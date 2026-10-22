@@ -7,6 +7,7 @@ mod auto_obligations;
 mod builtins;
 mod callable_queries;
 mod callables;
+mod cloning;
 mod coherence;
 mod coinduction;
 pub(in crate::sema) use coherence::may_overlap;

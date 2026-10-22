@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct V<'a>{count:&'a mut u8}impl Drop for V<'_>{fn drop(&mut self){*self.count+=1u8;}}fn main(){let mut n=0u8;{let a=[V{count:&mut n}];{let i=a.iter();let mut j=i.clone();match j.next(){Some(_)=>{},None=>check(false)}}}check(n==1);}

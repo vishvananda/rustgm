@@ -482,9 +482,19 @@ impl Checker<'_> {
         if !self.facts.methods.bound_uses.contains(&self.key(node)) {
             return Ok(None);
         }
-        self.facts
-            .associated
-            .trait_owner(owner)
+        let trait_owner = self.facts.associated.trait_owner(owner);
+        if trait_owner.is_some_and(|owner| {
+            self.facts
+                .cloning
+                .as_deref()
+                .is_some_and(|r| r.owns_trait(owner))
+        }) {
+            // Clone bounds are scoped marker premises. The actual canonical
+            // application must use selection's marker bridge, not pretend that
+            // the caller supplied an explicit user-trait assumption.
+            return Ok(None);
+        }
+        trait_owner
             .and_then(|owner| self.facts.generics.trait_self_bounds.get(&owner))
             .copied()
             .map(Some)

@@ -59,6 +59,10 @@ pub(super) fn prepare(
             .iteration
             .as_deref()
             .is_some_and(|r| r.owns_trait(owner))
+        || facts
+            .cloning
+            .as_deref()
+            .is_some_and(|r| r.owns_trait(owner))
     {
         facts.generics.callable_parameters(&facts.types, owner)?.1
     } else {
@@ -103,6 +107,16 @@ pub(super) fn prepare(
     }
     for predicate in facts.generics.predicates_in_scope(owner) {
         let predicate = predicate.value.ordinary()?;
+        // Applicability checks the abstract marker and Sized requirements. The
+        // chosen callable retains and proves its complete canonical trait goal.
+        if facts
+            .cloning
+            .as_deref()
+            .is_some_and(|r| r.owns_trait(owner))
+            && facts.generics.trait_self_bounds.get(&owner) == Some(&predicate)
+        {
+            continue;
+        }
         if matches!(
             predicate.bound,
             Bound::Trait(_) | Bound::ProjectionEqual(_) | Bound::Auto(_)

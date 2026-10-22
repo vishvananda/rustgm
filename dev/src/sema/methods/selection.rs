@@ -85,6 +85,26 @@ pub(super) fn trait_groups(
         },
         |object| object.traits.as_slice(),
     );
+    let clone_bound = parameter
+        .zip(caller.environment)
+        .filter(|(parameter, environment)| {
+            environment
+                .abilities(*parameter)
+                .is_some_and(|abilities| abilities.clone_)
+        })
+        .and(facts.cloning.as_deref())
+        .map(|r| ItemId(r.canonical.definition.0));
+    let with_clone;
+    let bound_traits = if let Some(clone) = clone_bound {
+        with_clone = bound_traits
+            .iter()
+            .copied()
+            .chain(std::iter::once(clone))
+            .collect::<Vec<_>>();
+        with_clone.as_slice()
+    } else {
+        bound_traits
+    };
     let index = facts
         .methods
         .visible

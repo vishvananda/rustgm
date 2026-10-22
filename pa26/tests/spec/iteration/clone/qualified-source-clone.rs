@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct V(u8);trait Clone{fn clone(&self)->u8;}impl<'a,T> Clone for core::slice::Iter<'a,T>{fn clone(&self)->u8{9}}fn main(){let a=[V(1)];check(Clone::clone(&a.iter())==9);let mut i=core::clone::Clone::clone(&a.iter());match core::iter::Iterator::next(&mut i){Some(x)=>check(x.0==1),None=>check(false)}}

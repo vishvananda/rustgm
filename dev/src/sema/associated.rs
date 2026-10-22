@@ -248,8 +248,8 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
         if definition.kind != DefKind::SelfType {
             continue;
         }
+        // Exact canonical owners retain typed schemas instead of source AST ownership.
         if library_owner(report, index) {
-            // Exact canonical owners retain typed schemas instead of source AST ownership.
             continue;
         }
         let source = definition
@@ -344,6 +344,12 @@ fn library_owner(report: &Report, index: usize) -> bool {
                     .iter()
                     .any(|d| d.definition.0 as usize == index)
             })
+        || report
+            .resolution
+            .builtin_traits
+            .cloning()
+            .and_then(|cloning| cloning.implementation)
+            .is_some_and(|implementation| implementation.definition.0 as usize == index)
 }
 fn identity(report: &Report, source: NodeKey, index: usize) -> Result<DefId, Error> {
     u32::try_from(index).map(DefId).map_err(|_| {

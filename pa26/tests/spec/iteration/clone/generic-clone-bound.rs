@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct V(u8);fn read(i:&mut core::slice::Iter<V>)->u8{match i.next(){Some(x)=>x.0,None=>0}}fn duplicate<T:Clone>(x:&T)->T{x.clone()}fn main(){let a=[V(6)];let mut i=duplicate(&a.iter());check(read(&mut i)==6);}

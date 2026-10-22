@@ -66,7 +66,10 @@ impl Checker<'_> {
         let types = super::super::associated_types::Members::new(self.report, &self.facts);
         let constants = super::constants::Members::new(self.report, &self.facts);
         for (owner, source, predicate) in headers {
-            if self.validate_iteration_blanket(owner)? || self.validate_collection_impl(owner)? {
+            if self.validate_iteration_blanket(owner)?
+                || self.validate_collection_impl(owner)?
+                || self.validate_iterator_clone(owner)?
+            {
                 continue;
             }
             self.validate_reference_coherence(owner, source, predicate, &mut steps)?;

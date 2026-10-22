@@ -48,6 +48,36 @@ impl Checker<'_> {
                 head: heads.shape(target).unwrap_or_default(),
             });
         }
+        self.library_implementation_headers(&mut headers);
+        if headers.is_empty() {
+            return Ok(());
+        }
+        self.facts
+            .generics
+            .implementations
+            .get_or_insert_with(Default::default)
+            .reserve(headers)
+            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+        self.facts
+            .generics
+            .implementations
+            .as_mut()
+            .ok_or_else(|| {
+                Error::at(
+                    crate::resolve::unit::FileId(0),
+                    0,
+                    "missing reserved implementation inventory",
+                )
+            })?
+            .register_collection_heads(self.report)
+            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))
+    }
+
+    fn library_implementation_headers(
+        &self,
+        headers: &mut Vec<crate::sema::traits::implementations::PendingHeader>,
+    ) {
+        use crate::sema::traits::implementations::PendingHeader;
         if let Some(iteration) = self.report.resolution.builtin_traits.iteration() {
             for declaration in iteration.blankets {
                 let trait_ = match declaration.kind {
@@ -94,28 +124,19 @@ impl Checker<'_> {
                 }
             }
         }
-        if headers.is_empty() {
-            return Ok(());
+        if let (Some(cloning), Some(collections)) = (
+            self.report.resolution.builtin_traits.cloning(),
+            self.report.resolution.builtin_traits.collections(),
+        ) && let Some(implementation) = cloning.implementation
+        {
+            headers.push(PendingHeader {
+                owner: implementation.definition,
+                item: crate::types::ItemId(cloning.definition.0).into(),
+                head: Some(crate::sema::traits::heads::Head::Nominal(
+                    crate::types::ItemId(collections.iterator.0),
+                )),
+            });
         }
-        self.facts
-            .generics
-            .implementations
-            .get_or_insert_with(Default::default)
-            .reserve(headers)
-            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
-        self.facts
-            .generics
-            .implementations
-            .as_mut()
-            .ok_or_else(|| {
-                Error::at(
-                    crate::resolve::unit::FileId(0),
-                    0,
-                    "missing reserved implementation inventory",
-                )
-            })?
-            .register_collection_heads(self.report)
-            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))
     }
 
     pub(super) fn impl_parameters(

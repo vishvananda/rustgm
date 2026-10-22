@@ -184,6 +184,12 @@ impl Checker<'_> {
                                 | crate::resolve::model::BuiltinTrait::Iteration(_)
                         )
                     )
+                    || !auto
+                        && self
+                            .facts
+                            .cloning
+                            .as_deref()
+                            .is_some_and(|r| r.owns_trait(id))
                     || auto
                         && matches!(
                             self.report.resolution.builtin_traits.identify(id),

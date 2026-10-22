@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct V(u8);fn read(i:&mut core::slice::Iter<V>)->u8{match i.next(){Some(x)=>x.0,None=>0}}fn main(){let a=[V(4),V(7),V(9)];let mut i=a.iter();check(read(&mut i)==4);let mut j=i.clone();check(read(&mut i)==7&&read(&mut j)==7);check(read(&mut i)==9&&read(&mut j)==9);}

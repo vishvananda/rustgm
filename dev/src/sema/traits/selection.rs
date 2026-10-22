@@ -163,6 +163,16 @@ pub(in crate::sema) fn may_have_subject(
     if facts.associated.callable(DefId(item.0)).is_some() {
         return Ok(true);
     }
+    if facts
+        .cloning
+        .as_deref()
+        .is_some_and(|r| r.owns_trait(DefId(item.0)))
+    {
+        // Exclusion only. Exact marker bounds, Sized and all real candidates
+        // remain mandatory; this never selects a concrete clone body.
+        return Ok(true);
+    }
+
     let subject = match super::heads::Subject::query(&facts.types, context, subject) {
         Ok(subject) => subject,
         Err(infer::Error::Normalization) => return Ok(true),

@@ -160,3 +160,6 @@ mod iterator_visibility;
 
 #[path = "language_operators/shared_iterators.rs"]
 mod shared_iterators;
+
+#[path = "language_operators/iterator_cloning.rs"]
+mod iterator_cloning;

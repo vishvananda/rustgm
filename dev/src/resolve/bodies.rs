@@ -31,7 +31,8 @@ impl Resolver<'_> {
             }
         }
         self.reserve_operator_comparisons()?;
-        self.reserve_iteration()
+        self.reserve_iteration()?;
+        self.reserve_cloning()
     }
     pub fn visit_list(&mut self, c: Context, list: List, ns: Namespace) -> Result<(), Error> {
         for offset in list.start..list.end {
@@ -182,6 +183,7 @@ impl Resolver<'_> {
                     self.prepare_comparison_method(c, node, method)?;
                 }
                 self.prepare_slice_method(c, node, *name)?;
+                self.note_clone_name(c, node, *name);
                 self.facts.method_calls.insert(
                     NodeKey { file: c.file, node },
                     super::model::MethodCall {
@@ -208,6 +210,7 @@ impl Resolver<'_> {
                     self.prepare_comparison_method(c, node, method)?;
                 }
                 self.prepare_slice_method(c, node, name)?;
+                self.note_clone_name(c, node, name);
                 self.facts.method_calls.insert(
                     NodeKey { file: c.file, node },
                     super::model::MethodCall {
@@ -239,6 +242,7 @@ impl Resolver<'_> {
                 let (_, names) = self.path_names(c, path)?;
                 if let Some(&name) = names.last() {
                     self.prepare_slice_method(c, node, name)?;
+                    self.note_clone_name(c, node, name);
                 }
                 let Kind::Path { segments, .. } = self.kind(c, path) else {
                     return Err(self.error(c, node, "qualified suffix requires parsed segments"));
@@ -457,11 +461,15 @@ impl Resolver<'_> {
             return self.lifetime(c, node, span);
         }
         let (absolute, path) = self.path_names(c, node)?;
+        if ns == Namespace::Value {
+            self.prepare_clone_path(c, node, absolute, &path)?;
+        }
         if ns == Namespace::Value
             && path.len() > 1
             && let Some(&name) = path.last()
         {
             self.prepare_slice_method(c, node, name)?;
+            self.note_clone_name(c, node, name);
         }
         if ns == Namespace::Type
             || ns == Namespace::Value
@@ -469,6 +477,10 @@ impl Resolver<'_> {
                 && path.last().is_some_and(|name| {
                     crate::support::comparisons::Method::from_name(self.package.names.get(*name))
                         .is_some()
+                })
+            || ns == Namespace::Value
+                && path.last().is_some_and(|name| {
+                    matches!(self.package.names.get(*name), "next" | "into_iter")
                 })
             || ns == Namespace::Value
                 && path.iter().any(|name| {

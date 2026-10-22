@@ -437,6 +437,7 @@ impl Checker<'_> {
         else {
             return Ok(ty);
         };
+        super::super::declarations::cloning::request_member(self.report, self.facts, owner, ty)?;
         let explicit = if self.facts.generics.item_uses.contains_key(&self.key(node)) {
             self.facts
                 .generics

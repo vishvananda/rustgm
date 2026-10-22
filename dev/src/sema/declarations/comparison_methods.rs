@@ -1,8 +1,17 @@
 //! Shared registration for ordinary source-free library method declarations.
 use super::{Checker, DefId, Error, ItemId, NodeKey, State, Type};
 use crate::{
+    sema::{
+        associated::Schema,
+        generics::{Parameter, Predicate as Written},
+    },
     syntax::ast::List,
-    types::{GenericArgs, TypeId, arguments::Argument},
+    types::{
+        GenericArgs, TypeId,
+        arguments::Argument,
+        parameters::predicates::{Bound, Predicate},
+        traits::Application,
+    },
 };
 #[derive(Clone, Copy)]
 pub(super) struct MethodContract {
@@ -170,5 +179,63 @@ impl super::comparisons::LibraryContracts<'_> {
             }),
         );
         Ok(())
+    }
+}
+
+impl super::comparisons::LibraryContracts<'_> {
+    pub(super) fn library_trait_owner(
+        &mut self,
+        source: NodeKey,
+        owner: DefId,
+        self_parameter: DefId,
+        sized: bool,
+    ) -> Result<(TypeId, crate::types::traits::ApplicationId), Error> {
+        let subject = self.language_parameter(source, self_parameter, self_parameter, sized)?;
+        self.facts.generics.parameters.insert(
+            self_parameter,
+            vec![Parameter {
+                binding: self_parameter,
+                anonymous: false,
+                argument: Argument::Type(subject),
+                default: None,
+            }],
+        );
+        self.facts.generics.parameters.insert(owner, Vec::new());
+        self.facts.generics.parents.insert(owner, self_parameter);
+        self.facts
+            .associated
+            .declare_language_trait(
+                owner,
+                Schema {
+                    self_type: subject,
+                    captures: 0,
+                    bounds: Vec::new(),
+                },
+                None,
+            )
+            .map_err(|e| self.error(source, e))?;
+        let application = self
+            .facts
+            .types
+            .intern_trait_application(Application {
+                item: ItemId(owner.0),
+                arguments: GenericArgs::EMPTY,
+            })
+            .map_err(|e| self.error(source, e))?;
+        let own = Predicate {
+            ty: subject,
+            bound: Bound::Trait(application),
+        };
+        self.facts.generics.trait_self_bounds.insert(owner, own);
+        self.facts
+            .generics
+            .predicates
+            .entry(owner)
+            .or_default()
+            .push(Written {
+                source,
+                value: own.into(),
+            });
+        Ok((subject, application))
     }
 }

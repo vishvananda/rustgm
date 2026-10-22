@@ -735,6 +735,15 @@ impl Checker<'_> {
                     self.availability,
                     super::traits::implementations::Availability::Validated
                 ) && let Some(owner) = owner
+                    && super::declarations::cloning::owns(self.report, owner)
+                {
+                    super::declarations::cloning::prepare(self.report, self.facts, owner, true)?;
+                    continue;
+                }
+                if matches!(
+                    self.availability,
+                    super::traits::implementations::Availability::Validated
+                ) && let Some(owner) = owner
                     && super::declarations::iteration::collections::owns(self.report, owner)
                 {
                     super::declarations::iteration::collections::prepare(

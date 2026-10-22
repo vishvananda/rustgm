@@ -168,7 +168,7 @@ fn build(
     }
     Ok(body)
 }
-fn local(
+pub(super) fn local(
     body: &mut Body,
     ty: TypeId,
     kind: LocalKind,
@@ -187,7 +187,7 @@ fn local(
     statement(body, Action::StorageLive(id));
     Ok(id)
 }
-fn projection(
+pub(super) fn projection(
     body: &mut Body,
     base: Place,
     ty: TypeId,

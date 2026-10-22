@@ -1,5 +1,5 @@
 //! Collection impls publish real associated types and checked callable schemas.
-mod conformance;
+pub(in crate::sema::declarations) mod conformance;
 mod parameters;
 mod signatures;
 use super::{Checker, DefId, Error, ItemId, State, Type};

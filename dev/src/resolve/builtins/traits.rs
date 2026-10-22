@@ -1,5 +1,6 @@
 //! Small demand-loaded trait modules retain identity through aliases and globs.
 mod callables;
+mod cloning;
 mod collections;
 mod comparisons;
 mod iteration;
@@ -14,6 +15,7 @@ use crate::{
     syntax::ast::NodeId,
 };
 pub use callables::Callable;
+pub use cloning::{Declaration as Cloning, Implementation as CloneImplementation};
 pub use collections::{CollectionDeclaration, Collections};
 pub use comparisons::{Equality, Members as ComparisonMembers};
 pub use iteration::{Blanket as IterationBlanket, Declaration as IterationDeclaration, Iteration};
@@ -60,6 +62,7 @@ pub struct Traits {
     pub(super) library: Option<ScopeId>,
     marker: Option<ScopeId>,
     clone_: Option<ScopeId>,
+    cloning: Option<Box<cloning::Registry>>,
     panic: Option<ScopeId>,
     pub(super) ops: Option<ScopeId>,
     entries: [Option<DefId>; 11],

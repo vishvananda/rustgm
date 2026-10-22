@@ -336,6 +336,11 @@ Safe shared slice/array iteration and canonical `core::slice::Iter` now use
 checked generated originals, exact Item/source lifetimes and ordinary cleanup.
 `tests/shared-iteration-outcomes.json` declares the shared source/native controls;
 see `docs/pa26-shared-iteration.md` for demand, proof and layout boundaries.
-The Clone marker control does not exercise `Iter::clone` execution. Mutable/owned
-collection and range iteration, executable clone, further iterator methods,
-question-mark, additional derives and formatting remain required; PA26 stays planned.
+The shared checkpoint's Clone marker control is separate from executable clone.
+Canonical `Iter::clone` now has an exact selected implementation and an ordinarily
+checked generic original, including non-Clone elements and independent cursor
+state. `tests/iterator-clone-outcomes.json` and `docs/pa26-iterator-clone.md`
+record actual execution, lookup and lifetime controls. Concrete derived/reference
+Clone targets, mutable/owned collection and range iteration, further iterator
+methods, question-mark, additional derives and formatting remain required; PA26
+stays planned.

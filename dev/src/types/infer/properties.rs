@@ -135,10 +135,23 @@ impl Query {
         selected: &HashMap<ItemId, Declaration, S>,
         ty: TypeId,
     ) -> Result<Possible, &'static str> {
+        let field_only = match store.kind(ty) {
+            Some(crate::types::Kind::Adt(item, _)) => selected
+                .get(&item)
+                .filter(|declaration| !declaration.has_argument_bounds()),
+            _ => None,
+        };
+        // Match the constructed-head possibility filter above. The selected
+        // implementation still proves actual fields before any value operation.
+        let abilities = if let Some(declaration) = field_only {
+            declaration.properties()
+        } else {
+            self.copies.demand(store, definitions, selected, ty)?
+        };
         Ok(Possible {
             ty: Some(ty),
             sized: self.shapes.demand(store, ty)?.sized,
-            abilities: self.copies.demand(store, definitions, selected, ty)?,
+            abilities,
         })
     }
 }

@@ -8,6 +8,7 @@ mod calling_conventions;
 use calling_conventions::rust_abi;
 pub(super) use calling_conventions::{callable_convention, fixed_parameters, with_variadic};
 mod capture_bounds;
+pub(in crate::sema) mod cloning;
 mod comparison_methods;
 mod comparisons;
 pub(in crate::sema) use comparisons::prepare as prepare_comparison;
@@ -312,6 +313,7 @@ impl Checker<'_> {
         self.prepare_call_contracts()?;
         self.prepare_language_contracts()?;
         self.prepare_comparison_contracts()?;
+        self.prepare_clone_contract()?;
         self.prepare_iteration_contracts()?;
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
@@ -383,6 +385,7 @@ impl Checker<'_> {
             .is_some()
             || self.lazy_library_method(id)
             || iteration::collections::owns(self.report, id)
+            || cloning::owns(self.report, id)
     }
 
     #[expect(
@@ -655,6 +658,9 @@ impl Checker<'_> {
             .push(Work::Node(NodeKey { file, node }, false, context));
     }
     fn definition(&mut self, id: DefId, finish: bool) -> Result<(), Error> {
+        if cloning::owns(self.report, id) {
+            return self.activate_iterator_clone(id);
+        }
         if iteration::collections::owns(self.report, id) {
             return self.activate_collection(id);
         }

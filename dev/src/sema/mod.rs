@@ -9,6 +9,7 @@ pub mod crates;
 pub use constants::values;
 mod arguments;
 pub(crate) mod callee_premises;
+pub(crate) mod cloning;
 pub mod declarations;
 pub mod destructors;
 pub(crate) mod dispatch;

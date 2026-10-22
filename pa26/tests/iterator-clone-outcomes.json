@@ -1,0 +1,583 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/iteration/clone/original-nonclone-elements.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "b7d67d27826887a631586fd828d0edadaa22ddbe5523785253686ac957f7125d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/original-nonclone-elements.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/partial-state.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "3811b3ace4120f6c58ddb8ae1eb6ee9f9e34755f8ba4633bda5cfec787437c19",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/partial-state.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/generic-clone-bound.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "28f0000c70ebd3cf23853bbe4b94d0c82ea59b4469acf7a5f93ea81cea625956",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/generic-clone-bound.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/qualified-clone.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "82bbacbd3ddbc3c14de7beafa94c7dae8ca4cf116f76f77fdc8f859c80948747",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/qualified-clone.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/qualified-iter-clone.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "df8b72b12cb931525b9369230ac19f8aac8a5e76360b0a09f4a412ead1d8e361",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/qualified-iter-clone.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/reified-clone.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "c3d5ba6d88a2cab54792b257765c52b4870a3d2d884263a74a39ae37c17a32ea",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/reified-clone.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/item-survives-clone-owner.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "c827f234665076b4bab0a9e5eb4f91b21f7d4f5624ecda220809ca4ffab3f255",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/item-survives-clone-owner.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/empty-zst.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "0a17df748b4635deb9cd8c6843516d395df195f3c197d69e0b152e7d12f0dbef",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/empty-zst.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/noncopy-drop.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "798817aea8b38961157517f4201f6a1d9cb82f445b4f679a06adcf132c01a05a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/noncopy-drop.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/no-prelude-import.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "3f61cf10fba4ef79b7c699ed1d2e03caab7d3c889346aa67c9505d54d0b6a07d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/no-prelude-import.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/no-prelude-missing.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "c5f8573b8e044ce35c041132e8173362387cb8c93cc52515834359ba57d24da6",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/no-prelude-missing.rs"
+    },
+    {
+      "path": "tests/spec/iteration/clone/source-shadow.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "7fe9f03587fd2ea3aea33202c550b07cdcf31f3cd14ad49f17a386516cdb7d85",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/source-shadow.rs"
+    },
+    {
+      "path": "tests/spec/iteration/clone/source-lookalike.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "6c17e867fc2d97d5040f368f1ccdeaf9d33857a9a0d419594334bdeab38910f9",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/source-lookalike.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/competing-trait.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "7822f01822fe333e42cf2ada60cbf766031283fbd251d94f883a89ffb57af056",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/competing-trait.rs"
+    },
+    {
+      "path": "tests/spec/iteration/clone/source-mutation.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "fccd78f5362d56226e2f69f64abbb5c927e0666a4718245365e7c940ead64ac4",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/source-mutation.rs"
+    },
+    {
+      "path": "tests/spec/iteration/clone/source-escape.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "34725a25794d9d087ccb04b4d638df2e5af84d7606a44745a1408334ebf68746",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/source-escape.rs"
+    },
+    {
+      "path": "tests/spec/iteration/clone/iter-still-not-copy.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "3ffedf08bfa102ea7650887c70d88894aa76dc9fe590a41ec4a4cd19d9ee20b4",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/iter-still-not-copy.rs"
+    },
+    {
+      "path": "tests/spec/iteration/clone/plain-nonclone.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "780e07db41edf60f7b87b943179ba025dac0b629d1f87a8f27e92a01f30fb91e",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/plain-nonclone.rs"
+    },
+    {
+      "path": "tests/spec/iteration/clone/after-exhaustion.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "9e5ec0194e7156e9bc2e7b85ef08f3a4a3a289d4500e21eb4a83af15e7d321c4",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/after-exhaustion.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/live-borrowed-item.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "b8097bd145e7b68ca1c1f1bea23d15be5442474cf2e5d9fbe32eea8b108ac52b",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/live-borrowed-item.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/qualified-source-clone.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "1a6423e30219e7261d1b0d354b6a8362a41fd909366d57f2b29a313bfacf6b0d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/qualified-source-clone.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/qualified-generic-bound.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "62da67ee22aabe56b395893341e16e0da634fc4a89004ece393d707bb6f2f18c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/qualified-generic-bound.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/clone-supertrait-sized.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "3189c6180efceed873409b1c8aaec0123d5f6f989cb665b3e8aa0dff1f89ecf0",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/clone-supertrait-sized.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/abstract-generic.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "7adcd2a626057b3341b070d62629387ff690c8189accd2ce3db2deab1470bb73",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/abstract-generic.rs",
+      "native": {
+        "kind": "codegen",
+        "reason": "Abstract marker-bound body is type-checked; empty main does not instantiate clone."
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/no-prelude-generic.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "ae0aa7ab9cb4f01b8d256763604fbd3e6010bdbb5cc7beb6065b1488d221803a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/no-prelude-generic.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/source-winner-with-iter.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "3026cd7525fc5dc686e2fef613956aa0e530d1384fc7ae71a558da8b0f12b759",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/source-winner-with-iter.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/inherent-winner-with-iter.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "e369158dc9ea5ec90dc88da106fcf43bc0fe92874e96b40e1d0d70dc0f358a98",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/inherent-winner-with-iter.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/clone-const-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "54884b11a73914bec675a671e020ab34e14a36836d5c3be40772dbbbfe4c24a2",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/clone-const-reject.rs"
+    },
+    {
+      "path": "tests/spec/iteration/clone/clone-foreign-pointer-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "7039c9830c150099c19c9a23790cbe41c743587d06c3ae2def66c1ae695e6654",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/clone-foreign-pointer-reject.rs"
+    },
+    {
+      "path": "tests/spec/iteration/clone/macro-canonical-origin.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "595c9d4d7fb199ce8dff478508aa18ffb509bf066e8eb8fdb2242e3382530b96",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/macro-canonical-origin.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/clone/std-alias-qualified.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "c043dc7b5455df79418c1a8ddecd9b8a358056e9329dbcf9eae53f1c1f260e50",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "qualification_origin": "obj/parallel/pa26/iterator-clone/declared-v3/std-alias-qualified.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    }
+  ],
+  "required_gaps": [
+    {
+      "name": "concrete-marker-only",
+      "path": "obj/parallel/pa26/iterator-clone/declared-v3/concrete-marker-only.rs",
+      "source_sha256": "c5f63560a36ed2aa0998e4e103ece8d09bd7571db93c337acf29a736f9b2b543",
+      "rustc": 0,
+      "native": 0,
+      "candidate_expected": 1,
+      "required_gap": true
+    },
+    {
+      "name": "reference-marker-only",
+      "path": "obj/parallel/pa26/iterator-clone/declared-v3/reference-marker-only.rs",
+      "source_sha256": "8b33df344d49992aee927a4f800294bc23347fe097e03373e799e0a31c1f2f6f",
+      "rustc": 0,
+      "native": 0,
+      "candidate_expected": 1,
+      "required_gap": true
+    }
+  ]
+}

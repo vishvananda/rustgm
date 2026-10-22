@@ -86,9 +86,9 @@ pub(super) fn complete(
         .and_then(|r| r.collections.as_deref_mut())
         .ok_or_else(|| Error::at(source.file, 0, "missing collection completion marker"))?
         .status = Status::Complete;
-    Ok(())
+    super::super::super::cloning::prepare_requested(report, facts)
 }
-fn check_overlap(
+pub(in crate::sema::declarations) fn check_overlap(
     report: &Report,
     facts: &mut Declarations,
     source: crate::resolve::unit::NodeKey,
@@ -180,7 +180,14 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
             types.push((expected, actual));
         }
         self.collection_associated(source, predicate, &types, &mut proof)?;
-        self.collection_lifetimes(original, predicate, &requirements, &mut proof)?;
+        self.library_impl_lifetimes(
+            owner,
+            u32::from(declaration.lifetime.is_some()),
+            source,
+            predicate,
+            &requirements,
+            &mut proof,
+        )?;
         let definitions = conformance::Definitions::new(self.facts, predicate, &types)
             .map_err(|e| self.error(source, e))?;
         let function = |id| {
@@ -253,26 +260,15 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
         }
         Ok(())
     }
-    fn collection_lifetimes(
+    pub(in crate::sema::declarations) fn library_impl_lifetimes(
         &self,
-        original: Original,
+        owner: super::DefId,
+        captures: u32,
+        source: crate::resolve::unit::NodeKey,
         predicate: Predicate,
         requirements: &crate::sema::traits::Requirements,
         proof: &mut Proof,
     ) -> Result<(), Error> {
-        let source = self
-            .facts
-            .iteration
-            .as_deref()
-            .ok_or_else(|| {
-                Error::at(
-                    super::super::super::FileId(0),
-                    0,
-                    "missing iteration registry",
-                )
-            })?
-            .canonical
-            .origin;
         let mut queries = Queries::new(
             &self.facts.types,
             &self.facts.lifetimes.nominal_requirements,
@@ -281,15 +277,11 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
         let mut constraints = Constraints::new(
             &self.facts.types,
             &self.facts.lifetimes.variances,
-            u32::from(original.declaration.lifetime.is_some()),
+            captures,
             1_000_000,
         )
         .map_err(|e| self.error(source, e.to_string()))?;
-        for parameter in self
-            .facts
-            .generics
-            .parameters_in_scope(original.declaration.definition)
-        {
+        for parameter in self.facts.generics.parameters_in_scope(owner) {
             if let crate::types::arguments::Argument::Type(ty) = parameter.argument
                 && let Some(Kind::Parameter(id)) = self.facts.types.kind(ty)
             {
@@ -307,7 +299,7 @@ impl super::super::super::comparisons::LibraryContracts<'_> {
                 &mut queries,
                 self.facts
                     .generics
-                    .predicates_in_scope(original.declaration.definition)
+                    .predicates_in_scope(owner)
                     .map(|p| p.value),
             )
             .map_err(|e| self.error(source, e))?;

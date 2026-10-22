@@ -8,6 +8,9 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
+        if let Some(action) = self.clone_marker_result(facts, frame)? {
+            return Ok(action);
+        }
         match primitive_methods::candidate(
             facts,
             &mut frame.inputs.context,

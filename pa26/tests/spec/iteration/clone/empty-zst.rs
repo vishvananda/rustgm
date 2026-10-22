@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct Z;fn main(){let a:[Z;0]=[];let mut i=a.iter().clone();match i.next(){None=>{},Some(_)=>check(false)}let a=[Z,Z];let mut i=a.iter().clone();match i.next(){Some(_)=>{},None=>check(false)}match i.next(){Some(_)=>{},None=>check(false)}match i.next(){None=>{},Some(_)=>check(false)}}

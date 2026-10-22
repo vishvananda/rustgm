@@ -16,8 +16,9 @@ use crate::syntax::{
 pub use intrinsics::{ComparisonResult, Definition as BuiltinIntrinsic, Intrinsics};
 pub use library::{LibraryTypes, Nominal as LibraryNominal, SliceLength};
 pub use traits::{
-    BuiltinTrait, Callable, CollectionDeclaration, Collections, ComparisonMembers, Equality,
-    Iteration, IterationBlanket, IterationDeclaration, Language, LanguageOutput, Traits,
+    BuiltinTrait, Callable, CloneImplementation, Cloning, CollectionDeclaration, Collections,
+    ComparisonMembers, Equality, Iteration, IterationBlanket, IterationDeclaration, Language,
+    LanguageOutput, Traits,
 };
 
 impl Resolver<'_> {

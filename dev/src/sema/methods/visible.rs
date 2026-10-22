@@ -50,6 +50,9 @@ impl Index {
                 index.prelude_members(declaration.definition)?;
             }
         }
+        if let Some(cloning) = facts.cloning.as_deref() {
+            index.prelude_members(cloning.canonical.definition)?;
+        }
         for (ordinal, scope) in report.resolution.scopes.iter().enumerate() {
             index.account(1)?;
             let scope_id = u32::try_from(ordinal)
@@ -64,7 +67,7 @@ impl Index {
                         == DefKind::Trait
                         || (facts.associated.operation(binding.target).is_some()
                             || facts.associated.comparison(binding.target).is_some()
-                            || iteration_trait(facts, binding.target)))
+                            || canonical_trait(facts, binding.target)))
                 {
                     index
                         .scopes
@@ -79,7 +82,7 @@ impl Index {
             if report.resolution.definitions[binding.target.0 as usize].kind == DefKind::Trait
                 || (facts.associated.operation(binding.target).is_some()
                     || facts.associated.comparison(binding.target).is_some()
-                    || iteration_trait(facts, binding.target))
+                    || canonical_trait(facts, binding.target))
             {
                 let scope = report.resolution.imports[import].scope;
                 index
@@ -193,9 +196,13 @@ impl Index {
     }
 }
 
-fn iteration_trait(facts: &Declarations, definition: DefId) -> bool {
+fn canonical_trait(facts: &Declarations, definition: DefId) -> bool {
     facts
         .iteration
         .as_deref()
         .is_some_and(|iteration| iteration.owns_trait(definition))
+        || facts
+            .cloning
+            .as_deref()
+            .is_some_and(|cloning| cloning.owns_trait(definition))
 }

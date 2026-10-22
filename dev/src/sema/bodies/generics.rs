@@ -243,44 +243,7 @@ impl Checker<'_> {
                 .types
                 .get(term.0 as usize)
                 .ok_or_else(|| self.error(node, "missing inferred item type"))?;
-            let Some(Type::FunctionItem { arguments, .. }) = self.facts.types.kind(ty) else {
-                return Err(self.error(node, "missing inferred item arguments"));
-            };
-            let arguments = self
-                .facts
-                .types
-                .arguments(arguments)
-                .ok_or_else(|| self.error(node, "invalid inferred arguments"))?
-                .filter(|a| !matches!(a, Canonical::Lifetime(_)))
-                .collect::<Vec<_>>();
-            let mut arguments = arguments.into_iter();
-            let parameters = self.callable_parameters(node, owner)?;
-            for id in parameters {
-                let parameter = self
-                    .facts
-                    .types
-                    .parameter(id)
-                    .ok_or_else(|| self.error(node, "missing inferred parameter"))?;
-                let argument = arguments
-                    .next()
-                    .ok_or_else(|| self.error(node, "missing inferred generic argument"))?;
-                if !matches!(
-                    (parameter.kind, argument),
-                    (ParameterKind::Type { .. }, Canonical::Type(_))
-                        | (ParameterKind::Const { .. }, Canonical::Const(_))
-                ) {
-                    return Err(self.error(node, "inferred generic argument kind mismatch"));
-                }
-                if let (ParameterKind::Type { sized: true }, Canonical::Type(actual)) =
-                    (parameter.kind, argument)
-                    && !self.body_is_sized(node, actual)?
-                {
-                    return Err(self.error(node, "generic type argument must be sized"));
-                }
-            }
-            if arguments.next().is_some() {
-                return Err(self.error(node, "unexpected inferred generic argument"));
-            }
+            self.validate_inferred_arguments(node, owner, ty)?;
         }
         for (index, predicate) in predicates.iter().enumerate() {
             let node = self.state.call_types.obligations[index].0;
@@ -332,11 +295,65 @@ impl Checker<'_> {
                     continue;
                 }
                 Some(Source::Builtin) => {
-                    return Err(self.error(node, "builtin evidence cannot replace a trait goal"));
+                    let Some(marker) =
+                        crate::sema::cloning::marker_predicate(self.facts, *predicate)
+                    else {
+                        return Err(
+                            self.error(node, "builtin evidence cannot replace a trait goal")
+                        );
+                    };
+                    self.prove_bound(node, marker.ty, Bound::Sized)?;
+                    marker
                 }
                 None => *predicate,
             };
             self.prove_bound(node, predicate.ty, predicate.bound)?;
+        }
+        Ok(())
+    }
+    fn validate_inferred_arguments(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+        ty: TypeId,
+    ) -> Result<(), Error> {
+        let Some(Type::FunctionItem { arguments, .. }) = self.facts.types.kind(ty) else {
+            return Err(self.error(node, "missing inferred item arguments"));
+        };
+        let arguments = self
+            .facts
+            .types
+            .arguments(arguments)
+            .ok_or_else(|| self.error(node, "invalid inferred arguments"))?
+            .filter(|a| !matches!(a, Canonical::Lifetime(_)))
+            .collect::<Vec<_>>();
+        let mut arguments = arguments.into_iter();
+        let parameters = self.callable_parameters(node, owner)?;
+        for id in parameters {
+            let parameter = self
+                .facts
+                .types
+                .parameter(id)
+                .ok_or_else(|| self.error(node, "missing inferred parameter"))?;
+            let argument = arguments
+                .next()
+                .ok_or_else(|| self.error(node, "missing inferred generic argument"))?;
+            if !matches!(
+                (parameter.kind, argument),
+                (ParameterKind::Type { .. }, Canonical::Type(_))
+                    | (ParameterKind::Const { .. }, Canonical::Const(_))
+            ) {
+                return Err(self.error(node, "inferred generic argument kind mismatch"));
+            }
+            if let (ParameterKind::Type { sized: true }, Canonical::Type(actual)) =
+                (parameter.kind, argument)
+                && !self.body_is_sized(node, actual)?
+            {
+                return Err(self.error(node, "generic type argument must be sized"));
+            }
+        }
+        if arguments.next().is_some() {
+            return Err(self.error(node, "unexpected inferred generic argument"));
         }
         Ok(())
     }

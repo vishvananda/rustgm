@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct V(u8);fn main(){let a=[V(6),V(9)];let mut i=a.iter();let mut j=i.clone();let x=match i.next(){Some(x)=>x.0,None=>0};let y=match j.next(){Some(x)=>x.0,None=>0};check(x==6&&y==6);}

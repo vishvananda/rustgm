@@ -257,10 +257,8 @@ fn iterator_layout_keeps_ordinary_records_compact() {
         size_of::<crate::sema::iteration::Call>(),
         size_of::<body::ir::Value>()
     );
-    // Caller computations add an 8-byte box slot and an 8-byte work counter;
-    // write_bytes and the two pointer-add identities add three 32-byte slots;
-    // pointer method selection adds one 8-byte lazy catalog slot.
-    assert_eq!(size_of::<Declarations>(), 8544);
+    // The integrated 8544-byte base retains pointer methods; Clone adds one lazy pointer.
+    assert_eq!(size_of::<Declarations>(), 8552);
     assert_eq!(size_of::<Original>(), 56);
     // The demand-only collection catalog adds one optional Box to this owner.
     assert_eq!(size_of::<crate::sema::iteration::Registry>(), 312);
@@ -268,3 +266,6 @@ fn iterator_layout_keeps_ordinary_records_compact() {
     assert_eq!(size_of::<crate::sema::iteration::Call>(), 8);
     assert_eq!(size_of::<crate::sema::iteration::ForPlan>(), 36);
 }
+
+#[path = "clone_contracts.rs"]
+mod cloning;

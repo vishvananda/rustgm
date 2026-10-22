@@ -32,8 +32,8 @@ impl Checker<'_> {
         id: DefId,
         phase: Phase,
     ) -> Result<(), Error> {
-        if super::super::iteration::collections::owns(self.report, id) {
-            return self.activate_collection(id);
+        if self.activate_library_impl_header(id)? {
+            return Ok(());
         }
         if self.impl_headers.complete.contains(&id) {
             return Ok(());
@@ -127,6 +127,25 @@ impl Checker<'_> {
             }
         }
         Ok(())
+    }
+
+    fn activate_library_impl_header(&mut self, id: DefId) -> Result<bool, Error> {
+        if self
+            .report
+            .resolution
+            .builtin_traits
+            .cloning()
+            .and_then(|c| c.implementation)
+            .is_some_and(|i| i.definition == id)
+        {
+            self.activate_iterator_clone(id)?;
+            return Ok(true);
+        }
+        if super::super::iteration::collections::owns(self.report, id) {
+            self.activate_collection(id)?;
+            return Ok(true);
+        }
+        Ok(false)
     }
 
     fn begin_owner_header(&mut self, owner: Owner) -> Result<(), Error> {

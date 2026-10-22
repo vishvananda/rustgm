@@ -11,6 +11,7 @@ use crate::{
 pub(super) struct Heads {
     iterator: ItemId,
     entries: [(DefId, Collection); 3],
+    cloning: Option<DefId>,
 }
 #[derive(Clone, Copy)]
 enum Shape {
@@ -23,10 +24,9 @@ enum Shape {
 impl Pending {
     pub(in super::super) fn collection_owner(&self, owner: DefId) -> bool {
         self.owners.contains_key(&owner)
-            && self
-                .collections
-                .as_deref()
-                .is_some_and(|rules| rules.entries.iter().any(|(id, _)| *id == owner))
+            && self.collections.as_deref().is_some_and(|rules| {
+                rules.entries.iter().any(|(id, _)| *id == owner) || rules.cloning == Some(owner)
+            })
     }
     pub(in super::super) fn only_collections(&self) -> bool {
         self.owners
@@ -84,9 +84,37 @@ impl Pending {
         let entries = entries
             .try_into()
             .map_err(|_| "invalid collection scheduling rule count")?;
+        let cloning = report.resolution.builtin_traits.cloning().and_then(|c| {
+            c.implementation
+                .map(|implementation| (c.definition, implementation))
+        });
+        let cloning = if let Some((definition, implementation)) = cloning {
+            if report
+                .resolution
+                .builtin_traits
+                .get(crate::resolve::model::BuiltinTrait::Clone)
+                != Some(definition)
+                || self.owners.get(&implementation.definition)
+                    != Some(&(
+                        Identity::User(ItemId(definition.0)),
+                        Some(Head::Nominal(ItemId(canonical.iterator.0))),
+                    ))
+                || report
+                    .resolution
+                    .definitions
+                    .get(implementation.definition.0 as usize)
+                    .is_none_or(|d| d.kind != DefKind::SelfType || d.node.is_some())
+            {
+                return Err("Clone scheduling rule differs from canonical implementation");
+            }
+            Some(implementation.definition)
+        } else {
+            None
+        };
         self.collections = Some(Box::new(Heads {
             iterator: ItemId(canonical.iterator.0),
             entries,
+            cloning,
         }));
         Ok(())
     }
@@ -144,7 +172,8 @@ impl Pending {
                 .entries
                 .iter()
                 .find(|(id, _)| *id == owner)
-                .map(|(_, kind)| *kind);
+                .map(|(_, kind)| *kind)
+                .or_else(|| (rules.cloning == Some(owner)).then_some(Collection::SliceIterator));
             let keep = if let Some(kind) = kind {
                 let actual = if let Some(shape) = shape {
                     shape

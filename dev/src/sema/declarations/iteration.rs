@@ -6,11 +6,7 @@ mod conformance;
 use super::{Checker, DefId, Error, ItemId, State, Type};
 use crate::{
     resolve::model::{BuiltinIteration, BuiltinIterationDeclaration},
-    sema::{
-        associated::{Schema, TypeContract},
-        generics::{Parameter, Predicate as Written},
-        traits::Header,
-    },
+    sema::{associated::TypeContract, generics::Predicate as Written, traits::Header},
     support::iteration::Trait,
     types::{
         GenericArgs, RegionId, TypeId,
@@ -142,68 +138,18 @@ impl Checker<'_> {
         canonical: BuiltinIteration,
         declaration: BuiltinIterationDeclaration,
     ) -> Result<(TypeId, crate::types::traits::ApplicationId), Error> {
-        let source = canonical.origin;
-        let subject = self.language_parameter(
-            source,
-            declaration.self_parameter,
+        let result = super::comparisons::LibraryContracts {
+            report: self.report,
+            facts: &mut self.facts,
+        }
+        .library_trait_owner(
+            canonical.origin,
+            declaration.definition,
             declaration.self_parameter,
             false,
         )?;
-        self.facts.generics.parameters.insert(
-            declaration.self_parameter,
-            vec![Parameter {
-                binding: declaration.self_parameter,
-                anonymous: false,
-                argument: Argument::Type(subject),
-                default: None,
-            }],
-        );
-        self.facts
-            .generics
-            .parameters
-            .insert(declaration.definition, Vec::new());
-        self.facts
-            .generics
-            .parents
-            .insert(declaration.definition, declaration.self_parameter);
-        self.facts
-            .associated
-            .declare_language_trait(
-                declaration.definition,
-                Schema {
-                    self_type: subject,
-                    captures: 0,
-                    bounds: Vec::new(),
-                },
-                None,
-            )
-            .map_err(|e| self.error(source, e))?;
-        let application = self
-            .facts
-            .types
-            .intern_trait_application(Application {
-                item: ItemId(declaration.definition.0),
-                arguments: GenericArgs::EMPTY,
-            })
-            .map_err(|e| self.error(source, e))?;
-        let own = Predicate {
-            ty: subject,
-            bound: Bound::Trait(application),
-        };
-        self.facts
-            .generics
-            .trait_self_bounds
-            .insert(declaration.definition, own);
-        self.facts
-            .generics
-            .predicates
-            .entry(declaration.definition)
-            .or_default()
-            .push(Written {
-                source,
-                value: own.into(),
-            });
-        Ok((subject, application))
+        self.states[declaration.self_parameter.0 as usize] = State::Complete;
+        Ok(result)
     }
     fn iteration_outputs(
         &mut self,

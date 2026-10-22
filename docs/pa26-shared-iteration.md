@@ -12,7 +12,8 @@ rejections), with unchanged source digests and explicit LowIR inspection modes.
 `language_operators::shared_iterators` owns source/native comparison. Its native
 test is explicitly ignored on installations without the external backend.
 The `iter-clone-no-element-clone` program checks the **Clone bound**, not an
-invocation of `Iter::clone`; executable clone materialization remains required.
+invocation of `Iter::clone`; its subsequent executable materialization is recorded
+separately in [the Clone checkpoint](pa26-iterator-clone.md).
 
 ## Identity, proof and execution
 

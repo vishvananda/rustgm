@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}macro_rules! duplicate{($x:expr)=>{core::clone::Clone::clone($x)}}fn main(){let a=[7u8];let mut i=duplicate!(&a.iter());match i.next(){Some(x)=>check(*x==7),None=>check(false)}}
