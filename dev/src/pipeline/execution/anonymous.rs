@@ -19,22 +19,38 @@ impl Engine {
                 "anonymous instance identity changed",
             ));
         }
+        if let crate::sema::inline_constants::Context::SourceInitializer(witness) =
+            instance.enclosing()
+        {
+            let parent_result = witness
+                .result(facts)
+                .map_err(|e| Declarations::error(report, source, e))?;
+            witness
+                .validate(facts, parent_result)
+                .map_err(|e| Declarations::error(report, source, e))?;
+            self.root(
+                report,
+                facts,
+                Target::SourceAssociated {
+                    source: witness,
+                    result: parent_result,
+                },
+            )?;
+        }
+        if let Some(&index) = self.roots.get(&Target::Anonymous { instance, result }) {
+            return Ok(index);
+        }
         let (template, contract) = if let Some(retained) = self.anonymous.remove(&source) {
             retained
         } else {
             self.anonymous_template(report, facts, source)?
         };
-        let built = body::instantiate::anonymous(facts, &template, instance, &contract)
-            .map_err(|e| Declarations::error(report, source, e));
+        let built =
+            body::instantiate::anonymous_result(facts, &template, instance, result, &contract)
+                .and_then(|materialized| materialized.into_requested(result))
+                .map_err(|e| Declarations::error(report, source, e));
         self.anonymous.insert(source, (template, contract));
         let mut concrete = built?;
-        if concrete.body.result != result {
-            return Err(Declarations::error(
-                report,
-                source,
-                "anonymous specialized result differs from request",
-            ));
-        }
         body::constants::eligibility(report, facts, &concrete.body)?;
         body::dispatch::resolve(facts, &mut concrete.body, &mut concrete.contract)
             .map_err(|e| Declarations::error(report, source, e))?;
@@ -54,9 +70,22 @@ impl Engine {
             &environment,
             &concrete.contract,
         )?;
+        let results = if let crate::sema::inline_constants::Context::SourceInitializer(witness) =
+            instance.enclosing()
+        {
+            body::instantiate::source_inline_results(
+                facts,
+                &concrete.body,
+                &concrete.contract,
+                witness,
+            )
+            .map_err(|e| Declarations::error(report, source, e))?
+        } else {
+            Vec::new()
+        };
         let index = self
             .catalog
-            .insert(&concrete.body)
+            .anonymous_result(&concrete.body, result, &results)
             .map_err(|e| Declarations::error(report, source, e))?;
         facts.constant_work.anonymous_instances += 1;
         self.roots

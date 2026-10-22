@@ -147,19 +147,43 @@ impl Engine {
             &environment,
             &concrete.contract,
         )?;
-        let index = if source_value.is_some() {
-            self.catalog
-                .source_initializer(&concrete.body, (instance, source, result))
-        } else {
-            self.catalog.insert(&concrete.body)
-        }
-        .map_err(|e| Declarations::error(report, source, e))?;
+        let index = self
+            .publish_selected(facts, &concrete, source_value, result)
+            .map_err(|e| Declarations::error(report, source, e))?;
         facts.constant_work.associated_instances += 1;
         let target = source_value.map_or(Target::Associated { instance, result }, |source| {
             Target::SourceAssociated { source, result }
         });
         self.roots.insert(target, index);
         Ok(index)
+    }
+    fn publish_selected(
+        &mut self,
+        facts: &mut Declarations,
+        concrete: &body::instantiate::Materialized,
+        witness: Option<crate::sema::values::execution::SourceComputation>,
+        result: TypeId,
+    ) -> Result<usize, &'static str> {
+        let Some(witness) = witness else {
+            return self.catalog.insert(&concrete.body);
+        };
+        let crate::body::ir::Owner::InitializerInstance { instance, .. } = concrete.body.owner
+        else {
+            return Err("selected publication has another body owner");
+        };
+        let results = body::instantiate::source_inline_results(
+            facts,
+            &concrete.body,
+            &concrete.contract,
+            witness,
+        )?;
+        self.catalog.source_initializer(
+            facts,
+            &concrete.body,
+            (instance, concrete.body.source, result),
+            witness,
+            &results,
+        )
     }
     fn associated_template(
         &mut self,

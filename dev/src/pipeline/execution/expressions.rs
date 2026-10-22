@@ -17,6 +17,15 @@ impl Engine {
         if let Target::Associated { instance, result } = target {
             return self.associated_root(report, facts, instance, result);
         }
+        if let Target::Anonymous { instance, result } = target
+            && matches!(
+                instance.enclosing(),
+                crate::sema::inline_constants::Context::SourceInitializer(_)
+            )
+        {
+            // Warm source-only entries still validate their exact live caller.
+            return self.anonymous_root(report, facts, instance, result);
+        }
         if let Some(&index) = self.roots.get(&target) {
             return Ok(index);
         }

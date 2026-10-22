@@ -55,8 +55,9 @@ debts. They do not close the following required families:
   pattern and nested associated reference/tuple families now also execute through
   that path. A generic inline constant containing the same projected associated
   use now passes semantic normalization in the direct and nested controls. Its
-  demanded execution still needs the sealed open initializer context and the
-  anonymous result/output interface described below.
+  demanded direct, nested and sibling inline cases now execute through the sealed
+  source initializer context and checked anonymous result interface described below.
+  Inline children requiring a conditional parent output remain required followup.
 - Projected named-pattern operands. The original selected reference and paid
   relation controls still fail shape inference before value execution. Selected
   tuple/record controls now pass their actual projected operand and a separately
@@ -67,9 +68,11 @@ debts. They do not close the following required families:
 - Source-associated uses inside conditional nested-output contracts. The original
   and instantiated conditional requirements must be discharged by the actual
   caller; no inherited summary is execution permission.
-- The known generic cleanup quadratic remains a required changed-path performance
-  followup. The observation cache only bounds shared argument observation and
-  makes no whole-specialization or cleanup scaling claim.
+- The generic cleanup quadratic is repaired by integrator checkpoint `33d2ba12`:
+  exact transition/work invariants and nine immutable inputs retain all outputs;
+  width128 uses 64–73% fewer instructions. The combined checkpoint passes 2,588
+  regular tests, 267 native tests and all 8,360 active text cases. Publication
+  performance review remains integrator-owned; no worker cleanup work is pending.
 - The released PA25 manifest, constants-view oracles, handout/counts, full owning
   source/native qualification and frozen performance review remain integrator
   gates. PA25 is still planned and no oracle was changed here.
@@ -296,3 +299,72 @@ with only the same seven inherited PA20 hash pairs pending central review.
 The text guard exits 1 for that existing review set; it introduces no new delta.
 Both common output controls remain byte-identical. Full combined publication,
 newer public-base fixtures and performance qualification remain integrator-owned.
+
+
+### Checked source initializer inline contexts
+
+A demanded inline constant inside an open-lifetime associated initializer now
+retains the existing sealed `SourceComputation` handle in its enclosing context.
+The handle is validated against the declaration catalog, selected instance,
+original source, caller ownership and requested result before cold or warm
+provider/cache use. Ordinary initializer contexts keep their concrete admission
+rule. Inspection exposes source-only completion without inventing a typed value
+root, and diagnostic ordering uses semantic identities rather than handle IDs.
+
+Original anonymous eligibility and full proof remain mandatory. The specialized
+anonymous body retains its actual result and proves a coercion to the separately
+imported requested result in the same Bound universals. Lifetime-erased shape
+comparison checks representation only; it supplies no lifetime relation. The
+actual result is restored through the exact registered caller namespace before
+selected arguments are substituted, matching the order used for the body itself.
+Every instance obligation is then proved before code publication.
+
+Only a fully proved immediate parent may transport its prepared inline request
+results. One bounded folder consumes that parent's retained equality facts and
+exact selected arguments. It preserves nested binders and rejects missing or
+foreign anchors, sibling parents and shape-only/outlives-only substitutes. It
+never walks an ancestor chain, changes original Body/Value types, or borrows a
+conditional output summary as permission. The interpreter consumes the exact
+prepared destination request rather than searching by a coincident type key.
+Source initializer code has a lazy witness-keyed index, keeping distinct callers
+with equal selected instances/results separate. Cold and warm requests validate
+both the actual body result and separately published requested result.
+
+The unchanged `required` and `nested` fixtures now pass all three views and native
+execution. A Copy-bounded two-sibling fixture does likewise. The original
+unconstrained sibling hypothesis is preserved separately: Rust rejects its generic
+destructor, and demanded compiler evaluation rejects destructors as well. No
+positive was rewritten to hide that outcome. Closure/paid-lifetime inline outputs
+still require their checked conditional parent contract; the foreign-lifetime
+negative currently reaches that earlier boundary rather than a claimed final
+lifetime check. Open type arguments remain a required implementation family.
+
+Evidence is under `obj/parallel/pa25-projected-result-routing/`.
+`inline-source-tail/` passes strict all-target/all-feature release Clippy, the
+architecture/file audit (1,615 files, zero findings), four immediate-parent
+invariants, the source/frontier functions and six native programs, harness and
+upstream checks. `inline-parent-transport-ninth/` additionally retains six context
+and one source-cache authority test. Controls cover foreign catalogs, stale or
+wrong result/caller ownership, equal selected/result handles with different
+callers, nested binders and sibling parent identities. Earlier failed hypothesis,
+test setup and lint attempts are retained and excluded from passing claims.
+
+`inline-source-qualified/` passes the four existing storage/result-interface
+invariants, both exact independent-selection/lookup-readiness smoke tests and all
+22 nested-evaluation tests. Its immutable candidate SHA-256 is
+`1c85414307da7cb26011a0ebba448656ec98104e155da5684f8ad638f921d1c2`;
+`identity.json` also records the 928-file production map. All 8,255 worker-base
+active comparisons, including the immutable published 467-case PA24 archive,
+preserve the preceding checkpoint: 8,248 match oracles, with exactly the same
+seven inherited PA20 source/output hash pairs in `review.json`. The text command
+exits 1 for that existing central review set. Both ordinary512 and constcall64
+outputs remain exact. This does not claim the newer 8,360-case public matrix;
+combined release and performance qualification remain integrator-owned.
+
+Measured layouts are Context 12 bytes, InlineInstance 20, BodyKey 20, Target 28,
+Request 56 and Code 336. Code and prepared operands keep their existing layout;
+the execution Catalog adds one lazy optional boxed map pointer (8 bytes on the
+qualified host), with map/row retention charged only on source publication.
+The parent folder bounds scratch at 64 MiB and visits at one million, including
+failed traversals. Full witness validation is preserved; no sealed reuse cache or
+ordinary-path proof shortcut was introduced. PA25 remains planned.

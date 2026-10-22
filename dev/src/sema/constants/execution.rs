@@ -47,10 +47,44 @@ impl Queries<'_> {
                 .and_then(|r| r.get(source))
                 .is_some()
         {
+            let context = if self
+                .typing
+                .facts
+                .types
+                .arguments_are_concrete(initializer.arguments)
+                .map_err(|e| self.error(Query::Node(source), e))?
+            {
+                crate::sema::inline_constants::Context::Initializer(initializer)
+            } else {
+                let parent = self
+                    .typing
+                    .facts
+                    .initializer_index(initializer.definition)
+                    .and_then(|index| self.typing.facts.initializers.get(index))
+                    .copied()
+                    .ok_or_else(|| {
+                        self.error(Query::Node(source), "missing inline initializer context")
+                    })?;
+                let requested = self.substituted_type(source, parent.ty)?;
+                match self.source_computation(initializer, parent.semantic_source(), requested)? {
+                    Target::SourceAssociated { source, .. } => {
+                        crate::sema::inline_constants::Context::SourceInitializer(source)
+                    }
+                    Target::Associated { instance, .. } => {
+                        crate::sema::inline_constants::Context::Initializer(instance)
+                    }
+                    _ => {
+                        return Err(self.error(
+                            Query::Node(source),
+                            "inline parent selection changed target kind",
+                        ));
+                    }
+                }
+            };
             let instance = crate::sema::inline_constants::InlineInstance::select(
                 self.typing.facts,
                 source,
-                crate::sema::inline_constants::Context::Initializer(initializer),
+                context,
             )
             .map_err(|e| self.error(Query::Node(source), e))?;
             return Ok(Target::Anonymous { instance, result });

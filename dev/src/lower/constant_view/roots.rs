@@ -108,10 +108,15 @@ fn initializers(graph: &mut Graph<'_>) -> Result<(), &'static str> {
 }
 fn promotions(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'static str> {
     graph.charge(checked.program().bodies.len())?;
-    graph.storage(checked.program().bodies.len().saturating_mul(16))?;
-    let mut bodies: Vec<_> = checked.program().bodies.iter().collect();
-    bodies.sort_unstable_by_key(|body| (owner_key(body.key()), body.instance.map(|i| i.ty().0)));
-    for body in bodies {
+    graph.storage(checked.program().bodies.len().saturating_mul(64))?;
+    let mut bodies: Vec<_> = checked
+        .program()
+        .bodies
+        .iter()
+        .map(|body| owner_key(graph.facts, body.key()).map(|key| (key, body)))
+        .collect::<Result<_, _>>()?;
+    bodies.sort_unstable_by_key(|(key, body)| (*key, body.instance.map(|i| i.ty().0)));
+    for (_, body) in bodies {
         let Some(promotions) = &body.promotions else {
             continue;
         };
@@ -182,8 +187,12 @@ fn associated(graph: &mut Graph<'_>) -> Result<(), &'static str> {
     Ok(())
 }
 
-fn owner_key(key: BodyKey) -> (u8, u32, u32, u8, u32, u32) {
-    match key {
+fn owner_key(
+    facts: &crate::sema::model::Declarations,
+    key: BodyKey,
+) -> Result<[u32; 12], &'static str> {
+    let mut result = [0; 12];
+    let ordinary = match key {
         BodyKey::ClosureAdapter(adapter) => (
             3,
             adapter.instance().ty().0,
@@ -199,8 +208,13 @@ fn owner_key(key: BodyKey) -> (u8, u32, u32, u8, u32, u32) {
         BodyKey::Closure(id) => (1, id.0, 0, 0, 0, 0),
         BodyKey::Anonymous(node) => (2, node.file.0, node.node.0, 0, 0, 0),
         BodyKey::AnonymousInstance(instance) => {
-            let (file, node, kind, owner, args) = instance.order();
-            (4, file, node, kind, owner, args)
+            result[0] = 4;
+            result[1..].copy_from_slice(&instance.order(facts)?);
+            return Ok(result);
         }
-    }
+    };
+    result[..6].copy_from_slice(&[
+        ordinary.0, ordinary.1, ordinary.2, ordinary.3, ordinary.4, ordinary.5,
+    ]);
+    Ok(result)
 }

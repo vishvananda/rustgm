@@ -49,11 +49,7 @@ impl Machine<'_, '_> {
             .ok_or("missing constant rvalue")?;
         let ty = value.ty;
         let result = match value.kind {
-            Rvalue::InlineInstance(instance) => {
-                crate::sema::values::Reader::new(self.evaluator.facts())
-                    .inline_instance(instance, value.ty)
-                    .ok_or("anonymous instance value is not prepared")?
-            }
+            Rvalue::InlineInstance(_) => Self::value(frame, id)?,
             Rvalue::Intrinsic {
                 intrinsic,
                 instance,
@@ -123,13 +119,13 @@ impl Machine<'_, '_> {
                     body.owner
                         .source_caller(self.evaluator.facts(), body.source, body.instance)?;
                 source.validate_use(self.evaluator.facts(), body.source, enclosing, ty)?;
-                let (selected, result) = self.evaluator.checked_source(source)?;
+                let (selected, _) = self.evaluator.checked_source(source)?;
                 let index = self
                     .bodies
-                    .associated
+                    .sources
                     .as_deref()
-                    .and_then(|map| map.get(&(selected, result)))
-                    .copied();
+                    .and_then(|map| map.get(&source))
+                    .map(|&(index, _)| index);
                 if index.is_none() {
                     self.waiting = Some(super::Requirement::SourceAssociatedBody(source));
                     return Ok(None);

@@ -8,19 +8,23 @@ use crate::{
 pub(super) struct Observed {
     regions: Vec<RegionId>,
 }
-fn context(enclosing: CallerInstance) -> Result<Context, &'static str> {
-    match enclosing {
+fn context(facts: &Declarations, enclosing: CallerInstance) -> Result<Context, &'static str> {
+    let context = match enclosing {
         CallerInstance::Callable(instance) => Ok(Context::Callable(instance)),
         CallerInstance::Initializer(instance) => Ok(Context::Initializer(instance)),
         CallerInstance::Inline(instance) => Ok(instance.enclosing()),
         CallerInstance::Original => Err("source namespace requires an exact instance"),
-    }
+    }?;
+    Ok(match context {
+        Context::SourceInitializer(witness) => Context::Initializer(witness.identity(facts)?.0),
+        context => context,
+    })
 }
 pub(super) fn regions(
     facts: &Declarations,
     enclosing: CallerInstance,
 ) -> Result<&[RegionId], &'static str> {
-    let key = context(enclosing)?;
+    let key = context(facts, enclosing)?;
     facts
         .source_computations
         .as_deref()
@@ -34,7 +38,7 @@ pub(super) fn prepare(
     enclosing: CallerInstance,
     scratch: usize,
 ) -> Result<(), &'static str> {
-    let key = context(enclosing)?;
+    let key = context(facts, enclosing)?;
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
     if regions(facts, enclosing).is_ok() {
         return Ok(());
@@ -67,6 +71,9 @@ pub(super) fn prepare(
         match key {
             Context::Callable(instance) => {
                 fold.apply(&mut facts.types, instance.ty())?;
+            }
+            Context::SourceInitializer(_) => {
+                return Err("source observation key was not canonicalized");
             }
             Context::Initializer(instance) => {
                 fold.apply_arguments(&mut facts.types, instance.arguments)?;

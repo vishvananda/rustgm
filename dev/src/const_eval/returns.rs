@@ -40,6 +40,14 @@ impl Machine<'_, '_> {
             self.evaluator.complete_inline(body.source, result)?;
         }
         if let Owner::AnonymousInstance(instance) = body.owner {
+            if body.source_only
+                != matches!(
+                    instance.enclosing(),
+                    crate::sema::inline_constants::Context::SourceInitializer(_)
+                )
+            {
+                return Err("anonymous return has a different publication context".into());
+            }
             if !self.active_anonymous.remove(&(instance, body.result)) {
                 return Err("anonymous return lost its active identity".into());
             }

@@ -12,6 +12,7 @@ use crate::{
 pub enum Context {
     Callable(Instance),
     Initializer(values::Instance),
+    SourceInitializer(values::execution::SourceComputation),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -21,7 +22,7 @@ pub struct InlineInstance {
 }
 
 impl InlineInstance {
-    /// Select a source-owned template in an exact closed enclosing context.
+    /// Select a source-owned template in an exact checked enclosing context.
     /// Binding arity, substitution and every body proof remain provider gates;
     /// this identity carries no execution or const permission.
     /// # Errors
@@ -61,6 +62,21 @@ impl InlineInstance {
                     _ => return Err("anonymous context is not a selected callable"),
                 }
             }
+            Context::SourceInitializer(witness) => {
+                if closure_owner.is_some() {
+                    return Err("source initializer selects a closure-owned anonymous body");
+                }
+                let (instance, original) = witness.identity(facts)?;
+                let initializer = facts
+                    .initializer_index(instance.definition)
+                    .and_then(|index| facts.initializers.get(index))
+                    .ok_or("source anonymous context has no initializer")?;
+                if initializer.semantic_source() != original {
+                    return Err("source anonymous context changed its initializer owner");
+                }
+                let _ = instance.substitution(facts)?;
+                instance.definition
+            }
             Context::Initializer(instance) => {
                 if closure_owner.is_some() {
                     return Err("anonymous initializer context selects a closure-owned body");
@@ -91,6 +107,7 @@ impl std::fmt::Display for InlineInstance {
     fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(out, "{}:{}@", self.source.file.0, self.source.node.0)?;
         match self.enclosing {
+            Context::SourceInitializer(_) => out.write_str("source-initializer"),
             Context::Callable(instance) => write!(out, "callable:{}", instance.ty().0),
             Context::Initializer(instance) => write!(
                 out,
@@ -101,18 +118,23 @@ impl std::fmt::Display for InlineInstance {
     }
 }
 impl InlineInstance {
-    pub(crate) fn order(self) -> (u32, u32, u8, u32, u32) {
-        let (kind, owner, arguments) = match self.enclosing {
-            Context::Callable(instance) => (0, instance.ty().0, 0),
-            Context::Initializer(instance) => (1, instance.definition.0, instance.arguments.0),
-        };
-        (
-            self.source.file.0,
-            self.source.node.0,
-            kind,
-            owner,
-            arguments,
-        )
+    pub(crate) fn order(self, facts: &Declarations) -> Result<[u32; 11], &'static str> {
+        let mut key = [0; 11];
+        key[0] = self.source.file.0;
+        key[1] = self.source.node.0;
+        match self.enclosing {
+            Context::Callable(instance) => key[3] = instance.ty().0,
+            Context::Initializer(instance) => {
+                key[2] = 1;
+                key[3] = instance.definition.0;
+                key[4] = instance.arguments.0;
+            }
+            Context::SourceInitializer(witness) => {
+                key[2] = 2;
+                key[3..].copy_from_slice(&witness.context_order(facts)?);
+            }
+        }
+        Ok(key)
     }
 }
 #[derive(Default)]

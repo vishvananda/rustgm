@@ -85,7 +85,7 @@ fn projected_pattern_request_keeps_operand_and_normalized_result_distinct()
 impl Executor for Capture {
     fn check(
         &mut self,
-        _report: &crate::resolve::expansion::Report,
+        report: &crate::resolve::expansion::Report,
         facts: &mut Declarations,
         target: Target,
     ) -> Result<(), Error> {
@@ -140,6 +140,9 @@ impl Executor for Capture {
             ]
             .map(|row| catalog.retain_use(row).map(SourceComputation))
         };
+        let foreign_caller = forged[0].map_err(|e| Error::at(super::super::FileId(0), 0, e))?;
+        source_code_owner(facts, report, source, foreign_caller, result)
+            .map_err(|e| Error::at(super::super::FileId(0), 0, e))?;
         for witness in forged {
             assert!(
                 witness
@@ -186,6 +189,73 @@ impl Executor for Capture {
             crate::sema::model::Scalar::Integer(1),
         )))
     }
+}
+fn source_code_owner(
+    facts: &mut Declarations,
+    report: &crate::resolve::expansion::Report,
+    source: SourceComputation,
+    foreign: SourceComputation,
+    result: TypeId,
+) -> Result<(), &'static str> {
+    let (first, _) = source.entry(facts)?;
+    let (other, _) = foreign.entry(facts)?;
+    assert_eq!(first.selected, other.selected);
+    assert_eq!(first.requested, other.requested);
+    assert!(first.caller != other.caller);
+    let initializer = *facts
+        .initializer_index(first.selected.definition)
+        .and_then(|n| facts.initializers.get(n))
+        .ok_or("missing original initializer")?;
+    // This catalog is never executed. Exercise cold/warm key validation without
+    // granting any borrow proof or materialized constant publication authority.
+    let mut body = crate::body::templates::Prepared::default()
+        .initializer(report, facts, &initializer)
+        .map_err(|_| "missing typed initializer")?
+        .body;
+    body.owner = crate::body::ir::Owner::InitializerInstance {
+        instance: first.selected,
+        kind: initializer.kind,
+    };
+    let tuple = (first.selected, first.original, result);
+    let mut code = crate::const_eval::code::Catalog::default();
+    assert!(
+        code.source_initializer(facts, &body, tuple, foreign, &[])
+            .is_err()
+    );
+    assert!(code.sources.is_none());
+    let index = code.source_initializer(facts, &body, tuple, source, &[])?;
+    assert_eq!(code[index].result, result);
+    assert_eq!(code[index].values.len(), body.values.len());
+    assert!(
+        code[index]
+            .values
+            .iter()
+            .zip(&body.values)
+            .all(|(a, b)| a.ty == b.ty)
+    );
+    assert_eq!(
+        code.source_initializer(facts, &body, tuple, source, &[])?,
+        index
+    );
+    let bytes = code.bytes;
+    assert!(
+        code.source_initializer(facts, &body, tuple, foreign, &[])
+            .is_err()
+    );
+    assert!(
+        code.source_initializer(facts, &body, (tuple.0, tuple.1, TypeId::UNIT), source, &[])
+            .is_err()
+    );
+    assert_eq!(
+        code.sources
+            .as_ref()
+            .ok_or("missing source code index")?
+            .len(),
+        1
+    );
+    assert!(code.associated.is_none());
+    assert_eq!(code.bytes, bytes);
+    Ok(())
 }
 #[test]
 fn foreign_and_stale_source_witnesses_are_rejected() -> Result<(), Box<dyn std::error::Error>> {

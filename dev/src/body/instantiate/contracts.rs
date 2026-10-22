@@ -66,6 +66,10 @@ fn prepare(
     close_static: bool,
 ) -> Result<(Bound, Contract, Option<crate::types::TypeId>), &'static str> {
     let mut contract = original.clone();
+    if requested.is_some() && matches!(original.key, crate::body::ir::BodyKey::Anonymous(_)) {
+        // Reprove the complete child without assuming its conditional conclusion.
+        super::closures::formation(&mut contract);
+    }
     super::caller_transport::contract(facts, &mut contract, inputs.caller)?;
     let regions = import_regions(facts, inputs, original.universals, &mut requested)?;
     let mut bound = if close_static {

@@ -111,12 +111,12 @@
       },
       "modes": {
         "--emit-types": 0,
-        "--emit-constants": 1,
-        "--emit-lowir": 1
+        "--emit-constants": 0,
+        "--emit-lowir": 0
       },
-      "native": false,
-      "status": "required lifetime/output continuation; original outcome retained",
-      "diagnostic": "anonymous initializer context is not closed"
+      "native": true,
+      "status": "implemented; source/instance proof and immediate parent result transport",
+      "diagnostic": ""
     },
     {
       "name": "nested",
@@ -130,12 +130,12 @@
       },
       "modes": {
         "--emit-types": 0,
-        "--emit-constants": 1,
-        "--emit-lowir": 1
+        "--emit-constants": 0,
+        "--emit-lowir": 0
       },
-      "native": false,
-      "status": "required lifetime/output continuation; original outcome retained",
-      "diagnostic": "anonymous initializer context is not closed"
+      "native": true,
+      "status": "implemented; source/instance proof and immediate parent result transport",
+      "diagnostic": ""
     },
     {
       "name": "closure",
@@ -212,6 +212,44 @@
       "native": false,
       "status": "required lifetime/output continuation; original outcome retained",
       "diagnostic": "source computation retains a non-lifetime parameter"
+    },
+    {
+      "name": "siblings",
+      "path": "tests/spec/inline-query-context/siblings.rs",
+      "source_sha256": "04095b27296ebbcd62d5c9a735ecc9ca1039351b9e187fb8924abe7aca5df37c",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
+      },
+      "native": true,
+      "status": "implemented; source/instance proof and immediate parent result transport",
+      "diagnostic": ""
+    },
+    {
+      "name": "siblings-drop",
+      "path": "tests/spec/inline-query-context/siblings-drop.rs",
+      "source_sha256": "caef1ccdc8cb68c400d7da8d439e717df55b9f1d281fcfeee1c70bc74299b0aa",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "status": "retained wrong positive hypothesis: pinned Rust rejects generic destructor E0493",
+      "diagnostic": "cannot run destructors"
     }
   ]
 }

@@ -14,6 +14,23 @@ use crate::{
 };
 use std::ops::Range;
 
+/// Transport an original result just as the corresponding body will be moved,
+/// before any external selected argument can collide with a private source ID.
+pub(super) fn result_root(
+    facts: &mut Declarations,
+    source: crate::resolve::unit::NodeKey,
+    caller: CallerInstance,
+    ty: crate::types::TypeId,
+) -> Result<crate::types::TypeId, &'static str> {
+    if matches!(caller, CallerInstance::Original) || !caller_published(facts, source) {
+        return Ok(ty);
+    }
+    with_registered_namespace(facts, source, caller, |facts, transport| {
+        transport.steps = transport.steps.saturating_add(1);
+        transport.fold.apply(&mut facts.types, ty)
+    })
+}
+
 pub(super) fn prepare_body(
     facts: &mut Declarations,
     source: &Body,

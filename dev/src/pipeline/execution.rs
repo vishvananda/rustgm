@@ -140,6 +140,24 @@ impl Engine {
                 .validate(facts, result)
                 .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         }
+        if let Target::Anonymous { instance, .. } = request.target
+            && let crate::sema::inline_constants::Context::SourceInitializer(witness) =
+                instance.enclosing()
+        {
+            let checked = (|| {
+                witness.validate(facts, witness.result(facts)?)?;
+                let selected = crate::sema::inline_constants::InlineInstance::select(
+                    facts,
+                    instance.source(),
+                    instance.enclosing(),
+                )?;
+                if selected != instance {
+                    return Err("anonymous request changed its source context");
+                }
+                Ok(())
+            })();
+            checked.map_err(|e| Error::at(FileId(0), 0, e))?;
+        }
         if let Some(&value) = self.completed.get(request) {
             return Ok(Progress::Complete(value));
         }

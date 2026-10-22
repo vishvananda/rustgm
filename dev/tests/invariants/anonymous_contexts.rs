@@ -292,3 +292,101 @@ fn captured_context_identity_cannot_replace_public_signature_or_erased_slots()
     );
     Ok(())
 }
+
+#[test]
+fn source_inline_contexts_revalidate_warm_values_and_foreign_catalogs()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crate::{
+        sema::values::execution::{Progress, Request},
+        types::arguments::Argument,
+    };
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../pa25/tests/spec/inline-query-context/required.rs");
+    let text = std::fs::read_to_string(path)?;
+    let mut report = test_source::resolve(&text, true)?;
+    let analysis = pipeline::analyze_source(&report)?;
+    let mut facts = analysis.facts;
+    let entry = crate::sema::entry::select(&mut report, &facts)?;
+    crate::lower::instances::build_prepared(&report, &mut facts, entry, analysis.prepared)?;
+    let (instance, result, _) = facts
+        .inline_constants
+        .as_deref()
+        .ok_or("missing inline registry")?
+        .instance_values()
+        .find(|(instance, _, _)| matches!(instance.enclosing(), Context::SourceInitializer(_)))
+        .ok_or("missing source inline value")?;
+    let Context::SourceInitializer(witness) = instance.enclosing() else {
+        return Err("source context".into());
+    };
+    let selected = witness.identity(&facts)?.0;
+    let request = Request {
+        target: Target::Anonymous { instance, result },
+        arguments: Vec::new(),
+    };
+    let mut executor = facts.constant_executor.take().ok_or("missing executor")?;
+    assert!(matches!(
+        executor.advance(&report, &mut facts, &request)?,
+        Progress::Complete(_)
+    ));
+    let region = facts
+        .types
+        .arguments(selected.arguments)
+        .and_then(|mut args| {
+            args.find_map(|arg| match arg {
+                Argument::Lifetime(r) if r != crate::types::RegionId::STATIC => Some(r),
+                _ => None,
+            })
+        })
+        .ok_or("missing caller lifetime")?;
+    let old = facts.body_regions[region.0 as usize - 1];
+    facts.body_regions[region.0 as usize - 1].body.node.0 += 1;
+    assert!(executor.check(&report, &mut facts, request.target).is_err());
+    assert!(executor.advance(&report, &mut facts, &request).is_err());
+    facts.body_regions[region.0 as usize - 1] = old;
+    assert!(executor.check(&report, &mut facts, request.target).is_ok());
+    let row = facts
+        .inline_constants
+        .as_deref_mut()
+        .ok_or("inline registry")?
+        .bodies
+        .iter_mut()
+        .find(|body| body.source == instance.source())
+        .ok_or("inline body")?;
+    let old_result = row.result.take();
+    assert!(InlineInstance::select(&facts, instance.source(), instance.enclosing()).is_err());
+    assert!(executor.check(&report, &mut facts, request.target).is_err());
+    facts
+        .inline_constants
+        .as_deref_mut()
+        .ok_or("inline registry")?
+        .bodies
+        .iter_mut()
+        .find(|body| body.source == instance.source())
+        .ok_or("inline body")?
+        .result = old_result;
+    assert!(
+        executor
+            .check(
+                &report,
+                &mut facts,
+                Target::Anonymous {
+                    instance,
+                    result: TypeId::UNIT
+                }
+            )
+            .is_err()
+    );
+    facts.constant_executor = Some(executor);
+    let foreign_report = test_source::resolve(&text, true)?;
+    let foreign = pipeline::analyze_source(&foreign_report)?.facts;
+    assert!(InlineInstance::select(&foreign, instance.source(), instance.enclosing()).is_err());
+    println!(
+        "source inline layout Context={} InlineInstance={} BodyKey={} Target={} Request={}",
+        size_of::<Context>(),
+        size_of::<InlineInstance>(),
+        size_of::<crate::body::ir::BodyKey>(),
+        size_of::<Target>(),
+        size_of::<Request>()
+    );
+    Ok(())
+}

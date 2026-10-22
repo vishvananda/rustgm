@@ -3,6 +3,8 @@ mod allocated_owners;
 mod anonymous;
 mod caller_transport;
 mod initializers;
+mod parent_results;
+pub(crate) use parent_results::prepare as source_inline_results;
 #[cfg(test)]
 #[path = "../../tests/invariants/seals.rs"]
 mod seals;
@@ -19,7 +21,9 @@ pub(crate) use closures::{
     substitute as substitute_closure_execution,
 };
 mod inputs;
-pub(crate) use anonymous::{close_operands as close_inline_operands, with_contract as anonymous};
+pub(crate) use anonymous::{
+    close_operands as close_inline_operands, with_result as anonymous_result,
+};
 use inputs::Inputs;
 mod projections;
 use super::{
@@ -215,7 +219,7 @@ fn materialize(
         statements: source.statements.clone(),
         blocks: source.blocks.clone(),
     };
-    caller_transport::prepare_body(facts, source, &mut body, selection.caller())?;
+    caller_transport::prepare_body(facts, source, &mut body, selection.caller(facts)?)?;
     let projected = substitute(facts, &mut body, substitution)?;
     if matches!(premises, Premises::Declared)
         && let Some(contract) = contract.as_deref_mut()

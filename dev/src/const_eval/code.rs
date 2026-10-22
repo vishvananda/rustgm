@@ -146,6 +146,52 @@ impl Code {
             result: value.ty,
         }))
     }
+    fn inline_results_match(&self, results: &[(ValueId, crate::types::TypeId)]) -> bool {
+        self.operands
+            .iter()
+            .filter_map(|operand| {
+                if let PreparedOperand::Inline {
+                    destination,
+                    selected: Inline::Instance(_),
+                    result,
+                } = *operand
+                {
+                    Some((destination, result))
+                } else {
+                    None
+                }
+            })
+            .eq(results.iter().copied())
+    }
+    fn transport_inline_results(
+        &mut self,
+        source_only: bool,
+        results: &[(ValueId, crate::types::TypeId)],
+    ) -> Result<(), &'static str> {
+        let mut results = results.iter();
+        if source_only {
+            for operand in &mut self.operands {
+                if let PreparedOperand::Inline {
+                    destination,
+                    selected: Inline::Instance(_),
+                    result,
+                } = operand
+                {
+                    let &(id, ty) = results
+                        .next()
+                        .ok_or("missing transported inline request result")?;
+                    if id != *destination {
+                        return Err("transported inline request order changed");
+                    }
+                    *result = ty;
+                }
+            }
+        }
+        if results.next().is_some() {
+            return Err("foreign transported inline request result");
+        }
+        Ok(())
+    }
     pub(crate) fn callable_target(&self, original: Instance) -> Instance {
         self.callables.get(&original).copied().unwrap_or(original)
     }
@@ -166,6 +212,8 @@ type AnonymousIndex = HashMap<
     usize,
 >;
 type AssociatedIndex = HashMap<(crate::sema::values::Instance, crate::types::TypeId), usize>;
+type SourceIndex =
+    HashMap<crate::sema::values::execution::SourceComputation, (usize, crate::types::TypeId)>;
 #[derive(Default)]
 pub(crate) struct Catalog {
     pub bytes: usize,
@@ -175,6 +223,7 @@ pub(crate) struct Catalog {
     pub expressions: HashMap<NodeKey, usize>,
     pub anonymous: Option<Box<AnonymousIndex>>,
     pub associated: Option<Box<AssociatedIndex>>,
+    pub sources: Option<Box<SourceIndex>>,
 }
 impl Catalog {
     pub(crate) fn initializer(
@@ -193,25 +242,32 @@ impl Catalog {
         Ok(())
     }
     pub(crate) fn insert(&mut self, body: &Body) -> Result<usize, &'static str> {
-        self.insert_body(body, false)
+        self.insert_body(body, false, None, &[])
     }
     pub(crate) fn source_initializer(
         &mut self,
+        facts: &mut crate::sema::model::Declarations,
         body: &Body,
         source: (crate::sema::values::Instance, NodeKey, crate::types::TypeId),
+        witness: crate::sema::values::execution::SourceComputation,
+        results: &[(ValueId, crate::types::TypeId)],
     ) -> Result<usize, &'static str> {
-        if !matches!(body.owner, Owner::InitializerInstance { instance, .. } if instance == source.0)
+        let selected = witness.resolve(facts, source.2)?;
+        if selected.selected != source.0
+            || selected.original != source.1
+            || !matches!(body.owner, Owner::InitializerInstance { instance, .. } if instance == source.0)
             || body.source != source.1
         {
             return Err("source computation selects another checked initializer body");
         }
-        let key = (source.0, source.2);
-        if let Some(&index) = self.associated.as_deref().and_then(|map| map.get(&key)) {
+        if let Some(&(index, actual)) = self.sources.as_deref().and_then(|map| map.get(&witness)) {
             let previous = self.bodies.get(index).ok_or("source code index is stale")?;
             if !previous.source_only
                 || previous.source != body.source
                 || !matches!(previous.owner, Owner::InitializerInstance {instance,..} if instance==source.0)
-                || previous.result != body.result
+                || previous.result != source.2
+                || actual != body.result
+                || !previous.inline_results_match(results)
             {
                 return Err("source initializer code identity changed");
             }
@@ -220,25 +276,60 @@ impl Catalog {
         let bytes = self
             .bytes
             .saturating_add(crate::support::retained::new_map::<
-                (crate::sema::values::Instance, crate::types::TypeId),
-                usize,
+                crate::sema::values::execution::SourceComputation,
+                (usize, crate::types::TypeId),
             >(1))
-            .saturating_add(if self.associated.is_none() {
-                size_of::<AssociatedIndex>()
+            .saturating_add(if self.sources.is_none() {
+                size_of::<SourceIndex>()
             } else {
                 0
             });
         if bytes > 64 * 1024 * 1024 {
             return Err("source code index storage budget exceeded");
         }
+        let prior = self.bytes;
         self.bytes = bytes;
-        let index = self.insert_body(body, true)?;
-        self.associated
+        let index = match self.insert_body(body, true, Some(source.2), results) {
+            Ok(index) => index,
+            Err(error) => {
+                self.bytes = prior;
+                return Err(error);
+            }
+        };
+        self.sources
             .get_or_insert_with(Default::default)
-            .insert(key, index);
+            .insert(witness, (index, body.result));
         Ok(index)
     }
-    fn insert_body(&mut self, body: &Body, source_only: bool) -> Result<usize, &'static str> {
+    pub(crate) fn anonymous_result(
+        &mut self,
+        body: &Body,
+        requested: crate::types::TypeId,
+        results: &[(ValueId, crate::types::TypeId)],
+    ) -> Result<usize, &'static str> {
+        let Owner::AnonymousInstance(instance) = body.owner else {
+            return Err("anonymous publication requires its exact instance owner");
+        };
+        let source_only = matches!(
+            instance.enclosing(),
+            crate::sema::inline_constants::Context::SourceInitializer(_)
+        );
+        self.insert_body(body, source_only, Some(requested), results)
+    }
+    fn insert_body(
+        &mut self,
+        body: &Body,
+        source_only: bool,
+        requested: Option<crate::types::TypeId>,
+        results: &[(ValueId, crate::types::TypeId)],
+    ) -> Result<usize, &'static str> {
+        if !source_only
+            && matches!(body.owner, Owner::AnonymousInstance(instance)
+            if matches!(instance.enclosing(), crate::sema::inline_constants::Context::SourceInitializer(_)))
+        {
+            return Err("source anonymous code requires checked source publication");
+        }
+        let published = requested.unwrap_or(body.result);
         let bytes = self
             .bytes
             .checked_add(Code::storage_bytes(body)?)
@@ -278,6 +369,10 @@ impl Catalog {
         if u32::try_from(body.values.len()).is_err() {
             return Err("constant CFG value identity limit exceeded");
         }
+        let mut code = Code::snapshot(body)?;
+        code.transport_inline_results(source_only, results)?;
+        code.source_only = source_only;
+        code.result = published;
         if let Some(instance) = body.instance {
             if self.functions.contains_key(&instance) {
                 return Err("duplicate constant function instance");
@@ -300,7 +395,7 @@ impl Catalog {
             && self
                 .anonymous
                 .get_or_insert_with(Default::default)
-                .insert((instance, body.result), index)
+                .insert((instance, published), index)
                 .is_some()
         {
             return Err("duplicate anonymous constant instance body");
@@ -315,8 +410,6 @@ impl Catalog {
         {
             return Err("duplicate selected initializer execution body");
         }
-        let mut code = Code::snapshot(body)?;
-        code.source_only = source_only;
         self.bodies.push(std::rc::Rc::new(code));
         self.bytes = bytes;
         Ok(index)

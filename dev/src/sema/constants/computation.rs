@@ -62,6 +62,19 @@ impl Declarations {
     }
 }
 impl SourceComputation {
+    pub(crate) fn context_order(self, facts: &Declarations) -> Result<[u32; 8], &'static str> {
+        let (entry, caller) = self.entry(facts)?;
+        Ok([
+            entry.selected.definition.0,
+            entry.selected.arguments.0,
+            caller.source.file.0,
+            caller.source.node.0,
+            entry.input.definition.0,
+            entry.input.arguments.0,
+            entry.actual_result.0,
+            entry.requested.0,
+        ])
+    }
     pub(crate) fn input(self, facts: &Declarations) -> Result<Instance, &'static str> {
         Ok(self.entry(facts)?.0.input)
     }

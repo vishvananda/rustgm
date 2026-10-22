@@ -62,10 +62,26 @@ pub(super) fn instances(graph: &mut super::graph::Graph<'_>) -> Result<(), &'sta
     };
     let count = registry.instance_values().count();
     graph.charge(count)?;
-    graph.storage(count.saturating_mul(96))?;
-    let mut values = registry.instance_values().collect::<Vec<_>>();
-    values.sort_unstable_by_key(|(instance, result, _)| (instance.order(), result.0));
-    for (instance, result, value) in values {
+    graph.storage(count.saturating_mul(160))?;
+    let mut values = registry
+        .instance_values()
+        .map(|(instance, result, value)| {
+            instance
+                .order(graph.facts)
+                .map(|key| (key, instance, result, value))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    values.sort_unstable_by_key(|(key, _, result, _)| (*key, result.0));
+    for (key, instance, result, value) in values {
+        if matches!(
+            instance.enclosing(),
+            crate::sema::inline_constants::Context::SourceInitializer(_)
+        ) {
+            graph.declaration(format!(
+                "inline-value instance={instance} selected={}:{} caller={}:{} status=source-complete result=deferred",
+                key[3], key[4], key[5], key[6]))?;
+            continue;
+        }
         let value = graph.value(result, value)?;
         graph.root(format!(
             "root inline-instance instance={instance} type={} value=v{value}",

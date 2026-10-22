@@ -2,7 +2,14 @@
 use super::native;
 use std::path::{Path, PathBuf};
 type TestResult = Result<(), Box<dyn std::error::Error>>;
-const ACCEPTED: &[&str] = &["scalar", "scalar-nested", "scalar-closure"];
+const ACCEPTED: &[&str] = &[
+    "scalar",
+    "scalar-nested",
+    "scalar-closure",
+    "required",
+    "nested",
+    "siblings",
+];
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../pa25/tests/spec/inline-query-context")
@@ -23,6 +30,12 @@ fn nested_query_callers_preserve_their_actual_parent_premises() -> TestResult {
     ] {
         super::checked_sources::check(&fixture(name), &evidence, name, (1, 1, reason))?;
     }
+    super::checked_sources::check_modes(
+        &fixture("siblings-drop"),
+        &evidence,
+        "siblings-drop",
+        (1, [0, 1, 1], "cannot run destructors"),
+    )?;
     Ok(())
 }
 #[test]
@@ -31,14 +44,6 @@ fn projected_inline_results_retain_their_required_execution_frontiers() -> TestR
         .join("../obj/parallel/pa25-inline-queries/remaining")
         .join(std::process::id().to_string());
     std::fs::create_dir_all(&evidence)?;
-    for name in ["required", "nested"] {
-        super::checked_sources::check_modes(
-            &fixture(name),
-            &evidence,
-            name,
-            (0, [0, 1, 1], "anonymous initializer context is not closed"),
-        )?;
-    }
     for (name, rust) in [
         ("closure", 0),
         ("paid-lifetime", 0),

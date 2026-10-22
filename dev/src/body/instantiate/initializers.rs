@@ -18,21 +18,32 @@ pub(crate) fn with_contract(
     }
     let mut inputs = anonymous::initializer_inputs(facts, instance)?;
     let (substitution, contract) = contracts::initializer(facts, original, &mut inputs)?;
-    materialize(facts, template, instance, substitution, contract)
+    materialize(
+        facts,
+        template,
+        anonymous::Selection::Initializer(instance),
+        substitution,
+        contract,
+    )
 }
 fn materialize(
     facts: &mut Declarations,
     template: &Template,
-    instance: Instance,
+    selection: anonymous::Selection,
     mut substitution: crate::types::substitute::Bound,
     mut contract: Contract,
 ) -> Result<Materialized, &'static str> {
+    let (crate::body::ir::Owner::InitializerInstance { instance, .. }, _, _) =
+        selection.owner(facts, &template.body)?
+    else {
+        return Err("initializer materialization selects another body kind");
+    };
     contract.key = BodyKey::InitializerInstance(instance);
     let mut cleanup = Cleanup::new(facts);
     let (body, destruction) = super::materialize(
         facts,
         template,
-        anonymous::Selection::Initializer(instance),
+        selection,
         &mut substitution,
         Some(&mut contract),
         None,
@@ -66,16 +77,30 @@ pub(crate) fn source(
         return Err("source computation selects another original initializer contract");
     }
     if template.body.result == result && facts.types.needs_region_context(result) == Some(false) {
+        let mut inputs = anonymous::initializer_inputs(facts, selected.selected)?;
+        let (substitution, contract) = contracts::initializer(facts, original, &mut inputs)?;
         return Ok(SourceMaterialized {
-            materialized: with_contract(facts, template, selected.selected, original)?,
+            materialized: materialize(
+                facts,
+                template,
+                anonymous::Selection::SourceInitializer(witness),
+                substitution,
+                contract,
+            )?,
             interface: None,
         });
     }
     let mut inputs = anonymous::initializer_inputs(facts, selected.selected)?;
     let (mut substitution, mut contract, imported) =
         contracts::source_result(facts, original, &mut inputs, result)?;
+    let actual = super::caller_transport::result_root(
+        facts,
+        template.body.source,
+        crate::sema::values::execution::CallerInstance::Initializer(selected.selected),
+        template.body.result,
+    )?;
     let before = substitution.steps;
-    let actual = substitution.apply(&mut facts.types, template.body.result)?;
+    let actual = substitution.apply(&mut facts.types, actual)?;
     facts.body_work.canonical_steps += substitution.steps - before;
     let obligation = contract.obligations.len();
     contract.obligations.push(crate::body::regions::Obligation {
@@ -88,7 +113,13 @@ pub(crate) fn source(
         },
     });
     Ok(SourceMaterialized {
-        materialized: materialize(facts, template, selected.selected, substitution, contract)?,
+        materialized: materialize(
+            facts,
+            template,
+            anonymous::Selection::SourceInitializer(witness),
+            substitution,
+            contract,
+        )?,
         interface: Some(ResultInterface {
             requested: result,
             imported,
@@ -106,6 +137,27 @@ pub(crate) struct SourceMaterialized {
     interface: Option<ResultInterface>,
 }
 impl SourceMaterialized {
+    pub(super) fn plain(materialized: Materialized) -> Self {
+        Self {
+            materialized,
+            interface: None,
+        }
+    }
+    pub(super) fn interface(
+        materialized: Materialized,
+        requested: crate::types::TypeId,
+        imported: crate::types::TypeId,
+        obligation: usize,
+    ) -> Self {
+        Self {
+            materialized,
+            interface: Some(ResultInterface {
+                requested,
+                imported,
+                obligation,
+            }),
+        }
+    }
     pub(crate) fn into_requested(
         self,
         requested: crate::types::TypeId,
