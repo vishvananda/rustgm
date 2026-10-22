@@ -797,10 +797,11 @@ to PA21. Independent-source outputs now use `.o`/`.rmeta` suffixes so the shared
 storage guard removes them after successful runs.
 
 
-PA22 publishes 328 LowIR cases: 236 accept, 92 reject. Every source is independently
-object-qualified with pinned rustc. Its 102 runtime comparisons include five
+PA22 publishes 356 LowIR cases: 254 accept, 102 reject. Every source is independently
+object-qualified with pinned rustc. Its 120 runtime comparisons include five
 expected panics; 134 compile-only controls are reported separately. Root report,
-source and native targets include PA22. PA24–PA38 remain planned and fail explicitly.
+source and native targets include PA22. The 28 added reference-unsizing cast cases
+retain all 328 earlier cases and their exact byte oracles.
 See [docs/pa22-release.md](docs/pa22-release.md) for qualification and performance.
 
 

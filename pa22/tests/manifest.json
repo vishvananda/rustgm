@@ -1125,6 +1125,442 @@
       }
     },
     {
+      "path": "tests/spec/casts/reference-unsizing/active-loan.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/aliases.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/byte-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/const-generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/evaluate-once.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/generic-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/grouped-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/grouped-reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/grouped-shared-mutable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/grouped.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/mutable-invariance.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/mutable-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/named-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/nested.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/noncopy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/reverse.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/shared-covariance.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/shared-mutable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/shared-reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/unpaid-element-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/wrong-element.rs",
+      "exit_status": 1,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES"
+    },
+    {
+      "path": "tests/spec/casts/reference-unsizing/zst.rs",
+      "exit_status": 0,
+      "features": [
+        "pa22.casts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/pointer_casts/coercion_casts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/coercions/tail-coercions/structural-unsizing-preserves-fields-metadata-and-reborrows/aggregate.rs",
       "exit_status": 0,
       "features": [

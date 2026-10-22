@@ -62,22 +62,40 @@ finish-v7/source-map.json retains production file hashes with digest
 `520daa19899ad7f843547087b6a5abb8d154c94545989528c4961ff28cd78507`.
 The final guard closed successfully and cleaned disposable outputs.
 
-The owning PA22 fixture
-and manifest payload is separate: its declared sources and outcomes will be
-integrated with root-reviewed generated sidecars and provenance. The compiler
-checkpoint qualifies against the unchanged active PA22 suite. Neither payload
-layout nor new text oracles is claimed complete here, and no references or
-assignment activation are changed by the worker.
+The worker delivered the owning PA22 fixtures and manifest separately from
+compiler changes. Its checkpoint qualified against the unchanged active PA22
+suite; reference generation and installation remained integrator work.
 
 The reviewable payload is
 `obj/parallel/pa26/slice-casts/fixture-payload-v2/payload.patch`, with SHA-256
 `696362870f7ef81f439f3553f52b6d8b04ddf722bae8d8092010881473e42e5f`.
 It adds the 28 sources under `pa22/tests/spec/casts/reference-unsizing` and
-their explicit manifest entries, taking the proposed manifest to 356 cases.
+their explicit manifest entries, taking the manifest to 356 cases.
 All 18 positive cases declare native execution. The receipt retains each
 source hash, base/proposed manifest hashes and the independent outcomes.
-`git apply --check` succeeds against the unchanged PA22 base. This is not a
-claim that the missing generated sidecars or reference receipt are ready.
+`git apply --check` succeeded against the unchanged PA22 base.
+
+The integrated default-release compiler at `9314f2ef` independently qualifies
+all 356 PA22 sources and all 120 executable/134 compile-only native comparisons.
+Its production sources are exactly `b0d85e28`; the later commit corrects only
+the volatile test's pointer-registry count after adding the two copy operations.
+The compiler binary SHA-256 is
+`228f9496bb6d9424bfd2ce89fb70cda6c6a63ef7c80358e827ee4f9df9650a05`.
+
+Evidence in the main checkout's `obj/parallel/pa22-casts-publication-v1/`
+records the isolated fixture tree, independent source/native runs and oracle
+review. Every new three-stream oracle equals the corresponding independently
+qualified frontend output. All 18 positive LowIR outputs equal the exact bytes
+compiled and executed by the native checker. The ten negatives reach actual
+type, permission, lifetime or loan failures, with no unsupported-feature result
+accepted. All 984 earlier sidecars remain byte-for-byte unchanged.
+
+The legacy full receipt lacked per-case contracts, so the complete 356-case
+receipt was regenerated after independent checks. The first generation attempt
+rejected an evidence directory outside the isolated tree's own `obj/`; its
+failure is retained. Correcting that path required no compiler, source, outcome
+or oracle edits. The successful generation and exact text comparison are
+retained separately, along with the 28-case installation and review receipts.
 
 Remaining PA26 work includes concrete str and structural comparisons, elided
 reference-impl lifetime admission, dot-call RHS inference, unsuffixed primitive
