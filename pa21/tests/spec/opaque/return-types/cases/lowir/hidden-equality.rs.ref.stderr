@@ -1,1 +1,1 @@
-ERROR: file 0: 48: operation requires a scalar type
+ERROR: file 0: 48: trait obligation requires an unambiguous matching assumption or implementation
