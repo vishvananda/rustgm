@@ -1,4 +1,5 @@
 //! One cache shares validated ordinary paths and preserves consumer distinctions.
+use crate::support::hash::HashMap;
 use crate::{
     body::ir::{BlockId, LocalKind, Place, ProjectionId, Rvalue},
     const_eval::{
@@ -14,7 +15,6 @@ use crate::{
     test_source,
     types::{Primitive, TypeId},
 };
-use crate::support::hash::HashMap;
 use std::fmt::Write;
 
 fn scalar(value: u128) -> Constant {
