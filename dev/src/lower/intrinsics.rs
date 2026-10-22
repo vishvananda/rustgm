@@ -1,6 +1,7 @@
 //! Typed scalar operations and reified shims use the existing volatile vocabulary.
 mod atomic;
 mod counted;
+mod fill;
 mod memory;
 mod overlapping;
 use super::context::{Context, Representation};
@@ -59,6 +60,17 @@ impl Context<'_> {
         else {
             return Err("volatile intrinsic requires a raw pointer");
         };
+        if intrinsic.is_fill() {
+            if !mutable
+                || parameters.len() != 3
+                || result != TypeId::UNIT
+                || parameters[1] != TypeId::primitive(Primitive::U8)
+                || parameters[2] != TypeId::primitive(Primitive::Usize)
+            {
+                return Err("pointer byte fill signature mismatch");
+            }
+            return self.memory_type(pointee);
+        }
         if intrinsic.is_counted_memory() {
             if mutable
                 || parameters.len() != 3
@@ -115,7 +127,9 @@ impl Context<'_> {
             return Err("intrinsic shim requires a function item");
         };
         let signature = self.signature(signature)?;
-        let body = if intrinsic.is_counted_memory() {
+        let body = if intrinsic.is_fill() {
+            Self::fill_memory_body(representation)?
+        } else if intrinsic.is_counted_memory() {
             Self::counted_memory_body(intrinsic, representation)?
         } else if intrinsic.is_memory() {
             Self::memory_body(intrinsic, representation)?

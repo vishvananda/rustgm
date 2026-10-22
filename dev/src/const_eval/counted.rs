@@ -1,5 +1,6 @@
 //! Initialized typed snapshots implement the first bounded counted-copy profile.
 mod bytes;
+mod fill;
 mod spans;
 #[cfg(test)]
 #[path = "../../tests/invariants/counted_memory.rs"]

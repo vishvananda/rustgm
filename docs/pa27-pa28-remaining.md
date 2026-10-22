@@ -1,7 +1,8 @@
 # PA27/PA28 remaining release contracts
 
 This reconciles the planned handouts with the accepted development slices after
-`9829fd38` and the counted/overlapping memory checkpoints. Earlier checkpoint reviews retain their original boundaries and
+`9829fd38`, counted/overlapping memory, symbolic relocation and byte-fill
+checkpoints. Earlier checkpoint reviews retain their original boundaries and
 measurements; later slices supersede those explicitly rather than rewriting the
 historical observations. Neither assignment is activated by this inventory.
 
@@ -9,9 +10,10 @@ historical observations. Neither assignment is activated by this inventory.
 
 The accepted surface includes lexical unsafe permission and scoped lint policy,
 raw versus reference place capabilities, mutable-static authority, packed
-alignment, runtime union overlap and destruction, scalar-only constant union
-Images, exact symbolic raw reads/stores and reconstructed references, and
-packed/raw/union closure capture precision. See the owning handout and the
+alignment, runtime union overlap and destruction, constant union Images over
+qualified scalar/aggregate and symbolic-word profiles, exact symbolic raw
+reads/stores and reconstructed references, and packed/raw/union closure capture
+precision. See the owning handout and the
 individual `pa27-*-review.md` records for their qualified profiles.
 
 Open implementation or profile contracts remain:
@@ -19,9 +21,13 @@ Open implementation or profile contracts remain:
 - General pointer offsets, byte reinterpretation and provenance reconstruction.
   Exact-type symbolic locations and canonical scalar union projections do not
   supply arbitrary byte-addressed memory.
-- Pointer/reference/function and aggregate union field Images, including
-  relocation-bearing byte storage. Current Images require every concrete field
-  to belong to the primitive scalar family and have no active member.
+- General enum/opaque/closure and string backing, broader raw-slice indexing and
+  object reference-cast/reconstruction. Qualified thin/function/slice/vtable word
+  fragments now preserve independent metadata and incoming write restrictions;
+  complete scalar/aggregate Images no longer require every field to be scalar.
+  Partial fragments remain transient, and typed reads/publication retain their
+  validity gates. See `docs/pa28-relocation-design.md` for exact supported and
+  unsupported profiles; no active-member union model is introduced.
 - Shared-derived interior-mutable writes. A per-pointer restriction is retained,
   but crossing an UnsafeCell-like boundary needs its own typed permission model.
   Runtime `invalid_reference_casting` policy is a separate outstanding frontend
@@ -62,19 +68,20 @@ reinterpretation. Its outcome contract lives in
 
 Open operation families remain:
 
-- Byte fills and relocation-bearing arbitrary byte constant transport,
-  with explicit byte/count overflow, initialization and provenance rules. The
-  `copy_nonoverlapping` and overlap-safe `copy` checkpoints supply bounded typed
-  initialized-value snapshots over canonical scalar/object or contiguous array
-  storage. Runtime `copy` uses direction-selected byte loops, preserving raw
-  scalar bits without typed interpretation. Zero effective bytes use address-only
-  validation without reading contents or granting write authority; ordinary
-  nonzero memory access retains its existing checks. These typed constant profiles
-  do not complete the untyped memory contract. A later scalar byte-backing slice
-  now preserves invalid scalar bits and initialization masks across copies and
-  ordinary typed/range aliases; see `docs/pa28-byte-transport.md`. Pointer-bearing
-  and enum roots remain explicit boundaries until symbolic relocation storage
-  and its inspection/emission consumers are implemented.
+- General byte transport beyond the qualified scalar/aggregate and symbolic-word
+  families. Counted copies and overlap-safe `copy` now preserve invalid scalar
+  bits, initialization masks and symbolic pointer/function/slice/vtable fragments
+  through exclusive byte backing. The `write_bytes` slice adds one checked
+  destination span, one provenance interval edit and batched byte/mask fill.
+  Typed reads still enforce validity and complete immutable publication rejects
+  partial words. Unsupported enum/opaque/closure/string backing and the broader
+  provenance families above remain required work. See
+  `docs/pa28-byte-transport.md`, `docs/pa28-relocation-design.md` and
+  `docs/pa28-byte-fill.md` for exact boundaries and oracle differences.
+- Primitive associated constants such as `usize::MAX`/`u32::MAX` need PA26 library
+  preparation. Original byte-fill sources using them retain independent outcomes
+  and earlier lookup failures; literal-count counterfactuals qualify the operation
+  without claiming the missing library route.
 - Numeric, bit and cast intrinsic families, including width/sign behavior and
   u128 controls beyond ordinary language arithmetic.
 - Additional atomic widths/types, fences, accessors and update/control methods.
@@ -88,8 +95,8 @@ Open operation families remain:
 The counted-copy development checkpoint qualifies exact typed symbolic spans,
 snapshots and existing runtime transfer loops; its review is
 `docs/pa28-counted-memory.md`. The overlapping-copy checkpoint is reviewed in
-`docs/pa28-overlapping-memory.md`. Fills and relocation-bearing byte constant transport
-remain substantial required follow-ups. Full release, immutable
+`docs/pa28-overlapping-memory.md`. The supported byte fill and relocation profiles
+do not complete the broader provenance/storage families above. Full release, immutable
 performance measurement, active manifests/oracles and publication remain
 integrator-owned. Focused logical work bounds are not wall-time or RSS
 neutrality claims.

@@ -1,0 +1,709 @@
+{
+  "stage": "corrected-predeclared-hypotheses",
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "baseline": "6db48ff3",
+  "contract_sources": [
+    "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/mod.rs#L636-L704",
+    "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ub_checks.rs#L105-L120"
+  ],
+  "cases": [
+    {
+      "name": "zero-shared",
+      "path": "pa28/tests/spec/byte-fill/zero-shared.rs",
+      "sha256": "723855e659547398ac533f5e7340810e4f637c7c93fa408bd3217338f686ecc7",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "zero-expired",
+      "path": "pa28/tests/spec/byte-fill/zero-expired.rs",
+      "sha256": "5b193f42f3ed0a42fdf557728796048c01069de72f9aac7764fdf083987fac59",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "one-expired",
+      "path": "pa28/tests/spec/byte-fill/one-expired.rs",
+      "sha256": "923f72b61838a17da6e252305685dd117774f4f69b3bb7cf471822eefe6b3fcd",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "expired storage"
+    },
+    {
+      "name": "one-shared",
+      "path": "pa28/tests/spec/byte-fill/one-shared.rs",
+      "sha256": "ad9c9402329d6de0f8d7735693863798649ef62418a4911c741415e08308a72d",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "derived from a shared reference"
+    },
+    {
+      "name": "zero-static",
+      "path": "pa28/tests/spec/byte-fill/zero-static.rs",
+      "sha256": "f43b4c63f5e37629effe7098f9e31bcd0ca959900bc0430e0b607168612a0174",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "one-static",
+      "path": "pa28/tests/spec/byte-fill/one-static.rs",
+      "sha256": "dd925ed0d664eec6e4a9b3a08eb75657b0356e610bb9757070d6e5a93f8d327c",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "cannot write static storage"
+    },
+    {
+      "name": "zst-max-count",
+      "path": "pa28/tests/spec/byte-fill/zst-max-count.rs",
+      "sha256": "64dba0b77d4c9f1780272f00990e4c1e0f6e2b6e99c0781ac01af65448098169",
+      "rustc_expected": 0,
+      "profile": "primitive usize::MAX library preparation boundary; operation not reached",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "missing value resolution"
+    },
+    {
+      "name": "zst-null",
+      "path": "pa28/tests/spec/byte-fill/zst-null.rs",
+      "sha256": "419997b12f98668036af392e078a94d315e9556a15d17a12ee4b091f6a355d2f",
+      "rustc_expected": 0,
+      "profile": "numeric-provenance-boundary; no native validity claim",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "name": "null-zero-default",
+      "path": "pa28/tests/spec/byte-fill/null-zero-default.rs",
+      "sha256": "5e9bd18662648b1c0e8967d8dc60973fd34555ddc49cef0bd56bb9b591c23cc7",
+      "rustc_expected": 1,
+      "profile": "numeric-provenance-boundary; no native validity claim",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "name": "null-zero-allow",
+      "path": "pa28/tests/spec/byte-fill/null-zero-allow.rs",
+      "sha256": "1332fdce34a7fdae157606d50d96d26b2403812367ca949ddfaa167a30d7109f",
+      "rustc_expected": 0,
+      "profile": "numeric-provenance-boundary; no native validity claim",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "name": "numeric-zst",
+      "path": "pa28/tests/spec/byte-fill/numeric-zst.rs",
+      "sha256": "72adb86396671096f1dc3f3c566617fb301ae7ef67cf6f486a39505f7327be70",
+      "rustc_expected": 0,
+      "profile": "primitive usize::MAX library preparation boundary; operation not reached",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "missing value resolution"
+    },
+    {
+      "name": "numeric-misaligned-zero",
+      "path": "pa28/tests/spec/byte-fill/numeric-misaligned-zero.rs",
+      "sha256": "bcef5cee9e40c472864e70e61e8c0470aaca874756c68b20320d1c59a08db8d5",
+      "rustc_expected": 0,
+      "profile": "numeric provenance boundary; also documented alignment precondition violation accepted by pinned CTFE",
+      "initial_hypothesis": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_validity_claim": false,
+      "diagnostic_contains": "constant counted numeric pointer access is not implemented"
+    },
+    {
+      "name": "packed-field-zero",
+      "path": "pa28/tests/spec/byte-fill/packed-field-zero.rs",
+      "sha256": "49c2f4609c252c4476ca4594428a6efdc40ad150707678365b4365b35df3b542",
+      "rustc_expected": 0,
+      "profile": "documented alignment precondition; pinned CTFE acceptance difference",
+      "initial_hypothesis": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_validity_claim": false,
+      "diagnostic_contains": "constant counted pointer is unaligned"
+    },
+    {
+      "name": "packed-base-zero",
+      "path": "pa28/tests/spec/byte-fill/packed-base-zero.rs",
+      "sha256": "d88b802dd0df04e766fb332e0fb366717604c18d78a17ae03d8d54c0f71bcff1",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "zst-expired",
+      "path": "pa28/tests/spec/byte-fill/zst-expired.rs",
+      "sha256": "28428dc7ce077e57d2da9ccfaa71fc7d78d330e1bf8441e48b1eab420df4a64f",
+      "rustc_expected": 0,
+      "profile": "primitive usize::MAX library preparation boundary; operation not reached",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "missing value resolution"
+    },
+    {
+      "name": "count-overflow",
+      "path": "pa28/tests/spec/byte-fill/count-overflow.rs",
+      "sha256": "8aa9700f07ff854875cd21b1fe94ba7dbf3902491f8885bb817fbcbe237812e6",
+      "rustc_expected": 1,
+      "profile": "primitive usize::MAX library preparation boundary; operation not reached",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "missing value resolution"
+    },
+    {
+      "name": "out-of-bounds",
+      "path": "pa28/tests/spec/byte-fill/out-of-bounds.rs",
+      "sha256": "6d939ea5d8ea82107d589e383870e162b60b7821739932b8fe91c67b4a687b0c",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "constant counted transfer exceeds"
+    },
+    {
+      "name": "byte-scalar",
+      "path": "pa28/tests/spec/byte-fill/byte-scalar.rs",
+      "sha256": "d75847ff12fe7ddf0b6dd098c92213bebbc7f7cf439e1af8fe85962bb7f9e4a0",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/byte-scalar.rs",
+        "sha256": "74bebbcfe46d2c68705c88041b56fa88387372052ce7cfe3096d53d1998bb5a1"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "invalid-bool-transport",
+      "path": "pa28/tests/spec/byte-fill/invalid-bool-transport.rs",
+      "sha256": "269b508de773cfb1d4a56d0dc38e0f1ec2fc4333329b4b462875a928cce64de6",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/invalid-bool-transport.rs",
+        "sha256": "a2e1f6802042f9e4f271d2d48a71619f1519bcaf16ccf738db8f0854c5ce7ef6"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "invalid-bool-demand",
+      "path": "pa28/tests/spec/byte-fill/invalid-bool-demand.rs",
+      "sha256": "0446439a05ef9765f0a629a1b5cadc3d8404635ad8314831c5cf23819125a638",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "invalid bool representation"
+    },
+    {
+      "name": "partial-initialization-repair",
+      "path": "pa28/tests/spec/byte-fill/partial-initialization-repair.rs",
+      "sha256": "231f465eb881c11bf8bd7d1fc48b3e2b8fb3f6ef5cf8382c9e857a7a2796cfac",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/partial-initialization-repair.rs",
+        "sha256": "b503a1157aced640c6e8d8149aa091d16d90430b65dcc55c406f185ac2f3de4f"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "unsafe-required",
+      "path": "pa28/tests/spec/byte-fill/unsafe-required.rs",
+      "sha256": "13e49c62ae0fd54b25fde98c0b8439d2f4bba98846d5d8fd381fd115a940428d",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "call to unsafe function requires an unsafe context"
+    },
+    {
+      "name": "wrong-fill-type",
+      "path": "pa28/tests/spec/byte-fill/wrong-fill-type.rs",
+      "sha256": "c31623a400097f404271a977913a503365c9f8556e347cf5b13a7affc0c7a769",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "incompatible types"
+    },
+    {
+      "name": "non-copy-generic-aggregate",
+      "path": "pa28/tests/spec/byte-fill/non-copy-generic-aggregate.rs",
+      "sha256": "19837c51fcd920a9faa7145410d249326451bd2ae9d630c0cf93c6d3aca28745",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/non-copy-generic-aggregate.rs",
+        "sha256": "ed8fdcff6a66f332b489ee70013fe09fca078f7e09d4ffecfd4db58515ee0b58"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "invalid-char-transport",
+      "path": "pa28/tests/spec/byte-fill/invalid-char-transport.rs",
+      "sha256": "2d5c294791a2af746451edb2a89b5b51ecac5b3df9a7c0a613fc1db4514e40b2",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/invalid-char-transport-literal.rs",
+        "sha256": "ea71109f324384d8bfe8f2e12b042dc835e98dd505c714b16189f549f5f98bad",
+        "counterfactual_of": "pa28/tests/byte-fill-native/invalid-char-transport.rs"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": "",
+      "original_native": {
+        "path": "pa28/tests/byte-fill-native/invalid-char-transport.rs",
+        "sha256": "b3b944873b47a920d178e640f17871917f6618b67b069efa998543bbd2b43de7",
+        "frontend_expected": 1,
+        "diagnostic_contains": "missing value resolution",
+        "profile": "u32::MAX library preparation boundary, no candidate native execution"
+      }
+    },
+    {
+      "name": "invalid-char-demand",
+      "path": "pa28/tests/spec/byte-fill/invalid-char-demand.rs",
+      "sha256": "35b7e9f52ef96c9eb5cf3a456eb24654b466b363b7602c100cd39eaebbb6f7a2",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "invalid char representation"
+    },
+    {
+      "name": "invalid-bool-repair",
+      "path": "pa28/tests/spec/byte-fill/invalid-bool-repair.rs",
+      "sha256": "c2d189d8efbe0e070cd05145dca5e038c704077da8980fdad3eddb253da4dccd",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/invalid-bool-repair.rs",
+        "sha256": "c12890ad72fd2f57db563799901df879ef82c80e2960fe3189cf96b1f2141919"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "partial-provenance-final",
+      "path": "pa28/tests/spec/byte-fill/partial-provenance-final.rs",
+      "sha256": "1af990f174c452457294fce363e5d7a4c3f41b81e50d88ef3c718d186d8efbd1",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "partial or misordered pointer provenance"
+    },
+    {
+      "name": "partial-provenance-restore",
+      "path": "pa28/tests/spec/byte-fill/partial-provenance-restore.rs",
+      "sha256": "3890ab71b54120144c48fc1b4d404134928c4f39602a5ed2112364da6516dd7c",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/partial-provenance-restore.rs",
+        "sha256": "47c8113cfaed352753a494c8c0ef67a56eedb8feb32cb9314da4ea5b2dc0560d"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "whole-provenance-overwrite",
+      "path": "pa28/tests/spec/byte-fill/whole-provenance-overwrite.rs",
+      "sha256": "46a72ac96f015cd66aa9a8e6203ffa02c143742cdef5be2a1835e648458c9c1a",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/whole-provenance-overwrite.rs",
+        "sha256": "9e5361a5be95644babf14a675bdf6c727ece0505acbc64aea76ce888fd07bc0a"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "writable-after-shared-borrow",
+      "path": "pa28/tests/spec/byte-fill/writable-after-shared-borrow.rs",
+      "sha256": "35db72d2a6c9ed9169048a90b397ee9cc2f45b0f719ef07e39b6a382c81dce1d",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/writable-after-shared-borrow.rs",
+        "sha256": "eef602b4c67ae5f81f6460bef82d58c13bcdcea0ab719bfddadf115231bc9d50"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "reified-generic-runtime",
+      "path": "pa28/tests/spec/byte-fill/reified-generic-runtime.rs",
+      "sha256": "122749404353937025d868d728c30cd2cd655a386471708e7160f040c8a33690",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/reified-generic-runtime.rs",
+        "sha256": "122749404353937025d868d728c30cd2cd655a386471708e7160f040c8a33690"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "reified-const-call",
+      "path": "pa28/tests/spec/byte-fill/reified-const-call.rs",
+      "sha256": "12955cf82cf6c9605f7967ab804ac1f2063f23d04c96698b07b9fd0203ddf214",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "non-const calls are not allowed"
+    },
+    {
+      "name": "destructor-not-overwritten",
+      "path": "pa28/tests/spec/byte-fill/destructor-not-overwritten.rs",
+      "sha256": "9de9d37c6e994c942062c6c1071eb3274b1a3d765377d76bc4e0f8d80f4199fc",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/destructor-not-overwritten.rs",
+        "sha256": "9de9d37c6e994c942062c6c1071eb3274b1a3d765377d76bc4e0f8d80f4199fc"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "argument-evaluation-once",
+      "path": "pa28/tests/spec/byte-fill/argument-evaluation-once.rs",
+      "sha256": "f1358530d837b5bd9728dcb79e83d1d144977c9b6e6273716cb25701d8f51179",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/argument-evaluation-once.rs",
+        "sha256": "f1358530d837b5bd9728dcb79e83d1d144977c9b6e6273716cb25701d8f51179"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "reference-bearing-repair",
+      "path": "pa28/tests/spec/byte-fill/reference-bearing-repair.rs",
+      "sha256": "79a51634e2bfc415cf273e1554ac5fc442adcacd8cc14d0bb7eeafa7b4ecd5f0",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/reference-bearing-repair.rs",
+        "sha256": "aaf9667cf9c22f68e15168c88e299a133b3c19da2d2158f1bf720eed85607e49"
+      },
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "packed-field-one",
+      "path": "pa28/tests/spec/byte-fill/packed-field-one.rs",
+      "sha256": "852f2802a8e1f6a604cd2c1fdacb5b84b39879edfb7ef40d7b76f16e7d7d6144",
+      "rustc_expected": 0,
+      "profile": "documented alignment precondition; pinned CTFE acceptance difference",
+      "native_validity_claim": false,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "constant counted pointer is unaligned"
+    },
+    {
+      "name": "atomic-static-zero",
+      "path": "pa28/tests/spec/byte-fill/atomic-static-zero.rs",
+      "sha256": "2774e0334ffb8745ff54639ad1d91d5406aa23bc43400bf655e80cceaca4d544",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "sized-required",
+      "path": "pa28/tests/spec/byte-fill/sized-required.rs",
+      "sha256": "bdd9e80966019edc78b3cd7e91260d54653249979e951a22c0a6586aa1c053d0",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "generic type argument must be sized"
+    },
+    {
+      "name": "shadowed-nonconst",
+      "path": "pa28/tests/spec/byte-fill/shadowed-nonconst.rs",
+      "sha256": "42e6674bf86ecd4235ffaba573d23ba4540ab70a6f7df93516fd90ba6ce43bc3",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "non-const calls are not allowed"
+    },
+    {
+      "name": "canonical-core-alias",
+      "path": "pa28/tests/spec/byte-fill/canonical-core-alias.rs",
+      "sha256": "5d77cffbfb6607d6460e99d2bf7e37f75f6ea8e5f7163ed0cff3e09d607846b8",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": ""
+    },
+    {
+      "name": "zst-max-count-literal",
+      "path": "pa28/tests/spec/byte-fill/zst-max-count-literal.rs",
+      "sha256": "827a88060077ed8ec558abeacafb59604e9901858517f6128758a56dcb2ab403",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": "",
+      "counterfactual_of": "zst-max-count",
+      "native_validity_claim": false
+    },
+    {
+      "name": "numeric-zst-literal",
+      "path": "pa28/tests/spec/byte-fill/numeric-zst-literal.rs",
+      "sha256": "dde1bf7b948c3926ee6100be6dada108be17cad2106c742c8bd23c3b02c6f256",
+      "rustc_expected": 0,
+      "profile": "numeric-provenance-boundary; no native validity claim",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "constant counted numeric pointer access is not implemented",
+      "counterfactual_of": "numeric-zst",
+      "native_validity_claim": false
+    },
+    {
+      "name": "zst-expired-literal",
+      "path": "pa28/tests/spec/byte-fill/zst-expired-literal.rs",
+      "sha256": "3c238efbd8ebb9c535df66e420588a3d4561e505ff15bd63ee29f5dc0d876d6a",
+      "rustc_expected": 0,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": "",
+      "counterfactual_of": "zst-expired",
+      "native_validity_claim": false
+    },
+    {
+      "name": "count-overflow-literal",
+      "path": "pa28/tests/spec/byte-fill/count-overflow-literal.rs",
+      "sha256": "6839cb425bd88c35fff730a4aec94741cd29ea75c212885a9b8bc1a3db8255a5",
+      "rustc_expected": 1,
+      "profile": "symbolic-byte-fill",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "diagnostic_contains": "constant fill byte count exceeds allocation size",
+      "counterfactual_of": "count-overflow",
+      "native_validity_claim": false
+    },
+    {
+      "name": "runtime-zero-zst",
+      "path": "pa28/tests/spec/byte-fill/runtime-zero-zst.rs",
+      "sha256": "02875bd35247920bc8172df9c3fc28a35a120e30579354bba51da0350d43ed3e",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": "",
+      "profile": "valid aligned native byte-fill control",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/runtime-zero-zst.rs",
+        "sha256": "02875bd35247920bc8172df9c3fc28a35a120e30579354bba51da0350d43ed3e"
+      }
+    },
+    {
+      "name": "packed-whole-runtime",
+      "path": "pa28/tests/spec/byte-fill/packed-whole-runtime.rs",
+      "sha256": "41dcf489de21ede7028c19ac5a2ae08bbcee98dd04350af70370141ac9586855",
+      "rustc_expected": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "diagnostic_contains": "",
+      "profile": "valid aligned native byte-fill control",
+      "native": {
+        "path": "pa28/tests/byte-fill-native/packed-whole-runtime.rs",
+        "sha256": "41dcf489de21ede7028c19ac5a2ae08bbcee98dd04350af70370141ac9586855"
+      }
+    }
+  ],
+  "status": "planned-independent-contract",
+  "implementation": "WriteBytes append-only index 21; no new public value schema",
+  "initial_hypothesis_receipt": "obj/parallel/pa28/byte-fill/independent-first/outcomes.json",
+  "independent_additional_receipt": "obj/parallel/pa28/byte-fill/independent-additional"
+}

@@ -2,6 +2,7 @@
 mod access;
 mod codec;
 mod continuations;
+mod fill;
 mod images;
 mod intervals;
 mod relocations;

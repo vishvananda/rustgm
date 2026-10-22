@@ -199,8 +199,18 @@ and replicate bytes/mask with bounded work. The 22 source outcomes and 15 native
 comparisons are declared in `tests/byte-transport-contract.json`; original
 uninitialized-local hypotheses are retained as E0381 source rejections, without
 native-positive claims. Pointer-bearing/enum backings, symbolic relocations,
-fills and general reinterpretation remain required work. See
+fills and general reinterpretation remained follow-ups at that checkpoint. See
 `docs/pa28-byte-transport.md` for the exact scope and superseded boundaries.
+
+The symbolic-fragment slice supersedes the pointer-bearing scalar-only boundary
+for its qualified thin/function/slice/vtable word families. Data, length and
+vtable words retain separate identities; copies preserve initialization masks
+and original write restrictions. Partial words may exist transiently but must
+be complete before typed demand or immutable publication. Constant views and
+native emission consume the same fragments, without an active union member or
+invented numeric provenance. Enum/opaque/closure/string backing, general raw
+slice and object-reference reconstruction, and PA29 image export remain required
+work. See `docs/pa28-relocation-design.md` for exact supported profiles.
 
 The current implementation and release gaps are reconciled in
 `docs/pa27-pa28-remaining.md`; historical checkpoint reviews preserve their
@@ -250,3 +260,13 @@ sidecars together. Run all active earlier suites, lint, file/architecture audits
 and affected scaling measurements. Record independent checks before setting
 status active in `assignments.json` and adding the stage to the root report.
 Student export is a later operation: this repository owns the full solution.
+
+The canonical `ptr::write_bytes` development slice retains its actual Sized-only
+unsafe const signature. It fills checked symbolic spans with one byte/mask
+update and one provenance interval edit; runtime uses the frozen U8-store loop.
+Initialization, lifetime, bounds, alignment, per-pointer write authority and
+static-context checks remain independent. Typed demand rejects invalid bool/char
+bits and incomplete pointer words, while transport can preserve or repair them.
+`tests/byte-fill-contract.json` declares the exact supported profile, numeric/MAX
+library boundaries and pinned-CTFE alignment differences; no invalid-precondition
+native result is claimed. See `docs/pa28-byte-fill.md`.

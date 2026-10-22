@@ -22,6 +22,7 @@ pub enum Intrinsic {
     WriteUnaligned,
     CopyNonoverlapping,
     Copy,
+    WriteBytes,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -39,7 +40,7 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 21] = [
+    pub const ALL: [Self; 22] = [
         Self::ReadVolatile,
         Self::WriteVolatile,
         Self::AtomicLoad,
@@ -61,6 +62,7 @@ impl Intrinsic {
         Self::WriteUnaligned,
         Self::CopyNonoverlapping,
         Self::Copy,
+        Self::WriteBytes,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -86,6 +88,7 @@ impl Intrinsic {
             Self::WriteUnaligned => 18,
             Self::CopyNonoverlapping => 19,
             Self::Copy => 20,
+            Self::WriteBytes => 21,
         }
     }
     #[must_use]
@@ -112,6 +115,7 @@ impl Intrinsic {
             Self::WriteUnaligned => "write_unaligned",
             Self::CopyNonoverlapping => "copy_nonoverlapping",
             Self::Copy => "copy",
+            Self::WriteBytes => "write_bytes",
         }
     }
     #[must_use]
@@ -128,11 +132,16 @@ impl Intrinsic {
                 | Self::WriteUnaligned
                 | Self::CopyNonoverlapping
                 | Self::Copy
+                | Self::WriteBytes
         )
     }
     #[must_use]
     pub const fn is_counted_memory(self) -> bool {
         matches!(self, Self::CopyNonoverlapping | Self::Copy)
+    }
+    #[must_use]
+    pub const fn is_fill(self) -> bool {
+        matches!(self, Self::WriteBytes)
     }
     #[must_use]
     pub const fn is_unaligned(self) -> bool {
@@ -165,7 +174,7 @@ impl Intrinsic {
     pub const fn writes_pointer(self) -> bool {
         matches!(
             self,
-            Self::Write | Self::WriteVolatile | Self::WriteUnaligned
+            Self::Write | Self::WriteVolatile | Self::WriteUnaligned | Self::WriteBytes
         )
     }
     #[must_use]
@@ -191,7 +200,8 @@ impl Intrinsic {
             | Self::ReadUnaligned
             | Self::WriteUnaligned
             | Self::CopyNonoverlapping
-            | Self::Copy => false,
+            | Self::Copy
+            | Self::WriteBytes => false,
         }
     }
     #[must_use]

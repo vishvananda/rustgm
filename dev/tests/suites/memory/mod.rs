@@ -5,6 +5,8 @@ mod atomic_storage;
 mod bitwise_atomics;
 #[path = "../../harness/bitwise_loops.rs"]
 pub(crate) mod bitwise_loops;
+#[path = "../../byte_fills.rs"]
+mod byte_fills;
 #[path = "../../byte_transfers.rs"]
 mod byte_transfers;
 #[path = "../../cas_intrinsics.rs"]

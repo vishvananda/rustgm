@@ -39,6 +39,17 @@ impl Machine<'_, '_> {
         else {
             return Err("pointer memory operation requires a typed raw pointer".into());
         };
+        if intrinsic.is_fill() {
+            if !mutable
+                || inputs.len() != 3
+                || result != TypeId::UNIT
+                || inputs[1] != TypeId::primitive(crate::types::Primitive::U8)
+                || inputs[2] != TypeId::primitive(crate::types::Primitive::Usize)
+            {
+                return Err("pointer byte fill signature mismatch".into());
+            }
+            return Ok(pointee);
+        }
         if intrinsic.is_counted_memory() {
             if mutable
                 || inputs.len() != 3
@@ -74,6 +85,9 @@ impl Machine<'_, '_> {
         }
         let ty = self.memory_pointee(intrinsic, instance)?;
         self.charge(1)?;
+        if intrinsic.is_fill() {
+            return self.counted_fill(ty, arguments);
+        }
         if intrinsic.is_counted_memory() {
             return self.counted_copy(intrinsic, ty, arguments);
         }

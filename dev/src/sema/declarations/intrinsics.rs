@@ -86,7 +86,10 @@ impl Checker<'_> {
             subject,
             TypeId::primitive(crate::types::Primitive::Usize),
         ];
-        let count = if kind.is_counted_memory() {
+        let count = if kind.is_fill() {
+            inputs[1] = TypeId::primitive(crate::types::Primitive::U8);
+            3
+        } else if kind.is_counted_memory() {
             inputs[1] = self.intern(
                 origin,
                 Type::Pointer {

@@ -247,9 +247,25 @@ fn volatile_instances_share_canonical_identity_and_additive_body_work()
             )?;
         }
         let (report, facts) = semantic::analyze(&text)?;
-        // The eight canonical pointer entries include both counted copies;
-        // repeated callers must not register additional definitions.
-        assert_eq!(facts.intrinsics.iter().count(), 8);
+        // Repeated callers must not register additional canonical definitions.
+        assert_eq!(
+            facts
+                .intrinsics
+                .iter()
+                .map(|entry| entry.kind)
+                .collect::<HashSet<_>>(),
+            HashSet::from([
+                Intrinsic::ReadVolatile,
+                Intrinsic::WriteVolatile,
+                Intrinsic::Read,
+                Intrinsic::Write,
+                Intrinsic::ReadUnaligned,
+                Intrinsic::WriteUnaligned,
+                Intrinsic::CopyNonoverlapping,
+                Intrinsic::Copy,
+                Intrinsic::WriteBytes,
+            ])
+        );
         assert_ne!(
             facts
                 .intrinsics
