@@ -1,1 +1,1 @@
-ERROR: file 0: 348: required lifetime does not outlive its target
+ERROR: file 0: 348: source caller inputs do not prove its lifetime alias equations
