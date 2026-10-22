@@ -1,4 +1,6 @@
 //! C objects retain canonical classes across imports, exports and callbacks.
+#[path = "aggregate_calling/composites.rs"]
+mod composites;
 use crate::foreign_frontend as frontend;
 use crate::host_objects as objects;
 use std::path::Path;
@@ -28,14 +30,14 @@ fn aggregate_profile_has_explicit_language_and_implementation_boundaries()
         let result = frontend::checked(&source);
         assert_eq!(
             result.is_ok(),
-            matches!(name, "interop" | "aligned" | "indirect"),
+            matches!(
+                name,
+                "interop" | "aligned" | "indirect" | "nested" | "array"
+            ),
             "{name}: {:?}",
             result.as_ref().err()
         );
-        if matches!(
-            name,
-            "rust-repr" | "packed" | "union" | "enum" | "empty" | "nested" | "array"
-        ) {
+        if matches!(name, "rust-repr" | "packed" | "union" | "enum" | "empty") {
             let diagnostic = result.err().ok_or("missing profile boundary")?;
             assert!(
                 diagnostic.contains("C aggregate ABI profile"),

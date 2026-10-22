@@ -92,7 +92,7 @@
     },
     {
       "path": "tests/spec/aggregate-abi/nested.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa30.c-aggregate-abi"
       ],
@@ -102,11 +102,16 @@
         "status": 0,
         "emit": "obj"
       },
-      "native": false
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "previous_frontend_status": 1,
+      "superseded_by": "composite ABI checkpoint; original source unchanged"
     },
     {
       "path": "tests/spec/aggregate-abi/array.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa30.c-aggregate-abi"
       ],
@@ -116,7 +121,12 @@
         "status": 0,
         "emit": "obj"
       },
-      "native": false
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "previous_frontend_status": 1,
+      "superseded_by": "composite ABI checkpoint; original source unchanged"
     },
     {
       "path": "tests/spec/aggregate-abi/unsafe-call.rs",

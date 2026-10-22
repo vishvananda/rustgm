@@ -1,0 +1,396 @@
+{
+  "schema": 1,
+  "status": "draft; independently qualified source hypotheses, no generated oracles",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/aggregate-abi/composites/nested-integer.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "c1277d5a0ddf126560d9559a226630f6cb1394a54955d586b1a3e3175e497844",
+      "features": [
+        "pa30.composite-abi"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "host_provider": "tests/spec/aggregate-abi/composites/nested-integer.c",
+      "classes_hypothesis": [
+        "INTEGER",
+        "INTEGER"
+      ],
+      "bytes": 16,
+      "align": 8
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/nested-sse.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "a28678f702e9c120c08d0d2b13c94ae604917539a59841453029d63e24e70483",
+      "features": [
+        "pa30.composite-abi"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "host_provider": "tests/spec/aggregate-abi/composites/nested-sse.c",
+      "classes_hypothesis": [
+        "SSE",
+        "SSE"
+      ],
+      "bytes": 16,
+      "align": 8
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/nested-integer-sse.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "7703864afb12cec2a6d3f3822abba1f17aee7fdf8611ed46a4aa694a80cced3a",
+      "features": [
+        "pa30.composite-abi"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "host_provider": "tests/spec/aggregate-abi/composites/nested-integer-sse.c",
+      "classes_hypothesis": [
+        "INTEGER",
+        "SSE"
+      ],
+      "bytes": 16,
+      "align": 8
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/nested-sse-integer.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "94f9ca23df7f25d9201d654b45d7d317aa1e7faeda96484c42e150448594f7ca",
+      "features": [
+        "pa30.composite-abi"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "host_provider": "tests/spec/aggregate-abi/composites/nested-sse-integer.c",
+      "classes_hypothesis": [
+        "SSE",
+        "INTEGER"
+      ],
+      "bytes": 16,
+      "align": 8
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/array-integer.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "a1e0cb356bb83f0404f27dea0e228c11ee2a2e104cf317bf52b9a3e716b2bef1",
+      "features": [
+        "pa30.composite-abi"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "host_provider": "tests/spec/aggregate-abi/composites/array-integer.c",
+      "classes_hypothesis": [
+        "INTEGER",
+        "INTEGER"
+      ],
+      "bytes": 16,
+      "align": 4
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/array-sse.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "4bb61214dd43df7eead9c7be08ececef48cf22739ead8f27656fd90b61744157",
+      "features": [
+        "pa30.composite-abi"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "host_provider": "tests/spec/aggregate-abi/composites/array-sse.c",
+      "classes_hypothesis": [
+        "SSE",
+        "SSE"
+      ],
+      "bytes": 16,
+      "align": 4
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/array-bytes.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "a82ec3abd6474df03ca45fc72f61f6617559ad6cf093fc8daf2b1f6df8f797d9",
+      "features": [
+        "pa30.composite-abi"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "host_provider": "tests/spec/aggregate-abi/composites/array-bytes.c",
+      "classes_hypothesis": [
+        "INTEGER",
+        "INTEGER"
+      ],
+      "bytes": 9,
+      "align": 1
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/array-nested-merge.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "2fd12389a28127199711f0865ee75d9081e92661f3b3fdc629cf0061d9ef7324",
+      "features": [
+        "pa30.composite-abi"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "host_provider": "tests/spec/aggregate-abi/composites/array-nested-merge.c",
+      "classes_hypothesis": [
+        "INTEGER",
+        "INTEGER"
+      ],
+      "bytes": 16,
+      "align": 4
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/nested-memory.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "0837934293986d9006029deb29ff8cd2c366102e2846aa22c18adf7aadc75557",
+      "features": [
+        "pa30.composite-abi"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "host_provider": "tests/spec/aggregate-abi/composites/nested-memory.c",
+      "classes_hypothesis": [
+        "MEMORY"
+      ],
+      "bytes": 32,
+      "align": 8
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/zero-array-field.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "2527ac7961b56f40e2740061c8b48868d6404571d7eff726bbe4856776f4dbca",
+      "features": [
+        "pa30.composite-abi"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "host_provider": "tests/spec/aggregate-abi/composites/zero-array-field.c",
+      "classes_hypothesis": [
+        "INTEGER"
+      ],
+      "bytes": 8,
+      "align": 8,
+      "host_extension": "GNU C zero-length array; separate portability probe"
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/packed-inner.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "Explicit nested packed, Rust-layout or union ABI profile boundary"
+      },
+      "source_sha256": "bfae2f397864cda610114b6946fe5f51bd64c00c371c707c21f6de14fca51c6e",
+      "features": [
+        "pa30.composite-abi"
+      ]
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/rust-layout-inner.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "Explicit nested packed, Rust-layout or union ABI profile boundary"
+      },
+      "source_sha256": "6130745986bf6bb542d8021ab06ad382d0cd2953fbbdafa1e6e809af0017c7f7",
+      "features": [
+        "pa30.composite-abi"
+      ]
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/union-inner.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "reason": "Explicit nested packed, Rust-layout or union ABI profile boundary"
+      },
+      "source_sha256": "6c2e89e7ea1b782c5b443d879b89b30687b8620d8f5a7ad6325dc72f90b38269",
+      "features": [
+        "pa30.composite-abi"
+      ]
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/wrong-nominal.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "0b9b14eca83cfc8364997462248151585f02a5571710027935c7179474561343",
+      "features": [
+        "pa30.composite-abi"
+      ]
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/unsafe-call.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "fbe3afba96afc0d64e8fece40ff6f529c1aafd4dcccaf275071c18b57864a129",
+      "features": [
+        "pa30.composite-abi"
+      ]
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/wrong-arity.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "78a01fd0660e917846a1ca6309eca958f1fbe8bfdaf4884570d942021349dcdd",
+      "features": [
+        "pa30.composite-abi"
+      ]
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/shifted-nested-mixed.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "a883e6fdf0634f2baf7c7f609148513f83c4c98ca10857f7d285f0691aac9647",
+      "features": [
+        "pa30.composite-abi"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "host_provider": "tests/spec/aggregate-abi/composites/shifted-nested-mixed.c",
+      "classes_hypothesis": [
+        "INTEGER",
+        "SSE"
+      ],
+      "bytes": 16,
+      "align": 4
+    },
+    {
+      "path": "tests/spec/aggregate-abi/composites/shifted-array-mixed.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "49f837083d7e8923c0e6bd58be84599af5ad4265dbf5e8c5595e0f98db3b7a04",
+      "features": [
+        "pa30.composite-abi"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "host_provider": "tests/spec/aggregate-abi/composites/shifted-array-mixed.c",
+      "classes_hypothesis": [
+        "INTEGER",
+        "SSE"
+      ],
+      "bytes": 16,
+      "align": 4
+    }
+  ]
+}

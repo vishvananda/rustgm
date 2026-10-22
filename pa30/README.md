@@ -39,11 +39,14 @@ dependencies in executable and entry-free modes. Draft outcomes are in
 `docs/pa30-static-checkpoint.md`.
 
 The maintainer aggregate-callable checkpoint classifies nonempty aligned
-`repr(C)` scalar-field structs once and retains INTEGER/SSE/none/MEMORY classes
+`repr(C)` structs once and retains INTEGER/SSE/none/MEMORY classes
 for imports, exports and callbacks. Sparse object temporaries preserve ordinary
 scalar record sizes. Native controls exercise mixed results, register rollback,
-large values, padding and Drop. Draft outcomes are in
-`tests/aggregate-outcomes.json`; see `docs/pa30-aggregate-abi.md` for the profile
+large values, padding and Drop. The nested-aggregate checkpoint adds recursively
+validated `repr(C)` struct and fixed-array fields, including placement-aware mixed
+eightbytes and MEMORY validation. Draft outcomes are in
+`tests/aggregate-outcomes.json` and `tests/composite-outcomes.json`; see
+`docs/pa30-aggregate-abi.md` and `docs/pa30-composite-abi.md` for the profile
 and explicit boundaries. Variadic calls and static/aggregate crate-metadata
 transport remain unfinished. The reviewed optional object backend
 profile is selected explicitly; its native tests are always registered and run

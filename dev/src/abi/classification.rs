@@ -1,4 +1,8 @@
 //! One cached x86-64 C boundary plan derives classes from prepared typed layouts.
+mod composites;
+#[cfg(test)]
+#[path = "../../tests/invariants/composite_classes.rs"]
+mod tests;
 use super::layout::{Layouts, Shape};
 use crate::types::{
     self, Kind, Store, TypeId,
@@ -36,25 +40,16 @@ pub struct Plan {
 pub struct Plans {
     signatures: HashMap<TypeId, Arc<Plan>>,
     types: HashMap<TypeId, Result<Passing, &'static str>>,
+    composites: Option<Box<composites::Cache>>,
     pub steps: usize,
     pub retained_bytes: usize,
 }
 impl Plans {
     fn charge(&mut self, work: usize) -> Result<(), &'static str> {
-        self.steps = self
-            .steps
-            .checked_add(work)
-            .filter(|&n| n <= 4_000_000)
-            .ok_or("C ABI classification work exceeds budget")?;
-        Ok(())
+        account_work(&mut self.steps, work)
     }
     fn retain(&mut self, bytes: usize) -> Result<(), &'static str> {
-        self.retained_bytes = self
-            .retained_bytes
-            .checked_add(bytes)
-            .filter(|&n| n <= 64_000_000)
-            .ok_or("C ABI classification exceeds retained budget")?;
-        Ok(())
+        storage(&mut self.retained_bytes, bytes)
     }
     /// # Errors
     /// Rejects unsupported calling conventions, unresolved shapes and aggregate profiles.
@@ -168,7 +163,7 @@ impl Plans {
             let kind = types.kind(field).ok_or("missing C field type")?;
             let child = layouts.get(field).ok_or("missing C field layout")?;
             if !scalar(kind) || !matches!(child.shape, Shape::Scalar) || child.size == 0 {
-                return Err("C aggregate ABI profile requires scalar fields");
+                return self.composite(types, definitions, layouts, head, layout);
             }
             let offset = *offsets.get(index).ok_or("missing C field offset")?;
             if offset % u64::from(child.align) != 0 {
@@ -212,6 +207,31 @@ impl Plans {
             classes,
         }))
     }
+    fn composite(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        layouts: &Layouts,
+        head: TypeId,
+        layout: super::layout::Layout,
+    ) -> Result<Passing, &'static str> {
+        if self.composites.is_none() {
+            self.retain(size_of::<composites::Cache>() + 16)?;
+        }
+        let classes = self.composites.get_or_insert_default().demand(
+            types,
+            definitions,
+            layouts,
+            head,
+            &mut self.steps,
+            &mut self.retained_bytes,
+        )?;
+        Ok(Passing::Object(Object {
+            bytes: layout.size,
+            align: layout.align,
+            classes,
+        }))
+    }
 }
 fn scalar(kind: Kind) -> bool {
     matches!(kind,Kind::Primitive(p) if p!=types::Primitive::Str)
@@ -219,4 +239,19 @@ fn scalar(kind: Kind) -> bool {
             kind,
             Kind::Reference { .. } | Kind::Pointer { .. } | Kind::Function { .. }
         )
+}
+
+fn account_work(steps: &mut usize, work: usize) -> Result<(), &'static str> {
+    *steps = steps
+        .checked_add(work)
+        .filter(|&n| n <= 4_000_000)
+        .ok_or("C ABI classification work exceeds budget")?;
+    Ok(())
+}
+fn storage(retained: &mut usize, bytes: usize) -> Result<(), &'static str> {
+    *retained = retained
+        .checked_add(bytes)
+        .filter(|&n| n <= 64_000_000)
+        .ok_or("C ABI classification exceeds retained budget")?;
+    Ok(())
 }
