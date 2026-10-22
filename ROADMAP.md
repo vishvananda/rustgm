@@ -5,7 +5,8 @@ have working draft references and executable text-oracle suites; PA25–PA44 are
 planned. No planned assignment is counted as passing.
 
 The destination includes compiling original upstream core, alloc and std with
-RustGM, then real crates. The compiler supplies genuine language/intrinsic hooks;
+RustGM. Start real-crate acceptance as soon as core works; add alloc and std
+as their consumers require them. The compiler supplies genuine language/intrinsic hooks;
 ordinary library APIs come from their Rust sources. The
 [library bootstrap plan](docs/library-bootstrap-roadmap.md) defines source pins,
 acceptance gates, implementation priority and the old-to-new number mapping.
@@ -59,8 +60,9 @@ PA1–PA30 retain their current contracts and ownership.
 | [44](pa44/README.md) | Frontend acceptance | planned |
 
 Implementation priority is PA25–PA30 closure, generic cross-crate transport and
-source-declared compiler bindings; then core, alloc and the Rust 2021/build
-pipeline; then serde_core/serde_json, std and procedural derives. Develop
+source-declared compiler bindings. Develop the Rust 2021/build pipeline alongside
+core; exercise itoa/serde_core as soon as their core-only graph works. Then build
+alloc and serde_json, followed by std and procedural derives. Develop
 independent prerequisites in parallel while keeping cumulative releases honest.
 Full unwinding and async follow the first usable abort-profile crate graph.
 
