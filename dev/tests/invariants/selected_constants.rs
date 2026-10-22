@@ -203,49 +203,73 @@ fn erased_owner_parameters_cannot_supply_selected_execution_identity()
 #[test]
 fn symbolic_source_values_do_not_authorize_initializer_execution()
 -> Result<(), Box<dyn std::error::Error>> {
-    for path in [
-        "selection/lookup-readiness/semantics/trait-caller-lifetime.rs",
-        "constants/pattern/semantics/erased-type-called.rs",
+    for (path, require_symbolic) in [
+        (
+            "selection/lookup-readiness/semantics/trait-caller-lifetime.rs",
+            false,
+        ),
+        ("constants/pattern/semantics/erased-type-called.rs", true),
     ] {
         let source = std::fs::read_to_string(
             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("../pa20/tests/spec")
                 .join(path),
         )?;
-        let report = test_source::resolve(&source, true)?;
-        let pipeline::Analysis { mut facts, .. } = pipeline::analyze_source(&report)?;
-        let values = facts
-            .constant_instances
-            .iter()
-            .map(|(&instance, &value)| (instance, value))
-            .collect::<Vec<_>>();
-        let count = values.len();
-        let mut executor = facts.constant_executor.take().ok_or("missing provider")?;
-        let mut symbolic = 0;
-        for (instance, completed) in values {
-            if !facts.types.arguments_are_concrete(instance.arguments)? {
-                symbolic += 1;
-                assert!(completed.ty.is_none());
-                let result = facts.definitions[instance.definition.0 as usize]
-                    .ok_or("missing declared type")?;
-                assert!(
-                    executor
-                        .check(&report, &mut facts, Target::Associated { instance, result })
-                        .is_err()
-                );
-                assert!(
-                    instance
-                        .publish(&mut facts, Some(result), completed.value)
-                        .is_err()
-                );
-                assert!(Reader::new(&facts).associated(instance) == Some(completed.value));
-            }
+        let (symbolic, concrete) = reject_symbolic_execution(&source)?;
+        if require_symbolic {
+            assert!(symbolic > 0, "{path} must retain a symbolic type argument");
+        } else {
+            // Selection equalities can close this fixture's lifetime arguments.
+            assert!(
+                concrete > 0,
+                "{path} must retain its canonical selected value"
+            );
         }
-        assert!(symbolic > 0);
-        assert_eq!(facts.constant_instances.len(), count);
-        facts.constant_executor = Some(executor);
     }
+    let (symbolic, _) = reject_symbolic_execution(
+        "struct S<'a>(&'a u8);impl<'a>S<'a>{const C:u8=7;}\
+         fn f<'a>(_:&'a u8,x:u8)->bool{match x{S::<'a>::C=>true,_=>false}}fn main(){}",
+    )?;
+    assert!(
+        symbolic > 0,
+        "an unclosed lifetime argument must remain symbolic"
+    );
     Ok(())
+}
+
+fn reject_symbolic_execution(source: &str) -> Result<(usize, usize), Box<dyn std::error::Error>> {
+    let report = test_source::resolve(source, true)?;
+    let pipeline::Analysis { mut facts, .. } = pipeline::analyze_source(&report)?;
+    let values = facts
+        .constant_instances
+        .iter()
+        .map(|(&instance, &value)| (instance, value))
+        .collect::<Vec<_>>();
+    let count = values.len();
+    let mut executor = facts.constant_executor.take().ok_or("missing provider")?;
+    let mut symbolic = 0;
+    for (instance, completed) in values {
+        if !facts.types.arguments_are_concrete(instance.arguments)? {
+            symbolic += 1;
+            assert!(completed.ty.is_none());
+            let result =
+                facts.definitions[instance.definition.0 as usize].ok_or("missing declared type")?;
+            assert!(
+                executor
+                    .check(&report, &mut facts, Target::Associated { instance, result })
+                    .is_err()
+            );
+            assert!(
+                instance
+                    .publish(&mut facts, Some(result), completed.value)
+                    .is_err()
+            );
+            assert!(Reader::new(&facts).associated(instance) == Some(completed.value));
+        }
+    }
+    assert_eq!(facts.constant_instances.len(), count);
+    facts.constant_executor = Some(executor);
+    Ok((symbolic, count - symbolic))
 }
 
 #[test]
