@@ -1,7 +1,7 @@
 //! The first wire profile exports closed scalar Rust functions, with explicit symbols.
 use super::{
     Constant, CrateIdentity, ExternalDef, ExternalKind, MAX_COMPONENTS, MAX_DEPENDENCIES,
-    MAX_FUNCTIONS, MAX_NAME_BYTES, Signature,
+    MAX_FUNCTIONS, MAX_NAME_BYTES, Nominals, Signature, TypeNode,
 };
 use crate::support::linkage::Linkage;
 use std::sync::Arc;
@@ -84,6 +84,7 @@ pub struct Interface {
     dependencies: Vec<CrateIdentity>,
     functions: Vec<Function>,
     constants: Vec<Constant>,
+    nominals: Option<Nominals>,
     atoms: usize,
     names: usize,
 }
@@ -103,12 +104,57 @@ impl Interface {
     /// Rejects duplicate value names, foreign identities and bounded table exhaustion.
     pub fn with_constants(
         identity: CrateIdentity,
+        dependencies: Vec<CrateIdentity>,
+        functions: Vec<Function>,
+        constants: Vec<Constant>,
+    ) -> Result<Self, &'static str> {
+        if functions.iter().any(|function| {
+            function
+                .signature
+                .types()
+                .nodes()
+                .iter()
+                .any(|node| matches!(node, TypeNode::Record(_)))
+        }) {
+            return Err("nominal metadata requires an owned record table");
+        }
+        for function in &functions {
+            function.signature.types().canonical(
+                function
+                    .signature
+                    .parameters()
+                    .iter()
+                    .copied()
+                    .chain(std::iter::once(function.signature.result())),
+            )?;
+        }
+        Self::build(identity, dependencies, functions, constants, None)
+    }
+    /// Publish shared nominal storage only after all roots and identities validate.
+    /// # Errors
+    /// Rejects invalid record ownership, roots, ordering and combined quotas.
+    pub fn with_nominals(
+        identity: CrateIdentity,
+        dependencies: Vec<CrateIdentity>,
+        functions: Vec<Function>,
+        constants: Vec<Constant>,
+        nominals: Nominals,
+    ) -> Result<Self, &'static str> {
+        Self::build(identity, dependencies, functions, constants, Some(nominals))
+    }
+    fn build(
+        identity: CrateIdentity,
         mut dependencies: Vec<CrateIdentity>,
         mut functions: Vec<Function>,
         mut constants: Vec<Constant>,
+        nominals: Option<Nominals>,
     ) -> Result<Self, &'static str> {
         if dependencies.len() > MAX_DEPENDENCIES
-            || functions.len().saturating_add(constants.len()) > MAX_FUNCTIONS
+            || functions
+                .len()
+                .saturating_add(constants.len())
+                .saturating_add(nominals.as_ref().map_or(0, |n| n.records().len()))
+                > MAX_FUNCTIONS
         {
             return Err("metadata table exceeds profile budget");
         }
@@ -137,7 +183,11 @@ impl Interface {
             }
             components = components
                 .saturating_add(function.definition.path().len())
-                .saturating_add(function.signature.atoms());
+                .saturating_add(if nominals.is_some() {
+                    function.signature.root_atoms()
+                } else {
+                    function.signature.atoms()
+                });
             bytes = bytes.saturating_add(
                 function
                     .definition
@@ -162,14 +212,25 @@ impl Interface {
         constants.sort_unstable_by(|left, right| left.definition().cmp(right.definition()));
         let (components, bytes) =
             constant_budget(&identity, &functions, &constants, components, bytes)?;
+        let (components, bytes) = match &nominals {
+            Some(records) => {
+                records.validate(&identity, &functions, &constants, components, bytes)?
+            }
+            None => (components, bytes),
+        };
         Ok(Self {
             identity,
             dependencies,
             functions,
             constants,
+            nominals,
             atoms: components,
             names: bytes,
         })
+    }
+    #[must_use]
+    pub const fn nominals(&self) -> Option<&Nominals> {
+        self.nominals.as_ref()
     }
     pub(super) const fn budget(&self) -> (usize, usize) {
         (self.atoms, self.names)

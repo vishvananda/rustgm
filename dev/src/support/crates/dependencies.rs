@@ -117,7 +117,8 @@ fn validate_graph(
     for (index, artifact) in artifacts.iter().enumerate() {
         functions = functions
             .saturating_add(artifact.functions().len())
-            .saturating_add(artifact.constants().len());
+            .saturating_add(artifact.constants().len())
+            .saturating_add(artifact.nominals().map_or(0, |n| n.records().len()));
         edges = edges.saturating_add(artifact.dependencies().len());
         if functions > MAX_FUNCTIONS || edges > MAX_COMPONENTS {
             return Err("crate graph contents exceed profile budget");

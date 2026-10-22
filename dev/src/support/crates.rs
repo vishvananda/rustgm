@@ -3,12 +3,14 @@ mod codec;
 mod dependencies;
 mod identity;
 mod interface;
+mod nominals;
 mod scalar_value;
 mod type_graph;
 pub use codec::{SCHEMA, decode, encode};
 pub use dependencies::{Dependencies, Dependency};
 pub use identity::{CrateIdentity, ExternalDef, ExternalKind, Namespace};
 pub use interface::{Function, Interface, Scalar, Symbol};
+pub use nominals::{Nominals, Record, RecordField, RecordRef};
 pub use scalar_value::{Constant, ScalarValue};
 pub use type_graph::{Lifetime, Signature, TypeGraph, TypeNode, TypeRef};
 

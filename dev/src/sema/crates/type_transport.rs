@@ -12,6 +12,9 @@ pub(super) fn import(facts: &mut Declarations, signature: &Signature) -> Result<
         facts.crates.get_or_insert_default().import_work.type_nodes += 1;
         let ty = match *node {
             TypeNode::Scalar(value) => scalar(value),
+            TypeNode::Record(_) => {
+                return Err(error("nominal metadata import requires shared remapping"));
+            }
             TypeNode::Reference {
                 region,
                 mutable,

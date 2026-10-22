@@ -22,12 +22,25 @@ pub(super) fn encode(
         return Ok(());
     }
     out.u16(signature.bound_regions())?;
-    out.u16(
-        u16::try_from(signature.types().nodes().len()).map_err(|_| "too many metadata types")?,
-    )?;
-    for node in signature.types().nodes() {
+    encode_graph(out, signature.types(), false)?;
+    encode_roots(out, signature)
+}
+pub(super) fn encode_graph(
+    out: &mut Writer,
+    types: &TypeGraph,
+    nominal: bool,
+) -> Result<(), &'static str> {
+    out.u16(u16::try_from(types.nodes().len()).map_err(|_| "too many metadata types")?)?;
+    for node in types.nodes() {
         match *node {
             TypeNode::Scalar(scalar) => out.bytes(&[0, scalar as u8])?,
+            TypeNode::Record(record) => {
+                if !nominal {
+                    return Err("record in signature-local metadata graph");
+                }
+                out.u8(2)?;
+                out.u16(record.0)?;
+            }
             TypeNode::Reference {
                 region,
                 mutable,
@@ -46,6 +59,9 @@ pub(super) fn encode(
             }
         }
     }
+    Ok(())
+}
+pub(super) fn encode_roots(out: &mut Writer, signature: &Signature) -> Result<(), &'static str> {
     out.u16(u16::try_from(signature.parameters().len()).map_err(|_| "too many parameters")?)?;
     for id in signature.parameters() {
         out.u16(id.0)?;
@@ -70,15 +86,23 @@ pub(super) fn decode(
         return Signature::new(parameters, input.scalar()?, unsafe_);
     }
     let bound_regions = input.u16()?;
-    let count = usize::from(input.u16()?);
-    if bound_regions > 256
-        || count == 0
-        || count > TypeGraph::MAX_NODES
-        || count > input.remaining() / 2
-    {
+    if bound_regions > 256 {
         return Err("invalid metadata type graph count");
     }
-    input.atoms(count + usize::from(bound_regions))?;
+    input.atoms(usize::from(bound_regions))?;
+    let nodes = decode_graph(input, false)?;
+    let (parameters, result) = decode_roots(input)?;
+    Signature::with_types(nodes, bound_regions, parameters, result, unsafe_)
+}
+pub(super) fn decode_graph(
+    input: &mut Reader<'_>,
+    nominal: bool,
+) -> Result<Vec<TypeNode>, &'static str> {
+    let count = usize::from(input.u16()?);
+    if (!nominal && count == 0) || count > TypeGraph::MAX_NODES || count > input.remaining() / 2 {
+        return Err("invalid metadata type graph count");
+    }
+    input.atoms(count)?;
     let mut nodes = Vec::with_capacity(count);
     for _ in 0..count {
         nodes.push(match input.u8()? {
@@ -100,9 +124,15 @@ pub(super) fn decode(
                     referent: TypeRef(input.u16()?),
                 }
             }
+            2 if nominal => TypeNode::Record(crate::support::crates::RecordRef(input.u16()?)),
             _ => return Err("unknown metadata type graph node"),
         });
     }
+    Ok(nodes)
+}
+pub(super) fn decode_roots(
+    input: &mut Reader<'_>,
+) -> Result<(Vec<TypeRef>, TypeRef), &'static str> {
     let count = usize::from(input.u16()?);
     if count > 256 || count.saturating_add(1) > input.remaining() / 2 {
         return Err("invalid metadata typed parameter count");
@@ -112,11 +142,5 @@ pub(super) fn decode(
     for _ in 0..count {
         parameters.push(TypeRef(input.u16()?));
     }
-    Signature::with_types(
-        nodes,
-        bound_regions,
-        parameters,
-        TypeRef(input.u16()?),
-        unsafe_,
-    )
+    Ok((parameters, TypeRef(input.u16()?)))
 }
