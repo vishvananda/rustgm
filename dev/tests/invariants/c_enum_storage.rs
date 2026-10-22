@@ -1,4 +1,4 @@
-//! Inferred C tags retain exact signed bits without accepting default Rust layouts.
+//! Inferred C tags and selected Rust tags use one retained tag lookup algorithm.
 use super::*;
 use crate::types::Primitive;
 #[test]
@@ -35,40 +35,44 @@ fn c_enum_tag_families_follow_retained_signed_and_unsigned_abi_facts() -> Result
 #[test]
 fn c_enum_warm_tag_work_is_bounded_by_width_and_logarithmic_lookup() -> Result<(), String> {
     for (base, width) in [(0u128, 4usize), (1u128 << 32, 8usize)] {
-        for count in [8usize, 32, 128] {
-            let mut text = String::from("#[repr(C)]enum E{");
-            for n in 0..count {
-                write!(&mut text, "V{n}={},", base + 2 * n as u128).map_err(|e| e.to_string())?;
-            }
-            text.push('}');
-            let mut observations = Vec::new();
-            for noise in [0, 1024] {
-                with_enum_source(&text, noise, |machine, enums| {
-                    let (ty, ids) = &enums[0];
-                    let before = machine.work.steps;
-                    let (_, id) = root(machine, *ty, ids[count - 1])?;
-                    let cold = machine.work.steps - before;
-                    let retained = machine.memory.retained_cells();
-                    let mut rows = Vec::new();
-                    for repeats in [8usize, 32, 128] {
-                        let before = machine.work.steps;
-                        for _ in 0..repeats {
-                            machine.decode_byte_enum(Source::Backing(id), 0, *ty)?;
-                        }
-                        let steps = machine.work.steps - before;
-                        assert_eq!(steps, repeats * (count.ilog2() as usize + width + 3));
-                        assert_eq!(machine.memory.retained_cells(), retained);
-                        rows.push(steps);
-                        println!(
-                            "c-enum width={width} variants={count} noise={noise} repeats={repeats} cold={cold} warm={steps} retained={retained}"
-                        );
-                    }
-                    observations.push((cold, retained, rows));
-                    Ok(())
-                })?;
-            }
-            assert_eq!(observations[0], observations[1]);
+        warm_tag_work("#[repr(C)]", base, width)?;
+    }
+    Ok(())
+}
+pub(super) fn warm_tag_work(repr: &str, base: u128, width: usize) -> Result<(), String> {
+    for count in [8usize, 32, 128] {
+        let mut text = format!("{repr}enum E{{");
+        for n in 0..count {
+            write!(&mut text, "V{n}={},", base + 2 * n as u128).map_err(|e| e.to_string())?;
         }
+        text.push('}');
+        let mut observations = Vec::new();
+        for noise in [0, 1024] {
+            with_enum_source(&text, noise, |machine, enums| {
+                let (ty, ids) = &enums[0];
+                let before = machine.work.steps;
+                let (_, id) = root(machine, *ty, ids[count - 1])?;
+                let cold = machine.work.steps - before;
+                let retained = machine.memory.retained_cells();
+                let mut rows = Vec::new();
+                for repeats in [8usize, 32, 128] {
+                    let before = machine.work.steps;
+                    for _ in 0..repeats {
+                        machine.decode_byte_enum(Source::Backing(id), 0, *ty)?;
+                    }
+                    let steps = machine.work.steps - before;
+                    assert_eq!(steps, repeats * (count.ilog2() as usize + width + 3));
+                    assert_eq!(machine.memory.retained_cells(), retained);
+                    rows.push(steps);
+                    println!(
+                        "c-enum width={width} variants={count} noise={noise} repeats={repeats} cold={cold} warm={steps} retained={retained}"
+                    );
+                }
+                observations.push((cold, retained, rows));
+                Ok(())
+            })?;
+        }
+        assert_eq!(observations[0], observations[1]);
     }
     Ok(())
 }

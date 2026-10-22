@@ -103,6 +103,9 @@ impl Backing {
     }
 }
 impl Machine<'_, '_> {
+    pub(super) fn has_byte_roots(&self) -> bool {
+        !self.memory.bytes.roots.is_empty()
+    }
     pub(super) fn byte_root(&self, root: LocationId) -> Option<Id> {
         if self.memory.bytes.roots.is_empty() {
             return None;

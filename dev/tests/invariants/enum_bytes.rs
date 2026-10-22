@@ -9,6 +9,8 @@ use crate::{
 use std::fmt::Write;
 #[path = "c_enum_storage.rs"]
 mod c;
+#[path = "rust_enum_storage.rs"]
+mod defaults;
 #[path = "payload_enum_storage.rs"]
 mod payload;
 #[path = "tagless_enum_storage.rs"]
@@ -210,8 +212,7 @@ fn enum_index_keys_retain_complete_closed_const_arguments() -> Result<(), String
     Ok(())
 }
 #[test]
-fn enum_default_tags_remain_unsupported_while_explicit_payloads_are_supported() -> Result<(), String>
-{
+fn enum_retained_default_and_explicit_tags_share_byte_family_support() -> Result<(), String> {
     let report =
         test_source::resolve("enum DefaultTag{A,B}#[repr(u8)]enum Payload{A(u8),B}", true)?;
     let mut facts = crate::pipeline::analyze_source(&report)
@@ -229,8 +230,7 @@ fn enum_default_tags_remain_unsupported_while_explicit_payloads_are_supported() 
         .map(|ty| machine.byte_family(ty))
         .collect::<Result<_, _>>()
         .map_err(|e| e.message().to_owned())?;
-    assert_eq!(supported.iter().filter(|&&yes| yes).count(), 1);
-    assert_eq!(supported.iter().filter(|&&yes| !yes).count(), 1);
+    assert_eq!(supported, [true, true]);
     assert!(machine.memory.bytes.enumerations.is_some());
     Ok(())
 }

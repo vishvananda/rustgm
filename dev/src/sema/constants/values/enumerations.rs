@@ -28,7 +28,12 @@ impl<'a> Reader<'a> {
         layout: &Layout,
     ) -> Result<StoredShape<'a>, &'static str> {
         let expected = definition.repr.tag;
-        if expected.is_none() && definition.repr.representation != Representation::C {
+        if expected.is_none()
+            && !matches!(
+                definition.repr.representation,
+                Representation::Rust | Representation::C
+            )
+        {
             return Ok(StoredShape::Unsupported);
         }
         let Shape::Aggregate { tag: Some(tag), .. } = layout.shape else {
@@ -38,6 +43,13 @@ impl<'a> Reader<'a> {
             return Err("stored enum tag differs from its declared representation");
         }
         if expected.is_none()
+            && definition.repr.representation == Representation::Rust
+            && tag.ty != crate::types::Primitive::I64
+        {
+            return Err("stored Rust enum differs from its retained target integer tag");
+        }
+        if expected.is_none()
+            && definition.repr.representation == Representation::C
             && !matches!(
                 tag.ty,
                 crate::types::Primitive::I32

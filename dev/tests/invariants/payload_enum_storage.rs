@@ -155,9 +155,12 @@ fn payload_enum_field_addresses_keep_physical_offsets_and_pointer_restrictions()
 #[test]
 fn payload_enum_repeated_field_access_reuses_one_backing_and_has_width_independent_work()
 -> Result<(), String> {
+    repeated_field_work("#[repr(u8)]")
+}
+pub(super) fn repeated_field_work(repr: &str) -> Result<(), String> {
     let mut expected = None;
     for width in [8u64, 32, 128, 4096] {
-        let source = format!("#[repr(u8)]enum E{{A(u32,[u8;{width}]),Empty}}");
+        let source = format!("{repr}enum E{{A(u32,[u8;{width}]),Empty}}");
         let mut observations = Vec::new();
         for noise in [0, 1024] {
             with_enum_source(&source, noise, |machine, enums| {
@@ -174,7 +177,7 @@ fn payload_enum_repeated_field_access_reuses_one_backing_and_has_width_independe
                 ));
                 assert!(machine.memory.bytes.enumerations.is_none());
                 let before = machine.work.steps;
-                let selected = machine.field_projection(owner, field, word)?;
+                let selected = machine.field_projection_for::<true>(owner, field, word)?;
                 machine.read(raw(selected, word))?.ok_or("warm field")?;
                 let cold = machine.work.steps - before;
                 let retained = machine.memory.retained_cells();
@@ -183,7 +186,7 @@ fn payload_enum_repeated_field_access_reuses_one_backing_and_has_width_independe
                 for repeats in [8usize, 32, 128] {
                     let before = machine.work.steps;
                     for _ in 0..repeats {
-                        let selected = machine.field_projection(owner, field, word)?;
+                        let selected = machine.field_projection_for::<true>(owner, field, word)?;
                         machine.write_place(raw(selected, word), integer(41))?;
                         assert!(machine.read(raw(selected, word))?.ok_or("field")? == integer(41));
                     }

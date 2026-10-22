@@ -102,9 +102,9 @@
       "native_valid": true,
       "rustc_actual": 0,
       "path": "pa27/tests/spec/default-enum-bytes/default-layout-still-required.rs",
-      "frontend_expected": 1,
-      "reason": "requires a supported closed byte family",
-      "required_gap": "multi-variant/default/niche backing remains required"
+      "frontend_expected": 0,
+      "reason": "",
+      "superseded_by": "default-tag-enum-outcomes.json"
     }
   ]
 }

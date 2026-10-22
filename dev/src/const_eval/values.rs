@@ -176,7 +176,7 @@ impl Machine<'_, '_> {
                 value
             }
             Rvalue::Address(place) => {
-                let Some(place) = self.place(frame, place)? else {
+                let Some(place) = self.address_place(frame, place)? else {
                     return Ok(None);
                 };
                 if let Some(union) = place.union {
@@ -194,7 +194,7 @@ impl Machine<'_, '_> {
                 }
             }
             Rvalue::Borrow { place, .. } => {
-                let Some(place) = self.place(frame, place)? else {
+                let Some(place) = self.address_place(frame, place)? else {
                     return Ok(None);
                 };
                 let shared = matches!(

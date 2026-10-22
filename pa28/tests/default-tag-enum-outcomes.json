@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "ac9a4fab9f745605e31e5fe87d0a34e966f49fb6",
+  "layout": "Existing retained direct I64 tag; not universal rustc repr(Rust) layout equality.",
+  "cases": [
+    {
+      "name": "whole-array-copy",
+      "path": "pa28/tests/spec/default-tag-enum-bytes/whole-array-copy.rs",
+      "sha256": "2724c9f7dfe837bcb6b567809a3410e8c97095fb5b0bfcb915cbab61807c2efb",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "family": "retained-tag",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/whole-array-copy.rs",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "original_evidence_path": "obj/parallel/pa27/default-tag-enum-bytes/inputs/whole-array-copy.rs",
+      "reason": ""
+    },
+    {
+      "name": "field-pointer-fill",
+      "path": "pa28/tests/spec/default-tag-enum-bytes/field-pointer-fill.rs",
+      "sha256": "06e3db53f36f84f80769ba331034a2676a98cd5985e86fe18e0425fc037c3a2f",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "family": "retained-tag",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/field-pointer-fill.rs",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "original_evidence_path": "obj/parallel/pa27/default-tag-enum-bytes/inputs/field-pointer-fill.rs",
+      "reason": ""
+    },
+    {
+      "name": "field-before-tag-change",
+      "path": "pa28/tests/spec/default-tag-enum-bytes/field-before-tag-change.rs",
+      "sha256": "0521bd6e141b684611725a24c6c19e8bfa4cad29ffe40203d53aeaccea86dbf3",
+      "rustc_expected": 0,
+      "frontend_expected": 0,
+      "native_valid": true,
+      "family": "retained-tag",
+      "original_evidence_path": "obj/parallel/pa27/default-tag-enum-bytes/inputs/field-before-tag-change.rs",
+      "reason": ""
+    },
+    {
+      "name": "selected-invalid-bool",
+      "path": "pa28/tests/spec/default-tag-enum-bytes/selected-invalid-bool.rs",
+      "sha256": "c4e7f115b1dd0cf159fe49b67ea631b635d2ffcb261aad44db3834b3f44909d5",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "native_valid": false,
+      "family": "retained-tag",
+      "original_evidence_path": "obj/parallel/pa27/default-tag-enum-bytes/inputs/selected-invalid-bool.rs",
+      "reason": "invalid bool representation"
+    },
+    {
+      "name": "selected-null-reference",
+      "path": "pa28/tests/spec/default-tag-enum-bytes/selected-null-reference.rs",
+      "sha256": "89ec97bb40ab295b0a24f99f0fc7bd9150f58cf80700b4d53e48bff7ff430166",
+      "rustc_expected": 1,
+      "frontend_expected": 1,
+      "native_valid": false,
+      "family": "retained-tag",
+      "original_evidence_path": "obj/parallel/pa27/default-tag-enum-bytes/inputs/selected-null-reference.rs",
+      "reason": "symbolic pointer read requires one complete provenance word"
+    }
+  ],
+  "layout_observations": [
+    {
+      "name": "active-invalid-bool",
+      "path": "pa28/tests/spec/default-tag-enum-bytes/active-invalid-bool.rs",
+      "sha256": "c4e46136fb578d39dd8b8b34f161fa0a1dc1316876b2198a6dc43070e3d75d52",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "family": "retained-tag",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/active-invalid-bool.rs",
+      "rustc_expected": 0,
+      "frontend_expected": 1,
+      "oracle_difference": "Rust bool niche selects Empty; course retained direct tag keeps A with invalid bool. Not a Rust rejection/native-valid contract.",
+      "original_evidence_path": "obj/parallel/pa27/default-tag-enum-bytes/inputs/active-invalid-bool.rs",
+      "reason": "invalid bool representation"
+    }
+  ]
+}

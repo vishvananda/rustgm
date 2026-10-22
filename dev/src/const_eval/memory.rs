@@ -426,6 +426,22 @@ impl Machine<'_, '_> {
         frame: &mut Frame,
         root: Place,
     ) -> Result<Option<Resolved>, Failure> {
+        self.place_for::<false>(frame, root)
+    }
+    pub(super) fn address_place(
+        &mut self,
+        frame: &mut Frame,
+        root: Place,
+    ) -> Result<Option<Resolved>, Failure> {
+        self.place_for::<true>(frame, root)
+    }
+    /// Address formation cannot reuse a cached logical enum-field selection.
+    /// Both modes share the checked iterative walk; only values populate its cache.
+    fn place_for<const ADDRESS: bool>(
+        &mut self,
+        frame: &mut Frame,
+        root: Place,
+    ) -> Result<Option<Resolved>, Failure> {
         let body = self.bodies[frame.body].clone();
         let mut current = root;
         let mut pending = Vec::new();
@@ -470,7 +486,7 @@ impl Machine<'_, '_> {
                     };
                 }
                 Place::Projection(id) => {
-                    if let Some(&address) = frame.projections.get(&id) {
+                    if !ADDRESS && let Some(&address) = frame.projections.get(&id) {
                         break address;
                     }
                     let projection = body
@@ -483,15 +499,17 @@ impl Machine<'_, '_> {
             }
         };
         while let Some((id, projection)) = pending.pop() {
-            let Some(result) = self.project(frame, address, projection)? else {
+            let Some(result) = self.project::<ADDRESS>(frame, address, projection)? else {
                 return Ok(None);
             };
             address = result;
-            frame.projections.insert(id, address);
+            if !ADDRESS {
+                frame.projections.insert(id, address);
+            }
         }
         Ok(Some(address))
     }
-    fn project(
+    fn project<const ADDRESS: bool>(
         &mut self,
         frame: &Frame,
         mut address: Resolved,
@@ -529,7 +547,13 @@ impl Machine<'_, '_> {
                         }),
                 }));
             }
-            ProjectionKind::Field(field) => self.field_projection(address, field, projection.ty)?,
+            ProjectionKind::Field(field) => {
+                if ADDRESS {
+                    self.field_projection_for::<true>(address, field, projection.ty)?
+                } else {
+                    self.field_projection(address, field, projection.ty)?
+                }
+            }
             ProjectionKind::UnionField(field) => {
                 self.project_raw_type(address)?;
                 return Ok(Some(Resolved {

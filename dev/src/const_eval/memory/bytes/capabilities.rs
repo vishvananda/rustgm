@@ -2,7 +2,10 @@
 use super::{Failure, Machine, Reader, TypeId};
 use crate::sema::values::StoredShape;
 impl Machine<'_, '_> {
-    pub(super) fn byte_family(&mut self, root: TypeId) -> Result<bool, Failure> {
+    pub(in crate::const_eval::memory) fn byte_family(
+        &mut self,
+        root: TypeId,
+    ) -> Result<bool, Failure> {
         let mut pending = vec![(root, false)];
         while let Some((ty, finish)) = pending.pop() {
             self.charge(1)?;

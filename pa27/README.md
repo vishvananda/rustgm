@@ -247,3 +247,12 @@ initialized-byte masks, symbolic fragments and reference validity; the original
 tagless positive is now supported. Multi-variant default/niche layouts remain
 required. See `tests/tagless-enum-byte-outcomes.json` and
 `docs/pa27-tagless-enum-bytes.md` for the independently declared scope.
+
+Ordinary multi-variant enum constant byte storage now consumes the existing
+retained direct tag and selected payload layout. Sparse/signed discriminants map
+to canonical variants; current bytes, initialization, provenance and reference
+validity remain checked at demand. Ordinary typed fields retain their previous
+path when their complete backing family is unsupported. This target layout is
+not a claim of universal rustc `repr(Rust)` byte equality. See
+`tests/default-tag-enum-outcomes.json` and `docs/pa27-default-tag-enum-bytes.md`;
+broader niches and opaque/closure backing remain required work.

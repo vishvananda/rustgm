@@ -54,10 +54,7 @@ fn enum_storage_facade_rejects_malformed_tags_bounds_counts_and_owners() -> Resu
     }
     let mut unsupported = definition;
     unsupported.repr.tag = None;
-    assert!(matches!(
-        Reader::enumeration_shape(&unsupported, &layout)?,
-        StoredShape::Unsupported
-    ));
+    assert!(Reader::enumeration_shape(&unsupported, &layout).is_err());
     for tag in [
         Primitive::Bool,
         Primitive::Char,
@@ -195,10 +192,22 @@ fn c_enum_storage_facade_rejects_non_abi_tags_and_preserves_written_repr_checks(
     ));
     let mut rust = definition;
     rust.repr.representation = Representation::Rust;
+    assert!(Reader::enumeration_shape(&rust, &original).is_err());
+    let mut retained = original;
+    retained.size = 8;
+    retained.shape = Shape::Aggregate {
+        variants,
+        tag: Some(Tag {
+            ty: Primitive::I64,
+            offset: 0,
+        }),
+    };
     assert!(matches!(
-        Reader::enumeration_shape(&rust, &original)?,
-        StoredShape::Unsupported
+        Reader::enumeration_shape(&rust, &retained)?,
+        StoredShape::Enumeration { .. }
     ));
+    retained.size = 7;
+    assert!(Reader::enumeration_shape(&rust, &retained).is_err());
     Ok(())
 }
 #[test]

@@ -150,9 +150,9 @@ const CASES: &[(&str, &str, i32, i32, bool, &str)] = &[
         "default-multiple-still-required",
         "pa27/tests/spec/default-enum-bytes/default-layout-still-required.rs",
         0,
-        1,
-        false,
-        "requires a supported closed byte family",
+        0,
+        true,
+        "",
     ),
 ];
 #[test]

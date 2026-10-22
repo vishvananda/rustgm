@@ -131,7 +131,7 @@ impl Machine<'_, '_> {
                 && Reader::new(self.evaluator.facts())
                     .array_image(value)?
                     .is_some();
-            if !incoming_image && !self.writes_inside_image(path.root, &path.fields)? {
+            if !incoming_image && !self.path_has_image(path.root, &path.fields)? {
                 return Ok(false);
             }
             self.convert_byte_root(path.root)?;
@@ -144,7 +144,7 @@ impl Machine<'_, '_> {
         self.write_byte_value(path.root, offset, ty, value)?;
         Ok(true)
     }
-    fn writes_inside_image(
+    pub(in crate::const_eval::memory) fn path_has_image(
         &mut self,
         root: crate::sema::values::LocationId,
         path: &[u64],

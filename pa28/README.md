@@ -316,3 +316,10 @@ initialized-byte masks, symbolic fragments and reference validity; the original
 tagless positive is now supported. Multi-variant default/niche layouts remain
 required. See `tests/tagless-enum-byte-outcomes.json` and
 `docs/pa27-tagless-enum-bytes.md` for the independently declared scope.
+
+The ordinary direct-tag enum storage slice also applies to counted copies and
+field-pointer fills through the existing byte/provenance engine. It preserves
+selected payload validity and physical field addresses without changing the
+retained ABI or granting new raw access permission. See
+`tests/default-tag-enum-outcomes.json` and `docs/pa27-default-tag-enum-bytes.md`.
+Broader niches and unsupported payload backing remain required work.

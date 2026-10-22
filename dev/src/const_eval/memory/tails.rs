@@ -12,6 +12,14 @@ impl Machine<'_, '_> {
         field: Selection,
         target: TypeId,
     ) -> Result<Constant, Failure> {
+        self.field_projection_for::<false>(place, field, target)
+    }
+    pub(super) fn field_projection_for<const ADDRESS: bool>(
+        &mut self,
+        place: Resolved,
+        field: Selection,
+        target: TypeId,
+    ) -> Result<Constant, Failure> {
         self.charge(1)?;
         let index = match field {
             Selection::Tuple(index) => index,
@@ -22,7 +30,7 @@ impl Machine<'_, '_> {
                 .ordinal(field)
                 .ok_or("missing constant field ordinal")?,
         };
-        if let Some(address) = self.enum_field_projection(place, field, target)? {
+        if let Some(address) = self.enum_field_projection::<ADDRESS>(place, field, target)? {
             return Ok(address);
         }
         if self.byte_projecting(place)? {
@@ -89,7 +97,7 @@ impl Machine<'_, '_> {
             .projection(place.address, u64::from(index), stored)?;
         metadata.map_or(Ok(value), |metadata| value.with_metadata(metadata))
     }
-    fn enum_field_projection(
+    fn enum_field_projection<const ADDRESS: bool>(
         &mut self,
         place: Resolved,
         field: Selection,
@@ -113,8 +121,10 @@ impl Machine<'_, '_> {
         else {
             return Ok(None);
         };
-        let tagged =
+        let explicit =
             definition.repr.tag.is_some() || definition.repr.representation == Representation::C;
+        let ordinary =
+            definition.repr.tag.is_none() && definition.repr.representation == Representation::Rust;
         let tagless = definition.repr.tag.is_none()
             && definition.repr.representation == Representation::Rust
             && self.evaluator.facts().members.variants(owner).len() == 1;
@@ -124,16 +134,22 @@ impl Machine<'_, '_> {
             .aggregates
             .nullable_enum(owner)
             .is_some();
-        if !tagged && !tagless && !nullable {
+        if !explicit && !ordinary && !nullable {
             return Ok(None);
         }
         self.footprint(place.ty)?;
-        let niche = self
+        let shape = self
             .evaluator
             .facts()
             .layouts
             .get(place.ty)
-            .is_some_and(|layout| matches!(layout.shape, crate::abi::layout::Shape::Niche { .. }));
+            .ok_or("missing prepared enum field layout")?
+            .shape;
+        let tagged = matches!(
+            shape,
+            crate::abi::layout::Shape::Aggregate { tag: Some(_), .. }
+        );
+        let niche = matches!(shape, crate::abi::layout::Shape::Niche { .. });
         if !tagged && !tagless && !niche {
             return Ok(None);
         }
@@ -146,10 +162,35 @@ impl Machine<'_, '_> {
             }
             .into());
         }
+        if tagged && ordinary && !explicit && !self.physical_default_field::<ADDRESS>(place)? {
+            return Ok(None);
+        }
         if tagged || niche {
             self.byte_address(place, selected.offset, target).map(Some)
         } else {
             Ok(None)
         }
+    }
+    fn physical_default_field<const ADDRESS: bool>(
+        &mut self,
+        place: Resolved,
+    ) -> Result<bool, Failure> {
+        let physical = ADDRESS || place.raw.is_some() || self.byte_projecting(place)?;
+        let images = Reader::new(self.evaluator.facts()).has_image_storage();
+        if !physical && !self.has_byte_roots() && !images {
+            return Ok(false);
+        }
+        let path = self.path(place.address)?;
+        let root = path.root;
+        if self.byte_root(root).is_some() || images && self.path_has_image(root, &path.fields)? {
+            return Ok(true);
+        }
+        let reader = Reader::new(self.evaluator.facts());
+        let stored = reader.location(root)?;
+        let persistent = matches!(stored.origin, crate::sema::values::Origin::Static(_));
+        if !physical && !persistent {
+            return Ok(false);
+        }
+        self.byte_family(stored.ty)
     }
 }

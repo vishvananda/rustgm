@@ -92,8 +92,11 @@ fn wide_enum_partial_tag_writes_and_padding_keep_independent_initialization() ->
 }
 #[test]
 fn wide_enum_cache_never_interprets_symbolic_pointer_words_as_tag_numbers() -> Result<(), String> {
+    tag_provenance("#[repr(u64)]")
+}
+pub(super) fn tag_provenance(repr: &str) -> Result<(), String> {
     with_enum_source(
-        "#[repr(u64)]enum E{A=0,B=7}fn pointer_type(_: *const u8){}",
+        &format!("{repr}enum E{{A=0,B=7}}fn pointer_type(_: *const u8){{}}"),
         0,
         |machine, enums| {
             let (ty, ids) = &enums[0];

@@ -28,7 +28,7 @@ Open implementation or profile contracts remain:
   and index offsets now reuse original backing coordinates, masks, fragments and
   access checks; this does not implement numeric pointer reconstruction or every
   storage family. See `pa27-byte-access-review.md` for the qualified controls.
-- General default-layout/niche enum, opaque/closure and string backing, whole raw-slice values and
+- Broader niche enum, opaque/closure and string backing, whole raw-slice values and
   object reference-cast/reconstruction. Qualified thin/function/slice/vtable word
   fragments now preserve independent metadata and incoming write restrictions;
   complete scalar/aggregate Images no longer require every field to be scalar.
@@ -90,7 +90,7 @@ Open operation families remain:
   through exclusive byte backing. The `write_bytes` slice adds one checked
   destination span, one provenance interval edit and batched byte/mask fill.
   Typed reads still enforce validity and complete immutable publication rejects
-  partial words. Unsupported default-layout/niche enum, opaque/closure/string backing and the broader
+  partial words. Unsupported niche enum, opaque/closure/string backing and the broader
   provenance families above remain required work. See
   `docs/pa28-byte-transport.md`, `docs/pa28-relocation-design.md` and
   `docs/pa28-byte-fill.md` for exact boundaries and oracle differences.
@@ -155,8 +155,13 @@ encoding for runtime size/alignment/call ABI and constant byte backing, includin
 eligible transparent carriers. Four original stride wrong-code controls are
 corrected; Some/None, C/Rust/reified calls and destructor behavior are qualified.
 See `pa27-option-niche-design.md` and the PA26/27/28/30 Option outcome drafts.
-General default-layout direct-tag backing, wider/other scalar niches and
-NonZero/NonNull remain required rather than being excluded from completion.
+Ordinary multi-variant Rust enums now consume their existing retained I64 direct
+tag in byte storage, preserving exact discriminant-to-variant mapping and selected
+payload validity. The unchanged default-layout required positive now passes;
+ordinary typed closure fields retain their previous path. This does not promise
+rustc's implementation-selected byte layout or general closure backing. See
+`pa27-default-tag-enum-bytes.md`. Wider/other scalar niches and NonZero/NonNull
+remain required rather than being excluded from completion.
 Default-std compatibility additionally needs AtomicBool and signed/unsigned/
 target-sized atomic families; memchr/zmij SIMD/target-feature/inline-assembly
 requirements belong to later PA28/PA37 compatibility work. The current U32 and

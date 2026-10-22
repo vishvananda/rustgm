@@ -129,6 +129,8 @@ mod payload_enum_bytes;
 #[path = "../../c_enum_bytes.rs"]
 mod c_enum_bytes;
 
+#[path = "../../rust_enum_storage.rs"]
+mod rust_enum_storage;
 #[path = "../../tagless_enum_bytes.rs"]
 mod tagless_enum_bytes;
 
