@@ -406,9 +406,32 @@ impl Queries<'_> {
         Ok(result)
     }
     pub(super) fn enter_instance(&mut self, instance: Instance) -> Result<(), Error> {
+        let context = self.work.context;
         let key = self.instance_source(instance)?;
+        let index = self
+            .typing
+            .facts
+            .initializer_index(instance.definition)
+            .ok_or_else(|| {
+                self.error(
+                    Query::Instance(instance),
+                    "missing selected pattern value initializer",
+                )
+            })?;
+        self.begin_pattern_value(index, context)?;
         self.forward(Query::Instance(instance), Query::Node(key));
         self.prepare(key)
+    }
+    pub(super) fn prepare_instance(&mut self, instance: Instance) -> Result<(), Error> {
+        let context = self.work.context;
+        let source = self.instance_source(instance)?;
+        let index = self
+            .typing
+            .facts
+            .initializer_index(instance.definition)
+            .ok_or_else(|| self.error(Query::Instance(instance), "missing prepared initializer"))?;
+        self.begin_pattern_value(index, context)?;
+        self.prepare(source)
     }
     pub(super) fn instance_source(&mut self, instance: Instance) -> Result<NodeKey, Error> {
         let query = Query::Instance(instance);

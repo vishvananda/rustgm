@@ -301,8 +301,8 @@ fn executed_constants_match_native_values() -> Result<(), Box<dyn std::error::Er
 }
 
 #[test]
-fn named_patterns_in_discriminants_retain_the_general_evaluation_boundary()
--> Result<(), Box<dyn std::error::Error>> {
+fn named_patterns_in_discriminants_use_completed_ranges() -> Result<(), Box<dyn std::error::Error>>
+{
     let source = "const N:isize=7;enum E{A=match 7isize{N=>1,_=>2}}fn main(){}";
     rustc::qualify("discriminant-named-pattern", source, true)?;
     let file = folder("constant-boundaries")?.join("discriminant.rs");
@@ -311,9 +311,12 @@ fn named_patterns_in_discriminants_retain_the_general_evaluation_boundary()
         .arg("--emit-lowir")
         .arg(file)
         .output()?;
-    assert_eq!(compiler.status.code(), Some(1));
-    assert!(compiler.stdout.is_empty());
-    assert!(String::from_utf8_lossy(&compiler.stderr).contains("general constant evaluation"));
+    assert!(
+        compiler.status.success(),
+        "{}",
+        String::from_utf8_lossy(&compiler.stderr)
+    );
+    assert!(!compiler.stdout.is_empty() && compiler.stderr.is_empty());
     Ok(())
 }
 
@@ -365,3 +368,6 @@ fn deferred_ranges_keep_their_source_file() -> Result<(), Box<dyn std::error::Er
     assert!(ran.status.success() && ran.stdout.is_empty() && ran.stderr.is_empty());
     Ok(())
 }
+
+#[path = "constant_patterns/named_readiness.rs"]
+mod readiness;

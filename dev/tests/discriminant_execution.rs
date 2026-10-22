@@ -92,7 +92,7 @@ fn const_discriminants_resume_the_same_checked_function() -> Result<(), String> 
 #[ignore = "requires the configured CPPGM native backend"]
 fn completed_discriminants_match_independent_native_values()
 -> Result<(), Box<dyn std::error::Error>> {
-    native::check_cases("pa25-discriminant-values", CASES)
+    native::check_cases("parallel/pa25-discriminant-values", CASES)
 }
 fn qualify(name: &str, text: &str, accepted: bool) -> Result<String, Box<dyn std::error::Error>> {
     let folder = Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
@@ -143,12 +143,6 @@ fn incomplete_tags_are_boundaries_and_true_cycles_are_rejected()
             "enum E{A=f()}enum First{A=3}const fn f()->isize{First::A as isize}fn main(){}",
             true,
             "enum cast requires a completed discriminant",
-        ),
-        (
-            "root-pattern-boundary",
-            "const N:isize=7;enum E{A=match 7isize{N=>1,_=>2}}fn main(){}",
-            true,
-            "constant expressions containing named patterns require general constant evaluation",
         ),
         (
             "constant-cycle",

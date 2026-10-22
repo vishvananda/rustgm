@@ -12,7 +12,13 @@ impl Engine {
         let ready = facts
             .initializer_index(instance.definition)
             .and_then(|i| facts.initializers.get(i))
-            .is_some_and(crate::sema::model::Initializer::type_checked);
+            .is_some_and(|initializer| {
+                initializer.type_checked()
+                    && !facts
+                        .patterns
+                        .pending_bodies
+                        .contains(&initializer.semantic_source())
+            });
         if !ready {
             return Ok(false);
         }

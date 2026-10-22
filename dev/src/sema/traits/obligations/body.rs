@@ -65,6 +65,33 @@ impl Reservation {
         self.next = Some(allocated.end);
         Ok(())
     }
+    /// Preserve ordinary flat source facts after reserving their exact interval.
+    pub fn publish_pattern(
+        mut self,
+        proof: Obligations,
+        facts: &mut Declarations,
+        body: NodeKey,
+        source: NodeKey,
+    ) -> Result<(), &'static str> {
+        if self.next.is_none() {
+            return proof.retain_body(facts, body, source);
+        }
+        self.reserve(facts, body, source, proof.regions.clone())?;
+        if !proof.has_quantified() {
+            for id in proof.regions.clone() {
+                let region = facts
+                    .body_regions
+                    .get_mut(id as usize - 1)
+                    .ok_or("missing reserved pattern region")?;
+                if region.body != body || region.source != source {
+                    return Err("reserved pattern region belongs to another owner");
+                }
+                region.origin = BodyRegionOrigin::Inference;
+            }
+        }
+        proof.publish_body(facts, body, source);
+        Ok(())
+    }
     pub fn publish(
         mut self,
         proof: Obligations,
@@ -121,6 +148,10 @@ impl Obligations {
         facts
             .body_regions
             .extend(self.regions.clone().map(|_| region));
+        self.publish_body(facts, body, source);
+        Ok(())
+    }
+    fn publish_body(self, facts: &mut Declarations, body: NodeKey, source: NodeKey) {
         if self.has_quantified() {
             facts
                 .quantified_proofs
@@ -128,7 +159,7 @@ impl Obligations {
                     body,
                     evidence: crate::sema::model::LifetimeProof::new(source, self),
                 });
-            return Ok(());
+            return;
         }
         facts.region_equalities.extend(
             self.equalities
@@ -151,6 +182,5 @@ impl Obligations {
                 ty,
                 shorter,
             }));
-        Ok(())
     }
 }

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait Pick{const N:u8;}impl Pick for u8{const N:u8=7;}struct S<T>{v:T}impl<T:Pick>S<T>{const M:u8=match 7{T::N=>1,_=>2};}fn main(){let _=S::<u8>::M;}

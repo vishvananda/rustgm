@@ -167,54 +167,92 @@ impl Checker<'_> {
         result
     }
     pub(in crate::sema) fn complete_constant_patterns(&mut self) -> Result<(), Error> {
-        let Some(pending) = self.state.pending_patterns.take() else {
+        let Some((_, scopes)) = self.take_prepared_patterns()? else {
             return Ok(());
         };
+        super::super::constants::prepared_patterns(
+            self.report,
+            self.facts,
+            scopes,
+            &mut self.pattern_queries,
+        )
+    }
+    pub(in crate::sema) fn pending_pattern_scopes(&self) -> usize {
+        self.state
+            .pending_patterns
+            .as_ref()
+            .map_or(0, |pending| pending.scopes.len())
+    }
+    pub(in crate::sema) fn pending_pattern_allocation(
+        &self,
+    ) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        if let Some(pending) = &self.state.pending_patterns {
+            total.boxed(pending.as_ref());
+            total.vector(&pending.requests);
+            total.vector(&pending.scopes);
+            total.vector(&pending.ranges);
+            total.vector(&pending.roots);
+            total.vector(&pending.matches);
+        }
+        total
+    }
+    pub(in crate::sema) fn take_prepared_patterns(
+        &mut self,
+    ) -> Result<Option<(NodeKey, Vec<PreparedScope>)>, Error> {
+        let Some(pending) = self.state.pending_patterns.take() else {
+            return Ok(None);
+        };
+        let body = self.state.body;
         let mut scopes = pending.into_scopes();
         let order = ordering::schedule(self.facts, &scopes)
-            .map_err(|message| self.error(self.state.body.node, message))?;
+            .map_err(|message| self.error(body.node, message))?;
+        let mut prepared = Vec::with_capacity(order.len());
         for index in order {
-            let prepared = scopes[index].take().ok_or_else(|| {
+            let prepared_scope = scopes[index].take().ok_or_else(|| {
                 self.error(
                     self.state.body.node,
                     "constant pattern scope scheduled twice",
                 )
             })?;
-            self.complete_pattern_scope(prepared)?;
+            prepared.push(prepared_scope);
         }
-        Ok(())
+        Ok(Some((body, prepared)))
     }
-    fn complete_pattern_scope(&mut self, prepared: PreparedScope) -> Result<(), Error> {
+    pub(in crate::sema) fn publish_prepared_patterns(
+        &mut self,
+        prepared: PreparedScope,
+    ) -> Result<(), Error> {
         let PreparedScope {
             scope,
-            requests,
             ranges,
             roots,
             matches,
+            ..
         } = prepared;
-        super::super::constants::pattern_values(
-            self.report,
-            self.facts,
-            &requests,
-            std::iter::once(scope.values),
-            &mut self.pattern_queries,
-        )?;
+        let mut scratch = super::Scratch::default();
+        scratch.resumable();
+        let fresh = Checker::with_scratch(self.report, self.facts, scratch).state;
+        let saved = std::mem::replace(&mut self.state, fresh);
         self.state.body = scope.values.body;
         self.state.file = scope.values.body.file;
         self.state.module = scope.module;
         self.state.range_work.extend(ranges);
         self.state.pattern_requirements.extend(roots);
         self.state.matches.extend(matches);
-        self.finish_patterns()?;
-        self.facts
-            .patterns
-            .pending_bodies
-            .remove(&scope.values.body);
-        Ok(())
+        let result = self.finish_patterns();
+        self.state = saved;
+        if result.is_ok() {
+            self.facts
+                .patterns
+                .pending_bodies
+                .remove(&scope.values.body);
+        }
+        result
     }
 }
 
-struct PreparedScope {
+pub(in crate::sema) struct PreparedScope {
     scope: Scope,
     requests: Vec<(
         NodeKey,
@@ -225,6 +263,30 @@ struct PreparedScope {
     roots: Vec<(PatternId, bool)>,
     matches: Vec<u32>,
 }
+impl PreparedScope {
+    pub(in crate::sema) fn values(&self) -> super::super::constants::PatternScope {
+        self.scope.values
+    }
+    pub(in crate::sema) fn request(
+        &self,
+        cursor: usize,
+    ) -> Option<(
+        NodeKey,
+        super::super::constants::PatternValue,
+        Option<PatternId>,
+    )> {
+        self.requests.get(cursor).copied()
+    }
+    pub(in crate::sema) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut total = crate::support::retained::Allocation::default();
+        total.vector(&self.requests);
+        total.vector(&self.ranges);
+        total.vector(&self.roots);
+        total.vector(&self.matches);
+        total
+    }
+}
+
 impl Pending {
     fn into_scopes(self) -> Vec<Option<PreparedScope>> {
         let mut requests = self.requests.into_iter();

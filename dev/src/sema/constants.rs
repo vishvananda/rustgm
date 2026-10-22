@@ -20,9 +20,13 @@ mod instances;
 mod layouts;
 mod member_readiness;
 mod patterns;
+mod pending_patterns;
 mod places;
 pub(super) mod products;
 pub(super) mod references;
+mod scope_frames;
+mod scope_progress;
+mod scope_requests;
 mod suspension;
 pub(super) use suspension::Continuation as ArgumentContinuation;
 pub(super) use suspension::Dependency as ArgumentDependency;
@@ -158,6 +162,11 @@ enum Expression {
 }
 enum Work {
     Execute(NodeKey),
+    PatternOwner(NodeKey),
+    PatternStart(pending_patterns::FrameId),
+    PatternNext(pending_patterns::FrameId),
+    PatternPublish(pending_patterns::FrameId, Query),
+    PatternFinish(pending_patterns::FrameId),
     PrepareNode(NodeKey),
     PrepareInstance(crate::sema::values::Instance),
     Layout(NodeKey, TypeId, bool),
@@ -191,6 +200,7 @@ struct Queries<'a> {
     pattern_dispatch: Option<super::dispatch::Dispatcher>,
     value_scope: Option<instances::ValueScope>,
     checked_members: HashSet<Query>,
+    pattern_frames: Option<Box<pending_patterns::Frames>>,
 }
 /// Reusable storage belongs to one report and its append-only declaration facts.
 #[derive(Default)]
@@ -223,103 +233,22 @@ pub(super) struct PatternScope {
     pub binders: u32,
     pub end: usize,
 }
-/// Resolve pattern uses after their initializer bodies have published typed facts.
-pub(super) fn pattern_values(
+/// Complete the ordered original scopes in one value/dependency graph.
+pub(super) fn prepared_patterns(
     report: &Report,
     facts: &mut Declarations,
-    requests: &[(NodeKey, PatternValue, Option<super::patterns::PatternId>)],
-    scopes: impl Iterator<Item = PatternScope>,
+    scopes: Vec<bodies::PreparedScope>,
     scratch: &mut Option<Box<Scratch>>,
 ) -> Result<(), Error> {
     let mut queries =
         Queries::with_scratch(report, facts, None, *scratch.take().unwrap_or_default());
-    let mut start = 0;
-    for scope in scopes {
-        queries.pattern_scope = Some(scope);
-        for &(key, definition, pattern) in &requests[start..scope.end] {
-            queries.pattern_value(key, definition, pattern)?;
-        }
-        if let Some(dispatch) = queries.pattern_dispatch.take() {
-            dispatch
-                .finish()
-                .retain_body(queries.typing.facts, scope.body, scope.body)
-                .map_err(|e| Declarations::error(report, scope.body, e))?;
-        }
-        start = scope.end;
+    for scope in scopes.iter().rev() {
+        queries.work.push(Work::PatternOwner(scope.values().body));
     }
+    queries.retain_prepared_patterns(scopes)?;
+    queries.drain()?;
     *scratch = Some(Box::new(queries.into_scratch()));
     Ok(())
-}
-impl Queries<'_> {
-    fn pattern_value(
-        &mut self,
-        key: NodeKey,
-        definition: PatternValue,
-        pattern: Option<super::patterns::PatternId>,
-    ) -> Result<(), Error> {
-        self.work.context = instances::Context::default();
-        let query = match definition {
-            PatternValue::Definition(_) if self.typing.facts.constant_uses.contains_key(&key) => {
-                let instance = self.typing.facts.constant_uses[&key];
-                Query::Instance(self.selected_constant(key, instance)?)
-            }
-            PatternValue::Definition(definition)
-                if self
-                    .typing
-                    .facts
-                    .crates
-                    .as_deref()
-                    .is_some_and(|linkage| linkage.imported_constant(definition)) =>
-            {
-                Query::Node(key)
-            }
-            PatternValue::Definition(definition) => {
-                let index = self
-                    .typing
-                    .facts
-                    .initializer_index(definition)
-                    .ok_or_else(|| {
-                        Declarations::error(
-                            self.report,
-                            key,
-                            "pattern path requires a named constant",
-                        )
-                    })?;
-                if !matches!(
-                    self.typing.facts.initializers[index].kind,
-                    InitializerKind::Const
-                ) {
-                    return Err(Declarations::error(
-                        self.report,
-                        key,
-                        "a static is not a constant pattern",
-                    ));
-                }
-                Query::Constant(index)
-            }
-            PatternValue::Literal(source) => Query::Node(source),
-        };
-        self.work.push(Work::Enter(query));
-        if let Query::Node(source) = query {
-            self.prepare(source)?;
-        }
-        self.drain()?;
-        let value = self.value(query)?;
-        if let Some(pattern) = pattern {
-            self.complete_pattern(key, value)?;
-            patterns::expand(self.report, self.typing.facts, pattern, value)?;
-            return Ok(());
-        }
-        let value = value
-            .scalar()
-            .map_err(|e| Declarations::error(self.report, key, e))?;
-        self.typing
-            .facts
-            .node_mut(key)
-            .ok_or_else(|| Declarations::error(self.report, key, "missing constant pattern node"))?
-            .scalar = Some(value);
-        Ok(())
-    }
 }
 impl<'a> Queries<'a> {
     fn new(report: &'a Report, facts: &'a mut Declarations) -> Self {
@@ -357,6 +286,7 @@ impl<'a> Queries<'a> {
             source_work,
             preparation_steps: scratch.preparation_steps,
             pattern_values: HashSet::new(),
+            pattern_frames: None,
             drop_scratch: scratch.drops,
             layout_scratch: scratch.layouts,
             pattern_scope: None,
@@ -418,11 +348,8 @@ impl Queries<'_> {
             _ => Err(self.error(query, "missing completed constant dependency")),
         }
     }
-    fn require_complete_patterns(&self, query: Query) -> Result<(), Error> {
-        if self.typing.has_pending_patterns() {
-            return Err(self.error(query, "constant expressions containing named patterns require general constant evaluation"));
-        }
-        Ok(())
+    fn require_complete_patterns(&mut self, _query: Query) -> Result<(), Error> {
+        self.capture_pending_patterns()
     }
     fn primitive(&self, key: NodeKey, ty: TypeId) -> Result<Primitive, Error> {
         if let Some(Type::Primitive(ty)) = self.typing.facts.types.kind(ty) {
@@ -456,7 +383,19 @@ impl Queries<'_> {
         &mut self,
         ready: Option<&HashSet<DefId>>,
     ) -> Result<Option<suspension::Dependency>, Error> {
+        let result = self.drain_until_inner(ready);
+        if result.is_err() {
+            self.abort_pattern_frames();
+        }
+        result
+    }
+    fn drain_until_inner(
+        &mut self,
+        ready: Option<&HashSet<DefId>>,
+    ) -> Result<Option<suspension::Dependency>, Error> {
         while let Some(work) = self.work.pop() {
+            self.resume_pattern_dispatch()?;
+            self.reserve_pattern_dispatch()?;
             if let Some(ready) = ready
                 && let Some(definition) = self.required_initializer(&work)?
                 && !ready.contains(&definition)
@@ -472,17 +411,24 @@ impl Queries<'_> {
             }
             self.budget()?;
             match work {
+                Work::PatternOwner(body) => {
+                    self.schedule_pattern_owner(body, None)?;
+                }
+                Work::PatternStart(id) => self.start_pattern_frame(id)?,
+                Work::PatternNext(id) => self.next_pattern_request(id)?,
+                Work::PatternPublish(id, query) => self.publish_pattern_request(id, query)?,
+                Work::PatternFinish(id) => self.finish_pattern_frame(id)?,
                 Work::Execute(key) => {
                     if let Some(requirement) = self.execute(key)? {
                         self.work.push(Work::Execute(key));
+                        if self.prepare_pattern_requirement(requirement)? {
+                            continue;
+                        }
                         return Ok(Some(suspension::Dependency::Execution(requirement)));
                     }
                 }
                 Work::PrepareNode(key) => self.prepare(key)?,
-                Work::PrepareInstance(instance) => {
-                    let source = self.instance_source(instance)?;
-                    self.prepare(source)?;
-                }
+                Work::PrepareInstance(instance) => self.prepare_instance(instance)?,
                 Work::Layout(key, ty, finish) => self.layout(key, ty, finish)?,
                 Work::Alignment(obligation) => self.check_alignment(obligation)?,
                 Work::Enter(query) => self.enter(query)?,
@@ -585,6 +531,7 @@ impl Queries<'_> {
                     self.typing.initializer(index)?;
                     self.require_complete_patterns(query)?;
                 }
+                self.begin_pattern_value(index, self.work.context)?;
                 let key = self.typing.facts.initializers[index].value;
                 self.forward(query, Query::Node(key));
                 self.prepare(key)?;
@@ -786,6 +733,9 @@ impl Queries<'_> {
         Ok(())
     }
     fn prepare(&mut self, root: NodeKey) -> Result<(), Error> {
+        if self.begin_pending_patterns(root)? {
+            return Ok(());
+        }
         // Validate all branches, including ones evaluation will skip. Inference
         // has already selected their operations; this is constant eligibility.
         // Push value continuations first: preparation schedules prerequisite work.
@@ -859,6 +809,8 @@ impl Queries<'_> {
                 .insert((self.work.context, key), expression);
         }
         self.drop_scratch = drops.map(drops::Check::finish);
+        self.resume_pattern_dispatch()?;
+        self.reserve_pattern_dispatch()?;
         if execution {
             self.check_execution(root)?;
             // Execute the same complete checked root whose region and ownership

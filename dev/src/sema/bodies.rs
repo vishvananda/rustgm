@@ -28,6 +28,7 @@ mod nominals;
 mod notifications;
 mod owner_arguments;
 mod pattern_constants;
+pub(super) use pattern_constants::PreparedScope;
 mod patterns;
 mod projections;
 mod readiness;

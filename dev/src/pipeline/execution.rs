@@ -259,6 +259,9 @@ impl Engine {
         match requirement {
             Requirement::FunctionBody(instance) => self.function(report, facts, instance),
             Requirement::AnonymousBody { instance, result } => {
+                if facts.patterns.pending_bodies.contains(&instance.source()) {
+                    return Ok(false);
+                }
                 self.root(report, facts, Target::Anonymous { instance, result })?;
                 Ok(true)
             }
@@ -271,6 +274,9 @@ impl Engine {
                     })?
                     .require(source, result)
                     .map_err(|e| Declarations::error(report, source, e))?;
+                if facts.patterns.pending_bodies.contains(&source) {
+                    return Ok(false);
+                }
                 self.root(
                     report,
                     facts,
@@ -287,7 +293,12 @@ impl Engine {
                     .initializer_index(definition)
                     .ok_or_else(|| Error::at(FileId(0), 0, "missing required initializer"))?;
                 let initializer = facts.initializers[index];
-                if !initializer.type_checked() {
+                if !initializer.type_checked()
+                    || facts
+                        .patterns
+                        .pending_bodies
+                        .contains(&initializer.semantic_source())
+                {
                     return Ok(false);
                 }
                 let target = if initializer.semantic_source() == initializer.value {
@@ -332,6 +343,9 @@ impl Engine {
             .and_then(|&index| facts.functions.get(index))
             .ok_or_else(|| Error::at(FileId(0), 0, "missing checked const function"))?;
         let source = function.body.unwrap_or(function.node);
+        if facts.patterns.pending_bodies.contains(&source) {
+            return Ok(false);
+        }
         let input = self
             .contracts
             .function(facts, &function)

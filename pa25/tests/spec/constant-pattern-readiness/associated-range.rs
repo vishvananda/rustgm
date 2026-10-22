@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+const M:isize=7;trait Pick{const A:isize;const B:isize;}struct S;impl Pick for S{const A:isize=match 7isize{M=>1,_=>0};const B:isize=match 7isize{M=>2,_=>0};}enum E{A=match 1isize{<S as Pick>::A..=<S as Pick>::B=>3,_=>4}}fn main(){check(E::A as isize==3);}

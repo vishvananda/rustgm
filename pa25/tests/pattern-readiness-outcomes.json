@@ -1,0 +1,561 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "mode": "--emit-lowir",
+  "cases": [
+    {
+      "name": "discriminant-match",
+      "path": "tests/spec/constant-pattern-readiness/discriminant-match.rs",
+      "source_sha256": "d5c79e432d46a6cc8071d7dde021728c5913cb113901a3b99de2f3964ead18ac",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "forward-pattern",
+      "path": "tests/spec/constant-pattern-readiness/forward-pattern.rs",
+      "source_sha256": "fc55e0ed73bd06d8382c44c6074427319c71ef309b340b6c408106e46f566d3e",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "nested-constant",
+      "path": "tests/spec/constant-pattern-readiness/nested-constant.rs",
+      "source_sha256": "e8e19e0c52a75f9e9a5eb91e5a618399b650e9f064ac3666f63b57abeffaed39",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "callee-pattern",
+      "path": "tests/spec/constant-pattern-readiness/callee-pattern.rs",
+      "source_sha256": "f972b18a7a30ce8fda3309eb77d6f64e82bf8252b78b3889aafdeb89a1e8d8f1",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "forward-callee",
+      "path": "tests/spec/constant-pattern-readiness/forward-callee.rs",
+      "source_sha256": "f1e64cef17c2fedc613c6a8c88608396c1923af2cef2c0e53345a1d8878b32de",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "forward-enum-cast",
+      "path": "tests/spec/constant-pattern-readiness/forward-enum-cast.rs",
+      "source_sha256": "6f87b241ce497bfed2217dbc8088669b4a927b61f0a1412149a7135fc64ebdc0",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "callee-enum-cast",
+      "path": "tests/spec/constant-pattern-readiness/callee-enum-cast.rs",
+      "source_sha256": "0d262e524c3087a02e9a0b93552e722855ffba6067b7a1b7661dbd1d31459f02",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": true,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": "enum cast requires a completed discriminant",
+      "limitation": "Valid Rust; required PA25 continuation work remains."
+    },
+    {
+      "name": "ordinary-pattern",
+      "path": "tests/spec/constant-pattern-readiness/ordinary-pattern.rs",
+      "source_sha256": "22e88c1e0bc4bb32d944fb393785895476eb0c7bc472580a18d77f5354b4d443",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "discriminant-cycle",
+      "path": "tests/spec/constant-pattern-readiness/discriminant-cycle.rs",
+      "source_sha256": "9274b0b223e36f6b0c84912c5b10f382b489297ad3bb0f997a1dd95db789a953",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": "cycle"
+    },
+    {
+      "name": "pattern-value-cycle",
+      "path": "tests/spec/constant-pattern-readiness/pattern-value-cycle.rs",
+      "source_sha256": "24a3b2afe74121ab525b7b54e0743688c6e0b906f6aed793de1cc7dd2e81aa82",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": "cycle"
+    },
+    {
+      "name": "cross-enum-cycle",
+      "path": "tests/spec/constant-pattern-readiness/cross-enum-cycle.rs",
+      "source_sha256": "e53e9b22611f8b3e98ef3f72be55f6d867229b0d3b2da053d1adff4d8155bcee",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": "cycle"
+    },
+    {
+      "name": "associated-scalar",
+      "path": "tests/spec/constant-pattern-readiness/associated-scalar.rs",
+      "source_sha256": "0a9f8293fa0c183c5deb379dcbdb53f48a2ccb930e656326242d71910ce85484",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "associated-nested",
+      "path": "tests/spec/constant-pattern-readiness/associated-nested.rs",
+      "source_sha256": "b397d72e4714f796d1838d4dae45e447dc1317e50ac23fe7f73bab18baddb9fd",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "associated-specialized",
+      "path": "tests/spec/constant-pattern-readiness/associated-specialized.rs",
+      "source_sha256": "215e0736009c33c8ef84006aed0f1b37fb414017aee00562e1c8be55221cad24",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "associated-range",
+      "path": "tests/spec/constant-pattern-readiness/associated-range.rs",
+      "source_sha256": "74b9f44aed4b9038bfc0a45e98f6d59860c13ad6691073704808500147957091",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "array-bound-pattern",
+      "path": "tests/spec/constant-pattern-readiness/array-bound-pattern.rs",
+      "source_sha256": "162f8c687aa0eba6931edc109fb2725b078fef99045209908cc8b0e966ad9ffc",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "associated-cycle",
+      "path": "tests/spec/constant-pattern-readiness/associated-cycle.rs",
+      "source_sha256": "259ebeb824f56f82406151fe732935c883e0773a9f217f11730a81f3079a7930",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": "cycle"
+    },
+    {
+      "name": "interleaved-lifetime-bound",
+      "path": "tests/spec/constant-pattern-readiness/interleaved-lifetime-bound.rs",
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "source_sha256": "b298008a8b0a0d52f2509db3ff87477eee60e443932cb4a227e2f9bf082cf896",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "diagnostic": "selected constant arguments are not concrete"
+    },
+    {
+      "name": "interleaved-lifetime",
+      "path": "tests/spec/constant-pattern-readiness/interleaved-lifetime.rs",
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "source_sha256": "50a434cbad50b6b565ce7066711b728f3f841c3bf21b2c66811f71577fcc9d72",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": true,
+      "diagnostic": "selected constant arguments are not concrete",
+      "limitation": "Valid Rust; required PA25 continuation work remains."
+    },
+    {
+      "name": "source-independent-instances",
+      "path": "tests/spec/constant-pattern-readiness/source-independent-instances.rs",
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "source_sha256": "096cf33df1c0a3bdeb79664c119e9c54961845ec5455a40038ea751f7fa74973",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "diagnostic": ""
+    },
+    {
+      "name": "source-opaque-pattern",
+      "path": "tests/spec/constant-pattern-readiness/source-opaque-pattern.rs",
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "source_sha256": "f79eeeccfc3b91013889af474ed4c961614619bba4cbbedd9a6602e17340ce9d",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 1,
+        "--emit-lowir": 1,
+        "--emit-constants": 1
+      },
+      "boundary": false,
+      "diagnostic": "concrete dispatch cannot use a symbolic assumption"
+    },
+    {
+      "name": "source-self-pattern",
+      "path": "tests/spec/constant-pattern-readiness/source-self-pattern.rs",
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "source_sha256": "a1ca114907bb073f7892b78621f82907a9a6135b2a374e90732d778ccf7f48dc",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "diagnostic": ""
+    },
+    {
+      "name": "skipped-associated-pattern",
+      "path": "tests/spec/constant-pattern-readiness/skipped-associated-pattern.rs",
+      "source_sha256": "5f8d8b40fa77276eac7f58de1bb806cb445fd94dcfc3781e4880f170daea2372",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "exterior-dispatch-owner",
+      "path": "tests/spec/constant-pattern-readiness/exterior-dispatch-owner.rs",
+      "source_sha256": "a3efa28bbf82cc64ef912cc03b601968b6cb94d92c48c17ae80b64cada570220",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    },
+    {
+      "name": "suspended-body-pattern",
+      "path": "tests/spec/constant-pattern-readiness/suspended-body-pattern.rs",
+      "source_sha256": "ee1bcb87126589e4da087496b9f43029b12006d699d1c01e1c581d28aa8cc1a9",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-lowir": 0,
+        "--emit-constants": 0
+      },
+      "boundary": false,
+      "features": [
+        "pa25.constant-evaluation"
+      ],
+      "diagnostic": ""
+    }
+  ]
+}
