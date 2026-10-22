@@ -5,6 +5,7 @@ mod globals;
 mod identity;
 mod interface;
 mod nominals;
+pub mod owner_catalog;
 mod public_names;
 mod scalar_value;
 mod type_graph;

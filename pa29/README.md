@@ -103,6 +103,12 @@ backing, nested arrays, repeated references and full-width zero-sized indices.
 Generic bodies and additional representation/value contracts remain required;
 see `docs/pa29-aggregate-metadata.md` and `docs/pa29-array-storage.md`.
 
+The source-independent [original body ownership table](../docs/pa29-body-ownership.md)
+is a typed prerequisite for generic transport. It validates defining artifact,
+declaration, parent and ordinal relationships with bounded linear work. It does
+not yet encode/import bodies, provide executable permission or activate a new
+wire profile. The full generic-body and contract transport remains required.
+
 ## Tests to develop with the reference
 
 multi-crate dependencies; symbol identity; visibility; deterministic exports.
