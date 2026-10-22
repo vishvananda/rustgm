@@ -198,7 +198,8 @@ fn iterator_layout_keeps_ordinary_records_compact() {
         size_of::<crate::sema::iteration::Call>(),
         size_of::<body::ir::Value>()
     );
-    // Named static imports add one 48-byte linkage map to the iterator baseline.
+    // Caller computations add an 8-byte box slot and an 8-byte work counter;
+    // write_bytes adds one 32-byte fixed intrinsic registry slot.
     assert_eq!(size_of::<Declarations>(), 8472);
     assert_eq!(size_of::<Original>(), 56);
     assert_eq!(size_of::<crate::sema::iteration::Registry>(), 304);
