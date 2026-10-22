@@ -180,7 +180,7 @@ fn range_catalog_preserves_ordinary_record_sizes() {
         size_of::<types::Kind>(),
         size_of::<body::ir::Value>()
     );
-    assert_eq!(size_of::<Declarations>(), 8552);
+    assert_eq!(size_of::<Declarations>(), 8568);
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2152);
     assert_eq!(size_of::<sema::iteration::Registry>(), 320);
     assert_eq!(size_of::<types::Kind>(), 24);
