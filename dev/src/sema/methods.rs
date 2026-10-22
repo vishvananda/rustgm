@@ -1,5 +1,6 @@
 //! Typed inherent candidate buckets and selected qualified source uses.
 pub(super) mod overlap;
+pub(crate) mod pointers;
 pub(super) mod receiver;
 pub(super) mod selection;
 pub(crate) mod slices;
@@ -21,6 +22,7 @@ pub struct Qualified {
 #[derive(Default)]
 pub struct Methods {
     library: Option<Box<slices::Library>>,
+    pointers: Option<Box<pointers::Library>>,
     visible: Option<Box<visible::Index>>,
     comparison_borrows: Option<Box<ComparisonBorrows>>,
     pub(super) trait_names: HashSet<NameId>,

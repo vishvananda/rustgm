@@ -2,6 +2,7 @@
 pub(crate) mod code;
 mod counted;
 mod memory;
+mod offsets;
 mod raw_reads;
 mod readiness;
 mod returns;

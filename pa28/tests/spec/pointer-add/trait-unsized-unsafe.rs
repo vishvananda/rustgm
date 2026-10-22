@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}trait A{fn add(self,n:usize)->usize;}impl A for *const [u8]{fn add(self,n:usize)->usize{n+7}}fn main(){let x=[1u8,7];let p=(&raw const x)as*const[u8];let _=unsafe{p.add(1)};}

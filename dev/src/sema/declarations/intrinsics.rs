@@ -16,6 +16,9 @@ use crate::{
 impl Checker<'_> {
     pub(super) fn prepare_intrinsics(&mut self) -> Result<(), Error> {
         for kind in Intrinsic::ALL {
+            if kind.is_pointer_offset() {
+                continue;
+            }
             if let Some(declaration) = self.report.resolution.intrinsics.get(kind).copied() {
                 self.intrinsic_signature(declaration)?;
             }

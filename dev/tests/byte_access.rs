@@ -225,8 +225,8 @@ const CASES: &[(&str, &str, i32, i32, &str)] = &[
         "library-add-offset",
         "pa28/tests/spec/byte-access/library-add-offset.rs",
         0,
-        1,
-        "receiver has no inherent nominal method",
+        0,
+        "",
     ),
     (
         "cast-array-base-offset",

@@ -80,6 +80,11 @@ impl Machine<'_, '_> {
         if intrinsic.descriptor().constant == ConstPermission::RuntimeOnly {
             return Err("runtime-only intrinsic is not allowed during constant evaluation".into());
         }
+        if intrinsic.is_pointer_offset() {
+            return self
+                .pointer_offset(intrinsic, instance, arguments)
+                .map(Some);
+        }
         if !intrinsic.is_memory() {
             return Err("constant intrinsic execution is not implemented".into());
         }

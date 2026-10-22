@@ -1,0 +1,570 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "source_commit": "073f160b79385976d1662b2b6997e7552e98b73d",
+  "cases": [
+    {
+      "name": "original-add",
+      "path": "pa28/tests/spec/byte-access/library-add-offset.rs",
+      "sha256": "eb99c8bb1dd916e80249094f8535ce186a91905828034e4857ef279487bf6262",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "Exact original unchanged bytes.",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "const-read",
+      "path": "pa28/tests/spec/pointer-add/const-read.rs",
+      "sha256": "efee491891e746f24f48750b3c8d2a7614b079263c4928700de2ae2ccd549e1a",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mutable-store",
+      "path": "pa28/tests/spec/pointer-add/mutable-store.rs",
+      "sha256": "2c988d86d246f4b047332ac7b2bffb9498e0f542257d66b89db22da2d7af94e8",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "field-relative",
+      "path": "pa28/tests/spec/pointer-add/field-relative.rs",
+      "sha256": "0c5d477544ac33c29482e3f9111aab22c17a4dd2a2b7fe2ba6abd789cc2762c1",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "const-generic",
+      "path": "pa28/tests/spec/pointer-add/const-generic.rs",
+      "sha256": "289f75a3d4f89828204b8b5a1f3be6e3659950f3d636ddc317419b9fda2e36f8",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "mutable-generic",
+      "path": "pa28/tests/spec/pointer-add/mutable-generic.rs",
+      "sha256": "917550ab4cd5b896a9ed5aa41d744da55dfbf20dfe09837dd5a534ebddbd874f",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "ufcs-const",
+      "path": "pa28/tests/spec/pointer-add/ufcs-const.rs",
+      "sha256": "1b30bccdf94201d81247d82e4a9c904605388973c0e9f2e47ad052f7b917c1c3",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "ufcs-mutable",
+      "path": "pa28/tests/spec/pointer-add/ufcs-mutable.rs",
+      "sha256": "ecf2bca49f62f43463d835fdbe1bb862c96e4b9c3e38bd8afcf589b8878b8c6c",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "reified-const",
+      "path": "pa28/tests/spec/pointer-add/reified-const.rs",
+      "sha256": "f53aedd2ce2727b58a5f1cd5dd6e265f475e28d744b48dc537feb91799edb461",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "reified-mutable",
+      "path": "pa28/tests/spec/pointer-add/reified-mutable.rs",
+      "sha256": "e5d62af20c60ceb9fb7c55d2a94b35c86583b6bebb09b9d1ff1cecf6fda30b29",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "const-reified-forbidden",
+      "path": "pa28/tests/spec/pointer-add/const-reified-forbidden.rs",
+      "sha256": "1d6da997922b2c74822fb00acefc565cdafb44f07af6c03893135b3e6e7036f8",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "owned-runtime",
+      "path": "pa28/tests/spec/pointer-add/owned-runtime.rs",
+      "sha256": "9186342db81d2354d84420681dcf51d2bae60dbccc922ecba406e62c8c7cefff",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "evaluate-once",
+      "path": "pa28/tests/spec/pointer-add/evaluate-once.rs",
+      "sha256": "d78a96bad05087be63a446743a08325bb7fdcb4ab90586cc2b189cc734b1d453",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "zero-static",
+      "path": "pa28/tests/spec/pointer-add/zero-static.rs",
+      "sha256": "6503e6479ecfc868a0ff6e8b18fad77fe4cbe08fdd3a31cc402b5d03f48d0b0b",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "uninitialized-bytes-address-only",
+      "path": "pa28/tests/spec/pointer-add/uninitialized-bytes-address-only.rs",
+      "sha256": "fac50f89c2248e53729fa6592d0c33221c31ded1b4446f4791ccffcee0ccfcfc",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "zero-numeric",
+      "path": "pa28/tests/spec/pointer-add/zero-numeric.rs",
+      "sha256": "6257b5c094af7484b08e78e12a289eb7e144a7b862bda0c40e441e9e86d22c9e",
+      "rustc_expected": 0,
+      "native_valid": false,
+      "note": "No numeric-pointer native claim.",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "zero-null",
+      "path": "pa28/tests/spec/pointer-add/zero-null.rs",
+      "sha256": "f813ab1b3af9e1d4cadb4200f4ab5962c355ec4f00afed9c2b3cad0594f6331c",
+      "rustc_expected": 0,
+      "native_valid": false,
+      "note": "No numeric-pointer native claim.",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "zst-huge",
+      "path": "pa28/tests/spec/pointer-add/zst-huge.rs",
+      "sha256": "9b216600b4db868b8323c14d64d6fdcf83d1d97baabd2dc19e2837d34d21c0f6",
+      "rustc_expected": 0,
+      "native_valid": false,
+      "note": "Zero effective byte offset; no numeric native claim.",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "uninhabited-zst",
+      "path": "pa28/tests/spec/pointer-add/uninhabited-zst.rs",
+      "sha256": "1a1f2bf434cc52544210cb8fee8a1bf6df0d0cd40bc18035d9504651c306f24f",
+      "rustc_expected": 0,
+      "native_valid": false,
+      "note": "Address arithmetic must not require inhabited T.",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "live-zst",
+      "path": "pa28/tests/spec/pointer-add/live-zst.rs",
+      "sha256": "7cca67af1ee0ca22fed9f003a245ac249d836be63af891e3abcc191c87e227f4",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "expired-zero-transient",
+      "path": "pa28/tests/spec/pointer-add/expired-zero-transient.rs",
+      "sha256": "63aec7e1737733f3d5249b29baeb3252027b23182ae1aeb02c6138a5d2c461ec",
+      "rustc_expected": 0,
+      "native_valid": false,
+      "note": "Transient zero offset only; no expired-pointer native claim.",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "expired-nonzero",
+      "path": "pa28/tests/spec/pointer-add/expired-nonzero.rs",
+      "sha256": "63a4e83cf14f088e2e91b2a0fce3c1ffa53701b512838d03c479ddf0493592df",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "zero-escape",
+      "path": "pa28/tests/spec/pointer-add/zero-escape.rs",
+      "sha256": "b200ad04d461ecfee9873d5ae8540a9291e363a20735888dec50415574b95921",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "one-past",
+      "path": "pa28/tests/spec/pointer-add/one-past.rs",
+      "sha256": "db1016f2a5755416de5606e38c74d316ec42937c6f013df8883083152804c740",
+      "rustc_expected": 0,
+      "native_valid": false,
+      "note": "Address only; final dereference tested separately.",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "beyond-end",
+      "path": "pa28/tests/spec/pointer-add/beyond-end.rs",
+      "sha256": "e14d305bfc90fcc44448839e692f954be34a0c634485815413dee71c8d133f88",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "one-past-dereference",
+      "path": "pa28/tests/spec/pointer-add/one-past-dereference.rs",
+      "sha256": "b168024defd585d67cf551199ecd162032b0bde05852d94984347b14d8444599",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "multiply-overflow",
+      "path": "pa28/tests/spec/pointer-add/multiply-overflow.rs",
+      "sha256": "7ec08021c5ce215dbe61bfd8e513b1bbbc1c364c7a2dcc06f219df76cb56e38f",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "isize-overflow",
+      "path": "pa28/tests/spec/pointer-add/isize-overflow.rs",
+      "sha256": "586dc78727be53a73e98bff0530b0fb5d76a19a74230c3f293c286e9a0b62e2d",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "packed-zero-address",
+      "path": "pa28/tests/spec/pointer-add/packed-zero-address.rs",
+      "sha256": "6d248f075945a94fdd88e82cb0dc294bf655c6e4a042169cfe6d44e99b81748a",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "packed-unaligned-read",
+      "path": "pa28/tests/spec/pointer-add/packed-unaligned-read.rs",
+      "sha256": "ee92b74bcd12b0fb705f7afdd2c8c244d2101f4e491b9da4c16ff12f381e4849",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "packed-aligned-read-reject",
+      "path": "pa28/tests/spec/pointer-add/packed-aligned-read-reject.rs",
+      "sha256": "4c21f718bc6f6ca0936d27f946861fa2cd44c8f8fc98250b19146d2565f8dedc",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "shared-derived-store",
+      "path": "pa28/tests/spec/pointer-add/shared-derived-store.rs",
+      "sha256": "451a5a424428ef34d8fbed28013ea193dafa9c1e64288c7f0a744984b5d18fe7",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "unsafe-required",
+      "path": "pa28/tests/spec/pointer-add/unsafe-required.rs",
+      "sha256": "9ced10d215ec8f0a2428aac526272e5c50471bbc8b8bf0a33e8c6845d95327a6",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "wrong-count",
+      "path": "pa28/tests/spec/pointer-add/wrong-count.rs",
+      "sha256": "0c2b54e2c77e69a666137f0bfc221cd3548fe645dc1e40854c3b2c85daa24833",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "method-turbofish-reject",
+      "path": "pa28/tests/spec/pointer-add/method-turbofish-reject.rs",
+      "sha256": "de402a105ab9bf07f13c2858fce74245add944eef835fbbbe87cb4b2f89e7db0",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "unsized-receiver",
+      "path": "pa28/tests/spec/pointer-add/unsized-receiver.rs",
+      "sha256": "eee59185ff33dd8cdd2d90f61bfe320caf57071a1640ae9c2c7115d4ee396c7d",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "ordinary-shadow",
+      "path": "pa28/tests/spec/pointer-add/ordinary-shadow.rs",
+      "sha256": "66a102071caa72d7c3c5bb6e2d2a33c7972d2829de7da6d7d6d5470aefb004dd",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "trait-sized-shadow",
+      "path": "pa28/tests/spec/pointer-add/trait-sized-shadow.rs",
+      "sha256": "00747bb9c93e101772a5e6ca97a1a1a73340f93338df75499b8251690a4193c1",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "trait-unsized-shadow",
+      "path": "pa28/tests/spec/pointer-add/trait-unsized-shadow.rs",
+      "sha256": "feae0be7ca2701e094203812af324d1e2aba66c729d6341837b784c3ed88ad16",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "note": "Hypothesis: inherent Sized requirement dominates; retain actual outcome if disproved.",
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "trait-explicit-ufcs",
+      "path": "pa28/tests/spec/pointer-add/trait-explicit-ufcs.rs",
+      "sha256": "47f63f5d310c31ba4bf098559ccf3f3e4d897f723a51e838168c68702cfcc342",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "note": "",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "alias-ufcs",
+      "path": "pa28/tests/spec/pointer-add/alias-ufcs.rs",
+      "sha256": "e1ec29720bfa86cd7d6a73ad280c68bba846662aeb8d75741c8cb66e0abc9856",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "generic-ufcs",
+      "path": "pa28/tests/spec/pointer-add/generic-ufcs.rs",
+      "sha256": "26ea44a9244764f7045f563fc1c364a4d8676db30d31be1c763a959c5a0a898e",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "trait-unsized-unsafe",
+      "path": "pa28/tests/spec/pointer-add/trait-unsized-unsafe.rs",
+      "sha256": "97ec2fecdf2dc0443cb6ac874f0227a32e623ed1cabc084cc223963e36c17dc6",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "notes": [
+    "Independent qualification uses explicit cap-lints=allow for frozen check helpers. No reference generation or activation.",
+    "Zero numeric/null/expired address-only acceptance is not a native validity claim.",
+    "Baseline trait-unsized-shadow falsely accepts; selected inherent method now requires Sized without fallback."
+  ]
+}

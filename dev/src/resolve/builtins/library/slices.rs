@@ -39,6 +39,9 @@ impl Resolver<'_> {
         node: NodeId,
         name: super::NameId,
     ) -> Result<(), Error> {
+        if self.package.names.get(name) == "add" {
+            self.prepare_pointer_methods(c, node)?;
+        }
         if self.package.names.get(name) == "len" {
             self.prepare_slice_length(c, node)?;
         }

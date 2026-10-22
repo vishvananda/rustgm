@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}const unsafe fn step<T>(p:*const T,n:usize)->*const T{unsafe{p.add(n)}}const N:u16={let x=[1u16,7];unsafe{*step(&raw const x as *const u16,1)}};fn main(){check(N==7);}

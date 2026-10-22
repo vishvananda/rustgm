@@ -43,6 +43,8 @@ mod memory_transfers;
 mod mutable_reconstruction;
 #[path = "../../harness/native_references.rs"]
 pub(crate) mod native_references;
+#[path = "../../offset_intrinsics.rs"]
+mod offset_intrinsics;
 #[path = "../../overlapping_transfers.rs"]
 mod overlapping_transfers;
 #[path = "../../owned_transfers.rs"]

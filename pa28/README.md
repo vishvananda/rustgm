@@ -270,3 +270,21 @@ bits and incomplete pointer words, while transport can preserve or repair them.
 `tests/byte-fill-contract.json` declares the exact supported profile, numeric/MAX
 library boundaries and pinned-CTFE alignment differences; no invalid-precondition
 native result is claimed. See `docs/pa28-byte-fill.md`.
+
+Canonical `*const T::add` and `*mut T::add` are unsafe const inherent methods
+with inherited `T` and a method-local `T: Sized` requirement. Lookup selects the
+inherent method before proving that requirement; it cannot silently select a
+same-named trait method when `T` is unsized. Direct, qualified, generic and
+reified runtime calls share the selected intrinsic identity. Reified calls
+remain independently forbidden during constant evaluation.
+
+Constant arithmetic checks the mathematical byte displacement and allocation
+bounds for nonzero effective offsets. It preserves the incoming pointer's write
+restriction and selects original backing coordinates without reading contents
+or creating a reference. A zero effective offset, including zero-sized types,
+returns the original value without an allocation/liveness demand. Final escape
+and later memory accesses retain their own validity gates. Numeric/null and
+expired zero-offset CTFE controls make no native-validity claim. Runtime shims
+use the existing byte index operation and no loads/stores. See
+`tests/pointer-add-outcomes.json` and `docs/pa28-pointer-add.md`; whole byte-array
+fragment snapshots and the remaining memory/provenance families stay open.

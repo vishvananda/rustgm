@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}#[repr(C,packed)]struct P{a:u8,b:[u32;2]}const N:u32={let x=P{a:0,b:[1,7]};let p=&raw const x.b as *const u32;unsafe{*p.add(1)}};fn main(){let _=N;}

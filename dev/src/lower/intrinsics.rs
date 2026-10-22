@@ -3,6 +3,7 @@ mod atomic;
 mod counted;
 mod fill;
 mod memory;
+mod offsets;
 mod overlapping;
 use super::context::{Context, Representation};
 use crate::{
@@ -60,6 +61,16 @@ impl Context<'_> {
         else {
             return Err("volatile intrinsic requires a raw pointer");
         };
+        if intrinsic.is_pointer_offset() {
+            if parameters.len() != 2
+                || result != parameters[0]
+                || parameters[1] != TypeId::primitive(Primitive::Usize)
+                || mutable != (intrinsic == Intrinsic::MutPointerAdd)
+            {
+                return Err("pointer add signature mismatch");
+            }
+            return Ok(Representation::Scalar(Type::Ptr));
+        }
         if intrinsic.is_fill() {
             if !mutable
                 || parameters.len() != 3
@@ -127,7 +138,9 @@ impl Context<'_> {
             return Err("intrinsic shim requires a function item");
         };
         let signature = self.signature(signature)?;
-        let body = if intrinsic.is_fill() {
+        let body = if intrinsic.is_pointer_offset() {
+            self.pointer_offset_body(instance)?
+        } else if intrinsic.is_fill() {
             Self::fill_memory_body(representation)?
         } else if intrinsic.is_counted_memory() {
             Self::counted_memory_body(intrinsic, representation)?

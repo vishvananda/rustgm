@@ -122,6 +122,12 @@ impl Resolver<'_> {
         }
         if path
             .last()
+            .is_some_and(|name| self.package.names.get(*name) == "add")
+        {
+            self.prepare_pointer_methods(c, node)?;
+        }
+        if path
+            .last()
             .is_some_and(|name| self.package.names.get(*name) == "len")
         {
             self.prepare_slice_length(c, node)?;

@@ -74,12 +74,12 @@
       "reason": "retain canonical pointer method route even if separate preparation gap",
       "rustc_actual": 0,
       "frontend_expected": [
-        1,
-        1,
-        1
+        0,
+        0,
+        0
       ],
-      "native_qualified": false,
-      "required_gap": "Canonical raw-pointer add method preparation."
+      "native_qualified": true,
+      "supersedes": "The pointer-add checkpoint qualifies the unchanged source; original preparation failure remains in historical evidence."
     },
     {
       "name": "packed-field-unaligned-read",

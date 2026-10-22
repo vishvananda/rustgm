@@ -253,6 +253,18 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
             .library_types
             .slice_length()
             .is_some_and(|length| length.owner.0 as usize == index)
+            || [
+                crate::support::intrinsics::Intrinsic::ConstPointerAdd,
+                crate::support::intrinsics::Intrinsic::MutPointerAdd,
+            ]
+            .into_iter()
+            .any(|kind| {
+                report
+                    .resolution
+                    .intrinsics
+                    .get(kind)
+                    .is_some_and(|d| d.owner.is_some_and(|owner| owner.0 as usize == index))
+            })
         {
             // This canonical slice impl is described by library metadata, not AST ownership.
             continue;

@@ -43,6 +43,14 @@ impl Intrinsics {
             .find(|entry| entry.definition == definition)
             .map(|entry| entry.kind)
     }
+    pub(crate) fn pointer_method(&self, definition: DefId) -> Option<&Definition> {
+        self.get(Intrinsic::ConstPointerAdd)
+            .filter(|d| d.definition == definition)
+            .or_else(|| {
+                self.get(Intrinsic::MutPointerAdd)
+                    .filter(|d| d.definition == definition)
+            })
+    }
     pub fn iter(&self) -> impl Iterator<Item = &Definition> {
         self.entries.iter().flatten()
     }
@@ -62,11 +70,11 @@ impl Resolver<'_> {
             name == "ptr"
                 || Intrinsic::ALL
                     .into_iter()
-                    .any(|kind| kind.is_pointer() && kind.name() == name)
+                    .any(|kind| kind.is_pointer_function() && kind.name() == name)
         });
         if requested {
             for kind in Intrinsic::ALL {
-                if kind.is_pointer() {
+                if kind.is_pointer_function() {
                     self.prepare_intrinsic(c, node, kind)?;
                 }
             }
@@ -177,6 +185,34 @@ impl Resolver<'_> {
                 origin: NodeKey { file: c.file, node },
                 definition,
                 parameter: None,
+                owner: Some(owner),
+            });
+        }
+        Ok(())
+    }
+}
+
+impl Resolver<'_> {
+    pub(in crate::resolve) fn prepare_pointer_methods(
+        &mut self,
+        c: Context,
+        node: NodeId,
+    ) -> Result<(), Error> {
+        for kind in [Intrinsic::ConstPointerAdd, Intrinsic::MutPointerAdd] {
+            if self.facts.intrinsics.get(kind).is_some() {
+                continue;
+            }
+            let scope = self.new_scope(None, ModuleId(0), true)?;
+            let context = Context { scope, ..c };
+            let owner = self.builtin_definition(context, node, "Self", DefKind::SelfType, None)?;
+            let definition =
+                self.builtin_definition(context, node, kind.name(), DefKind::Function, None)?;
+            let parameter = self.builtin_definition(context, node, "T", DefKind::Generic, None)?;
+            self.facts.intrinsics.entries[kind.index()] = Some(Definition {
+                kind,
+                origin: NodeKey { file: c.file, node },
+                definition,
+                parameter: Some(parameter),
                 owner: Some(owner),
             });
         }

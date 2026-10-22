@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}fn main(){let x=[1u16,7];let f:unsafe fn(*const u16,usize)->*const u16=<*const u16>::add;check(unsafe{*f(&raw const x as *const u16,1)}==7);}

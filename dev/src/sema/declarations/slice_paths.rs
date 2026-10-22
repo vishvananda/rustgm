@@ -17,7 +17,7 @@ impl Checker<'_> {
             return Ok(false);
         };
         if path.namespace != Namespace::Value
-            || !self
+            || !(self
                 .report
                 .resolution
                 .library_types
@@ -25,6 +25,7 @@ impl Checker<'_> {
                 .is_some_and(|length| {
                     self.report.resolution.definitions[length.definition.0 as usize].name == *name
                 })
+                || super::super::methods::pointers::named(self.report, *name, false).is_some())
             || !matches!(
                 self.report.resolution.definitions[path.owner.0 as usize].kind,
                 DefKind::TypeAlias | DefKind::SelfType | DefKind::Generic
@@ -39,7 +40,8 @@ impl Checker<'_> {
             },
             path.owner,
         );
-        if self.facts.methods.length_prefix(key).is_some()
+        if (self.facts.methods.length_prefix(key).is_some()
+            || self.facts.methods.pointer_prefix(key).is_some())
             && self.facts.generics.item_uses.contains_key(&key)
         {
             return Ok(true);
@@ -98,14 +100,17 @@ impl Checker<'_> {
         let Some((prefix, suffix, name)) = parts else {
             return Ok(false);
         };
-        if !self
-            .report
-            .resolution
-            .library_types
-            .slice_length()
-            .is_some_and(|length| {
-                self.report.resolution.definitions[length.definition.0 as usize].name == name
-            })
+        let pointer_name =
+            super::super::methods::pointers::named(self.report, name, false).is_some();
+        if !pointer_name
+            && !self
+                .report
+                .resolution
+                .library_types
+                .slice_length()
+                .is_some_and(|length| {
+                    self.report.resolution.definitions[length.definition.0 as usize].name == name
+                })
         {
             return Ok(false);
         }
@@ -115,10 +120,24 @@ impl Checker<'_> {
                 _ => None,
             })
         });
-        if !matches!(
-            ty.and_then(|ty| self.facts.types.kind(ty)),
-            Some(Type::Slice(_))
-        ) {
+        let head = ty.and_then(|ty| self.facts.types.kind(ty));
+        if pointer_name {
+            let Some(Type::Pointer { mutable, .. }) = head else {
+                return Ok(false);
+            };
+            let definition = super::super::methods::pointers::named(self.report, name, mutable)
+                .ok_or_else(|| self.error(key, "missing canonical pointer method"))?;
+            self.complete_pointer_prefix(
+                (key, prefix, suffix),
+                definition,
+                context,
+                steps,
+                limit,
+                scan,
+            )?;
+            return Ok(true);
+        }
+        if !matches!(head, Some(Type::Slice(_))) {
             return Ok(false);
         }
         self.prepare_slice_methods()?;

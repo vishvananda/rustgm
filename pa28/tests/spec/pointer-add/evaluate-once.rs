@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}fn base(c:&mut u32,x:&mut [u32;2])->*mut u32{*c+=1;&raw mut x[0]}fn count(c:&mut u32)->usize{*c+=1;1}fn main(){let mut x=[1u32,7];let mut c=0;unsafe{*base(&mut c,&mut x).add(count(&mut c))=11;}check(c==2);check(x[1]==11);}

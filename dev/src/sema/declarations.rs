@@ -33,6 +33,7 @@ mod method_paths;
 mod method_prefix;
 mod methods;
 mod objects;
+mod offset_paths;
 mod primitive_constants;
 mod projections;
 mod receivers;
@@ -339,14 +340,8 @@ impl Checker<'_> {
             {
                 continue;
             }
-            if self
-                .report
-                .resolution
-                .library_types
-                .slice_length()
-                .is_some_and(|length| length.definition == id)
-            {
-                // The exact library method is published only by typed slice demand.
+            if self.lazy_library_method(id) {
+                // Canonical library methods publish signatures only on typed demand.
                 continue;
             }
             if !matches!(

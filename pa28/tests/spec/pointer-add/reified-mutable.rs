@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}fn main(){let mut x=[1u16,7];let f:unsafe fn(*mut u16,usize)->*mut u16=<*mut u16>::add;unsafe{*f(&raw mut x as *mut u16,1)=11;}check(x[1]==11);}

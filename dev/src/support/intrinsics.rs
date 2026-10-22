@@ -23,6 +23,8 @@ pub enum Intrinsic {
     CopyNonoverlapping,
     Copy,
     WriteBytes,
+    ConstPointerAdd,
+    MutPointerAdd,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -40,7 +42,7 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 22] = [
+    pub const ALL: [Self; 24] = [
         Self::ReadVolatile,
         Self::WriteVolatile,
         Self::AtomicLoad,
@@ -63,6 +65,8 @@ impl Intrinsic {
         Self::CopyNonoverlapping,
         Self::Copy,
         Self::WriteBytes,
+        Self::ConstPointerAdd,
+        Self::MutPointerAdd,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -89,6 +93,8 @@ impl Intrinsic {
             Self::CopyNonoverlapping => 19,
             Self::Copy => 20,
             Self::WriteBytes => 21,
+            Self::ConstPointerAdd => 22,
+            Self::MutPointerAdd => 23,
         }
     }
     #[must_use]
@@ -116,6 +122,7 @@ impl Intrinsic {
             Self::CopyNonoverlapping => "copy_nonoverlapping",
             Self::Copy => "copy",
             Self::WriteBytes => "write_bytes",
+            Self::ConstPointerAdd | Self::MutPointerAdd => "add",
         }
     }
     #[must_use]
@@ -149,7 +156,15 @@ impl Intrinsic {
     }
     #[must_use]
     pub const fn is_pointer(self) -> bool {
+        self.is_pointer_function() || self.is_pointer_offset()
+    }
+    #[must_use]
+    pub const fn is_pointer_function(self) -> bool {
         self.is_volatile() || self.is_memory()
+    }
+    #[must_use]
+    pub const fn is_pointer_offset(self) -> bool {
+        matches!(self, Self::ConstPointerAdd | Self::MutPointerAdd)
     }
     #[must_use]
     pub const fn is_atomic(self) -> bool {
@@ -201,7 +216,9 @@ impl Intrinsic {
             | Self::WriteUnaligned
             | Self::CopyNonoverlapping
             | Self::Copy
-            | Self::WriteBytes => false,
+            | Self::WriteBytes
+            | Self::ConstPointerAdd
+            | Self::MutPointerAdd => false,
         }
     }
     #[must_use]
@@ -237,7 +254,7 @@ impl Intrinsic {
             } else {
                 Safety::Safe
             },
-            constant: if self.is_memory() {
+            constant: if self.is_memory() || self.is_pointer_offset() {
                 ConstPermission::Allowed
             } else {
                 ConstPermission::RuntimeOnly

@@ -77,7 +77,13 @@ pub(in crate::sema) fn choose(
         .slice_length()
         .filter(|l| report.resolution.definitions[l.definition.0 as usize].name == site.name)
         .filter(|_| array(head) || matches!(head, Some(Constructor::Slice)))
-        .map(|l| l.definition);
+        .map(|l| l.definition)
+        .or_else(|| match head {
+            Some(Constructor::Pointer { mutable }) => {
+                super::pointers::named(report, site.name, mutable)
+            }
+            _ => None,
+        });
     if inherent.is_empty() && !has_traits && library.is_none() {
         return Err(error(
             if matches!(head, Some(Constructor::Adt(..) | Constructor::AdtArgs(..))) {
@@ -259,6 +265,27 @@ impl Search<'_> {
     }
 
     fn library_candidate(&mut self, term: TermId, method: DefId) -> Result<bool, &'static str> {
+        if self
+            .report
+            .resolution
+            .intrinsics
+            .identify(method)
+            .is_some_and(crate::support::intrinsics::Intrinsic::is_pointer_offset)
+        {
+            let Some(Constructor::Pointer { mutable }) = self
+                .source
+                .head(&self.facts.types, term)
+                .map_err(inference)?
+            else {
+                return Ok(false);
+            };
+            if super::pointers::named(self.report, self.site.name, mutable) != Some(method) {
+                return Ok(false);
+            }
+            super::pointers::prepare(self.report, self.facts, method)?;
+            selection::account_probe(self.facts, 1)?;
+            return Ok(true);
+        }
         if !super::slices::receiver(self.facts, self.source, term)? {
             return Ok(false);
         }

@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}struct V(u32);static mut D:u32=0;impl Drop for V{fn drop(&mut self){unsafe{D+=1;}}}unsafe fn step<T>(p:*const T,n:usize)->*const T{unsafe{p.add(n)}}fn main(){{let x=[V(1),V(7),V(9)];check(unsafe{(*step(&raw const x as *const V,1)).0}==7);}check(unsafe{D}==3);}

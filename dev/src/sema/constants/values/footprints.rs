@@ -113,6 +113,21 @@ impl Evaluator<'_> {
         ty: TypeId,
         limit: usize,
     ) -> Result<(StorageLayout, usize), Failure> {
+        self.storage_footprint::<true>(ty, limit)
+    }
+    /// Address arithmetic needs layout, without asserting that a value inhabits it.
+    pub(crate) fn address_layout(
+        &mut self,
+        ty: TypeId,
+        limit: usize,
+    ) -> Result<(StorageLayout, usize), Failure> {
+        self.storage_footprint::<false>(ty, limit)
+    }
+    fn storage_footprint<const INHABITED: bool>(
+        &mut self,
+        ty: TypeId,
+        limit: usize,
+    ) -> Result<(StorageLayout, usize), Failure> {
         let mut work = self.storage_readiness(ty, limit)?;
         let facts = &mut *self.queries.typing.facts;
         let before = facts.layouts.steps;
@@ -128,7 +143,7 @@ impl Evaluator<'_> {
             .layouts
             .at(id)
             .ok_or("missing prepared storage layout")?;
-        if !layout.inhabited {
+        if INHABITED && !layout.inhabited {
             return Err("constant read requires inhabited storage".into());
         }
         Ok((
