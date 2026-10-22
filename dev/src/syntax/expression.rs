@@ -6,7 +6,7 @@ use super::{
 };
 use crate::{
     lex::{
-        keyword,
+        keyword::{self, Word},
         token::{Kind as TokenKind, LexError, Punctuation as P, Token},
     },
     literal,
@@ -68,8 +68,14 @@ pub fn parse(source: &str) -> Result<Ast<'_>, LexError> {
 }
 
 impl<'source> Parser<'source, '_> {
+    /// A whole-source parse reserves its node and edge arenas from the source
+    /// length (dense code yields about one node per two bytes), so they do not
+    /// grow by repeated doubling. Untouched capacity is never written.
     fn new(source: &'source str, extended: bool) -> Result<Self, LexError> {
-        Ok(Self::with_cursor(Cursor::new(source)?, extended))
+        let mut parser = Self::with_cursor(Cursor::new(source)?, extended);
+        parser.ast.nodes.reserve(source.len() / 2 + 1);
+        parser.ast.edges.reserve(source.len() / 4 + 1);
+        Ok(parser)
     }
     fn with_cursor(cursor: Cursor<'source>, extended: bool) -> Self {
         Self {
@@ -96,33 +102,66 @@ impl<'source> Parser<'source, '_> {
             message,
         ))
     }
+    // Forced only without debug assertions: debug builds keep the call so
+    // recursive-descent frames stay small enough for the nesting limit.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token grammar helper over an inlined cursor probe; callgrind shows calls dominate"
+        )
+    )]
     fn required(&mut self) -> Result<Token, LexError> {
-        self.cursor
-            .take()?
-            .ok_or_else(|| error(self.cursor.end(), "unexpected end of expression"))
-    }
-    fn eat(&mut self, punctuation: P) -> Result<bool, LexError> {
-        if self.cursor.at(punctuation)? {
-            self.cursor.take()?;
-            Ok(true)
-        } else {
-            Ok(false)
+        match self.cursor.take()? {
+            Some(token) => Ok(token),
+            None => Err(error(self.cursor.end(), "unexpected end of expression")),
         }
     }
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token grammar helper over an inlined cursor probe; callgrind shows calls dominate"
+        )
+    )]
+    fn eat(&mut self, punctuation: P) -> Result<bool, LexError> {
+        self.cursor.eat(punctuation)
+    }
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token grammar helper over an inlined cursor probe; callgrind shows calls dominate"
+        )
+    )]
     fn expect(&mut self, punctuation: P) -> Result<Token, LexError> {
         if !self.cursor.at(punctuation)? {
             return Err(self.error("expected punctuation")?);
         }
         self.required()
     }
-    fn word(&mut self, word: &str) -> Result<bool, LexError> {
-        if self.cursor.word(word)? {
-            self.cursor.take()?;
-            Ok(true)
-        } else {
-            Ok(false)
-        }
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token grammar helper over an inlined cursor probe; callgrind shows calls dominate"
+        )
+    )]
+    fn eat_word(&mut self, word: Word) -> Result<bool, LexError> {
+        self.cursor.eat_word(word)
     }
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token grammar helper over an inlined cursor probe; callgrind shows calls dominate"
+        )
+    )]
     fn node(&mut self, start: u32, kind: Kind) -> Result<NodeId, LexError> {
         let id = u32::try_from(self.ast.nodes.len())
             .map_err(|_| error(start, "too many syntax nodes"))?;
@@ -134,6 +173,23 @@ impl<'source> Parser<'source, '_> {
             kind,
         });
         Ok(NodeId(id))
+    }
+    /// `list` for exactly one child, without staging it in scratch.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-path edge append; callgrind shows calls dominate"
+        )
+    )]
+    fn single(&mut self, child: NodeId) -> Result<List, LexError> {
+        let start = u32::try_from(self.ast.edges.len())
+            .map_err(|_| error(self.cursor.end(), "too many syntax edges"))?;
+        self.ast.edges.push(child);
+        let end = u32::try_from(self.ast.edges.len())
+            .map_err(|_| error(self.cursor.end(), "too many syntax edges"))?;
+        Ok(List { start, end })
     }
     fn list(&mut self, mark: usize) -> Result<List, LexError> {
         let start = u32::try_from(self.ast.edges.len())
@@ -168,50 +224,39 @@ impl<'source> Parser<'source, '_> {
             condition: context.condition && minimum <= 41,
             ..context
         })?;
-        while let Some(token) = self.cursor.peek(0)? {
-            let start = self.ast.node(left).span.start;
-            if matches!(self.ast.node(left).kind, Kind::Cast { .. })
-                && matches!(
-                    token.kind,
-                    TokenKind::Punctuation(P::Dot | P::Question | P::OpenParen | P::OpenBracket)
-                )
+        while let Some((token, word)) = self.cursor.current()? {
+            let node = self.ast.node(left);
+            let start = node.span.start;
+            let op = match token.kind {
+                TokenKind::Punctuation(op) => op,
+                TokenKind::Identifier if word == Word::As => {
+                    if (context.statement && self.with_block(left)) || minimum > 120 {
+                        break;
+                    }
+                    left = self.cast(left, start)?;
+                    continue;
+                }
+                _ => break,
+            };
+            if matches!(op, P::Dot | P::Question | P::OpenParen | P::OpenBracket)
+                && matches!(node.kind, Kind::Cast { .. })
             {
                 return Err(error(
                     token.start,
                     "cast followed by a postfix operator requires parentheses",
                 ));
             }
-            if self.cursor.at(P::Dot)? || self.cursor.at(P::Question)? {
-                left = self.postfix(left)?;
+            if matches!(op, P::Dot | P::Question) {
+                left = self.postfix(left, op)?;
                 continue;
             }
             if context.statement && self.with_block(left) {
                 break;
             }
-            if self.cursor.at(P::OpenParen)? || self.cursor.at(P::OpenBracket)? {
-                left = self.postfix(left)?;
+            if matches!(op, P::OpenParen | P::OpenBracket) {
+                left = self.postfix(left, op)?;
                 continue;
             }
-            if self.cursor.word("as")? {
-                if minimum > 120 {
-                    break;
-                }
-                self.cursor.take()?;
-                let ty = self.ty()?;
-                if matches!(
-                    self.cursor.last_kind(),
-                    Some(TokenKind::Identifier | TokenKind::RawIdentifier)
-                ) && (self.cursor.at(P::Less)? || self.cursor.at(P::ShiftLeft)?)
-                {
-                    return Err(self
-                        .error("cast followed by less-than or left shift requires parentheses")?);
-                }
-                left = self.node(start, Kind::Cast { value: left, ty })?;
-                continue;
-            }
-            let TokenKind::Punctuation(op) = token.kind else {
-                break;
-            };
             let Some((power, right_power)) = precedence(op) else {
                 break;
             };
@@ -219,8 +264,8 @@ impl<'source> Parser<'source, '_> {
                 break;
             }
             if (power == 50
-                && matches!(self.ast.node(left).kind, Kind::Binary { op: old, .. } if precedence(old).is_some_and(|(p, _)| p == 50)))
-                || (power == 20 && matches!(self.ast.node(left).kind, Kind::Range { .. }))
+                && matches!(node.kind, Kind::Binary { op: old, .. } if precedence(old).is_some_and(|(p, _)| p == 50)))
+                || (power == 20 && matches!(node.kind, Kind::Range { .. }))
             {
                 return Err(error(
                     token.start,
@@ -265,6 +310,22 @@ impl<'source> Parser<'source, '_> {
         Ok(left)
     }
 
+    /// Consume the observed `as` and its target type.
+    fn cast(&mut self, value: NodeId, start: u32) -> Result<NodeId, LexError> {
+        self.required()?;
+        let ty = self.ty()?;
+        if matches!(
+            self.cursor.last_kind(),
+            Some(TokenKind::Identifier | TokenKind::RawIdentifier)
+        ) && (self.cursor.at(P::Less)? || self.cursor.at(P::ShiftLeft)?)
+        {
+            return Err(
+                self.error("cast followed by less-than or left shift requires parentheses")?
+            );
+        }
+        self.node(start, Kind::Cast { value, ty })
+    }
+
     fn prefix(&mut self, context: Context) -> Result<NodeId, LexError> {
         if let Some(node) = self.interpolated(&[
             F::Expression,
@@ -275,20 +336,21 @@ impl<'source> Parser<'source, '_> {
         ])? {
             return Ok(node);
         }
-        let token = self
-            .cursor
-            .peek(0)?
-            .ok_or_else(|| error(self.cursor.end(), "expected expression"))?;
-        if self.extended && literal::is_token(self.cursor.source, token) {
-            self.required()?;
-            return self.node(token.start, Kind::DeferredLiteral(token));
-        }
-        if let Some(value) = literal::interpret(self.cursor.source, token)? {
-            self.cursor.take()?;
-            let id = u32::try_from(self.ast.literals.len())
-                .map_err(|_| error(token.start, "too many literals"))?;
-            self.ast.literals.push(value);
-            return self.node(token.start, Kind::Literal(id));
+        let Some((token, word)) = self.cursor.current()? else {
+            return Err(error(self.cursor.end(), "expected expression"));
+        };
+        if literal_candidate(token.kind, word) {
+            if self.extended && literal::is_token(self.cursor.source, token) {
+                self.required()?;
+                return self.node(token.start, Kind::DeferredLiteral(token));
+            }
+            if let Some(value) = literal::interpret(self.cursor.source, token)? {
+                self.cursor.take()?;
+                let id = u32::try_from(self.ast.literals.len())
+                    .map_err(|_| error(token.start, "too many literals"))?;
+                self.ast.literals.push(value);
+                return self.node(token.start, Kind::Literal(id));
+            }
         }
         match token.kind {
             TokenKind::CrateRoot(_) => self.path_expression(context),
@@ -320,20 +382,20 @@ impl<'source> Parser<'source, '_> {
             }
             TokenKind::Punctuation(P::Or | P::OrOr) => self.closure(false, false, token.start),
             TokenKind::Lifetime | TokenKind::RawLifetime => self.labeled(),
-            TokenKind::Identifier => match self.cursor.spelling(token) {
-                "if" => self.if_expression(),
-                "loop" | "while" | "for" => self.loop_expression(),
-                "match" => self.match_expression(),
-                "return" | "break" | "continue" => self.jump(),
-                "let" if context.condition => self.let_condition(context),
-                "move" => {
+            TokenKind::Identifier => match word {
+                Word::If => self.if_expression(),
+                Word::Loop | Word::While | Word::For => self.loop_expression(),
+                Word::Match => self.match_expression(),
+                Word::Return | Word::Break | Word::Continue => self.jump(),
+                Word::Let if context.condition => self.let_condition(context),
+                Word::Move => {
                     self.cursor.take()?;
                     self.closure(true, false, token.start)
                 }
-                "async" => self.async_expression(),
-                "unsafe" | "const" => {
+                Word::Async => self.async_expression(),
+                Word::Unsafe | Word::Const => {
                     self.cursor.take()?;
-                    let flavor = if self.cursor.spelling(token) == "unsafe" {
+                    let flavor = if word == Word::Unsafe {
                         BlockFlavor::Unsafe
                     } else {
                         BlockFlavor::Const
@@ -342,7 +404,7 @@ impl<'source> Parser<'source, '_> {
                     self.ast.nodes[block.0 as usize].span.start = token.start;
                     Ok(block)
                 }
-                "_" => {
+                Word::Underscore => {
                     self.cursor.take()?;
                     self.node(token.start, Kind::Wildcard)
                 }
@@ -364,21 +426,18 @@ impl<'source> Parser<'source, '_> {
         } else {
             self.required()?
         };
-        let raw_borrow = self.cursor.word("raw")?
-            && self.cursor.peek(1)?.is_some_and(|next| {
-                next.kind == TokenKind::Identifier
-                    && matches!(self.cursor.spelling(next), "const" | "mut")
-            });
+        let raw_borrow = self.cursor.at_word(Word::Raw)?
+            && matches!(self.cursor.peek_word(1)?, Word::Const | Word::Mut);
         let op = match token.kind {
             TokenKind::Punctuation(P::Minus) => Unary::Negate,
             TokenKind::Punctuation(P::Bang) => Unary::Not,
             TokenKind::Punctuation(P::Star) => Unary::Dereference,
-            _ if self.word("mut")? => Unary::BorrowMut,
+            _ if self.eat_word(Word::Mut)? => Unary::BorrowMut,
             _ if raw_borrow => {
                 self.required()?;
-                if self.word("const")? {
+                if self.eat_word(Word::Const)? {
                     Unary::RawConst
-                } else if self.word("mut")? {
+                } else if self.eat_word(Word::Mut)? {
                     Unary::RawMut
                 } else {
                     return Err(self.error("raw borrow requires const or mut")?);
@@ -411,15 +470,7 @@ impl<'source> Parser<'source, '_> {
         let absolute = self.eat(P::ColonColon)?;
         loop {
             let token = self.required()?;
-            let name = self
-                .cursor
-                .spelling(token)
-                .strip_prefix("r#")
-                .unwrap_or(self.cursor.spelling(token));
-            if !(keyword::identifier(token.kind, name)
-                || (token.kind == TokenKind::Identifier
-                    && matches!(name, "self" | "Self" | "super" | "crate")))
-            {
+            if !self.path_segment(token, self.cursor.last_word()) {
                 return Err(error(token.start, "expected path segment"));
             }
             let segment = self.node(
@@ -534,34 +585,43 @@ impl<'source> Parser<'source, '_> {
         self.list(mark)
     }
 
-    fn postfix(&mut self, value: NodeId) -> Result<NodeId, LexError> {
+    /// `op` is the already observed postfix punctuation at the cursor.
+    fn postfix(&mut self, value: NodeId, op: P) -> Result<NodeId, LexError> {
         let start = self.ast.node(value).span.start;
-        if self.eat(P::Question)? {
-            return self.node(
-                start,
-                Kind::Unary {
-                    op: Unary::Try,
-                    operand: value,
-                },
-            );
+        self.required()?;
+        match op {
+            P::Question => {
+                return self.node(
+                    start,
+                    Kind::Unary {
+                        op: Unary::Try,
+                        operand: value,
+                    },
+                );
+            }
+            P::OpenParen => {
+                let arguments = self.call_arguments()?;
+                return self.node(
+                    start,
+                    Kind::Call {
+                        callee: value,
+                        arguments,
+                    },
+                );
+            }
+            P::OpenBracket => {
+                let index = self.expr(0, NORMAL)?;
+                self.expect(P::CloseBracket)?;
+                return self.node(start, Kind::Index { value, index });
+            }
+            _ => {}
         }
-        if self.eat(P::OpenParen)? {
-            let arguments = self.call_arguments()?;
-            return self.node(
-                start,
-                Kind::Call {
-                    callee: value,
-                    arguments,
-                },
-            );
-        }
-        if self.eat(P::OpenBracket)? {
-            let index = self.expr(0, NORMAL)?;
-            self.expect(P::CloseBracket)?;
-            return self.node(start, Kind::Index { value, index });
-        }
-        self.expect(P::Dot)?;
-        if self.word("await")? {
+        self.member(value, start)
+    }
+
+    /// The member access after a consumed `.`: await, field, tuple index or method call.
+    fn member(&mut self, value: NodeId, start: u32) -> Result<NodeId, LexError> {
+        if self.eat_word(Word::Await)? {
             return self.node(
                 start,
                 Kind::Unary {
@@ -571,7 +631,7 @@ impl<'source> Parser<'source, '_> {
             );
         }
         let name = self.cursor.projection()?;
-        if !self.field_name(name) {
+        if !self.field_name(name, self.cursor.last_word()) {
             return Err(error(
                 name.start,
                 "expected field name or canonical tuple index",
@@ -652,7 +712,7 @@ impl<'source> Parser<'source, '_> {
                 break;
             }
             let token = self.required()?;
-            if !self.field_name(token) {
+            if !self.field_name(token, self.cursor.last_word()) {
                 return Err(error(token.start, "expected struct field"));
             }
             let name = Span {
@@ -678,16 +738,44 @@ impl<'source> Parser<'source, '_> {
         self.node(start, Kind::Struct { path, fields, base })
     }
 
-    fn field_name(&self, token: Token) -> bool {
+    /// `word` is the cursor classification of `token` when it was consumed.
+    fn field_name(&self, token: Token, word: Word) -> bool {
+        if self.identifier(token, word) {
+            return true;
+        }
         let spelling = self.cursor.spelling(token);
-        keyword::identifier(token.kind, spelling.strip_prefix("r#").unwrap_or(spelling))
-            || (token.kind == TokenKind::Integer
-                && spelling.bytes().all(|b| b.is_ascii_digit())
-                && (spelling == "0" || !spelling.starts_with('0')))
+        token.kind == TokenKind::Integer
+            && spelling.bytes().all(|b| b.is_ascii_digit())
+            && (spelling == "0" || !spelling.starts_with('0'))
+    }
+
+    /// `keyword::identifier` over a consumed token, using its classified word.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-segment keyword check; callgrind shows calls dominate"
+        )
+    )]
+    fn identifier(&self, token: Token, word: Word) -> bool {
+        match token.kind {
+            TokenKind::Identifier => !word.reserved(),
+            TokenKind::RawIdentifier => {
+                let spelling = self.cursor.spelling(token);
+                keyword::identifier(token.kind, spelling.strip_prefix("r#").unwrap_or(spelling))
+            }
+            _ => false,
+        }
+    }
+
+    /// An identifier or one of the path keywords `self`, `Self`, `super` and `crate`.
+    fn path_segment(&self, token: Token, word: Word) -> bool {
+        self.identifier(token, word) || (token.kind == TokenKind::Identifier && word.path_keyword())
     }
 
     fn can_start(&mut self) -> Result<bool, LexError> {
-        let Some(token) = self.cursor.peek(0)? else {
+        let Some((token, word)) = self.cursor.current()? else {
             return Ok(false);
         };
         Ok(match token.kind {
@@ -707,7 +795,7 @@ impl<'source> Parser<'source, '_> {
                     | P::DotDotEqual
                     | P::ColonColon
             ),
-            TokenKind::Identifier => !matches!(self.cursor.spelling(token), "else" | "in" | "as"),
+            TokenKind::Identifier => !matches!(word, Word::Else | Word::In | Word::As),
             TokenKind::Whitespace | TokenKind::LineComment | TokenKind::BlockComment => false,
             _ => true,
         })
@@ -745,6 +833,32 @@ impl<'source> Parser<'source, '_> {
     }
 }
 
+/// Only literal categories and `true`/`false` can start a literal expression.
+fn literal_candidate(kind: TokenKind, word: Word) -> bool {
+    match kind {
+        TokenKind::Identifier => matches!(word, Word::True | Word::False),
+        TokenKind::Integer
+        | TokenKind::Float
+        | TokenKind::Character
+        | TokenKind::Byte
+        | TokenKind::String
+        | TokenKind::ByteString
+        | TokenKind::CString
+        | TokenKind::RawString
+        | TokenKind::RawByteString
+        | TokenKind::RawCString => true,
+        _ => false,
+    }
+}
+
+#[cfg_attr(not(debug_assertions), inline(always))]
+#[cfg_attr(
+    not(debug_assertions),
+    expect(
+        clippy::inline_always,
+        reason = "per-operator table lookup; callgrind shows calls dominate"
+    )
+)]
 fn precedence(op: P) -> Option<(u8, u8)> {
     let power = match op {
         P::Equal

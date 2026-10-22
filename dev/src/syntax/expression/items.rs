@@ -1,6 +1,6 @@
 //! Crate, module, associated and local item grammar over the shared body parser.
 use super::{
-    Ast, BlockFlavor, Kind, LexError, List, NORMAL, NodeId, P, Parser, Span, TokenKind, error,
+    Ast, BlockFlavor, Kind, LexError, List, NORMAL, NodeId, P, Parser, Span, TokenKind, Word, error,
 };
 use crate::syntax::item::{FunctionFlags, Item, ItemKind, Safety, Shape, Visibility};
 
@@ -40,7 +40,7 @@ impl Parser<'_, '_> {
     }
 
     pub(super) fn starts_item(&mut self) -> Result<bool, LexError> {
-        let Some(token) = self.cursor.peek(0)? else {
+        let Some((token, word)) = self.cursor.current()? else {
             return Ok(false);
         };
         if matches!(token.kind, TokenKind::Interpolated(_)) {
@@ -55,53 +55,42 @@ impl Parser<'_, '_> {
         if token.kind != TokenKind::Identifier {
             return Ok(false);
         }
-        let spelling = self.cursor.spelling(token);
-        if spelling == "union" {
-            return Ok(self.cursor.peek(1)?.is_some_and(|t| {
+        Ok(match word {
+            Word::Union => self.cursor.peek(1)?.is_some_and(|t| {
                 t.kind == TokenKind::Identifier || t.kind == TokenKind::RawIdentifier
-            }));
-        }
-        if spelling == "macro_rules" {
-            return Ok(self
-                .cursor
-                .peek(1)?
-                .is_some_and(|t| t.kind == TokenKind::Punctuation(P::Bang))
-                && self.cursor.peek(2)?.is_some_and(|t| {
-                    t.kind == TokenKind::Identifier || t.kind == TokenKind::RawIdentifier
-                }));
-        }
-        if matches!(
-            spelling,
-            "fn" | "struct"
-                | "enum"
-                | "union"
-                | "trait"
-                | "impl"
-                | "mod"
-                | "use"
-                | "type"
-                | "static"
-                | "extern"
-                | "pub"
-                | "macro_rules"
-        ) {
-            return Ok(true);
-        }
-        if matches!(spelling, "unsafe" | "async" | "const" | "safe") {
-            return Ok(!self
-                .cursor
-                .peek(1)?
-                .is_some_and(|next| next.kind == TokenKind::Punctuation(P::OpenBrace))
-                && (spelling == "const"
-                    || self.cursor.peek(1)?.is_some_and(|next| {
-                        next.kind == TokenKind::Identifier
-                            && matches!(
-                                self.cursor.spelling(next),
-                                "fn" | "trait" | "impl" | "extern" | "unsafe"
-                            )
-                    })));
-        }
-        Ok(false)
+            }),
+            Word::MacroRules => {
+                self.cursor
+                    .peek(1)?
+                    .is_some_and(|t| t.kind == TokenKind::Punctuation(P::Bang))
+                    && self.cursor.peek(2)?.is_some_and(|t| {
+                        t.kind == TokenKind::Identifier || t.kind == TokenKind::RawIdentifier
+                    })
+            }
+            Word::Fn
+            | Word::Struct
+            | Word::Enum
+            | Word::Trait
+            | Word::Impl
+            | Word::Mod
+            | Word::Use
+            | Word::Type
+            | Word::Static
+            | Word::Extern
+            | Word::Pub => true,
+            Word::Unsafe | Word::Async | Word::Const | Word::Safe => {
+                !self
+                    .cursor
+                    .peek(1)?
+                    .is_some_and(|next| next.kind == TokenKind::Punctuation(P::OpenBrace))
+                    && (word == Word::Const
+                        || matches!(
+                            self.cursor.peek_word(1)?,
+                            Word::Fn | Word::Trait | Word::Impl | Word::Extern | Word::Unsafe
+                        ))
+            }
+            _ => false,
+        })
     }
 
     pub(super) fn item_in(&mut self, scope: Scope) -> Result<NodeId, LexError> {
@@ -154,20 +143,19 @@ impl Parser<'_, '_> {
             kind: ItemKind::Module { items: None },
         };
         let mut inner = crate::syntax::item::AttributeRange::default();
-        let introducer = self
-            .cursor
-            .peek(0)?
-            .ok_or_else(|| error(self.cursor.end(), "expected item"))?;
-        item.kind = if self.word("struct")?
-            || (self.cursor.word("union")?
+        if self.cursor.peek(0)?.is_none() {
+            return Err(error(self.cursor.end(), "expected item"));
+        }
+        item.kind = if self.eat_word(Word::Struct)?
+            || (self.cursor.at_word(Word::Union)?
                 && self.cursor.peek(1)?.is_some_and(|t| {
                     matches!(t.kind, TokenKind::Identifier | TokenKind::RawIdentifier)
                 })
-                && self.word("union")?)
-            || self.word("enum")?
+                && self.eat_word(Word::Union)?)
+            || self.eat_word(Word::Enum)?
         {
-            self.aggregate_item(self.cursor.spelling(introducer), &mut item)?
-        } else if self.word("type")? {
+            self.aggregate_item(self.cursor.last_word(), &mut item)?
+        } else if self.eat_word(Word::Type)? {
             item.name = Some(self.name()?);
             item.generics = self.generics()?;
             let bounds = if self.eat(P::Colon)? {
@@ -181,12 +169,12 @@ impl Parser<'_, '_> {
             } else {
                 None
             };
-            if self.cursor.word("where")? {
+            if self.cursor.at_word(Word::Where)? {
                 item.where_clause = self.where_clause()?;
             }
             self.expect(P::Semicolon)?;
             ItemKind::TypeAlias { bounds, ty }
-        } else if self.word("mod")? {
+        } else if self.eat_word(Word::Mod)? {
             item.name = Some(self.name()?);
             let items = if self.eat(P::Semicolon)? {
                 None
@@ -196,11 +184,11 @@ impl Parser<'_, '_> {
                 Some(self.item_list(true, Scope::Module)?)
             };
             ItemKind::Module { items }
-        } else if self.word("use")? {
+        } else if self.eat_word(Word::Use)? {
             let tree = self.use_tree()?;
             self.expect(P::Semicolon)?;
             ItemKind::Use(tree)
-        } else if self.word("macro_rules")? {
+        } else if self.eat_word(Word::MacroRules)? {
             self.expect(P::Bang)?;
             item.name = Some(self.name()?);
             let first = self.required()?;
@@ -218,20 +206,20 @@ impl Parser<'_, '_> {
                 .map_err(|_| error(start, "too many captures"))?;
             self.ast.captures.push(forest);
             ItemKind::MacroRules { capture }
-        } else if self.cursor.word("static")?
-            || (self.cursor.word("const")? && !self.function_after_const()?)
+        } else if self.cursor.at_word(Word::Static)?
+            || (self.cursor.at_word(Word::Const)? && !self.function_after_const()?)
         {
             self.value_item(&mut item, Safety::Default)?
         } else {
-            let constant = self.word("const")?;
-            let asynchronous = self.word("async")?;
-            let unsafe_ = self.word("unsafe")?;
-            let safe = self.cursor.word("safe")?
+            let constant = self.eat_word(Word::Const)?;
+            let asynchronous = self.eat_word(Word::Async)?;
+            let unsafe_ = self.eat_word(Word::Unsafe)?;
+            let safe = self.cursor.at_word(Word::Safe)?
                 && self
                     .cursor
                     .peek(1)?
                     .is_some_and(|t| matches!(self.cursor.spelling(t), "fn" | "static"))
-                && self.word("safe")?;
+                && self.eat_word(Word::Safe)?;
             let safety = if unsafe_ {
                 Safety::Unsafe
             } else if safe {
@@ -239,12 +227,12 @@ impl Parser<'_, '_> {
             } else {
                 Safety::Default
             };
-            if self.cursor.word("static")? && (unsafe_ || safe) {
+            if self.cursor.at_word(Word::Static)? && (unsafe_ || safe) {
                 if constant || asynchronous {
                     return Err(error(start, "invalid static qualifier"));
                 }
                 self.value_item(&mut item, safety)?
-            } else if self.word("trait")? {
+            } else if self.eat_word(Word::Trait)? {
                 if constant || asynchronous || safe {
                     return Err(error(start, "invalid trait qualifier"));
                 }
@@ -263,14 +251,14 @@ impl Parser<'_, '_> {
                     bounds,
                     items: self.item_list(true, Scope::Trait)?,
                 }
-            } else if self.word("impl")? {
+            } else if self.eat_word(Word::Impl)? {
                 if constant || asynchronous || safe {
                     return Err(error(start, "invalid impl qualifier"));
                 }
                 item.generics = self.generics()?;
                 let negative = self.eat(P::Bang)?;
                 let first = self.ty()?;
-                let (trait_path, ty) = if self.word("for")? {
+                let (trait_path, ty) = if self.eat_word(Word::For)? {
                     (Some(first), self.ty()?)
                 } else {
                     (None, first)
@@ -286,9 +274,9 @@ impl Parser<'_, '_> {
                     items: self.item_list(true, Scope::Impl)?,
                 }
             } else {
-                let external = self.word("extern")?;
-                if external && self.word("crate")? {
-                    item.name = Some(if self.cursor.word("self")? {
+                let external = self.eat_word(Word::Extern)?;
+                if external && self.eat_word(Word::Crate)? {
+                    item.name = Some(if self.cursor.at_word(Word::SelfValue)? {
                         let token = self.required()?;
                         Span {
                             start: token.start,
@@ -297,7 +285,7 @@ impl Parser<'_, '_> {
                     } else {
                         self.name()?
                     });
-                    let rename = if self.word("as")? {
+                    let rename = if self.eat_word(Word::As)? {
                         Some(self.alias_name()?)
                     } else {
                         None
@@ -313,7 +301,7 @@ impl Parser<'_, '_> {
                             abi,
                             items: self.item_list(true, Scope::External)?,
                         }
-                    } else if self.word("fn")? {
+                    } else if self.eat_word(Word::Fn)? {
                         item.name = Some(self.name()?);
                         item.generics = self.generics()?;
                         let parameters = self.function_parameters(false)?;
@@ -422,17 +410,17 @@ impl Parser<'_, '_> {
             self.required()?;
             return splice.visibility(self.cursor.source, &mut self.ast);
         }
-        if !self.word("pub")? {
+        if !self.eat_word(Word::Pub)? {
             return Ok(Visibility::Private);
         }
         if !self.eat(P::OpenParen)? {
             return Ok(Visibility::Public);
         }
-        let explicit = self.word("in")?;
+        let explicit = self.eat_word(Word::In)?;
         if !(explicit
-            || self.cursor.word("self")?
-            || self.cursor.word("super")?
-            || self.cursor.word("crate")?)
+            || self.cursor.at_word(Word::SelfValue)?
+            || self.cursor.at_word(Word::Super)?
+            || self.cursor.at_word(Word::Crate)?)
         {
             return Err(self.error("expected visibility restriction")?);
         }
@@ -447,21 +435,18 @@ impl Parser<'_, '_> {
     }
 
     fn function_after_const(&mut self) -> Result<bool, LexError> {
-        Ok(self.cursor.peek(1)?.is_some_and(|t| {
-            t.kind == TokenKind::Identifier
-                && matches!(
-                    self.cursor.spelling(t),
-                    "fn" | "async" | "unsafe" | "extern"
-                )
-        }))
+        Ok(matches!(
+            self.cursor.peek_word(1)?,
+            Word::Fn | Word::Async | Word::Unsafe | Word::Extern
+        ))
     }
 
     fn value_item(&mut self, item: &mut Item, safety: Safety) -> Result<ItemKind, LexError> {
-        let static_ = self.word("static")?;
+        let static_ = self.eat_word(Word::Static)?;
         if !static_ {
             self.required()?;
         }
-        let mutable = static_ && self.word("mut")?;
+        let mutable = static_ && self.eat_word(Word::Mut)?;
         item.name = Some(self.alias_name()?);
         self.expect(P::Colon)?;
         let ty = self.ty()?;
@@ -531,12 +516,12 @@ impl Parser<'_, '_> {
                     }) {
                     self.required()?;
                     let lifetime = self.required()?;
-                    let mutable = self.word("mut")?;
+                    let mutable = self.eat_word(Word::Mut)?;
                     let name = self
                         .cursor
                         .peek(0)?
                         .ok_or_else(|| error(self.cursor.end(), "expected receiver"))?;
-                    if !self.word("self")? {
+                    if !self.eat_word(Word::SelfValue)? {
                         return Err(self.error("reference lifetime in a parameter requires self")?);
                     }
                     self.node(
@@ -601,10 +586,11 @@ impl Parser<'_, '_> {
         }
     }
 
-    fn aggregate_item(&mut self, category: &str, item: &mut Item) -> Result<ItemKind, LexError> {
+    /// `category` is the consumed `struct`, `union` or `enum` introducer.
+    fn aggregate_item(&mut self, category: Word, item: &mut Item) -> Result<ItemKind, LexError> {
         item.name = Some(self.name()?);
         item.generics = self.generics()?;
-        if category == "struct" && self.eat(P::OpenParen)? {
+        if category == Word::Struct && self.eat(P::OpenParen)? {
             let fields = self.fields(Shape::Tuple)?;
             item.where_clause = self.where_clause()?;
             self.expect(P::Semicolon)?;
@@ -614,14 +600,14 @@ impl Parser<'_, '_> {
             });
         }
         item.where_clause = self.where_clause()?;
-        if category == "struct" && self.eat(P::Semicolon)? {
+        if category == Word::Struct && self.eat(P::Semicolon)? {
             return Ok(ItemKind::Struct {
                 shape: Shape::Unit,
                 fields: Self::empty_list(),
             });
         }
         self.expect(P::OpenBrace)?;
-        if category == "enum" {
+        if category == Word::Enum {
             let mark = self.scratch.len();
             while !self.eat(P::CloseBrace)? {
                 let attrs = self.attributes(false)?;
@@ -659,7 +645,7 @@ impl Parser<'_, '_> {
             })
         } else {
             let fields = self.fields(Shape::Record)?;
-            Ok(if category == "union" {
+            Ok(if category == Word::Union {
                 ItemKind::Union { fields }
             } else {
                 ItemKind::Struct {
@@ -708,7 +694,7 @@ impl Parser<'_, '_> {
     }
 
     fn alias_name(&mut self) -> Result<Span, LexError> {
-        if self.cursor.word("_")? {
+        if self.cursor.at_word(Word::Underscore)? {
             let token = self.required()?;
             Ok(Span {
                 start: token.start,
@@ -827,7 +813,7 @@ impl Parser<'_, '_> {
         } else {
             Self::empty_list()
         };
-        let rename = if self.word("as")? {
+        let rename = if self.eat_word(Word::As)? {
             if glob || grouped {
                 return Err(self.error("use group or glob cannot be renamed")?);
             }

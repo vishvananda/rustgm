@@ -1,5 +1,5 @@
 //! Macro nonterminals call the ordinary grammar over classified tokens.
-use super::{Ast, BlockFlavor, Context, Kind, LexError, NORMAL, NodeId, P, Parser, items};
+use super::{Ast, BlockFlavor, Context, Kind, LexError, NORMAL, NodeId, P, Parser, Word, items};
 use crate::{
     lex::token::Token,
     syntax::cursor::{Cursor, TokenPosition},
@@ -84,7 +84,8 @@ pub fn parse_with_inputs<'s>(
         }
         FragmentKind::Expression | FragmentKind::Expression2021 => {
             if kind == FragmentKind::Expression2021
-                && (parser.cursor.word("_")? || parser.cursor.word("const")?)
+                && (parser.cursor.at_word(Word::Underscore)?
+                    || parser.cursor.at_word(Word::Const)?)
             {
                 return Err(
                     parser.error("expr_2021 excludes top-level underscore and const blocks")?
@@ -125,7 +126,7 @@ impl Parser<'_, '_> {
             let start = self.required()?.start;
             return self.node(start, Kind::EmptyStatement);
         }
-        if self.cursor.word("let")? {
+        if self.cursor.at_word(Word::Let)? {
             return self.let_statement(false);
         }
         let value = self.expr(

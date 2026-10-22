@@ -2,19 +2,36 @@
 use super::token_tree::{Forest, ForestBuilder, error};
 use crate::lex::{
     Lexer,
+    keyword::Word,
     token::{Kind, LexError, Punctuation, Token},
 };
-use std::collections::VecDeque;
 
 enum Input<'source> {
     Source(Lexer<'source>),
     Tokens(&'source [Token]),
 }
+/// One buffered significant token. Identifier words are classified once on
+/// entry, so grammar keyword probes compare small integers, not spellings.
+/// Input ordinals live in a parallel ring, keeping this hot entry at 16 bytes.
 #[derive(Clone, Copy)]
 struct Pending {
     token: Token,
-    ordinal: usize,
+    word: Word,
 }
+const VACANT: Pending = Pending {
+    token: Token {
+        kind: Kind::Whitespace,
+        start: 0,
+        end: 0,
+    },
+    word: Word::Other,
+};
+/// Grammar lookahead never exceeds three tokens. Source tokens are lexed in
+/// batches ahead of that demand; the ring keeps room for grammar splits.
+const SLOTS: usize = 32;
+const MASK: usize = SLOTS - 1;
+const BOUND: usize = 3;
+const BATCH: usize = SLOTS - 8;
 
 /// A parser fragment may stop partway through a compound punctuation token.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
@@ -26,11 +43,24 @@ pub struct TokenPosition {
 pub struct Cursor<'source> {
     pub source: &'source str,
     input: Input<'source>,
-    pending: VecDeque<Pending>,
+    ring: [Pending; SLOTS],
+    ordinals: [usize; SLOTS],
+    head: usize,
+    /// Tokens the grammar has demanded; only these count as lookahead.
+    len: usize,
+    /// Buffered tokens, including those lexed ahead of demand.
+    ready: usize,
+    /// No input remains after the buffered tokens.
+    exhausted: bool,
+    /// A failure met while lexing ahead, reported when its position is demanded.
+    deferred: Option<LexError>,
     produced: usize,
     last_ordinal: usize,
     consumed_end: u32,
     last_kind: Option<Kind>,
+    last_word: Word,
+    /// The failure for the probe that is currently returning one.
+    failure: Option<LexError>,
     pub high_water: usize,
 }
 
@@ -42,32 +72,43 @@ impl<'source> Cursor<'source> {
     }
 
     pub(crate) fn source(source: &'source str, strip_shebang: bool) -> Result<Self, LexError> {
-        Ok(Self {
+        Ok(Self::with_input(
             source,
-            input: Input::Source(Lexer::source(source, strip_shebang)?),
+            Input::Source(Lexer::source(source, strip_shebang)?),
+            0,
+        ))
+    }
+
+    fn with_input(source: &'source str, input: Input<'source>, consumed_end: u32) -> Self {
+        Self {
+            source,
+            input,
+            ring: [VACANT; SLOTS],
+            ordinals: [0; SLOTS],
+            head: 0,
+            len: 0,
+            ready: 0,
+            exhausted: false,
+            deferred: None,
             produced: 0,
             last_ordinal: 0,
-            pending: VecDeque::with_capacity(3),
-            consumed_end: 0,
+            consumed_end,
             last_kind: None,
+            last_word: Word::Other,
+            failure: None,
             high_water: 0,
-        })
+        }
     }
 
     /// Consume already classified macro tokens with the ordinary bounded parser.
     /// Token spellings are borrowed; this path never invokes the lexer.
     #[must_use]
     pub fn from_tokens(source: &'source str, tokens: &'source [Token]) -> Self {
-        Self {
+        Self::with_input(
             source,
-            input: Input::Tokens(tokens),
-            pending: VecDeque::with_capacity(3),
-            produced: 0,
-            last_ordinal: 0,
-            consumed_end: tokens.first().map_or(0, |t| t.start),
-            last_kind: None,
-            high_water: 0,
-        }
+            Input::Tokens(tokens),
+            tokens.first().map_or(0, |t| t.start),
+        )
     }
 
     /// Resume a macro fragment after a prior grammar split, without copying its tokens.
@@ -93,13 +134,11 @@ impl<'source> Cursor<'source> {
         }
         let mut next = position;
         while let Some(token) = token_at(source, tokens, next)? {
-            cursor.pending.push_back(Pending {
-                token,
-                ordinal: position.index,
-            });
-            if cursor.pending.len() > 3 {
+            if cursor.len >= BOUND {
                 return Err(error(token.start, "split token exceeds lookahead bound"));
             }
+            let word = cursor.classify(token);
+            cursor.push_back(token, word, position.index);
             let original = tokens[position.index];
             if token.end == original.end {
                 break;
@@ -107,98 +146,293 @@ impl<'source> Cursor<'source> {
             next.offset = token.end - original.start;
         }
         cursor.produced += 1;
-        cursor.high_water = cursor.pending.len();
+        cursor.high_water = cursor.len;
         Ok(cursor)
     }
 
     /// # Errors
     /// Reports malformed source ranges or lexical failures while filling lookahead.
     pub fn token_position(&mut self) -> Result<TokenPosition, LexError> {
-        self.peek(0)?;
-        let Some(next) = self.pending.front() else {
+        let Some(next) = self.entry(0)? else {
             return Ok(TokenPosition {
                 index: self.produced,
                 offset: 0,
             });
         };
+        let ordinal = self.ordinals[self.head & MASK];
         let offset = match self.input {
-            Input::Tokens(tokens) => next.token.start.saturating_sub(tokens[next.ordinal].start),
+            Input::Tokens(tokens) => next.token.start.saturating_sub(tokens[ordinal].start),
             Input::Source(_) => 0,
         };
         Ok(TokenPosition {
-            index: next.ordinal,
+            index: ordinal,
             offset,
         })
     }
 
-    fn next_input(&mut self) -> Result<Option<Pending>, LexError> {
-        let token = match &mut self.input {
-            Input::Source(lexer) => lexer.next_token()?,
-            Input::Tokens(tokens) => {
-                let token = tokens.get(self.produced).copied();
-                if let Some(token) = token
-                    && (token.start > token.end
-                        || self
-                            .source
-                            .get(token.start as usize..token.end as usize)
-                            .is_none())
+    fn classify(&self, token: Token) -> Word {
+        classify(self.source, token)
+    }
+
+    /// The next significant input token and its ordinal among all input tokens.
+    fn next_significant(&mut self) -> Result<Option<(Token, usize)>, LexError> {
+        match &mut self.input {
+            Input::Source(lexer) => Ok(lexer
+                .next_significant(&mut self.produced)?
+                .map(|token| (token, self.produced - 1))),
+            Input::Tokens(tokens) => loop {
+                let Some(token) = tokens.get(self.produced).copied() else {
+                    return Ok(None);
+                };
+                if token.start > token.end
+                    || self
+                        .source
+                        .get(token.start as usize..token.end as usize)
+                        .is_none()
                 {
                     return Err(error(token.start, "invalid parser token source range"));
                 }
-                token
-            }
-        };
-        let Some(token) = token else {
-            return Ok(None);
-        };
-        let ordinal = self.produced;
-        self.produced += 1;
-        Ok(Some(Pending { token, ordinal }))
+                let ordinal = self.produced;
+                self.produced += 1;
+                if !matches!(
+                    token.kind,
+                    Kind::Whitespace | Kind::LineComment | Kind::BlockComment
+                ) {
+                    return Ok(Some((token, ordinal)));
+                }
+            },
+        }
+    }
+
+    /// Buffer a token after every ready one, without demanding it.
+    fn stage(&mut self, token: Token, word: Word, ordinal: usize) {
+        let slot = (self.head + self.ready) & MASK;
+        self.ring[slot] = Pending { token, word };
+        self.ordinals[slot] = ordinal;
+        self.ready += 1;
+    }
+
+    /// Construction-time split pieces are demanded as soon as they are staged.
+    fn push_back(&mut self, token: Token, word: Word, ordinal: usize) {
+        self.stage(token, word, ordinal);
+        self.len += 1;
     }
 
     fn prepend(&mut self, token: Token) {
-        self.pending.push_front(Pending {
+        self.head = (self.head + MASK) & MASK;
+        self.ring[self.head] = Pending {
             token,
-            ordinal: self.last_ordinal,
-        });
+            word: Word::Other,
+        };
+        self.ordinals[self.head] = self.last_ordinal;
+        self.len += 1;
+        self.ready += 1;
+    }
+
+    /// The buffered entry `ahead` significant tokens on; only misses leave line.
+    // Forced only without debug assertions: debug builds keep the call so
+    // recursive-descent frames stay small enough for the nesting limit.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token lookahead probe; callgrind shows the call costs more than the probe"
+        )
+    )]
+    fn entry(&mut self, ahead: usize) -> Result<Option<Pending>, LexError> {
+        if ahead >= self.len {
+            if !self.demand(ahead) {
+                return Err(self.failure());
+            }
+            if ahead >= self.len {
+                return Ok(None);
+            }
+        }
+        Ok(Some(self.ring[(self.head + ahead) & MASK]))
+    }
+
+    /// Demand a token already lexed ahead, or fill. Kept small and out of line.
+    #[inline(never)]
+    fn demand(&mut self, ahead: usize) -> bool {
+        if ahead < self.ready && ahead < BOUND {
+            self.len = ahead + 1;
+            self.high_water = self.high_water.max(self.len);
+            return true;
+        }
+        self.fill(ahead)
+    }
+
+    /// Extend demanded lookahead through `ahead`, stopping early only at end of
+    /// input. A failure is recorded for `failure`, keeping this result a flag.
+    /// Lexing ahead never changes which tokens count as demanded lookahead, and
+    /// a lexical failure is reported only once its position is demanded.
+    #[cold]
+    #[inline(never)]
+    fn fill(&mut self, ahead: usize) -> bool {
+        if ahead >= BOUND {
+            self.failure = Some(error(
+                self.consumed_end,
+                "parser lookahead exceeds three tokens",
+            ));
+            return false;
+        }
+        while self.ready <= ahead && !self.exhausted {
+            self.lex_ahead();
+        }
+        let demanded = self.ready.min(ahead + 1);
+        if demanded > self.len {
+            self.len = demanded;
+            self.high_water = self.high_water.max(self.len);
+        }
+        if self.ready <= ahead
+            && let Some(failure) = self.deferred.take()
+        {
+            self.failure = Some(failure);
+            return false;
+        }
+        true
+    }
+
+    /// Buffer a batch of source tokens, or one macro token so a fragment parse
+    /// never validates tokens beyond its own demand.
+    fn lex_ahead(&mut self) {
+        let source = self.source;
+        let Input::Source(lexer) = &mut self.input else {
+            match self.next_significant() {
+                Ok(Some((token, ordinal))) => {
+                    let word = self.classify(token);
+                    self.stage(token, word, ordinal);
+                }
+                Ok(None) => self.exhausted = true,
+                Err(failure) => {
+                    self.deferred = Some(failure);
+                    self.exhausted = true;
+                }
+            }
+            return;
+        };
+        while self.ready < BATCH {
+            match lexer.next_significant(&mut self.produced) {
+                Ok(Some(token)) => {
+                    let slot = (self.head + self.ready) & MASK;
+                    self.ring[slot] = Pending {
+                        token,
+                        word: classify(source, token),
+                    };
+                    self.ordinals[slot] = self.produced - 1;
+                    self.ready += 1;
+                }
+                Ok(None) => {
+                    self.exhausted = true;
+                    return;
+                }
+                Err(failure) => {
+                    self.deferred = Some(failure);
+                    self.exhausted = true;
+                    return;
+                }
+            }
+        }
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn failure(&mut self) -> LexError {
+        self.failure
+            .take()
+            .unwrap_or_else(|| error(self.consumed_end, "missing lookahead failure"))
     }
 
     /// # Errors
     /// Returns lexical errors or a request exceeding the three-token bound.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token lookahead probe; callgrind shows the call costs more than the probe"
+        )
+    )]
     pub fn peek(&mut self, ahead: usize) -> Result<Option<Token>, LexError> {
-        if ahead > 2 {
-            return Err(error(
-                self.consumed_end,
-                "parser lookahead exceeds three tokens",
-            ));
+        Ok(self.entry(ahead)?.map(|pending| pending.token))
+    }
+
+    /// The classified word `ahead` tokens on; `Word::Other` for any
+    /// non-identifier, unclassified identifier or end of input.
+    ///
+    /// # Errors
+    /// Returns lexical errors or a request exceeding the three-token bound.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token lookahead probe; callgrind shows the call costs more than the probe"
+        )
+    )]
+    pub fn peek_word(&mut self, ahead: usize) -> Result<Word, LexError> {
+        Ok(self
+            .entry(ahead)?
+            .map_or(Word::Other, |pending| pending.word))
+    }
+
+    /// The next token together with its classified word.
+    ///
+    /// # Errors
+    /// Returns lexical failures.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token lookahead probe; callgrind shows the call costs more than the probe"
+        )
+    )]
+    pub fn current(&mut self) -> Result<Option<(Token, Word)>, LexError> {
+        Ok(self.entry(0)?.map(|pending| (pending.token, pending.word)))
+    }
+
+    /// Consume the buffered front token. Callers have just observed one.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token lookahead probe; callgrind shows the call costs more than the probe"
+        )
+    )]
+    fn advance(&mut self) {
+        if self.len == 0 {
+            return;
         }
-        while self.pending.len() <= ahead {
-            let Some(next) = self.next_input()? else {
-                break;
-            };
-            if matches!(
-                next.token.kind,
-                Kind::Whitespace | Kind::LineComment | Kind::BlockComment
-            ) {
-                continue;
-            }
-            self.pending.push_back(next);
-            self.high_water = self.high_water.max(self.pending.len());
-        }
-        Ok(self.pending.get(ahead).map(|pending| pending.token))
+        let slot = self.head & MASK;
+        let pending = self.ring[slot];
+        self.last_ordinal = self.ordinals[slot];
+        self.head = (slot + 1) & MASK;
+        self.len -= 1;
+        self.ready -= 1;
+        self.consumed_end = pending.token.end;
+        self.last_kind = Some(pending.token.kind);
+        self.last_word = pending.word;
     }
 
     /// # Errors
     /// Returns lexical failures.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token lookahead probe; callgrind shows the call costs more than the probe"
+        )
+    )]
     pub fn take(&mut self) -> Result<Option<Token>, LexError> {
-        self.peek(0)?;
-        let pending = self.pending.pop_front();
-        if let Some(pending) = pending {
-            self.consumed_end = pending.token.end;
-            self.last_kind = Some(pending.token.kind);
-            self.last_ordinal = pending.ordinal;
+        let token = self.peek(0)?;
+        if token.is_some() {
+            self.advance();
         }
-        Ok(pending.map(|pending| pending.token))
+        Ok(token)
     }
 
     #[must_use]
@@ -211,20 +445,80 @@ impl<'source> Cursor<'source> {
         self.last_kind
     }
 
-    /// # Errors
-    /// Returns lexical failures.
-    pub fn at(&mut self, punctuation: Punctuation) -> Result<bool, LexError> {
-        Ok(self
-            .peek(0)?
-            .is_some_and(|token| token.kind == Kind::Punctuation(punctuation)))
+    /// The classified word of the most recently consumed token.
+    #[must_use]
+    pub const fn last_word(&self) -> Word {
+        self.last_word
     }
 
     /// # Errors
     /// Returns lexical failures.
-    pub fn word(&mut self, word: &str) -> Result<bool, LexError> {
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token lookahead probe; callgrind shows the call costs more than the probe"
+        )
+    )]
+    pub fn at(&mut self, punctuation: Punctuation) -> Result<bool, LexError> {
         Ok(self
-            .peek(0)?
-            .is_some_and(|token| token.kind == Kind::Identifier && self.spelling(token) == word))
+            .entry(0)?
+            .is_some_and(|pending| pending.token.kind == Kind::Punctuation(punctuation)))
+    }
+
+    /// Consume the next token when it is `punctuation`.
+    ///
+    /// # Errors
+    /// Returns lexical failures.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token lookahead probe; callgrind shows the call costs more than the probe"
+        )
+    )]
+    pub fn eat(&mut self, punctuation: Punctuation) -> Result<bool, LexError> {
+        let found = self.at(punctuation)?;
+        if found {
+            self.advance();
+        }
+        Ok(found)
+    }
+
+    /// # Errors
+    /// Returns lexical failures.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token lookahead probe; callgrind shows the call costs more than the probe"
+        )
+    )]
+    pub fn at_word(&mut self, word: Word) -> Result<bool, LexError> {
+        Ok(self.peek_word(0)? == word)
+    }
+
+    /// Consume the next token when it is the identifier `word`.
+    ///
+    /// # Errors
+    /// Returns lexical failures.
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(
+            clippy::inline_always,
+            reason = "per-token lookahead probe; callgrind shows the call costs more than the probe"
+        )
+    )]
+    pub fn eat_word(&mut self, word: Word) -> Result<bool, LexError> {
+        let found = self.at_word(word)?;
+        if found {
+            self.advance();
+        }
+        Ok(found)
     }
 
     #[must_use]
@@ -299,7 +593,7 @@ impl<'source> Cursor<'source> {
         let dot = token.start
             + u32::try_from(left.len()).map_err(|_| error(token.start, "tuple index too long"))?;
         let additions = 1 + usize::from(!right.is_empty());
-        if self.pending.len() + additions > 3 {
+        if self.len + additions > BOUND {
             return Err(error(
                 token.start,
                 "projection split exceeds lookahead bound",
@@ -319,7 +613,8 @@ impl<'source> Cursor<'source> {
         });
         self.consumed_end = dot;
         self.last_kind = Some(Kind::Integer);
-        self.high_water = self.high_water.max(self.pending.len());
+        self.last_word = Word::Other;
+        self.high_water = self.high_water.max(self.len);
         Ok(Token {
             kind: Kind::Integer,
             start: token.start,
@@ -338,7 +633,7 @@ impl<'source> Cursor<'source> {
             .ok_or_else(|| error(self.end(), "expected compound token"))?;
         if token.end - token.start < 2
             || !matches!(token.kind, Kind::Punctuation(_))
-            || self.pending.len() >= 3
+            || self.len >= BOUND
         {
             return Err(error(token.start, "invalid compound token split"));
         }
@@ -349,13 +644,25 @@ impl<'source> Cursor<'source> {
         });
         self.consumed_end = token.start + 1;
         self.last_kind = Some(Kind::Punctuation(first));
-        self.high_water = self.high_water.max(self.pending.len());
+        self.last_word = Word::Other;
+        self.high_water = self.high_water.max(self.len);
         Ok(Token {
             kind: Kind::Punctuation(first),
             start: token.start,
             end: token.start + 1,
         })
     }
+}
+
+/// The keyword class of an identifier token; every other token is `Other`.
+fn classify(source: &str, token: Token) -> Word {
+    if token.kind != Kind::Identifier {
+        return Word::Other;
+    }
+    source
+        .as_bytes()
+        .get(token.start as usize..token.end as usize)
+        .map_or(Word::Other, Word::classify)
 }
 
 /// Inspect the typed remainder of a token split by a grammar callback.

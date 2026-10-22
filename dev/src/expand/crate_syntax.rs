@@ -50,40 +50,22 @@ pub fn configure<'s>(
     config: &Config,
 ) -> Result<ConfiguredCrate<'s>, LexError> {
     let mut active = vec![false; ast.nodes.len()];
-    let mut work = vec![ast.root];
+    let mut work = Vec::with_capacity(64);
+    work.push(ast.root);
     let mut owners = Vec::new();
     let mut attributes = Attributes::default();
     let mut effects = Vec::new();
     while let Some(node) = work.pop() {
-        if active[node.0 as usize] {
+        let index = node.0 as usize;
+        if active[index] {
             continue;
         }
         if let Kind::Attributed {
             attributes: range, ..
-        } = ast.node(node).kind
+        } = ast.nodes[index].kind
         {
             let first = effects.len();
-            for index in range.start..range.end {
-                let capture = &ast.attributes[index as usize];
-                let before = attributes.entries.len();
-                attributes.push_owned(&capture.forest, source, capture.attribute, config)?;
-                for entry in &attributes.entries[before..] {
-                    let mut entry = *entry;
-                    if let Some(parent) = entry.parent {
-                        entry.parent =
-                            Some(u32::try_from(first + parent as usize).map_err(|_| {
-                                crate::syntax::token_tree::error(
-                                    capture.attribute.span.start,
-                                    "too many configured attributes",
-                                )
-                            })?);
-                    }
-                    effects.push(AttributeEffect {
-                        capture: index,
-                        attribute: entry,
-                    });
-                }
-            }
+            configure_owner(&ast, range, source, config, &mut attributes, &mut effects)?;
             let enabled = attributes.enabled();
             attributes.clear();
             owners.push(Owner {
@@ -95,19 +77,30 @@ pub fn configure<'s>(
                 continue;
             }
         }
-        active[node.0 as usize] = true;
-        if let Kind::DeferredLiteral(token) = ast.node(node).kind {
-            let value = crate::literal::interpret(source, token)?.ok_or(
-                crate::syntax::token_tree::error(token.start, "expected literal token"),
-            )?;
-            let index = u32::try_from(ast.literals.len())
-                .map_err(|_| crate::syntax::token_tree::error(token.start, "too many literals"))?;
-            ast.literals.push(value);
-            ast.nodes[node.0 as usize].kind = Kind::Literal(index);
+        active[index] = true;
+        match ast.nodes[index].kind {
+            Kind::DeferredLiteral(token) => {
+                let value = crate::literal::interpret(source, token)?.ok_or(
+                    crate::syntax::token_tree::error(token.start, "expected literal token"),
+                )?;
+                let literal = u32::try_from(ast.literals.len()).map_err(|_| {
+                    crate::syntax::token_tree::error(token.start, "too many literals")
+                })?;
+                ast.literals.push(value);
+                ast.nodes[index].kind = Kind::Literal(literal);
+            }
+            // The most frequent leaves have no children to visit.
+            Kind::Name(_) | Kind::Literal(_) | Kind::CrateRoot(_) => {}
+            _ => {
+                let mark = work.len();
+                ast.push_children(node, &mut work);
+                match work.len() - mark {
+                    0 | 1 => {}
+                    2 => work.swap(mark, mark + 1),
+                    _ => work[mark..].reverse(),
+                }
+            }
         }
-        let mark = work.len();
-        ast.push_children(node, &mut work);
-        work[mark..].reverse();
     }
     Ok(ConfiguredCrate {
         ast,
@@ -115,6 +108,40 @@ pub fn configure<'s>(
         active,
         effects,
     })
+}
+
+/// Evaluate one owner's attributes, appending their effects with parent
+/// indices relative to the whole effect list.
+fn configure_owner<L>(
+    ast: &Syntax<L>,
+    range: crate::syntax::item::AttributeRange,
+    source: &str,
+    config: &Config,
+    attributes: &mut Attributes,
+    effects: &mut Vec<AttributeEffect>,
+) -> Result<(), LexError> {
+    let first = effects.len();
+    for index in range.start..range.end {
+        let capture = &ast.attributes[index as usize];
+        let before = attributes.entries.len();
+        attributes.push_owned(&capture.forest, source, capture.attribute, config)?;
+        for entry in &attributes.entries[before..] {
+            let mut entry = *entry;
+            if let Some(parent) = entry.parent {
+                entry.parent = Some(u32::try_from(first + parent as usize).map_err(|_| {
+                    crate::syntax::token_tree::error(
+                        capture.attribute.span.start,
+                        "too many configured attributes",
+                    )
+                })?);
+            }
+            effects.push(AttributeEffect {
+                capture: index,
+                attribute: entry,
+            });
+        }
+    }
+    Ok(())
 }
 
 /// # Errors

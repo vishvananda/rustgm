@@ -1,5 +1,7 @@
 //! Type paths, binders and generic argument syntax; no name/type resolution.
-use super::{Kind, LexError, List, NORMAL, NodeId, P, Parser, Span, TokenKind, error, keyword};
+use super::{
+    Kind, LexError, List, NORMAL, NodeId, P, Parser, Span, TokenKind, Word, error, keyword,
+};
 use crate::syntax::{ast::TypeFlavor, item::GenericFlavor};
 
 use super::fragment::FragmentKind as F;
@@ -11,8 +13,7 @@ impl Parser<'_, '_> {
 
     pub(super) fn name(&mut self) -> Result<Span, LexError> {
         let token = self.required()?;
-        let text = self.cursor.spelling(token);
-        if !keyword::identifier(token.kind, text.strip_prefix("r#").unwrap_or(text)) {
+        if !self.identifier(token, self.cursor.last_word()) {
             return Err(error(token.start, "expected identifier"));
         }
         Ok(Span {
@@ -72,11 +73,12 @@ impl Parser<'_, '_> {
                 "type fragment is not a path",
             ));
         }
-        let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
-        if self.cursor.at(P::Less)? || self.cursor.at(P::ShiftLeft)? {
+        let first = self.cursor.peek(0)?;
+        let start = first.map_or(self.cursor.end(), |t| t.start);
+        if first.is_some_and(|t| matches!(t.kind, TokenKind::Punctuation(P::Less | P::ShiftLeft))) {
             self.angle_start()?;
             let ty = self.ty()?;
-            let trait_path = if self.word("as")? {
+            let trait_path = if self.eat_word(Word::As)? {
                 Some(self.rich_path(true)?)
             } else {
                 None
@@ -103,12 +105,7 @@ impl Parser<'_, '_> {
                 }
                 self.node(token.start, Kind::CrateRoot(crate_id.get()))?
             } else {
-                let text = self.cursor.spelling(token);
-                let name = text.strip_prefix("r#").unwrap_or(text);
-                if !(keyword::identifier(token.kind, name)
-                    || (token.kind == TokenKind::Identifier
-                        && matches!(name, "Self" | "self" | "super" | "crate")))
-                {
+                if !self.path_segment(token, self.cursor.last_word()) {
                     return Err(error(token.start, "expected path segment"));
                 }
                 self.node(
@@ -119,24 +116,17 @@ impl Parser<'_, '_> {
                     }),
                 )?
             };
-            let separator = self.cursor.at(P::ColonColon)?
-                && self.cursor.peek(1)?.is_some_and(|next| {
-                    matches!(
-                        next.kind,
-                        TokenKind::Punctuation(
-                            P::Less | P::LeftArrow | P::ShiftLeft | P::OpenParen
-                        )
-                    )
-                });
+            let mut next = self.cursor.peek(0)?.map(|t| t.kind);
+            let separator = next == Some(TokenKind::Punctuation(P::ColonColon))
+                && self
+                    .cursor
+                    .peek(1)?
+                    .is_some_and(|next| opens_arguments(next.kind));
             if separator {
                 self.required()?;
+                next = self.cursor.peek(0)?.map(|t| t.kind);
             }
-            if (type_position || separator)
-                && (self.cursor.at(P::Less)?
-                    || self.cursor.at(P::LeftArrow)?
-                    || self.cursor.at(P::ShiftLeft)?
-                    || self.cursor.at(P::OpenParen)?)
-            {
+            if (type_position || separator) && next.is_some_and(opens_arguments) {
                 let (arguments, output, parenthesized) = self.generic_arguments()?;
                 segment = self.node(
                     token.start,
@@ -147,11 +137,18 @@ impl Parser<'_, '_> {
                         parenthesized,
                     },
                 )?;
+                next = self.cursor.peek(0)?.map(|t| t.kind);
             }
-            self.scratch.push(segment);
-            if !self.eat(P::ColonColon)? {
+            if next != Some(TokenKind::Punctuation(P::ColonColon)) {
+                if self.scratch.len() == mark {
+                    let segments = self.single(segment)?;
+                    return self.node(start, Kind::Path { absolute, segments });
+                }
+                self.scratch.push(segment);
                 break;
             }
+            self.scratch.push(segment);
+            self.required()?;
         }
         let segments = self.list(mark)?;
         self.node(start, Kind::Path { absolute, segments })
@@ -233,45 +230,37 @@ impl Parser<'_, '_> {
     }
 
     pub(super) fn rich_type(&mut self) -> Result<NodeId, LexError> {
-        let token = self
-            .cursor
-            .peek(0)?
-            .ok_or_else(|| error(self.cursor.end(), "expected type"))?;
+        let Some((token, word)) = self.cursor.current()? else {
+            return Err(error(self.cursor.end(), "expected type"));
+        };
         let start = token.start;
-        if self.cursor.word("dyn")? || self.cursor.word("impl")? {
-            let opaque = self.word("impl")?;
-            if !opaque {
+        match word {
+            Word::Dyn | Word::Impl => {
                 self.required()?;
+                let opaque = word == Word::Impl;
+                let bounds = self.bounds()?;
+                if bounds.start == bounds.end {
+                    return Err(error(start, "trait type requires a bound"));
+                }
+                return self.node(start, Kind::TraitType { opaque, bounds });
             }
-            let bounds = self.bounds()?;
-            if bounds.start == bounds.end {
-                return Err(error(start, "trait type requires a bound"));
-            }
-            return self.node(start, Kind::TraitType { opaque, bounds });
-        }
-        if self.cursor.word("for")?
-            || self.cursor.word("unsafe")?
-            || self.cursor.word("extern")?
-            || self.cursor.word("fn")?
-        {
-            return self.function_type();
+            Word::For | Word::Unsafe | Word::Extern | Word::Fn => return self.function_type(),
+            Word::Underscore => return self.type_inner(),
+            _ => {}
         }
         if matches!(
             token.kind,
             TokenKind::Punctuation(
                 P::And | P::AndAnd | P::Star | P::OpenParen | P::OpenBracket | P::Bang
             )
-        ) || self.cursor.word("_")?
-        {
+        ) {
             return self.type_inner();
         }
         let path = self.rich_path(true)?;
         if self.eat(P::Bang)? {
             return self.macro_capture(path, crate::syntax::ast::MacroContext::Type);
         }
-        let mark = self.scratch.len();
-        self.scratch.push(path);
-        let elements = self.list(mark)?;
+        let elements = self.single(path)?;
         self.node(
             start,
             Kind::Type {
@@ -316,7 +305,7 @@ impl Parser<'_, '_> {
                         },
                         None,
                     )
-                } else if self.word("const")? {
+                } else if self.eat_word(Word::Const)? {
                     let name = self.name()?;
                     self.expect(P::Colon)?;
                     (GenericFlavor::Const, name, Some(self.ty()?))
@@ -361,7 +350,7 @@ impl Parser<'_, '_> {
     }
 
     pub(super) fn binders(&mut self) -> Result<List, LexError> {
-        if !self.word("for")? {
+        if !self.eat_word(Word::For)? {
             return Ok(Self::empty_list());
         }
         if !self.cursor.at(P::Less)? {
@@ -396,12 +385,12 @@ impl Parser<'_, '_> {
                         | P::OpenBrace
                         | P::CloseParen
                 )
-            ) || self.cursor.word("where")?
+            ) || self.cursor.at_word(Word::Where)?
             {
                 break;
             }
             let grouped = self.eat(P::OpenParen)?;
-            if self.word("use")? {
+            if self.eat_word(Word::Use)? {
                 if grouped {
                     return Err(error(
                         token.start,
@@ -416,7 +405,7 @@ impl Parser<'_, '_> {
                 continue;
             }
             let optional = self.eat(P::Question)?;
-            let quantified = self.cursor.word("for")?;
+            let quantified = self.cursor.at_word(Word::For)?;
             let binders = self.binders()?;
             if quantified && (optional || self.cursor.at(P::Question)?) {
                 return Err(self.error("higher-ranked bounds cannot relax trait requirements")?);
@@ -496,14 +485,14 @@ impl Parser<'_, '_> {
 
     pub(super) fn where_clause(&mut self) -> Result<List, LexError> {
         let mark = self.scratch.len();
-        if !self.word("where")? {
+        if !self.eat_word(Word::Where)? {
             return self.list(mark);
         }
         while !self.cursor.at(P::OpenBrace)?
             && !self.cursor.at(P::Semicolon)?
             && !self.cursor.at(P::Equal)?
         {
-            let quantified = self.cursor.word("for")?;
+            let quantified = self.cursor.at_word(Word::For)?;
             let binders = self.binders()?;
             let token = self
                 .cursor
@@ -543,13 +532,13 @@ impl Parser<'_, '_> {
     fn function_type(&mut self) -> Result<NodeId, LexError> {
         let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
         let binders = self.binders()?;
-        let unsafe_ = self.word("unsafe")?;
-        let abi = if self.word("extern")? {
+        let unsafe_ = self.eat_word(Word::Unsafe)?;
+        let abi = if self.eat_word(Word::Extern)? {
             crate::syntax::item::Abi::Extern(self.abi()?)
         } else {
             crate::syntax::item::Abi::Rust
         };
-        if !self.word("fn")? {
+        if !self.eat_word(Word::Fn)? {
             return Err(self.error("expected fn in function pointer type")?);
         }
         let parameters = self.function_parameters(true)?;
@@ -571,4 +560,12 @@ impl Parser<'_, '_> {
             });
         self.node(start, Kind::FunctionType(index))
     }
+}
+
+/// Tokens that begin generic or parenthesized arguments after a path segment.
+fn opens_arguments(kind: TokenKind) -> bool {
+    matches!(
+        kind,
+        TokenKind::Punctuation(P::Less | P::LeftArrow | P::ShiftLeft | P::OpenParen)
+    )
 }

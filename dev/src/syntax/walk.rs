@@ -5,8 +5,9 @@ use super::{
 };
 
 impl<L> Syntax<L> {
+    /// Child lists are short; copying element-wise avoids a library copy call.
     fn children(&self, list: List, output: &mut Vec<NodeId>) {
-        output.extend_from_slice(self.list(list));
+        output.extend(self.list(list).iter().copied());
     }
 
     /// Append direct child IDs. Callers may reverse the appended suffix for a
@@ -16,7 +17,7 @@ impl<L> Syntax<L> {
         reason = "exhaustive typed child dispatch is kept together and audited as a dispatch function"
     )]
     pub fn push_children(&self, id: NodeId, output: &mut Vec<NodeId>) {
-        match self.node(id).kind {
+        match self.nodes[id.0 as usize].kind {
             Kind::GenericMethodCall {
                 receiver,
                 method,
@@ -249,7 +250,7 @@ impl<L> Syntax<L> {
     }
 
     fn item_children(&self, index: u32, output: &mut Vec<NodeId>) {
-        let item = self.items[index as usize];
+        let item = &self.items[index as usize];
         if let Visibility::Restricted(path) = item.visibility {
             output.push(path);
         }
