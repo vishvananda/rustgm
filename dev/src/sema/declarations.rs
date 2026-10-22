@@ -24,6 +24,7 @@ mod impl_headers;
 mod implicit_methods;
 mod inherent_headers;
 mod intrinsics;
+mod iteration;
 mod language_hooks;
 mod library_types;
 mod lifetimes;
@@ -310,6 +311,7 @@ impl Checker<'_> {
         self.prepare_call_contracts()?;
         self.prepare_language_contracts()?;
         self.prepare_comparison_contracts()?;
+        self.prepare_iteration_contracts()?;
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
         self.prepare_trait_owners(&mut steps, work_limit)?;

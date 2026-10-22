@@ -16,7 +16,8 @@ use crate::syntax::{
 pub use intrinsics::{ComparisonResult, Definition as BuiltinIntrinsic, Intrinsics};
 pub use library::{LibraryTypes, Nominal as LibraryNominal, SliceLength};
 pub use traits::{
-    BuiltinTrait, Callable, ComparisonMembers, Equality, Language, LanguageOutput, Traits,
+    BuiltinTrait, Callable, ComparisonMembers, Equality, Iteration, IterationBlanket,
+    IterationDeclaration, Language, LanguageOutput, Traits,
 };
 
 impl Resolver<'_> {
@@ -115,6 +116,12 @@ impl Resolver<'_> {
     ) -> Result<(), Error> {
         if path
             .last()
+            .is_some_and(|name| matches!(self.package.names.get(*name), "next" | "into_iter"))
+        {
+            self.prepare_iteration(c, node)?;
+        }
+        if path
+            .last()
             .is_some_and(|name| self.package.names.get(*name) == "len")
         {
             self.prepare_slice_length(c, node)?;
@@ -144,6 +151,8 @@ impl Resolver<'_> {
                         | "Eq"
                         | "PartialOrd"
                         | "Ord"
+                        | "Iterator"
+                        | "IntoIterator"
                         | "core"
                         | "std"
                         | "Copy"

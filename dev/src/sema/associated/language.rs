@@ -19,6 +19,35 @@ pub(super) struct Declarations {
     pub(super) comparisons: Option<Box<super::comparisons::Comparisons>>,
 }
 impl Inventory {
+    pub(in crate::sema) fn library_impl_member(
+        &mut self,
+        owner: DefId,
+        member: DefId,
+    ) -> Result<(), &'static str> {
+        let language = self
+            .language
+            .as_mut()
+            .ok_or("missing library member registry")?;
+        if language.members.remove(&member) != Some(owner) {
+            return Err("library implementation member has a different owner");
+        }
+        if language.inherent_members.insert(member, owner).is_some() {
+            return Err("library implementation member already registered");
+        }
+        Ok(())
+    }
+    pub(in crate::sema) fn register_library_type_member(
+        &mut self,
+        owner: DefId,
+        member: DefId,
+        name: crate::resolve::names::NameId,
+    ) {
+        let language = self.language.get_or_insert_default();
+        if language.members.insert(member, owner).is_none() {
+            language.hook_members.push((member, owner));
+        }
+        self.type_names.insert(member, name);
+    }
     pub(in crate::sema) fn declare_operation(
         &mut self,
         definition: DefId,

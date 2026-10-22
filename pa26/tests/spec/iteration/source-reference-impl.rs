@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct R{cur:u8,end:u8}impl<'a>core::iter::Iterator for &'a mut R{type Item=u8;fn next(&mut self)->Option<u8>{if self.cur<self.end{let x=self.cur;self.cur+=1u8;Some(x)}else{None}}}fn main(){let mut r=R{cur:0,end:3};let mut n=0u8;for x in &mut r{n+=x;}check(n==3&&r.cur==3);}

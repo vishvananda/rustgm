@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}trait Iterator{type Item;fn next(&mut self)->Option<Self::Item>;}struct I;impl Iterator for I{type Item=u8;fn next(&mut self)->Option<u8>{None}}fn main(){for _x in I{}}

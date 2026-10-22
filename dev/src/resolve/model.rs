@@ -2,8 +2,10 @@
 pub use super::builtins::{
     BuiltinIntrinsic, BuiltinTrait, Callable as BuiltinCallable,
     ComparisonMembers as BuiltinComparisonMembers, ComparisonResult, Equality as BuiltinEquality,
-    Intrinsics, Language as BuiltinLanguage, LanguageOutput as BuiltinLanguageOutput,
-    LibraryNominal, LibraryTypes, SliceLength as LibrarySliceLength, Traits as BuiltinTraits,
+    Intrinsics, Iteration as BuiltinIteration, IterationBlanket as BuiltinIterationBlanket,
+    IterationDeclaration as BuiltinIterationDeclaration, Language as BuiltinLanguage,
+    LanguageOutput as BuiltinLanguageOutput, LibraryNominal, LibraryTypes,
+    SliceLength as LibrarySliceLength, Traits as BuiltinTraits,
 };
 use super::{names::NameId, package::ModuleId, unit::NodeKey};
 use crate::syntax::ast::NodeId;

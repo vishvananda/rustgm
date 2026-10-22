@@ -30,7 +30,8 @@ impl Resolver<'_> {
                 self.visit(c, root, Namespace::Value)?;
             }
         }
-        self.reserve_operator_comparisons()
+        self.reserve_operator_comparisons()?;
+        self.reserve_iteration()
     }
     pub fn visit_list(&mut self, c: Context, list: List, ns: Namespace) -> Result<(), Error> {
         for offset in list.start..list.end {
@@ -112,6 +113,9 @@ impl Resolver<'_> {
                 iterator,
                 body,
             } => {
+                self.facts
+                    .builtin_traits
+                    .note_iteration(c.module, NodeKey { file: c.file, node });
                 self.visit(c, iterator, Namespace::Value)?;
                 self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::new())?;
                 self.visit(c, body, Namespace::Value)

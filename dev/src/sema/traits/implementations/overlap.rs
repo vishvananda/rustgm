@@ -1,6 +1,7 @@
 //! Structural impl disjointness uses simultaneous existential type/const equations.
 mod disjointness;
 mod inputs;
+mod iteration;
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
@@ -9,6 +10,7 @@ use crate::{
         parameters::predicates::Predicate,
     },
 };
+pub(in crate::sema) use iteration::possible as iteration;
 
 pub(in crate::sema) fn possible(
     facts: &mut Declarations,

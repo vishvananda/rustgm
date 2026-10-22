@@ -181,6 +181,7 @@ impl Checker<'_> {
                         Some(
                             crate::resolve::model::BuiltinTrait::Language(_)
                                 | crate::resolve::model::BuiltinTrait::Comparison(_)
+                                | crate::resolve::model::BuiltinTrait::Iteration(_)
                         )
                     )
                     || auto

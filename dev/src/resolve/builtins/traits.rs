@@ -1,6 +1,7 @@
 //! Small demand-loaded trait modules retain identity through aliases and globs.
 mod callables;
 mod comparisons;
+mod iteration;
 mod language;
 use super::{Context, DefId, DefKind, Error, NameId, Resolver, ScopeId};
 use crate::support::language_hooks::Hook;
@@ -13,6 +14,7 @@ use crate::{
 };
 pub use callables::Callable;
 pub use comparisons::{Equality, Members as ComparisonMembers};
+pub use iteration::{Blanket as IterationBlanket, Declaration as IterationDeclaration, Iteration};
 pub use language::{Language, Output as LanguageOutput};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -24,6 +26,7 @@ pub enum BuiltinTrait {
     Callable(CallTrait),
     Language(Hook),
     Comparison(crate::support::comparisons::Comparison),
+    Iteration(crate::support::iteration::Trait),
 }
 impl BuiltinTrait {
     fn index(self) -> Option<usize> {
@@ -33,7 +36,7 @@ impl BuiltinTrait {
             Self::Sized => 2,
             Self::Auto(marker) => 3 + marker as usize,
             Self::Callable(kind) => 8 + kind as usize,
-            Self::Language(_) | Self::Comparison(_) => return None,
+            Self::Language(_) | Self::Comparison(_) | Self::Iteration(_) => return None,
         })
     }
     #[must_use]
@@ -46,6 +49,7 @@ impl BuiltinTrait {
             Self::Callable(kind) => kind.name(),
             Self::Language(kind) => kind.name(),
             Self::Comparison(kind) => kind.name(),
+            Self::Iteration(kind) => kind.name(),
         }
     }
 }
@@ -60,6 +64,7 @@ pub struct Traits {
     callables: Option<Box<[Callable; 3]>>,
     language: std::collections::HashMap<Hook, Language>,
     comparisons: Option<Box<comparisons::Comparisons>>,
+    iteration: Option<Box<iteration::Registry>>,
 }
 impl Traits {
     fn insert_fixed(
@@ -81,6 +86,9 @@ impl Traits {
         if let BuiltinTrait::Comparison(kind) = trait_ {
             return self.comparison(kind).map(|entry| entry.definition);
         }
+        if let BuiltinTrait::Iteration(kind) = trait_ {
+            return self.iteration().map(|entry| entry.get(kind).definition);
+        }
         self.entries[trait_.index()?]
     }
     #[must_use]
@@ -93,6 +101,11 @@ impl Traits {
                 crate::support::comparisons::Comparison::ALL
                     .into_iter()
                     .map(BuiltinTrait::Comparison),
+            )
+            .chain(
+                crate::support::iteration::Trait::ALL
+                    .into_iter()
+                    .map(BuiltinTrait::Iteration),
             )
             .find(|t| self.get(*t) == Some(id))
             .or_else(|| {
@@ -114,6 +127,11 @@ impl Traits {
                     .flat_map(|entries| entries.entries.iter().flatten())
                     .map(|entry| entry.definition),
             )
+            .chain(
+                self.iteration()
+                    .into_iter()
+                    .flat_map(|entry| entry.declarations.map(|d| d.definition)),
+            )
     }
 }
 impl Resolver<'_> {
@@ -130,6 +148,12 @@ impl Resolver<'_> {
         let Some(last) = path.last().map(|n| self.package.names.get(*n)) else {
             return Ok(());
         };
+        if matches!(
+            last,
+            "Iterator" | "IntoIterator" | "next" | "into_iter" | "iter"
+        ) {
+            return self.prepare_iteration(c, node);
+        }
         // Loading language metadata does not select it. Ordinary lookup still
         // decides whether the written name denotes a user declaration or alias.
         // Defer this family until a call-trait name is actually demanded so an

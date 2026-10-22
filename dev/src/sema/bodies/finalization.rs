@@ -157,6 +157,7 @@ impl Checker<'_> {
         self.validate_generic_uses(&solved, &predicates, &evidence)?;
         self.publish_constant_uses(arguments)?;
         self.publish_methods(&solved);
+        self.publish_for_plans(&solved)?;
         self.publish_invocations(&solved);
         let body_key = self.key(body);
         self.publish_pattern_types(&solved)?;
@@ -179,6 +180,9 @@ impl Checker<'_> {
         self.publish_index_bounds(&solved)?;
         self.publish_adjustments(&solved, body_key)?;
         for (node, term) in &self.state.calls {
+            if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. }) {
+                continue;
+            }
             let key = self.key(*node);
             self.facts
                 .node_mut(key)

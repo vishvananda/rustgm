@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct C{cur:u8,end:u8}fn counter(end:u8)->C{C{cur:0,end}}impl core::iter::Iterator for C{type Item=u8;fn next(&mut self)->Option<u8>{if self.cur<self.end{let n=self.cur;self.cur+=1u8;Some(n)}else{None}}}fn main(){for _x in counter(3){break 7u8;}}

@@ -4,6 +4,7 @@ pub mod comparisons;
 pub mod crates;
 pub(crate) mod intern_slice;
 pub mod intrinsics;
+pub mod iteration;
 pub mod language_hooks;
 pub mod library_types;
 pub mod linkage;

@@ -10,6 +10,7 @@ mod adjusted;
 mod decisions;
 mod drops;
 mod environments;
+mod for_loops;
 mod guards;
 mod initializers;
 mod inline_roots;
@@ -244,6 +245,20 @@ struct Reach {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    ForInitialize {
+        node: NodeId,
+        base: usize,
+    },
+    ForRepeat {
+        node: NodeId,
+        header: BlockId,
+        base: usize,
+    },
+    ForFinish {
+        node: NodeId,
+        exit: BlockId,
+        base: usize,
+    },
     CloseScope {
         node: NodeId,
         scopes: ScopeRange,
@@ -954,6 +969,9 @@ impl<'a> Builder<'a> {
                     self.save(node, value)?;
                 }
             }
+            Work::ForInitialize { node, base } => self.initialize_for(node, base)?,
+            Work::ForRepeat { node, header, base } => self.repeat_for(node, header, base)?,
+            Work::ForFinish { node, exit, base } => self.finish_for(node, exit, base)?,
             Work::Repeat {
                 node,
                 target,
@@ -1122,6 +1140,13 @@ impl<'a> Builder<'a> {
                 right,
             } => self.choice(node, left, Some(left), Some(right))?,
             Kind::Loop { body } => self.loop_body(node, body, None)?,
+            Kind::For { iterator, .. } => {
+                self.scratch.work.push(Work::ForInitialize {
+                    node,
+                    base: self.scratch.live.len(),
+                });
+                self.scratch.work.push(Work::Enter(iterator));
+            }
             Kind::While { condition, body } if self.conditional_chain(condition) => {
                 self.conditional_loop(node, condition, body)?;
             }

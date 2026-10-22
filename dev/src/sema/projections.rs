@@ -26,6 +26,11 @@ pub(super) fn definition(
     owner: DefId,
     item: ItemId,
 ) -> Result<DefId, &'static str> {
+    if let Some(iteration) = facts.iteration.as_deref()
+        && let Some(definition) = iteration.associated_definition(owner, item)?
+    {
+        return Ok(definition);
+    }
     facts
         .associated
         .type_definition(owner, DefId(item.0))

@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}trait Iterator{fn next(&mut self)->u8;}struct I;impl Iterator for I{fn next(&mut self)->u8{7}}fn main(){let mut i=I;check(<I as Iterator>::next(&mut i)==7);}

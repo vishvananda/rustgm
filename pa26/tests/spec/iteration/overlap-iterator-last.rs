@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct C;impl core::iter::IntoIterator for C{type Item=u8;type IntoIter=C;fn into_iter(self)->C{self}}impl core::iter::Iterator for C{type Item=u8;fn next(&mut self)->Option<u8>{None}}fn main(){}

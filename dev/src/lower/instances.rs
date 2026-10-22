@@ -156,6 +156,7 @@ fn inspect_selected<R>(
     .bodies;
     body::templates::constructors(report, facts, &mut templates, &mut inputs)?;
     body::provided::append(report, facts, &mut templates, &mut inputs)?;
+    body::iterator_factories::append(report, facts, &mut templates, &mut inputs)?;
     body::promote::analyze_templates_reusing(
         report,
         facts,

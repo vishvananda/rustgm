@@ -20,6 +20,7 @@ mod hidden_results;
 mod inline;
 mod invocations;
 mod item_values;
+mod iteration;
 mod language_hooks;
 mod lifetimes;
 mod matches;
@@ -119,6 +120,7 @@ pub fn analyze_with_hidden(
 enum FrameKind {
     Loop,
     While,
+    For,
     Block,
 }
 #[derive(Clone, Copy)]
@@ -189,6 +191,8 @@ enum Work {
     },
     MethodArguments(NodeId),
     AssignmentValue(NodeId),
+    ForIterator(NodeId),
+    ForPattern(NodeId, TermId),
     CollectClosure,
     CollectInline,
 }
@@ -799,6 +803,8 @@ impl Checker<'_> {
                 }
                 Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
                 Work::MethodArguments(node) => self.method_arguments(node)?,
+                Work::ForIterator(node) => self.for_iterator(node)?,
+                Work::ForPattern(node, item) => self.pattern(node, item, true)?,
                 Work::AssignmentValue(node) => {
                     let Kind::Binary { left, right, .. } = self.kind(node) else {
                         return Err(self.error(node, "invalid assignment work"));
@@ -1146,6 +1152,11 @@ impl Checker<'_> {
         self.state.work.push(Work::Exit(node));
         self.state.children.clear();
         match self.kind(node) {
+            Kind::For { iterator, .. } => {
+                self.state.work.push(Work::ForIterator(node));
+                self.state.work.push(Work::Enter(iterator, None));
+                return Ok(());
+            }
             Kind::Match { value, .. } => {
                 self.state.work.push(Work::MatchArms { node, expected });
                 self.state.work.push(Work::Enter(value, None));
@@ -1546,7 +1557,7 @@ impl Checker<'_> {
                 arguments,
                 ..
             } => self.call(node, receiver, arguments),
-            Kind::Loop { body } => self.finish_loop(node, body, None),
+            Kind::Loop { body } | Kind::For { body, .. } => self.finish_loop(node, body, None),
             Kind::While { condition, body } => self.finish_loop(node, body, Some(condition)),
             Kind::Break { label, value } => self.transfer(node, label.is_some(), value, false),
             Kind::Continue(label) => self.transfer(node, label.is_some(), None, true),
@@ -1949,6 +1960,7 @@ impl Checker<'_> {
         let (kind, body) = match self.kind(node) {
             Kind::Loop { body } => (FrameKind::Loop, body),
             Kind::While { body, .. } => (FrameKind::While, body),
+            Kind::For { body, .. } => (FrameKind::For, body),
             Kind::Block { .. } if label.is_some() => (FrameKind::Block, node),
             Kind::Label { value, .. } => {
                 let label = self
@@ -1961,7 +1973,7 @@ impl Checker<'_> {
             }
             _ => return Ok(()),
         };
-        let result = if kind == FrameKind::While {
+        let result = if matches!(kind, FrameKind::While | FrameKind::For) {
             self.known(node, TypeId::UNIT)?
         } else {
             self.variable(node, Domain::Any)?
@@ -1973,7 +1985,7 @@ impl Checker<'_> {
             label,
             result,
             breaks: None,
-            expected: if kind == FrameKind::While {
+            expected: if matches!(kind, FrameKind::While | FrameKind::For) {
                 None
             } else {
                 expected
@@ -2006,7 +2018,7 @@ impl Checker<'_> {
         }
         self.finish_frame(
             frame,
-            if condition.is_some() {
+            if condition.is_some() || frame.kind == FrameKind::For {
                 Some(unit)
             } else {
                 None
@@ -2230,6 +2242,9 @@ impl Checker<'_> {
         } else {
             if value.is_some() && frame.kind == FrameKind::While {
                 return Err(self.error(node, "while loops cannot break with a value"));
+            }
+            if value.is_some() && frame.kind == FrameKind::For {
+                return Err(self.error(node, "for loops cannot break with a value"));
             }
             let expected = self.frame_expected(frame)?.unwrap_or(frame.result);
             if let Some(value) = value {

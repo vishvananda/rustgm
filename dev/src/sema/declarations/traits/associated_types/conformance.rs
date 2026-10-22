@@ -131,7 +131,7 @@ impl Checker<'_> {
     }
 
     /// Instantiate result contracts with one shared mapping, leaving actual types in impl scope.
-    pub(super) fn associated_result_bounds(
+    pub(in crate::sema::declarations) fn associated_result_bounds(
         &mut self,
         key: NodeKey,
         predicate: Predicate,

@@ -257,6 +257,20 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
             // This canonical slice impl is described by library metadata, not AST ownership.
             continue;
         }
+        if report
+            .resolution
+            .builtin_traits
+            .iteration()
+            .is_some_and(|iteration| {
+                iteration
+                    .blankets
+                    .iter()
+                    .any(|declaration| declaration.definition.0 as usize == index)
+            })
+        {
+            // Exact library impl owners retain their own typed schemas and contracts.
+            continue;
+        }
         let source = definition
             .node
             .ok_or_else(|| Error::at(FileId(0), 0, "associated Self definition has no source"))?;

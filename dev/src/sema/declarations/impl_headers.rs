@@ -48,6 +48,28 @@ impl Checker<'_> {
                 head: heads.shape(target).unwrap_or_default(),
             });
         }
+        if let Some(iteration) = self.report.resolution.builtin_traits.iteration() {
+            for declaration in iteration.blankets {
+                let trait_ = match declaration.kind {
+                    crate::support::iteration::Blanket::Identity => {
+                        crate::support::iteration::Trait::IntoIterator
+                    }
+                    crate::support::iteration::Blanket::MutableReference => {
+                        crate::support::iteration::Trait::Iterator
+                    }
+                };
+                headers.push(PendingHeader {
+                    owner: declaration.definition,
+                    item: crate::types::ItemId(iteration.get(trait_).definition.0).into(),
+                    head: match declaration.kind {
+                        crate::support::iteration::Blanket::Identity => None,
+                        crate::support::iteration::Blanket::MutableReference => {
+                            Some(crate::sema::traits::heads::Head::Reference(true))
+                        }
+                    },
+                });
+            }
+        }
         if headers.is_empty() {
             return Ok(());
         }

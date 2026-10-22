@@ -10,6 +10,7 @@ use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct CallTypes {
+    pub iteration: Option<Box<super::iteration::Pending>>,
     pub closure_expectations: Hints,
     pub input_context: super::callee_inputs::Inputs,
     pub obligations: Vec<(NodeId, crate::types::infer::predicates::Predicate)>,
@@ -76,6 +77,7 @@ impl CallTypes {
         self.universal_regions.clone()
     }
     pub fn clear(&mut self) {
+        self.iteration = None;
         self.closure_expectations = Hints::default();
         self.input_context = super::callee_inputs::Inputs::default();
         self.obligations.clear();

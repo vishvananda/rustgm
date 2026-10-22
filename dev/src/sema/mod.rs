@@ -18,6 +18,7 @@ pub mod foreign;
 pub mod generics;
 pub mod inline_constants;
 pub(crate) mod invocations;
+pub(crate) mod iteration;
 pub mod layout_view;
 pub mod lifetimes;
 pub mod members;

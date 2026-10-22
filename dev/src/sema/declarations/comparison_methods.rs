@@ -99,7 +99,7 @@ impl super::comparisons::LibraryContracts<'_> {
             .map_err(|e| self.error(origin, e))?;
         self.publish_library_method(method, callable, receiver, bound_regions)
     }
-    fn publish_library_method(
+    pub(super) fn publish_library_method(
         &mut self,
         method: MethodContract,
         callable: TypeId,

@@ -68,6 +68,7 @@ impl Walker<'_> {
                     self.push(Work::Condition(condition, inner))?;
                 }
             }
+            Syntax::For { .. } => self.for_scopes(node, context)?,
             Syntax::Match { value, arms } => {
                 self.expressions(arms, context)?;
                 // The scrutinee deliberately inherits its enclosing temporary scope.
@@ -101,6 +102,22 @@ impl Walker<'_> {
             }
             other => self.operands(node, other, context)?,
         }
+        Ok(())
+    }
+    fn for_scopes(&mut self, node: NodeId, context: Context) -> Result<(), Error> {
+        let Syntax::For {
+            pattern,
+            iterator,
+            body,
+        } = self.kind(node)
+        else {
+            return Err(self.error(node, "invalid for-loop scope source"));
+        };
+        let extent = self.scope(node, Kind::Block, context)?;
+        let iteration = self.scope(node, Kind::Iteration, extent)?;
+        self.push(Work::Expression(body, iteration))?;
+        self.push(Work::Pattern(pattern, iteration.scope))?;
+        self.push(Work::Expression(iterator, extent))?;
         Ok(())
     }
     fn operands(&mut self, node: NodeId, kind: Syntax, context: Context) -> Result<(), Error> {

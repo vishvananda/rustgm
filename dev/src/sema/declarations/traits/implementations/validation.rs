@@ -28,9 +28,10 @@ impl Checker<'_> {
         for (a, owner_a, b, owner_b) in pairs {
             let key = self
                 .facts
-                .associated
-                .owner(owner_b)
-                .and_then(|id| self.facts.associated.get(id))
+                .generics
+                .implementations
+                .as_ref()
+                .and_then(|r| r.header(owner_b))
                 .ok_or_else(|| {
                     Error::at(
                         crate::resolve::unit::FileId(0),
@@ -42,6 +43,15 @@ impl Checker<'_> {
             let (possible, work) = overlap::possible(&mut self.facts, (a, owner_a), (b, owner_b))
                 .map_err(|e| self.error(key, e))?;
             steps = steps.saturating_add(work);
+            let possible = if possible {
+                let (possible, work) =
+                    overlap::iteration(&mut self.facts, (a, owner_a), (b, owner_b))
+                        .map_err(|e| self.error(key, e))?;
+                steps = steps.saturating_add(work);
+                possible
+            } else {
+                false
+            };
             if steps > 1_000_000 {
                 return Err(self.error(key, "trait implementation overlap work budget exceeded"));
             }
@@ -56,6 +66,9 @@ impl Checker<'_> {
         let types = super::super::associated_types::Members::new(self.report, &self.facts);
         let constants = super::constants::Members::new(self.report, &self.facts);
         for (owner, source, predicate) in headers {
+            if self.validate_iteration_blanket(owner)? {
+                continue;
+            }
             self.validate_reference_coherence(owner, source, predicate, &mut steps)?;
             self.validate_trait_impl_contract(owner, source, predicate)?;
             if matches!(predicate.bound, Bound::Auto(_)) {
@@ -109,7 +122,7 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn validate_trait_impl_contract(
+    pub(in crate::sema::declarations) fn validate_trait_impl_contract(
         &mut self,
         owner: DefId,
         source: NodeKey,

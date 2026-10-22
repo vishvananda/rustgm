@@ -237,14 +237,14 @@ fn build(
     super::build::finish_factory(&mut body, unequal)?;
     Ok(body)
 }
-fn statement(body: &mut Body, action: Action) {
+pub(super) fn statement(body: &mut Body, action: Action) {
     body.statements.push(Statement {
         source: body.source.node,
         action,
     });
 }
-fn value(body: &mut Body, ty: TypeId, kind: Rvalue) -> Result<ValueId, &'static str> {
-    let id = ValueId(u32::try_from(body.values.len()).map_err(|_| "too many equality values")?);
+pub(super) fn value(body: &mut Body, ty: TypeId, kind: Rvalue) -> Result<ValueId, &'static str> {
+    let id = ValueId(u32::try_from(body.values.len()).map_err(|_| "too many library values")?);
     body.values.push(Value { ty, kind });
     statement(body, Action::Evaluate(id));
     Ok(id)

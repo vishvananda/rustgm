@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct R<'a>{p:&'a u8,done:bool}impl<'a> core::iter::Iterator for R<'a>{type Item=&'a u8;fn next(&mut self)->Option<&'a u8>{if self.done{None}else{self.done=true;Some(self.p)}}}fn main(){let n=7u8;let mut sum=0;for x in (R{p:&n,done:false}){sum+=*x;}check(sum==7);}

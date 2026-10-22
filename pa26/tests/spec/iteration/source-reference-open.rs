@@ -1,0 +1,1 @@
+struct R<T>(T);impl<'a,T:core::iter::Iterator>core::iter::Iterator for &'a mut R<T>{type Item=u8;fn next(&mut self)->Option<u8>{None}}impl<T:core::iter::Iterator>core::iter::Iterator for R<T>{type Item=u8;fn next(&mut self)->Option<u8>{None}}fn main(){}

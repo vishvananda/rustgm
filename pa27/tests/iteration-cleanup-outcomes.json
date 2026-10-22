@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/iteration/drop-complete.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa27.iteration-cleanup"
+      ],
+      "source_sha256": "e706a6f9b8da01a1503d73407b568c580ffe2893c93a699ddaf24b1ec83a3553",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/drop-break.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa27.iteration-cleanup"
+      ],
+      "source_sha256": "517f603fca730d9963f7782a367d9c559c767bb2b174f3bef04a09caf771f1c3",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/drop-continue.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa27.iteration-cleanup"
+      ],
+      "source_sha256": "cff0beda1989d3968d52462704c05b2a02aaead8d71bc1ad3512a58b0abc098f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration/drop-return.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa27.iteration-cleanup"
+      ],
+      "source_sha256": "e12da624c1daba314a47ccd1ed0720abe2e6834faa822b39c4ac852c4fa73dfe",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    }
+  ]
+}

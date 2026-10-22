@@ -42,7 +42,11 @@ impl Checker<'_> {
                 .resolution
                 .builtin_traits
                 .identify(trait_definition),
-            Some(BuiltinTrait::Language(_) | BuiltinTrait::Comparison(_))
+            Some(
+                BuiltinTrait::Language(_)
+                    | BuiltinTrait::Comparison(_)
+                    | BuiltinTrait::Iteration(_)
+            )
         ) {
             return Ok(());
         }

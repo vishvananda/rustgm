@@ -319,3 +319,15 @@ initializers; `Self::MAX` preserves inherent-versus-trait precedence.
 `docs/pa26-integer-max.md` records the implementation, layout and evidence.
 Float/char MAX, other primitive constants and legacy numeric modules remain
 required work. PA26 remains planned.
+
+## Maintainer user-defined iteration checkpoint
+
+Canonical `Iterator` and `IntoIterator` now retain real associated-type and
+method obligations. `for` uses separately selected `into_iter` and `next` calls,
+canonical `Option`, ordinary receiver loans and existing scope cleanup.
+The canonical identity and `&mut I` blankets use checked generic originals,
+including unsized mutable-reference forwarding. Draft controls are in
+`tests/iteration-outcomes.json`; unsafe destructor observers belong to PA27.
+See `docs/pa26-iteration-checkpoint.md` for the boundary and qualification.
+Array/slice/range iteration, further iterator methods, question-mark, additional
+derives and formatting remain required; PA26 stays planned.
