@@ -76,7 +76,7 @@ fn contents(reader: Reader<'_>, id: LocationId) -> Result<Constant, &'static str
 fn constant_places_retain_static_identity_and_nested_subobject_paths()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join(format!("../obj/constant-locations-{}", std::process::id()));
+        .join(format!("../obj/parallel/constant-locations-{}", std::process::id()));
     std::fs::create_dir_all(&directory)?;
     let path = directory.join("input.rs");
     std::fs::write(&path, SOURCE)?;
