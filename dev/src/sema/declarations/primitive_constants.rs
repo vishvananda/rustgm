@@ -10,6 +10,10 @@ struct Path {
 }
 impl Checker<'_> {
     fn primitive_constant_path(&self, key: NodeKey) -> Option<Path> {
+        if self.report.package.source_core.is_some() {
+            // Source providers own their associated declarations, including MAX.
+            return None;
+        }
         let (prefix, suffix, name, owner) =
             if let Some(path) = self.report.resolution.qualified_paths.get(&key) {
                 if path.namespace != Namespace::Value || path.trait_path.is_some() {

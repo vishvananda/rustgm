@@ -6,6 +6,17 @@ use crate::{
 };
 use std::collections::{HashMap, HashSet};
 
+#[cfg(test)]
+#[path = "../../../tests/invariants/provider_execution.rs"]
+mod tests;
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum Phase {
+    Begin,
+    Prepared,
+    Resume,
+}
+
 #[derive(Default)]
 pub(super) struct Pending {
     active: HashSet<DefId>,
@@ -16,9 +27,9 @@ impl Checker<'_> {
     pub(super) fn execution_body(
         &mut self,
         requirement: Requirement,
-        resume: bool,
+        phase: Phase,
     ) -> Result<(), Error> {
-        let Some((definition, initializer)) = self.execution_owner(requirement, resume)? else {
+        let Some((definition, initializer)) = self.execution_owner(requirement, phase)? else {
             return Ok(());
         };
         if initializer.map_or_else(
@@ -27,28 +38,53 @@ impl Checker<'_> {
         ) {
             return Ok(());
         }
-        if !resume && !self.execution_bodies.active.insert(definition) {
+        if phase == Phase::Begin && !self.execution_bodies.active.insert(definition) {
             return Err(Error::at(
                 FileId(0),
                 0,
                 "cycle in const function body declaration dependencies",
             ));
         }
+        if phase == Phase::Begin && initializer.is_none() {
+            let function = self
+                .facts
+                .function_indices
+                .get(&definition)
+                .and_then(|&i| self.facts.functions.get(i))
+                .copied()
+                .ok_or_else(|| Error::at(FileId(0), 0, "missing demanded function annotations"))?;
+            if let Some(body) = function.body {
+                self.work
+                    .push(Work::Execution(requirement, Phase::Prepared));
+                let context = self.local_context(function.node, super::regions::Context::ALIAS);
+                self.constant_dependencies_in(body, context)?;
+                return Ok(());
+            }
+        }
+        if phase == Phase::Prepared
+            && (!self.execution_bodies.active.contains(&definition)
+                || self.execution_bodies.suspended.contains_key(&definition))
+        {
+            return Err(Error::at(
+                FileId(0),
+                0,
+                "prepared const body has no exact pending owner",
+            ));
+        }
         let mut scratch = self.constant_scratch.take_typing();
         scratch.resumable();
         let mut checker = bodies::Checker::with_scratch(self.report, &mut self.facts, scratch);
         checker.availability = crate::sema::traits::implementations::Availability::Declarations;
-        let progress = if let Some(state) = self.execution_bodies.suspended.remove(&definition) {
+        let progress = if phase == Phase::Resume {
+            let state = self
+                .execution_bodies
+                .suspended
+                .remove(&definition)
+                .ok_or_else(|| Error::at(FileId(0), 0, "missing suspended const function body"))?;
             checker.restore_body(*state);
             checker.advance_body()?
         } else if let Some(index) = initializer {
             checker.start_initializer(index)?
-        } else if resume {
-            return Err(Error::at(
-                FileId(0),
-                0,
-                "missing suspended const function body",
-            ));
         } else {
             checker.start_execution_function(definition)?
         };
@@ -62,7 +98,7 @@ impl Checker<'_> {
                 Error::at(FileId(0), 0, "const body dependency has no continuation")
             })?;
             self.execution_bodies.suspended.insert(definition, state);
-            self.work.push(Work::Execution(requirement, true));
+            self.work.push(Work::Execution(requirement, Phase::Resume));
             self.work
                 .push(Work::body_dependency(dependency.requirement));
         } else {
@@ -76,7 +112,7 @@ impl Checker<'_> {
     fn execution_owner(
         &mut self,
         requirement: Requirement,
-        resume: bool,
+        phase: Phase,
     ) -> Result<Option<(DefId, Option<usize>)>, Error> {
         let owner = match requirement {
             Requirement::DiscriminantValue(_) => {
@@ -115,11 +151,12 @@ impl Checker<'_> {
                     .ok_or_else(|| {
                         Error::at(FileId(0), 0, "missing constant declaration source")
                     })?;
-                if !resume {
+                if phase == Phase::Begin {
                     if !self.execution_bodies.active.insert(definition) {
                         return Err(self.error(source, "cycle in required initializer bodies"));
                     }
-                    self.work.push(Work::Execution(requirement, true));
+                    self.work
+                        .push(Work::Execution(requirement, Phase::Prepared));
                     self.require_initializer_readiness(source, definition)?;
                     return Ok(None);
                 }

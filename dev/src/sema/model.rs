@@ -335,6 +335,7 @@ pub struct UnionWork {
     pub unique_types: usize,
 }
 pub struct Declarations {
+    pub(crate) source_bindings: Option<Box<super::compiler_items::Catalog>>,
     pub(super) source_computations: Option<Box<super::constants::Computations>>,
     pub crates: Option<Box<super::crates::Linkage>>,
     pub foreign: Option<Box<super::foreign::Registry>>,
@@ -527,6 +528,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            source_bindings: super::compiler_items::Catalog::reserve(report)?,
             source_computations: None,
             crates: None,
             foreign: None,

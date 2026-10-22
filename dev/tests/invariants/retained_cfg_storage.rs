@@ -22,10 +22,11 @@ fn full_bodies_charge_proof_storage_and_snapshots_charge_callable_maps() -> Resu
         size_of::<Vec<(crate::body::ir::ValueId, Inline, crate::types::TypeId)>>()
     );
     println!(
-        "prepared operand bytes={}, former inline entry bytes={}, Code bytes={}",
+        "prepared operand bytes={}, former inline entry bytes={}, Code bytes={}, Catalog bytes={}",
         size_of::<PreparedOperand>(),
         size_of::<(crate::body::ir::ValueId, Inline, crate::types::TypeId)>(),
-        size_of::<Code>()
+        size_of::<Code>(),
+        size_of::<Catalog>()
     );
     let full = body.retained_bytes();
     body.guard_places.reserve(16);
@@ -55,6 +56,7 @@ fn full_bodies_charge_proof_storage_and_snapshots_charge_callable_maps() -> Resu
         bytes: 64 * 1024 * 1024,
         ..Catalog::default()
     };
+    assert!(catalog.layout_results.is_none());
     assert_eq!(
         catalog.insert(body).err(),
         Some("constant execution code exceeds 64 MiB budget")

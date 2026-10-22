@@ -77,7 +77,11 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
-    Execution(crate::sema::values::execution::Requirement, bool),
+    Execution(
+        crate::sema::values::execution::Requirement,
+        execution::Phase,
+    ),
+    ClosureAnnotation(NodeKey, regions::Context, Option<usize>),
     CallTraitInputs(BinderId),
     CallTraitOutput(NodeKey, regions::Context),
     ImplHeader(DefId, impl_headers::Phase),
@@ -412,7 +416,10 @@ impl Checker<'_> {
                 ));
             }
             match work {
-                Work::Execution(requirement, resume) => self.execution_body(requirement, resume)?,
+                Work::Execution(requirement, phase) => self.execution_body(requirement, phase)?,
+                Work::ClosureAnnotation(key, context, first) => {
+                    self.closure_annotation(key, context, first, steps, limit, &mut scan)?;
+                }
                 Work::CallTraitInputs(binder) => self.regions.begin_callable(binder),
                 Work::CallTraitOutput(key, context) => self.call_trait_output(key, context)?,
                 Work::ImplHeader(owner, phase) => self.advance_impl_header(owner, phase)?,
@@ -586,15 +593,12 @@ impl Checker<'_> {
             self.schedule_item_arguments(key, owner, context, steps, limit, scan)?;
             self.drain(steps, limit)?;
         }
-        if let Kind::Closure { parameters, .. } = self.kind(key) {
-            self.closure_annotation_inputs(key, parameters, context, steps, limit, scan)?;
+        if matches!(self.kind(key), Kind::Closure { .. }) {
+            self.work.push(Work::ClosureAnnotation(key, context, None));
+            self.drain(steps, limit)?;
+            return Ok(());
         }
-        let (Kind::Let { ty: Some(ty), .. }
-        | Kind::Cast { ty, .. }
-        | Kind::Closure {
-            result: Some(ty), ..
-        }) = self.kind(key)
-        else {
+        let (Kind::Let { ty: Some(ty), .. } | Kind::Cast { ty, .. }) = self.kind(key) else {
             return Ok(());
         };
         // Holes stay in the owning body, while the ordinary elaborator
@@ -868,6 +872,7 @@ impl Checker<'_> {
     }
     fn complete(&mut self, id: DefId, key: NodeKey, ty: TypeId) -> Result<(), Error> {
         self.facts.definitions[id.0 as usize] = Some(ty);
+        crate::sema::compiler_items::validate_layout_member(self.report, &self.facts, id)?;
         self.states[id.0 as usize] = State::Complete;
         self.store(key, ty)
     }
@@ -1355,6 +1360,14 @@ impl Checker<'_> {
                             node,
                         }),
                     });
+                    let function = *self.facts.functions.last().ok_or_else(|| {
+                        self.error(key, "source function publication disappeared")
+                    })?;
+                    crate::sema::compiler_items::validate_intrinsic(
+                        self.report,
+                        &mut self.facts,
+                        function,
+                    )?;
                     let item = self.intern(
                         key,
                         Type::FunctionItem {

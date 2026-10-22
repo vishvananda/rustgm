@@ -38,6 +38,7 @@ impl Checker<'_> {
         node: NodeId,
         expected: Option<TermId>,
     ) -> Result<(), Error> {
+        self.require_source_closure_bindings(node)?;
         let Kind::Closure {
             parameters,
             result,

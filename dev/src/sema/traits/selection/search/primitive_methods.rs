@@ -8,6 +8,9 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
+        if let Some(action) = self.source_sizing_result(facts, frame)? {
+            return Ok(action);
+        }
         if let Some(action) = self.clone_marker_result(facts, frame)? {
             return Ok(action);
         }

@@ -65,6 +65,18 @@ impl Checker<'_> {
             ));
         }
         let (path, definition) = self.resolved_impl_trait_path(path)?;
+        if self
+            .report
+            .resolution
+            .source_bindings
+            .as_deref()
+            .is_some_and(|bindings| bindings.denies_implementation(definition))
+        {
+            return Err(self.error(
+                owner.source,
+                "explicit implementation is prohibited by its source trait declaration",
+            ));
+        }
         if self.impl_trait_safety(path, definition)? != unsafe_ {
             return Err(self.error(
                 owner.source,

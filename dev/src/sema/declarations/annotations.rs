@@ -4,17 +4,58 @@ use super::{
 };
 
 impl Checker<'_> {
-    pub(super) fn closure_annotation_inputs(
+    pub(super) fn closure_annotation(
         &mut self,
         key: NodeKey,
-        parameters: List,
         context: regions::Context,
+        first: Option<usize>,
         steps: &mut usize,
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
-        let first = self.facts.body_regions.len();
-        for index in parameters.start..parameters.end {
+        let Kind::Closure {
+            parameters, result, ..
+        } = self.kind(key)
+        else {
+            return Err(self.error(key, "closure annotation continuation has no closure owner"));
+        };
+        if let Some(first) = first {
+            let added = self
+                .facts
+                .body_regions
+                .get(first..)
+                .ok_or_else(|| self.error(key, "closure annotation region range changed"))?;
+            let mut regions = Vec::new();
+            for (offset, region) in added.iter().enumerate() {
+                if region.body == key
+                    && matches!(
+                        region.origin,
+                        crate::sema::model::BodyRegionOrigin::Annotation
+                    )
+                {
+                    regions.push(crate::types::RegionId(
+                        u32::try_from(first + offset + 1).map_err(|_| {
+                            self.error(key, "closure input lifetime limit exceeded")
+                        })?,
+                    ));
+                }
+            }
+            // A repeated global traversal may find already prepared inputs.
+            if !regions.is_empty() {
+                self.facts.closures.inputs.insert(key, regions);
+            }
+            if let Some(ty) = result {
+                self.annotation_holes(NodeKey { node: ty, ..key }, steps, limit, scan)?;
+                self.node_work(key.file, ty, context);
+            }
+            return Ok(());
+        }
+        self.work.push(Work::ClosureAnnotation(
+            key,
+            context,
+            Some(self.facts.body_regions.len()),
+        ));
+        for index in (parameters.start..parameters.end).rev() {
             let unit = self.report.package.unit(key.file);
             let mut node = unit.configured.ast.edges[index as usize];
             if !unit.configured.active[node.0 as usize] {
@@ -28,21 +69,6 @@ impl Checker<'_> {
             };
             self.annotation_holes(NodeKey { node: ty, ..key }, steps, limit, scan)?;
             self.node_work(key.file, ty, context);
-            self.drain(steps, limit)?;
-        }
-        let mut regions = Vec::new();
-        for (index, region) in self.facts.body_regions.iter().enumerate().skip(first) {
-            if matches!(
-                region.origin,
-                crate::sema::model::BodyRegionOrigin::Annotation
-            ) {
-                regions.push(crate::types::RegionId(u32::try_from(index + 1).map_err(
-                    |_| self.error(key, "closure input lifetime limit exceeded"),
-                )?));
-            }
-        }
-        if !regions.is_empty() {
-            self.facts.closures.inputs.insert(key, regions);
         }
         Ok(())
     }

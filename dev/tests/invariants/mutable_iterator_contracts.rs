@@ -215,8 +215,8 @@ fn mutable_iteration_keeps_ordinary_record_sizes_and_records_lazy_catalog_cost()
         size_of::<types::infer::Context>(),
         size_of::<types::Store>()
     );
-    // Nullable policies and layout caches add two cold pointers to the 8552-byte base.
-    assert_eq!(size_of::<Declarations>(), 8568);
+    // Nullable policy/layout caches add 16 bytes; source bindings add one cold pointer.
+    assert_eq!(size_of::<Declarations>(), 8576);
     assert_eq!(size_of::<types::Kind>(), 24);
     assert_eq!(size_of::<types::infer::Context>(), 448);
     assert_eq!(size_of::<types::Store>(), 448);

@@ -295,6 +295,11 @@ impl Checker<'_> {
                     continue;
                 }
                 Some(Source::Builtin) => {
+                    if crate::sema::compiler_items::sizing_predicate(self.facts, *predicate)
+                        .map_err(|e| self.error(node, e))?
+                    {
+                        continue;
+                    }
                     let Some(marker) =
                         crate::sema::cloning::marker_predicate(self.facts, *predicate)
                     else {

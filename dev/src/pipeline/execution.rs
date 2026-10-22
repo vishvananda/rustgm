@@ -5,6 +5,7 @@ mod components;
 mod expressions;
 mod initializers;
 mod inputs;
+mod layout_kernel;
 mod selected;
 #[cfg(test)]
 #[path = "../../tests/invariants/execution_storage.rs"]
@@ -178,7 +179,7 @@ impl Engine {
         let mut session = self.take_session(request)?;
         loop {
             if let Some(requirement) = session.waiting {
-                if !self.prepare(report, facts, requirement)? {
+                if !self.prepare(report, facts, requirement, session.state.as_ref())? {
                     return self.retain_session(facts, request, session, requirement);
                 }
                 session.waiting = None;
@@ -292,13 +293,16 @@ impl Engine {
         report: &Report,
         facts: &mut Declarations,
         requirement: Requirement,
+        state: Option<&const_eval::State>,
     ) -> Result<bool, Error> {
         match requirement {
             Requirement::DiscriminantValue(variant) => values::Reader::new(facts)
                 .discriminant(variant)
                 .map(|value| value.is_some())
                 .map_err(|e| Error::at(FileId(0), 0, e)),
-            Requirement::FunctionBody(instance) => self.function(report, facts, instance),
+            Requirement::FunctionBody(instance) => {
+                self.source_layout(report, facts, instance, state)
+            }
             Requirement::AnonymousBody { instance, result } => {
                 if facts.patterns.pending_bodies.contains(&instance.source()) {
                     return Ok(false);

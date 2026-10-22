@@ -43,7 +43,7 @@ impl Checker<'_> {
                     } => {
                         dependents.entry(parent).or_default().push(definition);
                     }
-                    Written::Outlives(_) => {}
+                    Written::SourceSizing(_) | Written::Outlives(_) => {}
                 }
             }
             promises.insert(definition, result);

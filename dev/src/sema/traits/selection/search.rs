@@ -19,6 +19,7 @@ mod marker_evidence_tests;
 #[path = "../../../../tests/invariants/marker_readiness.rs"]
 mod marker_readiness_tests;
 mod primitive_methods;
+mod sizing_fallback;
 pub(in crate::sema) use completed_proofs::Reuse;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/erased_formation.rs"]
@@ -287,6 +288,7 @@ impl Search<'_> {
         self.language_result(facts, frame)
     }
     fn start(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
+        Self::source_sizing_kind(facts, &frame.goal)?;
         frame.started = true;
         frame.cycles = self.query.cycles;
         if frame.goal.projection_result().is_some() {

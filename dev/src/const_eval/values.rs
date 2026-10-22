@@ -286,17 +286,35 @@ impl Machine<'_, '_> {
                             "non-const calls are not allowed during constant execution".into()
                         );
                     }
-                    let Some(index) = self
-                        .bodies
-                        .functions
-                        .get(&target)
-                        .or_else(|| self.bodies.definitions.get(&definition))
-                        .copied()
-                    else {
-                        self.waiting = Some(super::Requirement::FunctionBody(target));
-                        return Ok(None);
-                    };
-                    return Ok(Some((index, arguments, id)));
+                    if let Some(call) = super::reached_layout::validate(
+                        self.evaluator.facts(),
+                        &body,
+                        frame,
+                        frame
+                            .next
+                            .checked_sub(1)
+                            .ok_or("source layout call has no current statement")?,
+                        target,
+                    )? {
+                        let Some(bits) = self.bodies.layout_result(call.instance()) else {
+                            self.waiting = Some(super::Requirement::FunctionBody(target));
+                            return Ok(None);
+                        };
+                        self.work.calls += 1;
+                        Constant::scalar(Scalar::Integer(u128::from(bits)))
+                    } else {
+                        let Some(index) = self
+                            .bodies
+                            .functions
+                            .get(&target)
+                            .or_else(|| self.bodies.definitions.get(&definition))
+                            .copied()
+                        else {
+                            self.waiting = Some(super::Requirement::FunctionBody(target));
+                            return Ok(None);
+                        };
+                        return Ok(Some((index, arguments, id)));
+                    }
                 }
             }
             Rvalue::Invoke { .. } => {

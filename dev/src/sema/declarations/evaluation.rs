@@ -191,7 +191,8 @@ impl Checker<'_> {
                 );
             }
             constants::ArgumentDependency::Execution(requirement) => {
-                self.work.push(Work::Execution(requirement, false));
+                self.work
+                    .push(Work::Execution(requirement, super::execution::Phase::Begin));
             }
         }
         Ok(())

@@ -5,6 +5,7 @@ mod memory;
 mod offsets;
 mod place_cache;
 mod raw_reads;
+mod reached_layout;
 mod readiness;
 mod returns;
 mod static_reads;
@@ -17,6 +18,7 @@ use crate::{
     resolve::{model::DefId, unit::NodeKey},
     sema::values::{Constant, Evaluator, Failure},
 };
+pub(crate) use reached_layout::Call as SourceLayoutCall;
 use static_reads::EvaluationContext;
 use std::collections::{HashMap, HashSet};
 

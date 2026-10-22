@@ -38,6 +38,7 @@ mod projections;
 mod readiness;
 pub(super) use readiness::{Dependency, Requirement};
 mod addresses;
+mod intrinsic_items;
 mod pointer_casts;
 mod pointers;
 mod range_values;
@@ -649,6 +650,9 @@ impl Checker<'_> {
             .map_or(0, |f| f.total);
         self.state.in_function = true;
         let Some(body) = function.body else {
+            if self.source_intrinsic(function.node.node, function.definition)? {
+                return Ok(None);
+            }
             if self
                 .facts
                 .associated
@@ -1781,6 +1785,7 @@ impl Checker<'_> {
             )
         ) && matches!(expected_head, Some(Constructor::Function { .. }))
         {
+            self.require_reifiable_head(source, actual_head)?;
             self.closure_pointer_environment(source, actual)?;
             let signature = self.child(source, actual, 0)?;
             let view = self.callable_conversion(source, signature, expected)?;
@@ -2535,6 +2540,11 @@ impl Checker<'_> {
             scalar::cast(self.primitive(value)?, self.primitive(ty)?)
                 .ok_or_else(|| self.error(node, "invalid scalar cast"))?
         };
+        if kind == super::model::Cast::FunctionPointer
+            && let Some(Type::FunctionItem { item, .. }) = self.facts.types.kind(self.ty(value)?)
+        {
+            self.require_reifiable_item(node, DefId(item.0))?;
+        }
         Ok(Operation::Cast {
             kind,
             source: self.ty(value)?,

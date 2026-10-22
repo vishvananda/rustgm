@@ -1,5 +1,6 @@
 //! Decode resolved bounds once; subjects and trait arguments share the declaration worklist.
 pub(in crate::sema::declarations) mod lexical;
+mod sizing_defaults;
 use super::{Checker, DefId, Error, Kind, NodeKey, Type, Work, regions};
 use crate::{
     resolve::model::{BuiltinTrait, Target},
@@ -27,6 +28,7 @@ pub(in super::super) struct Syntax {
 pub(in super::super) enum Written {
     Trait(Bound),
     User { path: NodeKey, definition: DefId },
+    SourceSizing(DefId),
     Outlives(NodeKey),
 }
 impl Checker<'_> {
@@ -109,6 +111,7 @@ impl Checker<'_> {
                 &mut syntax,
             )?;
         }
+        self.source_sizing_defaults(owner, key, parameters, &mut syntax)?;
         if !syntax.is_empty() {
             self.index_parameter_bounds(owner, &syntax, context);
             self.bound_syntax.insert(owner, syntax);
@@ -302,6 +305,9 @@ impl Checker<'_> {
             }
             if let Some(Target::Definition(id)) = self.facts.node(key).and_then(|f| f.reference) {
                 let builtin = self.report.resolution.builtin_traits.identify(id);
+                if self.source_sized_bound(key, id)? {
+                    return Ok(Written::Trait(Bound::Sized));
+                }
                 if matches!(builtin, Some(BuiltinTrait::Callable(_))) {
                     if crate::sema::lifetimes::call_arguments(self.report, key)?.is_none() {
                         return Err(
@@ -568,6 +574,17 @@ impl Checker<'_> {
     ) -> Result<(Bound, Bound), Error> {
         let value = match written {
             Written::Trait(bound) => bound,
+            Written::SourceSizing(definition) => {
+                let application = self
+                    .facts
+                    .types
+                    .intern_trait_application(crate::types::traits::Application {
+                        item: crate::types::ItemId(definition.0),
+                        arguments: crate::types::GenericArgs::EMPTY,
+                    })
+                    .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+                Bound::Trait(application)
+            }
             Written::User { path, definition } => {
                 let arguments = self.application_arguments(path, definition, context)?;
                 let original_arguments = self.facts.unreduced.arguments(path).unwrap_or(arguments);
@@ -623,7 +640,7 @@ impl Syntax {
     pub(in super::super) fn trait_path(self) -> Option<(NodeKey, DefId)> {
         match self.bound {
             Written::User { path, definition } => Some((path, definition)),
-            Written::Trait(_) | Written::Outlives(_) => None,
+            Written::Trait(_) | Written::SourceSizing(_) | Written::Outlives(_) => None,
         }
     }
     pub(in super::super) fn subject(self) -> Option<NodeKey> {

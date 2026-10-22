@@ -30,6 +30,7 @@ pub struct Reservations {
     pub root: ScopeId,
     languages: [Option<Declaration>; 5],
     intrinsics: HashMap<DefId, IntrinsicDeclaration>,
+    denied_implementations: HashSet<DefId>,
     pub steps: usize,
 }
 impl Reservations {
@@ -44,11 +45,16 @@ impl Reservations {
     pub fn intrinsic(&self, definition: DefId) -> Option<IntrinsicDeclaration> {
         self.intrinsics.get(&definition).copied()
     }
+    #[must_use]
+    pub fn denies_implementation(&self, definition: DefId) -> bool {
+        self.denied_implementations.contains(&definition)
+    }
 }
 #[derive(Clone, Copy)]
 enum Claim {
     Language(LangItem),
     Intrinsic,
+    DenyImplementations,
 }
 
 pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> Result<(), Error> {
@@ -92,6 +98,7 @@ pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> R
             .ok_or_else(|| Error::at(FileId(0), 0, "missing source crate root"))?,
         languages: [None; 5],
         intrinsics: HashMap::new(),
+        denied_implementations: HashSet::new(),
         steps: 0,
     };
     let parents = parents(package, facts);
@@ -155,6 +162,26 @@ fn reserve(
         )
     };
     match claim {
+        Claim::DenyImplementations => {
+            if !source.features.has(Feature::RustcAttributes) {
+                return Err(error("implementation restriction requires rustc_attrs"));
+            }
+            let unit = package.unit(declaration.origin.file);
+            let Kind::Item(index) = unit.configured.ast.node(declaration.origin.node).kind else {
+                return Err(error("implementation restriction requires a trait owner"));
+            };
+            if !matches!(
+                unit.configured.ast.items[index as usize].kind,
+                ItemKind::Trait { .. }
+            ) {
+                return Err(error(
+                    "implementation restriction requires a trait declaration",
+                ));
+            }
+            reserved
+                .denied_implementations
+                .insert(declaration.definition);
+        }
         Claim::Language(kind) => {
             if !source.features.has(Feature::LangItems) {
                 return Err(error("lang requires its explicit source feature"));
@@ -312,6 +339,12 @@ fn claims(package: &Package) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
                             return Err(error("rustc_intrinsic requires no arguments"));
                         }
                         Claim::Intrinsic
+                    }
+                    Some("rustc_deny_explicit_impl") => {
+                        if attribute.input != Input::Empty {
+                            return Err(error("rustc_deny_explicit_impl requires no arguments"));
+                        }
+                        Claim::DenyImplementations
                     }
                     _ => continue,
                 };

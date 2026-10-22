@@ -83,3 +83,15 @@ fn forward_value_headers_resume_without_evaluating_unrequested_values() -> Resul
     assert!(error.contains("cycle"), "{error}");
     Ok(())
 }
+
+#[test]
+fn early_generic_const_functions_keep_closure_annotation_binders() -> Result<(), String> {
+    for text in [
+        "const fn value<T>()->usize{4}const fn wrapper<T>()->usize{return value::<T>();let _f=|x:&'static u8|x;}const N:usize=wrapper::<u32>();type A=[u8;N];",
+        "const fn value<T>()->usize{4}const fn wrapper<T>()->usize{return value::<T>();let _f=|x:&u8|->u8{*x};}const N:usize=wrapper::<u32>();type A=[u8;N];",
+    ] {
+        let facts = analyze(text, 256)?;
+        assert!(facts.array_lengths.values().any(|&n| n == 4));
+    }
+    Ok(())
+}

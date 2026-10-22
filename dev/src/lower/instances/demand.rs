@@ -72,6 +72,13 @@ impl Ordinary {
         Ok(Some(match facts.types.kind(instance.ty()) {
             Some(Kind::FunctionItem { item, .. }) => {
                 if facts
+                    .source_bindings
+                    .as_deref()
+                    .map_or(Ok(false), |c| c.intrinsic(DefId(item.0)))?
+                {
+                    return Err("source layout intrinsic runtime lowering is not implemented");
+                }
+                if facts
                     .foreign
                     .as_deref()
                     .and_then(|r| r.function(DefId(item.0)))
@@ -216,6 +223,10 @@ pub(super) fn prepare(
     if templates.is_empty()
         && !program.has_adapters()
         && !facts.types.has_dynamic_shapes()
+        && facts
+            .source_bindings
+            .as_deref()
+            .is_none_or(|catalog| !catalog.has_intrinsics())
         && facts
             .primitive_methods
             .as_deref()

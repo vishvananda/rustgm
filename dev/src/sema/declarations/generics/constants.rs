@@ -241,6 +241,12 @@ impl Checker<'_> {
         let mut work = vec![(root, context)];
         let mut children = Vec::new();
         while let Some((key, context)) = work.pop() {
+            // Nested items own separate declaration preparation and binders.
+            // Their bodies must not be memoized under an enclosing const call.
+            if matches!(self.kind(key), Kind::Item(_)) {
+                continue;
+            }
+            let context = self.local_context(key, context);
             if !self.report.package.unit(key.file).configured.active[key.node.0 as usize]
                 || !self.constant_dependencies.insert(key)
             {
@@ -250,6 +256,9 @@ impl Checker<'_> {
                 return Err(self.error(root, "const argument dependency budget exceeded"));
             }
             match self.kind(key) {
+                Kind::Closure { .. } => {
+                    self.work.push(Work::ClosureAnnotation(key, context, None));
+                }
                 Kind::Cast { ty, .. } | Kind::Let { ty: Some(ty), .. } => {
                     self.node_work(key.file, ty, context);
                 }
