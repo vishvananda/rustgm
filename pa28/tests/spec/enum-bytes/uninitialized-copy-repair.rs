@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}#[derive(Copy,Clone)]#[repr(u8)]enum E{A=1,B=7}union U{e:E,z:()}const N:u8={let from=U{z:()};let source=unsafe{&raw const from.e};let mut to=E::A;unsafe{core::ptr::copy_nonoverlapping(source,&raw mut to,1);core::ptr::write_bytes(&raw mut to,7,1);}match to{E::A=>1,E::B=>7}};fn main(){check(N==7);}

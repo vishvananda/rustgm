@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}enum Z{Only}static ZED:Z=Z::Only;const N:u8=unsafe{let p=&raw const ZED;core::ptr::copy_nonoverlapping(p,p as *mut Z,18446744073709551615);7};fn main(){check(N==7);}

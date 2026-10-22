@@ -268,6 +268,9 @@ impl Reader<'_> {
 pub(crate) enum StoredShape<'a> {
     Scalar,
     Word,
+    Enumeration {
+        tag: crate::abi::layout::Tag,
+    },
     Array {
         element: TypeId,
         stride: u64,
@@ -331,7 +334,9 @@ impl<'a> Reader<'a> {
                 let union = match definition.kind {
                     crate::types::aggregate::Kind::Struct => false,
                     crate::types::aggregate::Kind::Union => true,
-                    crate::types::aggregate::Kind::Enum => return Ok(StoredShape::Unsupported),
+                    crate::types::aggregate::Kind::Enum => {
+                        return Self::enumeration_shape(definition, layout);
+                    }
                 };
                 let [id] = self.facts.members.variants(item) else {
                     return Err("stored nominal requires one declaration variant");

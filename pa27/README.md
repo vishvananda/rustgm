@@ -207,3 +207,13 @@ sidecars together. Run all active earlier suites, lint, file/architecture audits
 and affected scaling measurements. Record independent checks before setting
 status active in `assignments.json` and adding the stage to the root report.
 Student export is a later operation: this repository owns the full solution.
+
+
+Explicit `repr(u8)` and `repr(i8)` fieldless enums can use constant byte backing.
+Sparse and signed tag bytes select exact declaration variants; invalid tags and
+uninitialized typed reads reject. Raw copies preserve those bytes without
+interpreting them, so a destination may be repaired before a typed read. Ordinary
+enum values retain their existing product/variant identity, and padding remains
+independently uninitialized. The draft `tests/enum-byte-outcomes.json` and
+`docs/pa27-enum-bytes.md` record this bounded profile; payload, default-layout and
+wider-tag enum storage remain required work.

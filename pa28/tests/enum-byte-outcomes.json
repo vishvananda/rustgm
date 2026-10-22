@@ -1,0 +1,108 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "0b2eca88",
+  "cases": [
+    {
+      "name": "pointer-copy",
+      "path": "pa28/tests/spec/enum-bytes/pointer-copy.rs",
+      "sha256": "f4c83820aae2ae8494c144824bcf0f0cec3e74d90fbfcd96e3b7c34dfa55b970",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "fill-valid",
+      "path": "pa28/tests/spec/enum-bytes/fill-valid.rs",
+      "sha256": "9124753818eec0956263d58f11fd4d9d8bfcc4200e9685fb00d15499eb8f81c7",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "fill-invalid",
+      "path": "pa28/tests/spec/enum-bytes/fill-invalid.rs",
+      "sha256": "faa7aa2b7df0436c36b6186af95220abc861502494a415d92b3b30832d32838b",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "zero-effective-copy",
+      "path": "pa28/tests/spec/enum-bytes/zero-effective-copy.rs",
+      "sha256": "eb18c193983b68266cad9436113db9b12181dcb33c58be45b89c9680ee38c4a0",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "invalid-copy-repair",
+      "path": "pa28/tests/spec/enum-bytes/invalid-copy-repair.rs",
+      "sha256": "3f35624167d07dcdac248951b1fbdfa89221d67051333cbea4e6366af805b9ee",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "uninitialized-copy-repair",
+      "path": "pa28/tests/spec/enum-bytes/uninitialized-copy-repair.rs",
+      "sha256": "db62ce9c137ee30b9a3dd0a7375b0d5972c951a2abc678086f812fe72cd7ad80",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "invalid-copy-demand",
+      "path": "pa28/tests/spec/enum-bytes/invalid-copy-demand.rs",
+      "sha256": "50226cc03ed32761e0ce5f02b076461cbcce862510da278fd615ef87966f43e4",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "uninitialized-copy-demand",
+      "path": "pa28/tests/spec/enum-bytes/uninitialized-copy-demand.rs",
+      "sha256": "5042507fc0757090dd4dc90ebeabac9ac10ce231f02b431320d7b60d4c637495",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "nested-family",
+      "path": "pa28/tests/spec/enum-bytes/nested-family.rs",
+      "sha256": "c5d628cae2b7f38a3b2d6f960f093a4bd2bb11dd039093999a4a9fe6d0b12c35",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "distinct-family",
+      "path": "pa28/tests/spec/enum-bytes/distinct-family.rs",
+      "sha256": "413d0f8df449be3097d6b4c74b548daf6b31774f989a90f96b39e40022db6a45",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "distinct-invalid-family",
+      "path": "pa28/tests/spec/enum-bytes/distinct-invalid-family.rs",
+      "sha256": "c00a665f3d9d13ded756cd0ca8a729bf6f3eb2f102fad41ee4551c33205d75dc",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    }
+  ]
+}

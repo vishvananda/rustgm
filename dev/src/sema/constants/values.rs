@@ -5,6 +5,7 @@ pub use relocations::{ImageFragment, WordTarget};
 pub(crate) use relocations::{MetadataShape, WordAddress, WordShape};
 mod callables;
 mod computed;
+mod enumerations;
 mod footprints;
 pub(crate) use footprints::{ProjectionStorage, StorageLayout, StoredShape};
 pub mod execution;

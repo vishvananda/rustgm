@@ -2,6 +2,7 @@
 mod access;
 mod codec;
 mod continuations;
+mod enumerations;
 mod fill;
 mod images;
 mod intervals;
@@ -44,6 +45,7 @@ pub(super) struct Storage {
     words: Option<Box<relocations::Words>>,
     paths: Option<Box<subobjects::Paths>>,
     reads: Option<Box<continuations::Reads>>,
+    enumerations: Option<Box<enumerations::Enumerations>>,
 }
 impl Storage {
     pub(super) fn retained_slots(&self) -> usize {
@@ -65,6 +67,11 @@ impl Storage {
                     .map_or(0, |words| words.retained_slots()),
             )
             .saturating_add(self.families.len().saturating_mul(4))
+            .saturating_add(
+                self.enumerations
+                    .as_ref()
+                    .map_or(0, |enums| enums.retained_slots()),
+            )
     }
 }
 impl Backing {

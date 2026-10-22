@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}#[derive(Copy,Clone)]#[repr(u8)]enum E{A=1,B=7}union U{e:E,b:u8,z:()}const N:u8={let mut e=E::A;unsafe{core::ptr::write_bytes(&raw mut e,2,1);}match e{E::A=>1,E::B=>7}};fn main(){let _=N;}

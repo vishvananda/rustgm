@@ -23,6 +23,8 @@ pub(crate) mod counted_cases;
 mod counted_transfers;
 #[path = "../../direct_union_borrows.rs"]
 mod direct_union_borrows;
+#[path = "../../enum_bytes.rs"]
+mod enum_bytes;
 #[path = "../../external_storage.rs"]
 mod external_storage;
 #[path = "../../extremum_atomics.rs"]

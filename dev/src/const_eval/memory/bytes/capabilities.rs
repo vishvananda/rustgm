@@ -12,14 +12,17 @@ impl Machine<'_, '_> {
             self.footprint(ty)?;
             let shape = Reader::new(self.evaluator.facts()).storage_shape(ty)?;
             let unsupported = matches!(shape, StoredShape::Unsupported);
+            let enumeration = matches!(shape, StoredShape::Enumeration { .. });
             let length = match shape {
                 StoredShape::Array { length: 0, .. }
                 | StoredShape::Scalar
                 | StoredShape::Word
+                | StoredShape::Enumeration { .. }
                 | StoredShape::Unsupported => 0,
                 StoredShape::Array { .. } => 1,
                 StoredShape::Product { fields, .. } => fields.len(),
             };
+            let unsupported = unsupported || (enumeration && !self.prepare_byte_enum(ty)?);
             self.reserve_cells(
                 pending
                     .len()
@@ -32,6 +35,7 @@ impl Machine<'_, '_> {
                 StoredShape::Array { length: 0, .. }
                 | StoredShape::Scalar
                 | StoredShape::Word
+                | StoredShape::Enumeration { .. }
                 | StoredShape::Unsupported => Vec::new(),
                 StoredShape::Array { element, .. } => vec![element],
                 StoredShape::Product { fields, .. } => fields.to_vec(),

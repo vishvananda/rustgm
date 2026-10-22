@@ -1,0 +1,144 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "0b2eca88",
+  "cases": [
+    {
+      "name": "u8-tag-read",
+      "path": "pa27/tests/spec/enum-bytes/u8-tag-read.rs",
+      "sha256": "fececbea80c991fcce0875a57dbb849b39b66319f81b53f17c854c9034be50dd",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "u8-tag-write",
+      "path": "pa27/tests/spec/enum-bytes/u8-tag-write.rs",
+      "sha256": "347eb9d726e716921da0512a7e54a4ab3064008263f72ffb240cec925a1b956e",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "invalid-tag",
+      "path": "pa27/tests/spec/enum-bytes/invalid-tag.rs",
+      "sha256": "f1e5579498fd54361ead69883a118e0cddc4f183acf8b0005d8b01b88a3c4e36",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "unused-invalid-tag",
+      "path": "pa27/tests/spec/enum-bytes/unused-invalid-tag.rs",
+      "sha256": "58d3c599998707b3ee620d9278191f31bed200f3f1b818f84a0d8eb0ff819ec7",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "uninitialized-tag",
+      "path": "pa27/tests/spec/enum-bytes/uninitialized-tag.rs",
+      "sha256": "c296887d9ef1076cbf2b19c20336db277764bb89476d6381c787b7b716930e85",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "negative-tag-read",
+      "path": "pa27/tests/spec/enum-bytes/negative-tag-read.rs",
+      "sha256": "588bc2563290d1732138c72ed3972a93b955812fc6e4f3f82f5ea02779afd4d9",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "negative-tag-write",
+      "path": "pa27/tests/spec/enum-bytes/negative-tag-write.rs",
+      "sha256": "8d0be5efd1609b8d0aed2e5945d017a34383e34956d1a3dca68e428107f1984f",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "negative-invalid",
+      "path": "pa27/tests/spec/enum-bytes/negative-invalid.rs",
+      "sha256": "2587bd649c127517d7b914ac5e9e95cbf8a93c4f8c270961c2e1b487be2d4f6a",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "single-variant",
+      "path": "pa27/tests/spec/enum-bytes/single-variant.rs",
+      "sha256": "440dd16b803bd49808e98004a11812a51f10d42ed1b40e2d2cde9d88b82bf41b",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "sparse-valid",
+      "path": "pa27/tests/spec/enum-bytes/sparse-valid.rs",
+      "sha256": "9da7381e9283ea870e1583721fc95023772e10f483666f58eb13c4abb9df3ba4",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "sparse-hole",
+      "path": "pa27/tests/spec/enum-bytes/sparse-hole.rs",
+      "sha256": "00575f869ff0d980f0632c61b559d12804b773dbfc700d46d580bc3ef2189d0b",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": 1
+    },
+    {
+      "name": "computed-discriminant",
+      "path": "pa27/tests/spec/enum-bytes/computed-discriminant.rs",
+      "sha256": "9b0dbda0193fa4abbeac40f184ef23b84f00cb14c2cd01eaf0f1995c06c2824b",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "ordinary-enum",
+      "path": "pa27/tests/spec/enum-bytes/ordinary-enum.rs",
+      "sha256": "2ecf645a89e718e1142c9ac59018b2a05a867cdf463dfa7bc50e2761120412e8",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "signed-boundaries",
+      "path": "pa27/tests/spec/enum-bytes/signed-boundaries.rs",
+      "sha256": "14bad130e923305b91594328727cafe6b047447fda2e048684ac501a307fdcc6",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    },
+    {
+      "name": "tag-padding",
+      "path": "pa27/tests/spec/enum-bytes/tag-padding.rs",
+      "sha256": "8180fd870be192883e33dff94ffe03a0dec33e1a94145c0b481a135e3e1a4769",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": 0
+    }
+  ]
+}

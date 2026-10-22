@@ -137,6 +137,11 @@ impl Machine<'_, '_> {
             }
         } else if matches!(
             Reader::new(self.evaluator.facts()).storage_shape(ty)?,
+            StoredShape::Enumeration { .. }
+        ) {
+            self.encode_byte_enum(backing, offset, ty, value)?;
+        } else if matches!(
+            Reader::new(self.evaluator.facts()).storage_shape(ty)?,
             StoredShape::Word
         ) {
             self.encode_byte_word(backing, offset, ty, value)?;
@@ -253,6 +258,18 @@ impl Machine<'_, '_> {
                 super::Cell::Empty => {}
                 super::Cell::Bytes(_) => {
                     return Err("nested byte backing escaped its allocation root".into());
+                }
+                super::Cell::Fields { values, variant }
+                    if matches!(
+                        Reader::new(self.evaluator.facts()).storage_shape(ty)?,
+                        StoredShape::Enumeration { .. }
+                    ) =>
+                {
+                    if !values.is_empty() {
+                        return Err("stored fieldless enum contains payload cells".into());
+                    }
+                    let value = self.evaluator.fields(&[], *variant)?;
+                    self.encode_byte_enum(backing, offset, ty, value)?;
                 }
                 super::Cell::Fields { values, .. } => {
                     let length = values.len();
@@ -552,6 +569,13 @@ impl Machine<'_, '_> {
             state
                 .values
                 .push(self.decode_byte_scalar(source, start, end, ty)?);
+        } else if matches!(
+            Reader::new(self.evaluator.facts()).storage_shape(ty)?,
+            StoredShape::Enumeration { .. }
+        ) {
+            state
+                .values
+                .push(self.decode_byte_enum(source, offset, ty)?);
         } else if matches!(
             Reader::new(self.evaluator.facts()).storage_shape(ty)?,
             StoredShape::Word
