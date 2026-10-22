@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}fn source<'a>(a:&'a[u8],calls:&mut u8)->&'a[u8]{*calls+=1;a}fn main(){let a=[2u8,3];let mut calls=0u8;let mut sum=0u8;for x in source(&a,&mut calls){sum+=*x;}check(calls==1&&sum==5);}

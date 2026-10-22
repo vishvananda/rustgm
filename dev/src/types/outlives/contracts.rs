@@ -148,6 +148,44 @@ pub struct Bounds {
     pub steps: usize,
 }
 impl Bounds {
+    /// Append one newly completed nominal whose fields have no nominal or
+    /// projected dependency. Existing inferred entries remain immutable.
+    /// # Errors
+    /// Rejects existing entries, dependent fields and ordinary inference limits.
+    pub(crate) fn append_leaf(
+        &mut self,
+        types: &mut Store,
+        definitions: &Definitions,
+        item: ItemId,
+    ) -> Result<(), &'static str> {
+        if self.items.contains_key(&item) {
+            return Err("nominal outlives contract is already complete");
+        }
+        let definition = definitions
+            .get(item)
+            .ok_or("missing leaf nominal definition")?;
+        let mut inference = Inference::default();
+        inference.fields(types, definitions, definition)?;
+        if !inference.scan.uses.is_empty() || !inference.scan.projection_pairs.is_empty() {
+            return Err("leaf outlives append has a nominal or projected dependency");
+        }
+        let mut inferred = inference.solve(types)?;
+        if inferred.projected.is_some() || inferred.items.len() != 1 {
+            return Err("leaf outlives append has nonlocal requirements");
+        }
+        let value = inferred
+            .items
+            .remove(&item)
+            .ok_or("missing inferred leaf contract")?;
+        let steps = self
+            .steps
+            .checked_add(inferred.steps)
+            .filter(|n| *n <= 1_000_000)
+            .ok_or("type outlives work budget exceeded")?;
+        self.items.insert(item, value);
+        self.steps = steps;
+        Ok(())
+    }
     /// Infer required field lifetimes from all variants, with finite propagation.
     /// # Errors
     /// Rejects malformed templates and exhausted propagation work.

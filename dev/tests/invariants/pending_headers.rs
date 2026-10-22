@@ -202,3 +202,116 @@ fn header_publication_checks_reserved_identity_before_removing_dependencies()
     );
     Ok(())
 }
+
+fn collection_reference(
+    store: &mut Store,
+    referent: TypeId,
+    mutable: bool,
+) -> Result<TypeId, &'static str> {
+    store.intern(Kind::Reference {
+        referent,
+        mutable,
+        region: crate::types::RegionId::STATIC,
+    })
+}
+
+#[test]
+fn latent_collection_headers_keep_unknown_goals_pending_and_closed_goals_disjoint()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crate::{
+        support::iteration::{Collection, Trait},
+        types::{
+            RegionId,
+            infer::{Constructor, Domain},
+        },
+    };
+    let report = crate::test_source::resolve("fn main(){for _ in &[1u8]{}}", true)?;
+    let catalog = report
+        .resolution
+        .builtin_traits
+        .collections()
+        .ok_or("collection identities")?;
+    let iteration = report
+        .resolution
+        .builtin_traits
+        .iteration()
+        .ok_or("iteration identities")?;
+    let mut registry = Implementations::default();
+    registry.reserve(
+        catalog
+            .declarations
+            .iter()
+            .filter_map(|d| {
+                d.kind.trait_().map(|t| Header {
+                    owner: d.definition,
+                    item: ItemId(iteration.get(t).definition.0).into(),
+                    head: Some(if t == Trait::Iterator {
+                        Head::Nominal(ItemId(catalog.iterator.0))
+                    } else {
+                        Head::Reference(false)
+                    }),
+                })
+            })
+            .collect(),
+    )?;
+    registry.register_collection_heads(&report)?;
+    registry.finish_constant_headers()?;
+    registry.finish_validation()?;
+    assert!(registry.constant_headers_ready());
+    assert!(!registry.selection_headers_ready());
+    let mut store = Store::default();
+    let item = ItemId(iteration.get(Trait::IntoIterator).definition.0);
+    let element = TypeId::primitive(Primitive::U8);
+    let slice = store.intern(Kind::Slice(element))?;
+    let shared_slice = collection_reference(&mut store, slice, false)?;
+    let shared_scalar = collection_reference(&mut store, element, false)?;
+    let shared_mut = collection_reference(&mut store, slice, true)?;
+    let mut context = Context::default();
+    for (ty, ready) in [
+        (shared_scalar, true),
+        (shared_mut, true),
+        (shared_slice, false),
+    ] {
+        let value = implementation(&mut store, 0, item.0, ty)?.predicate;
+        let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+        let goal = context.instantiate_predicate(&mut store, value, &mut substitution)?;
+        assert_eq!(
+            registry.selection_goal_ready(&store, &mut context, &goal)?,
+            ready
+        );
+        assert_eq!(
+            registry.selection_predicate_ready(&store, &mut context, value)?,
+            ready
+        );
+    }
+    let unknown = context.variable(Domain::Any)?;
+    let term = context.construct(
+        Constructor::Reference {
+            mutable: false,
+            region: RegionId::STATIC,
+        },
+        &[unknown],
+    )?;
+    let pending = registry.pending.as_deref().ok_or("pending")?;
+    let owners = catalog
+        .declarations
+        .iter()
+        .filter(|d| matches!(d.kind, Collection::SharedSlice | Collection::SharedArray))
+        .map(|d| d.definition)
+        .collect::<Vec<_>>();
+    let mut found = owners.clone();
+    pending.filter_collections(&store, &mut context, term, &mut found)?;
+    assert_eq!(found, owners);
+    let exact = context.known(&store, slice)?;
+    context.equate(&store, unknown, exact)?;
+    let mut found = owners;
+    pending.filter_collections(&store, &mut context, term, &mut found)?;
+    assert_eq!(
+        found,
+        [catalog.declarations[Collection::SharedSlice as usize].definition]
+    );
+    // Closed absence above never consumed or negatively cached either header.
+    let matching = implementation(&mut store, 0, item.0, shared_slice)?.predicate;
+    assert!(!registry.selection_predicate_ready(&store, &mut context, matching)?);
+    Ok(())
+}

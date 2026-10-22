@@ -7,7 +7,7 @@ use crate::{
     types::{
         ItemId, Store,
         aggregate::Definitions,
-        copy::{Copies, Properties},
+        copy::{Copies, Declaration},
         outlives::LiveRegions,
     },
 };
@@ -59,7 +59,7 @@ impl std::error::Error for Error {}
 pub struct Environment<'a, S: BuildHasher> {
     pub types: &'a Store,
     pub definitions: &'a Definitions,
-    pub derives: &'a HashMap<ItemId, Properties, S>,
+    pub derives: &'a HashMap<ItemId, Declaration, S>,
     pub copies: &'a mut Copies,
 }
 /// # Errors

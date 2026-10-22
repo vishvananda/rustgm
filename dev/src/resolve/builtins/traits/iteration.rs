@@ -45,6 +45,9 @@ impl Iteration {
 pub(super) struct Registry {
     origin: Option<(ModuleId, NodeKey)>,
     complete: Option<Iteration>,
+    pub(super) collections: Option<Box<super::collections::Collections>>,
+    collection_origin: Option<(ModuleId, NodeKey)>,
+    named_iterator: bool,
 }
 impl Traits {
     pub(in crate::resolve) fn note_iteration(&mut self, module: ModuleId, source: NodeKey) {
@@ -52,6 +55,28 @@ impl Traits {
             .get_or_insert_default()
             .origin
             .get_or_insert((module, source));
+    }
+    pub(in crate::resolve) fn note_collection(&mut self, module: ModuleId, source: NodeKey) {
+        self.note_iteration(module, source);
+        self.iteration
+            .get_or_insert_default()
+            .collection_origin
+            .get_or_insert((module, source));
+    }
+    pub(in crate::resolve) fn name_slice_iterator(&mut self, module: ModuleId, source: NodeKey) {
+        self.note_collection(module, source);
+        self.iteration.get_or_insert_default().named_iterator = true;
+    }
+    #[must_use]
+    pub fn named_slice_iterator(&self) -> bool {
+        self.iteration.as_deref().is_some_and(|r| r.named_iterator)
+    }
+    pub(super) fn collection_origin(&self) -> Option<(ModuleId, NodeKey)> {
+        self.iteration.as_deref()?.collection_origin
+    }
+    #[must_use]
+    pub fn collections(&self) -> Option<&super::collections::Collections> {
+        self.iteration.as_deref()?.collections.as_deref()
     }
     #[must_use]
     pub fn iteration(&self) -> Option<Iteration> {
@@ -77,7 +102,8 @@ impl Resolver<'_> {
                 foreign: None,
             },
             source.node,
-        )
+        )?;
+        self.reserve_collections()
     }
     pub(in crate::resolve) fn prepare_iteration(
         &mut self,

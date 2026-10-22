@@ -3,7 +3,7 @@ use super::{Constructor, Context, Error, Store, TermId, TypeId, Value};
 use crate::types::{
     ItemId, Primitive,
     aggregate::Definitions,
-    copy::{Copies, Properties},
+    copy::{Copies, Declaration, Properties},
     parameters::{environment::Environment, shape::Shapes},
 };
 use std::{collections::HashMap, hash::BuildHasher, sync::Arc};
@@ -49,7 +49,7 @@ impl Query {
         context: &mut Context,
         store: &mut Store,
         definitions: &Definitions,
-        selected: &HashMap<ItemId, Properties, S>,
+        selected: &HashMap<ItemId, Declaration, S>,
         root: TermId,
     ) -> Result<Possible, &'static str> {
         let root = context.root(root).map_err(inference)?;
@@ -69,6 +69,16 @@ impl Query {
                     return Err("candidate properties require associated type normalization");
                 }
                 Value::Construct(kind) => {
+                    if matches!(kind, Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)
+                        if selected.get(&item).is_some_and(|declaration| !declaration.has_argument_bounds()))
+                    {
+                        // This is only a possibility filter. The completed Copy/Clone
+                        // proof checks actual fields; irrelevant argument properties
+                        // must not force normalization or invent argument bounds here.
+                        self.cache
+                            .insert(id, partial(kind, &[], definitions, selected));
+                        continue;
+                    }
                     if !finish {
                         context
                             .account_work((term.end - term.start) as usize)
@@ -122,7 +132,7 @@ impl Query {
         &mut self,
         store: &Store,
         definitions: &Definitions,
-        selected: &HashMap<ItemId, Properties, S>,
+        selected: &HashMap<ItemId, Declaration, S>,
         ty: TypeId,
     ) -> Result<Possible, &'static str> {
         Ok(Possible {
@@ -137,7 +147,7 @@ fn partial<S: BuildHasher>(
     kind: Constructor,
     children: &[Possible],
     definitions: &Definitions,
-    selected: &HashMap<ItemId, Properties, S>,
+    selected: &HashMap<ItemId, Declaration, S>,
 ) -> Possible {
     let mut value = Possible::UNKNOWN;
     match kind {
@@ -164,11 +174,15 @@ fn partial<S: BuildHasher>(
             }
         }
         Constructor::Adt(item, _) | Constructor::AdtArgs(item, _) => {
-            value.abilities = selected.get(&item).copied().unwrap_or_default();
+            let declaration = selected.get(&item).copied().unwrap_or_default();
+            value.abilities = declaration.properties();
             let packed = definitions
                 .get(item)
                 .is_some_and(|d| d.repr.packed.is_some());
-            for child in children {
+            for child in children
+                .iter()
+                .filter(|_| declaration.has_argument_bounds())
+            {
                 value.abilities.copy &= child.abilities.copy;
                 value.abilities.clone_ &= child.abilities.clone_;
                 if packed {

@@ -66,7 +66,7 @@ impl Checker<'_> {
         let types = super::super::associated_types::Members::new(self.report, &self.facts);
         let constants = super::constants::Members::new(self.report, &self.facts);
         for (owner, source, predicate) in headers {
-            if self.validate_iteration_blanket(owner)? {
+            if self.validate_iteration_blanket(owner)? || self.validate_collection_impl(owner)? {
                 continue;
             }
             self.validate_reference_coherence(owner, source, predicate, &mut steps)?;
@@ -97,7 +97,21 @@ impl Checker<'_> {
                 .complete(owner, methods, types, constants)
                 .map_err(|e| self.error(source, e))?;
         }
-        self.finish_constant_contracts()
+        self.finish_constant_contracts()?;
+        super::super::super::iteration::collections::finish_prepared(self.report, &mut self.facts)?;
+        self.facts
+            .generics
+            .implementations
+            .as_mut()
+            .ok_or_else(|| {
+                Error::at(
+                    crate::resolve::unit::FileId(0),
+                    0,
+                    "missing completed implementation inventory",
+                )
+            })?
+            .finish_validation()
+            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))
     }
 
     fn validate_reference_coherence(
@@ -128,51 +142,10 @@ impl Checker<'_> {
         source: NodeKey,
         predicate: Predicate,
     ) -> Result<(), Error> {
-        let requirements = if matches!(predicate.bound, Bound::Auto(_)) {
-            std::sync::Arc::new(crate::sema::traits::Requirements::default())
-        } else {
-            self.facts
-                .generics
-                .traits
-                .as_mut()
-                .ok_or_else(|| Error::at(source.file, 0, "missing trait contracts"))?
-                .requirements(&mut self.facts.types, predicate)
-                .map_err(|e| self.error(source, e))?
-        };
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(owner, environment);
-        for ty in std::iter::once(predicate.ty).chain(requirements.types.iter().copied()) {
-            if !proof
-                .check(&mut self.facts, ty)
-                .map_err(|e| self.error(source, e))?
-                .well_formed
-            {
-                return Err(self.error(source, "trait implementation header must be well-formed"));
-            }
-        }
-        for &requirement in requirements.required.iter().chain(&requirements.implied) {
-            let requirement = match requirement {
-                Clause::Predicate(predicate) => {
-                    let predicate = proof
-                        .normalize_builtin(&mut self.facts, predicate)
-                        .map_err(|e| self.error(source, e))?;
-                    if matches!(predicate.bound, Bound::Outlives(_)) {
-                        continue;
-                    }
-                    Clause::Predicate(predicate)
-                }
-                Clause::ForAll(_) => requirement,
-            };
-            if !proof
-                .prove_clause(&mut self.facts, requirement)
-                .map_err(|e| self.error(source, e))?
-            {
-                return Err(self.error(
-                    source,
-                    "trait implementation does not satisfy the trait's requirements",
-                ));
-            }
-        }
+        let requirements = impl_contract_obligations(&mut self.facts, predicate, &mut proof)
+            .map_err(|e| self.error(source, e))?;
         self.retain_trait_proof(owner, source, &mut proof);
         let mut queries = Queries::new(
             &self.facts.types,
@@ -211,4 +184,44 @@ impl Checker<'_> {
             )
         })
     }
+}
+
+pub(in crate::sema::declarations) fn impl_contract_obligations(
+    facts: &mut crate::sema::model::Declarations,
+    predicate: Predicate,
+    proof: &mut crate::sema::nominals::Proof,
+) -> Result<std::sync::Arc<crate::sema::traits::Requirements>, String> {
+    let requirements = if matches!(predicate.bound, Bound::Auto(_)) {
+        std::sync::Arc::new(crate::sema::traits::Requirements::default())
+    } else {
+        facts
+            .generics
+            .traits
+            .as_mut()
+            .ok_or_else(|| "missing trait contracts".to_owned())?
+            .requirements(&mut facts.types, predicate)?
+    };
+    for ty in std::iter::once(predicate.ty).chain(requirements.types.iter().copied()) {
+        if !proof.check(facts, ty)?.well_formed {
+            return Err("trait implementation header must be well-formed".to_owned());
+        }
+    }
+    for &requirement in requirements.required.iter().chain(&requirements.implied) {
+        let requirement = match requirement {
+            Clause::Predicate(predicate) => {
+                let predicate = proof.normalize_builtin(facts, predicate)?;
+                if matches!(predicate.bound, Bound::Outlives(_)) {
+                    continue;
+                }
+                Clause::Predicate(predicate)
+            }
+            Clause::ForAll(_) => requirement,
+        };
+        if !proof.prove_clause(facts, requirement)? {
+            return Err(
+                "trait implementation does not satisfy the trait's requirements".to_owned(),
+            );
+        }
+    }
+    Ok(requirements)
 }

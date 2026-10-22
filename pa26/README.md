@@ -332,5 +332,10 @@ See `docs/pa26-iteration-checkpoint.md` for the boundary and qualification.
 Canonical iteration dot methods use the existing lexical/prelude lookup and
 ordinary receiver proof; `docs/pa26-iteration-method-visibility.md` records
 explicit imports, no-prelude controls and source/canonical ambiguity.
-Array/slice/range iteration, further iterator methods, question-mark, additional
-derives and formatting remain required; PA26 stays planned.
+Safe shared slice/array iteration and canonical `core::slice::Iter` now use
+checked generated originals, exact Item/source lifetimes and ordinary cleanup.
+`tests/shared-iteration-outcomes.json` declares the shared source/native controls;
+see `docs/pa26-shared-iteration.md` for demand, proof and layout boundaries.
+The Clone marker control does not exercise `Iter::clone` execution. Mutable/owned
+collection and range iteration, executable clone, further iterator methods,
+question-mark, additional derives and formatting remain required; PA26 stays planned.

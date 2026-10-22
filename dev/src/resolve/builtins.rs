@@ -16,8 +16,8 @@ use crate::syntax::{
 pub use intrinsics::{ComparisonResult, Definition as BuiltinIntrinsic, Intrinsics};
 pub use library::{LibraryTypes, Nominal as LibraryNominal, SliceLength};
 pub use traits::{
-    BuiltinTrait, Callable, ComparisonMembers, Equality, Iteration, IterationBlanket,
-    IterationDeclaration, Language, LanguageOutput, Traits,
+    BuiltinTrait, Callable, CollectionDeclaration, Collections, ComparisonMembers, Equality,
+    Iteration, IterationBlanket, IterationDeclaration, Language, LanguageOutput, Traits,
 };
 
 impl Resolver<'_> {
@@ -128,9 +128,10 @@ impl Resolver<'_> {
         }
         if path
             .last()
-            .is_some_and(|name| self.package.names.get(*name) == "len")
+            .is_some_and(|name| matches!(self.package.names.get(*name), "len" | "iter"))
+            && let Some(name) = path.last()
         {
-            self.prepare_slice_length(c, node)?;
+            self.prepare_slice_method(c, node, *name)?;
         }
         if self.facts.builtin_traits.library.is_none()
             && path.len() > 1

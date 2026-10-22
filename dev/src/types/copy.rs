@@ -20,6 +20,51 @@ impl Properties {
         }
     }
 }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+enum Arguments {
+    #[default]
+    All,
+    FieldsOnly,
+}
+/// Declared implementation conditions are separate from computed abilities.
+/// Source derives require all type arguments; a validated library declaration
+/// can instead carry its actual field-only contract.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Declaration {
+    properties: Properties,
+    arguments: Arguments,
+}
+impl Declaration {
+    #[must_use]
+    pub const fn derived(properties: Properties) -> Self {
+        Self {
+            properties,
+            arguments: Arguments::All,
+        }
+    }
+    #[must_use]
+    pub const fn properties(self) -> Properties {
+        self.properties
+    }
+    #[must_use]
+    pub const fn has_argument_bounds(self) -> bool {
+        matches!(self.arguments, Arguments::All)
+    }
+    pub(crate) const fn fields_only_clone() -> Self {
+        Self {
+            properties: Properties {
+                copy: false,
+                clone_: true,
+            },
+            arguments: Arguments::FieldsOnly,
+        }
+    }
+}
+impl From<Properties> for Declaration {
+    fn from(properties: Properties) -> Self {
+        Self::derived(properties)
+    }
+}
 #[derive(Clone, Copy, Default)]
 enum State {
     #[default]
@@ -88,7 +133,7 @@ impl Copies {
         &mut self,
         types: &Store,
         definitions: &Definitions,
-        selected: &HashMap<ItemId, Properties, S>,
+        selected: &HashMap<ItemId, Declaration, S>,
         ty: TypeId,
     ) -> Result<Properties, &'static str> {
         match self.state(ty) {
@@ -151,7 +196,7 @@ impl Copies {
         &mut self,
         types: &Store,
         definitions: &Definitions,
-        selected: &HashMap<ItemId, Properties, S>,
+        selected: &HashMap<ItemId, Declaration, S>,
     ) -> Result<(), &'static str> {
         while let Some((ty, finish)) = self.work.pop() {
             let kind = types.kind(ty).ok_or("invalid Copy type")?;
@@ -189,52 +234,36 @@ impl Copies {
             {
                 definitions.shape(types, ty)?;
             }
-            let initial = match kind {
-                Kind::Opaque(id, _) => {
-                    types
-                        .opaque_declaration(id)
-                        .ok_or("invalid opaque declaration")?
-                        .copies
-                }
-                Kind::Projection(application) => {
-                    self.projected_copies(types, application.item, assumed.is_some())?
-                }
-                Kind::Parameter(id) => {
-                    let abilities = self
-                        .scope
-                        .as_ref()
-                        .and_then(|scope| scope.environment.as_ref())
-                        .ok_or("generic Copy checking requires a parameter environment")?
-                        .abilities(id)
-                        .ok_or("Copy parameter is outside the current environment")?;
-                    Properties {
-                        copy: abilities.copy,
-                        clone_: abilities.clone_,
-                    }
-                }
-                Kind::Adt(item, _) => selected.get(&item).copied().unwrap_or_default(),
-                Kind::Primitive(Primitive::Str)
-                | Kind::Slice(_)
-                | Kind::Dynamic { .. }
-                | Kind::Reference { mutable: true, .. } => Properties::default(),
-                _ => Properties::BOTH,
-            };
+            let initial = self.initial_properties(types, selected, kind, assumed.is_some())?;
             let mut result = initial;
             let packed = matches!(kind, Kind::Adt(item, _)
                 if definitions.get(item).is_some_and(|d| d.repr.packed.is_some()));
             if initial != Properties::default() {
-                children(types, definitions, ty, !self.declaration, |child| {
-                    if finish {
-                        let properties = self.get(child)?;
-                        result = result.intersect(properties);
-                        if packed {
-                            result.clone_ &= properties.copy;
-                        }
-                    } else {
-                        self.work.push((child, false));
+                let arguments = match kind {
+                    Kind::Adt(item, _) => {
+                        selected.get(&item).is_none_or(|d| d.has_argument_bounds())
                     }
-                    Ok(())
-                })?;
+                    _ => true,
+                };
+                children(
+                    types,
+                    definitions,
+                    ty,
+                    !self.declaration || !arguments,
+                    arguments,
+                    |child| {
+                        if finish {
+                            let properties = self.get(child)?;
+                            result = result.intersect(properties);
+                            if packed {
+                                result.clone_ &= properties.copy;
+                            }
+                        } else {
+                            self.work.push((child, false));
+                        }
+                        Ok(())
+                    },
+                )?;
             }
             if finish {
                 result.clone_ |= assumed.is_some_and(|p| p.clone_);
@@ -242,6 +271,48 @@ impl Copies {
             }
         }
         Ok(())
+    }
+    fn initial_properties<S: BuildHasher>(
+        &self,
+        types: &Store,
+        selected: &HashMap<ItemId, Declaration, S>,
+        kind: Kind,
+        assumed: bool,
+    ) -> Result<Properties, &'static str> {
+        Ok(match kind {
+            Kind::Opaque(id, _) => {
+                types
+                    .opaque_declaration(id)
+                    .ok_or("invalid opaque declaration")?
+                    .copies
+            }
+            Kind::Projection(application) => {
+                self.projected_copies(types, application.item, assumed)?
+            }
+            Kind::Parameter(id) => {
+                let abilities = self
+                    .scope
+                    .as_ref()
+                    .and_then(|scope| scope.environment.as_ref())
+                    .ok_or("generic Copy checking requires a parameter environment")?
+                    .abilities(id)
+                    .ok_or("Copy parameter is outside the current environment")?;
+                Properties {
+                    copy: abilities.copy,
+                    clone_: abilities.clone_,
+                }
+            }
+            Kind::Adt(item, _) => selected
+                .get(&item)
+                .copied()
+                .unwrap_or_default()
+                .properties(),
+            Kind::Primitive(Primitive::Str)
+            | Kind::Slice(_)
+            | Kind::Dynamic { .. }
+            | Kind::Reference { mutable: true, .. } => Properties::default(),
+            _ => Properties::BOTH,
+        })
     }
     fn projected_copies(
         &self,
@@ -308,6 +379,7 @@ fn children(
     definitions: &Definitions,
     ty: TypeId,
     fields: bool,
+    argument_bounds: bool,
     mut visit: impl FnMut(TypeId) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     match types.kind(ty).ok_or("invalid Copy type")? {
@@ -328,9 +400,11 @@ fn children(
             }
             // Derives impose bounds on type parameters even in pointer fields.
             // Packed Clone derives strengthen these bounds to Copy too.
-            for argument in types.arguments(arguments).ok_or("invalid Copy arguments")? {
-                if let super::arguments::Argument::Type(ty) = argument {
-                    visit(ty)?;
+            if argument_bounds {
+                for argument in types.arguments(arguments).ok_or("invalid Copy arguments")? {
+                    if let super::arguments::Argument::Type(ty) = argument {
+                        visit(ty)?;
+                    }
                 }
             }
         }

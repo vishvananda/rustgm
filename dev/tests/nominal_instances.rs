@@ -59,14 +59,16 @@ fn conditional_derives_preserve_stronger_copy_bounds_for_packed_clone() -> Resul
             Properties {
                 copy: true,
                 clone_: true,
-            },
+            }
+            .into(),
         ),
         (
             ItemId(1),
             Properties {
                 copy: false,
                 clone_: true,
-            },
+            }
+            .into(),
         ),
     ]);
     let mut copies = Copies::default();
@@ -334,7 +336,8 @@ fn field_availability_does_not_authorize_recursive_by_value_layouts() -> Result<
         Properties {
             copy: true,
             clone_: true,
-        },
+        }
+        .into(),
     )]);
     assert_eq!(
         Copies::default().demand(&types, &definitions, &selected, root),
@@ -568,7 +571,8 @@ fn shared_generic_field_graphs_are_iterative_and_memoized() -> Result<(), Box<dy
         Properties {
             copy: true,
             clone_: true,
-        },
+        }
+        .into(),
     )]);
     assert!(
         Copies::default()

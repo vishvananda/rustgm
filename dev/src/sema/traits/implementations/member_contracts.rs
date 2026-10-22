@@ -1,5 +1,5 @@
 //! A checked constant member does not authorize methods or complete its implementation.
-use super::{Availability, DefId, Implementations};
+use super::{Availability, DefId, Headers, Implementations};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(in crate::sema) struct ConstantRequest {
@@ -12,17 +12,32 @@ impl Implementations {
         if self
             .pending
             .as_ref()
-            .is_some_and(|pending| !pending.is_empty())
+            .is_some_and(|pending| !pending.only_collections())
         {
             return Err("implementation candidate inventory still has pending headers");
         }
-        self.pending = None;
-        self.constant_headers_ready = true;
+        if self
+            .pending
+            .as_ref()
+            .is_some_and(|pending| pending.is_empty())
+        {
+            self.pending = None;
+        }
+        if self.headers == Headers::Open {
+            self.headers = Headers::Constants;
+        }
         Ok(())
     }
 
     pub(in crate::sema) fn constant_headers_ready(&self) -> bool {
-        self.constant_headers_ready
+        self.headers != Headers::Open
+    }
+    pub(in crate::sema) fn selection_headers_ready(&self) -> bool {
+        self.constant_headers_ready()
+            && self
+                .pending
+                .as_deref()
+                .is_none_or(super::pending::Pending::is_empty)
     }
     pub(in crate::sema) fn available_constant(
         &self,

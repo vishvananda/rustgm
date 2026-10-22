@@ -2,6 +2,7 @@
 mod associated_types;
 mod implementations;
 pub(super) use implementations::Readiness as ConstantReadiness;
+pub(super) use implementations::impl_contract_obligations;
 mod promises;
 use super::{Checker, Error, ItemId, Kind, NodeKey, Type, regions};
 use crate::{

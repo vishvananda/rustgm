@@ -37,9 +37,16 @@ struct Entry {
     validated: bool,
     checked_constants: HashMap<DefId, DefId>,
 }
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+enum Headers {
+    #[default]
+    Open,
+    Constants,
+    Validated,
+}
 #[derive(Default)]
 pub(in crate::sema) struct Implementations {
-    constant_headers_ready: bool,
+    headers: Headers,
     pending: Option<Box<pending::Pending>>,
     entries: Vec<Entry>,
     owners: HashMap<DefId, usize>,
@@ -71,10 +78,32 @@ impl Implementations {
 
     /// Reserve the complete source inventory before any early candidate selection.
     pub fn reserve(&mut self, headers: Vec<PendingHeader>) -> Result<(), &'static str> {
-        if self.pending.is_some() || !self.entries.is_empty() || self.constant_headers_ready {
+        if self.pending.is_some() || !self.entries.is_empty() || self.headers != Headers::Open {
             return Err("implementation candidate inventory is already initialized");
         }
         self.pending = Some(Box::new(pending::Pending::new(headers)?));
+        Ok(())
+    }
+    pub(in crate::sema) fn register_collection_heads(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+    ) -> Result<(), &'static str> {
+        if report.resolution.builtin_traits.collections().is_none() {
+            return Ok(());
+        }
+        self.pending
+            .as_deref_mut()
+            .ok_or("collection heads require reserved inventory")?
+            .install_collections(report)
+    }
+    pub(in crate::sema) fn headers_validated(&self) -> bool {
+        self.headers == Headers::Validated
+    }
+    pub(in crate::sema) fn finish_validation(&mut self) -> Result<(), &'static str> {
+        if self.headers == Headers::Open || self.entries.iter().any(|entry| !entry.validated) {
+            return Err("implementation inventory contains unvalidated declarations");
+        }
+        self.headers = Headers::Validated;
         Ok(())
     }
     pub(super) fn may_have_subject(&self, item: ItemId, subject: Subject) -> bool {
@@ -96,20 +125,10 @@ impl Implementations {
     ) -> Result<Candidates, crate::types::infer::Error> {
         use crate::types::infer::Error;
         let item = Identity::goal(goal)?;
-        let subject = match Subject::query(store, context, goal.subject()) {
-            Ok(subject) => subject,
-            Err(Error::Normalization) => Some(Subject::Rigid(Head::Projection(
-                context
-                    .projection_item(store, goal.subject())?
-                    .ok_or(Error::InvalidIdentity)?,
-            ))),
-            Err(error) => return Err(error),
-        };
-        if let Some(pending) = &self.pending {
-            let owners = pending.candidates(context, item, subject)?;
-            if !owners.is_empty() {
-                return Ok(Candidates::Pending(owners));
-            }
+        let subject = pending_subject(store, context, goal.subject())?;
+        let owners = self.pending_candidates(store, context, item, subject, goal.subject())?;
+        if !owners.is_empty() {
+            return Ok(Candidates::Pending(owners));
         }
         let Some(subject) = subject else {
             return Ok(Candidates::Ready(Vec::new()));
@@ -153,6 +172,80 @@ impl Implementations {
         result.sort_unstable_by_key(|id| id.0);
         Ok(Candidates::Ready(result))
     }
+    fn pending_candidates(
+        &self,
+        store: &Store,
+        context: &mut crate::types::infer::Context,
+        item: Identity,
+        subject: Option<Subject>,
+        term: crate::types::infer::TermId,
+    ) -> Result<Vec<DefId>, crate::types::infer::Error> {
+        let Some(pending) = &self.pending else {
+            return Ok(Vec::new());
+        };
+        let mut owners = pending.candidates(context, item, subject)?;
+        pending.filter_collections(store, context, term, &mut owners)?;
+        Ok(owners)
+    }
+    pub(in crate::sema) fn selection_goal_ready(
+        &self,
+        store: &Store,
+        context: &mut crate::types::infer::Context,
+        goal: &crate::types::infer::predicates::Predicate,
+    ) -> Result<bool, crate::types::infer::Error> {
+        if self.selection_headers_ready() {
+            return Ok(true);
+        }
+        if !self.constant_headers_ready() {
+            return Ok(false);
+        }
+        if goal.trait_arguments().is_none()
+            && !matches!(
+                goal.builtin_bound(),
+                Some(crate::types::parameters::predicates::Bound::Auto(_))
+            )
+        {
+            return Ok(true);
+        }
+        let item = Identity::goal(goal)?;
+        let subject = pending_subject(store, context, goal.subject())?;
+        Ok(self
+            .pending_candidates(store, context, item, subject, goal.subject())?
+            .is_empty())
+    }
+    pub(in crate::sema) fn selection_predicate_ready(
+        &self,
+        store: &Store,
+        context: &mut crate::types::infer::Context,
+        goal: crate::types::parameters::predicates::Predicate,
+    ) -> Result<bool, crate::types::infer::Error> {
+        use crate::types::{infer::Error, parameters::predicates::Bound};
+        if self.selection_headers_ready() {
+            return Ok(true);
+        }
+        if !self.constant_headers_ready() {
+            return Ok(false);
+        }
+        let item = match goal.bound {
+            Bound::Trait(application) => Identity::User(
+                store
+                    .trait_application(application)
+                    .ok_or(Error::InvalidIdentity)?
+                    .item,
+            ),
+            Bound::Auto(marker) => Identity::Auto(marker),
+            _ => return Ok(true),
+        };
+        let Some(pending) = &self.pending else {
+            return Ok(true);
+        };
+        let subject = Subject::Rigid(Head::canonical(
+            store.kind(goal.ty).ok_or(Error::InvalidIdentity)?,
+        ));
+        let mut owners = pending.candidates(context, item, Some(subject))?;
+        pending.filter_known_collections(store, context, goal.ty, &mut owners)?;
+        Ok(owners.is_empty())
+    }
     fn append_candidates(
         &self,
         context: &mut crate::types::infer::Context,
@@ -176,7 +269,13 @@ impl Implementations {
         value: Implementation,
     ) -> Result<(), &'static str> {
         let item = item.into();
-        if self.constant_headers_ready {
+        if self.headers != Headers::Open
+            && (!value.constants.is_empty()
+                || !self
+                    .pending
+                    .as_deref()
+                    .is_some_and(|pending| pending.collection_owner(value.owner)))
+        {
             return Err("implementation candidate headers are already frozen");
         }
         if self.owners.contains_key(&value.owner) {
@@ -345,5 +444,22 @@ impl Implementations {
         entry.value.constants = constants;
         entry.validated = true;
         Ok(())
+    }
+}
+
+fn pending_subject(
+    store: &Store,
+    context: &mut crate::types::infer::Context,
+    term: crate::types::infer::TermId,
+) -> Result<Option<Subject>, crate::types::infer::Error> {
+    use crate::types::infer::Error;
+    match Subject::query(store, context, term) {
+        Ok(subject) => Ok(subject),
+        Err(Error::Normalization) => Ok(Some(Subject::Rigid(Head::Projection(
+            context
+                .projection_item(store, term)?
+                .ok_or(Error::InvalidIdentity)?,
+        )))),
+        Err(error) => Err(error),
     }
 }

@@ -273,7 +273,12 @@ impl Query {
             .generics
             .implementations
             .as_ref()
-            .is_none_or(|registry| registry.constant_headers_ready())
+            .map(|registry| {
+                registry.selection_goal_ready(&facts.types, &mut state.context, &self.goal)
+            })
+            .transpose()
+            .map_err(|_| "invalid pending trait header readiness")?
+            .unwrap_or(true)
             && !facts.types.nominal_sizes_pending()
         {
             let empty = Assumptions::default();

@@ -65,3 +65,13 @@ qualifies all 30 source outcomes; its explicitly ignored native test compares
 20 selected programs with Rust and CPPGM. The no-prelude program also has
 standalone direct-backend qualification. Exact schema/instance and compact
 representation controls live beside the existing primitive factory invariants.
+
+
+`shared-iteration-outcomes.json` declares 26 `spec/iteration/shared-collections`
+outcomes: 18 accepted native programs and eight language rejections. The
+shared_iterators module of language_operators qualifies the unchanged sources;
+its explicitly ignored backend test compares execution with pinned Rust. These
+include empty/ZST and non-Copy elements, source/item lifetimes, qualified/reified
+lookup, one-time formation and ordinary Drop observers. The Clone-bound case
+does not invoke clone; actual `Iter::clone`, mutable/owned collections and ranges
+remain required. See `docs/pa26-shared-iteration.md`.

@@ -139,92 +139,11 @@ impl Checker<'_> {
         ty: crate::types::TypeId,
         substitution: &mut Option<crate::types::substitute::Bound>,
     ) -> Result<Vec<Clause>, Error> {
-        let contract = self
-            .facts
-            .associated
-            .type_contract(expected)
-            .ok_or_else(|| self.error(key, "missing associated type contract"))?;
-        let projection = contract.projection;
-        let mut required = contract.bounds.clone();
-        for requirement in &mut required {
-            *requirement = self.map_result_bound(
-                key,
-                predicate,
-                (projection, ty),
-                *requirement,
-                substitution,
-            )?;
+        crate::sema::declarations::comparisons::LibraryContracts {
+            report: self.report,
+            facts: &mut self.facts,
         }
-        Ok(required)
-    }
-
-    /// The concrete result is already in impl scope. Insert it beneath a retained
-    /// clause binder after mapping the declaration's inputs, never before.
-    fn map_result_bound(
-        &mut self,
-        key: NodeKey,
-        parent: Predicate,
-        result_types: (crate::types::TypeId, crate::types::TypeId),
-        clause: Clause,
-        substitution: &mut Option<crate::types::substitute::Bound>,
-    ) -> Result<Clause, Error> {
-        let (projection, actual) = result_types;
-        let (mut requirement, count) = match clause {
-            Clause::Predicate(value) => (value, None),
-            Clause::ForAll(id) => {
-                let value = self
-                    .facts
-                    .types
-                    .quantified(id)
-                    .ok_or_else(|| self.error(key, "invalid associated result binder"))?;
-                (value.predicate, Some(value.bound_regions))
-            }
-        };
-        let depth = u16::from(count.is_some());
-        let formal = self
-            .facts
-            .types
-            .shift_type(projection, depth)
-            .map_err(|e| self.error(key, e))?
-            .0;
-        let direct = requirement.ty == formal;
-        if !direct || !matches!(requirement.bound, Bound::Copy | Bound::Clone | Bound::Sized) {
-            if substitution.is_none() {
-                *substitution = Some(
-                    crate::sema::traits::results::substitution(&self.facts, parent)
-                        .map_err(|e| self.error(key, e))?,
-                );
-            }
-            if direct {
-                requirement.ty = crate::types::TypeId::UNIT;
-            }
-            requirement = substitution
-                .as_mut()
-                .ok_or_else(|| self.error(key, "missing associated result substitution"))?
-                .predicate_inside(&mut self.facts.types, requirement, depth)
-                .map_err(|e| self.error(key, e))?;
-        }
-        if direct {
-            requirement.ty = self
-                .facts
-                .types
-                .shift_type(actual, depth)
-                .map_err(|e| self.error(key, e))?
-                .0;
-        }
-        Ok(if let Some(bound_regions) = count {
-            Clause::ForAll(
-                self.facts
-                    .types
-                    .intern_quantified(Quantified {
-                        bound_regions,
-                        predicate: requirement,
-                    })
-                    .map_err(|e| self.error(key, e))?,
-            )
-        } else {
-            Clause::Predicate(requirement)
-        })
+        .associated_result_bounds(key, predicate, expected, ty, substitution)
     }
 
     fn associated_type_regions(
@@ -285,6 +204,104 @@ impl Checker<'_> {
                 source,
                 format!("associated type lifetime requirement is not satisfied: {e}"),
             )
+        })
+    }
+}
+
+impl crate::sema::declarations::comparisons::LibraryContracts<'_> {
+    pub(in crate::sema::declarations) fn associated_result_bounds(
+        &mut self,
+        key: NodeKey,
+        predicate: Predicate,
+        expected: DefId,
+        ty: crate::types::TypeId,
+        substitution: &mut Option<crate::types::substitute::Bound>,
+    ) -> Result<Vec<Clause>, Error> {
+        let contract = self
+            .facts
+            .associated
+            .type_contract(expected)
+            .ok_or_else(|| self.error(key, "missing associated type contract"))?;
+        let projection = contract.projection;
+        let mut required = contract.bounds.clone();
+        for requirement in &mut required {
+            *requirement = self.map_result_bound(
+                key,
+                predicate,
+                (projection, ty),
+                *requirement,
+                substitution,
+            )?;
+        }
+        Ok(required)
+    }
+
+    /// The concrete result is already in impl scope. Insert it beneath a retained
+    /// clause binder after mapping the declaration's inputs, never before.
+    fn map_result_bound(
+        &mut self,
+        key: NodeKey,
+        parent: Predicate,
+        result_types: (crate::types::TypeId, crate::types::TypeId),
+        clause: Clause,
+        substitution: &mut Option<crate::types::substitute::Bound>,
+    ) -> Result<Clause, Error> {
+        let (projection, actual) = result_types;
+        let (mut requirement, count) = match clause {
+            Clause::Predicate(value) => (value, None),
+            Clause::ForAll(id) => {
+                let value = self
+                    .facts
+                    .types
+                    .quantified(id)
+                    .ok_or_else(|| self.error(key, "invalid associated result binder"))?;
+                (value.predicate, Some(value.bound_regions))
+            }
+        };
+        let depth = u16::from(count.is_some());
+        let formal = self
+            .facts
+            .types
+            .shift_type(projection, depth)
+            .map_err(|e| self.error(key, e))?
+            .0;
+        let direct = requirement.ty == formal;
+        if !direct || !matches!(requirement.bound, Bound::Copy | Bound::Clone | Bound::Sized) {
+            if substitution.is_none() {
+                *substitution = Some(
+                    crate::sema::traits::results::substitution(self.facts, parent)
+                        .map_err(|e| self.error(key, e))?,
+                );
+            }
+            if direct {
+                requirement.ty = crate::types::TypeId::UNIT;
+            }
+            requirement = substitution
+                .as_mut()
+                .ok_or_else(|| self.error(key, "missing associated result substitution"))?
+                .predicate_inside(&mut self.facts.types, requirement, depth)
+                .map_err(|e| self.error(key, e))?;
+        }
+        if direct {
+            requirement.ty = self
+                .facts
+                .types
+                .shift_type(actual, depth)
+                .map_err(|e| self.error(key, e))?
+                .0;
+        }
+        Ok(if let Some(bound_regions) = count {
+            Clause::ForAll(
+                self.facts
+                    .types
+                    .intern_quantified(Quantified {
+                        bound_regions,
+                        predicate: requirement,
+                    })
+                    .map_err(|e| self.error(key, e))?,
+            )
+        } else {
+            Clause::Predicate(requirement)
         })
     }
 }

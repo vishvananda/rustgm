@@ -24,7 +24,7 @@ mod impl_headers;
 mod implicit_methods;
 mod inherent_headers;
 mod intrinsics;
-mod iteration;
+pub(in crate::sema) mod iteration;
 mod language_hooks;
 mod library_types;
 mod lifetimes;
@@ -331,17 +331,7 @@ impl Checker<'_> {
                 u32::try_from(index)
                     .map_err(|_| Error::at(FileId(0), 0, "too many type declarations"))?,
             );
-            if self
-                .report
-                .resolution
-                .builtin_traits
-                .latent_comparison_owner(id)
-                .is_some()
-            {
-                continue;
-            }
-            if self.lazy_library_method(id) {
-                // Canonical library methods publish signatures only on typed demand.
+            if self.latent_library_definition(id) {
                 continue;
             }
             if !matches!(
@@ -385,6 +375,16 @@ impl Checker<'_> {
         }
         self.complete_layouts()
     }
+    fn latent_library_definition(&self, id: DefId) -> bool {
+        self.report
+            .resolution
+            .builtin_traits
+            .latent_comparison_owner(id)
+            .is_some()
+            || self.lazy_library_method(id)
+            || iteration::collections::owns(self.report, id)
+    }
+
     #[expect(
         clippy::too_many_lines,
         reason = "the exhaustive worklist dispatch keeps every declaration continuation in one match"
@@ -655,6 +655,9 @@ impl Checker<'_> {
             .push(Work::Node(NodeKey { file, node }, false, context));
     }
     fn definition(&mut self, id: DefId, finish: bool) -> Result<(), Error> {
+        if iteration::collections::owns(self.report, id) {
+            return self.activate_collection(id);
+        }
         if self.states[id.0 as usize] == State::Complete {
             return Ok(());
         }

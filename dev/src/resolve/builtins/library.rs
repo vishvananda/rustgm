@@ -2,17 +2,17 @@
 use super::{Context, DefId, DefKind, Error, NameId, Namespace, Resolver, ScopeId};
 use crate::{
     resolve::{package::ModuleId, unit::NodeKey},
-    support::library_types::{LibraryField, LibraryModule, LibraryType},
+    support::library_types::{LibraryField, LibraryModule, LibraryParameter, LibraryType},
     syntax::ast::NodeId,
 };
 use std::collections::HashMap;
 mod slices;
 pub use slices::SliceLength;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Variant {
     pub type_definition: Option<DefId>,
-    pub constructor: DefId,
+    pub constructor: Option<DefId>,
     pub field: Option<LibraryField>,
 }
 #[derive(Clone)]
@@ -64,9 +64,28 @@ impl Resolver<'_> {
         let Some(last) = path.last().map(|name| self.package.names.get(*name)) else {
             return Ok(());
         };
+        if last == "slice"
+            && self.nominal_library_path(c, node, absolute, path, LibraryType::SliceIter)
+        {
+            let parent = self
+                .facts
+                .builtin_traits
+                .library
+                .ok_or_else(|| self.error(c, node, "missing canonical slice library module"))?;
+            self.library_module(c, node, parent, LibraryModule::Slice)?;
+            return Ok(());
+        }
         let comparison = matches!(last, "Ordering" | "cmp" | "Less" | "Equal" | "Greater")
-            && self.comparison_library_path(c, node, absolute, path);
+            && self.nominal_library_path(c, node, absolute, path, LibraryType::ComparisonOrdering);
         let kind = LibraryType::ALL.into_iter().find(|kind| {
+            if *kind == LibraryType::SliceIter
+                && (!path
+                    .iter()
+                    .any(|name| self.package.names.get(*name) == kind.name())
+                    || !self.nominal_library_path(c, node, absolute, path, *kind))
+            {
+                return false;
+            }
             if matches!(
                 kind,
                 LibraryType::Ordering | LibraryType::ComparisonOrdering
@@ -76,32 +95,41 @@ impl Resolver<'_> {
             }
 
             kind.name() == last
-                || kind.module() == last
+                || *kind != LibraryType::SliceIter && kind.module() == last
                 || kind.in_prelude() && kind.variants().iter().any(|(name, _)| *name == last)
                 || path
                     .iter()
                     .any(|name| self.package.names.get(*name) == kind.name())
         });
         if let Some(kind) = kind {
+            if kind == LibraryType::SliceIter {
+                self.facts
+                    .builtin_traits
+                    .name_slice_iterator(c.module, NodeKey { file: c.file, node });
+            }
             self.prepare_library_type(c, node, kind)?;
         }
         Ok(())
     }
-    fn comparison_library_path(
+    fn nominal_library_path(
         &self,
         c: Context,
         node: NodeId,
         absolute: bool,
         path: &[NameId],
+        kind: LibraryType,
     ) -> bool {
         use crate::resolve::lookup::{Lookup, LookupMode};
         let index = path
             .iter()
-            .position(|name| matches!(self.package.names.get(*name), "cmp" | "Ordering"))
+            .position(|name| {
+                let name = self.package.names.get(*name);
+                name == kind.module() || name == kind.name()
+            })
             .unwrap_or_else(|| path.len().saturating_sub(1));
         if index == 0 {
             return matches!(self.lookup_path(c, node, absolute, path, LookupMode::Import(Namespace::Type), None),
-                Ok(Lookup::Found(binding)) if self.facts.library_types.identify(binding.target) == Some(LibraryType::ComparisonOrdering));
+                Ok(Lookup::Found(binding)) if self.facts.library_types.identify(binding.target) == Some(kind));
         }
         let Ok(Lookup::Found(binding)) = self.lookup_path(
             c,
@@ -115,8 +143,11 @@ impl Resolver<'_> {
         };
         let scope = self.facts.definitions[binding.target.0 as usize].members;
         scope.is_some()
-            && (scope == self.facts.library_types.modules[LibraryModule::Comparison.index()]
-                || self.package.names.get(path[index]) == "cmp"
+            && (kind
+                .modules()
+                .last()
+                .is_some_and(|part| scope == self.facts.library_types.modules[part.index()])
+                || self.package.names.get(path[index]) == kind.module()
                     && scope == self.facts.builtin_traits.library)
     }
     pub(super) fn prepare_library_type(
@@ -151,15 +182,19 @@ impl Resolver<'_> {
         )?;
         let parameter_scope = self.new_scope(None, ModuleId(0), true)?;
         let mut parameters = Vec::new();
-        for name in kind.parameters() {
+        for parameter in kind.parameters() {
             parameters.push(self.builtin_definition(
                 Context {
                     scope: parameter_scope,
                     ..c
                 },
                 node,
-                name,
-                DefKind::Generic,
+                parameter.name(),
+                if matches!(parameter, LibraryParameter::Lifetime(_)) {
+                    DefKind::Lifetime
+                } else {
+                    DefKind::Generic
+                },
                 None,
             )?);
         }
@@ -220,19 +255,23 @@ impl Resolver<'_> {
     ) -> Result<Vec<Variant>, Error> {
         let mut variants = Vec::new();
         for &(name, field) in kind.variants() {
-            let constructor = self.library_value(
-                Context {
-                    scope: members,
-                    ..c
-                },
-                node,
-                name,
-                if kind.is_struct() {
-                    DefKind::Constructor
-                } else {
-                    DefKind::Variant
-                },
-            )?;
+            let constructor = if kind == LibraryType::SliceIter {
+                None
+            } else {
+                Some(self.library_value(
+                    Context {
+                        scope: members,
+                        ..c
+                    },
+                    node,
+                    name,
+                    if kind.is_struct() {
+                        DefKind::Constructor
+                    } else {
+                        DefKind::Variant
+                    },
+                )?)
+            };
             let type_definition = if kind.is_struct() {
                 None
             } else {
@@ -248,6 +287,8 @@ impl Resolver<'_> {
                 )?)
             };
             if kind.in_prelude() {
+                let constructor = constructor
+                    .ok_or_else(|| self.error(c, node, "prelude variant requires a constructor"))?;
                 let name = self.facts.definitions[constructor.0 as usize].name;
                 self.facts
                     .library_types

@@ -1,4 +1,5 @@
 //! Pending headers are scheduling dependencies, never implementation evidence.
+mod collections;
 use super::{DefId, Head, Identity, Subject};
 use crate::types::infer::{Context, Error};
 use std::collections::{HashMap, HashSet};
@@ -22,6 +23,7 @@ pub(in crate::sema) enum Candidates {
 
 #[derive(Default)]
 pub(super) struct Pending {
+    collections: Option<Box<collections::Heads>>,
     owners: HashMap<DefId, (Identity, Option<Head>)>,
     traits: HashMap<Identity, HashSet<DefId>>,
     heads: HashMap<(Identity, Option<Head>), HashSet<DefId>>,

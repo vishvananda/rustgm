@@ -70,6 +70,30 @@ impl Checker<'_> {
                 });
             }
         }
+        if let (Some(iteration), Some(collections)) = (
+            self.report.resolution.builtin_traits.iteration(),
+            self.report.resolution.builtin_traits.collections(),
+        ) {
+            for declaration in collections.declarations {
+                if let Some(trait_) = declaration.kind.trait_() {
+                    headers.push(PendingHeader {
+                        owner: declaration.definition,
+                        item: crate::types::ItemId(iteration.get(trait_).definition.0).into(),
+                        head: Some(
+                            if declaration.kind
+                                == crate::support::iteration::Collection::SliceIterator
+                            {
+                                crate::sema::traits::heads::Head::Nominal(crate::types::ItemId(
+                                    collections.iterator.0,
+                                ))
+                            } else {
+                                crate::sema::traits::heads::Head::Reference(false)
+                            },
+                        ),
+                    });
+                }
+            }
+        }
         if headers.is_empty() {
             return Ok(());
         }
@@ -78,6 +102,19 @@ impl Checker<'_> {
             .implementations
             .get_or_insert_with(Default::default)
             .reserve(headers)
+            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+        self.facts
+            .generics
+            .implementations
+            .as_mut()
+            .ok_or_else(|| {
+                Error::at(
+                    crate::resolve::unit::FileId(0),
+                    0,
+                    "missing reserved implementation inventory",
+                )
+            })?
+            .register_collection_heads(self.report)
             .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))
     }
 

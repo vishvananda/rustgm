@@ -42,6 +42,11 @@ impl Resolver<'_> {
         if self.package.names.get(name) == "add" {
             self.prepare_pointer_methods(c, node)?;
         }
+        if self.package.names.get(name) == "iter" {
+            self.facts
+                .builtin_traits
+                .note_collection(c.module, NodeKey { file: c.file, node });
+        }
         if self.package.names.get(name) == "len" {
             self.prepare_slice_length(c, node)?;
         }

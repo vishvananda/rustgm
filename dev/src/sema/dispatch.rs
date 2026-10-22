@@ -373,7 +373,12 @@ impl Dispatcher {
                 .generics
                 .implementations
                 .as_ref()
-                .is_some_and(|registry| registry.constant_headers_ready())
+                .map(|registry| {
+                    registry.selection_predicate_ready(&facts.types, &mut self.context, predicate)
+                })
+                .transpose()
+                .map_err(|e| e.to_string())?
+                .unwrap_or(false)
             && predicate.is_concrete(&facts.types)?;
         let first = self.obligations.regions.end;
         if closed

@@ -184,7 +184,9 @@ fn canonical_factory_identity_and_body_work_remain_additive()
             .ok_or("missing canonical atomic type")?;
         assert!(nominal.parameters.is_empty());
         assert_eq!(nominal.variants.len(), 1);
-        let factory = nominal.variants[0].constructor;
+        let factory = nominal.variants[0]
+            .constructor
+            .ok_or("missing atomic factory")?;
         assert_eq!(
             facts.members.constructors.get(&factory).map(|c| c.kind),
             Some(rustgm::sema::members::ConstructorKind::ConstFunction)

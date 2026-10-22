@@ -17,7 +17,7 @@ use crate::{
     types::{
         ItemId, Kind, Store,
         aggregate::Definitions,
-        copy::{Copies, Properties},
+        copy::{Copies, Declaration},
     },
 };
 use paths::Access;
@@ -76,7 +76,7 @@ impl<'a> Analysis<'a> {
 pub fn check<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Properties, S>,
+    derives: &HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     program: &'a Program,
 ) -> Result<Analysis<'a>, Error> {
@@ -94,7 +94,7 @@ pub fn check<'a, S: BuildHasher>(
 pub fn verify<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Properties, S>,
+    derives: &HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     program: &'a Program,
 ) -> Result<Checked<'a>, Error> {
@@ -103,7 +103,7 @@ pub fn verify<'a, S: BuildHasher>(
 fn visit<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Properties, S>,
+    derives: &HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     program: &'a Program,
     mut record: impl FnMut(BodyFacts),
@@ -144,7 +144,7 @@ fn visit<'a, S: BuildHasher>(
 pub fn analyze_body<S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Properties, S>,
+    derives: &HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     body: &Body,
 ) -> Result<BodyFacts, Error> {
@@ -156,7 +156,7 @@ pub fn analyze_body<S: BuildHasher>(
 fn prepare<S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Properties, S>,
+    derives: &HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     body: &Body,
     retain_initialization: bool,

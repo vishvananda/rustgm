@@ -157,3 +157,6 @@ mod iterators;
 
 #[path = "language_operators/iterator_visibility.rs"]
 mod iterator_visibility;
+
+#[path = "language_operators/shared_iterators.rs"]
+mod shared_iterators;

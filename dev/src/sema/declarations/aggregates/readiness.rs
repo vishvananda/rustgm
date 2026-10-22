@@ -32,7 +32,7 @@ impl Checker<'_> {
         attributes: crate::sema::representation::Attributes,
     ) -> Result<(), Error> {
         if attributes.derives != crate::types::copy::Properties::default() {
-            self.facts.derives.insert(item, attributes.derives);
+            self.facts.derives.insert(item, attributes.derives.into());
         }
         if attributes.equality != crate::types::equality::Properties::default() {
             self.facts
@@ -221,6 +221,10 @@ impl Checker<'_> {
 }
 
 impl Checker<'_> {
+    pub(in super::super) fn nominal_registered(&self, item: ItemId) -> bool {
+        self.nominals.index.contains_key(&item)
+    }
+
     pub(in super::super) fn register_library_nominal(
         &mut self,
         item: ItemId,

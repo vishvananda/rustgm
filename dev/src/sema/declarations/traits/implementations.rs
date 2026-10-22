@@ -14,6 +14,7 @@ use crate::{
     },
     types::parameters::predicates::{Bound, Predicate},
 };
+pub(in crate::sema::declarations) use validation::impl_contract_obligations;
 
 impl Checker<'_> {
     pub(in crate::sema::declarations) fn prepare_trait_implementations(

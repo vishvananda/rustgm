@@ -727,6 +727,24 @@ impl Checker<'_> {
     pub(super) fn advance_body(&mut self) -> Result<Option<Dependency>, Error> {
         loop {
             if let Some(dependency) = self.advance_current_body()? {
+                let owner = match dependency.requirement {
+                    Requirement::ImplHeader(owner) | Requirement::Definition(owner) => Some(owner),
+                    _ => None,
+                };
+                if matches!(
+                    self.availability,
+                    super::traits::implementations::Availability::Validated
+                ) && let Some(owner) = owner
+                    && super::declarations::iteration::collections::owns(self.report, owner)
+                {
+                    super::declarations::iteration::collections::prepare(
+                        self.report,
+                        self.facts,
+                        owner,
+                        true,
+                    )?;
+                    continue;
+                }
                 return Ok(Some(dependency));
             }
             if !self.continue_nested_bodies()? {
@@ -804,7 +822,11 @@ impl Checker<'_> {
                 }
                 Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
                 Work::MethodArguments(node) => self.method_arguments(node)?,
-                Work::ForIterator(node) => self.for_iterator(node)?,
+                Work::ForIterator(node) => {
+                    if let Some(dependency) = self.for_iterator_work(node)? {
+                        return Ok(Some(dependency));
+                    }
+                }
                 Work::ForPattern(node, item) => self.pattern(node, item, true)?,
                 Work::AssignmentValue(node) => {
                     let Kind::Binary { left, right, .. } = self.kind(node) else {

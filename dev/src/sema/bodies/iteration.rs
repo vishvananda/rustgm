@@ -5,7 +5,7 @@ use crate::{
     sema::iteration::{Call, ForPlan},
     support::{iteration::Trait, library_types::LibraryType},
     types::{
-        ItemId,
+        ItemId, TypeId,
         infer::{Solved, arguments::Argument},
         lifetime_proof::ScopeId,
     },
@@ -26,6 +26,47 @@ struct OpenCall {
     signature: TermId,
 }
 impl Checker<'_> {
+    pub(super) fn for_iterator_work(
+        &mut self,
+        node: NodeId,
+    ) -> Result<Option<super::Dependency>, Error> {
+        if let Some(requirement) = self.for_collection_readiness(node)? {
+            self.state.work.push(Work::ForIterator(node));
+            return Ok(Some(super::Dependency {
+                requirement,
+                source: self.key(node),
+            }));
+        }
+        self.for_iterator(node)?;
+        Ok(None)
+    }
+    fn for_collection_readiness(
+        &mut self,
+        node: NodeId,
+    ) -> Result<Option<super::Requirement>, Error> {
+        if self
+            .facts
+            .iteration
+            .as_deref()
+            .and_then(|r| r.collections.as_deref())
+            .is_some_and(|r| r.status == crate::sema::iteration::collections::Status::Complete)
+        {
+            return Ok(None);
+        }
+        let crate::syntax::ast::Kind::For { iterator, .. } = self.kind(node) else {
+            return Err(self.error(node, "invalid iteration readiness continuation"));
+        };
+        let subject = self.term(iterator)?;
+        let owner = crate::sema::iteration::collections::requested_owner(
+            self.report,
+            &self.facts.types,
+            &mut self.state.infer,
+            subject,
+        )
+        .map_err(|e| self.error(node, e.to_string()))?;
+        Ok(owner.map(super::Requirement::ImplHeader))
+    }
+
     pub(super) fn for_iterator(&mut self, node: NodeId) -> Result<(), Error> {
         let crate::syntax::ast::Kind::For {
             pattern,
@@ -186,6 +227,7 @@ impl Checker<'_> {
             {
                 return Err(self.error(node, "iteration result differs from the selected IntoIter"));
             }
+            self.prepare_iteration_storage(node, iterator, option)?;
             let key = self.key(node);
             self.facts
                 .iteration
@@ -204,6 +246,22 @@ impl Checker<'_> {
                         none,
                     },
                 );
+        }
+        Ok(())
+    }
+    fn prepare_iteration_storage(
+        &mut self,
+        node: NodeId,
+        iterator: TypeId,
+        option: TypeId,
+    ) -> Result<(), Error> {
+        // These synthesized call results become owned loop storage. Their
+        // exact solved shapes must precede CFG construction and drop queries.
+        for ty in [iterator, option] {
+            self.facts
+                .aggregates
+                .prepare(&mut self.facts.types, ty)
+                .map_err(|e| self.error(node, e))?;
         }
         Ok(())
     }

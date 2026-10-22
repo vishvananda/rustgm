@@ -1,6 +1,7 @@
 //! Stable name-resolution facts; lexical bindings point directly at definitions.
 pub use super::builtins::{
     BuiltinIntrinsic, BuiltinTrait, Callable as BuiltinCallable,
+    CollectionDeclaration as BuiltinCollectionDeclaration, Collections as BuiltinCollections,
     ComparisonMembers as BuiltinComparisonMembers, ComparisonResult, Equality as BuiltinEquality,
     Intrinsics, Iteration as BuiltinIteration, IterationBlanket as BuiltinIterationBlanket,
     IterationDeclaration as BuiltinIterationDeclaration, Language as BuiltinLanguage,

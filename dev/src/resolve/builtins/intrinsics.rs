@@ -158,10 +158,17 @@ impl Resolver<'_> {
         let [ok, err] = result.variants.as_slice() else {
             return Err(self.error(c, node, "comparison Result requires canonical Ok and Err"));
         };
+        let (Some(ok), Some(err)) = (ok.constructor, err.constructor) else {
+            return Err(self.error(
+                c,
+                node,
+                "comparison Result requires both variant constructors",
+            ));
+        };
         let identity = ComparisonResult {
             definition: result.definition,
-            ok: ok.constructor,
-            err: err.constructor,
+            ok,
+            err,
         };
         if self
             .facts

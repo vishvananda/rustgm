@@ -69,6 +69,7 @@ impl Checker<'_> {
                 .get(&entry.item)
                 .copied()
                 .unwrap_or_default();
+            let selected = selected.properties();
             // Each impl has its own generated environment: the Copy impl's
             // stronger bounds cannot justify the independent Clone impl.
             if selected.copy {
@@ -93,6 +94,16 @@ impl Checker<'_> {
         let generated = Properties {
             copy: copy || packed,
             clone_: true,
+        };
+        let generated = if self
+            .facts
+            .derives
+            .get(&item)
+            .is_some_and(|d| !d.has_argument_bounds())
+        {
+            Properties::default()
+        } else {
+            generated
         };
         let environment = self
             .derive_environment(item, generated)

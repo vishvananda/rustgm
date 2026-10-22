@@ -112,7 +112,8 @@ impl Checker<'_> {
 
     fn completed_method_path(&self, key: NodeKey) -> bool {
         (self.facts.methods.qualified.contains_key(&key)
-            || self.facts.methods.length_prefix(key).is_some())
+            || self.facts.methods.length_prefix(key).is_some()
+            || self.collection_prefix(key).is_some())
             && self.facts.generics.item_uses.contains_key(&key)
     }
 

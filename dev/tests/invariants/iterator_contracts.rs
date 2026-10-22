@@ -77,6 +77,35 @@ fn iterator_originals_enter_both_contract_collectors_and_ordinary_proof() -> Res
     Ok(())
 }
 #[test]
+fn collection_originals_enter_both_collectors_and_ordinary_ownership_proof() -> Result {
+    let (report, mut facts) = fixture("fn main(){let a=[1u8,2];for _ in &a{}}")?;
+    for incremental in [false, true] {
+        let mut contracts = if incremental {
+            body::regions::Collector::default().finish(&facts)?.bodies
+        } else {
+            body::regions::collect(&facts)?.bodies
+        };
+        let mut templates = Templates { bodies: Vec::new() };
+        append(&report, &mut facts, &mut templates, &mut contracts)?;
+        assert_eq!(templates.bodies.len(), 6);
+        body::promote::analyze_templates(&report, &mut facts, &mut templates)?;
+        verify(&mut facts, &templates, contracts.clone())?;
+        let next = facts
+            .iteration
+            .as_deref()
+            .and_then(|r| r.collections.as_deref())
+            .ok_or("collections")?
+            .originals[crate::support::iteration::Collection::SliceIterator as usize]
+            .ok_or("next")?
+            .declaration
+            .method;
+        let template=templates.bodies.iter_mut().find(|t|matches!(t.body.owner,body::ir::Owner::Function {definition,..} if definition==next)).ok_or("next original")?;
+        template.body.locals[0].kind = body::ir::LocalKind::Binding;
+        assert!(verify(&mut facts, &templates, contracts).is_err());
+    }
+    Ok(())
+}
+#[test]
 fn iterator_factory_rejects_forged_owner_parameter_prerequisite_and_binder() -> Result {
     let (_, mut facts) = fixture(SOURCE)?;
     let originals = facts.iteration.as_deref().ok_or("registry")?.originals;
@@ -233,7 +262,8 @@ fn iterator_layout_keeps_ordinary_records_compact() {
     // pointer method selection adds one 8-byte lazy catalog slot.
     assert_eq!(size_of::<Declarations>(), 8544);
     assert_eq!(size_of::<Original>(), 56);
-    assert_eq!(size_of::<crate::sema::iteration::Registry>(), 304);
+    // The demand-only collection catalog adds one optional Box to this owner.
+    assert_eq!(size_of::<crate::sema::iteration::Registry>(), 312);
     assert_eq!(size_of::<body::ir::Value>(), 24);
     assert_eq!(size_of::<crate::sema::iteration::Call>(), 8);
     assert_eq!(size_of::<crate::sema::iteration::ForPlan>(), 36);

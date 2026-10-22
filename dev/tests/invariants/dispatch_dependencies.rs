@@ -286,3 +286,33 @@ fn inherent_free_arguments_do_not_publish_an_independent_closure()
     );
     Ok(())
 }
+
+#[test]
+fn closed_dispatch_cache_stays_usable_with_unrelated_latent_collection_headers()
+-> Result<(), Box<dyn std::error::Error>> {
+    let (_, mut facts) = facts(
+        "trait A<'a,'b>{const C:usize;}struct S;impl<'a:'b,'b>A<'a,'b>for S{const C:usize=3;}struct I;impl Iterator for I{type Item=u8;fn next(&mut self)->Option<u8>{None}}fn main(){let _=<S as A<'static,'static>>::C;for _ in I{}}",
+    )?;
+    assert!(
+        facts
+            .iteration
+            .as_deref()
+            .is_some_and(|r| r.collections.is_none())
+    );
+    let instance = *facts.constant_uses.values().next().ok_or("constant")?;
+    for first in [1, 10, 100] {
+        let mut dispatch = Dispatcher::new(0, first)?;
+        dispatch.constant(&mut facts, instance)?;
+        assert!(dispatch.finish().is_empty());
+    }
+    assert_eq!(facts.dispatch_work().selections, 1);
+    assert_eq!(facts.dispatch_work().closed_proofs, 1);
+    assert_eq!(facts.dispatch_work().shared_selections, 2);
+    assert!(
+        facts
+            .iteration
+            .as_deref()
+            .is_some_and(|r| r.collections.is_none())
+    );
+    Ok(())
+}

@@ -18,6 +18,7 @@ pub(super) enum Term {
     Unsized,
     Type(TypeId),
 }
+#[derive(Clone)]
 pub(super) struct Entry {
     pub rule: Rule,
     term: Term,
@@ -32,7 +33,7 @@ enum Step {
     Child(Key),
     Fields(ItemId),
 }
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(super) struct Pending {
     states: HashMap<Key, State>,
     work: Vec<(Key, bool)>,

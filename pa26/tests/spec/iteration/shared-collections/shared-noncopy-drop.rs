@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct V<'a>(&'a mut u8);impl Drop for V<'_>{fn drop(&mut self){*self.0+=1;}}fn main(){let mut x=0u8;let mut y=0u8;{let a=[V(&mut x),V(&mut y)];let mut n=0u8;for _ in &a{n+=1;}check(n==2);}check(x==1&&y==1);}

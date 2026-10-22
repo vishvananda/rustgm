@@ -1,5 +1,6 @@
 //! Small demand-loaded trait modules retain identity through aliases and globs.
 mod callables;
+mod collections;
 mod comparisons;
 mod iteration;
 mod language;
@@ -13,6 +14,7 @@ use crate::{
     syntax::ast::NodeId,
 };
 pub use callables::Callable;
+pub use collections::{CollectionDeclaration, Collections};
 pub use comparisons::{Equality, Members as ComparisonMembers};
 pub use iteration::{Blanket as IterationBlanket, Declaration as IterationDeclaration, Iteration};
 pub use language::{Language, Output as LanguageOutput};

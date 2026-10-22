@@ -37,7 +37,12 @@ impl Checker<'_> {
         if let (Some(expected), Some(actual)) = (expected.into_iter, declaration.into_iter) {
             types.push((expected, actual));
         }
-        self.iteration_associated_definitions(source, original, &types)?;
+        self.iteration_associated_definitions(
+            source,
+            original.declaration.definition,
+            original.predicate,
+            &types,
+        )?;
         let definitions = conformance::Definitions::new(&self.facts, original.predicate, &types)
             .map_err(|e| self.error(source, e))?;
         let function = |definition| {
@@ -80,13 +85,13 @@ impl Checker<'_> {
             .map_err(|e| self.error(source, e))?;
         Ok(true)
     }
-    fn iteration_associated_definitions(
+    pub(super) fn iteration_associated_definitions(
         &mut self,
         source: crate::resolve::unit::NodeKey,
-        original: crate::sema::iteration::Original,
+        owner: DefId,
+        predicate: crate::types::parameters::predicates::Predicate,
         types: &[(DefId, DefId)],
     ) -> Result<(), Error> {
-        let owner = original.declaration.definition;
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(owner, environment);
         let mut substitution = None;
@@ -104,13 +109,9 @@ impl Checker<'_> {
                     "canonical iteration associated definition is not well-formed",
                 ));
             }
-            for requirement in self.associated_result_bounds(
-                source,
-                original.predicate,
-                expected,
-                ty,
-                &mut substitution,
-            )? {
+            for requirement in
+                self.associated_result_bounds(source, predicate, expected, ty, &mut substitution)?
+            {
                 if !proof
                     .prove_clause(&mut self.facts, requirement)
                     .map_err(|e| self.error(source, e))?

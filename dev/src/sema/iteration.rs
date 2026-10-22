@@ -7,6 +7,7 @@ use crate::{
     types::{TypeId, parameters::predicates::Predicate},
 };
 use std::collections::HashMap;
+pub(crate) mod collections;
 
 #[derive(Clone, Copy)]
 pub(crate) struct Call {
@@ -34,6 +35,7 @@ pub(crate) struct Registry {
     pub canonical: BuiltinIteration,
     pub originals: [Option<Original>; 2],
     pub plans: HashMap<NodeKey, ForPlan>,
+    pub collections: Option<Box<collections::Registry>>,
 }
 impl Registry {
     pub fn new(canonical: BuiltinIteration) -> Self {
@@ -41,6 +43,7 @@ impl Registry {
             canonical,
             originals: [None; 2],
             plans: HashMap::new(),
+            collections: None,
         }
     }
     pub fn original(&self, definition: DefId) -> Option<Original> {
@@ -68,6 +71,11 @@ impl Registry {
         item: crate::types::ItemId,
     ) -> Result<Option<DefId>, &'static str> {
         use crate::support::iteration::{Blanket, Trait};
+        if let Some(collections) = self.collections.as_deref()
+            && let Some(definition) = collections.associated(self.canonical, owner, item)?
+        {
+            return Ok(Some(definition));
+        }
         let Some(original) = self
             .originals
             .iter()

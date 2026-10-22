@@ -14,7 +14,7 @@ use crate::{
     types::{
         ItemId, Store,
         aggregate::Definitions,
-        copy::{Copies, Properties},
+        copy::{Copies, Declaration},
     },
 };
 use std::{
@@ -213,7 +213,7 @@ fn validate_path(path: &Path, bits: u32, words: usize) -> Result<(), &'static st
 pub fn analyze<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Properties, S>,
+    derives: &HashMap<ItemId, Declaration, S>,
     copies: &mut Copies,
     body: &'a Body,
 ) -> Result<Facts<'a>, Error> {

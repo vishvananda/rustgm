@@ -5,7 +5,7 @@ use crate::{
     types::{
         ItemId, Store,
         aggregate::Definitions,
-        copy::{Copies, Properties},
+        copy::{Copies, Declaration},
     },
 };
 use std::{collections::HashMap, hash::BuildHasher, sync::Arc};
@@ -17,7 +17,7 @@ use std::{collections::HashMap, hash::BuildHasher, sync::Arc};
 pub fn analyze<S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
-    derives: &HashMap<ItemId, Properties, S>,
+    derives: &HashMap<ItemId, Declaration, S>,
     custom: Option<&impl Fn(ItemId) -> bool>,
     templates: &Templates,
 ) -> Result<Vec<BodyFacts>, Error> {

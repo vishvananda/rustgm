@@ -283,6 +283,20 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
             // Exact library impl owners retain their own typed schemas and contracts.
             continue;
         }
+        if report
+            .resolution
+            .builtin_traits
+            .collections()
+            .is_some_and(|collections| {
+                collections
+                    .declarations
+                    .iter()
+                    .any(|d| d.definition.0 as usize == index)
+            })
+        {
+            // Actual canonical collection owners have typed, source-free schemas.
+            continue;
+        }
         let source = definition
             .node
             .ok_or_else(|| Error::at(FileId(0), 0, "associated Self definition has no source"))?;

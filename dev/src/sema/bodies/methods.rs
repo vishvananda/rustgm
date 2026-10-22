@@ -9,7 +9,9 @@ impl Checker<'_> {
         arguments: &[Argument],
         bindings: &[(ParameterId, Argument)],
     ) -> Result<(), Error> {
-        if self.bind_library_owner(node, bindings)? {
+        if self.bind_collection_prefix(node, bindings)?
+            || self.bind_library_owner(node, bindings)?
+        {
             return Ok(());
         }
         let selected = self.facts.methods.qualified.get(&self.key(node)).copied();
@@ -121,6 +123,46 @@ impl Checker<'_> {
                     _ => None,
                 })
                 .ok_or_else(|| self.error(node, "missing inherited pointer element argument"))?;
+            self.equate(node, element, target)?;
+            return Ok(true);
+        }
+        Ok(false)
+    }
+    fn bind_collection_prefix(
+        &mut self,
+        node: NodeId,
+        bindings: &[(ParameterId, Argument)],
+    ) -> Result<bool, Error> {
+        if let Some((prefix, parameter)) = self
+            .facts
+            .iteration
+            .as_deref()
+            .and_then(|r| r.collections.as_deref())
+            .and_then(|r| {
+                let prefix = r.prefixes.get(&self.key(node)).copied()?;
+                let original =
+                    r.originals[crate::support::iteration::Collection::SliceMethod as usize]?;
+                let crate::types::Kind::Parameter(parameter) =
+                    self.facts.types.kind(original.parameter)?
+                else {
+                    return None;
+                };
+                Some((prefix, parameter))
+            })
+        {
+            let annotation = self.annotation(prefix.node)?;
+            let prefix = self.alias_argument(node, annotation)?;
+            if !matches!(self.head(node, prefix)?, Some(super::Constructor::Slice)) {
+                return Err(self.error(node, "slice method prefix is not a slice"));
+            }
+            let element = self.child(node, prefix, 0)?;
+            let target = bindings
+                .iter()
+                .find_map(|(id, arg)| match arg {
+                    Argument::Type(ty) if *id == parameter => Some(*ty),
+                    _ => None,
+                })
+                .ok_or_else(|| self.error(node, "missing inherited slice element argument"))?;
             self.equate(node, element, target)?;
             return Ok(true);
         }

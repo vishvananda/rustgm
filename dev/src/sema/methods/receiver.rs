@@ -78,6 +78,18 @@ pub(in crate::sema) fn choose(
         .filter(|l| report.resolution.definitions[l.definition.0 as usize].name == site.name)
         .filter(|_| array(head) || matches!(head, Some(Constructor::Slice)))
         .map(|l| l.definition)
+        .or_else(|| {
+            report
+                .resolution
+                .builtin_traits
+                .collections()
+                .map(|c| {
+                    c.declarations[crate::support::iteration::Collection::SliceMethod as usize]
+                })
+                .filter(|c| report.resolution.definitions[c.method.0 as usize].name == site.name)
+                .filter(|_| array(head) || matches!(head, Some(Constructor::Slice)))
+                .map(|c| c.method)
+        })
         .or_else(|| match head {
             Some(Constructor::Pointer { mutable }) => {
                 super::pointers::named(report, site.name, mutable)
@@ -289,12 +301,60 @@ impl Search<'_> {
         if !super::slices::receiver(self.facts, self.source, term)? {
             return Ok(false);
         }
-        super::slices::prepare(self.report, self.facts)?;
+        if let Some(declaration) = self
+            .report
+            .resolution
+            .builtin_traits
+            .collections()
+            .map(|c| c.declarations[crate::support::iteration::Collection::SliceMethod as usize])
+            .filter(|d| d.method == method)
+        {
+            super::super::declarations::iteration::collections::prepare(
+                self.report,
+                self.facts,
+                declaration.definition,
+                matches!(
+                    self.caller.availability,
+                    crate::sema::traits::implementations::Availability::Validated
+                ),
+            )
+            .map_err(|_| "canonical slice iteration preparation failed")?;
+        }
+        let collection = self
+            .facts
+            .iteration
+            .as_deref()
+            .and_then(|r| r.collections.as_deref())
+            .and_then(|r| r.original(method));
+        if collection.is_none() {
+            super::slices::prepare(self.report, self.facts)?;
+        }
         let mut probe = Context::default();
         let actual = probe
             .import(&self.facts.types, self.source, term)
             .map_err(inference)?;
-        let possible = super::slices::applicable(self.facts, &mut probe, actual, method)?;
+        let possible = if let Some(original) = collection {
+            let receiver = self
+                .facts
+                .methods
+                .receivers
+                .get(&method)
+                .ok_or("missing collection receiver")?
+                .0;
+            selection::applicable(
+                self.facts,
+                &mut probe,
+                actual,
+                original.declaration.definition,
+                Some(selection::Receiver {
+                    ty: receiver,
+                    subject: None,
+                }),
+                self.caller,
+            )?
+        } else {
+            super::slices::applicable(self.facts, &mut probe, actual, method)?
+        };
         selection::account_probe(self.facts, probe.steps)?;
         Ok(possible)
     }

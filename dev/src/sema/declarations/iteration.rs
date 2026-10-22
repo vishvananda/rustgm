@@ -1,6 +1,7 @@
 //! Canonical iteration declarations preserve associated input and output obligations.
 mod blanket_methods;
 mod blankets;
+pub(in crate::sema) mod collections;
 mod conformance;
 use super::{Checker, DefId, Error, ItemId, State, Type};
 use crate::{
@@ -30,6 +31,17 @@ impl Checker<'_> {
             self.iteration_contract(canonical, declaration)?;
         }
         self.prepare_iteration_blankets(canonical)?;
+        if self.report.resolution.builtin_traits.named_slice_iterator() {
+            let owner = self
+                .report
+                .resolution
+                .builtin_traits
+                .collections()
+                .ok_or_else(|| self.error(canonical.origin, "missing named iterator catalog"))?
+                .declarations[crate::support::iteration::Collection::SliceIterator as usize]
+                .definition;
+            self.activate_collection(owner)?;
+        }
         Ok(())
     }
     fn iteration_contract(

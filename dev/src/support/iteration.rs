@@ -40,3 +40,28 @@ pub enum Blanket {
     Identity,
     MutableReference,
 }
+
+/// Real canonical collection implementation/method owners, separate from blankets.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Collection {
+    SharedSlice,
+    SharedArray,
+    SliceIterator,
+    SliceMethod,
+}
+impl Collection {
+    pub const ALL: [Self; 4] = [
+        Self::SharedSlice,
+        Self::SharedArray,
+        Self::SliceIterator,
+        Self::SliceMethod,
+    ];
+    #[must_use]
+    pub const fn trait_(self) -> Option<Trait> {
+        match self {
+            Self::SharedSlice | Self::SharedArray => Some(Trait::IntoIterator),
+            Self::SliceIterator => Some(Trait::Iterator),
+            Self::SliceMethod => None,
+        }
+    }
+}

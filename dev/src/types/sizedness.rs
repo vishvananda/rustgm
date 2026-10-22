@@ -1,4 +1,7 @@
 //! Nominal Sized conditions are separate from declaration identity and value layout.
+#[cfg(test)]
+#[path = "../../tests/invariants/late_nominal_sizes.rs"]
+mod late_tests;
 mod schemas;
 use super::{GenericArgs, ItemId, Kind, Property, Store, TypeId};
 use std::collections::HashMap;
@@ -22,7 +25,7 @@ pub enum Condition {
 
 /// Completed rules do not change when other declarations finish.
 /// Missing rules are dependencies, never provisional positive Sized answers.
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Rules {
     entries: HashMap<ItemId, schemas::Entry>,
     projections: HashMap<(ItemId, GenericArgs), TypeId>,
@@ -85,6 +88,86 @@ impl Rules {
 }
 
 impl Store {
+    /// Append one independent, unconditionally sized completed field record.
+    /// Shared older stores retain their rules and cannot intern this new nominal.
+    /// # Errors
+    /// Rejects existing identities, pending/dependent rules and exhausted work
+    /// before copying a shared rule inventory or publishing the new entry.
+    pub(crate) fn append_sized_leaf(
+        &mut self,
+        definitions: &super::aggregate::Definitions,
+        item: ItemId,
+    ) -> Result<usize, &'static str> {
+        let rules = self
+            .nominal_sizes
+            .as_ref()
+            .ok_or("nominal rules are not sealed")?;
+        if rules.get(item).is_some() || definitions.get(item).is_none() {
+            return Err("late sized nominal is existing or incomplete");
+        }
+        if !rules.pending.is_empty() {
+            return Err("sealed nominal rules contain pending declarations");
+        }
+        let copied = if std::sync::Arc::strong_count(rules) > 1 {
+            [
+                rules.entries.capacity(),
+                rules.projections.capacity(),
+                rules.closed.capacity(),
+                rules.pending.capacity(),
+            ]
+            .into_iter()
+            .try_fold(0usize, usize::checked_add)
+            .ok_or("sizedness clone capacity overflow")?
+        } else {
+            0
+        };
+        let payload = [
+            std::mem::size_of::<(ItemId, schemas::Entry)>(),
+            std::mem::size_of::<((ItemId, GenericArgs), TypeId)>(),
+            std::mem::size_of::<(TypeId, schemas::Term)>(),
+            std::mem::size_of::<(ItemId, schemas::Pending)>(),
+        ]
+        .into_iter()
+        .max()
+        .unwrap_or(0);
+        // A conservative bucket/control allowance is checked before COW allocation.
+        copied
+            .checked_mul(payload.saturating_add(1))
+            .and_then(|n| n.checked_mul(2))
+            .ok_or("sizedness clone allocation overflow")?;
+        let prior = rules
+            .steps
+            .checked_add(copied)
+            .filter(|&n| n <= 1_000_000)
+            .ok_or("nominal sizedness work budget exceeded")?;
+        let mut inferred = Rules::default();
+        if inferred
+            .prepare(self, definitions, item, |_, _, _| Ok(false))?
+            .is_some()
+            || inferred.entries.len() != 1
+            || !inferred.pending.is_empty()
+            || inferred.get(item) != Some(Rule::Sized)
+        {
+            return Err("late sized nominal has a dependent or conditional rule");
+        }
+        let total = prior
+            .checked_add(inferred.steps)
+            .filter(|&n| n <= 1_000_000)
+            .ok_or("nominal sizedness work budget exceeded")?;
+        let value = inferred
+            .entries
+            .remove(&item)
+            .ok_or("missing inferred sized leaf")?;
+        let rules = std::sync::Arc::make_mut(
+            self.nominal_sizes
+                .as_mut()
+                .ok_or("missing sealed nominal rules")?,
+        );
+        rules.entries.insert(item, value);
+        rules.steps = total;
+        Ok(copied + inferred.steps)
+    }
+
     pub(super) fn nominal_properties(
         &self,
         item: ItemId,

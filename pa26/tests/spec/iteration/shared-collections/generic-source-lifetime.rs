@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}fn first<'a,T>(s:&'a[T])->Option<&'a T>{let mut i=s.iter();i.next()}struct V(u8);fn main(){let a=[V(9)];check(match first(&a){Some(x)=>x.0==9,None=>false});}

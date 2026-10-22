@@ -115,7 +115,7 @@ impl Resolver<'_> {
             } => {
                 self.facts
                     .builtin_traits
-                    .note_iteration(c.module, NodeKey { file: c.file, node });
+                    .note_collection(c.module, NodeKey { file: c.file, node });
                 self.visit(c, iterator, Namespace::Value)?;
                 self.bind_pattern(c, pattern, DefKind::Local, &mut HashSet::new())?;
                 self.visit(c, body, Namespace::Value)

@@ -87,7 +87,10 @@ impl Pending {
             .generics
             .implementations
             .as_ref()
-            .is_none_or(|registry| registry.constant_headers_ready())
+            .map(|registry| registry.selection_goal_ready(&facts.types, context, goal))
+            .transpose()
+            .map_err(|_| "invalid pending method header readiness")?
+            .unwrap_or(true)
             && !facts.types.nominal_sizes_pending()
         {
             let empty = Assumptions::default();

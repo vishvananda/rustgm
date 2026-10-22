@@ -144,7 +144,7 @@ impl Checker<'_> {
             .facts
             .derives
             .get(&item)
-            .is_some_and(|properties| properties.copy)
+            .is_some_and(|properties| properties.properties().copy)
         {
             return Err(self.error(key, "a type cannot implement both Copy and Drop"));
         }

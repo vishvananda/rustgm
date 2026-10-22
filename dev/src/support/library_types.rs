@@ -19,11 +19,26 @@ pub enum LibraryType {
     AtomicU32,
     Ordering,
     ComparisonOrdering,
+    SliceIter,
 }
 #[derive(Clone, Copy)]
+pub enum LibraryParameter {
+    Lifetime(&'static str),
+    Type { name: &'static str, sized: bool },
+}
+impl LibraryParameter {
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::Lifetime(name) | Self::Type { name, .. } => name,
+        }
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LibraryField {
     Parameter(u32),
     U32,
+    SharedSlice,
 }
 #[derive(Clone, Copy)]
 pub enum LibraryTag {
@@ -38,9 +53,10 @@ pub enum LibraryModule {
     Sync,
     Atomic,
     Comparison,
+    Slice,
 }
 impl LibraryModule {
-    pub const COUNT: usize = 6;
+    pub const COUNT: usize = 7;
     #[must_use]
     pub const fn index(self) -> usize {
         self as usize
@@ -54,17 +70,19 @@ impl LibraryModule {
             Self::Sync => "sync",
             Self::Atomic => "atomic",
             Self::Comparison => "cmp",
+            Self::Slice => "slice",
         }
     }
 }
 impl LibraryType {
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 7] = [
         Self::Option,
         Self::Result,
         Self::ManuallyDrop,
         Self::AtomicU32,
         Self::Ordering,
         Self::ComparisonOrdering,
+        Self::SliceIter,
     ];
     #[must_use]
     pub const fn name(self) -> &'static str {
@@ -74,6 +92,7 @@ impl LibraryType {
             Self::ManuallyDrop => "ManuallyDrop",
             Self::AtomicU32 => "AtomicU32",
             Self::Ordering | Self::ComparisonOrdering => "Ordering",
+            Self::SliceIter => "Iter",
         }
     }
     /// Recognizes descriptor names for lazy preparation; lookup still proves identity.
@@ -85,6 +104,7 @@ impl LibraryType {
             "ManuallyDrop" => Some(Self::ManuallyDrop),
             "AtomicU32" => Some(Self::AtomicU32),
             "Ordering" => Some(Self::Ordering),
+            "Iter" => Some(Self::SliceIter),
             _ => None,
         }
     }
@@ -96,6 +116,7 @@ impl LibraryType {
             Self::ManuallyDrop => "mem",
             Self::AtomicU32 | Self::Ordering => "atomic",
             Self::ComparisonOrdering => "cmp",
+            Self::SliceIter => "slice",
         }
     }
     #[must_use]
@@ -106,6 +127,7 @@ impl LibraryType {
             Self::ManuallyDrop => &[LibraryModule::Memory],
             Self::AtomicU32 | Self::Ordering => &[LibraryModule::Sync, LibraryModule::Atomic],
             Self::ComparisonOrdering => &[LibraryModule::Comparison],
+            Self::SliceIter => &[LibraryModule::Slice],
         }
     }
     #[must_use]
@@ -132,17 +154,40 @@ impl LibraryType {
     }
     #[must_use]
     pub const fn is_struct(self) -> bool {
-        matches!(self, Self::ManuallyDrop | Self::AtomicU32)
+        matches!(self, Self::ManuallyDrop | Self::AtomicU32 | Self::SliceIter)
     }
     #[must_use]
     pub const fn in_prelude(self) -> bool {
         matches!(self, Self::Option | Self::Result)
     }
     #[must_use]
-    pub const fn parameters(self) -> &'static [&'static str] {
+    pub const fn parameters(self) -> &'static [LibraryParameter] {
         match self {
-            Self::Option | Self::ManuallyDrop => &["T"],
-            Self::Result => &["T", "E"],
+            Self::Option => &[LibraryParameter::Type {
+                name: "T",
+                sized: true,
+            }],
+            Self::ManuallyDrop => &[LibraryParameter::Type {
+                name: "T",
+                sized: false,
+            }],
+            Self::Result => &[
+                LibraryParameter::Type {
+                    name: "T",
+                    sized: true,
+                },
+                LibraryParameter::Type {
+                    name: "E",
+                    sized: true,
+                },
+            ],
+            Self::SliceIter => &[
+                LibraryParameter::Lifetime("'a"),
+                LibraryParameter::Type {
+                    name: "T",
+                    sized: true,
+                },
+            ],
             Self::AtomicU32 | Self::Ordering | Self::ComparisonOrdering => &[],
         }
     }
@@ -156,6 +201,7 @@ impl LibraryType {
             ],
             Self::ManuallyDrop => &[("new", Some(LibraryField::Parameter(0)))],
             Self::AtomicU32 => &[("new", Some(LibraryField::U32))],
+            Self::SliceIter => &[("Iter", Some(LibraryField::SharedSlice))],
             Self::ComparisonOrdering => &[("Less", None), ("Equal", None), ("Greater", None)],
             Self::Ordering => &[
                 ("Relaxed", None),

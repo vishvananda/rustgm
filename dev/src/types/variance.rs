@@ -76,9 +76,55 @@ impl Variances {
         types: &Store,
         definitions: &Definitions,
         parameters: &[(ItemId, GenericArgs)],
-        mut fields: impl FnMut(ItemId, u32, ListId) -> ListId,
+        fields: impl FnMut(ItemId, u32, ListId) -> ListId,
     ) -> Result<Self, &'static str> {
-        let mut graph = Graph::default();
+        Self::infer_mode(types, definitions, parameters, fields, false)
+    }
+    /// Append an independent completed declaration using the same field solver.
+    /// # Errors
+    /// Rejects an existing entry, external nominals and ordinary inference errors.
+    pub(crate) fn append_independent(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        item: ItemId,
+        arguments: GenericArgs,
+    ) -> Result<(), &'static str> {
+        if self.ranges.contains_key(&item) {
+            return Err("nominal variance is already complete");
+        }
+        let inferred = Self::infer_mode(
+            types,
+            definitions,
+            &[(item, arguments)],
+            |_, _, fields| fields,
+            true,
+        )?;
+        let values = inferred
+            .get(item)
+            .ok_or("missing independent variance result")?;
+        let steps = self
+            .steps
+            .checked_add(inferred.steps)
+            .filter(|n| *n <= 1_000_000)
+            .ok_or("variance work budget exceeded")?;
+        let start = self.values.len();
+        self.values.extend_from_slice(values);
+        self.ranges.insert(item, (start, self.values.len()));
+        self.steps = steps;
+        Ok(())
+    }
+    fn infer_mode(
+        types: &Store,
+        definitions: &Definitions,
+        parameters: &[(ItemId, GenericArgs)],
+        mut fields: impl FnMut(ItemId, u32, ListId) -> ListId,
+        independent: bool,
+    ) -> Result<Self, &'static str> {
+        let mut graph = Graph {
+            independent,
+            ..Graph::default()
+        };
         for &(item, arguments) in parameters {
             graph.declaration(types, item, arguments)?;
         }
@@ -125,6 +171,7 @@ enum Slot {
 #[derive(Default)]
 struct Graph {
     skip_external_nominals: bool,
+    independent: bool,
     result: Variances,
     slots: Vec<Slot>,
     variables: Vec<Term>,
@@ -266,7 +313,14 @@ impl Graph {
         self.queue_type(ty, Term::constant(Variance::Covariant), 0)?;
         while let Some((ty, position, depth)) = self.work.pop() {
             self.solver.charge()?;
-            if (types.escaping_binders(ty).ok_or("invalid variance type")? <= depth
+            if self.independent
+                && (matches!(types.kind(ty),Some(Kind::Adt(item,_)) if item!=owner)
+                    || matches!(types.kind(ty), Some(Kind::Projection(_))))
+            {
+                return Err("independent variance append has an external nominal dependency");
+            }
+            if (!self.independent
+                && types.escaping_binders(ty).ok_or("invalid variance type")? <= depth
                 && !types
                     .contains_parameters(ty)
                     .ok_or("invalid variance type")?)

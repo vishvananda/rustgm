@@ -32,6 +32,9 @@ impl Checker<'_> {
         id: DefId,
         phase: Phase,
     ) -> Result<(), Error> {
+        if super::super::iteration::collections::owns(self.report, id) {
+            return self.activate_collection(id);
+        }
         if self.impl_headers.complete.contains(&id) {
             return Ok(());
         }

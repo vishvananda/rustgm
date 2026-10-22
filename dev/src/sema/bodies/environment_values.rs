@@ -27,7 +27,8 @@ impl Checker<'_> {
             .variants
             .get(usize::from(value.is_some()))
             .ok_or_else(|| self.error(node, "missing Option library variant"))?
-            .constructor;
+            .constructor
+            .ok_or_else(|| self.error(node, "Option library variant requires a constructor"))?;
         let variant = self
             .facts
             .members

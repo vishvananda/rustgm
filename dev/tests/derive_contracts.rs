@@ -62,7 +62,8 @@ fn clone_does_not_borrow_the_separate_copy_impls_stronger_assumptions() -> TestR
         Copy {
             copy: true,
             clone_: true,
-        },
+        }
+        .into(),
     )]);
     let equal = HashMap::from([(
         ItemId(1),

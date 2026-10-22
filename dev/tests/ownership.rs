@@ -366,7 +366,8 @@ fn failed_copy_dependencies_are_cached_without_poisoning_independent_queries()
         Properties {
             copy: true,
             clone_: true,
-        },
+        }
+        .into(),
     )]);
     let mut copies = Copies::default();
     assert!(

@@ -86,6 +86,7 @@ pub(crate) fn append(
             environment,
         });
     }
+    super::collection_factories::append(report, facts, templates, contracts)?;
     Ok(())
 }
 fn build(

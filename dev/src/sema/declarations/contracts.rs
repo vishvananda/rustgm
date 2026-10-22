@@ -295,6 +295,22 @@ impl Checker<'_> {
         signature: TypeId,
         scheme: &FunctionRegions,
     ) -> Result<(), Error> {
+        super::comparisons::LibraryContracts {
+            report: self.report,
+            facts: &mut self.facts,
+        }
+        .callable_template(key, owner, signature, scheme)
+    }
+}
+
+impl super::comparisons::LibraryContracts<'_> {
+    pub(super) fn callable_template(
+        &mut self,
+        key: NodeKey,
+        owner: DefId,
+        signature: TypeId,
+        scheme: &FunctionRegions,
+    ) -> Result<(), Error> {
         if scheme.early.is_empty()
             && scheme.captures == 0
             && !self.facts.generics.has_parameters(owner)

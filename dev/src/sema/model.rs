@@ -403,7 +403,7 @@ pub struct Declarations {
     pub text_literals: std::collections::HashMap<NodeKey, super::text::Id>,
     pub patterns: super::patterns::Patterns,
     pub enum_casts: std::collections::HashSet<crate::types::ItemId>,
-    pub derives: std::collections::HashMap<crate::types::ItemId, crate::types::copy::Properties>,
+    pub derives: std::collections::HashMap<crate::types::ItemId, crate::types::copy::Declaration>,
     pub equality_derives:
         std::collections::HashMap<crate::types::ItemId, crate::types::equality::Properties>,
     pub equality: crate::types::equality::Equality,
