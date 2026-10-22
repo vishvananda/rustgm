@@ -670,7 +670,7 @@ impl Checker<'_> {
                 ));
             }
             self.states[declaration.definition.0 as usize] = State::Active;
-            self.comparison_contract(declaration)?;
+            self.comparison_family(declaration)?;
             if let Some(contracts) = &mut self.facts.generics.traits {
                 contracts.complete_results();
             }

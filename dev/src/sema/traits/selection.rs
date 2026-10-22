@@ -189,6 +189,8 @@ pub(in crate::sema) fn may_have_subject(
         Some(
             crate::support::comparisons::Comparison::PartialEq
                 | crate::support::comparisons::Comparison::Eq
+                | crate::support::comparisons::Comparison::PartialOrd
+                | crate::support::comparisons::Comparison::Ord
         )
     ) && matches!(
         subject,

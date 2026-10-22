@@ -250,8 +250,6 @@ impl Checker<'_> {
             contract: State::Complete,
             constructors: constructors.to_vec(),
         });
-        self.facts.generics.nominal_contracts.insert(DefId(item.0));
-        self.facts.generics.has_nominal_requirements = true;
         Ok(())
     }
 }

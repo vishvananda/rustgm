@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+use core::cmp::Ordering;struct Z;impl PartialEq for Z{fn eq(&self,_:&Self)->bool{true}}impl Eq for Z{}impl PartialOrd for Z{fn partial_cmp(&self,_:&Self)->Option<Ordering>{Some(Ordering::Equal)}}impl Ord for Z{fn cmp(&self,_:&Self)->Ordering{Ordering::Equal}}fn main(){let a=[Z,Z];let b=[Z,Z];check(a<=b);check(a.cmp(&b)==Ordering::Equal);}

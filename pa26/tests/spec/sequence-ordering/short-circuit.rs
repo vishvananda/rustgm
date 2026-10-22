@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+use core::cmp::Ordering;struct S(u8,bool);impl PartialEq for S{fn eq(&self,b:&Self)->bool{self.0==b.0}}impl PartialOrd for S{fn partial_cmp(&self,b:&Self)->Option<Ordering>{if self.1{let _=fail(0);}self.0.partial_cmp(&b.0)}}fn main(){check([S(1,false),S(0,true)]<[S(2,false),S(0,true)]);}

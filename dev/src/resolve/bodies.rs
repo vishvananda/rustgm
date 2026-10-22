@@ -63,15 +63,27 @@ impl Resolver<'_> {
         if let Some(scope) = self.facts.node_scopes.get(&(c.module, node)) {
             c.scope = *scope;
         }
-        if let Kind::Binary {
-            op:
-                crate::lex::token::Punctuation::EqualEqual | crate::lex::token::Punctuation::BangEqual,
-            ..
-        } = self.kind(c, node)
-        {
-            self.facts
-                .builtin_traits
-                .note_equality_operator(c.module, NodeKey { file: c.file, node });
+        if let Kind::Binary { op, .. } = self.kind(c, node) {
+            let kind = match op {
+                crate::lex::token::Punctuation::EqualEqual
+                | crate::lex::token::Punctuation::BangEqual => {
+                    Some(crate::support::comparisons::Comparison::PartialEq)
+                }
+                crate::lex::token::Punctuation::Less
+                | crate::lex::token::Punctuation::LessEqual
+                | crate::lex::token::Punctuation::Greater
+                | crate::lex::token::Punctuation::GreaterEqual => {
+                    Some(crate::support::comparisons::Comparison::PartialOrd)
+                }
+                _ => None,
+            };
+            if let Some(kind) = kind {
+                self.facts.builtin_traits.note_comparison_operator(
+                    kind,
+                    c.module,
+                    NodeKey { file: c.file, node },
+                );
+            }
         }
         match self.kind(c, node) {
             Kind::LibraryValue { kind, value } => {

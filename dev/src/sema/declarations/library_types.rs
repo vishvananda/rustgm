@@ -21,12 +21,45 @@ use crate::{
 impl Checker<'_> {
     pub(super) fn prepare_library_types(&mut self) -> Result<(), Error> {
         for kind in LibraryType::ALL {
-            if let Some(declaration) = self.report.resolution.library_types.get(kind).cloned() {
+            if !self
+                .report
+                .resolution
+                .builtin_traits
+                .comparison_result_latent(kind)
+                && let Some(declaration) = self.report.resolution.library_types.get(kind).cloned()
+            {
                 self.library_nominal(&declaration)?;
             }
         }
         Ok(())
     }
+    pub(super) fn library_nominal(&mut self, declaration: &LibraryNominal) -> Result<(), Error> {
+        let prepared = super::comparisons::LibraryContracts {
+            report: self.report,
+            facts: &mut self.facts,
+        }
+        .library_nominal(declaration.kind)?;
+        for definition in std::iter::once(declaration.definition)
+            .chain(declaration.parameters.iter().copied())
+            .chain(prepared.constructors.iter().copied())
+        {
+            self.states[definition.0 as usize] = State::Complete;
+        }
+        self.register_library_nominal(
+            ItemId(declaration.definition.0),
+            declaration.origin,
+            prepared.kind,
+            prepared.repr,
+            &prepared.constructors,
+        )
+    }
+}
+pub(super) struct PreparedNominal {
+    kind: aggregate::Kind,
+    repr: Repr,
+    constructors: Vec<DefId>,
+}
+impl super::comparisons::LibraryContracts<'_> {
     fn library_parameters(&mut self, declaration: &LibraryNominal) -> Result<Vec<TypeId>, Error> {
         let mut parameters = Vec::new();
         let mut types = Vec::new();
@@ -46,7 +79,6 @@ impl Checker<'_> {
                 .map_err(|e| self.error(declaration.origin, e))?;
             let ty = self.intern(declaration.origin, Type::Parameter(parameter))?;
             self.facts.definitions[binding.0 as usize] = Some(ty);
-            self.states[binding.0 as usize] = State::Complete;
             types.push(ty);
             parameters.push(Parameter {
                 binding,
@@ -65,7 +97,26 @@ impl Checker<'_> {
             .map_err(|e| self.error(declaration.origin, e))?;
         Ok(types)
     }
-    fn library_nominal(&mut self, declaration: &LibraryNominal) -> Result<(), Error> {
+    pub(super) fn library_nominal(&mut self, kind: LibraryType) -> Result<PreparedNominal, Error> {
+        let declaration = self
+            .report
+            .resolution
+            .library_types
+            .get(kind)
+            .cloned()
+            .ok_or_else(|| {
+                Error::at(
+                    crate::resolve::unit::FileId(0),
+                    0,
+                    "unregistered library nominal",
+                )
+            })?;
+        self.build_library_nominal(&declaration)
+    }
+    fn build_library_nominal(
+        &mut self,
+        declaration: &LibraryNominal,
+    ) -> Result<PreparedNominal, Error> {
         let types = self.library_parameters(declaration)?;
         let arguments = self
             .facts
@@ -83,7 +134,6 @@ impl Checker<'_> {
             Type::Adt(ItemId(declaration.definition.0), arguments),
         )?;
         self.facts.definitions[declaration.definition.0 as usize] = Some(owner);
-        self.states[declaration.definition.0 as usize] = State::Complete;
         if declaration.kind == LibraryType::Ordering {
             self.facts
                 .members
@@ -143,6 +193,20 @@ impl Checker<'_> {
                 .suppress_field_destruction(item)
                 .map_err(|e| self.error(declaration.origin, e))?;
         }
+        self.library_properties(declaration, item)?;
+        self.facts.generics.nominal_contracts.insert(DefId(item.0));
+        self.facts.generics.has_nominal_requirements = true;
+        Ok(PreparedNominal {
+            kind,
+            repr,
+            constructors,
+        })
+    }
+    fn library_properties(
+        &mut self,
+        declaration: &LibraryNominal,
+        item: ItemId,
+    ) -> Result<(), Error> {
         self.facts.derives.insert(
             item,
             crate::types::copy::Properties {
@@ -150,9 +214,8 @@ impl Checker<'_> {
                 clone_: declaration.kind != LibraryType::AtomicU32,
             },
         );
-        self.register_library_nominal(item, declaration.origin, kind, repr, &constructors)?;
         if declaration.kind == LibraryType::ComparisonOrdering {
-            crate::sema::primitive_methods::register_ordering(&mut self.facts, item)
+            crate::sema::primitive_methods::register_ordering(self.facts, item)
                 .map_err(|e| self.error(declaration.origin, e))?;
             self.facts.equality_derives.insert(
                 item,
@@ -251,7 +314,6 @@ impl Checker<'_> {
                 .generics
                 .parents
                 .insert(definition, declaration.definition);
-            self.states[definition.0 as usize] = State::Complete;
             constructors.push(definition);
             let ty = if definition == variant.constructor && !field_types.is_empty() {
                 self.library_constructor(

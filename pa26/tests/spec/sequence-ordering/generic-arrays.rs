@@ -1,0 +1,3 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+use core::cmp::Ordering;fn rank(x:Option<Ordering>)->i8{match x{None=>2,Some(Ordering::Less)=>-1,Some(Ordering::Equal)=>0,Some(Ordering::Greater)=>1}}
+fn f<T:PartialOrd,const N:usize>(a:&[T;N],b:&[T;N])->Option<Ordering>{a.partial_cmp(b)}fn g<T:Ord,const N:usize>(a:&[T;N],b:&[T;N])->Ordering{a.cmp(b)}fn main(){check(rank(f(&[1u8,2],&[1,3]))==-1);check(g(&[1u8],&[1])==Ordering::Equal);}

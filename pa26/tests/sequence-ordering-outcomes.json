@@ -1,0 +1,732 @@
+{
+  "schema": 1,
+  "status": "draft; independent pinned source/native outcomes, no generated oracles",
+  "mode": "--emit-lowir",
+  "edition": "2024",
+  "cases": [
+    {
+      "path": "tests/spec/sequence-ordering/array-ranks.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "462c40dae5b34fd324f786cd86c8bf1a8259a1e7f3fe782fb9c26fa8c7b8a11c",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/slice-length.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "b9a297e2bc3608af591fe030f420bace47110c2536e4721ea95d0509f7f5f279",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/float-unordered.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "574d4d99147c9f7a48ac0360b991e89bbf8add1e81931ebf5a210d6fa2dc19c4",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/public-override.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "b32ee43e1e2f444de2a1f4379011f4b58b49f99b39b38b9b6f7480e84a2a5a44",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/ord-versus-partial.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "e59e942474453d9ec0c95cdc58c218ca0d95566544cdf959f746d79a007d039f",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/generic-arrays.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "88710c6002f2a752ecb81ee8ee609c9816cf8d1c999ef07a16cfa70e56f231ae",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/qualified-array.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "c02bae590b11c3b690457832e2980dcd1c35a0720b93722baf80c80f848a990b",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/reified-array.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "67e4dbb19da64a69ee9c1c954bc999beabcf6a0a573652aec2e029f6306f4028",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/reified-slice.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "a82be06ed46880cee8a4cb9750a3440a8bb2272b50a8067ed19ad57d9b892236",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-equality/nested-arrays.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "eaeab4aa1b032bae49716cbb3abfdb48987258e6205241305952bd59f3f40c75",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/mutable-slices.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "236d8a04fd1be09af023ffb99daed44fc5ae5c77e52bc8467c5ccedc04b504ce",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/empty-arrays.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "ecbd7ce59497b72faabbc7540d20218d8a44deec7df70fdc4ab181fba1695207",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/independent-element-lifetimes.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "50dae96fcb6ce48093b74bf5c64919af18aa3d5f2a1e57e2e2d7ed617e6d9691",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/lookalike.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "bd49dc7d6a6f122bcf1af3346e92a3a4b4dbd7bdcf89ffb6c610bbd7ff1e3469",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/noncopy-borrow.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "440de2f5301974445fe7faf00c20f2e759c36b631da56f0953a7e4a72077ac53",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/different-length.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "0444c10915c13896d4c602a5a46d7128899b5ef88c57191f38dcd762ef14d6d0",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/array-slice.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "1ff9902bee4504d5e0ad59d72da688fb17ade425559c0c33457a2f6c479f9374",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/heterogeneous-array.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "c95f7c153e04a84fefc82fa4c91a3de491040d32b193aa53cff96d898f9fdbe3",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/heterogeneous-slice.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "daa48a3ffe88882f9b5bf97005231f9a857ac0e4808a59db6849fa61046de389",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/float-ord.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "8bb726ce4e19c5a3954b123d07ee4af2766ed56cdcf18b2975043a3558030ea2",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/missing-prerequisite.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "a4f8c4f9b314afc1b2e10d09475e5ea1c01b0e3535e9062e31b5e48967618e88",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/missing-element-bound.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "d16be773b35ee0405d98f54e3ea531106e897f063efa7a6010dcfd4734220f8d",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/borrow-escape.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "f9dab0857e90ef2442a984c214a08d1a57fd440e6c0d81a6ef1c0cf6940218f8",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/const-denied.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "f90644b044e69367355346a40689f3f42531ccab555236e2a4f1e1d7fee3f2ad",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/mutable-slices-borrowed-rhs.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "ad28cadacb1096841c8e623245527963a746174f695458217c2aed413d2951eb",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/bare-order.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "abc4125d408ae761d00ac848df0d3e24bfa8ba97173f8481e18fee82613ae899",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/later-unrelated-query.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "d5fc0a0f09fe4c5bf58d25980583327a32e30e04dc267ce67cb896faf3552c88",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/module-origin.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "891dd4c8ec1082e64589336c18450bc7241bf86b2af9ac2d07a1af5c5768d258",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/macro-origin.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "5204eb5eb524c5eb27f6a08af85f67ea917f4298c904369a053a8d9e0d6635dd",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/array-helpers.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "584f1a143f409eb1934bc24b5da4775fed40a4ec575b5c25dad379127da88c34",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/zero-sized-elements.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "5e439af52226e7e52bac8744f384dfeb8def083d4ddb98af827c14fd0b617d38",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/short-circuit.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "50eee1a9b54e5472009d10578d03598d02a5e66b520b51c0c53e0dac886f5f4a",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/empty-unpaid.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "ca0d37ee674de87b13ac8affd01fc754ccb9e5c640117bbb474f9435a921937d",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/distinct-symbolic-lengths.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "fbb64f217db15d13c9d82c0fed409b6a8d8051a9bd83c6ba7452bf38bad253d7",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/uninitialized.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "82bc64fa3746982ef332338f707ce88a409ab8bff2707d868403d6d70afa661b",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/live-mutable-loan.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "85b6472638365467971ec0379d9345990e8edd2ebbba4b17f29e7020d7a53d90",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/invariant-inner-unpaid.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "927b0e58586b1dadbc396e9e3c2d3886ff7d92ed62912e8b3ddb681cad43ed4a",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "codegen",
+        "reason": "The accepted generic body has no concrete call in its unchanged empty main; paired paid and storage-duration programs execute the consumer."
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/invariant-inner-paid.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "3fe448ba226494092bc499b95b6804775aee43ccd5b72275027836a423664a51",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/conditional-lifetime-unpaid.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "1659bf89b510648a62fdca022ca9a634e52f6257dd5d5d173507d6808271cf11",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/conditional-lifetime-paid.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "45c18644e91d9a4be4efb215b860510da8aa83be080f5a96e6ddd1a0987d185e",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/comparison-does-not-extend-source.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "2c5100090047a434b00dbbef984940a5fb2ffc6f221115e791a01f344b62b9ef",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/reborrow-storage-duration.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "2d555ea808f5b7f656e6bc5ab31c22522bf6dd60ed05ca7b4ad162dff4410c60",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sequence-ordering/invariant-parameters-unpaid.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "source_sha256": "bcc010e3375a3291e51de2204cdfd9f64e73894992f6be2e4eb56e09761b22c2",
+      "features": [
+        "pa26.sequence-ordering"
+      ]
+    },
+    {
+      "path": "tests/spec/sequence-ordering/invariant-parameters-paid.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "source_sha256": "ca5379baeab27e89bd5996f3630b5e48654cb7fc1b1beaf6fcd541111efdd681",
+      "features": [
+        "pa26.sequence-ordering"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    }
+  ]
+}

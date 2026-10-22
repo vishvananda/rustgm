@@ -13,14 +13,15 @@ impl Checker<'_> {
         node: NodeId,
     ) -> Result<Option<super::Requirement>, Error> {
         let method = match self.kind(node) {
-            crate::syntax::ast::Kind::Binary {
-                op: crate::lex::token::Punctuation::EqualEqual,
-                ..
-            } => Method::Eq,
-            crate::syntax::ast::Kind::Binary {
-                op: crate::lex::token::Punctuation::BangEqual,
-                ..
-            } => Method::Ne,
+            crate::syntax::ast::Kind::Binary { op, .. } => match op {
+                crate::lex::token::Punctuation::EqualEqual => Method::Eq,
+                crate::lex::token::Punctuation::BangEqual => Method::Ne,
+                crate::lex::token::Punctuation::Less => Method::Lt,
+                crate::lex::token::Punctuation::LessEqual => Method::Le,
+                crate::lex::token::Punctuation::Greater => Method::Gt,
+                crate::lex::token::Punctuation::GreaterEqual => Method::Ge,
+                _ => return Ok(None),
+            },
             _ => return Ok(None),
         };
         let declaration = self
@@ -117,8 +118,19 @@ impl Checker<'_> {
         let method = methods
             .get(method)
             .ok_or_else(|| self.error(node, "comparison method is not in canonical owner"))?;
-        let subject = self.term(left)?;
-        let right_type = self.term(right)?;
+        let actual_subject = self.term(left)?;
+        let actual_right = self.term(right)?;
+        let (subject, right_type) = if declaration.kind
+            == crate::support::comparisons::Comparison::PartialOrd
+            && self.sequence_operand(node, actual_subject)?
+        {
+            (
+                self.inferred_regions(node, actual_subject)?,
+                self.inferred_regions(node, actual_right)?,
+            )
+        } else {
+            (actual_subject, actual_right)
+        };
         let rhs = declaration
             .argument
             .ok_or_else(|| self.error(node, "missing comparison argument"))?;
@@ -161,14 +173,15 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))?;
         let signature = self.call_signature(node, signature)?;
         let receiver = self.child(node, signature, 0)?;
-        let actual = self.comparison_borrow(node, subject, receiver)?;
-        let pending = self.retain_language_borrow(node, left, method, callable, subject, actual);
+        let actual = self.comparison_borrow(node, actual_subject, receiver)?;
+        let pending =
+            self.retain_language_borrow(node, left, method, callable, actual_subject, actual);
         self.state.call_types.methods[pending]
             .1
             .expect_receiver(receiver);
         let expected = self.child(node, signature, 1)?;
-        let actual = self.comparison_borrow(node, right_type, expected)?;
-        self.state.call_types.field_receivers.push(right_type);
+        let actual = self.comparison_borrow(node, actual_right, expected)?;
+        self.state.call_types.field_receivers.push(actual_right);
         self.state
             .call_types
             .comparison_borrows
@@ -176,6 +189,31 @@ impl Checker<'_> {
         self.state.alignment.borrows.push((node, right));
         self.state.calls.push((node, signature));
         self.child(node, signature, 2)
+    }
+    fn sequence_operand(&mut self, node: NodeId, mut term: TermId) -> Result<bool, Error> {
+        loop {
+            match self.state.infer.head(&self.facts.types, term) {
+                Ok(Some(Constructor::Reference { .. })) => {
+                    term = self
+                        .state
+                        .infer
+                        .child(&self.facts.types, term, 0)
+                        .map_err(|error| self.error(node, error))?;
+                }
+                Ok(Some(
+                    Constructor::Array(_)
+                    | Constructor::ArrayTerm(_)
+                    | Constructor::ArrayInfer(_)
+                    | Constructor::Slice,
+                )) => return Ok(true),
+                Ok(_)
+                | Err(
+                    crate::types::infer::Error::Normalization
+                    | crate::types::infer::Error::Unresolved,
+                ) => return Ok(false),
+                Err(error) => return Err(self.error(node, error)),
+            }
+        }
     }
     fn comparison_borrow(
         &mut self,

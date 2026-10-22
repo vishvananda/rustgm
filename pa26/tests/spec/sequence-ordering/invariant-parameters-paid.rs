@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+fn f<'a,'b>(left:[&mut &'a u8;1],right:[&mut &'b u8;1])->bool where 'a:'b,'b:'a{left<right}fn main(){let x=1u8;let y=2u8;let mut a=&x;let mut b=&y;check(f([&mut a],[&mut b]));}

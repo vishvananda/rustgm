@@ -60,7 +60,9 @@ fn compatible(kind: Comparison, left: Sequence, right: Sequence) -> bool {
                 Sequence::Array
             ) | (Sequence::Slice, Sequence::Slice)
         ),
-        _ => false,
+        Comparison::PartialOrd | Comparison::Ord => {
+            left == right && matches!(left, Sequence::Array | Sequence::Slice)
+        }
     }
 }
 pub(super) fn candidate(
@@ -70,9 +72,6 @@ pub(super) fn candidate(
     right: TermId,
     kind: Comparison,
 ) -> Result<Option<Candidate>, infer::Error> {
-    if !matches!(kind, Comparison::PartialEq | Comparison::Eq) {
-        return Ok(None);
-    }
     let left = head(facts, context, goal.subject())?;
     let right_shape = head(facts, context, right)?;
     let (Some((left, a, n)), Some((right, b, m))) = (left, right_shape) else {
@@ -96,10 +95,20 @@ pub(super) fn candidate(
             };
         }
     }
+    if matches!(kind, Comparison::PartialOrd | Comparison::Ord)
+        && let Err(error) =
+            context.equate_input_pairs(&facts.types, &[(Argument::Type(a), Argument::Type(b))])
+    {
+        return if error == infer::Error::Mismatch {
+            Ok(Some(Candidate::Unrelated))
+        } else {
+            Err(error)
+        };
+    }
     let (item, _) = goal
         .trait_arguments()
         .ok_or(infer::Error::InvalidIdentity)?;
-    let arguments = if kind == Comparison::PartialEq {
+    let arguments = if kind.has_rhs() {
         vec![Argument::Type(b)]
     } else {
         Vec::new()
@@ -158,11 +167,16 @@ pub(super) fn validate(
     let Operands::Sequences { left, right } = descriptor.operands else {
         return Err("sequence operation requires sequence operands");
     };
-    if kind != Comparison::PartialEq || bound_regions != 2 || !compatible(kind, left, right) {
+    if kind == Comparison::Eq || bound_regions != 2 || !compatible(kind, left, right) {
         return Err("sequence member has invalid blanket contract");
     }
-    element(facts, operands[0], left)?;
-    element(facts, operands[1], right)?;
+    let a = element(facts, operands[0], left)?;
+    let b = element(facts, operands[1], right)?;
+    if matches!(kind, Comparison::PartialOrd | Comparison::Ord) {
+        element_equalities(facts, a, b)?;
+    }
+    // The canonical substitution check validates each full referent beneath
+    // this callable binder; raw operands are outside that binder.
     for (slot, parameter) in parameters.into_iter().enumerate() {
         if !matches!(facts.types.kind(parameter),Some(Kind::Reference{mutable:false,region,..}) if region==crate::types::RegionId::bound(0,u16::try_from(slot).map_err(|_|"invalid sequence slot")?)?)
         {
@@ -179,6 +193,29 @@ pub(super) fn validate(
         }
     }
     Ok(())
+}
+/// These are exactly the canonical blanket impl's one-T unification equations,
+/// not facts inferred from a result or a source-local condition. Selection pays
+/// the same input equations before this factory's ordinary body can be demanded.
+fn element_equalities(
+    facts: &Declarations,
+    left: TypeId,
+    right: TypeId,
+) -> Result<Vec<crate::types::outlives::Pair>, &'static str> {
+    if left == right {
+        return Ok(Vec::new());
+    }
+    let mut context = Context::default();
+    let a = context
+        .known(&facts.types, left)
+        .map_err(|_| "invalid sequence element")?;
+    let b = context
+        .known(&facts.types, right)
+        .map_err(|_| "invalid sequence element")?;
+    context
+        .equate_input_pairs(&facts.types, &[(Argument::Type(a), Argument::Type(b))])
+        .map_err(|_| "sequence ordering elements do not match one canonical type")?;
+    Ok(context.region_equalities)
 }
 impl super::Selected {
     pub(crate) fn sequence_inputs(
@@ -212,9 +249,12 @@ impl super::Selected {
             .associated
             .trait_owner(source.definition)
             .ok_or("sequence method has no trait owner")?;
-        let args = facts
-            .types
-            .intern_arguments(&[crate::types::arguments::Argument::Type(b)])?;
+        let arguments = if source.comparison == Some(crate::support::comparisons::Method::Cmp) {
+            Vec::new()
+        } else {
+            vec![crate::types::arguments::Argument::Type(b)]
+        };
+        let args = facts.types.intern_arguments(&arguments)?;
         let application =
             facts
                 .types
@@ -226,11 +266,20 @@ impl super::Selected {
             ty: a,
             bound: crate::types::parameters::predicates::Bound::Trait(application),
         };
-        let assumptions = Some(crate::sema::callee_premises::declared_condition(
+        let equalities = if source.comparison == Some(crate::support::comparisons::Method::Eq) {
+            Vec::new()
+        } else {
+            element_equalities(facts, a, b)?
+        };
+        let mut assumptions = crate::sema::callee_premises::declared_condition(
             facts,
             prerequisite.into(),
             universals,
-        )?);
+        )?;
+        for (left, right) in equalities {
+            assumptions.regions.extend([(left, right), (right, left)]);
+        }
+        let assumptions = Some(assumptions);
         Ok(Some(super::referential::Inputs {
             operands,
             universals,

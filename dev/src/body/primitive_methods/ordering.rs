@@ -7,13 +7,13 @@ use crate::{
     support::comparisons::Method,
     types::{Kind, Primitive, TypeId},
 };
-struct Results {
-    ordering: TypeId,
-    variants: [VariantId; 3],
-    option: Option<[VariantId; 2]>,
+pub(super) struct Results {
+    pub(super) ordering: TypeId,
+    pub(super) variants: [VariantId; 3],
+    pub(super) option: Option<[VariantId; 2]>,
 }
 impl Results {
-    fn new(facts: &Declarations, source: &Validated) -> Result<Self, &'static str> {
+    pub(super) fn new(facts: &Declarations, source: &Validated) -> Result<Self, &'static str> {
         let (ordering, option) = if source.comparison == Some(Method::PartialCmp) {
             let Some(Kind::Adt(owner, arguments)) = facts.types.kind(source.result) else {
                 return Err("partial_cmp factory has no option result");
@@ -123,6 +123,17 @@ pub(super) fn build(
     left: ValueId,
     right: ValueId,
 ) -> Result<(), &'static str> {
+    append(body, facts, source, 0, left, right)
+}
+pub(super) fn append(
+    body: &mut Body,
+    facts: &Declarations,
+    source: &Validated,
+    start: u32,
+    left: ValueId,
+    right: ValueId,
+) -> Result<(), &'static str> {
+    let base = u32::try_from(body.blocks.len()).map_err(|_| "too many ordering blocks")?;
     let results = Results::new(facts, source)?;
     let boolean = TypeId::primitive(Primitive::Bool);
     let less = value(
@@ -134,7 +145,7 @@ pub(super) fn build(
             right,
         },
     )?;
-    let start = branch(body, 0, less, 1, 2)?;
+    let start = branch(body, start, less, base + 1, base + 2)?;
     let start = finish(body, &results, start, Some(0))?;
     let equal = value(
         body,
@@ -145,7 +156,7 @@ pub(super) fn build(
             right,
         },
     )?;
-    let start = branch(body, start, equal, 3, 4)?;
+    let start = branch(body, start, equal, base + 3, base + 4)?;
     let start = finish(body, &results, start, Some(1))?;
     if source.comparison == Some(Method::PartialCmp) {
         let greater = value(
@@ -157,7 +168,7 @@ pub(super) fn build(
                 right,
             },
         )?;
-        let start = branch(body, start, greater, 5, 6)?;
+        let start = branch(body, start, greater, base + 5, base + 6)?;
         let start = finish(body, &results, start, Some(2))?;
         finish(body, &results, start, None)?;
     } else {

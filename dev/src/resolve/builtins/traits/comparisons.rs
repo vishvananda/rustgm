@@ -14,6 +14,7 @@ pub(super) struct Comparisons {
     pub entries: [Option<Equality>; 4],
     pending: u8,
     latent: u8,
+    results: u8,
     origin: Option<(ModuleId, NodeKey)>,
 }
 #[derive(Clone, Copy)]

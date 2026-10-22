@@ -32,6 +32,50 @@ impl Checker<'_> {
         }
         Ok(())
     }
+    pub(super) fn comparison_family(&mut self, declaration: BuiltinEquality) -> Result<(), Error> {
+        if matches!(declaration.kind, Comparison::PartialOrd | Comparison::Ord) {
+            for kind in RESULTS {
+                let nominal = self
+                    .report
+                    .resolution
+                    .library_types
+                    .get(kind)
+                    .cloned()
+                    .ok_or_else(|| {
+                        self.error(declaration.origin, "missing comparison result nominal")
+                    })?;
+                if !self
+                    .facts
+                    .generics
+                    .nominal_contracts
+                    .contains(&nominal.definition)
+                {
+                    self.library_nominal(&nominal)?;
+                }
+            }
+        }
+        for kind in Comparison::ALL {
+            if required(declaration.kind, kind) {
+                let parent = self
+                    .report
+                    .resolution
+                    .builtin_traits
+                    .comparison(kind)
+                    .ok_or_else(|| {
+                        self.error(declaration.origin, "missing comparison prerequisite")
+                    })?;
+                if self
+                    .facts
+                    .associated
+                    .comparison(parent.definition)
+                    .is_none()
+                {
+                    self.comparison_contract(parent)?;
+                }
+            }
+        }
+        Ok(())
+    }
     pub(super) fn comparison_contract(
         &mut self,
         declaration: BuiltinEquality,
@@ -59,7 +103,7 @@ pub(super) struct LibraryContracts<'a> {
     pub report: &'a Report,
     pub facts: &'a mut Declarations,
 }
-/// Activate only an identity reserved for implicit equality syntax. A named trait,
+/// Activate only an identity reserved for implicit comparison syntax. A named trait,
 /// source implementation or ordinary declaration never enters this route.
 pub(in crate::sema) fn prepare(
     report: &Report,
@@ -70,9 +114,7 @@ pub(in crate::sema) fn prepare(
         .resolution
         .builtin_traits
         .latent_comparison_owner(owner)
-        .filter(|declaration| {
-            declaration.definition == owner && declaration.kind == Comparison::PartialEq
-        })
+        .filter(|declaration| declaration.definition == owner)
         .ok_or_else(|| {
             Error::at(
                 crate::resolve::unit::FileId(0),
@@ -83,13 +125,74 @@ pub(in crate::sema) fn prepare(
     if facts.associated.comparison(owner).is_some() {
         return Ok(());
     }
-    LibraryContracts { report, facts }.comparison_contract(declaration)?;
-    if let Some(contracts) = &mut facts.generics.traits {
+    let mut builder = LibraryContracts { report, facts };
+    builder.prepare_results(declaration)?;
+    for kind in Comparison::ALL {
+        if required(declaration.kind, kind) {
+            let parent = builder
+                .report
+                .resolution
+                .builtin_traits
+                .comparison(kind)
+                .ok_or_else(|| {
+                    builder.error(declaration.origin, "missing comparison prerequisite")
+                })?;
+            if builder
+                .facts
+                .associated
+                .comparison(parent.definition)
+                .is_none()
+            {
+                builder.comparison_contract(parent)?;
+            }
+        }
+    }
+    if let Some(contracts) = &mut builder.facts.generics.traits {
         contracts.complete_results();
     }
     Ok(())
 }
+const RESULTS: [crate::support::library_types::LibraryType; 2] = [
+    crate::support::library_types::LibraryType::ComparisonOrdering,
+    crate::support::library_types::LibraryType::Option,
+];
+fn required(owner: Comparison, candidate: Comparison) -> bool {
+    candidate == Comparison::PartialEq || candidate == owner || owner == Comparison::Ord
+}
 impl LibraryContracts<'_> {
+    fn prepare_results(&mut self, declaration: BuiltinEquality) -> Result<(), Error> {
+        if !matches!(declaration.kind, Comparison::PartialOrd | Comparison::Ord) {
+            return Ok(());
+        }
+        for kind in RESULTS {
+            let nominal = self
+                .report
+                .resolution
+                .library_types
+                .get(kind)
+                .ok_or_else(|| {
+                    self.error(declaration.origin, "missing comparison result nominal")
+                })?;
+            if self
+                .facts
+                .generics
+                .nominal_contracts
+                .contains(&nominal.definition)
+            {
+                continue;
+            }
+            if !self
+                .report
+                .resolution
+                .builtin_traits
+                .comparison_result_latent(kind)
+            {
+                return Err(self.error(declaration.origin, "comparison result was not completed"));
+            }
+            self.library_nominal(kind)?;
+        }
+        Ok(())
+    }
     pub(super) fn error(&self, origin: NodeKey, message: impl Into<String>) -> Error {
         Declarations::error(self.report, origin, message)
     }

@@ -82,6 +82,7 @@ impl Descriptor {
                     Operation::Comparison(crate::support::comparisons::Comparison::Ord)
                         | Operation::Ordering(crate::support::comparisons::Comparison::Ord)
                         | Operation::References(crate::support::comparisons::Comparison::Ord)
+                        | Operation::Sequences(crate::support::comparisons::Comparison::Ord)
                 ) =>
             {
                 Ok([*subject, *subject])
@@ -110,7 +111,7 @@ impl Descriptor {
     }
     pub(crate) fn sequence_default(self, member: crate::support::comparisons::Method) -> bool {
         matches!(self.operation, Operation::Sequences(_))
-            && member == crate::support::comparisons::Method::Ne
+            && (member == crate::support::comparisons::Method::Ne || member.relation())
     }
     pub(crate) fn nominal(self) -> bool {
         matches!(self.operation, Operation::Ordering(_))
@@ -141,6 +142,42 @@ impl Descriptor {
             | Operation::References(_)
             | Operation::Sequences(_) => Ok(Punctuation::EqualEqual),
         }
+    }
+    fn validate_comparison(
+        self,
+        facts: &Declarations,
+        definition: DefId,
+        result: TypeId,
+    ) -> Result<Option<crate::support::comparisons::Method>, &'static str> {
+        let comparison = facts.associated.comparison_method(definition);
+        if matches!(self.operation, Operation::Sequences(_))
+            && !matches!(
+                (self.operation, comparison),
+                (
+                    Operation::Sequences(crate::support::comparisons::Comparison::PartialEq),
+                    Some(crate::support::comparisons::Method::Eq)
+                ) | (
+                    Operation::Sequences(crate::support::comparisons::Comparison::PartialOrd),
+                    Some(crate::support::comparisons::Method::PartialCmp)
+                ) | (
+                    Operation::Sequences(crate::support::comparisons::Comparison::Ord),
+                    Some(crate::support::comparisons::Method::Cmp)
+                )
+            )
+        {
+            return Err("sequence factory requires its exact primary comparison member");
+        }
+        if comparison.is_some_and(|method| {
+            !matches!(
+                method,
+                crate::support::comparisons::Method::Cmp
+                    | crate::support::comparisons::Method::PartialCmp
+            )
+        }) && result != TypeId::primitive(Primitive::Bool)
+        {
+            return Err("primitive relation result is not bool");
+        }
+        Ok(comparison)
     }
     fn member(
         self,
@@ -501,22 +538,9 @@ impl Selected {
             Compound::None
         };
         validate_substitution(facts, self.descriptor, item, signature, &arguments)?;
-        let comparison = facts.associated.comparison_method(definition);
-        if matches!(self.descriptor.operation, Operation::Sequences(_))
-            && comparison != Some(crate::support::comparisons::Method::Eq)
-        {
-            return Err("sequence factory requires the exact canonical eq member");
-        }
-        if comparison.is_some_and(|method| {
-            !matches!(
-                method,
-                crate::support::comparisons::Method::Cmp
-                    | crate::support::comparisons::Method::PartialCmp
-            )
-        }) && result != TypeId::primitive(Primitive::Bool)
-        {
-            return Err("primitive relation result is not bool");
-        }
+        let comparison = self
+            .descriptor
+            .validate_comparison(facts, definition, result)?;
         Ok(Validated {
             definition,
             source,

@@ -189,7 +189,12 @@
       "mode": "--emit-lowir",
       "expected": 0,
       "source_sha256": "eaeab4aa1b032bae49716cbb3abfdb48987258e6205241305952bd59f3f40c75",
-      "status": "Rust-positive required follow-up: sequence PartialOrd"
+      "status": "Implemented by the independently qualified sequence PartialOrd checkpoint; original source bytes unchanged",
+      "supersedes_status": "Rust-positive required follow-up: sequence PartialOrd",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "name": "aliased-shapes",

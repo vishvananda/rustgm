@@ -370,7 +370,16 @@ fn validate_locals(
     parameters: &[TypeId],
 ) -> Result<(), &'static str> {
     let sequence = matches!(source.compound, Compound::Sequences(_));
-    if body.locals.len() != if sequence { 3 } else { 2 }
+    let expected = if sequence {
+        if source.comparison == Some(crate::support::comparisons::Method::Eq) {
+            3
+        } else {
+            4
+        }
+    } else {
+        2
+    };
+    if body.locals.len() != expected
         || body
             .locals
             .iter()
@@ -380,7 +389,7 @@ fn validate_locals(
         return Err("primitive factory locals differ from lifetime contract");
     }
     if sequence {
-        sequences::validate(body)?;
+        sequences::validate(body, source)?;
     }
     Ok(())
 }

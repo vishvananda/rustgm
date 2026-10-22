@@ -79,7 +79,7 @@ fn sequence_factory_rejects_unpaid_elements_shape_changes_and_injected_regions()
 
 #[test]
 fn latent_equality_keeps_source_ids_and_scalar_contracts_unchanged() -> Result {
-    let plain = crate::test_source::resolve("fn before(){}fn main(){let _=1u8<2u8;}", true)?;
+    let plain = crate::test_source::resolve("fn before(){}fn main(){let _=1u8+2u8;}", true)?;
     let report = crate::test_source::resolve("fn before(){}fn main(){let _=1u8==2u8;}", true)?;
     let source_ids = |report: &crate::resolve::expansion::Report| {
         report
@@ -233,6 +233,185 @@ fn repeated_sequence_demand_avoids_unrelated_source_materialization() -> Result 
             factory.instructions,
             factory.facts.dispatch_dependencies.work.selections
         );
+    }
+    Ok(())
+}
+#[test]
+fn sequence_ordering_reconstructs_only_selected_element_equations() -> Result {
+    let Factory {
+        report,
+        mut facts,
+        selected,
+        ..
+    } = fixture_for(
+        "fn compare<'a,'b>(a:[&'a u8;1],b:[&'b u8;1])->bool{a<b}fn main(){let a=1;let b=2;let _=compare([&a],[&b]);}",
+    )?;
+    let selected = selected
+        .into_iter()
+        .find(|selected| {
+            matches!(
+                selected.descriptor.operation,
+                Operation::Sequences(Comparison::PartialOrd)
+            )
+        })
+        .ok_or("sequence ordering selection")?;
+    let (body, input) = crate::body::primitive_methods::build(&report, &mut facts, selected)?;
+    let permit = crate::body::primitive_methods::validate(&mut facts, selected, &body, &input)?;
+    assert_eq!(body.locals.len(), 4);
+    assert!(
+        !input.assumptions.is_empty(),
+        "distinct selected operand views retain their matching equations"
+    );
+    for &(a, b) in &input.assumptions {
+        assert!(
+            input.assumptions.contains(&(b, a)),
+            "same-element matching retains both directions"
+        );
+    }
+    let templates = crate::body::templates::Templates { bodies: Vec::new() };
+    let checked = originals(&mut facts, &templates)?;
+    prove(&mut facts, &checked, body.clone(), &input, Some(permit))?;
+    let mut unpaid = input.clone();
+    unpaid.assumptions.clear();
+    assert!(
+        crate::body::primitive_methods::validate(&mut facts, selected, &body, &unpaid).is_err()
+    );
+    let mut injected = input.clone();
+    injected
+        .assumptions
+        .push((RegionId::STATIC, RegionId::bound(0, 0)?));
+    assert!(
+        crate::body::primitive_methods::validate(&mut facts, selected, &body, &injected).is_err()
+    );
+    let mut malformed = body.clone();
+    malformed.locals[3].ty = TypeId::UNIT;
+    assert!(
+        crate::body::primitive_methods::validate(&mut facts, selected, &malformed, &input).is_err()
+    );
+    let wrong = Selected {
+        descriptor: Descriptor {
+            operation: Operation::Sequences(Comparison::Ord),
+            ..selected.descriptor
+        },
+        ..selected
+    };
+    assert!(wrong.validate(&mut facts).is_err());
+    Ok(())
+}
+
+#[test]
+fn sequence_ordering_demand_scales_without_unrelated_materialization() -> Result {
+    for (kind, function) in [
+        (
+            Comparison::PartialOrd,
+            "fn order<T:PartialOrd>(a:&[T],b:&[T])->bool{a<b}",
+        ),
+        (
+            Comparison::Ord,
+            "fn order<T:Ord>(a:&[T],b:&[T])->core::cmp::Ordering{a.cmp(b)}",
+        ),
+    ] {
+        let mut previous = None;
+        for width in [8, 32, 128] {
+            let mut source = function.to_string();
+            for i in 0..width {
+                write!(source, "struct Other{i};fn unused{i}(_:Other{i}){{}}")?;
+            }
+            source.push_str("fn main(){let a=[1u8,2];");
+            for _ in 0..width {
+                source.push_str("let _=order(&a,&a);");
+            }
+            source.push('}');
+            let factory = fixture_for(&source)?;
+            assert_eq!(factory.selected.iter().filter(|selection| selection.descriptor.operation == Operation::Sequences(kind)).count(), 1);
+            if let Some(previous) = previous {
+                assert_eq!(factory.definitions, previous);
+            }
+            previous = Some(factory.definitions);
+            assert!(factory.definitions < 20);
+            eprintln!(
+                "ordering kind={kind:?} width={width} factories={} definitions={} instructions={} selections={}",
+                factory.selected.len(),
+                factory.definitions,
+                factory.instructions,
+                factory.facts.dispatch_dependencies.work.selections
+            );
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn sequence_ordering_rejects_forged_binders_and_signature_referents() -> Result {
+    let Factory {
+        mut facts,
+        selected,
+        ..
+    } = fixture_for("fn main(){let _=[1u8]<[2u8];}")?;
+    let selected = selected
+        .into_iter()
+        .find(|selected| {
+            matches!(
+                selected.descriptor.operation,
+                Operation::Sequences(Comparison::PartialOrd)
+            )
+        })
+        .ok_or("sequence ordering")?;
+    let Some(Kind::FunctionItem {
+        item,
+        signature,
+        arguments,
+    }) = facts.types.kind(selected.instance.ty())
+    else {
+        return Err("selected item".into());
+    };
+    let Some(Kind::Function {
+        parameters,
+        result,
+        unsafe_,
+        convention,
+        ..
+    }) = facts.types.kind(signature)
+    else {
+        return Err("selected signature".into());
+    };
+    let parameters = facts.types.list(parameters).ok_or("parameters")?.to_vec();
+    let array = facts.types.intern(Kind::Array {
+        element: TypeId::primitive(Primitive::U16),
+        length: 1,
+    })?;
+    let wrong_referent = facts.types.intern(Kind::Reference {
+        mutable: false,
+        region: RegionId::bound(0, 0)?,
+        referent: array,
+    })?;
+    let Some(Kind::Reference { referent, .. }) = facts.types.kind(parameters[0]) else {
+        return Err("borrow".into());
+    };
+    let wrong_slot = facts.types.intern(Kind::Reference {
+        mutable: false,
+        region: RegionId::bound(0, 1)?,
+        referent,
+    })?;
+    for (first, count) in [(wrong_referent, 2), (wrong_slot, 2), (parameters[0], 3)] {
+        let list = facts.types.intern_list(&[first, parameters[1]])?;
+        let signature = facts.types.intern(Kind::Function {
+            parameters: list,
+            result,
+            unsafe_,
+            convention,
+            bound_regions: count,
+        })?;
+        let ty = facts.types.intern(Kind::FunctionItem {
+            item,
+            signature,
+            arguments,
+        })?;
+        let wrong = Selected {
+            instance: Instance::new(&facts.types, ty)?,
+            ..selected
+        };
+        assert!(wrong.validate(&mut facts).is_err());
     }
     Ok(())
 }

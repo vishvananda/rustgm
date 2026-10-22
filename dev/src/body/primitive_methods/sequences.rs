@@ -1,4 +1,5 @@
-//! Equality loops borrow elements without reading or moving their storage.
+//! Sequence loops borrow elements without reading or moving their storage.
+mod ordering;
 use super::{
     Body, Declarations, Kind, Local, LocalId, LocalKind, Place, Projection, ProjectionId,
     ProjectionKind, Rvalue, TypeId, Validated, ValueId, dereference, statement, value,
@@ -78,27 +79,30 @@ fn indexed(
     statement(body, Action::Project(id));
     Ok((Place::Projection(id), element))
 }
-fn element_ne(
+fn element_call(
     body: &mut Body,
     facts: &mut Declarations,
     source: &Validated,
     left: (Place, TypeId),
     right: (Place, TypeId),
 ) -> Result<ValueId, &'static str> {
-    let boolean = TypeId::primitive(Primitive::Bool);
     let ((left, a), (right, b)) = (left, right);
-    let ne = facts
-        .associated
-        .library_defaults()
-        .find_map(|(definition, default)| match default {
-            crate::sema::associated::LibraryDefault::PartialEqNe { eq }
-                if eq == source.definition =>
-            {
-                Some(definition)
-            }
-            _ => None,
-        })
-        .ok_or("sequence equality has no canonical element ne member")?;
+    let ne = if source.comparison == Some(crate::support::comparisons::Method::Eq) {
+        facts
+            .associated
+            .library_defaults()
+            .find_map(|(definition, default)| match default {
+                crate::sema::associated::LibraryDefault::PartialEqNe { eq }
+                    if eq == source.definition =>
+                {
+                    Some(definition)
+                }
+                _ => None,
+            })
+            .ok_or("sequence equality has no canonical element ne member")?
+    } else {
+        source.definition
+    };
     let (callable, opened) =
         super::forwarded::callable(facts, ne, vec![Argument::Type(a), Argument::Type(b)])?;
     let Some(Kind::Function {
@@ -107,15 +111,15 @@ fn element_ne(
         ..
     }) = facts.types.kind(opened)
     else {
-        return Err("sequence element ne is not callable");
+        return Err("sequence element comparison is not callable");
     };
     let borrowed = facts
         .types
         .list(call_parameters)
         .ok_or("missing sequence borrow parameters")?
         .to_vec();
-    if borrowed.len() != 2 || result != boolean {
-        return Err("sequence element ne has invalid signature");
+    if borrowed.len() != 2 || result != source.result {
+        return Err("sequence element comparison has invalid signature");
     }
     let first = u32::try_from(body.arguments.len()).map_err(|_| "too many sequence arguments")?;
     for (place, ty) in [left, right].into_iter().zip(borrowed) {
@@ -132,7 +136,7 @@ fn element_ne(
     let callee = value(body, callable, Rvalue::Function(ne))?;
     value(
         body,
-        boolean,
+        result,
         Rvalue::Call {
             signature: opened,
             callee,
@@ -149,6 +153,9 @@ pub(super) fn operation(
     source: &Validated,
     parameters: [TypeId; 2],
 ) -> Result<(), &'static str> {
+    if source.comparison != Some(crate::support::comparisons::Method::Eq) {
+        return ordering::operation(body, facts, source, parameters);
+    }
     let usize_ = TypeId::primitive(Primitive::Usize);
     let boolean = TypeId::primitive(Primitive::Bool);
     body.locals.push(Local {
@@ -196,7 +203,7 @@ pub(super) fn operation(
     let start = super::ordering::branch(body, start, more, 2, 4)?;
     let (left, a) = indexed(body, facts, left, a, index)?;
     let (right, b) = indexed(body, facts, right, b, index)?;
-    let different = element_ne(body, facts, source, (left, a), (right, b))?;
+    let different = element_call(body, facts, source, (left, a), (right, b))?;
     let start = super::ordering::branch(body, start, different, 5, 3)?;
     let one = integer(body, 1, usize_)?;
     let next = value(
@@ -222,7 +229,7 @@ pub(super) fn operation(
     let no = integer(body, 0, boolean)?;
     crate::body::build::finish_factory_block(body, start, no)
 }
-pub(super) fn validate(body: &Body) -> Result<(), &'static str> {
+pub(super) fn validate(body: &Body, source: &Validated) -> Result<(), &'static str> {
     let Some(local) = body.locals.get(INDEX.0 as usize) else {
         return Err("sequence loop has no index local");
     };
@@ -234,6 +241,9 @@ pub(super) fn validate(body: &Body) -> Result<(), &'static str> {
         || local.scope != crate::body::scopes::Id(0)
     {
         return Err("sequence factory index local differs from its checked schema");
+    }
+    if source.comparison != Some(crate::support::comparisons::Method::Eq) {
+        ordering::validate(body, source)?;
     }
     Ok(())
 }

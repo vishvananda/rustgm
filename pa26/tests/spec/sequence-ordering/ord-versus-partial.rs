@@ -1,0 +1,4 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+use core::cmp::Ordering;fn rank(x:Option<Ordering>)->i8{match x{None=>2,Some(Ordering::Less)=>-1,Some(Ordering::Equal)=>0,Some(Ordering::Greater)=>1}}
+struct S(u8);impl PartialEq for S{fn eq(&self,b:&Self)->bool{self.0==b.0}}impl Eq for S{}impl PartialOrd for S{fn partial_cmp(&self,b:&Self)->Option<Ordering>{self.0.partial_cmp(&b.0)}fn lt(&self,_:&Self)->bool{false}}impl Ord for S{fn cmp(&self,_:&Self)->Ordering{Ordering::Greater}}
+fn main(){let a=[S(1)];let b=[S(2)];check(rank(a.partial_cmp(&b))==-1);check(a.cmp(&b)==Ordering::Greater);let a:&[S]=&a;let b:&[S]=&b;check(rank(a.partial_cmp(b))==-1);check(a.cmp(b)==Ordering::Greater);}

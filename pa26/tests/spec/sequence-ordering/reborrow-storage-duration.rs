@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+fn main(){let x=1u8;let y=2u8;let mut a=[&x];let mut b=[&y];let result={let aa=&mut a;let bb=&mut b;aa<bb};a[0]=&y;check(result);check(*a[0]==2);}

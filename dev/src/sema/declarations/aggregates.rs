@@ -468,6 +468,21 @@ impl Checker<'_> {
         owner: ItemId,
         signature: TypeId,
     ) -> Result<(), Error> {
+        super::comparisons::LibraryContracts {
+            report: self.report,
+            facts: &mut self.facts,
+        }
+        .constructor_template(key, item, owner, signature)
+    }
+}
+impl super::comparisons::LibraryContracts<'_> {
+    pub(super) fn constructor_template(
+        &mut self,
+        key: NodeKey,
+        item: ItemId,
+        owner: ItemId,
+        signature: TypeId,
+    ) -> Result<(), Error> {
         let Some(Type::Function { bound_regions, .. }) = self.facts.types.kind(signature) else {
             return Err(self.error(key, "missing constructor signature"));
         };

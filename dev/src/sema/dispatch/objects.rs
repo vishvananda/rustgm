@@ -138,6 +138,7 @@ pub(super) fn retain_language(
         Some(
             crate::sema::associated::LibraryDefault::OrdHelper { .. }
                 | crate::sema::associated::LibraryDefault::PartialEqNe { .. }
+                | crate::sema::associated::LibraryDefault::PartialOrdRelation { .. }
         )
     ) {
         return Err("comparison helper has no canonical provided original".into());

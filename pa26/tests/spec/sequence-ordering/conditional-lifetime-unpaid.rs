@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+use core::cmp::Ordering;struct W<'a>(&'a u8);impl<'a>PartialEq for W<'a>{fn eq(&self,b:&Self)->bool{*self.0==*b.0}}impl<'a>PartialOrd for W<'a> where 'a:'static{fn partial_cmp(&self,b:&Self)->Option<Ordering>{self.0.partial_cmp(&b.0)}}fn f<'a>(x:&'a u8)->bool{[W(x)]<[W(x)]}fn main(){}
