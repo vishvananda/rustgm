@@ -40,8 +40,8 @@ fn same_path(machine: &mut Machine<'_, '_>, a: Constant, b: Constant) -> Result<
     assert_eq!(a.root, b.root);
     assert_eq!(a.fields, b.fields);
     assert_eq!(
-        a.range.map(|r| (r.from, r.length)),
-        b.range.map(|r| (r.from, r.length))
+        a.range()?.map(|r| (r.from, r.length)),
+        b.range()?.map(|r| (r.from, r.length))
     );
     Ok(())
 }

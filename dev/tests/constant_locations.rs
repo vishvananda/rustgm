@@ -51,8 +51,10 @@ fn ancestry(
                 indices.push(index);
                 id = base;
             }
-            Origin::Subsequence { .. } => {
-                return Err("ordinary location fixture unexpectedly selected a sequence range");
+            Origin::Subsequence { .. } | Origin::ByteOffset { .. } => {
+                return Err(
+                    "ordinary location fixture unexpectedly selected a non-field projection",
+                );
             }
         }
     }

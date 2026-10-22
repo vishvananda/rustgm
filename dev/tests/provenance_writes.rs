@@ -51,20 +51,10 @@ const CASES: &[(&str, i32, i32, &str)] = &[
         "reinterpret-bool-invalid",
         1,
         1,
-        "raw pointer type reinterpretation in constant execution is not implemented",
+        "constant union scalar read has invalid bool representation",
     ),
-    (
-        "reinterpret-bool-valid",
-        0,
-        1,
-        "raw pointer type reinterpretation in constant execution is not implemented",
-    ),
-    (
-        "reinterpret-width",
-        0,
-        1,
-        "raw pointer type reinterpretation in constant execution is not implemented",
-    ),
+    ("reinterpret-bool-valid", 0, 0, ""),
+    ("reinterpret-width", 0, 0, ""),
     (
         "static-immutable",
         1,

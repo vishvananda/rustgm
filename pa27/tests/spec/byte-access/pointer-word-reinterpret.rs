@@ -1,0 +1,1 @@
+static X:u32=0x44332211;const N:u32={let p=&raw const X as *const u8;let q=unsafe{*(&raw const p as *const *const u32)};unsafe{*q}};fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}fn main(){check(N==1144201745);}

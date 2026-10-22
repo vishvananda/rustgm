@@ -1,0 +1,852 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "213f1e21",
+  "cases": [
+    {
+      "name": "scalar-first-byte",
+      "path": "pa27/tests/spec/byte-access/scalar-first-byte.rs",
+      "sha256": "79b2a7734c08bcac672bb35222b7f4025e4910628b128ee99c357a71b7c01967",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "scalar-u16-read",
+      "path": "pa27/tests/spec/byte-access/scalar-u16-read.rs",
+      "sha256": "f092e488252b473b3afdb0aba5aad227ac94a0c51db2598b4c216a159ae7c627",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "scalar-byte-index",
+      "path": "pa27/tests/spec/byte-access/scalar-byte-index.rs",
+      "sha256": "835d2db4d1e66c723ad5b5c1af8c6dad1c77e13e4fa1bcc39516b640ed1bd7d1",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "scalar-word-index",
+      "path": "pa27/tests/spec/byte-access/scalar-word-index.rs",
+      "sha256": "0754c462d8a0da0622cc24381f169ac03f012fd05452b7c58cfd699c707741f6",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "scalar-byte-store",
+      "path": "pa27/tests/spec/byte-access/scalar-byte-store.rs",
+      "sha256": "c55c2cb57f1f8cae8806b0b58ef5be236a34068bcfbe4494c54b2411e5ba0e70",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "scalar-offset-store",
+      "path": "pa27/tests/spec/byte-access/scalar-offset-store.rs",
+      "sha256": "ec30bea80707ffe2da9e50fcac71006bf9de3e12c9c42e188a0620de70c65deb",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "record-second-field",
+      "path": "pa27/tests/spec/byte-access/record-second-field.rs",
+      "sha256": "0216143dcf19e460eb6ec78f5d70e50a45a52ff2528c4b183a6bb8c7b5dda759",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "record-offset-store",
+      "path": "pa27/tests/spec/byte-access/record-offset-store.rs",
+      "sha256": "71fc6de8676c7955fb0e395d3686042d1df5b010545c9d8b8111053b91c215e2",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "nested-logical-offset",
+      "path": "pa27/tests/spec/byte-access/nested-logical-offset.rs",
+      "sha256": "62bc93ffc3ca6aba2a13781b866968362f7e263cf61b75f1ace1e642b2665982",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "physical-subobject-cast",
+      "path": "pa27/tests/spec/byte-access/physical-subobject-cast.rs",
+      "sha256": "56ad925b23d5277c5ffca9bbcd11720d57703e55e7f3614901e34a9ab14a6f05",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "field-pointer-roundtrip",
+      "path": "pa27/tests/spec/byte-access/field-pointer-roundtrip.rs",
+      "sha256": "ed2c578d064481613a371772853255c2af4b18afc00d3f9011f3e52a4697aecb",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "shared-reconstruction",
+      "path": "pa27/tests/spec/byte-access/shared-reconstruction.rs",
+      "sha256": "d3fcf3cc69c615f956bd9e358b36f26713f062dd956de9723cf3378cc5d30f0d",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "mutable-reconstruction",
+      "path": "pa27/tests/spec/byte-access/mutable-reconstruction.rs",
+      "sha256": "d28a39408402fb40c2994dd32b031ac35b06887f3679ddaf9b193b8350cfffd3",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "float-bits",
+      "path": "pa27/tests/spec/byte-access/float-bits.rs",
+      "sha256": "b4fa82db0193249cc5a746e693b27adb71d1b4edb3342989e2f4562f2381c8f9",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "bool-valid",
+      "path": "pa27/tests/spec/byte-access/bool-valid.rs",
+      "sha256": "d9fcbd2345901fb8db4f883ca829fe46e3d56d6a00870eda5e002bdc78d592b3",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "char-valid",
+      "path": "pa27/tests/spec/byte-access/char-valid.rs",
+      "sha256": "448dd86f06e195db18c528df95c5466a351afbdee7cde6c4f50988d3dd478b3a",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "pointer-word-reinterpret",
+      "path": "pa27/tests/spec/byte-access/pointer-word-reinterpret.rs",
+      "sha256": "aeeca01fe84baf7fea4b157bf36162a528b7fd2dd1f682a8a5ce3f0fefd2c262",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "zst-read",
+      "path": "pa27/tests/spec/byte-access/zst-read.rs",
+      "sha256": "ba98a78c52b156d83fe172eb0956bdea4ddcd9003d676c0e6cba2f4ef00a941f",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false,
+      "required_gap": "Unit PartialEq hook; isolated unit use passes memory."
+    },
+    {
+      "name": "invalid-bool",
+      "path": "pa27/tests/spec/byte-access/invalid-bool.rs",
+      "sha256": "0692880bc9e3da057b5d44703a61c064274c918de05aec92ba1c697d5c178c47",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "invalid bool representation",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "invalid-char",
+      "path": "pa27/tests/spec/byte-access/invalid-char.rs",
+      "sha256": "e5cd057f24c874faac3d5f34df077995b51c823edf102115983a9af8b4ecf2e8",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "invalid char representation",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "field-outside-allocation",
+      "path": "pa27/tests/spec/byte-access/field-outside-allocation.rs",
+      "sha256": "6c72ed92f22136ac2234734fc1c26006eab7e2732c85ea0695d8b030c3eb60c6",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "selected field exceeds allocation",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "logical-index-bounds",
+      "path": "pa27/tests/spec/byte-access/logical-index-bounds.rs",
+      "sha256": "38bc3b9b6a315cc788588c1c6a3265fecd03e1713b581929b9bc0b85ebbe1ddb",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "logical array bounds",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "unaligned-read",
+      "path": "pa27/tests/spec/byte-access/unaligned-read.rs",
+      "sha256": "f91ebb725f2ce6a28786b52b97166c6392fe961015aeef2f34b7b8bd37ef14be",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "insufficient allocation alignment",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "unaligned-reference",
+      "path": "pa27/tests/spec/byte-access/unaligned-reference.rs",
+      "sha256": "522e955aa05910be76c725a0151e7ff31506be2068f4ffda09c204b0b2944797",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "reference alignment",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "expired-read",
+      "path": "pa27/tests/spec/byte-access/expired-read.rs",
+      "sha256": "e2e380c07e354c1ddc4aa5f0766773a22daa3a58546ba79451b3883f17be6b8a",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "expired root",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "shared-derived-write",
+      "path": "pa27/tests/spec/byte-access/shared-derived-write.rs",
+      "sha256": "c677e34131603bd0a60f0bf016ec6c97dde350162a740d5a34e3d8d6dfb5356a",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "shared-derived write forbidden",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "numeric-pointer-read",
+      "path": "pa27/tests/spec/byte-access/numeric-pointer-read.rs",
+      "sha256": "9a8a786b50a2f79568407ac9a616a8e3137f4f2829fc217ec30caee118bc3fcc",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "numeric pointer has no provenance",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "cast-array-base-offset",
+      "path": "pa27/tests/spec/byte-access/cast-array-base-offset.rs",
+      "sha256": "f10d11566b9c040baf6a1a7cd6460509f7abbd25eccf5abdad8ec3bc9c3997ae",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "oversized-record-prefix",
+      "path": "pa27/tests/spec/byte-access/oversized-record-prefix.rs",
+      "sha256": "49a8c6a4e97aa90d83c904bc5285effa84adaaf7d510d12f00a63a49f5a49320",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "oversized-array-prefix",
+      "path": "pa27/tests/spec/byte-access/oversized-array-prefix.rs",
+      "sha256": "14e65ab35b6ea02d04b35fee43c4bee4c5ef0d4c9131a5365c7f56fe186f67f2",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "published-reference",
+      "path": "pa27/tests/spec/byte-access/published-reference.rs",
+      "sha256": "aa99fc03e29e9cd141bea157d5dd6449ba8950c005384f36e4604b9c224b7690",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "published-field-reference",
+      "path": "pa27/tests/spec/byte-access/published-field-reference.rs",
+      "sha256": "11312533e9fadcff8a1ac58825a066a29cf94e48d6939e5937469d2ef0634da8",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "packed-logical-base",
+      "path": "pa27/tests/spec/byte-access/packed-logical-base.rs",
+      "sha256": "67b67c98c2bc75b4a8ed38ef07f87cb6797a62e24879f362844d7ce1128e3d8b",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "packed-separate-field-pointer",
+      "path": "pa27/tests/spec/byte-access/packed-separate-field-pointer.rs",
+      "sha256": "d1c972e08085ca97a8f72a89110ba2002fd3facb4726101bf03ae01292493f08",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "pointer-word-numeric-read",
+      "path": "pa27/tests/spec/byte-access/pointer-word-numeric-read.rs",
+      "sha256": "cee8e916eeadf1a4be3a489238fde0ccd98a54b9ca07b602c3e203878fa6c477",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "pointer-word-partial-numeric-read",
+      "path": "pa27/tests/spec/byte-access/pointer-word-partial-numeric-read.rs",
+      "sha256": "96f78d0754c65983906378f0b9221c3ec3a3a6c7add2587b4ded94266ef4c204",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "reinterpret-aggregate-reference",
+      "path": "pa27/tests/spec/byte-access/reinterpret-aggregate-reference.rs",
+      "sha256": "e606d5a11fbc66d1d661277226b1cd7b05153387ba722d3b6ac7914965cb1e03",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "isolation_note": "Original uses canonical u32::from; retain any separate preparation failure.",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "reinterpret-aggregate-reference-cast",
+      "path": "pa27/tests/spec/byte-access/reinterpret-aggregate-reference-cast.rs",
+      "sha256": "344752757440b314b1ef2fe17c17926f32b569b334bb87efb0ae20923bb9c196",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "one-past-field-address",
+      "path": "pa27/tests/spec/byte-access/one-past-field-address.rs",
+      "sha256": "704d18e3d0b9501223ad04e4ab1723bcc517b3e5a9dab1ff1258e7bb3ece8548",
+      "rustc_expected": 0,
+      "native_valid": false,
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "beyond-one-past-field-address",
+      "path": "pa27/tests/spec/byte-access/beyond-one-past-field-address.rs",
+      "sha256": "6c788c85ee2663cf12e7291793ff84fa91b681b796ace8fbeba165e372565139",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "published-reference-escape",
+      "path": "pa27/tests/spec/byte-access/published-reference-escape.rs",
+      "sha256": "d23d0f0c8ffe8e47f21bb53a124a0e0d5e642df8ef39ed778b3b3961d976aa72",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "offset-aligned-read-reject",
+      "path": "pa27/tests/spec/byte-access/offset-aligned-read-reject.rs",
+      "sha256": "8c81a800654c211ee4a7ec5ace579b31e53ea62db77fac5fda05ed688caf267c",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "offset-word-roundtrip",
+      "path": "pa27/tests/spec/byte-access/offset-word-roundtrip.rs",
+      "sha256": "2c357073a7950d3175efa4be92e5c96c04d4f45912e4f81c2fa2b30455135356",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false,
+      "required_gap": "Whole byte-array symbolic fragment snapshot transport."
+    },
+    {
+      "name": "zst-read-isolated",
+      "path": "pa27/tests/spec/byte-access/zst-read-isolated.rs",
+      "sha256": "eb0aec0675babc5293ffec8f53d740474f6f8d9faa48d3a81e0ade0d3e680049",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "Unit use avoids the original independent missing PartialEq route",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "offset-pointer-word-reinterpret",
+      "path": "pa27/tests/spec/byte-access/offset-pointer-word-reinterpret.rs",
+      "sha256": "3464a02adfd8c2b089b19dd0127c6512322e08bc5c73e26dae14beca7ca1fae1",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "raw-array-length-no-contents",
+      "path": "pa27/tests/spec/byte-access/raw-array-length-no-contents.rs",
+      "sha256": "415592ade5f512851069226340917167c28ddc2849cc54aebbf041c8a89278ba",
+      "rustc_expected": 0,
+      "native_valid": false,
+      "reason": "Only logical length is observed; no numeric-address native claim",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "expired-array-length-no-contents",
+      "path": "pa27/tests/spec/byte-access/expired-array-length-no-contents.rs",
+      "sha256": "d2cfd7dcbfa8f380b1d8effdad6d3cfbd61506ac1cb2e37e0fb8717c84a12e2a",
+      "rustc_expected": 0,
+      "native_valid": false,
+      "reason": "Only logical length; no expired pointer native claim",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "reference-field-demand",
+      "path": "pa27/tests/spec/byte-access/reference-field-demand.rs",
+      "sha256": "6e07b6a09529dc10cfc0266f0cbf4dd2f89a19d9dab74dc1e76e932250f1d671",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "reference-nested-field-demand",
+      "path": "pa27/tests/spec/byte-access/reference-nested-field-demand.rs",
+      "sha256": "8be2cab75aac7487f5f45c133839e29fc687319150b2fdd7c5ea365d0a7653ec",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "runtime-published-offset",
+      "path": "pa27/tests/spec/byte-access/runtime-published-offset.rs",
+      "sha256": "2532c458fbd994dbd27726c5ad327cc0c92fb820f370c374b475800859fff14b",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "runtime-published-reference",
+      "path": "pa27/tests/spec/byte-access/runtime-published-reference.rs",
+      "sha256": "9a4902ee6a8e2484d2fc3d36432b1e9dd0d00e1bfe2b8fab0a82868746a6e08a",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "runtime-cast-write",
+      "path": "pa27/tests/spec/byte-access/runtime-cast-write.rs",
+      "sha256": "c458e219de5a7f663585b13097c27bd2c023bddb50d94028da173588ae5966a4",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "runtime-byte-index",
+      "path": "pa27/tests/spec/byte-access/runtime-byte-index.rs",
+      "sha256": "9c1aaf500cb192530c9001bda786c127b7c9775729a21ea541bceb6d0182500a",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "reference-field-escape",
+      "path": "pa27/tests/spec/byte-access/reference-field-escape.rs",
+      "sha256": "0a99105a50e564b6c2fa3c8a8fba07c92a4d4a79e9fb6b864d79118ee8d1b5f1",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "reference-invalid-field",
+      "path": "pa27/tests/spec/byte-access/reference-invalid-field.rs",
+      "sha256": "ddaba7cf172d07aacbb4265b87b385d6ac6eeab72184d3773673c611cc53c1cf",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "native-reference-referent",
+      "path": "pa27/tests/spec/byte-access/native-reference-referent.rs",
+      "sha256": "618e8506156f05bb4d9a5fd500f4ba935da679127ddb597c81ec264085db3336",
+      "rustc_expected": 0,
+      "rustc_actual": 0,
+      "native_valid": true,
+      "reason": "Separate value-use control for unchanged different-referent; does not rewrite that source.",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "native-reference-lifetime",
+      "path": "pa27/tests/spec/byte-access/native-reference-lifetime.rs",
+      "sha256": "d811000190629579dd6d790f1b449d8b6e7973dd4d6e24bf8c86baf887b38b02",
+      "rustc_expected": 0,
+      "rustc_actual": 0,
+      "native_valid": true,
+      "reason": "Separate value-use control for unchanged different-inner-region; does not rewrite that source.",
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    }
+  ]
+}

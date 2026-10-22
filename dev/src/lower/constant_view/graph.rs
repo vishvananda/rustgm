@@ -156,7 +156,10 @@ impl Graph<'_> {
         let location = self.reader.location(id)?;
         match location.origin {
             Origin::Static(id) => self.static_(id, location.ty, self.reader.definition(id)),
-            Origin::Allocation | Origin::Projection { .. } | Origin::Subsequence { .. } => {
+            Origin::Allocation
+            | Origin::Projection { .. }
+            | Origin::Subsequence { .. }
+            | Origin::ByteOffset { .. } => {
                 self.allocation(Backing::Location(id), location.ty, location.value)
             }
         }

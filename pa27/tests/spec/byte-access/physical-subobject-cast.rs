@@ -1,0 +1,1 @@
+#[repr(C)]struct Wrap{a:u32,b:u32}const N:u8={let x=Wrap{a:7,b:0x44332211};unsafe{(*(&raw const x.b as *const [u8;4]))[3]}};fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}fn main(){check(N==68);}

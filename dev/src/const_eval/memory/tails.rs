@@ -22,6 +22,44 @@ impl Machine<'_, '_> {
                 .ordinal(field)
                 .ok_or("missing constant field ordinal")?,
         };
+        if self.byte_projecting(place)? {
+            if !matches!(
+                (self.evaluator.facts().types.kind(place.ty), field),
+                (Some(crate::types::Kind::Tuple(_)), Selection::Tuple(_))
+                    | (Some(crate::types::Kind::Adt(_, _)), Selection::Nominal(_))
+            ) {
+                return Err("constant byte field has a different projection capability".into());
+            }
+            let selected = Reader::new(self.evaluator.facts())
+                .projection_layout(place.ty, u64::from(index))?;
+            if selected.ty != target
+                || !matches!(
+                    selected.storage,
+                    crate::sema::values::ProjectionStorage::Product
+                )
+            {
+                return Err(
+                    "constant byte field differs from its checked type or capability".into(),
+                );
+            }
+            if let Selection::Nominal(field) = field {
+                let members = &self.evaluator.facts().members;
+                let variant = members
+                    .variant(field)
+                    .ok_or("constant byte field lacks owner")?;
+                let group = members
+                    .variants
+                    .get(variant.0 as usize)
+                    .ok_or("constant byte field lacks group")?;
+                if !matches!(self.evaluator.facts().types.kind(place.ty),Some(crate::types::Kind::Adt(owner,_)) if owner == group.owner)
+                    || group.start.checked_add(index) != Some(field.0)
+                    || field.0 >= group.end
+                {
+                    return Err("constant byte field has a different owner or ordinal".into());
+                }
+            }
+            return self.byte_address(place, selected.offset, target);
+        }
         self.project_raw_type(place)?;
         let metadata = Reader::new(self.evaluator.facts()).projected_metadata(
             place.ty,

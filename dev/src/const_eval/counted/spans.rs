@@ -27,13 +27,24 @@ impl Machine<'_, '_> {
             },
             retained,
         )?;
-        let (root, mut fields) = path.fields_only()?;
+        let byte_offset = match path.terminal {
+            Some(crate::const_eval::memory::Terminal::Bytes { offset, .. }) => Some(offset),
+            _ => None,
+        };
+        let (root, mut fields) = if byte_offset.is_some() {
+            (path.root, path.fields)
+        } else {
+            path.fields_only()?
+        };
         let root_type = Reader::new(self.evaluator.facts()).location(root)?.ty;
         let layout = self.footprint(root_type)?;
-        let (stored, offset, image) = self.storage_coordinates::<true>(root_type, &fields)?;
-        if !Reader::new(self.evaluator.facts()).same_storage_type(stored, ty) {
-            return Err("constant counted pointer reinterpretation is not implemented".into());
-        }
+        let (stored, offset, image) = if let Some(offset) = byte_offset {
+            (ty, offset, None)
+        } else {
+            self.storage_coordinates::<true>(root_type, &fields)?
+        };
+        let reinterpreted = byte_offset.is_some()
+            || !Reader::new(self.evaluator.facts()).same_storage_type(stored, ty);
         let target = self.footprint(ty)?;
         if layout.align < target.align || !offset.is_multiple_of(u64::from(target.align)) {
             return Err("constant counted pointer is unaligned".into());
@@ -49,10 +60,12 @@ impl Machine<'_, '_> {
             let reader = Reader::new(self.evaluator.facts());
             let location =
                 reader.location(address.location().ok_or("counted pointer lacks storage")?)?;
-            if matches!(
-                location.origin,
-                crate::sema::values::Origin::Projection { .. }
-            ) {
+            if !reinterpreted
+                && matches!(
+                    location.origin,
+                    crate::sema::values::Origin::Projection { .. }
+                )
+            {
                 let (parent, start) = address.projection_parent(reader)?;
                 let parent_type = reader
                     .location(parent.location().ok_or("counted parent lacks storage")?)?
@@ -75,7 +88,7 @@ impl Machine<'_, '_> {
                     });
                 }
             }
-            if range.is_none() && count != 1 {
+            if !reinterpreted && range.is_none() && count != 1 {
                 return Err(
                     "constant counted transfer requires contiguous array element storage".into(),
                 );

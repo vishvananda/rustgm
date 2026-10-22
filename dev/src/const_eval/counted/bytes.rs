@@ -5,11 +5,25 @@ impl Machine<'_, '_> {
         &self,
         source: &TransferSpan,
         destination: &TransferSpan,
-    ) -> bool {
-        self.has_byte_root(source.root)
+    ) -> Result<bool, Failure> {
+        Ok(self.reinterpreted_span(source)?
+            || self.reinterpreted_span(destination)?
+            || self.has_byte_root(source.root)
             || self.has_byte_root(destination.root)
             || source.image.is_some()
-            || destination.image.is_some()
+            || destination.image.is_some())
+    }
+    fn reinterpreted_span(&self, span: &TransferSpan) -> Result<bool, Failure> {
+        let reader = crate::sema::values::Reader::new(self.evaluator.facts());
+        let location = reader.location(
+            span.address
+                .location()
+                .ok_or("constant byte span lacks provenance")?,
+        )?;
+        Ok(matches!(
+            location.origin,
+            crate::sema::values::Origin::ByteOffset { .. }
+        ) || !reader.same_storage_type(location.ty, span.ty))
     }
     pub(super) fn copy_byte_spans(
         &mut self,
@@ -44,6 +58,13 @@ impl Machine<'_, '_> {
                     .ok_or("counted union image offset is reversed")?,
                 source.bytes,
             )?
+        } else if self.reinterpreted_span(source)? {
+            let Some(snapshot) =
+                self.snapshot_byte_access(source.root, source.offset, source.bytes, source.ty)?
+            else {
+                return Ok(None);
+            };
+            snapshot
         } else {
             let Some(value) = self.transfer_snapshot(source)? else {
                 return Ok(None);

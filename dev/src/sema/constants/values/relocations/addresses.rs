@@ -40,10 +40,22 @@ impl Evaluator<'_> {
                 .filter(|n| *n <= limit)
                 .ok_or("symbolic address ancestry work budget exceeded")?;
             let place = Reader::new(self.facts()).location(root)?;
+            if let Origin::ByteOffset {
+                base,
+                offset: displacement,
+            } = place.origin
+            {
+                offset = offset
+                    .checked_add(displacement)
+                    .ok_or("symbolic byte address offset overflow")?;
+                root = base;
+                continue;
+            }
             let (base, index) = match place.origin {
                 Origin::Projection { base, index } => (base, index),
                 Origin::Subsequence { base, from, .. } => (base, from),
                 Origin::Allocation | Origin::Static(_) => break,
+                Origin::ByteOffset { .. } => return Err("symbolic byte ancestry changed".into()),
             };
             let parent = Reader::new(self.facts()).location(base)?;
             let (_, added) = self.storage_layout(parent.ty, limit.saturating_sub(work))?;
@@ -80,6 +92,68 @@ impl Evaluator<'_> {
             },
             work,
         ))
+    }
+    /// Select bytes relative to existing symbolic provenance, never a numeric address.
+    pub(crate) fn byte_projection(
+        &mut self,
+        value: Constant,
+        offset: u64,
+        ty: TypeId,
+        limit: usize,
+    ) -> Result<(Constant, usize), Failure> {
+        let Value::Reference(mut pointer) = value.0 else {
+            return Err("constant byte projection lacks pointer provenance".into());
+        };
+        if self.facts().types.is_sized(ty) != Some(true) {
+            return Err("constant byte projection requires a completed sized target".into());
+        }
+        pointer.metadata = None;
+        let (address, mut work) = self.word_address(Constant(Value::Reference(pointer)), limit)?;
+        let root = Reader::new(self.facts()).location(address.root)?.ty;
+        let (layout, added) = self.storage_layout(root, limit.saturating_sub(work))?;
+        work = work
+            .checked_add(added)
+            .filter(|n| *n <= limit)
+            .ok_or("constant byte address work budget exceeded")?;
+        let offset = address
+            .offset
+            .checked_add(offset)
+            .filter(|&n| n <= layout.size && i64::try_from(n).is_ok())
+            .ok_or("constant byte address is outside allocation bounds")?;
+        pointer.place = address.root.0;
+        let value = self
+            .queries
+            .typing
+            .facts
+            .constant_references
+            .byte_projection(
+                pointer,
+                offset,
+                super::super::references::Place {
+                    value: None,
+                    ty,
+                    access: super::super::references::Access::Owned,
+                    packed: None,
+                    projection: None,
+                },
+            )?;
+        Ok((Constant(value), work))
+    }
+    /// A canonical word supplies provenance and restrictions, never numeric permission.
+    pub(crate) fn byte_word_projection(
+        &mut self,
+        address: WordAddress,
+        ty: TypeId,
+        limit: usize,
+    ) -> Result<(Constant, usize), Failure> {
+        let mut pointer = super::super::references::Pointer::new(address.root.0);
+        pointer.write = address.write;
+        self.byte_projection(
+            Constant(Value::Reference(pointer)),
+            address.offset,
+            ty,
+            limit,
+        )
     }
     /// Rebuild only a checked declared subobject at the recorded physical address.
     pub(crate) fn word_projection(

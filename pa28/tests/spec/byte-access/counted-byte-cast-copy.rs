@@ -1,0 +1,1 @@
+const N:u32={let x=7u32;let mut y=0u32;unsafe{core::ptr::copy_nonoverlapping(&raw const x as *const u8,&raw mut y as *mut u8,4);}y};fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}fn main(){check(N==7);}

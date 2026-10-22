@@ -16,6 +16,29 @@ impl Machine<'_, '_> {
         if self.is_raw_slice(place) {
             return self.raw_slice_element(place, index, result);
         }
+        if self.byte_projecting(place)? {
+            let Some(Kind::Array { element, length }) = self.evaluator.facts().types.kind(place.ty)
+            else {
+                return Err("constant byte index requires checked array bounds".into());
+            };
+            if index >= length {
+                return Err(Failure::Fault("constant index is out of bounds"));
+            }
+            if !Reader::new(self.evaluator.facts()).same_storage_type(element, result) {
+                return Err("constant byte index differs from its checked element type".into());
+            }
+            let offset = self
+                .footprint(element)?
+                .size
+                .checked_mul(index)
+                .ok_or("constant byte index offset overflow")?;
+            return Ok(Resolved {
+                address: self.byte_address(place, offset, result)?,
+                ty: result,
+                raw: place.raw,
+                union: None,
+            });
+        }
         self.project_raw_type(place)?;
         Ok(Resolved {
             address: self.evaluator.projection(place.address, index, result)?,
@@ -124,7 +147,7 @@ impl Machine<'_, '_> {
         self.footprint(root)?;
         let (actual, _) = self.storage_offset(root, &path.fields)?;
         let reader = Reader::new(self.evaluator.facts());
-        if let Some(range) = path.range {
+        if let Some(range) = path.range()? {
             let Some(Kind::Array {
                 element: stored,
                 length,

@@ -17,6 +17,7 @@ mod unions;
 mod words;
 pub(in crate::const_eval) use transport::Snapshot;
 mod capabilities;
+mod raw;
 use super::{Cell, Constant, Failure, LocationId, Machine, Read, Reader, TypeId};
 use std::collections::HashMap;
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -166,6 +167,14 @@ impl Machine<'_, '_> {
         let encoded = self.encode_byte_cells(&mut backing, cell, ty);
         self.slots = previous;
         encoded?;
+        self.install_byte_root(root, backing, Some(cell))
+    }
+    fn install_byte_root(
+        &mut self,
+        root: LocationId,
+        backing: Backing,
+        cell: Option<usize>,
+    ) -> Result<Id, Failure> {
         let id = Id(u32::try_from(self.memory.bytes.roots.len())
             .map_err(|_| "constant byte backing identity exhausted")?);
         let retained = backing
@@ -207,7 +216,20 @@ impl Machine<'_, '_> {
         self.memory.bytes.retained = retained;
         // All addresses resolve from this root. Its former field cells are unreachable;
         // retained arena capacity remains accounted by Memory::retained_cells.
-        self.memory.cells[cell] = Cell::Bytes(id);
+        if let Some(cell) = cell {
+            self.memory.cells[cell] = Cell::Bytes(id);
+        } else {
+            self.memory
+                .roots
+                .try_reserve(1)
+                .map_err(|_| "constant immutable byte root index allocation failed")?;
+            self.memory
+                .cells
+                .try_reserve(1)
+                .map_err(|_| "constant immutable byte root allocation failed")?;
+            self.memory.roots.insert(root, self.memory.cells.len());
+            self.memory.cells.push(Cell::Bytes(id));
+        }
         Ok(id)
     }
     pub(super) fn byte_read(

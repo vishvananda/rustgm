@@ -99,7 +99,7 @@ impl Machine<'_, '_> {
             return Err("constant copy_nonoverlapping regions overlap".into());
         }
         self.check_raw_write_authority(destination.address, destination.root)?;
-        if self.needs_byte_transfer(source, destination) {
+        if self.needs_byte_transfer(source, destination)? {
             return self.copy_byte_spans(source, destination);
         }
         let Some(snapshot) = self.transfer_snapshot(source)? else {

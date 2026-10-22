@@ -379,7 +379,9 @@ impl Dependencies {
                     }
                     let location = reader.location(id)?;
                     match location.origin {
-                        Origin::Projection { base, .. } | Origin::Subsequence { base, .. } => {
+                        Origin::Projection { base, .. }
+                        | Origin::Subsequence { base, .. }
+                        | Origin::ByteOffset { base, .. } => {
                             work.push(Work::Location(base));
                         }
                         Origin::Allocation => work.push(Work::Value(

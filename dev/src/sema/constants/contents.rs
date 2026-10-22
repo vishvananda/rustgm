@@ -35,6 +35,12 @@ impl Queries<'_> {
             .map_err(|e| self.error(query, e))?
         {
             let (work, base) = match projection {
+                ProjectionView::Byte { .. } => {
+                    return Err(self.error(
+                        query,
+                        "constant byte-reference structural contents are not implemented",
+                    ));
+                }
                 ProjectionView::Field { base, index } => (
                     Work::Project {
                         key,

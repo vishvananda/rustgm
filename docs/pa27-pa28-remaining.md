@@ -18,9 +18,11 @@ individual `pa27-*-review.md` records for their qualified profiles.
 
 Open implementation or profile contracts remain:
 
-- General pointer offsets, byte reinterpretation and provenance reconstruction.
-  Exact-type symbolic locations and canonical scalar union projections do not
-  supply arbitrary byte-addressed memory.
+- The canonical raw-pointer `.add` route and whole byte-array fragment snapshots
+  remain required after the typed byte-address/access checkpoint. Logical field
+  and index offsets now reuse original backing coordinates, masks, fragments and
+  access checks; this does not implement numeric pointer reconstruction or every
+  storage family. See `pa27-byte-access-review.md` for the qualified controls.
 - General enum/opaque/closure and string backing, whole raw-slice values and
   object reference-cast/reconstruction. Qualified thin/function/slice/vtable word
   fragments now preserve independent metadata and incoming write restrictions;

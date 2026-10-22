@@ -1,0 +1,1 @@
+#[repr(C)]struct Pair{a:u16,b:u16}static X:u32=0x00070001;const R:&u16=unsafe{&(*(&raw const X as *const Pair)).b};const N:u16=*R;fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}fn main(){check(N==7);}

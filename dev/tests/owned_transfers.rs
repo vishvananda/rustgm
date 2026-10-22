@@ -28,18 +28,8 @@ const CASES: &[(&str, i32, [i32; 3], &str)] = &[
     ("const-move-reinitialize", 0, [0, 0, 0], ""),
     ("const-moved-raw-field", 0, [0, 0, 0], ""),
     ("const-moved-ptr-read", 0, [0, 0, 0], ""),
-    (
-        "const-reference-transfer",
-        0,
-        [1, 1, 1],
-        "raw pointer type reinterpretation in constant execution is not implemented",
-    ),
-    (
-        "const-reference-alias-use",
-        0,
-        [1, 1, 1],
-        "raw pointer type reinterpretation in constant execution is not implemented",
-    ),
+    ("const-reference-transfer", 0, [0, 0, 0], ""),
+    ("const-reference-alias-use", 0, [0, 0, 0], ""),
     ("const-raw-field-transfer", 0, [0, 0, 0], ""),
     (
         "const-drop-forbidden",

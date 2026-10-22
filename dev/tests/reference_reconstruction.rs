@@ -74,13 +74,7 @@ const CASES: &[(&str, i32, i32, i32, &str)] = &[
     ),
     ("mutable-reference", 0, 0, 0, ""),
     ("union-field", 0, 0, 0, ""),
-    (
-        "reinterpret",
-        0,
-        1,
-        1,
-        "raw pointer type reinterpretation in constant execution is not implemented",
-    ),
+    ("reinterpret", 0, 0, 0, ""),
     (
         "mutable-static-reference",
         0,

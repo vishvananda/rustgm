@@ -17,23 +17,13 @@ const CASES: &[(&str, i32, i32, &str)] = &[
     ("nested-shared-write", 0, 0, ""),
     ("original-mutable-after-sharing", 0, 0, ""),
     ("nested-shared-read", 0, 0, ""),
-    (
-        "different-inner-region",
-        0,
-        1,
-        "raw pointer type reinterpretation in constant execution is not implemented",
-    ),
-    (
-        "different-referent",
-        0,
-        1,
-        "raw pointer type reinterpretation in constant execution is not implemented",
-    ),
+    ("different-inner-region", 0, 0, ""),
+    ("different-referent", 0, 0, ""),
     (
         "different-mutability",
         0,
         1,
-        "raw pointer type reinterpretation in constant execution is not implemented",
+        "mutable symbolic reference has shared-derived pointer authority",
     ),
     ("reference-cell-store", 0, 0, ""),
     (

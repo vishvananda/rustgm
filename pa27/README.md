@@ -131,9 +131,17 @@ or grant unsafe permission; an existing raw-base anchor remains intact. Source
 packed alignment and initialization/ownership checks stay independent. Pointer-
 bearing and zero-sized/aggregate union families remain explicit boundaries.
 
-Byte reinterpretation and shared-derived interior-mutable writes remain explicit
-unsupported boundaries. Unsafe permission grants none of these missing constant
-capabilities. Foreign and mutable static contents remain forbidden.
+Typed byte-addressed raw reads, stores and logical field/index offsets reuse the
+original scalar/aggregate backing and symbolic fragments. Actual selected bounds,
+initialization, raw alignment anchors, lifetime and incoming write permission
+remain independent checks. A reconstructed reference also validates its complete
+selected type and leaf alignment; an already normalized view retains its exact
+pointer identity. These controls are reviewed in `docs/pa27-byte-access-review.md`.
+The canonical `.add` route, whole byte-array fragment snapshots, numeric pointer
+reconstruction and unsupported backing families remain required work. Shared-
+derived interior-mutable writes remain unsupported. Unsafe permission grants none
+of these missing constant capabilities. Foreign and mutable static contents remain
+forbidden in this development profile.
 
 Raw slice indexing selects an exact sized element from original array/rest
 storage. Logical metadata bounds and the selected physical backing bounds remain

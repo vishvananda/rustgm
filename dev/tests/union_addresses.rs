@@ -76,12 +76,7 @@ const CASES: &[(&str, i32, i32, &str)] = &[
         1,
         "constant pointer has no allocation provenance",
     ),
-    (
-        "cast-reinterpret-boundary",
-        0,
-        1,
-        "raw pointer type reinterpretation in constant execution is not implemented",
-    ),
+    ("cast-reinterpret-boundary", 0, 0, ""),
     ("reference-reconstruction-boundary", 0, 0, ""),
     ("pointer-family-boundary", 0, 0, ""),
     (

@@ -223,6 +223,15 @@ impl Graph<'_> {
                 }
             }
             Backing::Location(location) => match self.reader.location(location)?.origin {
+                Origin::ByteOffset { base, offset } => {
+                    let base = self.location(base)?;
+                    write!(
+                        row,
+                        "origin=byte-projection:a{base}:{offset} contents=alias"
+                    )
+                    .map_err(|_| "constant view formatting failed")?;
+                    return Ok(row);
+                }
                 Origin::Projection { base, index } => {
                     let base = self.location(base)?;
                     write!(row, "origin=projection:a{base}:{index} contents=alias")

@@ -14,7 +14,7 @@ impl Machine<'_, '_> {
     ) -> Result<Read<Constant>, Failure> {
         let path = self.path(address)?;
         let range = path
-            .range
+            .range()?
             .ok_or("symbolic slice reference lacks its normalized range")?;
         if address.length() != Some(range.length) {
             return Err("symbolic slice metadata differs from its retained range".into());

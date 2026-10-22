@@ -184,6 +184,15 @@ impl Context<'_> {
             }
             let location = self.constants.location(id)?;
             match location.origin {
+                Origin::ByteOffset { base, offset } => {
+                    let parent = self.constants.location(base)?;
+                    let layout = self.layout(parent.ty)?;
+                    if offset > layout.size {
+                        return Err("constant byte address exceeds allocation bounds");
+                    }
+                    path.push((id, offset));
+                    id = base;
+                }
                 Origin::Projection { base, index } => {
                     let parent = self.constants.location(base)?;
                     let layout = self.layout(parent.ty)?;

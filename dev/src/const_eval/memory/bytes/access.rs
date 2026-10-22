@@ -126,7 +126,7 @@ impl Machine<'_, '_> {
             }
             self.convert_byte_root(path.root)?;
         }
-        if let Some(range) = path.range {
+        if let Some(range) = path.range()? {
             return self.write_byte_range(path.root, &path.fields, range, value);
         }
         let ty = Reader::new(self.evaluator.facts()).location(path.root)?.ty;
@@ -175,7 +175,7 @@ impl Machine<'_, '_> {
         }
         Ok(false)
     }
-    fn write_byte_value(
+    pub(super) fn write_byte_value(
         &mut self,
         root: crate::sema::values::LocationId,
         offset: u64,

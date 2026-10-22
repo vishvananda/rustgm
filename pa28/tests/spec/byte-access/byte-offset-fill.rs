@@ -1,0 +1,1 @@
+const N:u32={let mut x=0x00070000u32;let p=unsafe{&raw mut (*(&raw mut x as *mut [u8;4]))[0]};unsafe{core::ptr::write_bytes(p,0,2);}x>>16};fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}fn main(){check(N==7);}

@@ -190,6 +190,17 @@ impl Queries<'_> {
             Work::Read(key) => {
                 let location = self.value(Query::Place(key))?;
                 let place = self.place(key, location)?;
+                if matches!(
+                    self.typing
+                        .facts
+                        .constant_references
+                        .projection(place)
+                        .map_err(|e| self.error(Query::Node(key), e))?,
+                    Some(super::references::ProjectionView::Byte { .. })
+                ) {
+                    self.work.push(super::Work::Execute(key));
+                    return Ok(());
+                }
                 if !matches!(place.access, Access::Owned) {
                     let ty = self.place_type(key)?;
                     self.check_copy_read(Query::Node(key), ty)?;
@@ -357,12 +368,36 @@ impl Queries<'_> {
                 "constant projection base is not a pointer",
             ));
         };
-        let mut value = self
-            .typing
-            .facts
-            .constant_references
-            .project(base, index, Place { value, ty, ..place })
-            .map_err(|e| self.error(Query::Place(key), e))?;
+        let selected = Place { value, ty, ..place };
+        let mut value = if matches!(
+            self.typing
+                .facts
+                .constant_references
+                .projection(place)
+                .map_err(|e| self.error(Query::Place(key), e))?,
+            Some(super::references::ProjectionView::Byte { .. })
+        ) {
+            let field = super::values::Reader::new(self.typing.facts)
+                .projection_layout(place.ty, index)
+                .map_err(|e| self.error(Query::Place(key), e))?;
+            if field.ty != ty || !matches!(field.storage, super::values::ProjectionStorage::Product)
+            {
+                return Err(self.error(
+                    Query::Place(key),
+                    "constant byte field differs from its retained backing",
+                ));
+            }
+            self.typing
+                .facts
+                .constant_references
+                .byte_projection(base, field.offset, selected)
+        } else {
+            self.typing
+                .facts
+                .constant_references
+                .project(base, index, selected)
+        }
+        .map_err(|e| self.error(Query::Place(key), e))?;
         if let Value::Reference(pointer) = &mut value {
             pointer.metadata = metadata;
         }

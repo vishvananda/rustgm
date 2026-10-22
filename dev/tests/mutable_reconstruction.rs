@@ -61,13 +61,7 @@ const CASES: &[(&str, i32, i32, i32, &str)] = &[
     ),
     ("packed-whole", 0, 0, 0, ""),
     ("symbolic-zst", 0, 0, 0, ""),
-    (
-        "reinterpret-boundary",
-        0,
-        1,
-        1,
-        "raw pointer type reinterpretation in constant execution is not implemented",
-    ),
+    ("reinterpret-boundary", 0, 0, 0, ""),
     (
         "uninitialized",
         1,

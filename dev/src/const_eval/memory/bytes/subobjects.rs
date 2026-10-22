@@ -86,7 +86,18 @@ impl Machine<'_, '_> {
             .as_ref()
             .is_some_and(|paths| paths.checked.contains_key(&key))
         {
-            let (path, actual) = self.find_subobject(key, zero)?;
+            let Some((path, actual)) = self.find_subobject(key, zero)? else {
+                if erased {
+                    return Err("symbolic object pointer has no declared concrete subobject".into());
+                }
+                let (value, work) = self.evaluator.byte_word_projection(
+                    address,
+                    target,
+                    self.limits.steps.saturating_sub(self.work.steps),
+                )?;
+                self.charge(work)?;
+                return self.cache_word_view(view, (value, target), 32);
+            };
             self.reserve_cells(path.len().saturating_add(16))?;
             let paths = self
                 .memory
@@ -128,24 +139,41 @@ impl Machine<'_, '_> {
             .ok_or("missing checked symbolic subobject path")?;
         let actual = *actual;
         let value = self.evaluator.word_projection(address, path, actual)?;
+        self.cache_word_view(view, (value, actual), length.saturating_add(32))
+    }
+    fn cache_word_view(
+        &mut self,
+        view: (WordAddress, TypeId, bool),
+        value: (Constant, TypeId),
+        retained: usize,
+    ) -> Result<(Constant, TypeId), Failure> {
+        let header = if self.memory.bytes.paths.is_none() {
+            4 * size_of::<Paths>().div_ceil(size_of::<Constant>())
+        } else {
+            0
+        };
+        self.reserve_cells(retained.saturating_add(header))?;
         let paths = self
             .memory
             .bytes
             .paths
-            .as_mut()
-            .ok_or("missing symbolic pointer view cache")?;
+            .get_or_insert_with(|| Box::new(Paths::default()));
         paths
             .views
             .try_reserve(1)
             .map_err(|_| "symbolic pointer view cache allocation failed")?;
         paths.retained = paths
             .retained
-            .checked_add(length.saturating_add(32))
+            .checked_add(retained)
             .ok_or("symbolic pointer view retention overflow")?;
-        paths.views.insert(view, (value, actual));
-        Ok((value, actual))
+        paths.views.insert(view, value);
+        Ok(value)
     }
-    fn find_subobject(&mut self, key: Key, zero: bool) -> Result<(Vec<u64>, TypeId), Failure> {
+    fn find_subobject(
+        &mut self,
+        key: Key,
+        zero: bool,
+    ) -> Result<Option<(Vec<u64>, TypeId)>, Failure> {
         self.reserve_cells(16)?;
         let mut nodes = vec![Search {
             ty: key.root,
@@ -199,8 +227,9 @@ impl Machine<'_, '_> {
                 });
             }
         }
-        let mut current =
-            selected.ok_or("symbolic pointer typed reinterpretation has no declared subobject")?;
+        let Some(mut current) = selected else {
+            return Ok(None);
+        };
         let actual = nodes[current].ty;
         let mut path = Vec::new();
         while let Some(parent) = nodes[current].parent {
@@ -218,7 +247,7 @@ impl Machine<'_, '_> {
             current = parent;
         }
         path.reverse();
-        Ok((path, actual))
+        Ok(Some((path, actual)))
     }
     fn subobject_children(
         &mut self,

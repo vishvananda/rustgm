@@ -4,6 +4,7 @@ mod image_paths;
 mod loads;
 mod ranges;
 mod raw_slices;
+mod reinterpretation;
 mod sequences;
 mod tails;
 use super::{Constant, Failure, Frame, Machine};
@@ -13,6 +14,7 @@ use crate::{
     types::TypeId,
 };
 pub(super) use image_paths::ImagePath;
+pub(in crate::const_eval) use ranges::Terminal;
 pub(super) use ranges::{Range, StoragePath};
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Liveness {
@@ -139,7 +141,7 @@ impl Machine<'_, '_> {
             "constant pointer has no allocation provenance",
         ))?;
         let mut path = Vec::new();
-        let mut range = None;
+        let mut terminal = None;
         loop {
             self.charge(1)?;
             if RETAINED {
@@ -155,10 +157,22 @@ impl Machine<'_, '_> {
                     location = base;
                 }
                 Origin::Subsequence { base, from, length } => {
-                    if range.is_some() || !path.is_empty() {
+                    if terminal.is_some() || !path.is_empty() {
                         return Err("constant range is not a terminal normalized projection".into());
                     }
-                    range = Some(Range { from, length });
+                    terminal = Some(Terminal::Range(Range { from, length }));
+                    location = base;
+                }
+                Origin::ByteOffset { base, offset } => {
+                    if terminal.is_some() || !path.is_empty() {
+                        return Err(
+                            "constant byte address is not a terminal normalized projection".into(),
+                        );
+                    }
+                    terminal = Some(Terminal::Bytes {
+                        offset,
+                        ty: place.ty,
+                    });
                     location = base;
                 }
                 Origin::Static(_) | Origin::Allocation => break,
@@ -168,7 +182,7 @@ impl Machine<'_, '_> {
         Ok(StoragePath {
             root: location,
             fields: path,
-            range,
+            terminal,
         })
     }
     fn thaw(&mut self, id: usize) -> Result<(), Failure> {
@@ -286,11 +300,15 @@ impl Machine<'_, '_> {
         place: Resolved,
         purpose: super::static_reads::ReadPurpose,
     ) -> Result<Option<Constant>, Failure> {
+        if let Some(selected) = self.byte_place(place)? {
+            self.check_byte_access(place, selected, false)?;
+            return self.read_byte_access(selected.root, selected.offset, selected.ty, purpose);
+        }
+        let selected = self.path(place.address)?;
+        let range = selected.range()?;
         let StoragePath {
-            root,
-            fields: path,
-            range,
-        } = self.path(place.address)?;
+            root, fields: path, ..
+        } = selected;
         if let Some(access) = place.raw {
             if range.is_some() {
                 return Err("constant raw whole-range access is not implemented".into());
@@ -340,6 +358,11 @@ impl Machine<'_, '_> {
         Ok(Some(value))
     }
     pub(super) fn write_place(&mut self, place: Resolved, value: Constant) -> Result<(), Failure> {
+        if let Some(selected) = self.byte_place(place)? {
+            self.check_raw_write_authority(place.address, selected.root)?;
+            self.check_byte_access(place, selected, false)?;
+            return self.write_byte_access(selected.root, selected.offset, selected.ty, value);
+        }
         if self.write_byte_place(place, value)? {
             return Ok(());
         }
@@ -372,10 +395,9 @@ impl Machine<'_, '_> {
         if self.write_byte_path(&storage, value)? {
             return Ok(());
         }
+        let range = storage.range()?;
         let StoragePath {
-            root,
-            fields: path,
-            range,
+            root, fields: path, ..
         } = storage;
         if let Some(range) = range {
             return self.write_range(root, &path, range, value);
@@ -531,9 +553,9 @@ impl Machine<'_, '_> {
                     .ok()
                     .filter(|i| *i < length)
                     .ok_or(Failure::Fault("constant index is out of bounds"))?;
-                self.project_raw_type(address)?;
-                self.evaluator
-                    .projection(address.address, index, projection.ty)?
+                return self
+                    .indexed_element(address, index, projection.ty)
+                    .map(Some);
             }
             ProjectionKind::IndexParameter { .. } => {
                 return Err("constant body retains an unresolved array length".into());

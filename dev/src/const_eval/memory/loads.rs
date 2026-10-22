@@ -10,6 +10,11 @@ impl Machine<'_, '_> {
         leaf: TypeId,
         purpose: ReadPurpose,
     ) -> Result<Option<Constant>, Failure> {
+        let location = Reader::new(self.evaluator.facts()).location(root)?;
+        if let Origin::Static(id) = location.origin {
+            self.check_static_read(id)?;
+            self.check_static_value_read(location.ty, leaf, purpose)?;
+        }
         let value = if self.memory.roots.contains_key(&root) {
             let loaded = if let Some(range) = range {
                 self.read_range(root, path, range, purpose)?
@@ -21,10 +26,7 @@ impl Machine<'_, '_> {
             };
             value
         } else {
-            let location = Reader::new(self.evaluator.facts()).location(root)?;
             let value = if let Origin::Static(id) = location.origin {
-                self.check_static_read(id)?;
-                self.check_static_value_read(location.ty, leaf, purpose)?;
                 let Some(value) = Reader::new(self.evaluator.facts()).definition(id) else {
                     self.waiting = Some(crate::const_eval::Requirement::InitializerBody(id));
                     return Ok(None);

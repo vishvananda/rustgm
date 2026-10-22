@@ -1,0 +1,1 @@
+union U{p:*const u16,q:*const u32}#[repr(C)]struct Pair{a:u16,b:u16}static X:u32=0x00070001;const N:u16=unsafe{let p=&raw const (*(&raw const X as *const Pair)).b;let q=U{p}.q;*(q as *const u16)};fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}fn main(){check(N==7);}

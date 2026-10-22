@@ -115,7 +115,7 @@ const CASES: &[(&str, i32, i32, &str)] = &[
         "vtable-scoped-borrowed-object-escape",
         1,
         1,
-        "raw pointer type reinterpretation in constant execution is not implemented",
+        "trait object has no fixed layout",
     ),
     ("complete-function-image", 0, 0, ""),
     ("complete-object-image", 0, 0, ""),

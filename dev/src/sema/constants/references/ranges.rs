@@ -10,6 +10,7 @@ pub(super) struct Subsequence {
 pub(in crate::sema::constants) enum ProjectionView {
     Field { base: Id, index: u64 },
     Sequence { base: Id, from: u64, length: u64 },
+    Byte { base: Id, offset: u64 },
 }
 impl References {
     pub(in crate::sema::constants) fn projection(
@@ -37,8 +38,50 @@ impl References {
                         length: p.length,
                     })
                     .ok_or("missing constant sequence projection"),
+                ProjectionId::Byte(id) => self
+                    .projections
+                    .get(id as usize)
+                    .map(|p| ProjectionView::Byte {
+                        base: p.base,
+                        offset: p.index,
+                    })
+                    .ok_or("missing constant byte projection"),
             })
             .transpose()
+    }
+    pub(in crate::sema::constants) fn byte_projection(
+        &mut self,
+        mut base: Pointer,
+        mut offset: u64,
+        mut place: Place,
+    ) -> Result<Value, &'static str> {
+        let parent = self.get(Value::Reference(base))?;
+        if let Some(ProjectionView::Byte {
+            base: root,
+            offset: prior,
+        }) = self.projection(parent)?
+        {
+            offset = offset
+                .checked_add(prior)
+                .ok_or("constant byte projection offset overflow")?;
+            base.place = root;
+        }
+        let id = Id(u32::try_from(self.places.len()).map_err(|_| "too many constant places")?);
+        let projection = ProjectionId::Byte(
+            u32::try_from(self.projections.len())
+                .map_err(|_| "too many constant byte projections")?,
+        );
+        place.projection = Some(projection);
+        self.projections.push(super::Projection {
+            base: base.place,
+            index: offset,
+        });
+        self.places.push(place);
+        Ok(Value::Reference(Pointer {
+            place: id,
+            metadata: None,
+            write: base.write,
+        }))
     }
     pub(in crate::sema::constants) fn subsequence(
         &mut self,

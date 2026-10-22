@@ -39,6 +39,7 @@ impl Pointer {
 pub(super) enum ProjectionId {
     Field(u32),
     Sequence(u32),
+    Byte(u32),
 }
 struct Projection {
     base: Id,

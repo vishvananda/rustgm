@@ -1,0 +1,1 @@
+#[repr(C)]struct Pair{a:u16,b:u16}#[repr(C)]struct Wrap{a:u32,b:Pair}const N:u16={let x=[0x44332211u32,0x88776655];unsafe{(*(&raw const x as *const Wrap)).b.b}};fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}fn main(){check(N==34935);}

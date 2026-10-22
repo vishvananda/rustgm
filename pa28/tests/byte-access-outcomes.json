@@ -1,0 +1,158 @@
+{
+  "profile": "Rust1.98.0/2024/x86_64",
+  "rustc_args": [
+    "--cap-lints=allow"
+  ],
+  "baseline": "213f1e21",
+  "cases": [
+    {
+      "name": "unaligned-array-read",
+      "path": "pa28/tests/spec/byte-access/unaligned-array-read.rs",
+      "sha256": "666402b60a9b1bb86001eb45da7edfb949bd84095b063edf0e80fb968d5abc05",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "unaligned-array-write",
+      "path": "pa28/tests/spec/byte-access/unaligned-array-write.rs",
+      "sha256": "08c0fe7330e343b112ee88fb8c226f7c449f1f183c3813b24346e0d8bae54ec9",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "read-too-wide",
+      "path": "pa28/tests/spec/byte-access/read-too-wide.rs",
+      "sha256": "ff78f365f5856eda49f20980720454332336608a785f6e5c367c4e968205417f",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "read exceeds allocation",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "padding-read",
+      "path": "pa28/tests/spec/byte-access/padding-read.rs",
+      "sha256": "47e67a7e643621e6123bf98c0664a18d0c60a3d3d49b992462af5abe0121841a",
+      "rustc_expected": 1,
+      "native_valid": false,
+      "reason": "uninitialized padding",
+      "rustc_actual": 1,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false
+    },
+    {
+      "name": "library-add-offset",
+      "path": "pa28/tests/spec/byte-access/library-add-offset.rs",
+      "sha256": "eb99c8bb1dd916e80249094f8535ce186a91905828034e4857ef279487bf6262",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "retain canonical pointer method route even if separate preparation gap",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        1,
+        1,
+        1
+      ],
+      "native_qualified": false,
+      "required_gap": "Canonical raw-pointer add method preparation."
+    },
+    {
+      "name": "packed-field-unaligned-read",
+      "path": "pa28/tests/spec/byte-access/packed-field-unaligned-read.rs",
+      "sha256": "6c8692cb008fb51027271c1c61cdba48686f710b856a00aa36613debc1817c40",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "offset-unaligned-read",
+      "path": "pa28/tests/spec/byte-access/offset-unaligned-read.rs",
+      "sha256": "8aba3a11a5d3af8ed124b119ff430a5717aa0c41cb69e5dd209eda7c210cd25f",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "counted-byte-cast-copy",
+      "path": "pa28/tests/spec/byte-access/counted-byte-cast-copy.rs",
+      "sha256": "65ef3738aa8e55b47f0f1c7c7c598fc98b8984ad2f543029e50febd44f60541b",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "byte-offset-fill",
+      "path": "pa28/tests/spec/byte-access/byte-offset-fill.rs",
+      "sha256": "7aef52c6237e9580a34e400221e5d9956f9fdfa2afde2e036edf00205988a9bc",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    },
+    {
+      "name": "byte-offset-copy",
+      "path": "pa28/tests/spec/byte-access/byte-offset-copy.rs",
+      "sha256": "82c35e767c60cb23c45055122201eaa5966d9771c3bc07414ab073e960d8c5c0",
+      "rustc_expected": 0,
+      "native_valid": true,
+      "reason": "",
+      "rustc_actual": 0,
+      "frontend_expected": [
+        0,
+        0,
+        0
+      ],
+      "native_qualified": true
+    }
+  ]
+}

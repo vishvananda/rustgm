@@ -12,14 +12,36 @@ pub(in crate::const_eval) struct Range {
 pub(in crate::const_eval) struct StoragePath {
     pub root: LocationId,
     pub fields: Vec<u64>,
-    pub range: Option<Range>,
+    pub terminal: Option<Terminal>,
+}
+#[derive(Clone, Copy)]
+pub(in crate::const_eval) enum Terminal {
+    Range(Range),
+    Bytes {
+        offset: u64,
+        ty: crate::types::TypeId,
+    },
 }
 impl StoragePath {
-    pub(in crate::const_eval) fn fields_only(self) -> Result<(LocationId, Vec<u64>), Failure> {
-        if self.range.is_some() {
-            return Err("constant raw whole-range access is not implemented".into());
+    pub(in crate::const_eval) fn range(&self) -> Result<Option<Range>, Failure> {
+        match self.terminal {
+            None => Ok(None),
+            Some(Terminal::Range(range)) => Ok(Some(range)),
+            Some(Terminal::Bytes { .. }) => {
+                Err("constant byte address reached a range-only consumer".into())
+            }
         }
-        Ok((self.root, self.fields))
+    }
+    pub(in crate::const_eval) fn fields_only(self) -> Result<(LocationId, Vec<u64>), Failure> {
+        match self.terminal {
+            None => Ok((self.root, self.fields)),
+            Some(Terminal::Range(_)) => {
+                Err("constant raw whole-range access is not implemented".into())
+            }
+            Some(Terminal::Bytes { .. }) => {
+                Err("constant byte address reached a fields-only consumer".into())
+            }
+        }
     }
 }
 impl Machine<'_, '_> {
@@ -56,12 +78,20 @@ impl Machine<'_, '_> {
             // the pointee, form a reference or perform address arithmetic.
             return self.raw_slice_metadata(place).map(|(_, length)| length);
         }
+        if let Some(Kind::Array { length, .. }) = self.evaluator.facts().types.kind(place.ty)
+            && (place.raw.is_some() || self.byte_projecting(place)?)
+        {
+            // Raw place evaluation already read the pointer value. A checked
+            // array length is type metadata, independently of selected contents.
+            self.charge(1)?;
+            return Ok(length);
+        }
         let path = self.path(place.address)?;
         // Metadata does not read bytes or demand a static initializer. Local storage
         // must nevertheless have an initialized container at the selected path.
         self.check_length_storage(path.root, &path.fields)?;
         if let Some(access) = place.raw {
-            if path.range.is_some() {
+            if path.range()?.is_some() {
                 return Err("constant raw whole-range access is not implemented".into());
             }
             self.check_raw_read(place, access, path.root, &path.fields)?;
@@ -74,7 +104,7 @@ impl Machine<'_, '_> {
                 .ok_or("constant slice place lacks length metadata")?,
             _ => return Err("constant length requires an array or slice place".into()),
         };
-        if let Some(range) = path.range
+        if let Some(range) = path.range()?
             && range.length != length
         {
             return Err("constant range length differs from its checked place".into());

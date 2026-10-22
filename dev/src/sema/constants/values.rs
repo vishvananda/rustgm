@@ -54,6 +54,10 @@ pub enum Origin {
         from: u64,
         length: u64,
     },
+    ByteOffset {
+        base: LocationId,
+        offset: u64,
+    },
 }
 #[derive(Clone, Copy)]
 pub struct Location {
@@ -185,6 +189,10 @@ impl<'a> Reader<'a> {
                     length,
                 }
             }
+            Some(references::ProjectionView::Byte { base, offset }) => Origin::ByteOffset {
+                base: LocationId(base),
+                offset,
+            },
             None => {
                 if let references::Access::Static(id) = place.access {
                     Origin::Static(id)

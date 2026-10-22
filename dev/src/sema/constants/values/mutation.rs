@@ -235,7 +235,9 @@ impl Inspection<'_> {
         loop {
             self.charge(1)?;
             match self.reader.location(location)?.origin {
-                Origin::Projection { base, .. } | Origin::Subsequence { base, .. } => {
+                Origin::Projection { base, .. }
+                | Origin::Subsequence { base, .. }
+                | Origin::ByteOffset { base, .. } => {
                     location = base;
                 }
                 Origin::Static(_) => return Ok(Answer::Ordinary),

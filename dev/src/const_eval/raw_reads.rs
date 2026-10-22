@@ -178,6 +178,9 @@ impl Machine<'_, '_> {
         place: Resolved,
         mutable: bool,
     ) -> Result<Option<crate::sema::values::Constant>, Failure> {
+        if let Some(selected) = self.byte_place(place)? {
+            return self.checked_byte_reference(place, selected, mutable);
+        }
         let (root, path) = self.path(place.address)?.fields_only()?;
         let location = Reader::new(self.evaluator.facts()).location(root)?;
         if mutable {
@@ -245,6 +248,10 @@ impl Machine<'_, '_> {
         }))
     }
     pub(super) fn check_raw_write(&mut self, place: Resolved) -> Result<(), Failure> {
+        if let Some(selected) = self.byte_place(place)? {
+            self.check_raw_write_authority(place.address, selected.root)?;
+            return self.check_byte_access(place, selected, false);
+        }
         let access = place
             .raw
             .ok_or("constant raw write lacks its access anchor")?;

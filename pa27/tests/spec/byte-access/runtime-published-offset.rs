@@ -1,0 +1,1 @@
+#[repr(C)]struct P{a:u16,b:u16}static X:u32=0x00070001;const P:*const u16=unsafe{&raw const (*(&raw const X as *const P)).b};fn load(p:*const u16)->u16{unsafe{*p}}fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}fn main(){check(load(P)==7);}

@@ -34,7 +34,7 @@ const CASES: &[(&str, bool, bool)] = &[
     ("mutable-static", false, false),
     ("static-cycle", false, false),
     ("nonnull-numeric", false, false),
-    ("reinterpret-boundary", true, false),
+    ("reinterpret-boundary", true, true),
     ("raw-write-boundary", true, true),
     ("raw-borrow-boundary", true, true),
 ];

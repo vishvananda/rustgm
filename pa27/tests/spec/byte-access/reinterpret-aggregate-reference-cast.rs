@@ -1,0 +1,1 @@
+#[repr(C)]struct Pair{a:u16,b:u16}const N:u32={let mut x=0x00070001u32;let r=unsafe{&mut *(&raw mut x as *mut Pair)};r.a=9;r.b as u32};fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}fn main(){check(N==7);}
