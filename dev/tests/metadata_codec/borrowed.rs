@@ -36,6 +36,7 @@ fn artifact(signature: Signature) -> Result<Interface, &'static str> {
 fn typed_signatures_roundtrip_and_preserve_unused_binder_slots()
 -> Result<(), Box<dyn std::error::Error>> {
     let original = artifact(signature()?)?;
+    super::public_names::roundtrip(&original)?;
     let encoded = crates::encode(&original)?;
     assert_eq!(encoded[12], 2);
     let decoded = crates::decode(&encoded)?;

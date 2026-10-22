@@ -67,8 +67,15 @@ impl<'a> Reader<'a> {
         Ok(())
     }
     pub(super) fn path(&mut self) -> Result<Vec<String>, &'static str> {
+        let path = self.module_path()?;
+        if path.is_empty() {
+            return Err("invalid metadata path table length");
+        }
+        Ok(path)
+    }
+    pub(super) fn module_path(&mut self) -> Result<Vec<String>, &'static str> {
         let count = usize::from(self.u16()?);
-        if count == 0 || count > 64 || count > self.remaining() / 5 {
+        if count > 64 || count > self.remaining() / 5 {
             return Err("invalid metadata path table length");
         }
         self.atoms(count)?;

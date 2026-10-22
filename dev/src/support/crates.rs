@@ -5,6 +5,7 @@ mod globals;
 mod identity;
 mod interface;
 mod nominals;
+mod public_names;
 mod scalar_value;
 mod type_graph;
 pub use codec::{SCHEMA, decode, encode};
@@ -13,6 +14,7 @@ pub use globals::{Static, StaticRef, Storage, StorageOrigin, StoredKind, StoredV
 pub use identity::{CrateIdentity, ExternalDef, ExternalKind, Namespace};
 pub use interface::{Function, Interface, Scalar, Symbol};
 pub use nominals::{Nominals, Record, RecordField, RecordRef};
+pub use public_names::{PublicBinding, PublicModule, PublicNames};
 pub use scalar_value::{Constant, ScalarValue};
 pub use type_graph::{Abi, Lifetime, Signature, TypeGraph, TypeNode, TypeRef};
 

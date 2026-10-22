@@ -86,6 +86,7 @@ impl Dependencies {
             return Err("crate graph payload exceeds profile budget");
         }
         let edges = validate_graph(&artifacts, &indices)?;
+        super::public_names::exposure::validate(&artifacts, &indices)?;
         Ok(Self {
             artifacts,
             aliases,

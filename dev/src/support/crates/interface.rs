@@ -1,7 +1,7 @@
 //! The first wire profile exports closed scalar Rust functions, with explicit symbols.
 use super::{
     Constant, CrateIdentity, ExternalDef, ExternalKind, MAX_COMPONENTS, MAX_DEPENDENCIES,
-    MAX_FUNCTIONS, MAX_NAME_BYTES, Nominals, Record, Signature, Storage, TypeNode,
+    MAX_FUNCTIONS, MAX_NAME_BYTES, Nominals, PublicNames, Record, Signature, Storage, TypeNode,
 };
 use crate::support::linkage::Linkage;
 use std::sync::Arc;
@@ -92,6 +92,7 @@ pub struct Interface {
     constants: Vec<Constant>,
     nominals: Option<Nominals>,
     storage: Option<Storage>,
+    public_names: Option<Box<PublicNames>>,
     atoms: usize,
     names: usize,
 }
@@ -282,6 +283,7 @@ impl Interface {
             constants,
             nominals,
             storage,
+            public_names: None,
             atoms: components,
             names: bytes,
         })
@@ -293,6 +295,27 @@ impl Interface {
     #[must_use]
     pub const fn storage(&self) -> Option<&Storage> {
         self.storage.as_ref()
+    }
+    /// Publish exact public bindings after owned declarations have been validated.
+    /// # Errors
+    /// Rejects duplicate publication, invalid targets and combined artifact quotas.
+    pub fn with_public_names(mut self, public_names: PublicNames) -> Result<Self, &'static str> {
+        if self.public_names.is_some() {
+            return Err("public metadata names are already published");
+        }
+        public_names.validate(&self)?;
+        let (atoms, names) = public_names.budget();
+        self.atoms = self.atoms.saturating_add(atoms);
+        self.names = self.names.saturating_add(names);
+        if self.atoms > MAX_COMPONENTS || self.names > MAX_NAME_BYTES {
+            return Err("metadata contents exceed profile budget");
+        }
+        self.public_names = Some(Box::new(public_names));
+        Ok(self)
+    }
+    #[must_use]
+    pub fn public_names(&self) -> Option<&PublicNames> {
+        self.public_names.as_deref()
     }
     #[must_use]
     pub fn records(&self) -> &[Record] {

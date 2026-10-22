@@ -18,6 +18,7 @@ fn artifact(abi: Abi) -> Result<Interface, &'static str> {
 fn fixed_foreign_signatures_roundtrip_and_old_profiles_keep_their_wire_contract()
 -> Result<(), Box<dyn std::error::Error>> {
     let original = artifact(Abi::C)?;
+    super::public_names::roundtrip(&original)?;
     let bytes = crates::encode(&original)?;
     assert_eq!(&bytes[12..14], &[4, 0]);
     let restored = crates::decode(&bytes)?;

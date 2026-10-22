@@ -87,6 +87,7 @@ fn hidden_storage_roundtrips_by_identity_and_field_path() -> Result<(), Box<dyn 
         vec![backing()?, pointer()?],
         vec![scalar()?, product(0), reference(0, &[0])],
     )?;
+    super::public_names::roundtrip(&artifact)?;
     let bytes = crates::encode(&artifact)?;
     assert_eq!(bytes[12], 5);
     let decoded = crates::decode(&bytes)?;

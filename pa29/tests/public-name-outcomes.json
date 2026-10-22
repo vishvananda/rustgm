@@ -1,0 +1,202 @@
+{
+  "profile": "Rust 1.98.0 edition2024 x86_64-unknown-linux-gnu; full rlib/object/native; independently frozen before execution",
+  "cases": [
+    {
+      "name": "first",
+      "path": "tests/spec/public-names/first.rs",
+      "source_sha256": "52a511f8a56489eb2d760d5fc945a9813e02dfc1574296b4eb7eba13e7c99441",
+      "kind": "rlib",
+      "crate": "origin",
+      "deps": {},
+      "rustc": 0,
+      "rustc_codes": [],
+      "native": false,
+      "frontend_expected_after_implementation": 0
+    },
+    {
+      "name": "second",
+      "path": "tests/spec/public-names/second.rs",
+      "source_sha256": "d625b2eb0f185204970663db502d1e2d031358ca0829e93b0b4b2157da8468cb",
+      "kind": "rlib",
+      "crate": "origin",
+      "deps": {},
+      "rustc": 0,
+      "rustc_codes": [],
+      "native": false,
+      "frontend_expected_after_implementation": 0
+    },
+    {
+      "name": "facade",
+      "path": "tests/spec/public-names/facade.rs",
+      "source_sha256": "3b09a01697557d79e97156443d277a5bb3968960f59fefacf3a850265cc84c09",
+      "kind": "rlib",
+      "crate": "facade",
+      "deps": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": 0,
+      "rustc_codes": [],
+      "native": false,
+      "frontend_expected_after_implementation": 0
+    },
+    {
+      "name": "renamed-client",
+      "path": "tests/spec/public-names/renamed-client.rs",
+      "source_sha256": "f70d5838f5cbc8796886d0d8794957c6289a2138f10c37f612e237540825ee45",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "facade": "facade",
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": 0,
+      "rustc_codes": [],
+      "native": true,
+      "frontend_expected_after_implementation": 0
+    },
+    {
+      "name": "glob-client",
+      "path": "tests/spec/public-names/glob-client.rs",
+      "source_sha256": "27c6a7d2825e9c9cca4d153494d94c736710012b11983e7e71e95f894a40219b",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "facade": "facade",
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": 0,
+      "rustc_codes": [],
+      "native": true,
+      "frontend_expected_after_implementation": 0
+    },
+    {
+      "name": "hidden-path",
+      "path": "tests/spec/public-names/hidden-path.rs",
+      "source_sha256": "5e708da4a80e5cc9ec8dd80e864d520bed3aa00d72b9d6d8f8cf23546a002c79",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": 1,
+      "rustc_codes": [
+        "E0603"
+      ],
+      "native": false,
+      "frontend_expected_after_implementation": 1
+    },
+    {
+      "name": "private-field",
+      "path": "tests/spec/public-names/private-field.rs",
+      "source_sha256": "c6336212cc5593728139a4793bac6a831696131ab67f250bd92aa50112f741ed",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "facade": "facade",
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": 1,
+      "rustc_codes": [
+        "E0451"
+      ],
+      "native": false,
+      "frontend_expected_after_implementation": 1
+    },
+    {
+      "name": "nominal-mismatch",
+      "path": "tests/spec/public-names/nominal-mismatch.rs",
+      "source_sha256": "194c627358b4e4da5b5c8d6512bb0908c009b5f4f2f67acf03f3b9f46c297f42",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "facade": "facade",
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": 1,
+      "rustc_codes": [
+        "E0308"
+      ],
+      "native": false,
+      "frontend_expected_after_implementation": 1
+    },
+    {
+      "name": "moved-alias",
+      "path": "tests/spec/public-names/moved-alias.rs",
+      "source_sha256": "fae73fbd2ee73d2d4927ec9ee79f3b25fa85f769ddc817bef7c60673083c17ed",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "facade": "facade",
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": 1,
+      "rustc_codes": [
+        "E0382"
+      ],
+      "native": false,
+      "frontend_expected_after_implementation": 1
+    },
+    {
+      "name": "ambiguous-glob",
+      "path": "tests/spec/public-names/ambiguous-glob.rs",
+      "source_sha256": "4f8badd0f2a794439505e26036b7fa62091c628c2c58906afae2f303b1bf13b7",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": 1,
+      "rustc_codes": [
+        "E0659"
+      ],
+      "native": false,
+      "frontend_expected_after_implementation": 1
+    },
+    {
+      "name": "private-reexport",
+      "path": "tests/spec/public-names/private-reexport.rs",
+      "source_sha256": "187d3fe317035cd0b4db3b646549e6ad6fbdf6ad470d9539960d9ab626ebfb13",
+      "kind": "rlib",
+      "crate": "private_reexport",
+      "deps": {},
+      "rustc": 1,
+      "rustc_codes": [
+        "E0603"
+      ],
+      "native": false,
+      "frontend_expected_after_implementation": 1
+    },
+    {
+      "name": "unresolved-cycle",
+      "path": "tests/spec/public-names/unresolved-cycle.rs",
+      "source_sha256": "f4c3d0a323e6eef0b00f26e64b7c792c027dde1d3adeb627f02bf73e70158f38",
+      "kind": "rlib",
+      "crate": "unresolved_cycle",
+      "deps": {},
+      "rustc": 1,
+      "rustc_codes": [
+        "E0432"
+      ],
+      "native": false,
+      "frontend_expected_after_implementation": 1
+    }
+  ],
+  "frontend": "pending public-name source export/import; no frontend result claimed",
+  "status": "Independently qualified source contract; public-name codec implemented privately; source import/export remains pending.",
+  "qualification": {
+    "root": "obj/parallel/pa29-public-name-sources-v1",
+    "declaration_sha256": "fab37decbae3fa3b0d62fff53f956f9b2deb7682c7d3af732d6639fc86df33bd",
+    "results_sha256": "2f0c5efb63b7585432aeaf27c9fda8688cdad201ab94d772c515d67257ed2899",
+    "cases": 12,
+    "native": 2,
+    "failures": []
+  }
+}

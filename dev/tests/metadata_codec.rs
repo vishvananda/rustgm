@@ -5,6 +5,8 @@ mod borrowed;
 mod calling_conventions;
 #[path = "metadata_codec/nominals.rs"]
 mod nominals;
+#[path = "metadata_codec/public_names.rs"]
+mod public_names;
 #[path = "metadata_codec/scalar_values.rs"]
 mod scalar_values;
 #[path = "metadata_codec/stored_interfaces.rs"]

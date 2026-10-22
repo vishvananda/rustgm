@@ -71,6 +71,7 @@ fn artifact() -> Result<Interface, &'static str> {
 fn records_roundtrip_with_one_shared_graph_and_private_layouts()
 -> Result<(), Box<dyn std::error::Error>> {
     let interface = artifact()?;
+    super::public_names::roundtrip(&interface)?;
     let bytes = crates::encode(&interface)?;
     assert_eq!(bytes[12], 3);
     let decoded = crates::decode(&bytes)?;

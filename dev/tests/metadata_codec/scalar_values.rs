@@ -49,6 +49,7 @@ fn scalar_values_preserve_widths_sign_bits_zero_and_nan_payloads()
         .map(|(index, (ty, bits))| constant(&owner, &format!("V{index:02}"), ty, bits))
         .collect::<Result<Vec<_>, _>>()?;
     let first = Interface::with_constants(owner.clone(), vec![], vec![], values.clone())?;
+    super::public_names::roundtrip(&first)?;
     let second =
         Interface::with_constants(owner, vec![], vec![], values.into_iter().rev().collect())?;
     let bytes = crates::encode(&first)?;
