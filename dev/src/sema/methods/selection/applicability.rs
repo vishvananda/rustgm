@@ -55,6 +55,10 @@ pub(super) fn prepare(
     let ids = if facts.associated.trait_owner(owner).is_some()
         || facts.associated.operation(owner).is_some()
         || facts.associated.comparison(owner).is_some()
+        || facts
+            .iteration
+            .as_deref()
+            .is_some_and(|r| r.owns_trait(owner))
     {
         facts.generics.callable_parameters(&facts.types, owner)?.1
     } else {

@@ -56,6 +56,12 @@ impl Registry {
             .flatten()
             .any(|o| o.declaration.definition == definition)
     }
+    pub fn owns_trait(&self, definition: DefId) -> bool {
+        self.canonical
+            .declarations
+            .iter()
+            .any(|declaration| declaration.definition == definition)
+    }
     pub fn associated_definition(
         &self,
         owner: DefId,

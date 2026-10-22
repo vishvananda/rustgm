@@ -1,0 +1,246 @@
+{
+  "schema": 1,
+  "status": "draft",
+  "mode": "--emit-lowir",
+  "language": "Rust1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "path": "tests/spec/iteration-visibility/prelude-next.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "9651d74106c8b8d4f91657b4a26b43261a8c322c8f62ece19f5603e067b9fe2f",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/explicit-next.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "ba4c0222b538bc510e9007a4474c1c0f95afa772d775373a76945d8221e89a5e",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/aliased-next.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "2dfb8b965ab5c4de024d01e47d6396e48ba22a075e78571e0ca0d9c41040e2cf",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/anonymous-next.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "68e0f022f37ac9acb5e2aab1ea4035a2ed6ff497cf83817f1e13ccf3c250588a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/no-prelude-next.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "a00c0bb03ff63906eff400fdcfd9cc1ee01b5f621307ac910a3ab80a76e61f7d",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/no-prelude-missing-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "d96ced5651aec6e846ece8c363e95da8e01e2ea3a33b841e46ac7a923dd1b19e",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/source-lookalike.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "70e882b9ecd7b8896a5df7db2d3afaa2a4c26214c8dc53df2e0f82f05e5b1cad",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/user-canonical-ambiguity-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "0816f93991a612c789265db446201dc5a73535c079d4f1e091983377c9c24d08",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/shadowed-prelude-ambiguity-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "7e8091e41fa4dd5039fe198a73106e40eed433793d249f212c6249b519d07a68",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/inherent-wins.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "a28dca7405f88e9c1021449f7bc233a089a65fd20dd863e46c9e197474bdb04a",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/generic-bound.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "11874ff11f323da5a7d0f7966f85b5df076da96d6988c5c797fc1ab23dfb9e66",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/shared-receiver-reject.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "e2b20468731b6417872388858208a64dac71776562a7e7dbd3fd5efc0d43006b",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/prelude-into-iter.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "35f1a5a040cae743429b54b657fc5a8ad946e617acf980229dab5c9721b6d916",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/iteration-visibility/generic-reference-item.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "features": [
+        "pa26.iteration"
+      ],
+      "source_sha256": "26a5b944dfbb258c1491646c5b581103ec1b3107bb88573cee36b5f411b911ee",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    }
+  ]
+}

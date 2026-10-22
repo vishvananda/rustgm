@@ -329,5 +329,8 @@ The canonical identity and `&mut I` blankets use checked generic originals,
 including unsized mutable-reference forwarding. Draft controls are in
 `tests/iteration-outcomes.json`; unsafe destructor observers belong to PA27.
 See `docs/pa26-iteration-checkpoint.md` for the boundary and qualification.
+Canonical iteration dot methods use the existing lexical/prelude lookup and
+ordinary receiver proof; `docs/pa26-iteration-method-visibility.md` records
+explicit imports, no-prelude controls and source/canonical ambiguity.
 Array/slice/range iteration, further iterator methods, question-mark, additional
 derives and formatting remain required; PA26 stays planned.

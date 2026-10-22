@@ -1,0 +1,1 @@
+fn check(b:bool){if !b{let z=0;let _=1/z;}}struct I{done:bool}impl core::iter::Iterator for I{type Item=u8;fn next(&mut self)->Option<u8>{if self.done{None}else{self.done=true;Some(7)}}}impl I{fn next(&mut self)->u8{9}}fn main(){let mut i=I{done:false};check(i.next()==9);}

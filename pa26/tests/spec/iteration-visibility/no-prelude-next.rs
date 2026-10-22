@@ -1,0 +1,2 @@
+#![no_implicit_prelude]
+extern crate core;use core::iter::Iterator as It;fn check(b:bool){if !b{let z=0;let _=1/z;}}struct I{done:bool}impl core::iter::Iterator for I{type Item=u8;fn next(&mut self)->core::option::Option<u8>{if self.done{core::option::Option::None}else{self.done=true;core::option::Option::Some(7)}}}fn main(){let mut i=I{done:false};match i.next(){core::option::Option::Some(x)=>check(x==7),core::option::Option::None=>check(false)}}

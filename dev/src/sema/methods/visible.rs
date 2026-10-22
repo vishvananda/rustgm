@@ -41,14 +41,13 @@ impl Index {
             }
         }
         for kind in crate::support::comparisons::Comparison::ALL {
-            if let Some(declaration) = report.resolution.builtin_traits.comparison(kind)
-                && let Some(members) = index.members.get(&declaration.definition)
-            {
-                index
-                    .prelude
-                    .extend(members.iter().map(|(name, member)| (*name, *member)));
-                let count = members.len();
-                index.account(count)?;
+            if let Some(declaration) = report.resolution.builtin_traits.comparison(kind) {
+                index.prelude_members(declaration.definition)?;
+            }
+        }
+        if let Some(iteration) = facts.iteration.as_deref() {
+            for declaration in iteration.canonical.declarations {
+                index.prelude_members(declaration.definition)?;
             }
         }
         for (ordinal, scope) in report.resolution.scopes.iter().enumerate() {
@@ -64,7 +63,8 @@ impl Index {
                     && (report.resolution.definitions[binding.target.0 as usize].kind
                         == DefKind::Trait
                         || (facts.associated.operation(binding.target).is_some()
-                            || facts.associated.comparison(binding.target).is_some()))
+                            || facts.associated.comparison(binding.target).is_some()
+                            || iteration_trait(facts, binding.target)))
                 {
                     index
                         .scopes
@@ -78,7 +78,8 @@ impl Index {
             index.account(1)?;
             if report.resolution.definitions[binding.target.0 as usize].kind == DefKind::Trait
                 || (facts.associated.operation(binding.target).is_some()
-                    || facts.associated.comparison(binding.target).is_some())
+                    || facts.associated.comparison(binding.target).is_some()
+                    || iteration_trait(facts, binding.target))
             {
                 let scope = report.resolution.imports[import].scope;
                 index
@@ -89,6 +90,15 @@ impl Index {
             }
         }
         Ok(index)
+    }
+    fn prelude_members(&mut self, definition: DefId) -> Result<(), &'static str> {
+        if let Some(members) = self.members.get(&definition) {
+            self.prelude
+                .extend(members.iter().map(|(name, member)| (*name, *member)));
+            let count = members.len();
+            self.account(count)?;
+        }
+        Ok(())
     }
     pub(super) const fn steps(&self) -> usize {
         self.steps
@@ -181,4 +191,11 @@ impl Index {
         }
         Ok(())
     }
+}
+
+fn iteration_trait(facts: &Declarations, definition: DefId) -> bool {
+    facts
+        .iteration
+        .as_deref()
+        .is_some_and(|iteration| iteration.owns_trait(definition))
 }

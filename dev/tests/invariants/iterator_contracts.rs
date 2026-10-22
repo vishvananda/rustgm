@@ -188,6 +188,36 @@ fn iterator_plans_scale_with_loops_and_ignore_unrelated_source() -> Result {
     Ok(())
 }
 #[test]
+fn iteration_visibility_reuses_indexes_across_calls_and_unrelated_source() -> Result {
+    let mut steps = Vec::new();
+    for (calls, unused) in [(8, 0), (32, 0), (128, 0), (1, 8), (1, 32), (1, 128)] {
+        let mut source = SOURCE
+            .strip_suffix("fn main(){for _ in I{}}")
+            .ok_or("source")?
+            .to_owned();
+        for index in 0..unused {
+            write!(source, "fn unused_{index}(){{let _=1u8;}}")?;
+        }
+        source.push_str("fn main(){let mut i=I;");
+        for _ in 0..calls {
+            source.push_str("let _=i.next();");
+        }
+        source.push('}');
+        let (_, facts) = fixture(&source)?;
+        assert_eq!(facts.methods.calls.len(), calls);
+        let work = facts.methods.trait_visibility_steps;
+        eprintln!("iteration visibility calls={calls} unused={unused} work={work}");
+        steps.push(work);
+    }
+    for values in steps.as_chunks::<3>().0 {
+        assert_eq!(4 * (values[1] - values[0]), values[2] - values[1]);
+    }
+    let (_, facts) = fixture("fn main(){let _=1u8+2u8;}")?;
+    assert!(facts.iteration.is_none());
+    assert_eq!(facts.methods.trait_visibility_steps, 0);
+    Ok(())
+}
+#[test]
 fn iterator_layout_keeps_ordinary_records_compact() {
     eprintln!(
         "iteration sizes declarations={} registry={} plan={} original={} call={} value={}",

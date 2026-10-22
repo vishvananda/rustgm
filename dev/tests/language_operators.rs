@@ -154,3 +154,6 @@ mod limits;
 
 #[path = "language_operators/iterators.rs"]
 mod iterators;
+
+#[path = "language_operators/iterator_visibility.rs"]
+mod iterator_visibility;
