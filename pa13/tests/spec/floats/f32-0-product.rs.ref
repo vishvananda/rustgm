@@ -122,8 +122,6 @@ function @rg.18(%p0 : ptr) -> u8 {
     store u8 3, $s1
     jump ^b1
   block ^b8:
-    %t20 = addr $s0
-    %t21 = index u8 %t20, 4
     jump ^b6
   block ^b6:
     store u8 2, $s1
@@ -132,8 +130,8 @@ function @rg.18(%p0 : ptr) -> u8 {
     store u8 1, $s1
     jump ^b1
   block ^b1:
-    %t22 = load u8 $s1
-    return u8 %t22
+    %t20 = load u8 $s1
+    return u8 %t20
   block ^b15:
     unreachable
   block ^b16:

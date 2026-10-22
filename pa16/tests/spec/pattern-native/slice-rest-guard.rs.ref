@@ -117,50 +117,47 @@ function @rg.15(%p0 : ptr) -> u8 {
     copyobj 16x8 %t17, %t18
     %t19 = addr $s3
     store ptr %t19, $s4
-    %t20 = binary sub i64 %t13, 1
-    %t21 = binary mul i64 %t20, 1
-    %t22 = index u8 %t10, %t21
     jump ^b31
   block ^b32:
-    %t23 = load ptr $s0
-    %t24 = addr $s0
-    %t25 = index u8 %t24, 8
-    %t26 = load i64 %t25
-    %t27 = binary sub i64 %t26, 1
-    %t28 = index u8 %t23, 1
-    store ptr %t28, $s7
-    %t29 = addr $s7
-    %t30 = index u8 %t29, 8
-    store i64 %t27, %t30
-    %t31 = addr $s7
-    %t32 = addr $s3
-    copyobj 16x8 %t31, %t32
-    %t33 = addr $s3
-    store ptr %t33, $s4
+    %t20 = load ptr $s0
+    %t21 = addr $s0
+    %t22 = index u8 %t21, 8
+    %t23 = load i64 %t22
+    %t24 = binary sub i64 %t23, 1
+    %t25 = index u8 %t20, 1
+    store ptr %t25, $s7
+    %t26 = addr $s7
+    %t27 = index u8 %t26, 8
+    store i64 %t24, %t27
+    %t28 = addr $s7
+    %t29 = addr $s3
+    copyobj 16x8 %t28, %t29
+    %t30 = addr $s3
+    store ptr %t30, $s4
     jump ^b31
   block ^b31:
-    %t34 = load ptr $s4
-    %t35 = load ptr %t34
-    %t36 = index u8 %t34, 8
-    %t37 = load i64 %t36
-    %t38 = cmp uge i64 0, %t37
-    branch %t38, ^b43, ^b44
+    %t31 = load ptr $s4
+    %t32 = load ptr %t31
+    %t33 = index u8 %t31, 8
+    %t34 = load i64 %t33
+    %t35 = cmp uge i64 0, %t34
+    branch %t35, ^b43, ^b44
   block ^b44:
-    %t39 = binary mul i64 0, 1
-    %t40 = index u8 %t35, %t39
-    %t41 = load u8 %t40
-    %t42 = cmp eq u8 %t41, 7
-    %t43 = convert trunc i1 i64 %t42
-    branch %t43, ^b34, ^b36
+    %t36 = binary mul i64 0, 1
+    %t37 = index u8 %t32, %t36
+    %t38 = load u8 %t37
+    %t39 = cmp eq u8 %t38, 7
+    %t40 = convert trunc i1 i64 %t39
+    branch %t40, ^b34, ^b36
   block ^b36:
     jump ^b35
   block ^b35:
     jump ^b5
   block ^b5:
-    %t44 = load u32 $s2
-    %t45 = cmp eq u32 %t44, 0
-    %t46 = convert trunc i1 i64 %t45
-    branch %t46, ^b8, ^b11
+    %t41 = load u32 $s2
+    %t42 = cmp eq u32 %t41, 0
+    %t43 = convert trunc i1 i64 %t42
+    branch %t43, ^b8, ^b11
   block ^b11:
     jump ^b20
   block ^b20:
@@ -186,13 +183,13 @@ function @rg.15(%p0 : ptr) -> u8 {
   block ^b10:
     jump ^b22
   block ^b22:
-    %t47 = load ptr $s0
-    %t48 = addr $s0
-    %t49 = index u8 %t48, 8
-    %t50 = load i64 %t49
-    %t51 = cmp uge i64 %t50, 1
-    %t52 = convert trunc i1 i64 %t51
-    branch %t52, ^b24, ^b7
+    %t44 = load ptr $s0
+    %t45 = addr $s0
+    %t46 = index u8 %t45, 8
+    %t47 = load i64 %t46
+    %t48 = cmp uge i64 %t47, 1
+    %t49 = convert trunc i1 i64 %t48
+    branch %t49, ^b24, ^b7
   block ^b7:
     jump ^b3
   block ^b3:
@@ -212,58 +209,55 @@ function @rg.15(%p0 : ptr) -> u8 {
     store u32 1, $s2
     jump ^b2
   block ^b34:
-    %t53 = load u32 $s2
-    %t54 = cmp eq u32 %t53, 0
-    %t55 = convert trunc i1 i64 %t54
-    branch %t55, ^b38, ^b39
+    %t50 = load u32 $s2
+    %t51 = cmp eq u32 %t50, 0
+    %t52 = convert trunc i1 i64 %t51
+    branch %t52, ^b38, ^b39
   block ^b39:
-    %t56 = load ptr $s0
-    %t57 = addr $s0
-    %t58 = index u8 %t57, 8
-    %t59 = load i64 %t58
-    %t60 = binary sub i64 %t59, 1
-    store ptr %t56, $s8
-    %t61 = addr $s8
-    %t62 = index u8 %t61, 8
-    store i64 %t60, %t62
-    %t63 = addr $s8
-    %t64 = addr $s5
-    copyobj 16x8 %t63, %t64
-    %t65 = binary sub i64 %t59, 1
-    %t66 = binary mul i64 %t65, 1
-    %t67 = index u8 %t56, %t66
+    %t53 = load ptr $s0
+    %t54 = addr $s0
+    %t55 = index u8 %t54, 8
+    %t56 = load i64 %t55
+    %t57 = binary sub i64 %t56, 1
+    store ptr %t53, $s8
+    %t58 = addr $s8
+    %t59 = index u8 %t58, 8
+    store i64 %t57, %t59
+    %t60 = addr $s8
+    %t61 = addr $s5
+    copyobj 16x8 %t60, %t61
     jump ^b37
   block ^b38:
-    %t68 = load ptr $s0
-    %t69 = addr $s0
-    %t70 = index u8 %t69, 8
-    %t71 = load i64 %t70
-    %t72 = binary sub i64 %t71, 1
-    %t73 = index u8 %t68, 1
-    store ptr %t73, $s9
-    %t74 = addr $s9
-    %t75 = index u8 %t74, 8
-    store i64 %t72, %t75
-    %t76 = addr $s9
-    %t77 = addr $s5
-    copyobj 16x8 %t76, %t77
+    %t62 = load ptr $s0
+    %t63 = addr $s0
+    %t64 = index u8 %t63, 8
+    %t65 = load i64 %t64
+    %t66 = binary sub i64 %t65, 1
+    %t67 = index u8 %t62, 1
+    store ptr %t67, $s9
+    %t68 = addr $s9
+    %t69 = index u8 %t68, 8
+    store i64 %t66, %t69
+    %t70 = addr $s9
+    %t71 = addr $s5
+    copyobj 16x8 %t70, %t71
     jump ^b37
   block ^b37:
-    %t78 = load ptr $s5
-    %t79 = addr $s5
-    %t80 = index u8 %t79, 8
-    %t81 = load i64 %t80
-    %t82 = cmp uge i64 1, %t81
-    branch %t82, ^b43, ^b45
+    %t72 = load ptr $s5
+    %t73 = addr $s5
+    %t74 = index u8 %t73, 8
+    %t75 = load i64 %t74
+    %t76 = cmp uge i64 1, %t75
+    branch %t76, ^b43, ^b45
   block ^b45:
-    %t83 = binary mul i64 1, 1
-    %t84 = index u8 %t78, %t83
-    %t85 = load u8 %t84
-    store u8 %t85, $s1
+    %t77 = binary mul i64 1, 1
+    %t78 = index u8 %t72, %t77
+    %t79 = load u8 %t78
+    store u8 %t79, $s1
     jump ^b1
   block ^b1:
-    %t86 = load u8 $s1
-    return u8 %t86
+    %t80 = load u8 $s1
+    return u8 %t80
   block ^b41:
     unreachable
   block ^b42:

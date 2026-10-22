@@ -2,8 +2,6 @@ function @rg.18() -> void {
   slot $s0 : obj<2x1>
   slot $s1 : obj<16x8>
   block ^b0:
-    %t0 = addr $s0
-    %t1 = index u8 %t0, 1
     call void @rg.13(1)
     return void
 }

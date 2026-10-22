@@ -3,8 +3,6 @@ function @rg.15() -> void {
   block ^b0:
     jump ^b4
   block ^b4:
-    %t0 = addr $s0
-    %t1 = index u8 %t0, 1
     jump ^b2
   block ^b2:
     jump ^b1

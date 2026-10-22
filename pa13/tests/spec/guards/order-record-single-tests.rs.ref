@@ -86,66 +86,63 @@ function @rg.16() -> i64 {
     jump ^b45
   block ^b46:
     store ptr %t17, $s3
-    %t22 = index u8 %t17, 1
     jump ^b45
   block ^b45:
-    %t23 = addr $s9
-    %t24 = index u8 %t23, 4
-    %t25 = load u32 $s2
-    %t26 = cmp eq u32 %t25, 2
-    %t27 = convert trunc i1 i64 %t26
-    branch %t27, ^b49, ^b50
+    %t22 = addr $s9
+    %t23 = index u8 %t22, 4
+    %t24 = load u32 $s2
+    %t25 = cmp eq u32 %t24, 2
+    %t26 = convert trunc i1 i64 %t25
+    branch %t26, ^b49, ^b50
   block ^b50:
-    %t28 = addr $s9
-    %t29 = index u8 %t28, 1
-    store ptr %t29, $s4
+    %t27 = addr $s9
+    %t28 = index u8 %t27, 1
+    store ptr %t28, $s4
     jump ^b48
   block ^b49:
-    %t30 = addr $s9
-    store ptr %t30, $s4
-    %t31 = addr $s9
-    %t32 = index u8 %t31, 1
+    %t29 = addr $s9
+    store ptr %t29, $s4
     jump ^b48
   block ^b48:
-    %t33 = load i64 $s0
-    %t34 = convert zext i128 i64 %t33
-    %t35 = convert zext i128 i64 100
-    %t36 = binary mul i128 %t34, %t35
-    %t37 = convert trunc i64 i128 %t36
-    %t38 = convert zext i128 i64 %t37
-    %t39 = cmp ne i128 %t36, %t38
-    branch %t39, ^b63, ^b64
+    %t30 = load i64 $s0
+    %t31 = convert zext i128 i64 %t30
+    %t32 = convert zext i128 i64 100
+    %t33 = binary mul i128 %t31, %t32
+    %t34 = convert trunc i64 i128 %t33
+    %t35 = convert zext i128 i64 %t34
+    %t36 = cmp ne i128 %t33, %t35
+    branch %t36, ^b63, ^b64
   block ^b64:
-    %t40 = load ptr $s4
-    %t41 = load u8 %t40
-    %t42 = convert zext i16 u8 %t41
-    %t43 = convert zext i16 u8 10
-    %t44 = binary mul i16 %t42, %t43
-    %t45 = convert trunc u8 i16 %t44
-    %t46 = convert zext i16 u8 %t45
-    %t47 = cmp ne i16 %t44, %t46
-    branch %t47, ^b63, ^b65
+    %t37 = load ptr $s4
+    %t38 = load u8 %t37
+    %t39 = convert zext i16 u8 %t38
+    %t40 = convert zext i16 u8 10
+    %t41 = binary mul i16 %t39, %t40
+    %t42 = convert trunc u8 i16 %t41
+    %t43 = convert zext i16 u8 %t42
+    %t44 = cmp ne i16 %t41, %t43
+    branch %t44, ^b63, ^b65
   block ^b65:
-    %t48 = load ptr $s3
-    %t49 = load u8 %t48
-    %t50 = convert zext i16 u8 %t45
-    %t51 = convert zext i16 u8 %t49
-    %t52 = binary add i16 %t50, %t51
-    %t53 = convert trunc u8 i16 %t52
-    %t54 = convert zext i16 u8 %t53
-    %t55 = cmp ne i16 %t52, %t54
-    branch %t55, ^b63, ^b66
+    %t45 = load ptr $s3
+    %t46 = load u8 %t45
+    %t47 = convert zext i16 u8 %t42
+    %t48 = convert zext i16 u8 %t46
+    %t49 = binary add i16 %t47, %t48
+    %t50 = convert trunc u8 i16 %t49
+    %t51 = convert zext i16 u8 %t50
+    %t52 = cmp ne i16 %t49, %t51
+    branch %t52, ^b63, ^b66
   block ^b66:
-    %t56 = convert zext i64 u8 %t53
-    %t57 = convert zext i128 i64 %t37
-    %t58 = convert zext i128 i64 %t56
-    %t59 = binary add i128 %t57, %t58
-    %t60 = convert trunc i64 i128 %t59
-    %t61 = convert zext i128 i64 %t60
-    %t62 = cmp ne i128 %t59, %t61
-    branch %t62, ^b63, ^b67
+    %t53 = convert zext i64 u8 %t50
+    %t54 = convert zext i128 i64 %t34
+    %t55 = convert zext i128 i64 %t53
+    %t56 = binary add i128 %t54, %t55
+    %t57 = convert trunc i64 i128 %t56
+    %t58 = convert zext i128 i64 %t57
+    %t59 = cmp ne i128 %t56, %t58
+    branch %t59, ^b63, ^b67
   block ^b67:
-    store i64 %t60, $s0
+    store i64 %t57, $s0
     branch 0, ^b51, ^b53
   block ^b53:
     jump ^b52
@@ -154,10 +151,10 @@ function @rg.16() -> i64 {
   block ^b5:
     jump ^b27
   block ^b27:
-    %t63 = load u32 $s2
-    %t64 = cmp eq u32 %t63, 2
-    %t65 = convert trunc i1 i64 %t64
-    branch %t65, ^b30, ^b33
+    %t60 = load u32 $s2
+    %t61 = cmp eq u32 %t60, 2
+    %t62 = convert trunc i1 i64 %t61
+    branch %t62, ^b30, ^b33
   block ^b33:
     jump ^b38
   block ^b38:
@@ -167,17 +164,17 @@ function @rg.16() -> i64 {
   block ^b41:
     jump ^b29
   block ^b29:
-    %t66 = load u32 $s2
-    %t67 = cmp eq u32 %t66, 4
-    %t68 = convert trunc i1 i64 %t67
-    branch %t68, ^b3, ^b25
+    %t63 = load u32 $s2
+    %t64 = cmp eq u32 %t63, 4
+    %t65 = convert trunc i1 i64 %t64
+    branch %t65, ^b3, ^b25
   block ^b25:
     jump ^b7
   block ^b7:
-    %t69 = load u32 $s1
-    %t70 = cmp eq u32 %t69, 0
-    %t71 = convert trunc i1 i64 %t70
-    branch %t71, ^b11, ^b14
+    %t66 = load u32 $s1
+    %t67 = cmp eq u32 %t66, 0
+    %t68 = convert trunc i1 i64 %t67
+    branch %t68, ^b11, ^b14
   block ^b14:
     jump ^b19
   block ^b19:
@@ -225,46 +222,43 @@ function @rg.16() -> i64 {
     store u32 3, $s2
     jump ^b2
   block ^b51:
-    %t72 = addr $s9
-    %t73 = index u8 %t72, 2
-    %t74 = load u32 $s1
-    %t75 = cmp eq u32 %t74, 0
-    %t76 = convert trunc i1 i64 %t75
-    branch %t76, ^b55, ^b56
+    %t69 = addr $s9
+    %t70 = index u8 %t69, 2
+    %t71 = load u32 $s1
+    %t72 = cmp eq u32 %t71, 0
+    %t73 = convert trunc i1 i64 %t72
+    branch %t73, ^b55, ^b56
   block ^b56:
-    %t77 = index u8 %t73, 1
-    %t78 = load u8 %t77
-    store u8 %t78, $s5
+    %t74 = index u8 %t70, 1
+    %t75 = load u8 %t74
+    store u8 %t75, $s5
     jump ^b54
   block ^b55:
-    %t79 = load u8 %t73
-    store u8 %t79, $s5
-    %t80 = index u8 %t73, 1
+    %t76 = load u8 %t70
+    store u8 %t76, $s5
     jump ^b54
   block ^b54:
-    %t81 = addr $s9
-    %t82 = index u8 %t81, 4
-    %t83 = load u32 $s2
-    %t84 = cmp eq u32 %t83, 2
-    %t85 = convert trunc i1 i64 %t84
-    branch %t85, ^b58, ^b59
+    %t77 = addr $s9
+    %t78 = index u8 %t77, 4
+    %t79 = load u32 $s2
+    %t80 = cmp eq u32 %t79, 2
+    %t81 = convert trunc i1 i64 %t80
+    branch %t81, ^b58, ^b59
   block ^b59:
-    %t86 = addr $s9
-    %t87 = index u8 %t86, 1
-    %t88 = load u8 %t87
-    store u8 %t88, $s6
+    %t82 = addr $s9
+    %t83 = index u8 %t82, 1
+    %t84 = load u8 %t83
+    store u8 %t84, $s6
     jump ^b57
   block ^b58:
-    %t89 = load u8 $s9
-    store u8 %t89, $s6
-    %t90 = addr $s9
-    %t91 = index u8 %t90, 1
+    %t85 = load u8 $s9
+    store u8 %t85, $s6
     jump ^b57
   block ^b57:
     jump ^b1
   block ^b1:
-    %t92 = load i64 $s0
-    return i64 %t92
+    %t86 = load i64 $s0
+    return i64 %t86
   block ^b61:
     unreachable
   block ^b62:

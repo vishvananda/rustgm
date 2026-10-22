@@ -48,17 +48,15 @@ function @rg.17() -> void {
   block ^b4:
     jump ^b5
   block ^b5:
-    %t20 = index u8 %t14, 1
     jump ^b6
   block ^b6:
-    %t21 = index u8 %t14, 2
     jump ^b2
   block ^b2:
     store i1 1, $s0
     jump ^b1
   block ^b1:
-    %t22 = load i1 $s0
-    call void @rg.13(%t22)
+    %t20 = load i1 $s0
+    call void @rg.13(%t20)
     return void
   block ^b9:
     unreachable

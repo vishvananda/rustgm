@@ -77,71 +77,66 @@ function @rg.15() -> i64 {
     jump ^b61
   block ^b62:
     store ptr %t13, $s4
-    %t18 = index u8 %t13, 1
     jump ^b61
   block ^b61:
     jump ^b55
   block ^b56:
-    %t19 = load u32 $s2
-    %t20 = cmp eq u32 %t19, 2
-    %t21 = convert trunc i1 i64 %t20
-    branch %t21, ^b59, ^b60
+    %t18 = load u32 $s2
+    %t19 = cmp eq u32 %t18, 2
+    %t20 = convert trunc i1 i64 %t19
+    branch %t20, ^b59, ^b60
   block ^b60:
-    %t22 = addr $s8
-    %t23 = index u8 %t22, 1
-    store ptr %t23, $s4
+    %t21 = addr $s8
+    %t22 = index u8 %t21, 1
+    store ptr %t22, $s4
     jump ^b58
   block ^b59:
-    %t24 = addr $s8
-    store ptr %t24, $s4
-    %t25 = addr $s8
-    %t26 = index u8 %t25, 1
+    %t23 = addr $s8
+    store ptr %t23, $s4
     jump ^b58
   block ^b58:
-    %t27 = addr $s8
-    %t28 = index u8 %t27, 2
     jump ^b55
   block ^b55:
-    %t29 = load i64 $s0
-    %t30 = convert zext i128 i64 %t29
-    %t31 = convert zext i128 i64 10
-    %t32 = binary mul i128 %t30, %t31
-    %t33 = convert trunc i64 i128 %t32
-    %t34 = convert zext i128 i64 %t33
-    %t35 = cmp ne i128 %t32, %t34
-    branch %t35, ^b79, ^b80
+    %t24 = load i64 $s0
+    %t25 = convert zext i128 i64 %t24
+    %t26 = convert zext i128 i64 10
+    %t27 = binary mul i128 %t25, %t26
+    %t28 = convert trunc i64 i128 %t27
+    %t29 = convert zext i128 i64 %t28
+    %t30 = cmp ne i128 %t27, %t29
+    branch %t30, ^b79, ^b80
   block ^b80:
-    %t36 = load ptr $s4
-    %t37 = load u8 %t36
-    %t38 = convert zext i64 u8 %t37
-    %t39 = convert zext i128 i64 %t33
-    %t40 = convert zext i128 i64 %t38
-    %t41 = binary add i128 %t39, %t40
-    %t42 = convert trunc i64 i128 %t41
-    %t43 = convert zext i128 i64 %t42
-    %t44 = cmp ne i128 %t41, %t43
-    branch %t44, ^b79, ^b81
+    %t31 = load ptr $s4
+    %t32 = load u8 %t31
+    %t33 = convert zext i64 u8 %t32
+    %t34 = convert zext i128 i64 %t28
+    %t35 = convert zext i128 i64 %t33
+    %t36 = binary add i128 %t34, %t35
+    %t37 = convert trunc i64 i128 %t36
+    %t38 = convert zext i128 i64 %t37
+    %t39 = cmp ne i128 %t36, %t38
+    branch %t39, ^b79, ^b81
   block ^b81:
-    store i64 %t42, $s0
+    store i64 %t37, $s0
     branch 0, ^b64, ^b66
   block ^b66:
     jump ^b65
   block ^b65:
     jump ^b5
   block ^b5:
-    %t45 = load u32 $s1
-    %t46 = cmp eq u32 %t45, 0
-    %t47 = convert trunc i1 i64 %t46
-    branch %t47, ^b8, ^b11
+    %t40 = load u32 $s1
+    %t41 = cmp eq u32 %t40, 0
+    %t42 = convert trunc i1 i64 %t41
+    branch %t42, ^b8, ^b11
   block ^b11:
     jump ^b32
   block ^b32:
     jump ^b37
   block ^b37:
-    %t48 = load u32 $s3
-    %t49 = cmp eq u32 %t48, 4
-    %t50 = convert trunc i1 i64 %t49
-    branch %t50, ^b40, ^b43
+    %t43 = load u32 $s3
+    %t44 = cmp eq u32 %t43, 4
+    %t45 = convert trunc i1 i64 %t44
+    branch %t45, ^b40, ^b43
   block ^b43:
     jump ^b48
   block ^b48:
@@ -151,10 +146,10 @@ function @rg.15() -> i64 {
   block ^b51:
     jump ^b39
   block ^b39:
-    %t51 = load u32 $s3
-    %t52 = cmp eq u32 %t51, 6
-    %t53 = convert trunc i1 i64 %t52
-    branch %t53, ^b7, ^b35
+    %t46 = load u32 $s3
+    %t47 = cmp eq u32 %t46, 6
+    %t48 = convert trunc i1 i64 %t47
+    branch %t48, ^b7, ^b35
   block ^b35:
     jump ^b7
   block ^b7:
@@ -185,10 +180,10 @@ function @rg.15() -> i64 {
   block ^b31:
     jump ^b13
   block ^b13:
-    %t54 = load u32 $s2
-    %t55 = cmp eq u32 %t54, 2
-    %t56 = convert trunc i1 i64 %t55
-    branch %t56, ^b17, ^b20
+    %t49 = load u32 $s2
+    %t50 = cmp eq u32 %t49, 2
+    %t51 = convert trunc i1 i64 %t50
+    branch %t51, ^b17, ^b20
   block ^b20:
     jump ^b25
   block ^b25:
@@ -234,55 +229,50 @@ function @rg.15() -> i64 {
     store u32 3, $s2
     jump ^b14
   block ^b64:
-    %t57 = load u32 $s1
-    %t58 = cmp eq u32 %t57, 0
-    %t59 = convert trunc i1 i64 %t58
-    branch %t59, ^b68, ^b69
+    %t52 = load u32 $s1
+    %t53 = cmp eq u32 %t52, 0
+    %t54 = convert trunc i1 i64 %t53
+    branch %t54, ^b68, ^b69
   block ^b69:
-    %t60 = addr $s8
-    %t61 = index u8 %t60, 2
-    %t62 = load u32 $s3
-    %t63 = cmp eq u32 %t62, 4
-    %t64 = convert trunc i1 i64 %t63
-    branch %t64, ^b74, ^b75
+    %t55 = addr $s8
+    %t56 = index u8 %t55, 2
+    %t57 = load u32 $s3
+    %t58 = cmp eq u32 %t57, 4
+    %t59 = convert trunc i1 i64 %t58
+    branch %t59, ^b74, ^b75
   block ^b75:
-    %t65 = index u8 %t61, 1
-    %t66 = load u8 %t65
-    store u8 %t66, $s5
+    %t60 = index u8 %t56, 1
+    %t61 = load u8 %t60
+    store u8 %t61, $s5
     jump ^b73
   block ^b74:
-    %t67 = load u8 %t61
-    store u8 %t67, $s5
-    %t68 = index u8 %t61, 1
+    %t62 = load u8 %t56
+    store u8 %t62, $s5
     jump ^b73
   block ^b73:
     jump ^b67
   block ^b68:
-    %t69 = load u32 $s2
-    %t70 = cmp eq u32 %t69, 2
-    %t71 = convert trunc i1 i64 %t70
-    branch %t71, ^b71, ^b72
+    %t63 = load u32 $s2
+    %t64 = cmp eq u32 %t63, 2
+    %t65 = convert trunc i1 i64 %t64
+    branch %t65, ^b71, ^b72
   block ^b72:
-    %t72 = addr $s8
-    %t73 = index u8 %t72, 1
-    %t74 = load u8 %t73
-    store u8 %t74, $s5
+    %t66 = addr $s8
+    %t67 = index u8 %t66, 1
+    %t68 = load u8 %t67
+    store u8 %t68, $s5
     jump ^b70
   block ^b71:
-    %t75 = load u8 $s8
-    store u8 %t75, $s5
-    %t76 = addr $s8
-    %t77 = index u8 %t76, 1
+    %t69 = load u8 $s8
+    store u8 %t69, $s5
     jump ^b70
   block ^b70:
-    %t78 = addr $s8
-    %t79 = index u8 %t78, 2
     jump ^b67
   block ^b67:
     jump ^b1
   block ^b1:
-    %t80 = load i64 $s0
-    return i64 %t80
+    %t70 = load i64 $s0
+    return i64 %t70
   block ^b77:
     unreachable
   block ^b78:

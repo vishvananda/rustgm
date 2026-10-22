@@ -51,27 +51,25 @@ function @rg.16() -> void {
   block ^b4:
     jump ^b5
   block ^b5:
-    %t24 = index u8 %t18, 1
     jump ^b6
   block ^b6:
-    %t25 = index u8 %t18, 2
     jump ^b2
   block ^b2:
     store i1 1, $s2
     jump ^b1
   block ^b1:
-    %t26 = load i1 $s2
-    call void @rg.13(%t26)
-    %t27 = cmp uge i64 1, 3
-    branch %t27, ^b11, ^b13
+    %t24 = load i1 $s2
+    call void @rg.13(%t24)
+    %t25 = cmp uge i64 1, 3
+    branch %t25, ^b11, ^b13
   block ^b13:
-    %t28 = binary mul i64 1, 1
-    %t29 = addr $s0
-    %t30 = index u8 %t29, %t28
-    %t31 = load u8 %t30
-    %t32 = cmp eq u8 %t31, 9
-    %t33 = convert trunc i1 i64 %t32
-    call void @rg.13(%t33)
+    %t26 = binary mul i64 1, 1
+    %t27 = addr $s0
+    %t28 = index u8 %t27, %t26
+    %t29 = load u8 %t28
+    %t30 = cmp eq u8 %t29, 9
+    %t31 = convert trunc i1 i64 %t30
+    call void @rg.13(%t31)
     return void
   block ^b9:
     unreachable

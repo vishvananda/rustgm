@@ -47,7 +47,6 @@ function @rg.18() -> void {
   block ^b4:
     jump ^b5
   block ^b5:
-    %t20 = index u8 %t14, 1
     jump ^b2
   block ^b2:
     jump ^b1

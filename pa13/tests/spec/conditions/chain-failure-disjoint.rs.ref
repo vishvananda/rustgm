@@ -109,48 +109,44 @@ function @rg.17(%p0 : ptr, %p1 : i1) -> u8 {
     store i1 %p1, $s1
     jump ^b7
   block ^b7:
-    %t1 = addr $s0
-    %t2 = index u8 %t1, 1
     jump ^b8
   block ^b8:
-    %t3 = addr $s0
-    %t4 = index u8 %t3, 2
-    %t5 = load i1 %t4
-    %t6 = cmp eq i1 %t5, 1
-    %t7 = convert trunc i1 i64 %t6
-    branch %t7, ^b5, ^b6
+    %t1 = addr $s0
+    %t2 = index u8 %t1, 2
+    %t3 = load i1 %t2
+    %t4 = cmp eq i1 %t3, 1
+    %t5 = convert trunc i1 i64 %t4
+    branch %t5, ^b5, ^b6
   block ^b6:
     jump ^b2
   block ^b5:
-    %t8 = addr $s0
-    %t9 = addr $s4
+    %t6 = addr $s0
+    %t7 = addr $s4
+    copyobj 1x1 %t6, %t7
+    %t8 = addr $s4
+    %t9 = addr $s3
     copyobj 1x1 %t8, %t9
-    %t10 = addr $s4
-    %t11 = addr $s3
-    copyobj 1x1 %t10, %t11
-    %t12 = addr $s0
-    %t13 = index u8 %t12, 1
-    %t14 = addr $s0
-    %t15 = index u8 %t14, 2
+    %t10 = addr $s0
+    %t11 = index u8 %t10, 2
     jump ^b4
   block ^b4:
-    %t16 = load i1 $s1
-    branch %t16, ^b1, ^b9
+    %t12 = load i1 $s1
+    branch %t12, ^b1, ^b9
   block ^b9:
     jump ^b2
   block ^b2:
-    %t17 = addr $s0
-    %t18 = index u8 %t17, 1
-    %t19 = load u8 %t18
-    store u8 %t19, $s2
+    %t13 = addr $s0
+    %t14 = index u8 %t13, 1
+    %t15 = load u8 %t14
+    store u8 %t15, $s2
     jump ^b3
   block ^b1:
-    %t20 = load u8 $s3
-    store u8 %t20, $s2
+    %t16 = load u8 $s3
+    store u8 %t16, $s2
     jump ^b3
   block ^b3:
-    %t21 = load u8 $s2
-    return u8 %t21
+    %t17 = load u8 $s2
+    return u8 %t17
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1

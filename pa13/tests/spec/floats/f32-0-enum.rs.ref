@@ -134,8 +134,6 @@ function @rg.23(%p0 : ptr) -> u8 {
     store u8 4, $s1
     jump ^b1
   block ^b12:
-    %t25 = addr $s0
-    %t26 = index u8 %t25, 8
     jump ^b10
   block ^b10:
     store u8 3, $s1
@@ -147,8 +145,8 @@ function @rg.23(%p0 : ptr) -> u8 {
     store u8 1, $s1
     jump ^b1
   block ^b1:
-    %t27 = load u8 $s1
-    return u8 %t27
+    %t25 = load u8 $s1
+    return u8 %t25
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1

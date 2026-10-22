@@ -13,18 +13,16 @@ function @rg.15() -> void {
     %t4 = addr $s2
     %t5 = addr $s0
     copyobj 1x1 %t4, %t5
-    %t6 = addr $s1
-    %t7 = index u8 %t6, 1
-    %t8 = cmp uge i64 0, 1
-    branch %t8, ^b1, ^b2
+    %t6 = cmp uge i64 0, 1
+    branch %t6, ^b1, ^b2
   block ^b2:
-    %t9 = binary mul i64 0, 1
-    %t10 = addr $s0
-    %t11 = index u8 %t10, %t9
-    %t12 = load u8 %t11
-    %t13 = cmp eq u8 %t12, 2
-    %t14 = convert trunc i1 i64 %t13
-    call void @rg.13(%t14)
+    %t7 = binary mul i64 0, 1
+    %t8 = addr $s0
+    %t9 = index u8 %t8, %t7
+    %t10 = load u8 %t9
+    %t11 = cmp eq u8 %t10, 2
+    %t12 = convert trunc i1 i64 %t11
+    call void @rg.13(%t12)
     return void
   block ^b1:
     call void @abort()
