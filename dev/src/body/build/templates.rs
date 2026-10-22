@@ -26,6 +26,10 @@ impl Template {
 pub struct Templates {
     pub bodies: Vec<Template>,
 }
+#[derive(Default)]
+struct ClosureTemplates {
+    bodies: std::collections::HashMap<crate::types::closure::ClosureId, Template>,
+}
 /// Every original child belongs to the same defining source family as its parent.
 pub(crate) fn owns(facts: &Declarations, owner: crate::resolve::model::DefId) -> bool {
     facts.generics.has_parameters(owner) || facts.opaques.owners.contains_key(&owner)
@@ -46,6 +50,7 @@ pub struct Prepared {
     query: Option<NeedsDrop>,
     bodies: std::collections::HashMap<crate::resolve::model::DefId, Template>,
     anonymous: std::collections::HashMap<crate::resolve::unit::NodeKey, Template>,
+    closures: Option<Box<ClosureTemplates>>,
     built: usize,
     reused: usize,
 }
@@ -224,6 +229,36 @@ impl Prepared {
         })
     }
 
+    pub(crate) fn retain_component(
+        &mut self,
+        templates: Vec<Template>,
+    ) -> Result<(), &'static str> {
+        let mut keys = std::collections::HashSet::with_capacity(templates.len());
+        for template in &templates {
+            let body = &template.body;
+            let present = match body.owner {
+                crate::body::ir::Owner::Function { definition, .. }
+                | crate::body::ir::Owner::Initializer { definition, .. } => {
+                    self.bodies.contains_key(&definition)
+                }
+                crate::body::ir::Owner::Closure { identity, .. } => self
+                    .closures
+                    .as_ref()
+                    .is_some_and(|c| c.bodies.contains_key(&identity)),
+                crate::body::ir::Owner::AnonymousConstant => {
+                    self.anonymous.contains_key(&body.source)
+                }
+                _ => return Err("original component contains a selected instance"),
+            };
+            if body.instance.is_some() || present || !keys.insert(body.key()) {
+                return Err("original component conflicts with a retained template owner");
+            }
+        }
+        for template in templates {
+            self.retain(template)?;
+        }
+        Ok(())
+    }
     /// Retain a completed original function for later template qualification and lowering.
     /// # Errors
     /// Rejects duplicate retained owners and non-function bodies.
@@ -238,6 +273,18 @@ impl Prepared {
                 .is_some()
             {
                 return Err("anonymous template was retained twice");
+            }
+            return Ok(());
+        }
+        if let crate::body::ir::Owner::Closure { identity, .. } = template.body.owner {
+            if self
+                .closures
+                .get_or_insert_with(Default::default)
+                .bodies
+                .insert(identity, template)
+                .is_some()
+            {
+                return Err("closure template was retained twice");
             }
             return Ok(());
         }
@@ -313,6 +360,13 @@ impl Prepared {
                 "anonymous template has no program owner",
             ));
         }
+        if self.closures.as_ref().is_some_and(|c| !c.bodies.is_empty()) {
+            return Err(Error::at(
+                crate::resolve::unit::FileId(0),
+                0,
+                "retained closure template has no program owner",
+            ));
+        }
         if let Some(template) = self.bodies.values().next() {
             return Err(Declarations::error(
                 report,
@@ -324,13 +378,30 @@ impl Prepared {
         Ok(Templates { bodies })
     }
 
-    fn closure(
+    pub(crate) fn closure(
         &mut self,
         report: &Report,
         facts: &Declarations,
         closure: &crate::sema::closures::Body,
         owner: crate::resolve::model::DefId,
     ) -> Result<Template, Error> {
+        if let Some(template) = self
+            .closures
+            .as_mut()
+            .and_then(|c| c.bodies.remove(&closure.identity))
+        {
+            if template.body.source != closure.semantic_source()
+                || template.body.key() != crate::body::ir::BodyKey::Closure(closure.identity)
+            {
+                return Err(Declarations::error(
+                    report,
+                    closure.source,
+                    "retained closure original changed owner",
+                ));
+            }
+            self.reused += 1;
+            return Ok(template);
+        }
         let environment = environment(report, facts, owner, closure.source)?;
         let query = self.query.get_or_insert_with(|| {
             NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item))

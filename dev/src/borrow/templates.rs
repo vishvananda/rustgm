@@ -1,4 +1,6 @@
 //! A sealed proof retains the exact immutable templates checked under their assumptions.
+mod context;
+mod owners;
 mod preconditions;
 use super::{Environment, Error, loans, regions};
 use crate::{
@@ -9,6 +11,7 @@ use crate::{
     },
     types::{ItemId, TypeId, closure::ClosureId, variance::Variances},
 };
+pub(crate) use context::{Contexts, verify as verify_with_context};
 use std::{collections::HashMap, hash::BuildHasher};
 
 pub struct Checked<'a> {
@@ -118,41 +121,11 @@ pub fn verify<'a, S: BuildHasher>(
     custom: &[ItemId],
     position: impl Fn(TypeId, Selection) -> Result<(u32, u32), &'static str>,
 ) -> Result<Checked<'a>, Error> {
-    let mut index = HashMap::with_capacity(templates.bodies.len());
-    let mut closures = HashMap::new();
-    let mut anonymous = HashMap::new();
-    for (ordinal, template) in templates.bodies.iter().enumerate() {
-        let body = &template.body;
-        let error = |message: &str| Error {
-            node: Some(body.source),
-            message: message.into(),
-        };
-        let duplicate = match body.owner {
-            Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
-                index.insert(ItemId(definition.0), ordinal).is_some()
-            }
-            Owner::Closure { identity, .. } => closures.insert(identity, ordinal).is_some(),
-            Owner::AnonymousConstant => anonymous.insert(body.key(), ordinal).is_some(),
-            Owner::InitializerInstance { .. }
-            | Owner::AnonymousInstance(_)
-            | Owner::ClosureAdapter { .. } => {
-                return Err(error("template requires a declared owner"));
-            }
-        };
-        if body.instance.is_some() || duplicate {
-            return Err(error("template proof requires distinct original owners"));
-        }
-        if body.promotions.is_none()
-            && body
-                .values
-                .iter()
-                .any(|v| matches!(v.kind, crate::body::ir::Rvalue::Borrow { .. }))
-        {
-            return Err(error(
-                "template proof requires completed promotion analysis",
-            ));
-        }
-    }
+    let owners::Indices {
+        functions: index,
+        closures,
+        anonymous,
+    } = owners::indices(templates)?;
     let regions = regions::check_templates(environment.types, variances, contracts, templates)
         .map_err(|e| Error {
             node: e.source,

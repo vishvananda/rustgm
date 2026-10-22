@@ -1,5 +1,7 @@
 //! Checked constant execution shares demanded CFGs with ordinary compilation.
 mod anonymous;
+mod component_index;
+mod components;
 mod expressions;
 mod initializers;
 mod inputs;
@@ -77,6 +79,7 @@ pub(super) struct Engine {
     associated: Option<Box<InitializerTemplates>>,
     originals: HashMap<DefId, Template>,
     anonymous: HashMap<crate::resolve::unit::NodeKey, (Template, Contract)>,
+    original_components: Option<Box<components::Retained>>,
     concrete: HashMap<BodyKey, Body>,
     loans: Option<(usize, borrow::loans::templates::Verifier)>,
     inputs: Rc<RefCell<HashMap<BodyKey, Body>>>,
@@ -89,8 +92,10 @@ impl Engine {
     pub(super) fn transfer(
         &mut self,
         report: &Report,
+        facts: &mut Declarations,
         prepared: &mut Prepared,
     ) -> Result<(), Error> {
+        self.transfer_components(report, facts, prepared)?;
         for (key, body) in std::mem::take(&mut self.concrete) {
             if prepared.concrete.contains_key(&key) {
                 return Err(Declarations::error(
@@ -102,18 +107,27 @@ impl Engine {
             prepared.concrete.insert(key, body);
         }
         for (template, _) in self.associated.iter().flat_map(|map| map.values()) {
+            if self.component_contains(template.body.key()) {
+                continue;
+            }
             prepared
                 .templates
                 .retain(template.clone())
                 .map_err(|e| Declarations::error(report, template.body.source, e))?;
         }
         for (template, _) in self.anonymous.values() {
+            if self.component_contains(template.body.key()) {
+                continue;
+            }
             prepared
                 .templates
                 .retain(template.clone())
                 .map_err(|e| Declarations::error(report, template.body.source, e))?;
         }
         for (&definition, template) in &self.originals {
+            if self.component_contains(template.body.key()) {
+                continue;
+            }
             if matches!(template.body.owner, Owner::Function { .. }) {
                 prepared
                     .templates
@@ -563,6 +577,18 @@ impl Engine {
             body,
         )
         .map_err(|e| Declarations::error(report, e.source.unwrap_or(source), e.message))?;
+        self.prove_loans(report, facts, body, destruction, parameters, &regions)
+    }
+    fn prove_loans(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        body: &Body,
+        destruction: &body::drops::Requirements,
+        parameters: &Arc<Environment>,
+        regions: &borrow::regions::Body,
+    ) -> Result<(), Error> {
+        let source = body.source;
         let custom = facts
             .destructors
             .implementations()
@@ -596,7 +622,7 @@ impl Engine {
                 body,
                 destruction,
                 parameters,
-                &regions,
+                regions,
                 &|ty, field| body::drops::nominal_position(facts, ty, field),
             )
             .map_err(|e| Declarations::error(report, e.node.unwrap_or(source), e.message))?;

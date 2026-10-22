@@ -1,5 +1,6 @@
 //! Coordinate defining-body proofs without reversing semantic phase dependencies.
 pub(crate) mod execution;
+mod original_contexts;
 use crate::{
     body::{self, regions::Collector, templates},
     borrow,
@@ -16,6 +17,7 @@ use std::collections::HashMap;
 #[derive(Default)]
 pub struct Prepared {
     pub(crate) constants: Option<execution::Context>,
+    pub(crate) original_contexts: Option<Box<original_contexts::Originals>>,
     pub(crate) concrete: HashMap<body::ir::BodyKey, body::ir::Body>,
     pub(crate) templates: templates::Prepared,
     pub(crate) contracts: Option<Collector>,
@@ -76,7 +78,7 @@ pub fn analyze_source(report: &Report) -> Result<Analysis, Error> {
         sema::values::Evaluator::new(report, &mut analysis.facts)
             .validate_ordinary_initializers()?;
     }
-    context.transfer(report, &mut analysis.prepared)?;
+    context.transfer(report, &mut analysis.facts, &mut analysis.prepared)?;
     analysis.prepared.constants = Some(context);
     Ok(analysis)
 }

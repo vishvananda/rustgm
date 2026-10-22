@@ -1,5 +1,7 @@
 //! Selected associated roots share retained source templates and iterative execution.
-use super::{Contract, Declarations, DefId, Engine, Error, Report, Target, Template, body};
+use super::{
+    BodyKey, Contract, Declarations, DefId, Engine, Error, Report, Target, Template, body,
+};
 use crate::{sema::values::Instance, types::TypeId};
 impl Engine {
     pub(super) fn associated_ready(
@@ -185,13 +187,31 @@ impl Engine {
             &results,
         )
     }
-    fn associated_template(
+    pub(super) fn associated_template(
         &mut self,
         report: &Report,
         facts: &mut Declarations,
         initializer: &crate::sema::model::Initializer,
     ) -> Result<(Template, Contract), Error> {
         let source = initializer.semantic_source();
+        if let Some(row) = self.component_original(BodyKey::Declaration(initializer.definition)) {
+            row.validate(facts)
+                .map_err(|e| Declarations::error(report, source, e))?;
+            Self::associated_storage(
+                report,
+                facts,
+                source,
+                row.template
+                    .retained_bytes()
+                    .saturating_add(row.contract.retained_bytes())
+                    .saturating_add(crate::support::retained::new_map::<
+                        DefId,
+                        (Template, Contract),
+                    >(1)),
+            )?;
+            facts.constant_work.associated_templates += 1;
+            return Ok((row.template.clone(), row.contract.clone()));
+        }
         let existing = self
             .runtime_template_indices
             .get(&initializer.definition)

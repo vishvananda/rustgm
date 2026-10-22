@@ -110,6 +110,66 @@ impl Engine {
         facts: &mut Declarations,
         source: crate::resolve::unit::NodeKey,
     ) -> Result<(Template, Contract), Error> {
+        let (template, contract) = self.build_anonymous(report, facts, source)?;
+        if contract.output.is_some()
+            && self.anonymous_needs_parent(report, facts, &template, &contract)?
+        {
+            return self.original_component(
+                report,
+                facts,
+                crate::pipeline::original_contexts::Original { template, contract },
+            );
+        }
+        if contract.output.is_none() {
+            self.prove(report, facts, &template, &contract)?;
+        }
+        Self::reserve_anonymous(report, facts, &template, &contract)?;
+        facts.constant_work.anonymous_templates += 1;
+        Ok((template, contract))
+    }
+    fn anonymous_needs_parent(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        template: &Template,
+        contract: &Contract,
+    ) -> Result<bool, Error> {
+        let source = template.body.source;
+        contract
+            .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+            .map_err(|e| Declarations::error(report, source, e))?;
+        let mut queries = crate::types::outlives::Queries::new(
+            &facts.types,
+            &facts.lifetimes.nominal_requirements,
+            &facts.lifetimes.callables,
+        );
+        let region = crate::borrow::regions::check_original_child(
+            &facts.types,
+            &facts.lifetimes.variances,
+            &mut queries,
+            contract,
+            &template.body,
+        )
+        .map_err(|e| Declarations::error(report, e.source.unwrap_or(source), e.message))?;
+        let Some(regions) = region else {
+            return Ok(true);
+        };
+        self.prove_loans(
+            report,
+            facts,
+            &template.body,
+            &template.destruction,
+            &template.environment,
+            &regions,
+        )?;
+        Ok(false)
+    }
+    pub(super) fn build_anonymous(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        source: crate::resolve::unit::NodeKey,
+    ) -> Result<(Template, Contract), Error> {
         let mut template = self.construction.anonymous(report, facts, source)?;
         let mut contract = self
             .contracts
@@ -124,7 +184,14 @@ impl Engine {
             &template.destruction,
             &mut self.promotions,
         )?;
-        self.prove(report, facts, &template, &contract)?;
+        Ok((template, contract))
+    }
+    fn reserve_anonymous(
+        report: &Report,
+        facts: &mut Declarations,
+        template: &Template,
+        contract: &Contract,
+    ) -> Result<(), Error> {
         // The provider and ordinary template verifier each own a typed CFG copy.
         // Contract vectors/proof payload belong to the provider; shared Arc roots are excluded.
         let bytes = template
@@ -143,11 +210,10 @@ impl Engine {
             .ok_or_else(|| {
                 Declarations::error(
                     report,
-                    source,
+                    template.body.source,
                     "anonymous template storage exceeds 64 MiB budget",
                 )
             })?;
-        facts.constant_work.anonymous_templates += 1;
-        Ok((template, contract))
+        Ok(())
     }
 }

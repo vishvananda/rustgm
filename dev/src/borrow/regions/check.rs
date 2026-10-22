@@ -18,6 +18,13 @@ pub struct Body {
     pub builtins: Option<std::sync::Arc<crate::body::regions::BuiltinRequirements>>,
     pub output: Option<super::OutputSummary>,
 }
+impl Body {
+    fn needs_parent(&self) -> bool {
+        self.output
+            .as_ref()
+            .is_some_and(super::output::Summary::requires_parent)
+    }
+}
 pub struct Analysis {
     pub bodies: Vec<Body>,
 }
@@ -163,17 +170,36 @@ pub(crate) fn check_one(
         });
     }
     let result = body(types, variances, queries, input, Some(cfg), &[])?;
-    if result
-        .output
-        .as_ref()
-        .is_some_and(super::output::Summary::requires_parent)
-    {
+    if result.needs_parent() {
         return Err(Error {
             source: Some(input.source),
             message: "nested output requires its checked parent contract".into(),
         });
     }
     Ok(result)
+}
+
+/// Inspect an exact original child's conditional requirements. This region
+/// result grants no standalone ownership or executable authority.
+pub(crate) fn check_original_child(
+    types: &Store,
+    variances: &Variances,
+    queries: &mut Queries<'_>,
+    input: &Contract,
+    cfg: &crate::body::ir::Body,
+) -> Result<Option<Body>, Error> {
+    if !matches!(cfg.owner, crate::body::ir::Owner::AnonymousConstant)
+        || cfg.instance.is_some()
+        || input.key != cfg.key()
+        || input.source != cfg.source
+    {
+        return Err(Error {
+            source: Some(cfg.source),
+            message: "original child contract does not match its anonymous body".into(),
+        });
+    }
+    let result = body(types, variances, queries, input, Some(cfg), &[])?;
+    Ok((!result.needs_parent()).then_some(result))
 }
 
 pub(crate) fn check_nested_bodies<'a>(

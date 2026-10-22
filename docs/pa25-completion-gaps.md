@@ -117,8 +117,11 @@ filename and is retained in `conditional-component-close`; the private file was
 renamed to `conditional_parents.rs` without changing the test module identity.
 
 This establishes the original component proof, not source-to-native support.
-The next consumer is the provider's `Engine::anonymous_template`, which currently
-checks the child alone. Actual anonymous instance output specialization and
+The provider's original-component consumer is now implemented and its focused
+source/native/private/strict and archived active-text checks pass; see
+`pa25-original-contexts.md` for exact qualification and the
+strict separation of proof-context parents from runtime candidates.
+Actual anonymous instance output specialization and
 caller namespace transport still reject conditional outputs. They must consume
 an exact checked parent/component and preserve all obligations, sibling/owner
 identity, escape and ordinary original/instance proofs; this test does not grant

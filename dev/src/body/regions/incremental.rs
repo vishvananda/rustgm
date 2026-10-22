@@ -43,6 +43,16 @@ impl Collector {
         self.populate(facts, &mut contract);
         Ok(contract)
     }
+    pub(crate) fn closure(
+        &mut self,
+        facts: &Declarations,
+        closure: &crate::sema::closures::Body,
+    ) -> Result<Contract, &'static str> {
+        self.update(facts)?;
+        let mut contract = super::closure_contract(facts, closure)?;
+        self.populate(facts, &mut contract);
+        Ok(contract)
+    }
     /// Number of semantic facts visited, excluding fixed body-header construction.
     #[must_use]
     pub const fn observations(&self) -> usize {

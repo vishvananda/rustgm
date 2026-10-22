@@ -194,3 +194,194 @@ fn conditional_inline_component_does_not_supply_an_unpaid_outer_lifetime_relatio
     );
     Ok(())
 }
+
+#[test]
+fn context_parents_prove_originals_without_entering_runtime_lookup() -> Result {
+    let component = component(&fixture("paid-lifetime")?)?;
+    let facts = &component.facts;
+    let templates = Templates {
+        bodies: vec![component.templates.bodies[0].clone()],
+    };
+    let contexts = crate::borrow::templates::Contexts {
+        bodies: Templates {
+            bodies: component.templates.bodies[1..].to_vec(),
+        },
+        source: Vec::new(),
+    };
+    let inputs = crate::body::regions::Contracts {
+        bodies: component.contracts.clone(),
+        callables: &facts.lifetimes.callables,
+        nominal_requirements: &facts.lifetimes.nominal_requirements,
+    };
+    let custom = facts
+        .destructors
+        .implementations()
+        .iter()
+        .map(|i| i.item)
+        .collect::<Vec<_>>();
+    let mut copies = crate::types::copy::Copies::default();
+    let mut environment = crate::borrow::Environment {
+        types: &facts.types,
+        definitions: &facts.aggregates,
+        derives: &facts.derives,
+        copies: &mut copies,
+    };
+    let checked = crate::borrow::templates::verify_with_context(
+        &mut environment,
+        &facts.lifetimes.variances,
+        &inputs,
+        &templates,
+        &contexts,
+        &custom,
+        |ty, field| crate::body::drops::nominal_position(facts, ty, field),
+    )?;
+    assert_eq!(checked.regions().bodies.len(), 1);
+    assert_eq!(checked.loans().len(), 1);
+    for parent in &contexts.bodies.bodies {
+        match parent.body.owner {
+            crate::body::ir::Owner::Function { definition, .. } => {
+                assert!(checked.get(crate::types::ItemId(definition.0)).is_none());
+            }
+            crate::body::ir::Owner::Closure { identity, .. } => {
+                assert!(checked.closure(identity).is_none());
+            }
+            _ => return Err("unexpected original parent".into()),
+        }
+    }
+    let mut caller = crate::types::relations::Constraints::new(
+        &facts.types,
+        &facts.lifetimes.variances,
+        2,
+        10_000,
+    )?;
+    caller.outlives(
+        crate::types::RegionId::bound(0, 0)?,
+        crate::types::RegionId::bound(0, 1)?,
+        0,
+    )?;
+    assert!(
+        caller.solve().is_err(),
+        "original parent proof cannot pay another caller's debt"
+    );
+    drop(checked);
+    let mut duplicated = crate::borrow::templates::Contexts {
+        bodies: Templates {
+            bodies: contexts.bodies.bodies.clone(),
+        },
+        source: Vec::new(),
+    };
+    duplicated.bodies.bodies.push(templates.bodies[0].clone());
+    assert!(
+        crate::borrow::templates::verify_with_context(
+            &mut environment,
+            &facts.lifetimes.variances,
+            &inputs,
+            &templates,
+            &duplicated,
+            &custom,
+            |ty, field| crate::body::drops::nominal_position(facts, ty, field)
+        )
+        .is_err()
+    );
+    Ok(())
+}
+
+#[test]
+fn provider_retains_complete_original_components_before_specialization() -> Result {
+    for name in ["closure", "paid-lifetime"] {
+        let mut report = crate::test_source::resolve(&fixture(name)?, true)?;
+        let analysis = crate::pipeline::analyze_source(&report)?;
+        assert!(analysis.prepared.original_contexts.is_some());
+        let mut facts = analysis.facts;
+        let entry = crate::sema::entry::select(&mut report, &facts)?;
+        let error =
+            crate::lower::instances::build_prepared(&report, &mut facts, entry, analysis.prepared)
+                .err()
+                .ok_or("specialized conditional output unexpectedly acquired authority")?;
+        eprintln!("{name} remaining specialized frontier: {error}");
+        assert!(
+            !error
+                .to_string()
+                .contains("requires its checked parent contract"),
+            "{error}"
+        );
+    }
+    let report =
+        crate::test_source::resolve(&fixture("paid-lifetime")?.replace(" where 'a:'b", ""), true)?;
+    let error = crate::pipeline::analyze_source(&report)
+        .err()
+        .ok_or("unpaid provider parent was accepted")?;
+    assert!(
+        error
+            .to_string()
+            .contains("required lifetime does not outlive its target"),
+        "{error}"
+    );
+    Ok(())
+}
+
+#[test]
+fn source_and_provider_component_debts_are_both_mandatory() -> Result {
+    let component = component(&fixture("paid-lifetime")?)?;
+    let facts = &component.facts;
+    let templates = Templates {
+        bodies: vec![component.templates.bodies[0].clone()],
+    };
+    for side in 0..2 {
+        let mut contexts = crate::borrow::templates::Contexts {
+            bodies: Templates {
+                bodies: component.templates.bodies[1..].to_vec(),
+            },
+            source: component.contracts.clone(),
+        };
+        let mut inputs = crate::body::regions::Contracts {
+            bodies: component.contracts.clone(),
+            callables: &facts.lifetimes.callables,
+            nominal_requirements: &facts.lifetimes.nominal_requirements,
+        };
+        let rows = if side == 0 {
+            &mut contexts.source
+        } else {
+            &mut inputs.bodies
+        };
+        let parent = rows
+            .iter_mut()
+            .find(|row| row.key == component.templates.bodies[2].body.key())
+            .ok_or("function contract")?;
+        parent.obligations.push(crate::body::regions::Obligation {
+            source: parent.source,
+            kind: crate::body::regions::Kind::Outlives((
+                crate::types::RegionId::bound(0, 0)?,
+                crate::types::RegionId::STATIC,
+            )),
+        });
+        let mut copies = crate::types::copy::Copies::default();
+        let custom = facts
+            .destructors
+            .implementations()
+            .iter()
+            .map(|i| i.item)
+            .collect::<Vec<_>>();
+        let error = crate::borrow::templates::verify_with_context(
+            &mut crate::borrow::Environment {
+                types: &facts.types,
+                definitions: &facts.aggregates,
+                derives: &facts.derives,
+                copies: &mut copies,
+            },
+            &facts.lifetimes.variances,
+            &inputs,
+            &templates,
+            &contexts,
+            &custom,
+            |ty, field| crate::body::drops::nominal_position(facts, ty, field),
+        )
+        .err()
+        .ok_or("component debt was erased")?;
+        assert_eq!(
+            error.to_string(),
+            "required lifetime does not outlive its target"
+        );
+    }
+    Ok(())
+}

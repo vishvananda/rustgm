@@ -32,11 +32,33 @@ pub fn verify<S: std::hash::BuildHasher>(
         crate::body::ir::Selection,
     ) -> Result<(u32, u32), &'static str>,
 ) -> Result<Vec<Analysis>, Error> {
+    verify_iter(
+        environment,
+        templates.bodies.iter(),
+        templates.bodies.len(),
+        contracts,
+        custom,
+        position,
+    )
+}
+/// The combined original component may include proof-only parents. Its rows are
+/// checked identically and never enter the runtime template lookup catalog.
+pub(crate) fn verify_iter<'a, S: std::hash::BuildHasher>(
+    environment: &mut crate::borrow::Environment<'_, S>,
+    templates: impl Iterator<Item = &'a crate::body::templates::Template>,
+    count: usize,
+    contracts: &regions::Analysis,
+    custom: &[crate::types::ItemId],
+    position: impl Fn(
+        crate::types::TypeId,
+        crate::body::ir::Selection,
+    ) -> Result<(u32, u32), &'static str>,
+) -> Result<Vec<Analysis>, Error> {
     let error = |message: &str| Error {
         node: None,
         message: message.into(),
     };
-    if contracts.bodies.len() != templates.bodies.len() {
+    if contracts.bodies.len() != count {
         return Err(error(
             "template cleanup contracts have different body coverage",
         ));
@@ -48,8 +70,8 @@ pub fn verify<S: std::hash::BuildHasher>(
         }
     }
     let mut verifier = Verifier::new(custom).map_err(error)?;
-    let mut results = Vec::with_capacity(templates.bodies.len());
-    for template in &templates.bodies {
+    let mut results = Vec::with_capacity(count);
+    for template in templates {
         let body = &template.body;
         let error = |message: &str| Error {
             node: Some(body.source),
@@ -67,6 +89,11 @@ pub fn verify<S: std::hash::BuildHasher>(
             contract,
             &position,
         )?);
+    }
+    if results.len() != count {
+        return Err(error(
+            "template cleanup iterator has different body coverage",
+        ));
     }
     Ok(results)
 }

@@ -154,6 +154,13 @@ fn inspect_selected<R>(
     }
     .map_err(|e| diagnostic(report, None, e.into()))?
     .bodies;
+    let contexts = if let Some(originals) = prepared.original_contexts.take() {
+        originals
+            .apply(&templates, &mut inputs)
+            .map_err(|e| diagnostic(report, None, e.into()))?
+    } else {
+        borrow::templates::Contexts::default()
+    };
     body::templates::constructors(report, facts, &mut templates, &mut inputs)?;
     body::provided::append(report, facts, &mut templates, &mut inputs)?;
     body::iterator_factories::append(report, facts, &mut templates, &mut inputs)?;
@@ -192,11 +199,12 @@ fn inspect_selected<R>(
         derives: &facts.derives,
         copies: &mut copies,
     };
-    let checked = borrow::templates::verify(
+    let checked = borrow::templates::verify_with_context(
         &mut environment,
         &facts.lifetimes.variances,
         &contracts,
         &templates,
+        &contexts,
         &custom,
         |ty, field| body::drops::nominal_position(facts, ty, field),
     )

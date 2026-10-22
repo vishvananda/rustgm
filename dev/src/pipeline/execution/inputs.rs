@@ -87,6 +87,7 @@ impl Context {
     pub(crate) fn transfer(
         &self,
         report: &Report,
+        facts: &mut Declarations,
         prepared: &mut crate::pipeline::Prepared,
     ) -> Result<(), Error> {
         self.engine
@@ -98,7 +99,7 @@ impl Context {
                     "constant provider is still executing during handoff",
                 )
             })?
-            .transfer(report, prepared)
+            .transfer(report, facts, prepared)
     }
     pub(crate) fn templates(&self, templates: Rc<Templates>) -> Result<(), &'static str> {
         let mut engine = self

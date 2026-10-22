@@ -44,22 +44,24 @@ fn projected_inline_results_retain_their_required_execution_frontiers() -> TestR
         .join("../obj/parallel/pa25-inline-queries/remaining")
         .join(std::process::id().to_string());
     std::fs::create_dir_all(&evidence)?;
-    for (name, rust) in [
-        ("closure", 0),
-        ("paid-lifetime", 0),
-        ("foreign-lifetime", 1),
-    ] {
-        super::checked_sources::check(
+    for name in ["closure", "paid-lifetime"] {
+        super::checked_sources::check_modes(
             &fixture(name),
             &evidence,
             name,
             (
-                rust,
-                1,
-                "nested output requires its checked parent contract",
+                0,
+                [0, 1, 1],
+                "anonymous specialized output interface is not implemented",
             ),
         )?;
     }
+    super::checked_sources::check(
+        &fixture("foreign-lifetime"),
+        &evidence,
+        "foreign-lifetime",
+        (1, 1, "required lifetime does not outlive its target"),
+    )?;
     super::checked_sources::check_modes(
         &fixture("unpaid-lifetime"),
         &evidence,
