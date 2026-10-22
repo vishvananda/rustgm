@@ -20,16 +20,14 @@ fn fingerprint<T: Hash>(values: &[T]) -> u64 {
     hasher.finish()
 }
 
-impl<T: Hash> Default for Slices<T> {
+/// Slice 0 is the empty slice. Its entry is stored at the first non-empty
+/// intern, so a table that never interns allocates nothing.
+impl<T> Default for Slices<T> {
     fn default() -> Self {
         Self {
             values: Vec::new(),
-            entries: vec![Entry {
-                start: 0,
-                end: 0,
-                next: None,
-            }],
-            index: HashMap::from_iter([(fingerprint::<T>(&[]), 0)]),
+            entries: Vec::new(),
+            index: HashMap::default(),
         }
     }
 }
@@ -44,7 +42,9 @@ impl<T: Copy + Eq + Hash> Slices<T> {
     }
 
     pub fn get(&self, id: u32) -> Option<&[T]> {
-        let entry = self.entries.get(id as usize)?;
+        let Some(entry) = self.entries.get(id as usize) else {
+            return (id == 0).then_some(&[]);
+        };
         self.values.get(entry.start as usize..entry.end as usize)
     }
 
@@ -53,6 +53,9 @@ impl<T: Copy + Eq + Hash> Slices<T> {
     }
 
     pub fn find(&self, values: &[T]) -> Option<u32> {
+        if values.is_empty() {
+            return Some(0);
+        }
         self.find_from(values, self.index.get(&fingerprint(values)).copied())
     }
 
@@ -67,6 +70,16 @@ impl<T: Copy + Eq + Hash> Slices<T> {
     }
 
     pub fn intern(&mut self, values: &[T]) -> Result<u32, &'static str> {
+        if values.is_empty() {
+            return Ok(0);
+        }
+        if self.entries.is_empty() {
+            self.entries.push(Entry {
+                start: 0,
+                end: 0,
+                next: None,
+            });
+        }
         let hash = fingerprint(values);
         let head = self.index.get(&hash).copied();
         if let Some(id) = self.find_from(values, head) {

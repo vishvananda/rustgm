@@ -344,7 +344,10 @@ impl Resolver<'_> {
 /// Spellings that can select demand-created language metadata in
 /// `prepare_builtin_path` and its trait, library and intrinsic helpers. A path
 /// naming none of them leaves every preparation step a no-op. Keep this a
-/// superset of those comparisons when adding language items.
+/// superset of those comparisons when adding language items. `builtin_name`
+/// caches the answer, so this runs once per name.
+#[cold]
+#[inline(never)]
 fn builtin_spelling(spelling: &str) -> bool {
     use crate::support::{
         call_traits::CallTrait, comparisons::Comparison, comparisons::Method,
