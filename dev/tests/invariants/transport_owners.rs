@@ -122,8 +122,13 @@ fn source_nodes_and_provider_labels_remain_separate() -> Result<(), &'static str
     let body = catalog
         .install(&definitions(1), input("sites", 0, 1)?)?
         .body(BodyRef(0))?;
-    assert!(BodyOrigin::Imported(body).source().is_none());
-    assert!(BodyOrigin::Imported(body).source_site(node).is_err());
+    let origin = catalog.validate(body, &expected(0, body))?;
+    assert!(origin.source().is_none());
+    assert!(origin.source_site(node).is_err());
+    assert_eq!(
+        origin.proof_site(BodySite::source(node)?).err(),
+        Some("operation site belongs outside its imported body")
+    );
     let site = catalog.proof_site(body, catalog.site(body, 0)?)?;
     assert!(site.source().is_none());
     let location = catalog.location(site)?.ok_or("missing diagnostic label")?;

@@ -1,7 +1,7 @@
 //! Dense catalog rows own exact remaps; no row is a checked body or permission.
 use super::{
-    BodyOrigin, DeclarationBinding, Edition, Epoch, ImportedBodyId, ImportedDeclarationId,
-    ImportedOwnerId, Label, NEXT_CATALOG, ProviderFile,
+    BodyOrigin, DeclarationBinding, Edition, Epoch, ImportedBodyId, ImportedBodyOrigin,
+    ImportedDeclarationId, ImportedOwnerId, Label, NEXT_CATALOG, ProviderFile,
 };
 use crate::{
     resolve::model::{DefId, Definition},
@@ -223,7 +223,30 @@ impl Catalog {
         {
             return Err("imported body changed its declaration, kind, parent or numbering unit");
         }
-        Ok(BodyOrigin::Imported(id))
+        Self::origin_of(id, row)
+    }
+    pub(crate) fn validate_origin(
+        &self,
+        origin: BodyOrigin,
+        expected: &Expected,
+    ) -> Result<(), &'static str> {
+        let BodyOrigin::Imported(imported) = origin else {
+            return Err("source body is not an imported original");
+        };
+        if self.validate(imported.id(), expected)? != origin {
+            return Err("imported origin changed its catalog-owned site bounds");
+        }
+        Ok(())
+    }
+    pub(crate) fn origin(&self, id: ImportedBodyId) -> Result<BodyOrigin, &'static str> {
+        Self::origin_of(id, self.get(id)?)
+    }
+    fn origin_of(id: ImportedBodyId, row: &Row) -> Result<BodyOrigin, &'static str> {
+        // Every executable body has a root site, even an empty source function.
+        // A declaration without a body has no Body row at all.
+        let sites = std::num::NonZeroU32::new(row.sites.end - row.sites.start)
+            .ok_or("imported body has no root operation site")?;
+        Ok(BodyOrigin::Imported(ImportedBodyOrigin { id, sites }))
     }
     pub(crate) fn coordinate(
         &self,

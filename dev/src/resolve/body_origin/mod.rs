@@ -49,16 +49,45 @@ impl std::fmt::Debug for ImportedBodyId {
         out.write_str("ImportedBodyId(..)")
     }
 }
+/// Bounds-carrying location only; authorizing consumers still check the catalog.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub(crate) struct ImportedBodyOrigin {
+    id: ImportedBodyId,
+    sites: NonZeroU32,
+}
+impl ImportedBodyOrigin {
+    pub(crate) const fn id(self) -> ImportedBodyId {
+        self.id
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) enum BodyOrigin {
     Source(NodeKey),
-    Imported(ImportedBodyId),
+    Imported(ImportedBodyOrigin),
 }
 impl BodyOrigin {
     pub(crate) const fn source(self) -> Option<NodeKey> {
         match self {
             Self::Source(source) => Some(source),
             Self::Imported(_) => None,
+        }
+    }
+    pub(crate) fn proof_site(self, site: BodySite) -> Result<ProofSite, &'static str> {
+        match self {
+            Self::Source(source) => Ok(ProofSite::Source(NodeKey {
+                file: source.file,
+                node: NodeId::checked(site.index())
+                    .ok_or("source body site is not a syntax node")?,
+            })),
+            Self::Imported(origin) => {
+                if site.index() >= origin.sites.get() {
+                    return Err("operation site belongs outside its imported body");
+                }
+                Ok(ProofSite::Imported(ImportedProofSite {
+                    owner: origin.id.0,
+                    ordinal: site.0,
+                }))
+            }
         }
     }
     pub(crate) fn source_site(self, node: NodeId) -> Result<ProofSite, &'static str> {
@@ -122,3 +151,7 @@ mod layout_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/transport_owners.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/bounded_sites.rs"]
+mod site_tests;

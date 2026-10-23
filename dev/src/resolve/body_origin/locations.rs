@@ -1,5 +1,5 @@
 //! Provider labels cannot create a source node or change operation identity.
-use super::{BodySite, Catalog, ImportedProofSite, ProofSite, catalog::OwnerRow};
+use super::{BodySite, Catalog, ProofSite, catalog::OwnerRow};
 
 pub(crate) struct ProviderFile {
     pub path: String,
@@ -34,11 +34,9 @@ impl Catalog {
         body: super::ImportedBodyId,
         site: BodySite,
     ) -> Result<ProofSite, &'static str> {
-        let actual = self.site(body, site.index())?;
-        Ok(ProofSite::Imported(ImportedProofSite {
-            owner: body.0,
-            ordinal: actual.0,
-        }))
+        let origin = self.origin(body)?;
+        self.charge(1)?;
+        origin.proof_site(site)
     }
     pub(crate) fn location(&self, site: ProofSite) -> Result<Option<Location<'_>>, &'static str> {
         let ProofSite::Imported(site) = site else {

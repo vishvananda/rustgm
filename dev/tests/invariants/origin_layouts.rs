@@ -105,6 +105,9 @@ fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {
     assert_eq!(size_of::<ir::Value>(), 24);
     assert_eq!(size_of::<CatalogSlot>(), size_of::<usize>());
     assert_eq!(size_of::<ImportedBodyId>(), 8);
+    assert_eq!(size_of::<ImportedBodyOrigin>(), 12);
+    assert_eq!(size_of::<BodyOrigin>(), 12);
+    assert_eq!(size_of::<ProofSite>(), 12);
     assert_eq!(size_of::<Option<ImportedBodyId>>(), 8);
     assert_eq!(size_of::<BodySite>(), size_of::<NodeId>());
     assert_eq!(size_of::<Option<BodySite>>(), size_of::<Option<NodeId>>());

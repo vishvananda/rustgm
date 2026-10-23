@@ -107,3 +107,38 @@ scalar-import semantic contracts. The library/group targets were each built
 once; no full maintainer/native/text sweep ran. Its frozen binary also records
 the actual cold/hot layouts in layout.log. Real source-free original validation
 and executable generic import remain the next live consumers.
+
+## Bounds-carrying body locations
+
+Imported BodyOrigin now contains a sealed ImportedBodyOrigin: the checked body
+ID plus its actual nonzero site count. Only a checked catalog row can mint it.
+Composing BodySite with this handle checks the actual bounds in constant work;
+it does not require a catalog pointer on every body. An authorizing original
+lookup still revalidates current catalog epoch, body row kind, exact expected
+owner and the unchanged site count. A stale retained location can describe its
+old site, but cannot validate or resolve in a replacement catalog. Distinct
+sealed declaration constructors remain unchanged.
+
+The count is not encoded as count+1. Every executable body has a real root
+site, including an empty source function with its actual CFG block; a declaration
+without a body has no body row. The focused empty-function control exercises the
+ordinary source pipeline and body builder before checking the one-site imported
+partition. The future executable importer must check actual body contents and
+site assignments as well as the catalog; this dormant metadata remains no proof
+or execution permission.
+
+Actual layout observations remain ImportedBodyId8, ImportedBodyOrigin12,
+BodyOrigin12 and ProofSite12, with candidate Body448 and Contract184 unchanged.
+Value24, canonical Predicate12, OwnerRow40, Catalog168, Artifact136 and Slot8
+remain unchanged. No new allocation or retained owner row was introduced.
+
+The first closing guard passed format and all-target/all-feature strict Clippy,
+then stopped on the filename-stem audit because imported_sites.rs was a seventh
+imported-prefixed file. Renaming only that private test to bounded_sites.rs
+preserved behavior. The corrected guard passed audit, registration and all19
+exact private cases in one debug library target, plus the uncaptured containing
+layout observation. It covers real empty functions, altered bounds, foreign and
+retired catalogs, exact current validation, quotas, cold slots and constant-work
+composition. Evidence: obj/parallel/pa29-executable-originals/bounded-origin-first
+and bounded-origin-second (source maps, checks, batch receipt and layout.log).
+No wire tag or executable generic import has been enabled by this checkpoint.
