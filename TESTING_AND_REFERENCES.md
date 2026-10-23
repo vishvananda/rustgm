@@ -155,6 +155,13 @@ passes 3,362 fresh release/native tests and 8,382 text cases. Its text sweep tak
 separate independent checks, retained failures, 59 performance inputs and
 17.20 GiB of automatic artifact cleanup.
 
+The [source const-call and slice checkpoint](docs/source-const-slice-checkpoint.md)
+passes 3,400 fresh release/native tests and 8,382 text cases. Its 60-input
+performance matrix has 39 equal-output comparisons and 25 new candidate native
+preflights. No instruction, memory or scaling threshold fires; the report also
+retains the observed wall-time increases and the corrected filename-only harness
+failure. Functional cleanup reclaims 17.13 GiB.
+
 For a validation batch, pass `scripts/course.py --evidence-root obj/BATCH/course`
 and include that directory in the storage guard's `--prune-under` roots. This
 keeps the same fixture comparisons and complete receipts while avoiding a cleanup
