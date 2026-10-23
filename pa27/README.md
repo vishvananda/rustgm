@@ -269,6 +269,8 @@ and its exact retained layout. The iterative physical codec and readonly product
 inspection preserve the original source identity, ownership, permissions and
 callable authority. Shared heads reuse one validated family dependency; current
 byte validity is never cached with it. `tests/opaque-byte-outcomes.json` records
-supported scalar/aggregate/closure cases, validity negatives and required
-missing-head reference/owned cases. String words and those readiness gaps remain
+supported scalar/aggregate/closure/reference cases, validity negatives and an
+owned transfer retaining its runtime destructor. Previously unclosed defining
+results close from the exact fully proved original body; deferred applications
+replay once under their original identity. String words and broader backing families remain
 required. See `docs/pa27-opaque-byte-storage.md`.

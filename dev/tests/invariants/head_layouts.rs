@@ -86,6 +86,56 @@ fn opaque_storage_layout_comparison_checks_flags_and_full_shape() {
 }
 
 #[test]
+fn source_opaque_cleanup_stays_conservative_until_exact_head_selection() -> Result<(), String> {
+    use crate::types::{destruction::NeedsDrop, parameters::environment::Environment};
+    use std::sync::Arc;
+
+    let mut types = crate::types::Store::default();
+    let definitions = crate::types::aggregate::Definitions::default();
+    for copies in [
+        copy::Properties::default(),
+        copy::Properties {
+            copy: false,
+            clone_: true,
+        },
+        copy::Properties {
+            copy: true,
+            clone_: true,
+        },
+    ] {
+        let id = types.declare_opaque(opaque::Declaration {
+            trait_result: false,
+            sized: true,
+            copies,
+        })?;
+        let ty = types.intern(Kind::Opaque(id, GenericArgs::EMPTY))?;
+        let environment = Arc::new(Environment::new(&types, &[])?);
+        let mut source = NeedsDrop::in_environment([], environment);
+        assert_eq!(source.demand(&types, &definitions, ty)?, !copies.copy);
+        assert!(types.storage_head(ty).is_err());
+        let mut selected = NeedsDrop::new([]);
+        assert_eq!(
+            selected.demand(&types, &definitions, ty).is_ok(),
+            copies.copy
+        );
+
+        // Physical selection may remove cleanup without granting source Copy.
+        types.publish_storage_head(ty, TypeId::primitive(crate::types::Primitive::U8))?;
+        assert!(!NeedsDrop::new([]).demand(&types, &definitions, ty)?);
+        assert_eq!(source.demand(&types, &definitions, ty)?, !copies.copy);
+        assert_eq!(
+            types
+                .opaque_declaration(id)
+                .ok_or("opaque declaration")?
+                .copies
+                .copy,
+            copies.copy
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn opaque_product_inspection_uses_only_its_exact_checked_head() -> Result<(), String> {
     let report = test_source::resolve("", true)?;
     let mut facts = crate::sema::declarations::analyze(&report).map_err(|e| e.to_string())?;

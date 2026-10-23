@@ -28,11 +28,14 @@ pub(crate) struct Original {
 }
 impl Original {
     pub fn validate(&self, facts: &Declarations) -> Result<(), &'static str> {
-        let body = &self.template.body;
-        if body.instance.is_some()
-            || self.contract.key != body.key()
-            || self.contract.source != body.source
-        {
+        Self::validate_parts(facts, &self.template.body, &self.contract)
+    }
+    pub(super) fn validate_parts(
+        facts: &Declarations,
+        body: &crate::body::ir::Body,
+        contract: &Contract,
+    ) -> Result<(), &'static str> {
+        if body.instance.is_some() || contract.key != body.key() || contract.source != body.source {
             return Err("original component contract belongs to another body");
         }
         let valid = match body.owner {
@@ -46,8 +49,8 @@ impl Original {
                 .is_some_and(|f| {
                     f.body == Some(body.source)
                         && f.signature == signature
-                        && self.contract.signature == Some(signature)
-                        && self.contract.universals
+                        && contract.signature == Some(signature)
+                        && contract.universals
                             == facts
                                 .lifetimes
                                 .functions
@@ -60,8 +63,8 @@ impl Original {
                 .is_some_and(|i| {
                     i.semantic_source() == body.source
                         && i.ty == body.result
-                        && self.contract.signature.is_none()
-                        && self.contract.universals
+                        && contract.signature.is_none()
+                        && contract.universals
                             == facts
                                 .associated
                                 .schema(definition)
@@ -86,10 +89,8 @@ impl Original {
                 c.semantic_source() == body.source
                     && c.signature == signature
                     && c.execution.map(|e| e.signature) == execution
-                    && self.contract.signature
-                        == Some(c.execution.map_or(signature, |e| e.signature))
-                    && self.contract.universals
-                        == c.execution.map_or(c.universals, |e| e.universals)
+                    && contract.signature == Some(c.execution.map_or(signature, |e| e.signature))
+                    && contract.universals == c.execution.map_or(c.universals, |e| e.universals)
             }),
             Owner::AnonymousConstant => facts
                 .inline_constants
@@ -97,8 +98,8 @@ impl Original {
                 .and_then(|r| r.get(body.source))
                 .is_some_and(|i| {
                     i.result == Some(body.result)
-                        && i.universals == self.contract.universals
-                        && self.contract.signature.is_none()
+                        && i.universals == contract.universals
+                        && contract.signature.is_none()
                 }),
             _ => false,
         };
@@ -107,7 +108,7 @@ impl Original {
             .as_deref()
             .and_then(|r| r.get(&body.source));
         if !valid
-            || match (&self.contract.output, link) {
+            || match (&contract.output, link) {
                 (Some(a), Some(b)) => !Arc::ptr_eq(a, b),
                 (None, None) => false,
                 _ => true,

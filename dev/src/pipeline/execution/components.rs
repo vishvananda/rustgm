@@ -247,7 +247,7 @@ impl Engine {
             .map(|i| i.item)
             .collect::<Vec<_>>();
         let mut copies = crate::types::copy::Copies::default();
-        crate::borrow::templates::verify(
+        let checked = crate::borrow::templates::verify(
             &mut crate::borrow::Environment {
                 types: &facts.types,
                 definitions: &facts.aggregates,
@@ -267,7 +267,10 @@ impl Engine {
                 e.message,
             )
         })?;
-        self.publish_component(facts, templates, contracts.bodies, retained)
+        let inputs = contracts.bodies;
+        super::defining_heads::close_component(report, facts, &templates, &checked)?;
+        drop(checked);
+        self.publish_component(facts, templates, inputs, retained)
     }
     fn publish_component(
         &mut self,
