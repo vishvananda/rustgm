@@ -1,0 +1,253 @@
+{
+  "status": "Independently declared hypotheses before generic codec/header/body implementation; no candidate qualification or wire tag is claimed.",
+  "profile": "Rust 1.98.0 edition2024 x86_64-unknown-linux-gnu; panic abort; overflow checks enabled",
+  "cases": [
+    {
+      "name": "provider",
+      "path": "tests/spec/generic-contracts/library.rs",
+      "kind": "rlib",
+      "crate": "transport",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "frontend_expected_after_implementation": 0,
+      "native": false,
+      "source_sha256": "6eae37a1208afb6d9a15ea85db4ea48d9846bc8de4df21608638414e4626855d"
+    },
+    {
+      "name": "other-provider",
+      "path": "tests/spec/generic-contracts/library.rs",
+      "kind": "rlib",
+      "crate": "transport",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "frontend_expected_after_implementation": 0,
+      "native": false,
+      "source_sha256": "6eae37a1208afb6d9a15ea85db4ea48d9846bc8de4df21608638414e4626855d"
+    },
+    {
+      "name": "relay",
+      "path": "tests/spec/generic-contracts/relay.rs",
+      "kind": "rlib",
+      "crate": "relay",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "frontend_expected_after_implementation": 0,
+      "native": false,
+      "source_sha256": "ea80b8f5fd3db2fad3b189e1b62854fa956aeec712eeee70da90361bbc2dbdba"
+    },
+    {
+      "name": "pass-id",
+      "path": "tests/spec/generic-contracts/pass-id.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "frontend_expected_after_implementation": 0,
+      "native": true,
+      "source_sha256": "ba616568d27c8d24d1bbc71c3e40e6f0da154bdd1dac63656597e672b9d662da"
+    },
+    {
+      "name": "pass-helper-unused",
+      "path": "tests/spec/generic-contracts/pass-helper-unused.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "frontend_expected_after_implementation": 0,
+      "native": true,
+      "source_sha256": "48a2957a80ed4108b6f2bc277efc4b0742319b27dcf1aa2fa6f6926c528ad446"
+    },
+    {
+      "name": "pass-reborrow",
+      "path": "tests/spec/generic-contracts/pass-reborrow.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "frontend_expected_after_implementation": 0,
+      "native": true,
+      "source_sha256": "02c57c0c36d2149262d572e8992a01c7f0a432377fcd8730e45ce926ca2473bc"
+    },
+    {
+      "name": "pass-const-array",
+      "path": "tests/spec/generic-contracts/pass-const-array.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "frontend_expected_after_implementation": 0,
+      "native": true,
+      "source_sha256": "1cb69082925739b2e2024ba1f9c6b2f5ac82ca981ed6f300179ca8373312f2a3"
+    },
+    {
+      "name": "pass-trait",
+      "path": "tests/spec/generic-contracts/pass-trait.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "frontend_expected_after_implementation": 0,
+      "native": true,
+      "source_sha256": "986fa47dd0d61b6658b8c8c3332d257596d24067999a0f6e24e779197a8d1d75"
+    },
+    {
+      "name": "pass-relay",
+      "path": "tests/spec/generic-contracts/pass-relay.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider",
+        "relay": "relay"
+      },
+      "rustc": 0,
+      "code": null,
+      "frontend_expected_after_implementation": 0,
+      "native": true,
+      "source_sha256": "00ce1a74a50092a618100641a107be6d25d08bc112f9d178debd1301acc74a95"
+    },
+    {
+      "name": "pass-collisions",
+      "path": "tests/spec/generic-contracts/pass-collisions.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider",
+        "other": "other-provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "frontend_expected_after_implementation": 0,
+      "native": true,
+      "source_sha256": "fd66423820829d531afa49af6d63053f4ab5cd8b36478fd1f0eca6f12a407255"
+    },
+    {
+      "name": "reject-copy",
+      "path": "tests/spec/generic-contracts/reject-copy.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc": 1,
+      "code": "E0277",
+      "frontend_expected_after_implementation": 1,
+      "native": false,
+      "source_sha256": "1208b425ce85a8e3a9866f21f6c22f39dca3f41521af03ccae16b20700710b85"
+    },
+    {
+      "name": "reject-trait",
+      "path": "tests/spec/generic-contracts/reject-trait.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc": 1,
+      "code": "E0277",
+      "frontend_expected_after_implementation": 1,
+      "native": false,
+      "source_sha256": "93240283212fa7afba2e0bd597406415272a2f3941ab21e96bf967d98fa8723c"
+    },
+    {
+      "name": "reject-const-call",
+      "path": "tests/spec/generic-contracts/reject-const-call.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc": 1,
+      "code": "E0015",
+      "frontend_expected_after_implementation": 1,
+      "native": false,
+      "source_sha256": "177df4d20f22c12ce1ecf49d6df4a3b138a99f84a5efc8056cd29f6cc63973d4"
+    },
+    {
+      "name": "reject-escape",
+      "path": "tests/spec/generic-contracts/reject-escape.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc": 1,
+      "code": "E0515",
+      "frontend_expected_after_implementation": 1,
+      "native": false,
+      "source_sha256": "23ad02ce3a497a2a5d992d8234c3e96492459e13c924b545003302dcd80bf226"
+    },
+    {
+      "name": "reject-array",
+      "path": "tests/spec/generic-contracts/reject-array.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc": 1,
+      "code": "E0308",
+      "frontend_expected_after_implementation": 1,
+      "native": false,
+      "source_sha256": "74d7f940e4417965b69841d18f6fa2deb9e1fce06947549452c57d164a5a930f"
+    },
+    {
+      "name": "reject-foreign-trait",
+      "path": "tests/spec/generic-contracts/reject-foreign-trait.rs",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "base": "provider",
+        "other": "other-provider"
+      },
+      "rustc": 1,
+      "code": "E0277",
+      "frontend_expected_after_implementation": 1,
+      "native": false,
+      "source_sha256": "be19dcdd490f229cb744f2d43b8fec06014ae038b96838299374604580d22769"
+    },
+    {
+      "name": "reject-unused-source",
+      "path": "tests/spec/generic-contracts/reject-unused-source.rs",
+      "kind": "rlib",
+      "crate": "invalid",
+      "deps": {},
+      "rustc": 1,
+      "code": "E0308",
+      "frontend_expected_after_implementation": 1,
+      "native": false,
+      "source_sha256": "49031d340f74a2c2bcb030806861506286436b1e61b0301d9a7d62a4eb1464f2"
+    },
+    {
+      "name": "reject-unused-outlives",
+      "path": "tests/spec/generic-contracts/reject-unused-outlives.rs",
+      "kind": "rlib",
+      "crate": "invalid",
+      "deps": {},
+      "rustc": 1,
+      "code": null,
+      "frontend_expected_after_implementation": 1,
+      "native": false,
+      "source_sha256": "5e3be677c9212c8cea89b573da6eadbafbf698ad250c21a23d1571457072414e"
+    }
+  ]
+}

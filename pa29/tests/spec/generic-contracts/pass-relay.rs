@@ -1,0 +1,1 @@
+struct Counter(u8);impl base::Step for Counter{fn step(self)->u8{self.0+1}}const A:[u8;2]=relay::array::<2>();fn fail(x:u8)->u8{1/x}fn main(){let [a,b]=A;if relay::forward(7u8)!=7||relay::invoke(Counter(8))!=9||a!=7||b!=7{let _=fail(0);}}
