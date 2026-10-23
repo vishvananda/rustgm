@@ -1,0 +1,201 @@
+{
+  "state": "reviewed independent evidence only; original hypotheses preserved; no RustGM scoped hygiene claim",
+  "contract": "pa31/tests/spec/declarative-macros/mixed-contract.json",
+  "contract_sha256": "b1675c8224ff7f9602be1844311a0d4ba2d3992bc39a76d06200efdd2fecedcf",
+  "evidence": "/home/vishvananda/rustgm-pa29-work/obj/parallel/pa31-declarative-macros/mixed-independent-v1",
+  "results_sha256": "6def724f29f54040e6fd4118aaac4ba0d49ad10fc09fa170df4776165ee0aebe",
+  "binding_sha256": "3dd2a6a501fe625f38a7881a83fa40058e5e9abe16f93b64ef2b02565dbb91a1",
+  "summary": {
+    "cases": 5,
+    "observations": 18,
+    "hypothesis_mismatches": 2,
+    "infrastructure_failures": 0,
+    "inputs_unchanged": true,
+    "results_sha256": "6def724f29f54040e6fd4118aaac4ba0d49ad10fc09fa170df4776165ee0aebe",
+    "binding_sha256": "3dd2a6a501fe625f38a7881a83fa40058e5e9abe16f93b64ef2b02565dbb91a1",
+    "state": "independent evidence; inspect mismatches before candidate contract; no RustGM acceptance claim"
+  },
+  "review": "The legacy-inside-opaque hypothesis is false: pinned rustc cannot find the textual bridge macro in this scoped definition context. Four other cases pass metadata/object/native. Exported legacy bridge is a separate predeclared followup; no original input or expectation is changed.",
+  "rows": [
+    {
+      "name": "legacy-inside-opaque",
+      "phase": "metadata",
+      "status": 1,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c66de3165c55231c8c62456f0e77c6c33a420a207cb59e70c635ec3aeb8506f1"
+    },
+    {
+      "name": "legacy-inside-opaque",
+      "phase": "object",
+      "status": 1,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c66de3165c55231c8c62456f0e77c6c33a420a207cb59e70c635ec3aeb8506f1"
+    },
+    {
+      "name": "opaque-inside-legacy",
+      "phase": "metadata",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "opaque-inside-legacy",
+      "phase": "object",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "opaque-inside-legacy",
+      "phase": "link",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "opaque-inside-legacy",
+      "phase": "native",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": "3\n",
+      "matches_hypothesis": true,
+      "stdout_sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-generated-macro-name",
+      "phase": "metadata",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-generated-macro-name",
+      "phase": "object",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-generated-macro-name",
+      "phase": "link",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-generated-macro-name",
+      "phase": "native",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": "17\n",
+      "matches_hypothesis": true,
+      "stdout_sha256": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-module-segment",
+      "phase": "metadata",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-module-segment",
+      "phase": "object",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-module-segment",
+      "phase": "link",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-module-segment",
+      "phase": "native",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": "23\n",
+      "matches_hypothesis": true,
+      "stdout_sha256": "076320a2a08267b4c026d06573bba408ea68841e73cdc20e62cce59de165ece3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-import-path-alias",
+      "phase": "metadata",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-import-path-alias",
+      "phase": "object",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-import-path-alias",
+      "phase": "link",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": null,
+      "matches_hypothesis": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-import-path-alias",
+      "phase": "native",
+      "status": 0,
+      "expected_status": 0,
+      "expected_stdout": "31\n",
+      "matches_hypothesis": true,
+      "stdout_sha256": "32c2643e0dc65524c9f1f6f9f00937322fd68d59986bc381d9ff2285d23e353d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

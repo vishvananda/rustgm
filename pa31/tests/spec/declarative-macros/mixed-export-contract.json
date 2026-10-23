@@ -1,0 +1,25 @@
+{
+  "state": "predeclared followup; not executed",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "original": "pa31/tests/spec/declarative-macros/legacy-inside-opaque.rs",
+  "reason": "Give the legacy macro an actual exported item-namespace binding; retain the original textual-only lookup rejection.",
+  "rows": [
+    {
+      "name": "exported-legacy-inside-opaque",
+      "entry": "pa31/tests/spec/declarative-macros/exported-legacy-inside-opaque.rs",
+      "sha256": "5faee254bfa9b8e3e09dcfc9c250afb674a39977bc129110f65b8c1eb31f5018",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "hypothesis": "An exported legacy macro invoked by an opaque literal inherits the opaque invocation context for its value lookup."
+    }
+  ]
+}

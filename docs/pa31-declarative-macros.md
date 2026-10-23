@@ -5,9 +5,11 @@ pinned whole-core root gets past `option_env` import resolution and reaches
 `core/src/macros/mod.rs:170`, where `pub macro assert_matches` fails parsing.
 The current public compiler checkpoint does not include the changes below.
 
-The isolated branch now drafts typed concise/braced syntax and shared matcher
-compilation, with parser/transfer/separator tests. It has only been formatted,
-not audited, compiled or executed. Expansion and direct resolution still reject
+The isolated branch implements typed concise/braced syntax and shared matcher
+compilation, with parser/transfer/separator tests. Development snapshot
+`b270dd1266354f5b71f2f7239c1c1456d21c0e66` passes formatting, architecture/file
+audits, all-target strict Clippy, harness/upstream verification, 135 focused
+frontend tests and seven private invariant tests. Expansion and direct resolution still reject
 scoped macro semantics explicitly while normalized hygiene is being implemented;
 this is not a passing semantic checkpoint or a parser-frontier success claim.
 
@@ -76,6 +78,15 @@ nesting and captured path-segment controls. Original rustc hygiene tests includi
 `tests/ui/hygiene/legacy_interaction.rs`, `items.rs`, `lexical.rs` and
 `rustc-macro-transparency.rs` identify further obligations; importing fixtures
 must preserve complete original bytes, attribution and source hashes.
+
+The five mixed hypotheses now have 18 independent observations and four native
+answers, retained in `mixed-observations.json`. The original textual-only
+`legacy-inside-opaque` hypothesis fails macro lookup in rustc; it must not become
+an accepted RustGM contract. A separate `exported-legacy-inside-opaque` input adds
+an actual exported item binding and declares the expected answer before probing.
+The original source, expectation and rejection remain unchanged. The captured
+generated macro name, captured module segment, captured import/alias and
+opaque-inside-legacy cases independently pass.
 
 ## Qualification and bounded work
 
@@ -155,6 +166,21 @@ x86-64 profile); the three existing Resolution layout contracts account for it.
 Private draft controls cover single-local no-allocation, 128 unrelated contexts
 by 32 shadows with bounded predecessor comparisons, historical strict visibility,
 duplicate/out-of-order atomicity, and separate scope/namespace histories. This
-code has not yet been audited, compiled or executed. It still uses the existing
-context identity and must migrate to normalized LocalContext with the scoped
-hygiene implementation. Whole-frontend allocation and timing remain unmeasured.
+code passes the focused development checks above. The three existing Resolution
+layout controls pass at 2040 bytes; the prior record was 2032 bytes. It still uses
+the existing context identity and must migrate to normalized LocalContext with
+the scoped hygiene implementation. Whole-frontend allocation and timing remain
+unmeasured. This development gate does not replace release/native/performance
+qualification of the coherent scoped-macro implementation.
+
+Development evidence is retained under
+`obj/parallel/pa31-declarative-macros/development-v5`; its checks receipt SHA-256 is
+`e542edba148ec2a4af8186966bf313a4ae11c71d5e0a14b0662301426d5b284e`.
+The earlier formatting, audit, naming and Clippy failures remain alongside it.
+
+Sixteen independently declared legacy-history scaling sources vary width
+8/32/128/512 across distinct introduced contexts, historical predecessors,
+ordinary unrelated locals and newest shadows. Their metadata and object checks
+pass, but the initial C links lack the upstream overflow-panic runtime; no native
+or timing result is claimed. A separately bound pinned-Rust native consumer will
+provide that runtime while preserving every source and overflow-check setting.
