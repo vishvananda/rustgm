@@ -62,3 +62,9 @@ settled runtime/borrow controls. Grouped `glue_provider::unsized_elements` tests
 own its focused source/native coverage. The worker slice implementation is focused source/native qualified; combined
 publication is separate. Dyn, owned Box and CTFE remain required work.
 See [the slice-helper boundary](../../docs/pa31-slice-drop-glue.md).
+
+`spec/source-header-transport/` records source-provider/client hypotheses for
+actual sizing, Copy/Clone/default-method, Destruct/Freeze and receiver transport.
+Its historical hypothesis disagreements are retained separately from corrected
+Rust/native controls. This preparation does not enable generic source-role
+metadata or source-sysroot client policy; see the scoped interface review.

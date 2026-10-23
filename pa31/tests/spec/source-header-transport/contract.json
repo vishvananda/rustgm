@@ -1,0 +1,514 @@
+{
+  "status": "Declared hypotheses before independent qualification; no metadata/source-header implementation or assignment activation.",
+  "profile": "Pinned Rust1.98 88d9e12; Rust2024 x86_64-unknown-linux-gnu panic=abort overflow-checks=yes; RUSTC_BOOTSTRAP=1 admits original compiler declarations only in the independent oracle.",
+  "transforms": {
+    "semantic-provider": "Only stable/unstable/rustc_const_stable/rustc_const_unstable attributes removed; complete Clone/clone_from/Destruct/receiver bodies, qualifiers, signatures and other semantic attributes retained.",
+    "original-attributes-provider": "Contiguous original slices concatenated with declared no_core/staged_api crate wrapper and explicit user primitive impls.",
+    "signature-only-control": "Declared reduced source control, intentionally not equivalent to the actual Clone header."
+  },
+  "upstream": [
+    {
+      "name": "sized",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs",
+      "first_line": 144,
+      "last_line": 160,
+      "file_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "slice_sha256": "ae0614d43f8ab070e00189082a03ade961b6111faaf6ca9997503e43a3868dc0"
+    },
+    {
+      "name": "meta",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs",
+      "first_line": 163,
+      "last_line": 177,
+      "file_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "slice_sha256": "396ba2c9b4667f5924a2f3fd6a608aa76b213f6101aadc75fdebe2a2b8711329"
+    },
+    {
+      "name": "pointee",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs",
+      "first_line": 180,
+      "last_line": 192,
+      "file_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "slice_sha256": "3666b207df3d2e65b7e716da0da1dd4cc772e3be30f850bcc17f30245372c48f"
+    },
+    {
+      "name": "clone",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/clone.rs",
+      "first_line": 189,
+      "last_line": 251,
+      "file_sha256": "fd3467602106e2a2ec416485d8d058b6d2b434ceac7689b4e2f4c792079e500f",
+      "slice_sha256": "c77a2ec4f17dc6cac149ee157ce067fa62722791410751f113298e36f9ba96ce"
+    },
+    {
+      "name": "copy",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs",
+      "first_line": 451,
+      "last_line": 456,
+      "file_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "slice_sha256": "3da7b68cb1003da985874a786f1310b34edf9f5c15f9fcd0bf92f143ab4143a9"
+    },
+    {
+      "name": "destruct",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs",
+      "first_line": 1057,
+      "last_line": 1063,
+      "file_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "slice_sha256": "b5aec6c9c472c9dd8bea45191d0ce4c7c6ce4053563ecb65311316722465805a"
+    },
+    {
+      "name": "receiver",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/deref.rs",
+      "first_line": 394,
+      "last_line": 405,
+      "file_sha256": "55d940bd62685513afbc552b96ea42974a45fc16f6db1d4971d56c332074eca5",
+      "slice_sha256": "5bc9e18f824d770596e94d3809dc5dd93f593dd4f6319e417e11ecab15251d71"
+    },
+    {
+      "name": "identity",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/convert/mod.rs",
+      "first_line": 102,
+      "last_line": 108,
+      "file_sha256": "95242eb094be9ab087c2bd9673736ff2125abb3430835e6a687d4aecf21625eb",
+      "slice_sha256": "22cac4c044f2ea1eb19cdc52d3834f165c9c5905cd26e0f694892415a273e5bd"
+    },
+    {
+      "name": "freeze",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs",
+      "first_line": 904,
+      "last_line": 906,
+      "file_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "slice_sha256": "35b7b5b25ebd341a42c56b43dc97ef9c4049db2790762e4810bd27df89ef001b"
+    }
+  ],
+  "cases": [
+    {
+      "name": "missing-copy",
+      "path": "spec/source-header-transport/sizing-only.rs",
+      "source_sha256": "6245fc84e2b3eaf7d99bd949280d0a75f6483125ed741d56271287997c3e73df",
+      "rustc": 1,
+      "code": null,
+      "deps": {},
+      "kind": "rlib",
+      "native": false,
+      "scope": "hypothesis: demanded read without Copy; retain any contradictory independent result"
+    },
+    {
+      "name": "signature-control",
+      "path": "spec/source-header-transport/signature-only-control.rs",
+      "source_sha256": "32b62e6ba82d386102c0bdadb8250c3931a373505ccb0f897fe6c128c4393d6c",
+      "rustc": 0,
+      "code": null,
+      "deps": {},
+      "kind": "rlib",
+      "native": false,
+      "scope": "reduced control only: Clone default method intentionally absent; never original-header qualification"
+    },
+    {
+      "name": "semantic-provider",
+      "path": "spec/source-header-transport/semantic-provider.rs",
+      "source_sha256": "f5f9b3e62f5c40c7e94bb6c517531a7403cd328487f5cf634e99005a0d558227",
+      "rustc": 0,
+      "code": null,
+      "deps": {},
+      "kind": "rlib",
+      "native": false,
+      "scope": "all original semantic declarations and full provided Clone body; API-stability attributes omitted explicitly"
+    },
+    {
+      "name": "original-attributes-provider",
+      "path": "spec/source-header-transport/original-attributes-provider.rs",
+      "source_sha256": "8f90644ba6d30cbb245377fc234d2b47c36cf24a47b9b9d66c076551f0b76ce4",
+      "rustc": 0,
+      "code": null,
+      "deps": {},
+      "kind": "rlib",
+      "native": false,
+      "scope": "original contiguous header/body slices including API-stability attributes"
+    },
+    {
+      "name": "semantic-provider-runtime-client",
+      "path": "spec/source-header-transport/runtime-client.rs",
+      "source_sha256": "99553f08b7b79367da7410943e228c55e4005a69c8848dd8c90a3138df0aadbb",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "semantic-provider"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "required"
+    },
+    {
+      "name": "semantic-provider-const-client",
+      "path": "spec/source-header-transport/const-client.rs",
+      "source_sha256": "ed5e8e8e7e0d0b7e52e99b2e113e701c213d24ffbd05b3d016d99260de5a273b",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "semantic-provider"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "required"
+    },
+    {
+      "name": "semantic-provider-noncopy-client",
+      "path": "spec/source-header-transport/noncopy-client.rs",
+      "source_sha256": "f0aa83f83f46e9d460855ba4963ebc665f34e094380b7b0320c5444fd49c9178",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "semantic-provider"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "required"
+    },
+    {
+      "name": "semantic-provider-unsized-client",
+      "path": "spec/source-header-transport/unsized-client.rs",
+      "source_sha256": "7bfa5f7e6026ebc9399f888833fb94f41fa48454ea8c43a3e68d5300f33b4b74",
+      "rustc": 1,
+      "code": "E0277",
+      "deps": {
+        "base": "semantic-provider"
+      },
+      "kind": "lib",
+      "native": false,
+      "scope": "required"
+    },
+    {
+      "name": "original-attributes-provider-runtime-client",
+      "path": "spec/source-header-transport/runtime-client.rs",
+      "source_sha256": "99553f08b7b79367da7410943e228c55e4005a69c8848dd8c90a3138df0aadbb",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "original-attributes-provider"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "required"
+    },
+    {
+      "name": "original-attributes-provider-const-client",
+      "path": "spec/source-header-transport/const-client.rs",
+      "source_sha256": "ed5e8e8e7e0d0b7e52e99b2e113e701c213d24ffbd05b3d016d99260de5a273b",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "original-attributes-provider"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "required"
+    },
+    {
+      "name": "original-attributes-provider-noncopy-client",
+      "path": "spec/source-header-transport/noncopy-client.rs",
+      "source_sha256": "f0aa83f83f46e9d460855ba4963ebc665f34e094380b7b0320c5444fd49c9178",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "original-attributes-provider"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "required"
+    },
+    {
+      "name": "original-attributes-provider-unsized-client",
+      "path": "spec/source-header-transport/unsized-client.rs",
+      "source_sha256": "7bfa5f7e6026ebc9399f888833fb94f41fa48454ea8c43a3e68d5300f33b4b74",
+      "rustc": 1,
+      "code": "E0277",
+      "deps": {
+        "base": "original-attributes-provider"
+      },
+      "kind": "lib",
+      "native": false,
+      "scope": "required"
+    },
+    {
+      "name": "sizing-gated",
+      "path": "spec/source-header-transport/sizing-gated.rs",
+      "source_sha256": "485ef6809c02ee0bb07ff46980cb3c8d7480b3697d22420d5de29999472f3de0",
+      "rustc": 1,
+      "code": null,
+      "deps": {},
+      "kind": "rlib",
+      "native": false,
+      "scope": "Revised independent hypothesis: fundamental/auto_traits explicitly requested, actual Freeze added; signature-only control also adds real Destruct. Initial failed source bytes remain unchanged."
+    },
+    {
+      "name": "signature-only-control-gated",
+      "path": "spec/source-header-transport/signature-only-control-gated.rs",
+      "source_sha256": "ac808b5278a14fb27395124b633f27deba20c66dd09f59bf134a990534d96678",
+      "rustc": 0,
+      "code": null,
+      "deps": {},
+      "kind": "rlib",
+      "native": false,
+      "scope": "Revised independent hypothesis: fundamental/auto_traits explicitly requested, actual Freeze added; signature-only control also adds real Destruct. Initial failed source bytes remain unchanged."
+    },
+    {
+      "name": "semantic-provider-gated",
+      "path": "spec/source-header-transport/semantic-provider-gated.rs",
+      "source_sha256": "b82d8068c85493dda51101f777eca3f564687d74b8d9fc7307c17ccf2e9a26f5",
+      "rustc": 0,
+      "code": null,
+      "deps": {},
+      "kind": "rlib",
+      "native": false,
+      "scope": "Revised independent hypothesis: fundamental/auto_traits explicitly requested, actual Freeze added; signature-only control also adds real Destruct. Initial failed source bytes remain unchanged."
+    },
+    {
+      "name": "original-attributes-provider-gated",
+      "path": "spec/source-header-transport/original-attributes-provider-gated.rs",
+      "source_sha256": "936d194a290d899131d7fcc2b2a6bb0a4b35bb0bc568f4a13b344c1c9b8e06a4",
+      "rustc": 0,
+      "code": null,
+      "deps": {},
+      "kind": "rlib",
+      "native": false,
+      "scope": "Revised independent hypothesis: fundamental/auto_traits explicitly requested, actual Freeze added; signature-only control also adds real Destruct. Initial failed source bytes remain unchanged."
+    },
+    {
+      "name": "semantic-provider-gated-runtime-client",
+      "path": "spec/source-header-transport/runtime-client.rs",
+      "source_sha256": "99553f08b7b79367da7410943e228c55e4005a69c8848dd8c90a3138df0aadbb",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "semantic-provider-gated"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "Revised provider; same original consumer bytes."
+    },
+    {
+      "name": "semantic-provider-gated-const-client",
+      "path": "spec/source-header-transport/const-client.rs",
+      "source_sha256": "ed5e8e8e7e0d0b7e52e99b2e113e701c213d24ffbd05b3d016d99260de5a273b",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "semantic-provider-gated"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "Revised provider; same original consumer bytes."
+    },
+    {
+      "name": "semantic-provider-gated-noncopy-client",
+      "path": "spec/source-header-transport/noncopy-client.rs",
+      "source_sha256": "f0aa83f83f46e9d460855ba4963ebc665f34e094380b7b0320c5444fd49c9178",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "semantic-provider-gated"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "Revised provider; same original consumer bytes."
+    },
+    {
+      "name": "semantic-provider-gated-unsized-client",
+      "path": "spec/source-header-transport/unsized-client.rs",
+      "source_sha256": "7bfa5f7e6026ebc9399f888833fb94f41fa48454ea8c43a3e68d5300f33b4b74",
+      "rustc": 1,
+      "code": "E0277",
+      "deps": {
+        "base": "semantic-provider-gated"
+      },
+      "kind": "lib",
+      "native": false,
+      "scope": "Revised provider; same original consumer bytes."
+    },
+    {
+      "name": "original-attributes-provider-gated-runtime-client",
+      "path": "spec/source-header-transport/runtime-client.rs",
+      "source_sha256": "99553f08b7b79367da7410943e228c55e4005a69c8848dd8c90a3138df0aadbb",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "original-attributes-provider-gated"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "Revised provider; same original consumer bytes."
+    },
+    {
+      "name": "original-attributes-provider-gated-const-client",
+      "path": "spec/source-header-transport/const-client.rs",
+      "source_sha256": "ed5e8e8e7e0d0b7e52e99b2e113e701c213d24ffbd05b3d016d99260de5a273b",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "original-attributes-provider-gated"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "Revised provider; same original consumer bytes."
+    },
+    {
+      "name": "original-attributes-provider-gated-noncopy-client",
+      "path": "spec/source-header-transport/noncopy-client.rs",
+      "source_sha256": "f0aa83f83f46e9d460855ba4963ebc665f34e094380b7b0320c5444fd49c9178",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "original-attributes-provider-gated"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "Revised provider; same original consumer bytes."
+    },
+    {
+      "name": "original-attributes-provider-gated-unsized-client",
+      "path": "spec/source-header-transport/unsized-client.rs",
+      "source_sha256": "7bfa5f7e6026ebc9399f888833fb94f41fa48454ea8c43a3e68d5300f33b4b74",
+      "rustc": 1,
+      "code": "E0277",
+      "deps": {
+        "base": "original-attributes-provider-gated"
+      },
+      "kind": "lib",
+      "native": false,
+      "scope": "Revised provider; same original consumer bytes."
+    },
+    {
+      "name": "semantic-provider-qualified",
+      "path": "spec/source-header-transport/semantic-provider-qualified.rs",
+      "source_sha256": "1eadd5e238a13743e96b14c62312b48cd4c13e67a9b521541e2aa66d70ec2eb4",
+      "rustc": 0,
+      "code": null,
+      "deps": {},
+      "kind": "rlib",
+      "native": false,
+      "scope": "Third declared hypothesis: const_destruct request enabled; original attributes retain original attachment after correcting the explicitly preserved broken assembly."
+    },
+    {
+      "name": "semantic-provider-qualified-runtime-client",
+      "path": "spec/source-header-transport/runtime-client.rs",
+      "source_sha256": "99553f08b7b79367da7410943e228c55e4005a69c8848dd8c90a3138df0aadbb",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "semantic-provider-qualified"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "Same original consumer with complete corrected provider."
+    },
+    {
+      "name": "semantic-provider-qualified-const-client",
+      "path": "spec/source-header-transport/const-client.rs",
+      "source_sha256": "ed5e8e8e7e0d0b7e52e99b2e113e701c213d24ffbd05b3d016d99260de5a273b",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "semantic-provider-qualified"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "Same original consumer with complete corrected provider."
+    },
+    {
+      "name": "semantic-provider-qualified-noncopy-client",
+      "path": "spec/source-header-transport/noncopy-client.rs",
+      "source_sha256": "f0aa83f83f46e9d460855ba4963ebc665f34e094380b7b0320c5444fd49c9178",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "semantic-provider-qualified"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "Same original consumer with complete corrected provider."
+    },
+    {
+      "name": "semantic-provider-qualified-unsized-client",
+      "path": "spec/source-header-transport/unsized-client.rs",
+      "source_sha256": "7bfa5f7e6026ebc9399f888833fb94f41fa48454ea8c43a3e68d5300f33b4b74",
+      "rustc": 1,
+      "code": "E0277",
+      "deps": {
+        "base": "semantic-provider-qualified"
+      },
+      "kind": "lib",
+      "native": false,
+      "scope": "Same original consumer with complete corrected provider."
+    },
+    {
+      "name": "original-attributes-provider-qualified",
+      "path": "spec/source-header-transport/original-attributes-provider-qualified.rs",
+      "source_sha256": "42d2f5bd74beec3dd272d1f2bb6abe1e29d19f0dbeea383cbd0e42b1862188c0",
+      "rustc": 0,
+      "code": null,
+      "deps": {},
+      "kind": "rlib",
+      "native": false,
+      "scope": "Third declared hypothesis: const_destruct request enabled; original attributes retain original attachment after correcting the explicitly preserved broken assembly."
+    },
+    {
+      "name": "original-attributes-provider-qualified-runtime-client",
+      "path": "spec/source-header-transport/runtime-client.rs",
+      "source_sha256": "99553f08b7b79367da7410943e228c55e4005a69c8848dd8c90a3138df0aadbb",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "original-attributes-provider-qualified"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "Same original consumer with complete corrected provider."
+    },
+    {
+      "name": "original-attributes-provider-qualified-const-client",
+      "path": "spec/source-header-transport/const-client.rs",
+      "source_sha256": "ed5e8e8e7e0d0b7e52e99b2e113e701c213d24ffbd05b3d016d99260de5a273b",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "original-attributes-provider-qualified"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "Same original consumer with complete corrected provider."
+    },
+    {
+      "name": "original-attributes-provider-qualified-noncopy-client",
+      "path": "spec/source-header-transport/noncopy-client.rs",
+      "source_sha256": "f0aa83f83f46e9d460855ba4963ebc665f34e094380b7b0320c5444fd49c9178",
+      "rustc": 0,
+      "code": null,
+      "deps": {
+        "base": "original-attributes-provider-qualified"
+      },
+      "kind": "lib",
+      "native": true,
+      "scope": "Same original consumer with complete corrected provider."
+    },
+    {
+      "name": "original-attributes-provider-qualified-unsized-client",
+      "path": "spec/source-header-transport/unsized-client.rs",
+      "source_sha256": "7bfa5f7e6026ebc9399f888833fb94f41fa48454ea8c43a3e68d5300f33b4b74",
+      "rustc": 1,
+      "code": "E0277",
+      "deps": {
+        "base": "original-attributes-provider-qualified"
+      },
+      "kind": "lib",
+      "native": false,
+      "scope": "Same original consumer with complete corrected provider."
+    }
+  ],
+  "revision": "All initial and gated failures retained; new qualified-suffix hypotheses add required const_destruct feature and repair stability attribute attachment before third qualification.",
+  "qualification": {
+    "current": "The two -qualified providers and eight matching consumers have ten matching Rust outcomes and six native successes.",
+    "current_receipt": "obj/parallel/pa29-source-headers/independent-third/rust-receipt.json",
+    "historical": "Initial and gated hypothesis mismatches are preserved in independent/ and independent-second/. Earlier expected values remain hypotheses, not corrected grading expectations.",
+    "frontend": "Accepted22f pin only; current a6 source has no new compiler build or source-header implementation."
+  }
+}
