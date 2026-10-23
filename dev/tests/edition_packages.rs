@@ -101,8 +101,10 @@ pub(super) fn lowir(source: &str, edition: Edition) -> Result<Vec<u8>, Box<dyn s
 #[test]
 fn generic_metadata_never_relabels_the_defining_crate_edition()
 -> Result<(), Box<dyn std::error::Error>> {
-    let source =
-        crate::resolve::fixture("pa29/tests/spec/generic-contracts/minimal-id-library.rs")?;
+    let source = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa29/tests/spec/generic-contracts/minimal-id-library.rs"),
+    )?;
     for edition in [Edition::Rust2021, Edition::Rust2024] {
         let report = analyze(&source, edition, &mut Files::default())?;
         let rustgm::pipeline::Analysis {
