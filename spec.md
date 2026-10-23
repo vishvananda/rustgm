@@ -66,6 +66,24 @@ includes declaration and owning crate; familiar names are not implementation
 evidence. Transport checked generic/const bodies and their retained contracts
 through deterministic crate metadata with indexed external-to-local remapping.
 
+Imported executable originals have authenticated external declaration/body/site
+coordinates. Install their complete canonical header graph before original
+proof, without inventing source AST nodes or marking body proof complete when
+headers become ready. Keep declared and relocated callable signatures distinct.
+Derive mandatory formation and flagged Sized requirements for every actual
+formal, including unused parameters; preserve explicit `?Sized`. Original
+assumptions do not pay substituted instance obligations. Retain a single cold
+owner for immutable imported templates/contracts, with exact owner validation
+at every borrowed view and ordinary per-instance proof on execution.
+
+Reserve imported graph storage from actual declaration-owner summaries during
+the existing topological walk. Count nodes/edges once, deduplicate reached owners
+in reusable scratch, and retain shared dependency edges instead of flattened
+per-root closures. Separate conservative preflight reservations from observed
+retained payload and reject partial publication on either work or storage limit.
+An artifact's total size repeated for every declaration is a quadratic bound,
+even when each actual lookup is indexed.
+
 Every target Rust dependency must pass through RustGM. Explicitly declared host
 tools may bootstrap build-time execution, but rustc-built target libraries or
 frontend fallbacks cannot satisfy upstream acceptance. Keep build/configuration
