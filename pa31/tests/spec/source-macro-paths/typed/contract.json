@@ -1,0 +1,60 @@
+{
+  "state": "Declared before independent and candidate observations; complete source sizing provider for the full types view",
+  "profile": {
+    "toolchain": "1.98.0",
+    "target": "x86_64-unknown-linux-gnu",
+    "edition": "2024",
+    "panic": "abort",
+    "overflow_checks": true,
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "derivation": "Prepend lang_items request and append actual PointeeSized/MetaSized/Sized declarations; preserve every original macro fixture byte",
+  "original_view_correction": "Original fixtures pass full macro expansion/resolution but intentionally lack semantically required source sizing declarations for CLI --emit-types. Original failed benchmark observations remain in library-stability-callable-perf-v2.",
+  "rows": [
+    {
+      "name": "forward-import",
+      "entry": "pa31/tests/spec/source-macro-paths/typed/forward-import.rs",
+      "sha256": "2068706b055b29488f8d226d1bcd2c9d56abe0a640f52235142daad206c32b36",
+      "original": "pa31/tests/spec/source-macro-paths/forward-import.rs",
+      "original_sha256": "43d979bc9920af9c1513c811cf89bd97a81740e9e9669446f7c82bfb1631282b",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_candidate_types": 0,
+      "expected_native": null
+    },
+    {
+      "name": "forward-alias-call",
+      "entry": "pa31/tests/spec/source-macro-paths/typed/forward-alias-call.rs",
+      "sha256": "779445495ab0da5dcd8e44a7c9d04f6eab76b21cf0dec4994b2fd9d9c9297f24",
+      "original": "pa31/tests/spec/source-macro-paths/forward-alias-call.rs",
+      "original_sha256": "225b75505311817974c02d8382949c2a217f463d49e64f957c06eb81cd932e5d",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_candidate_types": 0,
+      "expected_native": null
+    },
+    {
+      "name": "forward-qualified-call",
+      "entry": "pa31/tests/spec/source-macro-paths/typed/forward-qualified-call.rs",
+      "sha256": "047e8eaa985cbb48118441c3a9c65fd03f6fddc84adc6b5da4deca0e0af04f17",
+      "original": "pa31/tests/spec/source-macro-paths/forward-qualified-call.rs",
+      "original_sha256": "294c705913a07f9b1ebb7d2d9c64ffb500fd3fa56cafe8ef6b71a39bc25403e1",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_candidate_types": 0,
+      "expected_native": null
+    },
+    {
+      "name": "renamed-user-macro",
+      "entry": "pa31/tests/spec/source-macro-paths/typed/renamed-user-macro.rs",
+      "sha256": "2aba2b28d9eba239a476099d02068099ae5f0caa05344d0d220ca090bd3f26e9",
+      "original": "pa31/tests/spec/source-macro-paths/renamed-user-macro.rs",
+      "original_sha256": "37bbf54a6db8afe93154d7fec61a501dabf79c98dae194b3c560dd4e1dc4e8e2",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_candidate_types": 0,
+      "expected_native": null
+    }
+  ]
+}
