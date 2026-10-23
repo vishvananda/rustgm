@@ -1,11 +1,12 @@
 # Generic crate transport for source-built core
 
 Proposal only. No shared compiler interface or wire bytes change here. The
-inspection base is validation `6a547f96` (`907dcd0c` + array/C-record metadata
-`eac3885e`, IterMut `0600db40`, Option `6a547f96`). The worker remains at the
-caller-premise checkpoint; no rebase is implied. Root's stored-array worktree
-at `bc640d44` was inspected read-only while dirty: its Repeat/Bytes values and
-Field/Element reference paths remain an independent data-transport family.
+concrete [source-free original plan](pa29-source-free-originals.md) refreshes this
+proposal against `46d8b82a`, qualified parent port `4eb1a20f`, and the current
+C defining-head API. The initial inspection was validation `6a547f96` (then
+`907dcd0c` plus arrays/C records, IterMut and Option); that historical source
+review is not a current qualification claim. Stored arrays and Field/Element
+reference transport are now an independent integrated data-transport family.
 The public roadmap keeps PA1–30 responsibilities intact and prioritizes source
 core, then alloc/std. This proposal does not call existing PA25 gaps complete.
 
