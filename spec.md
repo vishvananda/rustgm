@@ -87,7 +87,17 @@ Planning receipts are not compilation results. The
 authenticated crates.io archive snapshots. Preserve original package bytes and
 validate the complete registry lockfile set, including inactive dependencies.
 Hash each package once per validation boundary, then use indexed source ownership
-to bind its units; do not rescan each package per host/target unit. Complete local
+to bind its units; do not rescan each package per host/target unit. Execute each
+selected host compilation/run once in dependency order. Share a compiled script
+across its host/target executions while retaining separate configuration and
+generated outputs; apply own-script effects to the exact consuming unit and
+pass links metadata only along immediate script edges. Use one host library
+inventory rather than copying transitive dependency closures per consumer.
+Bound aggregate graph outputs and append completion receipts; rewriting the
+growing graph after every process is quadratic. Publish no result until the
+package/configuration/artifact/generated-input closure has been revalidated.
+Invocation-local completed results do not establish a persistent cache key.
+Complete local
 source/configuration closure, per-crate edition semantics and the target executor
 remain required before upstream acceptance. Cargo's implicit sysroot is not a
 selected package unit: add original source-sysroot jobs explicitly.

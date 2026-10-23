@@ -73,8 +73,11 @@ source, and prune disposable host executables under the batch's scoped output
 root. Do not repeat host builds per target source file or retain one executable
 per historical observation.
 
-The target compiler still needs genuine Rust 2021 semantics. Its current CLI
-accepts only edition 2024; adding a 2021 flag alone is insufficient. Definition
+The target compiler needs genuine Rust 2021 semantics. At the initial script
+observation its CLI accepted only edition 2024; adding a 2021 flag alone would
+be insufficient. The later [package edition checkpoint](pa34-package-editions.md)
+implements explicit package edition propagation and paired semantic controls.
+Definition
 edition must survive macro expansion and cross-crate transport. The pinned
 Reference identifies differences in expression macro fragments, match binding
 modes, temporary scopes, extern blocks and reserved `gen`, among other rules.
@@ -202,3 +205,64 @@ query includes the proc-macro crate type, so its `proc_macro` cfg is expected;
 the earlier hypothesis that it would disappear is retained and corrected.
 Unstable-only target facts disappear with bootstrap removed. These raw package
 planning queries must not become the RustGM target compiler's capability table.
+
+## Shared host dependency execution
+
+`scripts/host_graph.py` now consumes the full validated unit order, authenticated
+registry snapshots and explicitly pinned host/target contexts. It compiles each
+selected ordinary host rlib or build script once. A shared build-script executable
+can run separately for host and target consumers, with distinct cfg facts even
+when both use the same target triple. Target compilation units remain untouched.
+The source manifest is parsed once per package; a source-path index binds its
+units without repeatedly scanning the package inventory.
+
+Each host library consumes its exact own script's ordered cfg, check-cfg, native
+library/search flags, environment and generated directory. Direct renamed host
+dependencies use their built artifacts. All host rlibs occupy one invocation's
+library inventory, avoiding per-consumer copies of transitive dependency lists.
+Only immediate links metadata edges supply `DEP_*` variables to a script;
+metadata cannot enable cfg or leak transitively. Repeated assignments retain the
+last value, including empty values, and ambiguous normalized names fail.
+
+Each process keeps its own bounded command receipt. Completed nodes append one
+journal record; the full receipt is written only at initialization and completion.
+The executor bounds aggregate generated files/bytes, artifact bytes and parsed
+script/query output. Before returning any graph result it revalidates packages,
+configuration inputs, artifacts, generated inputs and implementation pins.
+Failed, timed-out, mutated or unsupported jobs never publish successful results.
+This shares completed work within one invocation; it does not introduce a
+persistent cache or claim complete system toolchain/runtime provenance.
+
+`make test-host-builds` runs the maintained independent control. Three authored
+registry archives exercise renamed dependencies, separate host/target feature
+sets, a host library's own generated source and cfg/environment, immediate links
+metadata and a shared script. Independent offline Cargo compiles the host graph
+and deliberately fails on the target crate's declared `compile_error!`. The
+executor then uses the frozen graph and produces identical generated source
+with six host compilations and five script executions, with no target compilation.
+The first qualified answer SHA-256 remains
+`9823372a0e335dc9ac0b0759c214de0fb4d7bb0917cb288a6136b9993590e4b0`.
+
+The Python harness checks changed inputs/artifacts, failed and caught queries,
+metadata collisions, unsupported units/profiles, resource budgets and sharing.
+At 8, 32 and 128 additional consumers, each package is verified exactly twice,
+each host node launches once, and the full graph receipt is written three times.
+Process-specific receipts and completion records grow with nodes/edges; they do
+not repeatedly serialize the accumulated graph. Real host compilation is checked
+separately rather than repeated for every harness failure control.
+
+Original discovery failures remain under `obj/parallel/pa34-host-graph-v1/`:
+Cargo rejected differing dependency aliases for the same package across domains;
+the corrected fixture uses one renamed alias in both domains. The first candidate
+then rejected Cargo's observed inferred `strip=debuginfo` representation before
+launch. The supported profile translation now preserves that exact representation.
+The maintained runner retains each new declaration, raw command outputs and
+generated-source hashes under `obj/qualification/host-graph/`; scoped cleanup
+removes disposable executables and objects after success.
+
+Procedural macro execution, general compiler probes, persistent rerun/cache
+closure, local/path source closure, complete toolchain/runtime provenance and
+actual target consumption remain required. Link-argument directives stay ordered
+in script outputs but do not apply to the ordinary host rlib targets supported
+here. This checkpoint neither activates PA34 nor establishes upstream crate or
+source-sysroot compilation.

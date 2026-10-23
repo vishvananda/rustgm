@@ -72,7 +72,7 @@ def execute(job, folder):
     wrapper = Path(__file__).with_name('cargo_query.py').absolute()
     implementation = {name: digest(wrapper.with_name(name)) for name in (
         'cargo_query.py', 'cargo_plan.py', 'build_units.py', 'crate_vendor.py', 'package_snapshot.py',
-        'host_build_script.py', 'host_profile.py', 'build_script_output.py')}
+        'host_build_script.py', 'host_process.py', 'host_profile.py', 'build_script_output.py')}
     environment = {
         'PATH': '/usr/bin:/bin', 'CARGO_HOME': str(folder / 'cargo-home'),
         'CARGO_TARGET_DIR': str(folder / 'target'), 'CARGO_INCREMENTAL': '0',

@@ -27,8 +27,8 @@ def decode(encoded):
         raise ValueError('host profile switches must be booleans')
     if profile['panic'] not in ('abort', 'unwind'):
         raise ValueError('unsupported host panic profile')
-    # This is the observed wire representation, not a guessed Cargo enum.
-    if profile['strip'] != {'deferred': 'None'}:
+    # Preserve observed wire variants, including Cargo's inferred debug=0 strip.
+    if profile['strip'] not in ({'deferred': 'None'}, {'resolved': {'Named': 'debuginfo'}}):
         raise ValueError('unsupported host strip protocol')
     return profile
 
@@ -42,6 +42,8 @@ def arguments(encoded):
     # Cargo false permits rustc's local thin LTO; -Clto=off would disable it.
     if profile['lto'] != 'false':
         settings.append(('lto', 'fat' if profile['lto'] == 'true' else profile['lto']))
+    if profile['strip'] == {'resolved': {'Named': 'debuginfo'}}:
+        settings.append(('strip', 'debuginfo'))
     for key in ('codegen_units', 'split_debuginfo'):
         if profile[key] is not None:
             settings.append((key.replace('_', '-'), str(profile[key])))

@@ -46,8 +46,13 @@ target execution remain part of this assignment.
 
 Its authenticated host script now executes through the exact paired graph units,
 with explicit compiler/run profiles and package/target environment. Original
-generated source and directives match independent observations. Host dependency
-scheduling, DEP metadata and target consumption remain required. The query wrapper
+generated source and directives match independent observations. The host DAG
+executor additionally schedules ordinary host rlibs and scripts, retaining own
+script configuration, renamed dependencies and immediate DEP links metadata.
+It builds a shared host script once and runs it separately for each selected
+host/target context. `make test-host-builds` checks an authored dependency graph
+against independent offline Cargo with real host compilation. Target consumption,
+procedural macro execution and complete toolchain closure remain required. The query wrapper
 isolates Cargo's bootstrap environment and rejects source-compiling probes even
 when a build script catches their failure.
 

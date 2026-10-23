@@ -4,26 +4,17 @@ The crate planner supplies this task; manifest resolution and target compilation
 are separate responsibilities. There is no compiler discovery or target fallback.
 """
 from dataclasses import asdict, dataclass
-import hashlib
 import json
 import os
 from pathlib import Path
 import subprocess
-import time
 
 from build_script_output import MAX_BYTES, parse
 import host_profile
+from host_process import CommandLog, digest
 
 MAX_FILES = 100_000
 MAX_GENERATED_BYTES = 256 * 1024 * 1024
-
-
-def digest(path):
-    result = hashlib.sha256()
-    with path.open('rb') as source:
-        for block in iter(lambda: source.read(1024 * 1024), b''):
-            result.update(block)
-    return result.hexdigest()
 
 
 @dataclass(frozen=True)
@@ -128,29 +119,7 @@ def execute(job, folder):
     def save():
         (folder / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
 
-    def run(name, command, environment):
-        command = [str(part) for part in command]
-        started = time.monotonic()
-        row = {'name': name, 'command': command, 'cwd': str(job.package),
-               'environment': environment, 'status': None}
-        commands.append(row)
-        save()
-        with (folder / f'{name}.stdout').open('xb') as stdout, \
-                (folder / f'{name}.stderr').open('xb') as stderr:
-            try:
-                result = subprocess.run(command, cwd=job.package, env=environment,
-                                        stdout=stdout, stderr=stderr, timeout=120)
-            except subprocess.TimeoutExpired:
-                row['error'] = 'timeout'
-                raise
-            finally:
-                row['seconds'] = time.monotonic() - started
-                save()
-        row['status'] = result.returncode
-        row['stdout_sha256'] = digest(folder / f'{name}.stdout')
-        row['stderr_sha256'] = digest(folder / f'{name}.stderr')
-        save()
-        return result.returncode
+    run = CommandLog(folder, job.package, commands, save).run
 
     save()
     try:

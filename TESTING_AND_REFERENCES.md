@@ -109,6 +109,16 @@ the full debug integration lane remains available through `make test-debug`.
 Use the
 storage guard throughout, with scoped cleanup when all output roots are known.
 
+`make test-host-builds` separately qualifies PA34's host dependency executor with
+an authored offline Cargo graph and actual pinned host compilation. It declares
+the expected generated source before either execution, runs an independent Cargo
+build to its deliberate target stop, then compares the host executor's output.
+The executor performs no target Rust compilation. CI runs this small check once;
+it needs no RustGM rebuild or CPPGM backend. Receipts and original/generated
+sources stay under `obj/qualification/host-graph/`, and scoped cleanup removes
+host binaries and Cargo outputs. Python harness tests cover graph sharing,
+context/metadata isolation, failed publication and bounded work separately.
+
 The [source-trait checkpoint measurements](docs/source-traits-editions-checkpoint.md)
 separate observed build, execution and text-suite costs under this cadence.
 They are shared-machine observations, not a controlled harness speedup claim.

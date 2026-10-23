@@ -41,6 +41,11 @@ def setup(root):
 
 
 class Profiles(unittest.TestCase):
+    def test_observed_inferred_strip_profile_keeps_debug_zero_semantics(self):
+        profile = deepcopy(units.PROFILE)
+        profile.update(debuginfo=0, strip={'resolved': {'Named': 'debuginfo'}})
+        self.assertIn('strip=debuginfo', host_profile.arguments(json.dumps(profile)))
+
     def test_codegen_flags_preserve_explicit_false_settings_and_lto_semantics(self):
         profile = deepcopy(units.PROFILE)
         profile.update(debug_assertions=False, overflow_checks=False, codegen_units=2,

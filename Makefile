@@ -42,6 +42,9 @@ test-harness:
 	$(PYTHON) -m unittest discover -s scripts/tests -v
 	$(PYTHON) scripts/maintainer_suites.py check
 	$(PYTHON) scripts/check_layout.py
+.PHONY: test-host-builds
+test-host-builds:
+	$(PYTHON) scripts/storage.py run --prune-under obj/qualification/host-graph -- $(PYTHON) scripts/check_host_graph.py
 test-backend:
 	$(PYTHON) scripts/backend.py --test
 test-maintainer-native: test-backend

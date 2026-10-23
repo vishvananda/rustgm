@@ -7,9 +7,10 @@ import tomllib
 from host_build_script import digest
 
 
-def package_environment(package):
+def package_environment(package, document=None):
     manifest = package.root / 'Cargo.toml'
-    document = tomllib.loads(manifest.read_text())
+    if document is None:
+        document = tomllib.loads(manifest.read_text())
     if 'lints' in document or 'cargo-features' in document:
         raise ValueError('build-script manifest lint/unstable policy is not implemented')
     data = document['package']
