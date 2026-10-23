@@ -63,7 +63,7 @@ fn duplicate_handoff_is_transactional_and_foreign_headers_fail() -> Result {
         contract: contract.clone(),
     }
     .validate(&analysis.facts)?;
-    for changed in 0..3 {
+    for changed in 0..5 {
         let mut row = Original {
             template: template.clone(),
             contract: contract.clone(),
@@ -71,7 +71,13 @@ fn duplicate_handoff_is_transactional_and_foreign_headers_fail() -> Result {
         match changed {
             0 => row.contract.source = child.body.source,
             1 => row.contract.universals += 1,
-            _ => row.contract.signature = None,
+            2 => row.contract.signature = None,
+            3 => {
+                // Preserve the node number while changing its actual source unit.
+                row.template.body.source.file = crate::resolve::unit::FileId(u32::MAX);
+                row.contract.source = row.template.body.source;
+            }
+            _ => row.contract.key = child.body.key(),
         }
         assert!(row.validate(&analysis.facts).is_err());
     }

@@ -56,6 +56,8 @@ pub struct Prepared {
 }
 impl Prepared {
     /// Build one already typed anonymous constant using retained construction scratch.
+    /// The same fixed source environment must also verify the resulting template;
+    /// possible opaque cleanup is retained until executable head selection.
     /// # Errors
     /// Reports missing facts and the same const eligibility failures as functions.
     pub fn expression(
@@ -64,6 +66,7 @@ impl Prepared {
         facts: &Declarations,
         source: crate::resolve::unit::NodeKey,
         result: crate::types::TypeId,
+        environment: Arc<Environment>,
     ) -> Result<(Body, Requirements), Error> {
         let scratch = self
             .scratch
@@ -77,6 +80,9 @@ impl Prepared {
         let query = self.query.get_or_insert_with(|| {
             NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item))
         });
+        let mut scoped =
+            (!facts.opaques.declarations.is_empty()).then(|| query.scoped(environment));
+        let query = scoped.as_mut().unwrap_or(query);
         let body = super::Builder::new(
             report,
             facts,

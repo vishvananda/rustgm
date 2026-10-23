@@ -92,6 +92,18 @@ impl Checked<'_> {
     pub fn input(&self, item: ItemId) -> Option<&Contract> {
         self.index.get(&item).map(|&index| &self.contracts[index])
     }
+    /// Borrow the exact function, contract and full region result sealed together.
+    pub(crate) fn function_proof(
+        &self,
+        item: ItemId,
+    ) -> Option<(&Template, &Contract, &regions::Body)> {
+        let &index = self.index.get(&item)?;
+        Some((
+            &self.templates.bodies[index],
+            &self.contracts[index],
+            &self.regions.bodies[index],
+        ))
+    }
     #[must_use]
     pub fn closure(&self, identity: ClosureId) -> Option<(&Template, &Contract)> {
         let &index = self.closures.get(&identity)?;

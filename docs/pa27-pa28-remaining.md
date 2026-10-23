@@ -173,12 +173,14 @@ and the existing iterative Product codec. Owned/shared/mutable captures preserve
 ownership and pointer restrictions, including fresh selected-reference validity;
 zero-byte nested closure products are still validated without expanding a Repeat
 extent. Full demanded Closure TypeId remains callable authority. This supersedes
-the exact explicit-closure counterexample, while opaque/function-item and other
+the exact explicit-closure counterexample, while function-item and other
 unsupported capture children remain open. See `pa27-closure-byte-storage.md`.
 
 Prepared opaque storage heads now drive the physical byte codec and readonly
 product inspection without changing source equality, traits, ownership or
 lifetime authority. Shared-head family validation is reused. Reference/owned
-opaque applications without a completed defining head, string words/UTF-8
-validation and other unsupported families above remain required; see
+opaque applications now retain conservative source cleanup and replay after an
+exact defining-source proof publishes their head. String words/UTF-8 validation,
+unprepared or otherwise unsupported defining heads and the other families above
+remain required; see
 `pa27-opaque-byte-storage.md` and the exact desired/observed outcomes.

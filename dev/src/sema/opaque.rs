@@ -1,4 +1,5 @@
 //! Defining contexts retain hidden types separately from published result identities.
+mod applications;
 mod captures;
 mod closing;
 pub(in crate::sema) mod overrides;
@@ -35,5 +36,5 @@ pub struct Opaques {
     pub body_results: HashMap<DefId, TypeId>,
     pub(crate) implementations: HashMap<(DefId, OpaqueId), Implementation>,
     storage_cursor: usize,
-    storage_layouts: Option<Box<crate::abi::templates::Templates>>,
+    storage_preparation: Option<Box<applications::Preparation>>,
 }

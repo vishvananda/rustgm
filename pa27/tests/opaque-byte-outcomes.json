@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "profile": "Rust1.98.0 / x86_64 / edition2024",
-  "purpose": "Exact checked opaque physical storage; no hidden-type equality, Copy or trait permission. Missing heads remain required gaps.",
+  "purpose": "Exact checked opaque physical storage and defining-head readiness; no hidden-type equality, Copy or trait permission. Unsupported head and string families remain required.",
   "evidence": "obj/parallel/pa27/opaque-string-backing",
   "cases": [
     {
@@ -165,19 +165,25 @@
       "hypothesis": "Opaque reference encoding preserves symbolic target and static referent validation.",
       "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-reference-word-check.rs",
       "path": "pa27/tests/spec/opaque-byte-backing/opaque-reference-word-check.rs",
-      "implemented": false,
+      "implemented": true,
       "required_views": [
         0,
         0,
         0
       ],
-      "observed_views": [
-        1,
-        1,
-        1
-      ],
-      "observed_reason": "opaque storage requires a checked defining type",
-      "status": "REQUIRED_GAP; observed unsupported is not the expected language outcome"
+      "status": "qualified; exact defining-source proof and deferred full-application replay",
+      "historical_observation": {
+        "views": [
+          1,
+          1,
+          1
+        ],
+        "reason": "opaque storage requires a checked defining type",
+        "evidence": "obj/parallel/pa27/opaque-string-backing"
+      },
+      "candidate_expected": 0,
+      "reason": "",
+      "qualification_evidence": "obj/parallel/pa27/opaque-source-cleanup/probe-v1"
     },
     {
       "name": "opaque-reference-direct",
@@ -187,19 +193,25 @@
       "hypothesis": "Direct opaque-reference cell access uses completed local hidden head and validates actual referent.",
       "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-reference-direct.rs",
       "path": "pa27/tests/spec/opaque-byte-backing/opaque-reference-direct.rs",
-      "implemented": false,
+      "implemented": true,
       "required_views": [
         0,
         0,
         0
       ],
-      "observed_views": [
-        1,
-        1,
-        1
-      ],
-      "observed_reason": "opaque storage requires a checked defining type",
-      "status": "REQUIRED_GAP; observed unsupported is not the expected language outcome"
+      "status": "qualified; exact defining-source proof and deferred full-application replay",
+      "historical_observation": {
+        "views": [
+          1,
+          1,
+          1
+        ],
+        "reason": "opaque storage requires a checked defining type",
+        "evidence": "obj/parallel/pa27/opaque-string-backing"
+      },
+      "candidate_expected": 0,
+      "reason": "",
+      "qualification_evidence": "obj/parallel/pa27/opaque-source-cleanup/probe-v1"
     },
     {
       "name": "opaque-shared-restriction",
@@ -209,19 +221,25 @@
       "hypothesis": "Physical hidden reference encoding must preserve shared-derived write restriction.",
       "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-shared-restriction.rs",
       "path": "pa27/tests/spec/opaque-byte-backing/opaque-shared-restriction.rs",
-      "implemented": false,
+      "implemented": true,
       "required_views": [
         1,
         1,
         1
       ],
-      "observed_views": [
-        1,
-        1,
-        1
-      ],
-      "observed_reason": "opaque storage requires a checked defining type",
-      "status": "REQUIRED_GAP; observed unsupported is not the expected language outcome"
+      "status": "qualified; exact defining-source proof and deferred full-application replay",
+      "historical_observation": {
+        "views": [
+          1,
+          1,
+          1
+        ],
+        "reason": "opaque storage requires a checked defining type",
+        "evidence": "obj/parallel/pa27/opaque-string-backing"
+      },
+      "candidate_expected": 1,
+      "reason": "constant raw pointer write is derived from a shared reference",
+      "qualification_evidence": "obj/parallel/pa27/opaque-source-cleanup/probe-v1"
     },
     {
       "name": "opaque-owned-transfer-concrete",
@@ -231,19 +249,25 @@
       "hypothesis": "Known repr(C) hidden D is retained under ManuallyDrop; ptr::read transfers ownership after opaque byte mutation; one runtime destructor sees11.",
       "original_path": "obj/parallel/pa27/opaque-string-backing/inputs/opaque-owned-transfer-concrete.rs",
       "path": "pa28/tests/spec/opaque-byte-backing/opaque-owned-transfer-concrete.rs",
-      "implemented": false,
+      "implemented": true,
       "required_views": [
         0,
         0,
         0
       ],
-      "observed_views": [
-        1,
-        1,
-        1
-      ],
-      "observed_reason": "opaque storage requires a checked defining type",
-      "status": "REQUIRED_GAP; observed unsupported is not the expected language outcome"
+      "status": "qualified; exact defining-source proof and deferred full-application replay",
+      "historical_observation": {
+        "views": [
+          1,
+          1,
+          1
+        ],
+        "reason": "opaque storage requires a checked defining type",
+        "evidence": "obj/parallel/pa27/opaque-string-backing"
+      },
+      "candidate_expected": 0,
+      "reason": "",
+      "qualification_evidence": "obj/parallel/pa27/opaque-source-cleanup/probe-v1"
     },
     {
       "name": "opaque-wide-8-repeat-8",

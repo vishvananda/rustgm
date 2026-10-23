@@ -118,9 +118,17 @@ impl Engine {
         source: NodeKey,
         result: TypeId,
     ) -> Result<Templates, Error> {
-        let (mut body, destruction) = self
-            .construction
-            .expression(report, facts, source, result)?;
+        let environment = Arc::new(
+            Environment::new(&facts.types, &[])
+                .map_err(|e| Declarations::error(report, source, e))?,
+        );
+        let (mut body, destruction) = self.construction.expression(
+            report,
+            facts,
+            source,
+            result,
+            Arc::clone(&environment),
+        )?;
         body::promote::instance_reusing(
             report,
             facts,
@@ -137,10 +145,7 @@ impl Engine {
         let template = Template {
             body,
             destruction,
-            environment: Arc::new(
-                Environment::new(&facts.types, &[])
-                    .map_err(|e| Declarations::error(report, source, e))?,
-            ),
+            environment,
         };
         let templates = Templates {
             bodies: vec![template],

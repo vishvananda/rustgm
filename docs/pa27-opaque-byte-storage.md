@@ -3,7 +3,8 @@
 This development slice consumes an already published full-TypeId opaque storage
 head. It does not reveal that head to source type equality, trait selection,
 lifetime proofs, move/drop checking or callable selection. Missing defining
-heads remain a required readiness gap; equal layouts never establish a mapping.
+heads require ordinary defining-source readiness; equal layouts never establish
+a mapping. The followup protocol is in `pa27-opaque-head-readiness.md`.
 
 `Reader::storage_type(TypeId)` returns ordinary types unchanged. For an opaque
 application it reads `Store::storage_head`, requires a non-opaque canonical head
@@ -39,11 +40,12 @@ The initial independent inventory lives in
 hypotheses remain frozen. Rust 1.98 accepts eight initial positives and rejects
 two negative controls; separately declared division-helper versions remove an
 unrelated unresolved panic macro from candidate checking. Opaque scalar, record,
-full generic applications, union snapshots and closures currently stop at the
+full generic applications, union snapshots and closures originally stopped at the
 unsupported byte family. String reference/raw-word roundtrips stop in symbolic
 word encoding and remain separate required work, including UTF-8/reference
 validation. Reference and non-Copy ownership controls expose a distinct missing
-prepared opaque head; their acceptance is not claimed by this codec change.
+prepared opaque head; the separate defining-head readiness followup now qualifies
+those original cases without changing the physical codec.
 The first non-Copy local-return hypothesis rejects in Rust with E0493; a later
 ManuallyDrop/known-repr(C) ownership transfer is independently Rust/native valid.
 
@@ -59,8 +61,9 @@ The prepared-head source checkpoint has five initial supported positives and
 four semantic negatives; three independently qualified wide-array source/value
 controls use widths/repetitions 8/32/128. Pointer-add and ptr::read fixtures live
 under PA28. Three Rust-positive reference/owned cases and one restriction
-negative still stop before the codec at missing prepared heads; they are
-REQUIRED_GAP records with the correct desired outcomes, not rejection contracts.
+negative originally stopped before the codec at missing prepared heads. Their
+unchanged desired outcomes are now qualified by `pa27-opaque-head-readiness.md`;
+the earlier failures remain historical observations, not rejection contracts.
 All original failed hypotheses remain under the evidence root.
 
 Private shared-head validation observed `5 * width + 11 * applications + 6` logical

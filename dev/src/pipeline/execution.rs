@@ -2,6 +2,7 @@
 mod anonymous;
 mod component_index;
 mod components;
+mod defining_heads;
 mod expressions;
 mod initializers;
 mod inputs;
@@ -453,7 +454,7 @@ impl Engine {
             )?;
             template
         };
-        self.prove(report, facts, &template, &input)?;
+        self.prove_defining_original(report, facts, &template, &input)?;
         if facts.generics.has_parameters(definition)
             || facts.opaques.owners.contains_key(&definition)
         {
@@ -565,6 +566,15 @@ impl Engine {
         parameters: &Arc<Environment>,
         contract: &Contract,
     ) -> Result<(), Error> {
+        let regions = Self::source_regions(report, facts, body, contract)?;
+        self.prove_loans(report, facts, body, destruction, parameters, &regions)
+    }
+    fn source_regions(
+        report: &Report,
+        facts: &mut Declarations,
+        body: &Body,
+        contract: &Contract,
+    ) -> Result<borrow::regions::Body, Error> {
         let source = body.source;
         contract
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
@@ -574,15 +584,14 @@ impl Engine {
             &facts.lifetimes.nominal_requirements,
             &facts.lifetimes.callables,
         );
-        let regions = borrow::regions::check_one(
+        borrow::regions::check_one(
             &facts.types,
             &facts.lifetimes.variances,
             &mut queries,
             contract,
             body,
         )
-        .map_err(|e| Declarations::error(report, e.source.unwrap_or(source), e.message))?;
-        self.prove_loans(report, facts, body, destruction, parameters, &regions)
+        .map_err(|e| Declarations::error(report, e.source.unwrap_or(source), e.message))
     }
     fn prove_loans(
         &mut self,
