@@ -252,6 +252,8 @@ pub fn analyze_with_context(
         })
         .and_then(|()| engine.run());
     result.map_err(|error| engine.diagnostic(error))?;
+    super::bindings::validate_features(&engine.loader.package)
+        .map_err(|error| engine.diagnostic(error))?;
     let (resolution, imports, pending) = engine.paths.finish();
     Ok(Report {
         package: engine.loader.package,

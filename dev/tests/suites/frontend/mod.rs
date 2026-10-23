@@ -11,6 +11,8 @@ mod expansion_install;
 mod expansion_stream;
 #[path = "../../expressions.rs"]
 mod expressions;
+#[path = "../../feature_requests.rs"]
+mod feature_requests;
 #[path = "../../fragments.rs"]
 mod fragments;
 #[path = "../../hygiene.rs"]
