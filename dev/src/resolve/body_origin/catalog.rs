@@ -1,5 +1,8 @@
 //! Dense catalog rows own exact remaps; no row is a checked body or permission.
-use super::{BodyOrigin, Edition, Epoch, ImportedBodyId, Label, NEXT_CATALOG, ProviderFile};
+use super::{
+    BodyOrigin, DeclarationBinding, Edition, Epoch, ImportedBodyId, Label, NEXT_CATALOG,
+    ProviderFile,
+};
 use crate::{
     resolve::model::{DefId, Definition},
     support::{
@@ -37,16 +40,20 @@ pub(crate) struct Input {
     pub owners: BodyCatalog,
     pub edition: Edition,
     pub definitions: Vec<DefId>,
+    pub declarations: Vec<DeclarationBinding>,
     pub bindings: Vec<Binding>,
     pub files: Vec<ProviderFile>,
     pub labels: Vec<Option<Label>>,
+    pub declaration_labels: Vec<Option<Label>>,
 }
 pub(super) struct Artifact {
     pub owner: CrateIdentity,
     pub edition: Edition,
     pub definitions: Vec<DefId>,
+    pub declarations: Vec<DeclarationBinding>,
     pub files: Vec<ProviderFile>,
     pub labels: Vec<Option<Label>>,
+    pub declaration_labels: Vec<Option<Label>>,
 }
 pub(crate) struct Row {
     pub definition: DefId,

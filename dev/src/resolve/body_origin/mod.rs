@@ -1,10 +1,14 @@
 //! Exact source/imported ownership is independent of diagnostic labels and proof.
 mod catalog;
+mod declarations;
 mod locations;
 mod publication;
 use super::unit::NodeKey;
 use crate::syntax::ast::NodeId;
 pub(crate) use catalog::{Catalog, Input, Installed};
+pub(crate) use declarations::{
+    DeclarationBinding, DeclarationOrigin, DeclarationSite, ImportedDeclarationId,
+};
 pub(crate) use locations::{Label, ProviderFile};
 use std::{
     num::NonZeroU32,
@@ -82,12 +86,16 @@ pub(crate) enum ProofSite {
         body: ImportedBodyId,
         site: BodySite,
     },
+    Declaration {
+        declaration: ImportedDeclarationId,
+        site: DeclarationSite,
+    },
 }
 impl ProofSite {
     pub(crate) const fn source(self) -> Option<NodeKey> {
         match self {
             Self::Source(source) => Some(source),
-            Self::Imported { .. } => None,
+            Self::Imported { .. } | Self::Declaration { .. } => None,
         }
     }
 }
@@ -99,6 +107,9 @@ pub(crate) enum Edition {
     Rust2024,
 }
 
+#[cfg(test)]
+#[path = "../../../tests/invariants/declaration_origins.rs"]
+mod declaration_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/origin_layouts.rs"]
 mod layout_tests;

@@ -54,6 +54,10 @@ struct SiteProof<S> {
     sources: Vec<S>,
     proof: crate::types::lifetime_proof::Obligations,
 }
+struct SitePredicate<S> {
+    site: S,
+    value: crate::types::parameters::clauses::Clause,
+}
 
 #[test]
 fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {
@@ -77,6 +81,10 @@ fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {
         size_of::<SiteProof<NodeKey>>(),
         size_of::<crate::sema::model::LifetimeProof>()
     );
+    assert_eq!(
+        size_of::<SitePredicate<NodeKey>>(),
+        size_of::<crate::sema::generics::Predicate>()
+    );
     println!(
         "identity={} origin={} site={} proof_site={} catalog={} row={} artifact={} slot={}",
         size_of::<ImportedBodyId>(),
@@ -99,5 +107,13 @@ fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {
         size_of::<crate::sema::model::LifetimeProof>(),
         size_of::<SiteProof<ProofSite>>(),
         size_of::<ir::Value>()
+    );
+    println!(
+        "canonical_predicate={} located_predicate={}/{} builtin_use={}/{}",
+        size_of::<crate::types::parameters::predicates::Predicate>(),
+        size_of::<crate::sema::generics::Predicate>(),
+        size_of::<SitePredicate<ProofSite>>(),
+        size_of::<(NodeKey, crate::types::parameters::predicates::Predicate)>(),
+        size_of::<(ProofSite, crate::types::parameters::predicates::Predicate)>(),
     );
 }

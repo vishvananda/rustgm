@@ -38,16 +38,24 @@ impl Catalog {
         Ok(ProofSite::Imported { body, site: actual })
     }
     pub(crate) fn location(&self, site: ProofSite) -> Result<Option<Location<'_>>, &'static str> {
-        let ProofSite::Imported { body, site } = site else {
-            return Ok(None);
+        let (artifact, label) = match site {
+            ProofSite::Source(_) => return Ok(None),
+            ProofSite::Imported { body, site } => {
+                let row = self.get(body)?;
+                self.charge(1)?;
+                if site.index() >= row.sites.end - row.sites.start {
+                    return Err("diagnostic site belongs outside its imported body");
+                }
+                let artifact = &self.artifacts[row.artifact as usize];
+                (
+                    artifact,
+                    artifact.labels[(row.sites.start + site.index()) as usize],
+                )
+            }
+            ProofSite::Declaration { declaration, site } => {
+                self.declaration_label(declaration, site)?
+            }
         };
-        let row = self.get(body)?;
-        self.charge(1)?;
-        if site.index() >= row.sites.end - row.sites.start {
-            return Err("diagnostic site belongs outside its imported body");
-        }
-        let artifact = &self.artifacts[row.artifact as usize];
-        let label = artifact.labels[(row.sites.start + site.index()) as usize];
         Ok(label.map(|label| Location {
             file: &artifact.files[label.file as usize].path,
             start: label.start,
@@ -69,7 +77,7 @@ pub(super) fn validate(catalog: &Catalog, input: &super::Input) -> Result<(), &'
             return Err("invalid imported provider diagnostic path");
         }
     }
-    for label in &input.labels {
+    for label in input.labels.iter().chain(&input.declaration_labels) {
         catalog.charge(1)?;
         if let Some(label) = label {
             let file = input

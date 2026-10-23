@@ -51,8 +51,10 @@ pub(super) fn install(
         owner,
         edition: input.edition,
         definitions: input.definitions,
+        declarations: input.declarations,
         files: input.files,
         labels: input.labels,
+        declaration_labels: input.declaration_labels,
     });
     catalog.bytes = retained;
     Ok(Installed::new(catalog.epoch, first, len))
@@ -61,6 +63,7 @@ pub(super) fn install(
 fn quotas(catalog: &Catalog, input: &Input) -> Result<(), &'static str> {
     use crate::support::crates::owner_catalog::BodyCatalog;
     if input.definitions.len() > BodyCatalog::MAX_DECLARATIONS
+        || input.declarations.len() != input.definitions.len()
         || input.bindings.len() != input.owners.rows().len()
         || catalog.rows.len().saturating_add(input.bindings.len()) > catalog.limits.bodies
         || catalog
@@ -92,8 +95,10 @@ fn storage(catalog: &Catalog, input: &Input) -> Result<usize, &'static str> {
                 .saturating_mul(4 * size_of::<(DefId, (u32, u32))>()),
         );
     let mut payload = retained::vector(&input.definitions)
+        .saturating_add(retained::vector(&input.declarations))
         .saturating_add(retained::vector(&input.files))
-        .saturating_add(retained::vector(&input.labels));
+        .saturating_add(retained::vector(&input.labels))
+        .saturating_add(retained::vector(&input.declaration_labels));
     for file in &input.files {
         catalog.charge(1)?;
         payload = payload.saturating_add(file.path.capacity());
@@ -119,7 +124,8 @@ fn validate_definitions(
     input: &Input,
 ) -> Result<(), &'static str> {
     let mut seen = HashSet::default();
-    for id in &input.definitions {
+    let mut next_site = 0;
+    for (id, binding) in input.definitions.iter().zip(&input.declarations) {
         catalog.charge(1)?;
         let definition = definitions
             .get(id.0 as usize)
@@ -134,13 +140,25 @@ fn validate_definitions(
                     | DefKind::Enum
                     | DefKind::Trait
                     | DefKind::TypeAlias
+                    | DefKind::SelfType
             )
+            || binding.kind != definition.kind
         {
             return Err("imported body declaration is not a source-free declaration");
         }
         if catalog.definitions.contains_key(id) || !seen.insert(*id) {
             return Err("imported declaration remap collides with another declaration");
         }
+        if binding.sites.start != next_site
+            || binding.sites.end <= next_site
+            || binding.sites.end as usize > input.declaration_labels.len()
+        {
+            return Err("imported declaration sites are not a complete ordered partition");
+        }
+        next_site = binding.sites.end;
+    }
+    if next_site as usize != input.declaration_labels.len() {
+        return Err("imported declaration diagnostic sites are unreachable");
     }
     Ok(())
 }

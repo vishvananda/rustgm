@@ -15,7 +15,7 @@ use crate::{
     },
 };
 
-fn definitions(count: u32) -> Vec<Definition> {
+pub(super) fn definitions(count: u32) -> Vec<Definition> {
     (0..count)
         .map(|index| Definition {
             name: NameId(index),
@@ -28,7 +28,7 @@ fn definitions(count: u32) -> Vec<Definition> {
         })
         .collect()
 }
-fn input(name: &str, first: u32, count: u32) -> Result<Input, &'static str> {
+pub(super) fn input(name: &str, first: u32, count: u32) -> Result<Input, &'static str> {
     let owners = BodyCatalog::new(
         CrateIdentity::new("provider", name)?,
         &vec![DeclarationBody::Function; count as usize],
@@ -45,6 +45,12 @@ fn input(name: &str, first: u32, count: u32) -> Result<Input, &'static str> {
         owners,
         edition: Edition::Rust2021,
         definitions: (first..first + count).map(DefId).collect(),
+        declarations: (0..count)
+            .map(|index| DeclarationBinding {
+                kind: DefKind::Function,
+                sites: index..index + 1,
+            })
+            .collect(),
         bindings: (0..count)
             .map(|index| Binding {
                 unit: BodyRef(index),
@@ -63,6 +69,7 @@ fn input(name: &str, first: u32, count: u32) -> Result<Input, &'static str> {
             });
             count as usize
         ],
+        declaration_labels: vec![None; count as usize],
     })
 }
 fn expected(definition: u32, unit: ImportedBodyId) -> Expected {
@@ -331,7 +338,7 @@ fn quotas_are_preflighted_and_warm_queries_are_constant_work() -> Result<(), &'s
             }
             let start = catalog.work();
             let installed = catalog.install(&defs, input("wanted", noise, width)?)?;
-            assert_eq!(catalog.work() - start, 28 + 3 * width as usize);
+            assert_eq!(catalog.work() - start, 28 + 4 * width as usize);
             let body = installed.body(BodyRef(width - 1))?;
             let retained = catalog.retained_bytes();
             let start = catalog.work();
