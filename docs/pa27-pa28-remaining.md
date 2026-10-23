@@ -28,13 +28,23 @@ Open implementation or profile contracts remain:
   and index offsets now reuse original backing coordinates, masks, fragments and
   access checks; this does not implement numeric pointer reconstruction or every
   storage family. See `pa27-byte-access-review.md` for the qualified controls.
-- Broader niche enum, opaque/string and unsupported capture-child backing, whole raw-slice values and
+- Broader niche enum, missing opaque physical heads and unsupported capture-child backing, whole raw-slice values and
   object reference-cast/reconstruction. Qualified thin/function/slice/vtable word
   fragments now preserve independent metadata and incoming write restrictions;
   complete scalar/aggregate Images no longer require every field to be scalar.
   Partial fragments remain transient, and typed reads/publication retain their
   validity gates. See `docs/pa28-relocation-design.md` for exact supported and
   unsupported profiles; no active-member union model is introduced.
+- String data/length word transport now uses the existing exact U8 range, mask,
+  provenance and write-authority rules, including empty/one-past references. This
+  is raw storage support, with no eager UTF8 validity rule or compiler string API.
+  Actual UTF8 library validation/conversion routines remain Rust source and need
+  their source intrinsic prerequisites. The two unchanged original panic-macro
+  sources remain required positives blocked on ordinary source-library bindings;
+  their separately frozen helper reductions qualify storage only. See
+  `pa27-string-byte-words.md`. Missing opaque heads remain unsupported until the
+  actual checked original publishes them; completed-head backing and the scoped
+  defining-head readiness family are qualified separately.
 - Shared-derived interior-mutable writes. A per-pointer restriction is retained,
   but crossing an UnsafeCell-like boundary needs its own typed permission model.
   Runtime `invalid_reference_casting` policy is a separate outstanding frontend

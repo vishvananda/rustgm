@@ -1,0 +1,1 @@
+static B:[u8;1]=[65];union W{a:(*const u8,usize),b:*const str}const S:&str=unsafe{&*W{a:((&raw const B as *const u8).add(1),0)}.b};const N:usize={let s=S;let b:&[u8]=unsafe{*(&raw const s as *const &[u8])};b.len()};fn main(){if N!=0{let _=fail(0);}}fn fail(x:u8)->u8{1/x}

@@ -20,6 +20,40 @@ impl WordAddress {
     }
 }
 impl Evaluator<'_> {
+    /// A word at an array's end may still select an empty reference range.
+    pub(crate) fn word_sequence_range(
+        &mut self,
+        address: WordAddress,
+        length: u64,
+        target: TypeId,
+    ) -> Result<Constant, Failure> {
+        let reader = Reader::new(self.facts());
+        let root = reader.location(address.root)?.ty;
+        let super::super::StoredShape::Array {
+            element,
+            stride,
+            length: bound,
+        } = reader.storage_shape(root)?
+        else {
+            return Err("symbolic sequence word requires original array storage".into());
+        };
+        if !reader.same_storage_type(element, reader.sequence_element(target)?) {
+            return Err("symbolic sequence word has a different stored element".into());
+        }
+        let from = if stride == 0 && address.offset == 0 {
+            0
+        } else if stride != 0 && address.offset.is_multiple_of(stride) {
+            address.offset / stride
+        } else {
+            return Err("symbolic sequence word is not at an element boundary".into());
+        };
+        if from.checked_add(length).is_none_or(|end| end > bound) {
+            return Err(Failure::Fault("constant range is out of bounds"));
+        }
+        let mut pointer = super::super::references::Pointer::new(address.root.0);
+        pointer.write = address.write;
+        self.subsequence(Constant(Value::Reference(pointer)), from, length, target)
+    }
     pub(crate) fn word_address(
         &mut self,
         value: Constant,
@@ -186,22 +220,47 @@ impl Evaluator<'_> {
     }
 }
 impl Reader<'_> {
-    fn sequence_displacement(
+    pub(crate) fn sequence_displacement(
         self,
         parent: TypeId,
         from: u64,
         length: u64,
         selected: TypeId,
     ) -> Result<u64, &'static str> {
-        use super::super::StoredShape;
-        let StoredShape::Array {
+        let layout = self
+            .facts
+            .layouts
+            .get(parent)
+            .ok_or("missing prepared sequence layout")?;
+        self.sequence_layout_displacement(parent, *layout, from, length, selected)
+    }
+    /// Lowering and execution may own distinct completed layout caches.
+    pub(crate) fn sequence_layout_displacement(
+        self,
+        parent: TypeId,
+        layout: crate::abi::layout::Layout,
+        from: u64,
+        length: u64,
+        selected: TypeId,
+    ) -> Result<u64, &'static str> {
+        let Some(crate::types::Kind::Array {
             element,
-            stride,
             length: bound,
-        } = self.storage_shape(parent)?
+        }) = self.facts.types.kind(parent)
+        else {
+            return Err("symbolic range requires original array storage");
+        };
+        let crate::abi::layout::Shape::Array {
+            element: actual,
+            length: count,
+            stride,
+        } = layout.shape
         else {
             return Err("symbolic range requires retained array storage");
         };
+        if actual != element || count != bound {
+            return Err("symbolic range layout differs from its canonical array type");
+        }
         if from.checked_add(length).is_none_or(|end| end > bound) {
             return Err("symbolic range exceeds its original allocation");
         }
@@ -210,7 +269,10 @@ impl Reader<'_> {
                 element: actual,
                 length: count,
             }) if count == length && self.same_storage_type(element, actual) => {}
-            Some(crate::types::Kind::Slice(actual)) if self.same_storage_type(element, actual) => {}
+            Some(
+                crate::types::Kind::Slice(_)
+                | crate::types::Kind::Primitive(crate::types::Primitive::Str),
+            ) if self.same_storage_type(element, self.sequence_element(selected)?) => {}
             _ => return Err("symbolic range has a different stored element type"),
         }
         from.checked_mul(stride)

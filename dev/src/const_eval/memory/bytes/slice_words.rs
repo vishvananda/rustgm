@@ -1,12 +1,45 @@
-//! A reconstructed slice reference validates its actual retained range, not raw bytes.
+//! Slice and str references validate initialized elements in their retained range.
 use super::{Constant, Failure, Machine, Read, Reader, TypeId};
 use crate::{
     const_eval::static_reads::ReadPurpose,
     sema::values::{Origin, StoredShape},
-    types::Kind,
 };
 impl Machine<'_, '_> {
-    pub(super) fn validate_slice_word_reference(
+    pub(in crate::const_eval) fn checked_string_reference(
+        &mut self,
+        place: crate::const_eval::memory::Resolved,
+        mutable: bool,
+    ) -> Result<Option<Constant>, Failure> {
+        let access = place
+            .raw
+            .ok_or("constant str reference lacks its raw anchor")?;
+        if access.ty != place.ty
+            || access.location != place.address.location()
+            || place.union.is_some()
+        {
+            return Err("constant str reference differs from its raw anchor".into());
+        }
+        self.path(place.address)?;
+        let (target, metadata) = self.evaluator.pointer_words(place.address)?;
+        let crate::sema::values::WordTarget::Value(pointer) = target else {
+            return Err("constant str reference lacks a data pointer".into());
+        };
+        let Some(crate::sema::values::Metadata::Length(length)) = metadata else {
+            return Err("constant str reference lacks length metadata".into());
+        };
+        let (address, work) = self
+            .evaluator
+            .word_address(pointer, self.limits.steps.saturating_sub(self.work.steps))?;
+        self.charge(work)?;
+        let selected = self.reconstruct_sequence_word(address, place.ty, length, true)?;
+        Ok(
+            match self.validate_sequence_word_reference(selected, place.ty, mutable)? {
+                Read::Pending => None,
+                Read::Value(value) => Some(value),
+            },
+        )
+    }
+    pub(super) fn validate_sequence_word_reference(
         &mut self,
         address: Constant,
         ty: TypeId,
@@ -33,9 +66,7 @@ impl Machine<'_, '_> {
         }
         let root = self.footprint(location.ty)?;
         let (stored, offset) = self.storage_offset(location.ty, &path.fields)?;
-        let Some(Kind::Slice(expected)) = self.evaluator.facts().types.kind(ty) else {
-            return Err("symbolic slice validity requires a slice type".into());
-        };
+        let expected = Reader::new(self.evaluator.facts()).sequence_element(ty)?;
         let StoredShape::Array {
             element,
             stride,

@@ -36,8 +36,29 @@ impl Machine<'_, '_> {
         }
         let root_ty = Reader::new(self.evaluator.facts()).location(path.root)?.ty;
         let (stored, offset) = self.storage_offset(root_ty, &path.fields)?;
-        if path.range()?.is_some() {
-            return Err("constant raw whole-range byte access is not implemented".into());
+        if let Some(range) = path.range()? {
+            if self.evaluator.facts().types.is_sized(place.ty) != Some(true) {
+                return Err("constant raw whole-range byte access is not implemented".into());
+            }
+            self.footprint(stored)?;
+            let reader = Reader::new(self.evaluator.facts());
+            let selected = reader
+                .location(
+                    place
+                        .address
+                        .location()
+                        .ok_or("constant sequence lacks provenance")?,
+                )?
+                .ty;
+            let displacement =
+                reader.sequence_displacement(stored, range.from, range.length, selected)?;
+            return Ok(Some(BytePlace {
+                root: path.root,
+                offset: offset
+                    .checked_add(displacement)
+                    .ok_or("constant sequence byte offset overflow")?,
+                ty: place.ty,
+            }));
         }
         if Reader::new(self.evaluator.facts()).same_storage_type(stored, place.ty) {
             return Ok(None);

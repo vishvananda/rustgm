@@ -1,0 +1,1 @@
+union U{a:&'static str,b:&'static str}const S:&str=unsafe{U{a:""}.b};const N:usize={let s=S;let b:&[u8]=unsafe{*(&raw const s as *const &[u8])};b.len()};fn main(){if N!=0{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
