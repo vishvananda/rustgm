@@ -496,7 +496,7 @@ impl Search<'_> {
                     self.query.reused |= matches!(decision, Decision::Proven(_));
                     return Ok(Some(decision));
                 }
-                if let Some(decision) = self.query.reuse_completed(frame, goal) {
+                if let Some(decision) = self.query.reuse_completed(facts, frame, goal)? {
                     return Ok(Some(decision));
                 }
                 if matches!(

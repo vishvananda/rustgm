@@ -22,6 +22,17 @@ opposites from still-required const and extra-role contexts. The grouped
 does not claim complete Drop/Pin, const or unsized support. See
 [the destruction-helper review](../../docs/pa31-source-drop-glue.md).
 
+`spec/source-freeze/formation/typed-depth-*.rs` retains six byte-identical
+copies of the frozen whole-caller alias-depth inputs (depth 8/32/128, with
+0/128 unrelated nominal declarations). Their explicit hashes, source profile,
+independent observations and required native 7 outcomes are recorded in
+[typed-depth-contract.json](spec/source-freeze/formation/typed-depth-contract.json).
+The private `typed_sizing_work` controls measure actual caller inference and
+canonical work plus retained proof-map storage; the grouped `provider_traits`
+native test executes every copied source. This is development coverage, not a
+PA31 manifest or whole-core acceptance. See the
+[source-sizing review](../../docs/pa31-source-sizing-reuse.md).
+
 Required families: lang-item identity and signatures; intrinsic declarations and const eligibility; builtin expansion and capability answers; duplicate and forged bindings; panic-abort runtime boundary.
 
 Follow the [owning brief](../README.md) and

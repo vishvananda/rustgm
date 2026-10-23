@@ -263,3 +263,15 @@ fn native_observe_fixture(name: &str, path: &str, expected: u8) -> TestResult {
     std::fs::remove_file(&object)?;
     Ok(())
 }
+
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn original_full_typed_source_sizing_depths_keep_native_seven() -> TestResult {
+    for depth in [8, 32, 128] {
+        for noise in [0, 128] {
+            let name = format!("typed-depth-{depth}-noise-{noise}");
+            native_observe_fixture(&name, &format!("formation/{name}.rs"), 7)?;
+        }
+    }
+    Ok(())
+}
