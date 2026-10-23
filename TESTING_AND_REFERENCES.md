@@ -80,6 +80,9 @@ itself invalidate every compiler measurement or require another full native run.
   backend, with one Cargo invocation and one cleanup scan. It replaces separate
   full regular/private/native passes; do not also run `--lib` and then repeat those
   same tests in the full suite. Run `make test-report` for the course text checks.
+  Full commands use Cargo's `--no-fail-fast`: every compiled test target runs,
+  and any failing target still fails the command. This collects independent
+  failures in one build instead of hiding later targets behind the first failure.
   Verify upstream fixtures after
   fixture changes and qualify the backend after contract/bridge changes. Preserve
   the receipts for the exact candidate tested.
@@ -108,6 +111,17 @@ The debug library lane retains the compiler's assertion-only validation paths;
 the full debug integration lane remains available through `make test-debug`.
 Use the
 storage guard throughout, with scoped cleanup when all output roots are known.
+
+For a failed combined run, preserve its failure and every completed target's
+source snapshot, binary hash, exact inventory and result. Review the complete
+source delta before retaining an unaffected target; a passing count alone is
+insufficient. Rebuild and rerun every affected target, including native cases,
+then run all active text cases with the corrected CLI. Changes to shared proof,
+lowering or representation behavior generally invalidate the broader run.
+Record retained and fresh results separately rather than describing recovery
+as a fresh full pass. Feature work that changes keyword classification or cold
+owner layouts should include the owning private classification/layout invariants
+in its focused batch; all-target Clippy cannot check their runtime assertions.
 
 `make test-host-builds` separately qualifies PA34's host dependency executor with
 an authored offline Cargo graph and actual pinned host compilation. It declares

@@ -12,14 +12,14 @@ REF_TEST_APP ?= $(ROOT)/dev/rustgm-ref
 all:
 	$(PYTHON) scripts/storage.py run --no-prune -- $(CARGO) build --manifest-path dev/Cargo.toml --release --locked
 test:
-	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked
+	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked --no-fail-fast
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
 test-debug:
-	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --locked
+	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --locked --no-fail-fast
 test-debug-invariants:
 	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --locked --lib
 test-maintainer: test-backend
-	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked -- --include-ignored
+	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked --no-fail-fast -- --include-ignored
 test-report: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
 	@echo 'PA25-PA44: planned, not included in acceptance totals'
@@ -49,7 +49,7 @@ test-host-builds:
 test-backend:
 	$(PYTHON) scripts/backend.py --test
 test-maintainer-native: test-backend
-	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked -- --ignored
+	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked --no-fail-fast -- --ignored
 test-native: test-maintainer-native
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa11 --app "$(RUSTGM_TEST_APP)"
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa12 --app "$(RUSTGM_TEST_APP)"
