@@ -65,12 +65,57 @@ comparisons in 52.96 seconds. `course-complete.json` in the evidence root binds
 the source commit, binary hash and individual receipts. This cheap regression
 pass reused the focused batch's CLI build; it did not invoke Cargo again.
 
+## Token syntax and provenance checkpoint
+
+The explicit `parse_crate_in_edition` syntax entrypoint now distinguishes `gen`
+in Rust 2021 and Rust 2024. Existing entrypoints still default to 2024. Name,
+path, field, use, generic/capture and attribute positions consume the same typed
+keyword rule; raw identifiers keep their existing behavior. This is syntax
+support, not a complete source-edition profile or a new driver flag.
+
+`Inputs::edition` reuses the parser's existing context reference. Uniform source
+uses the typed Edition; `WithEditions` borrows an immutable provenance resolver
+beside the existing opaque-input provider. Only `gen` demands that resolver.
+Transparent ident/tt captures do not interpret keywords. Macro fragment grammar
+still comes from the definition, while eligible syntax capture uses each input
+token's edition. Matcher memo entries remain invocation-local.
+
+`Stream::token_origin` checks a complete generated token against the existing
+sorted origin ranges. The caller resolves that original file/span, continuing
+through parent expansion maps when necessary. No token, cursor, AST, parser or
+retained macro record gains a field, and generated spelling is never lexed again.
+Opaque expression forwarding reuses parsed syntax without edition lookups.
+Attribute conversion likewise retains checked path-name admission in local,
+ordered graft ranges; new adjacent tokens still require their own provenance.
+Ordinary attributes allocate no graft-range storage.
+
+Independent source plans and observations are retained under
+`obj/parallel/pa34-token-editions-v1`. The first plan's 16 local source outcomes
+matched. Its mixed-edition run exposed an invalid provider artifact filename;
+those cross-crate failures are infrastructure evidence, not language rejection.
+The corrected immutable `independent-v2` plan
+(`9c233749f4e9ffe493248d2042f63563ffb42f10923e6817572d669e4b125a47`)
+passed all 34 commands: two providers, 20 source checks and 12 native executions.
+They distinguish captured names, definition-written names, raw identifiers and
+generated arguments consumed by a second macro. Eight further metadata and
+restricted-visibility probes matched in `qualification-v1`.
+
+The first candidate focused batch passed 68 frontend tests and five private
+destruction-query invariants; strict Clippy, the architecture audit and all 152
+harness tests passed. Its debug code generation took 138.68 seconds; test
+execution took 0.30 seconds. These shared-machine observations illustrate the
+reason for batching code generation, not a compiler speedup measurement.
+The subsequent opaque attribute-path correction and its new regressions await
+combined focused qualification with the next source-trait integration. Neither
+snapshot has completed the combined release/native/performance publication gate.
+
 ## Required continuation
 
-Carry explicit source editions through the lexer, bounded parser cursor, module
-loading and includes. Preserve per-token edition provenance across macro expansion
-and metadata without growing every ordinary token or reparsing generated text.
-Qualify mixed-edition generated definitions and opaque forwarding before exposing
+Wire the explicit syntax context through configured attributes, module loading,
+includes, persistent expansion sessions and metadata. Generated source owners
+must resolve their parent origin chains with bounded work; the standalone stream
+helper is not whole-package integration. Qualify mixed-edition generated
+definitions and opaque forwarding through those real entrypoints before exposing
 the driver option. Define reserved-token rejection at the appropriate grammar
 boundary without silently changing PA1's documented boundary-only token view.
 

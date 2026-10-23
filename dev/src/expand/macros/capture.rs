@@ -148,7 +148,8 @@ impl Captures {
                 }
                 Fragment::Visibility => {
                     self.parser_calls += 1;
-                    let parsed = fragment::visibility(source, &input.tokens, start)?;
+                    let parsed =
+                        fragment::visibility_with_inputs(source, &input.tokens, start, inputs)?;
                     (
                         parsed.position,
                         Payload::Visibility {
@@ -194,7 +195,15 @@ pub fn may_begin_with_inputs(
         return Ok(false);
     };
     if !matches!(token.kind, K::Interpolated(_)) {
-        return Ok(may_begin(fragment, Some(token), source));
+        let edition = if matches!(fragment, Fragment::Syntax(_))
+            && token.kind == K::Identifier
+            && source.get(token.start as usize..token.end as usize) == Some("gen")
+        {
+            inputs.edition(token)?
+        } else {
+            crate::support::edition::Edition::Rust2024
+        };
+        return Ok(may_begin_in(fragment, Some(token), source, edition));
     }
     let splice = inputs
         .get(token)?
@@ -302,6 +311,19 @@ fn own(source: &str, ast: crate::syntax::ast::Ast<'_>) -> Result<ParsedSyntax, L
 }
 #[must_use]
 pub fn may_begin(fragment: Fragment, token: Option<Token>, source: &str) -> bool {
+    may_begin_in(
+        fragment,
+        token,
+        source,
+        crate::support::edition::Edition::Rust2024,
+    )
+}
+fn may_begin_in(
+    fragment: Fragment,
+    token: Option<Token>,
+    source: &str,
+    edition: crate::support::edition::Edition,
+) -> bool {
     let Some(token) = token else {
         return false;
     };
@@ -324,12 +346,12 @@ pub fn may_begin(fragment: Fragment, token: Option<Token>, source: &str) -> bool
             token.kind,
             K::Identifier | K::RawIdentifier | K::Punctuation(P::ColonColon)
         ),
-        Fragment::Syntax(kind) => syntax_start(kind, token, spelling),
+        Fragment::Syntax(kind) => syntax_start(kind, token, spelling, edition),
         Fragment::Visibility => {
             matches!(
                 token.kind,
                 K::Identifier | K::RawIdentifier | K::Punctuation(P::Comma)
-            ) || syntax_start(F::Type, token, spelling)
+            ) || syntax_start(F::Type, token, spelling, edition)
         }
     }
 }
@@ -337,7 +359,12 @@ pub fn may_begin(fragment: Fragment, token: Option<Token>, source: &str) -> bool
     clippy::too_many_lines,
     reason = "one FIRST-token dispatch over the fragment grammar"
 )]
-fn syntax_start(kind: F, token: Token, spelling: &str) -> bool {
+fn syntax_start(
+    kind: F,
+    token: Token,
+    spelling: &str,
+    edition: crate::support::edition::Edition,
+) -> bool {
     let literal = matches!(
         token.kind,
         K::Integer
@@ -355,7 +382,7 @@ fn syntax_start(kind: F, token: Token, spelling: &str) -> bool {
         || token.kind == K::Punctuation(P::ColonColon)
         || (token.kind == K::Identifier
             && spelling != "_"
-            && (!keyword::reserved(spelling)
+            && (!keyword::Word::classify(spelling.as_bytes()).reserved_in(edition)
                 || matches!(spelling, "self" | "Self" | "crate" | "super")));
     match kind {
         F::Block => token.kind == K::Punctuation(P::OpenBrace),

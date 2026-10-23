@@ -255,6 +255,21 @@ impl Stream {
         }
         Ok(result)
     }
+    /// Resolve one complete generated token to its immediate source provenance.
+    /// A caller owning generated source files must continue through that file's
+    /// origin map; hygiene context does not replace token source identity.
+    ///
+    /// # Errors
+    /// Rejects missing origins and ranges that do not identify a complete token.
+    pub fn token_origin(&self, token: Token) -> Result<Location, LexError> {
+        let origin = self
+            .origin(token.start)
+            .filter(|origin| {
+                origin.generated.start == token.start && origin.generated.end == token.end
+            })
+            .ok_or_else(|| error(token.start, "missing complete token origin"))?;
+        Ok(origin.original)
+    }
     /// Locate the typed parent-origin mapping of a generated offset. A copied
     /// opaque slice may contain multiple contexts; None delegates to its parent.
     #[must_use]

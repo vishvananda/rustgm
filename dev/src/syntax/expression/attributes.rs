@@ -78,6 +78,7 @@ impl Parser<'_, '_> {
     fn attribute_capture(&mut self, inner: bool) -> Result<AttributeCapture, LexError> {
         let token = self.required()?;
         let mut builder = ForestBuilder::default();
+        let mut context = attribute::Context::new(self.inputs);
         builder.push(self.cursor.source, token)?;
         if token.kind == TokenKind::Punctuation(P::Pound) {
             if inner {
@@ -106,10 +107,12 @@ impl Parser<'_, '_> {
                     if let Nonterminal::Metadata { forest, .. } = splice.fragment {
                         self.required()?;
                         builder.append(forest, |span| splice.span(span))?;
+                        context.parsed_path(splice.destination)?;
                         continue;
                     }
                     if splice.append_attribute_path(self.cursor.source, &mut builder)? {
                         self.required()?;
+                        context.parsed_path(splice.destination)?;
                         continue;
                     }
                 }
@@ -117,7 +120,7 @@ impl Parser<'_, '_> {
             }
         }
         let forest = builder.finish(self.cursor.end())?;
-        let (attribute, _) = attribute::at(&forest, self.cursor.source, 0)?
+        let (attribute, _) = attribute::at_with_context(&forest, self.cursor.source, 0, &context)?
             .ok_or_else(|| error(token.start, "expected attribute"))?;
         Ok(AttributeCapture { forest, attribute })
     }

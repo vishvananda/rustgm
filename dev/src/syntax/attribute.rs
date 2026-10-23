@@ -5,6 +5,34 @@ use crate::lex::{
     token::{Kind, LexError, Punctuation},
 };
 
+/// Opaque paths already established identifier validity. Keep that evidence
+/// local to attribute construction, without assigning them a new edition.
+pub(crate) struct Context<'a> {
+    inputs: &'a dyn super::interpolation::Inputs,
+    parsed: Vec<Span>,
+}
+impl<'a> Context<'a> {
+    pub(crate) const fn new(inputs: &'a dyn super::interpolation::Inputs) -> Self {
+        Self {
+            inputs,
+            parsed: Vec::new(),
+        }
+    }
+    pub(crate) fn parsed_path(&mut self, span: Span) -> Result<(), LexError> {
+        if span.start > span.end || self.parsed.last().is_some_and(|old| old.end > span.start) {
+            return Err(error(span.start, "invalid parsed attribute path order"));
+        }
+        self.parsed.push(span);
+        Ok(())
+    }
+    fn contains(&self, token: crate::lex::token::Token) -> bool {
+        let index = self.parsed.partition_point(|span| span.end <= token.start);
+        self.parsed.get(index).is_some_and(|span| {
+            span.start <= token.start && token.start < token.end && token.end <= span.end
+        })
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Input {
     Empty,
@@ -57,6 +85,26 @@ impl Attribute {
 /// # Errors
 /// Reports malformed # attributes, paths, unsafe wrappers or empty RHS input.
 pub fn at(forest: &Forest, source: &str, index: u32) -> Result<Option<(Attribute, u32)>, LexError> {
+    at_with_inputs(forest, source, index, &super::interpolation::EMPTY_INPUTS)
+}
+
+/// # Errors
+/// Reports malformed attributes and missing edition provenance for path tokens.
+pub fn at_with_inputs(
+    forest: &Forest,
+    source: &str,
+    index: u32,
+    inputs: &dyn super::interpolation::Inputs,
+) -> Result<Option<(Attribute, u32)>, LexError> {
+    at_with_context(forest, source, index, &Context::new(inputs))
+}
+
+pub(crate) fn at_with_context(
+    forest: &Forest,
+    source: &str,
+    index: u32,
+    context: &Context<'_>,
+) -> Result<Option<(Attribute, u32)>, LexError> {
     let Some(tree) = forest.tree(index) else {
         return Ok(None);
     };
@@ -105,7 +153,7 @@ pub fn at(forest: &Forest, source: &str, index: u32) -> Result<Option<(Attribute
         end: group.span.end,
     };
     Ok(Some((
-        parse(forest, source, range, style, span)?,
+        parse_with_context(forest, source, range, style, span, context)?,
         forest.after(bracket),
     )))
 }
@@ -117,9 +165,40 @@ pub fn at(forest: &Forest, source: &str, index: u32) -> Result<Option<(Attribute
 pub fn parse(
     forest: &Forest,
     source: &str,
+    range: TreeRange,
+    style: Style,
+    span: Span,
+) -> Result<Attribute, LexError> {
+    parse_with_inputs(
+        forest,
+        source,
+        range,
+        style,
+        span,
+        &super::interpolation::EMPTY_INPUTS,
+    )
+}
+
+/// # Errors
+/// Reports malformed paths and missing edition provenance, preserving opaque input.
+pub fn parse_with_inputs(
+    forest: &Forest,
+    source: &str,
+    range: TreeRange,
+    style: Style,
+    span: Span,
+    inputs: &dyn super::interpolation::Inputs,
+) -> Result<Attribute, LexError> {
+    parse_with_context(forest, source, range, style, span, &Context::new(inputs))
+}
+
+pub(crate) fn parse_with_context(
+    forest: &Forest,
+    source: &str,
     mut range: TreeRange,
     style: Style,
     span: Span,
+    context: &Context<'_>,
 ) -> Result<Attribute, LexError> {
     let unsafe_wrapper = forest.name(source, range.start) == Some("unsafe")
         && forest
@@ -157,7 +236,7 @@ pub fn parse(
         next += 1;
     }
     loop {
-        if next >= range.end || !path_segment(forest, source, next) {
+        if next >= range.end || !path_segment(forest, source, next, context)? {
             return Err(error(
                 forest.offset(next),
                 "expected attribute path segment",
@@ -197,16 +276,23 @@ pub fn parse(
     })
 }
 
-fn path_segment(forest: &Forest, source: &str, index: u32) -> bool {
+fn path_segment(
+    forest: &Forest,
+    source: &str,
+    index: u32,
+    context: &Context<'_>,
+) -> Result<bool, LexError> {
     let Some(token) = forest.token(index) else {
-        return false;
+        return Ok(false);
     };
     let Some(name) = forest.name(source, index) else {
-        return false;
+        return Ok(false);
     };
-    if token.kind == Kind::RawIdentifier {
+    Ok(if token.kind == Kind::RawIdentifier {
         !matches!(name, "_" | "self" | "Self" | "crate" | "super")
+    } else if name == "gen" {
+        context.contains(token) || !keyword::Word::Gen.reserved_in(context.inputs.edition(token)?)
     } else {
         !keyword::reserved(name) || matches!(name, "self" | "crate" | "super")
-    }
+    })
 }

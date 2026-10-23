@@ -20,6 +20,12 @@ Use the shared typed `support::edition::Edition` for defining semantics; never
 infer it from the current consumer. Select a macro's expression fragment grammar
 once from its defining edition, retaining the completed fragment kind for matching
 and memoization. Token provenance remains separate from that grammar selection.
+Only edition-sensitive syntax demands a token's originating edition. Borrow this
+context through the existing parser input provider, and use retained expansion
+origin ranges; do not grow ordinary tokens or relex generated spelling. A parsed
+opaque fragment retains its identifier validity when converted to attribute
+paths. Keep that evidence scoped to the actual grafted ranges, rather than
+assigning the output stream or neighboring tokens the capture's edition.
 The [PA34 context foundation](docs/pa34-edition-context.md) records the independent
 mixed-edition controls and the remaining work before enabling Rust 2021 in the CLI.
 

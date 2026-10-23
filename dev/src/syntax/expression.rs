@@ -15,7 +15,7 @@ use crate::{
 mod control;
 pub mod fragment;
 mod items;
-pub use items::{parse_crate, parse_crate_with};
+pub use items::{parse_crate, parse_crate_in_edition, parse_crate_with};
 mod attributes;
 mod interpolate;
 use fragment::FragmentKind as F;
@@ -528,7 +528,7 @@ impl<'source> Parser<'source, '_> {
         let absolute = self.eat(P::ColonColon)?;
         loop {
             let token = self.required()?;
-            if !self.path_segment(token, self.cursor.last_word()) {
+            if !self.path_segment(token, self.cursor.last_word())? {
                 return Err(error(token.start, "expected path segment"));
             }
             let segment = self.name_node(token)?;
@@ -688,7 +688,7 @@ impl<'source> Parser<'source, '_> {
             );
         }
         let name = self.cursor.projection()?;
-        if !self.field_name(name, self.cursor.last_word()) {
+        if !self.field_name(name, self.cursor.last_word())? {
             return Err(error(
                 name.start,
                 "expected field name or canonical tuple index",
@@ -763,7 +763,7 @@ impl<'source> Parser<'source, '_> {
                 break;
             }
             let token = self.required()?;
-            if !self.field_name(token, self.cursor.last_word()) {
+            if !self.field_name(token, self.cursor.last_word())? {
                 return Err(error(token.start, "expected struct field"));
             }
             let name = Span {
@@ -790,14 +790,14 @@ impl<'source> Parser<'source, '_> {
     }
 
     /// `word` is the cursor classification of `token` when it was consumed.
-    fn field_name(&self, token: Token, word: Word) -> bool {
-        if self.identifier(token, word) {
-            return true;
+    fn field_name(&self, token: Token, word: Word) -> Result<bool, LexError> {
+        if self.identifier(token, word)? {
+            return Ok(true);
         }
         let spelling = self.cursor.spelling(token);
-        token.kind == TokenKind::Integer
+        Ok(token.kind == TokenKind::Integer
             && spelling.bytes().all(|b| b.is_ascii_digit())
-            && (spelling == "0" || !spelling.starts_with('0'))
+            && (spelling == "0" || !spelling.starts_with('0')))
     }
 
     /// `keyword::identifier` over a consumed token, using its classified word.
@@ -809,20 +809,24 @@ impl<'source> Parser<'source, '_> {
             reason = "per-segment keyword check; callgrind shows calls dominate"
         )
     )]
-    fn identifier(&self, token: Token, word: Word) -> bool {
-        match token.kind {
+    fn identifier(&self, token: Token, word: Word) -> Result<bool, LexError> {
+        Ok(match token.kind {
+            TokenKind::Identifier if word == Word::Gen => {
+                !word.reserved_in(self.inputs.edition(token)?)
+            }
             TokenKind::Identifier => !word.reserved(),
             TokenKind::RawIdentifier => {
                 let spelling = self.cursor.spelling(token);
                 keyword::identifier(token.kind, spelling.strip_prefix("r#").unwrap_or(spelling))
             }
             _ => false,
-        }
+        })
     }
 
     /// An identifier or one of the path keywords `self`, `Self`, `super` and `crate`.
-    fn path_segment(&self, token: Token, word: Word) -> bool {
-        self.identifier(token, word) || (token.kind == TokenKind::Identifier && word.path_keyword())
+    fn path_segment(&self, token: Token, word: Word) -> Result<bool, LexError> {
+        Ok(self.identifier(token, word)?
+            || (token.kind == TokenKind::Identifier && word.path_keyword()))
     }
 
     fn can_start(&mut self) -> Result<bool, LexError> {
