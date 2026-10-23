@@ -146,37 +146,158 @@ explicit unsupported boundary. Conditional const debt stays at its actual reache
 execution boundary. Existing implicit cleanup remains owned by C's validated
 canonical destructor path, not by a textual helper alias.
 
-## Current source evidence and remaining qualification
+## Qualified local closing checkpoint
 
-The source-freeze-v4 independent plan corrects the retained v3 hypothesis: an
-explicit `Freeze for &N` suppresses defaults for the entire shared-reference
-family, including &M. Mutable references remain separate. Const and mutable raw
-pointer families are likewise separate. All13 corrected object outcomes match;
-five native positives return7. Six observations reuse exact v3 source hashes;
-seven new controls were independently compiled. A stronger negative header not
-required by its nominal is rejected by Rust even unused (E0367); an exact matching
-nominal Copy-bound negative and unused reference-negative both execute7.
+The local close is qualified against `bb56fb92` (the explicitly unqualified
+`aa8cccd9` source-role snapshot, clean C475da0ea NeedsDrop registration/kernel,
+and ff9c6869 layout-only corrections). It is not a combined release or whole-core
+acceptance. The earlier WIP claim is superseded only by the receipts below.
+Root owns combined qualification and publication.
 
-The first header-strength profile accepts exact instantiated formation clauses
-and checks implicit Sized promises without the impl's own environment. Additional
-implied, lifetime and quantified strength proofs remain explicit unsupported
-requirements. Structural Freeze formation retains the existing well-formedness
-check; nonempty returned formation proof is an explicit unsupported boundary.
+Actual Freeze16 and DropGlue17 retain real configured declarations. Freeze is an
+unsafe, nonconst, empty, nongeneric auto trait in this provider profile. Other
+source auto traits remain explicitly unsupported. The active `auto_traits`,
+`negative_impls` and `freeze_impls` capabilities do not grant arbitrary trait
+permission. Positive/negative impl headers keep actual polarity through canonical
+header preparation, coherence, selection, completion and extraction. The four-state
+header byte preserves Entry136; registered source-free factories are positive-only.
+A forged/missing source owner cannot select that path.
 
-Per-node debt completion examines each completed immediate child once and prepays
-its bounded extraction visits. Pending, cycle and provisional distinctions remain
-separate. The current source includes depth/noise work assertions and exact node,
-Selection and selected-slot layout assertions, but they have not executed yet.
-All-target check passed refutation-check-v4. Expanded strict development-v1/v2/v3
-retains mechanical lint failures; source/native tests did not run behind them.
-A further test-only return-type correction is included in this WIP.
+Negative results remain separate from positive Evidence. Debt-free refutation
+retains the actual goal/owner/arguments and immutable caller authority. Conditional
+refutation keeps its graph and is explicitly unsupported at consumers which cannot
+pay it. No negative proof enters positive extraction, callable dispatch or memo
+exports. The first header-strength profile accepts exact instantiated nominal
+formation clauses and checks implicit Sized promises without borrowing the impl's
+own environment. Additional valid implied/lifetime/quantified strength proofs
+remain required unsupported work. Lifetime-only Self arguments now come from the
+actual canonical nominal template, not an absent type-parameter table.
 
-Thirty-five unchanged owning source copies are under pa31/tests/spec/source-freeze
-and are explicitly consumed by maintainer tests. Two Rust-accepted unused header
-profiles remain unsupported; thirteen native-positive cases are required. No
-stage activation, text reference, oracle or native acceptance is claimed.
+The 35 original source cases retain two Rust-accepted unused header profiles
+(safe/non-auto Freeze) outside this provider profile. They are unsupported Rust
+positives, not language-negative claims. All 35 declared candidate outcomes pass;
+13 original native positives return7. Initial falsified hypotheses and missing
+feature contexts remain in source-freeze-v1/v3 evidence, with corrected independent
+v2/v4 observations kept separately.
 
-The source Drop registration gate is still the temporary fail-closed prerequisite
-until clean C475da0ea is integrated. Automatic cleanup633442 is independently Rust
-native7 but is not yet a candidate pass. Direct helper, pointer wrapper, reified,
-generic and CTFE glue execution remain distinct requirements owned with C.
+## Retained formation and measured work
+
+`Proof::new` has no scoped trait-selection fold. Calling its full nominal check
+from structural Freeze therefore failed the unchanged W<N> source at a real source
+sizing obligation. The repair keeps those obligations in ordinary iterative
+selection before physical fallback. It does not delete formation, infer proof
+from layout, invoke recursive fresh State queries, or weaken equality.
+
+The first continuation prototype collected flattened requirements per frame.
+Its measured depth8/32 work was4,837/71,461 and edges442/6,370; depth128 exhausted
+the existing work budget. This prototype is retained in development-v11 and is not
+the final algorithm.
+
+The final query uses immediate nominal contracts and explicit formation-only
+child frames. The existing family index is a typed map: Member-active semantics
+remain unchanged; Nominal entries are Active or Completed(private WF node), keyed
+by exact TypeId, surrounding callable depth and ScopeId in one immutable caller
+query. The existing `lift` rules still defer binder-local obligations. Every
+immediate dependency remains a graph edge; shared completed WF nodes replace
+flattened prefixes. A formation-only node has no selected source and cannot enter
+ordinary trait caches, positive extraction, dispatch or export. Actual source
+selection resumes after its complete prefix, even when it is empty. Active keys
+remain live and auto coinduction cannot cross formation prerequisites.
+
+Proven/Refuted answers retain the prefix and all child/region/Sized obligations.
+Deferred stays retryable. An Absent answer cannot discard an unpaid prefix: this
+first profile explicitly diagnoses that case rather than publishing/caching false.
+Source Freeze, MetaSized/PointeeSized and ordinary Destruct use the shared physical
+shape accessor only after this completion gate.
+
+Final charged work includes actual collector visits, including duplicate edges:
+
+| Axis | 8 | 32 | 128 |
+| --- | ---: | ---: | ---: |
+| Nested depth, work | 1,428 | 5,772 | 23,148 |
+| Nested depth, nodes | 91 | 355 | 1,411 |
+| Nested depth, edges | 142 | 574 | 2,302 |
+| Repeated width, work | 248 | 296 | 488 |
+| Repeated width, nodes/edges | 17/23 | 17/23 | 17/23 |
+
+Each observation is identical with0 or128 unrelated proof nodes. Private tests
+assert linear bounds and cross-extent growth. Active/completed/binder-depth cache
+states, no-early-publication, warmed reuse, source=None extraction denial and
+unpaid-absence attacks pass. The exact pointer-override opponent confirms that a
+nominal containing N need not demand Freeze for N when the real source pointer
+impl deliberately ignores its negative Freeze implementation.
+
+Ordinary non-source queries take a constant-time path and allocate no formation
+state. Formation is cold176→200bytes (+24 for immediate dependency storage).
+Its shared-map key/entry are24/16bytes; member demand consequently uses a larger
+cold map row than its former20-byte set key. Query656, Frame1312, Node160,
+Selection/Evidence136, Trial656, ASTNode36, ItemKind28, Item64, OwnerKind20,
+Owner32, SourceCore72, Package240, Resolution2032 and Declarations7048 are unchanged.
+
+The final DWARF measurement requires complete fields and the18-slot array bounds:
+Catalog464, Reservations472, Declaration20, Validated28. Each language array is
+360bytes, so the two additional roles account for40bytes in each cold array.
+C's prior destruction-registration pointer remains a separate8-byte change.
+These are source-demand owners, not ordinary dense record growth.
+
+## Actual Drop captures and cleanup
+
+The unchanged cleanup source SHA256
+`633442327cf88bd6f30745d737706695860e5ea96cdbfd2662a81cdb25e1d110`
+exposed source Drop's incorrectly hardcoded zero capture count. Registered
+Implementation.parameters was1 while FunctionRegions.captures was0, collapsing
+the impl lifetime with the receiver late slot. Actual source Drop now validates
+its canonical role/header/schema/target, takes captures from that registered
+implementation and validates the ordinary callable template. Separate late
+receiver slots, original/specialized proof and conformance remain mandatory.
+Bootstrap cleanup keeps its existing flattened argument mapping; it has no
+ordinary source Drop header to justify this source-only adapter.
+
+Named/elided/static and two-capture controls preserve seven independent Rust
+observations, including the ordinary bootstrap reference. All six source-profile
+candidate outcomes match, and the four native positives return7/7/7/11. The
+unchanged automatic cleanup program now executes7. This is real scope cleanup
+through C's exact registered destructor, not execution of the unused glue stub.
+
+DropGlue17 validates the actual const unsafe Rust helper, one PointeeSized
+parameter, one independent late &mut T→unit signature and Conditional Destruct
+clause. `drop_glue_member` classifies the exact actual DefId; pending matched
+readiness errors. Until C installs its independently proved runtime consumer,
+ordinary direct/reified selection explicitly rejects runtime lowering. The empty
+placeholder is never ordinary execution authority. Direct helper/ptr wrapper,
+reified/generic, slice/dyn/ZST and CTFE cleanup remain separately required; paid
+Conditional→Const execution still awaits its scoped continuation. Full upstream
+Drop/Pin/Deref and Unsize/CoerceUnsized contracts remain required as recorded by C.
+
+## Receipts and consumer handoff
+
+All paths below are relative to this worker checkout:
+
+- `obj/parallel/pa31/source-freeze-v5/development-v15`: strict plus13 private
+  and7 frontend roots; all35 originals,13 additional formation cases, capture
+  cases and the existing Copy/Clone/FnOnce original/instance controls pass.
+- `obj/parallel/pa31/source-freeze-v5/closing-v16`: fmt, all-target/all-feature
+  strict, audit2003/0, registration364roots/13binaries, six invalidated private
+  tests plus the moved capture root, and four native roots containing28 answers.
+  Final exact work/layout replay is in `final-counts.stdout`.
+- `nominal-source-formation-v1` preserves the independently valid but unsupported
+  Destruct header context; v2 adds the exact deny-explicit-impl attribute in a
+  distinct10-source plan (8 native7,2 Rust rejections). v3 independently qualifies
+  the pointer opponent and callable-local positive/native7 and negative.
+- `source-drop-captures-v1` preserves all7 original Rust outcomes/native receipts.
+- `closing-v16/cold-layout.*` preserves the complete-field DWARF measurements;
+  missing/zero/ambiguous layouts are not accepted evidence.
+
+Tests read exact owning fixture bytes at runtime; include macros and a production
+fixture dependency were removed. Private helper file names reflect construction,
+WF graph work and cache scope ownership. No audit suppressions, source/AST record
+relaxation, stage activation, oracle regeneration or active-reference edits occur.
+No whole-core acceptance, generic inspector completion or combined release claim
+is made. The unchanged source-library/PA26/PA30 remaining requirements survive.
+
+C consumes the existing stable APIs:
+`Catalog::validated_language(LangItem::DropGlue)` and
+`compiler_items::drop_glue_member(facts, DefId) -> Result<bool, &'static str>`.
+Its runtime adapter replaces only the explicit Ordinary::select boundary after
+complete actual Instance/materialization/original/specialized proof. NeedsDrop's
+exact registration marker and both mandatory pre-proof/pre-cache gates are intact.

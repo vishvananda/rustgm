@@ -86,17 +86,23 @@ impl Search<'_> {
             .as_ref()
             .is_some_and(|registry| registry.source_auto_override(item, kind))
         {
+            if matches!(
+                self.query.availability,
+                crate::sema::traits::implementations::Availability::Validated
+            ) && facts
+                .generics
+                .implementations
+                .as_ref()
+                .is_some_and(|registry| !registry.headers_validated())
+            {
+                return Err(
+                    "source Freeze override requires validated implementation headers".into(),
+                );
+            }
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
-        let shape = self.query.builtins.check(facts, goal.ty)?;
-        if self
-            .query
-            .builtins
-            .take_trait_proof()
-            .is_some_and(|proof| !proof.is_empty())
-        {
-            return Err("source Freeze formation requires retained trait prerequisites".into());
-        }
+        frame.require_nominal_formed(facts, goal.ty)?;
+        let shape = self.query.builtins.physical_shape(facts, goal.ty)?;
         if !shape.well_formed {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }

@@ -33,6 +33,8 @@ mod callable_tests;
 #[path = "../../../../tests/invariants/implementation_conditions.rs"]
 mod condition_tests;
 pub(super) mod conditions;
+mod construction_completion;
+mod construction_conditions;
 mod continuation;
 mod equalities;
 #[cfg(test)]
@@ -86,6 +88,12 @@ mod suspension;
 #[path = "../../../../tests/invariants/universal_inference.rs"]
 mod universal_inference_tests;
 mod wakeups;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/wf_graph_work.rs"]
+mod wf_graph_work;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/wf_scope_cache.rs"]
+mod wf_scope_cache;
 pub(in crate::sema) use suspension::{
     Pending, Progress, begin, begin_canonical, begin_normalized, begin_projection, begin_refining,
     begin_refining_untouched, begin_scoped_refining,
@@ -261,7 +269,7 @@ impl Search<'_> {
     }
     fn advance(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
         if frame.forming() {
-            return self.advance_formation(frame);
+            return self.advance_formation(facts, frame);
         }
         if frame.pending_headers.is_some() {
             return self.await_header(facts, frame);
@@ -426,6 +434,9 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
+        if self.prepare_nominal_formation(facts, frame)? {
+            return Ok(Action::Continue);
+        }
         if let Some(action) = self.start_callable(facts, frame)? {
             return Ok(action);
         }

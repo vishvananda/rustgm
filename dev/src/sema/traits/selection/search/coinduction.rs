@@ -96,6 +96,7 @@ impl super::Query {
                 .autos
                 .as_deref()
                 .is_some_and(super::auto_obligations::Pending::source_freeze))
+                && !frame.forming()
                 && !frame
                     .autos
                     .as_ref()

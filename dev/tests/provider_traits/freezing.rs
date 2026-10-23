@@ -68,9 +68,22 @@ fn source_auto_header_profiles_and_feature_permissions_are_distinct() -> TestRes
 }
 
 #[test]
-fn source_freeze_original_cases_retain_header_selection_and_body_proofs() {
+fn source_freeze_original_cases_retain_header_selection_and_body_proofs() -> TestResult {
+    let mut failures = Vec::new();
     for &(name, source, accepted, _) in super::freeze_cases::CASES {
-        let result = super::lower(source);
-        assert_eq!(result.is_ok(), accepted, "{name}: {:?}", result.err());
+        let source = super::fixture(source)?;
+        let result = super::lower(&source);
+        if result.is_ok() != accepted {
+            failures.push(format!("{name}: {:?}", result.err()));
+        }
     }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+pub(super) const AUTOMATIC_CLEANUP: &str = "automatic-cleanup.rs";
+#[test]
+fn actual_freeze_and_glue_original_cleanup_passes_checked_lowering() -> TestResult {
+    super::lower(&super::fixture(AUTOMATIC_CLEANUP)?)?;
+    Ok(())
 }

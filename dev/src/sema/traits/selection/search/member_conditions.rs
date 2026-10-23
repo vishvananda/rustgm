@@ -9,17 +9,38 @@ use crate::{
     },
 };
 
-pub(super) type Key = (Application, ScopeId);
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub(super) enum Key {
+    Member(Application, ScopeId),
+    Nominal(crate::types::TypeId, u16, ScopeId),
+}
+#[derive(Clone, Copy)]
+pub(super) enum Entry {
+    Active,
+    Completed(usize),
+}
+pub(super) enum Purpose {
+    Member(Application),
+    Select(crate::types::TypeId),
+    Nominal(crate::types::TypeId, u16),
+}
+impl Purpose {
+    pub(super) fn nominal(&self) -> bool {
+        !matches!(self, Self::Member(_))
+    }
+}
+
 pub(super) struct Formation {
-    application: Application,
-    requirements: families::Requirements,
-    parent: Option<super::frames::Chosen>,
-    cursor: usize,
-    children: Vec<usize>,
-    universes: HashMap<u32, ScopeId>,
-    stopped: Option<Decision>,
-    registered: bool,
-    finished: bool,
+    pub(super) purpose: Purpose,
+    pub(super) requirements: families::Requirements,
+    pub(super) nominals: Vec<(crate::types::TypeId, u16)>,
+    pub(super) parent: Option<super::frames::Chosen>,
+    pub(super) cursor: usize,
+    pub(super) children: Vec<usize>,
+    pub(super) universes: HashMap<u32, ScopeId>,
+    pub(super) stopped: Option<Decision>,
+    pub(super) registered: bool,
+    pub(super) finished: bool,
 }
 
 impl Frame {
@@ -51,7 +72,8 @@ impl Frame {
             .account_work(requirements.steps)
             .map_err(inference)?;
         self.formation = Some(Box::new(Formation {
-            application,
+            purpose: Purpose::Member(application),
+            nominals: Vec::new(),
             requirements,
             parent: None,
             cursor: 0,
@@ -64,9 +86,9 @@ impl Frame {
         Ok(())
     }
     pub(super) fn forming(&self) -> bool {
-        self.formation
-            .as_ref()
-            .is_some_and(|formation| formation.parent.is_some() && !formation.finished)
+        self.formation.as_ref().is_some_and(|formation| {
+            (formation.purpose.nominal() || formation.parent.is_some()) && !formation.finished
+        })
     }
 }
 
@@ -79,6 +101,15 @@ impl Search<'_> {
         frame: &mut Frame,
         decision: Decision,
     ) -> Result<Option<Decision>, String> {
+        if frame
+            .formation
+            .as_ref()
+            .is_some_and(|f| f.purpose.nominal())
+        {
+            return self
+                .complete_nominal_formation(facts, frame, decision)
+                .map(Some);
+        }
         if frame
             .formation
             .as_ref()
@@ -102,11 +133,15 @@ impl Search<'_> {
             if let Some(key) = frame.key.take() {
                 self.query.active.remove(&key);
             }
-            let key = (formation.application, frame.scope);
-            if !self.query.families.insert(key) {
+            let Purpose::Member(application) = formation.purpose else {
+                return Err("missing member application".into());
+            };
+            let key = Key::Member(application, frame.scope);
+            if self.query.families.contains_key(&key) {
                 self.query.cycles += 1;
                 return Ok(Some(Decision::Absent));
             }
+            self.query.families.insert(key, Entry::Active);
             formation.registered = true;
             formation.parent = Some(parent);
             formation.children.push(parent.node());
@@ -117,15 +152,29 @@ impl Search<'_> {
         if let Some(formation) = &mut frame.formation
             && formation.registered
         {
+            let Purpose::Member(application) = formation.purpose else {
+                return Err("missing member application".into());
+            };
             self.query
                 .families
-                .remove(&(formation.application, frame.scope));
+                .remove(&Key::Member(application, frame.scope));
             formation.registered = false;
         }
         Ok(Some(decision))
     }
 
-    pub(super) fn advance_formation(&mut self, frame: &mut Frame) -> Result<Action, String> {
+    pub(super) fn advance_formation(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+    ) -> Result<Action, String> {
+        if frame
+            .formation
+            .as_ref()
+            .is_some_and(|f| f.purpose.nominal())
+        {
+            return self.advance_nominal_formation(facts, frame);
+        }
         let formation = frame.formation.as_mut().ok_or("missing family formation")?;
         if let Some(decision) = formation.stopped {
             formation.finished = true;
@@ -167,6 +216,13 @@ impl Search<'_> {
     ) -> Result<Option<Frame>, String> {
         if !frame.forming() {
             return Ok(None);
+        }
+        if frame
+            .formation
+            .as_ref()
+            .is_some_and(|formation| formation.cursor >= formation.requirements.clauses.len())
+        {
+            return self.nominal_formation_child(facts, frame).map(Some);
         }
         let formation = frame.formation.as_mut().ok_or("missing family formation")?;
         let clause = *formation

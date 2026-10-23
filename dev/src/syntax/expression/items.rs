@@ -244,13 +244,7 @@ impl Parser<'_, '_> {
                     .peek(1)?
                     .is_some_and(|t| matches!(self.cursor.spelling(t), "fn" | "static"))
                 && self.eat_word(Word::Safe)?;
-            let auto_ = self.eat_word(Word::Auto)?;
-            if auto_ && (!self.cursor.at_word(Word::Trait)? || constant || asynchronous || safe) {
-                return Err(error(
-                    start,
-                    "auto qualifier requires an ordinary trait declaration",
-                ));
-            }
+            let auto_ = self.auto_qualifier(start, (constant, asynchronous, safe))?;
             let safety = if unsafe_ {
                 Safety::Unsafe
             } else if safe {
@@ -391,6 +385,17 @@ impl Parser<'_, '_> {
         let node = self.node(start, Kind::Item(id))?;
         let node = self.attach(inner, node)?;
         self.attach(attrs, node)
+    }
+
+    fn auto_qualifier(&mut self, start: u32, flags: (bool, bool, bool)) -> Result<bool, LexError> {
+        let auto_ = self.eat_word(Word::Auto)?;
+        if auto_ && (!self.cursor.at_word(Word::Trait)? || flags.0 || flags.1 || flags.2) {
+            return Err(error(
+                start,
+                "auto qualifier requires an ordinary trait declaration",
+            ));
+        }
+        Ok(auto_)
     }
 
     fn validate_spliced_item(

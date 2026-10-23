@@ -179,3 +179,87 @@ fn refutation_keeps_exact_goal_and_caller_frontier() -> Result {
     result.reject()?;
     Ok(())
 }
+
+#[test]
+fn closed_negative_with_private_capture_keeps_unpaid_graph() -> Result {
+    let (report, mut facts) =
+        tests::declarations("struct N<'a>(&'a u8);impl<'a> !Unpin for N<'a>{}")?;
+    let arguments =
+        facts
+            .types
+            .intern_arguments(&[crate::types::arguments::Argument::Lifetime(
+                crate::types::RegionId::STATIC,
+            )])?;
+    let ty = facts.types.intern(Kind::Adt(
+        ItemId(tests::definition(&report, "N")?.0),
+        arguments,
+    ))?;
+    let predicate = Predicate {
+        ty,
+        bound: Bound::Auto(AutoTrait::Unpin),
+    };
+    let (mut context, goal) = tests::instantiate(&mut facts, predicate)?;
+    let assumptions = Assumptions::default();
+    let mut search = Search::new(
+        tests::caller(&assumptions, None),
+        Availability::Declarations,
+    );
+    let frame = Frame::new(&facts, &mut context, &goal, 1)?;
+    let Decision::Refuted(root) = search.run(&mut facts, frame)? else {
+        return Err("captured negative lost its result".into());
+    };
+    assert!(!search.query.nodes[root].debt_free);
+    assert!(search.negative_child(Decision::Refuted(root)).is_err());
+    let refutation = search.refutation(&facts, root, predicate)?;
+    let super::super::Refutation::Conditional(refutation) = refutation else {
+        return Err("captured refutation dropped its debt".into());
+    };
+    assert!(!refutation.proof.regions.is_empty());
+    assert!(!refutation.proof.equalities.is_empty());
+    assert!(
+        super::super::Refutation::Conditional(refutation)
+            .reject()
+            .is_err()
+    );
+    Ok(())
+}
+
+#[test]
+fn source_nominal_freeze_formation_retains_actual_sizing_obligations() -> Result {
+    let source =
+        crate::test_source::fixture("pa31/tests/spec/source-freeze/nominal-no-override.rs")?;
+    let report = crate::test_source::source_provider(&source, "freeze_formation")?;
+    let mut facts = crate::sema::declarations::analyze(&report)?;
+    let n = tests::definition(&report, "N")?;
+    let n = facts.definitions[n.0 as usize].ok_or("N")?;
+    let w = tests::definition(&report, "W")?;
+    let arguments = facts
+        .types
+        .intern_arguments(&[crate::types::arguments::Argument::Type(n)])?;
+    let ty = facts.types.intern(Kind::Adt(ItemId(w.0), arguments))?;
+    let bound = freezing::bound(&mut facts)?;
+    let predicate = Predicate { ty, bound };
+    let (mut context, goal) = tests::instantiate(&mut facts, predicate)?;
+    let assumptions = Assumptions::default();
+    let mut search = Search::new(tests::caller(&assumptions, None), Availability::Validated);
+    let frame = Frame::new(&facts, &mut context, &goal, 1)?;
+    let Decision::Proven(root) = search.run(&mut facts, frame)? else {
+        return Err("nominal source Freeze formation did not complete".into());
+    };
+    assert_eq!(search.query.nodes[root].goal, predicate);
+    assert!(search.query.nodes[root].children.len() >= 2);
+    assert!(search.query.nodes.iter().any(|node| {
+        node.source.is_none() && node.goal == predicate && !node.children.is_empty()
+    }));
+    assert!(
+        search
+            .query
+            .nodes
+            .iter()
+            .any(|node| { matches!(node.goal.bound, Bound::Trait(_)) && node.goal.ty == n })
+    );
+    assert!(search.query.active.is_empty());
+    let evidence = search.evidence(&facts, root)?;
+    assert!(matches!(evidence.source, Source::Builtin));
+    Ok(())
+}

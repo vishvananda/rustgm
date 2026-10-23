@@ -25,7 +25,7 @@ pub(super) struct Query {
     pub next_auto_segment: usize,
     pub auto_provisional:
         HashMap<usize, HashMap<(crate::types::lifetime_proof::ScopeId, Predicate), Decision>>,
-    pub families: HashSet<super::member_conditions::Key>,
+    pub families: HashMap<super::member_conditions::Key, super::member_conditions::Entry>,
     // Completed answers belong to one immutable caller, mode and region scope.
     pub completed: HashMap<Predicate, Decision>,
     pub cycles: usize,
@@ -69,7 +69,7 @@ impl<'a> Search<'a> {
                 auto_active: HashMap::default(),
                 next_auto_segment: 0,
                 auto_provisional: HashMap::default(),
-                families: HashSet::default(),
+                families: HashMap::default(),
                 completed: HashMap::default(),
                 cycles: 0,
                 reused: false,
@@ -190,7 +190,7 @@ impl<'a> Search<'a> {
                         self.query.decision = Some(decision);
                         return Ok(Progress::Ready(decision));
                     };
-                    if completed.formation.is_none() {
+                    if completed.formation_cacheable() {
                         self.remember(&completed, decision);
                         self.query.export_completed(facts, decision)?;
                     }

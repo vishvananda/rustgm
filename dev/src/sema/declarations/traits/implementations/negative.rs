@@ -68,11 +68,22 @@ fn negative_parameters(
         }
         return Err("generic non-nominal negative header legality is not implemented");
     };
+    let template = facts
+        .definitions
+        .get(item.0 as usize)
+        .copied()
+        .flatten()
+        .ok_or("negative header nominal template is missing")?;
+    let Some(Kind::Adt(formal_item, formal_arguments)) = facts.types.kind(template) else {
+        return Err("negative header nominal template changed kind");
+    };
+    if formal_item != item {
+        return Err("negative header nominal template changed owner");
+    }
     let parameters = facts
-        .generics
-        .parameters
-        .get(&DefId(item.0))
-        .map_or(&[][..], Vec::as_slice);
+        .types
+        .arguments(formal_arguments)
+        .ok_or("negative header nominal template arguments are missing")?;
     let arguments = facts
         .types
         .arguments(arguments)
@@ -81,11 +92,11 @@ fn negative_parameters(
         return Err("negative header Self arity changed");
     }
     let mut actual = HashSet::default();
-    for (parameter, argument) in parameters.iter().zip(arguments) {
+    for (parameter, argument) in parameters.zip(arguments) {
         if !actual.insert(argument) {
             return Err("specialized negative header legality is not implemented");
         }
-        match (parameter.argument, argument) {
+        match (parameter, argument) {
             (Argument::Type(formal), Argument::Type(actual)) => {
                 negative_type(facts, owner, formal, actual)?;
             }

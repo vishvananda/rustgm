@@ -12,7 +12,7 @@ use crate::types::{
         predicates::{Bound, Predicate},
     },
 };
-pub(super) use requirements::{Requirements, requirements};
+pub(super) use requirements::{Requirements, immediate, requirements};
 
 /// Predicate proofs are reusable only within one immutable declaration environment.
 pub(super) struct Proof {
@@ -246,6 +246,19 @@ impl Proof {
             self.shapes = Some(shapes);
         }
         Ok(result)
+    }
+    /// Physical properties alone carry no nominal trait-formation authority.
+    /// Selection retains those requirements as ordinary child proof nodes first.
+    pub(in crate::sema) fn physical_shape(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+    ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
+        facts
+            .lifetimes
+            .nominal_requirements
+            .prepare(&mut facts.types, ty)?;
+        self.shape(facts, ty)
     }
     pub fn check(
         &mut self,

@@ -16,6 +16,7 @@ use crate::{
 };
 pub(in crate::sema) use member_contracts::ConstantRequest;
 #[cfg(test)]
+#[path = "../../../tests/invariants/polarity_registry.rs"]
 mod tests;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]

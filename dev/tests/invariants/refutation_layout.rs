@@ -48,3 +48,29 @@ fn source_auto_and_refutation_layouts_are_measured() {
     assert_eq!(size_of::<Node>(), 160);
     assert_eq!(size_of::<Frame>(), 1312);
 }
+
+#[test]
+fn nominal_formation_uses_only_the_existing_cold_owner() {
+    #[allow(dead_code)]
+    struct Before {
+        application: crate::types::projection::Application,
+        requirements: crate::sema::projections::families::Requirements,
+        parent: Option<frames::Chosen>,
+        cursor: usize,
+        children: Vec<usize>,
+        universes: crate::support::hash::HashMap<u32, crate::types::lifetime_proof::ScopeId>,
+        stopped: Option<Decision>,
+        registered: bool,
+        finished: bool,
+    }
+    println!(
+        "FormationBefore={} FormationAfter={} FormationKey={} FormationEntry={}",
+        size_of::<Before>(),
+        size_of::<member_conditions::Formation>(),
+        size_of::<member_conditions::Key>(),
+        size_of::<member_conditions::Entry>()
+    );
+    assert!(size_of::<member_conditions::Formation>() <= size_of::<Before>() + 32);
+    assert_eq!(size_of::<Frame>(), 1312);
+    assert_eq!(size_of::<Node>(), 160);
+}

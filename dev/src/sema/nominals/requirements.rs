@@ -32,7 +32,6 @@ struct Scope {
     predicates: HashMap<Clause, Option<Clause>>,
 }
 impl Requirements {
-    #[cfg(test)]
     pub(in crate::sema) fn steps(&self) -> usize {
         self.types.len().saturating_add(self.fold_work)
     }
@@ -82,6 +81,20 @@ pub(in crate::sema) fn requirements(
     requirements_inside(facts, root, 0, checked)
 }
 
+/// Stop at nominal argument edges. The caller retains each edge as a separate
+/// formation proof in the same immutable query, including its callable depth.
+pub(in crate::sema) fn immediate(
+    facts: &mut Declarations,
+    root: TypeId,
+    depth: u16,
+    checked: &mut Requirements,
+    children: &mut Vec<(TypeId, u16)>,
+) -> Result<Vec<Clause>, &'static str> {
+    let mut work = vec![(root, depth)];
+    let mut unique = HashSet::default();
+    collect(facts, &mut work, &mut unique, checked, Some(children))
+}
+
 /// Equality results and outlives subjects recurse beneath their whole-clause binder.
 pub(super) fn requirements_inside(
     facts: &mut Declarations,
@@ -99,7 +112,7 @@ pub(super) fn requirements_inside(
     work.clear();
     unique.clear();
     work.push((root, depth));
-    let result = collect(facts, &mut work, &mut unique, checked);
+    let result = collect(facts, &mut work, &mut unique, checked, None);
     work.clear();
     unique.clear();
     checked.work = work;
@@ -111,9 +124,16 @@ fn collect(
     work: &mut Vec<(TypeId, u16)>,
     unique: &mut HashSet<Clause>,
     checked: &mut Requirements,
+    mut immediate: Option<&mut Vec<(TypeId, u16)>>,
 ) -> Result<Vec<Clause>, &'static str> {
     let mut predicates = Vec::new();
     while let Some((ty, depth)) = work.pop() {
+        if immediate.is_some() {
+            checked.fold_work = checked.fold_work.saturating_add(1);
+            if checked.fold_work > 1_000_000 {
+                return Err("immediate nominal formation work budget exceeded");
+            }
+        }
         if !checked.types.insert((ty, depth)) {
             continue;
         }
@@ -141,15 +161,22 @@ fn collect(
                         .nominal_requirements
                         .insert(ty, immediate.into());
                 }
-                let immediate = std::sync::Arc::clone(&facts.generics.nominal_requirements[&ty]);
-                for &predicate in immediate.iter() {
+                let cached = std::sync::Arc::clone(&facts.generics.nominal_requirements[&ty]);
+                for &predicate in cached.iter() {
                     if let Some(predicate) = checked.lift(&mut facts.types, predicate, depth)?
                         && unique.insert(predicate)
                     {
                         predicates.push(predicate);
                     }
                 }
-                arguments_work(facts, arguments, depth, work)?;
+                nominal_arguments(
+                    facts,
+                    arguments,
+                    depth,
+                    checked,
+                    work,
+                    immediate.as_deref_mut(),
+                )?;
             }
             Kind::Tuple(list) => {
                 work.extend(
@@ -201,6 +228,32 @@ fn collect(
     }
     Ok(predicates)
 }
+fn nominal_arguments(
+    facts: &Declarations,
+    arguments: GenericArgs,
+    depth: u16,
+    checked: &mut Requirements,
+    work: &mut Vec<(TypeId, u16)>,
+    immediate: Option<&mut Vec<(TypeId, u16)>>,
+) -> Result<(), &'static str> {
+    let Some(children) = immediate else {
+        return arguments_work(facts, arguments, depth, work);
+    };
+    let arguments = facts
+        .types
+        .arguments(arguments)
+        .ok_or("missing immediate nominal arguments")?;
+    checked.fold_work = checked.fold_work.saturating_add(arguments.len());
+    for argument in arguments {
+        if let Argument::Type(ty) = argument
+            && facts.types.contains_nominals(ty) != Some(false)
+        {
+            children.push((ty, depth));
+        }
+    }
+    Ok(())
+}
+
 fn arguments_work(
     facts: &Declarations,
     arguments: GenericArgs,
