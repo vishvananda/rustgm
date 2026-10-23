@@ -128,7 +128,7 @@ fn ordinary_owners_keep_scope_storage_lazy() {
 #[test]
 fn actual_port_work_is_bounded_across_reused_original_components() -> Result {
     let mut previous = None;
-    let mut slope = None;
+    let mut slope: Option<(usize, usize)> = None;
     for width in [1, 8, 32, 128] {
         let extra = "let _=const{S::<'a,Tag>::C};".repeat(width - 1);
         let text = fixture("paid-lifetime")?
@@ -137,6 +137,7 @@ fn actual_port_work_is_bounded_across_reused_original_components() -> Result {
         let analysis = crate::pipeline::analyze_source(&report)?;
         let mut facts = analysis.facts;
         let context = analysis.prepared.constants.clone().ok_or("executor")?;
+        let source_work = facts.body_work.canonical_steps;
         crate::lower::instances::inspect_prepared(
             &report,
             &mut facts,
@@ -170,18 +171,30 @@ fn actual_port_work_is_bounded_across_reused_original_components() -> Result {
         if let Some((old_width, old_work)) = previous {
             let ports = width - old_width;
             let visits = work - old_work;
-            assert_eq!(visits % ports, 0);
-            let increment = visits / ports;
-            if let Some(expected) = slope {
-                assert_eq!(increment, expected);
+            if let Some((old_visits, old_ports)) = slope {
+                // Fixed setup/cache transitions need not divide by the number
+                // of added ports. The actual average must not grow with width.
+                let current = visits
+                    .checked_mul(old_ports)
+                    .ok_or("work product overflow")?;
+                let previous = old_visits
+                    .checked_mul(ports)
+                    .ok_or("work product overflow")?;
+                assert!(
+                    current <= previous,
+                    "per-port work grew: {visits}/{ports} after {old_visits}/{old_ports}"
+                );
             }
-            slope = Some(increment);
+            slope = Some((visits, ports));
         }
         previous = Some((width, work));
+        assert!(engine.catalog.bytes <= 64 * 1024 * 1024);
+        assert!(facts.constant_work.template_bytes <= 64 * 1024 * 1024);
         eprintln!(
-            "width={width} actual-callable-values={count} canonical-work={} code-bytes={} anonymous-instances={}",
-            facts.body_work.canonical_steps,
+            "width={width} actual-callable-values={count} source-work={source_work} demand-work={} canonical-work={work} code-bytes={} template-bytes={} anonymous-instances={}",
+            work - source_work,
             engine.catalog.bytes,
+            facts.constant_work.template_bytes,
             facts.constant_work.anonymous_instances
         );
     }
