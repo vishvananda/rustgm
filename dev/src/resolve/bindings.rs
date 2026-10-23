@@ -30,6 +30,9 @@ pub struct SourceCore {
     pub(super) features: policy::Features,
 }
 impl SourceCore {
+    pub(crate) fn permits_negative_impls(&self) -> bool {
+        self.features.has(policy::Feature::NegativeImpls)
+    }
     /// This admits declaration syntax; it does not establish callable evidence.
     pub(crate) fn permits_freeze_impls(&self) -> bool {
         self.features.has(policy::Feature::FreezeImpls)
