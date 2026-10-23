@@ -617,6 +617,20 @@ impl Builder {
         Ok(methods)
     }
     #[cfg(test)]
+    pub(super) fn observe_original(
+        &self,
+        facts: &Declarations,
+        index: usize,
+        input: &Contract,
+    ) -> Result<(), borrow::Error> {
+        let proved = self.bodies.get(index).ok_or_else(|| borrow::Error {
+            node: Some(input.source.into()),
+            message: "ordinary original observer lost its actual proved body".into(),
+        })?;
+        super::upstream_originals::observe_ordinary(facts, proved, input);
+        Ok(())
+    }
+    #[cfg(test)]
     pub(super) fn with_checked<T>(
         self,
         use_checked: impl FnOnce(&borrow::Checked<'_>) -> T,

@@ -18,6 +18,9 @@ use crate::{
     },
 };
 use std::path::Path;
+#[path = "ordinary_original_probe.rs"]
+mod ordinary;
+pub(super) use ordinary::observe as observe_ordinary;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 struct NoFiles;
 impl Sources for NoFiles {
@@ -51,6 +54,8 @@ fn genuine_clone_from_and_identity_reach_paired_checked_original_inspection() ->
     )?)?;
     let analysis = crate::pipeline::analyze_source(&report)?;
     let mut facts = analysis.facts;
+    let concrete = source_function(&report, &facts, "clone")?;
+    let ordinary = ordinary::Probe::new(concrete);
     inspect_selected(
         &report,
         &mut facts,
@@ -73,17 +78,16 @@ fn genuine_clone_from_and_identity_reach_paired_checked_original_inspection() ->
         },
         |_, _, _| (),
     )?;
+    ordinary.finish();
     Ok(())
 }
 
-fn paired_original(
+fn source_function(
     report: &Report,
     facts: &Declarations,
-    checked: &borrow::templates::Checked<'_>,
     name: &str,
-    destruct: DefId,
-) -> std::result::Result<(), Error> {
-    let function = facts
+) -> std::result::Result<crate::sema::model::Function, Error> {
+    facts
         .functions
         .iter()
         .find(|function| {
@@ -92,8 +96,20 @@ fn paired_original(
                 .names
                 .get(report.resolution.definitions[function.definition.0 as usize].name)
                 == name
+                && function.body.is_some()
         })
-        .ok_or_else(|| diagnostic(report, None, "missing actual source function".into()))?;
+        .copied()
+        .ok_or_else(|| diagnostic(report, None, "missing actual source function".into()))
+}
+
+fn paired_original(
+    report: &Report,
+    facts: &mut Declarations,
+    checked: &borrow::templates::Checked<'_>,
+    name: &str,
+    destruct: DefId,
+) -> std::result::Result<(), Error> {
+    let function = source_function(report, facts, name)?;
     let (template, contract, proof) = checked
         .function_proof(ItemId(function.definition.0))
         .ok_or_else(|| diagnostic(report, None, "missing actual paired original proof".into()))?;
@@ -109,7 +125,7 @@ fn paired_original(
     let environment = facts
         .generics
         .body_environment(function.definition)
-        .ok_or_else(|| diagnostic(report, None, "missing exact original environment".into()))?;
+        .ok_or_else(|| diagnostic(report, None, "missing actual original environment".into()))?;
     assert!(std::sync::Arc::ptr_eq(&template.environment, environment));
     trace_body(facts, name, template, contract);
     let mut conditional = false;
@@ -151,6 +167,8 @@ fn paired_original(
             "actual conditional Destruct remains an original input"
         );
     }
+    trace_source_obligations(name, contract);
+    trace_opening(report, facts, body)?;
     Ok(())
 }
 
@@ -160,9 +178,21 @@ fn trace_body(
     template: &body::templates::Template,
     contract: &body::regions::Contract,
 ) {
-    let body = &template.body;
+    trace_shape(facts, name, &template.body, contract);
+    println!("{name} cleanup-sites={}", template.destruction.sites.len());
+    for site in &template.destruction.sites {
+        println!("{name} cleanup: {:?}", site.trigger);
+    }
+}
+
+fn trace_shape(
+    facts: &Declarations,
+    name: &str,
+    body: &body::ir::Body,
+    contract: &body::regions::Contract,
+) {
     println!(
-        "original {name}: definition={} universals={} result={} locals={} projections={} statements={} blocks={} cleanup-sites={}",
+        "original {name}: definition={} universals={} result={} locals={} projections={} statements={} blocks={}",
         match body.key() {
             body::ir::BodyKey::Declaration(definition) => definition.0,
             _ => unreachable!(),
@@ -172,8 +202,7 @@ fn trace_body(
         body.locals.len(),
         body.projections.len(),
         body.statements.len(),
-        body.blocks.len(),
-        template.destruction.sites.len()
+        body.blocks.len()
     );
     for (index, local) in body.locals.iter().enumerate() {
         println!(
@@ -219,7 +248,132 @@ fn trace_body(
         contract.proofs.len(),
         contract.obligations.len()
     );
-    for site in &template.destruction.sites {
-        println!("{name} cleanup: {:?}", site.trigger);
+}
+
+fn trace_source_obligations(name: &str, contract: &body::regions::Contract) {
+    use body::regions::Kind;
+    for obligation in &contract.obligations {
+        let site = obligation.source;
+        match obligation.kind {
+            Kind::Variable {
+                id,
+                needs_provenance,
+            } => println!("{name} goal {site:?}: variable {id:?} provenance={needs_provenance}"),
+            Kind::Membership { region, captures } => {
+                println!("{name} goal {site:?}: membership {region:?} {captures:?}");
+            }
+            Kind::LocalBorrow(region) => println!("{name} goal {site:?}: local-borrow {region:?}"),
+            Kind::Equality(pair) => println!("{name} goal {site:?}: equality {pair:?}"),
+            Kind::Outlives(pair) => println!("{name} goal {site:?}: outlives {pair:?}"),
+            Kind::Coercion {
+                actual,
+                expected,
+                unsize,
+                reference,
+            } => println!(
+                "{name} goal {site:?}: coercion {actual:?} -> {expected:?} unsize={unsize} reference={reference:?}"
+            ),
+            Kind::WellFormed(ty) => println!("{name} goal {site:?}: formed {ty:?}"),
+            Kind::ScopedWellFormed { ty, bound_regions } => {
+                println!("{name} goal {site:?}: scoped-formed {ty:?} binders={bound_regions}");
+            }
+            Kind::TypeOutlives { ty, shorter } => {
+                println!("{name} goal {site:?}: type-outlives {ty:?} {shorter:?}");
+            }
+        }
     }
+    for proof in &contract.proofs {
+        println!(
+            "{name} proof-input {source:?}: regions={regions:?} equality={equalities:?} outlives={outlives:?} types={types:?} quantified={quantified}",
+            source = proof.source,
+            regions = proof.proof.owned_regions().collect::<Vec<_>>(),
+            equalities = proof.proof.equalities,
+            outlives = proof.proof.outlives,
+            types = proof.proof.types,
+            quantified = proof.proof.has_quantified()
+        );
+    }
+    if let Some(builtins) = &contract.builtins {
+        println!("{name} builtin-goals {:?}", builtins.predicates);
+        if let Some(copy) = &builtins.source_copy {
+            println!("{name} source-copy {:?} {:?}", copy.declaration, copy.goals);
+        }
+    }
+}
+
+fn trace_opening(
+    report: &Report,
+    facts: &mut Declarations,
+    body: &body::ir::Body,
+) -> std::result::Result<(), Error> {
+    use crate::{
+        body::ir::{Action, Rvalue},
+        sema::model::{BodyRegionOrigin, Operation},
+        types::{Kind, substitute::Bound},
+    };
+    let failure = |message: &str| diagnostic(report, Some(body.source.root_site()), message.into());
+    let owner = body
+        .source
+        .source()
+        .ok_or_else(|| failure("observer requires an actual source body"))?;
+    for statement in &body.statements {
+        let Action::Evaluate(value) = statement.action else {
+            continue;
+        };
+        let Rvalue::Call {
+            signature, callee, ..
+        } = body.values[value.0 as usize].kind
+        else {
+            continue;
+        };
+        let site = body.source.proof_site(statement.source).map_err(failure)?;
+        let key = site
+            .source()
+            .ok_or_else(|| failure("actual call has no source site"))?;
+        let Some(Operation::Call {
+            signature: published,
+            source_use: Some(context),
+        }) = facts.node(key).and_then(|node| node.operation)
+        else {
+            return Err(failure(
+                "actual source Call has no completed owner/effect fact",
+            ));
+        };
+        assert_eq!(signature, published);
+        let effect = context.effect_for(facts, owner).map_err(failure)?;
+        let arguments: Vec<_> = facts
+            .body_regions
+            .log()
+            .iter()
+            .filter(|row| {
+                row.region.body == owner
+                    && row.region.source == key
+                    && matches!(row.region.origin, BodyRegionOrigin::CallArgument)
+            })
+            .map(|row| row.id)
+            .collect();
+        let Some(Kind::FunctionItem {
+            signature: declared,
+            ..
+        }) = facts.types.kind(body.values[callee.0 as usize].ty)
+        else {
+            return Err(failure(
+                "actual source call lost its function-item signature",
+            ));
+        };
+        let Some(Kind::Function { bound_regions, .. }) = facts.types.kind(declared) else {
+            return Err(failure("actual source call lost its declaration binder"));
+        };
+        assert_eq!(arguments.len(), bound_regions as usize);
+        println!(
+            "actual-call owner={owner:?} site={key:?} value={value:?} declaration={declared:?} opened={signature:?} effect={effect:?} exact-CallArgument-allocations={arguments:?}"
+        );
+        let mut fold = Bound::new(arguments);
+        assert_eq!(
+            fold.signature(&mut facts.types, declared, 0)
+                .map_err(failure)?,
+            signature
+        );
+    }
+    Ok(())
 }

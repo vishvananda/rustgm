@@ -4,6 +4,8 @@ mod graph;
 mod operands;
 mod operations;
 mod rows;
+#[path = "schema_rows.rs"]
+pub mod source;
 mod validate;
 use crate::support::{
     crates::{self, CrateIdentity, owner_catalog::BodyCatalog},

@@ -623,6 +623,10 @@ fn prepare_ordinary(
         let index = program
             .push(facts, templates, body, &input, None)
             .map_err(|e| diagnostic(report, e.node, e.message))?;
+        #[cfg(test)]
+        program
+            .observe_original(facts, index, &input)
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
         if let Some(definition) = definition {
             ordinary.functions.insert(ItemId(definition.0), index);
         }
