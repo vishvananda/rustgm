@@ -32,6 +32,12 @@ Cargo's executable records, enumerates each binary, excludes ignored tests from
 the ordinary lane, and runs the union of exact names once per binary. Missing,
 overlapping and empty selections fail. It also checks the executed count against
 the selected inventory; a successful zero-test process cannot qualify a batch.
+Direct test launches restore Cargo's package metadata environment from the
+explicit `dev/Cargo.toml` package fields, including `CARGO_PKG_NAME` and the
+manifest paths. These overrides apply to inventory and execution without
+changing the parent environment; receipts record only the package overrides.
+This keeps compiler subprocesses in environment-sensitive tests consistent with
+ordinary `cargo test`. Workspace-inherited metadata is rejected explicitly.
 The private library lane accepts complete test paths, with no substring filters:
 
 ```sh

@@ -2,15 +2,16 @@
 from contextlib import redirect_stdout
 import io
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
 from types import SimpleNamespace
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from maintainer_batch import artifacts, build_command, inventory, run_batch, selection
+from maintainer_batch import artifacts, build_command, inventory, package_environment, run_batch, selection
 
 
 def result(stdout="", code=0):
@@ -24,6 +25,8 @@ class MaintainerBatchTests(unittest.TestCase):
             "evidence_root": "obj/batch"}, **kwargs))
 
     def artifact(self, root, group="suite_memory"):
+        (root / "dev").mkdir(exist_ok=True)
+        (root / "dev/Cargo.toml").write_text('[package]\nname = "rustgm"\nversion = "0.1.0"\n')
         binary = root / group
         binary.write_bytes(b"test executable")
         return json.dumps({"reason": "compiler-artifact", "profile": {"test": True},
@@ -64,7 +67,8 @@ class MaintainerBatchTests(unittest.TestCase):
                 artifacts(row, {"suite_memory": []})
 
     def test_batch_builds_once_and_executes_combined_regular_inventory(self):
-        with tempfile.TemporaryDirectory() as directory, redirect_stdout(io.StringIO()):
+        with (tempfile.TemporaryDirectory() as directory, redirect_stdout(io.StringIO()),
+              patch.dict(os.environ, {"CARGO_PKG_NAME": "unrelated-parent", "RUST_TEST_THREADS": "2"})):
             root = Path(directory)
             runner = Mock(side_effect=[result(self.artifact(root)),
                 result("loans::one: test\nloans::native: test\nvalues::one: test\n"),
@@ -76,9 +80,36 @@ class MaintainerBatchTests(unittest.TestCase):
             self.assertEqual(sum(command[0] == "cargo" for command in calls), 1)
             self.assertEqual(calls[-1][1:], ["--exact", "loans::one", "values::one"])
             self.assertEqual(runner.call_args_list[-1].kwargs["cwd"], root / "dev")
+            self.assertNotIn("env", runner.call_args_list[0].kwargs)
+            for call in runner.call_args_list[1:]:
+                self.assertEqual(call.kwargs["env"]["CARGO_PKG_NAME"], "rustgm")
+                self.assertEqual(call.kwargs["env"]["CARGO_MANIFEST_DIR"], str(root / "dev"))
+                self.assertEqual(call.kwargs["env"]["RUST_TEST_THREADS"], "2")
+            self.assertEqual(os.environ["CARGO_PKG_NAME"], "unrelated-parent")
             receipt = json.loads((root / "obj/batch/receipt.json").read_text())
             self.assertEqual(receipt["state"], "passed")
             self.assertEqual(len(receipt["binaries"]["suite_memory"]["sha256"]), 64)
+            self.assertEqual(receipt["package_environment"]["CARGO_PKG_NAME"], "rustgm")
+            self.assertNotIn("RUST_TEST_THREADS", receipt["package_environment"])
+
+    def test_package_environment_handles_missing_fields_and_prerelease_metadata(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.artifact(root)
+            manifest = root / "dev/Cargo.toml"
+            manifest.write_text('[package]\nname = "rustgm"\nversion = "1.2.3-beta.4+build"\n'
+                                'authors = ["One", "Two"]\nrust-version = "1.98"\n')
+            environment = package_environment(root)
+            self.assertEqual(environment["CARGO_PKG_VERSION_PRE"], "beta.4")
+            self.assertEqual(environment["CARGO_PKG_VERSION_PATCH"], "3")
+            self.assertEqual(environment["CARGO_PKG_AUTHORS"], "One:Two")
+            self.assertEqual(environment["CARGO_PKG_RUST_VERSION"], "1.98")
+            self.assertEqual(environment["CARGO_PKG_DESCRIPTION"], "")
+            self.assertEqual(environment["CARGO_MANIFEST_PATH"], str(manifest))
+            for version in ('"invalid"', '{workspace = true}'):
+                manifest.write_text('[package]\nname = "rustgm"\nversion = ' + version + '\n')
+                with self.subTest(version=version), self.assertRaises(ValueError):
+                    package_environment(root)
 
     def test_native_failure_is_retained_and_never_cached_as_passed(self):
         with tempfile.TemporaryDirectory() as directory, redirect_stdout(io.StringIO()):
