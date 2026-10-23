@@ -1,4 +1,5 @@
 //! Declaration and node facts shared by type checking and later body construction.
+pub use super::bodies::SourceCallUse;
 pub use super::safety::Work as SafetyWork;
 use crate::{
     lex::token::Punctuation,
@@ -93,6 +94,7 @@ pub enum Operation {
     },
     Call {
         signature: TypeId,
+        source_use: Option<SourceCallUse>,
     },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

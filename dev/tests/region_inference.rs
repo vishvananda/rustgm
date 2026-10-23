@@ -153,7 +153,7 @@ fn each_call_instantiates_late_lifetimes_once_and_retains_input_result_identity(
     )?;
     let mut calls = Vec::new();
     for node in facts.nodes.iter().flatten() {
-        let Some(rustgm::sema::model::Operation::Call { signature }) = node.operation else {
+        let Some(rustgm::sema::model::Operation::Call { signature, .. }) = node.operation else {
             continue;
         };
         let Some(Kind::Function {

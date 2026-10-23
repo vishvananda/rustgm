@@ -1,7 +1,7 @@
 //! Solved bodies retain their finalization frontier while field declarations complete.
 use super::{
-    AdjustmentKind, Checker, Declarations, Dependency, Error, NodeId, NodeKey, Operation,
-    RegionEquality, field_storage::Batch, hidden_results::HiddenResults,
+    AdjustmentKind, Checker, Declarations, Dependency, Error, NodeId, NodeKey, RegionEquality,
+    field_storage::Batch, hidden_results::HiddenResults,
 };
 use crate::support::hash::HashMap;
 use crate::{
@@ -187,18 +187,7 @@ impl Checker<'_> {
         let callable_dependencies = self.dependency_append(&callable_dependencies)?;
         self.publish_index_bounds(&solved)?;
         self.publish_adjustments(&solved, body_key)?;
-        for (node, term) in &self.state.calls {
-            if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. }) {
-                continue;
-            }
-            let key = self.key(*node);
-            self.facts
-                .node_mut(key)
-                .ok_or_else(|| Declarations::error(self.report, key, "invalid call node"))?
-                .operation = Some(Operation::Call {
-                signature: solved.types[term.0 as usize],
-            });
-        }
+        self.publish_calls(&solved)?;
         for node in &self.state.annotation_checks {
             crate::types::bound_uses::check_pointer(&self.facts.types, self.ty(*node)?)
                 .map_err(|e| self.error(*node, e))?;

@@ -1768,7 +1768,7 @@ impl<'a> Builder<'a> {
         arguments: List,
         receiver: Option<ValueId>,
     ) -> Result<ValueId, Error> {
-        let Some(Operation::Call { signature }) = self.fact(node)?.operation else {
+        let Some(Operation::Call { signature, .. }) = self.fact(node)?.operation else {
             return Err(self.error(node, "missing call signature"));
         };
         let arguments = self.call_inputs(node, arguments, receiver)?;

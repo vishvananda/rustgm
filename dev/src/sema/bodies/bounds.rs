@@ -455,7 +455,7 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn callee_use_effect(&self) -> crate::support::constness::Constness {
+    pub(super) fn callee_use_effect(&self) -> crate::support::constness::Constness {
         use crate::support::constness::Constness;
         if self.runtime_callee_context() {
             return Constness::Ordinary;

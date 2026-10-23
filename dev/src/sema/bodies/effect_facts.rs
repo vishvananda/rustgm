@@ -1,0 +1,260 @@
+//! Completed calls reference one current, unmet semantic-body context.
+use super::{Checker, Declarations, Error};
+use crate::{resolve::unit::NodeKey, support::constness::Constness, types::infer::Solved};
+use std::num::NonZeroU32;
+
+/// A current-table location, never eligibility, proof payment or a foreign effect.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct SourceCallUse(NonZeroU32);
+#[derive(Clone, Copy)]
+struct Descriptor {
+    owner: NodeKey,
+    effect: Constness,
+}
+#[derive(Default)]
+pub(in crate::sema) struct CallContexts {
+    rows: Vec<Descriptor>,
+}
+const MAX_ROWS: usize = 1_000_000;
+const MAX_RETAINED: usize = 16 * 1024 * 1024;
+const MAX_TRANSIENT: usize = 32 * 1024 * 1024;
+impl CallContexts {
+    fn bytes(capacity: usize) -> Result<usize, &'static str> {
+        capacity
+            .checked_mul(size_of::<Descriptor>())
+            .and_then(|bytes| bytes.checked_add(size_of::<Self>() + size_of::<Option<Box<Self>>>()))
+            .ok_or("source call context storage overflow")
+    }
+    fn reserve(&mut self, steps: &mut usize, limit: usize) -> Result<SourceCallUse, &'static str> {
+        if Self::bytes(self.rows.capacity())? > limit.min(MAX_RETAINED) {
+            return Err("source call context storage budget exceeded");
+        }
+        if self.rows.len() >= MAX_ROWS {
+            return Err("source call context inventory exhausted");
+        }
+        let row = u32::try_from(self.rows.len())
+            .ok()
+            .and_then(|row| row.checked_add(1))
+            .and_then(NonZeroU32::new)
+            .map(SourceCallUse)
+            .ok_or("source call context identity exhausted")?;
+        if self.rows.len() < self.rows.capacity() {
+            return Ok(row);
+        }
+        let capacity = self.rows.len().saturating_mul(2).clamp(4, MAX_ROWS);
+        let retained = Self::bytes(capacity)?;
+        let transient = retained
+            .checked_add(self.rows.capacity().saturating_mul(size_of::<Descriptor>()))
+            .and_then(|bytes| bytes.checked_add(size_of::<Vec<Descriptor>>()))
+            .ok_or("source call context storage overflow")?;
+        if retained > limit.min(MAX_RETAINED) || transient > MAX_TRANSIENT {
+            return Err("source call context storage budget exceeded");
+        }
+        charge(steps, self.rows.len())?;
+        let mut staged = Vec::new();
+        staged
+            .try_reserve_exact(capacity)
+            .map_err(|_| "source call context allocation failed")?;
+        if Self::bytes(staged.capacity())? > limit.min(MAX_RETAINED)
+            || Self::bytes(staged.capacity())?
+                .saturating_add(self.rows.capacity().saturating_mul(size_of::<Descriptor>()))
+                .saturating_add(size_of::<Vec<Descriptor>>())
+                > MAX_TRANSIENT
+        {
+            return Err("source call context allocation exceeds storage budget");
+        }
+        staged.extend_from_slice(&self.rows);
+        self.rows = staged;
+        Ok(row)
+    }
+    fn append(
+        &mut self,
+        owner: NodeKey,
+        effect: Constness,
+        steps: &mut usize,
+    ) -> Result<SourceCallUse, &'static str> {
+        let row = self.reserve(steps, MAX_RETAINED)?;
+        // Reservation completes identity/capacity checks before this commit.
+        self.rows.push(Descriptor { owner, effect });
+        Ok(row)
+    }
+}
+impl SourceCallUse {
+    fn descriptor(self, facts: &Declarations) -> Result<&Descriptor, &'static str> {
+        facts
+            .source_bindings
+            .as_deref()
+            .ok_or("source call use has no current source catalog")?
+            .call_contexts
+            .as_deref()
+            .and_then(|contexts| contexts.rows.get((self.0.get() - 1) as usize))
+            .ok_or("source call use has no current body descriptor")
+    }
+    /// This lookup is data ownership only. The querying work owner charges it.
+    /// # Errors
+    /// Rejects missing current catalog data or an invalid row.
+    pub fn owner(self, facts: &Declarations) -> Result<NodeKey, &'static str> {
+        Ok(self.descriptor(facts)?.owner)
+    }
+    /// Callers charge successful and rejected lookups in their mutable work budget.
+    /// The effect comes from the current table, never from the supplied row handle.
+    /// # Errors
+    /// Rejects missing data and a use copied from another semantic body.
+    pub fn effect_for(
+        self,
+        facts: &Declarations,
+        owner: NodeKey,
+    ) -> Result<Constness, &'static str> {
+        let descriptor = self.descriptor(facts)?;
+        if descriptor.owner != owner {
+            return Err("source call use belongs to another semantic body");
+        }
+        Ok(descriptor.effect)
+    }
+}
+fn charge(steps: &mut usize, amount: usize) -> Result<(), &'static str> {
+    *steps = steps
+        .checked_add(amount)
+        .ok_or("source call context work overflow")?;
+    if *steps > 1_000_000 {
+        return Err("body type work budget exceeded");
+    }
+    Ok(())
+}
+impl Checker<'_> {
+    fn existing_call_context(
+        &mut self,
+        solved: &Solved,
+        effect: Constness,
+    ) -> Result<(bool, Option<SourceCallUse>), Error> {
+        if self.state.file != self.state.body.file {
+            return Err(Declarations::error(
+                self.report,
+                self.state.body,
+                "source call body changed source unit",
+            ));
+        }
+        let mut existing = None;
+        let mut unpublished = false;
+        let mut any = false;
+        for (node, term) in &self.state.calls {
+            charge(&mut self.state.steps, 1)
+                .map_err(|e| Declarations::error(self.report, self.state.body, e))?;
+            let key = self.key(*node);
+            let operation = self
+                .facts
+                .node(key)
+                .ok_or_else(|| {
+                    Declarations::error(self.report, self.state.body, "invalid call node")
+                })?
+                .operation;
+            // ForPlan retains distinct into_iter/next signatures, not one Call.
+            if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. }) {
+                continue;
+            }
+            any = true;
+            let signature = solved.types.get(term.0 as usize).ok_or_else(|| {
+                Declarations::error(self.report, key, "invalid completed call signature")
+            })?;
+            if let Some(crate::sema::model::Operation::Call {
+                source_use: Some(source),
+                signature: existing_signature,
+            }) = operation
+            {
+                charge(&mut self.state.steps, 1)
+                    .map_err(|e| Declarations::error(self.report, key, e))?;
+                let current = source
+                    .effect_for(self.facts, self.state.body)
+                    .map_err(|e| Declarations::error(self.report, key, e))?;
+                if effect != current
+                    || *signature != existing_signature
+                    || existing.is_some_and(|old| old != source)
+                {
+                    return Err(Declarations::error(
+                        self.report,
+                        key,
+                        "source call publication changed its current body context",
+                    ));
+                }
+                existing = Some(source);
+            } else {
+                unpublished = true;
+            }
+        }
+        if existing.is_some() && unpublished {
+            return Err(self.error(
+                self.state.body.node,
+                "source call body was partially published",
+            ));
+        }
+        Ok((any, existing))
+    }
+    pub(super) fn publish_calls(&mut self, solved: &Solved) -> Result<(), Error> {
+        if self.facts.source_bindings.is_none() {
+            return self.publish_ordinary_calls(solved);
+        }
+        let effect = self.callee_use_effect();
+        let (any, mut source_use) = self.existing_call_context(solved, effect)?;
+        // Charge all commit ports before retaining a descriptor or changing a node.
+        charge(&mut self.state.steps, self.state.calls.len())
+            .map_err(|e| self.error(self.state.body.node, e))?;
+        if any && source_use.is_none() {
+            charge(&mut self.state.steps, 1).map_err(|e| self.error(self.state.body.node, e))?;
+            let catalog = self.facts.source_bindings.as_deref_mut().ok_or_else(|| {
+                Declarations::error(
+                    self.report,
+                    self.state.body,
+                    "source call policy disappeared",
+                )
+            })?;
+            if let Some(contexts) = catalog.call_contexts.as_deref_mut() {
+                source_use = Some(
+                    contexts
+                        .append(self.state.body, effect, &mut self.state.steps)
+                        .map_err(|e| Declarations::error(self.report, self.state.body, e))?,
+                );
+            } else {
+                let mut contexts = CallContexts::default();
+                source_use = Some(
+                    contexts
+                        .append(self.state.body, effect, &mut self.state.steps)
+                        .map_err(|e| Declarations::error(self.report, self.state.body, e))?,
+                );
+                catalog.call_contexts = Some(Box::new(contexts));
+            }
+        }
+        for (node, term) in &self.state.calls {
+            if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. }) {
+                continue;
+            }
+            let key = self.key(*node);
+            // Preflight checked both indices; only the separate context table
+            // changed since then. This commit has no fallible lookup or growth.
+            self.facts.nodes[key.file.0 as usize][key.node.get() as usize].operation =
+                Some(crate::sema::model::Operation::Call {
+                    signature: solved.types[term.0 as usize],
+                    source_use,
+                });
+        }
+        Ok(())
+    }
+    fn publish_ordinary_calls(&mut self, solved: &Solved) -> Result<(), Error> {
+        for (node, term) in &self.state.calls {
+            if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. }) {
+                continue;
+            }
+            let key = self.key(*node);
+            self.facts
+                .node_mut(key)
+                .ok_or_else(|| Declarations::error(self.report, key, "invalid call node"))?
+                .operation = Some(crate::sema::model::Operation::Call {
+                signature: solved.types[term.0 as usize],
+                source_use: None,
+            });
+        }
+        Ok(())
+    }
+}
+#[cfg(test)]
+#[path = "../../../tests/invariants/effect_snapshots.rs"]
+mod tests;

@@ -41,6 +41,7 @@ pub(crate) struct Catalog {
     destruction_registration: Option<DefId>,
     traits: Option<Box<roles::Validated>>,
     call_effects: Option<Box<crate::support::hash::HashMap<DefId, calls::Effect>>>,
+    pub(in crate::sema) call_contexts: Option<Box<super::bodies::CallContexts>>,
     intrinsics: crate::support::hash::HashMap<DefId, intrinsic_contracts::Intrinsic>,
     attributes: [crate::resolve::bindings::HeaderAttributes; LangItem::ALL.len()],
 }
@@ -93,6 +94,7 @@ impl Catalog {
             destruction_registration: None,
             traits: None,
             call_effects: None,
+            call_contexts: None,
             intrinsics: reserved
                 .intrinsics()
                 .map(|entry| {

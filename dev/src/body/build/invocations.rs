@@ -45,7 +45,7 @@ impl Builder<'_> {
         receiver: ValueId,
         arguments: List,
     ) -> Result<ValueId, Error> {
-        let Some(Operation::Call { signature }) = self.fact(node)?.operation else {
+        let Some(Operation::Call { signature, .. }) = self.fact(node)?.operation else {
             return Err(self.error(node, "missing call signature"));
         };
         let arguments = self.call_inputs(node, arguments, Some(receiver))?;

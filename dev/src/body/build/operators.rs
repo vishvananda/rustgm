@@ -70,7 +70,7 @@ impl Builder<'_> {
         let Some(selected) = self.facts.methods.calls.get(&key).copied() else {
             return Ok(None);
         };
-        let Some(Operation::Call { signature }) = self.fact(node)?.operation else {
+        let Some(Operation::Call { signature, .. }) = self.fact(node)?.operation else {
             return Err(self.error(node, "missing library operator signature"));
         };
         let callee = self.evaluate(node, selected.callable, Rvalue::Function(selected.method))?;
@@ -136,7 +136,7 @@ impl Builder<'_> {
         let Some(place) = place.filter(|_| self.current.is_some()) else {
             return Ok(());
         };
-        let Some(Operation::Call { signature }) = self.fact(node)?.operation else {
+        let Some(Operation::Call { signature, .. }) = self.fact(node)?.operation else {
             return Err(self.error(node, "comparison requires selected call"));
         };
         let Some(crate::types::Kind::Function { parameters, .. }) =
@@ -259,7 +259,7 @@ impl Builder<'_> {
             .get(&key)
             .copied()
             .ok_or_else(|| self.error(node, "missing library index selection"))?;
-        let Some(Operation::Call { signature }) = self.fact(node)?.operation else {
+        let Some(Operation::Call { signature, .. }) = self.fact(node)?.operation else {
             return Err(self.error(node, "missing library index signature"));
         };
         let super::Kind::Index { index, .. } = self.kind(node) else {
