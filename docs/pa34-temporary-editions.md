@@ -55,10 +55,10 @@ Formatting, all-target strict Clippy, architecture, harness and upstream gates
 pass for that production snapshot. Subsequent private test preparation binds
 both delimiter origins to the same donor edition, preserving the matched-pair
 invariant while leaving the qualifier and captured tail in their own edition.
-That test-only refinement is recorded in `paired-origin-review.json` and awaits
-the combined checkpoint's private execution. Production, fixture bytes and
-native helpers are unchanged. Full release and performance qualification
-remain required before publication.
+That test-only refinement is recorded in `paired-origin-review.json` and passes
+the combined checkpoint's debug and release private execution. Production,
+fixture bytes and native helpers are unchanged. The [combined checkpoint](source-calls-sizing-checkpoint.md)
+records fresh full release, source/native, text and performance qualification.
 
 This does not expose a Rust 2021 driver flag or activate PA34. Cross-crate macro
 transport, opaque capture rules, prelude/method selection and never-type fallback

@@ -147,6 +147,12 @@ The [source-trait checkpoint measurements](docs/source-traits-editions-checkpoin
 separate observed build, execution and text-suite costs under this cadence.
 They are shared-machine observations, not a controlled harness speedup claim.
 
+The [source sizing and generic-call checkpoint](docs/source-calls-sizing-checkpoint.md)
+passes 3,362 fresh release/native tests and 8,382 text cases. Its text sweep takes
+19.29 seconds; optimized compilation takes 17 minutes 13 seconds. It records
+separate independent checks, retained failures, 59 performance inputs and
+17.20 GiB of automatic artifact cleanup.
+
 For a validation batch, pass `scripts/course.py --evidence-root obj/BATCH/course`
 and include that directory in the storage guard's `--prune-under` roots. This
 keeps the same fixture comparisons and complete receipts while avoiding a cleanup

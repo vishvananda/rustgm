@@ -46,9 +46,10 @@ The full caller was measured independently of the direct-query controls:
 The corresponding 128 unrelated source declarations change none of these four
 observations. Map bytes include the owner and entry capacity, excluding allocator
 metadata and immutable shared arenas. These are deterministic work/storage
-observations, not wall-time or heap measurements. Root owns optimized CLI,
-shared 39 performance and combined release qualification; this worker claims no
-whole-core acceptance or release performance result.
+observations, not wall-time or heap measurements. The
+[combined checkpoint](source-calls-sizing-checkpoint.md) now records optimized
+CLI measurements and fresh release qualification. These worker counters remain
+separate from those wall-time observations; neither establishes whole-core acceptance.
 
 The six owning PA31 development fixtures preserve the exact frozen v2 bytes and
 Rust 1.98/x86-64/edition2024 profile. Their hashes and original evidence paths are
