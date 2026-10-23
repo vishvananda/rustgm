@@ -21,6 +21,7 @@ pub(super) struct Pending {
     precise: Option<NodeKey>,
     promises: copy::Properties,
     application: Option<TypeId>,
+    explicit: Option<Box<super::capture_bounds::ExplicitLifetimes>>,
 }
 #[derive(Clone, Copy)]
 struct Declared {
@@ -59,7 +60,13 @@ impl Checker<'_> {
                     copies: pending.promises,
                 })
                 .map_err(|e| self.error(key, e))?;
-            let captures = self.opaque_captures(key, pending.owner, context, pending.precise)?;
+            let captures = self.opaque_captures(
+                key,
+                pending.owner,
+                context,
+                pending.precise,
+                pending.explicit.as_deref(),
+            )?;
             let captures = self
                 .facts
                 .types
@@ -120,6 +127,7 @@ impl Checker<'_> {
             precise: None,
             promises: copy::Properties::default(),
             application: None,
+            explicit: self.legacy_opaque_captures(key, owner)?,
         };
         let nodes = self
             .report
@@ -159,6 +167,12 @@ impl Checker<'_> {
             };
             let scope = self.call_bound_scope(source, written, scope, context)?;
             let context = scope.map_or(context, |scope| scope.context(context));
+            if let Written::Outlives(lifetime) = written
+                && let Some(explicit) = &mut pending.explicit
+            {
+                let region = self.region(lifetime, Some(lifetime.node), context)?;
+                explicit.regions.insert(region);
+            }
             if let Written::Trait(bound) = written {
                 pending.promises.copy |= bound == Bound::Copy;
                 pending.promises.clone_ |= matches!(bound, Bound::Copy | Bound::Clone);
@@ -167,7 +181,14 @@ impl Checker<'_> {
                 path, definition, ..
             } = written
             {
-                self.bound_subject_lifetimes(path, owner)?;
+                self.bound_subject_inputs(
+                    path,
+                    owner,
+                    pending
+                        .explicit
+                        .as_deref_mut()
+                        .map(|captures| &mut captures.names),
+                )?;
                 self.schedule_associated_bindings(path, context)?;
                 self.work
                     .push(Work::PathArguments(path, definition, context));

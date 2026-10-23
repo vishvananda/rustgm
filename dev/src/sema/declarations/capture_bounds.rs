@@ -5,13 +5,61 @@ use crate::types::{
     RegionId, Store, TypeId, arguments::Argument, bound_uses::Uses, parameters::clauses::Clause,
 };
 
+/// Only legacy free/inherent return opaques retain a written lifetime inventory.
+/// Bound-local identities are filtered against the defining signature's slots.
+#[derive(Default)]
+pub(super) struct ExplicitLifetimes {
+    pub names: HashSet<DefId>,
+    pub regions: HashSet<RegionId>,
+}
+
 impl Checker<'_> {
+    pub(super) fn legacy_opaque_captures(
+        &self,
+        key: NodeKey,
+        owner: DefId,
+    ) -> Result<Option<Box<ExplicitLifetimes>>, Error> {
+        use crate::sema::associated::OwnerKind;
+        let associated = &self.facts.associated;
+        let trait_member = associated.trait_owner(owner).is_some()
+            || associated
+                .owner(owner)
+                .and_then(|id| associated.get(id))
+                .is_some_and(|owner| {
+                    matches!(
+                        owner.kind,
+                        OwnerKind::Impl {
+                            trait_type: Some(_),
+                            ..
+                        }
+                    )
+                });
+        if trait_member {
+            return Ok(None);
+        }
+        let span = self
+            .report
+            .package
+            .unit(key.file)
+            .configured
+            .ast
+            .node(key.node)
+            .span;
+        let edition = crate::resolve::unit::editions::introducer(key.file, span, |file| {
+            self.report.package.units.get(file.0 as usize)
+        })
+        .map_err(|error| self.error(key, error.message))?;
+        Ok((edition == crate::support::edition::Edition::Rust2021)
+            .then(|| Box::new(ExplicitLifetimes::default())))
+    }
+
     pub(super) fn opaque_captures(
         &mut self,
         key: NodeKey,
         owner: DefId,
         context: regions::Context,
         precise: Option<NodeKey>,
+        explicit: Option<&ExplicitLifetimes>,
     ) -> Result<Vec<Argument>, Error> {
         let binder = context
             .binder
@@ -32,6 +80,21 @@ impl Checker<'_> {
             .collect::<Vec<_>>();
         captures.extend(parameters.iter().map(|p| p.argument));
         let Some(source) = precise else {
+            if let Some(explicit) = explicit {
+                let mut selected = explicit.regions.clone();
+                for (name, region) in self
+                    .regions
+                    .bindings(binder)
+                    .map_err(|e| self.error(key, e))?
+                {
+                    if explicit.names.contains(&name) {
+                        selected.insert(region);
+                    }
+                }
+                captures.retain(|argument| {
+                    !matches!(argument, Argument::Lifetime(region) if !selected.contains(region))
+                });
+            }
             return Ok(captures);
         };
         if parameters.iter().any(|p| p.anonymous) {

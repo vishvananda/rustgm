@@ -29,3 +29,10 @@ configuration/build provenance and linked native output evidence.
 local native outcomes and four independently checked cross-edition macro native
 outcomes. All hypotheses match pinned rustc. The candidate implementation and
 its focused qualification are in development; no driver profile is activated.
+
+`opaque-edition-outcomes.json` freezes 32 local source outcomes and eight
+cross-edition macro outcomes against pinned rustc, with 28 accepted native
+programs. The candidate has matching source/lowering outcomes and native results;
+its macro controls install exact token origins without claiming external macro
+metadata transport. See the [return capture development record](../../docs/pa34-return-editions.md).
+Full release and performance qualification remain pending; PA34 stays planned.

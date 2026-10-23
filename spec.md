@@ -1538,6 +1538,19 @@ building its CFG: the CFG result uses the solved private result, including
 nested opaque occurrences and early returns. Caller inference, equality and
 trait permissions consume published promises, never storage representations.
 
+Implicit return captures follow the edition of the parsed `impl` introducer's
+exact token origin. Rust 2021 free and inherent functions capture only lifetimes
+written in the opaque bounds; trait declarations and trait implementations keep
+automatic captures in both supported editions. Type and const parameters remain
+captured, and an explicit `use<...>` list overrides implicit selection. A where
+clause does not add a written opaque-bound capture. Collect resolved lifetime
+identities during the existing bound traversal, before alias normalization can
+erase them; intersect bound-local identities with the defining signature's slots.
+Do not reparse source, walk the entire crate or infer captures from normalized
+trait arguments. The legacy inventory belongs to the pending opaque declaration,
+not every type, owner or CFG node. Token origin here differs from never-type
+fallback, whose rule belongs to the containing compilation unit.
+
 Resolve precise capture lists to existing parameter identities and retain
 declaration order. Require every type/const parameter, reject anonymous input
 parameters, duplicates and misplaced lifetimes, and require all lifetimes used
