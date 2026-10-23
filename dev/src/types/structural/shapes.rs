@@ -21,6 +21,17 @@ pub(crate) struct Shapes {
     pub steps: usize,
 }
 impl Shapes {
+    /// An acyclic scalar/parameter/function graph has one type key per node
+    /// and at most one list key per function. Pending edges include finish
+    /// markers and each explicit list/result edge.
+    pub(crate) fn callable_allocation_bound(nodes: usize, edges: usize) -> usize {
+        let keys = nodes.saturating_mul(2);
+        crate::support::retained::new_map::<Key, u64>(keys).saturating_add(
+            keys.saturating_mul(2)
+                .saturating_add(edges)
+                .saturating_mul(4 * size_of::<(Key, bool)>()),
+        )
+    }
     pub(crate) fn allocation(&self) -> crate::support::retained::Allocation {
         let mut total = crate::support::retained::Allocation::default();
         total.map(&self.completed);

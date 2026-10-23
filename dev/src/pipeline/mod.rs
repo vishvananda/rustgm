@@ -17,6 +17,7 @@ use crate::{
 #[derive(Default)]
 pub struct Prepared {
     pub(crate) constants: Option<execution::Context>,
+    pub(crate) imported: Option<std::rc::Rc<crate::body::transported_originals::ImportedOriginals>>,
     pub(crate) original_contexts: Option<Box<original_contexts::Originals>>,
     pub(crate) concrete: HashMap<body::ir::BodyKey, body::ir::Body>,
     pub(crate) templates: templates::Prepared,
@@ -130,9 +131,7 @@ impl Demand {
             callables: &facts.lifetimes.callables,
             nominal_requirements: &facts.lifetimes.nominal_requirements,
         };
-        let templates = templates::Templates {
-            bodies: vec![template],
-        };
+        let templates = templates::Templates::source(vec![template]);
         let custom = self.custom.get_or_insert_with(|| {
             facts
                 .destructors

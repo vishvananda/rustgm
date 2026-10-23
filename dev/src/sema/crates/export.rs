@@ -35,6 +35,27 @@ pub fn export(
     facts: &mut Declarations,
     identity: CrateIdentity,
 ) -> Result<Exports, Error> {
+    export_with_originals(report, facts, identity, |_, _, _| {
+        Err(error(
+            "const, async and generic exports are outside the scalar metadata profile",
+        ))
+    })
+}
+#[derive(Clone)]
+pub(crate) struct GenericRequest {
+    pub definition: DefId,
+    pub external: ExternalDef,
+}
+pub(crate) fn export_with_originals(
+    report: &Report,
+    facts: &mut Declarations,
+    identity: CrateIdentity,
+    provider: impl FnOnce(
+        &Declarations,
+        &[GenericRequest],
+        &Interface,
+    ) -> Result<crate::support::crates::generics::Payload, Error>,
+) -> Result<Exports, Error> {
     if facts
         .crates
         .as_ref()
@@ -44,6 +65,7 @@ pub fn export(
         return Err(error("conflicting local crate linkage identity"));
     }
     let mut functions = Vec::new();
+    let mut originals = Vec::new();
     let mut constants = Vec::new();
     let mut roots = Vec::new();
     let mut records = Vec::new();
@@ -52,8 +74,20 @@ pub fn export(
     for (definition, external) in plan.owned {
         match report.resolution.definitions[definition.0 as usize].kind {
             DefKind::Function => {
-                functions.push(function(report, facts, definition, external)?);
-                roots.push(definition);
+                if needs_original(facts, definition) {
+                    if facts.target_feature_functions.contains(&definition) {
+                        return Err(error(
+                            "target-feature exports are outside the generic metadata profile",
+                        ));
+                    }
+                    originals.push(GenericRequest {
+                        definition,
+                        external,
+                    });
+                } else {
+                    functions.push(function(report, facts, definition, external)?);
+                    roots.push(definition);
+                }
             }
             DefKind::Const => constants.push(named_values::export(facts, definition, external)?),
             DefKind::Struct => records.push(definition),
@@ -90,6 +124,22 @@ pub fn export(
             storage,
         },
     )?;
+    let interface = if originals.is_empty() {
+        interface
+    } else {
+        originals.sort_unstable_by(|a, b| a.external.cmp(&b.external));
+        let payload = provider(facts, &originals, &interface)?;
+        validate_original_exports(&originals, &payload).map_err(error)?;
+        let interface = interface.with_generic_payload(payload).map_err(error)?;
+        for request in &originals {
+            facts
+                .crates
+                .get_or_insert_default()
+                .symbols
+                .insert(request.definition, request.external.rust_symbol());
+        }
+        interface
+    };
     let interface = if let Some(names) = plan.names {
         interface.with_public_names(names).map_err(error)?
     } else {
@@ -99,6 +149,43 @@ pub fn export(
     linkage.set_identity(identity).map_err(error)?;
     roots.sort_unstable_by_key(|definition| definition.0);
     Ok(Exports { interface, roots })
+}
+fn needs_original(facts: &Declarations, definition: DefId) -> bool {
+    facts.is_const_function(definition)
+        || facts
+            .generics
+            .parameters_in_scope(definition)
+            .any(|p| !matches!(p.argument, Argument::Lifetime(_)))
+        || facts
+            .lifetimes
+            .functions
+            .get(&definition)
+            .is_some_and(|s| s.captures != 0 || !s.early.is_empty() || !s.bounds.is_empty())
+        || facts
+            .generics
+            .predicates_in_scope(definition)
+            .next()
+            .is_some()
+}
+fn validate_original_exports(
+    requests: &[GenericRequest],
+    payload: &crate::support::crates::generics::Payload,
+) -> Result<(), &'static str> {
+    let mut requested = requests.iter();
+    for declaration in &payload.rows().declarations {
+        if let crate::support::crates::generics::Declaration::Function {
+            identity,
+            public: true,
+        } = declaration
+            && requested.next().is_none_or(|r| &r.external != identity)
+        {
+            return Err("generic export provider changed or omitted an actual public request");
+        }
+    }
+    if requested.next().is_some() {
+        return Err("generic export provider omitted a requested declaration");
+    }
+    Ok(())
 }
 struct PreparedFunction {
     definition: ExternalDef,
@@ -239,7 +326,7 @@ fn callable(report: &Report, facts: &Declarations, definition: DefId) -> Result<
         linkage: Kind::Export,
     })
 }
-pub(super) fn scalar(facts: &Declarations, ty: TypeId) -> Result<Scalar, Error> {
+pub(crate) fn scalar(facts: &Declarations, ty: TypeId) -> Result<Scalar, Error> {
     if ty == TypeId::UNIT {
         return Ok(Scalar::Unit);
     }

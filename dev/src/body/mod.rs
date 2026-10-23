@@ -24,6 +24,7 @@ mod range_factories;
 pub mod regions;
 pub use crate::sema::scopes;
 pub mod storage;
+pub(crate) mod transported_originals;
 
 pub use build::build;
 pub use build::concrete as build_concrete;

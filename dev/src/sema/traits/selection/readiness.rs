@@ -110,7 +110,10 @@ fn transparent_subject(
     owner: crate::resolve::model::DefId,
 ) -> Result<bool, Error> {
     use crate::types::parameters::predicates::Bound;
-    for predicate in facts.generics.declared_predicates_in_scope(owner) {
+    for predicate in
+        crate::sema::declaration_inputs::declared(&facts.generics, facts.crates.as_deref(), owner)
+            .map_err(|_| Error::InvalidIdentity)?
+    {
         context.account_work(1)?;
         if !matches!(predicate.value, crate::types::parameters::clauses::Clause::Predicate(value)
             if !matches!(value.bound, Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_) | Bound::ProjectionEqual(_)))

@@ -91,11 +91,12 @@ impl Ordinary {
                         }
                     });
                 }
-                if facts
-                    .foreign
-                    .as_deref()
-                    .and_then(|r| r.function(DefId(item.0)))
-                    .is_some_and(|f| f.linkage == crate::support::linkage::Linkage::Import)
+                if templates.get(item).is_none()
+                    && facts
+                        .foreign
+                        .as_deref()
+                        .and_then(|r| r.function(DefId(item.0)))
+                        .is_some_and(|f| f.linkage == crate::support::linkage::Linkage::Import)
                 {
                     return Ok(None);
                 }

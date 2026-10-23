@@ -60,7 +60,7 @@ fn iterator_originals_enter_both_contract_collectors_and_ordinary_proof() -> Res
         } else {
             body::regions::collect(&facts)?.bodies
         };
-        let mut templates = Templates { bodies: Vec::new() };
+        let mut templates = Templates::source(Vec::new());
         append(&report, &mut facts, &mut templates, &mut contracts)?;
         assert_eq!(templates.bodies.len(), 2);
         for template in &templates.bodies {
@@ -86,7 +86,7 @@ fn collection_originals_enter_both_collectors_and_ordinary_ownership_proof() -> 
         } else {
             body::regions::collect(&facts)?.bodies
         };
-        let mut templates = Templates { bodies: Vec::new() };
+        let mut templates = Templates::source(Vec::new());
         append(&report, &mut facts, &mut templates, &mut contracts)?;
         assert_eq!(templates.bodies.len(), 6);
         body::promote::analyze_templates(&report, &mut facts, &mut templates)?;
@@ -159,7 +159,7 @@ fn iteration_is_sparse_and_preserves_two_distinct_call_contexts() -> Result {
     let (report, mut facts) = fixture("fn main(){let _=1u8+2u8;}")?;
     assert!(report.resolution.builtin_traits.iteration().is_none());
     assert!(facts.iteration.is_none());
-    let mut templates = Templates { bodies: Vec::new() };
+    let mut templates = Templates::source(Vec::new());
     let mut contracts = Vec::new();
     append(&report, &mut facts, &mut templates, &mut contracts)?;
     assert!(templates.bodies.is_empty() && contracts.is_empty());

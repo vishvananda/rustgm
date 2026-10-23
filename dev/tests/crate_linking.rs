@@ -12,6 +12,8 @@ mod imported_records;
 mod imported_regions;
 #[path = "crate_linking/imports.rs"]
 mod imports;
+#[path = "crate_linking/instantiable.rs"]
+mod instantiable;
 #[path = "crate_linking/named_values.rs"]
 mod named_values;
 #[path = "crate_linking/records.rs"]

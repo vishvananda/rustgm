@@ -1,0 +1,67 @@
+{
+  "status": "Independently declared minimal vertical family before generic codec/export/import enablement. The original 18-scenario matrix remains required.",
+  "profile": "Rust 1.98.0 edition2024 x86_64-unknown-linux-gnu; panic abort; overflow checks enabled",
+  "cases": [
+    {
+      "name": "minimal-provider",
+      "path": "tests/spec/generic-contracts/minimal-id-library.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "48b58e7579e8d5589510efc5fe3c0d3016fed76857e58998c5689f05a1bea44c"
+    },
+    {
+      "name": "minimal-native",
+      "path": "tests/spec/generic-contracts/pass-id.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "minimal-provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "native": true,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "ba616568d27c8d24d1bbc71c3e40e6f0da154bdd1dac63656597e672b9d662da"
+    },
+    {
+      "name": "minimal-const",
+      "path": "tests/spec/generic-contracts/pass-imported-id-const.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "minimal-provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "native": true,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "6e4760cbcea86485c116402032c3245e9d4f50ba98e36fcbfe1e1f5322e7da1d"
+    },
+    {
+      "name": "missing-copy",
+      "path": "tests/spec/generic-contracts/reject-copy.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "minimal-provider"
+      },
+      "rustc": 1,
+      "code": "E0277",
+      "native": false,
+      "frontend_expected_after_implementation": 1,
+      "source_sha256": "1208b425ce85a8e3a9866f21f6c22f39dca3f41521af03ccae16b20700710b85"
+    },
+    {
+      "name": "invalid-unused",
+      "path": "tests/spec/generic-contracts/reject-unused-source.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 1,
+      "code": "E0308",
+      "native": false,
+      "frontend_expected_after_implementation": 1,
+      "source_sha256": "49031d340f74a2c2bcb030806861506286436b1e61b0301d9a7d62a4eb1464f2"
+    }
+  ]
+}

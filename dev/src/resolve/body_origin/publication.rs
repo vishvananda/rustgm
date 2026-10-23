@@ -61,6 +61,8 @@ pub(super) fn install(
         owner,
         edition: input.edition,
         definitions: input.definitions,
+        first_body,
+        body_count: len,
         files: input.files,
         labels: input.labels,
         declaration_labels: input.declaration_labels,
@@ -150,6 +152,9 @@ fn validate_definitions(
                     | DefKind::Trait
                     | DefKind::TypeAlias
                     | DefKind::SelfType
+                    | DefKind::Generic
+                    | DefKind::Parameter
+                    | DefKind::Local
             )
             || binding.kind != definition.kind
         {

@@ -107,6 +107,22 @@ pub struct Nominals {
     records: Box<[Record]>,
 }
 impl Nominals {
+    pub(super) fn allocation_bytes(&self) -> usize {
+        size_of_val(self.records.as_ref()).saturating_add(
+            self.records
+                .iter()
+                .map(|record| {
+                    size_of_val(record.fields.as_ref()).saturating_add(
+                        record
+                            .fields
+                            .iter()
+                            .map(|field| field.name.capacity())
+                            .fold(0_usize, usize::saturating_add),
+                    )
+                })
+                .fold(0_usize, usize::saturating_add),
+        )
+    }
     /// Validate record ordinals, static field roots and finite by-value storage.
     /// Record ordinals refer to this already sorted table; it is never reordered.
     /// # Errors

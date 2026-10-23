@@ -123,6 +123,17 @@ declaration, parent and ordinal relationships with bounded linear work. It does
 not yet encode/import bodies, provide executable permission or activate a new
 wire profile. The full generic-body and contract transport remains required.
 
+The first executable generic checkpoint adds envelope nine, row version zero,
+for defining Rust 2024 and the legacy language-role policy. An actual checked
+`const fn id<T: Copy>(value: T) -> T` survives export/import and normal runtime
+and constant instantiation; Copy debts are re-proved for each actual instance.
+Artifacts contain typed original operations rather than proof tokens. The
+narrow operation/type family rejects unsupported source-role, trait, lifetime,
+call and other body contracts explicitly. Profiles zero through eight retain
+their encodings. This does not activate PA29 or replace the full generic-body
+requirement; see [the checkpoint](../docs/pa29-executable-generics.md) and the
+unchanged complete `tests/generic-contract-outcomes.json` inventory.
+
 ## Tests to develop with the reference
 
 multi-crate dependencies; symbol identity; visibility; deterministic exports.

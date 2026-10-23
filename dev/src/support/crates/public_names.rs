@@ -73,6 +73,33 @@ pub struct PublicNames {
     names: usize,
 }
 impl PublicNames {
+    pub(super) fn allocation_bytes(&self) -> usize {
+        size_of::<Self>()
+            .saturating_add(crate::support::retained::vector(&self.modules))
+            .saturating_add(
+                self.modules
+                    .iter()
+                    .map(|module| {
+                        crate::support::retained::vector(&module.path)
+                            .saturating_add(crate::support::retained::vector(&module.bindings))
+                            .saturating_add(
+                                module
+                                    .path
+                                    .iter()
+                                    .map(String::capacity)
+                                    .fold(0_usize, usize::saturating_add),
+                            )
+                            .saturating_add(
+                                module
+                                    .bindings
+                                    .iter()
+                                    .map(|binding| binding.name.capacity())
+                                    .fold(0_usize, usize::saturating_add),
+                            )
+                    })
+                    .fold(0_usize, usize::saturating_add),
+            )
+    }
     /// Store each canonical module once, without unfolding alias paths.
     /// # Errors
     /// Rejects missing roots, duplicate modules and combined storage exhaustion.
@@ -162,6 +189,22 @@ pub(super) fn owned_public_definitions(
         .functions()
         .iter()
         .map(super::Function::definition)
+        .chain(
+            interface
+                .generic_payload()
+                .into_iter()
+                .flat_map(|payload| &payload.rows().declarations)
+                .filter_map(|declaration| match declaration {
+                    super::generics::Declaration::Function {
+                        identity,
+                        public: true,
+                    } => Some(identity),
+                    super::generics::Declaration::Function { public: false, .. }
+                    | super::generics::Declaration::TypeParameter { .. }
+                    | super::generics::Declaration::ValueParameter { .. }
+                    | super::generics::Declaration::Local { .. } => None,
+                }),
+        )
         .chain(
             interface
                 .constants()

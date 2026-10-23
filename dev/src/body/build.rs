@@ -196,6 +196,13 @@ fn function_body(
 }
 impl Body {
     pub(super) fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {
+        Self::original(owner, source.into(), result)
+    }
+    pub(crate) fn original(
+        owner: Owner,
+        source: crate::body::ir::BodyOrigin,
+        result: TypeId,
+    ) -> Self {
         Self {
             mutable_statics: None,
             static_types: None,
@@ -216,7 +223,7 @@ impl Body {
             guard_places: Vec::new(),
             projections: Vec::new(),
             owner,
-            source: source.into(),
+            source,
             result,
             locals: Vec::new(),
             values: Vec::new(),
@@ -824,7 +831,12 @@ impl<'a> Builder<'a> {
         }
         self.settle();
         let scope_work = self.scope_plan.work;
-        let (mut scopes, scratch) = self.scope_plan.finish();
+        let (source_scopes, scratch) = self.scope_plan.finish();
+        let scope_work = scope_work.saturating_add(source_scopes.len());
+        let mut scopes = source_scopes
+            .into_iter()
+            .map(super::storage::Scope::from)
+            .collect::<Vec<_>>();
         scopes.shrink_to_fit();
         self.scratch.scopes = scratch;
         self.body.storage = Some(super::storage::Facts {

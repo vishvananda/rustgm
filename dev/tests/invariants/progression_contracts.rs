@@ -20,7 +20,7 @@ fn range_originals_use_both_collectors_and_ordinary_body_proof() -> Result {
         } else {
             body::regions::collect(&facts)?.bodies
         };
-        let mut templates = Templates { bodies: Vec::new() };
+        let mut templates = Templates::source(Vec::new());
         append(&report, &mut facts, &mut templates, &mut contracts)?;
         assert_eq!(templates.bodies.len(), 14);
         body::promote::analyze_templates(&report, &mut facts, &mut templates)?;
@@ -202,7 +202,7 @@ fn range_factory_requires_immutable_canonical_catalog() -> Result {
         .canonical
         .nominal = original.declaration.definition;
     let mut contracts = body::regions::collect(&facts)?.bodies;
-    let mut templates = Templates { bodies: Vec::new() };
+    let mut templates = Templates::source(Vec::new());
     assert!(append(&report, &mut facts, &mut templates, &mut contracts).is_err());
     Ok(())
 }

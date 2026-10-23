@@ -59,7 +59,7 @@ fn clone_factory_enters_batch_and_incremental_original_proof() -> Result {
         } else {
             body::regions::collect(&facts)?.bodies
         };
-        let mut templates = Templates { bodies: Vec::new() };
+        let mut templates = Templates::source(Vec::new());
         append(&report, &mut facts, &mut templates, &mut contracts)?;
         assert_eq!(templates.bodies.len(), 7);
         body::promote::analyze_templates(&report, &mut facts, &mut templates)?;
@@ -94,7 +94,7 @@ fn typed_member_demand_keeps_marker_and_source_winners_cold() -> Result {
                 .as_deref()
                 .is_none_or(|r| !r.requested && r.original.is_none() && !r.complete)
         );
-        let mut templates = Templates { bodies: Vec::new() };
+        let mut templates = Templates::source(Vec::new());
         let mut contracts = Vec::new();
         append(&report, &mut facts, &mut templates, &mut contracts)?;
         assert!(templates.bodies.iter().all(|t| {

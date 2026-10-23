@@ -98,6 +98,47 @@ pub(super) fn lowir(source: &str, edition: Edition) -> Result<Vec<u8>, Box<dyn s
     Ok(bytes)
 }
 
+#[test]
+fn generic_metadata_never_relabels_the_defining_crate_edition()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source =
+        crate::resolve::fixture("pa29/tests/spec/generic-contracts/minimal-id-library.rs")?;
+    for edition in [Edition::Rust2021, Edition::Rust2024] {
+        let report = analyze(&source, edition, &mut Files::default())?;
+        let rustgm::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = rustgm::pipeline::analyze_source(&report)?;
+        let result = rustgm::lower::instances::build_library_prepared(
+            &report,
+            &mut facts,
+            rustgm::support::crates::CrateIdentity::new("library", "edition_originals")?,
+            prepared,
+        );
+        if edition == Edition::Rust2021 {
+            let Err(error) = result else {
+                return Err("unsupported source edition was silently exported".into());
+            };
+            assert!(
+                error
+                    .to_string()
+                    .contains("requires the Rust 2024 source profile")
+            );
+        } else {
+            let (_, interface) = result?;
+            assert_eq!(
+                interface
+                    .generic_payload()
+                    .ok_or("missing generic original")?
+                    .rows()
+                    .edition,
+                edition
+            );
+        }
+    }
+    Ok(())
+}
+
 const EXECUTABLES: &[(&str, &str, Edition)] = &[
     (
         "physical",

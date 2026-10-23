@@ -4,6 +4,9 @@ mod component_index;
 mod components;
 mod defining_heads;
 mod expressions;
+#[cfg(test)]
+#[path = "../../tests/invariants/transport_debts.rs"]
+mod imported_tests;
 mod initializers;
 mod inputs;
 mod layout_kernel;
@@ -72,6 +75,7 @@ struct Session {
 type InitializerTemplates = HashMap<DefId, (Template, Contract)>;
 #[derive(Default)]
 pub(super) struct Engine {
+    imported: Option<Rc<body::transported_originals::ImportedOriginals>>,
     catalog: Catalog,
     values: values::Scratch,
     limits: Limits,
@@ -101,6 +105,8 @@ impl Engine {
         facts: &mut Declarations,
         prepared: &mut Prepared,
     ) -> Result<(), Error> {
+        self.ensure_imported_originals(report, facts)?;
+        prepared.imported = self.imported.as_ref().map(Rc::clone);
         self.transfer_components(report, facts, prepared)?;
         for (key, body) in std::mem::take(&mut self.concrete) {
             if prepared.concrete.contains_key(&key) {
@@ -386,13 +392,16 @@ impl Engine {
             .map_err(|e| Error::at(FileId(0), 0, e))?;
         crate::sema::compiler_items::check_const_drop_glue(facts, instance)
             .map_err(|e| Error::at(FileId(0), 0, e))?;
-        if self.catalog.functions.contains_key(&instance) {
+        if self.cached_function(report, facts, instance)? {
             return Ok(true);
         }
         let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty()) else {
             return Err(Error::at(FileId(0), 0, "missing selected const function"));
         };
         let definition = DefId(item.0);
+        if self.imported_function(report, facts, instance, definition)? {
+            return Ok(true);
+        }
         if !facts.typed_function_bodies.contains(&definition) {
             return Ok(false);
         }
@@ -439,7 +448,10 @@ impl Engine {
         if let Some(templates) = self.runtime_templates.as_ref().map(Rc::clone)
             && let Some(&index) = self.runtime_template_indices.get(&definition)
         {
-            self.specialize(report, facts, instance, &templates.bodies[index], &input)?;
+            let template = templates
+                .get(index)
+                .ok_or_else(|| report.body_error(source, "runtime template index is stale"))?;
+            self.specialize(report, facts, instance, template, &input)?;
             return Ok(true);
         }
         let template = if let Some(template) = self.originals.remove(&definition) {
@@ -471,6 +483,115 @@ impl Engine {
             self.concrete
                 .insert(BodyKey::Declaration(definition), template.body);
         }
+        Ok(true)
+    }
+    fn cached_function(
+        &self,
+        report: &Report,
+        facts: &Declarations,
+        instance: crate::types::instance::Instance,
+    ) -> Result<bool, Error> {
+        if !self.catalog.functions.contains_key(&instance) {
+            return Ok(false);
+        }
+        if let Some(originals) = &self.imported
+            && let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty())
+            && let Some(row) = originals.get(DefId(item.0))
+        {
+            let header = facts
+                .function_header(DefId(item.0))
+                .map_err(|e| report.body_optional_error(None, e))?
+                .ok_or_else(|| {
+                    report.body_optional_error(
+                        None,
+                        "cached imported Code lost its exact declaration",
+                    )
+                })?;
+            if header.body != Some(row.template.body.source)
+                || row.contract.signature != Some(header.signature)
+                || header
+                    .environment
+                    .is_none_or(|env| !Arc::ptr_eq(env, &row.template.environment))
+            {
+                return Err(report.body_error(
+                    row.template.body.source,
+                    "cached imported Code changed its exact original lineage",
+                ));
+            }
+        }
+        Ok(true)
+    }
+    fn ensure_imported_originals(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+    ) -> Result<(), Error> {
+        if self.imported.is_some() {
+            return Ok(());
+        }
+        let Some(originals) =
+            body::transported_originals::build(report, facts, &mut self.promotions)?
+        else {
+            return Ok(());
+        };
+        // All imported originals, including unused rows, prove before this private
+        // provider retains the set or any selected imported Code can be published.
+        for row in originals.iter() {
+            crate::borrow::storage::validate(&row.template.body)
+                .map_err(|e| report.body_error(e.node, e.message))?;
+            super::original_contexts::Original::validate_parts(
+                facts,
+                &row.template.body,
+                &row.contract,
+            )
+            .map_err(|e| report.body_error(row.template.body.source, e))?;
+            self.prove(report, facts, &row.template, &row.contract)?;
+        }
+        let retained = facts
+            .constant_work
+            .template_bytes
+            .saturating_add(originals.retained_bytes());
+        if retained > 64 * 1024 * 1024 {
+            return Err(report
+                .body_optional_error(None, "imported templates exceed combined retained budget"));
+        }
+        facts.constant_work.template_bytes = retained;
+        self.imported = Some(originals);
+        Ok(())
+    }
+    fn imported_function(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        instance: crate::types::instance::Instance,
+        definition: DefId,
+    ) -> Result<bool, Error> {
+        let Some(header) = facts
+            .function_header(definition)
+            .map_err(|e| report.body_optional_error(None, e))?
+        else {
+            return Ok(false);
+        };
+        if header.declaration.source().is_some() {
+            return Ok(false);
+        }
+        if !facts.is_const_function(definition) {
+            return Err(report.body_optional_error(None, "imported function is not declared const"));
+        }
+        self.ensure_imported_originals(report, facts)?;
+        let originals = self.imported.as_ref().map(Rc::clone).ok_or_else(|| {
+            report.body_optional_error(None, "imported function lacks its proved original set")
+        })?;
+        let row = originals.get(definition).ok_or_else(|| {
+            report.body_optional_error(None, "imported function has no exact original row")
+        })?;
+        super::original_contexts::Original::validate_parts(
+            facts,
+            &row.template.body,
+            &row.contract,
+        )
+        .map_err(|e| report.body_error(row.template.body.source, e))?;
+        self.specialize(report, facts, instance, &row.template, &row.contract)?;
         Ok(true)
     }
     fn reserve_template(

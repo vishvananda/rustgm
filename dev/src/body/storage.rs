@@ -30,17 +30,33 @@ pub struct Exit {
     pub location: Location,
     pub end: End,
 }
+/// Body-owned lexical location; semantic scope construction retains its syntax IDs.
+#[derive(Clone, Copy, Debug)]
+pub struct Scope {
+    pub parent: Option<scopes::Id>,
+    pub source: super::ir::BodySite,
+    pub kind: scopes::Kind,
+}
+impl From<scopes::Scope> for Scope {
+    fn from(scope: scopes::Scope) -> Self {
+        Self {
+            parent: scope.parent,
+            source: scope.source.into(),
+            kind: scope.kind,
+        }
+    }
+}
 #[derive(Clone)]
 pub struct Facts {
     pub scope_work: usize,
-    pub scopes: Vec<scopes::Scope>,
+    pub scopes: Vec<Scope>,
     pub exits: Vec<Exit>,
 }
 impl Facts {
     pub(crate) fn new(scopes: scopes::Facts) -> Self {
         Self {
-            scope_work: scopes.work,
-            scopes: scopes.into_scopes(),
+            scope_work: scopes.work.saturating_add(scopes.scopes().len()),
+            scopes: scopes.into_scopes().into_iter().map(Scope::from).collect(),
             exits: Vec::new(),
         }
     }

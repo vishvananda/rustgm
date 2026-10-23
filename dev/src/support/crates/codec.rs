@@ -1,5 +1,6 @@
 //! Versioned little-endian metadata validates bounded tables before inference.
 mod nominals;
+mod originals;
 mod profiles;
 mod public_names;
 mod reader;
@@ -51,6 +52,9 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     }
     if let Some(storage) = stored {
         stored_globals::encode(&mut out, storage)?;
+    }
+    if let Some(payload) = interface.generic_payload() {
+        originals::encode(&mut out, payload)?;
     }
     if let Some(names) = interface.public_names() {
         public_names::encode(
@@ -157,6 +161,17 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     } else {
         None
     };
+    if profile.generic() {
+        let interface = decoded_base(
+            identity,
+            dependencies,
+            functions,
+            constants,
+            nominal,
+            storage,
+        )?;
+        return generic_tail(&mut input, interface, profile);
+    }
     let public = if profile.public_names {
         Some(public_names::decode(&mut input, &identity, &dependencies)?)
     } else {
@@ -165,7 +180,29 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     if !input.done() {
         return Err("trailing metadata bytes");
     }
-    let interface = match (nominal, storage) {
+    let interface = decoded_base(
+        identity,
+        dependencies,
+        functions,
+        constants,
+        nominal,
+        storage,
+    )?;
+    profile.validate(&interface)?;
+    match public {
+        Some(names) => interface.with_public_names(names),
+        None => Ok(interface),
+    }
+}
+fn decoded_base(
+    identity: CrateIdentity,
+    dependencies: Vec<CrateIdentity>,
+    functions: Vec<Function>,
+    constants: Vec<super::Constant>,
+    nominal: Option<super::Nominals>,
+    storage: Option<super::Storage>,
+) -> Result<Interface, &'static str> {
+    match (nominal, storage) {
         (Some(records), Some(storage)) => Interface::with_storage(
             identity,
             dependencies,
@@ -179,7 +216,27 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
         }
         (None, None) => Interface::with_constants(identity, dependencies, functions, constants),
         (None, Some(_)) => Err("static metadata requires a shared type graph"),
-    }?;
+    }
+}
+fn generic_tail(
+    input: &mut Reader<'_>,
+    interface: Interface,
+    profile: Profile,
+) -> Result<Interface, &'static str> {
+    let payload = originals::decode(input, &interface)?;
+    let interface = interface.with_generic_payload(payload)?;
+    let public = if profile.public_names {
+        Some(public_names::decode(
+            input,
+            interface.identity(),
+            interface.dependencies(),
+        )?)
+    } else {
+        None
+    };
+    if !input.done() {
+        return Err("trailing metadata bytes");
+    }
     profile.validate(&interface)?;
     match public {
         Some(names) => interface.with_public_names(names),

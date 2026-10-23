@@ -5,6 +5,7 @@ use crate::support::crates::{RecordRepr, TypeGraph, TypeNode};
 const PUBLIC_NAMES: u8 = 6;
 const AGGREGATES: u8 = 7;
 const VARIADICS: u8 = 8;
+const GENERIC_ORIGINALS: u8 = 9;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Payload {
@@ -45,6 +46,12 @@ pub(super) struct Profile {
     pub(super) shared: bool,
     pub(super) aggregates: bool,
     calling: Calling,
+    originals: Originals,
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Originals {
+    None,
+    Generic,
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Calling {
@@ -94,9 +101,17 @@ impl Profile {
             shared,
             aggregates: aggregate_types(interface),
             calling: Calling::for_interface(interface),
+            originals: if interface.generic_payload().is_some() {
+                Originals::Generic
+            } else {
+                Originals::None
+            },
         }
     }
     pub(super) fn write(self, out: &mut Writer) -> Result<(), &'static str> {
+        if self.generic() {
+            out.u8(GENERIC_ORIGINALS)?;
+        }
         if self.variadic() {
             out.u8(VARIADICS)?;
         }
@@ -114,6 +129,10 @@ impl Profile {
     }
     pub(super) fn read(input: &mut Reader<'_>) -> Result<Self, &'static str> {
         let mut tag = input.u8()?;
+        let generic = tag == GENERIC_ORIGINALS;
+        if generic {
+            tag = input.u8()?;
+        }
         let variadics = tag == VARIADICS;
         if variadics {
             tag = input.u8()?;
@@ -141,12 +160,20 @@ impl Profile {
             public_names,
             shared,
             aggregates,
+            originals: if generic {
+                Originals::Generic
+            } else {
+                Originals::None
+            },
             calling: if variadics {
                 Calling::VariadicC
             } else {
                 Calling::Fixed
             },
         })
+    }
+    pub(super) fn generic(self) -> bool {
+        self.originals == Originals::Generic
     }
     pub(super) fn typed(self) -> bool {
         self.payload == Payload::Borrowed || (self.payload == Payload::Foreign && !self.shared)
@@ -158,6 +185,9 @@ impl Profile {
         self.calling == Calling::VariadicC
     }
     pub(super) fn validate(self, interface: &Interface) -> Result<(), &'static str> {
+        if self.generic() != interface.generic_payload().is_some() {
+            return Err("generic metadata envelope requires complete originals");
+        }
         if self.calling != Calling::for_interface(interface) {
             return Err("variadic metadata profile requires a variadic function");
         }

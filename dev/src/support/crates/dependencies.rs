@@ -119,6 +119,11 @@ fn validate_graph(
     for (index, artifact) in artifacts.iter().enumerate() {
         functions = functions
             .saturating_add(artifact.functions().len())
+            .saturating_add(
+                artifact
+                    .generic_payload()
+                    .map_or(0, |p| p.rows().functions.len()),
+            )
             .saturating_add(artifact.constants().len())
             .saturating_add(artifact.nominals().map_or(0, |n| n.records().len()));
         edges = edges.saturating_add(artifact.dependencies().len());

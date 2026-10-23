@@ -373,7 +373,7 @@ fn template_loan_inputs_require_complete_unique_body_coverage()
     assert!(check(&templates, &contracts, &owned[..1]).is_err());
     assert!(
         check(
-            &body::templates::Templates { bodies: Vec::new() },
+            &body::templates::Templates::source(Vec::new()),
             &contracts,
             &owned
         )

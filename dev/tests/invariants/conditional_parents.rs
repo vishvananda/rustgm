@@ -43,13 +43,11 @@ fn component(source: &str) -> Result<Component> {
     let mut child_contract =
         crate::body::regions::Collector::default().expression(&facts, child_source)?;
     crate::body::dispatch::original_anonymous(&mut facts, &mut child.body, &mut child_contract)?;
-    let mut templates = Templates {
-        bodies: vec![
-            child,
-            prepared.closure(&report, &facts, &closure, owner)?,
-            prepared.function(&report, &facts, &function)?,
-        ],
-    };
+    let mut templates = Templates::source(vec![
+        child,
+        prepared.closure(&report, &facts, &closure, owner)?,
+        prepared.function(&report, &facts, &function)?,
+    ]);
     let mut promotions = crate::body::promote::Scratch::default();
     for template in &mut templates.bodies {
         crate::body::promote::instance_reusing(
@@ -135,8 +133,8 @@ fn conditional_inline_originals_require_the_exact_complete_parent_component() ->
             component.contracts.clone(),
         )?;
         for missing in [1, 2] {
-            let templates = Templates {
-                bodies: component
+            let templates = Templates::source(
+                component
                     .templates
                     .bodies
                     .iter()
@@ -144,7 +142,7 @@ fn conditional_inline_originals_require_the_exact_complete_parent_component() ->
                     .filter(|(index, _)| *index != missing)
                     .map(|(_, body)| body.clone())
                     .collect(),
-            };
+            );
             let error = verify(&component, &templates, component.contracts.clone())
                 .err()
                 .ok_or("missing parent was accepted")?;
@@ -200,13 +198,9 @@ fn conditional_inline_component_does_not_supply_an_unpaid_outer_lifetime_relatio
 fn context_parents_prove_originals_without_entering_runtime_lookup() -> Result {
     let component = component(&fixture("paid-lifetime")?)?;
     let facts = &component.facts;
-    let templates = Templates {
-        bodies: vec![component.templates.bodies[0].clone()],
-    };
+    let templates = Templates::source(vec![component.templates.bodies[0].clone()]);
     let contexts = crate::borrow::templates::Contexts {
-        bodies: Templates {
-            bodies: component.templates.bodies[1..].to_vec(),
-        },
+        bodies: Templates::source(component.templates.bodies[1..].to_vec()),
         source: Vec::new(),
     };
     let inputs = crate::body::regions::Contracts {
@@ -267,9 +261,7 @@ fn context_parents_prove_originals_without_entering_runtime_lookup() -> Result {
     );
     drop(checked);
     let mut duplicated = crate::borrow::templates::Contexts {
-        bodies: Templates {
-            bodies: contexts.bodies.bodies.clone(),
-        },
+        bodies: Templates::source(contexts.bodies.bodies.clone()),
         source: Vec::new(),
     };
     duplicated.bodies.bodies.push(templates.bodies[0].clone());
@@ -318,14 +310,10 @@ fn provider_originals_feed_actual_parent_proof_before_execution() -> Result {
 fn source_and_provider_component_debts_are_both_mandatory() -> Result {
     let component = component(&fixture("paid-lifetime")?)?;
     let facts = &component.facts;
-    let templates = Templates {
-        bodies: vec![component.templates.bodies[0].clone()],
-    };
+    let templates = Templates::source(vec![component.templates.bodies[0].clone()]);
     for side in 0..2 {
         let mut contexts = crate::borrow::templates::Contexts {
-            bodies: Templates {
-                bodies: component.templates.bodies[1..].to_vec(),
-            },
+            bodies: Templates::source(component.templates.bodies[1..].to_vec()),
             source: component.contracts.clone(),
         };
         let mut inputs = crate::body::regions::Contracts {

@@ -268,7 +268,7 @@ fn sequence_ordering_reconstructs_only_selected_element_equations() -> Result {
             "same-element matching retains both directions"
         );
     }
-    let templates = crate::body::templates::Templates { bodies: Vec::new() };
+    let templates = crate::body::templates::Templates::source(Vec::new());
     let checked = originals(&mut facts, &templates)?;
     prove(&mut facts, &checked, body.clone(), &input, Some(permit))?;
     let mut unpaid = input.clone();

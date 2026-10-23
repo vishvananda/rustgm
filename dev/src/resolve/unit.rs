@@ -40,6 +40,10 @@ pub struct Unit {
 }
 
 impl Unit {
+    pub(crate) const fn edition(&self) -> crate::support::edition::Edition {
+        self.edition
+    }
+
     /// Configured attributes cross the resolution boundary as retained syntax.
     pub(crate) fn retained_attributes(
         &self,

@@ -372,12 +372,13 @@ impl Checker<'_> {
         arguments: &[Argument],
         bindings: &[(ParameterId, Argument)],
     ) -> Result<(), Error> {
-        let predicates = self
-            .facts
-            .generics
-            .predicates_in_scope(owner)
-            .copied()
-            .collect::<Vec<_>>();
+        let predicates = crate::sema::declaration_inputs::all(
+            &self.facts.generics,
+            self.facts.crates.as_deref(),
+            owner,
+        )
+        .map_err(|e| self.error(node, e))?
+        .collect::<Vec<_>>();
         if predicates.is_empty() {
             return Ok(());
         }

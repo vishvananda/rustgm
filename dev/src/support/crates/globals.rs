@@ -113,6 +113,22 @@ pub struct Storage {
     values: Box<[StoredValue]>,
 }
 impl Storage {
+    pub(super) fn allocation_bytes(&self) -> usize {
+        size_of_val(self.statics.as_ref())
+            .saturating_add(size_of_val(self.values.as_ref()))
+            .saturating_add(
+                self.values
+                    .iter()
+                    .map(|value| match &value.kind {
+                        StoredKind::Product(fields) => size_of_val(fields.as_ref()),
+                        StoredKind::Bytes(bytes) => bytes.len(),
+                        StoredKind::Reference { fields, .. } => size_of_val(fields.as_ref()),
+                        StoredKind::ProjectedReference { path, .. } => size_of_val(path.as_ref()),
+                        StoredKind::Scalar(_) | StoredKind::Repeat(_) => 0,
+                    })
+                    .fold(0_usize, usize::saturating_add),
+            )
+    }
     /// Retain canonical declaration ordinals and postorder value nodes.
     /// # Errors
     /// Rejects empty, unbounded or noncanonical tables before further validation.

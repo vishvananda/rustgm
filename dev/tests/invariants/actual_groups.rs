@@ -41,7 +41,7 @@ fn actual(damage: bool) -> Result<(Vec<PairedProved>, bool)> {
             .map(|body| Ok((Arc::clone(inputs.get(&body.key()).ok_or("input")?), body)))
             .collect::<Result<Vec<_>>>()?,
     )?;
-    let originals = body::templates::Templates { bodies: Vec::new() };
+    let originals = body::templates::Templates::source(Vec::new());
     let mut copies = crate::types::copy::Copies::default();
     let mut environment = Environment {
         types: &facts.types,

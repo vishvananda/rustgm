@@ -91,10 +91,7 @@ impl Collector {
             let mut contract = super::function_contract(facts, function, source)?;
             self.populate(facts, &mut contract)?;
             super::clause_terms::collect(facts, function.definition, |source, kind| {
-                contract.obligations.push(Obligation {
-                    source: source.into(),
-                    kind,
-                });
+                contract.obligations.push(Obligation { source, kind });
                 Ok(())
             })?;
             super::opaque_members(facts, function.definition, |source, kind| {

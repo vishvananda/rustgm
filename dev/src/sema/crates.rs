@@ -4,6 +4,7 @@ mod imported_records;
 mod imported_storage;
 mod imported_values;
 mod type_transport;
+mod typed_headers;
 use super::{foreign, model::Declarations};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
@@ -16,10 +17,12 @@ use crate::{
     types::{GenericArgs, ItemId, Kind as Type, Primitive, TypeId},
 };
 pub use export::{Exports, export};
+pub(crate) use export::{GenericRequest, export_with_originals, scalar as export_scalar};
 
 #[derive(Default)]
 pub struct Linkage {
     origins: Option<std::rc::Rc<crate::resolve::body_origin::Catalog>>,
+    originals: Option<Box<typed_headers::Headers>>,
     identity: Option<CrateIdentity>,
     prefix: Option<String>,
     symbols: HashMap<DefId, String>,
@@ -94,6 +97,7 @@ pub(super) fn import(report: &Report, facts: &mut Declarations) -> Result<(), Er
         facts.crates.get_or_insert_default().origins = Some(origins);
     }
     let records = imported_records::prepare(imported, facts)?;
+    typed_headers::import(imported, facts)?;
     for (definition, function) in imported.functions() {
         let signature = records.signature(facts, function)?;
         let ty = facts

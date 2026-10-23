@@ -77,7 +77,7 @@ fn default_ne_original_is_checked_with_incremental_and_batch_contracts() -> Resu
             } else {
                 body::regions::collect(&facts)?.bodies
             };
-            let mut templates = body::templates::Templates { bodies: Vec::new() };
+            let mut templates = body::templates::Templates::source(Vec::new());
             super::append(&report, &mut facts, &mut templates, &mut contracts)?;
             assert_eq!(templates.bodies.len(), 1);
             let default = &templates.bodies[0].body;
@@ -142,7 +142,7 @@ fn ordering_defaults_use_original_proof_with_both_collectors() -> Result {
         } else {
             body::regions::collect(&facts)?.bodies
         };
-        let mut templates = body::templates::Templates { bodies: Vec::new() };
+        let mut templates = body::templates::Templates::source(Vec::new());
         super::append(&report, &mut facts, &mut templates, &mut contracts)?;
         // The requested canonical Ordering result also exposes its Ord contract:
         // ne, four partial relations and three owned helpers are checked originals.
@@ -171,7 +171,7 @@ fn owned_helpers_require_original_contracts_with_method_only_sized() -> Result {
         } else {
             body::regions::collect(&facts)?.bodies
         };
-        let mut templates = body::templates::Templates { bodies: Vec::new() };
+        let mut templates = body::templates::Templates::source(Vec::new());
         super::append(&report, &mut facts, &mut templates, &mut contracts)?;
         assert_eq!(templates.bodies.len(), 8);
         let error = verify(&mut facts, &templates, contracts.clone())
