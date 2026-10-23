@@ -54,6 +54,20 @@ Internal features active in an earlier library must work then, regardless of
 later broad edition/target closure. Measure complete library time and peak memory
 as well as changed-path scaling, with existing resource and cleanup limits.
 
+Build orchestration may use an explicitly pinned Cargo unit graph as a package
+planner, outside the frontend. Its compiler adapter permits only version and
+empty-input target-information queries; Cargo never compiles a target dependency.
+Retain each unit's features, edition, full profile and dependency renames. Host
+and target units for the same package are distinct: a build script executes on
+the host while carrying the configuration of its consuming target. Traverse the
+selected graph once, retaining dependency-first order and diagnosing cycles,
+missing nodes and unsupported protocol fields. Graph rows and Cargo path IDs
+are invocation-local, not portable crate identities or persistent cache keys.
+Planning receipts are not compilation results. The initial
+[planning adapter](docs/crate-planning.md) supports frozen local path packages;
+complete source/configuration acquisition, per-crate edition semantics and the
+target executor remain required before upstream acceptance.
+
 ## Source, lexing and parsing
 
 Read source in bulk; retain immutable source images and compact file/offset
