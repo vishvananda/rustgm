@@ -63,7 +63,7 @@ Parse `rustc-cfg`, `rustc-check-cfg`, environment, link and rerun directives int
 separate typed records outside the frontend library. Preserve link argument
 order. A check-cfg declaration does not enable a cfg or grant a language feature.
 Reject unsupported build-affecting directives instead of silently ignoring them.
-General directive parsing, dependency resolution, caching and replay remain
+Dependency resolution, persistent caching, target integration and replay remain
 implementation work; these two scripts do not exercise every directive family.
 
 Cache a completed script only under its exact host compiler, package/dependency
@@ -103,3 +103,39 @@ followed by per-crate edition propagation and the required semantic differences.
 The complete selected transitive graph must be frozen and built before claiming
 upstream crate acceptance. No PA34 fixture, text oracle or activation changes in
 this checkpoint.
+
+## Implemented host task and ordered output consumer
+
+`scripts/host_build_script.py` now executes an explicitly configured host `Job`:
+the caller supplies the package/script, edition, compiler pin, frozen inputs,
+host dependencies, resolved features and separate compile/runtime environments.
+There is no compiler discovery or target frontend fallback. It validates pins
+before work and after execution, retains command/diagnostic receipts, and
+publishes generated-file hashes and directives only after success. Every task
+uses a fresh output root; persistent cache reuse is deliberately absent until
+the crate planner closes the full source/dependency/environment/rerun graph.
+
+`scripts/build_script_output.py` implements the ordered host output protocol.
+Enabled cfgs and check-cfg expectations have distinct typed kinds. Environment
+assignments, rerun inputs, metadata and scoped link directives remain distinct;
+native link order and embedded equals signs survive parsing. Legacy metadata
+keys and the modern prefix follow the
+[Cargo build-script protocol](https://doc.rust-lang.org/cargo/reference/build-scripts.html).
+Only `-l`/`-L` are accepted in `rustc-flags`; error directives, nonzero statuses,
+malformed/unsupported modern directives and resource limits fail explicitly.
+Ordinary stdout remains raw evidence rather than frontend input.
+
+This task primitive does not resolve Cargo manifests or select target inputs.
+It does not yet consume link/check-cfg records in the target driver or establish
+host/target graph closure. Its caller must provide the complete frozen source
+and host dependency set before claiming reproducible crate builds. A successful
+host task alone remains insufficient for PA34 or an upstream crate milestone.
+
+Validation under `obj/parallel/pa34-host-runner-v2/` passes 12 focused protocol
+and task tests plus all 110 harness tests, suite registration and assignment
+layout checks. Both unchanged original Serde scripts executed through this new
+task primitive and matched the previously declared stdout/generated-source
+bytes. No RustGM rebuild was needed. Scoped cleanup removed the two generated
+host executables and retained sources, outputs and receipts. The first focused
+attempt's standalone test import-path error is retained under the v1 root;
+the fix makes this test root runnable independently of test discovery order.
