@@ -71,6 +71,30 @@ tools may bootstrap build-time execution, but rustc-built target libraries or
 frontend fallbacks cannot satisfy upstream acceptance. Keep build/configuration
 orchestration outside the frontend. A whole selected crate build and independent
 native consumers are required; source reducers guide work but do not replace it.
+
+Source auto-trait selection preserves explicit positive and negative identities.
+A refutation is not positive evidence, and an applicable explicit implementation
+family replaces its structural default even when its conditions are unpaid.
+Validate that family's headers before publishing a completed absence. Retain
+nominal well-formedness prerequisites before using physical shape for source
+Freeze, sizing or ordinary destruction. Share immediate formation dependencies
+in a query-local DAG keyed by the resolved type, surrounding callable depth and
+immutable caller scope; flattening each nested prefix repeats quadratic work.
+Formation-only nodes supply no trait implementation or dispatch permission.
+Never cache an absence that discards an unpaid prerequisite. Preserve active
+cycle checks, binder-local deferral and complete child obligations. See the
+[source Freeze checkpoint](docs/pa31-source-freeze-proposal.md) for the measured
+depth, width, unrelated-node and cold/warm controls.
+
+An actual source drop-glue helper is a compiler hook, not an executable empty
+body. Its runtime adapter consumes the exact registered declaration, full proved
+instance, retained source/body signature pair and caller's destruction recipe.
+Ordinary non-hook bodies allocate no adapter query. A dropless answer requires
+the same immutable type/definition inventory and completed empty registry;
+missing structural or proof data is not evidence of no destruction. Keep sized
+thin-reference cleanup distinct from required unsized metadata, owned-box order
+and constant-evaluation cleanup. The [runtime checkpoint](docs/pa31-source-drop-glue.md)
+records its accepted consumers and remaining boundaries.
 Internal features active in an earlier library must work then, regardless of
 later broad edition/target closure. Measure complete library time and peak memory
 as well as changed-path scaling, with existing resource and cleanup limits.
