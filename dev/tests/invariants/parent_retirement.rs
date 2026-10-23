@@ -127,7 +127,7 @@ fn ordinary_owners_keep_scope_storage_lazy() {
 
 #[test]
 fn actual_port_work_is_bounded_across_reused_original_components() -> Result {
-    let mut previous = None;
+    let mut previous: Option<(usize, usize)> = None;
     let mut slope: Option<(usize, usize)> = None;
     for width in [1, 8, 32, 128] {
         let extra = "let _=const{S::<'a,Tag>::C};".repeat(width - 1);
