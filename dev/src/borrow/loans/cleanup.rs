@@ -26,7 +26,7 @@ impl Flow<'_> {
         inspect: bool,
     ) -> Result<(), Error> {
         let error = |message| Error {
-            node: self.body.source,
+            node: self.body.source.into(),
             message,
         };
         let Some(plan) = self.destruction else {
@@ -60,7 +60,7 @@ impl Flow<'_> {
                     .unwrap_or(range.end);
                 if skip > next {
                     self.charge(skip - next).map_err(|message| Error {
-                        node: self.body.source,
+                        node: self.body.source.into(),
                         message,
                     })?;
                     next = skip;
@@ -70,15 +70,16 @@ impl Flow<'_> {
             let index = next;
             next += 1;
             let event = &plan.events[index];
-            let mut node = self.body.source;
-            if let Location::At { block, before } = event.location {
+            let node = if let Location::At { block, before } = event.location {
                 let cfg = &self.body.blocks[block.0 as usize];
-                node.node = if before < cfg.end {
+                self.body.diagnostic_site(if before < cfg.end {
                     self.body.statements[before as usize].source
                 } else {
                     cfg.source
-                };
-            }
+                })
+            } else {
+                self.body.source.root_site()
+            };
             let error = |message| Error { node, message };
             self.charge(1).map_err(error)?;
             let point =

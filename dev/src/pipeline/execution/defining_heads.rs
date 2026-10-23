@@ -33,7 +33,7 @@ impl Engine {
         )?;
         facts
             .close_opaque_results(definition, &regions.hidden_regions)
-            .map_err(|e| Declarations::error(report, body.source, e))
+            .map_err(|e| report.body_error(body.source, e))
     }
 }
 
@@ -77,7 +77,7 @@ pub(super) fn close_component(
             .ok_or_else(|| identity_error("missing checked defining function"))?;
         facts
             .close_opaque_results(definition, &regions.hidden_regions)
-            .map_err(|e| Declarations::error(report, template.body.source, e))?;
+            .map_err(|e| report.body_error(template.body.source, e))?;
     }
     Ok(())
 }

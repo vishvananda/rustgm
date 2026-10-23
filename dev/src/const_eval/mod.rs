@@ -47,7 +47,7 @@ pub struct Work {
     pub peak_slots: usize,
 }
 pub struct Error {
-    pub source: NodeKey,
+    pub source: Option<crate::body::ir::ProofSite>,
     pub message: &'static str,
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -174,10 +174,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             .get(&definition)
             .copied()
             .ok_or(Error {
-                source: NodeKey {
-                    file: crate::resolve::unit::FileId(0),
-                    node: crate::syntax::ast::NodeId::new(0),
-                },
+                source: None,
                 message: "missing constant execution body",
             })?;
         if let Owner::Initializer { .. } = self.bodies[index].owner
@@ -232,7 +229,7 @@ impl<'a, 'b> Machine<'a, 'b> {
     }
     fn error(&self, index: usize, failure: Failure) -> Error {
         Error {
-            source: self.bodies[index].source,
+            source: self.bodies.get(index).map(|body| body.source.root_site()),
             message: failure.message(),
         }
     }
@@ -265,19 +262,7 @@ impl<'a, 'b> Machine<'a, 'b> {
         {
             return Err(Failure::Fault("cycle in constant initializer values"));
         }
-        if matches!(body.owner, Owner::AnonymousConstant)
-            && self
-                .evaluator
-                .facts()
-                .inline_constants
-                .as_deref()
-                .is_some_and(|registry| registry.get(body.source).is_some())
-        {
-            self.evaluator.require_inline(body.source, body.result)?;
-            if !self.active_inline.insert(body.source) {
-                return Err(Failure::Fault("cycle in inline constant values"));
-            }
-        }
+        self.start_source_inline(&body)?;
         if let Owner::AnonymousInstance(instance) = body.owner
             && !self.active_anonymous.insert((instance, body.result))
         {

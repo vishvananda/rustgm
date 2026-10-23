@@ -11,7 +11,7 @@ pub(super) fn check(
     facts: &BodyFacts,
 ) -> Result<(), Error> {
     let error = |message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     };
     let mut protected = Vec::with_capacity(facts.paths.entries.len());
@@ -43,8 +43,7 @@ pub(super) fn check(
             protected[path.0 as usize]
                 || info.union && matches!(types.kind(facts.paths.entries[path.0 as usize].ty), Some(Kind::Adt(item, _)) if custom(item))
         }) {
-            let mut node = body.source;
-            node.node = statement.source;
+            let node = body.diagnostic_site(statement.source);
             return Err(Error {
                 node,
                 message: "cannot move a non-Copy field out of a type that implements Drop",

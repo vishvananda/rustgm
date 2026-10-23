@@ -59,12 +59,12 @@ fn semantic_owner_and_executable_root_remain_distinct() -> Result<(), Box<dyn st
             .iter()
             .find(|body| body.key == rustgm::body::ir::BodyKey::Declaration(initializer.definition))
             .ok_or("missing initializer contract")?;
-        assert_eq!(owner.source, initializer.semantic_source());
+        assert_eq!(owner.source, initializer.semantic_source().into());
         for closure in facts.closures.all() {
-            assert_ne!(owner.source, closure.semantic_source(), "{name}");
+            assert_ne!(owner.source, closure.semantic_source().into(), "{name}");
             assert!(contracts.bodies.iter().any(|body| body.key
                 == rustgm::body::ir::BodyKey::Closure(closure.identity)
-                && body.source == closure.semantic_source()));
+                && body.source == closure.semantic_source().into()));
         }
         let program = rustgm::body::build(&report, &facts)?;
         rustgm::borrow::regions::check_bodies(

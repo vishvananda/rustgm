@@ -1,10 +1,11 @@
 //! Function-owned flat control-flow storage. Values snapshot reads before later effects.
+pub use crate::resolve::body_origin::{BodyOrigin, BodySite, ImportedBodyId, ProofSite};
 pub use crate::resolve::{model::DefId, unit::NodeKey};
 pub use crate::sema::members::{Selection, VariantId};
 use crate::{
     lex::token::Punctuation,
     sema::model::{Cast, InitializerKind, RegionEquality, Scalar},
-    syntax::ast::{NodeId, Unary},
+    syntax::ast::Unary,
     types::TypeId,
 };
 
@@ -120,7 +121,7 @@ pub struct Local {
     pub kind: LocalKind,
     pub definition: Option<DefId>,
     pub mutable: bool,
-    pub source: NodeId,
+    pub source: BodySite,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RepeatMode {
@@ -268,7 +269,7 @@ pub struct Value {
 pub struct Temporary {
     pub lifetime: super::scopes::Lifetime,
     pub value: ValueId,
-    pub source: NodeId,
+    pub source: BodySite,
     pub block: BlockId,
     /// Materialization happens immediately before this global statement index.
     pub before: u32,
@@ -322,7 +323,7 @@ impl Action {
 }
 #[derive(Clone, Copy)]
 pub struct Statement {
-    pub source: NodeId,
+    pub source: BodySite,
     pub action: Action,
 }
 #[derive(Clone, Copy, Debug)]
@@ -348,7 +349,7 @@ pub struct Block {
     pub start: u32,
     pub end: u32,
     pub terminator: Terminator,
-    pub source: NodeId,
+    pub source: BodySite,
 }
 #[derive(Clone, Copy)]
 pub enum Owner {
@@ -385,6 +386,7 @@ pub enum BodyKey {
     Declaration(DefId),
     Closure(crate::types::closure::ClosureId),
     Anonymous(NodeKey),
+    Imported(ImportedBodyId),
     AnonymousInstance(crate::sema::inline_constants::InlineInstance),
     InitializerInstance(crate::sema::values::Instance),
 }
@@ -412,7 +414,7 @@ pub struct Body {
     pub guard_places: Vec<Place>,
     pub projections: Vec<Projection>,
     pub owner: Owner,
-    pub source: NodeKey,
+    pub source: BodyOrigin,
     pub result: TypeId,
     pub locals: Vec<Local>,
     pub values: Vec<Value>,
@@ -438,6 +440,25 @@ impl ResolvedCallables {
     }
 }
 impl Body {
+    pub(crate) const fn root_site(&self) -> BodySite {
+        self.source.root_body_site()
+    }
+    /// Error reporting may use the owner's real root for malformed site data;
+    /// this helper never admits a proof obligation or validates imported IR.
+    pub(crate) fn diagnostic_site(&self, site: BodySite) -> ProofSite {
+        self.source
+            .proof_site(site)
+            .unwrap_or_else(|_| self.source.root_site())
+    }
+    /// AST-only consumers must first establish the enclosing source owner.
+    pub(crate) fn syntax_site(&self, site: BodySite) -> Result<NodeKey, &'static str> {
+        let node = crate::syntax::ast::NodeId::checked(site.index())
+            .ok_or("invalid source operation site")?;
+        self.source
+            .source_site(node)?
+            .source()
+            .ok_or("imported body has no syntax site")
+    }
     /// The identity a consumed body leaves behind: owner, source, result type,
     /// instance and constant context, without any CFG payload.
     #[must_use]
@@ -524,7 +545,10 @@ impl Body {
             Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
                 BodyKey::Declaration(definition)
             }
-            Owner::AnonymousConstant => BodyKey::Anonymous(self.source),
+            Owner::AnonymousConstant => match self.source {
+                BodyOrigin::Source(source) => BodyKey::Anonymous(source),
+                BodyOrigin::Imported(body) => BodyKey::Imported(body.id()),
+            },
             Owner::AnonymousInstance(instance) => BodyKey::AnonymousInstance(instance),
             Owner::InitializerInstance { instance, .. } => BodyKey::InitializerInstance(instance),
             Owner::Closure { identity, .. } => BodyKey::Closure(identity),

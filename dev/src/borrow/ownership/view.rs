@@ -6,15 +6,21 @@ use std::io::{self, Write};
 /// # Errors
 /// Propagates output failures.
 pub fn write(checked: &Analysis<'_>, out: &mut impl Write) -> io::Result<()> {
+    write_with_origins(checked, crate::body::BodyOrigins::source_only(), out)
+}
+/// # Errors
+/// Rejects missing/foreign imported locations and propagates output failures.
+pub fn write_with_origins(
+    checked: &Analysis<'_>,
+    origins: crate::body::BodyOrigins<'_>,
+    out: &mut impl Write,
+) -> io::Result<()> {
     writeln!(out, "ownership-crate 1")?;
     for (index, facts) in checked.bodies.iter().enumerate() {
         let body = &checked.program().bodies[index];
-        writeln!(
-            out,
-            "body {index} source={}:{}",
-            body.source.file.0,
-            body.source.node.get()
-        )?;
+        write!(out, "body {index} source=")?;
+        origins.body(body.source, out)?;
+        writeln!(out)?;
         for (id, path) in facts.paths.entries.iter().enumerate() {
             write!(out, "  path m{id} type={} root=", path.ty.0)?;
             match path.root {

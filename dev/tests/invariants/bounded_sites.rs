@@ -65,15 +65,10 @@ fn empty_executable_functions_have_real_sites_without_an_extra_count_encoding()
         .first()
         .ok_or("empty source function missing")?;
     assert_eq!(body.blocks.len(), 1);
-    let source = BodyOrigin::Source(body.source);
+    let source = body.source;
     assert_eq!(
-        source
-            .proof_site(BodySite::source(body.blocks[0].source)?)?
-            .source(),
-        Some(crate::resolve::unit::NodeKey {
-            node: body.blocks[0].source,
-            ..body.source
-        })
+        source.proof_site(body.blocks[0].source)?.source(),
+        Some(body.syntax_site(body.blocks[0].source)?)
     );
     let mut catalog = Catalog::new(Limits::default())?;
     let id = catalog

@@ -142,11 +142,20 @@ fn promotions(graph: &mut Graph<'_>, checked: &Checked<'_>) -> Result<(), &'stat
             ),
             Owner::AnonymousInstance(instance) => format!("anonymous-instance:{instance}"),
             Owner::AnonymousConstant => {
-                format!(
-                    "anonymous:{}:{}",
-                    body.source.file.0,
-                    body.source.node.get()
-                )
+                if let Some(source) = body.source.source() {
+                    format!("anonymous:{}:{}", source.file.0, source.node.get())
+                } else {
+                    let mut origin = Vec::new();
+                    graph
+                        .facts
+                        .body_origins()
+                        .body(body.source, &mut origin)
+                        .map_err(|_| "constant promotion has invalid body provenance")?;
+                    format!(
+                        "anonymous:{}",
+                        String::from_utf8(origin).map_err(|_| "invalid body location UTF-8")?
+                    )
+                }
             }
         };
         for (id, value) in entries {
@@ -211,6 +220,11 @@ fn owner_key(
         BodyKey::Declaration(id) => (0, id.0, 0, 0, 0, 0),
         BodyKey::Closure(id) => (1, id.0, 0, 0, 0, 0),
         BodyKey::Anonymous(node) => (2, node.file.0, node.node.get(), 0, 0, 0),
+        BodyKey::Imported(_) => {
+            return Err(
+                "imported anonymous promotion ordering requires its authenticated original catalog",
+            );
+        }
         BodyKey::AnonymousInstance(instance) => {
             result[0] = 4;
             result[1..].copy_from_slice(&instance.order(facts)?);

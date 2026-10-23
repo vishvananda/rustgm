@@ -24,6 +24,15 @@ fn validate(analysis: &Analysis<'_>) -> io::Result<()> {
 /// # Errors
 /// Rejects missing inspection facts before output; propagates output failures.
 pub fn write(analysis: &Analysis<'_>, out: &mut impl Write) -> io::Result<()> {
+    write_with_origins(analysis, crate::body::BodyOrigins::source_only(), out)
+}
+/// # Errors
+/// Rejects missing/foreign imported locations and propagates output failures.
+pub fn write_with_origins(
+    analysis: &Analysis<'_>,
+    origins: crate::body::BodyOrigins<'_>,
+    out: &mut impl Write,
+) -> io::Result<()> {
     validate(analysis)?;
     writeln!(out, "loans-crate 1")?;
     for (index, (inspection, body)) in analysis
@@ -32,12 +41,9 @@ pub fn write(analysis: &Analysis<'_>, out: &mut impl Write) -> io::Result<()> {
         .zip(&analysis.checked().program().bodies)
         .enumerate()
     {
-        writeln!(
-            out,
-            "body {index} source={}:{}",
-            body.source.file.0,
-            body.source.node.get()
-        )?;
+        write!(out, "body {index} source=")?;
+        origins.body(body.source, out)?;
+        writeln!(out)?;
         if let Some(detail) = &inspection.detail {
             write_body(body, detail, out)?;
         }

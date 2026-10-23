@@ -6,13 +6,13 @@ use crate::{
 };
 impl Builder<'_> {
     pub(super) fn inline_root(&self, node: NodeId) -> Option<&RootFacts> {
-        if !matches!(self.body.owner, Owner::AnonymousConstant) || node != self.body.source.node {
+        if !matches!(self.body.owner, Owner::AnonymousConstant) || node != self.source.node {
             return None;
         }
         self.facts
             .inline_constants
             .as_deref()?
-            .get(self.body.source)?
+            .get(self.source)?
             .root
             .as_deref()
     }
@@ -23,7 +23,7 @@ impl Builder<'_> {
                     .reference_adjustments
                     .get(&super::NodeKey {
                         node,
-                        ..self.body.source
+                        ..self.source
                     })
                     .copied()
             },
@@ -37,7 +37,7 @@ impl Builder<'_> {
                     .pointer_adjustments
                     .get(&super::NodeKey {
                         node,
-                        ..self.body.source
+                        ..self.source
                     })
                     .copied()
             },
@@ -51,7 +51,7 @@ impl Builder<'_> {
                     .unsizing_adjustments
                     .get(&super::NodeKey {
                         node,
-                        ..self.body.source
+                        ..self.source
                     })
                     .copied()
             },
@@ -80,15 +80,13 @@ pub(super) fn concrete(
             continue;
         }
         if let Some(body) = prepared.remove(&crate::body::ir::BodyKey::Anonymous(source)) {
-            if body.source != source
+            if body.source != source.into()
                 || body.result != ty
                 || !matches!(body.owner, Owner::AnonymousConstant)
             {
-                return Err(super::Declarations::error(
-                    report,
-                    source,
-                    "retained inline CFG identity or result changed",
-                ));
+                return Err(
+                    report.body_error(source, "retained inline CFG identity or result changed")
+                );
             }
             program.bodies.push(body);
             continue;
@@ -108,7 +106,7 @@ pub(super) fn concrete(
                 body,
                 scope_plan,
                 query.as_deref_mut(),
-            )
+            )?
             .run(None)
             .map_err(|e| report.diagnostic(e))?,
         );

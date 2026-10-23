@@ -18,7 +18,7 @@ impl Builder<'_> {
                     self.report,
                     crate::resolve::unit::NodeKey {
                         node: operand,
-                        ..self.body.source
+                        ..self.source
                     },
                 )
                 .is_some();
@@ -65,7 +65,7 @@ impl Builder<'_> {
     ) -> Result<Option<ValueId>, Error> {
         let key = crate::resolve::unit::NodeKey {
             node,
-            ..self.body.source
+            ..self.source
         };
         let Some(selected) = self.facts.methods.calls.get(&key).copied() else {
             return Ok(None);
@@ -119,7 +119,7 @@ impl Builder<'_> {
             .calls
             .get(&crate::resolve::unit::NodeKey {
                 node,
-                ..self.body.source
+                ..self.source
             })
             .is_some_and(|selected| {
                 self.facts
@@ -155,7 +155,7 @@ impl Builder<'_> {
             .methods
             .comparison_borrow(crate::resolve::unit::NodeKey {
                 node,
-                ..self.body.source
+                ..self.source
             })
             .ok_or_else(|| self.error(node, "comparison RHS lacks physical shared-borrow type"))?;
         let value = self.receiver_value(
@@ -178,7 +178,7 @@ impl Builder<'_> {
             .calls
             .get(&crate::resolve::unit::NodeKey {
                 node,
-                ..self.body.source
+                ..self.source
             })
             .is_some_and(|selected| selected.borrow.is_some())
     }
@@ -190,7 +190,7 @@ impl Builder<'_> {
             };
             let key = crate::resolve::unit::NodeKey {
                 node,
-                ..self.body.source
+                ..self.source
             };
             let selected = self
                 .facts
@@ -220,7 +220,7 @@ impl Builder<'_> {
     pub(super) fn language_index_receiver(&mut self, node: NodeId) -> Result<(), Error> {
         let key = crate::resolve::unit::NodeKey {
             node,
-            ..self.body.source
+            ..self.source
         };
         let selected = self
             .facts
@@ -250,7 +250,7 @@ impl Builder<'_> {
     ) -> Result<crate::body::ir::Place, Error> {
         let key = crate::resolve::unit::NodeKey {
             node,
-            ..self.body.source
+            ..self.source
         };
         let selected = self
             .facts

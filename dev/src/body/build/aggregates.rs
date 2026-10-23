@@ -119,7 +119,7 @@ impl Builder<'_> {
                 if crate::sema::primitive_constants::selected(
                     self.facts,
                     crate::resolve::unit::NodeKey {
-                        file: self.body.source.file,
+                        file: self.source.file,
                         node,
                     },
                 )
@@ -265,7 +265,7 @@ impl Builder<'_> {
         elements: List,
     ) -> Result<ValueId, Error> {
         let start = self.index(node, self.body.arguments.len())?;
-        let unit = self.report.package.unit(self.body.source.file);
+        let unit = self.report.package.unit(self.source.file);
         for element in unit.configured.ast.list(elements) {
             if self.active(*element) {
                 self.body.arguments.push(self.value(*element)?);
@@ -317,7 +317,7 @@ impl Builder<'_> {
                 value: self.value(value)?,
                 mode: if self.facts.constant_repeats.contains(&super::NodeKey {
                     node,
-                    ..self.body.source
+                    ..self.source
                 }) {
                     crate::body::ir::RepeatMode::Constant
                 } else {
@@ -348,7 +348,7 @@ impl Builder<'_> {
         self.scratch
             .field_values
             .resize((variant.end - variant.start) as usize, None);
-        let unit = self.report.package.unit(self.body.source.file);
+        let unit = self.report.package.unit(self.source.file);
         for mut field in unit.configured.ast.list(fields).iter().copied() {
             if !self.active(field) {
                 continue;
@@ -399,7 +399,7 @@ impl Builder<'_> {
         )
     }
     fn construct_union(&mut self, node: NodeId, fields: List) -> Result<ValueId, Error> {
-        let unit = self.report.package.unit(self.body.source.file);
+        let unit = self.report.package.unit(self.source.file);
         let mut selected = None;
         for mut field in unit.configured.ast.list(fields).iter().copied() {
             if !self.active(field) {

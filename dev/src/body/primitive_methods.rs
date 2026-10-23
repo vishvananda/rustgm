@@ -37,7 +37,7 @@ pub(crate) fn build(
     let source = selected
         .validate(facts)
         .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
-    let error = |e| Declarations::error(report, source.source, e);
+    let error = |e| report.body_error(source.source, e);
     if matches!(facts.types.kind(source.result), Some(Kind::Adt(..))) {
         facts
             .aggregates
@@ -72,7 +72,7 @@ pub(crate) fn build(
             kind: LocalKind::Parameter(ordinal),
             definition: None,
             mutable: false,
-            source: source.source.node,
+            source: source.source.node.into(),
         });
         statement(&mut body, Action::StorageLive(LocalId(ordinal)));
     }
@@ -89,7 +89,7 @@ pub(crate) fn build(
     }
     if !matches!(source.compound, Compound::None) {
         super::dispatch::resolve(facts, &mut body, &mut contract)
-            .map_err(|e| Declarations::error(report, source.source, e))?;
+            .map_err(|e| report.body_error(source.source, e))?;
     }
     validate(facts, selected, &body, &contract).map_err(error)?;
     Ok((body, contract))
@@ -231,7 +231,7 @@ fn contract(
 }
 fn statement(body: &mut Body, action: Action) {
     body.statements.push(Statement {
-        source: body.source.node,
+        source: body.root_site(),
         action,
     });
 }
@@ -277,7 +277,7 @@ pub(crate) fn validate(
         || body.key() != BodyKey::Declaration(source.definition)
         || input.key != body.key()
         || input.source != body.source
-        || body.source != source.source
+        || body.source != source.source.into()
         || !matches!(body.owner,Owner::Function{definition,signature} if definition==source.definition && signature==source.signature)
         || body.result != source.result
         || !input.parameters.is_empty()

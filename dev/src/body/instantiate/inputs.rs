@@ -173,7 +173,7 @@ pub(super) fn original_function_context(
         || header.parameters as usize != scheme.captures as usize + scheme.early.len()
         || inline.universals != scheme.total
         || original.key != crate::body::ir::BodyKey::Anonymous(instance.source())
-        || original.source != instance.source()
+        || original.source != instance.source().into()
         || original.universals != inline.universals
         || InlineInstance::select(facts, instance.source(), instance.enclosing())? != instance
     {
@@ -336,7 +336,7 @@ pub(super) fn owner(
                 .closures
                 .identity(identity)
                 .ok_or("missing closure template identity")?;
-            if closure.semantic_source() != source.source {
+            if crate::body::ir::BodyOrigin::from(closure.semantic_source()) != source.source {
                 return Err("closure instance selects a different source body");
             }
             let owner = closure

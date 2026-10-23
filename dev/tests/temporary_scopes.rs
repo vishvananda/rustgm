@@ -119,15 +119,15 @@ fn materialized_block_results_keep_their_own_scope_provenance() -> Result<(), St
     let body = program
         .bodies
         .iter()
-        .find(|b| b.source == body_source)
+        .find(|b| b.source == body_source.into())
         .ok_or("missing body")?;
     let [temporary] = body.temporaries.as_slice() else {
         return Err("expected one temporary".into());
     };
     let result = expression(&report, &scopes, body_source, source, "{temp()}")?;
     let tail = expression(&report, &scopes, body_source, source, "temp()")?;
-    assert_eq!(temporary.source, result);
-    assert_eq!(lifetime_kind(&scopes, temporary.source)?, Kind::Block);
+    assert_eq!(temporary.source, result.into());
+    assert_eq!(lifetime_kind(&scopes, result)?, Kind::Block);
     let evaluation = body
         .statements
         .iter()
@@ -137,7 +137,7 @@ fn materialized_block_results_keep_their_own_scope_provenance() -> Result<(), St
         Action::Evaluate(id) if id == temporary.value)
         })
         .ok_or("missing evaluation")?;
-    assert_eq!(evaluation.1.source, tail);
+    assert_eq!(evaluation.1.source, tail.into());
     assert!(evaluation.0 < temporary.before as usize);
     let block = &body.blocks[temporary.block.0 as usize];
     assert!(block.start <= temporary.before && temporary.before <= block.end);

@@ -30,7 +30,7 @@ impl Collector {
     ) -> Result<Contract, &'static str> {
         self.update(facts)?;
         let mut contract = Contract::constant(source);
-        self.populate(facts, &mut contract);
+        self.populate(facts, &mut contract)?;
         super::anonymous_header(facts, &mut contract)?;
         Ok(contract)
     }
@@ -41,7 +41,7 @@ impl Collector {
     ) -> Result<Contract, &'static str> {
         self.update(facts)?;
         let mut contract = super::initializer_contract(facts, initializer)?;
-        self.populate(facts, &mut contract);
+        self.populate(facts, &mut contract)?;
         Ok(contract)
     }
     pub(crate) fn closure(
@@ -51,7 +51,7 @@ impl Collector {
     ) -> Result<Contract, &'static str> {
         self.update(facts)?;
         let mut contract = super::closure_contract(facts, closure)?;
-        self.populate(facts, &mut contract);
+        self.populate(facts, &mut contract)?;
         Ok(contract)
     }
     /// Number of semantic facts visited, excluding fixed body-header construction.
@@ -89,13 +89,19 @@ impl Collector {
             .ok_or("lifetime contract requires a function body")?;
         if !self.completed.contains_key(&source) {
             let mut contract = super::function_contract(facts, function, source)?;
-            self.populate(facts, &mut contract);
+            self.populate(facts, &mut contract)?;
             super::clause_terms::collect(facts, function.definition, |source, kind| {
-                contract.obligations.push(Obligation { source, kind });
+                contract.obligations.push(Obligation {
+                    source: source.into(),
+                    kind,
+                });
                 Ok(())
             })?;
             super::opaque_members(facts, function.definition, |source, kind| {
-                contract.obligations.push(Obligation { source, kind });
+                contract.obligations.push(Obligation {
+                    source: source.into(),
+                    kind,
+                });
                 Ok(())
             })?;
             self.completed.insert(source, contract);
@@ -125,7 +131,7 @@ impl Collector {
         }
         for closure in facts.closures.all() {
             let mut contract = super::closure_contract(facts, closure)?;
-            self.populate(facts, &mut contract);
+            self.populate(facts, &mut contract)?;
             if index
                 .insert(closure.semantic_source(), bodies.len())
                 .is_some()
@@ -136,7 +142,7 @@ impl Collector {
         }
         for initializer in &facts.initializers {
             let mut contract = super::initializer_contract(facts, initializer)?;
-            self.populate(facts, &mut contract);
+            self.populate(facts, &mut contract)?;
             index.insert(initializer.semantic_source(), bodies.len());
             bodies.push(contract);
         }
@@ -145,14 +151,14 @@ impl Collector {
                 return Err("duplicate anonymous constant lifetime owner");
             }
             let mut contract = Contract::constant(source);
-            self.populate(facts, &mut contract);
+            self.populate(facts, &mut contract)?;
             super::anonymous_header(facts, &mut contract)?;
             bodies.push(contract);
         }
         let start = bodies.len();
         super::constructors(facts, &mut bodies, &mut index)?;
         for contract in &mut bodies[start..] {
-            self.populate(facts, contract);
+            self.populate(facts, contract)?;
         }
         if !self.pending.is_empty() || !self.completed.is_empty() {
             return Err("lifetime obligation has no body owner");
@@ -182,9 +188,17 @@ impl Collector {
         })
     }
 
-    fn populate(&mut self, facts: &Declarations, contract: &mut Contract) {
-        super::output_interface(facts, contract);
-        if let Some(mut bucket) = self.pending.remove(&contract.source) {
+    fn populate(
+        &mut self,
+        facts: &Declarations,
+        contract: &mut Contract,
+    ) -> Result<(), &'static str> {
+        let source = contract
+            .source
+            .source()
+            .ok_or("source collector cannot populate an imported contract")?;
+        super::output_interface(facts, contract)?;
+        if let Some(mut bucket) = self.pending.remove(&source) {
             for &position in &bucket.reserved {
                 let Some(allocated) = facts.body_regions.log().get(position) else {
                     continue;
@@ -192,7 +206,7 @@ impl Collector {
                 let origin = allocated.region.origin;
                 if !matches!(origin, BodyRegionOrigin::QuantifiedProof) {
                     bucket.obligations[0].push(Obligation {
-                        source: allocated.region.source,
+                        source: allocated.region.source.into(),
                         kind: variable(allocated.id, origin),
                     });
                 }
@@ -205,8 +219,9 @@ impl Collector {
         contract.builtins = facts
             .generics
             .builtin_requirements
-            .get(&contract.source)
+            .get(&source)
             .map(|requirements| std::sync::Arc::new(requirements.clone()));
+        Ok(())
     }
 
     fn update(&mut self, facts: &Declarations) -> Result<(), &'static str> {
@@ -217,9 +232,12 @@ impl Collector {
             let bucket = self.pending.entry(body).or_default();
             match fact {
                 Fact::Obligation(order, kind) => {
-                    bucket.obligations[order].push(Obligation { source, kind });
+                    bucket.obligations[order].push(Obligation {
+                        source: source.into(),
+                        kind,
+                    });
                 }
-                Fact::Proof(proof) => bucket.proofs.push(proof.clone()),
+                Fact::Proof(proof) => bucket.proofs.push(Proof::from_source(proof)),
                 Fact::Reserved(position) => bucket.reserved.push(position),
             }
             Ok(())
@@ -229,7 +247,7 @@ impl Collector {
 
 pub(super) enum Fact<'a> {
     Obligation(usize, Kind),
-    Proof(&'a Proof),
+    Proof(&'a crate::sema::model::LifetimeProof),
     /// A region log position reserved for proof evidence when visited.
     Reserved(usize),
 }

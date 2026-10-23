@@ -33,7 +33,7 @@ impl Builder<'_> {
             .patterns
             .matches
             .get(&super::NodeKey {
-                file: self.body.source.file,
+                file: self.source.file,
                 node,
             })
             .ok_or_else(|| self.error(node, "missing checked match decisions"))?;

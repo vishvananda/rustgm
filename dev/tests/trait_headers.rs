@@ -167,7 +167,7 @@ fn trait_self_and_declared_parameters_keep_separate_original_identities()
     assert_eq!(templates.bodies.len(), 1);
     assert_eq!(
         templates.bodies[0].body.source,
-        method.body.ok_or("missing default body")?
+        method.body.ok_or("missing default body")?.into()
     );
     prove(source)
 }

@@ -30,7 +30,7 @@ fn initialize(
             kind: LocalKind::Binding,
             definition: None,
             mutable: true,
-            source: body.source.node,
+            source: body.root_site(),
         });
         statement(body, Action::StorageLive(id));
     }

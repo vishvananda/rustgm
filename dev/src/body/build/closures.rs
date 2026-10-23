@@ -36,11 +36,7 @@ pub(super) fn body(
     query: Option<&mut NeedsDrop>,
 ) -> Result<Body, Error> {
     let Some(Type::Function { result, .. }) = facts.types.kind(closure.signature) else {
-        return Err(Declarations::error(
-            report,
-            closure.source,
-            "missing closure signature",
-        ));
+        return Err(report.body_error(closure.source, "missing closure signature"));
     };
     let scope_plan =
         scopes::closure_with_scratch(report, facts, closure, std::mem::take(&mut scratch.scopes))?;
@@ -53,11 +49,11 @@ pub(super) fn body(
         closure.semantic_source(),
         closure.internal_result.unwrap_or(result),
     );
-    let mut body = Builder::new(report, facts, scratch, body, scope_plan, query)
+    let mut body = Builder::new(report, facts, scratch, body, scope_plan, query)?
         .run_root(closure.body.node, Some(closure.parameters))
         .map_err(|e| report.diagnostic(e))?;
     crate::body::instantiate::close_inline_operands(facts, &mut body)
-        .map_err(|e| Declarations::error(report, closure.source, e))?;
+        .map_err(|e| report.body_error(closure.source, e))?;
     Ok(body)
 }
 impl Builder<'_> {

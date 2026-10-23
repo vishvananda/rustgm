@@ -129,7 +129,7 @@ fn generic_adapter_requires_its_exact_specialized_source() -> TestResult {
     let prepared = body::adapters::build(&mut facts, entries[0], builder.body(indices[0])?)?;
     let mut unpaid = prepared;
     unpaid.input.obligations.push(Obligation {
-        source: unpaid.body.source,
+        source: unpaid.body.source.into(),
         kind: Kind::Outlives((RegionId(1), RegionId::STATIC)),
     });
     assert!(
@@ -299,7 +299,7 @@ fn private_receiver_borrow_cannot_pay_a_static_lifetime() -> TestResult {
     let report = crate::test_source::resolve(SOURCE, true)?;
     let mut prepared = body::adapters::build(&mut facts, entry, builder.body(source)?)?;
     prepared.input.obligations.push(Obligation {
-        source: prepared.body.source,
+        source: prepared.body.source.into(),
         kind: Kind::Outlives((RegionId(1), RegionId::STATIC)),
     });
     assert!(

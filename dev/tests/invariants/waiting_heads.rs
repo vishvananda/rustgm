@@ -9,12 +9,57 @@ fn deferred_preparation_keeps_the_existing_cold_record_slot() {
         size_of::<Option<Box<crate::abi::templates::Templates>>>()
     );
     eprintln!(
-        "opaque-record={} preparation={} former-layouts={} cold-slot={}",
+        "opaque-record={} preparation={} former-layouts={} cold-slot={} failure={}",
         size_of::<crate::sema::opaque::Opaques>(),
         size_of::<Preparation>(),
         size_of::<crate::abi::templates::Templates>(),
-        size_of::<Option<Box<Preparation>>>()
+        size_of::<Option<Box<Preparation>>>(),
+        size_of::<StorageFailure>()
     );
+}
+
+#[test]
+fn storage_failure_keeps_the_actual_defining_owner_on_cold_and_warm_requests()
+-> Result<(), Box<dyn std::error::Error>> {
+    for source in [
+        "fn f<T:Copy>(x:T)->impl Copy{(x,f(x))}fn main(){}",
+        "fn unrelated(){}fn f()->impl Copy{(f(),)}fn main(){}",
+    ] {
+        let report = crate::test_source::resolve(source, true)?;
+        let crate::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = crate::pipeline::analyze_source(&report)?;
+        assert_eq!(facts.opaques.owners.len(), 1);
+        let owner = *facts.opaques.owners.keys().next().ok_or("missing owner")?;
+        let node =
+            facts.functions[*facts.function_indices.get(&owner).ok_or("function index")?].node;
+        let offset = report
+            .package
+            .unit(node.file)
+            .configured
+            .ast
+            .node(node.node)
+            .span
+            .start;
+        let error =
+            crate::lower::instances::inspect_prepared(&report, &mut facts, prepared, |_, _| ())
+                .err()
+                .ok_or("recursive opaque storage was accepted")?;
+        assert_eq!(error.file.source(), Some(node.file));
+        assert_eq!(error.span.start, offset);
+        let failure = facts
+            .prepare_opaque_storage_located()
+            .err()
+            .ok_or("lost sticky failure")?;
+        assert_eq!(failure.owner, Some(owner));
+        assert_eq!(failure.message, "recursive type has infinite size");
+        for _ in 0..8 {
+            assert_eq!(facts.prepare_opaque_storage_located(), Err(failure));
+            assert_eq!(facts.prepare_opaque_storage(), Err(failure.message));
+        }
+    }
+    Ok(())
 }
 
 #[test]
@@ -213,7 +258,10 @@ fn failed_wakeup_remains_an_error_after_the_checked_head_closes() -> Result<(), 
         .storage_preparation
         .as_mut()
         .ok_or("preparation")?;
-    assert_eq!(preparation.failed, Some(error));
+    assert_eq!(
+        preparation.failed.map(|failure| failure.message),
+        Some(error)
+    );
     assert_eq!(preparation.waiting_entries, 1);
     assert!(preparation.ready.is_empty());
     // Even a later cheap no-op cannot make this preparation usable again.

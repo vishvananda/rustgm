@@ -9,7 +9,7 @@ mod state;
 pub mod templates;
 pub mod view;
 pub struct Error {
-    pub node: crate::body::ir::NodeKey,
+    pub node: crate::body::ir::ProofSite,
     pub message: &'static str,
 }
 use crate::{
@@ -110,7 +110,7 @@ fn visit<'a, S: BuildHasher>(
 ) -> Result<Checked<'a>, Error> {
     if let Some(pending) = &program.drops {
         return Err(Error {
-            node: pending.source,
+            node: pending.source.into(),
             message: crate::body::drops::PENDING_MESSAGE,
         });
     }
@@ -130,7 +130,7 @@ fn visit<'a, S: BuildHasher>(
     }
     if let Some(node) = pending {
         return Err(Error {
-            node,
+            node: node.into(),
             message: "reference expression execution requires region and loan proofs",
         });
     }
@@ -173,7 +173,7 @@ fn prepare<S: BuildHasher>(
     retain_initialization: bool,
 ) -> Result<BodyFacts, Error> {
     let error = |message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     };
     let mut uses = vec![Use::Other; body.values.len()];

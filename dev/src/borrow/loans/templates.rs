@@ -77,7 +77,7 @@ pub(crate) fn verify_iter<'a, S: std::hash::BuildHasher>(
     for template in templates {
         let body = &template.body;
         let error = |message: &str| Error {
-            node: Some(body.source),
+            node: Some(body.source.into()),
             message: message.into(),
         };
         validate(template).map_err(error)?;
@@ -225,7 +225,7 @@ pub fn check(
     if ownership.len() != templates.bodies.len() || contracts.bodies.len() != templates.bodies.len()
     {
         return Err(Error {
-            node: templates.bodies.first().map(|t| t.body.source),
+            node: templates.bodies.first().map(|t| t.body.source.root_site()),
             message: "template loan facts have different body coverage".into(),
         });
     }
@@ -236,7 +236,7 @@ pub fn check(
     for contract in &contracts.bodies {
         if index.insert(contract.key, contract).is_some() {
             return Err(Error {
-                node: Some(contract.source),
+                node: Some(contract.source.into()),
                 message: "duplicate template loan contract".into(),
             });
         }
@@ -245,7 +245,7 @@ pub fn check(
     for (ordinal, template) in templates.bodies.iter().enumerate() {
         let body = &template.body;
         let error = |message: &str| Error {
-            node: Some(body.source),
+            node: Some(body.source.into()),
             message: message.into(),
         };
         validate(template).map_err(error)?;

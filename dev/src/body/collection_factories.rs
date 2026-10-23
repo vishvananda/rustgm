@@ -41,7 +41,7 @@ pub(super) fn append(
             })?
             .canonical
             .origin;
-        let error = |e| Declarations::error(report, source, e);
+        let error = |e| report.body_error(source, e);
         original.validate(facts).map_err(error)?;
         let environment = Arc::new(
             facts
@@ -141,7 +141,7 @@ fn build(
                 return Err("collection unsizing requires array extent");
             }
             contract.obligations.push(Obligation {
-                source,
+                source: source.into(),
                 kind: Debt::Coercion {
                     actual: receiver,
                     expected: slice,
@@ -186,7 +186,7 @@ pub(super) fn local(
         kind,
         definition: None,
         mutable,
-        source: body.source.node,
+        source: body.root_site(),
     });
     statement(body, Action::StorageLive(id));
     Ok(id)

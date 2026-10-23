@@ -67,7 +67,13 @@ impl Checked<'_> {
                 .checked_sub(u32::from(borrowed_receiver))
                 .ok_or("captured source has no execution receiver lifetime")?;
             let conditions = collector.source(contract, universals, conditions)?;
-            publish(identity, source, conditions.as_ref())?;
+            publish(
+                identity,
+                source
+                    .source()
+                    .ok_or("imported closure conditions require their imported header catalog")?,
+                conditions.as_ref(),
+            )?;
         }
         Ok(collector.steps())
     }
@@ -160,7 +166,7 @@ impl Checked<'_> {
         let &index = match body.key() {
             BodyKey::Declaration(definition) => self.index.get(&ItemId(definition.0)),
             BodyKey::Closure(identity) => self.closures.get(&identity),
-            key @ BodyKey::Anonymous(_) => self.anonymous.get(&key),
+            key @ (BodyKey::Anonymous(_) | BodyKey::Imported(_)) => self.anonymous.get(&key),
             BodyKey::InitializerInstance(_)
             | BodyKey::AnonymousInstance(_)
             | BodyKey::ClosureAdapter(_) => None,
@@ -201,7 +207,7 @@ pub fn verify<'a, S: BuildHasher>(
                 .remove(&template.body.key())
                 .cloned()
                 .ok_or_else(|| Error {
-                    node: Some(template.body.source),
+                    node: Some(template.body.source.into()),
                     message: "checked template lost its input contract".into(),
                 })
         })

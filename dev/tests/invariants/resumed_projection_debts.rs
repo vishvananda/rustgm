@@ -107,7 +107,7 @@ impl Fixture {
         );
         assert_eq!(result.is_ok(), valid, "{:?}", result.as_ref().err());
         if let Err(error) = result {
-            assert_eq!(error.source, Some(source(2)));
+            assert_eq!(error.source, Some(source(2).into()));
             assert!(
                 matches!(
                     error.message.as_str(),
@@ -131,7 +131,7 @@ fn contract(proof: Obligations) -> Contract {
         builtins: None,
         output: None,
         require_result_formation: false,
-        source: source(1),
+        source: source(1).into(),
         signature: None,
         universals: 0,
         assumptions: Vec::new(),
@@ -283,7 +283,7 @@ fn repeated_shared_roots_and_independent_scopes_have_additive_work() -> Result {
             }
             let scopes = proof.scope_count();
             let mut c = contract(proof);
-            c.proofs[0].sources = vec![source(2); count];
+            c.proofs[0].sources = vec![source(2).into(); count];
             let steps = normalize(&mut f.facts, &mut c, 1)?;
             assert!(steps < 128 * count, "{count}: {steps}");
             assert_eq!(c.proofs[0].proof.scope_count(), scopes);
@@ -394,7 +394,7 @@ fn concrete_projection_premises_supply_only_their_own_independent_components() -
                 referent: TypeId::UNIT,
             })?;
             c.obligations.push(Obligation {
-                source: source(2),
+                source: source(2).into(),
                 kind: Debt::TypeOutlives {
                     ty,
                     shorter: RegionId::STATIC,
@@ -457,7 +457,7 @@ fn shared_normalization_attributes_new_debts_to_the_first_demanding_root() -> Re
             }
             let mut c = contract(proof);
             c.universals = u32::from(!ambient);
-            c.proofs[0].sources = vec![source(11), source(12), source(13)];
+            c.proofs[0].sources = vec![source(11).into(), source(12).into(), source(13).into()];
             normalize(&mut f.facts, &mut c, 1)?;
             check_source(&f, c, restricted.then_some(source(12)))?;
         }
@@ -476,7 +476,7 @@ fn check_source(f: &Fixture, contract: Contract, expected: Option<NodeKey>) -> R
     match (result, expected) {
         (Ok(_), None) => Ok(()),
         (Err(error), Some(source)) => {
-            assert_eq!(error.source, Some(source));
+            assert_eq!(error.source, Some(source.into()));
             assert_eq!(
                 error.message,
                 "required lifetime does not outlive its target"
@@ -502,7 +502,7 @@ fn formation_normalization_keeps_each_obligation_source_in_one_shared_scope() ->
             .enumerate()
         {
             c.obligations.push(Obligation {
-                source: source(20 + u32::try_from(index)?),
+                source: source(20 + u32::try_from(index)?).into(),
                 kind: Debt::ScopedWellFormed {
                     ty: f.projected(region)?,
                     bound_regions: 1,

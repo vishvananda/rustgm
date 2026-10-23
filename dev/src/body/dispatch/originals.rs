@@ -30,7 +30,7 @@ pub(crate) fn initializer(
     if body.instance.is_some()
         || body.key() != BodyKey::Declaration(definition)
         || body.key() != contract.key
-        || body.source != initializer.semantic_source()
+        || body.source != initializer.semantic_source().into()
         || body.source != contract.source
         || body.result != initializer.ty
         || !matches!(body.owner, Owner::Initializer { definition: owner, .. } if owner == definition)
@@ -39,7 +39,8 @@ pub(crate) fn initializer(
             .initializer_index(definition)
             .and_then(|index| facts.initializers.get(index))
             .is_some_and(|actual| {
-                actual.semantic_source() == body.source && actual.ty == body.result
+                crate::body::ir::BodyOrigin::from(actual.semantic_source()) == body.source
+                    && actual.ty == body.result
             })
     {
         return Err("original initializer dispatch belongs to another declaration or body".into());
@@ -55,7 +56,7 @@ pub(crate) fn anonymous(
     let inline = facts
         .inline_constants
         .as_deref()
-        .and_then(|registry| registry.get(body.source))
+        .and_then(|registry| body.source.source().and_then(|source| registry.get(source)))
         .ok_or("original anonymous dispatch has no typed body")?;
     let definition = inline
         .declaration
@@ -67,7 +68,11 @@ pub(crate) fn anonymous(
         || body.source != contract.source
         || inline.result != Some(body.result)
         || inline.universals != contract.universals
-        || facts.constant_body_type(body.source) != Some(body.result)
+        || body
+            .source
+            .source()
+            .and_then(|source| facts.constant_body_type(source))
+            != Some(body.result)
     {
         return Err("original anonymous dispatch belongs to another declaration or body".into());
     }
@@ -257,8 +262,16 @@ fn owned_regions(
             || id.bound_parts().is_some()
             || !facts
                 .body_regions
-                .get(contract.source, id)
-                .is_some_and(|record| record.body == contract.source)
+                .get(
+                    contract
+                        .source
+                        .source()
+                        .ok_or("source-local alias has no real source owner")?,
+                    id,
+                )
+                .is_some_and(|record| {
+                    crate::body::ir::BodyOrigin::from(record.body) == contract.source
+                })
         {
             return Err("original initializer identity belongs to another body");
         }

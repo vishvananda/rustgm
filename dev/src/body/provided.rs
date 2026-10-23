@@ -41,7 +41,7 @@ pub(crate) fn append(
                 )
             })?;
         let source = function.node;
-        let error = |message| Declarations::error(report, source, message);
+        let error = |message| report.body_error(source, message);
         validate_default(facts, definition, default).map_err(error)?;
         let environment = Arc::new(
             facts
@@ -209,7 +209,7 @@ fn build(
             kind: LocalKind::Parameter(index),
             definition: None,
             mutable: false,
-            source: source.node,
+            source: source.node.into(),
         });
         statement(&mut body, Action::StorageLive(LocalId(index)));
         let value = value(&mut body, ty, Rvalue::Read(Place::Local(LocalId(index))))?;
@@ -239,7 +239,7 @@ fn build(
 }
 pub(super) fn statement(body: &mut Body, action: Action) {
     body.statements.push(Statement {
-        source: body.source.node,
+        source: body.root_site(),
         action,
     });
 }

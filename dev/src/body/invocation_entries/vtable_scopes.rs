@@ -68,7 +68,7 @@ fn close(
     let mut opening = proofs.next().ok_or("missing captured call opening")?.proof;
     let mut shift = Bound::shift(1);
     for mut evidence in proofs {
-        if evidence.source != selected.source || !evidence.sources.is_empty() {
+        if evidence.source != selected.source.into() || !evidence.sources.is_empty() {
             return Err("captured call proof changed its diagnostic owner");
         }
         // Actual numeric aliases keep their scope. Outer body-bound lifetimes
@@ -78,7 +78,7 @@ fn close(
     }
     let mut debts = Obligations::new(opening.regions.end);
     for obligation in selected.obligations {
-        if obligation.source != selected.source {
+        if obligation.source != selected.source.into() {
             return Err("captured call debt changed its diagnostic owner");
         }
         match obligation.kind {

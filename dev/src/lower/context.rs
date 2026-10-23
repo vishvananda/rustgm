@@ -12,16 +12,12 @@ use crate::{
         program::{MemorySpan, Operand, Program, SignatureId, SymbolId, Terminator},
         vocabulary::Type,
     },
-    resolve::{
-        model::DefId,
-        unit::{FileId, NodeKey},
-    },
+    resolve::model::DefId,
     sema::{
         members::Members,
         model::{Declarations, Initializer},
         values::Reader,
     },
-    syntax::ast::NodeId,
     types::{Kind, Primitive, Store, TypeId, aggregate::Definitions, instance::Instance},
 };
 
@@ -174,13 +170,10 @@ impl<'a> Context<'a> {
         ),
         roots: super::roots::Selected<'_>,
     ) -> Result<Program, Error> {
-        let source = bodies.as_slice().first().map_or(
-            NodeKey {
-                file: FileId(0),
-                node: NodeId::new(0),
-            },
-            |b| b.source,
-        );
+        let source = bodies
+            .as_slice()
+            .first()
+            .map(|body| body.source.root_site());
         let size = bodies
             .as_slice()
             .iter()
@@ -273,7 +266,7 @@ impl<'a> Context<'a> {
     }
     /// Demand queues own their identities before any dependency is emitted.
     /// Newly discovered functions, drop glue and data append without recursion.
-    fn emit_pending(&mut self, source: NodeKey) -> Result<(), Error> {
+    fn emit_pending(&mut self, source: Option<crate::body::ir::ProofSite>) -> Result<(), Error> {
         let destruction = self.destruction;
         let (mut next, mut next_data, mut next_drop, mut next_table) = (0, 0, 0, 0);
         while next < self.queue.len()
@@ -339,7 +332,7 @@ impl<'a> Context<'a> {
             self.output
                 .define(symbol, lowered)
                 .map_err(|message| Error {
-                    node: body.source,
+                    node: Some(body.source.into()),
                     message,
                 })?;
             // An owned body and plan are released here; only its header remains.

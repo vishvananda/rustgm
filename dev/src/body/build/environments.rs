@@ -33,7 +33,7 @@ impl Builder<'_> {
         self.capture_environment().is_some_and(|environment| {
             environment.accesses.contains_key(&NodeKey {
                 node,
-                ..self.body.source
+                ..self.source
             })
         })
     }
@@ -50,7 +50,7 @@ impl Builder<'_> {
         let source = facts
             .closures
             .identity(identity)
-            .ok_or_else(|| self.error(self.body.source.node, "missing captured closure body"))?;
+            .ok_or_else(|| self.error(self.source.node, "missing captured closure body"))?;
         let Some(environment) = facts.closures.environment(identity) else {
             return if signature.is_none() {
                 Ok(())
@@ -227,7 +227,7 @@ impl Builder<'_> {
         };
         let Some(&path) = environment.accesses.get(&NodeKey {
             node,
-            ..self.body.source
+            ..self.source
         }) else {
             return Ok(Access::Ordinary);
         };
@@ -307,7 +307,7 @@ impl Builder<'_> {
             && let Some(&mapped) = parent.nested_accesses.get(&(
                 NodeKey {
                     node,
-                    ..self.body.source
+                    ..self.source
                 },
                 path,
             ))

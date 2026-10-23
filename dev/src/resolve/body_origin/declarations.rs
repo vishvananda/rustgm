@@ -14,28 +14,33 @@ use std::{num::NonZeroU32, ops::Range};
 
 /// Catalog-local rejection identity; no stable symbol or serialized ordinal.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) struct ImportedDeclarationId(pub(super) ImportedOwnerId);
+pub struct ImportedDeclarationId(pub(super) ImportedOwnerId);
 impl std::fmt::Debug for ImportedDeclarationId {
     fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         out.write_str("ImportedDeclarationId(..)")
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub(crate) enum DeclarationOrigin {
+pub enum DeclarationOrigin {
     Source(NodeKey),
     Imported(ImportedDeclarationId),
 }
 impl DeclarationOrigin {
-    pub(crate) const fn source(self) -> Option<NodeKey> {
+    pub const fn source(self) -> Option<NodeKey> {
         match self {
             Self::Source(source) => Some(source),
             Self::Imported(_) => None,
         }
     }
 }
+impl From<NodeKey> for DeclarationOrigin {
+    fn from(source: NodeKey) -> Self {
+        Self::Source(source)
+    }
+}
 /// Clause/annotation ordinal in one declaration, distinct from a body operation.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub(crate) struct DeclarationSite(NonZeroU32);
+pub struct DeclarationSite(NonZeroU32);
 impl DeclarationSite {
     fn checked(index: u32) -> Result<Self, &'static str> {
         index
@@ -44,7 +49,7 @@ impl DeclarationSite {
             .map(Self)
             .ok_or("declaration site space exhausted")
     }
-    pub(crate) const fn index(self) -> u32 {
+    pub const fn index(self) -> u32 {
         self.0.get() - 1
     }
 }

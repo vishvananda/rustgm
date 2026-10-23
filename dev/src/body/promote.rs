@@ -162,18 +162,7 @@ fn analyze_body(
     let output = engine.collect().map_err(|error| match error {
         Error::Constant(error) => error,
         Error::Evaluation(error) => {
-            let span = report
-                .package
-                .unit(body.source.file)
-                .configured
-                .ast
-                .node(body.source.node)
-                .span;
-            report.diagnostic(Diagnostic::at(
-                body.source.file,
-                span.start,
-                error.message(),
-            ))
+            report.diagnostic(report.body_error(body.source, error.message()))
         }
     })?;
     body.promotions = Some(output);

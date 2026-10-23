@@ -47,7 +47,7 @@ impl Builder<'_> {
     pub(super) fn conditional_chain(&self, node: NodeId) -> bool {
         !self.facts.patterns.chains.is_empty()
             && self.facts.patterns.chains.contains(&NodeKey {
-                file: self.body.source.file,
+                file: self.source.file,
                 node,
             })
     }
@@ -56,7 +56,7 @@ impl Builder<'_> {
             .patterns
             .conditions
             .get(&NodeKey {
-                file: self.body.source.file,
+                file: self.source.file,
                 node,
             })
             .copied()

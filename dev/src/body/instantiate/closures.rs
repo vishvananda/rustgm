@@ -28,7 +28,7 @@ pub(super) fn formation(contract: &mut crate::body::regions::Contract) {
                     .inputs
                     .iter()
                     .map(|input| crate::body::regions::Obligation {
-                        source: contract.source,
+                        source: contract.source.into(),
                         kind: crate::body::regions::Kind::WellFormed(input.child),
                     }),
             );

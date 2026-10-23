@@ -18,10 +18,13 @@ use std::ops::Range;
 /// before any external selected argument can collide with a private source ID.
 pub(super) fn result_root(
     facts: &mut Declarations,
-    source: crate::resolve::unit::NodeKey,
+    source: crate::body::ir::BodyOrigin,
     caller: CallerInstance,
     ty: crate::types::TypeId,
 ) -> Result<crate::types::TypeId, &'static str> {
+    let Some(source) = source.source() else {
+        return Ok(ty);
+    };
     if matches!(caller, CallerInstance::Original) || !caller_published(facts, source) {
         return Ok(ty);
     }
@@ -41,7 +44,10 @@ pub(super) fn prepare_body(
         if let Rvalue::SourceAssociated(prepared) = value.kind {
             prepared.validate_use(
                 facts,
-                source.source,
+                source
+                    .source
+                    .source()
+                    .ok_or("source operand has no real source caller")?,
                 source
                     .owner
                     .source_caller(facts, source.source, source.instance)?,
@@ -80,7 +86,10 @@ fn transport_contract(
     caller: CallerInstance,
     conditional: bool,
 ) -> Result<(), &'static str> {
-    if matches!(caller, CallerInstance::Original) || !caller_published(facts, contract.source) {
+    let Some(source) = contract.source.source() else {
+        return Ok(());
+    };
+    if matches!(caller, CallerInstance::Original) || !caller_published(facts, source) {
         return Ok(());
     }
     if contract.output.is_some() && !conditional {
@@ -90,7 +99,7 @@ fn transport_contract(
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(visits);
     with_namespace(
         facts,
-        contract.source,
+        source,
         caller,
         contract.universals,
         &owned,
@@ -224,10 +233,13 @@ pub(super) fn body(
     body: &mut Body,
     caller: CallerInstance,
 ) -> Result<(), &'static str> {
-    if matches!(caller, CallerInstance::Original) || !caller_published(facts, body.source) {
+    let Some(source) = body.source.source() else {
+        return Ok(());
+    };
+    if matches!(caller, CallerInstance::Original) || !caller_published(facts, source) {
         return Ok(());
     }
-    with_registered_namespace(facts, body.source, caller, |facts, transport| {
+    with_registered_namespace(facts, source, caller, |facts, transport| {
         transport.steps = transport
             .steps
             .saturating_add(body.locals.len())

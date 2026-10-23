@@ -1,5 +1,6 @@
 //! Defining contexts retain hidden types separately from published result identities.
 mod applications;
+pub(crate) use applications::StorageFailure;
 mod captures;
 mod closing;
 pub(in crate::sema) mod overrides;

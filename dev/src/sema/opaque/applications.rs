@@ -11,6 +11,21 @@ const BYTES: usize = 64 * 1024 * 1024;
 #[path = "../../../tests/invariants/waiting_heads.rs"]
 mod tests;
 
+/// Diagnostic ownership only; no defining-head or execution permission.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) struct StorageFailure {
+    pub owner: Option<crate::resolve::model::DefId>,
+    pub message: &'static str,
+}
+impl From<&'static str> for StorageFailure {
+    fn from(message: &'static str) -> Self {
+        Self {
+            owner: None,
+            message,
+        }
+    }
+}
+
 #[derive(Default)]
 pub(super) struct Preparation {
     pub layouts: crate::abi::templates::Templates,
@@ -21,7 +36,7 @@ pub(super) struct Preparation {
     peak_waiting: usize,
     peak_ready: usize,
     pub steps: usize,
-    pub failed: Option<&'static str>,
+    pub failed: Option<StorageFailure>,
 }
 
 impl Preparation {
@@ -72,10 +87,10 @@ impl Preparation {
     }
     pub fn wake(&mut self, id: OpaqueId) -> Result<(), &'static str> {
         if let Some(error) = self.failed {
-            return Err(error);
+            return Err(error.message);
         }
         let result = self.wake_ready(id);
-        self.failed = result.as_ref().err().copied();
+        self.failed = result.as_ref().err().copied().map(Into::into);
         result
     }
     fn wake_ready(&mut self, id: OpaqueId) -> Result<(), &'static str> {

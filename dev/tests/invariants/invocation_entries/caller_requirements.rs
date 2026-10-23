@@ -35,7 +35,13 @@ fn every_selected_caller_must_discharge_output_conditions() -> TestResult {
     let mut execution = super::formal(formal);
     execution.universals = 2;
     let bindings = matching::execution_bindings(&store, execution, actual)?;
-    require_conditions(&facts, identity, &bindings, contract.source, &mut contract)?;
+    require_conditions(
+        &facts,
+        identity,
+        &bindings,
+        contract.source.into(),
+        &mut contract,
+    )?;
     let check = |contract: Contract| {
         crate::borrow::regions::check(
             &facts.types,

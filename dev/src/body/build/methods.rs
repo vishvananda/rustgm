@@ -6,7 +6,7 @@ impl Builder<'_> {
     pub(super) fn method_receiver(&mut self, node: NodeId) -> Result<(), Error> {
         let key = NodeKey {
             node,
-            ..self.body.source
+            ..self.source
         };
         let site = self
             .report
@@ -82,7 +82,7 @@ impl Builder<'_> {
     pub(super) fn method_call(&mut self, node: NodeId, arguments: List) -> Result<ValueId, Error> {
         let key = NodeKey {
             node,
-            ..self.body.source
+            ..self.source
         };
         let selected = self
             .facts

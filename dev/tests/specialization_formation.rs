@@ -62,7 +62,7 @@ impl Fixture {
     }
     fn add(&mut self, ty: TypeId, count: u32) {
         self.contract.obligations.push(Obligation {
-            source: self.contract.source,
+            source: self.contract.source.into(),
             kind: Debt::ScopedWellFormed {
                 ty,
                 bound_regions: count,
@@ -91,7 +91,7 @@ impl Fixture {
         assert_eq!(result.is_ok(), valid, "{:?}", result.as_ref().err());
         if let Err(error) = result {
             assert!(error.message.contains("does not outlive"), "{error}");
-            assert_eq!(error.source, Some(self.contract.source));
+            assert_eq!(error.source, Some(self.contract.source.into()));
         }
     }
 }

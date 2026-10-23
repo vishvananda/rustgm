@@ -7,7 +7,7 @@ impl Builder<'_> {
             .invocations
             .get(&NodeKey {
                 node,
-                ..self.body.source
+                ..self.source
             })
             .copied()
     }
@@ -70,7 +70,7 @@ impl Builder<'_> {
         for &argument in self
             .report
             .package
-            .unit(self.body.source.file)
+            .unit(self.source.file)
             .configured
             .ast
             .list(arguments)

@@ -104,7 +104,7 @@ impl Demand {
             .get_or_insert_with(|| facts.functions.iter().map(|f| (f.definition, *f)).collect());
         let function = functions
             .get(&owner)
-            .ok_or_else(|| Declarations::error(report, source, "missing defining function"))?;
+            .ok_or_else(|| report.body_error(source, "missing defining function"))?;
         let mut template = self.prepared.templates.function(report, facts, function)?;
         body::promote::instance_reusing(
             report,
@@ -118,10 +118,10 @@ impl Demand {
             .contracts
             .get_or_insert_with(Collector::default)
             .function(facts, function)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         input
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         let contracts = body::regions::Contracts {
             bodies: vec![input.clone()],
             callables: &facts.lifetimes.callables,
@@ -151,21 +151,22 @@ impl Demand {
             custom,
             |ty, field| body::drops::nominal_position(facts, ty, field),
         )
-        .map_err(|e| Declarations::error(report, e.node.unwrap_or(source), e.message))?;
-        let proof =
-            checked.regions().bodies.first().ok_or_else(|| {
-                Declarations::error(report, source, "missing defining region proof")
-            })?;
+        .map_err(|e| report.body_error(e.node.unwrap_or(source.into()), e.message))?;
+        let proof = checked
+            .regions()
+            .bodies
+            .first()
+            .ok_or_else(|| report.body_error(source, "missing defining region proof"))?;
         let choices = proof.hidden_regions.clone();
         drop(checked);
         facts
             .close_opaque_results(owner, &choices)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         for template in templates.bodies {
             self.prepared
                 .templates
                 .retain(template)
-                .map_err(|e| Declarations::error(report, source, e))?;
+                .map_err(|e| report.body_error(source, e))?;
         }
         Ok(())
     }

@@ -13,21 +13,8 @@ pub(super) fn finish(
     program: &mut crate::body::ir::Program,
     query: Option<&mut crate::types::destruction::NeedsDrop>,
 ) -> Result<(), Error> {
-    program.drops =
-        crate::body::drops::collect(facts, program, query).map_err(|(source, message)| {
-            report.diagnostic(Error::at(
-                source.file,
-                report
-                    .package
-                    .unit(source.file)
-                    .configured
-                    .ast
-                    .node(source.node)
-                    .span
-                    .start,
-                message,
-            ))
-        })?;
+    program.drops = crate::body::drops::collect(facts, program, query)
+        .map_err(|(source, message)| report.diagnostic(report.body_error(source, message)))?;
     Ok(())
 }
 
@@ -48,7 +35,7 @@ impl Builder<'_> {
             .ok_or_else(|| self.error(node, "owned value has no block"))?;
         let temporary = Temporary {
             value,
-            source: node,
+            source: node.into(),
             lifetime: self.owned_lifetime(node)?,
             block,
             before: self.index(node, self.body.statements.len())?,
@@ -68,7 +55,7 @@ impl Builder<'_> {
                 self.facts
                     .node(super::NodeKey {
                         node,
-                        ..self.body.source
+                        ..self.source
                     })
                     .and_then(|facts| facts.binding)
                     .and_then(|binding| self.scope_plan.binding(binding))

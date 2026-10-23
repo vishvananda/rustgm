@@ -146,14 +146,13 @@ fn reference_shape_constants_keep_a_typed_lifetime_proof_body() -> Result<(), St
     let program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
     let contracts = rustgm::body::regions::collect(&facts).map_err(str::to_owned)?;
     let source = facts.constant_bodies()[0].0;
-    assert!(program.bodies.iter().any(
-        |b| b.source == source && matches!(b.owner, rustgm::body::ir::Owner::AnonymousConstant)
-    ));
+    assert!(program.bodies.iter().any(|b| b.source == source.into()
+        && matches!(b.owner, rustgm::body::ir::Owner::AnonymousConstant)));
     assert!(
         contracts
             .bodies
             .iter()
-            .any(|b| b.source == source && !b.obligations.is_empty())
+            .any(|b| b.source == source.into() && !b.obligations.is_empty())
     );
     let (_, scalar) =
         semantic::analyze("type A<const N:usize>=[u8;N];fn f(){let _:A<{1+2}>=[0;3];}")?;

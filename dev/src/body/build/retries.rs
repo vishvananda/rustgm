@@ -195,7 +195,13 @@ impl Builder<'_> {
         // Emit each continuation once even when its backedge will be built later.
         // Executable and ownership reachability are recomputed from real IR edges.
         self.scratch.reach[block.0 as usize].incoming = true;
-        self.switch(self.body.blocks[block.0 as usize].source, block)
+        self.switch(
+            self.body
+                .syntax_site(self.body.blocks[block.0 as usize].source)
+                .map_err(|message| self.report.body_error(self.body.source, message))?
+                .node,
+            block,
+        )
     }
     fn choice_test(
         &mut self,

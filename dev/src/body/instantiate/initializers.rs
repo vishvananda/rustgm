@@ -76,8 +76,8 @@ pub(crate) fn source(
 ) -> Result<SourceMaterialized, &'static str> {
     let selected = witness.resolve(facts, result)?;
     if original.key != BodyKey::Declaration(selected.selected.definition)
-        || original.source != selected.original
-        || template.body.source != selected.original
+        || original.source != selected.original.into()
+        || template.body.source != selected.original.into()
         || original.key != template.body.key()
         || original.output.is_some()
     {
@@ -122,7 +122,7 @@ pub(crate) fn source(
     facts.body_work.canonical_steps += substitution.steps - before;
     let obligation = contract.obligations.len();
     contract.obligations.push(crate::body::regions::Obligation {
-        source: original.source,
+        source: original.source.into(),
         kind: crate::body::regions::Kind::Coercion {
             actual,
             expected: imported,

@@ -145,21 +145,14 @@ pub fn run(
 
 fn phase_error(
     report: &resolve::expansion::Report,
-    node: resolve::unit::NodeKey,
+    site: impl Into<rustgm::body::ir::ProofSite>,
     message: &str,
 ) -> String {
-    let offset = report
-        .package
-        .unit(node.file)
-        .configured
-        .ast
-        .node(node.node)
-        .span
-        .start;
     report
-        .diagnostic(resolve::package::Error::at(node.file, offset, message))
+        .diagnostic(report.body_error(site, message))
         .to_string()
 }
+
 fn region_proofs(
     report: &resolve::expansion::Report,
     facts: &rustgm::sema::model::Declarations,
@@ -213,20 +206,27 @@ fn ownership_view(
         program,
     )
     .map_err(|e| borrow_error(report, e))?;
-    rustgm::lower::alignment::check(facts, program)
-        .map_err(|e| phase_error(report, e.node, e.message))?;
+    rustgm::lower::alignment::check(facts, program).map_err(|e| {
+        report
+            .diagnostic(report.body_optional_error(e.node, e.message))
+            .to_string()
+    })?;
     if matches!(mode, Mode::Loans) {
         return if count {
             rustgm::borrow::loans::view::count(&checked, out)
         } else {
-            rustgm::borrow::loans::view::write(&checked, out)
+            rustgm::borrow::loans::view::write_with_origins(&checked, facts.body_origins(), out)
         }
         .map_err(|e| e.to_string());
     }
     if count {
         rustgm::borrow::ownership::view::count(checked.owned(), out)
     } else {
-        rustgm::borrow::ownership::view::write(checked.owned(), out)
+        rustgm::borrow::ownership::view::write_with_origins(
+            checked.owned(),
+            facts.body_origins(),
+            out,
+        )
     }
     .map_err(|e| e.to_string())
 }
@@ -309,7 +309,11 @@ fn semantic(
             return if count {
                 rustgm::borrow::regions::view::count(&contracts, out)
             } else {
-                rustgm::borrow::regions::view::write(&contracts, out)
+                rustgm::borrow::regions::view::write_with_origins(
+                    &contracts,
+                    facts.body_origins(),
+                    out,
+                )
             }
             .map_err(|e| e.to_string());
         }
@@ -319,7 +323,12 @@ fn semantic(
         return if count {
             rustgm::body::body_view::count(&program, out)
         } else {
-            rustgm::body::body_view::write(&program, &facts.types, out)
+            rustgm::body::body_view::write_with_origins(
+                &program,
+                &facts.types,
+                facts.body_origins(),
+                out,
+            )
         }
         .map_err(|e| e.to_string());
     }

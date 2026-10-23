@@ -162,10 +162,13 @@ impl Context {
             for body in program.bodies.drain(..) {
                 let shared = match body.owner {
                     Owner::Function { definition, .. } => facts.is_const_function(definition),
-                    Owner::AnonymousConstant => facts
-                        .inline_constants
-                        .as_deref()
-                        .is_some_and(|registry| registry.get(body.source).is_some()),
+                    Owner::AnonymousConstant => {
+                        facts.inline_constants.as_deref().is_some_and(|registry| {
+                            body.source
+                                .source()
+                                .is_some_and(|source| registry.get(source).is_some())
+                        })
+                    }
                     Owner::Initializer { .. }
                     | Owner::Closure { .. }
                     | Owner::ClosureAdapter { .. }
@@ -175,11 +178,9 @@ impl Context {
                 if shared {
                     let key = body.key();
                     if store.contains_key(&key) {
-                        return Err(Error::at(
-                            body.source.file,
-                            0,
-                            "duplicate lent constant CFG owner",
-                        ));
+                        return Err(
+                            report.body_error(body.source, "duplicate lent constant CFG owner")
+                        );
                     }
                     store.insert(key, body);
                     slots.push(Slot::Shared(key));

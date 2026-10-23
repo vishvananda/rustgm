@@ -7,6 +7,8 @@ mod clone_factories;
 mod collection_factories;
 pub(crate) mod conditional_inputs;
 pub mod constants;
+mod diagnostics;
+pub use diagnostics::BodyOrigins;
 pub(crate) mod dispatch;
 pub mod drops;
 pub mod instantiate;

@@ -4,7 +4,7 @@ use crate::support::hash::{HashMap, HashSet};
 use crate::{
     body::{
         self,
-        ir::{Body, BodyKey, NodeKey, Owner},
+        ir::{Body, BodyKey, Owner},
         regions::Contract,
     },
     borrow::templates::Checked,
@@ -15,8 +15,8 @@ use crate::{
 mod paid_owners;
 
 enum Work {
-    Adapter(body::invocation_entries::Entry, NodeKey),
-    Enter(Instance, NodeKey),
+    Adapter(body::invocation_entries::Entry, body::ir::ProofSite),
+    Enter(Instance, body::ir::ProofSite),
     Leave(BodyKey),
 }
 #[derive(Default)]
@@ -126,7 +126,7 @@ impl Budget {
         templates: &Checked<'_>,
         program: &mut proof::Builder,
         original: usize,
-        request: (body::invocation_entries::Entry, NodeKey),
+        request: (body::invocation_entries::Entry, body::ir::ProofSite),
     ) -> Result<Option<(usize, BodyKey)>, Error> {
         let (entry, source) = request;
         let error = |e: &str| diagnostic(report, Some(source), e.into());
@@ -141,10 +141,10 @@ impl Budget {
             .body(source)
             .map_err(|e| diagnostic(report, None, e.into()))?;
         let prepared = body::adapters::build(facts, entry, original)
-            .map_err(|e| diagnostic(report, Some(original.source), e.into()))?;
+            .map_err(|e| diagnostic(report, Some(original.source.into()), e.into()))?;
         let family = prepared.body.key();
         self.enter(family, &prepared.body, &prepared.input)
-            .map_err(|e| diagnostic(report, Some(prepared.body.source), e.into()))?;
+            .map_err(|e| diagnostic(report, Some(prepared.body.source.into()), e.into()))?;
         let index = program
             .push_adapter(report, facts, templates, source, prepared)
             .map_err(|e| diagnostic(report, e.node, e.message))?;
@@ -172,7 +172,7 @@ impl Budget {
         let (body, input) = body::primitive_methods::build(report, facts, selected)?;
         let family = body.key();
         self.enter(family, &body, &input)
-            .map_err(|e| diagnostic(report, Some(body.source), e.into()))?;
+            .map_err(|e| diagnostic(report, Some(body.source.into()), e.into()))?;
         let index = program
             .push_factory(facts, templates, selected, body, &input)
             .map_err(|e| diagnostic(report, e.node, e.message))?;
@@ -352,7 +352,7 @@ struct Specialization<'a> {
     template: &'a body::templates::Template,
     input: &'a Contract,
     instance: Instance,
-    source: NodeKey,
+    source: body::ir::ProofSite,
 }
 // Entered dependencies come only from a body sealed by Builder::push.
 fn specialize(
@@ -420,10 +420,10 @@ fn initial_work(
             .get(definition.0 as usize)
             .copied()
             .flatten()
-            .ok_or_else(|| diagnostic(report, Some(source), "missing root type".into()))?;
+            .ok_or_else(|| diagnostic(report, Some(source.into()), "missing root type".into()))?;
         let instance = Instance::new(&facts.types, ty)
-            .map_err(|e| diagnostic(report, Some(source), e.into()))?;
-        work.push(Work::Enter(instance, source));
+            .map_err(|e| diagnostic(report, Some(source.into()), e.into()))?;
+        work.push(Work::Enter(instance, source.into()));
     }
     let dependencies = Dependencies::roots(report, facts, program, roots.globals, &mut work)?;
     Ok((work, dependencies))
@@ -470,11 +470,11 @@ impl Dependencies {
                 let source = body.source;
                 let demands = self
                     .collect(report, facts, body)
-                    .map_err(|e| diagnostic(report, Some(source), e))?;
+                    .map_err(|e| diagnostic(report, Some(source.into()), e))?;
                 let cleanup = program
                     .cleanup_dependencies(facts, index)
-                    .map_err(|e| diagnostic(report, Some(source), e.into()))?;
-                (source, demands, cleanup)
+                    .map_err(|e| diagnostic(report, Some(source.into()), e.into()))?;
+                (source.root_site(), demands, cleanup)
             }
             DependencyRoot::Global(definition) => {
                 let initializer = facts
@@ -490,8 +490,8 @@ impl Dependencies {
                 let source = initializer.value;
                 let demands = self
                     .global(report, facts, definition)
-                    .map_err(|e| diagnostic(report, Some(source), e))?;
-                (source, demands, Vec::new())
+                    .map_err(|e| diagnostic(report, Some(source.into()), e))?;
+                (source.into(), demands, Vec::new())
             }
         };
         let error = |e: &str| diagnostic(report, Some(source), e.into());
@@ -538,12 +538,12 @@ fn prepare_ordinary(
         let input = inputs.get_mut(&body.key()).ok_or_else(|| {
             diagnostic(
                 report,
-                Some(body.source),
+                Some(body.source.into()),
                 "missing ordinary dispatch contract".into(),
             )
         })?;
         body::dispatch::resolve(facts, body, input)
-            .map_err(|e| diagnostic(report, Some(body.source), e))?;
+            .map_err(|e| diagnostic(report, Some(body.source.into()), e))?;
     }
     body::promote::analyze(report, facts, &mut program)?;
     let pending = paid_owners::prepare(facts, templates, &program, &mut inputs)
@@ -600,7 +600,7 @@ fn prepare_ordinary(
         let input = inputs.remove(&body.key()).ok_or_else(|| {
             diagnostic(
                 report,
-                Some(source),
+                Some(source.into()),
                 "missing ordinary body contract".into(),
             )
         })?;

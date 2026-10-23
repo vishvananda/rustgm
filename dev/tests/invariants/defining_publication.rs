@@ -28,7 +28,11 @@ fn component_identity_preflight_precedes_every_hidden_head_publication() -> Resu
             // A same-number foreign source remains internally paired with its
             // contract. Only the actual original declaration check rejects it.
             let body = &mut templates.bodies[1].body;
-            body.source.file = crate::resolve::unit::FileId(u32::MAX);
+            body.source = crate::resolve::unit::NodeKey {
+                file: crate::resolve::unit::FileId(u32::MAX),
+                ..crate::test_sites::node(body.source)?
+            }
+            .into();
             inputs
                 .iter_mut()
                 .find(|c| c.key == body.key())

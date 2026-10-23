@@ -9,7 +9,7 @@ pub(crate) use catalog::{Catalog, CatalogSlot, Input, Installed};
 pub(crate) use declarations::{
     DeclarationBinding, DeclarationOrigin, DeclarationSite, ImportedDeclarationId,
 };
-pub(crate) use locations::{Label, ProviderFile};
+pub(crate) use locations::{ImportedDiagnostic, Label, LocationOwner, ProviderFile};
 use std::{
     num::NonZeroU32,
     sync::atomic::{AtomicU32, Ordering},
@@ -43,7 +43,7 @@ impl std::fmt::Debug for ImportedOwnerId {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) struct ImportedBodyId(ImportedOwnerId);
+pub struct ImportedBodyId(ImportedOwnerId);
 impl std::fmt::Debug for ImportedBodyId {
     fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         out.write_str("ImportedBodyId(..)")
@@ -51,7 +51,7 @@ impl std::fmt::Debug for ImportedBodyId {
 }
 /// Bounds-carrying location only; authorizing consumers still check the catalog.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub(crate) struct ImportedBodyOrigin {
+pub struct ImportedBodyOrigin {
     id: ImportedBodyId,
     sites: NonZeroU32,
 }
@@ -61,15 +61,33 @@ impl ImportedBodyOrigin {
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub(crate) enum BodyOrigin {
+pub enum BodyOrigin {
     Source(NodeKey),
     Imported(ImportedBodyOrigin),
 }
 impl BodyOrigin {
-    pub(crate) const fn source(self) -> Option<NodeKey> {
+    #[must_use]
+    pub const fn source(self) -> Option<NodeKey> {
         match self {
             Self::Source(source) => Some(source),
             Self::Imported(_) => None,
+        }
+    }
+    pub(crate) const fn root_body_site(self) -> BodySite {
+        match self {
+            Self::Source(source) => BodySite(NonZeroU32::MIN.saturating_add(source.node.get())),
+            Self::Imported(_) => BodySite(NonZeroU32::MIN),
+        }
+    }
+    /// A real source root or the checked imported body's first retained site.
+    #[must_use]
+    pub const fn root_site(self) -> ProofSite {
+        match self {
+            Self::Source(source) => ProofSite::Source(source),
+            Self::Imported(origin) => ProofSite::Imported(ImportedProofSite {
+                owner: origin.id.0,
+                ordinal: NonZeroU32::MIN,
+            }),
         }
     }
     pub(crate) fn proof_site(self, site: BodySite) -> Result<ProofSite, &'static str> {
@@ -99,7 +117,7 @@ impl BodyOrigin {
 
 /// An operation ordinal interpreted only together with its exact body origin.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub(crate) struct BodySite(NonZeroU32);
+pub struct BodySite(NonZeroU32);
 impl BodySite {
     pub(crate) fn source(node: NodeId) -> Result<Self, &'static str> {
         Self::checked(node.get())
@@ -111,27 +129,54 @@ impl BodySite {
             .map(Self)
             .ok_or("body operation site space exhausted")
     }
-    pub(crate) const fn index(self) -> u32 {
+    #[must_use]
+    pub const fn index(self) -> u32 {
         self.0.get() - 1
+    }
+    #[must_use]
+    pub const fn get(self) -> u32 {
+        self.index()
+    }
+}
+impl From<NodeId> for BodySite {
+    fn from(node: NodeId) -> Self {
+        // NodeId already stores index+1 in NonZeroU32, so this cannot saturate.
+        Self(NonZeroU32::MIN.saturating_add(node.get()))
+    }
+}
+impl From<NodeKey> for BodyOrigin {
+    fn from(source: NodeKey) -> Self {
+        Self::Source(source)
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub(crate) enum ProofSite {
+pub enum ProofSite {
     Source(NodeKey),
     Imported(ImportedProofSite),
 }
 /// A checked location in the common owner table, not a body or proof handle.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub(crate) struct ImportedProofSite {
+pub struct ImportedProofSite {
     owner: ImportedOwnerId,
     ordinal: NonZeroU32,
 }
 impl ProofSite {
-    pub(crate) const fn source(self) -> Option<NodeKey> {
+    #[must_use]
+    pub const fn source(self) -> Option<NodeKey> {
         match self {
             Self::Source(source) => Some(source),
             Self::Imported(_) => None,
         }
+    }
+}
+impl From<BodyOrigin> for ProofSite {
+    fn from(origin: BodyOrigin) -> Self {
+        origin.root_site()
+    }
+}
+impl From<NodeKey> for ProofSite {
+    fn from(source: NodeKey) -> Self {
+        Self::Source(source)
     }
 }
 
@@ -155,3 +200,7 @@ mod tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/bounded_sites.rs"]
 mod site_tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/location_errors.rs"]
+mod diagnostic_tests;

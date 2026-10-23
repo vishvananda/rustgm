@@ -267,7 +267,7 @@ impl Builder<'_> {
             .patterns
             .roots
             .get(&super::NodeKey {
-                file: self.body.source.file,
+                file: self.source.file,
                 node,
             })
             .copied()

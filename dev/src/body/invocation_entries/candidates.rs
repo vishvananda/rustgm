@@ -2,7 +2,6 @@
 use super::{Entry, borrowed, matching, require_conditions};
 use crate::{
     body::regions::{Contract, Kind, Obligation},
-    resolve::unit::NodeKey,
     sema::{closures::Body, model::Declarations},
     support::call_traits::CallTrait,
     types::{
@@ -46,7 +45,7 @@ impl Candidate {
         self,
         facts: &mut Declarations,
         contract: &mut Contract,
-        caller: NodeKey,
+        caller: crate::body::ir::BodyOrigin,
         selected: TypeId,
         proofs: &mut crate::body::instantiate::ProofCursor,
     ) -> Result<Entry, &'static str> {
@@ -78,13 +77,13 @@ impl Candidate {
             )?;
         }
         if generic {
-            require_conditions(facts, identity, &bindings, caller, contract)?;
+            require_conditions(facts, identity, &bindings, caller.into(), contract)?;
         }
         equalities.extend(bindings.equalities);
         contract
             .obligations
             .extend(equalities.into_iter().map(|pair| Obligation {
-                source: caller,
+                source: caller.into(),
                 kind: Kind::Equality(pair),
             }));
         Ok(Entry {
@@ -100,7 +99,7 @@ impl Candidate {
 pub(crate) fn select_execution(
     facts: &mut Declarations,
     input: &mut Contract,
-    caller: NodeKey,
+    caller: crate::body::ir::BodyOrigin,
     requested: CallTrait,
     receiver: TypeId,
     selected: TypeId,
@@ -118,7 +117,7 @@ pub(crate) fn select_execution(
 fn validate_opened(
     types: &Store,
     input: &Contract,
-    caller: NodeKey,
+    caller: crate::body::ir::BodyOrigin,
     receiver: TypeId,
     selected: TypeId,
 ) -> Result<(), &'static str> {

@@ -467,7 +467,7 @@ fn connect_inputs(
                     .equalities
                     .iter()
                     .map(|&pair| crate::body::regions::Obligation {
-                        source: contract.source,
+                        source: contract.source.into(),
                         kind: Kind::Equality(pair),
                     }),
             );

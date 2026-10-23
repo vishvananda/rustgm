@@ -139,7 +139,7 @@ pub(super) fn verify<I: Maybe>(
 ) -> Result<Vec<Word<I>>, Error> {
     let flow = if I::TRACK_VALUES { flow } else { None };
     let error = |message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     };
     if body.blocks.is_empty() {
@@ -173,7 +173,7 @@ fn verify_iterative<I: Maybe>(
     (words, size): (usize, usize),
 ) -> Result<Vec<Word<I>>, Error> {
     let error = |message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     };
     let mut incoming = vec![Word::<I>::default(); size];
@@ -283,7 +283,7 @@ fn verify_acyclic<I: Maybe>(
     order: &crate::borrow::order::Order,
 ) -> Result<Vec<Word<I>>, Error> {
     let error = |message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     };
     let mut incoming = vec![Word::<I>::default(); size];
@@ -363,8 +363,7 @@ fn transfer_plain<I: Maybe>(
     let block = &body.blocks[index];
     for statement in &body.statements[block.start as usize..block.end as usize] {
         let error = |message| {
-            let mut node = body.source;
-            node.node = statement.source;
+            let node = body.diagnostic_site(statement.source);
             Error { node, message }
         };
         if let Some(types) = types {
@@ -388,8 +387,7 @@ fn transfer_block<I: Maybe>(
 ) -> Result<(), Error> {
     let block = &body.blocks[index];
     let error = |source, message| {
-        let mut node = body.source;
-        node.node = source;
+        let node = body.diagnostic_site(source);
         Error { node, message }
     };
     let block_id = BlockId(

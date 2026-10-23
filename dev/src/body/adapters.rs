@@ -40,7 +40,7 @@ impl Template {
             return Err("receiver adapter has no declared execution signature");
         };
         if input.key != BodyKey::ClosureAdapter(self.adapter)
-            || input.source != self.source
+            || input.source != self.source.into()
             || input.signature != Some(self.signature)
             || input.universals != bound_regions
         {
@@ -59,7 +59,7 @@ impl Template {
         };
         self.adapter.validate(types)?;
         if original.instance != self.instance
-            || original.source != self.source
+            || original.source != self.source.into()
             || !matches!(original.owner, Owner::Closure { identity: actual, signature, execution: Some(execution) }
                 if identity == actual && signature == self.public && execution == self.original)
         {
@@ -76,7 +76,7 @@ impl Template {
             self.receiver,
             self.adapter,
         )?;
-        if body.source != self.source
+        if body.source != self.source.into()
             || body.instance != Some(self.adapter.instance())
             || !matches!(body.owner, Owner::ClosureAdapter { adapter, signature }
                 if adapter == self.adapter && signature == self.signature)
@@ -120,7 +120,7 @@ pub(crate) fn build(
         return Err("receiver adapter requires a proved closure source");
     };
     if original.instance != instance
-        || original.source != source.semantic_source()
+        || original.source != source.semantic_source().into()
         || identity != source.identity
         || signature != public
         || (!generic && original_execution != canonical.signature)
@@ -201,7 +201,7 @@ fn contract(
     let region = RegionId(1);
     Contract {
         key: BodyKey::ClosureAdapter(adapter),
-        source,
+        source: source.into(),
         signature: Some(execution.signature),
         universals: execution.universals,
         assumptions: Vec::new(),
@@ -209,14 +209,14 @@ fn contract(
         type_assumptions: Vec::new(),
         obligations: vec![
             Obligation {
-                source,
+                source: source.into(),
                 kind: ObligationKind::Variable {
                     id: region,
                     needs_provenance: true,
                 },
             },
             Obligation {
-                source,
+                source: source.into(),
                 kind: ObligationKind::LocalBorrow(region),
             },
         ],
@@ -248,7 +248,7 @@ impl Writer {
         );
         body.instance = Some(adapter.instance());
         body.storage = Some(super::storage::Facts::new(super::scopes::Facts::synthetic(
-            body.source.node,
+            source.semantic_source().node,
         )));
         let mut writer = Self { body };
         for (index, &ty) in parameters.iter().enumerate() {
@@ -260,7 +260,7 @@ impl Writer {
                 kind: LocalKind::Parameter(index),
                 definition: None,
                 mutable: index == 0 && execution.receiver == CallKind::Once,
-                source: source.semantic_source().node,
+                source: source.semantic_source().node.into(),
             });
             writer.statement(Action::StorageLive(LocalId(index)));
         }
@@ -330,7 +330,7 @@ impl Writer {
 
     fn statement(&mut self, action: Action) {
         self.body.statements.push(Statement {
-            source: self.body.source.node,
+            source: self.body.root_site(),
             action,
         });
     }

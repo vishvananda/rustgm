@@ -16,7 +16,75 @@ pub(crate) struct Location<'a> {
     pub start: u32,
     pub end: u32,
 }
+/// Cold, catalog-validated diagnostic metadata, never an owner or proof handle.
+pub(crate) struct ImportedDiagnostic {
+    label: String,
+    span: crate::syntax::token_tree::Span,
+}
+impl ImportedDiagnostic {
+    pub(in crate::resolve) fn into_parts(self) -> (String, crate::syntax::token_tree::Span) {
+        (self.label, self.span)
+    }
+}
+pub(crate) enum LocationOwner {
+    Body(crate::support::crates::owner_catalog::BodyRef),
+    Declaration(crate::support::crates::owner_catalog::DeclarationRef),
+}
 impl Catalog {
+    pub(crate) fn proof_coordinate(
+        &self,
+        site: ProofSite,
+    ) -> Result<(&crate::support::crates::CrateIdentity, LocationOwner, u32), &'static str> {
+        let ProofSite::Imported(imported) = site else {
+            return Err("source site has no imported coordinate");
+        };
+        self.location(site)?;
+        let (artifact, owner) = match self.owner(imported.owner)? {
+            OwnerRow::Body(row) => (row.artifact, LocationOwner::Body(row.body)),
+            OwnerRow::Declaration(row) => (
+                row.artifact,
+                LocationOwner::Declaration(crate::support::crates::owner_catalog::DeclarationRef(
+                    row.ordinal,
+                )),
+            ),
+        };
+        Ok((
+            &self.artifacts[artifact as usize].owner,
+            owner,
+            imported.ordinal.get() - 1,
+        ))
+    }
+    pub(crate) fn diagnostic(&self, site: ProofSite) -> Result<ImportedDiagnostic, &'static str> {
+        let ProofSite::Imported(imported) = site else {
+            return Err("source diagnostic requires its actual source unit");
+        };
+        if let Some(location) = self.location(site)? {
+            self.charge(1 + location.file.len())?;
+            return Ok(ImportedDiagnostic {
+                label: location.file.to_owned(),
+                span: crate::syntax::token_tree::Span {
+                    start: location.start,
+                    end: location.end,
+                },
+            });
+        }
+        // location() has already checked epoch, row kind and the exact bounds.
+        let (artifact, kind, ordinal) = match self.owner(imported.owner)? {
+            OwnerRow::Body(row) => (row.artifact, "body", row.body.0),
+            OwnerRow::Declaration(row) => (row.artifact, "declaration", row.ordinal),
+        };
+        let identity = &self.artifacts[artifact as usize].owner;
+        self.charge(64 + identity.name().len() + identity.disambiguator().len())?;
+        Ok(ImportedDiagnostic {
+            label: format!(
+                "crate {}[{}] {kind} {ordinal} site {}",
+                identity.name(),
+                identity.disambiguator(),
+                imported.ordinal.get() - 1
+            ),
+            span: crate::syntax::token_tree::Span { start: 0, end: 0 },
+        })
+    }
     pub(crate) fn site(
         &self,
         body: super::ImportedBodyId,

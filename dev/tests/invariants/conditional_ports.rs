@@ -37,14 +37,16 @@ fn fixture(width: usize) -> Result<Fixture> {
                 .as_deref()
                 .and_then(|r| r.get(&instance.source()))
                 .ok_or("link")?;
-            sources.insert(instance.source(), body.source, link, &[], None)?;
+            sources.insert(instance.source().into(), body.source, link, &[], None)?;
         }
     }
-    let unit = facts.body_regions.unit_of(body.source);
+    let unit = facts
+        .body_regions
+        .unit_of(crate::test_sites::node(body.source)?);
     let foreign_source = bodies
         .iter()
-        .find(|other| facts.body_regions.unit_of(other.source) != unit)
-        .map(|other| other.source)
+        .filter_map(|other| other.source.source())
+        .find(|source| facts.body_regions.unit_of(*source) != unit)
         .ok_or("unrelated numbering unit")?;
     Ok(Fixture {
         facts,
@@ -99,7 +101,7 @@ fn exact_ports_reject_foreign_epoch_body_instance_result_and_stale_operands() ->
             .is_err()
     );
     let original_source = body.source;
-    body.source = foreign_source;
+    body.source = foreign_source.into();
     assert!(
         pending
             .validate(&facts, &body, &contract, &mut owner_work)
@@ -123,7 +125,7 @@ fn exact_ports_reject_foreign_epoch_body_instance_result_and_stale_operands() ->
     );
     body.values[port.operand.0 as usize].ty = original_ty;
     let parent = contract.source;
-    contract.source = foreign_source;
+    contract.source = foreign_source.into();
     assert!(
         pending
             .validate(&facts, &body, &contract, &mut owner_work)
@@ -194,8 +196,12 @@ fn coincident_foreign_unit_ids_cannot_replace_a_prepared_child() -> Result {
     let pending = sources.prepare(&facts, &body, &mut input)?.ok_or("ports")?;
     let port = &pending.ports[0];
     let original = std::mem::take(&mut facts.body_regions);
-    facts.body_regions.nest(body.source, pending.unit)?;
-    let parent = facts.body_regions.allocate(annotation(body.source))?;
+    facts
+        .body_regions
+        .nest(crate::test_sites::node(body.source)?, pending.unit)?;
+    let parent = facts
+        .body_regions
+        .allocate(annotation(crate::test_sites::node(body.source)?))?;
     let child = facts
         .body_regions
         .allocate(annotation(port.instance.source()))?;
@@ -204,7 +210,9 @@ fn coincident_foreign_unit_ids_cannot_replace_a_prepared_child() -> Result {
         "unrelated units deliberately reuse the same number"
     );
     assert_ne!(
-        facts.body_regions.unit_of(body.source),
+        facts
+            .body_regions
+            .unit_of(crate::test_sites::node(body.source)?),
         facts.body_regions.unit_of(port.instance.source())
     );
     let mut work = 0;
@@ -223,7 +231,9 @@ fn coincident_foreign_unit_ids_cannot_replace_a_prepared_child() -> Result {
     // A changed shared unit is foreign even when parent and child still agree.
     assert_ne!(foreign_source, pending.unit);
     facts.body_regions = crate::sema::numbered_regions::BodyRegions::default();
-    facts.body_regions.nest(body.source, foreign_source)?;
+    facts
+        .body_regions
+        .nest(crate::test_sites::node(body.source)?, foreign_source)?;
     facts
         .body_regions
         .nest(port.instance.source(), foreign_source)?;
@@ -262,11 +272,16 @@ fn nested_shared_units_survive_foreign_allocation_interleaving() -> Result {
     let port = &pending.ports[0];
     assert_ne!(foreign_source, pending.unit);
     let original = std::mem::take(&mut facts.body_regions);
-    facts.body_regions.nest(body.source, pending.unit)?;
     facts
         .body_regions
-        .nest(port.instance.source(), body.source)?;
-    let parent = facts.body_regions.allocate(annotation(body.source))?;
+        .nest(crate::test_sites::node(body.source)?, pending.unit)?;
+    facts.body_regions.nest(
+        port.instance.source(),
+        crate::test_sites::node(body.source)?,
+    )?;
+    let parent = facts
+        .body_regions
+        .allocate(annotation(crate::test_sites::node(body.source)?))?;
     let unrelated = facts.body_regions.allocate(annotation(foreign_source))?;
     let child = facts
         .body_regions
@@ -278,7 +293,10 @@ fn nested_shared_units_survive_foreign_allocation_interleaving() -> Result {
         pending.unit
     );
     assert_eq!(
-        facts.body_regions.get(body.source, child).map(|r| r.body),
+        facts
+            .body_regions
+            .get(crate::test_sites::node(body.source)?, child)
+            .map(|r| r.body),
         Some(port.instance.source())
     );
     let mut work = 0;

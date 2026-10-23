@@ -57,10 +57,11 @@ fn prepare<'a>(
     for body in bodies {
         eligibility(report, facts, body)?;
         if matches!(body.owner, super::ir::Owner::AnonymousConstant)
-            && facts
-                .inline_constants
-                .as_deref()
-                .is_some_and(|registry| registry.get(body.source).is_some())
+            && facts.inline_constants.as_deref().is_some_and(|registry| {
+                body.source
+                    .source()
+                    .is_some_and(|source| registry.get(source).is_some())
+            })
         {
             continue;
         }
@@ -177,7 +178,7 @@ pub(crate) fn eligibility(
             _ => None,
         };
         if let Some(message) = message {
-            return Err(report.diagnostic(Declarations::error(report, body.source, message)));
+            return Err(report.diagnostic(report.body_error(body.source, message)));
         }
     }
     Ok(())
@@ -266,11 +267,7 @@ pub(crate) fn alias_cycles(
         loop {
             steps += 1;
             if steps > body.values.len() {
-                return Err(Declarations::error(
-                    report,
-                    body.source,
-                    "cycle in constant alias value graph",
-                ));
+                return Err(report.body_error(body.source, "cycle in constant alias value graph"));
             }
             match body.values[value.0 as usize].kind {
                 Rvalue::Constrain(source) => value = source,
@@ -298,11 +295,7 @@ pub(crate) fn alias_cycles(
                 break;
             }
             if !active.insert(current) {
-                return Err(Declarations::error(
-                    report,
-                    source,
-                    "cycle in closed constant aliases",
-                ));
+                return Err(report.body_error(source, "cycle in closed constant aliases"));
             }
             current = next;
         }

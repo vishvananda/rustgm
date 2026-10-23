@@ -1350,7 +1350,7 @@ fn expansion_diagnostics_project_physical_tokens_and_ordered_call_definition_tra
         ),
     ] {
         let error = diagnosed(source, &mut Files::default())?;
-        assert_eq!(error.file.0, 0);
+        assert_eq!(error.file.source().map(|file| file.0), Some(0));
         assert_eq!(error.span.start, offset, "{source}");
         assert_eq!(
             error
@@ -1386,7 +1386,7 @@ fn expansion_diagnostics_cross_files_and_handle_uninstalled_failed_modules() -> 
     let child = "macro_rules! m {()=>{missing}}";
     files.sources.insert("/crate/child.rs".into(), child.into());
     let error = diagnosed("#[macro_use] mod child; fn f(){m!();}", &mut files)?;
-    assert_eq!(error.file.0, 1);
+    assert_eq!(error.file.source().map(|file| file.0), Some(1));
     assert_eq!(error.span.start, 21);
     assert_eq!(error.expansions.len(), 1);
     let trace = &error.expansions[0];
@@ -1402,7 +1402,7 @@ fn expansion_diagnostics_cross_files_and_handle_uninstalled_failed_modules() -> 
         .sources
         .insert("/crate/child.rs".into(), "fn invalid(".into());
     let error = diagnosed("macro_rules! m{()=>{mod child;}}m!();", &mut files)?;
-    assert_eq!(error.file.0, 1);
+    assert_eq!(error.file.source().map(|file| file.0), Some(1));
     assert_eq!(error.expansions.len(), 1);
     assert_eq!(error.expansions[0].macro_name, "m");
     assert_eq!(error.expansions[0].call.file.0, 0);
@@ -2225,7 +2225,7 @@ fn included_ordinary_name_errors_keep_the_include_invocation_trace() -> Result<(
     let error = rustgm::resolve::analyze_expanded(report)
         .err()
         .ok_or("expected ordinary name failure")?;
-    assert_eq!(error.file.0, 1);
+    assert_eq!(error.file.source().map(|file| file.0), Some(1));
     assert_eq!(error.span.start, 0);
     assert_eq!(error.expansions.len(), 1);
     assert_eq!(error.expansions[0].macro_name, "include");

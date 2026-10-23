@@ -88,7 +88,7 @@ pub fn templates(
             .origin
             .require_diagnostic()
             .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
-        let error = |message| Declarations::error(report, source, message);
+        let error = |message| report.body_error(source, message);
         let environment = match environments.entry(owner) {
             std::collections::hash_map::Entry::Occupied(entry) => Arc::clone(entry.get()),
             std::collections::hash_map::Entry::Vacant(entry) => Arc::clone(
@@ -145,7 +145,7 @@ fn build(
         .origin
         .require_diagnostic()
         .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
-    let error = |message| Declarations::error(report, source, message);
+    let error = |message| report.body_error(source, message);
     let Some(Type::Function { result, .. }) = facts.types.kind(signature) else {
         return Err(error("missing constructor signature"));
     };
@@ -178,10 +178,10 @@ fn build(
             kind: LocalKind::Parameter(ordinal),
             definition: None,
             mutable: false,
-            source: field_source.node,
+            source: field_source.node.into(),
         });
         body.statements.push(Statement {
-            source: field_source.node,
+            source: field_source.node.into(),
             action: Action::StorageLive(local),
         });
         let value = ValueId(ordinal);
@@ -191,7 +191,7 @@ fn build(
         });
         body.arguments.push(value);
         body.statements.push(Statement {
-            source: field_source.node,
+            source: field_source.node.into(),
             action: Action::Evaluate(value),
         });
     }
@@ -207,6 +207,11 @@ fn finish_constructor(
     variant_id: crate::sema::members::VariantId,
 ) -> Result<(), &'static str> {
     use super::{Statement, Value};
+    let source = body
+        .source
+        .source()
+        .ok_or("source constructor requires a real declaration")?
+        .node;
     let count =
         u32::try_from(body.arguments.len()).map_err(|_| "too many constructor arguments")?;
     let value = ValueId(count);
@@ -221,7 +226,7 @@ fn finish_constructor(
         },
     });
     body.statements.push(Statement {
-        source: body.source.node,
+        source: source.into(),
         action: Action::Evaluate(value),
     });
     finish_factory(body, value)
@@ -237,6 +242,11 @@ pub(in crate::body) fn finish_factory_block(
     value: ValueId,
 ) -> Result<(), &'static str> {
     use super::{Block, LocalId, Statement, Terminator};
+    let source = body
+        .source
+        .source()
+        .ok_or("source factory requires a real declaration")?
+        .node;
     let block =
         super::BlockId(u32::try_from(body.blocks.len()).map_err(|_| "too many factory blocks")?);
     let count = u32::try_from(body.locals.len()).map_err(|_| "too many factory parameters")?;
@@ -255,7 +265,7 @@ pub(in crate::body) fn finish_factory_block(
         });
     if let Some(last) = count.checked_sub(1).map(LocalId) {
         body.statements.push(Statement {
-            source: body.source.node,
+            source: source.into(),
             action: Action::end_storage(LocalId(0), last),
         });
     }
@@ -264,7 +274,7 @@ pub(in crate::body) fn finish_factory_block(
     body.blocks.push(Block {
         start,
         end,
-        source: body.source.node,
+        source: source.into(),
         terminator: Terminator::Return(value),
     });
     Ok(())

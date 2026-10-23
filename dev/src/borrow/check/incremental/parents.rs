@@ -40,7 +40,7 @@ impl PaidInline<'_> {
             return Err("paid parent lost its immutable owner lineage");
         }
         if input.key != crate::body::ir::BodyKey::AnonymousInstance(self.port.instance)
-            || input.source != self.port.instance.source()
+            || input.source != self.port.instance.source().into()
             || body.key() != input.key
             || body.source != input.source
             || body.instance.is_some()
@@ -136,7 +136,7 @@ impl Verifier {
         let (pending, work) = pending;
         *work = work.saturating_add(pending.ports().len());
         let error = |message: &str| Error {
-            node: Some(body.source),
+            node: Some(body.source.into()),
             message: message.into(),
         };
         pending

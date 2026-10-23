@@ -15,7 +15,7 @@ pub(super) fn check<S: BuildHasher>(
         return Ok(None);
     };
     let error = |message: &str| Error {
-        node: Some(proof.source),
+        node: Some(proof.source.into()),
         message: message.into(),
     };
     let parameters = requirements
@@ -38,7 +38,7 @@ pub(super) fn check<S: BuildHasher>(
     let mut shapes = parameters.as_ref().map(|e| Shapes::new(Arc::clone(e)));
     for &(source, predicate) in &requirements.predicates {
         let error = |message: &str| Error {
-            node: Some(source),
+            node: Some(source.into()),
             message: message.into(),
         };
         let (valid, message) = match predicate.bound {

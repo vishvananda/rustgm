@@ -199,7 +199,8 @@ impl Fixture {
         assert_eq!(checked.is_ok(), expected, "{:?}", checked.as_ref().err());
         if let Err(error) = checked {
             assert!(error.message.contains("does not outlive"), "{error}");
-            let source = error.source.ok_or("missing failing obligation source")?;
+            let source =
+                crate::test_sites::node(error.source.ok_or("missing failing obligation source")?)?;
             assert_eq!(
                 self.report
                     .package
@@ -304,7 +305,7 @@ fn distinct_nominal_uses_keep_the_unpaid_roots_location() -> ResultTest {
     let error = crate::borrow::regions::check(&facts.types, &facts.lifetimes.variances, &contracts)
         .err()
         .ok_or("unpaid body requirement was accepted")?;
-    let source = error.source.ok_or("missing body requirement source")?;
+    let source = crate::test_sites::node(error.source.ok_or("missing body requirement source")?)?;
     assert_eq!(
         f.report
             .package

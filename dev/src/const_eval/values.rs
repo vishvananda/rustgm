@@ -118,7 +118,14 @@ impl Machine<'_, '_> {
                 let enclosing =
                     body.owner
                         .source_caller(self.evaluator.facts(), body.source, body.instance)?;
-                source.validate_use(self.evaluator.facts(), body.source, enclosing, ty)?;
+                source.validate_use(
+                    self.evaluator.facts(),
+                    body.source
+                        .source()
+                        .ok_or("source operand has an imported caller")?,
+                    enclosing,
+                    ty,
+                )?;
                 let (selected, _) = self.evaluator.checked_source(source)?;
                 let index = self
                     .bodies

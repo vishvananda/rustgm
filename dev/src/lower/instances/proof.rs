@@ -117,13 +117,13 @@ impl Builder {
             .collect();
         for body in &bodies {
             let input = inputs.get(&body.key()).ok_or_else(|| borrow::Error {
-                node: Some(body.source),
+                node: Some(body.source.into()),
                 message: "missing original output contract".into(),
             })?;
             input
                 .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
                 .map_err(|message| borrow::Error {
-                    node: Some(body.source),
+                    node: Some(body.source.into()),
                     message: message.into(),
                 })?;
         }
@@ -141,7 +141,7 @@ impl Builder {
                     .get(&body.key())
                     .map(|input| (input, body))
                     .ok_or_else(|| borrow::regions::Error {
-                        source: Some(body.source),
+                        source: Some(body.source.into()),
                         message: "missing original output contract".into(),
                     })
             }),
@@ -230,12 +230,12 @@ impl Builder {
             .as_mut()
             .and_then(|r| r.remove(&body.key()))
             .ok_or_else(|| borrow::Error {
-                node: Some(source),
+                node: Some(source.into()),
                 message: "missing paired conditional region proof".into(),
             })?;
         let RegionProof::Parent(retained) = retained else {
             return Err(borrow::Error {
-                node: Some(source),
+                node: Some(source.into()),
                 message: "conditional parent has an ordinary region cache row".into(),
             });
         };
@@ -283,7 +283,7 @@ impl Builder {
         proof
             .resolve_callables(&mut facts.types)
             .map_err(|message| borrow::Error {
-                node: Some(proof.body().source),
+                node: Some(proof.body().source.into()),
                 message: message.into(),
             })?;
         let index = self.bodies.len();
@@ -322,7 +322,7 @@ impl Builder {
     ) -> Result<usize, borrow::Error> {
         let permit = crate::body::primitive_methods::validate(facts, selected, &body, input)
             .map_err(|message| borrow::Error {
-                node: Some(body.source),
+                node: Some(body.source.into()),
                 message: message.into(),
             })?;
         let mut query = crate::types::destruction::NeedsDrop::new(
@@ -335,7 +335,7 @@ impl Builder {
         let requirements =
             crate::body::drops::requirements(facts, &body, &mut query).map_err(|message| {
                 borrow::Error {
-                    node: Some(body.source),
+                    node: Some(body.source.into()),
                     message: message.into(),
                 }
             })?;
@@ -357,7 +357,7 @@ impl Builder {
         mut prepared: crate::body::adapters::Prepared,
     ) -> Result<usize, borrow::Error> {
         let error = |message: &str| borrow::Error {
-            node: Some(prepared.body.source),
+            node: Some(prepared.body.source.into()),
             message: message.into(),
         };
         prepared
@@ -381,12 +381,12 @@ impl Builder {
         );
         let requirements = crate::body::drops::requirements(facts, &prepared.body, &mut query)
             .map_err(|message| borrow::Error {
-                node: Some(prepared.body.source),
+                node: Some(prepared.body.source.into()),
                 message: message.into(),
             })?;
         crate::body::promote::instance(report, facts, &mut prepared.body, &requirements).map_err(
             |error| borrow::Error {
-                node: Some(prepared.body.source),
+                node: Some(prepared.body.source.into()),
                 message: error.to_string(),
             },
         )?;
@@ -422,7 +422,7 @@ impl Builder {
         let proof = match original {
             Original::Adapter(index, template) => {
                 let source = self.bodies.get(index).ok_or_else(|| borrow::Error {
-                    node: Some(input.source),
+                    node: Some(input.source.into()),
                     message: "receiver adapter has no proved original source".into(),
                 })?;
                 self.verifier.prove_adapter(
@@ -455,7 +455,7 @@ impl Builder {
         proof
             .resolve_callables(&mut facts.types)
             .map_err(|message| borrow::Error {
-                node: Some(input.source),
+                node: Some(input.source.into()),
                 message: message.into(),
             })?;
         let index = self.bodies.len();
@@ -479,7 +479,7 @@ impl Builder {
         input
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
             .map_err(|message| borrow::Error {
-                node: Some(input.source),
+                node: Some(input.source.into()),
                 message: message.into(),
             })?;
         let mut queries = std::mem::take(&mut self.queries).attach(
@@ -494,7 +494,7 @@ impl Builder {
                 .map(|proof| match proof {
                     RegionProof::Ordinary(proof) => Ok(proof),
                     RegionProof::Parent(_) => Err(borrow::regions::Error {
-                        source: Some(body.source),
+                        source: Some(body.source.into()),
                         message: "paired parent proof requires its actual owner path".into(),
                     }),
                 })

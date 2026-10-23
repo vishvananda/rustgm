@@ -48,7 +48,7 @@ fn call_quantifiers_keep_caller_debts_and_reject_local_static_leaks() -> TestRes
     for public in [false, true] {
         let (mut facts, mut selected, scope) = fixture()?;
         selected.obligations.push(Obligation {
-            source: selected.source,
+            source: selected.source.into(),
             kind: Kind::Outlives((
                 if public {
                     RegionId(100)

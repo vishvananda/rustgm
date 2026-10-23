@@ -18,7 +18,9 @@ pub(super) fn prepare<'a>(
         if let Rvalue::SourceAssociated(source) = value.kind {
             source.validate_use(
                 facts,
-                body.source,
+                body.source
+                    .source()
+                    .ok_or("source operand has no real source caller")?,
                 body.owner
                     .source_caller(facts, body.source, body.instance)?,
                 value.ty,
@@ -42,12 +44,16 @@ pub(super) fn prepare<'a>(
         return Err("source dispatch contract belongs to another body".into());
     }
     let caller = if source_path {
+        let source = body
+            .source
+            .source()
+            .ok_or("source operand has no real source caller")?;
         let enclosing = body
             .owner
             .source_caller(facts, body.source, body.instance)?;
         Some(crate::sema::values::execution::BodyCaller::with_inputs(
             facts,
-            body.source,
+            source,
             enclosing,
             contract.universals,
             contract
@@ -67,7 +73,7 @@ pub(super) fn prepare<'a>(
                         .flat_map(|proof| proof.proof.root_equalities()),
                 ),
             crate::sema::callee_premises::Inputs {
-                source: contract.source,
+                source,
                 universals: contract.universals,
                 signature: contract.signature,
                 parameters: &contract.parameters,
@@ -116,7 +122,12 @@ fn first_region(
         // registered namespace already numbered them past every actual.
         facts
             .body_regions
-            .frontier(contract.source)
+            .frontier(
+                contract
+                    .source
+                    .source()
+                    .ok_or("source caller frontier has no real source owner")?,
+            )
             .map_err(|_| "source caller region identity space exhausted")?
             .max(first)
     } else {

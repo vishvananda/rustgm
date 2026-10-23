@@ -1,8 +1,8 @@
 //! Optional retained proof records; executable verification does not allocate traces.
-use super::{Index, Loan, NodeKey, Point, Set, liveness, points};
+use super::{Index, Loan, Point, Set, liveness, points};
 
 pub struct Inspection {
-    pub(super) source: NodeKey,
+    pub(super) source: crate::body::ir::BodyOrigin,
     pub(super) detail: Option<Detail>,
 }
 pub(super) struct Detail {

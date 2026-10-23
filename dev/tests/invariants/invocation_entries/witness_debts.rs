@@ -34,7 +34,7 @@ fn accepted(facts: &Declarations, contract: &Contract) -> bool {
 fn closure_execution_normalization_retains_static_debt() -> Result {
     let (mut facts, mut original) = fixture()?;
     original.obligations.push(Obligation {
-        source: original.source,
+        source: original.source.into(),
         kind: Kind::Variable {
             id: RegionId(7),
             needs_provenance: false,

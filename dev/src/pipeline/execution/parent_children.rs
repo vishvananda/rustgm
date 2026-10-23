@@ -10,7 +10,7 @@ impl Engine {
         result: TypeId,
     ) -> Result<usize, Error> {
         let source = instance.source();
-        let error = |message: &str| Declarations::error(report, source, message);
+        let error = |message: &str| report.body_error(source, message);
         self.validate_parent_scope(facts, Target::Anonymous { instance, result })
             .map_err(error)?;
         if let Some(&index) = self.roots.get(&Target::Anonymous { instance, result }) {
@@ -37,7 +37,7 @@ impl Engine {
         let mut concrete = built.map_err(error)?;
         body::constants::eligibility(report, facts, &concrete.body)?;
         body::dispatch::resolve(facts, &mut concrete.body, &mut concrete.contract)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         body::promote::instance_reusing(
             report,
             facts,
@@ -51,7 +51,7 @@ impl Engine {
             .map_err(error)?;
         let regions = self
             .paid_child_regions(facts, &concrete.body, &concrete.contract, instance, result)
-            .map_err(|e| Declarations::error(report, e.source.unwrap_or(source), e.message))?;
+            .map_err(|e| report.body_error(e.source.unwrap_or(source.into()), e.message))?;
         self.prove_loans(
             report,
             facts,
@@ -82,7 +82,7 @@ impl Engine {
         result: TypeId,
     ) -> Result<crate::borrow::regions::Body, crate::borrow::regions::Error> {
         let failure = |message: &str| crate::borrow::regions::Error {
-            source: Some(body.source),
+            source: Some(body.source.into()),
             message: message.into(),
         };
         let (_, paid) = self

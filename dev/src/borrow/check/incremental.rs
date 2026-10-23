@@ -57,7 +57,7 @@ enum Original<'a> {
 impl Original<'_> {
     fn validate_source(&self, types: &crate::types::Store, body: &Body) -> Result<(), Error> {
         let error = |message: &str| Error {
-            node: Some(body.source),
+            node: Some(body.source.into()),
             message: message.into(),
         };
         let adapter_source = match self {
@@ -91,7 +91,7 @@ impl Original<'_> {
         body: &Body,
     ) -> Result<(), Error> {
         let error = |message: &str| Error {
-            node: Some(body.source),
+            node: Some(body.source.into()),
             message: message.into(),
         };
         if matches!(self, Self::Factory(_)) && body.instance.is_none() {
@@ -203,7 +203,7 @@ impl Verifier {
         original: Original<'_>,
     ) -> Result<Proved, Error> {
         let error = |message: &str| Error {
-            node: Some(body.source),
+            node: Some(body.source.into()),
             message: message.into(),
         };
         original.validate_source(environment.types, &body)?;

@@ -263,7 +263,7 @@ fn analyze_with<'a, S: BuildHasher>(
 ) -> Result<Facts<'a>, Error> {
     let mut ownership = super::prepare(types, definitions, derives, copies, body, true)?;
     let consumption = Effects::build(body, types, &ownership.paths).map_err(|message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     })?;
     let storage = if let Some(shared) = shared {
@@ -277,7 +277,7 @@ fn analyze_with<'a, S: BuildHasher>(
         )?)
     };
     let owners = Owners::build(body, &ownership.paths).map_err(|message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     })?;
     let flow = Flow {

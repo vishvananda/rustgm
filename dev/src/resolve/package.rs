@@ -40,8 +40,23 @@ pub struct ExpansionTrace {
 /// return in registers; diagnostics are rare and their data lives on the heap.
 pub struct Error(Box<ErrorData>);
 #[derive(Debug)]
+pub enum DiagnosticFile {
+    Source(FileId),
+    Imported(String),
+    Unlocated,
+}
+impl DiagnosticFile {
+    #[must_use]
+    pub const fn source(&self) -> Option<FileId> {
+        match self {
+            Self::Source(file) => Some(*file),
+            _ => None,
+        }
+    }
+}
+#[derive(Debug)]
 pub struct ErrorData {
-    pub file: FileId,
+    pub file: DiagnosticFile,
     pub span: Span,
     pub message: String,
     pub expansions: Vec<ExpansionTrace>,
@@ -51,11 +66,33 @@ impl Error {
     #[must_use]
     pub fn at(file: FileId, offset: u32, message: impl Into<String>) -> Self {
         Self::from(ErrorData {
-            file,
+            file: DiagnosticFile::Source(file),
             span: Span {
                 start: offset,
                 end: offset,
             },
+            message: message.into(),
+            expansions: Vec::new(),
+            introduction: ContextId(0),
+        })
+    }
+    pub(crate) fn imported(
+        location: super::body_origin::ImportedDiagnostic,
+        message: impl Into<String>,
+    ) -> Self {
+        let (label, span) = location.into_parts();
+        Self::from(ErrorData {
+            file: DiagnosticFile::Imported(label),
+            span,
+            message: message.into(),
+            expansions: Vec::new(),
+            introduction: ContextId(0),
+        })
+    }
+    pub(crate) fn unlocated(message: impl Into<String>) -> Self {
+        Self::from(ErrorData {
+            file: DiagnosticFile::Unlocated,
+            span: Span { start: 0, end: 0 },
             message: message.into(),
             expansions: Vec::new(),
             introduction: ContextId(0),
@@ -86,11 +123,19 @@ impl std::fmt::Debug for Error {
 }
 impl std::fmt::Display for Error {
     fn fmt(&self, output: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            output,
-            "file {}: {}: {}",
-            self.file.0, self.span.start, self.message
-        )?;
+        match &self.file {
+            DiagnosticFile::Source(file) => write!(
+                output,
+                "file {}: {}: {}",
+                file.0, self.span.start, self.message
+            )?,
+            DiagnosticFile::Imported(label) => write!(
+                output,
+                "file {label}: {}: {}",
+                self.span.start, self.message
+            )?,
+            DiagnosticFile::Unlocated => write!(output, "input: {}", self.message)?,
+        }
         for trace in &self.expansions {
             write!(
                 output,

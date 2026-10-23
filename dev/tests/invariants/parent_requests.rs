@@ -209,7 +209,7 @@ fn sibling_inline_values_cannot_borrow_anonymous_parent_equations() -> Result {
         kind: Rvalue::InlineInstance(sibling),
     });
     body.statements.push(crate::body::ir::Statement {
-        source: body.source.node,
+        source: body.root_site(),
         action: Action::Evaluate(id),
     });
     let mut work = 0;

@@ -95,7 +95,8 @@ fn immediate_fact_is_not_promotion_permission_and_operation_syntax_is_no_longer_
             .ok_or("missing division statement")?;
         // Only the irrelevant original operation syntax is replaced; the typed
         // operands, values, scopes, obligations and source identity remain exact.
-        let node = &mut report.package.units[function.source.file.0 as usize]
+        let node = &mut report.package.units
+            [crate::test_sites::node(function.source)?.file.0 as usize]
             .configured
             .ast
             .nodes[division.get() as usize];

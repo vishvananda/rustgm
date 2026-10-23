@@ -18,7 +18,7 @@ impl Declarations {
             .as_ref()
             .and_then(|preparation| preparation.failed)
         {
-            return Err(error);
+            return Err(error.message);
         }
         let Some(ids) = self.opaques.owners.get(&owner) else {
             return Ok(());

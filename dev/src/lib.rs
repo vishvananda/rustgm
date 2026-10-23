@@ -24,3 +24,7 @@ pub mod types;
 #[cfg(test)]
 #[path = "../tests/helpers/resolve.rs"]
 mod test_source;
+
+#[cfg(test)]
+#[path = "../tests/helpers/locations.rs"]
+mod test_sites;

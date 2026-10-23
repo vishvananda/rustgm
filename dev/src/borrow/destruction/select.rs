@@ -61,7 +61,7 @@ pub(crate) fn select_reusing(
     facts.destructor_moves(catalog.types(), |item| catalog.custom(item))?;
     let body = facts.body();
     let error = |message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     };
     let mut builder = Builder {

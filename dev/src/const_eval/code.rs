@@ -28,7 +28,7 @@ pub(crate) enum PreparedOperand {
 
 pub(crate) struct Code {
     pub instance: Option<Instance>,
-    pub source: NodeKey,
+    pub source: crate::body::ir::BodyOrigin,
     pub result: crate::types::TypeId,
     pub owner: Owner,
     pub const_context: bool,
@@ -239,6 +239,9 @@ pub(crate) struct Catalog {
     layout_results: Option<Box<HashMap<Instance, u64>>>,
 }
 impl Catalog {
+    pub(crate) fn get(&self, index: usize) -> Option<&Code> {
+        self.bodies.get(index).map(std::convert::AsRef::as_ref)
+    }
     pub(crate) fn code(&self, index: usize) -> Option<&Code> {
         self.bodies.get(index).map(std::rc::Rc::as_ref)
     }
@@ -358,7 +361,7 @@ impl Catalog {
         if selected.selected != source.0
             || selected.original != source.1
             || !matches!(body.owner, Owner::InitializerInstance { instance, .. } if instance == source.0)
-            || body.source != source.1
+            || body.source != source.1.into()
         {
             return Err("source computation selects another checked initializer body");
         }
@@ -489,10 +492,14 @@ impl Catalog {
             }
             self.definitions.insert(definition, index);
         } else if matches!(body.owner, Owner::AnonymousConstant) {
-            if self.expressions.contains_key(&body.source) {
+            let source = body
+                .source
+                .source()
+                .ok_or("imported anonymous Code requires its exact body-key index")?;
+            if self.expressions.contains_key(&source) {
                 return Err("duplicate anonymous constant body");
             }
-            self.expressions.insert(body.source, index);
+            self.expressions.insert(source, index);
         }
         if let Owner::AnonymousInstance(instance) = body.owner
             && scope.is_none()

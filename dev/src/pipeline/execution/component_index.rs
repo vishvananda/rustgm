@@ -153,7 +153,12 @@ impl Index {
             let Some(link) = &self.nodes[child].link else {
                 continue;
             };
-            let Some(&parent) = self.sources.get(&link.parent) else {
+            let Some(&parent) = self.sources.get(
+                &link
+                    .parent
+                    .source()
+                    .ok_or("source component has an imported parent link")?,
+            ) else {
                 continue;
             };
             self.nodes[child].parent = Some(parent);
@@ -219,8 +224,8 @@ impl Index {
                 .parent
                 .and_then(|p| self.nodes.get(p))
                 .ok_or("original output component is missing its typed parent")?;
-            if link.source != node.source
-                || parent.source != link.parent
+            if link.source != node.source.into()
+                || crate::body::ir::BodyOrigin::from(parent.source) != link.parent
                 || parent.source == node.source
                 || parent.declaration != node.declaration
             {
@@ -258,7 +263,7 @@ impl Index {
                         && node
                             .link
                             .as_ref()
-                            .is_none_or(|link| link.parent == i.parent_body)
+                            .is_none_or(|link| link.parent == i.parent_body.into())
                 }),
         };
         if !valid {

@@ -77,7 +77,7 @@ fn repeated_roots_share_queries_and_existing_pairs_remain_immutable() -> Result 
         collector.queries.as_ref().ok_or("query")?.steps(),
         query_steps
     );
-    input.key = crate::body::ir::BodyKey::Anonymous(input.source);
+    input.key = crate::body::ir::BodyKey::Anonymous(crate::test_sites::node(input.source)?);
     assert!(collector.source(&input, 3, None).is_err());
     Ok(())
 }

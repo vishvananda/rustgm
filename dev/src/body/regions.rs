@@ -4,9 +4,9 @@ mod allocation;
 mod anonymous;
 mod clause_terms;
 mod incremental;
-use super::ir::NodeKey;
+mod proof;
+use super::ir::{BodyOrigin, NodeKey, ProofSite};
 pub use crate::sema::model::BuiltinRequirements;
-pub use crate::sema::model::LifetimeProof as Proof;
 use crate::support::hash::HashMap;
 use crate::{
     sema::model::Declarations,
@@ -14,6 +14,7 @@ use crate::{
 };
 use anonymous::header as anonymous_header;
 pub use incremental::Collector;
+pub use proof::Proof;
 
 #[derive(Clone, Copy)]
 pub enum Kind {
@@ -48,13 +49,13 @@ pub enum Kind {
 }
 #[derive(Clone, Copy)]
 pub struct Obligation {
-    pub source: NodeKey,
+    pub source: ProofSite,
     pub kind: Kind,
 }
 #[derive(Clone)]
 pub struct Contract {
     pub key: super::ir::BodyKey,
-    pub source: NodeKey,
+    pub source: BodyOrigin,
     pub signature: Option<TypeId>,
     pub universals: u32,
     pub assumptions: Vec<Pair>,
@@ -89,7 +90,7 @@ impl Contract {
     fn constant(source: NodeKey) -> Self {
         Self {
             key: super::ir::BodyKey::Anonymous(source),
-            source,
+            source: source.into(),
             signature: None,
             universals: 0,
             assumptions: Vec::new(),
@@ -145,7 +146,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
     }
     constructors(facts, &mut bodies, &mut index)?;
     for contract in &mut bodies {
-        output_interface(facts, contract);
+        output_interface(facts, contract)?;
     }
     incremental::Cursor::default().visit(facts, |body, source, fact| {
         let target = index
@@ -154,21 +155,29 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             .ok_or("lifetime obligation has no body owner")?;
         match fact {
             incremental::Fact::Obligation(_, kind) => {
-                bodies[target].obligations.push(Obligation { source, kind });
+                bodies[target].obligations.push(Obligation {
+                    source: source.into(),
+                    kind,
+                });
             }
-            incremental::Fact::Proof(proof) => bodies[target].proofs.push(proof.clone()),
+            incremental::Fact::Proof(proof) => {
+                bodies[target].proofs.push(Proof::from_source(proof));
+            }
             // One pass after analysis sees final origins: a reserved region
             // still belongs to proof evidence.
             incremental::Fact::Reserved(_) => {}
         }
         Ok(())
     })?;
-    let mut add = |body, source, kind| -> Result<(), &'static str> {
+    let mut add = |body, source: NodeKey, kind| -> Result<(), &'static str> {
         let target = index
             .get(&body)
             .copied()
             .ok_or("lifetime obligation has no body owner")?;
-        bodies[target].obligations.push(Obligation { source, kind });
+        bodies[target].obligations.push(Obligation {
+            source: source.into(),
+            kind,
+        });
         Ok(())
     };
     for function in &facts.functions {
@@ -370,7 +379,7 @@ fn parameter_contract(
     }
     Ok(Contract {
         key: super::ir::BodyKey::Declaration(owner),
-        source,
+        source: source.into(),
         signature,
         universals: 0,
         assumptions: Vec::new(),
@@ -384,13 +393,18 @@ fn parameter_contract(
     })
 }
 
-fn output_interface(facts: &Declarations, contract: &mut Contract) {
+fn output_interface(facts: &Declarations, contract: &mut Contract) -> Result<(), &'static str> {
+    let source = contract
+        .source
+        .source()
+        .ok_or("source output collector cannot populate an imported contract")?;
     contract.output = facts
         .nested_outputs
         .as_deref()
-        .and_then(|outputs| outputs.get(&contract.source))
+        .and_then(|outputs| outputs.get(&source))
         .cloned();
     if let Some(output) = &contract.output {
         contract.universals = contract.universals.max(output.universals);
     }
+    Ok(())
 }

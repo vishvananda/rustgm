@@ -38,10 +38,6 @@ pub struct ImportWork {
     pub fields: usize,
 }
 impl Linkage {
-    #[expect(
-        dead_code,
-        reason = "facts-only imported Original validation consumes this during body-origin migration"
-    )]
     pub(crate) fn origin_catalog(&self) -> Option<&crate::resolve::body_origin::Catalog> {
         self.origins.as_deref()
     }

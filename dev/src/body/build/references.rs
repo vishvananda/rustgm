@@ -135,7 +135,7 @@ impl Builder<'_> {
     ) -> Result<Place, Error> {
         let key = super::NodeKey {
             node,
-            ..self.body.source
+            ..self.source
         };
         let count = self.facts.autoderefs.get(&key).copied().unwrap_or(0);
         for _ in 0..count {
@@ -181,7 +181,7 @@ impl Builder<'_> {
                 .ok_or_else(|| self.error(node, "missing temporary scope"))?
                 .temporary,
             value,
-            source: node,
+            source: node.into(),
             block,
             before: self.index(node, self.body.statements.len())?,
             exits_before: self.index(node, self.scope_exits.len())?,

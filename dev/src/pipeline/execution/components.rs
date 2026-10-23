@@ -26,7 +26,10 @@ impl Engine {
         facts: &mut Declarations,
         seed: Original,
     ) -> Result<(Template, Contract), Error> {
-        let source = seed.template.body.source;
+        let origin = seed.template.body.source;
+        let source = origin.source().ok_or_else(|| {
+            Error::unlocated("source component cannot collect an imported original")
+        })?;
         let mut work = 0;
         let operation = (|| {
             let mut retained = if let Some(retained) = self.original_components.take() {
@@ -38,7 +41,7 @@ impl Engine {
                     .saturating_sub(facts.constant_work.template_bytes)
                     .saturating_sub(header);
                 let index = Index::new(facts, available, &mut work)
-                    .map_err(|e| Declarations::error(report, source, e))?;
+                    .map_err(|e| report.body_error(source, e))?;
                 facts.constant_work.template_bytes = facts
                     .constant_work
                     .template_bytes
@@ -67,8 +70,11 @@ impl Engine {
         seed: Original,
         work: &mut usize,
     ) -> Result<(Template, Contract), Error> {
-        let source = seed.template.body.source;
-        let error = |e| Declarations::error(report, source, e);
+        let origin = seed.template.body.source;
+        let source = origin.source().ok_or_else(|| {
+            Error::unlocated("source component cannot collect an imported original")
+        })?;
+        let error = |e| report.body_error(source, e);
         let members = retained
             .index
             .component(facts, source, work)
@@ -126,7 +132,7 @@ impl Engine {
         available: usize,
     ) -> Result<Original, Error> {
         let source = node.source;
-        let error = |e| Declarations::error(report, source, e);
+        let error = |e| report.body_error(source, e);
         let (mut template, contract) = match node.owner {
             Owner::Function(id) => {
                 let function = facts
@@ -188,7 +194,7 @@ impl Engine {
                     &mut contract,
                     &initializer,
                 )
-                .map_err(|e| Declarations::error(report, source, e))?;
+                .map_err(|e| report.body_error(source, e))?;
                 (template, contract)
             }
             Owner::Anonymous => {
@@ -231,7 +237,7 @@ impl Engine {
         for row in rows {
             row.contract
                 .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
-                .map_err(|e| Declarations::error(report, row.contract.source, e))?;
+                .map_err(|e| report.body_error(row.contract.source, e))?;
             templates.bodies.push(row.template);
             contracts.push(row.contract);
         }
@@ -261,9 +267,8 @@ impl Engine {
             |ty, field| body::drops::nominal_position(facts, ty, field),
         )
         .map_err(|e| {
-            Declarations::error(
-                report,
-                e.node.unwrap_or(templates.bodies[0].body.source),
+            report.body_error(
+                e.node.unwrap_or(templates.bodies[0].body.source.into()),
                 e.message,
             )
         })?;
@@ -321,10 +326,12 @@ impl Engine {
         for (template, contract) in templates.bodies.into_iter().zip(contracts) {
             let key = template.body.key();
             if matches!(template.body.owner, body::ir::Owner::AnonymousConstant) {
+                let source = template.body.source.source().ok_or_else(|| {
+                    Error::unlocated("source component cannot publish imported anonymous syntax")
+                })?;
                 facts.constant_work.anonymous_templates +=
-                    usize::from(!self.anonymous.contains_key(&template.body.source));
-                self.anonymous
-                    .insert(template.body.source, (template, contract));
+                    usize::from(!self.anonymous.contains_key(&source));
+                self.anonymous.insert(source, (template, contract));
             } else {
                 retained.rows.insert(key, Original { template, contract });
             }
@@ -346,7 +353,7 @@ impl Engine {
         for &key in &retained.order {
             let (template, contract) = if let BodyKey::Anonymous(source) = key {
                 let row = self.anonymous.get(&source).ok_or_else(|| {
-                    Declarations::error(report, source, "component anonymous cache was lost")
+                    report.body_error(source, "component anonymous cache was lost")
                 })?;
                 (&row.0, &row.1)
             } else {
@@ -370,7 +377,7 @@ impl Engine {
         for &key in &retained.order {
             let (template, contract) = if let BodyKey::Anonymous(source) = key {
                 let row = self.anonymous.get(&source).ok_or_else(|| {
-                    Declarations::error(report, source, "component anonymous cache was lost")
+                    report.body_error(source, "component anonymous cache was lost")
                 })?;
                 (&row.0, &row.1)
             } else {

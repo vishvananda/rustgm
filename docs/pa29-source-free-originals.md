@@ -4,7 +4,9 @@ Design and private prerequisite, refreshed against frontend `46d8b82a`, the
 focused actual-parent port `4eb1a20f`, and C's current `defining_heads` proposal.
 The private resolver identity foundation is qualified in
 [its checkpoint note](pa29-origin-foundation.md); no live body/proof field, artifact
-profile tag or edition encoding has migrated yet. The broad required
+profile tag or edition encoding has migrated yet. The live body/proof/site migration is now recorded in
+[its source-compatibility checkpoint](pa29-body-sites-checkpoint.md); the design
+baseline statements below describe the original proposal snapshot. The broad required
 scope remains in [the generic transport proposal](pa29-generic-transport-proposal.md).
 This prerequisite must lead to actual generic/const cross-crate execution, not
 stop at another neutral vocabulary. Root owns edition/build integration.

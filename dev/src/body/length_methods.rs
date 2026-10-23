@@ -85,10 +85,10 @@ pub(crate) fn build(
         kind: LocalKind::Parameter(0),
         definition: None,
         mutable: false,
-        source: length.origin.node,
+        source: length.origin.node.into(),
     });
     body.statements.push(Statement {
-        source: length.origin.node,
+        source: length.origin.node.into(),
         action: Action::StorageLive(LocalId(0)),
     });
     body.projections.push(Projection {
@@ -100,7 +100,7 @@ pub(crate) fn build(
         ty: referent,
     });
     body.statements.push(Statement {
-        source: length.origin.node,
+        source: length.origin.node.into(),
         action: Action::Project(ProjectionId(0)),
     });
     body.values.push(Value {
@@ -108,7 +108,7 @@ pub(crate) fn build(
         kind: Rvalue::Length(Place::Projection(ProjectionId(0))),
     });
     body.statements.push(Statement {
-        source: length.origin.node,
+        source: length.origin.node.into(),
         action: Action::Evaluate(ValueId(0)),
     });
     super::build::finish_factory(&mut body, ValueId(0))?;

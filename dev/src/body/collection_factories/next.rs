@@ -21,7 +21,7 @@ pub(super) fn build(
     body.blocks.push(Block {
         start: 0,
         end,
-        source: body.source.node,
+        source: body.root_site(),
         terminator: Terminator::Branch {
             condition: empty,
             yes: BlockId(1),

@@ -118,7 +118,7 @@ fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {
         size_of::<regions::Contract>()
     );
     assert_eq!(
-        size_of::<SiteObligation<NodeKey>>(),
+        size_of::<SiteObligation<ProofSite>>(),
         size_of::<regions::Obligation>()
     );
     assert_eq!(
@@ -161,5 +161,14 @@ fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {
         size_of::<SitePredicate<ProofSite>>(),
         size_of::<(NodeKey, crate::types::parameters::predicates::Predicate)>(),
         size_of::<(ProofSite, crate::types::parameters::predicates::Predicate)>(),
+    );
+    println!(
+        "Code={} Target={} Request={} Template={} Proved={} paired_proof={}",
+        size_of::<crate::const_eval::code::Code>(),
+        size_of::<crate::sema::values::execution::Target>(),
+        size_of::<crate::sema::values::execution::Request>(),
+        size_of::<crate::body::templates::Template>(),
+        size_of::<crate::borrow::incremental::Proved>(),
+        size_of::<crate::borrow::incremental::PairedProved>(),
     );
 }

@@ -108,16 +108,19 @@ fn project(
     invocations: &[Invocation],
     mut error: Error,
 ) -> Error {
+    let Some(file) = error.file.source() else {
+        return error;
+    };
     let result = (|| {
         let (location, mut context) = physical(
             package,
             invocations,
             Location {
-                file: error.file,
+                file,
                 span: error.span,
             },
         )?;
-        error.file = location.file;
+        error.file = crate::resolve::package::DiagnosticFile::Source(location.file);
         error.span = location.span;
         for trace in &mut error.expansions {
             let parent = project_frame(package, invocations, trace)?;

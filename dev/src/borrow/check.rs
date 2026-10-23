@@ -5,7 +5,7 @@ pub(crate) mod structure;
 use super::{loans, ownership, regions};
 use crate::support::hash::HashMap;
 use crate::{
-    body::ir::{Body, NodeKey, Program},
+    body::ir::{Body, Program},
     types::{
         ItemId, Store,
         aggregate::Definitions,
@@ -47,7 +47,7 @@ impl Analysis<'_> {
 }
 #[derive(Debug)]
 pub struct Error {
-    pub node: Option<NodeKey>,
+    pub node: Option<crate::body::ir::ProofSite>,
     pub message: String,
 }
 impl std::fmt::Display for Error {
@@ -142,7 +142,7 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
     require_resolved_promotions(program)?;
     if let Some(pending) = &program.drops {
         return Err(Error {
-            node: Some(pending.source),
+            node: Some(pending.source.into()),
             message: crate::body::drops::PENDING_MESSAGE.into(),
         });
     }
@@ -156,7 +156,7 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
         let contract = if let Some(templates) = templates {
             if body.instance.is_some() && templates.contract(body).is_none() {
                 return Err(Error {
-                    node: Some(body.source),
+                    node: Some(body.source.into()),
                     message: "instance has no checked original template".into(),
                 });
             }
@@ -169,7 +169,7 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
             by_key.get(&body.key()).copied()
         }
         .ok_or_else(|| Error {
-            node: Some(body.source),
+            node: Some(body.source.into()),
             message: "body has no lifetime proof".into(),
         })?;
         let (owned, proof) = prove_body::<RECORD, _>(
@@ -209,20 +209,20 @@ pub fn verify_destruction<'a, S: BuildHasher>(
         .ok_or_else(|| error(None, "missing destruction work"))?;
     let mut drop_regions =
         crate::types::destruction::regions::Regions::new(pending.methods.iter().map(|m| m.item))
-            .map_err(|e| error(Some(pending.source), e))?;
+            .map_err(|e| error(Some(pending.source.into()), e))?;
     let mut reused = Reused::default();
     let by_key: HashMap<_, _> = contracts.bodies.iter().map(|b| (b.key, b)).collect();
     let mut plans = Vec::with_capacity(program.bodies.len());
     for body in &program.bodies {
         if body.instance.is_some() {
             return Err(error(
-                Some(body.source),
+                Some(body.source.into()),
                 "specialized destruction requires checked instance contracts",
             ));
         }
         let contract = by_key
             .get(&body.key())
-            .ok_or_else(|| error(Some(body.source), "body has no lifetime proof"))?;
+            .ok_or_else(|| error(Some(body.source.into()), "body has no lifetime proof"))?;
         plans.push(
             prove_cleanup(
                 environment,
@@ -254,7 +254,7 @@ fn require_resolved_promotions(program: &Program) -> Result<(), Error> {
 fn require_body_promotions(body: &Body) -> Result<(), Error> {
     if body.resolved_callables.is_some() {
         return Err(Error {
-            node: Some(body.source),
+            node: Some(body.source.into()),
             message: "resolved callable targets require a completed body proof".into(),
         });
     }
@@ -264,7 +264,7 @@ fn require_body_promotions(body: &Body) -> Result<(), Error> {
         .is_some_and(|p| p.deferred().next().is_some())
     {
         return Err(Error {
-            node: Some(body.source),
+            node: Some(body.source.into()),
             message: "deferred promotion values require concrete instantiation".into(),
         });
     }
