@@ -396,6 +396,22 @@
       "state": "Independent metadata/object/native passed; actual final candidate source/native/scaling qualification remains integrator-owned and pending",
       "derivation": "unchanged mapped-provider declaration prefix; record() protocol from independently qualified operand-effects-once; pointer branch from independently qualified pointer-two-targets",
       "independent_evidence": "obj/parallel/pa28/const-eval-select/source-scaling-v1/independent-v1"
+    },
+    {
+      "name": "item-reuse",
+      "source": "pa31/tests/spec/const-eval-select-runtime/item-reuse.rs",
+      "sha256": "715dcb4a51415894fab48dbf4ac9bbc8d38966e76df36a1f633b4f5a76c6b575",
+      "client": "pa31/tests/spec/const-eval-select-runtime/item-reuse.c",
+      "client_sha256": "bae8c00295195fd31cdeb5385d9deef50bbcb5a580a5737015fd6119c99b1d51",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 2\n",
+      "native_stderr_hypothesis": "",
+      "candidate_runtime_required": 0,
+      "scope": "One actual function-item callback bound once, copied into two runtime selector calls",
+      "state": "Declared positive; independent and candidate qualification pending callable-copy-focused-v1",
+      "derivation": "Unchanged qualified mapped provider prefix; simple nongeneric callback isolates actual function-item Copy from lifetime remapping"
     }
   ],
   "independent_receipts": {

@@ -32,6 +32,12 @@ hashes and expected outputs frozen before those probes. Candidate execution of
 the new rows remains pending merged qualification. See the [checkpoint](../../../../docs/pa31-runtime-const-select.md)
 for exact qualification and the retained mapping-hypothesis failure.
 
+`item-reuse.rs` binds one function item and passes it to two selector calls;
+its independently declared output is `7 2` with a final newline. This control
+and the unchanged pointer128 row require actual source Copy evidence for
+callable values. The related paired ordinary Copy/Clone marker correction and
+this new control await the integrator's merged qualification.
+
 The original 26 observations and first 19 provider hypotheses remain unchanged
 in retained development receipts. Their missing-Freeze and staged-attribute
 failures are separate from these corrected provider contexts. Candidate

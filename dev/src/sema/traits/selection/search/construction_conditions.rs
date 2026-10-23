@@ -54,12 +54,16 @@ impl Search<'_> {
         if frame.formation.is_some() || facts.source_bindings.is_none() {
             return Ok(false);
         }
+        // Callable markers share this formation DAG only for exact ordinary
+        // source roles. Item arguments keep their retained formation duties;
+        // their declaration signature was proved before forming the item.
         let source_rule = Self::source_freeze_goal(facts, &frame.goal)?
             || matches!(
                 Self::source_sizing_kind(facts, &frame.goal)?,
                 Some(LangItem::MetaSized | LangItem::PointeeSized)
             )
-            || source_destruct_goal(facts, frame)?;
+            || source_destruct_goal(facts, frame)?
+            || Self::source_callable_marker_goal(facts, frame)?;
         if !source_rule {
             return Ok(false);
         }

@@ -146,6 +146,27 @@ and pending; they are not inferred from the smaller v3 contexts.
 
 ## Remaining boundaries
 
+The first merged gate exposed a missing actual source Copy selection for the
+unchanged pointer128 callback's second use. Its positive pinned Rust observation
+and original source remain intact. The narrow correction supplies ordinary
+Copy/Clone marker evidence for function pointers and items using exact completed
+source roles. It preserves candidate precedence, the caller's obligations and
+the existing nominal formation DAG; it supplies no executable Clone method or
+const permission. Function item arguments retain their existing formation
+requirements without replaying declaration signatures. Noncallable Copy goals
+do not allocate callable formation state.
+
+Six private controls cover non-Copy signature inputs/results, Rust and unsafe C
+pointer values, actual function items, exact source role/effect/argument checks,
+selected/deferred precedence, unpaid nominal signature retry, retained lifetime
+debts, completed role readiness and the unrelated-subject allocation path. The
+new item-reuse source binds its callback once and requires output `7 2` after two
+selector calls. The correction and all new controls are explicitly unqualified
+locally; the integrator runs fresh static/source/native checks and the frozen
+item-reuse independent metadata/object/native plan. The plan and exact private
+selection are retained under
+`obj/parallel/pa28/const-eval-select/callable-copy-focused-v1/`.
+
 Constant callback selection is explicitly unsupported, including a body-bearing
 placeholder. General callable objects/closures, callback destruction and wider
 intrinsic families remain separate work. The original fully staged declaration

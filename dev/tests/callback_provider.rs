@@ -19,6 +19,7 @@ const RUNTIME: &[(&str, &str)] = &[
     ("scale-mapped-32", "7 32\n"),
     ("scale-mapped-128", "7 128\n"),
     ("scale-pointer-128", "9 128 13 128\n"),
+    ("item-reuse", "7 2\n"),
 ];
 fn source(name: &str, extension: &str) -> TestResult<String> {
     Ok(std::fs::read_to_string(

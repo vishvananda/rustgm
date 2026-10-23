@@ -11,6 +11,9 @@ mod cloning;
 mod coherence;
 mod coinduction;
 #[cfg(test)]
+#[path = "../../../../tests/invariants/fn_copying.rs"]
+mod fn_copying_tests;
+#[cfg(test)]
 #[path = "../../../../tests/invariants/refutation_layout.rs"]
 mod refutation_layout;
 pub(in crate::sema) use coherence::may_overlap;
