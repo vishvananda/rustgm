@@ -85,7 +85,7 @@ fn analyze(source: &str, edition: Edition, files: &mut Files) -> Result<expansio
     rustgm::resolve::analyze_expanded(report).map_err(|error| format!("{error:?}"))
 }
 
-fn lowir(source: &str, edition: Edition) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+pub(super) fn lowir(source: &str, edition: Edition) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let mut report = analyze(source, edition, &mut Files::default())?;
     let rustgm::pipeline::Analysis {
         mut facts,
@@ -194,7 +194,7 @@ fn native_answers_match_the_selected_lexical_edition() -> Result<(), Box<dyn std
     Ok(())
 }
 
-fn run(
+pub(super) fn run(
     folder: &Path,
     name: &str,
     command: &mut std::process::Command,

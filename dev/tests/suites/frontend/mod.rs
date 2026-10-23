@@ -51,6 +51,8 @@ mod name_storage;
 pub(crate) mod native_references;
 #[path = "../../option_environment.rs"]
 mod option_environment;
+#[path = "../../pattern_editions.rs"]
+mod pattern_editions;
 #[path = "../../provider_traits.rs"]
 mod provider_traits;
 #[path = "../../helpers/qualify.rs"]

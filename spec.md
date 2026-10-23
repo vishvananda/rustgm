@@ -29,6 +29,14 @@ assigning the output stream or neighboring tokens the capture's edition.
 The [PA34 context foundation](docs/pa34-edition-context.md) records the independent
 mixed-edition controls and the remaining work before enabling Rust 2021 in the CLI.
 
+For edition-sensitive explicit pattern modifiers, consume the parsed flags and
+the introducer's original token edition. A complete pattern can span captured
+syntax from multiple editions; do not require one edition for its full span.
+Only those modifiers demand origin lookup. Preserve ordinary move/loan checks
+after selecting the default binding mode; legacy syntax is not proof of Copy or
+mutable access. The [pattern checkpoint](docs/pa34-pattern-editions.md) records
+the paired Rust 2021/2024 semantic and native controls.
+
 ```text
 source image -> Rust lexer -> token-tree/parser/expansion/resolution worklist
              -> syntax with canonical semantic facts
