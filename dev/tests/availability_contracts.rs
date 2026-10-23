@@ -145,7 +145,21 @@ fn deferred_features_use_enabled_expanded_definitions_and_keep_const_separate() 
             let Err(error) = result else {
                 return Err(format!("{name}: unexpected acceptance").into());
             };
-            assert!(error.to_string().contains("library"), "{name}: {error}");
+            let expected = match name {
+                "undefined-request" | "disabled-definition" => {
+                    "undefined library feature request"
+                }
+                "conflicting-stability" => "duplicate or conflicting library stability",
+                "missing-staged-api" => "library stability requires staged_api",
+                // These valid/invalid const hypotheses remain outside this
+                // candidate profile; an unsupported gate is not Rust evidence.
+                "missing-const-stability" => "local library stability profile",
+                "runtime-unstable-const" => {
+                    "const, default-body and macro library stability contracts are not implemented"
+                }
+                _ => return Err("undeclared API rejection diagnostic".into()),
+            };
+            assert!(error.to_string().contains(expected), "{name}: {error}");
         }
     }
     Ok(())
