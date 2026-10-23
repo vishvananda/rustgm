@@ -129,6 +129,34 @@ pub enum RepeatMode {
     /// Instantiate a selected constant path independently for each element.
     Constant,
 }
+/// Lexical operand form is retained data, never promotion or execution permission.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BinaryOperands {
+    /// This operator does not consume operand syntax during promotion.
+    NotRequired,
+    Neither,
+    Left,
+    Right,
+    Both,
+}
+impl BinaryOperands {
+    #[must_use]
+    pub const fn new(left: bool, right: bool) -> Self {
+        match (left, right) {
+            (false, false) => Self::Neither,
+            (true, false) => Self::Left,
+            (false, true) => Self::Right,
+            (true, true) => Self::Both,
+        }
+    }
+    #[must_use]
+    pub const fn immediate(self, left: bool) -> bool {
+        matches!(
+            (self, left),
+            (Self::Both, _) | (Self::Left, true) | (Self::Right, false)
+        )
+    }
+}
 #[derive(Clone, Copy, Debug)]
 pub enum Rvalue {
     Unit,
@@ -193,6 +221,7 @@ pub enum Rvalue {
         literal: bool,
     },
     Binary {
+        operands: BinaryOperands,
         operator: Punctuation,
         left: ValueId,
         right: ValueId,

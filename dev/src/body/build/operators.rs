@@ -295,3 +295,45 @@ impl Builder<'_> {
         self.dereference_place(node, place)
     }
 }
+
+impl Builder<'_> {
+    pub(super) fn binary_operands(
+        &self,
+        left: NodeId,
+        right: NodeId,
+    ) -> Result<crate::body::ir::BinaryOperands, Error> {
+        Ok(crate::body::ir::BinaryOperands::new(
+            self.immediate_operand(left)?,
+            self.immediate_operand(right)?,
+        ))
+    }
+    fn immediate_operand(&self, mut node: NodeId) -> Result<bool, Error> {
+        for _ in 0..self.unit.configured.ast.nodes.len() {
+            let visits = &self.facts.body_work.cfg_operand_visits;
+            visits.set(visits.get().saturating_add(1));
+            match self.kind(node) {
+                super::Kind::Group(child) | super::Kind::Attributed { value: child, .. } => {
+                    node = child;
+                }
+                super::Kind::Expansion {
+                    children,
+                    tail: Some(child),
+                } if children.start == children.end => node = child,
+                super::Kind::Literal(_) | super::Kind::Name(..) | super::Kind::Path { .. } => {
+                    return Ok(true);
+                }
+                super::Kind::Unary {
+                    op: crate::syntax::ast::Unary::Negate,
+                    ..
+                } => {
+                    return Ok(matches!(
+                        self.fact(node)?.operation,
+                        Some(Operation::Unary { literal: true, .. })
+                    ));
+                }
+                _ => return Ok(false),
+            }
+        }
+        Err(self.error(node, "cycle in binary operand source wrappers"))
+    }
+}

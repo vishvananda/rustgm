@@ -184,6 +184,7 @@ pub(super) fn operation(
         body,
         boolean,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::EqualEqual,
             left: len,
             right: other,
@@ -195,6 +196,7 @@ pub(super) fn operation(
         body,
         boolean,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::Less,
             left: index,
             right: len,
@@ -210,6 +212,7 @@ pub(super) fn operation(
         body,
         usize_,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::Plus,
             left: index,
             right: one,

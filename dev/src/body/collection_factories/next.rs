@@ -162,6 +162,7 @@ fn empty_test(body: &mut Body, slice: Place) -> Result<crate::body::ir::ValueId,
         body,
         TypeId::primitive(Primitive::Bool),
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::EqualEqual,
             left: length,
             right: zero,

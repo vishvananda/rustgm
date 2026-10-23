@@ -488,6 +488,7 @@ impl Builder<'_> {
                             node,
                             TypeId::primitive(Primitive::Bool),
                             Rvalue::Binary {
+                                operands: crate::body::ir::BinaryOperands::Neither,
                                 operator: Op::EqualEqual,
                                 left: input,
                                 right: value,

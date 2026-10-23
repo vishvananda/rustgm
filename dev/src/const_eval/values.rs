@@ -238,6 +238,7 @@ impl Machine<'_, '_> {
                 operator,
                 left,
                 right,
+                ..
             } => self.evaluator.binary(
                 operator,
                 body.values[left.0 as usize].ty,

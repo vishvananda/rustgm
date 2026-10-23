@@ -219,6 +219,7 @@ impl Machine<'_> {
                 operator,
                 left,
                 right,
+                ..
             } => {
                 let left_type = frame.body.values[left.0 as usize].ty;
                 let signed = self

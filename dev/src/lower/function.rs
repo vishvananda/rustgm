@@ -775,6 +775,7 @@ impl Lower<'_, '_, '_> {
                 operator,
                 left,
                 right,
+                ..
             } => {
                 if matches!(
                     self.context

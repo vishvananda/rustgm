@@ -1647,6 +1647,18 @@ impl<'a> Builder<'a> {
         if let Some(value) = self.language_call(node, &[left, right])? {
             return Ok(value);
         }
+        let operator = match self.fact(node)?.operation {
+            Some(Operation::Binary { operator, .. }) => Some(operator),
+            Some(Operation::Assign { operator, .. } | Operation::AssignPlace { operator, .. }) => {
+                operator
+            }
+            _ => None,
+        };
+        let operands = if matches!(operator, Some(Op::Slash | Op::Percent)) {
+            self.binary_operands(left, right)?
+        } else {
+            crate::body::ir::BinaryOperands::NotRequired
+        };
         let right = self.value(right)?;
         match self.fact(node)?.operation {
             Some(Operation::AssignPlace {
@@ -1661,6 +1673,7 @@ impl<'a> Builder<'a> {
                         node,
                         ty,
                         Rvalue::Binary {
+                            operands,
                             operator,
                             left,
                             right,
@@ -1676,6 +1689,7 @@ impl<'a> Builder<'a> {
                 node,
                 self.ty(node)?,
                 Rvalue::Binary {
+                    operands,
                     operator,
                     left: self.value(left)?,
                     right,
@@ -1701,6 +1715,7 @@ impl<'a> Builder<'a> {
                         node,
                         ty,
                         Rvalue::Binary {
+                            operands,
                             operator,
                             left,
                             right,

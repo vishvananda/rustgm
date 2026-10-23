@@ -166,6 +166,7 @@ fn operation(
             TypeId::primitive(scalar.left)
         },
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: source.operator,
             left: a,
             right: b,

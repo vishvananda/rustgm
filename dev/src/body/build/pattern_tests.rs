@@ -40,6 +40,7 @@ impl Builder<'_> {
                     node,
                     boolean,
                     Rvalue::Binary {
+                        operands: crate::body::ir::BinaryOperands::Neither,
                         operator: if exact {
                             Punctuation::EqualEqual
                         } else {

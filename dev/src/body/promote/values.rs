@@ -250,6 +250,7 @@ impl Engine<'_, '_> {
                 operator,
                 left,
                 right,
+                ..
             } => self.binary(id, operator, left, right)?,
             Rvalue::Cast { kind, operand, .. } => {
                 let Some(value) = self.ready(Key::Value(operand))? else {

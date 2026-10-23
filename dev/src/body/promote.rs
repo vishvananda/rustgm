@@ -158,7 +158,7 @@ fn analyze_body(
     if body.promotions.is_some() {
         return Ok(());
     }
-    let mut engine = Engine::new(report, body, evaluator, drop_values);
+    let mut engine = Engine::new(body, evaluator, drop_values);
     let output = engine.collect().map_err(|error| match error {
         Error::Constant(error) => error,
         Error::Evaluation(error) => {
@@ -225,8 +225,6 @@ impl From<&'static str> for Error {
 }
 struct Engine<'a, 'b> {
     drop_values: Option<&'a [bool]>,
-    report: &'a Report,
-    sources: Vec<Option<crate::syntax::ast::NodeId>>,
     body: &'a Body,
     evaluator: &'a mut Evaluator<'b>,
     states: HashMap<Key, State>,
@@ -237,15 +235,12 @@ struct Engine<'a, 'b> {
 }
 impl<'a, 'b> Engine<'a, 'b> {
     fn new(
-        report: &'a Report,
         body: &'a Body,
         evaluator: &'a mut Evaluator<'b>,
         drop_values: Option<&'a [bool]>,
     ) -> Self {
         Self {
             drop_values,
-            report,
-            sources: Vec::new(),
             body,
             evaluator,
             states: HashMap::default(),

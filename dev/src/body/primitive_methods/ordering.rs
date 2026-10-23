@@ -140,6 +140,7 @@ pub(super) fn append(
         body,
         boolean,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::Less,
             left,
             right,
@@ -151,6 +152,7 @@ pub(super) fn append(
         body,
         boolean,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::EqualEqual,
             left,
             right,
@@ -163,6 +165,7 @@ pub(super) fn append(
             body,
             boolean,
             Rvalue::Binary {
+                operands: crate::body::ir::BinaryOperands::Neither,
                 operator: Punctuation::Greater,
                 left,
                 right,

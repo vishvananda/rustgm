@@ -180,6 +180,7 @@ fn next_blocks(
         body,
         TypeId::primitive(Primitive::Bool),
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: crate::lex::token::Punctuation::Less,
             left: first,
             right: last,
@@ -219,6 +220,7 @@ fn next_blocks(
         body,
         element,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: crate::lex::token::Punctuation::Plus,
             left: first,
             right: one,
