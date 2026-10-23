@@ -87,7 +87,7 @@ impl Dependencies {
                                 self.fields(recipes, variant.fields, &mut work)?;
                             }
                         }
-                        glue::Shape::Array { .. } => {}
+                        glue::Shape::Array { .. } | glue::Shape::Dynamic => {}
                     }
                 }
             }

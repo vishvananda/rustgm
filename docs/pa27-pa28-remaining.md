@@ -234,3 +234,12 @@ Dynamic/tail cleanup, lazy exposed-only recipes, actual Box ownership/ordering,
 full Drop/Pin/default methods and CTFE cleanup remain required. See
 `pa31-slice-drop-glue.md` for exact outcomes, retained dense-query costs and the
 separate deterministic work/native evidence.
+
+The worker dynamic-helper successor now qualifies the unchanged dyn positive
+through the existing exact vtable drop entry and a typed wide-reference adapter.
+It retains first-batch exposed-only recipes without altering owned-body proof
+flags, and binds the new sparse exposure cache to lazy stable arena identities.
+This supersedes the dynamic/lazy-exposure portion immediately above; central
+integration/publication remains separate. Actual Box ownership/ordering, unsized
+tails, CTFE cleanup, full Drop/Pin/default bodies and source DispatchFromDyn remain
+required. See `pa31-dyn-drop-glue.md` for the exact contracts and remaining gaps.

@@ -75,6 +75,17 @@ impl Emitter<'_, '_> {
             self.slice(element, child)?;
             return self.run();
         }
+        if matches!(recipe.kind, glue::Shape::Dynamic) {
+            if recipe.method.is_some()
+                || !matches!(
+                    self.context.types.kind(recipe.ty),
+                    Some(crate::types::Kind::Dynamic { .. })
+                )
+            {
+                return Err("dynamic cleanup requires its exact object recipe");
+            }
+            return self.dynamic();
+        }
         let layout = self.context.layout(recipe.ty)?;
         let base = Address {
             operand: Operand::Parameter(0),
@@ -109,9 +120,38 @@ impl Emitter<'_, '_> {
             glue::Shape::Array { element, length } => {
                 self.array(Target::Glue(element), recipe.ty, base, 0, length)?;
             }
-            glue::Shape::Slice { .. } => return Err("slice cleanup lost its wide entry"),
+            glue::Shape::Slice { .. } | glue::Shape::Dynamic => {
+                return Err("cleanup lost its wide entry");
+            }
         }
         self.run()
+    }
+    fn dynamic(&mut self) -> Result<(), &'static str> {
+        let drop = self.builder.load(Type::Ptr, Operand::Parameter(1))?;
+        let null = self
+            .builder
+            .literal(Type::Ptr, crate::lowir::program::Literal::Null)?;
+        let empty = self.builder.compare(Predicate::Eq, drop, null)?;
+        let call = self.builder.block()?;
+        let done = self.builder.block()?;
+        self.builder.terminate(Terminator::Branch {
+            condition: empty.operand,
+            yes: done,
+            no: call,
+        })?;
+        self.builder.enter(call)?;
+        let signature = self
+            .context
+            .output
+            .signature(&[Type::Ptr], Type::Void, false)?;
+        let data = Value {
+            ty: Type::Ptr,
+            operand: Operand::Parameter(0),
+        };
+        self.builder
+            .call(signature, Type::Void, drop.operand, &[data])?;
+        self.builder.terminate(Terminator::Jump(done))?;
+        self.builder.enter(done)
     }
     fn run(&mut self) -> Result<(), &'static str> {
         while let Some(work) = self.state.work.pop() {

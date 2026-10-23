@@ -297,7 +297,7 @@ impl Builder<'_, '_> {
                     };
                 }
             }
-            glue::Shape::Slice { .. } => {
+            glue::Shape::Slice { .. } | glue::Shape::Dynamic => {
                 return Err("partial owned slice cleanup requires retained wide metadata");
             }
         }

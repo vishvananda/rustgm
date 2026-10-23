@@ -300,29 +300,40 @@ pub(crate) fn assemble(
     bodies: Vec<Proved>,
     recipes: Option<glue::Recipes>,
 ) -> Result<Assembled, Error> {
+    let owned_cleanup = program.drops.is_some();
     if !program.bodies.is_empty()
-        || program.drops.is_some() != recipes.is_some()
+        || (owned_cleanup && recipes.is_none())
+        || (!owned_cleanup
+            && recipes
+                .as_ref()
+                .is_some_and(|recipes| !recipes.has_exposed()))
         || program
             .drops
             .as_ref()
             .is_some_and(|pending| pending.bodies.len() != bodies.len())
-        || bodies
-            .iter()
-            .any(|body| body.destruction != recipes.is_some())
+        || bodies.iter().any(|body| {
+            body.destruction != owned_cleanup || (!owned_cleanup && body.plan.is_some())
+        })
     {
         return Err(Error {
             node: None,
             message: "instance assembly contains unproved bodies or inconsistent cleanup".into(),
         });
     }
-    let mut plans = Vec::with_capacity(bodies.len());
+    let mut plans = if owned_cleanup {
+        Vec::with_capacity(bodies.len())
+    } else {
+        Vec::new()
+    };
     program.bodies.reserve_exact(bodies.len());
     // Release the proved records progressively while their bodies move.
     let mut bodies = bodies;
     bodies.reverse();
     while let Some(proved) = bodies.pop() {
         program.bodies.push(proved.body);
-        plans.push(proved.plan);
+        if owned_cleanup {
+            plans.push(proved.plan);
+        }
         if bodies.len() < bodies.capacity() / 2 {
             bodies.shrink_to_fit();
         }
@@ -344,3 +355,7 @@ pub(crate) fn with_checked<T>(
 ) -> Result<T, Error> {
     Ok(assemble(program, bodies, recipes)?.with_checked(use_checked))
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/exposure_proofs.rs"]
+mod exposure_proofs;

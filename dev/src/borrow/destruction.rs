@@ -114,6 +114,10 @@ pub struct Proof {
     pub(super) recipes: glue::Recipes,
 }
 impl Proof {
+    #[cfg(test)]
+    pub(crate) fn plan_capacity(&self) -> usize {
+        self.plans.capacity()
+    }
     #[must_use]
     pub fn plan(&self, body: usize) -> Option<&Plan> {
         self.plans.get(body).and_then(Option::as_deref)

@@ -1,5 +1,8 @@
 //! Orchestrate append-only body proofs without retaining semantic borrows across demand.
 #[cfg(test)]
+#[path = "../../../tests/invariants/exposure_stages.rs"]
+mod exposure_stages;
+#[cfg(test)]
 mod tests;
 use crate::{
     body::{
@@ -239,9 +242,10 @@ impl Builder {
                 message: "conditional parent has an ordinary region cache row".into(),
             });
         };
-        let mut catalog = self
-            .recipes
-            .take()
+        let owned_cleanup = self.program.drops.is_some();
+        let mut catalog = owned_cleanup
+            .then(|| self.recipes.take())
+            .flatten()
             .map(|cache| cache.attach(&facts.types, &facts.aggregates, &facts.members));
         let mut environment = borrow::Environment {
             types: &facts.types,
@@ -273,7 +277,9 @@ impl Builder {
                 )
                 .map(|proved| Staged::Ordinary(Box::new(proved))),
         };
-        self.recipes = catalog.map(glue::Catalog::into_cache);
+        if owned_cleanup {
+            self.recipes = catalog.map(glue::Catalog::into_cache);
+        }
         proved
     }
     pub(super) fn append_proved(
@@ -410,9 +416,10 @@ impl Builder {
         original: Original<'_>,
     ) -> Result<usize, borrow::Error> {
         let contract = self.regions(facts, &body, input)?;
-        let mut catalog = self
-            .recipes
-            .take()
+        let owned_cleanup = self.program.drops.is_some();
+        let mut catalog = owned_cleanup
+            .then(|| self.recipes.take())
+            .flatten()
             .map(|cache| cache.attach(&facts.types, &facts.aggregates, &facts.members));
         let mut environment = borrow::Environment {
             types: &facts.types,
@@ -452,7 +459,9 @@ impl Builder {
                 )
             }
         };
-        self.recipes = catalog.map(glue::Catalog::into_cache);
+        if owned_cleanup {
+            self.recipes = catalog.map(glue::Catalog::into_cache);
+        }
         let mut proof = proof?;
         proof
             .resolve_callables(&mut facts.types)
@@ -538,10 +547,22 @@ impl Builder {
         facts: &mut Declarations,
         types: &[crate::types::TypeId],
     ) -> Result<Vec<Instance>, &'static str> {
-        // No destructor declarations means every concrete sized type is dropless.
-        let Some(cache) = self.recipes.take() else {
+        if types.is_empty() {
             return Ok(Vec::new());
-        };
+        }
+        if let Some(source) = facts.source_bindings.as_deref() {
+            source.require_source_destructors_prepared()?;
+        }
+        if self.recipes.is_none() {
+            if self.program.drops.is_some() || !facts.destructors.implementations().is_empty() {
+                return Err("exposure roots lost their owned destructor environment");
+            }
+            self.recipes = Some(glue::Cache::exposed_empty(
+                &mut facts.types,
+                &mut facts.aggregates,
+            )?);
+        }
+        let cache = self.recipes.take().ok_or("missing exposure catalog")?;
         let mut catalog = cache.attach(&facts.types, &facts.aggregates, &facts.members);
         let roots = types
             .iter()

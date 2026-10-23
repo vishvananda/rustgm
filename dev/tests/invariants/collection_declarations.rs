@@ -305,8 +305,8 @@ fn collection_layout_preserves_scalar_owners_and_padded_derive_entries() {
         size_of::<Properties>(),
         size_of::<(ItemId, Declaration)>()
     );
-    // Nullable policy/layout caches add 16 bytes; source bindings add one cold pointer.
-    assert_eq!(size_of::<crate::sema::model::Declarations>(), 7048);
+    // Two lazy arena identity slots add 16 bytes to the previous 7048-byte baseline.
+    assert_eq!(size_of::<crate::sema::model::Declarations>(), 7064);
     assert_eq!(size_of::<Type>(), 24);
     assert_eq!(
         size_of::<(ItemId, Declaration)>(),

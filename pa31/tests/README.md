@@ -75,3 +75,10 @@ actual sizing, Copy/Clone/default-method, Destruct/Freeze and receiver transport
 Its historical hypothesis disagreements are retained separately from corrected
 Rust/native controls. This preparation does not enable generic source-role
 metadata or source-sysroot client policy; see the scoped interface review.
+
+`spec/drop-glue-dyn/` retains 14 independently settled source contracts and ten
+native observers, including the unchanged original dyn helper. Grouped
+`glue_provider::virtual_receivers` tests own its focused runtime/null/ordered
+cleanup coverage. Lazy exposed-only recipes preserve ordinary body proof flags;
+CTFE, Box ordering and unsized tails remain required separately. See
+[the dynamic-helper boundary](../../docs/pa31-dyn-drop-glue.md).
