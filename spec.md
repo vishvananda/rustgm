@@ -154,6 +154,21 @@ those conditions across cold and warm lookup. The
 [source unsizing checkpoint](docs/pa31-source-unsizing.md) defines the actual
 Unsize/CoerceUnsized roles and the retained runtime/CTFE boundaries.
 
+Conditional source const calls retain declaration requirements separately from
+caller permission. Prepare immutable requirements once for each complete Code
+instance, then prove them under the actual caller environment at every reached
+statement, including warm Code reuse. Consume a private continuation bound to
+the exact frame, code, statement, target and checked contract before invocation;
+resuming or replaying another use cannot inherit permission. Keep the optional
+input table cold and move the already proved Contract into retained rows rather
+than cloning it again or widening every Body/Value. Charge retained rows and
+suspended continuations to the existing storage limits. Actual const impls may
+satisfy ordinary uses, but only coarse candidate indexes erase effects: canonical
+headers, exact goals and completed proof keys preserve them. The
+[reached-call checkpoint](docs/pa31-reached-const-payment.md) covers closed,
+argument-free ordinary functions; conditional intrinsics, open/lifetime-bearing
+contracts, callable adapters and CTFE cleanup retain separate required checks.
+
 An actual source drop-glue helper is a compiler hook, not an executable empty
 body. Its runtime adapter consumes the exact registered declaration, full proved
 instance, retained source/body signature pair and caller's destruction recipe.
