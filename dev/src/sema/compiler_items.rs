@@ -1,4 +1,5 @@
 //! Actual source compiler declarations remain distinct from bootstrap identities.
+mod intrinsic_contracts;
 mod layout;
 mod sizing;
 use crate::{
@@ -7,8 +8,8 @@ use crate::{
     },
     support::{bindings::LangItem, crates::CrateIdentity},
 };
+pub(super) use intrinsic_contracts::validate as validate_intrinsic;
 pub(crate) use layout::Selection;
-pub(super) use layout::validate as validate_intrinsic;
 pub(super) use layout::validate_member as validate_layout_member;
 pub(super) use sizing::validate as validate_sizing;
 #[cfg(test)]
@@ -19,7 +20,7 @@ pub(crate) struct Catalog {
     provider: CrateIdentity,
     languages: [Option<Declaration>; 5],
     sizing: Option<[DefId; 3]>,
-    intrinsics: crate::support::hash::HashMap<DefId, layout::Intrinsic>,
+    intrinsics: crate::support::hash::HashMap<DefId, intrinsic_contracts::Intrinsic>,
 }
 impl Catalog {
     pub(crate) fn reserve(report: &Report) -> Result<Option<Box<Self>>, Error> {
@@ -72,7 +73,7 @@ impl Catalog {
                 .map(|entry| {
                     (
                         entry.declaration.definition,
-                        layout::Intrinsic::reserved(entry),
+                        intrinsic_contracts::Intrinsic::reserved(entry),
                     )
                 })
                 .collect(),

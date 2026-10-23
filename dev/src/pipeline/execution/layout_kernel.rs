@@ -1,7 +1,7 @@
 //! Source intrinsic kernels are reached only from a checked direct constant call.
 use super::{Declarations, Engine, Error, FileId, Kind, Report, const_eval};
 use crate::{
-    support::bindings::LayoutIntrinsic,
+    support::bindings::{LayoutIntrinsic, SourceIntrinsic},
     types::{Primitive, instance::Instance},
 };
 impl Engine {
@@ -15,14 +15,19 @@ impl Engine {
         let selected = facts
             .source_bindings
             .as_deref()
-            .map(|c| c.layout_selection(facts, instance))
+            .map(|c| c.selected_intrinsic(facts, instance))
             .transpose()
             .map_err(|e| Error::at(FileId(0), 0, e))?
             .flatten();
-        let Some(_) = selected else {
+        let Some(selected) = selected else {
             return self.function(report, facts, instance);
         };
         let error = |message| Error::at(FileId(0), 0, message);
+        if selected.kind == SourceIntrinsic::NeedsDrop {
+            return Err(error(
+                "source needs_drop requires completed source Drop and Copy roles",
+            ));
+        }
         let call = state
             .ok_or_else(|| error("source intrinsic requires a reached checked caller"))?
             .source_layout_call(facts, &self.catalog, instance)

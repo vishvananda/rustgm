@@ -67,3 +67,21 @@ impl LayoutIntrinsic {
         }
     }
 }
+
+/// Validated source declarations select a compiler contract, not an ordinary API.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum SourceIntrinsic {
+    Layout(LayoutIntrinsic),
+    NeedsDrop,
+}
+impl SourceIntrinsic {
+    /// Declaration attribute decoding only; consumers retain the actual `DefId`.
+    #[must_use]
+    pub fn from_name(name: &str) -> Option<Self> {
+        if name == "needs_drop" {
+            Some(Self::NeedsDrop)
+        } else {
+            LayoutIntrinsic::from_name(name).map(Self::Layout)
+        }
+    }
+}

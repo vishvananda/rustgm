@@ -72,12 +72,21 @@ impl Ordinary {
     ) -> Result<Option<Selected<'a>>, &'static str> {
         Ok(Some(match facts.types.kind(instance.ty()) {
             Some(Kind::FunctionItem { item, .. }) => {
-                if facts
+                if let Some(kind) = facts
                     .source_bindings
                     .as_deref()
-                    .map_or(Ok(false), |c| c.intrinsic(DefId(item.0)))?
+                    .map(|c| c.intrinsic_kind(DefId(item.0)))
+                    .transpose()?
+                    .flatten()
                 {
-                    return Err("source layout intrinsic runtime lowering is not implemented");
+                    return Err(match kind {
+                        crate::support::bindings::SourceIntrinsic::Layout(_) => {
+                            "source layout intrinsic runtime lowering is not implemented"
+                        }
+                        crate::support::bindings::SourceIntrinsic::NeedsDrop => {
+                            "source needs_drop intrinsic must be evaluated in a const block"
+                        }
+                    });
                 }
                 if facts
                     .foreign

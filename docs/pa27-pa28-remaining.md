@@ -194,3 +194,10 @@ exact defining-source proof publishes their head. String words/UTF-8 validation,
 unprepared or otherwise unsupported defining heads and the other families above
 remain required; see
 `pa27-opaque-byte-storage.md` and the exact desired/observed outcomes.
+
+Source-bound `needs_drop<T:?Sized>` remains required. Its real intrinsic identity
+and bool signature are separate from the existing source layout provider; runtime
+`core::mem::needs_drop` must execute its original const block. Actual source
+Copy/Drop readiness, complete destructor preparation and fresh reached-caller proof
+precede result caching. Drop/Destruct, Pin/default-method and const-drop prerequisites
+are retained in `pa28-source-needs-drop.md`; missing roles never imply false.

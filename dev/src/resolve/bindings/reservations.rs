@@ -8,7 +8,7 @@ use crate::{
         unit::{FileId, NodeKey},
     },
     support::{
-        bindings::{LangItem, LayoutIntrinsic},
+        bindings::{LangItem, SourceIntrinsic},
         crates::CrateIdentity,
     },
     syntax::{ast::Kind, attribute::Input, item::ItemKind},
@@ -23,7 +23,7 @@ pub struct Declaration {
 #[derive(Clone, Copy)]
 pub struct IntrinsicDeclaration {
     pub declaration: Declaration,
-    pub kind: LayoutIntrinsic,
+    pub kind: SourceIntrinsic,
 }
 pub struct Reservations {
     pub provider: CrateIdentity,
@@ -219,7 +219,7 @@ fn reserve(
             let spelling = unit
                 .spelling(span)
                 .map_err(|e| Error::at(declaration.origin.file, e.offset, e.message))?;
-            let kind = LayoutIntrinsic::from_name(spelling)
+            let kind = SourceIntrinsic::from_name(spelling)
                 .ok_or_else(|| error("unsupported source intrinsic"))?;
             if reserved
                 .intrinsics
