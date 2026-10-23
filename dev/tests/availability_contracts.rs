@@ -146,9 +146,7 @@ fn deferred_features_use_enabled_expanded_definitions_and_keep_const_separate() 
                 return Err(format!("{name}: unexpected acceptance").into());
             };
             let expected = match name {
-                "undefined-request" | "disabled-definition" => {
-                    "undefined library feature request"
-                }
+                "undefined-request" | "disabled-definition" => "undefined library feature request",
                 "conflicting-stability" => "duplicate or conflicting library stability",
                 "missing-staged-api" => "library stability requires staged_api",
                 // These valid/invalid const hypotheses remain outside this
