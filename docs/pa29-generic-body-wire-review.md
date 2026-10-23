@@ -6,6 +6,8 @@ and 75 private controls at `11199b03`. The subsequently approved envelope 9 /
 row version 0 and first executable imported id family are documented in
 [executable-generics](pa29-executable-generics.md); the broader design below
 remains the required continuation, not an implementation-completion claim.
+The subsequent reviewed version-one safe helper-call family is recorded in
+[direct-call transport](pa29-direct-call-transport.md).
 The complete executable source contract remains
 [generic-contract-sources](pa29-generic-contract-sources.md). The full remaining
 PA29 requirement is not limited to the first executable family.

@@ -54,7 +54,7 @@ pub(super) fn reserve(
             request.definition,
             g::Declaration::Function {
                 identity: request.external.clone(),
-                public: true,
+                public: !export.private.contains(&request.definition),
             },
         )?;
     }

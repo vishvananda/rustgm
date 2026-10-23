@@ -25,7 +25,7 @@ pub(super) fn encode(out: &mut Writer, rows: &g::Rows) -> Result<(), &'static st
     }
     out.u32(rows.types.len())?;
     for &ty in &rows.types {
-        type_write(out, ty)?;
+        type_write(out, ty, rows.calls.is_some())?;
     }
     out.u32(rows.roots.len())?;
     for root in &rows.roots {
@@ -110,7 +110,7 @@ fn declaration_write(out: &mut Writer, declaration: &g::Declaration) -> Result<(
         }
     }
 }
-fn type_write(out: &mut Writer, ty: g::Type) -> Result<(), &'static str> {
+fn type_write(out: &mut Writer, ty: g::Type, calls: bool) -> Result<(), &'static str> {
     match ty {
         g::Type::Scalar(scalar) => out.bytes(&[0, scalar as u8]),
         g::Type::Parameter(declaration) => {
@@ -129,6 +129,17 @@ fn type_write(out: &mut Writer, ty: g::Type) -> Result<(), &'static str> {
                 g::Convention::C => 2,
             })?;
             out.u8(u8::from(signature.variadic))
+        }
+        g::Type::FunctionItem(application) | g::Type::ApplicationSignature(application) => {
+            if !calls {
+                return Err("generic application types require row version one");
+            }
+            out.u8(if matches!(ty, g::Type::FunctionItem(_)) {
+                3
+            } else {
+                4
+            })?;
+            id(out, application.0)
         }
     }
 }
@@ -211,6 +222,7 @@ pub(super) fn decode(
         clauses,
         functions,
         originals: Vec::new(),
+        calls: None,
     })
 }
 fn declaration_read(
@@ -253,6 +265,8 @@ fn type_read(read: &mut Input<'_, '_>) -> Result<g::Type, &'static str> {
     match read.reader.u8()? {
         0 => Ok(g::Type::Scalar(read.reader.scalar()?)),
         1 => Ok(g::Type::Parameter(DeclarationRef(read.id()?))),
+        3 if read.version == 1 => Ok(g::Type::FunctionItem(g::ApplicationRef(read.id()?))),
+        4 if read.version == 1 => Ok(g::Type::ApplicationSignature(g::ApplicationRef(read.id()?))),
         2 => {
             let binder = g::BinderRef(read.id()?);
             let parameters = read.range()?;

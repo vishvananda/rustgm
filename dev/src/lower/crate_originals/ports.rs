@@ -38,9 +38,10 @@ pub(super) fn emit(
     reference: BodyRef,
     declaration: DeclarationRef,
 ) -> Result<g::Original, &'static str> {
-    validate(body)?;
+    validate(body, export.rows.calls.is_some())?;
     let mut sites = Sites::new(export, body)?;
     let mut raw = g::Original {
+        arguments: Vec::new(),
         body: reference,
         declaration,
         result: export.ty(body.result)?,
@@ -89,18 +90,18 @@ pub(super) fn emit(
             });
         }
     }
-    for value in &body.values {
+    let evaluation = evaluation_sites(export, body)?;
+    for (index, value) in body.values.iter().enumerate() {
         export.reserve(4 * size_of::<g::Value>())?;
-        let kind = match value.kind {
-            Rvalue::Unit => g::ValueKind::Unit,
-            Rvalue::Read(Place::Local(local)) => g::ValueKind::Read(local.0),
-            Rvalue::Constrain(value) => g::ValueKind::Constrain(value.0),
-            _ => return Err("generic value operation is outside row version zero"),
-        };
+        let kind = value_kind(export, body, value, index, &evaluation, &mut sites)?;
         raw.values.push(g::Value {
             ty: export.ty(value.ty)?,
             kind,
         });
+    }
+    if export.rows.calls.is_some() {
+        export.reserve(body.arguments.len().saturating_mul(size_of::<u32>()))?;
+        raw.arguments = body.arguments.iter().map(|v| v.0).collect();
     }
     for statement in &body.statements {
         export.reserve(4 * size_of::<g::Statement>())?;
@@ -151,10 +152,10 @@ fn action(action: Action) -> Result<g::Action, &'static str> {
     })
 }
 
-fn validate(body: &Body) -> Result<(), &'static str> {
+fn validate(body: &Body, calls: bool) -> Result<(), &'static str> {
     if !body.projections.is_empty()
         || !body.scalars.is_empty()
-        || !body.arguments.is_empty()
+        || (!calls && !body.arguments.is_empty())
         || !body.guards.is_empty()
         || !body.guard_places.is_empty()
         || body.closure_calls.is_some()
@@ -171,4 +172,96 @@ fn validate(body: &Body) -> Result<(), &'static str> {
         );
     }
     Ok(())
+}
+
+fn evaluation_sites(
+    export: &mut Export<'_>,
+    body: &Body,
+) -> Result<Vec<Option<BodySite>>, &'static str> {
+    if export.rows.calls.is_none() {
+        return Ok(Vec::new());
+    }
+    export.reserve(
+        body.values
+            .len()
+            .saturating_mul(size_of::<Option<BodySite>>()),
+    )?;
+    let mut sites = vec![None; body.values.len()];
+    for statement in &body.statements {
+        export.charge(1)?;
+        if let Action::Evaluate(value) = statement.action {
+            let slot = sites
+                .get_mut(value.0 as usize)
+                .ok_or("call evaluation has a foreign value")?;
+            if slot.replace(statement.source).is_some() {
+                return Err("call value has duplicate evaluation ownership");
+            }
+        }
+    }
+    Ok(sites)
+}
+fn value_kind(
+    export: &mut Export<'_>,
+    body: &Body,
+    value: &crate::body::ir::Value,
+    index: usize,
+    evaluation: &[Option<BodySite>],
+    sites: &mut Sites,
+) -> Result<g::ValueKind, &'static str> {
+    Ok(match value.kind {
+        Rvalue::Unit => g::ValueKind::Unit,
+        Rvalue::Read(Place::Local(local)) => g::ValueKind::Read(local.0),
+        Rvalue::Constrain(value) => g::ValueKind::Constrain(value.0),
+        Rvalue::Function(_) => g::ValueKind::Function(
+            *export
+                .applications
+                .get(&value.ty)
+                .ok_or("function value has no reserved complete application")?,
+        ),
+        Rvalue::Call {
+            signature,
+            callee,
+            arguments,
+        } => {
+            let item = body
+                .values
+                .get(callee.0 as usize)
+                .ok_or("call callee is unknown")?
+                .ty;
+            let application = *export
+                .applications
+                .get(&item)
+                .ok_or("call requires a reserved direct function application")?;
+            let Some(crate::types::Kind::FunctionItem {
+                signature: actual, ..
+            }) = export.facts.types.kind(item)
+            else {
+                return Err("call target is not a function item");
+            };
+            if signature != actual {
+                return Err("call changed its actual selected signature");
+            }
+            let signature = export
+                .rows
+                .calls
+                .as_ref()
+                .ok_or("call has no application table")?
+                .signature_type(application)?;
+            let site = evaluation
+                .get(index)
+                .copied()
+                .flatten()
+                .ok_or("call has no exact evaluation source site")?;
+            g::ValueKind::Call {
+                signature,
+                callee: callee.0,
+                arguments: g::Range {
+                    start: arguments.start,
+                    end: arguments.end,
+                },
+                site: sites.get(export, site)?,
+            }
+        }
+        _ => return Err("generic value operation is outside its declared row version"),
+    })
 }

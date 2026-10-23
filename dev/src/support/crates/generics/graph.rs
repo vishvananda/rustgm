@@ -16,6 +16,35 @@ impl Range {
     }
 }
 impl Graph {
+    pub(super) fn owner(&self, ty: TypeRef) -> Result<Option<DeclarationRef>, &'static str> {
+        self.owners
+            .get(ty.0 as usize)
+            .copied()
+            .ok_or("generic type root is unknown")
+    }
+    pub(super) fn applications(
+        &mut self,
+        rows: &Rows,
+        owners: &[Option<DeclarationRef>],
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let first = self.owners.len();
+        if rows.types.len() != first.saturating_add(owners.len().saturating_mul(2)) {
+            return Err("generic application recipe table is incomplete");
+        }
+        for (index, &owner) in owners.iter().enumerate() {
+            work.charge(2)?;
+            let reference =
+                super::ApplicationRef(u32::try_from(index).map_err(|_| "too many applications")?);
+            if rows.types[first + 2 * index] != Type::FunctionItem(reference)
+                || rows.types[first + 2 * index + 1] != Type::ApplicationSignature(reference)
+            {
+                return Err("generic application type recipes are reordered or foreign");
+            }
+            self.owners.extend([owner, owner]);
+        }
+        Ok(())
+    }
     pub(super) fn root(
         &self,
         owner: DeclarationRef,
@@ -54,6 +83,13 @@ enum Key<'a> {
     },
 }
 pub(super) fn validate(rows: &Rows, work: &mut Work) -> Result<Graph, &'static str> {
+    let header_count = rows
+        .calls
+        .as_ref()
+        .map_or(rows.types.len(), |c| c.header_types as usize);
+    if header_count > rows.types.len() {
+        return Err("generic header type prefix is outside its graph");
+    }
     let mut keys = HashSet::with_capacity_and_hasher(
         rows.types.len(),
         crate::support::hash::BuildFxHasher::default(),
@@ -61,7 +97,7 @@ pub(super) fn validate(rows: &Rows, work: &mut Work) -> Result<Graph, &'static s
     let mut owners: Vec<Option<DeclarationRef>> = Vec::with_capacity(rows.types.len());
     let mut depths: Vec<usize> = Vec::with_capacity(rows.types.len());
     let mut parameters = vec![false; rows.declarations.len()];
-    for (index, node) in rows.types.iter().enumerate() {
+    for (index, node) in rows.types.iter().take(header_count).enumerate() {
         work.charge(1)?;
         let (owner, depth, key) = match *node {
             Type::Scalar(scalar) => (None, 0, Key::Scalar(scalar as u8)),
@@ -124,6 +160,9 @@ pub(super) fn validate(rows: &Rows, work: &mut Work) -> Result<Graph, &'static s
                         variadic: signature.variadic,
                     },
                 )
+            }
+            Type::FunctionItem(_) | Type::ApplicationSignature(_) => {
+                return Err("generic application type appears in the header prefix");
             }
         };
         if depth > 64 {

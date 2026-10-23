@@ -394,3 +394,6 @@ fn unused_formal_sizedness_is_paid_per_instance_and_relaxation_is_preserved() ->
     }
     Ok(())
 }
+
+#[path = "application_debts.rs"]
+mod calls;

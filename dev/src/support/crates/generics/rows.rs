@@ -11,6 +11,8 @@ use crate::support::{
 pub struct TypeRef(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct BinderRef(pub u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ApplicationRef(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Range {
     pub start: u32,
@@ -73,6 +75,20 @@ pub enum Type {
     Scalar(Scalar),
     Parameter(DeclarationRef),
     Function(Signature),
+    FunctionItem(ApplicationRef),
+    ApplicationSignature(ApplicationRef),
+}
+/// Complete static applications are data, not selected-call permissions.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Application {
+    pub target: DeclarationRef,
+    pub arguments: Range,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Calls {
+    pub header_types: u32,
+    pub applications: Vec<Application>,
+    pub arguments: Vec<TypeRef>,
 }
 /// A source-defined Copy contract never becomes a spelling or legacy builtin bit.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -132,6 +148,13 @@ pub enum ValueKind {
     Unit,
     Read(u32),
     Constrain(u32),
+    Function(ApplicationRef),
+    Call {
+        signature: TypeRef,
+        callee: u32,
+        arguments: Range,
+        site: u32,
+    },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Value {
@@ -232,6 +255,7 @@ pub struct Original {
     pub scopes: Vec<Scope>,
     pub exits: Vec<Exit>,
     pub temporaries: Vec<Temporary>,
+    pub arguments: Vec<u32>,
 }
 /// Complete raw input of the first operation family. Unsupported source records
 /// must reject before construction; no omitted projection/guard/temporary table
@@ -248,4 +272,5 @@ pub struct Rows {
     pub clauses: Vec<Clause>,
     pub functions: Vec<Function>,
     pub originals: Vec<Original>,
+    pub calls: Option<Box<Calls>>,
 }

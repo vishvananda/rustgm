@@ -1,4 +1,5 @@
 //! Canonical imported headers retain actual catalog ownership and declared inputs.
+mod applications;
 mod ingest;
 mod roots;
 use super::{Declarations, Error};
@@ -34,6 +35,7 @@ pub(super) struct Header {
 pub(super) struct Headers {
     entries: HashMap<DefId, Header>,
     graphs: HashMap<CrateIdentity, Vec<TypeId>>,
+    applications: HashMap<CrateIdentity, Vec<applications::Application>>,
     bytes: usize,
     work: usize,
     base: usize,
@@ -147,6 +149,21 @@ impl super::Linkage {
             environment: Some(&header.environment),
         }))
     }
+    pub(crate) fn original_application(
+        &self,
+        owner: &CrateIdentity,
+        application: crate::support::crates::generics::ApplicationRef,
+    ) -> Result<&applications::Application, &'static str> {
+        let row = self
+            .originals
+            .as_deref()
+            .and_then(|h| h.applications.get(owner))
+            .and_then(|v| v.get(application.0 as usize))
+            .ok_or("missing canonical imported application")?;
+        self.original_header(row.target)?
+            .ok_or("application target header disappeared")?;
+        Ok(row)
+    }
     pub(crate) fn original_inputs(
         &self,
         definition: DefId,
@@ -202,25 +219,7 @@ pub(super) fn import(imported: &Imported, facts: &mut Declarations) -> Result<()
         };
         let rows = payload.rows();
         headers.prepare(rows)?;
-        let types = roots::import(imported, facts, artifact.identity(), rows, &mut headers)?;
-        for body in &rows.originals {
-            for local in &body.locals {
-                headers.charge(1)?;
-                let Some(reference) = local.definition else {
-                    continue;
-                };
-                let definition = imported
-                    .generic_definition(artifact.identity(), reference)
-                    .map_err(error)?;
-                let slot = facts
-                    .definitions
-                    .get_mut(definition.0 as usize)
-                    .ok_or_else(|| error("imported local has no real declaration slot"))?;
-                if slot.replace(types.nodes[local.ty.0 as usize]).is_some() {
-                    return Err(error("imported local declaration was already typed"));
-                }
-            }
-        }
+        let mut types = roots::import(imported, facts, artifact.identity(), rows, &mut headers)?;
         for function in &rows.functions {
             headers.charge(1)?;
             let context = ingest::Context {
@@ -235,6 +234,31 @@ pub(super) fn import(imported: &Imported, facts: &mut Declarations) -> Result<()
                 return Err(error("duplicate canonical imported header"));
             }
         }
+        if rows.calls.is_some() {
+            headers.reserve(crate::support::retained::new_map::<
+                CrateIdentity,
+                Vec<applications::Application>,
+            >(1))?;
+            let calls = applications::import(
+                imported,
+                facts,
+                artifact.identity(),
+                payload,
+                &mut types,
+                &mut headers,
+            )?;
+            headers
+                .applications
+                .insert(artifact.identity().clone(), calls);
+        }
+        roots::locals(
+            imported,
+            facts,
+            artifact.identity(),
+            rows,
+            &types,
+            &mut headers,
+        )?;
         headers
             .observed
             .add(crate::support::retained::vector(&types.nodes));
@@ -245,6 +269,7 @@ pub(super) fn import(imported: &Imported, facts: &mut Declarations) -> Result<()
     let linkage = facts.crates.get_or_insert_default();
     headers.observed.map(&headers.entries);
     headers.observed.map(&headers.graphs);
+    headers.observed.map(&headers.applications);
     headers.observed.add(size_of::<Headers>());
     if headers.observed.bytes > headers.bytes {
         return Err(error(

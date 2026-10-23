@@ -84,6 +84,15 @@ pub(super) fn build(
         predicates.push((root, declared_goal(facts, *clause)?));
     }
     relations(facts, payload, function, body, &mut obligations, work)?;
+    super::invocations::append(
+        facts,
+        payload,
+        function,
+        body,
+        &mut obligations,
+        &mut predicates,
+        work,
+    )?;
     Ok(Contract {
         key: body.key(),
         source: body.source,

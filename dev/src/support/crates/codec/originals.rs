@@ -1,5 +1,7 @@
-//! Envelope 9, row version 0: Rust 2024, legacy roles, no source proof handles.
+//! Envelope 9 versions 0/1: explicit Rust 2024 legacy-role operation data.
+mod applications;
 mod bodies;
+mod opcodes;
 mod tables;
 use super::{Interface, Reader, Writer};
 use crate::support::{
@@ -14,25 +16,35 @@ pub(super) fn encode(out: &mut Writer, payload: &g::Payload) -> Result<(), &'sta
     if payload.rows().edition != Edition::Rust2024 {
         return Err("generic row version zero requires defining edition2024");
     }
-    // These IDs belong to envelope9/version0, not to the old language header.
-    out.bytes(&[0, 0, 0])?; // Row version, Rust2024, legacy language-role policy.
+    // These descriptor IDs belong to envelope9, not to the old language header.
+    let version = u8::from(payload.rows().calls.is_some());
+    out.bytes(&[version, 0, 0])?; // Row version, Rust2024, legacy language-role policy.
     tables::encode(out, payload.rows())?;
+    if let Some(calls) = &payload.rows().calls {
+        applications::encode(out, calls)?;
+    }
     out.u32(payload.rows().originals.len())?;
     for original in &payload.rows().originals {
-        bodies::encode(out, original)?;
+        bodies::encode(out, original, version)?;
     }
     Ok(())
 }
 pub(super) fn decode(input: &mut Reader<'_>, base: &Interface) -> Result<g::Payload, &'static str> {
-    if input.bytes(3)? != [0, 0, 0] {
+    let descriptor = input.bytes(3)?;
+    let version = descriptor[0];
+    if version > 1 || descriptor[1..] != [0, 0] {
         return Err("unsupported generic row version, defining edition or source-role policy");
     }
     let mut read = Input {
         reader: input,
         bytes: size_of::<g::Payload>(),
         base: base.base_retained_bytes(),
+        version,
     };
     let mut rows = tables::decode(&mut read, base.identity())?;
+    if version == 1 {
+        rows.calls = Some(Box::new(applications::decode(&mut read)?));
+    }
     let count = read.count::<g::Original>(crates::MAX_FUNCTIONS, 48)?;
     rows.originals = Vec::with_capacity(count);
     for _ in 0..count {
@@ -51,6 +63,7 @@ struct Input<'a, 'b> {
     reader: &'b mut Reader<'a>,
     bytes: usize,
     base: usize,
+    version: u8,
 }
 impl Input<'_, '_> {
     fn reserve(&mut self, bytes: usize) -> Result<(), &'static str> {

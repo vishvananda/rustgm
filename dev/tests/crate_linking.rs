@@ -4,6 +4,8 @@ mod artifacts;
 mod borrowed;
 #[path = "crate_linking/convention_transport.rs"]
 mod convention_transport;
+#[path = "crate_linking/direct_calls.rs"]
+mod direct_calls;
 #[path = "crate_linking/exports.rs"]
 mod exports;
 #[path = "crate_linking/imported_records.rs"]

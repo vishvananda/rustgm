@@ -22,6 +22,9 @@ pub(super) fn declarations(
             .saturating_add(rows.roots.len())
             .saturating_add(rows.parameters.len())
             .saturating_add(rows.clauses.len())
+            .saturating_add(rows.calls.as_ref().map_or(0, |c| {
+                c.applications.len().saturating_add(c.arguments.len())
+            }))
             > crates::MAX_COMPONENTS
     {
         return Err("generic declaration tables exceed profile budget");

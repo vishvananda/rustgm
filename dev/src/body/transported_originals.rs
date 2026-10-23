@@ -1,5 +1,6 @@
 //! Immutable imported originals share one owner; no row is a Checked or Permit.
 mod interface_goals;
+mod invocations;
 mod operations;
 use crate::{
     body::{regions::Contract, templates::Template},
@@ -72,6 +73,38 @@ impl ImportedOriginals {
             let header = &rows.functions[body.body.0 as usize];
             let formals = (header.parameters.end - header.parameters.start) as usize;
             let clauses = (header.clauses.end - header.clauses.start) as usize;
+            if let Some(calls) = &rows.calls {
+                for value in &body.values {
+                    self.charge(1)?;
+                    let crates::generics::ValueKind::Call {
+                        callee, arguments, ..
+                    } = value.kind
+                    else {
+                        continue;
+                    };
+                    let crates::generics::Type::FunctionItem(app) =
+                        rows.types[body.values[callee as usize].ty.0 as usize]
+                    else {
+                        return Err("call allocation lost its exact application");
+                    };
+                    let app = &calls.applications[app.0 as usize];
+                    let target = &rows.functions[app.target.0 as usize];
+                    let formals = (app.arguments.end - app.arguments.start) as usize;
+                    let bounds = (target.clauses.end - target.clauses.start) as usize;
+                    let inputs = (arguments.end - arguments.start) as usize;
+                    growth = growth
+                        .saturating_add(
+                            4 * (formals + inputs + 1)
+                                .saturating_mul(size_of::<crate::body::regions::Obligation>()),
+                        )
+                        .saturating_add(
+                            4 * (formals + bounds).saturating_mul(size_of::<(
+                                crate::body::ir::ProofSite,
+                                crate::types::parameters::predicates::Predicate,
+                            )>()),
+                        );
+                }
+            }
             growth = growth
                 .saturating_add(4 * operations::allocation(body))
                 .saturating_add(
@@ -250,6 +283,10 @@ fn row(
         catalog: context.catalog,
         owner: context.owner,
         types,
+        linkage: facts
+            .crates
+            .as_ref()
+            .ok_or_else(|| report.body_error(source, "missing imported linkage"))?,
     };
     let mut body = operations::build(
         &operations,

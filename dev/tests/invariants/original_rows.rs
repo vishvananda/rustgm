@@ -85,6 +85,7 @@ fn fixture(width: u32) -> Result<(CrateIdentity, Rows)> {
                 constant: true,
             }],
             originals: vec![original(binding)],
+            calls: None,
         },
     ))
 }
@@ -175,6 +176,7 @@ fn generic_validation_work_tracks_distinct_slots_and_retains_failure_work() -> R
 
 fn original(binding: DeclarationRef) -> Original {
     Original {
+        arguments: Vec::new(),
         body: BodyRef(0),
         declaration: DeclarationRef(0),
         result: TypeRef(0),
@@ -211,4 +213,90 @@ fn original(binding: DeclarationRef) -> Original {
         exits: vec![],
         temporaries: vec![],
     }
+}
+
+fn recursive_call() -> Result<(CrateIdentity, Rows)> {
+    let (owner, mut rows) = fixture(1)?;
+    rows.calls = Some(Box::new(Calls {
+        header_types: 3,
+        applications: vec![Application {
+            target: DeclarationRef(0),
+            arguments: Range { start: 0, end: 1 },
+        }],
+        arguments: vec![TypeRef(0)],
+    }));
+    rows.types.extend([
+        Type::FunctionItem(ApplicationRef(0)),
+        Type::ApplicationSignature(ApplicationRef(0)),
+    ]);
+    let body = &mut rows.originals[0];
+    body.arguments.push(0);
+    body.values.extend([
+        Value {
+            ty: TypeRef(3),
+            kind: ValueKind::Function(ApplicationRef(0)),
+        },
+        Value {
+            ty: TypeRef(0),
+            kind: ValueKind::Call {
+                signature: TypeRef(4),
+                callee: 1,
+                arguments: Range { start: 0, end: 1 },
+                site: 0,
+            },
+        },
+    ]);
+    body.blocks[0].terminator = Terminator::Return(2);
+    Ok((owner, rows))
+}
+#[test]
+fn recursive_callable_edges_roundtrip_without_lexical_owner_cycles() -> Result {
+    let (owner, rows) = recursive_call()?;
+    let payload = Payload::new(&owner, rows, &mut Work::default())?;
+    let interface = crate::support::crates::Interface::new(owner, vec![], vec![])?
+        .with_generic_payload(payload)?;
+    let encoded = crate::support::crates::encode(&interface)?;
+    assert_eq!(crate::support::crates::decode(&encoded)?, interface);
+    for end in 0..encoded.len() {
+        assert!(crate::support::crates::decode(&encoded[..end]).is_err());
+    }
+    Ok(())
+}
+#[test]
+fn malformed_applications_lists_versions_and_budgets_never_publish() -> Result {
+    let (owner, rows) = recursive_call()?;
+    for mutation in 0..9 {
+        let mut rows = rows.clone();
+        match mutation {
+            0 => rows.calls = None,
+            1 => rows.calls.as_mut().ok_or("calls")?.arguments.clear(),
+            2 => rows.calls.as_mut().ok_or("calls")?.arguments[0] = TypeRef(3),
+            3 => rows.calls.as_mut().ok_or("calls")?.applications[0].target = DeclarationRef(1),
+            4 => rows.types.swap(3, 4),
+            5 => rows.originals[0].arguments[0] = 2,
+            6 => {
+                rows.originals[0].values[2].kind = ValueKind::Call {
+                    signature: TypeRef(3),
+                    callee: 1,
+                    arguments: Range { start: 0, end: 1 },
+                    site: 0,
+                }
+            }
+            7 => rows.calls.as_mut().ok_or("calls")?.applications.clear(),
+            _ => rows.originals[0].arguments.push(0),
+        }
+        let mut work = Work::default();
+        assert!(
+            Payload::new(&owner, rows, &mut work).is_err(),
+            "mutation {mutation}"
+        );
+        assert!(work.steps > 0);
+    }
+    let mut work = Work {
+        steps: crate::support::crates::MAX_COMPONENTS,
+        ..Work::default()
+    };
+    assert!(Payload::new(&owner, rows, &mut work).is_err());
+    assert!(work.steps > crate::support::crates::MAX_COMPONENTS);
+    Ok(())
 }

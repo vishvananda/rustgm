@@ -9,6 +9,11 @@ formal-bound cases are in `pa29/tests/generic-formal-outcomes.json`: unused
 default Sized rejects `[u8]`, while the paired `?Sized` declaration accepts it. The complete 18-scenario contract in
 `pa29/tests/generic-contract-outcomes.json` remains required.
 
+The subsequent safe direct-call family uses a distinct row version, described
+with its current implementation and evidence in
+[direct-call transport](pa29-direct-call-transport.md). It does not reinterpret
+the frozen version-zero bytes below.
+
 ## Frozen envelope 9, row version 0
 
 Envelope 9 wraps the existing canonical payload. Its descriptor is exactly

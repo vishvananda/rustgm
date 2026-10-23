@@ -1,0 +1,245 @@
+{
+  "status": "Declared before v1 implementation; full original 18-scenario contract remains required.",
+  "profile": "Rust 1.98.0 edition2024 x86_64-unknown-linux-gnu; panic abort; overflow checks enabled",
+  "cases": [
+    {
+      "name": "calls-provider",
+      "path": "tests/spec/generic-contracts/call-library.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "8bf17dff5c4ce5bc1c0c3f36a85f4d3c2392e097730e1d1a82f4af9a1c1bfe28"
+    },
+    {
+      "name": "calls-runtime",
+      "path": "tests/spec/generic-contracts/pass-helper-unused.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "calls-provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "native": true,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "48a2957a80ed4108b6f2bc277efc4b0742319b27dcf1aa2fa6f6926c528ad446"
+    },
+    {
+      "name": "calls-const",
+      "path": "tests/spec/generic-contracts/call-const.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "calls-provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "native": true,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "cda38442f72023909d0f71838cec4f0985c6c44396bd41bca203734c6e1f39a3"
+    },
+    {
+      "name": "calls-copy-debt",
+      "path": "tests/spec/generic-contracts/call-reject-copy.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "calls-provider"
+      },
+      "rustc": 1,
+      "code": "E0277",
+      "native": false,
+      "frontend_expected_after_implementation": 1,
+      "source_sha256": "a4b35e04f29ac89e733e394f78eea4f950e503f63691344730c8cb3a6729f981"
+    },
+    {
+      "name": "calls-unused-debt",
+      "path": "tests/spec/generic-contracts/call-reject-unused.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "calls-provider"
+      },
+      "rustc": 1,
+      "code": "E0277",
+      "native": false,
+      "frontend_expected_after_implementation": 1,
+      "source_sha256": "84e82f1b11be14e61646c244b04889a91f4280e2ecfc211526210fe1ce90f762"
+    },
+    {
+      "name": "calls-private",
+      "path": "tests/spec/generic-contracts/call-reject-private.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "calls-provider"
+      },
+      "rustc": 1,
+      "code": "E0603",
+      "native": false,
+      "frontend_expected_after_implementation": 1,
+      "source_sha256": "1748bf35d61632918276967f6c0729de8bfb84ffa98b1276823b09e284772bc5"
+    },
+    {
+      "name": "runtime-provider",
+      "path": "tests/spec/generic-contracts/call-runtime-library.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "3954f337985f6cf77347e945a9b7e58a29bda95e0a169acb7be92e8bde91eaac"
+    },
+    {
+      "name": "runtime-client",
+      "path": "tests/spec/generic-contracts/pass-helper-unused.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "runtime-provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "native": true,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "48a2957a80ed4108b6f2bc277efc4b0742319b27dcf1aa2fa6f6926c528ad446"
+    },
+    {
+      "name": "nonconst-call",
+      "path": "tests/spec/generic-contracts/call-const.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "runtime-provider"
+      },
+      "rustc": 1,
+      "code": "E0015",
+      "native": false,
+      "frontend_expected_after_implementation": 1,
+      "source_sha256": "cda38442f72023909d0f71838cec4f0985c6c44396bd41bca203734c6e1f39a3"
+    },
+    {
+      "name": "recursive-provider",
+      "path": "tests/spec/generic-contracts/call-recursive-library.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "e09b6bfb576f571d2be30e6e77b397b960da85f95c3045324710e263f9126e7d"
+    },
+    {
+      "name": "recursive-unused",
+      "path": "tests/spec/generic-contracts/call-unused.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "recursive-provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "native": true,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "8c72b9bc757c23481081603700cbf2095db1f8807450a1f0ba315ad967859ac8"
+    },
+    {
+      "name": "recursive-demand",
+      "path": "tests/spec/generic-contracts/call-reject-recursion.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "recursive-provider"
+      },
+      "rustc": 1,
+      "code": "E0080",
+      "native": false,
+      "frontend_expected_after_implementation": 1,
+      "source_sha256": "6b647aa898c25a0c2db8cf7d5e5e3b029e9f416a5f128345e2db82cc4546f90c"
+    },
+    {
+      "name": "invalid-unused-source",
+      "path": "tests/spec/generic-contracts/call-reject-source.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 1,
+      "code": "E0277",
+      "native": false,
+      "frontend_expected_after_implementation": 1,
+      "source_sha256": "edbb78a7a57ca2bbad220f5cfd8f75b1c85cc0bc856ab095a96095734d20721f"
+    },
+    {
+      "name": "unsafe-required-followup",
+      "path": "tests/spec/generic-contracts/call-unsafe-library.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 1,
+      "source_sha256": "cb940fa4be8e258eeaadc505258c4589f2b78c9cbf7d3fce16c133d5cb3c86b5",
+      "required_boundary": "Rust-positive unsafe direct call; v1 admits safe targets only. Retained required later family."
+    },
+    {
+      "name": "call-scaling-calls-8",
+      "path": "tests/spec/generic-contracts/call-scaling-calls-8.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "3a30e8c41ffb79ce8f3de1e9a112c731c12adca7162dcc638e2fcfb84fdd221a"
+    },
+    {
+      "name": "call-scaling-calls-32",
+      "path": "tests/spec/generic-contracts/call-scaling-calls-32.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "b5300d117beb86cbc9507c91d4a080c64e60d220c49d5fdf5092e86139ccdb73"
+    },
+    {
+      "name": "call-scaling-calls-128",
+      "path": "tests/spec/generic-contracts/call-scaling-calls-128.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "a5a5fcb96f5e9137a607e002bb8903adc99a1f64cf41041f2c3ce05fac720c9e"
+    },
+    {
+      "name": "call-scaling-helpers-8",
+      "path": "tests/spec/generic-contracts/call-scaling-helpers-8.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "4c4982f62dbbe3db6557429f734d4b81043cba84169bcc61dee990e11e2bf2ce"
+    },
+    {
+      "name": "call-scaling-helpers-32",
+      "path": "tests/spec/generic-contracts/call-scaling-helpers-32.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "2cd6366269803a6c3ad395abbdd754f3ae01afe075b4ff63063dcf55fbdf6291"
+    },
+    {
+      "name": "call-scaling-helpers-128",
+      "path": "tests/spec/generic-contracts/call-scaling-helpers-128.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "d79526124c1d061e1acb120713a6545e22675764bcb0ed04c62d0087c4edd36b"
+    }
+  ]
+}

@@ -14,21 +14,27 @@ use crate::{
     support::crates::{CrateIdentity, generics as g},
 };
 pub(super) fn allocation(raw: &g::Original) -> usize {
-    raw.locals
+    raw.arguments
         .len()
-        .saturating_mul(size_of::<Local>())
-        .saturating_add(raw.values.len().saturating_mul(size_of::<Value>()))
-        .saturating_add(raw.statements.len().saturating_mul(size_of::<Statement>()))
-        .saturating_add(raw.blocks.len().saturating_mul(size_of::<Block>()))
-        .saturating_add(raw.scopes.len().saturating_mul(size_of::<storage::Scope>()))
-        .saturating_add(raw.exits.len().saturating_mul(size_of::<storage::Exit>()))
-        .saturating_add(raw.temporaries.len().saturating_mul(size_of::<Temporary>()))
+        .saturating_mul(size_of::<ValueId>())
+        .saturating_add(
+            raw.locals
+                .len()
+                .saturating_mul(size_of::<Local>())
+                .saturating_add(raw.values.len().saturating_mul(size_of::<Value>()))
+                .saturating_add(raw.statements.len().saturating_mul(size_of::<Statement>()))
+                .saturating_add(raw.blocks.len().saturating_mul(size_of::<Block>()))
+                .saturating_add(raw.scopes.len().saturating_mul(size_of::<storage::Scope>()))
+                .saturating_add(raw.exits.len().saturating_mul(size_of::<storage::Exit>()))
+                .saturating_add(raw.temporaries.len().saturating_mul(size_of::<Temporary>())),
+        )
 }
 pub(super) struct Context<'a> {
     pub imported: &'a Imported,
     pub catalog: &'a Catalog,
     pub owner: &'a CrateIdentity,
     pub types: &'a [TypeId],
+    pub linkage: &'a crate::sema::crates::Linkage,
 }
 pub(super) fn build(
     context: &Context<'_>,
@@ -62,7 +68,8 @@ pub(super) fn build(
             .saturating_add(raw.blocks.len())
             .saturating_add(raw.scopes.len())
             .saturating_add(raw.exits.len())
-            .saturating_add(raw.temporaries.len()),
+            .saturating_add(raw.temporaries.len())
+            .saturating_add(raw.arguments.len()),
     )?;
     ports(context, raw, &mut body, &site)?;
     control(raw, &mut body, &site)?;
@@ -100,15 +107,37 @@ fn ports(
     body.values = raw
         .values
         .iter()
-        .map(|value| Value {
-            ty: context.types[value.ty.0 as usize],
-            kind: match value.kind {
-                g::ValueKind::Unit => Rvalue::Unit,
-                g::ValueKind::Read(local) => Rvalue::Read(Place::Local(LocalId(local))),
-                g::ValueKind::Constrain(value) => Rvalue::Constrain(ValueId(value)),
-            },
+        .map(|value| {
+            Ok(Value {
+                ty: context.types[value.ty.0 as usize],
+                kind: match value.kind {
+                    g::ValueKind::Unit => Rvalue::Unit,
+                    g::ValueKind::Read(local) => Rvalue::Read(Place::Local(LocalId(local))),
+                    g::ValueKind::Constrain(value) => Rvalue::Constrain(ValueId(value)),
+                    g::ValueKind::Function(application) => Rvalue::Function(
+                        context
+                            .linkage
+                            .original_application(context.owner, application)?
+                            .target,
+                    ),
+                    g::ValueKind::Call {
+                        signature,
+                        callee,
+                        arguments,
+                        ..
+                    } => Rvalue::Call {
+                        signature: context.types[signature.0 as usize],
+                        callee: ValueId(callee),
+                        arguments: crate::body::ir::ValueList {
+                            start: arguments.start,
+                            end: arguments.end,
+                        },
+                    },
+                },
+            })
         })
-        .collect();
+        .collect::<Result<_, &'static str>>()?;
+    body.arguments = raw.arguments.iter().copied().map(ValueId).collect();
     Ok(())
 }
 fn control(

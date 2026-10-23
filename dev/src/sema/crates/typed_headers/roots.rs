@@ -51,6 +51,11 @@ impl Mapped {
                     owner
                 }
                 g::Type::Function(signature) => rows.binders[signature.binder.0 as usize].owner,
+                _ => {
+                    return Err(error(
+                        "application type cannot be a declaration clause root",
+                    ));
+                }
             };
             let graph = &self.graphs[owner.0 as usize];
             if graph.visit.replace(round) != round {
@@ -78,6 +83,7 @@ impl Mapped {
                 rows.binders[signature.binder.0 as usize].owner,
                 (signature.parameters.end - signature.parameters.start) as usize + 1,
             ),
+            _ => return Err(error("application type escaped its header prefix")),
         };
         let graph = &mut self.graphs[owner.0 as usize];
         graph.nodes = graph.nodes.saturating_add(1);
@@ -101,7 +107,11 @@ pub(super) fn import(
         scalars: 0,
         round: Cell::new(0),
     };
-    for node in &rows.types {
+    let count = rows
+        .calls
+        .as_ref()
+        .map_or(rows.types.len(), |calls| calls.header_types as usize);
+    for node in &rows.types[..count] {
         headers.charge(1)?;
         mapped.record(rows, *node)?;
         facts.crates.get_or_insert_default().import_work.type_nodes += 1;
@@ -135,6 +145,7 @@ pub(super) fn import(
             g::Type::Function(signature) => {
                 callable(facts, rows, &mapped.nodes, signature, headers)?
             }
+            _ => return Err(error("application type escaped its header prefix")),
         };
         if let g::Type::Parameter(reference) = *node {
             mapped.parameters[reference.0 as usize] = Some(ty);
@@ -189,4 +200,33 @@ fn callable(
             convention: crate::types::callable::Convention::RUST,
         })
         .map_err(error)
+}
+
+pub(super) fn locals(
+    imported: &Imported,
+    facts: &mut Declarations,
+    owner: &CrateIdentity,
+    rows: &g::Rows,
+    types: &Mapped,
+    headers: &mut Headers,
+) -> Result<(), Error> {
+    for body in &rows.originals {
+        for local in &body.locals {
+            headers.charge(1)?;
+            let Some(reference) = local.definition else {
+                continue;
+            };
+            let definition = imported
+                .generic_definition(owner, reference)
+                .map_err(error)?;
+            let slot = facts
+                .definitions
+                .get_mut(definition.0 as usize)
+                .ok_or_else(|| error("imported local has no real declaration slot"))?;
+            if slot.replace(types.nodes[local.ty.0 as usize]).is_some() {
+                return Err(error("imported local declaration was already typed"));
+            }
+        }
+    }
+    Ok(())
 }

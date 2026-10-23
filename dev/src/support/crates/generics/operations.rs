@@ -1,7 +1,7 @@
 //! Raw operation validation is independent of later region/ownership/loan proof.
 use super::{
     Action, Declaration, End, Function, Lifetime, LocalKind, Location, Original, Rows, ScopeKind,
-    Terminator, Type, TypeRef, ValueKind, Work, graph::Graph,
+    Terminator, TypeRef, ValueKind, Work, graph::Graph,
 };
 use crate::support::crates::MAX_COMPONENTS;
 
@@ -38,6 +38,7 @@ pub(super) fn relations(original: &Original) -> impl Iterator<Item = Relation> +
 }
 pub(super) fn validate(rows: &Rows, graph: &Graph, work: &mut Work) -> Result<(), &'static str> {
     let mut definitions = vec![false; rows.declarations.len()];
+    let mut applications = vec![false; rows.calls.as_ref().map_or(0, |c| c.applications.len())];
     let mut site_count = 0_usize;
     for (index, original) in rows.originals.iter().enumerate() {
         work.charge(1)?;
@@ -55,8 +56,11 @@ pub(super) fn validate(rows: &Rows, graph: &Graph, work: &mut Work) -> Result<()
         scopes(original, work)?;
         locals(rows, graph, header, original, &mut definitions, work)?;
         bindings(rows, original, work)?;
-        operations(rows, graph, header, original, work)?;
+        operations(rows, graph, header, original, &mut applications, work)?;
         storage(original, work)?;
+    }
+    if applications.contains(&false) {
+        return Err("generic application has no actual function-item operand");
     }
     for (index, declaration) in rows.declarations.iter().enumerate() {
         work.charge(1)?;
@@ -153,30 +157,10 @@ fn operations(
     graph: &Graph,
     header: &Function,
     original: &Original,
+    applications: &mut [bool],
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    for (index, value) in original.values.iter().enumerate() {
-        work.operations = work.operations.saturating_add(1);
-        work.charge(1)?;
-        graph.root(header.declaration, value.ty, work)?;
-        match value.kind {
-            ValueKind::Unit
-                if rows.types.get(value.ty.0 as usize)
-                    != Some(&Type::Scalar(crate::support::crates::Scalar::Unit)) =>
-            {
-                return Err("generic unit operation has a different actual type");
-            }
-            ValueKind::Read(local)
-                if original.locals.get(local as usize).map(|local| local.ty) != Some(value.ty) =>
-            {
-                return Err("generic read type differs from its actual local");
-            }
-            ValueKind::Constrain(input) if input as usize >= index => {
-                return Err("generic value graph has a forward or cyclic edge");
-            }
-            _ => {}
-        }
-    }
+    super::operands::validate(rows, graph, header, original, applications, work)?;
     for statement in &original.statements {
         work.operations = work.operations.saturating_add(1);
         work.charge(1)?;
@@ -306,7 +290,7 @@ fn bindings(rows: &Rows, original: &Original, work: &mut Work) -> Result<(), &'s
             ValueKind::Constrain(input) => *origins
                 .get(input as usize)
                 .ok_or("parameter binding has a cyclic value input")?,
-            ValueKind::Unit => None,
+            ValueKind::Unit | ValueKind::Function(_) | ValueKind::Call { .. } => None,
         };
         origins.push(origin);
     }

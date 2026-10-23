@@ -1,7 +1,11 @@
 //! Version-zero operation rows preserve flat CFG and lexical storage indices.
 use super::{BodyRef, DeclarationRef, Input, Writer, crates, g, id, option, range};
 
-pub(super) fn encode(out: &mut Writer, body: &g::Original) -> Result<(), &'static str> {
+pub(super) fn encode(
+    out: &mut Writer,
+    body: &g::Original,
+    version: u8,
+) -> Result<(), &'static str> {
     for value in [body.body.0, body.declaration.0, body.result.0, body.sites] {
         id(out, value)?;
     }
@@ -13,20 +17,7 @@ pub(super) fn encode(out: &mut Writer, body: &g::Original) -> Result<(), &'stati
         id(out, binding.local)?;
     }
     out.u32(body.values.len())?;
-    for value in &body.values {
-        id(out, value.ty.0)?;
-        match value.kind {
-            g::ValueKind::Unit => out.u8(0)?,
-            g::ValueKind::Read(local) => {
-                out.u8(1)?;
-                id(out, local)?;
-            }
-            g::ValueKind::Constrain(value) => {
-                out.u8(2)?;
-                id(out, value)?;
-            }
-        }
-    }
+    super::opcodes::encode(out, &body.values, version)?;
     out.u32(body.statements.len())?;
     for statement in &body.statements {
         id(out, statement.site)?;
@@ -99,6 +90,14 @@ pub(super) fn encode(out: &mut Writer, body: &g::Original) -> Result<(), &'stati
             id(out, value)?;
         }
     }
+    if version == 1 {
+        out.u32(body.arguments.len())?;
+        for &value in &body.arguments {
+            id(out, value)?;
+        }
+    } else if !body.arguments.is_empty() {
+        return Err("generic value lists require row version one");
+    }
     Ok(())
 }
 fn action_write(out: &mut Writer, action: g::Action) -> Result<(), &'static str> {
@@ -149,14 +148,7 @@ pub(super) fn decode(read: &mut Input<'_, '_>) -> Result<g::Original, &'static s
     let count = read.count::<g::Value>(crates::MAX_COMPONENTS, 5)?;
     let mut values = Vec::with_capacity(count);
     for _ in 0..count {
-        let ty = g::TypeRef(read.id()?);
-        let kind = match read.reader.u8()? {
-            0 => g::ValueKind::Unit,
-            1 => g::ValueKind::Read(read.id()?),
-            2 => g::ValueKind::Constrain(read.id()?),
-            _ => return Err("unknown generic value operation"),
-        };
-        values.push(g::Value { ty, kind });
+        values.push(super::opcodes::decode(read)?);
     }
     let count = read.count::<g::Statement>(crates::MAX_COMPONENTS, 9)?;
     let mut statements = Vec::with_capacity(count);
@@ -214,6 +206,14 @@ pub(super) fn decode(read: &mut Input<'_, '_>) -> Result<g::Original, &'static s
             exits_before: read.id()?,
         });
     }
+    let mut arguments = Vec::new();
+    if read.version == 1 {
+        let count = read.count::<u32>(crates::MAX_COMPONENTS, 4)?;
+        arguments = Vec::with_capacity(count);
+        for _ in 0..count {
+            arguments.push(read.id()?);
+        }
+    }
     Ok(g::Original {
         body,
         declaration,
@@ -227,6 +227,7 @@ pub(super) fn decode(read: &mut Input<'_, '_>) -> Result<g::Original, &'static s
         scopes,
         exits,
         temporaries,
+        arguments,
     })
 }
 fn action_read(read: &mut Input<'_, '_>) -> Result<g::Action, &'static str> {

@@ -1,5 +1,7 @@
 //! Generic originals are validated data; ordinary proof still precedes execution.
+mod calls;
 mod graph;
+mod operands;
 mod operations;
 mod rows;
 mod validate;
@@ -35,6 +37,7 @@ pub struct Payload {
     peak: usize,
     names: usize,
     atoms: usize,
+    application_owners: Vec<Option<crate::support::crates::owner_catalog::DeclarationRef>>,
 }
 impl PartialEq for Payload {
     fn eq(&self, other: &Self) -> bool {
@@ -65,8 +68,10 @@ impl Payload {
             return Err("generic metadata exceeds combined retained and scratch budget");
         }
         let names = validate::declarations(owner, &rows, work)?;
-        let graph = graph::validate(&rows, work)?;
+        let mut graph = graph::validate(&rows, work)?;
         let owners = validate::functions(owner, &rows, &graph, work)?;
+        let application_owners = calls::validate(&rows, &graph, work)?;
+        graph.applications(&rows, &application_owners, work)?;
         operations::validate(&rows, &graph, work)?;
         Ok(Self {
             owners,
@@ -75,7 +80,17 @@ impl Payload {
             peak,
             names,
             atoms: work.steps.saturating_sub(first),
+            application_owners,
         })
+    }
+    pub(crate) fn application_owner(
+        &self,
+        application: ApplicationRef,
+    ) -> Result<Option<crate::support::crates::owner_catalog::DeclarationRef>, &'static str> {
+        self.application_owners
+            .get(application.0 as usize)
+            .copied()
+            .ok_or("generic application ownership is absent")
     }
     #[must_use]
     pub const fn rows(&self) -> &Rows {
@@ -135,6 +150,7 @@ fn storage(rows: &Rows, work: &mut Work) -> Result<(usize, usize), &'static str>
             | Declaration::Local { name, .. } => bytes = bytes.saturating_add(name.capacity()),
         }
     }
+    let mut arguments = 0_usize;
     for original in &rows.originals {
         work.charge(1)?;
         bytes = bytes.saturating_add(retained::sum([
@@ -146,8 +162,17 @@ fn storage(rows: &Rows, work: &mut Work) -> Result<(usize, usize), &'static str>
             retained::vector(&original.scopes),
             retained::vector(&original.exits),
             retained::vector(&original.temporaries),
+            retained::vector(&original.arguments),
         ]));
+        arguments = arguments.saturating_add(original.arguments.len());
+        if arguments > crates::MAX_COMPONENTS {
+            return Err("generic value argument table exceeds profile budget");
+        }
+        if rows.calls.is_none() && !original.arguments.is_empty() {
+            return Err("generic value lists require row version one");
+        }
     }
+    let application_scratch = call_storage(rows, work, &mut bytes)?;
     // All validation scratch and the derived owner forest coexist with the rows.
     // Four hash slots per node covers minimum/geometric capacity before growth.
     let body_scratch = rows
@@ -168,7 +193,9 @@ fn storage(rows: &Rows, work: &mut Work) -> Result<(usize, usize), &'static str>
         })
         .max()
         .unwrap_or(0);
-    let scratch = graph::scratch(rows.types.len())
+    let scratch = application_scratch
+        .saturating_add(rows.calls.as_ref().map_or(0, |c| c.applications.len()))
+        .saturating_add(graph::scratch(rows.types.len()))
         .saturating_add(rows.roots.len().saturating_mul(size_of::<bool>()))
         .saturating_add(body_scratch)
         .saturating_add(
@@ -191,3 +218,31 @@ fn storage(rows: &Rows, work: &mut Work) -> Result<(usize, usize), &'static str>
 #[cfg(test)]
 #[path = "../../../../tests/invariants/original_rows.rs"]
 mod tests;
+
+fn call_storage(rows: &Rows, work: &mut Work, bytes: &mut usize) -> Result<usize, &'static str> {
+    let scratch = if let Some(calls) = &rows.calls {
+        work.charge(
+            calls
+                .applications
+                .len()
+                .saturating_add(calls.arguments.len()),
+        )?;
+        *bytes = bytes
+            .saturating_add(size_of::<Calls>())
+            .saturating_add(retained::vector(&calls.applications))
+            .saturating_add(retained::vector(&calls.arguments))
+            .saturating_add(calls.applications.len().saturating_mul(size_of::<
+                Option<crate::support::crates::owner_catalog::DeclarationRef>,
+            >()));
+        crate::support::retained::new_map::<
+            (
+                crate::support::crates::owner_catalog::DeclarationRef,
+                &[TypeRef],
+            ),
+            (),
+        >(calls.applications.len())
+    } else {
+        0
+    };
+    Ok(scratch)
+}
