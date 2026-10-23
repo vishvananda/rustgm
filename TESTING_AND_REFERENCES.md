@@ -175,6 +175,15 @@ pass. Its 37-input performance matrix retains 26 equal-output comparisons and
 27 native preflights, with no instruction, RSS or scaling trigger. The record
 preserves the original layout failure and separate benchmark preflight repairs.
 
+The [local stability and callable checkpoint](docs/library-stability-callable-checkpoint.md)
+qualifies 3,477 maintainer cases: 3,180 retained unchanged-target results and 297
+fresh frontend results after a test-only feature-inventory phase correction.
+All 8,382 text cases pass in 17.68 seconds. Its 48-input matrix has 26 equal-output
+comparisons and 24 native preflights, with no instruction, RSS or growth trigger.
+Source feature/inventory edits must include the `feature_requests` suite in focused
+selection: loading may deliberately retain a request that completed expansion
+must reject. The record preserves the failed full run and benchmark preparations.
+
 For a validation batch, pass `scripts/course.py --evidence-root obj/BATCH/course`
 and include that directory in the storage guard's `--prune-under` roots. This
 keeps the same fixture comparisons and complete receipts while avoiding a cleanup
