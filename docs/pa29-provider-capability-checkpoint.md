@@ -6,6 +6,9 @@ checkpoint. No artifact version, source-client mode, assignment activation or
 cross-crate execution permission is added here. Full core/alloc/std and the
 complete generic transport matrix remain required.
 
+Combined release and immutable-binary performance qualification are recorded in
+the [integrated checkpoint](source-capabilities-dyn-returns-checkpoint.md).
+
 ## Implemented boundary
 
 Configured-owner collection retains exact sizing-role attributes in a one-byte

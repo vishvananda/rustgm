@@ -162,6 +162,13 @@ preflights. No instruction, memory or scaling threshold fires; the report also
 retains the observed wall-time increases and the corrected filename-only harness
 failure. Functional cleanup reclaims 17.13 GiB.
 
+The [source capabilities, dynamic cleanup and return-capture checkpoint](docs/source-capabilities-dyn-returns-checkpoint.md)
+qualifies 3,424 maintainer tests: 2,206 retained integration results and 1,218
+fresh library results after a test-only layout correction. All 8,382 text cases
+pass. Its 37-input performance matrix retains 26 equal-output comparisons and
+27 native preflights, with no instruction, RSS or scaling trigger. The record
+preserves the original layout failure and separate benchmark preflight repairs.
+
 For a validation batch, pass `scripts/course.py --evidence-root obj/BATCH/course`
 and include that directory in the storage guard's `--prune-under` roots. This
 keeps the same fixture comparisons and complete receipts while avoiding a cleanup

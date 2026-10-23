@@ -3,7 +3,8 @@
 This local development checkpoint implements implicit return-position `impl Trait`
 capture differences between Rust 2021 and 2024. It does not enable the public 2021
 driver profile, implement external macro transport or activate PA34. Combined
-release and immutable-binary performance qualification remain pending.
+release and immutable-binary performance qualification are recorded in the
+[integrated checkpoint](source-capabilities-dyn-returns-checkpoint.md).
 
 Free and inherent functions in 2021 capture only lifetimes appearing in the opaque
 bounds. Trait declarations and trait implementations capture their input lifetimes

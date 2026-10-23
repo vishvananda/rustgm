@@ -2,7 +2,8 @@
 
 This focused runtime continuation follows [slice cleanup](pa31-slice-drop-glue.md)
 and the exact source-bound [DropGlue contract](pa31-source-drop-glue.md). Central
-combined release/performance qualification remains separate. PA31 stays planned.
+combined release/performance qualification is recorded in the
+[integrated checkpoint](source-capabilities-dyn-returns-checkpoint.md). PA31 stays planned.
 The unchanged original dyn source has SHA-256
 `54ef238fb38e8eaa7a8c9a03cc581aeb430617f820455dc6f233442061ed3deb`.
 Pinned Rust 1.98.0 accepts its metadata/object forms and its native observer prints 1.
