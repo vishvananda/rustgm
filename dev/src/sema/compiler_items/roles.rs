@@ -7,6 +7,7 @@ pub(crate) use destructibility::destruct_predicate;
 pub(crate) use freezing::predicate as freeze_predicate;
 pub(crate) use glue::member as drop_glue_member;
 mod invocation;
+mod unsizing;
 use super::Catalog;
 use crate::{
     resolve::{
@@ -23,6 +24,7 @@ use crate::{
     syntax::{ast::Kind as Syntax, item::ItemKind},
     types::{Kind, TypeId, parameters::predicates::Bound},
 };
+pub(crate) use unsizing::{kind as unsizing_role, predicate as unsizing_predicate};
 
 pub(super) struct Validated {
     roles: u32,
@@ -68,6 +70,8 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         LangItem::Drop,
         LangItem::Destruct,
         LangItem::Freeze,
+        LangItem::Unsize,
+        LangItem::CoerceUnsized,
     ] {
         let Some(declaration) = catalog.language(role) else {
             continue;
@@ -85,6 +89,9 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
             )?,
             LangItem::Tuple => validate_marker(report, facts, declaration)?,
             LangItem::Freeze => freezing::validate(report, facts, declaration)?,
+            LangItem::Unsize | LangItem::CoerceUnsized => {
+                unsizing::validate(report, facts, catalog, declaration, role, self_type)?;
+            }
             LangItem::Drop | LangItem::Destruct => {
                 destructibility::validate(report, facts, catalog, declaration, role, self_type)?;
             }
@@ -111,17 +118,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         glue::validate(report, facts, catalog, declaration, complete.roles)?;
         complete.roles |= 1 << LangItem::DropGlue.index();
     }
-    for role in [LangItem::CloneFn, LangItem::FnOnceOutput] {
-        if let Some(declaration) = catalog.language(role)
-            && complete.roles & (1 << role.index()) == 0
-        {
-            return Err(Declarations::error(
-                report,
-                declaration.origin,
-                "source language member has no validated actual trait owner",
-            ));
-        }
-    }
+    validate_owned_members(report, catalog, complete.roles)?;
     if complete.roles == 0 {
         return Ok(());
     }
@@ -148,6 +145,21 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
             )
         })?
         .traits = Some(Box::new(complete));
+    Ok(())
+}
+
+fn validate_owned_members(report: &Report, catalog: &Catalog, roles: u32) -> Result<(), Error> {
+    for role in [LangItem::CloneFn, LangItem::FnOnceOutput] {
+        if let Some(declaration) = catalog.language(role)
+            && roles & (1 << role.index()) == 0
+        {
+            return Err(Declarations::error(
+                report,
+                declaration.origin,
+                "source language member has no validated actual trait owner",
+            ));
+        }
+    }
     Ok(())
 }
 
@@ -198,7 +210,11 @@ fn header(
         .ok_or_else(|| error("source trait role has no parameter contract"))?;
     let expected = usize::from(matches!(
         role,
-        LangItem::FnOnce | LangItem::FnMut | LangItem::Fn
+        LangItem::FnOnce
+            | LangItem::FnMut
+            | LangItem::Fn
+            | LangItem::Unsize
+            | LangItem::CoerceUnsized
     ));
     if parameters.len() != expected
         || !matches!(facts.types.kind(schema.self_type), Some(Kind::Parameter(_)))

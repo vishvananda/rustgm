@@ -72,6 +72,7 @@ enum Claim {
     Intrinsic,
     DenyImplementations,
     BuiltinMacro,
+    DynIncompatible,
 }
 
 pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> Result<(), Error> {
@@ -146,6 +147,7 @@ pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> R
             reserved.steps += 1;
             reserve(package, source, &mut reserved, declaration, *claim)?;
         }
+        validate_unsizing_claims(package, declaration, claims)?;
     }
     if claims.keys().any(|key| !claimed.contains(key)) {
         return Err(Error::at(
@@ -181,6 +183,11 @@ fn reserve(
     match claim {
         // The configured-owner facade has already validated this exact declaration.
         Claim::BuiltinMacro => {}
+        Claim::DynIncompatible => {
+            if !source.features.has(Feature::RustcAttributes) {
+                return Err(error("dyn restriction requires rustc_attrs"));
+            }
+        }
         Claim::DenyImplementations => {
             if !source.features.has(Feature::RustcAttributes) {
                 return Err(error("implementation restriction requires rustc_attrs"));
@@ -380,6 +387,14 @@ fn claims(package: &Package) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
                         }
                         Claim::DenyImplementations
                     }
+                    Some("rustc_dyn_incompatible_trait") => {
+                        if attribute.input != Input::Empty {
+                            return Err(error(
+                                "rustc_dyn_incompatible_trait requires no arguments",
+                            ));
+                        }
+                        Claim::DynIncompatible
+                    }
                     _ => continue,
                 };
                 result
@@ -390,4 +405,33 @@ fn claims(package: &Package) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
         }
     }
     Ok(result)
+}
+
+/// The first attribute consumer is the exact pinned Unsize role. Other uses
+/// remain unsupported rather than silently losing their semantic restriction.
+fn validate_unsizing_claims(
+    package: &Package,
+    declaration: Declaration,
+    claims: &[Claim],
+) -> Result<(), Error> {
+    let unsize = claims
+        .iter()
+        .any(|claim| matches!(claim, Claim::Language(LangItem::Unsize)));
+    let restricted = claims
+        .iter()
+        .any(|claim| matches!(claim, Claim::DynIncompatible));
+    if unsize != restricted {
+        return Err(Error::at(
+            declaration.origin.file,
+            package
+                .unit(declaration.origin.file)
+                .configured
+                .ast
+                .node(declaration.origin.node)
+                .span
+                .start,
+            "dyn restriction currently requires the exact pinned source Unsize declaration",
+        ));
+    }
+    Ok(())
 }

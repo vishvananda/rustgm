@@ -141,6 +141,9 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
+        if matches!(frame.language.as_deref(), Some(Pending::Unsize(_))) {
+            return self.complete_unsizing(facts, frame);
+        }
         if matches!(frame.language.as_deref(), Some(Pending::Forward(_))) {
             return self.complete_forwarding(facts, frame);
         }

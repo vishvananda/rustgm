@@ -25,6 +25,7 @@ mod marker_readiness_tests;
 mod primitive_methods;
 mod sizing_fallback;
 mod tuple_role;
+mod unsizing;
 pub(in crate::sema) use completed_proofs::Reuse;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/erased_formation.rs"]
@@ -334,6 +335,7 @@ impl Search<'_> {
     }
     fn start(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
         Self::source_sizing_kind(facts, &frame.goal)?;
+        let unsizing = Self::source_unsizing_kind(facts, &frame.goal)?;
         frame.started = true;
         frame.cycles = self.query.cycles;
         if frame.goal.projection_result().is_some() {
@@ -350,6 +352,13 @@ impl Search<'_> {
             };
         }
         let needs_normalization = match self.assume(facts, frame) {
+            Ok(Some(Action::Complete(Decision::Deferred)))
+                if unsizing == Some(crate::support::bindings::LangItem::Unsize) =>
+            {
+                // No positive selection is possible yet. Still form known peers.
+                frame.deferred = true;
+                false
+            }
             Ok(Some(action)) => return Ok(action),
             Ok(None) => false,
             Err(infer::Error::Normalization) => true,
@@ -525,6 +534,12 @@ impl Search<'_> {
         }
         if frame.normalizing() {
             return self.accept_normalization(facts, frame, decision);
+        }
+        if matches!(
+            frame.language.as_deref(),
+            Some(mechanical::Pending::Unsize(_))
+        ) {
+            return self.accept_unsizing(facts, frame, decision);
         }
         if matches!(
             frame.language.as_deref(),

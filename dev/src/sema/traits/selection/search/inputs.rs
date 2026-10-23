@@ -187,6 +187,9 @@ impl Search<'_> {
         frame: &mut Frame,
         decision: Decision,
     ) -> Result<Decision, String> {
+        if decision == Decision::Absent {
+            self.validate_unsizing_absence(facts, frame)?;
+        }
         let (Decision::Proven(selected) | Decision::Refuted(selected)) = decision else {
             return Ok(decision);
         };

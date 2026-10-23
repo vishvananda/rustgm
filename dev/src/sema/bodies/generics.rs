@@ -326,6 +326,8 @@ impl Checker<'_> {
                             .map_err(|e| self.error(node, e))?
                         || crate::sema::compiler_items::tuple_predicate(self.facts, *predicate)
                             .map_err(|e| self.error(node, e))?
+                        || crate::sema::compiler_items::unsizing_predicate(self.facts, *predicate)
+                            .map_err(|e| self.error(node, e))?
                     {
                         continue;
                     }

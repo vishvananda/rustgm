@@ -39,6 +39,23 @@ pub(super) struct Query {
     decision: Option<Decision>,
 }
 
+#[cfg(test)]
+impl Query {
+    /// Exercise a later sibling using the same caller's completed prefix graph.
+    pub(super) fn resume_sibling_for_test(&mut self) -> Result<(), &'static str> {
+        if !self.stack.is_empty()
+            || self.waiting.is_some()
+            || self.universal.is_some()
+            || !self.active.is_empty()
+            || self.decision.is_none()
+        {
+            return Err("cannot reuse an unfinished test query");
+        }
+        self.decision = None;
+        Ok(())
+    }
+}
+
 impl<'a> Search<'a> {
     pub(super) fn new(caller: Caller<'a>, availability: Availability) -> Self {
         let builtins = match availability {

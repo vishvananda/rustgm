@@ -67,6 +67,12 @@ impl Search<'_> {
         }
         if matches!(
             parent.language.as_deref(),
+            Some(super::mechanical::Pending::Unsize(_))
+        ) {
+            return self.accept_partial_unsizing(facts, parent, child);
+        }
+        if matches!(
+            parent.language.as_deref(),
             Some(super::mechanical::Pending::Forward(_))
         ) {
             return self.accept_partial_forwarding(facts, parent, child);

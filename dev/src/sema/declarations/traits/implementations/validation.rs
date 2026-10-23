@@ -206,6 +206,7 @@ impl Checker<'_> {
         let requirements = impl_contract_obligations(&mut self.facts, predicate, &mut proof)
             .map_err(|e| self.error(source, e))?;
         self.validate_source_copy_impl(source, predicate, &mut proof)?;
+        let coerced = self.validate_source_coercion_impl(source, predicate, &mut proof)?;
         self.retain_trait_proof(owner, source, &mut proof);
         let mut queries = Queries::new(
             &self.facts.types,
@@ -215,6 +216,11 @@ impl Checker<'_> {
         let mut constraints = self
             .trait_region_environment(owner, &mut queries)
             .map_err(|e| self.error(source, e))?;
+        if let Some((longer, shorter)) = coerced {
+            constraints
+                .outlives(longer, shorter, 0)
+                .map_err(|e| self.error(source, e.to_string()))?;
+        }
         for &(a, b) in &requirements.regions {
             constraints
                 .outlives(a, b, 0)

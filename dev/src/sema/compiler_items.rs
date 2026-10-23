@@ -13,6 +13,7 @@ mod needs_drop;
 pub(crate) use copying::copy_decisions;
 mod roles;
 pub(crate) use roles::{destruct_predicate, drop_glue_member, freeze_predicate};
+pub(crate) use roles::{unsizing_predicate, unsizing_role};
 mod sizing;
 use crate::{
     resolve::{

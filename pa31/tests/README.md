@@ -30,3 +30,10 @@ Declare independent outcomes before creating text references. Register every
 input in a nonempty `manifest.json` when the stage is ready for activation;
 no undiscovered fixtures or empty-suite success. Preserve upstream checksums,
 configuration/build provenance and linked native output evidence.
+
+`spec/unsizing-roles/` preserves actual Unsize/CoerceUnsized source declarations,
+independent goal/opposing contracts and dyn requirement width/caller controls.
+Grouped `coercion_provider` tests qualify the bounded source-role family while
+retaining valid unsupported nominal/header sources as required positives. This
+is a prerequisite for runtime unsized cleanup, not cleanup completion. See
+[the source unsizing review](../../docs/pa31-source-unsizing.md).

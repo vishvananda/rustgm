@@ -1,4 +1,6 @@
 //! Maintainer integration suites for frontend.
+#[path = "../../coercion_provider.rs"]
+mod coercion_provider;
 #[path = "../../crate_expansion.rs"]
 mod crate_expansion;
 #[path = "../../crate_syntax.rs"]

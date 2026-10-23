@@ -6,6 +6,7 @@ mod negative;
 mod orphans;
 mod readiness;
 pub(in crate::sema::declarations) use readiness::Readiness;
+mod coercions;
 mod validation;
 use super::super::{Checker, DefId, Error, ItemId, NodeKey, Work};
 use crate::{

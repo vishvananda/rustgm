@@ -17,6 +17,11 @@ pub(super) fn collect(
     item: DefId,
     steps: &mut usize,
 ) -> Result<Contract, Error> {
+    if crate::sema::compiler_items::unsizing_role(facts, item)?
+        == Some(crate::support::bindings::LangItem::Unsize)
+    {
+        return Err("actual source Unsize is not dyn compatible".into());
+    }
     if let Some(kind) = facts.associated.callable(item) {
         return callable(facts, item, kind, steps);
     }

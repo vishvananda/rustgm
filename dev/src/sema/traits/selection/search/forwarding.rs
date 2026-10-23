@@ -124,6 +124,9 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Option<Frame>, String> {
+        if matches!(frame.language.as_deref(), Some(Callable::Unsize(_))) {
+            return self.unsizing_child(facts, frame);
+        }
         let first = frame.available_region().max(self.query.allocations.floor());
         let Some(Callable::Forward(pending)) = frame.language.as_deref_mut() else {
             return Ok(None);

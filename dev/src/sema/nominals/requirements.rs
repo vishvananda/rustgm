@@ -36,6 +36,26 @@ impl Requirements {
         self.types.len().saturating_add(self.fold_work)
     }
 
+    /// Lift one retained type-outlives debt through its actual callable depth.
+    /// Locally captured whole clauses defer under the same RFC 1214 policy.
+    pub(in crate::sema) fn outlives(
+        &mut self,
+        store: &mut Store,
+        projection: crate::types::outlives::Projection,
+        shorter: crate::types::RegionId,
+    ) -> Result<Option<Predicate>, &'static str> {
+        let clause = Predicate {
+            ty: projection.ty,
+            bound: Bound::Outlives(shorter),
+        }
+        .into();
+        match self.lift(store, clause, projection.depth)? {
+            Some(Clause::Predicate(predicate)) => Ok(Some(predicate)),
+            None => Ok(None),
+            Some(Clause::ForAll(_)) => Err("outlives lifting changed the retained clause kind"),
+        }
+    }
+
     fn lift(
         &mut self,
         store: &mut Store,
