@@ -3,9 +3,9 @@
 The preserved interface/declaration checkpoint is `3184e65c`. The qualified
 shared API merge is `dd415264`, whose tree differs from root `2da35cf0` only by
 that proposal and its declared fixtures. The production draft below is
-**unqualified**: no C build, audit, independent probe or candidate execution has
-run. Heavy jobs remain held through the integrator's release/performance work
-and B's next development lease.
+**unqualified**: no C build, audit or candidate execution has run. The first
+independent-only guard and its recovery hypotheses are recorded below. Recovery
+submission remains held while B takes its next coordinated development lease.
 
 The original [proposal](pa31-const-select-ctfe-proposal.md) and initial fixture
 contract remain unchanged. Two additive, pre-probe source contexts in
@@ -52,11 +52,11 @@ unchanged; its unqualified default defining-context successor is excluded.
 ## Draft qualification controls
 
 The frontend draft covers nine new ordinary-F source/native contexts plus the
-unchanged original empty-ARG CTFE positive. Bounds failure and moved-argument
+unchanged original empty-ARG CTFE positive. Raw provenance failure and moved-argument
 reuse bind specific diagnostics. Reference binders and Conditional callbacks
 retain explicit valid-but-unsupported classifications until their owners close
-the required boundary. The new independent hypotheses have not been observed;
-in particular the new bounds-error hypothesis is not yet a settled Rust result.
+the required boundary. The distinct recovery raw-read hypotheses have not been
+observed; the original bounds hypotheses retain their E0608 disagreements below.
 
 Five private controls use actual bodies captured by the existing materialized
 body observer and actual cold interpreter suspension. They cover evaluated
@@ -71,3 +71,29 @@ body snapshot.
 Future observations must distinguish actual completed work, retained payload,
 new versus retained qualification and unsupported profiles. No assignment
 activation, generated reference update or whole-library acceptance is claimed.
+
+## First independent observations and distinct recovery
+
+Guard83057 completed all fourteen independent rows and stopped before static or
+candidate checks. Eleven metadata/object/native triples matched, including owned
+tuples, mapped returns, reference binders, operand order, repeated/unreached
+selection and both Conditional contexts. Owned argument reuse rejected with
+E0382 as declared. The two index-fault sources instead rejected with E0608:
+this no_core provider does not declare the actual Index contract. Their intended
+CTFE-fault/runtime-positive hypotheses were invalid for that incomplete provider;
+the observations supply no RustGM Index qualification or selection result.
+
+The original sources, declarations and all three disagreements remain unchanged.
+`contract-recovery.json` binds the twelve unchanged successful oracle rows by
+source, result-row, binding and receipt hashes. Only two distinct inputs are
+declared for new probes: selected-null-raw-read-fault (E0080 hypothesis) and
+null-raw-read-runtime-opposite (native nine hypothesis). They use the existing
+PA27 raw pointer cast/read profile, with the null address supplied through a
+parameter. Candidate fault checking requires the existing provenance diagnostic.
+The unselected runtime F body still must not be demanded or executed.
+
+The initial guard's cleanup receipt is
+`obj/cleanup/1792795525468227666.jsonl`: zero disposable files remained because
+successful reference object/native teardown had already removed them. Inputs,
+diagnostics, all oracle rows and pinned evidence are retained. No recovery
+compiler/probe result is claimed yet.

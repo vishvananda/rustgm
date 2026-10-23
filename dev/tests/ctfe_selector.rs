@@ -8,7 +8,7 @@ const POSITIVE: &[(&str, &str)] = &[
     ("repeated-empty", "7 1\n"),
     ("unreached-const-loop", "7\n"),
     ("unselected-runtime-loop", "7\n"),
-    ("index-fault-runtime-opposite", "9\n"),
+    ("null-raw-read-runtime-opposite", "9\n"),
     ("same-item-instances", "7 1\n"),
     ("conditional-owner-two-selectors", "7 1\n"),
 ];
@@ -29,7 +29,10 @@ fn source_ctfe_selector_uses_owned_tuple_and_actual_callback_without_placeholder
 #[test]
 fn source_ctfe_selector_keeps_reached_fault_and_argument_ownership() -> TestResult {
     for (name, diagnostic) in [
-        ("selected-index-fault", "constant index is out of bounds"),
+        (
+            "selected-null-raw-read-fault",
+            "constant pointer has no allocation provenance",
+        ),
         (
             "owned-argument-reuse-reject",
             "local may be uninitialized or moved at this read",

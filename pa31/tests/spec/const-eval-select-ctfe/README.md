@@ -1,8 +1,12 @@
 # Constant source callback selection contracts
 
-These are pre-implementation contracts. No new independent Rust or RustGM result
-is claimed. The JSON declares expected outcomes and source/client hashes before
-probes. The unchanged original CTFE-positive fixture and existing semantic
+The initial JSON preserves pre-implementation contracts and source/client hashes.
+The first independent run settled eleven positive metadata/object/native rows
+and one E0382 rejection. Both index-fault hypotheses instead produced E0608 in
+this incomplete no_core Index provider. Their original bytes and disagreements
+remain unchanged; they supply no RustGM Index qualification. A separate recovery
+contract declares raw-null-read fault/runtime-opposite inputs before new probes.
+No candidate result is claimed. The unchanged original CTFE-positive fixture and existing semantic
 opposites remain in the runtime cluster and are referenced without replacement.
 
 Each new source retains the original qualified semantic provider prefix and its
