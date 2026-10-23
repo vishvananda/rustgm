@@ -38,6 +38,15 @@ required provenance must fail; ordinary call/access permissions remain separate.
 The [external declaration checkpoint](docs/pa34-extern-editions.md) records the
 paired source and native controls without enabling a new driver profile.
 
+Temporary scope narrowing follows the defining if introducer or block delimiter
+edition. Preserve binding scopes independently of temporary endpoints; older
+block tails and if-let scrutinees inherit the enclosing temporary lifetime.
+Use the existing checked conditional-chain facts and paired delimiter origins,
+including when an unsafe qualifier or captured tail has another edition. Keep
+ordinary scope facts and storage-exit events unchanged. The
+[temporary scope checkpoint](docs/pa34-temporary-editions.md) includes opposing
+borrow cases and actual destructor traces for both editions.
+
 For edition-sensitive explicit pattern modifiers, consume the parsed flags and
 the introducer's original token edition. A complete pattern can span captured
 syntax from multiple editions; do not require one edition for its full span.

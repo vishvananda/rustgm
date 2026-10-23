@@ -69,6 +69,8 @@ pub(crate) mod qualify;
 mod resolution;
 #[path = "../../syntax_transfer.rs"]
 mod syntax_transfer;
+#[path = "../../temporary_editions.rs"]
+mod temporary_editions;
 #[path = "../../textual_scopes.rs"]
 mod textual_scopes;
 #[path = "../../token_trees.rs"]

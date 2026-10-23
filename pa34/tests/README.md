@@ -9,6 +9,13 @@ and focused candidate qualification. They do not enable the Rust 2021 driver
 profile or establish assignment acceptance; combined checkpoint qualification
 remains required before publication.
 
+`temporary-edition-outcomes.json` predeclares 20 source and 18 native outcomes
+for tail and if-let temporary scopes, unchanged scope controls and opposing
+borrow lifetimes. Independent Rust and focused candidate source/native
+qualification pass; combined checkpoint qualification remains required.
+Native assertions check the actual destructor trace in each edition. See the
+[temporary scope checkpoint](../../docs/pa34-temporary-editions.md).
+
 Required families: per-crate editions; feature and dependency resolution; host versus target artifacts; build script outputs; reproducible build provenance.
 
 Follow the [owning brief](../README.md) and

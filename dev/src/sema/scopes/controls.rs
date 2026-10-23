@@ -1,6 +1,46 @@
 //! Statement boundaries, conditional bindings, and explicit pattern ownership.
 use super::{Context, Error, Kind, List, NodeId, Punctuation, Syntax, Walker, Work};
 impl Walker<'_> {
+    pub(super) fn if_scopes(
+        &mut self,
+        node: NodeId,
+        condition: NodeId,
+        then: NodeId,
+        otherwise: Option<NodeId>,
+        context: Context,
+    ) -> Result<(), Error> {
+        let inner = self.scope(node, Kind::IfThen, context)?;
+        if let Some(otherwise) = otherwise {
+            self.push(Work::Expression(otherwise, context))?;
+        }
+        self.push(Work::Expression(then, inner))?;
+        let mut condition_context = inner;
+        if self.types.patterns.chains.contains(&super::NodeKey {
+            file: self.source.file,
+            node: condition,
+        }) && !self.narrowed_temporary(node, false)?
+        {
+            condition_context.temporary = context.temporary;
+        }
+        self.push(Work::Condition(condition, condition_context))
+    }
+    /// A block's matched brace pair owns its edition, even when an unsafe
+    /// keyword or captured tail comes from elsewhere. Its parsed closing byte
+    /// remains exact when the parser widens the block span for a qualifier.
+    pub(super) fn narrowed_temporary(&self, node: NodeId, block: bool) -> Result<bool, Error> {
+        let mut span = self.unit.configured.ast.node(node).span;
+        if block {
+            span.start = span
+                .end
+                .checked_sub(1)
+                .ok_or_else(|| self.error(node, "missing temporary block delimiter"))?;
+        }
+        let edition = crate::resolve::unit::editions::introducer(self.source.file, span, |file| {
+            self.package.units.get(file.0 as usize)
+        })
+        .map_err(|error| self.error(node, error.message))?;
+        Ok(edition == crate::support::edition::Edition::Rust2024)
+    }
     pub(super) fn bind_scope(
         &mut self,
         node: NodeId,

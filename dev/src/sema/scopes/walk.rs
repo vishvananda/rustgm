@@ -18,7 +18,10 @@ impl Walker<'_> {
                 let mut inner = self.scope(node, Kind::Block, context)?;
                 inner.block = inner.scope;
                 if let Some(tail) = tail {
-                    let tail_context = self.scope(tail, Kind::Tail, inner)?;
+                    let mut tail_context = self.scope(tail, Kind::Tail, inner)?;
+                    if !self.narrowed_temporary(node, true)? {
+                        tail_context.temporary = context.temporary;
+                    }
                     self.push(Work::Expression(tail, tail_context))?;
                 }
                 self.statements(statements, inner)?;
@@ -53,14 +56,7 @@ impl Walker<'_> {
                 condition,
                 then,
                 otherwise,
-            } => {
-                let inner = self.scope(node, Kind::IfThen, context)?;
-                if let Some(otherwise) = otherwise {
-                    self.push(Work::Expression(otherwise, context))?;
-                }
-                self.push(Work::Expression(then, inner))?;
-                self.push(Work::Condition(condition, inner))?;
-            }
+            } => self.if_scopes(node, condition, then, otherwise, context)?,
             Syntax::Loop { body } | Syntax::While { body, .. } => {
                 let inner = self.scope(node, Kind::Iteration, context)?;
                 self.push(Work::Expression(body, inner))?;
