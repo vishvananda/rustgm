@@ -2,10 +2,14 @@
 use super::*;
 use crate::{
     expand::config::Config,
-    resolve::{bindings::Context, expansion, load::{InputFile, Loader, Sources}},
+    resolve::{
+        bindings::Context,
+        expansion,
+        load::{InputFile, Loader, Sources},
+    },
     support::{bindings::Mode, crates::CrateIdentity, hash::HashSet, source::SourceFile},
 };
-use std::path::Path;
+use std::{fmt::Write, path::Path};
 
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const HEADER: &str = "#![feature(no_core,lang_items,rustc_attrs)]#![no_core]#[lang=\"pointee_sized\"]trait PointeeSized{}#[lang=\"meta_sized\"]trait MetaSized:PointeeSized{}#[lang=\"sized\"]trait Sized:MetaSized{}";
@@ -14,10 +18,15 @@ struct Files;
 impl Sources for Files {
     fn read(&mut self, path: &Path) -> std::result::Result<Option<InputFile>, String> {
         if path.extension().is_some_and(|extension| extension == "rs")
-            && path.file_stem().and_then(|stem| stem.to_str()).is_some_and(|stem| {
-                stem.strip_prefix("never").is_some_and(|suffix| suffix.bytes().all(|b| b.is_ascii_digit()))
-            }) {
-            Ok(Some(input(path, "!")?))
+            && path
+                .file_stem()
+                .and_then(|stem| stem.to_str())
+                .is_some_and(|stem| {
+                    stem.strip_prefix("items")
+                        .is_some_and(|suffix| suffix.bytes().all(|b| b.is_ascii_digit()))
+                })
+        {
+            Ok(Some(input(path, "type N=!;")?))
         } else if path == Path::new("unit.rs") {
             Ok(Some(input(path, "#[allow(unused)]const X:u8=1;")?))
         } else {
@@ -27,24 +36,37 @@ impl Sources for Files {
 }
 fn input(path: &Path, source: &str) -> std::result::Result<InputFile, String> {
     Ok(InputFile {
-        identity: path.into(), path: path.into(),
+        identity: path.into(),
+        path: path.into(),
         source: SourceFile::new(source.as_bytes().to_vec())?,
     })
 }
 fn context() -> Result<Context> {
     let identity = CrateIdentity::new("minicore", "features_v1")?;
     Ok(Context {
-        crate_name: Some("minicore".into()), current: Some(identity.clone()),
-        mode: Mode::Source { provider: identity }, ..Default::default()
+        crate_name: Some("minicore".into()),
+        current: Some(identity.clone()),
+        mode: Mode::Source { provider: identity },
+        ..Default::default()
     })
 }
 fn original(source: &str) -> Result<Package> {
-    Ok(Loader::with_context(input(Path::new("lib.rs"), source)?,
-        &mut Files, &Config::default(), &context()?)?.package)
+    Ok(Loader::with_context(
+        input(Path::new("lib.rs"), source)?,
+        &mut Files,
+        &Config::default(),
+        &context()?,
+    )?
+    .package)
 }
 fn expanded(source: &str) -> Result<Package> {
-    Ok(expansion::analyze_with_context(input(Path::new("lib.rs"), source)?,
-        &mut Files, &Config::default(), &context()?)?.package)
+    Ok(expansion::analyze_with_context(
+        input(Path::new("lib.rs"), source)?,
+        &mut Files,
+        &Config::default(),
+        &context()?,
+    )?
+    .package)
 }
 fn counted(package: &Package) -> Result<Work> {
     let mut work = Work::default();
@@ -56,14 +78,20 @@ fn unique_nodes(package: &Package) -> usize {
     let mut pending = Vec::new();
     let mut children = Vec::new();
     for (file, unit) in package.units.iter().enumerate() {
-        if unit.include_context.is_some() { continue; }
+        if unit.include_context.is_some() {
+            continue;
+        }
         pending.push(unit.configured.ast.root);
         while let Some(node) = pending.pop() {
-            if !unit.configured.active[node.get() as usize] { continue; }
-            if !seen.insert((file, node)) { continue; }
+            if !unit.configured.active[node.get() as usize] {
+                continue;
+            }
+            if !seen.insert((file, node)) {
+                continue;
+            }
             children.clear();
             unit.configured.ast.push_children(node, &mut children);
-            pending.extend(children.drain(..));
+            pending.append(&mut children);
         }
     }
     seen.len()
@@ -78,7 +106,8 @@ fn ordinary_path_inspects_no_syntax_and_requests_add_no_record_fields() -> Resul
     assert_eq!(counted(&package)?, Work::default());
     assert_eq!(size_of::<super::super::policy::Features>(), 1);
     assert_eq!(size_of::<Position>(), 1);
-    assert_eq!(size_of::<Package>(), 272);
+    // The flat-table performance base already reduced Package from 272 to 240.
+    assert_eq!(size_of::<Package>(), 240);
     assert_eq!(size_of::<super::super::SourceCore>(), 72);
     Ok(())
 }
@@ -87,19 +116,32 @@ fn ordinary_path_inspects_no_syntax_and_requests_add_no_record_fields() -> Resul
 fn width_depth_and_expansion_counts_visit_each_live_node_once() -> Result {
     for n in [8, 32, 128] {
         let mut width = HEADER.to_owned();
-        for index in 0..n { width.push_str(&format!("#[allow(unused)]const N{index}:u8=1;")); }
+        for index in 0..n {
+            write!(width, "#[allow(unused)]const N{index}:u8=1;")?;
+        }
         let package = original(&width)?;
         let work = counted(&package)?;
         assert_eq!(work.nodes, unique_nodes(&package));
         assert!(work.nodes < 12 * n + 64, "width={n}: {work:?}");
         assert_eq!(work.units, 1);
-        let depth = format!("{HEADER}{}const X:u8=1;{}", "mod m{".repeat(n), "}".repeat(n));
+        // A source deeper than this axis reaches the existing parser limit,
+        // before feature admission; retain that boundary below.
+        let levels = n.min(64);
+        let depth = format!(
+            "{HEADER}{}const X:u8=1;{}",
+            "mod m{".repeat(levels),
+            "}".repeat(levels)
+        );
         let package = original(&depth)?;
         let work = counted(&package)?;
         assert_eq!(work.nodes, unique_nodes(&package));
-        assert!(work.nodes < 5 * n + 64, "depth={n}: {work:?}");
-        let source = format!("{HEADER}macro_rules!make{{($name:ident)=>{{const $name:u8=1;}}}}{}
-            ", (0..n).map(|i| format!("make!(N{i});")).collect::<String>());
+        assert!(work.nodes < 5 * levels + 64, "depth={levels}: {work:?}");
+        eprintln!("feature admission depth={levels}: {work:?}");
+        let mut source =
+            format!("{HEADER}macro_rules!make{{($name:ident)=>{{const $name:u8=1;}}}}");
+        for i in 0..n {
+            write!(source, "make!(N{i});")?;
+        }
         let package = expanded(&source)?;
         let work = counted(&package)?;
         assert_eq!(work.nodes, unique_nodes(&package));
@@ -107,14 +149,29 @@ fn width_depth_and_expansion_counts_visit_each_live_node_once() -> Result {
         assert_eq!(work.units, 1);
         eprintln!("feature admission expansions={n}: {work:?}");
     }
+    let beyond = format!(
+        "{HEADER}{}const X:u8=1;{}",
+        "mod m{".repeat(128),
+        "}".repeat(128)
+    );
+    let error = original(&beyond)
+        .err()
+        .ok_or("missing parser depth boundary")?;
+    assert!(
+        error
+            .to_string()
+            .contains("crate syntax nesting exceeds 128")
+    );
     Ok(())
 }
 
 #[test]
 fn include_templates_and_separate_module_instances_are_not_replayed() -> Result {
     for n in [8, 32, 128] {
-        let source = format!("#![feature(never_type)]{HEADER}{INCLUDE}{}",
-            (0..n).map(|i| format!("type N{i}=include!(\"never.rs\");")).collect::<String>());
+        let mut source = format!("#![feature(never_type)]{HEADER}{INCLUDE}");
+        for i in 0..n {
+            write!(source, "mod m{i}{{include!(\"items.rs\");}}")?;
+        }
         let package = expanded(&source)?;
         let work = counted(&package)?;
         assert_eq!(work.nodes, unique_nodes(&package));
@@ -122,16 +179,20 @@ fn include_templates_and_separate_module_instances_are_not_replayed() -> Result 
         assert_eq!(work.templates, 1);
         assert!(package.units.iter().any(|u| u.include_context.is_some()));
         assert!(work.nodes < 6 * n + 64, "includes={n}: {work:?}");
-        let source = format!("#![feature(never_type)]{HEADER}{INCLUDE}{}",
-            (0..n).map(|i| format!("type N{i}=include!(\"never{i}.rs\");")).collect::<String>());
+        let mut source = format!("#![feature(never_type)]{HEADER}{INCLUDE}");
+        for i in 0..n {
+            write!(source, "mod m{i}{{include!(\"items{i}.rs\");}}")?;
+        }
         let package = expanded(&source)?;
         let work = counted(&package)?;
         assert_eq!(work.nodes, unique_nodes(&package));
         assert_eq!(work.units, 1);
         assert_eq!(work.templates, n);
         assert!(work.nodes < 6 * n + 64, "distinct includes={n}: {work:?}");
-        let source = format!("{HEADER}{}", (0..n)
-            .map(|i| format!("#[path=\"unit.rs\"]mod m{i};")).collect::<String>());
+        let mut source = HEADER.to_owned();
+        for i in 0..n {
+            write!(source, "#[path=\"unit.rs\"]mod m{i};")?;
+        }
         let package = expanded(&source)?;
         let work = counted(&package)?;
         assert_eq!(work.nodes, unique_nodes(&package));
@@ -155,12 +216,17 @@ fn failing_uses_are_counted_and_cfg_disabled_owners_have_no_authority() -> Resul
         assert!(work.nodes > 0 && work.nodes <= unique_nodes(&package));
         assert_eq!(work.units, 1);
     }
-    let source = format!("{HEADER}#[cfg(any())]mod wrong{{#![feature(unknown_source_gate)]type N=!;}}");
+    let source =
+        format!("{HEADER}#[cfg(any())]mod wrong{{#![feature(unknown_source_gate)]type N=!;}}");
     let package = original(&source)?;
     let work = counted(&package)?;
     assert_eq!(work.nodes, unique_nodes(&package));
     let package = original(&format!("#![feature(asm_experimental_arch)]{HEADER}"))?;
-    let features = &package.source_core.as_deref().ok_or("source owner")?.features;
+    let features = &package
+        .source_core
+        .as_deref()
+        .ok_or("source owner")?
+        .features;
     assert!(!features.has(Feature::NeverType));
     assert!(!features.has(Feature::ExpressionAttributes));
     Ok(())
@@ -170,12 +236,17 @@ fn failing_uses_are_counted_and_cfg_disabled_owners_have_no_authority() -> Resul
 fn an_attribute_index_cannot_substitute_another_configured_owner() -> Result {
     let mut package = original(&format!("{HEADER}#[allow(unused)]const N:u8=1;"))?;
     let unit = &mut package.units[0];
-    let index = unit.configured.owners.iter().position(|owner| {
-        owner.node != unit.configured.ast.root
-    }).ok_or("nonroot attribute owner")?;
+    let index = unit
+        .configured
+        .owners
+        .iter()
+        .position(|owner| owner.node != unit.configured.ast.root)
+        .ok_or("nonroot attribute owner")?;
     unit.configured.owners[index].node = unit.configured.ast.root;
     let mut work = Work::default();
-    let error = inspect(&package, &mut work).err().ok_or("forged owner accepted")?;
+    let error = inspect(&package, &mut work)
+        .err()
+        .ok_or("forged owner accepted")?;
     assert!(error.message.contains("different configured owner"));
     assert!(work.nodes > 0);
     Ok(())
@@ -187,7 +258,9 @@ fn a_callable_bound_result_is_not_a_stable_function_result_position() -> Result 
     // It does not assert that this provider already supplies the Fn lang item.
     let package = original(&format!("{HEADER}fn f<F:Fn()->!>(){{}}"))?;
     let mut work = Work::default();
-    let error = inspect(&package, &mut work).err().ok_or("ungated callable output")?;
+    let error = inspect(&package, &mut work)
+        .err()
+        .ok_or("ungated callable output")?;
     assert!(error.message.contains("never_type"));
     assert!(work.nodes > 0);
     Ok(())

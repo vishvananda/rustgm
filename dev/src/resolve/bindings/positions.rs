@@ -13,6 +13,7 @@ pub(super) enum Position {
     Expression,
     Statement,
     MethodReceiver,
+    IfBody,
 }
 
 /// Each edge is classified in constant time; no sibling or ancestor scan.
@@ -27,13 +28,14 @@ pub(super) fn child<L>(
     child: NodeId,
 ) -> Position {
     match ast.node(parent).kind {
-        Kind::Attributed { .. } => position,
-        Kind::Statement(_) => Position::Statement,
+        Kind::Attributed { .. } | Kind::Loop { .. } | Kind::Label { .. } => position,
+        Kind::Statement(_) | Kind::Block { .. } => Position::Statement,
         Kind::Expansion { tail, .. } => {
-            if tail == Some(child) { position } else { Position::Other }
-        }
-        Kind::Block { tail, .. } => {
-            if tail == Some(child) { Position::Expression } else { Position::Statement }
+            if tail == Some(child) {
+                position
+            } else {
+                Position::Other
+            }
         }
         Kind::Item(index) => item(ast.items[index as usize].kind, child),
         Kind::FunctionType(index) => {
@@ -53,9 +55,15 @@ pub(super) fn child<L>(
             }
         }
         Kind::MethodCall { receiver, .. } => {
-            if receiver == child { Position::MethodReceiver } else { Position::Expression }
+            if receiver == child {
+                Position::MethodReceiver
+            } else {
+                Position::Expression
+            }
         }
-        Kind::GenericMethodCall { receiver, method, .. } => {
+        Kind::GenericMethodCall {
+            receiver, method, ..
+        } => {
             if receiver == child {
                 Position::MethodReceiver
             } else if method == child {
@@ -64,37 +72,68 @@ pub(super) fn child<L>(
                 Position::Expression
             }
         }
-        Kind::Type { flavor: TypeFlavor::Array, elements } => {
+        Kind::Type {
+            flavor: TypeFlavor::Array,
+            elements,
+        } => {
             if ast.list(elements).get(1) == Some(&child) {
                 Position::Expression
             } else {
                 Position::Other
             }
         }
-        Kind::Let { value, otherwise, .. } => {
+        Kind::Let {
+            value, otherwise, ..
+        } => {
             if value == Some(child) || otherwise == Some(child) {
                 Position::Expression
             } else {
                 Position::Other
             }
         }
-        Kind::LetCondition { value, .. } => {
-            if value == child { Position::Expression } else { Position::Other }
+        Kind::LetCondition { value, .. } | Kind::Cast { value, .. } | Kind::Match { value, .. } => {
+            if value == child {
+                Position::Expression
+            } else {
+                Position::Other
+            }
         }
         Kind::Arm { value, guard, .. } => {
-            if value == child || guard == Some(child) { Position::Expression } else { Position::Other }
-        }
-        Kind::Cast { value, .. } => {
-            if value == child { Position::Expression } else { Position::Other }
+            if value == child || guard == Some(child) {
+                Position::Expression
+            } else {
+                Position::Other
+            }
         }
         Kind::Struct { base, .. } => {
-            if base == Some(child) { Position::Expression } else { Position::Other }
+            if base == Some(child) {
+                Position::Expression
+            } else {
+                Position::Other
+            }
         }
         Kind::For { iterator, body, .. } => {
-            if iterator == child || body == child { Position::Expression } else { Position::Other }
+            if iterator == child {
+                Position::Expression
+            } else if body == child {
+                position
+            } else {
+                Position::Other
+            }
         }
-        Kind::Match { value, .. } => {
-            if value == child { Position::Expression } else { Position::Other }
+        Kind::While { condition, .. } => {
+            if condition == child {
+                Position::Expression
+            } else {
+                position
+            }
+        }
+        Kind::If { condition, .. } => {
+            if condition == child {
+                Position::Expression
+            } else {
+                Position::IfBody
+            }
         }
         Kind::Generic(index) => {
             let parameter = ast.generics[index as usize];
@@ -123,10 +162,6 @@ pub(super) fn child<L>(
         | Kind::Index { .. }
         | Kind::Field { .. }
         | Kind::FieldInit { .. }
-        | Kind::If { .. }
-        | Kind::While { .. }
-        | Kind::Loop { .. }
-        | Kind::Label { .. }
         | Kind::Return(_)
         | Kind::Break { .. } => Position::Expression,
         Kind::Receiver { .. }
@@ -176,7 +211,11 @@ fn item(kind: ItemKind, child: NodeId) -> Position {
             }
         }
         ItemKind::Const { value, .. } | ItemKind::Static { value, .. } => {
-            if value == Some(child) { Position::Expression } else { Position::Other }
+            if value == Some(child) {
+                Position::Expression
+            } else {
+                Position::Other
+            }
         }
         ItemKind::Struct { .. }
         | ItemKind::Enum { .. }

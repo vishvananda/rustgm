@@ -19,8 +19,11 @@ const HEADER: &str = "#![feature(no_core,lang_items,rustc_attrs)]#![no_core]#[la
 struct Files<'a>(&'a [(&'a str, &'a str)]);
 impl Sources for Files<'_> {
     fn read(&mut self, path: &Path) -> std::result::Result<Option<InputFile>, String> {
-        self.0.iter().find(|(name, _)| path == Path::new(name))
-            .map(|(_, text)| input(path, text)).transpose()
+        self.0
+            .iter()
+            .find(|(name, _)| path == Path::new(name))
+            .map(|(_, text)| input(path, text))
+            .transpose()
     }
 }
 fn input(path: &Path, source: &str) -> std::result::Result<InputFile, String> {
@@ -44,12 +47,17 @@ fn package(source: &str, files: &mut Files<'_>, expanded: bool) -> Result<Packag
     if expanded {
         Ok(expansion::analyze_with_context(input, files, &Config::default(), &context()?)?.package)
     } else {
-        Ok(load::load_with_context(input, files, &Config::default(), &context()?)?)
+        Ok(load::load_with_context(
+            input,
+            files,
+            &Config::default(),
+            &context()?,
+        )?)
     }
 }
 
 #[test]
-fn declared_source_feature_requests_preserve_actual_use_contracts() -> Result {
+fn declared_source_feature_requests_preserve_actual_use_contracts() {
     // These declarations reuse the unchanged, independently qualified v1 corpus.
     // They test the published loading/expansion contracts, not completed core.
     for (request, tail, accepted) in [
@@ -59,7 +67,17 @@ fn declared_source_feature_requests_preserve_actual_use_contracts() -> Result {
         ("", "fn f()->!{loop{}}", true),
         ("", "#[cfg(any())]type N=!;", true),
         ("", "mod forged{#![feature(never_type)]type N=!;}", false),
-        ("stmt_expr_attributes", "const N:u8=#[allow(unused)]1u8;", true),
+        ("", "mod inert{#![feature(never_type)]}", true),
+        (
+            "never_type",
+            "mod inert{#![feature(never_type)]type N=!;}",
+            true,
+        ),
+        (
+            "stmt_expr_attributes",
+            "const N:u8=#[allow(unused)]1u8;",
+            true,
+        ),
         ("", "const N:u8=#[allow(unused)]1u8;", false),
         ("", "#[cfg(any())]const N:u8=#[allow(unused)]1u8;", true),
         ("", "#[allow(unused)]const N:u8=1u8;", true),
@@ -68,10 +86,14 @@ fn declared_source_feature_requests_preserve_actual_use_contracts() -> Result {
         let source = format!("#![feature({request})]{HEADER}{tail}");
         for expanded in [false, true] {
             let result = package(&source, &mut Files::default(), expanded);
-            assert_eq!(result.is_ok(), accepted, "expanded={expanded}: {source}: {:?}", result.err());
+            assert_eq!(
+                result.is_ok(),
+                accepted,
+                "expanded={expanded}: {source}: {:?}",
+                result.err()
+            );
         }
     }
-    Ok(())
 }
 
 #[test]
@@ -82,7 +104,11 @@ fn requests_follow_root_configuration_and_never_authorize_assembly() -> Result {
         "#![cfg_attr(any(),feature(unknown_source_gate))]",
     ] {
         for expanded in [false, true] {
-            package(&format!("{request}{HEADER}"), &mut Files::default(), expanded)?;
+            package(
+                &format!("{request}{HEADER}"),
+                &mut Files::default(),
+                expanded,
+            )?;
         }
     }
     for tail in [
@@ -94,7 +120,9 @@ fn requests_follow_root_configuration_and_never_authorize_assembly() -> Result {
         let mut loaded = package(&source, &mut Files::default(), false)?;
         assert!(resolve::analyze(&mut loaded).is_err());
     }
-    let ordinary = format!("#![feature(asm_experimental_arch)]{HEADER}macro_rules!asm{{()=>{{1u8}}}}const N:u8=asm!();");
+    let ordinary = format!(
+        "#![feature(asm_experimental_arch)]{HEADER}macro_rules!asm{{()=>{{1u8}}}}const N:u8=asm!();"
+    );
     package(&ordinary, &mut Files::default(), true)?;
     Ok(())
 }
@@ -103,18 +131,22 @@ fn requests_follow_root_configuration_and_never_authorize_assembly() -> Result {
 fn installed_source_uses_keep_parent_roles_and_diagnostic_ownership() -> Result {
     let include = "#[rustc_builtin_macro]macro_rules!include{($($t:tt)*)=>{}}";
     for tail in [
-        "type N=include!(\"never.rs\");",
+        "include!(\"items.rs\");",
         "macro_rules!ty{()=>{!}}type N=ty!();",
     ] {
         let source = format!("{HEADER}{include}{tail}");
-        let result = package(&source, &mut Files(&[("never.rs", "!")]), true);
+        let result = package(&source, &mut Files(&[("items.rs", "type N=!;")]), true);
         let error = result.err().ok_or("missing never-type feature error")?;
         assert!(error.to_string().contains("never_type"), "{error}");
         let source = format!("#![feature(never_type)]{source}");
-        package(&source, &mut Files(&[("never.rs", "!")]), true)?;
+        package(&source, &mut Files(&[("items.rs", "type N=!;")]), true)?;
     }
-    let source = format!("{HEADER}{include}fn f()->include!(\"never.rs\"){{loop{{}}}}");
-    package(&source, &mut Files(&[("never.rs", "!")]), true)?;
+    let source = format!("{HEADER}{include}include!(\"function.rs\");");
+    package(
+        &source,
+        &mut Files(&[("function.rs", "fn f()->!{loop{}}")]),
+        true,
+    )?;
     let source = format!("{HEADER}mod child;");
     let result = package(&source, &mut Files(&[("child.rs", "type N=!;")]), false);
     let error = result.err().ok_or("missing module feature error")?;
@@ -123,7 +155,7 @@ fn installed_source_uses_keep_parent_roles_and_diagnostic_ownership() -> Result 
 }
 
 #[test]
-fn declared_additional_never_positions_and_expression_boundaries() -> Result {
+fn declared_additional_never_positions_and_expression_boundaries() {
     // New opposing hypotheses. Independently qualify before claiming support.
     for (tail, accepted) in [
         ("type F=fn()->!;", true),
@@ -131,15 +163,29 @@ fn declared_additional_never_positions_and_expression_boundaries() -> Result {
         ("trait Call<R>{}trait T:Call<fn()->!>{}", true),
         ("fn f(){#[allow(unused)]let x=1u8;}", true),
         ("fn f(){#[allow(unused)]1u8;}", true),
-        ("fn f()->u8{#[allow(unused)]1u8}", false),
+        ("fn f()->u8{#[allow(unused)]1u8}", true),
+        ("const N:u8={#![allow(unused)]1u8};", false),
+        ("fn f(){loop{#![allow(unused)]break;}}", true),
+        ("fn f(){while false{#![allow(unused)]break;}}", true),
+        ("fn f(){'l:loop{#![allow(unused)]break 'l;}}", true),
+        ("fn f(){let _=loop{#![allow(unused)]break;};}", false),
+        ("fn f(){let _=while false{#![allow(unused)]break;};}", false),
+        ("fn f(){if true{#![allow(unused)]}}", false),
         ("const N:[u8;#[allow(unused)]1]=[0];", false),
         ("fn f(){let _=(#[allow(unused)]1u8);}", false),
     ] {
         let source = format!("{HEADER}{tail}");
         for expanded in [false, true] {
             let result = package(&source, &mut Files::default(), expanded);
-            assert_eq!(result.is_ok(), accepted, "expanded={expanded}: {tail}: {:?}", result.err());
+            assert_eq!(
+                result.is_ok(),
+                accepted,
+                "expanded={expanded}: {tail}: {:?}",
+                result.err()
+            );
         }
     }
-    Ok(())
+    let source =
+        format!("#![feature(stmt_expr_attributes)]{HEADER}fn f(){{if true{{#![allow(unused)]}}}}");
+    assert!(package(&source, &mut Files::default(), false).is_err());
 }
