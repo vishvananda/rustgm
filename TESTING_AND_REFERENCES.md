@@ -109,6 +109,10 @@ the full debug integration lane remains available through `make test-debug`.
 Use the
 storage guard throughout, with scoped cleanup when all output roots are known.
 
+The [source-trait checkpoint measurements](docs/source-traits-editions-checkpoint.md)
+separate observed build, execution and text-suite costs under this cadence.
+They are shared-machine observations, not a controlled harness speedup claim.
+
 For a validation batch, pass `scripts/course.py --evidence-root obj/BATCH/course`
 and include that directory in the storage guard's `--prune-under` roots. This
 keeps the same fixture comparisons and complete receipts while avoiding a cleanup
