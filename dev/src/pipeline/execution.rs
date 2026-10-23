@@ -7,6 +7,7 @@ mod expressions;
 mod initializers;
 mod inputs;
 mod layout_kernel;
+mod needs_drop_kernel;
 mod parent_children;
 mod parent_scope;
 mod selected;

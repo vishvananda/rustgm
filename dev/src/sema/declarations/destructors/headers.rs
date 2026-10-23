@@ -1,4 +1,4 @@
-//! Index genuine built-in Drop impls and their associated items in linear passes.
+//! Index genuine selected Drop impls and their associated items in linear passes.
 use crate::{
     resolve::{
         expansion::Report,
@@ -27,7 +27,14 @@ pub(super) fn item(report: &Report, key: NodeKey) -> Result<Item, Error> {
     Ok(ast.items[index as usize])
 }
 pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Header>, Error> {
-    let Some(drop_trait) = report.resolution.drop_trait else {
+    let selected = if let Some(catalog) = facts.source_bindings.as_deref() {
+        catalog
+            .language(crate::support::bindings::LangItem::Drop)
+            .map(|d| d.definition)
+    } else {
+        report.resolution.drop_trait
+    };
+    let Some(drop_trait) = selected else {
         return Ok(Vec::new());
     };
     let mut headers = Vec::new();

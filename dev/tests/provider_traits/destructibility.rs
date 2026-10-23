@@ -67,18 +67,9 @@ fn ordinary_destruct_is_not_const_or_a_lookalike_implementation() -> TestResult 
     Ok(())
 }
 #[test]
-fn actual_drop_without_registration_cannot_publish_even_literal_bodies() -> TestResult {
+fn completed_empty_drop_registration_preserves_literal_bodies() -> TestResult {
     let source = [BASE, DROP, "fn one()->u8{7}"].concat();
-    let report = report(&source)?;
-    sema::declarations::analyze(&report)?;
-    let error = lower(&source)
-        .err()
-        .ok_or("unprepared Drop published")?
-        .to_string();
-    assert!(
-        error.contains("source destructor registration is not implemented"),
-        "{error}"
-    );
+    lower(&source)?;
     lower(&[BASE, "trait Drop{}fn one()->u8{7}"].concat())?;
     Ok(())
 }

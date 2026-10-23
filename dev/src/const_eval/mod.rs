@@ -1,13 +1,16 @@
 //! Bounded constant execution consumes selected typed CFGs, never source syntax.
 pub(crate) mod code;
 mod counted;
+mod executed_calls;
 pub(crate) mod lease_codes;
 mod memory;
 mod offsets;
 mod place_cache;
 mod raw_reads;
+mod reached_drop;
 mod reached_layout;
 mod readiness;
+mod results;
 mod returns;
 mod static_reads;
 mod transfers;
@@ -20,6 +23,7 @@ use crate::{
     resolve::{model::DefId, unit::NodeKey},
     sema::values::{Constant, Evaluator, Failure},
 };
+pub(crate) use reached_drop::Call as SourceNeedsDropCall;
 pub(crate) use reached_layout::Call as SourceLayoutCall;
 use static_reads::EvaluationContext;
 

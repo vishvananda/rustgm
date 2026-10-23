@@ -235,8 +235,8 @@ pub(crate) struct Catalog {
     pub anonymous: Option<Box<AnonymousIndex>>,
     pub associated: Option<Box<AssociatedIndex>>,
     pub sources: Option<Box<SourceIndex>>,
-    // Pure layout data allocates only on reached source intrinsic calls.
-    layout_results: Option<Box<HashMap<Instance, u64>>>,
+    // Pure results and query state allocate only on reached source intrinsic calls.
+    pub(super) source_results: Option<Box<super::results::SourceResults>>,
 }
 impl Catalog {
     pub(crate) fn get(&self, index: usize) -> Option<&Code> {
@@ -244,39 +244,6 @@ impl Catalog {
     }
     pub(crate) fn code(&self, index: usize) -> Option<&Code> {
         self.bodies.get(index).map(std::rc::Rc::as_ref)
-    }
-    pub(crate) fn layout_result(&self, instance: Instance) -> Option<u64> {
-        self.layout_results.as_deref()?.get(&instance).copied()
-    }
-    /// Only pure layout data is shared. Each executing caller validates itself.
-    pub(crate) fn cache_layout(
-        &mut self,
-        call: &super::SourceLayoutCall,
-        value: u64,
-    ) -> Result<(), &'static str> {
-        if let Some(previous) = self.layout_result(call.instance()) {
-            return if previous == value {
-                Ok(())
-            } else {
-                Err("source layout result changed")
-            };
-        }
-        let bytes = self
-            .bytes
-            .saturating_add(crate::support::retained::new_map::<Instance, u64>(1))
-            .saturating_add(if self.layout_results.is_none() {
-                size_of::<HashMap<Instance, u64>>()
-            } else {
-                0
-            });
-        if bytes > 64 * 1024 * 1024 {
-            return Err("source layout cache storage budget exceeded");
-        }
-        self.layout_results
-            .get_or_insert_with(Default::default)
-            .insert(call.instance(), value);
-        self.bytes = bytes;
-        Ok(())
     }
     pub(crate) fn enter_scope(&mut self) -> Result<super::lease_codes::Scope, &'static str> {
         let extra = if self.anonymous.is_none() {

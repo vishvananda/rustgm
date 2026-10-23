@@ -24,9 +24,7 @@ impl Engine {
         };
         let error = |message| Error::at(FileId(0), 0, message);
         if selected.kind == SourceIntrinsic::NeedsDrop {
-            return Err(error(
-                "source needs_drop requires completed source Drop and Copy roles",
-            ));
+            return self.source_needs_drop(report, facts, instance, state);
         }
         let call = state
             .ok_or_else(|| error("source intrinsic requires a reached checked caller"))?

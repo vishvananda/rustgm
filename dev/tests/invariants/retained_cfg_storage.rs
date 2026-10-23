@@ -56,7 +56,7 @@ fn full_bodies_charge_proof_storage_and_snapshots_charge_callable_maps() -> Resu
         bytes: 64 * 1024 * 1024,
         ..Catalog::default()
     };
-    assert!(catalog.layout_results.is_none());
+    assert!(catalog.source_results.is_none());
     assert_eq!(
         catalog.insert(body).err(),
         Some("constant execution code exceeds 64 MiB budget")

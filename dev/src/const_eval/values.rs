@@ -297,34 +297,22 @@ impl Machine<'_, '_> {
                     if let Some(catalog) = self.evaluator.facts().source_bindings.as_deref() {
                         catalog.check_const_call(definition)?;
                     }
-                    if let Some(call) = super::reached_layout::validate(
-                        self.evaluator.facts(),
-                        &body,
-                        frame,
-                        frame
-                            .next
-                            .checked_sub(1)
-                            .ok_or("source layout call has no current statement")?,
-                        target,
-                    )? {
-                        let Some(bits) = self.bodies.layout_result(call.instance()) else {
-                            self.waiting = Some(super::Requirement::FunctionBody(target));
-                            return Ok(None);
-                        };
-                        self.work.calls += 1;
-                        Constant::scalar(Scalar::Integer(u128::from(bits)))
-                    } else {
-                        let Some(index) = self
-                            .bodies
-                            .functions
-                            .get(&target)
-                            .or_else(|| self.bodies.definitions.get(&definition))
-                            .copied()
-                        else {
-                            self.waiting = Some(super::Requirement::FunctionBody(target));
-                            return Ok(None);
-                        };
-                        return Ok(Some((index, arguments, id)));
+                    match self.source_intrinsic_call(&body, frame, target)? {
+                        super::executed_calls::Answer::Ready(value) => value,
+                        super::executed_calls::Answer::Pending => return Ok(None),
+                        super::executed_calls::Answer::Ordinary => {
+                            let Some(index) = self
+                                .bodies
+                                .functions
+                                .get(&target)
+                                .or_else(|| self.bodies.definitions.get(&definition))
+                                .copied()
+                            else {
+                                self.waiting = Some(super::Requirement::FunctionBody(target));
+                                return Ok(None);
+                            };
+                            return Ok(Some((index, arguments, id)));
+                        }
                     }
                 }
             }

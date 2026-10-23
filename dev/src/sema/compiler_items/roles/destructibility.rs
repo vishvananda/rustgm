@@ -7,17 +7,6 @@ use crate::{support::constness::Constness, types::callable::Convention};
 #[cfg(test)]
 #[path = "../../../../tests/invariants/registration_seal.rs"]
 mod tests;
-impl Catalog {
-    /// A reserved role can affect cleanup before its implementations are ready.
-    /// The consumer replaces this boundary with an exact registration marker.
-    pub(crate) fn require_source_destructors_prepared(&self) -> Result<(), &'static str> {
-        if self.language(LangItem::Drop).is_none() {
-            return Ok(());
-        }
-        self.validated_language(LangItem::Drop)?;
-        Err("source destructor registration is not implemented")
-    }
-}
 pub(super) fn validate(
     report: &Report,
     facts: &Declarations,

@@ -32,3 +32,31 @@ pub fn resolve(source: &str, expanded: bool) -> Result<Report, String> {
         Ok(report)
     }
 }
+
+/// Test-only actual-provider context, without bootstrap declarations.
+#[allow(
+    dead_code,
+    reason = "shared helper is compiled by suites without source providers"
+)]
+pub fn source_provider(source: &str, tag: &str) -> Result<Report, String> {
+    use rustgm::{
+        resolve::bindings::Context,
+        support::{bindings::Mode, crates::CrateIdentity},
+    };
+    let identity = CrateIdentity::new("minicore", tag).map_err(str::to_owned)?;
+    let options = Context {
+        crate_name: Some("minicore".into()),
+        current: Some(identity.clone()),
+        mode: Mode::Source { provider: identity },
+        ..Default::default()
+    };
+    let input = InputFile {
+        identity: "source-provider.rs".into(),
+        path: "source-provider.rs".into(),
+        source: SourceFile::new(source.as_bytes().to_vec())?,
+    };
+    let expanded =
+        resolve::expansion::analyze_with_context(input, &mut NoFiles, &Config::default(), &options)
+            .map_err(|e| e.to_string())?;
+    resolve::analyze_expanded(expanded).map_err(|e| e.to_string())
+}

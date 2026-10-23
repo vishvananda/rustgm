@@ -1,0 +1,316 @@
+{
+  "scope": "unchanged independently qualified logical-work/native inputs; no benchmark claim",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "cases": [
+    {
+      "name": "width8-calls8",
+      "path": "pa31/tests/spec/needs-drop/work/width8-calls8.rs",
+      "sha256": "86c61c341210d090c3e90b3fc1a8ba2c26024993e1efc62924c17b610d81aeb4",
+      "dimensions": {
+        "width": 8,
+        "repeats": 8,
+        "unrelated_nominals": 0
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "1\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [
+        1
+      ],
+      "query_invariant": "one exact closed source Instance, repeated actual calls; shared DAG width separate from repeated calls",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/width8-calls8.rs"
+    },
+    {
+      "name": "width8-calls32",
+      "path": "pa31/tests/spec/needs-drop/work/width8-calls32.rs",
+      "sha256": "876ae6f78409d0d83ec86324238353b4b32f2877da7310828f94667a88455e5c",
+      "dimensions": {
+        "width": 8,
+        "repeats": 32,
+        "unrelated_nominals": 0
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "1\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [
+        1
+      ],
+      "query_invariant": "one exact closed source Instance, repeated actual calls; shared DAG width separate from repeated calls",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/width8-calls32.rs"
+    },
+    {
+      "name": "width8-calls128",
+      "path": "pa31/tests/spec/needs-drop/work/width8-calls128.rs",
+      "sha256": "428410916fbbb88955b2cf2f687e73ec9cb94373194421bb029787f9a2c93017",
+      "dimensions": {
+        "width": 8,
+        "repeats": 128,
+        "unrelated_nominals": 0
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "1\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [
+        1
+      ],
+      "query_invariant": "one exact closed source Instance, repeated actual calls; shared DAG width separate from repeated calls",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/width8-calls128.rs"
+    },
+    {
+      "name": "width32-calls8",
+      "path": "pa31/tests/spec/needs-drop/work/width32-calls8.rs",
+      "sha256": "25e2e0203a07216022eba17c9fed7b0f0a3e5824fd0429e96977ba901b60cabb",
+      "dimensions": {
+        "width": 32,
+        "repeats": 8,
+        "unrelated_nominals": 0
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "1\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [
+        1
+      ],
+      "query_invariant": "one exact closed source Instance, repeated actual calls; shared DAG width separate from repeated calls",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/width32-calls8.rs"
+    },
+    {
+      "name": "width32-calls32",
+      "path": "pa31/tests/spec/needs-drop/work/width32-calls32.rs",
+      "sha256": "b2110c2bf2dd3fe413bc53ed509bb7b8b3c3099298123659fea79458a5f52429",
+      "dimensions": {
+        "width": 32,
+        "repeats": 32,
+        "unrelated_nominals": 0
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "1\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [
+        1
+      ],
+      "query_invariant": "one exact closed source Instance, repeated actual calls; shared DAG width separate from repeated calls",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/width32-calls32.rs"
+    },
+    {
+      "name": "width32-calls128",
+      "path": "pa31/tests/spec/needs-drop/work/width32-calls128.rs",
+      "sha256": "037f2577a33be72fccbcc384ac7cc8e0b2da3a420854f2523aa384fd87ed01e1",
+      "dimensions": {
+        "width": 32,
+        "repeats": 128,
+        "unrelated_nominals": 0
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "1\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [
+        1
+      ],
+      "query_invariant": "one exact closed source Instance, repeated actual calls; shared DAG width separate from repeated calls",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/width32-calls128.rs"
+    },
+    {
+      "name": "width128-calls8",
+      "path": "pa31/tests/spec/needs-drop/work/width128-calls8.rs",
+      "sha256": "df66b018e2ce1f662463b2ce41a2043f35500958608181d6d284cf3d0e95b3b7",
+      "dimensions": {
+        "width": 128,
+        "repeats": 8,
+        "unrelated_nominals": 0
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "1\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [
+        1
+      ],
+      "query_invariant": "one exact closed source Instance, repeated actual calls; shared DAG width separate from repeated calls",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/width128-calls8.rs"
+    },
+    {
+      "name": "width128-calls32",
+      "path": "pa31/tests/spec/needs-drop/work/width128-calls32.rs",
+      "sha256": "723962a054cea4845a3a39dde805d40fa4714a9d53ff014e081ae3d912711b09",
+      "dimensions": {
+        "width": 128,
+        "repeats": 32,
+        "unrelated_nominals": 0
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "1\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [
+        1
+      ],
+      "query_invariant": "one exact closed source Instance, repeated actual calls; shared DAG width separate from repeated calls",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/width128-calls32.rs"
+    },
+    {
+      "name": "width128-calls128",
+      "path": "pa31/tests/spec/needs-drop/work/width128-calls128.rs",
+      "sha256": "612b4ccadbdfe4a493c52e21e76b2d458edaa9adb365f9abf3168cc127faab35",
+      "dimensions": {
+        "width": 128,
+        "repeats": 128,
+        "unrelated_nominals": 0
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "1\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [
+        1
+      ],
+      "query_invariant": "one exact closed source Instance, repeated actual calls; shared DAG width separate from repeated calls",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/width128-calls128.rs"
+    },
+    {
+      "name": "width8-calls8-noise64",
+      "path": "pa31/tests/spec/needs-drop/work/width8-calls8-noise64.rs",
+      "sha256": "f8323892222b0a809f6ae5c8c3fa2d08e07baf1c0956820f71c88f1fe72ab413",
+      "dimensions": {
+        "width": 8,
+        "repeats": 8,
+        "unrelated_nominals": 64
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "1\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [
+        1
+      ],
+      "query_invariant": "one exact closed source Instance, repeated actual calls; shared DAG width separate from repeated calls",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/width8-calls8-noise64.rs"
+    },
+    {
+      "name": "width8-calls8-noise1024",
+      "path": "pa31/tests/spec/needs-drop/work/width8-calls8-noise1024.rs",
+      "sha256": "f201987e3c6d1d3955c1c8a30c7609273258282111325e27c084b0e404ff58de",
+      "dimensions": {
+        "width": 8,
+        "repeats": 8,
+        "unrelated_nominals": 1024
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "1\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [
+        1
+      ],
+      "query_invariant": "one exact closed source Instance, repeated actual calls; shared DAG width separate from repeated calls",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/width8-calls8-noise1024.rs"
+    },
+    {
+      "name": "ordinary-unused-intrinsic",
+      "path": "pa31/tests/spec/needs-drop/work/ordinary-unused-intrinsic.rs",
+      "sha256": "17a0779f9c06ce7074c066e68797c51c5f74097b9fbb9c95468472ac190fad9d",
+      "dimensions": {
+        "width": 8,
+        "repeats": 0,
+        "unrelated_nominals": 0
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "0\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [],
+      "query_invariant": "completed closed result only; every retained call still checks its own caller; no-cache allocation for ordinary control",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/ordinary-unused-intrinsic.rs"
+    },
+    {
+      "name": "primitive-calls128",
+      "path": "pa31/tests/spec/needs-drop/work/primitive-calls128.rs",
+      "sha256": "416b4a4e99a4f8026e0423bb914ebba73877d223f2de314d79a61453be9f2c62",
+      "dimensions": {
+        "width": 0,
+        "repeats": 128,
+        "unrelated_nominals": 0
+      },
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_stdout": "0\n",
+      "expected_candidate_views": {
+        "types": 0,
+        "constants": 0,
+        "lowir": 0
+      },
+      "scope": "reduced independently valid actual roles; full original Drop/Pin remains required",
+      "expected_selected_array_lengths": [
+        0
+      ],
+      "query_invariant": "one exact closed source Instance, repeated actual calls; shared DAG width separate from repeated calls",
+      "original_path": "obj/parallel/pa28/source-needs-drop/kernel-preparation-v1/inputs/primitive-calls128.rs"
+    }
+  ]
+}

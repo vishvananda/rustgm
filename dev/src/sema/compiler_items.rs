@@ -7,6 +7,7 @@ pub(super) use calls::record as record_call_effects;
 pub(in crate::sema) use explicit_cleanup::explicit_drop_member;
 mod intrinsic_contracts;
 mod layout;
+mod needs_drop;
 pub(crate) use copying::copy_decisions;
 mod roles;
 pub(crate) use roles::destruct_predicate;
@@ -20,6 +21,7 @@ use crate::{
 pub(super) use intrinsic_contracts::validate as validate_intrinsic;
 pub(crate) use layout::Selection;
 pub(super) use layout::validate_member as validate_layout_member;
+pub(crate) use needs_drop::NeedsDropSelection;
 pub(super) use roles::validate as validate_traits;
 pub(super) use sizing::validate as validate_sizing;
 #[cfg(test)]
@@ -30,6 +32,7 @@ pub(crate) struct Catalog {
     provider: CrateIdentity,
     languages: [Option<Declaration>; LangItem::ALL.len()],
     sizing: Option<[DefId; 3]>,
+    destruction_registration: Option<DefId>,
     traits: Option<Box<roles::Validated>>,
     call_effects: Option<Box<crate::support::hash::HashMap<DefId, calls::Effect>>>,
     intrinsics: crate::support::hash::HashMap<DefId, intrinsic_contracts::Intrinsic>,
@@ -80,6 +83,7 @@ impl Catalog {
             provider: reserved.provider.clone(),
             languages: LangItem::ALL.map(|kind| reserved.language(kind)),
             sizing: None,
+            destruction_registration: None,
             traits: None,
             call_effects: None,
             intrinsics: reserved

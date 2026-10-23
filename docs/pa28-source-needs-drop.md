@@ -245,3 +245,90 @@ This remains a private query prerequisite, without source intrinsic execution or
 actual Drop/Copy permission. Actual source role validation, exhaustive destructor
 registration (including completed-empty), fresh caller authority and final
 conformance validation remain required.
+
+## Qualified actual-role kernel
+
+This checkpoint supersedes the identity-only execution stop for the independently
+qualified minimal provider. Its fifteen original inputs and thirteen separately
+declared work controls now live under `pa31/tests/spec/needs-drop/`, with exact
+source hashes and original independent contracts. They remain planned-stage
+maintainer inputs, without generated references or assignment activation.
+
+Source-mode reservation classifies potential cleanup from the actual Drop DefId.
+The exhaustive collector completes ordinary retained ImplHeaders and their
+canonical declaration/override mapping before registration. A cold exact-DefId
+marker distinguishes absent, reserved, validated-unprepared, completed-empty and
+completed-nonempty inventories. The marker publishes only after the complete
+successful registration pass; later trait, method, body and Drop-bound checks
+remain mandatory. Ordinary bootstrap registration retains its previous route.
+Source Copy preparation and cold/warm const-call gates still require this marker.
+Explicit actual Drop-member calls/function values retain their separate identity
+denial, including matched overrides and aliases.
+
+`NeedsDropSelection` remains data. Both suspended preparation and resumed
+execution validate the current checked Code entry, frame block/statement,
+evaluated callee, complete Instance/signature, const eligibility, zero arguments
+and bool destination. Every warm result repeats these checks and the actual-role
+and registration gates. Ordinary original/specialized proof and caller debts are
+required before evaluating a source fallback; true/false placeholder bodies do
+not execute as an intrinsic implementation.
+
+One cold SourceResults owner holds the existing layout map and an optional
+DropResults owner. The latter shares one immutable destructor inventory and one
+bounded sparse concrete query across requests. Only successful closed-Instance
+bool answers enter its map. Missing roles, incomplete registration, unresolved
+physical heads and failed queries never publish false. Query and answer growth
+preflight their retained and replacement payload capacities under the existing
+shared execution budget. The accounting boundary covers owned logical record
+and payload capacities, not allocator overhead or canonical Store allocation.
+
+The unchanged reference-positive initially failed because the specialized
+Contract signature had one owned binder while the public callable had none.
+The exact original source and GDB evidence are retained. The separate reviewed
+signature-pairing prerequisite retains both genuine views; this kernel does not
+erase binders, compare only their counts or replace a public signature. See
+[the pairing review](pa31-source-copy-signatures.md).
+
+`kernel-v8/` passes four focused frontend tests, ten private invariants and all
+eleven original native outputs. The source family contains eleven positives and
+four semantic negatives. Exact call/destination/statement, full-Instance identity,
+wrong/pending registration, cold/warm authority, tiny-budget and signature/layout
+opponents pass. Strict all-target/all-feature Clippy, format and the 1983-file
+architecture audit pass. The prior `kernel-scaling-v1/` independently passes all
+thirteen native work controls. Their unchanged source snapshots and earlier
+failed batches remain retained under `obj/parallel/pa28/source-needs-drop/`.
+
+Actual-pipeline query work for widths 8/32/128 is 29/101/389 steps and
+388/772/2308 retained logical bytes, with one cached answer. All counts remain
+identical across 8/32/128 source calls and unrelated declaration counts 64/1024.
+The unused-intrinsic control allocates no query; 128 primitive calls use four
+query steps and 280 retained bytes. These are logical work/storage invariants,
+not measured wall-time or RSS neutrality. SourceResults is 40 bytes, DropResults
+104, and the execution Catalog remains 160. The cold source Catalog is 424
+bytes, eight more than the header-only 416-byte record for the exact marker;
+Validated is 28, Reservations 432, Declarations 7048 and Resolution 2032.
+
+## Required source closure remains
+
+The bool kernel/native tests do not instantiate and execute an actual Drop value.
+The original cleanup-count hypothesis first lacked the real Freeze declaration;
+adding it exposed the genuine drop_glue requirement. A distinct complete context
+with exact Freeze/Destruct/drop_glue declarations independently returns seven
+under pinned rustc. Its unchanged source hash is
+`633442327cf88bd6f30745d737706695860e5ea96cdbfd2662a81cdb25e1d110`.
+The candidate still stops parsing its original unsafe auto trait at byte 126.
+This remains a required positive owned by the source-role lane, alongside full
+Drop/Pin/default-method and const/conditional destructor execution.
+
+The complete CLI matrix is retained in `kernel-views-v1/`. Types/constants and
+checked LowIR/native lowering have distinct publication surfaces: library LowIR
+artifact export still rejects exposed source traits/generic declarations outside
+the scalar metadata profile. A separately declared no_main context independently
+accepts in rustc but still reaches the candidate's required-root-main boundary.
+Neither is a Rust rejection contract. The original sources remain required;
+checked internal lowering/native qualification does not claim a complete source
+library artifact or full upstream core acceptance. The two original string
+panic-macro positives and the rest of PA27/PA28 remain required as before.
+The two exact attributed upstream-wrapper contexts in `declared-v3.json` also
+remain required source-closure controls; the distinct minimal provider does not
+qualify their complete attribute/role environment.

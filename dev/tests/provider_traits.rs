@@ -18,10 +18,10 @@ mod destructibility;
 #[path = "provider_traits/forbidden_cleanup.rs"]
 mod forbidden_cleanup;
 #[path = "provider_traits/native.rs"]
-mod native;
+pub(super) mod native;
 #[path = "provider_traits/signature_views.rs"]
 mod signature_views;
-type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+pub(super) type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 const PROVIDER: &str = r#"#![feature(unboxed_closures)]
 #![feature(no_core,lang_items,rustc_attrs,const_trait_impl)]
 #![no_core]
@@ -47,7 +47,7 @@ impl Sources for NoFiles {
         Ok(None)
     }
 }
-fn report(source: &str) -> TestResult<resolve::expansion::Report> {
+pub(super) fn report(source: &str) -> TestResult<resolve::expansion::Report> {
     let identity = CrateIdentity::new("minicore", "source_traits_v1")?;
     let context = Context {
         crate_name: Some("minicore".into()),
@@ -113,7 +113,7 @@ fn source_roles_reject_wrong_owners_and_unsupported_header_profiles() -> TestRes
 const COPY_EXECUTION: &str = cases::GENERIC_COPY;
 const CLONE_EXECUTION: &str = cases::SOURCE_CLONE_UFCS;
 const CALL_EXECUTION: &str = cases::CALLABLE_FUNCTION_ITEM;
-fn lower(source: &str) -> TestResult<rustgm::lowir::program::Program> {
+pub(super) fn lower(source: &str) -> TestResult<rustgm::lowir::program::Program> {
     let report = report(source)?;
     let rustgm::pipeline::Analysis {
         mut facts,

@@ -1,0 +1,126 @@
+{
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "state": "declared independently qualified source inputs; planned PA31, no references or activation",
+  "cases": [
+    {
+      "name": "minimal-primitive",
+      "path": "pa31/tests/spec/needs-drop/minimal-primitive.rs",
+      "sha256": "19baaeec26d57af48af33f3a008125df476038149f912621bb9f489a88e24ef3",
+      "accepted": true,
+      "native_stdout": "0\n",
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/minimal-declared-v1.json"
+    },
+    {
+      "name": "minimal-drop",
+      "path": "pa31/tests/spec/needs-drop/minimal-drop.rs",
+      "sha256": "ef9700384c504e8c6a58bed984b96c1af674dab1a53a140be79adad7933aafee",
+      "accepted": true,
+      "native_stdout": "1\n",
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/minimal-declared-v1.json"
+    },
+    {
+      "name": "minimal-recursive-drop",
+      "path": "pa31/tests/spec/needs-drop/minimal-recursive-drop.rs",
+      "sha256": "6f93a0cab2e9fdef98890df0ae8c773e8c2fe715224f35efca95404073efb079",
+      "accepted": true,
+      "native_stdout": "1\n",
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/minimal-declared-v1.json"
+    },
+    {
+      "name": "minimal-zero-drop-array",
+      "path": "pa31/tests/spec/needs-drop/minimal-zero-drop-array.rs",
+      "sha256": "a3f3f6f65d9ad4384100ab0acd32c1051b73da81e0236c246aec333678c1e4d3",
+      "accepted": true,
+      "native_stdout": "0\n",
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/minimal-declared-v1.json"
+    },
+    {
+      "name": "minimal-reference",
+      "path": "pa31/tests/spec/needs-drop/minimal-reference.rs",
+      "sha256": "93c6b012e5bb90eb28701f9bc1f7c864eb2e5390582a558281846c4ba53e1149",
+      "accepted": true,
+      "native_stdout": "0\n",
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/minimal-declared-v1.json"
+    },
+    {
+      "name": "minimal-generic-drop",
+      "path": "pa31/tests/spec/needs-drop/minimal-generic-drop.rs",
+      "sha256": "39eb0e6c2fefa3dd1376007de4577b50ff8dbd7a7b25f7a41cbcb1671a188f6d",
+      "accepted": true,
+      "native_stdout": "1\n",
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/minimal-declared-v1.json"
+    },
+    {
+      "name": "minimal-copy-bound",
+      "path": "pa31/tests/spec/needs-drop/minimal-copy-bound.rs",
+      "sha256": "5417598840a905cde7f6b991007f1533e6ba8b64a3016058239387002a3c51f2",
+      "accepted": true,
+      "native_stdout": "0\n",
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/minimal-declared-v1.json"
+    },
+    {
+      "name": "minimal-unpaid-copy",
+      "path": "pa31/tests/spec/needs-drop/minimal-unpaid-copy.rs",
+      "sha256": "9c4fe3d5c991f57c833642ed714e604be1845d3073ec82ef3b019d1d0c880339",
+      "accepted": false,
+      "native_stdout": null,
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/minimal-declared-v1.json"
+    },
+    {
+      "name": "minimal-missing-drop-method",
+      "path": "pa31/tests/spec/needs-drop/minimal-missing-drop-method.rs",
+      "sha256": "9b445d66e0ce56c3db4af1e2c38ffa6d58e58b14bd572c9999db7d6a39e89772",
+      "accepted": false,
+      "native_stdout": null,
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/minimal-declared-v1.json"
+    },
+    {
+      "name": "minimal-wrong-drop-receiver",
+      "path": "pa31/tests/spec/needs-drop/minimal-wrong-drop-receiver.rs",
+      "sha256": "00d276e5c3b8ee5cd97a7f82f7e20528bff35e00304c5ccb5548c2accc0fb321",
+      "accepted": false,
+      "native_stdout": null,
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/minimal-declared-v1.json"
+    },
+    {
+      "name": "drop-copy-conflict",
+      "path": "pa31/tests/spec/needs-drop/drop-copy-conflict.rs",
+      "sha256": "79dc81bee2b27e064162929ef9a43ab143e800505e4aa128c2cb2f48cbd766ca",
+      "accepted": false,
+      "native_stdout": null,
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/kernel-identity-controls-v1/declared.json"
+    },
+    {
+      "name": "ordinary-drop-trait",
+      "path": "pa31/tests/spec/needs-drop/ordinary-drop-trait.rs",
+      "sha256": "ef3b94fadccd318bd2cb92a60c02767dbcc88e2ef3ab0c6798038a211287e170",
+      "accepted": true,
+      "native_stdout": "0\n",
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/kernel-identity-controls-v1/declared.json"
+    },
+    {
+      "name": "ordinary-needs-drop-function",
+      "path": "pa31/tests/spec/needs-drop/ordinary-needs-drop-function.rs",
+      "sha256": "984d72675ba80c7aa37fa21c78dcc5c878cce3b7b43edd3498d892dc038ac347",
+      "accepted": true,
+      "native_stdout": "1\n",
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/kernel-identity-controls-v1/declared.json"
+    },
+    {
+      "name": "intrinsic-fallback-true",
+      "path": "pa31/tests/spec/needs-drop/intrinsic-fallback-true.rs",
+      "sha256": "6a278ed8c1d8cd54a4a904281a2b1b116e97981c24d1c81999a502b861b4621e",
+      "accepted": true,
+      "native_stdout": "1\n",
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/kernel-execution-controls-v1/declared.json"
+    },
+    {
+      "name": "intrinsic-fallback-false",
+      "path": "pa31/tests/spec/needs-drop/intrinsic-fallback-false.rs",
+      "sha256": "ead831af1caf0a6478e1e66564b8ebea92ee03eebc906adf10f9617347ececb5",
+      "accepted": true,
+      "native_stdout": "1\n",
+      "independent_declaration": "obj/parallel/pa28/source-needs-drop/kernel-execution-controls-v1/declared.json"
+    }
+  ]
+}

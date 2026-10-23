@@ -178,6 +178,16 @@ actually required by selected core/crate sources must work at PA32/PA35;
 the broader target closure belongs to PA41. The current U32 and Option
 checkpoints do not claim those capabilities.
 
+The source-bound `needs_drop<T: ?Sized>` kernel now uses exact actual Copy/Drop
+roles, exhaustive destructor registration and a fresh checked const-call witness
+before every result-cache access. Ordinary runtime wrapper calls specialize their
+existing const block; direct runtime intrinsic codegen remains unsupported.
+The focused provider qualifies eleven original bool-result/native controls and
+thirteen query-reuse/scaling controls. This does not execute full upstream
+Drop/Pin, Freeze/drop_glue or conditional destruction, and does not close the
+public source-library metadata/entry boundaries. See
+`pa28-source-needs-drop.md`; all original required controls remain retained.
+
 Retained closure environments now use their exact completed capture tuple layout
 and the existing iterative Product codec. Owned/shared/mutable captures preserve
 ownership and pointer restrictions, including fresh selected-reference validity;

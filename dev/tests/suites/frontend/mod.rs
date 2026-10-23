@@ -63,3 +63,6 @@ mod syntax_transfer;
 mod textual_scopes;
 #[path = "../../token_trees.rs"]
 mod token_trees;
+
+#[path = "../../needs_drop_provider.rs"]
+mod needs_drop_provider;

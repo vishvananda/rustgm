@@ -56,12 +56,17 @@ fn source_drop_headers_and_registration_are_distinct_states() -> Result {
         catalog.require_source_destructors_prepared(),
         Err("source trait role requires completed declaration validation")
     );
-    let facts = sema::declarations::analyze(&report)?;
+    let mut facts = sema::declarations::analyze(&report)?;
+    facts
+        .source_bindings
+        .as_deref_mut()
+        .ok_or("catalog")?
+        .destruction_registration = None;
     let catalog = facts.source_bindings.as_deref().ok_or("catalog")?;
     assert!(catalog.validated_language(LangItem::Drop)?.is_some());
     assert_eq!(
         catalog.require_source_destructors_prepared(),
-        Err("source destructor registration is not implemented")
+        Err("source destructor registration requires exhaustive preparation")
     );
     println!(
         "Validated={} SourceCatalog={} Reservations={} Declarations={} Resolution={}",
@@ -79,6 +84,11 @@ fn source_drop_unprepared_registration_blocks_copy_and_cold_or_warm_ctfe() -> Re
         let report = report()?;
         let facts = sema::declarations::analyze(&report)?;
         let mut facts = sema::bodies::analyze(&report, facts)?;
+        facts
+            .source_bindings
+            .as_deref_mut()
+            .ok_or("catalog")?
+            .destruction_registration = None;
         let mut templates = body::templates::Prepared::default();
         let mut contracts = body::regions::Collector::default();
         let functions = facts
@@ -102,7 +112,7 @@ fn source_drop_unprepared_registration_blocks_copy_and_cold_or_warm_ctfe() -> Re
             let mut contract = contracts.function(&facts, function)?.clone();
             assert_eq!(
                 body::prepare_source_copy(&mut facts, b, &mut contract),
-                Err("source destructor registration is not implemented".into())
+                Err("source destructor registration requires exhaustive preparation".into())
             );
             // These intentionally unproved snapshots exercise the reached-call gate;
             // cache structure is not an execution permission.
@@ -124,7 +134,7 @@ fn source_drop_unprepared_registration_blocks_copy_and_cold_or_warm_ctfe() -> Re
         assert!(
             error
                 .message
-                .contains("source destructor registration is not implemented"),
+                .contains("source destructor registration requires exhaustive preparation"),
             "warm={warm}: {}",
             error.message
         );
@@ -191,3 +201,6 @@ fn ordinary_destruct_evidence_does_not_pay_const_or_conditional_goals() -> Resul
     }
     Ok(())
 }
+
+#[path = "needs_drop_registration.rs"]
+mod bool_results;

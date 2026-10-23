@@ -140,7 +140,7 @@ fn warmed_layout_data_still_requires_the_current_direct_checked_call() -> Result
     machine.begin(bad, &[]).map_err(|e| e.message)?;
     assert_eq!(
         machine.advance().err().map(|e| e.message),
-        Some("source layout call differs from its checked const contract")
+        Some("source intrinsic call differs from its checked const contract")
     );
     Ok(())
 }

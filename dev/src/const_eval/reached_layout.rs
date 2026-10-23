@@ -34,6 +34,7 @@ impl State {
             .frames
             .last()
             .ok_or("source intrinsic preparation has no reached caller")?;
+        catalog.validate_entry(frame.body)?;
         let body = catalog
             .code(frame.body)
             .ok_or("source layout caller code is missing")?;
@@ -54,41 +55,64 @@ pub(super) fn validate(
     let Some(selection) = catalog.layout_selection(facts, target)? else {
         return Ok(None);
     };
+    checked_call(
+        facts,
+        body,
+        frame,
+        position,
+        target,
+        (selection.definition, Primitive::Usize),
+    )?;
+    Ok(Some(Call {
+        instance: target,
+        selection,
+    }))
+}
+
+/// Shared structural checks do not retain a caller token or infer const permission.
+pub(super) fn checked_call(
+    facts: &Declarations,
+    body: &Code,
+    frame: &Frame,
+    position: u32,
+    target: Instance,
+    contract: (crate::resolve::model::DefId, Primitive),
+) -> Result<(), &'static str> {
     let block = body
         .blocks
         .get(frame.block.0 as usize)
-        .ok_or("source layout call has no checked block")?;
+        .ok_or("source intrinsic call has no checked block")?;
     if position < block.start || position >= block.end {
-        return Err("source layout call is outside the current checked block");
+        return Err("source intrinsic call is outside the current checked block");
     }
     let Some(Action::Evaluate(destination)) =
         body.statements.get(position as usize).map(|s| s.action)
     else {
-        return Err("source layout preparation is not a direct checked call");
+        return Err("source intrinsic preparation is not a direct checked call");
     };
     let value = body
         .values
         .get(destination.0 as usize)
-        .ok_or("source layout call has no destination")?;
+        .ok_or("source intrinsic call has no destination")?;
     let Rvalue::Call {
         signature,
         callee,
         arguments,
     } = value.kind
     else {
-        return Err("source layout preparation is not a function call");
+        return Err("source intrinsic preparation is not a function call");
     };
     let Some(Kind::FunctionItem {
         signature: selected_signature,
         ..
     }) = facts.types.kind(target.ty())
     else {
-        return Err("source layout target lost its item identity");
+        return Err("source intrinsic target lost its item identity");
     };
     if !body.const_context
-        || !facts.is_const_function(selection.definition)
+        || !facts.is_const_function(contract.0)
         || signature != selected_signature
-        || value.ty != crate::types::TypeId::primitive(Primitive::Usize)
+        || value.ty != crate::types::TypeId::primitive(contract.1)
         || body
             .values
             .get(callee.0 as usize)
@@ -98,16 +122,18 @@ pub(super) fn validate(
             .get(arguments.start as usize..arguments.end as usize)
             .is_some_and(<[ValueId]>::is_empty)
         || Machine::value(frame, callee)
-            .map_err(|_| "source layout call has no evaluated callee")?
+            .map_err(|_| "source intrinsic call has no evaluated callee")?
             .as_function()
             != Some(target)
     {
-        return Err("source layout call differs from its checked const contract");
+        return Err("source intrinsic call differs from its checked const contract");
     }
-    Ok(Some(Call {
-        instance: target,
-        selection,
-    }))
+    facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source intrinsic catalog disappeared")?
+        .check_const_call(contract.0)?;
+    Ok(())
 }
 
 #[cfg(test)]

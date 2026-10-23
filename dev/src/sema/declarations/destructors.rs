@@ -39,9 +39,34 @@ impl Checker<'_> {
             let method = header
                 .method
                 .ok_or_else(|| self.error(key, "Drop impl is missing its drop method"))?;
-            let environment =
-                self.impl_header(header.self_definition, key, header.target, steps, limit)?;
-            let target = environment.schema.self_type;
+            let source_role = self
+                .facts
+                .source_bindings
+                .as_deref()
+                .and_then(|c| c.language(crate::support::bindings::LangItem::Drop));
+            let environment = if let Some(role) = source_role {
+                self.facts
+                    .source_bindings
+                    .as_deref()
+                    .ok_or_else(|| self.error(key, "source catalog disappeared"))?
+                    .validated_language(crate::support::bindings::LangItem::Drop)
+                    .map_err(|e| self.error(role.origin, e))?;
+                self.work.push(super::Work::ImplHeader(
+                    header.self_definition,
+                    super::impl_headers::Phase::Begin,
+                ));
+                self.drain(steps, limit)?;
+                None
+            } else {
+                Some(self.impl_header(header.self_definition, key, header.target, steps, limit)?)
+            };
+            let schema = environment
+                .as_ref()
+                .map(|h| &h.schema)
+                .or_else(|| self.facts.associated.schema(header.self_definition))
+                .ok_or_else(|| self.error(key, "missing registered destructor schema"))?;
+            let (target, captures, bounds) =
+                (schema.self_type, schema.captures, schema.bounds.clone());
             let Some(Type::Adt(item, arguments)) = self.facts.types.kind(target) else {
                 return Err(self.error(key, "Drop requires a local struct or enum target"));
             };
@@ -49,12 +74,7 @@ impl Checker<'_> {
                 return Err(self.error(key, "Drop target disagrees with its declared nominal head"));
             }
             let coverage = self
-                .drop_target_coverage(
-                    header.self_definition,
-                    item,
-                    arguments,
-                    environment.schema.captures,
-                )
+                .drop_target_coverage(header.self_definition, item, arguments, captures)
                 .map_err(|e| self.error(key, e))?;
             self.facts
                 .destructors
@@ -64,12 +84,14 @@ impl Checker<'_> {
                     method,
                     target,
                     item,
-                    parameters: environment.schema.captures,
-                    bounds: environment.schema.bounds.clone(),
+                    parameters: captures,
+                    bounds,
                     coverage,
                 })
                 .map_err(|e| self.error(key, e))?;
-            self.complete_impl_owner(header.self_definition, key, environment, steps, limit)?;
+            if let Some(environment) = environment {
+                self.complete_impl_owner(header.self_definition, key, environment, steps, limit)?;
+            }
             if self
                 .facts
                 .generics
@@ -81,6 +103,11 @@ impl Checker<'_> {
                     .parents
                     .insert(method, header.self_definition);
             }
+        }
+        if let Some(catalog) = self.facts.source_bindings.as_deref_mut() {
+            catalog
+                .complete_destructor_registration()
+                .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         }
         Ok(())
     }
