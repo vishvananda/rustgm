@@ -1,6 +1,11 @@
 mod anonymous_parameters;
 pub mod bindings;
 mod bodies;
+#[allow(
+    dead_code,
+    reason = "private imported-original identities are qualified before body-field migration"
+)]
+pub(crate) mod body_origin;
 mod builtins;
 pub mod crates;
 pub mod expansion;
