@@ -206,7 +206,9 @@ impl Collector {
             .generics
             .builtin_requirements
             .get(&contract.source)
-            .map(|requirements| std::sync::Arc::new(requirements.clone()));
+            .map(|requirements| {
+                std::sync::Arc::new(super::BuiltinRequirements::from(requirements))
+            });
     }
 
     fn update(&mut self, facts: &Declarations) -> Result<(), &'static str> {

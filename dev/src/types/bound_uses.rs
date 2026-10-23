@@ -152,7 +152,7 @@ impl Uses {
         match predicate.bound {
             Bound::ProjectionEqual(result) => self.collect_inside(store, result, depth)?,
             Bound::Outlives(region) => self.region(region, depth),
-            Bound::Trait(id) => {
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => {
                 let application = store
                     .trait_application(id)
                     .ok_or("invalid bound-use trait application")?;

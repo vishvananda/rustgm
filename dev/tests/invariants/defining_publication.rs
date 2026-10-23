@@ -65,6 +65,7 @@ fn checked_family<'a>(
             types: &facts.types,
             definitions: &facts.aggregates,
             derives: &facts.derives,
+            source_copy: facts.uses_source_copy(),
             copies: &mut copies,
         },
         &facts.lifetimes.variances,

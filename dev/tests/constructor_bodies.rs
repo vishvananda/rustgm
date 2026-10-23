@@ -17,6 +17,7 @@ fn lower(source: &str) -> Result<rustgm::lowir::program::Program, String> {
             types: &facts.types,
             definitions: &facts.aggregates,
             derives: &facts.derives,
+            source_copy: facts.uses_source_copy(),
             copies: &mut facts.copies,
         },
         &proof,

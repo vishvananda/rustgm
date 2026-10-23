@@ -63,6 +63,8 @@ pub struct Environment<'a, S: BuildHasher> {
     pub definitions: &'a Definitions,
     pub derives: &'a std::collections::HashMap<ItemId, Declaration, S>,
     pub copies: &'a mut Copies,
+    /// Actual source-provider policy; absent body carriers never permit fallback.
+    pub source_copy: bool,
 }
 /// # Errors
 /// Rejects invalid contracts, unavailable storage, owned access or loan conflicts.
@@ -294,11 +296,21 @@ fn prove_body<const RECORD: bool, S: BuildHasher>(
             (local.order.as_ref(), &local.storage)
         }
     };
+    let mut copy_view = super::copy_view::CopyView::checked(
+        copies.as_mut().unwrap_or(environment.copies),
+        body,
+        contract,
+        environment.source_copy,
+    )
+    .map_err(|message| Error {
+        node: Some(body.source),
+        message: message.into(),
+    })?;
     let owned = ownership::analyze_body_ordered(
         environment.types,
         environment.definitions,
         environment.derives,
-        copies.as_mut().unwrap_or(environment.copies),
+        &mut copy_view,
         body,
         order,
     )
@@ -359,12 +371,19 @@ fn prove_cleanup<S: BuildHasher>(
     } else {
         super::order::Order::new(body)
     };
+    let mut copy_view = super::copy_view::CopyView::checked(
+        copies.as_mut().unwrap_or(environment.copies),
+        body,
+        contract,
+        environment.source_copy,
+    )
+    .map_err(|message| error(Some(body.source), message))?;
     let init = if let Some(shared) = shared {
         initialization::analyze_shared(
             environment.types,
             environment.definitions,
             environment.derives,
-            copies.as_mut().unwrap_or(environment.copies),
+            &mut copy_view,
             body,
             shared.order,
             shared.storage,
@@ -374,7 +393,7 @@ fn prove_cleanup<S: BuildHasher>(
             environment.types,
             environment.definitions,
             environment.derives,
-            copies.as_mut().unwrap_or(environment.copies),
+            &mut copy_view,
             body,
             order.as_ref(),
         )

@@ -346,7 +346,7 @@ impl Environment {
             return Arc::make_mut(self.equalities.get_or_insert_with(Default::default))
                 .insert(types, Clause::Predicate(predicate));
         }
-        if matches!(predicate.bound, Bound::Trait(_)) {
+        if predicate.bound.trait_parts().is_some() {
             return Arc::make_mut(self.traits.get_or_insert_with(Default::default))
                 .insert(types, Clause::Predicate(predicate));
         }
@@ -380,6 +380,8 @@ impl Environment {
             | Bound::Auto(_)
             | Bound::Outlives(_)
             | Bound::Trait(_)
+            | Bound::ConstTrait(_)
+            | Bound::MaybeConstTrait(_)
             | Bound::ProjectionEqual(_) => {}
         }
         if let Some(Kind::Parameter(id)) = types.kind(predicate.ty) {
@@ -443,12 +445,18 @@ impl Environment {
         ty: TypeId,
         application: crate::types::traits::ApplicationId,
     ) -> bool {
-        self.traits.as_ref().is_some_and(|traits| {
-            traits.unique.contains(&Predicate {
-                ty,
-                bound: Bound::Trait(application),
-            })
+        self.assumes_predicate(Predicate {
+            ty,
+            bound: Bound::Trait(application),
         })
+    }
+    /// This fast path preserves effect qualification. Stronger-premise
+    /// projection belongs to the ordinary scoped assumption selector.
+    #[must_use]
+    pub fn assumes_predicate(&self, predicate: Predicate) -> bool {
+        self.traits
+            .as_ref()
+            .is_some_and(|traits| traits.unique.contains(&predicate))
     }
     #[must_use]
     pub fn assumed(&self, ty: TypeId) -> Abilities {

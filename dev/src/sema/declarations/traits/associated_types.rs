@@ -245,7 +245,7 @@ impl Checker<'_> {
             .remove(&id)
             .ok_or_else(|| self.error(key, "missing reserved associated type bounds"))?;
         let predicate = self.facts.generics.trait_self_bounds[&trait_item];
-        let Bound::Trait(trait_application) = predicate.bound else {
+        let Some((trait_application, _)) = predicate.bound.trait_parts() else {
             return Err(self.error(key, "missing associated type trait application"));
         };
         let arguments = self.template_arguments(id, key)?;
@@ -319,6 +319,7 @@ impl Checker<'_> {
             }
             let Kind::Bound {
                 optional,
+                constness,
                 quantified,
                 binders,
                 value,
@@ -335,7 +336,7 @@ impl Checker<'_> {
                 syntax.push(Syntax::associated(key, id, Written::Outlives(value), scope));
                 continue;
             }
-            let written = self.trait_bound(value)?;
+            let written = self.qualified_trait_bound(value, constness)?;
             let scope = self.call_bound_scope(key, written, scope, context)?;
             if matches!(written, Written::User { .. }) && !optional {
                 syntax.push(Syntax::associated(key, id, written, scope));

@@ -163,8 +163,12 @@ fn owners(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Re
         if let OwnerKind::Trait {
             definition,
             unsafe_,
+            constant,
         } = owner.kind
         {
+            if constant {
+                write!(out, " const=true")?;
+            }
             write!(out, " trait={} unsafe={unsafe_} name=", definition.0)?;
             let definition = &report.resolution.definitions[definition.0 as usize];
             quoted::bytes(
@@ -258,7 +262,7 @@ fn requirement(store: &Store, predicate: Predicate, out: &mut impl Write) -> io:
             write!(out, "outlives:")?;
             type_view::region(region, out)
         }
-        Bound::Trait(id) => {
+        Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => {
             let application = store
                 .trait_application(id)
                 .ok_or_else(|| io::Error::other("invalid trait application"))?;

@@ -29,6 +29,12 @@ pub struct SourceCore {
     pub provider: CrateIdentity,
     pub(super) features: policy::Features,
 }
+impl SourceCore {
+    /// This admits declaration syntax; it does not establish callable evidence.
+    pub(crate) fn permits_rust_call(&self) -> bool {
+        self.features.has(policy::Feature::UnboxedClosures)
+    }
+}
 
 #[cfg(test)]
 #[path = "../../tests/invariants/provider_reservations.rs"]

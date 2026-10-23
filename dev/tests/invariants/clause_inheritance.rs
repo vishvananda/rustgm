@@ -297,3 +297,44 @@ fn distinct_supertrait_applications_share_structural_work() -> Result<(), &'stat
     }
     Ok(())
 }
+
+#[test]
+fn conditional_supertrait_effects_follow_the_actual_enclosing_application()
+-> Result<(), &'static str> {
+    use crate::support::constness::Constness;
+    let mut store = Store::default();
+    let application = store.intern_trait_application(Application {
+        item: ItemId(31),
+        arguments: crate::types::GenericArgs::EMPTY,
+    })?;
+    let predicate = Predicate {
+        ty: TypeId::UNIT,
+        bound: Bound::MaybeConstTrait(application),
+    };
+    let value = clause(&mut store, 3, predicate)?;
+    for effect in [
+        Constness::Ordinary,
+        Constness::Const,
+        Constness::Conditional,
+    ] {
+        let mapped = super::effects::in_context(&mut store, value, effect)?;
+        let Clause::ForAll(id) = mapped else {
+            return Err("conditional mapping lost its binder");
+        };
+        let mapped = store.quantified(id).ok_or("missing mapped clause")?;
+        assert_eq!(mapped.bound_regions, 3);
+        assert_eq!(
+            mapped.predicate.bound,
+            Bound::trait_application(application, effect)
+        );
+        let unconditional = Clause::Predicate(Predicate {
+            bound: Bound::ConstTrait(application),
+            ..predicate
+        });
+        assert_eq!(
+            super::effects::in_context(&mut store, unconditional, effect)?,
+            unconditional
+        );
+    }
+    Ok(())
+}

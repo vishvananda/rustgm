@@ -236,6 +236,9 @@ pub(super) fn export_roots(
         abi: match convention.abi {
             crate::types::callable::Abi::Rust => Abi::Rust,
             crate::types::callable::Abi::C => Abi::C,
+            crate::types::callable::Abi::RustCall => {
+                return Err(error("rust-call export is outside the metadata profile"));
+            }
         },
     })
 }

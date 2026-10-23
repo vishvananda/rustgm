@@ -174,6 +174,8 @@ pub(crate) fn build(
     )?;
     super::build::finish_factory(&mut writer.body, result)?;
     super::invocation_entries::select(facts, &mut writer.body, &mut contract)?;
+    super::copy_requirements::prepare(facts, &writer.body, &mut contract)
+        .map_err(|_| "receiver adapter source Copy preparation failed")?;
     let template = Template {
         adapter,
         source: source.semantic_source(),

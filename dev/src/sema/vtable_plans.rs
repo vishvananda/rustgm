@@ -213,7 +213,7 @@ pub(crate) fn prepare_call(
     let before = storage.erase.steps;
     let predicate = storage.erase.predicate(&mut facts.types, predicate)?;
     storage.charge(storage.erase.steps.saturating_sub(before).saturating_add(1))?;
-    let crate::types::parameters::predicates::Bound::Trait(parent) = predicate.bound else {
+    let Some((parent, _)) = predicate.bound.trait_parts() else {
         return Err("object callable requires a complete parent trait".into());
     };
     let shape = shapes::prepare(report, facts, predicate.ty)?;

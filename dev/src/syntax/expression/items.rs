@@ -256,7 +256,7 @@ impl Parser<'_, '_> {
                 }
                 self.value_item(&mut item, safety)?
             } else if self.eat_word(Word::Trait)? {
-                if constant || asynchronous || safe {
+                if asynchronous || safe {
                     return Err(error(start, "invalid trait qualifier"));
                 }
                 item.name = Some(self.name()?);
@@ -272,11 +272,12 @@ impl Parser<'_, '_> {
                 self.item_attributes(inner);
                 ItemKind::Trait {
                     unsafe_,
+                    constant,
                     bounds,
                     items: self.item_list(true, Scope::Trait)?,
                 }
             } else if self.eat_word(Word::Impl)? {
-                if constant || asynchronous || safe {
+                if asynchronous || safe {
                     return Err(error(start, "invalid impl qualifier"));
                 }
                 item.generics = self.generics()?;
@@ -293,6 +294,7 @@ impl Parser<'_, '_> {
                 self.item_attributes(inner);
                 ItemKind::Impl {
                     unsafe_,
+                    constant,
                     negative,
                     trait_path,
                     ty,
@@ -483,7 +485,7 @@ impl Parser<'_, '_> {
     fn function_after_const(&mut self) -> Result<bool, LexError> {
         Ok(matches!(
             self.cursor.peek_word(1)?,
-            Word::Fn | Word::Async | Word::Unsafe | Word::Extern
+            Word::Fn | Word::Async | Word::Unsafe | Word::Extern | Word::Trait | Word::Impl
         ))
     }
 

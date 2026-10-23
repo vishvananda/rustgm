@@ -265,10 +265,17 @@ pub struct BodyRegion {
 /// Deferred builtin uses retain their source and exact caller environment until
 /// the body's lifetime graph can establish identity of inferred arguments.
 #[derive(Clone)]
+pub struct SourceCopyRequirements {
+    /// None is a source policy with no Copy declaration, not bootstrap mode.
+    pub(crate) declaration: Option<crate::resolve::model::DefId>,
+    pub(crate) goals: Vec<crate::types::parameters::predicates::Predicate>,
+}
+#[derive(Clone)]
 pub struct BuiltinRequirements {
     pub(crate) environment:
         Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     pub(crate) predicates: Vec<(NodeKey, crate::types::parameters::predicates::Predicate)>,
+    pub(crate) source_copy: Option<std::sync::Arc<SourceCopyRequirements>>,
 }
 #[derive(Clone, Copy)]
 pub struct ReferenceAlignment {
@@ -428,6 +435,12 @@ pub struct Declarations {
     pub functions: Vec<Function>,
 }
 impl Declarations {
+    /// Borrow checking must require body-local source Copy evidence in this mode.
+    /// This policy is not itself evidence that any type implements Copy.
+    #[must_use]
+    pub fn uses_source_copy(&self) -> bool {
+        self.source_bindings.is_some()
+    }
     pub(super) fn push_initializer(
         &mut self,
         initializer: Initializer,

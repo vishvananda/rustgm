@@ -57,6 +57,7 @@ fn source_free_originals_use_exact_declaration_keys_in_both_collectors() -> Resu
         types: &facts.types,
         definitions: &facts.aggregates,
         derives: &facts.derives,
+        source_copy: facts.uses_source_copy(),
         copies: &mut copies,
     };
     borrow::templates::verify(

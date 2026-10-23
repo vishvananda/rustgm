@@ -4,7 +4,6 @@ use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{model::DefKind, names::NameId},
     sema::associated::OwnerKind,
-    types::parameters::predicates::Bound,
 };
 
 #[derive(Default)]
@@ -157,7 +156,7 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let mut roots = Vec::with_capacity(predicates.len());
         for predicate in &predicates {
-            let Bound::Trait(application) = predicate.bound else {
+            let Some((application, _)) = predicate.bound.trait_parts() else {
                 continue;
             };
             let application = self
@@ -207,7 +206,7 @@ impl Checker<'_> {
         name: NameId,
         predicate: Predicate,
     ) -> Result<Vec<Predicate>, Error> {
-        let Bound::Trait(application) = predicate.bound else {
+        let Some((application, _)) = predicate.bound.trait_parts() else {
             return Ok(Vec::new());
         };
         let application = self

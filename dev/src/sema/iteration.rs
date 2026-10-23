@@ -252,7 +252,7 @@ impl Original {
         } else {
             Trait::IntoIterator
         });
-        let Bound::Trait(application) = self.predicate.bound else {
+        let Some((application, _)) = self.predicate.bound.trait_parts() else {
             return Err("iteration original lacks a trait application");
         };
         let app = facts

@@ -32,6 +32,7 @@ impl Checker<'_> {
             .or_insert_with(|| crate::sema::model::BuiltinRequirements {
                 environment: Some(std::sync::Arc::clone(environment)),
                 predicates: Vec::new(),
+                source_copy: None,
             });
         if pending.predicates.len() >= 1_000_000 {
             return Err(self.error(node, "builtin requirement storage budget exceeded"));

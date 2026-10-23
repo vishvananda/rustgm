@@ -36,7 +36,10 @@ impl Checker<'_> {
                         .predicate
                 }
             };
-            if matches!(body.bound, Bound::Trait(_)) {
+            if matches!(
+                body.bound,
+                Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_)
+            ) {
                 self.validate_trait_bound(owner, predicate, proof, &mut traits)?;
                 continue;
             }
@@ -209,7 +212,10 @@ impl Checker<'_> {
                         .predicate
                 }
             };
-            if matches!(value.bound, Bound::Trait(_)) {
+            if matches!(
+                value.bound,
+                Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_)
+            ) {
                 assumptions
                     .insert_clause(&self.facts.types, predicate.value)
                     .map_err(|e| self.error(predicate.source, e.to_string()))?;

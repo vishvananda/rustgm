@@ -40,7 +40,7 @@ impl Checker<'_> {
         predicate: Predicate,
         members: &Members,
     ) -> Result<Vec<(DefId, DefId)>, Error> {
-        let Bound::Trait(id) = predicate.bound else {
+        let Some((id, _)) = predicate.bound.trait_parts() else {
             return Err(self.error(source, "missing impl trait predicate"));
         };
         let app = self

@@ -146,7 +146,7 @@ impl Checker<'_> {
             .next(&mut self.facts)
             .map_err(|e| self.error(source, e))?
         {
-            let Bound::Trait(application) = visit.predicate.bound else {
+            let Some((application, _)) = visit.predicate.bound.trait_parts() else {
                 return Err(self.error(source, "object member lookup requires a trait"));
             };
             let owner = self

@@ -2,6 +2,7 @@
 pub(super) mod assumptions;
 pub(in crate::sema) mod callables;
 pub(super) mod conformance;
+pub(in crate::sema) mod effects;
 pub(in crate::sema) mod equalities;
 pub(super) mod formation;
 pub(super) mod heads;
@@ -203,7 +204,7 @@ impl Contracts {
                     if header
                         .implies_self(store, predicate)
                         .map_err(|error| (item, error))?
-                        && let Bound::Trait(application) = value.bound
+                        && let Some((application, _)) = value.bound.trait_parts()
                     {
                         let application = store
                             .trait_application(application)
@@ -224,7 +225,7 @@ impl Contracts {
         if let Some(result) = self.applications.get(&predicate) {
             return Ok(Arc::clone(result));
         }
-        let Bound::Trait(id) = predicate.bound else {
+        let Some((id, effect)) = predicate.bound.trait_parts() else {
             return Err("trait contract requires a trait application");
         };
         let application = store
@@ -284,6 +285,7 @@ impl Contracts {
         let mut replace = substitute::Bound::parameters_captured(store, &mapping, regions)?;
         for predicate in &header.predicates {
             let value = replace.clause(store, predicate.value)?;
+            let value = effects::in_context(store, value, effect)?;
             if header.implies(store, predicate)? {
                 result.implied.push(value);
             } else {
@@ -291,7 +293,10 @@ impl Contracts {
             }
         }
         for (_, predicate) in &header.results {
-            result.results.push(replace.clause(store, predicate.value)?);
+            let value = replace.clause(store, predicate.value)?;
+            result
+                .results
+                .push(effects::in_context(store, value, effect)?);
         }
         for &(longer, shorter) in &header.regions {
             let (Argument::Lifetime(longer), Argument::Lifetime(shorter)) = (

@@ -7,7 +7,6 @@ use crate::{
     types::{
         GenericArgs, ItemId, Kind,
         infer::{self, Constructor},
-        parameters::predicates::Bound,
         projection,
         traits::Application,
     },
@@ -278,7 +277,7 @@ impl Search<'_> {
             ) => {}
             _ => return Err("reference callable requires callable or caller evidence".into()),
         }
-        let Bound::Trait(application) = proof.goal.bound else {
+        let Some((application, _)) = proof.goal.bound.trait_parts() else {
             return Err("forwarded call proof has no application".into());
         };
         let arguments = facts

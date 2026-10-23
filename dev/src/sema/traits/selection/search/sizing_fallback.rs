@@ -116,14 +116,12 @@ impl Search<'_> {
         }
         match kind {
             LangItem::MetaSized | LangItem::PointeeSized => {
-                Ok(Some(self.complete_source_sizing(frame, goal, shape.sized)))
+                Ok(Some(self.complete_source_builtin(frame, goal, shape.sized)))
             }
-            LangItem::Sized | LangItem::MemSizeConst | LangItem::MemAlignConst => {
-                Err("invalid source sizing fallback kind".into())
-            }
+            _ => Err("invalid source sizing fallback kind".into()),
         }
     }
-    fn complete_source_sizing(
+    pub(super) fn complete_source_builtin(
         &mut self,
         frame: &mut Frame,
         goal: Predicate,

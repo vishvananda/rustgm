@@ -1,5 +1,7 @@
 //! Caller assumptions are indexed once; alternatives use isolated complete-goal equations.
 mod alternatives;
+#[cfg(test)]
+use crate::types::parameters::predicates::Bound;
 mod universal;
 use super::heads::{Head, Subject};
 use crate::types::{
@@ -9,7 +11,7 @@ use crate::types::{
         ParameterId,
         clauses::Clause,
         environment::Environment,
-        predicates::{Bound, Predicate},
+        predicates::Predicate,
         premise_index::{ClauseIndex, QuantifiedIndex},
     },
 };
@@ -61,7 +63,7 @@ impl Assumptions {
         store: &Store,
         predicate: Predicate,
     ) -> Result<Option<Evidence>, infer::Error> {
-        let Bound::Trait(id) = predicate.bound else {
+        let Some((id, _)) = predicate.bound.trait_parts() else {
             return Err(infer::Error::InvalidIdentity);
         };
         let application = store
@@ -160,7 +162,7 @@ impl Assumptions {
         if self.quantified().is_some() || !self.contains(predicate) {
             return Err(infer::Error::InvalidIdentity);
         }
-        let Bound::Trait(id) = predicate.bound else {
+        let Some((id, _)) = predicate.bound.trait_parts() else {
             return Err(infer::Error::InvalidIdentity);
         };
         let application = store
@@ -220,7 +222,7 @@ impl Assumptions {
                 .flat_map(|head| self.candidates(item, head).iter())
                 .copied(),
             |_, _, predicate| Ok((predicate, Evidence(predicate))),
-            |_, _, _, _| Ok(false),
+            |_, _, left, right| Ok(alternatives::ordinary_consequence(goal, left.0, right.0)),
         )
     }
 }

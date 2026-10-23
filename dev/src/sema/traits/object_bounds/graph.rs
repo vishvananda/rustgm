@@ -67,7 +67,7 @@ impl Graph {
                 let clause = compose.clause(&mut facts.types, clause)?;
                 if matches!(
                     quantified_value(&facts.types, clause)?.bound,
-                    Bound::Trait(_)
+                    Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_)
                 ) {
                     self.work.push(clause);
                 }

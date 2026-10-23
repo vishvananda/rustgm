@@ -18,6 +18,7 @@ fn check(source: &str) -> Result<usize, String> {
             types: &facts.types,
             definitions: &facts.aggregates,
             derives: &facts.derives,
+            source_copy: facts.uses_source_copy(),
             copies: &mut facts.copies,
         },
         &regions,

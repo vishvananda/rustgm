@@ -114,9 +114,7 @@ impl Source {
         Ok(match evidence.clause {
             Clause::Predicate(predicate) => Self::Assumption(predicate),
             Clause::ForAll(clause) => {
-                let crate::types::parameters::predicates::Bound::Trait(application) =
-                    evidence.predicate.bound
-                else {
+                let Some((application, _)) = evidence.predicate.bound.trait_parts() else {
                     return Err(infer::Error::InvalidIdentity);
                 };
                 Self::QuantifiedAssumption {

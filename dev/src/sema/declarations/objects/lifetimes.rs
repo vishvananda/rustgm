@@ -24,7 +24,7 @@ impl Checker<'_> {
             .get(&principal)
             .copied()
             .ok_or_else(|| self.error(key, "missing object lifetime principal template"))?;
-        let Bound::Trait(application) = template.bound else {
+        let Some((application, _)) = template.bound.trait_parts() else {
             return Err(self.error(key, "object lifetime template requires a trait"));
         };
         let arguments = self

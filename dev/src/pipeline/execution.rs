@@ -387,6 +387,8 @@ impl Engine {
         facts: &mut Declarations,
         instance: crate::types::instance::Instance,
     ) -> Result<bool, Error> {
+        crate::sema::compiler_items::check_const_instance(facts, instance)
+            .map_err(|e| Error::at(FileId(0), 0, e))?;
         if self.catalog.functions.contains_key(&instance) {
             return Ok(true);
         }
@@ -572,6 +574,16 @@ impl Engine {
         parameters: &Arc<Environment>,
         contract: &Contract,
     ) -> Result<(), Error> {
+        let prepared;
+        let contract = if facts.source_bindings.is_some() {
+            let mut input = contract.clone();
+            body::copy_requirements::prepare(facts, body, &mut input)
+                .map_err(|e| Declarations::error(report, body.source, e))?;
+            prepared = input;
+            &prepared
+        } else {
+            contract
+        };
         let regions = Self::source_regions(report, facts, body, contract)?;
         self.prove_loans(report, facts, body, destruction, parameters, &regions)
     }
@@ -637,6 +649,7 @@ impl Engine {
                     types: &facts.types,
                     definitions: &facts.aggregates,
                     derives: &facts.derives,
+                    source_copy: facts.uses_source_copy(),
                     copies: &mut copies,
                 },
                 body,

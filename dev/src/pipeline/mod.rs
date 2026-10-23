@@ -119,6 +119,9 @@ impl Demand {
             .get_or_insert_with(Collector::default)
             .function(facts, function)
             .map_err(|e| Declarations::error(report, source, e))?;
+        let mut input = input.clone();
+        body::copy_requirements::prepare(facts, &template.body, &mut input)
+            .map_err(|e| Declarations::error(report, source, e))?;
         input
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
             .map_err(|e| Declarations::error(report, source, e))?;
@@ -143,6 +146,7 @@ impl Demand {
                 types: &facts.types,
                 definitions: &facts.aggregates,
                 derives: &facts.derives,
+                source_copy: facts.uses_source_copy(),
                 copies: &mut self.copies,
             },
             &facts.lifetimes.variances,

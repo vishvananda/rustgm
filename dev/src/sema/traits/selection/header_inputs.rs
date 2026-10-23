@@ -3,7 +3,7 @@ use super::{Context, Declarations, DefId};
 use crate::types::{
     Kind, RegionId,
     infer::{Constructor, Error, TermId, predicates::Predicate},
-    parameters::{ParameterId, predicates::Bound},
+    parameters::ParameterId,
 };
 
 pub(super) struct Inputs {
@@ -32,7 +32,7 @@ pub(super) fn independent(
         .and_then(|registry| registry.header(owner))
         .ok_or(Error::InvalidIdentity)?
         .predicate;
-    let Bound::Trait(id) = header.bound else {
+    let Some((id, _)) = header.bound.trait_parts() else {
         return Err(Error::InvalidIdentity);
     };
     let application = facts

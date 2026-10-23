@@ -18,6 +18,7 @@ fn verify(source: &str, name: &str) -> Result<usize, Box<dyn std::error::Error>>
         types: &facts.types,
         definitions: &facts.aggregates,
         derives: &facts.derives,
+        source_copy: facts.uses_source_copy(),
         copies: &mut copies,
     };
     let checked = borrow::templates::verify(
@@ -93,6 +94,7 @@ fn verify(source: &str, name: &str) -> Result<usize, Box<dyn std::error::Error>>
         types: &facts.types,
         definitions: &facts.aggregates,
         derives: &facts.derives,
+        source_copy: facts.uses_source_copy(),
         copies: &mut copies,
     };
     // A normal source-keyed proof cannot authorize specialized bodies.

@@ -216,7 +216,14 @@ pub fn analyze<'a, S: BuildHasher>(
     body: &'a Body,
 ) -> Result<Facts<'a>, Error> {
     let order = crate::borrow::order::Order::new(body);
-    analyze_ordered(types, definitions, derives, copies, body, order.as_ref())
+    analyze_ordered(
+        types,
+        definitions,
+        derives,
+        &mut crate::borrow::copy_view::CopyView::ordinary(copies),
+        body,
+        order.as_ref(),
+    )
 }
 /// `analyze`, reusing a reverse-postorder walk already computed for the body.
 #[inline]
@@ -224,7 +231,7 @@ pub(crate) fn analyze_ordered<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
     derives: &std::collections::HashMap<ItemId, Declaration, S>,
-    copies: &mut Copies,
+    copies: &mut crate::borrow::copy_view::CopyView<'_>,
     body: &'a Body,
     order: Option<&crate::borrow::order::Order>,
 ) -> Result<Facts<'a>, Error> {
@@ -237,7 +244,7 @@ pub(crate) fn analyze_shared<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
     derives: &std::collections::HashMap<ItemId, Declaration, S>,
-    copies: &mut Copies,
+    copies: &mut crate::borrow::copy_view::CopyView<'_>,
     body: &'a Body,
     order: Option<&crate::borrow::order::Order>,
     storage: &'a crate::borrow::storage::Analysis,
@@ -256,7 +263,7 @@ fn analyze_with<'a, S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
     derives: &std::collections::HashMap<ItemId, Declaration, S>,
-    copies: &mut Copies,
+    copies: &mut crate::borrow::copy_view::CopyView<'_>,
     body: &'a Body,
     order: Option<&crate::borrow::order::Order>,
     shared: Option<&'a crate::borrow::storage::Analysis>,

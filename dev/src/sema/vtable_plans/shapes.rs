@@ -4,7 +4,7 @@ use crate::support::hash::HashMap;
 use crate::{
     resolve::{expansion::Report, model::DefId},
     sema::{model::Declarations, traits::object_bounds},
-    types::{Kind, TypeId, parameters::predicates::Bound},
+    types::{Kind, TypeId},
 };
 use std::sync::Arc;
 
@@ -64,7 +64,7 @@ fn collect(
     };
     for &clause in applications {
         let predicate = object_bounds::graph::quantified_value(&facts.types, clause)?;
-        let Bound::Trait(parent) = predicate.bound else {
+        let Some((parent, _)) = predicate.bound.trait_parts() else {
             return Err("object slot owner requires a trait".into());
         };
         let storage = facts

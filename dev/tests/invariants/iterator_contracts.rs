@@ -19,6 +19,7 @@ fn verify(facts: &mut Declarations, templates: &Templates, contracts: Vec<Contra
         types: &facts.types,
         definitions: &facts.aggregates,
         derives: &facts.derives,
+        source_copy: facts.uses_source_copy(),
         copies: &mut facts.copies,
     };
     let types = &facts.types;

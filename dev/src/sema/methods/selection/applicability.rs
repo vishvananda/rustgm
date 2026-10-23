@@ -119,7 +119,11 @@ pub(super) fn prepare(
         }
         if matches!(
             predicate.bound,
-            Bound::Trait(_) | Bound::ProjectionEqual(_) | Bound::Auto(_)
+            Bound::Trait(_)
+                | Bound::ConstTrait(_)
+                | Bound::MaybeConstTrait(_)
+                | Bound::ProjectionEqual(_)
+                | Bound::Auto(_)
         ) {
             traits.push(
                 context
@@ -170,7 +174,7 @@ pub(super) fn builtin_requirements(
             Bound::Copy => value.abilities.copy,
             Bound::Clone => value.abilities.clone_,
             Bound::Outlives(_) => return Err("unexpected candidate region predicate"),
-            Bound::Trait(_) | Bound::Auto(_) => {
+            Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_) | Bound::Auto(_) => {
                 return Err("user trait candidate obligations require trait selection");
             }
             Bound::ProjectionEqual(_) => {

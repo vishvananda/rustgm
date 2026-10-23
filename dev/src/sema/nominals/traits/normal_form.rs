@@ -251,9 +251,7 @@ impl Query {
                 .families
                 .contains_key(&DefId(application.item.0))
         }) {
-            let crate::types::parameters::predicates::Bound::Trait(trait_application) =
-                self.requirement.bound
-            else {
+            let Some((trait_application, _)) = self.requirement.bound.trait_parts() else {
                 return Err("missing family parent predicate");
             };
             let application = Application {

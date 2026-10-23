@@ -173,7 +173,16 @@ impl Assumptions {
             goal,
             candidates,
             |store, context, clause| openings.prepare(store, context, clause, first),
-            |store, context, left, right| left.same_clause(store, context, right),
+            |store, context, left, right| {
+                if matches!(
+                    (left.clause, right.clause),
+                    (Clause::Predicate(_), Clause::Predicate(_))
+                ) && alternatives::ordinary_consequence(goal, left.predicate, right.predicate)
+                {
+                    return Ok(true);
+                }
+                left.same_clause(store, context, right)
+            },
         )
     }
 }

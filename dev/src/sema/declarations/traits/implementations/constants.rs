@@ -6,11 +6,8 @@ use crate::{
     sema::{model::Declarations, traits::conformance::Definitions},
     syntax::item::ItemKind,
     types::{
-        TypeId,
-        infer::Context,
-        lifetime_proof::Obligations,
-        outlives::Queries,
-        parameters::predicates::{Bound, Predicate},
+        TypeId, infer::Context, lifetime_proof::Obligations, outlives::Queries,
+        parameters::predicates::Predicate,
     },
 };
 
@@ -64,7 +61,7 @@ impl Checker<'_> {
         members: &Members,
         definitions: &Definitions,
     ) -> Result<Vec<(DefId, Option<DefId>)>, Error> {
-        let Bound::Trait(id) = predicate.bound else {
+        let Some((id, _)) = predicate.bound.trait_parts() else {
             return Err(self.error(source, "missing constant impl trait predicate"));
         };
         let app = self

@@ -91,7 +91,10 @@ impl Context {
         else {
             return Err(Error::InvalidIdentity);
         };
-        if a.item != b.item || a.arguments.len() != b.arguments.len() {
+        if a.item != b.item
+            || a.arguments.len() != b.arguments.len()
+            || (matches!(relation, Relation::Scoped) && a.constness != b.constness)
+        {
             return Err(Error::Mismatch);
         }
         self.account_work(1 + a.arguments.len())?;
@@ -186,11 +189,17 @@ impl Context {
         assumption: Canonical,
         ambient: &[u32],
     ) -> Result<(), Error> {
-        let (Requirement::Trait(trait_), Bound::Trait(id)) =
-            (&predicate.requirement, assumption.bound)
-        else {
+        let Requirement::Trait(trait_) = &predicate.requirement else {
             return Err(Error::Mismatch);
         };
+        let Some((id, constness)) = assumption.bound.trait_parts() else {
+            return Err(Error::Mismatch);
+        };
+        if trait_.constness != crate::support::constness::Constness::Ordinary
+            && trait_.constness != constness
+        {
+            return Err(Error::Mismatch);
+        }
         let application = store.trait_application(id).ok_or(Error::InvalidIdentity)?;
         if application.item != trait_.item {
             return Err(Error::Mismatch);

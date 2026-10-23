@@ -38,6 +38,7 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
             negative,
             trait_type: Some(path),
             target,
+            constant,
         } = owner.kind
         else {
             continue;
@@ -50,7 +51,10 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
         if facts.node(path).and_then(|f| f.reference) != Some(Target::Definition(drop_trait)) {
             continue;
         }
-        if unsafe_ || negative || crate::sema::lifetimes::arguments(report, path, false)?.is_some()
+        if constant
+            || unsafe_
+            || negative
+            || crate::sema::lifetimes::arguments(report, path, false)?.is_some()
         {
             return Err(Declarations::error(
                 report,

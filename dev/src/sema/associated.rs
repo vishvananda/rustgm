@@ -40,11 +40,13 @@ pub enum OwnerKind {
     Trait {
         definition: DefId,
         unsafe_: bool,
+        constant: bool,
     },
     Impl {
         target: NodeKey,
         trait_type: Option<NodeKey>,
         unsafe_: bool,
+        constant: bool,
         negative: bool,
     },
 }
@@ -149,6 +151,16 @@ impl Inventory {
         match self.get(self.owner(member)?)?.kind {
             OwnerKind::Trait { definition, .. } => Some(definition),
             OwnerKind::Impl { .. } => None,
+        }
+    }
+    pub(crate) fn constant_trait(&self, definition: DefId) -> Option<bool> {
+        match self.get(self.owner(definition)?)?.kind {
+            OwnerKind::Trait {
+                definition: actual,
+                constant,
+                ..
+            } if actual == definition => Some(constant),
+            _ => None,
         }
     }
     pub(super) fn declare(
@@ -371,7 +383,9 @@ fn owner_kind(
         return Err(error("associated owner has no item syntax"));
     };
     match ast.items[index as usize].kind {
-        ItemKind::Trait { unsafe_, .. } => {
+        ItemKind::Trait {
+            unsafe_, constant, ..
+        } => {
             let module = report.resolution.scopes[scope.0 as usize].module;
             let definition = *report
                 .resolution
@@ -381,10 +395,12 @@ fn owner_kind(
             Ok(OwnerKind::Trait {
                 definition,
                 unsafe_,
+                constant,
             })
         }
         ItemKind::Impl {
             unsafe_,
+            constant,
             negative,
             trait_path,
             ty,
@@ -393,6 +409,7 @@ fn owner_kind(
             target: NodeKey { node: ty, ..source },
             trait_type: trait_path.map(|node| NodeKey { node, ..source }),
             unsafe_,
+            constant,
             negative,
         }),
         _ => Err(error("Self definition is not owned by a trait or impl")),

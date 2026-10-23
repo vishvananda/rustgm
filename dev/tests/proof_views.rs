@@ -205,6 +205,7 @@ fn loan_inspection_preserves_proof_counts_and_records_call_activation()
         types: &facts.types,
         definitions: &facts.aggregates,
         derives: &facts.derives,
+        source_copy: facts.uses_source_copy(),
         copies: &mut facts.copies,
     };
     let plain = borrow::check(&mut environment, &regions, &program)?;

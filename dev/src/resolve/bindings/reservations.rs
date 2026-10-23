@@ -28,7 +28,7 @@ pub struct IntrinsicDeclaration {
 pub struct Reservations {
     pub provider: CrateIdentity,
     pub root: ScopeId,
-    languages: [Option<Declaration>; 5],
+    languages: [Option<Declaration>; LangItem::ALL.len()],
     intrinsics: HashMap<DefId, IntrinsicDeclaration>,
     denied_implementations: HashSet<DefId>,
     pub steps: usize,
@@ -37,6 +37,22 @@ impl Reservations {
     #[must_use]
     pub fn language(&self, kind: LangItem) -> Option<Declaration> {
         self.languages[kind.index()]
+    }
+    /// Reserved identity classifies argument syntax, never implementation evidence.
+    #[must_use]
+    pub fn callable(&self, definition: DefId) -> Option<crate::support::call_traits::CallTrait> {
+        use crate::support::call_traits::CallTrait;
+        [
+            (LangItem::Fn, CallTrait::Fn),
+            (LangItem::FnMut, CallTrait::FnMut),
+            (LangItem::FnOnce, CallTrait::FnOnce),
+        ]
+        .into_iter()
+        .find_map(|(role, kind)| {
+            self.language(role)
+                .filter(|d| d.definition == definition)
+                .map(|_| kind)
+        })
     }
     pub fn intrinsics(&self) -> impl Iterator<Item = IntrinsicDeclaration> + '_ {
         self.intrinsics.values().copied()
@@ -97,7 +113,7 @@ pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> R
             .module_scopes
             .first()
             .ok_or_else(|| Error::at(FileId(0), 0, "missing source crate root"))?,
-        languages: [None; 5],
+        languages: [None; LangItem::ALL.len()],
         intrinsics: HashMap::default(),
         denied_implementations: HashSet::default(),
         steps: 0,

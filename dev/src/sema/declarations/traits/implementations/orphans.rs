@@ -50,8 +50,7 @@ impl Checker<'_> {
         ) {
             return Ok(());
         }
-        let crate::types::parameters::predicates::Bound::Trait(application) = predicate.bound
-        else {
+        let Some((application, _)) = predicate.bound.trait_parts() else {
             return Err(self.error(source, "missing language trait application"));
         };
         let arguments = self

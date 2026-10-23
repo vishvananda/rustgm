@@ -1,6 +1,9 @@
 //! Trait obligations retain inference arguments until the whole body is solved.
 mod binder_mapping;
 mod equations;
+#[cfg(test)]
+#[path = "../../../tests/invariants/qualifiers.rs"]
+mod source_effect_tests;
 use super::{Context, Error, Instantiation, Solved, Store, TermId, TypeId, arguments::Argument};
 use crate::types::{
     ItemId,
@@ -15,6 +18,7 @@ enum Requirement {
     ProjectionEqual(TermId),
 }
 struct Trait {
+    constness: crate::support::constness::Constness,
     item: ItemId,
     arguments: Vec<Argument>,
 }
@@ -70,6 +74,7 @@ impl Predicate {
         };
         let requirement = match &self.requirement {
             Requirement::Trait(trait_) => Requirement::Trait(Box::new(Trait {
+                constness: trait_.constness,
                 item: trait_.item,
                 arguments: trait_
                     .arguments
@@ -136,6 +141,7 @@ impl Predicate {
                     })
                     .collect::<Result<_, Error>>()?;
                 Requirement::Trait(Box::new(Trait {
+                    constness: trait_.constness,
                     item: trait_.item,
                     arguments,
                 }))
@@ -153,7 +159,11 @@ impl Predicate {
     ) -> Self {
         Self {
             subject,
-            requirement: Requirement::Trait(Box::new(Trait { item, arguments })),
+            requirement: Requirement::Trait(Box::new(Trait {
+                constness: crate::support::constness::Constness::Ordinary,
+                item,
+                arguments,
+            })),
         }
     }
     #[must_use]
@@ -161,6 +171,13 @@ impl Predicate {
         match &self.requirement {
             Requirement::Builtin(bound) => Some(*bound),
             Requirement::Trait(_) | Requirement::ProjectionEqual(_) => None,
+        }
+    }
+    #[must_use]
+    pub fn constness(&self) -> Option<crate::support::constness::Constness> {
+        match &self.requirement {
+            Requirement::Trait(trait_) => Some(trait_.constness),
+            _ => None,
         }
     }
     #[must_use]
@@ -195,7 +212,7 @@ impl Context {
         substitution: &mut Instantiation,
     ) -> Result<Predicate, Error> {
         let subject = self.instantiate_with(store, predicate.ty, substitution)?;
-        let requirement = if let Bound::Trait(id) = predicate.bound {
+        let requirement = if let Some((id, constness)) = predicate.bound.trait_parts() {
             let application = store.trait_application(id).ok_or(Error::InvalidIdentity)?;
             let arguments = store
                 .arguments(application.arguments)
@@ -215,6 +232,7 @@ impl Context {
                 });
             }
             Requirement::Trait(Box::new(Trait {
+                constness,
                 item: application.item,
                 arguments: inferred,
             }))
@@ -336,13 +354,14 @@ impl Context {
                 let arguments = store
                     .intern_arguments(&arguments)
                     .map_err(|_| Error::InvalidIdentity)?;
-                Bound::Trait(
+                Bound::trait_application(
                     store
                         .intern_trait_application(Application {
                             item: trait_.item,
                             arguments,
                         })
                         .map_err(|_| Error::InvalidIdentity)?,
+                    trait_.constness,
                 )
             }
         };

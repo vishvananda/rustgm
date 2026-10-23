@@ -153,6 +153,29 @@ impl Checker<'_> {
         }
         self.state.method_environment.clone_from(&environment);
         self.state.prepare_parameter_queries();
+        if let Some(catalog) = self.facts.source_bindings.as_deref() {
+            let declaration = catalog
+                .validated_language(crate::support::bindings::LangItem::Copy)
+                .map_err(|e| self.error(node, e))?
+                .map(|declaration| declaration.definition);
+            let requirements = self
+                .facts
+                .generics
+                .builtin_requirements
+                .entry(self.state.body)
+                .or_insert_with(|| crate::sema::model::BuiltinRequirements {
+                    environment: environment.clone(),
+                    predicates: Vec::new(),
+                    source_copy: None,
+                });
+            requirements.environment.clone_from(&environment);
+            requirements.source_copy = Some(std::sync::Arc::new(
+                crate::sema::model::SourceCopyRequirements {
+                    declaration,
+                    goals: Vec::new(),
+                },
+            ));
+        }
         Ok(())
     }
     pub(super) fn body_shape(&mut self, node: NodeId, ty: TypeId) -> Result<Properties, Error> {
@@ -251,12 +274,17 @@ impl Checker<'_> {
                 });
             return Ok(());
         }
-        if let Bound::Trait(application) = bound {
+        if bound.trait_parts().is_some() {
             if self
                 .state
                 .method_environment
                 .as_ref()
-                .is_some_and(|environment| environment.assumes_trait(ty, application))
+                .is_some_and(|environment| {
+                    environment.assumes_predicate(crate::types::parameters::predicates::Predicate {
+                        ty,
+                        bound,
+                    })
+                })
             {
                 return Ok(());
             }
@@ -305,7 +333,9 @@ impl Checker<'_> {
                     Bound::Clone => "generic argument must implement Clone",
                     Bound::Sized => "generic argument must be sized",
                     Bound::Auto(_) => "generic argument must implement its auto trait",
-                    Bound::Trait(_) => "generic argument must implement its declared trait",
+                    Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_) => {
+                        "generic argument must implement its declared trait"
+                    }
                     Bound::Outlives(_) => "generic argument must outlive its bound",
                     Bound::ProjectionEqual(_) => "associated type must equal its required result",
                 },
@@ -391,7 +421,17 @@ impl Checker<'_> {
         // Keep declaration clauses intact and retain the first clause's own binder.
         let mut quantified = crate::support::hash::HashSet::default();
         for predicate in predicates {
-            if let crate::types::parameters::clauses::Clause::ForAll(id) = predicate.value {
+            let clause = if self.runtime_callee_context() {
+                crate::sema::traits::effects::in_context(
+                    &mut self.facts.types,
+                    predicate.value,
+                    crate::support::constness::Constness::Ordinary,
+                )
+                .map_err(|e| self.error(node, e))?
+            } else {
+                predicate.value
+            };
+            if let crate::types::parameters::clauses::Clause::ForAll(id) = clause {
                 let (key, work) = self
                     .facts
                     .types
@@ -407,7 +447,7 @@ impl Checker<'_> {
             }
             self.instantiate_bound_obligation(
                 node,
-                predicate.value,
+                clause,
                 assumed,
                 &mut substitution,
                 &mut inference,
@@ -415,6 +455,21 @@ impl Checker<'_> {
         }
         inference.recycle(&mut self.state.call_types.instantiations);
         Ok(())
+    }
+
+    fn runtime_callee_context(&self) -> bool {
+        if !self.state.in_function {
+            return false;
+        }
+        // Closures retain the enclosing environment, but own a distinct body.
+        self.state
+            .environment_owner
+            .and_then(|owner| self.facts.function_indices.get(&owner))
+            .and_then(|&index| self.facts.functions.get(index))
+            .is_none_or(|function| {
+                function.body != Some(self.state.body)
+                    || !self.facts.is_const_function(function.definition)
+            })
     }
 
     pub(super) fn instantiate_bound_obligation(

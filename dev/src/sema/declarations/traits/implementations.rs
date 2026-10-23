@@ -1,5 +1,6 @@
 //! Retain complete impl applications; headers alone do not prove an implementation.
 mod constants;
+mod copying;
 mod methods;
 mod orphans;
 mod readiness;

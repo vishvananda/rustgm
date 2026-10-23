@@ -71,9 +71,16 @@ pub(crate) fn requirements(
         }
         if matches!(
             body.bound,
-            PredicateBound::Trait(_) | PredicateBound::ProjectionEqual(_)
+            PredicateBound::Trait(_)
+                | PredicateBound::ConstTrait(_)
+                | PredicateBound::MaybeConstTrait(_)
+                | PredicateBound::ProjectionEqual(_)
         ) {
-            predicates.push(predicate.value);
+            predicates.push(crate::sema::traits::effects::in_context(
+                &mut facts.types,
+                predicate.value,
+                crate::support::constness::Constness::Ordinary,
+            )?);
         }
     }
     let predicates = predicates

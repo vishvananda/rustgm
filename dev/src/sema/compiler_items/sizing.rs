@@ -118,7 +118,7 @@ fn validate_header(
     if definition.kind != DefKind::Trait
         || definition.node != Some(key)
         || declaration.parent.is_some()
-        || !matches!(owner.kind, OwnerKind::Trait { definition, unsafe_: false } if definition == declaration.definition)
+        || !matches!(owner.kind, OwnerKind::Trait { definition, unsafe_: false, constant: false } if definition == declaration.definition)
         || !matches!(facts.types.kind(self_type), Some(Kind::Parameter(_)))
         || item.generics.start != item.generics.end
         || facts
@@ -153,7 +153,7 @@ fn validate_hierarchy(
         LangItem::Sized => Some(LangItem::MetaSized),
         LangItem::MetaSized => Some(LangItem::PointeeSized),
         LangItem::PointeeSized => None,
-        LangItem::MemSizeConst | LangItem::MemAlignConst => {
+        _ => {
             return Err(error("non-sizing language item in sizing validation"));
         }
     };

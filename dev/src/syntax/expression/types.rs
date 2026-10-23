@@ -387,6 +387,20 @@ impl Parser<'_, '_> {
                 continue;
             }
             let optional = self.eat(P::Question)?;
+            let constness = if self.eat(P::OpenBracket)? {
+                if !self.eat_word(Word::Const)? {
+                    return Err(self.error("conditional trait bound requires const")?);
+                }
+                self.expect(P::CloseBracket)?;
+                crate::support::constness::Constness::Conditional
+            } else if self.eat_word(Word::Const)? {
+                crate::support::constness::Constness::Const
+            } else {
+                crate::support::constness::Constness::Ordinary
+            };
+            if optional && constness != crate::support::constness::Constness::Ordinary {
+                return Err(self.error("const trait bounds cannot be relaxed")?);
+            }
             let quantified = self.cursor.at_word(Word::For)?;
             let binders = self.binders()?;
             if quantified && (optional || self.cursor.at(P::Question)?) {
@@ -416,6 +430,7 @@ impl Parser<'_, '_> {
                 token.start,
                 Kind::Bound {
                     optional,
+                    constness,
                     quantified,
                     binders,
                     value,

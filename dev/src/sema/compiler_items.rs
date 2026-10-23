@@ -1,6 +1,12 @@
 //! Actual source compiler declarations remain distinct from bootstrap identities.
+mod calls;
+mod copying;
+pub(crate) use calls::check_instance as check_const_instance;
+pub(super) use calls::record as record_call_effects;
 mod intrinsic_contracts;
 mod layout;
+pub(crate) use copying::copy_decisions;
+mod roles;
 mod sizing;
 use crate::{
     resolve::{
@@ -11,6 +17,7 @@ use crate::{
 pub(super) use intrinsic_contracts::validate as validate_intrinsic;
 pub(crate) use layout::Selection;
 pub(super) use layout::validate_member as validate_layout_member;
+pub(super) use roles::validate as validate_traits;
 pub(super) use sizing::validate as validate_sizing;
 #[cfg(test)]
 #[path = "../../tests/invariants/provider_sizing.rs"]
@@ -18,8 +25,10 @@ mod tests;
 
 pub(crate) struct Catalog {
     provider: CrateIdentity,
-    languages: [Option<Declaration>; 5],
+    languages: [Option<Declaration>; LangItem::ALL.len()],
     sizing: Option<[DefId; 3]>,
+    traits: Option<Box<roles::Validated>>,
+    call_effects: Option<Box<crate::support::hash::HashMap<DefId, calls::Effect>>>,
     intrinsics: crate::support::hash::HashMap<DefId, intrinsic_contracts::Intrinsic>,
 }
 impl Catalog {
@@ -68,6 +77,8 @@ impl Catalog {
             provider: reserved.provider.clone(),
             languages: LangItem::ALL.map(|kind| reserved.language(kind)),
             sizing: None,
+            traits: None,
+            call_effects: None,
             intrinsics: reserved
                 .intrinsics()
                 .map(|entry| {
@@ -79,14 +90,36 @@ impl Catalog {
                 .collect(),
         })))
     }
-    /// Closure typing demands bindings outside this initial layout-provider catalog.
-    /// Extend this gate with validated actual Copy/Fn declarations when those
-    /// source roles are implemented; bootstrap identities cannot satisfy it.
+    /// Closure formation requires the actual completed source role family.
+    /// This declaration gate confers neither an implementation nor call permission.
     pub(crate) fn require_closure_bindings(&self) -> Result<(), &'static str> {
         if self.sizing.is_none() {
             return Err("source closure typing requires validated source sizing bindings");
         }
-        Err("source closure typing requires source Copy and callable bindings not yet implemented")
+        for role in [
+            LangItem::Copy,
+            LangItem::Clone,
+            LangItem::CloneFn,
+            LangItem::Tuple,
+            LangItem::FnOnce,
+            LangItem::FnMut,
+            LangItem::Fn,
+            LangItem::FnOnceOutput,
+        ] {
+            if self.validated_language(role)?.is_none() {
+                return Err(
+                    "source closure typing requires actual source Copy and callable declarations",
+                );
+            }
+        }
+        if self
+            .traits
+            .as_ref()
+            .is_none_or(|r| r.methods.iter().any(Option::is_none))
+        {
+            return Err("source closure typing requires completed callable member signatures");
+        }
+        Ok(())
     }
     pub(crate) fn language(&self, kind: LangItem) -> Option<Declaration> {
         self.languages[kind.index()]
@@ -138,4 +171,37 @@ pub(in crate::sema) fn sizing_predicate(
         return Err("source sizing application has unexpected arguments");
     }
     Ok(true)
+}
+
+/// This intrinsic trait classifies actual tuple types after its real header is sealed.
+pub(crate) fn tuple_predicate(
+    facts: &crate::sema::model::Declarations,
+    predicate: crate::types::parameters::predicates::Predicate,
+) -> Result<bool, &'static str> {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(false);
+    };
+    let Some((application, crate::support::constness::Constness::Ordinary)) =
+        predicate.bound.trait_parts()
+    else {
+        return Ok(false);
+    };
+    let application = facts
+        .types
+        .trait_application(application)
+        .ok_or("invalid Tuple trait application")?;
+    let Some(declaration) =
+        catalog.validated_language(crate::support::bindings::LangItem::Tuple)?
+    else {
+        return Ok(false);
+    };
+    Ok(application.item.0 == declaration.definition.0
+        && facts
+            .types
+            .arguments(application.arguments)
+            .is_some_and(|args| args.len() == 0)
+        && matches!(
+            facts.types.kind(predicate.ty),
+            Some(crate::types::Kind::Tuple(_))
+        ))
 }

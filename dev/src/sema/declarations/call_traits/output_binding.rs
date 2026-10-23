@@ -66,7 +66,7 @@ impl Checker<'_> {
         source: NodeKey,
         predicate: Predicate,
     ) -> Result<TypeId, Error> {
-        let Bound::Trait(id) = predicate.bound else {
+        let Some((id, _)) = predicate.bound.trait_parts() else {
             return Err(self.error(source, "call output requires a trait application"));
         };
         let parent = self
@@ -74,20 +74,35 @@ impl Checker<'_> {
             .types
             .trait_application(id)
             .ok_or_else(|| self.error(source, "missing call input application"))?;
-        let declaration = self
-            .report
-            .resolution
-            .builtin_traits
-            .callable(CallTrait::FnOnce)
-            .ok_or_else(|| self.error(source, "missing FnOnce declaration"))?;
-        let member = declaration
-            .output
-            .ok_or_else(|| self.error(source, "missing FnOnce Output"))?;
+        let (definition, member) =
+            if let Some(reserved) = self.report.resolution.source_bindings.as_deref() {
+                let definition = reserved
+                    .language(crate::support::bindings::LangItem::FnOnce)
+                    .ok_or_else(|| self.error(source, "missing source FnOnce declaration"))?;
+                let member = reserved
+                    .language(crate::support::bindings::LangItem::FnOnceOutput)
+                    .filter(|m| m.parent == Some(definition.definition))
+                    .ok_or_else(|| self.error(source, "missing source FnOnce Output"))?;
+                (definition.definition, member.definition)
+            } else {
+                let declaration = self
+                    .report
+                    .resolution
+                    .builtin_traits
+                    .callable(CallTrait::FnOnce)
+                    .ok_or_else(|| self.error(source, "missing FnOnce declaration"))?;
+                (
+                    declaration.definition,
+                    declaration
+                        .output
+                        .ok_or_else(|| self.error(source, "missing FnOnce Output"))?,
+                )
+            };
         let trait_application = self
             .facts
             .types
             .intern_trait_application(Application {
-                item: ItemId(declaration.definition.0),
+                item: ItemId(definition.0),
                 arguments: parent.arguments,
             })
             .map_err(|e| self.error(source, e))?;

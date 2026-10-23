@@ -86,7 +86,7 @@ pub(super) fn prepare<'a>(
     Ok((caller, dispatcher))
 }
 
-fn first_region(
+pub(super) fn first_region(
     facts: &Declarations,
     contract: &Contract,
     source_path: bool,

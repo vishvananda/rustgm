@@ -49,6 +49,8 @@ mod name_storage;
 pub(crate) mod native_references;
 #[path = "../../option_environment.rs"]
 mod option_environment;
+#[path = "../../provider_traits.rs"]
+mod provider_traits;
 #[path = "../../helpers/qualify.rs"]
 pub(crate) mod qualify;
 #[path = "../../resolution.rs"]

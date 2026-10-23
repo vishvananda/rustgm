@@ -84,11 +84,13 @@ pub enum ItemKind {
     },
     Trait {
         unsafe_: bool,
+        constant: bool,
         bounds: List,
         items: List,
     },
     Impl {
         unsafe_: bool,
+        constant: bool,
         negative: bool,
         trait_path: Option<NodeId>,
         ty: NodeId,

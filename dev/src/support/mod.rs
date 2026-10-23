@@ -2,6 +2,7 @@ pub mod atomic_ordering;
 pub mod bindings;
 pub mod call_traits;
 pub mod comparisons;
+pub mod constness;
 pub mod crates;
 pub mod edition;
 pub mod hash;

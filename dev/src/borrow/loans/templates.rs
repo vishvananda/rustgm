@@ -132,12 +132,24 @@ impl Verifier {
         let parameters = crate::borrow::permissions::check(environment, contract)?
             .unwrap_or_else(|| std::sync::Arc::clone(parameters));
         let mut copies = Copies::in_environment(std::sync::Arc::clone(&parameters));
-        let facts = initialization::analyze(
+        let mut copy_view = crate::borrow::copy_view::CopyView::checked(
+            &mut copies,
+            body,
+            contract,
+            environment.source_copy,
+        )
+        .map_err(|message| Error {
+            node: Some(body.source),
+            message: message.into(),
+        })?;
+        let order = crate::borrow::order::Order::new(body);
+        let facts = initialization::analyze_ordered(
             environment.types,
             environment.definitions,
             environment.derives,
-            &mut copies,
+            &mut copy_view,
             body,
+            order.as_ref(),
         )
         .map_err(|e| Error {
             node: Some(e.node),

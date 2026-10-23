@@ -236,7 +236,9 @@ impl Implementations {
             return Ok(false);
         }
         let item = match goal.bound {
-            Bound::Trait(application) => Identity::User(
+            Bound::Trait(application)
+            | Bound::ConstTrait(application)
+            | Bound::MaybeConstTrait(application) => Identity::User(
                 store
                     .trait_application(application)
                     .ok_or(Error::InvalidIdentity)?

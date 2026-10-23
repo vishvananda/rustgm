@@ -42,7 +42,7 @@ impl Uses {
         if let super::predicates::Bound::ProjectionEqual(result) = predicate.bound {
             self.collect(store, result)?;
         }
-        if let super::predicates::Bound::Trait(id) = predicate.bound {
+        if let Some((id, _)) = predicate.bound.trait_parts() {
             let application = store
                 .trait_application(id)
                 .ok_or("invalid parameter use trait application")?;

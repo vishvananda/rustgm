@@ -106,6 +106,7 @@ fn verify(component: &Component, templates: &Templates, contracts: Vec<Contract>
             types: &facts.types,
             definitions: &facts.aggregates,
             derives: &facts.derives,
+            source_copy: facts.uses_source_copy(),
             copies: &mut copies,
         },
         &facts.lifetimes.variances,
@@ -224,6 +225,7 @@ fn context_parents_prove_originals_without_entering_runtime_lookup() -> Result {
         types: &facts.types,
         definitions: &facts.aggregates,
         derives: &facts.derives,
+        source_copy: facts.uses_source_copy(),
         copies: &mut copies,
     };
     let checked = crate::borrow::templates::verify_with_context(
@@ -359,6 +361,7 @@ fn source_and_provider_component_debts_are_both_mandatory() -> Result {
                 types: &facts.types,
                 definitions: &facts.aggregates,
                 derives: &facts.derives,
+                source_copy: facts.uses_source_copy(),
                 copies: &mut copies,
             },
             &facts.lifetimes.variances,

@@ -94,6 +94,15 @@ pub(in crate::sema) fn callable_convention(
     };
     let abi = match bytes.as_ref() {
         b"Rust" => Abi::Rust,
+        b"rust-call"
+            if report
+                .package
+                .source_core
+                .as_deref()
+                .is_some_and(crate::resolve::bindings::SourceCore::permits_rust_call) =>
+        {
+            Abi::RustCall
+        }
         b"C" => Abi::C,
         _ => return Err(Declarations::error(report, key, "unsupported callable ABI")),
     };

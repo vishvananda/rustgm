@@ -247,6 +247,7 @@ impl Builder {
             types: &facts.types,
             definitions: &facts.aggregates,
             derives: &facts.derives,
+            source_copy: facts.uses_source_copy(),
             copies: &mut facts.copies,
         };
         let proved = match pending {
@@ -417,6 +418,7 @@ impl Builder {
             types: &facts.types,
             definitions: &facts.aggregates,
             derives: &facts.derives,
+            source_copy: facts.uses_source_copy(),
             copies: &mut facts.copies,
         };
         let proof = match original {

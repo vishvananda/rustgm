@@ -67,3 +67,11 @@ pub(super) fn choose<C, E>(
         Ok(Selection::Absent)
     }
 }
+
+/// Only the ordinary consequence of identical flat inputs is shared. The
+/// selected original premise remains evidence for any later effect demand.
+pub(super) fn ordinary_consequence(goal: &Goal, left: Predicate, right: Predicate) -> bool {
+    goal.constness() == Some(crate::support::constness::Constness::Ordinary)
+        && left.ty == right.ty
+        && matches!((left.bound.trait_parts(), right.bound.trait_parts()), (Some((a, _)), Some((b, _))) if a == b)
+}

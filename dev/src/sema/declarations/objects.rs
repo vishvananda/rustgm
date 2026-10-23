@@ -99,6 +99,7 @@ impl Checker<'_> {
             Written::User {
                 path: principal.path,
                 definition: principal.definition,
+                constness: crate::support::constness::Constness::Ordinary,
             },
             subject,
             subject,
@@ -179,6 +180,7 @@ impl Checker<'_> {
             let source = NodeKey { node, ..key };
             let Kind::Bound {
                 optional,
+                constness,
                 quantified,
                 binders,
                 value,
@@ -188,6 +190,9 @@ impl Checker<'_> {
             };
             if optional {
                 return Err(self.error(source, "object bounds cannot be relaxed"));
+            }
+            if constness != crate::support::constness::Constness::Ordinary {
+                return Err(self.error(source, "object bounds cannot require const traits"));
             }
             let value = NodeKey { node: value, ..key };
             if self.lifetime_argument(value) {
@@ -205,7 +210,10 @@ impl Checker<'_> {
                 autos.push(marker);
                 continue;
             }
-            let Written::User { path, definition } = written else {
+            let Written::User {
+                path, definition, ..
+            } = written
+            else {
                 return Err(self.error(source, "object principal must be dyn compatible"));
             };
             if principal.is_some() {

@@ -160,6 +160,7 @@ pub enum Kind {
     },
     Bound {
         optional: bool,
+        constness: crate::support::constness::Constness,
         quantified: bool,
         binders: List,
         value: NodeId,

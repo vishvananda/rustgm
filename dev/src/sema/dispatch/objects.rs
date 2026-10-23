@@ -49,7 +49,9 @@ impl Dispatcher {
         predicate: Predicate,
     ) -> Result<Method, String> {
         let language = match predicate.bound {
-            crate::types::parameters::predicates::Bound::Trait(id) => {
+            crate::types::parameters::predicates::Bound::Trait(id)
+            | crate::types::parameters::predicates::Bound::ConstTrait(id)
+            | crate::types::parameters::predicates::Bound::MaybeConstTrait(id) => {
                 facts
                     .types
                     .trait_application(id)

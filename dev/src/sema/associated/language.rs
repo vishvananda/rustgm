@@ -19,6 +19,52 @@ pub(super) struct Declarations {
     pub(super) comparisons: Option<Box<super::comparisons::Comparisons>>,
 }
 impl Inventory {
+    /// Publish validated real source identities without synthetic members, schemas
+    /// or function bodies. The ordinary inventory remains their sole owner.
+    pub(in crate::sema) fn register_source_callables(
+        &mut self,
+        entries: &[(crate::resolve::bindings::Declaration, CallTrait, DefId)],
+        output: Option<crate::resolve::bindings::Declaration>,
+    ) -> Result<(), &'static str> {
+        if entries.is_empty() {
+            return Ok(());
+        }
+        if self
+            .language
+            .as_ref()
+            .is_some_and(|l| !l.callables.is_empty() || l.output.is_some())
+        {
+            return Err("source callable publication cannot replace existing identities");
+        }
+        for &(declaration, _, method) in entries {
+            let owner = self
+                .owner(declaration.definition)
+                .ok_or("missing source callable owner")?;
+            let owner = self
+                .get(owner)
+                .ok_or("missing source callable declaration")?;
+            if owner.source != declaration.origin
+                || self.schema(declaration.definition).is_none()
+                || self.trait_owner(method) != Some(declaration.definition)
+                || self.language.as_ref().is_some_and(|l| {
+                    l.schemas.contains_key(&declaration.definition)
+                        || l.members.contains_key(&method)
+                })
+            {
+                return Err("source callable publication requires ordinary source ownership");
+            }
+        }
+        if let Some(output) = output
+            && self.trait_owner(output.definition) != output.parent
+        {
+            return Err("source callable Output has a different owner");
+        }
+        for &(declaration, kind, _) in entries {
+            self.declare_callable(declaration.definition, kind, None, declaration.origin);
+        }
+        self.language.get_or_insert_default().output = output.map(|d| d.definition);
+        Ok(())
+    }
     pub(in crate::sema) fn library_impl_member(
         &mut self,
         owner: DefId,

@@ -3,7 +3,7 @@ use super::{Method, Target};
 use crate::{
     sema::{model::Declarations, traits::object_bounds},
     support::call_traits::CallTrait,
-    types::{TypeId, closure::Adapter, instance::Instance, parameters::predicates::Bound},
+    types::{TypeId, closure::Adapter, instance::Instance},
 };
 
 /// A physical target description, not a source-proof capability. Lowering must
@@ -24,7 +24,7 @@ pub(crate) fn captured_permissions(
     let mut permissions = [false; 2];
     for &clause in &bounds.applications {
         let predicate = object_bounds::graph::quantified_value(&facts.types, clause)?;
-        let Bound::Trait(parent) = predicate.bound else {
+        let Some((parent, _)) = predicate.bound.trait_parts() else {
             return Err("captured object member requires a trait application");
         };
         let item = facts

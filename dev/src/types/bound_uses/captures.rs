@@ -136,7 +136,7 @@ impl<Q: Query> Occurrences<Q> {
         let bound = match value.bound {
             Bound::ProjectionEqual(result) => self.collect_inside(store, result, depth),
             Bound::Outlives(region) => Ok(self.region(region, depth)),
-            Bound::Trait(id) => {
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => {
                 let cached = if depth == 0 {
                     self.applications.get(&id)
                 } else {

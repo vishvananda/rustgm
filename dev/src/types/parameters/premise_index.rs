@@ -2,7 +2,7 @@
 use super::{
     ParameterId,
     clauses::{Clause, QuantifiedId},
-    predicates::{Bound, Predicate},
+    predicates::Predicate,
 };
 use crate::support::hash::{HashMap, HashSet};
 use crate::types::{ItemId, Store, infer, subject_head::Head};
@@ -96,7 +96,7 @@ impl ClauseIndex {
                     .predicate
             }
         };
-        let Bound::Trait(id) = predicate.bound else {
+        let Some((id, _)) = predicate.bound.trait_parts() else {
             return Err(infer::Error::InvalidIdentity);
         };
         let application = store

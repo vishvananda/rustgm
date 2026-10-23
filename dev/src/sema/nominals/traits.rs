@@ -77,6 +77,55 @@ impl State {
         Ok(state)
     }
 
+    pub(crate) fn body(
+        facts: &mut Declarations,
+        environment: Option<Arc<Environment>>,
+        universals: u32,
+        first: u32,
+    ) -> Result<Self, &'static str> {
+        let mut state = Self::new(facts, environment, Some((universals, first)))?;
+        state.availability = Availability::Validated;
+        Ok(state)
+    }
+
+    /// A completed absence may classify a move; pending proof cannot do so.
+    pub(crate) fn copy_decision(
+        &mut self,
+        facts: &mut Declarations,
+        predicate: Predicate,
+    ) -> Result<bool, &'static str> {
+        let fold = self
+            .fold
+            .as_mut()
+            .ok_or("source Copy requires a scoped proof")?;
+        let before = fold.steps;
+        let predicate = fold.predicate(&mut facts.types, predicate)?;
+        self.context
+            .account_work(fold.steps.saturating_sub(before))
+            .map_err(|_| "source Copy proof work exhausted")?;
+        let caller = selection::Caller {
+            assumptions: &self.assumptions,
+            environment: self.environment.as_ref(),
+            first_region: self.obligations.regions.end,
+            retain_sized: false,
+        };
+        let selected = select_requirement(
+            facts,
+            &mut self.context,
+            predicate,
+            caller,
+            Availability::Validated,
+            false,
+            None,
+        )?;
+        match selected {
+            selection::Selection::Deferred => Err("source Copy selection is still pending"),
+            selected => self
+                .accept_selection(selected)
+                .map(|source| source.is_some()),
+        }
+    }
+
     pub fn new(
         facts: &mut Declarations,
         environment: Option<Arc<Environment>>,

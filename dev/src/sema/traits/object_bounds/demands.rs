@@ -140,7 +140,7 @@ fn prepare(
 fn callable_clause(facts: &Declarations, clause: Clause) -> Result<bool, &'static str> {
     let predicate = graph::quantified_value(&facts.types, clause)?;
     Ok(match predicate.bound {
-        Bound::Trait(id) => facts
+        Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => facts
             .types
             .trait_application(id)
             .is_some_and(|a| facts.associated.callable(DefId(a.item.0)).is_some()),

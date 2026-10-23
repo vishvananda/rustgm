@@ -99,7 +99,7 @@ impl FamilyInputs {
         root: TermId,
         ambient: &[u32],
     ) -> Result<bool, crate::types::infer::Error> {
-        use crate::types::{infer::Error, parameters::predicates::Bound, projection};
+        use crate::types::{infer::Error, projection};
         let original = context.projection_application(&facts.types, root)?;
         let known = if self.arguments.is_some() {
             context.resolved(&mut facts.types, root).map(|_| ())
@@ -114,7 +114,7 @@ impl FamilyInputs {
             Err(error) => return Err(error),
         }
         if let Some(arguments) = self.arguments {
-            let Bound::Trait(trait_application) = self.predicate.bound else {
+            let Some((trait_application, _)) = self.predicate.bound.trait_parts() else {
                 return Err(Error::InvalidIdentity);
             };
             context.equate_projection_inputs_inside(

@@ -5,7 +5,7 @@ mod anonymous;
 mod clause_terms;
 mod incremental;
 use super::ir::NodeKey;
-pub use crate::sema::model::BuiltinRequirements;
+mod builtins;
 pub use crate::sema::model::LifetimeProof as Proof;
 use crate::support::hash::HashMap;
 use crate::{
@@ -13,6 +13,7 @@ use crate::{
     types::{RegionId, TypeId, outlives::Pair},
 };
 use anonymous::header as anonymous_header;
+pub use builtins::BuiltinRequirements;
 pub use incremental::Collector;
 
 #[derive(Clone, Copy)]
@@ -62,7 +63,7 @@ pub struct Contract {
     pub type_assumptions: Vec<crate::types::parameters::clauses::Clause>,
     pub obligations: Vec<Obligation>,
     pub proofs: Vec<Proof>,
-    pub builtins: Option<std::sync::Arc<crate::sema::model::BuiltinRequirements>>,
+    pub builtins: Option<std::sync::Arc<BuiltinRequirements>>,
     pub output: Option<std::sync::Arc<crate::sema::nested_outputs::Link>>,
     /// Specialized nested inputs can be discharged without granting output formation.
     pub require_result_formation: bool,
@@ -186,7 +187,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             .get(source)
             .copied()
             .ok_or("builtin requirement has no body contract")?;
-        bodies[index].builtins = Some(std::sync::Arc::new(requirements.clone()));
+        bodies[index].builtins = Some(std::sync::Arc::new(BuiltinRequirements::from(requirements)));
     }
     super::length_methods::append_contract(facts, &mut bodies)?;
     Ok(Contracts {
