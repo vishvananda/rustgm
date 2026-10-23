@@ -17,10 +17,12 @@ sets needed when the same package is both a build and a target dependency.
 `scripts/cargo_plan.py` accepts a frozen `Job`: absolute pinned Cargo/query
 compiler paths and hashes, the root manifest and adjacent lockfile, explicit
 input file hashes, selected package, target triple, features and default-feature
-policy. Run `execute(job, fresh_output_directory)` under `scripts/storage.py`.
-The current selection is a library build. The adapter uses a fresh Cargo home,
-rejects ambient Cargo configuration and accepts local path packages. Registry
-resolution and acquisition are not implemented by this interface.
+policy and an optional frozen `Vendor`. Run `execute(job, fresh_output_directory)`
+under `scripts/storage.py`. The current selection is a library build. The adapter
+uses a fresh Cargo home and rejects ambient Cargo configuration. Local path
+packages use the caller's input pins; crates.io packages use the authenticated
+directory source described below. Network acquisition and other registries are
+outside this interface.
 
 The wrapper accepts only the exact observed version and empty-input file-name,
 sysroot and target-configuration queries. It retains raw query output, arguments
@@ -60,17 +62,68 @@ ordering, malformed/empty/cyclic graphs, pin changes, failed planning and reject
 source input to compiler queries. The real pinned-tool probe checks that the
 wrapper accepts Cargo's actual requests and no source compilation occurs.
 
+## Original registry package snapshots
+
+`scripts/package_snapshot.py` extracts an explicitly pinned local `.crate`
+archive into a fresh vendor package directory. The caller supplies the trusted
+archive checksum, name and version. Extraction verifies the archive and original
+manifest identity, rejects links, special files, escaping/duplicate paths and
+preexisting Cargo checksum metadata, and bounds entries and bytes. Original
+source, manifests, packaged lockfiles and attribution remain byte-for-byte
+unchanged. Permissions are normalized to ordinary files or executable files;
+set-id permissions are never imported. Cargo's generated checksum metadata is
+derived from those bytes, not trusted as the source of their provenance.
+
+Each immutable snapshot retains its archive pin, all file hashes and modes, and
+directory inventory. Validation rejects changed, missing or added inputs,
+including empty directories. Its portable package identity contains registry,
+name, version and archive hash; filesystem paths remain invocation-local. This
+is not yet a semantic crate identity or build-cache key. Keep snapshots under a
+dedicated source parent with `.keep-artifacts` when upstream packages contain
+files the cleanup policy would otherwise classify as generated objects.
+
+`scripts/crate_vendor.py` validates the exact registry package set against the
+external workspace's frozen version-4 lockfile, including packages resolved but
+inactive in this build. It accepts only crates.io with explicit matching archive
+checksums. The planner supplies only the two reviewed
+[directory-source replacement settings](https://doc.rust-lang.org/cargo/reference/source-replacement.html#directory-sources);
+it never permits arbitrary ambient Cargo configuration. It verifies every
+package before and after planning, builds one source-ownership index, and binds
+each registry unit to both the expected package ID and one of that package's
+actual pinned source files. Multiple host/target units do not rehash a package
+per unit. Receipts retain complete inventories and unit-to-package bindings.
+
+The original serde_core 1.0.229 probe uses an external Rust 2024/resolver-2
+workspace with default dependency features disabled. Its unmodified Rust 2021
+manifest resolves six registry packages: serde_core 1.0.229, serde_derive 1.0.229,
+proc-macro2 1.0.107, quote 1.0.47, syn 3.0.7 and unicode-ident 1.0.26. Cargo plans
+only four units: the consumer library, serde_core library, its host build-script
+compilation and target-context execution. The cfg-inactive derive dependency
+remains in the lockfile but has no selected compilation unit. The consumer uses
+`compile_error!` and the strict query wrapper prevents all source compilation.
+The original packaged lockfiles are preserved; only the external workspace owns
+the acceptance lockfile. All six archive pins also match their exact cached
+crates.io index rows; those rows are retained with the replay evidence.
+
+Evidence lives in `obj/parallel/pa34-serde-planning-v1/` (independent original
+graph) and `obj/parallel/pa34-vendor-adapter-v1/` (implemented adapter replay).
+The latter passed all 141 harness tests, suite registration, assignment layout
+and upstream-byte checks, then reproduced the four-unit graph offline using a
+fresh Cargo home. Receipt SHA-256 is
+`e20e4182193d8dc82f3dd16b01d87cc66b2ddd9cf0e6b3bac119a0daa1dc3146`.
+This checkpoint changes no frontend code, assignment activation or text oracle.
+
 ## Remaining integration
 
-The caller currently declares the input closure. A valid graph does not prove
-that all transitive manifests, files, target facts, environment or build-script
-rerun inputs are present. Persistent caching is disabled until the planner
-authenticates that complete closure, including registry packages/checksums and
-Cargo configuration. Preserve original upstream sources and packaged lockfiles;
-an external acceptance workspace can own its own resolved lockfile.
+The caller still declares local path-package inputs. A valid graph does not prove
+that all target facts, environment or build-script rerun inputs are present.
+Persistent caching is disabled until the planner authenticates that complete
+closure. Cargo's implicit sysroot is absent from this package graph: RustGM must
+add and compile the original source sysroot rather than consume rustc's target
+libraries. Four planned package units are not the complete frontend build graph.
 
-Next, bind units to authenticated package snapshots, lower host tasks into the
-existing `host_build_script.py` interface, and consume ordered generated cfg,
+Next, lower authenticated units into the existing `host_build_script.py`
+interface, and consume ordered generated cfg,
 environment and source outputs in target jobs. Implement actual Rust 2021
 semantics and per-crate macro edition provenance before claiming that profile.
 Then execute dependency-first target jobs through RustGM's typed metadata and

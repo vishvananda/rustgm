@@ -63,10 +63,15 @@ the host while carrying the configuration of its consuming target. Traverse the
 selected graph once, retaining dependency-first order and diagnosing cycles,
 missing nodes and unsupported protocol fields. Graph rows and Cargo path IDs
 are invocation-local, not portable crate identities or persistent cache keys.
-Planning receipts are not compilation results. The initial
-[planning adapter](docs/crate-planning.md) supports frozen local path packages;
-complete source/configuration acquisition, per-crate edition semantics and the
-target executor remain required before upstream acceptance.
+Planning receipts are not compilation results. The
+[planning adapter](docs/crate-planning.md) supports frozen local path inputs and
+authenticated crates.io archive snapshots. Preserve original package bytes and
+validate the complete registry lockfile set, including inactive dependencies.
+Hash each package once per validation boundary, then use indexed source ownership
+to bind its units; do not rescan each package per host/target unit. Complete local
+source/configuration closure, per-crate edition semantics and the target executor
+remain required before upstream acceptance. Cargo's implicit sysroot is not a
+selected package unit: add original source-sysroot jobs explicitly.
 
 ## Source, lexing and parsing
 

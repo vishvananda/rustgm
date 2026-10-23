@@ -1,8 +1,8 @@
-"""Pinned, frozen path-package planning; never execute a target compilation.
+"""Pinned, frozen package planning; never execute a target compilation.
 
 Run under storage.py. This initial adapter deliberately uses a fresh Cargo home
 and rejects ambient Cargo configuration. Registry acquisition and complete
-package-closure authentication must precede persistent caching or upstream
+configuration-closure authentication must precede persistent caching or upstream
 acceptance; a planned graph alone cannot establish either.
 """
 from dataclasses import dataclass
@@ -13,6 +13,7 @@ import subprocess
 import time
 
 from build_units import MAX_BYTES, parse
+from crate_vendor import Vendor
 from host_build_script import digest
 
 
@@ -30,6 +31,7 @@ class Job:
     target: str
     features: tuple[str, ...] = ()
     default_features: bool = True
+    vendor: Vendor | None = None
 
     def validate(self):
         for path, expected in ((self.cargo, self.cargo_sha256),
@@ -55,6 +57,10 @@ class Job:
             raise ValueError('invalid or duplicate selected feature')
         if type(self.default_features) is not bool:
             raise ValueError('default features must be explicitly enabled or disabled')
+        if self.vendor is not None:
+            self.vendor.verify(self.lockfile)
+            if any(path.is_relative_to(self.vendor.root) for path in paths):
+                raise ValueError('vendor snapshots must be separate from caller input pins')
 
 
 def execute(job, folder):
@@ -65,7 +71,8 @@ def execute(job, folder):
     folder.mkdir(parents=True)
     wrapper = Path(__file__).with_name('cargo_query.py').absolute()
     implementation = {name: digest(wrapper.with_name(name)) for name in (
-        'cargo_query.py', 'cargo_plan.py', 'build_units.py', 'host_build_script.py', 'build_script_output.py')}
+        'cargo_query.py', 'cargo_plan.py', 'build_units.py', 'crate_vendor.py', 'package_snapshot.py',
+        'host_build_script.py', 'build_script_output.py')}
     environment = {
         'PATH': '/usr/bin:/bin', 'CARGO_HOME': str(folder / 'cargo-home'),
         'CARGO_TARGET_DIR': str(folder / 'target'), 'CARGO_INCREMENTAL': '0',
@@ -78,6 +85,8 @@ def execute(job, folder):
     command = [str(job.cargo), 'build', '--manifest-path', str(job.manifest),
                '-p', job.package, '--lib', '--target', job.target,
                '--frozen', '--unit-graph', '-Z', 'unstable-options']
+    if job.vendor is not None:
+        command += job.vendor.arguments()
     if not job.default_features:
         command.append('--no-default-features')
     for feature in job.features:
@@ -86,6 +95,10 @@ def execute(job, folder):
                'cwd': str(job.manifest.parent), 'inputs': [(str(p), sha) for p, sha in job.inputs],
                'cargo_sha256': job.cargo_sha256, 'implementation_sha256': implementation,
                'query_compiler_sha256': job.query_compiler_sha256, 'status': None}
+    if job.vendor is not None:
+        receipt['vendor'] = [dict(package.identity, root=str(package.root), files=package.files,
+                                  directories=package.directories)
+                             for package in job.vendor.packages]
 
     def save():
         (folder / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
@@ -102,13 +115,14 @@ def execute(job, folder):
         with (folder / 'graph.stdout').open('rb') as source:
             plan = parse(source.read(MAX_BYTES + 1), job.target)
         inputs = dict(job.inputs)
-        if any(Path(unit.target.src_path) not in inputs for unit in plan.units):
+        bindings = job.vendor.bind(plan, inputs) if job.vendor is not None else None
+        if bindings is None and any(Path(unit.target.src_path) not in inputs for unit in plan.units):
             raise ValueError('planned source is absent from the declared frozen inputs')
         job.validate()
         if any(digest(wrapper.with_name(name)) != sha for name, sha in implementation.items()):
             raise ValueError('planning implementation changed during execution')
         receipt.update(state='planned', units=len(plan.units), roots=plan.roots, order=plan.order,
-                       execution=[unit.execution.value for unit in plan.units])
+                       execution=[unit.execution.value for unit in plan.units], packages=bindings)
         return plan
     except (OSError, ValueError, subprocess.TimeoutExpired) as error:
         receipt.update(state='failed', error=str(error))
