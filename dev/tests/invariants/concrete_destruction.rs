@@ -178,13 +178,19 @@ fn concrete_destruction_retains_actual_ownership_cycles_and_exhaustion() -> Resu
 }
 
 #[test]
-fn sparse_concrete_scope_preserves_the_existing_query_layout() {
+fn sparse_concrete_scope_accounts_for_binding_without_growing_the_query() {
     struct PreviousScope {
         _environment: Arc<Environment>,
         _builtins: Option<Box<BuiltinQuery>>,
         _states: HashMap<TypeId, State>,
     }
-    assert_eq!(size_of::<Scope>(), size_of::<PreviousScope>());
+    // Exact exposure adds one cold arena-binding pointer; ordinary queries
+    // retain the same header and leave that optional binding absent.
+    assert_eq!(
+        size_of::<Scope>(),
+        size_of::<PreviousScope>() + size_of::<Option<Box<catalogue::Binding>>>()
+    );
+    assert_eq!(size_of::<NeedsDrop>(), 72);
     assert_eq!(
         size_of::<Option<Arc<Environment>>>(),
         size_of::<Arc<Environment>>()
