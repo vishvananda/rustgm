@@ -1,8 +1,10 @@
 # Source-free originals for executable generic crate transport
 
-Design only, refreshed against frontend `46d8b82a`, the focused actual-parent port
-`4eb1a20f`, and C's current `defining_heads` proposal. No production API, artifact
-profile tag or edition encoding is changed by this document. The broad required
+Design and private prerequisite, refreshed against frontend `46d8b82a`, the
+focused actual-parent port `4eb1a20f`, and C's current `defining_heads` proposal.
+The private resolver identity foundation is qualified in
+[its checkpoint note](pa29-origin-foundation.md); no live body/proof field, artifact
+profile tag or edition encoding has migrated yet. The broad required
 scope remains in [the generic transport proposal](pa29-generic-transport-proposal.md).
 This prerequisite must lead to actual generic/const cross-crate execution, not
 stop at another neutral vocabulary. Root owns edition/build integration.
@@ -41,8 +43,9 @@ BodySite replaces a body-relative NodeId only in records used by both body
 origins. A local constructor retains the actual NodeId's checked nonzero value;
 its source-node accessor requires BodyOrigin::Source. An imported constructor
 checks a dense operation/site ordinal against that body's imported site table.
-It never constructs NodeId or calls Package::unit. Local/Value/Statement/Block
-locations keep one four-byte site field: no field is added to hot Value, View,
+It never constructs NodeId or calls Package::unit. Local/Statement/Block
+locations retain their existing four-byte site storage; Value has no source field.
+No field is added to hot Value, View,
 Constant, Place or scalar payloads.
 
 ProofSite replaces NodeKey where an obligation/proof/error can identify an
@@ -57,18 +60,18 @@ uses of Obligation.source rather than changing only an error formatter.
 Measured port baseline is Body=448, Value=24, Code=304, Target=28, Request=56,
 full Proved=472, paired Proved=496 bytes. NodeKey is two four-byte IDs, and NodeId
 is NonZeroU32. The proposed ImportedBodyId payload is eight bytes and BodySite
-four; the straightforward enums are expected to require 12 and 16 bytes for
-BodyOrigin and ProofSite. Those new enum/containing-record sizes are **not yet
-measured**: no production migration or standalone layout build has run. The
-first approved implementation gate measures Body/Contract/Obligation/Proof/error,
-Function/header, Prepared/Checked and Code after field placement. Value must
-remain 24 bytes. Do not claim a Body size increase simply by summing fields;
+four. The private foundation measures BodyOrigin=12 and ProofSite=12, with
+candidate Body=448/Contract=184 unchanged, Obligation28→32 and LifetimeProof120→128.
+No production field migration has run. Later error, Function/header,
+Prepared/Checked and Code layouts must be measured before their field changes.
+Value remains 24 bytes. Do not claim a Body size increase simply by summing fields;
 actual compiler layout/padding and cold vector capacities must be recorded.
 
 ## One cold imported catalog
 
-Add a lazy imported-original sidecar to the existing crate linkage owner. Its
-concrete contents are:
+The resolver keeps a lazy metadata-only ownership catalog, and the pipeline/body
+owner keeps the later decoded-original sidecar keyed by it. Resolve must not
+import sema/body or retain their records. Together their concrete contents are:
 
 - epoch, a vector of artifact descriptors and dense imported body rows;
 - (artifact slot, BodyRef) -> row and BodyKey -> row Fx indexes;
