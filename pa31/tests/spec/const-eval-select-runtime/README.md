@@ -26,9 +26,10 @@ explicitly denies constant callback execution.
 
 Four additional declared scaling rows repeat actual mapped selector calls at
 8/32/128 and a control with 128 pointer calls. Their C observers count every selected
-callback; source/native runs include the largest rows directly. Their independent
-observations are pending, with source/client hashes and expected outputs frozen
-before execution. See the [checkpoint](../../../../docs/pa31-runtime-const-select.md)
+callback; source/native runs include the largest rows directly. All four independently pass
+pinned rustc metadata/object and linked native execution, with source/client
+hashes and expected outputs frozen before those probes. Candidate execution of
+the new rows remains pending merged qualification. See the [checkpoint](../../../../docs/pa31-runtime-const-select.md)
 for exact qualification and the retained mapping-hypothesis failure.
 
 The original 26 observations and first 19 provider hypotheses remain unchanged

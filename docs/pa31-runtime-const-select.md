@@ -132,8 +132,17 @@ empty runtime stderr. Every selected callback must therefore execute. Candidate
 source/native execution includes all four rows; pointer128 must construct no
 origin index. The declarations, generator and source/client hashes are frozen
 under `obj/parallel/pa28/const-eval-select/source-scaling-v1/declared.json` before
-independent execution. Independent metadata/object/native observations and
-candidate merged scaling measurements remain pending at this commit.
+independent execution. All four rows independently pass pinned rustc metadata/object and linked native
+execution in source-scaling-v1/independent-v1. All expected outputs and runtime
+stderr match, without a hypothesis disagreement. Tool versions/hashes, complete
+commands, source/client hashes and raw observations remain in binding.json,
+results.json and summary.json. The plan SHA-256 is
+403c70a90ef5c1068f3a9543520d10cf17eb5f1f37750a26d373f183b0f21473;
+the independent results SHA-256 is
+bfe46cc548e95a62eab2fa14affff87386fcccf6629c6317eda43e7ec38aecea.
+This independent-only run made no RustGM/backend invocation. Actual candidate
+source/native execution and merged scaling measurements remain integrator-owned
+and pending; they are not inferred from the smaller v3 contexts.
 
 ## Remaining boundaries
 

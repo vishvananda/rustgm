@@ -336,8 +336,9 @@
       "selector_calls": 8,
       "family": "mapped",
       "scope": "same qualified runtime source profile; actual source scaling only",
-      "state": "DECLARED_BEFORE_INDEPENDENT_OR_CANDIDATE_EXECUTION",
-      "derivation": "unchanged mapped-provider declaration prefix; record() protocol from independently qualified operand-effects-once; pointer branch from independently qualified pointer-two-targets"
+      "state": "Independent metadata/object/native passed; actual final candidate source/native/scaling qualification remains integrator-owned and pending",
+      "derivation": "unchanged mapped-provider declaration prefix; record() protocol from independently qualified operand-effects-once; pointer branch from independently qualified pointer-two-targets",
+      "independent_evidence": "obj/parallel/pa28/const-eval-select/source-scaling-v1/independent-v1"
     },
     {
       "name": "scale-mapped-32",
@@ -354,8 +355,9 @@
       "selector_calls": 32,
       "family": "mapped",
       "scope": "same qualified runtime source profile; actual source scaling only",
-      "state": "DECLARED_BEFORE_INDEPENDENT_OR_CANDIDATE_EXECUTION",
-      "derivation": "unchanged mapped-provider declaration prefix; record() protocol from independently qualified operand-effects-once; pointer branch from independently qualified pointer-two-targets"
+      "state": "Independent metadata/object/native passed; actual final candidate source/native/scaling qualification remains integrator-owned and pending",
+      "derivation": "unchanged mapped-provider declaration prefix; record() protocol from independently qualified operand-effects-once; pointer branch from independently qualified pointer-two-targets",
+      "independent_evidence": "obj/parallel/pa28/const-eval-select/source-scaling-v1/independent-v1"
     },
     {
       "name": "scale-mapped-128",
@@ -372,8 +374,9 @@
       "selector_calls": 128,
       "family": "mapped",
       "scope": "same qualified runtime source profile; actual source scaling only",
-      "state": "DECLARED_BEFORE_INDEPENDENT_OR_CANDIDATE_EXECUTION",
-      "derivation": "unchanged mapped-provider declaration prefix; record() protocol from independently qualified operand-effects-once; pointer branch from independently qualified pointer-two-targets"
+      "state": "Independent metadata/object/native passed; actual final candidate source/native/scaling qualification remains integrator-owned and pending",
+      "derivation": "unchanged mapped-provider declaration prefix; record() protocol from independently qualified operand-effects-once; pointer branch from independently qualified pointer-two-targets",
+      "independent_evidence": "obj/parallel/pa28/const-eval-select/source-scaling-v1/independent-v1"
     },
     {
       "name": "scale-pointer-128",
@@ -390,8 +393,9 @@
       "selector_calls": 128,
       "family": "pointer",
       "scope": "same qualified runtime source profile; actual source scaling only",
-      "state": "DECLARED_BEFORE_INDEPENDENT_OR_CANDIDATE_EXECUTION",
-      "derivation": "unchanged mapped-provider declaration prefix; record() protocol from independently qualified operand-effects-once; pointer branch from independently qualified pointer-two-targets"
+      "state": "Independent metadata/object/native passed; actual final candidate source/native/scaling qualification remains integrator-owned and pending",
+      "derivation": "unchanged mapped-provider declaration prefix; record() protocol from independently qualified operand-effects-once; pointer branch from independently qualified pointer-two-targets",
+      "independent_evidence": "obj/parallel/pa28/const-eval-select/source-scaling-v1/independent-v1"
     }
   ],
   "independent_receipts": {
@@ -407,5 +411,16 @@
     "retained_v3_runtime_source_native_contexts": 12,
     "retained_v3_private_cases": 14,
     "final_delta": "Unqualified locally: lazy pointer-only demand path, precise diagnostic assertions, actual scaling/payload observations, four frozen source/native scaling contexts. Integrator runs merged qualification."
+  },
+  "scaling_independent_receipt": {
+    "cases": 4,
+    "metadata": 4,
+    "objects": 4,
+    "native": 4,
+    "hypothesis_disagreements": [],
+    "source_plan_sha256": "403c70a90ef5c1068f3a9543520d10cf17eb5f1f37750a26d373f183b0f21473",
+    "binding_sha256": "49edeca95b8fca82ecce33f8aa557837350a1d93282733879b62f3dd0011abc1",
+    "results_sha256": "bfe46cc548e95a62eab2fa14affff87386fcccf6629c6317eda43e7ec38aecea",
+    "no_candidate_invocation": true
   }
 }
