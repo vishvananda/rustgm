@@ -42,10 +42,11 @@ other unsized tails, numeric/null provenance and the remaining PA27/28 contracts
 stay required. Tuple-word construction controls are qualified for the explicit
 Linux x86-64 profile, without promising universal Rust tuple layout.
 
-Qualification is focused: declared source/checked-view outcomes, valid native
+Worker qualification is focused: declared source/checked-view outcomes, valid native
 controls, malformed sequence/initialization/write/liveness invariants, ordinary
-slice/literal controls and width/repetition work. Full release and comparative
-performance remain the integrator's responsibility. No text references are edited.
+slice/literal controls and width/repetition work. The integrator's subsequent
+combined release and performance results are recorded below. No text references
+are edited.
 
 The original panic-macro forms remain required successful inputs in the draft
 manifest. The focused supported-storage test excludes those two sources while
@@ -82,3 +83,59 @@ layout, 24 upstream/126 Reference pins and all 8,362 active text comparisons pas
 No generated reference changed. The final compiler pin is recorded in
 `obj/parallel/pa27/string-byte-words/closing-v2/binary.json`; the fixture-only
 runtime registration tail is `registration-v1/checks.json`.
+
+## Combined publication qualification
+
+The integrated compiler snapshot is `aa6a854b378953c760f5b6e72416151bfc536297`,
+with immutable release binary SHA-256
+`f70699200b4f5535a35577238e62030e542ee1337156765c9e6a7499238f88fc`.
+Validation evidence is retained in the validation checkout under
+`obj/parallel/string-prerequisites-combined-v1/`:
+
+- All 3,167 regular and ignored maintainer tests pass in one release execution.
+  That command took 1,600.28 seconds, including 14m34s of code generation.
+- All 8,362 active text comparisons pass in 18.99 seconds.
+- PA18 and PA24 each pass 470 independent source checks. Their native checks
+  pass 290 and 313 executable comparisons respectively, three codegen-only
+  comparisons each, and ten PA24 object comparisons.
+- Formatting, strict all-target/all-feature Clippy, architecture/file audit,
+  harness, upstream bytes and backend qualification pass.
+
+The full guard removed 10,334 generated files, reclaiming 16.91 GiB, and
+losslessly archived one large diagnostic. Twelve superseded compiler pins were
+then retired, reclaiming another 1.01 GiB; their hashes and receipts remain.
+An idle cleanup also removed 9,664 older unpinned generated files (16.84 GiB)
+and losslessly archived one older diagnostic. The current baseline, candidate
+and backend pins are retained; source inputs, diagnostics and measurements remain.
+
+`obj/parallel/string-prerequisites-perf-v1/` freezes twelve inputs before
+measurement. The nine width/reuse grid inputs are newly supported; the old
+compiler rejects them, so they have no A/B speedup result. Three ordinary/opaque
+controls have byte-identical A/B output. The combined candidate also passes four
+native consumers against retained independent outcomes for identical inputs.
+The exclusive comparison retains A/A calibration, five ABBA blocks, raw RSS
+observations and instruction profiles. Shared instruction counts decrease
+0.085–0.117%; measured median RSS does not increase. Increasing one grid
+dimension fourfold produces instruction ratios of 1.003–1.039 for width and
+1.391–2.183 for reuse. These whole-compiler observations complement the exact
+logical-work invariants above; they do not prove complexity by timing alone.
+
+Primary shared wall medians are 4.84–6.52% slower. The scalar observation exceeds
+its 3.39% A/A spread, so a single declared attribution batch records child CPU
+time, faults and context switches for all three shared controls. Its paired
+wall medians range from -1.32% to +0.87%, and child CPU from -1.72% to +1.79%,
+within that batch's A/A spreads. No major faults occur; scheduling counts are
+comparable. Both batches remain recorded, including the original slower results.
+Shared-machine launch/scheduling variation limits wall-time attribution; this
+checkpoint makes no wall-time speedup claim. No further retiming was performed.
+
+The primary analysis SHA-256 is
+`a8b0006537255b293ff0396c8a3c0e7fd13ec05c68a965eaad81d410b32a5680`;
+the separate attribution result SHA-256 is
+`62ac94518706f1ea1913ef1c8a3f153206d91250b58d298a90ad0360ad8162e1`.
+The later merge of main's already-qualified PA34 Python tooling changes no
+`dev/` bytes, so it does not rebuild or repeat the completed compiler suite.
+The merged tree passes all 152 harness tests, registration of 358 roots in 13
+binaries, all 44 assignment layouts and the 24 upstream/126 Reference file pins.
+PA25–PA44 remain planned, including both original panic-macro storage inputs
+and the complete upstream library requirements.
