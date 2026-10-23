@@ -84,7 +84,7 @@ impl Catalog {
         let published = requested.unwrap_or(code.result);
         let bytes = self.index_bytes(&code, source_only, bytes)?;
         let index = self.bodies.len();
-        self.available(&code, published, source_only, scope)?;
+        let expression = self.available(&code, published, source_only, scope)?;
         let bytes = self.scope_bytes(scope, code.owner, published, index, bytes)?;
         code.transport_inline_results(source_only, results)?;
         code.source_only = source_only;
@@ -98,11 +98,7 @@ impl Catalog {
             code.owner
         {
             self.definitions.insert(definition, index);
-        } else if matches!(code.owner, Owner::AnonymousConstant) {
-            let source = code
-                .source
-                .source()
-                .ok_or("imported anonymous Code requires its exact body-key index")?;
+        } else if let Some(source) = expression {
             self.expressions.insert(source, index);
         }
         if let Owner::AnonymousInstance(instance) = code.owner
@@ -165,7 +161,8 @@ impl Catalog {
         published: crate::types::TypeId,
         source_only: bool,
         scope: Option<crate::const_eval::lease_codes::Scope>,
-    ) -> Result<(), &'static str> {
+    ) -> Result<Option<super::NodeKey>, &'static str> {
+        let mut expression = None;
         if let Some(instance) = code.instance {
             if self.functions.contains_key(&instance) {
                 return Err("duplicate constant function instance");
@@ -184,6 +181,7 @@ impl Catalog {
             if self.expressions.contains_key(&source) {
                 return Err("duplicate anonymous constant body");
             }
+            expression = Some(source);
         }
         if let Owner::AnonymousInstance(instance) = code.owner
             && scope.is_none()
@@ -203,7 +201,7 @@ impl Catalog {
         {
             return Err("duplicate selected initializer execution body");
         }
-        Ok(())
+        Ok(expression)
     }
     fn scope_bytes(
         &self,
