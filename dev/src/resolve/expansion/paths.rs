@@ -508,6 +508,11 @@ impl Paths {
         context: Context,
         node: NodeId,
     ) -> Result<(), Error> {
+        // Source providers resolve their actual macro declarations through the
+        // import worklist. A familiar final spelling cannot create a library.
+        if package.source_core.is_some() {
+            return Ok(());
+        }
         let name = package
             .names
             .intern(Builtin::OptionEnv.name())

@@ -23,6 +23,8 @@ mod const_contexts;
 mod destructibility;
 #[path = "provider_traits/effect_opponents.rs"]
 mod effect_opponents;
+#[path = "provider_traits/environment_names.rs"]
+mod environment_names;
 #[path = "provider_traits/forbidden_cleanup.rs"]
 mod forbidden_cleanup;
 #[path = "provider_traits/freeze_cases.rs"]

@@ -93,6 +93,14 @@ includes declaration and owning crate; familiar names are not implementation
 evidence. Transport checked generic/const bodies and their retained contracts
 through deterministic crate metadata with indexed external-to-local remapping.
 
+Source macro imports and qualified calls use actual declarations and the existing
+import dependency worklist, including forward definitions and renamed targets.
+A final `option_env` spelling cannot create bootstrap Option or builtin macro
+definitions inside a source provider. Keep builtin expansion semantics separate
+from ordinary macro lookup; resolving an authored macro with that name grants
+no compiler role. The [source macro path controls](pa31/tests/spec/source-macro-paths/README.md)
+record the original whole-core failure and independently qualified inputs.
+
 Library feature requests come from enabled source declarations and authenticated
 dependency inventories, separately from compiler language capabilities. Complete
 their validation after configured expansion; unknown requests grant no capability.
