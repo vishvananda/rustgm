@@ -29,8 +29,10 @@ ref-test: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(REF_TEST_APP)" --bless || status=1; done; exit $$status
 ref-test-pa%: all
 	$(PYTHON) scripts/course.py pa$* --app "$(REF_TEST_APP)" --bless
-lint:
+.PHONY: fmt-check
+fmt-check:
 	$(CARGO) fmt --manifest-path dev/Cargo.toml --all -- --check
+lint: fmt-check
 	$(PYTHON) scripts/storage.py run --no-prune -- $(CARGO) clippy --manifest-path dev/Cargo.toml --all-targets --all-features --locked -- -D warnings
 setup-audit:
 	$(PYTHON) -m venv obj/audit-venv

@@ -11,7 +11,7 @@ jobs:
       - name: Pinned Rust
         run: rustup toolchain install 1.98.0 --profile minimal --component rustfmt --component clippy
       - name: Lint, architecture and harness
-        run: make lint setup-audit audit-rust test-harness test-upstream
+        run: make fmt-check setup-audit audit-rust lint test-harness test-upstream
       - name: Independent host build graph
         run: make test-host-builds
       - name: Release and course tests

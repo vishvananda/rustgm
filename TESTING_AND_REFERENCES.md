@@ -66,6 +66,8 @@ itself invalidate every compiler measurement or require another full native run.
   a complete qualification run. Run the audit after formatting and before
   Clippy: naming/placement failures do not need a compiler build to diagnose.
   Retain that audit result if Clippy leaves its source snapshot unchanged.
+  CI uses `make fmt-check setup-audit audit-rust lint` to preserve this order;
+  Make runs the shared formatting prerequisite only once in that invocation.
   Fix wiring failures before broadening tests.
   Settle related fixture and test edits first, then run all-target strict Clippy
   as the type/lint gate instead of running both `cargo check` and Clippy. Use
