@@ -10,8 +10,15 @@ use rustgm::{
     },
 };
 type Result<T = ()> = std::result::Result<T, String>;
-const CONCISE: &str = include_str!("../../pa31/tests/spec/declarative-macros/concise-parameter.rs");
-const ORDERED: &str = include_str!("../../pa31/tests/spec/declarative-macros/ordered-arms.rs");
+
+fn fixture(name: &str) -> Result<String> {
+    std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa31/tests/spec/declarative-macros")
+            .join(format!("{name}.rs")),
+    )
+    .map_err(|error| error.to_string())
+}
 
 fn compiled(source: &str) -> Result<(Compiled, Names)> {
     let ast = parse_crate(source).map_err(|error| format!("{error:?}"))?;
@@ -46,13 +53,14 @@ fn compiled(source: &str) -> Result<(Compiled, Names)> {
 
 #[test]
 fn concise_and_ordered_scoped_rules_use_the_existing_fragment_matcher() -> Result {
-    for (source, input, expected_rule) in [(CONCISE, "7", 0), (ORDERED, "9", 1)] {
-        let (mut definition, mut names) = compiled(source)?;
+    for (name, input, expected_rule) in [("concise-parameter", "7", 0), ("ordered-arms", "9", 1)] {
+        let source = fixture(name)?;
+        let (mut definition, mut names) = compiled(&source)?;
         let forest = Forest::parse(input).map_err(|error| format!("{error:?}"))?;
         let input_tokens =
             Input::from_forest(&forest, forest.roots()).map_err(|error| format!("{error:?}"))?;
         let matched = definition
-            .invoke(source, input, &input_tokens, &mut names)
+            .invoke(&source, input, &input_tokens, &mut names)
             .map_err(|error| format!("{error:?}"))?;
         assert_eq!(matched.rule, expected_rule);
         assert_eq!(
@@ -65,20 +73,18 @@ fn concise_and_ordered_scoped_rules_use_the_existing_fragment_matcher() -> Resul
 
 #[test]
 fn scoped_and_legacy_separators_keep_distinct_grammars() -> Result {
-    compiled(include_str!(
-        "../../pa31/tests/spec/declarative-macros/legacy-semicolon-control.rs"
-    ))?;
-    for (source, message) in [
+    compiled(&fixture("legacy-semicolon-control")?)?;
+    for (name, message) in [
         (
-            include_str!("../../pa31/tests/spec/declarative-macros/comma-required.rs"),
+            "comma-required",
             "scoped macro rules require comma separation",
         ),
         (
-            include_str!("../../pa31/tests/spec/declarative-macros/legacy-comma-rejected.rs"),
+            "legacy-comma-rejected",
             "macro rules require semicolon separation",
         ),
     ] {
-        let Err(error) = compiled(source) else {
+        let Err(error) = compiled(&fixture(name)?) else {
             return Err("opposite macro separator was accepted".into());
         };
         assert!(error.contains(message), "{error}");
@@ -91,7 +97,8 @@ fn scoped_and_legacy_separators_keep_distinct_grammars() -> Result {
 
 #[test]
 fn transferred_scoped_macro_keeps_both_capture_owners_and_original_spans() -> Result {
-    let ast = parse_crate(CONCISE).map_err(|error| format!("{error:?}"))?;
+    let source = fixture("concise-parameter")?;
+    let ast = parse_crate(&source).map_err(|error| format!("{error:?}"))?;
     let prefix = "macro_rules! previous {()=>{}}";
     let mut target = parse_crate(prefix).map_err(|error| format!("{error:?}"))?;
     let captures = target.captures.len();
