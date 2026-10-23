@@ -35,6 +35,13 @@ Keep orchestration outside dev/src frontend phases. Cache completed per-crate
 work by explicit inputs; do not rescan or reparse dependency sources for each
 consumer. Preserve the existing three-job controller and scoped cleanup.
 
+The maintainer's [planning adapter](../docs/crate-planning.md) establishes a
+pinned, compile-free local path-package unit graph. It preserves separate host
+and target feature sets and build-script execution context. This preparatory
+checkpoint does not activate PA34 or establish library compilation; package
+acquisition, complete provenance, edition behavior and target execution remain
+part of this assignment.
+
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
 Reference and CPPGM's efficient representation principles. Parse once, retain
