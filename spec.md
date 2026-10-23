@@ -185,6 +185,16 @@ cycle checks, binder-local deferral and complete child obligations. See the
 [source Freeze checkpoint](docs/pa31-source-freeze-proposal.md) for the measured
 depth, width, unrelated-node and cold/warm controls.
 
+Actual source Copy and Clone have ordinary compiler-defined marker rules for
+function items and function pointers. Match the completed registered trait and
+empty arguments; keep explicit, pending and partial candidates authoritative.
+Reuse the same caller-local formation DAG for nominal types in the callable
+signature or item arguments, preserving lifetime and declaration obligations.
+Signature parameters and results need not implement Copy. Marker evidence grants
+neither an executable Clone body nor const-call permission, and it cannot enter
+the sizing-only reuse cache. Ownership consumes the resulting exact body-local
+Copy decision through its existing checked interface, without a physical fallback.
+
 Share completed ordinary source MetaSized/PointeeSized answers across nominal
 roots in one immutable caller. Eligibility comes from the checked actual sizing
 producer; arbitrary builtin evidence cannot opt in. Preserve the full goal,
