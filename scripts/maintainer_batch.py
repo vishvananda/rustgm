@@ -1,13 +1,38 @@
 """Build focused targets once, then run exact inventories without reentering Cargo."""
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
 import time
+import tomllib
 
 from maintainer_suites import selected_tests
 from storage import cleanup_roots
+
+
+def package_environment(root):
+    """Restore Cargo's package metadata for directly launched test processes."""
+    manifest = (root / "dev/Cargo.toml").resolve()
+    package = tomllib.loads(manifest.read_text())["package"]
+    fields = ("name", "version", "description", "homepage", "repository", "license",
+              "license-file", "rust-version", "readme")
+    values = {field: package.get(field, "") for field in fields}
+    if any(not isinstance(value, str) for value in values.values()):
+        raise ValueError("batch package metadata requires explicit string values")
+    version = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)(?:-([^+]+))?(?:\+.+)?", values["version"])
+    authors = package.get("authors", [])
+    if (not values["name"] or version is None or not isinstance(authors, list)
+            or any(not isinstance(author, str) for author in authors)):
+        raise ValueError("invalid batch package name, version or authors")
+    environment = {"CARGO_PKG_" + field.upper().replace("-", "_"): value
+                   for field, value in values.items()}
+    environment.update(zip(("CARGO_PKG_VERSION_" + part for part in
+                            ("MAJOR", "MINOR", "PATCH", "PRE")), version.groups(default="")))
+    environment.update(CARGO_PKG_AUTHORS=":".join(authors),
+                       CARGO_MANIFEST_DIR=str(manifest.parent), CARGO_MANIFEST_PATH=str(manifest))
+    return environment
 
 
 def selection(suites, names, library_cases):
@@ -85,10 +110,12 @@ def run_batch(suites, args, *, root, runner=subprocess.run):
     def save():
         (folder / "receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")
 
-    def run(name, command, cwd):
+    def run(name, command, cwd, environment=None):
         print(f"START {name}", flush=True)
         started = time.monotonic()
-        result = runner([str(arg) for arg in command], cwd=cwd, capture_output=True, text=True)
+        options = {} if environment is None else {"env": environment}
+        result = runner([str(arg) for arg in command], cwd=cwd, capture_output=True, text=True,
+                        **options)
         hashes = {}
         for stream in ("stdout", "stderr"):
             output = getattr(result, stream).encode()
@@ -110,16 +137,19 @@ def run_batch(suites, args, *, root, runner=subprocess.run):
         if built.returncode:
             return built.returncode
         binaries = artifacts(built.stdout, groups)
+        receipt["package_environment"] = package_environment(root)
+        environment = {**os.environ, **receipt["package_environment"]}
         selected = {}
         flags = ["--ignored"] if args.ignored else []
         # Enumerate all targets before any execution; one missing case fails the batch.
         for group, binary in binaries.items():
-            listed = run(group + "-inventory", [binary, *flags, "--list"], root / "dev")
+            listed = run(group + "-inventory", [binary, *flags, "--list"], root / "dev", environment)
             if listed.returncode:
                 return listed.returncode
             listing = listed.stdout
             if not args.ignored:
-                ignored = run(group + "-ignored", [binary, "--ignored", "--list"], root / "dev")
+                ignored = run(group + "-ignored", [binary, "--ignored", "--list"],
+                              root / "dev", environment)
                 if ignored.returncode:
                     return ignored.returncode
                 ignored_rows = set(ignored.stdout.splitlines())
@@ -135,7 +165,8 @@ def run_batch(suites, args, *, root, runner=subprocess.run):
             if args.list:
                 print("\n".join(selected[group]))
                 continue
-            result = run(group, [binary, *flags, "--exact", *selected[group]], root / "dev")
+            result = run(group, [binary, *flags, "--exact", *selected[group]],
+                         root / "dev", environment)
             counts = re.findall(r"test result: (?:ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored;",
                                 result.stdout)
             if (len(counts) != 1 or sum(map(int, counts[0][:2])) != len(selected[group])
