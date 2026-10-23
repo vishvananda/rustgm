@@ -175,7 +175,7 @@ fn inspect_selected<R>(
         facts,
         prepared,
         |facts, checked| select(facts, checked).map(|(entry, exports)| (entry, exports, ())),
-        |(), _, _, _| Ok(()),
+        staged_originals::ignore,
         |facts, assembled, roots, ()| inspect(facts, assembled, roots),
     )
 }
@@ -188,7 +188,7 @@ fn inspect_staged<S, R>(
         &mut Declarations,
         &borrow::templates::Checked<'_>,
     ) -> Result<(Option<DefId>, super::roots::Exports, S), Error>,
-    mut collect: impl FnMut(
+    collect: impl FnMut(
         &mut S,
         &Declarations,
         &borrow::incremental::Proved,
@@ -274,10 +274,10 @@ fn inspect_staged<S, R>(
         .map_err(|failure| opaque_storage_error(report, facts, failure))?;
     let (entry, exports, mut stage) = select(facts, &checked)?;
     let roots = exports.selected(entry);
-    let mut collect =
-        |facts: &Declarations,
-         proved: &borrow::incremental::Proved,
-         input: &body::regions::Contract| { collect(&mut stage, facts, proved, input) };
+    let mut collect = staged_originals::Binding {
+        stage: &mut stage,
+        callback: collect,
+    };
     let program = demand::prepare(
         report,
         facts,

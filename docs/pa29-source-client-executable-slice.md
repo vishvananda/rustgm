@@ -366,3 +366,12 @@ generic collector code both changed; the full difference is not attributed to
 either without a comparison. A source-only followup will move collector binding
 outside final-result generic scope and give the legacy no-op a concrete shared
 function identity, preserving these successful observations and all semantics.
+
+The factoring is now qualified by `staged-flow-second/checks.json`: fresh fmt,
+audit, all-target strict Clippy, library build and the same six exact cases all
+passed (0.060s execution). Binding depends on S/F, not final R, and legacy uses
+one non-generic no-op callback. The private executable is341,387,864bytes,
+SHA-256 `376f9bcd355d7398dee70d75a1bd502e11a92a27731a831f0a60a4bb859d19d4`.
+These two observations differ by the reviewed binding factoring and its test
+adaptation; no compile-time or runtime speed claim follows. The common context
+remains two borrowed pointers, enforced by an early static layout assertion.

@@ -51,9 +51,12 @@ fn completed_original_rejects_equal_shaped_foreign_contract_before_collection() 
     drop(group);
     let foreign = input.as_ref().clone();
     let visits = Cell::new(0);
-    let mut collector = |_: &Declarations, _: &incremental::Proved, _: &Contract| {
-        visits.set(visits.get() + 1);
-        Ok(())
+    let mut collector = super::super::staged_originals::Binding {
+        stage: &mut (),
+        callback: |(): &mut (), _: &Declarations, _: &incremental::Proved, _: &Contract| {
+            visits.set(visits.get() + 1);
+            Ok(())
+        },
     };
     let mut context = super::super::staged_originals::Context {
         checked: &checked,
