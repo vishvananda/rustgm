@@ -49,5 +49,6 @@ while retaining inputs, diagnostics, receipts and the current candidate pin.
 
 Combined release/native and performance qualification remains required before
 publishing this compiler checkpoint. Full source-edition support also requires
-unsafe declarations/attributes, temporary scopes, opaque captures, prelude/method
-selection and never-type fallback as demanded by the frozen acceptance graph.
+the [external declaration rules](pa34-extern-editions.md), temporary scopes,
+opaque captures, prelude/method selection and never-type fallback as demanded
+by the frozen acceptance graph.

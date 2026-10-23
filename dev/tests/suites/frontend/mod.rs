@@ -19,6 +19,8 @@ mod expansion_install;
 mod expansion_stream;
 #[path = "../../expressions.rs"]
 mod expressions;
+#[path = "../../extern_editions.rs"]
+mod extern_editions;
 #[path = "../../feature_requests.rs"]
 mod feature_requests;
 #[path = "../../helpers/ffi_program.rs"]

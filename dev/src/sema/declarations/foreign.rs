@@ -21,7 +21,15 @@ impl Checker<'_> {
             let ItemKind::ExternBlock { unsafe_, abi, .. } = self.item(key)?.kind else {
                 return Err(self.error(key, "foreign owner is not an external block"));
             };
-            if !unsafe_ {
+            let package = &self.report.package;
+            let span = package.unit(key.file).configured.ast.node(key.node).span;
+            if !unsafe_
+                && crate::resolve::unit::editions::introducer(key.file, span, |file| {
+                    package.units.get(file.0 as usize)
+                })
+                .map_err(|error| self.error(key, error.message))?
+                    == crate::support::edition::Edition::Rust2024
+            {
                 return Err(self.error(key, "external blocks require unsafe"));
             }
             callable_convention(self.report, key, Abi::Extern(abi))?;
@@ -55,6 +63,7 @@ impl Checker<'_> {
         if body.is_some() || flags.constant || flags.asynchronous || abi != Abi::Rust {
             return Err(self.error(key, "invalid foreign function definition or qualifier"));
         }
+        self.foreign_member_safety(key, block, flags.safety)?;
         let ast = &self.report.package.unit(key.file).configured.ast;
         for &node in ast.list(item.generics) {
             if !self.report.package.unit(key.file).configured.active[node.get() as usize] {
@@ -119,11 +128,16 @@ impl Checker<'_> {
         mutable: bool,
         safety: Safety,
     ) -> Result<bool, Error> {
-        let imported = self
+        let block = self
             .report
             .resolution
             .foreign_owners
-            .contains_key(&definition);
+            .get(&definition)
+            .copied();
+        if let Some(block) = block {
+            self.foreign_member_safety(key, block, safety)?;
+        }
+        let imported = block.is_some();
         if !imported && safety != Safety::Default {
             return Err(self.error(
                 key,
@@ -155,6 +169,23 @@ impl Checker<'_> {
                 .map_err(|e| self.error(key, e))?;
         }
         Ok(imported)
+    }
+    fn foreign_member_safety(
+        &self,
+        key: NodeKey,
+        block: NodeKey,
+        safety: Safety,
+    ) -> Result<(), Error> {
+        let ItemKind::ExternBlock { unsafe_, .. } = self.item(block)?.kind else {
+            return Err(self.error(block, "foreign owner is not an external block"));
+        };
+        if !unsafe_ && safety != Safety::Default {
+            return Err(self.error(
+                key,
+                "foreign safety qualifier requires an unsafe external block",
+            ));
+        }
+        Ok(())
     }
     fn foreign_linkage(
         &mut self,

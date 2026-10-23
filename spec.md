@@ -29,6 +29,15 @@ assigning the output stream or neighboring tokens the capture's edition.
 The [PA34 context foundation](docs/pa34-edition-context.md) records the independent
 mixed-edition controls and the remaining work before enabling Rust 2021 in the CLI.
 
+External block safety follows the parsed introducer's originating edition;
+explicit member safety qualifiers still require an explicitly unsafe block in
+both editions. For supported unsafe linkage attributes, query the actual name
+token's edition, independently of a macro-generated wrapper or owning item.
+Use existing bounded origin ancestry only when bare syntax demands it. Missing
+required provenance must fail; ordinary call/access permissions remain separate.
+The [external declaration checkpoint](docs/pa34-extern-editions.md) records the
+paired source and native controls without enabling a new driver profile.
+
 For edition-sensitive explicit pattern modifiers, consume the parsed flags and
 the introducer's original token edition. A complete pattern can span captured
 syntax from multiple editions; do not require one edition for its full span.

@@ -1,6 +1,6 @@
 //! Explicit pattern modifiers retain the edition of their parsed introducer.
 use rustgm::support::edition::Edition;
-use std::{path::Path, process::Command};
+use std::path::Path;
 
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const CASES: &[(&str, bool, bool)] = &[
@@ -78,59 +78,8 @@ fn binding_values_and_mutations_match_each_selected_edition() -> Result {
     for &(name, older, newer) in CASES {
         for (edition, accepted) in [(Edition::Rust2021, older), (Edition::Rust2024, newer)] {
             if accepted {
-                native(&folder, name, edition, root)?;
+                crate::edition_packages::native(&folder, name, &source(name)?, edition, root)?;
             }
-        }
-    }
-    Ok(())
-}
-
-fn native(folder: &Path, name: &str, edition: Edition, root: &Path) -> Result {
-    use crate::edition_packages::run;
-    let flag = match edition {
-        Edition::Rust2021 => "--edition=2021",
-        Edition::Rust2024 => "--edition=2024",
-    };
-    let tag = format!("{name}-{edition:?}");
-    let source = source(name)?;
-    let input = folder.join(format!("{tag}.rs"));
-    let ir = folder.join(format!("{tag}.lowir"));
-    let reference = folder.join(format!("{tag}.reference"));
-    let candidate = folder.join(format!("{tag}.candidate"));
-    std::fs::write(&input, &source)?;
-    run(
-        folder,
-        &format!("{tag}-reference"),
-        Command::new("rustc")
-            .args([
-                "+1.98.0",
-                flag,
-                "--crate-name=probe",
-                "--cap-lints=allow",
-                "-C",
-                "panic=abort",
-                "-C",
-                "overflow-checks=yes",
-            ])
-            .arg(input)
-            .arg("-o")
-            .arg(&reference),
-    )?;
-    std::fs::write(&ir, crate::edition_packages::lowir(&source, edition)?)?;
-    run(
-        folder,
-        &format!("{tag}-backend"),
-        Command::new("python3")
-            .arg(root.join("scripts/backend.py"))
-            .arg(ir)
-            .arg("-o")
-            .arg(&candidate),
-    )?;
-    for (kind, binary) in [("reference", reference), ("candidate", candidate)] {
-        let executed = format!("{tag}-{kind}-run");
-        run(folder, &executed, &mut Command::new(binary))?;
-        for stream in ["stdout", "stderr"] {
-            assert!(std::fs::read(folder.join(format!("{executed}.{stream}")))?.is_empty());
         }
     }
     Ok(())
