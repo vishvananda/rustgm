@@ -303,7 +303,7 @@ fn prove_body<const RECORD: bool, S: BuildHasher>(
         environment.source_copy,
     )
     .map_err(|message| Error {
-        node: Some(body.source),
+        node: Some(body.source.into()),
         message: message.into(),
     })?;
     let owned = ownership::analyze_body_ordered(
@@ -377,7 +377,7 @@ fn prove_cleanup<S: BuildHasher>(
         contract,
         environment.source_copy,
     )
-    .map_err(|message| error(Some(body.source), message))?;
+    .map_err(|message| error(Some(body.source.into()), message))?;
     let init = if let Some(shared) = shared {
         initialization::analyze_shared(
             environment.types,

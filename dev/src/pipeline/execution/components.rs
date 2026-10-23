@@ -236,7 +236,7 @@ impl Engine {
         let mut contracts = Vec::with_capacity(rows.len());
         for mut row in rows {
             crate::body::copy_requirements::prepare(facts, &row.template.body, &mut row.contract)
-                .map_err(|e| Declarations::error(report, row.contract.source, e))?;
+                .map_err(|e| report.body_error(row.contract.source, e))?;
             row.contract
                 .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
                 .map_err(|e| report.body_error(row.contract.source, e))?;

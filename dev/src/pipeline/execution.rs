@@ -563,7 +563,7 @@ impl Engine {
         let contract = if facts.source_bindings.is_some() {
             let mut input = contract.clone();
             body::copy_requirements::prepare(facts, body, &mut input)
-                .map_err(|e| Declarations::error(report, body.source, e))?;
+                .map_err(|e| report.body_error(body.source, e))?;
             prepared = input;
             &prepared
         } else {

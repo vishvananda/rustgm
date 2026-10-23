@@ -139,7 +139,7 @@ impl Verifier {
             environment.source_copy,
         )
         .map_err(|message| Error {
-            node: Some(body.source),
+            node: Some(body.source.into()),
             message: message.into(),
         })?;
         let order = crate::borrow::order::Order::new(body);

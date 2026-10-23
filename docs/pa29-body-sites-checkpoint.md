@@ -98,3 +98,23 @@ Checked, Permit, Proved, caller or source-computation handle is accepted. Old
 profiles zero through seven and stored-array/variadic bytes stay unchanged; a
 new wire profile requires schema/validator review and actual executable generic
 and const multi-crate results, not just location vocabulary.
+
+## Combined source Copy merge
+
+The successor merges `5af6c837b43b6f65ed9711e83b423e2b9307b7f8` at
+`bcf3ef62`. Source Copy preparation keeps the exact Environment and neutral
+requirements Arcs. Body-owned predicate locations convert once from source
+facts; preparation diagnostics use the body-origin adapter. No imported Copy
+permission or invented source node is introduced.
+
+`obj/parallel/pa29-executable-originals/merged-sites-fourth` passes all-target,
+all-feature strict Clippy, architecture audit, registration, 75 exact private
+tests and two explicit layout checks. The prior three failed wiring receipts
+remain retained. The selected private debug binary has SHA-256
+`9ae0487b333904f3656e34711039367f5ff924396fec38eca9515724eaa5d069`.
+Body 448, Contract 184, Code 304, Value 24, ProofSite 12 and canonical Predicate
+12 remain unchanged. The earlier seven source/stage outcomes and 8,362 exact
+text comparisons qualify the source-site checkpoint; they were not rerun for
+these merge adapters. Combined release/source/native/text qualification remains
+with integration. Imported original execution and wire encoding are still
+required; this source merge does not enable them.
