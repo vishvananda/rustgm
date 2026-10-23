@@ -181,8 +181,13 @@ impl Word {
 
 #[must_use]
 pub fn identifier(kind: Kind, name: &str) -> bool {
+    identifier_in(kind, name, crate::support::edition::Edition::Rust2024)
+}
+
+#[must_use]
+pub fn identifier_in(kind: Kind, name: &str, edition: crate::support::edition::Edition) -> bool {
     match kind {
-        Kind::Identifier => !reserved(name),
+        Kind::Identifier => !Word::classify(name.as_bytes()).reserved_in(edition),
         Kind::RawIdentifier => !matches!(name, "_" | "self" | "Self" | "super" | "crate"),
         _ => false,
     }

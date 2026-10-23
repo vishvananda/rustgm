@@ -27,11 +27,26 @@ const TARGET_VALUES: &[(&str, &str)] = &[
 
 #[derive(Default, Debug)]
 pub struct Config {
+    edition: crate::support::edition::Edition,
     flags: HashSet<String>,
     values: HashMap<String, HashSet<String>>,
 }
 
 impl Config {
+    /// Select the physical source edition; this does not enable a driver profile.
+    #[must_use]
+    pub fn in_edition(edition: crate::support::edition::Edition) -> Self {
+        Self {
+            edition,
+            ..Self::default()
+        }
+    }
+
+    #[must_use]
+    pub const fn edition(&self) -> crate::support::edition::Edition {
+        self.edition
+    }
+
     #[must_use]
     pub fn contains(&self, name: &str, value: Option<&str>) -> bool {
         let Some(value) = value else {
@@ -60,7 +75,7 @@ impl Config {
             .ok_or_else(|| error(0, "expected cfg option name"))?;
         if !forest
             .token(0)
-            .is_some_and(|token| keyword::identifier(token.kind, name))
+            .is_some_and(|token| keyword::identifier_in(token.kind, name, self.edition))
         {
             return Err(error(0, "expected cfg option identifier"));
         }
@@ -122,7 +137,20 @@ pub fn predicate(
     range: TreeRange,
     config: &Config,
 ) -> Result<bool, LexError> {
-    evaluate(forest, source, range, config, 0)
+    predicate_with_inputs(forest, source, range, config, &config.edition())
+}
+
+/// Evaluate demanded cfg syntax in its original token edition.
+/// # Errors
+/// Rejects malformed predicates and missing demanded provenance.
+pub fn predicate_with_inputs(
+    forest: &Forest,
+    source: &str,
+    range: TreeRange,
+    config: &Config,
+    inputs: &dyn crate::syntax::interpolation::Inputs,
+) -> Result<bool, LexError> {
+    evaluate(forest, source, range, config, inputs, 0)
 }
 
 fn evaluate(
@@ -130,6 +158,7 @@ fn evaluate(
     source: &str,
     range: TreeRange,
     config: &Config,
+    inputs: &dyn crate::syntax::interpolation::Inputs,
     depth: u32,
 ) -> Result<bool, LexError> {
     let offset = forest.offset(range.start);
@@ -143,16 +172,22 @@ fn evaluate(
         .name(source, range.start)
         .ok_or_else(|| error(offset, "expected cfg predicate name"))?;
     let next = range.start + 1;
-    let kind = forest
+    let token = forest
         .token(range.start)
-        .map_or(Kind::UnknownPrefix, |token| token.kind);
+        .ok_or_else(|| error(offset, "expected cfg option token"))?;
+    let kind = token.kind;
     if kind == Kind::Identifier && matches!(name, "true" | "false") {
         if next != range.end {
             return Err(error(offset, "boolean cfg predicate takes no arguments"));
         }
         return Ok(name == "true");
     }
-    if !keyword::identifier(kind, name) {
+    let edition = if kind == Kind::Identifier && name == "gen" {
+        inputs.edition(token)?
+    } else {
+        config.edition()
+    };
+    if !keyword::identifier_in(kind, name, edition) {
         return Err(error(offset, "expected cfg option identifier"));
     }
     if next == range.end {
@@ -192,7 +227,7 @@ fn evaluate(
                 end: children.end,
             },
         );
-        let value = evaluate(forest, source, item, config, depth + 1)?;
+        let value = evaluate(forest, source, item, config, inputs, depth + 1)?;
         count += 1;
         result = match name {
             "all" => result & value,

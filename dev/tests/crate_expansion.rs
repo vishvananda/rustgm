@@ -2165,12 +2165,22 @@ fn included_macros_wait_for_eager_dependencies_and_keep_physical_errors() -> Res
         .sources
         .insert("/crate/part.rs".into(), "fn f()->i32{missing!()}".into());
     let source = "macro_rules! name{()=>{\"part.rs\"}} include!(include!(\"path.rs\"));";
-    let error = analyze(source, &mut files)
-        .err()
-        .ok_or("expected missing macro failure")?;
-    assert!(error.contains("unresolved macro"), "{error}");
-    assert!(error.contains("file: FileId(2)"), "{error}");
-    assert!(error.contains("macro_name: \"include\""), "{error}");
+    let error = expansion::analyze(
+        InputFile {
+            identity: "/crate/lib.rs".into(),
+            path: "/crate/lib.rs".into(),
+            source: SourceFile::new(source.as_bytes().to_vec())?,
+        },
+        &mut files,
+        &Config::default(),
+    )
+    .err()
+    .ok_or("expected missing macro failure")?;
+    assert!(error.message.contains("unresolved macro"), "{error}");
+    assert_eq!(error.file.source(), Some(resolve::unit::FileId(2)));
+    assert_eq!(error.span.start, 12);
+    assert_eq!(error.expansions.len(), 1);
+    assert_eq!(error.expansions[0].macro_name, "include");
     files
         .sources
         .insert("/crate/part.rs".into(), "fn f()->i32{42}".into());

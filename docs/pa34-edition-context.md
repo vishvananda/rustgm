@@ -126,13 +126,13 @@ release/native/performance qualification remains required before publication.
 
 ## Required continuation
 
-Wire the explicit syntax context through configured attributes, module loading,
-includes, persistent expansion sessions and metadata. Generated source owners
-must resolve their parent origin chains with bounded work; the standalone stream
-helper is not whole-package integration. Qualify mixed-edition generated
-definitions and opaque forwarding through those real entrypoints before exposing
-the driver option. Define reserved-token rejection at the appropriate grammar
-boundary without silently changing PA1's documented boundary-only token view.
+The [package lexical edition checkpoint](pa34-package-editions.md) now connects
+configured attributes, module loading, includes, persistent expansion sessions
+and bounded parent-origin lookup. Metadata and actual cross-crate macro transport
+remain required. Qualify mixed-edition generated definitions and opaque forwarding
+through those import entrypoints before exposing the driver option. Define
+reserved-token rejection at the appropriate grammar boundary without silently
+changing PA1's documented boundary-only token view.
 
 Then qualify edition-sensitive semantic behavior required by the actual crate
 graph, including match ergonomics, unsafe declarations/attributes, temporary

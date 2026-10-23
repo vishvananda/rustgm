@@ -83,7 +83,8 @@ pub fn analyze(source: &str, config: &Config) -> Result<Report, LexError> {
                     .intern(&source[name_span.start as usize..name_span.end as usize])
                     .map_err(|e| error(name_span.start, e))?;
                 let forest = &ast.captures[capture as usize];
-                let definition = compile::compile(source, forest, &mut report.names)?;
+                let definition =
+                    compile::in_edition(source, forest, &mut report.names, config.edition())?;
                 let index = report.definitions.len();
                 report.definitions.push(Definition {
                     name,
@@ -125,6 +126,7 @@ pub fn analyze(source: &str, config: &Config) -> Result<Report, LexError> {
                 definition,
                 data.span,
                 &mut scratch,
+                config.edition(),
             )?;
             continue;
         }
@@ -158,6 +160,7 @@ impl Report {
         definition: usize,
         span: Span,
         scratch: &mut Workspace,
+        edition: crate::support::edition::Edition,
     ) -> Result<(), LexError> {
         let prepared = prepare::if_needed(source, forest)?;
         let (spelling, forest) = image(source, forest, prepared.as_ref());
@@ -168,7 +171,7 @@ impl Report {
         let entry = &mut self.definitions[definition];
         let matched = entry
             .compiled
-            .invoke_with_scratch(source, spelling, &input, &mut self.names, scratch)
+            .invoke_with_inputs(source, spelling, &input, &mut self.names, scratch, &edition)
             .map_err(|e| original_error(e, prepared.as_ref()))?;
         let transcription =
             transcribe::transcribe(&entry.compiled.definition, &matched, spelling, &input)

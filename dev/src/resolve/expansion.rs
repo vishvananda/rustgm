@@ -4,7 +4,7 @@ use super::{
     load::{InputFile, Loader, Sources},
     model::{Resolution, ScopeId},
     package::{Error, ModuleId, Package},
-    unit::{FileId, NodeKey},
+    unit::{FileId, NodeKey, editions},
 };
 use crate::{
     expand::{
@@ -24,6 +24,7 @@ use crate::{
     support::names::NameId,
     syntax::{
         ast::{Kind, MacroContext, NodeId},
+        edition_context::WithEditions,
         expression::fragment,
         item::{ItemKind, Visibility},
         token_tree::Span,
@@ -796,10 +797,23 @@ impl<S: Sources> Engine<'_, S> {
             .names
             .intern(spelling)
             .map_err(|e| Error::at(file, span.start, e))?;
-        let definition = compile::compile(
+        let declaration = unit.configured.ast.node(visit.node).span.start;
+        let edition = editions::at(
+            Location {
+                file,
+                span: Span {
+                    start: declaration,
+                    end: declaration + 1,
+                },
+            },
+            |id| package.units.get(id.0 as usize),
+        )
+        .map_err(|e| Error::at(file, e.offset, e.message))?;
+        let definition = compile::in_edition(
             unit.source.text(),
             &unit.configured.ast.captures[capture as usize],
             &mut package.names,
+            edition,
         )
         .map_err(|e| Error::at(file, e.offset, e.message))?;
         let index = self.definitions.len();
@@ -1123,6 +1137,9 @@ impl<S: Sources> Engine<'_, S> {
         let view = self
             .captures
             .view(|id| units.get(id.0 as usize).map(|u| u.source.text()));
+        let inputs = WithEditions::new(&view, |token| {
+            editions::token(file, token, |id| units.get(id.0 as usize))
+        });
         let mut matched = compiled
             .invoke_with_inputs(
                 definition_source,
@@ -1130,7 +1147,7 @@ impl<S: Sources> Engine<'_, S> {
                 &input,
                 &mut package.names,
                 &mut self.workspace,
-                &view,
+                &inputs,
             )
             .map_err(|e| Error::at(file, e.offset, e.message))?;
         let transcription = transcribe::transcribe(&compiled.definition, &matched, source, &input)
@@ -1152,11 +1169,22 @@ impl<S: Sources> Engine<'_, S> {
         let view = self
             .captures
             .view(|id| units.get(id.0 as usize).map(|u| u.source.text()));
+        let inputs = WithEditions::new(&view, |token| {
+            let parent = editions::parent(
+                &stream.origins,
+                Span {
+                    start: token.start,
+                    end: token.end,
+                },
+            )?;
+            editions::at(parent, |id| units.get(id.0 as usize))
+        });
         let ast =
-            fragment::parse_expansion_with_inputs(&stream.source, &stream.tokens, grammar, &view)
+            fragment::parse_expansion_with_inputs(&stream.source, &stream.tokens, grammar, &inputs)
                 .map_err(|e| diagnostics::stream_error(&stream, file, original, e))?;
-        let configured = crate_syntax::configure(&stream.source, ast, self.config)
-            .map_err(|e| diagnostics::stream_error(&stream, file, original, e))?;
+        let configured =
+            crate_syntax::configure_with_inputs(&stream.source, ast, self.config, &inputs)
+                .map_err(|e| diagnostics::stream_error(&stream, file, original, e))?;
         let generated = package.units[file.0 as usize]
             .install_expansion(visit.node, &stream.source, configured, &stream.origins)
             .map_err(|e| Error::at(file, original.start, e.message))?;

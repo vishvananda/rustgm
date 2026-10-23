@@ -16,6 +16,7 @@ use crate::{
     },
 };
 
+pub(crate) mod editions;
 mod expansion;
 mod original;
 
@@ -35,6 +36,7 @@ pub struct Unit {
     pub owner_indices: Vec<Option<std::num::NonZeroU32>>,
     pub origins: Vec<crate::expand::stream::Origin>,
     original: original::Original,
+    edition: crate::support::edition::Edition,
 }
 
 impl Unit {
@@ -108,9 +110,18 @@ impl Unit {
         names: &mut Names,
     ) -> Result<Self, LexError> {
         let ast = if let Some(context) = context {
-            crate::syntax::expression::fragment::parse_include(source.text(), context, Some(names))?
+            crate::syntax::expression::fragment::parse_include_in_edition(
+                source.text(),
+                context,
+                Some(names),
+                config.edition(),
+            )?
         } else {
-            crate::syntax::expression::parse_crate_with(source.text(), Some(names))?
+            crate::syntax::expression::parse_crate_in_edition(
+                source.text(),
+                Some(names),
+                config.edition(),
+            )?
         };
         let report = crate_syntax::configure(source.text(), ast, config)?;
         let mut literals = Storage::default();
@@ -143,6 +154,7 @@ impl Unit {
             owner_indices,
             origins: Vec::new(),
             original,
+            edition: config.edition(),
         })
     }
 

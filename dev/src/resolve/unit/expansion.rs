@@ -309,14 +309,19 @@ impl Unit {
         file: super::FileId,
         tokens: &[crate::lex::token::Token],
         registry: &crate::expand::registry::Registry,
-        other: impl Fn(super::FileId) -> Option<&'a str>,
+        other: impl Fn(super::FileId) -> Option<&'a Unit>,
         config: &crate::expand::config::Config,
     ) -> Result<NodeId, LexError> {
         let source = self.source.text();
-        let inputs = registry.view(|id| if id == file { Some(source) } else { other(id) });
+        let units = |id| if id == file { Some(&*self) } else { other(id) };
+        let view = registry.view(|id| units(id).map(|unit| unit.source.text()));
+        let inputs = crate::syntax::edition_context::WithEditions::new(&view, |token| {
+            super::editions::token(file, token, units)
+        });
         let ast = crate::syntax::expression::fragment::parse_arguments(source, tokens, &inputs)?;
-        let (ast, mut configuration) =
-            Configuration::take(crate::expand::crate_syntax::configure(source, ast, config)?);
+        let (ast, mut configuration) = Configuration::take(
+            crate::expand::crate_syntax::configure_with_inputs(source, ast, config, &inputs)?,
+        );
         let root =
             NodeId::new(add(self.configured.ast.nodes.len(), ast.nodes.len())? + ast.root.get());
         let indices = self.expansion_metadata(root, &ast, &mut configuration, 0, source.len())?;

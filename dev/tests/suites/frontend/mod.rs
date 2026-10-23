@@ -7,6 +7,8 @@ mod crate_syntax;
 mod edition_fragments;
 #[path = "../../edition_origins.rs"]
 mod edition_origins;
+#[path = "../../edition_packages.rs"]
+mod edition_packages;
 #[path = "../../edition_tokens.rs"]
 mod edition_tokens;
 #[path = "../../expanded_cli.rs"]

@@ -99,6 +99,7 @@ impl Unit {
             owner_indices,
             origins: Vec::new(),
             original,
+            edition: self.edition,
         })
     }
 }

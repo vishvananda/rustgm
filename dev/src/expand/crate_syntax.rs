@@ -37,7 +37,11 @@ pub type ConfiguredCrate<'source> = ConfiguredSyntax<crate::literal::Value<'sour
 /// # Errors
 /// Rejects malformed syntax or demanded attribute/configuration predicates.
 pub fn analyze<'s>(source: &'s str, config: &Config) -> Result<ConfiguredCrate<'s>, LexError> {
-    configure(source, expression::parse_crate(source)?, config)
+    configure(
+        source,
+        expression::parse_crate_in_edition(source, None, config.edition())?,
+        config,
+    )
 }
 
 /// Configure a newly parsed source or expansion without parsing its spelling again.
@@ -52,8 +56,20 @@ pub fn analyze<'s>(source: &'s str, config: &Config) -> Result<ConfiguredCrate<'
 /// Rejects demanded attribute predicates and literal values in enabled syntax.
 pub fn configure<'s>(
     source: &'s str,
+    ast: crate::syntax::ast::Ast<'s>,
+    config: &Config,
+) -> Result<ConfiguredCrate<'s>, LexError> {
+    configure_with_inputs(source, ast, config, &config.edition())
+}
+
+/// Configure generated syntax using the same borrowed provenance as its parser.
+/// # Errors
+/// Rejects demanded attribute predicates, missing provenance and invalid literals.
+pub fn configure_with_inputs<'s>(
+    source: &'s str,
     mut ast: crate::syntax::ast::Ast<'s>,
     config: &Config,
+    inputs: &dyn crate::syntax::interpolation::Inputs,
 ) -> Result<ConfiguredCrate<'s>, LexError> {
     let pending = std::mem::take(&mut ast.pending);
     let mut active = vec![true; ast.nodes.len()];
@@ -88,7 +104,15 @@ pub fn configure<'s>(
             ));
         };
         let first = effects.len();
-        configure_owner(&ast, range, source, config, &mut attributes, &mut effects)?;
+        configure_owner(
+            &ast,
+            range,
+            source,
+            config,
+            inputs,
+            &mut attributes,
+            &mut effects,
+        )?;
         let enabled = attributes.enabled();
         attributes.clear();
         owners.push(Owner {
@@ -162,6 +186,7 @@ fn configure_owner<L>(
     range: crate::syntax::item::AttributeRange,
     source: &str,
     config: &Config,
+    inputs: &dyn crate::syntax::interpolation::Inputs,
     attributes: &mut Attributes,
     effects: &mut Vec<AttributeEffect>,
 ) -> Result<(), LexError> {
@@ -169,7 +194,13 @@ fn configure_owner<L>(
     for index in range.start..range.end {
         let capture = &ast.attributes[index as usize];
         let before = attributes.entries.len();
-        attributes.push_owned(&capture.forest, source, capture.attribute, config)?;
+        attributes.push_owned_with_inputs(
+            &capture.forest,
+            source,
+            capture.attribute,
+            config,
+            inputs,
+        )?;
         for entry in &attributes.entries[before..] {
             let mut entry = *entry;
             if let Some(parent) = entry.parent {

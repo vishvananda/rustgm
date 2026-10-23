@@ -58,7 +58,6 @@ impl<S: Sources> Engine<'_, S> {
                     } else {
                         after.get((id.0 - file.0 - 1) as usize)
                     }
-                    .map(|unit| unit.source.text())
                 },
                 self.config,
             )

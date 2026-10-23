@@ -69,6 +69,12 @@ impl SourceFile {
         })
     }
 
+    /// End of the normalized physical image, excluding appended expansions.
+    #[must_use]
+    pub(crate) const fn physical_len(&self) -> usize {
+        self.physical_len
+    }
+
     /// Copy a demanded module instance's original view without normalizing again
     /// or retaining any spelling appended by a previous expansion instance.
     #[must_use]

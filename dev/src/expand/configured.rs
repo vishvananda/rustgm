@@ -30,7 +30,8 @@ pub struct Attributes {
 }
 
 #[derive(Clone, Copy)]
-struct Expansion {
+struct Expansion<'a> {
+    inputs: &'a dyn crate::syntax::interpolation::Inputs,
     parent: Option<u32>,
     depth: u32,
     owned: bool,
@@ -55,6 +56,7 @@ impl Attributes {
             attribute,
             config,
             Expansion {
+                inputs: &config.edition(),
                 parent: None,
                 depth: 0,
                 owned: false,
@@ -74,6 +76,20 @@ impl Attributes {
         attribute: Attribute,
         config: &Config,
     ) -> Result<(), LexError> {
+        self.push_owned_with_inputs(forest, source, attribute, config, &config.edition())
+    }
+
+    /// Preserve generated tokens' editions while configuring a real syntax owner.
+    /// # Errors
+    /// Returns demanded configuration and provenance failures.
+    pub fn push_owned_with_inputs(
+        &mut self,
+        forest: &Forest,
+        source: &str,
+        attribute: Attribute,
+        config: &Config,
+        inputs: &dyn crate::syntax::interpolation::Inputs,
+    ) -> Result<(), LexError> {
         if self.disabled {
             return Ok(());
         }
@@ -83,6 +99,7 @@ impl Attributes {
             attribute,
             config,
             Expansion {
+                inputs,
                 parent: None,
                 depth: 0,
                 owned: true,
@@ -107,7 +124,7 @@ impl Attributes {
         source: &str,
         attribute: Attribute,
         config: &Config,
-        expansion: Expansion,
+        expansion: Expansion<'_>,
     ) -> Result<(), LexError> {
         if expansion.depth >= 128 {
             return Err(error(attribute.span.start, "cfg_attr nesting exceeds 128"));
@@ -123,7 +140,13 @@ impl Attributes {
                         "cfg requires exactly one predicate",
                     ));
                 }
-                Effect::Cfg(config::predicate(forest, source, predicate, config)?)
+                Effect::Cfg(config::predicate_with_inputs(
+                    forest,
+                    source,
+                    predicate,
+                    config,
+                    expansion.inputs,
+                )?)
             }
             Some("cfg_attr") => {
                 let arguments = arguments(forest, attribute)?;
@@ -134,7 +157,13 @@ impl Attributes {
                         "cfg_attr requires a comma after its predicate",
                     ));
                 }
-                Effect::CfgAttr(config::predicate(forest, source, predicate, config)?)
+                Effect::CfgAttr(config::predicate_with_inputs(
+                    forest,
+                    source,
+                    predicate,
+                    config,
+                    expansion.inputs,
+                )?)
             }
             _ => Effect::Keep,
         };
@@ -157,8 +186,14 @@ impl Attributes {
                         end: range.end,
                     },
                 );
-                let nested =
-                    attribute::parse(forest, source, item, attribute.style, attribute.span)?;
+                let nested = attribute::parse_with_inputs(
+                    forest,
+                    source,
+                    item,
+                    attribute.style,
+                    attribute.span,
+                    expansion.inputs,
+                )?;
                 if selected && !(expansion.owned && self.disabled) {
                     if matches!(
                         nested.name(forest, source),

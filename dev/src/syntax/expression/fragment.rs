@@ -406,6 +406,23 @@ pub fn parse_include<'s>(
     context: crate::syntax::ast::MacroContext,
     names: Option<&mut crate::support::names::Names>,
 ) -> Result<Ast<'s>, LexError> {
+    parse_include_in_edition(
+        source,
+        context,
+        names,
+        crate::support::edition::Edition::Rust2024,
+    )
+}
+
+/// Parse a physical include with its compilation unit's lexical edition.
+/// # Errors
+/// Rejects malformed included syntax and unsupported include contexts.
+pub fn parse_include_in_edition<'s>(
+    source: &'s str,
+    context: crate::syntax::ast::MacroContext,
+    names: Option<&mut crate::support::names::Names>,
+    edition: crate::support::edition::Edition,
+) -> Result<Ast<'s>, LexError> {
     use crate::syntax::{
         ast::{List, MacroContext},
         item::ItemContext,
@@ -422,6 +439,7 @@ pub fn parse_include<'s>(
     };
     let mut parser = Parser::with_cursor(Cursor::source(source, items)?, true);
     parser.names = names;
+    parser.inputs = &edition;
     let root = if items {
         let children = parser.item_list(false, ItemContext::Module)?;
         parser.node(
