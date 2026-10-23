@@ -3,11 +3,25 @@ use super::*;
 use crate::{
     sema::traits::{assumptions::Assumptions, implementations::Availability},
     types::{
-        GenericArgs, ItemId, Kind, Primitive, TypeId, auto_traits::AutoTrait,
-        lifetime_proof::ScopeId, parameters::predicates::Bound,
+        GenericArgs, ItemId, Kind, Primitive, TypeId, lifetime_proof::ScopeId,
+        parameters::predicates::Bound,
     },
 };
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+
+fn negative_declarations(
+    captured: bool,
+) -> Result<(crate::resolve::expansion::Report, Declarations)> {
+    let mut source =
+        crate::test_source::fixture("pa31/tests/spec/source-freeze/shared-default.rs")?;
+    if captured {
+        let (header, _) = source.split_once("struct N;").ok_or("provider header")?;
+        source = format!("{header}struct N<'a>(&'a u8);impl<'a> !Freeze for N<'a>{{}}");
+    }
+    let report = crate::test_source::source_provider(&source, "negative_provenance")?;
+    let facts = crate::sema::declarations::analyze(&report)?;
+    Ok((report, facts))
+}
 
 fn node(children: Vec<usize>, first: u32, end: u32) -> Node {
     Node {
@@ -77,14 +91,14 @@ fn completion_visits_each_produced_node_and_immediate_edge_once() {
 }
 #[test]
 fn negative_owner_cannot_enter_positive_extraction_or_reuse() -> Result {
-    let (report, mut facts) = tests::declarations("struct N;impl !Unpin for N{}")?;
+    let (report, mut facts) = negative_declarations(false)?;
     let ty = facts.types.intern(Kind::Adt(
         ItemId(tests::definition(&report, "N")?.0),
         GenericArgs::EMPTY,
     ))?;
     let predicate = Predicate {
         ty,
-        bound: Bound::Auto(AutoTrait::Unpin),
+        bound: freezing::bound(&mut facts)?,
     };
     for export in [false, true] {
         let (mut context, goal) = tests::instantiate(&mut facts, predicate)?;
@@ -116,14 +130,14 @@ fn negative_owner_cannot_enter_positive_extraction_or_reuse() -> Result {
 }
 #[test]
 fn refutation_keeps_exact_goal_and_caller_frontier() -> Result {
-    let (report, mut facts) = tests::declarations("struct N;impl !Unpin for N{}")?;
+    let (report, mut facts) = negative_declarations(false)?;
     let ty = facts.types.intern(Kind::Adt(
         ItemId(tests::definition(&report, "N")?.0),
         GenericArgs::EMPTY,
     ))?;
     let predicate = Predicate {
         ty,
-        bound: Bound::Auto(AutoTrait::Unpin),
+        bound: freezing::bound(&mut facts)?,
     };
     let assumptions = Assumptions::default();
     let (mut context, goal) = tests::instantiate(&mut facts, predicate)?;
@@ -182,8 +196,7 @@ fn refutation_keeps_exact_goal_and_caller_frontier() -> Result {
 
 #[test]
 fn closed_negative_with_private_capture_keeps_unpaid_graph() -> Result {
-    let (report, mut facts) =
-        tests::declarations("struct N<'a>(&'a u8);impl<'a> !Unpin for N<'a>{}")?;
+    let (report, mut facts) = negative_declarations(true)?;
     let arguments =
         facts
             .types
@@ -196,7 +209,7 @@ fn closed_negative_with_private_capture_keeps_unpaid_graph() -> Result {
     ))?;
     let predicate = Predicate {
         ty,
-        bound: Bound::Auto(AutoTrait::Unpin),
+        bound: freezing::bound(&mut facts)?,
     };
     let (mut context, goal) = tests::instantiate(&mut facts, predicate)?;
     let assumptions = Assumptions::default();

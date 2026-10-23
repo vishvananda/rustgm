@@ -205,15 +205,34 @@ fn header_polarity_status_preserves_entry_layout_and_rejects_missing_factory_own
 #[test]
 fn source_polarity_publication_checks_the_actual_inventory_row()
 -> Result<(), Box<dyn std::error::Error>> {
-    let report = crate::test_source::resolve("struct N;impl !Unpin for N{}", true)?;
+    let source = crate::test_source::fixture("pa31/tests/spec/source-freeze/shared-default.rs")?;
+    let report = crate::test_source::source_provider(&source, "negative_polarity")?;
     let mut facts = crate::sema::declarations::analyze(&report)?;
+    let freeze = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source bindings")?
+        .validated_language(crate::support::bindings::LangItem::Freeze)?
+        .ok_or("Freeze")?
+        .definition;
     let original = facts
         .generics
         .implementations
         .as_ref()
         .ok_or("registry")?
         .headers()
-        .next()
+        .find(|header| {
+            header
+                .predicate
+                .bound
+                .trait_parts()
+                .is_some_and(|(application, _)| {
+                    facts
+                        .types
+                        .trait_application(application)
+                        .is_some_and(|a| a.item.0 == freeze.0)
+                })
+        })
         .ok_or("header")?;
     let implementation = Implementation {
         owner: original.owner,
@@ -228,6 +247,10 @@ fn source_polarity_publication_checks_the_actual_inventory_row()
         .owner(implementation.owner)
         .and_then(|id| facts.associated.get(id))
         .ok_or("owner")?;
+    assert!(matches!(
+        owner.kind,
+        crate::sema::associated::OwnerKind::Impl { negative: true, .. }
+    ));
     let mut forged = owner;
     if let crate::sema::associated::OwnerKind::Impl { negative, .. } = &mut forged.kind {
         *negative = false;
@@ -238,7 +261,7 @@ fn source_polarity_publication_checks_the_actual_inventory_row()
             .prepare_source(
                 &mut facts.types,
                 &facts.associated,
-                super::Identity::Auto(crate::types::auto_traits::AutoTrait::Unpin),
+                super::Identity::User(ItemId(freeze.0)),
                 forged,
                 implementation
             )
