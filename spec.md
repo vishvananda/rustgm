@@ -187,6 +187,18 @@ headers, exact goals and completed proof keys preserve them. The
 argument-free ordinary functions; conditional intrinsics, open/lifetime-bearing
 contracts, callable adapters and CTFE cleanup retain separate required checks.
 
+Callable signature equations do not establish const-callability. For actual
+source Fn/FnMut/FnOnce roles, nonordinary use validates the completed declaration,
+source constness, prepared effect and exact substituted full function item.
+Reuse the typed dispatch instantiator and charge its work; closed subtrees must
+not be rescanned for every caller. Ordinary callable uses retain the early path
+without reconstruction. Function pointers cannot supply a const implementation;
+missing headers/templates remain pending, while conditional item/member debt
+retains its complete Instance until scoped proof is implemented. Reference
+subjects use actual source impl selection rather than effect-erasing forwarding.
+The [eligibility checkpoint](docs/pa31-callable-const-eligibility.md) records
+the supported source controls and separate remaining callable execution work.
+
 An actual source drop-glue helper is a compiler hook, not an executable empty
 body. Its runtime adapter consumes the exact registered declaration, full proved
 instance, retained source/body signature pair and caller's destruction recipe.
