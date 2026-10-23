@@ -103,7 +103,7 @@ fn source_selector_reached_values_reject_wrong_callee_callback_tuple_and_site() 
             2 => frame.values[constant.0 as usize] = frame.values[runtime.0 as usize],
             3 => {
                 frame.values[arg.0 as usize] =
-                    Some(Constant::scalar(crate::sema::model::Scalar::Integer(7)))
+                    Some(Constant::scalar(crate::sema::model::Scalar::Integer(7)));
             }
             4 => frame.body = usize::MAX,
             5 => frame.block = crate::body::ir::BlockId(u32::MAX),
