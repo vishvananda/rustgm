@@ -2,6 +2,13 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/library-stability/` retains 31 independently qualified local/client
+hypotheses and two providers. Its `contract.json` binds exact sources, declared
+outcomes and original evidence. Eight clients executed with pinned rustc; local
+library cases are metadata-only checks. Candidate implementation and maintainer
+registration remain pending. See the [stability investigation](../../docs/pa31-library-stability.md),
+including the retained module-stability confounder and corrected controls.
+
 `spec/needs-drop/` retains independently declared source-provider inputs for the
 actual `needs_drop<T: ?Sized>` intrinsic and its ordinary const-block wrapper.
 The grouped maintainer `needs_drop_provider` tests discover these files directly;

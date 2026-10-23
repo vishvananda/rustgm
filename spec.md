@@ -93,6 +93,16 @@ includes declaration and owning crate; familiar names are not implementation
 evidence. Transport checked generic/const bodies and their retained contracts
 through deterministic crate metadata with indexed external-to-local remapping.
 
+Library feature requests come from enabled source declarations and authenticated
+dependency inventories, separately from compiler language capabilities. Complete
+their validation after configured expansion; unknown requests grant no capability.
+Retain regular, const and default-body API stability as distinct declaration facts,
+separate from callable effects and each caller's proof. Compute owner inheritance
+and feature indexes once, then check actual uses without whole-crate rescanning.
+Macro-internal allowances follow exact defining/captured token provenance. The
+[stability investigation](docs/pa31-library-stability.md) records the independent
+cases and required implementation seams; this contract is not yet implemented.
+
 Imported executable originals have authenticated external declaration/body/site
 coordinates. Install their complete canonical header graph before original
 proof, without inventing source AST nodes or marking body proof complete when

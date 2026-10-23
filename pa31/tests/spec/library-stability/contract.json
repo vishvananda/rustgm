@@ -1,0 +1,317 @@
+{
+  "state": "independently-qualified-hypotheses; candidate implementation pending",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "rustc": "1.98.0",
+  "rust_source_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "bootstrap": true,
+  "lint_profile": "--cap-lints=allow; only acceptance/diagnosed errors asserted",
+  "source_origin": "Authored reducers; no copied upstream source",
+  "groups": [
+    {
+      "name": "api",
+      "provider": {
+        "path": "pa31/tests/spec/library-stability/api/provider.rs",
+        "sha256": "6e302b49250a272548fff3c3755ed46f792923d2b715f9bb10a36fd733202398",
+        "accepted": true
+      },
+      "rows": [
+        {
+          "name": "undefined-request",
+          "path": "pa31/tests/spec/library-stability/api/undefined-request.rs",
+          "sha256": "0abc0c8fafbfd0612a48fd7c34259d58d7eeb7d434d47b1c04d5aed445fd1503",
+          "accepted": false,
+          "kind": "library"
+        },
+        {
+          "name": "defined-after-request",
+          "path": "pa31/tests/spec/library-stability/api/defined-after-request.rs",
+          "sha256": "fe9bb9c316fb50a50e9386b4e39e03fda8f1410b7bdb179be0ca4cc9606234e3",
+          "accepted": true,
+          "kind": "library"
+        },
+        {
+          "name": "local-unstable-use",
+          "path": "pa31/tests/spec/library-stability/api/local-unstable-use.rs",
+          "sha256": "b0d6cf5c91ab5d1dd8549bc98ec62f664612deab27d76486a2aec44420be8094",
+          "accepted": true,
+          "kind": "library"
+        },
+        {
+          "name": "disabled-definition",
+          "path": "pa31/tests/spec/library-stability/api/disabled-definition.rs",
+          "sha256": "ecee77db3f18ff52936a113fffa06763fa5499e11e56117c0d7a404a28a8665a",
+          "accepted": false,
+          "kind": "library"
+        },
+        {
+          "name": "generated-definition",
+          "path": "pa31/tests/spec/library-stability/api/generated-definition.rs",
+          "sha256": "9c1808471a13fc65608d9e037da0f2e9d351def4340e10a1189a892792ee3415",
+          "accepted": true,
+          "kind": "library"
+        },
+        {
+          "name": "missing-public-stability",
+          "path": "pa31/tests/spec/library-stability/api/missing-public-stability.rs",
+          "sha256": "b093c54baa0a3bc73f0ff8d41bcaa9cf7569aff3962d81a548ecfb2f435b7cb4",
+          "accepted": false,
+          "kind": "library"
+        },
+        {
+          "name": "inherited-unstable",
+          "path": "pa31/tests/spec/library-stability/api/inherited-unstable.rs",
+          "sha256": "5545d33b3544133b51daafb60f5b361d68caa529e91434c931054b0554edad2c",
+          "accepted": true,
+          "kind": "library"
+        },
+        {
+          "name": "missing-staged-api",
+          "path": "pa31/tests/spec/library-stability/api/missing-staged-api.rs",
+          "sha256": "89071400a68ee0a012a88977acfff214fed15134c175b4fd7b1cf0c22e34dc71",
+          "accepted": false,
+          "kind": "library"
+        },
+        {
+          "name": "invalid-stable-version",
+          "path": "pa31/tests/spec/library-stability/api/invalid-stable-version.rs",
+          "sha256": "1d07f1b969a6328cc4ce99aa03c76be8d1818bb2ec5d4f13a5dc3453c422961a",
+          "accepted": false,
+          "kind": "library"
+        },
+        {
+          "name": "conflicting-stability",
+          "path": "pa31/tests/spec/library-stability/api/conflicting-stability.rs",
+          "sha256": "ab3b5629f4ab5214dd7b030fae263046b489752587a6053f1091aeaf88c8c134",
+          "accepted": false,
+          "kind": "library"
+        },
+        {
+          "name": "missing-const-stability",
+          "path": "pa31/tests/spec/library-stability/api/missing-const-stability.rs",
+          "sha256": "a91f497dd41e71f9d17243cc36aee83cb557c41c363aff6aa453c031ea462990",
+          "accepted": false,
+          "kind": "library"
+        },
+        {
+          "name": "runtime-unstable-const",
+          "path": "pa31/tests/spec/library-stability/api/runtime-unstable-const.rs",
+          "sha256": "35c5528c5c692651adfaf49b3a8ca641e356e3a842e3021abd3f48dc6410c9a2",
+          "accepted": true,
+          "kind": "library"
+        },
+        {
+          "name": "const-stable-unstable-callee",
+          "path": "pa31/tests/spec/library-stability/api/const-stable-unstable-callee.rs",
+          "sha256": "97b7d7def82bb6a4a33200a5fe7094ed59bc4e49babc0047bb1a3ed9ecbe6884",
+          "accepted": false,
+          "kind": "library"
+        },
+        {
+          "name": "const-stable-allowed-callee",
+          "path": "pa31/tests/spec/library-stability/api/const-stable-allowed-callee.rs",
+          "sha256": "5c663aad91d980dd0dbd8b9352c8649f3ab8d54f69e94a374bb9501fa30a423d",
+          "accepted": true,
+          "kind": "library"
+        },
+        {
+          "name": "shared-feature-name",
+          "path": "pa31/tests/spec/library-stability/api/shared-feature-name.rs",
+          "sha256": "2eddaff235c3bfd1f90e5732e7c0cc92661c11fd62d0137656442afb17636011",
+          "accepted": true,
+          "kind": "library"
+        },
+        {
+          "name": "module-request-not-root",
+          "path": "pa31/tests/spec/library-stability/api/module-request-not-root.rs",
+          "sha256": "64061537d1667794bb94c6009202e3852597da5ec2e27b88f604ae606f1cd546",
+          "accepted": false,
+          "kind": "library",
+          "interpretation": "Rejects missing public module stability; does not isolate nested feature-request ownership. Kept unchanged; see corrected macros/nested-* controls."
+        },
+        {
+          "name": "stable-client",
+          "path": "pa31/tests/spec/library-stability/api/stable-client.rs",
+          "sha256": "54d0fe63991361d0e4ecc935f31bc032aa45b2b8ea27a72e12933c9ce0a8a9a7",
+          "accepted": true,
+          "kind": "client",
+          "native": true,
+          "native_expected": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unstable-client",
+          "path": "pa31/tests/spec/library-stability/api/unstable-client.rs",
+          "sha256": "fa77a17174843fd1f7dc167edddc722c5923a584b1c39dd6d0bc5792f62896f4",
+          "accepted": false,
+          "kind": "client",
+          "native": false
+        },
+        {
+          "name": "enabled-client",
+          "path": "pa31/tests/spec/library-stability/api/enabled-client.rs",
+          "sha256": "24ed2b1e0546d64b6f4de68a4b624e4f50371fc16c91c70d2be371d2179eacb1",
+          "accepted": true,
+          "kind": "client",
+          "native": true,
+          "native_expected": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "wrong-feature-client",
+          "path": "pa31/tests/spec/library-stability/api/wrong-feature-client.rs",
+          "sha256": "1fc639467046def71ae2b9ce5e62a8ecbcabb29fed3dcca77b08da0e0e1f620f",
+          "accepted": false,
+          "kind": "client",
+          "native": false
+        },
+        {
+          "name": "runtime-const-client",
+          "path": "pa31/tests/spec/library-stability/api/runtime-const-client.rs",
+          "sha256": "aa9a1ee1f4165b7827a1b6e30dc6c19f2e60362d766c6655d475c83cf097fdd6",
+          "accepted": true,
+          "kind": "client",
+          "native": true,
+          "native_expected": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "const-client",
+          "path": "pa31/tests/spec/library-stability/api/const-client.rs",
+          "sha256": "7e1ea76510bededaf317edc1644e7a07eba8f9198cb56162667f002267eaafe2",
+          "accepted": false,
+          "kind": "client",
+          "native": false
+        },
+        {
+          "name": "enabled-const-client",
+          "path": "pa31/tests/spec/library-stability/api/enabled-const-client.rs",
+          "sha256": "27ebd0fa145a226464bda390dc01466a3ecf1cbbc7ce04b0680a0ad8e0cb63c5",
+          "accepted": true,
+          "kind": "client",
+          "native": true,
+          "native_expected": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "known-unused-feature-client",
+          "path": "pa31/tests/spec/library-stability/api/known-unused-feature-client.rs",
+          "sha256": "4f1c32277a10f02b596b84a0412b5c53c3b81a60f6e55589bc421235b2a1c841",
+          "accepted": true,
+          "kind": "client",
+          "native": true,
+          "native_expected": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        }
+      ],
+      "original_declaration": "obj/parallel/pa31-library-stability/declared-v1.json",
+      "original_declaration_sha256": "062766ab851be34bee9cdf122ceaf324e6c107e565d87039d5e76b92a26e92c1",
+      "original_results": "obj/parallel/pa31-library-stability/independent-v1/results.json",
+      "original_results_sha256": "0d1259741ea7cb070ca0dbede30a3d0d385a24e2741684f4a92bbeee07012fd0",
+      "observations": 30,
+      "observed_native": 5
+    },
+    {
+      "name": "macros",
+      "provider": {
+        "path": "pa31/tests/spec/library-stability/macros/provider.rs",
+        "sha256": "844e01eb165c554c23829a15d8aaf997d070a0de9a56d9b5eccebb02bd7706f2",
+        "accepted": true
+      },
+      "rows": [
+        {
+          "name": "macro-definition-allowed",
+          "path": "pa31/tests/spec/library-stability/macros/macro-definition-allowed.rs",
+          "sha256": "128c0d8e29036092cc6d18d454116a5f4f74a78507c907edfb8b1c9bab7f2915",
+          "accepted": true,
+          "kind": "client",
+          "native": true,
+          "native_expected": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "macro-definition-denied",
+          "path": "pa31/tests/spec/library-stability/macros/macro-definition-denied.rs",
+          "sha256": "00a7ec1c5fa874a2c670907e4949fd6e5a9eeef1379e91ec471bf3b9df5d2e2c",
+          "accepted": false,
+          "kind": "client",
+          "native": false
+        },
+        {
+          "name": "macro-captured-denied",
+          "path": "pa31/tests/spec/library-stability/macros/macro-captured-denied.rs",
+          "sha256": "a75001f7d5246ce6cbec2a5fd63ce59f60befdf8270694119738d5b69e0cdbfa",
+          "accepted": false,
+          "kind": "client",
+          "native": false
+        },
+        {
+          "name": "macro-captured-enabled",
+          "path": "pa31/tests/spec/library-stability/macros/macro-captured-enabled.rs",
+          "sha256": "49609329bd62124363aa305b8b5829c431c53f00ff4170119eff171a9c17d950",
+          "accepted": true,
+          "kind": "client",
+          "native": true,
+          "native_expected": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "macro-nested-allowed",
+          "path": "pa31/tests/spec/library-stability/macros/macro-nested-allowed.rs",
+          "sha256": "56667fa5d5202471db5c3b21aebc99c75c31f8988f6ca5abb3bda925eb3a2e8f",
+          "accepted": true,
+          "kind": "client",
+          "native": true,
+          "native_expected": {
+            "status": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "nested-defined-request",
+          "path": "pa31/tests/spec/library-stability/macros/nested-defined-request.rs",
+          "sha256": "3fb424fc2bfabdf057c14114c78c522a00e199a9a5d02fe5340c494c05324f73",
+          "accepted": true,
+          "kind": "library"
+        },
+        {
+          "name": "nested-unknown-request",
+          "path": "pa31/tests/spec/library-stability/macros/nested-unknown-request.rs",
+          "sha256": "597a54eeddfee3e211794e2d160671004aa9635294027364e9d6a0b370c5fa5d",
+          "accepted": true,
+          "kind": "library"
+        }
+      ],
+      "original_declaration": "obj/parallel/pa31-library-stability/macro-declared-v1.json",
+      "original_declaration_sha256": "7b2b298b0bade531d134f5f12a60525739d7355c08484402063640b9bf345bff",
+      "original_results": "obj/parallel/pa31-library-stability/macro-independent-v1/results.json",
+      "original_results_sha256": "8018c122b7b65a72abb51bf3e2d0a41c616c98fa452e74b196b981504882ff17",
+      "observations": 11,
+      "observed_native": 3
+    }
+  ]
+}

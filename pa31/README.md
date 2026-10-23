@@ -21,6 +21,12 @@ Classify attributes by semantic effect; never silently ignore an active semantic
 requirement. In this revision, `SizedTypeProperties` supplies layout constants
 and atomic aliases use `Atomic<T: AtomicPrimitive>`; test the real protocols.
 
+Library feature requests also depend on enabled local/dependency stability
+declarations. Implement their inventory, regular/const API checks and macro
+allowance provenance; a compiler feature whitelist cannot replace them. The
+[stability investigation](../docs/pa31-library-stability.md) supplies independently
+qualified seed cases and keeps this still-unimplemented contract explicit.
+
 Define explicit source-sysroot selection and crate identity. Replace bootstrap
 library factories with real declarations without duplicate identities or a
 synthetic fallback. Ordinary Option/Result/Iterator methods belong to upstream
