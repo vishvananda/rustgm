@@ -101,9 +101,12 @@ fn original_staged_provider_retains_its_explicit_unsupported_profile() -> TestRe
     let error = lower(&source("literal-attributed-declaration", "rs")?)
         .err()
         .ok_or("full-staged provider support changed; review its retained boundary")?;
-    assert_eq!(
-        error.to_string(),
-        "file 0: 0: unsupported active source-core feature"
+    let message = error.to_string();
+    assert!(
+        message.ends_with(
+            "const, default-body and macro library stability contracts are not implemented"
+        ),
+        "{message}"
     );
     Ok(())
 }

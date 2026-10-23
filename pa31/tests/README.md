@@ -99,3 +99,11 @@ attributed declaration. Grouped `callback_provider` tests cover runtime
 items/pointers, owned tuple transport and source opposites. The accepted CTFE
 program remains required; the malformed-header rustc ICE is a separate compiler
 robustness observation. Candidate qualification is pending.
+
+`spec/source-macro-paths/` retains six authored source-provider macro lookup
+controls with twelve independent metadata/object observations. The corrected
+candidate contract uses complete expansion and resolution; the earlier names
+view alone does not qualify macro-call semantics. Grouped
+`provider_traits::environment_names` tests check forward/renamed actual macro
+identity and intended missing-name diagnostics without bootstrap declarations.
+See [the preserved input and view distinction](spec/source-macro-paths/README.md).

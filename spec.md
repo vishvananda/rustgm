@@ -247,6 +247,26 @@ The [eligibility checkpoint](docs/pa31-callable-const-eligibility.md) records
 source selection independently of the closed execution profile above. A complete
 signature alone grants neither an execution entry nor another call's payment.
 
+Runtime `const_eval_select` lowering consumes the actual registered declaration,
+proved caller body and reached Call, preserving its logical type arguments and
+public/opened signatures. Evaluate every operand once in source order, then
+spread the owned tuple into the evaluated runtime callback. The const callback's
+obligations remain required, but its unselected executable body is not demanded
+solely by this operation. Constant selection needs a separate reached-call
+implementation; a source placeholder body cannot supply it.
+
+Keep a function item's constrained logical type distinct from its evaluated
+producer and executable target. Index retained checked Constrain edges once per
+actual body, then apply the existing callable-target mapping once to the original
+producer. An origin table describes structure and does not pay the coercion or
+callee proof. Prepare it lazily only for function-item selection, with bounded
+attempted work, actual vector payload capacity and sticky failed preparation.
+Function-pointer-only and ordinary bodies allocate no origin table. Each
+subsequent lookup is indexed; repeated or shared-prefix coercion chains cannot
+trigger a fresh walk per selector. The
+[runtime selector checkpoint](docs/pa31-runtime-const-select.md) records the
+source/native contracts, ownership controls and remaining const profile.
+
 An actual source drop-glue helper is a compiler hook, not an executable empty
 body. Its runtime adapter consumes the exact registered declaration, full proved
 instance, retained source/body signature pair and caller's destruction recipe.
