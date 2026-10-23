@@ -9,6 +9,7 @@ from build_environment import package_environment
 from build_script_output import Kind
 from build_units import Execution, MAX_BYTES, parse
 import host_profile
+from local_package import LocalPackage, validate_layout
 
 
 def fingerprint(value):
@@ -83,6 +84,10 @@ def prepare(plan, snapshots, contexts):
     packages = {}
     if len(snapshots) > len(plan.units) or sum(len(p.files) for p in snapshots) > 1_000_000:
         raise ValueError('host package inventory exceeds combined count budget')
+    validate_layout(tuple(p for p in snapshots if isinstance(p, LocalPackage)))
+    roots = sorted(p.root for p in snapshots)
+    if any(right.is_relative_to(left) for left, right in zip(roots, roots[1:])):
+        raise ValueError('host package roots must not overlap')
     for snapshot in snapshots:
         if snapshot.cargo_id in packages:
             raise ValueError('duplicate host package identity')

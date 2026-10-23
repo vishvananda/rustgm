@@ -45,6 +45,7 @@ test-harness:
 .PHONY: test-host-builds
 test-host-builds:
 	$(PYTHON) scripts/storage.py run --prune-under obj/qualification/host-graph -- $(PYTHON) scripts/check_host_graph.py
+	$(PYTHON) scripts/storage.py run --prune-under obj/qualification/host-graph -- $(PYTHON) scripts/check_host_graph.py --local
 test-backend:
 	$(PYTHON) scripts/backend.py --test
 test-maintainer-native: test-backend

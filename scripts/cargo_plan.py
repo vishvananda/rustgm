@@ -15,6 +15,7 @@ import time
 from build_units import MAX_BYTES, parse
 from crate_vendor import Vendor
 from host_build_script import digest
+import local_package
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,7 @@ class Job:
     features: tuple[str, ...] = ()
     default_features: bool = True
     vendor: Vendor | None = None
+    local_packages: tuple[local_package.LocalPackage, ...] = ()
 
     def validate(self):
         for path, expected in ((self.cargo, self.cargo_sha256),
@@ -61,18 +63,27 @@ class Job:
             self.vendor.verify(self.lockfile)
             if any(path.is_relative_to(self.vendor.root) for path in paths):
                 raise ValueError('vendor snapshots must be separate from caller input pins')
+        local_package.validate(self.local_packages)
+        if self.vendor is not None and any(
+            p.root.is_relative_to(self.vendor.root) or self.vendor.root.is_relative_to(p.root)
+            for p in self.local_packages
+        ):
+            raise ValueError('local and registry package roots must not overlap')
 
 
 def execute(job, folder):
     job.validate()
     folder = folder.absolute()
+    if any(folder.is_relative_to(p.root) for p in job.local_packages):
+        raise ValueError('planning output must be outside local package snapshots')
     if folder.exists() or folder.is_symlink():
         raise ValueError('planning evidence directory already exists')
     folder.mkdir(parents=True)
     wrapper = Path(__file__).with_name('cargo_query.py').absolute()
     implementation = {name: digest(wrapper.with_name(name)) for name in (
         'cargo_query.py', 'cargo_plan.py', 'build_units.py', 'crate_vendor.py', 'package_snapshot.py',
-        'host_build_script.py', 'host_process.py', 'host_profile.py', 'build_script_output.py')}
+        'host_build_script.py', 'host_process.py', 'host_profile.py', 'build_script_output.py',
+        'local_package.py')}
     environment = {
         'PATH': '/usr/bin:/bin', 'CARGO_HOME': str(folder / 'cargo-home'),
         'CARGO_TARGET_DIR': str(folder / 'target'), 'CARGO_INCREMENTAL': '0',
@@ -99,6 +110,9 @@ def execute(job, folder):
         receipt['vendor'] = [dict(package.identity, root=str(package.root), files=package.files,
                                   directories=package.directories)
                              for package in job.vendor.packages]
+    if job.local_packages:
+        receipt['local_packages'] = [dict(p.identity, root=str(p.root), files=p.files,
+                                         directories=p.directories) for p in job.local_packages]
 
     def save():
         (folder / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
@@ -115,9 +129,16 @@ def execute(job, folder):
         with (folder / 'graph.stdout').open('rb') as source:
             plan = parse(source.read(MAX_BYTES + 1), job.target)
         inputs = dict(job.inputs)
+        for package in job.local_packages:
+            inputs.update((package.root / name, sha) for name, sha, _ in package.files)
         bindings = job.vendor.bind(plan, inputs) if job.vendor is not None else None
+        if job.local_packages:
+            local = local_package.bind(plan, job.local_packages)
+            bindings = [left or right for left, right in zip(bindings or [None] * len(local), local)]
         if bindings is None and any(Path(unit.target.src_path) not in inputs for unit in plan.units):
             raise ValueError('planned source is absent from the declared frozen inputs')
+        if bindings is not None and job.vendor is None and any(value is None for value in bindings):
+            raise ValueError('planned registry source requires its authenticated vendor')
         job.validate()
         if any(digest(wrapper.with_name(name)) != sha for name, sha in implementation.items()):
             raise ValueError('planning implementation changed during execution')

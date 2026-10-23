@@ -86,6 +86,11 @@ Planning receipts are not compilation results. The
 [planning adapter](docs/crate-planning.md) supports frozen local path inputs and
 authenticated crates.io archive snapshots. Preserve original package bytes and
 validate the complete registry lockfile set, including inactive dependencies.
+For local packages, freeze the complete declared source tree, including directory
+entries and file modes. Keep portable caller-declared origins and inventory hashes
+separate from invocation-local Cargo path IDs. Changed or newly added files must
+invalidate the snapshot. Generated output belongs outside those immutable trees;
+source snapshots alone do not close workspace configuration or rerun inputs.
 Hash each package once per validation boundary, then use indexed source ownership
 to bind its units; do not rescan each package per host/target unit. Execute each
 selected host compilation/run once in dependency order. Share a compiled script

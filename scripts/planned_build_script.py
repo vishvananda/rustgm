@@ -51,7 +51,8 @@ def execute(plan, selected, package, context, folder):
     wrapper = Path(__file__).with_name('cargo_query.py').absolute()
     implementation = {name: host_build_script.digest(wrapper.with_name(name)) for name in (
         'planned_build_script.py', 'host_build_script.py', 'host_process.py', 'build_script_output.py',
-        'build_environment.py', 'host_profile.py', 'cargo_query.py', 'build_units.py', 'package_snapshot.py')}
+        'build_environment.py', 'host_profile.py', 'cargo_query.py', 'build_units.py',
+        'package_snapshot.py', 'local_package.py')}
     common = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', **package_environment(package)}
     queries = folder / 'queries.jsonl'
     runtime = {**common, **context.cfg_environment(), **host_profile.environment(unit.profile_json),

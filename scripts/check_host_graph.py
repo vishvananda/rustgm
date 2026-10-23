@@ -16,7 +16,7 @@ from host_graph import execute
 from host_process import CommandLog, digest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'tests'))
-from host_graph_fixtures import packages
+from host_graph_fixtures import local_packages, packages
 
 ROOT = Path(__file__).resolve().parent.parent
 TRIPLE = 'x86_64-unknown-linux-gnu'
@@ -41,8 +41,8 @@ def toolchain():
     return result
 
 
-def independent(root, snapshots, driver, tools):
-    vendor = Vendor(root / 'vendor', snapshots)
+def independent(root, snapshots, driver, tools, local=False):
+    vendor = None if local else Vendor(root / 'vendor', snapshots)
     cargo, compiler = (Path(tools[name]['path']) for name in ('cargo', 'rustc'))
     declaration = {'expected': {'cargo_status': 101, 'failure': 'intentional target graph stop',
                                'app_generated': ANSWER.decode(), 'host_compilations': 6,
@@ -56,7 +56,7 @@ def independent(root, snapshots, driver, tools):
                    'CARGO_TARGET_DIR': str(root / 'target'), 'CARGO_INCREMENTAL': '0',
                    'CARGO_BUILD_JOBS': '2', 'RUSTC': str(compiler), 'CARGO_ENCODED_RUSTFLAGS': ''}
     command = [cargo, 'build', '--offline', '-vv', '--manifest-path', driver / 'Cargo.toml',
-               '--target', TRIPLE, *vendor.arguments()]
+               '--target', TRIPLE, *(vendor.arguments() if vendor is not None else [])]
     status = log.run('independent', command, environment)
     if status != 101 or declaration['expected']['failure'] not in (root / 'independent.stderr').read_text():
         raise ValueError('independent Cargo did not reach its deliberate target stop')
@@ -65,7 +65,8 @@ def independent(root, snapshots, driver, tools):
         raise ValueError('independent host scripts differ from the declared generated answer')
     inputs = tuple((path, digest(path)) for path in sorted(driver.iterdir()) if path.is_file())
     job = Job(cargo, tools['cargo']['sha256'], compiler, tools['rustc']['sha256'],
-              driver / 'Cargo.toml', driver / 'Cargo.lock', inputs, 'driver', TRIPLE, vendor=vendor)
+              driver / 'Cargo.toml', driver / 'Cargo.lock', inputs, 'app' if local else 'driver',
+              TRIPLE, vendor=vendor, local_packages=snapshots if local else ())
     plan = plan_cargo(job, root / 'plan')
     native = [u for u in plan.units if u.pkg_id == snapshots[2].cargo_id and u.target.kind == ('custom-build',)]
     if (sum(u.execution is Execution.HOST_COMPILE for u in native) != 1
@@ -111,12 +112,13 @@ def candidate(root, plan, snapshots, tools):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', type=Path, default=ROOT / 'obj/qualification/host-graph' / str(time.time_ns()))
+    parser.add_argument('--local', action='store_true', help='qualify complete local path package inputs')
     args = parser.parse_args()
     root = args.out.absolute()
     root.mkdir(parents=True, exist_ok=False)
     tools = toolchain()
-    snapshots, driver = packages(root)
-    plan = independent(root, snapshots, driver, tools)
+    snapshots, driver = (local_packages if args.local else packages)(root)
+    plan = independent(root, snapshots, driver, tools, args.local)
     candidate(root, plan, snapshots, tools)
     print(f'PASS host graph: six compilations, five runs; generated answer matches independent Cargo ({root})')
 

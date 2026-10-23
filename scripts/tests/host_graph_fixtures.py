@@ -5,6 +5,7 @@ import tarfile
 
 from host_process import digest
 from package_snapshot import extract
+from local_package import capture
 
 FILES = {'app/Cargo.toml': '[package]\n'
                    'name="app"\n'
@@ -92,3 +93,24 @@ def packages(root):
                                      '[profile.dev]\ndebug=0\n[lib]\npath="lib.rs"\n')
     (driver / 'lib.rs').write_text('pub fn driver(){}\n')
     return tuple(result), driver
+
+
+def local_packages(root):
+    """Same authored host behavior, with explicit path dependencies and originals."""
+    workspace = root / 'workspace'
+    workspace.mkdir()
+    for path, text in FILES.items():
+        destination = workspace / path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if destination.name == 'Cargo.toml':
+            text = text.replace('package="helper",version="=1.0.0"',
+                                'package="helper",path="../helper"')
+            text = text.replace('native-sys={version="=1.0.0"}',
+                                'native-sys={path="../native-sys"}')
+        destination.write_text(text)
+    (workspace / 'Cargo.toml').write_text(
+        '[workspace]\nmembers=["app","helper","native-sys"]\n'
+        'default-members=["app"]\nresolver="2"\n[profile.dev]\ndebug=0\n')
+    result = tuple(capture(workspace / name, name, '1.0.0', 'fixture/' + name)
+                   for name in ('app', 'helper', 'native-sys'))
+    return result, workspace

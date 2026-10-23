@@ -134,3 +134,35 @@ semantics and per-crate macro edition provenance before claiming that profile.
 Then execute dependency-first target jobs through RustGM's typed metadata and
 CPPGM backend. Library acceptance requires the original selected dependency
 graph and independently checked native consumers, not just this planning slice.
+
+## Complete local package snapshots
+
+`scripts/local_package.py` freezes a caller-declared original local package tree
+without copying, rewriting or filtering its files. It retains every regular file,
+directory entry and mode, with the existing inventory size limits. Missing, added,
+changed, symlinked or mode-changed inputs invalidate the snapshot. Manifests must
+provide explicit matching names and versions; unresolved workspace inheritance
+remains unsupported. Local origins are explicit portable relative identifiers;
+they and inventory hashes form the retained identity. Absolute Cargo path IDs
+serve only to bind this invocation's graph, including differently named paths.
+
+`cargo_plan.Job.local_packages` opts into complete local unit ownership. Every
+selected path unit must belong to its exact snapshot; registry units still need
+authenticated vendor inputs. Roots and origins must be unique, package roots
+cannot overlap, and evidence/generated output lives outside package trees.
+Workspace manifest/lockfile and tool/configuration pins remain separate inputs.
+The host executor accepts the same snapshots and revalidates them before
+publishing results. This does not establish complete workspace inheritance,
+arbitrary build-script rerun/environment closure or persistent caching.
+
+Qualification in `obj/parallel/pa34-local-inputs/development-v1/` passes all 164
+Python harness tests, registration/layout/upstream checks and both real host
+graph comparisons. The local and registry variants each perform six host
+compilations and five script runs and match independent Cargo's declared
+generated source, with zero candidate target compilations. Their observed times
+are 2.47 and 2.22 seconds; these are qualification observations, not a speedup
+claim. At 8/32/128 shared units, each local package is verified twice rather than
+once per unit. No RustGM rebuild or full frontend suite was needed for this
+Python-only checkpoint. Scoped cleanup removed 44 generated files and preserved
+original inputs and receipts. Completion SHA-256:
+`50806abc65dc5b5948af492d3b0367491ad8ea8675bf3fbb1a3abcc6b7ce96d3`.

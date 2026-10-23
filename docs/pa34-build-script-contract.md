@@ -260,8 +260,12 @@ The maintained runner retains each new declaration, raw command outputs and
 generated-source hashes under `obj/qualification/host-graph/`; scoped cleanup
 removes disposable executables and objects after success.
 
+The later [local input checkpoint](crate-planning.md#complete-local-package-snapshots)
+adds complete local package inventories and the same independent host graph
+comparison for path dependencies. `make test-host-builds` runs both variants.
+
 Procedural macro execution, general compiler probes, persistent rerun/cache
-closure, local/path source closure, complete toolchain/runtime provenance and
+closure, complete workspace configuration, toolchain/runtime provenance and
 actual target consumption remain required. Link-argument directives stay ordered
 in script outputs but do not apply to the ordinary host rlib targets supported
 here. This checkpoint neither activates PA34 nor establishes upstream crate or

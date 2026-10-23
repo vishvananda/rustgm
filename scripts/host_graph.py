@@ -212,13 +212,15 @@ def execute(plan, snapshots, contexts, folder):
     """
     packages, contexts = prepare(plan, snapshots, contexts)
     folder = folder.absolute()
+    if any(folder.is_relative_to(p.snapshot.root) for p in packages.values()):
+        raise ValueError('host graph output must be outside package snapshots')
     if folder.exists() or folder.is_symlink():
         raise ValueError('host graph output already exists')
     folder.mkdir(parents=True)
     implementation = {name: digest(Path(__file__).with_name(name)) for name in (
         'host_graph.py', 'host_inputs.py', 'host_process.py', 'host_build_script.py',
         'build_environment.py', 'build_script_output.py', 'host_profile.py',
-        'build_units.py', 'cargo_query.py', 'package_snapshot.py')}
+        'build_units.py', 'cargo_query.py', 'package_snapshot.py', 'local_package.py')}
     build = Build(plan, packages, contexts, folder)
     build.receipt['implementation_sha256'] = implementation
     build.save()
