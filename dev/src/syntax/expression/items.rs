@@ -3,7 +3,7 @@ use super::{
     Ast, BlockFlavor, Kind, LexError, List, NORMAL, NodeId, P, Parser, Span, TokenKind, Word, error,
 };
 use crate::syntax::item::{FunctionFlags, Item, ItemKind, Safety, Shape, Visibility};
-mod macro_definitions;
+mod declarative_forms;
 
 pub(super) use crate::syntax::item::ItemContext as Scope;
 
