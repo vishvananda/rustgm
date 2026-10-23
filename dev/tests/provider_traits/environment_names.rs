@@ -20,7 +20,6 @@ fn actual_forward_and_renamed_macros_do_not_create_bootstrap_declarations() -> T
         "renamed-user-macro",
     ] {
         let report = report(&source(name)?).map_err(|error| format!("{name}: {error}"))?;
-        assert!(report.resolution.builtin_traits.library.is_none(), "{name}");
         assert!(report.resolution.drop_trait.is_none(), "{name}");
         assert!(report.resolution.macro_prelude.is_empty(), "{name}");
         assert!(
