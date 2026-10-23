@@ -183,3 +183,28 @@ settled semantic negative. None is relabeled complete by the minimal provider.
 B owns appended role identities and qualified-goal wiring. Any role-mask growth
 past the existing sixteen slots must be measured and coordinated before editing
 shared records.
+
+## Sparse concrete query prerequisite
+
+The private `NeedsDrop::concrete_sparse` constructor shares the existing iterative
+walker and immutable destructor registry, but retains only reached TypeIds. The
+cold Scope uses an optional environment without growing either query record.
+Measured sizes remain NeedsDrop 72 bytes and Scope 48 bytes.
+Its absent environment enables no symbolic assumptions. Unrevealed opaque heads
+and unresolved projections still reject, including declarations with Copy flags;
+those flags do not establish actual source-role proof. Existing ordinary and
+symbolic constructors retain their behavior.
+
+The focused debug qualification in
+`obj/parallel/pa28/source-needs-drop/sparse-concrete-v1/` passes five new private
+tests and two existing ownership tests, strict all-target/all-feature Clippy,
+format check and the architecture audit. The 27-point width/depth/noise grid
+varies widths 8/32/128, depths 1/8/32 and unrelated Store entries 0/1024/8192.
+Every result retains exactly depth+1 states, unchanged capacity/work across noise,
+and work bounded by 4×width×depth+2. Each grid point also performs 128 warm queries
+without growing traversal work. Missing-head failures remain sticky in their own
+query; readiness requires a fresh query rather than a cached false answer.
+
+This internal prerequisite does not execute source needs_drop. The actual Drop
+and Copy roles, completed destructor preparation, fresh reached-call witness and
+closed-instance result publication remain mandatory for the forthcoming kernel.

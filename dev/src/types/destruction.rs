@@ -14,7 +14,7 @@ enum State {
     Failed(&'static str),
 }
 struct Scope {
-    environment: Arc<Environment>,
+    environment: Option<Arc<Environment>>,
     builtins: Option<Box<BuiltinQuery>>,
     states: HashMap<TypeId, State>,
 }
@@ -39,6 +39,17 @@ impl NeedsDrop {
             steps: 0,
         }
     }
+    /// Concrete queries retain only visited types and cannot assume symbolic cleanup.
+    #[allow(dead_code)] // The source needs_drop consumer awaits validated source roles.
+    pub(crate) fn concrete_sparse(custom: impl IntoIterator<Item = ItemId>) -> Self {
+        let mut query = Self::new(custom);
+        query.scope = Some(Box::new(Scope {
+            environment: None,
+            builtins: None,
+            states: HashMap::default(),
+        }));
+        query
+    }
     /// Copy assumptions prove absence of destruction. Unconstrained parameters
     /// and unknown array lengths conservatively preserve possible cleanup.
     #[must_use]
@@ -53,7 +64,7 @@ impl NeedsDrop {
     pub fn scoped(&self, environment: Arc<Environment>) -> Self {
         Self {
             scope: Some(Box::new(Scope {
-                environment,
+                environment: Some(environment),
                 builtins: None,
                 states: HashMap::default(),
             })),
@@ -104,6 +115,16 @@ impl NeedsDrop {
         .copied()
         .unwrap_or_default()
     }
+    fn symbolic(&self) -> bool {
+        self.scope
+            .as_ref()
+            .is_some_and(|scope| scope.environment.is_some())
+    }
+    fn exact_heads(&self) -> bool {
+        self.scope
+            .as_ref()
+            .is_some_and(|scope| scope.environment.is_none())
+    }
     fn record(&mut self, ty: TypeId, state: State) {
         match &mut self.scope {
             Some(scope) => {
@@ -141,6 +162,34 @@ impl NeedsDrop {
             _ => None,
         })
     }
+    fn assumed_requirement(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        kind: Kind,
+    ) -> Result<Option<bool>, &'static str> {
+        if let Some(scope) = &mut self.scope
+            && let Some(environment) = &scope.environment
+        {
+            if environment
+                .assumed_with(types, ty, &mut scope.builtins)?
+                .copy
+            {
+                return Ok(Some(false));
+            }
+            if let Kind::Parameter(id) = kind {
+                return Ok(Some(
+                    !environment
+                        .abilities(id)
+                        .ok_or("destruction parameter is outside its environment")?
+                        .copy,
+                ));
+            }
+        } else if matches!(kind, Kind::Parameter(_) | Kind::ArrayTerm { .. }) {
+            return Err("generic destruction checking requires a parameter environment");
+        }
+        Ok(None)
+    }
     fn run(&mut self, types: &Store, definitions: &Definitions) -> Result<(), &'static str> {
         while let Some((ty, finish)) = self.work.pop() {
             self.charge()?;
@@ -157,30 +206,9 @@ impl NeedsDrop {
                 self.record(ty, State::Ready(true));
                 continue;
             }
-            if let Some(scope) = &mut self.scope {
-                let needed = if scope
-                    .environment
-                    .assumed_with(types, ty, &mut scope.builtins)?
-                    .copy
-                {
-                    Some(false)
-                } else if let Kind::Parameter(id) = kind {
-                    Some(
-                        !scope
-                            .environment
-                            .abilities(id)
-                            .ok_or("destruction parameter is outside its environment")?
-                            .copy,
-                    )
-                } else {
-                    None
-                };
-                if let Some(needed) = needed {
-                    self.record(ty, State::Ready(needed));
-                    continue;
-                }
-            } else if matches!(kind, Kind::Parameter(_) | Kind::ArrayTerm { .. }) {
-                return Err("generic destruction checking requires a parameter environment");
+            if let Some(needed) = self.assumed_requirement(types, ty, kind)? {
+                self.record(ty, State::Ready(needed));
+                continue;
             }
             if let Kind::Opaque(id, _) = kind {
                 let copy = types
@@ -188,15 +216,16 @@ impl NeedsDrop {
                     .ok_or("missing opaque declaration")?
                     .copies
                     .copy;
-                if copy || self.scope.is_some() {
+                if (copy && !self.exact_heads()) || self.symbolic() {
                     self.record(ty, State::Ready(!copy));
                     continue;
                 }
             }
             if let Kind::Projection(application) = kind {
-                if types
-                    .projection_schema(application.item)
-                    .is_some_and(|schema| schema.copies.copy)
+                if !self.exact_heads()
+                    && types
+                        .projection_schema(application.item)
+                        .is_some_and(|schema| schema.copies.copy)
                 {
                     self.record(ty, State::Ready(false));
                     continue;
@@ -204,7 +233,7 @@ impl NeedsDrop {
                 // A checked generic body can move or drop an opaque associated
                 // result. Keep possible cleanup until instance normalization
                 // selects its concrete type and actual destruction requirements.
-                if self.scope.is_some() {
+                if self.symbolic() {
                     self.record(ty, State::Ready(true));
                     continue;
                 }
@@ -317,3 +346,7 @@ pub(crate) fn validate_method(
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/concrete_destruction.rs"]
+mod tests;
