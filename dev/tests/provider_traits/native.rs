@@ -27,8 +27,20 @@ fn source_copy_clone_and_function_item_native_answers() -> TestResult {
         .join(std::process::id().to_string());
     std::fs::create_dir_all(&folder)?;
     let destruct = super::destructibility::ordinary_source();
+    let ordinary_member = [
+        super::destructibility::BASE,
+        super::forbidden_cleanup::MEMBER_NATIVE,
+    ]
+    .concat();
+    let ordinary_free = [
+        super::destructibility::BASE,
+        super::forbidden_cleanup::FREE_NATIVE,
+    ]
+    .concat();
     for (name, source, expected) in [
         ("ordinary-destruct", destruct.as_str(), 7),
+        ("ordinary-member-pointer", ordinary_member.as_str(), 7),
+        ("ordinary-free-pointer", ordinary_free.as_str(), 11),
         ("copy", COPY_EXECUTION, 7),
         ("clone", CLONE_EXECUTION, 11),
         ("callable", CALL_EXECUTION, 23),

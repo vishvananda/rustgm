@@ -15,6 +15,8 @@ use std::path::Path;
 mod cases;
 #[path = "provider_traits/destructibility.rs"]
 mod destructibility;
+#[path = "provider_traits/forbidden_cleanup.rs"]
+mod forbidden_cleanup;
 #[path = "provider_traits/native.rs"]
 mod native;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;

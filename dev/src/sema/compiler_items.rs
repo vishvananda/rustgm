@@ -1,8 +1,10 @@
 //! Actual source compiler declarations remain distinct from bootstrap identities.
 mod calls;
 mod copying;
+mod explicit_cleanup;
 pub(crate) use calls::check_instance as check_const_instance;
 pub(super) use calls::record as record_call_effects;
+pub(in crate::sema) use explicit_cleanup::explicit_drop_member;
 mod intrinsic_contracts;
 mod layout;
 pub(crate) use copying::copy_decisions;

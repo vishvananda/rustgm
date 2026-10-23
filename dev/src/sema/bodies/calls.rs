@@ -429,7 +429,10 @@ impl Checker<'_> {
         owner: DefId,
         ty: TypeId,
     ) -> Result<TypeId, Error> {
-        if self.facts.destructors.method(owner).is_some() {
+        if self.facts.destructors.method(owner).is_some()
+            || crate::sema::compiler_items::explicit_drop_member(self.facts, owner)
+                .map_err(|e| self.error(node, e))?
+        {
             return Err(self.error(
                 node,
                 "explicit destructor calls or function values are forbidden",
