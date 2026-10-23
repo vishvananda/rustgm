@@ -214,7 +214,8 @@ fn callable_copying_cannot_cache_an_unpaid_nominal_signature() -> TestResult {
 
 #[test]
 fn callable_marker_keeps_nominal_signature_lifetime_debts_on_repeated_queries() -> TestResult {
-    let (report, mut facts) = declarations("struct N<T:'static>(T);")?;
+    let (report, mut facts) =
+        declarations("trait Need{}impl<'a:'static>Need for &'a u8{}struct N<T:Need>(T);")?;
     let reference = facts.types.intern(Kind::Reference {
         mutable: false,
         region: RegionId(10),
@@ -238,6 +239,82 @@ fn callable_marker_keeps_nominal_signature_lifetime_debts_on_repeated_queries() 
             assert!(!super::size_evidence_tests::valid(&facts, &evidence.proof)?);
             assert!(reuse.selection(&facts, goal, 100)?.is_none());
         }
+    }
+    Ok(())
+}
+
+#[test]
+fn direct_nominal_outlives_is_paid_by_lifetime_formation_after_callable_marker() -> TestResult {
+    // Retain the original v4 source and raw observation. Ordinary nominal
+    // Outlives clauses intentionally belong to lifetime formation, whereas
+    // the test above retains the lifetime conditions of selected trait impls.
+    let (report, mut facts) = declarations("struct N<T:'static>(T);")?;
+    let input = RegionId(10);
+    let reference = facts.types.intern(Kind::Reference {
+        mutable: false,
+        region: input,
+        referent: TypeId::primitive(Primitive::U8),
+    })?;
+    let args = facts.types.intern_arguments(&[Argument::Type(reference)])?;
+    let nominal = facts
+        .types
+        .intern(Kind::Adt(ItemId(tests::definition(&report, "N")?.0), args))?;
+    let pointer = function(&mut facts, nominal, false, Convention::RUST)?;
+    for role in [LangItem::Copy, LangItem::Clone] {
+        let goal = predicate(&mut facts, role, pointer)?;
+        let selection::Selection::Proven(evidence) =
+            select(&mut facts, goal, &mut Reuse::default())?
+        else {
+            return Err("missing direct nominal callable marker".into());
+        };
+        assert!(matches!(evidence.source, Source::Builtin));
+        assert!(evidence.proof.is_empty());
+    }
+    let mut queries = crate::types::outlives::Queries::new(
+        &facts.types,
+        &facts.lifetimes.nominal_requirements,
+        &facts.lifetimes.callables,
+    );
+    assert!(
+        queries
+            .requirements(pointer)?
+            .contains(&(input, RegionId::STATIC))
+    );
+    let steps = queries.steps();
+    for paid in [false, true, false] {
+        let mut constraints = crate::types::relations::Constraints::new(
+            &facts.types,
+            &facts.lifetimes.variances,
+            1,
+            100_000,
+        )?;
+        let universal = RegionId::bound(0, 0)?;
+        constraints.variable(input)?;
+        constraints.outlives(input, universal, 0)?;
+        constraints.outlives(universal, input, 0)?;
+        if paid {
+            constraints.assume(universal, RegionId::STATIC)?;
+        }
+        // This is the actual Obligation::WellFormed consumer in borrow::regions.
+        constraints.require_requirements(
+            queries.symbolic_requirements(pointer)?,
+            crate::types::relations::ProofScope::ROOT,
+            0,
+        )?;
+        let result = constraints.solve();
+        match result {
+            Ok(_) => assert!(paid),
+            Err(
+                crate::types::region_graph::Error::Unsatisfied { .. }
+                | crate::types::region_graph::Error::Verification { .. },
+            ) => assert!(!paid),
+            Err(error) => return Err(error.into()),
+        }
+        assert_eq!(
+            queries.steps(),
+            steps,
+            "warm formation must keep its cached debt"
+        );
     }
     Ok(())
 }
