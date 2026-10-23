@@ -1,4 +1,5 @@
 //! Possible destruction requirements under immutable parameter assumptions.
+mod bounded;
 pub mod regions;
 use super::parameters::environment::{BuiltinQuery, Environment};
 use super::{ItemId, Kind, Store, TypeId, aggregate::Definitions};
@@ -82,6 +83,15 @@ impl NeedsDrop {
         definitions: &Definitions,
         ty: TypeId,
     ) -> Result<bool, &'static str> {
+        self.demand_inside::<false>(types, definitions, ty, usize::MAX)
+    }
+    fn demand_inside<const BOUNDED: bool>(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+        limit: usize,
+    ) -> Result<bool, &'static str> {
         if matches!(self.state(ty), State::Ready(_) | State::Failed(_)) {
             return self.get(ty);
         }
@@ -89,19 +99,24 @@ impl NeedsDrop {
         if self.scope.is_none() {
             self.states.resize(types.len(), State::Unseen);
         }
-        self.work.push((ty, false));
-        if let Err(message) = self.run(types, definitions) {
+        self.push::<BOUNDED>((ty, false), limit)?;
+        if let Err(message) = self.run::<BOUNDED>(types, definitions, limit) {
             let fail = |state: &mut State| {
                 if matches!(state, State::Active) {
                     *state = State::Failed(message);
                 }
             };
             if let Some(scope) = &mut self.scope {
+                if BOUNDED {
+                    self.steps = self.steps.saturating_add(scope.states.len());
+                }
                 scope.states.values_mut().for_each(fail);
             } else {
                 self.states.iter_mut().for_each(fail);
             }
-            self.record(ty, State::Failed(message));
+            if !BOUNDED || !matches!(self.state(ty), State::Unseen) {
+                self.record::<BOUNDED>(ty, State::Failed(message), limit)?;
+            }
             self.work.clear();
             return Err(message);
         }
@@ -125,13 +140,26 @@ impl NeedsDrop {
             .as_ref()
             .is_some_and(|scope| scope.environment.is_none())
     }
-    fn record(&mut self, ty: TypeId, state: State) {
+    fn record<const BOUNDED: bool>(
+        &mut self,
+        ty: TypeId,
+        state: State,
+        limit: usize,
+    ) -> Result<(), &'static str> {
+        if BOUNDED {
+            if let Some(existing) = self.scope.as_mut().and_then(|s| s.states.get_mut(&ty)) {
+                *existing = state;
+                return Ok(());
+            }
+            self.retain::<true>(1, 0, limit)?;
+        }
         match &mut self.scope {
             Some(scope) => {
                 scope.states.insert(ty, state);
             }
             None => self.states[ty.0 as usize] = state,
         }
+        Ok(())
     }
     fn get(&self, ty: TypeId) -> Result<bool, &'static str> {
         match self.state(ty) {
@@ -140,12 +168,18 @@ impl NeedsDrop {
             _ => Err("missing destruction requirement"),
         }
     }
-    fn charge(&mut self) -> Result<(), &'static str> {
-        self.steps = self
+    fn charge<const BOUNDED: bool>(&mut self) -> Result<(), &'static str> {
+        let next = self
             .steps
             .checked_add(1)
-            .filter(|n| *n <= 1_000_000)
             .ok_or("destruction query work budget exceeded")?;
+        if BOUNDED {
+            self.steps = next;
+        }
+        if next > 1_000_000 {
+            return Err("destruction query work budget exceeded");
+        }
+        self.steps = next;
         Ok(())
     }
     fn nominal_requirement(
@@ -190,9 +224,14 @@ impl NeedsDrop {
         }
         Ok(None)
     }
-    fn run(&mut self, types: &Store, definitions: &Definitions) -> Result<(), &'static str> {
+    fn run<const BOUNDED: bool>(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        limit: usize,
+    ) -> Result<(), &'static str> {
         while let Some((ty, finish)) = self.work.pop() {
-            self.charge()?;
+            self.charge::<BOUNDED>()?;
             match self.state(ty) {
                 State::Ready(_) => continue,
                 State::Failed(message) => return Err(message),
@@ -203,11 +242,11 @@ impl NeedsDrop {
             }
             let kind = types.kind(ty).ok_or("invalid destruction type")?;
             if matches!(kind, Kind::Dynamic { .. }) {
-                self.record(ty, State::Ready(true));
+                self.record::<BOUNDED>(ty, State::Ready(true), limit)?;
                 continue;
             }
             if let Some(needed) = self.assumed_requirement(types, ty, kind)? {
-                self.record(ty, State::Ready(needed));
+                self.record::<BOUNDED>(ty, State::Ready(needed), limit)?;
                 continue;
             }
             if let Kind::Opaque(id, _) = kind {
@@ -217,7 +256,7 @@ impl NeedsDrop {
                     .copies
                     .copy;
                 if (copy && !self.exact_heads()) || self.symbolic() {
-                    self.record(ty, State::Ready(!copy));
+                    self.record::<BOUNDED>(ty, State::Ready(!copy), limit)?;
                     continue;
                 }
             }
@@ -227,14 +266,14 @@ impl NeedsDrop {
                         .projection_schema(application.item)
                         .is_some_and(|schema| schema.copies.copy)
                 {
-                    self.record(ty, State::Ready(false));
+                    self.record::<BOUNDED>(ty, State::Ready(false), limit)?;
                     continue;
                 }
                 // A checked generic body can move or drop an opaque associated
                 // result. Keep possible cleanup until instance normalization
                 // selects its concrete type and actual destruction requirements.
                 if self.symbolic() {
-                    self.record(ty, State::Ready(true));
+                    self.record::<BOUNDED>(ty, State::Ready(true), limit)?;
                     continue;
                 }
                 return Err("associated type destruction checking requires normalization");
@@ -245,25 +284,25 @@ impl NeedsDrop {
             if let Kind::Adt(item, _) = kind
                 && let Some(needed) = self.nominal_requirement(definitions, item)?
             {
-                self.record(ty, State::Ready(needed));
+                self.record::<BOUNDED>(ty, State::Ready(needed), limit)?;
                 continue;
             }
             let mut needed = false;
             if !finish {
-                self.record(ty, State::Active);
-                self.work.push((ty, true));
+                self.record::<BOUNDED>(ty, State::Active, limit)?;
+                self.push::<BOUNDED>((ty, true), limit)?;
             }
             children(types, definitions, ty, |child| {
-                self.charge()?;
+                self.charge::<BOUNDED>()?;
                 if finish {
                     needed |= self.get(child)?;
                 } else {
-                    self.work.push((child, false));
+                    self.push::<BOUNDED>((child, false), limit)?;
                 }
                 Ok(())
             })?;
             if finish {
-                self.record(ty, State::Ready(needed));
+                self.record::<BOUNDED>(ty, State::Ready(needed), limit)?;
             }
         }
         Ok(())

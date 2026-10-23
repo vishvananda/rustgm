@@ -95,8 +95,8 @@ The actual `Pin` declaration has a lang item and transparent representation;
 matching layout or source spelling cannot substitute for that identity.
 
 B owns shared role/qualified-goal wiring, with Drop/Destruct following the
-existing fourteen roles. This lane owns typed header validation and destructor
-selection. Reserved Drop identity may classify potential cleanup before trait
+existing fourteen roles. The source-role lane owns typed header validation. This lane owns destructor
+registration and intrinsic execution/query selection. Reserved Drop identity may classify potential cleanup before trait
 completion. Only sealed exact header/role readiness can authorize executable
 selection. The source path must not alias bootstrap `resolution.drop_trait`.
 A private DropRole can be derived from the existing checked role catalog;
@@ -208,3 +208,40 @@ query; readiness requires a fresh query rather than a cached false answer.
 This internal prerequisite does not execute source needs_drop. The actual Drop
 and Copy roles, completed destructor preparation, fresh reached-call witness and
 closed-instance result publication remain mandatory for the forthcoming kernel.
+
+
+## Bounded concrete query prerequisite
+
+`NeedsDrop::concrete_bounded` preflights the cold query and immutable registry
+before consuming entries. `demand_concrete_bounded` uses the same iterative
+walker, with sparse state/work capacity checks before growth. Existing-key
+updates avoid map insertion, which may otherwise reserve before finding a key
+in a full table. `retained_bytes` reports owned logical record and payload
+capacity; temporary old/replacement payloads are conservatively charged before
+growth. Allocator headers/control bytes and canonical Store allocation remain
+outside this accounting boundary. Ordinary and symbolic APIs keep their existing
+behavior and record sizes: NeedsDrop 72 bytes and Scope 48 bytes.
+
+Each bounded attempt consumes work, including warm cache reads and over-budget
+attempts. Error cleanup charges its actual sparse-state scan; failed states stay
+failed. A pending opaque head requires a fresh query after readiness, and never
+publishes false. State/work preflight refusal preserves already completed answers
+without allocating an error entry for an unseen root.
+
+The focused debug batch under
+`obj/parallel/pa28/source-needs-drop/bounded-query-v5/` passes six new budget
+controls, five prior sparse controls and two existing ownership tests. Strict
+all-target/all-feature Clippy, format and the 1932-file audit pass. With a shared
+32-level DAG and root widths 8/32/128, cold traversal visits are 828/99/387,
+retained states 34/35/36, and logical retained bytes 6152 throughout. All values
+are identical with 0 versus 8192 unrelated Store entries. Each root's 128 warm
+queries consumes exactly 128 additional steps and no retained growth. The first
+root includes shared-DAG preparation; later roots reuse it.
+
+Earlier attempts remain evidence: an import/lint correction, format correction,
+and two private failures exposed full-map existing-key reservation and uncharged
+exhausted attempts. Both behavioral fixes are covered by the passing controls.
+This remains a private query prerequisite, without source intrinsic execution or
+actual Drop/Copy permission. Actual source role validation, exhaustive destructor
+registration (including completed-empty), fresh caller authority and final
+conformance validation remain required.
