@@ -119,6 +119,13 @@ sources stay under `obj/qualification/host-graph/`, and scoped cleanup removes
 host binaries and Cargo outputs. Python harness tests cover graph sharing,
 context/metadata isolation, failed publication and bounded work separately.
 
+The [source destruction and host build checkpoint](docs/source-destruction-editions-checkpoint.md)
+qualifies 3,270 maintainer tests, 8,382 text cases and the new host DAG executor.
+Its text sweep takes 19.14 seconds; optimized test compilation remains the main
+checkpoint cost. It retains passed integration results across five assertion-only
+layout corrections and reports the observed wall-time increases alongside the
+instruction, memory and scaling gates.
+
 The [source-trait checkpoint measurements](docs/source-traits-editions-checkpoint.md)
 separate observed build, execution and text-suite costs under this cadence.
 They are shared-machine observations, not a controlled harness speedup claim.
