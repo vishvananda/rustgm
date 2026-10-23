@@ -133,16 +133,17 @@ impl Engine {
                 .0
                 .environment,
         );
-        self.prove_body(
+        let checked = self.prove_body(
             report,
             facts,
             &concrete.body,
             &concrete.destruction,
-            &environment,
-            &concrete.contract,
+            super::ProofInput::code(&environment, &concrete.contract),
         )?;
         let index = self
             .publish_selected(facts, &concrete, source_value, result)
+            .map_err(|e| report.body_error(source, e))?;
+        self.retain_const_inputs(facts, index, &concrete.body, checked, None)
             .map_err(|e| report.body_error(source, e))?;
         facts.constant_work.associated_instances += 1;
         let target = source_value.map_or(Target::Associated { instance, result }, |source| {
@@ -245,7 +246,13 @@ impl Engine {
             &template.destruction,
             &mut self.promotions,
         )?;
-        self.prove(report, facts, &template, &contract)?;
+        self.prove(
+            report,
+            facts,
+            &template,
+            &contract,
+            super::ProofPurpose::Original,
+        )?;
         Self::associated_storage(
             report,
             facts,

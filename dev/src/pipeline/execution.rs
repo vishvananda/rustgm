@@ -13,6 +13,7 @@ mod layout_kernel;
 mod needs_drop_kernel;
 mod parent_children;
 mod parent_scope;
+mod reached_payments;
 mod selected;
 #[cfg(test)]
 #[path = "../../tests/invariants/execution_storage.rs"]
@@ -67,6 +68,27 @@ impl Executor for Proxy {
             .advance(report, facts, request)
     }
 }
+struct CheckedInput(Option<Arc<Contract>>);
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ProofPurpose {
+    Original,
+    Code,
+}
+#[derive(Clone, Copy)]
+struct ProofInput<'a> {
+    parameters: &'a Arc<Environment>,
+    contract: &'a Contract,
+    purpose: ProofPurpose,
+}
+impl<'a> ProofInput<'a> {
+    fn code(parameters: &'a Arc<Environment>, contract: &'a Contract) -> Self {
+        Self {
+            parameters,
+            contract,
+            purpose: ProofPurpose::Code,
+        }
+    }
+}
 #[derive(Default)]
 struct Session {
     state: Option<const_eval::State>,
@@ -77,6 +99,7 @@ type InitializerTemplates = HashMap<DefId, (Template, Contract)>;
 pub(super) struct Engine {
     imported: Option<Rc<body::transported_originals::ImportedOriginals>>,
     catalog: Catalog,
+    const_calls: Option<Box<const_eval::use_inputs::Inputs>>,
     values: values::Scratch,
     limits: Limits,
     suspended_slots: usize,
@@ -190,7 +213,7 @@ impl Engine {
         let mut session = self.take_session(request)?;
         loop {
             if let Some(requirement) = session.waiting {
-                if !self.prepare(report, facts, requirement, session.state.as_ref())? {
+                if !self.prepare(report, facts, requirement, session.state.as_mut())? {
                     return self.retain_session(facts, request, session, requirement);
                 }
                 session.waiting = None;
@@ -223,7 +246,11 @@ impl Engine {
                         facts.constant_work.peak_frames.max(work.peak_frames);
                     facts.constant_work.peak_slots =
                         facts.constant_work.peak_slots.max(work.peak_slots);
-                    facts.constant_work.code_bytes = self.catalog.bytes;
+                    facts.constant_work.code_bytes = self.catalog.bytes.saturating_add(
+                        self.const_calls
+                            .as_deref()
+                            .map_or(0, const_eval::use_inputs::Inputs::retained_bytes),
+                    );
 
                     self.completed.insert(request.clone(), value);
                     return Ok(Progress::Complete(value));
@@ -304,7 +331,7 @@ impl Engine {
         report: &Report,
         facts: &mut Declarations,
         requirement: Requirement,
-        state: Option<&const_eval::State>,
+        state: Option<&mut const_eval::State>,
     ) -> Result<bool, Error> {
         match requirement {
             Requirement::DiscriminantValue(variant) => values::Reader::new(facts)
@@ -312,7 +339,7 @@ impl Engine {
                 .map(|value| value.is_some())
                 .map_err(|e| Error::at(FileId(0), 0, e)),
             Requirement::FunctionBody(instance) => {
-                self.source_layout(report, facts, instance, state)
+                self.prepare_reached_function(report, facts, instance, state)
             }
             Requirement::AnonymousBody { instance, result } => {
                 if facts.patterns.pending_bodies.contains(&instance.source()) {
@@ -392,6 +419,14 @@ impl Engine {
             .map_err(|e| Error::at(FileId(0), 0, e))?;
         crate::sema::compiler_items::check_const_drop_glue(facts, instance)
             .map_err(|e| Error::at(FileId(0), 0, e))?;
+        self.function_body(report, facts, instance)
+    }
+    fn function_body(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        instance: crate::types::instance::Instance,
+    ) -> Result<bool, Error> {
         if self.cached_function(report, facts, instance)? {
             return Ok(true);
         }
@@ -419,32 +454,9 @@ impl Engine {
             .function(facts, &function)
             .map_err(|e| report.body_error(source, e))?
             .clone();
-        let inputs = Rc::clone(&self.inputs);
-        let stored = inputs.try_borrow().map_err(|_| {
-            report.body_error(source, "constant CFG lender is preparing another body")
-        })?;
-        if let Some(body) = stored.get(&BodyKey::Declaration(definition)) {
-            body::constants::eligibility(report, facts, body)?;
-            let mut needed = crate::types::destruction::NeedsDrop::new(
-                facts.destructors.implementations().iter().map(|i| i.item),
-            );
-            let destruction = body::drops::requirements(facts, body, &mut needed)
-                .map_err(|e| report.body_error(source, e))?;
-            let parameters = Arc::new(
-                facts
-                    .generics
-                    .parameter_environment(&facts.types, definition)
-                    .map_err(|e| report.body_error(source, e))?,
-            );
-            self.prove_body(report, facts, body, &destruction, &parameters, &input)?;
-            let index = self
-                .catalog
-                .insert(body)
-                .map_err(|e| report.body_error(source, e))?;
-            self.catalog.functions.insert(instance, index);
+        if self.lent_function(report, facts, function, instance, &input)? {
             return Ok(true);
         }
-        drop(stored);
         if let Some(templates) = self.runtime_templates.as_ref().map(Rc::clone)
             && let Some(&index) = self.runtime_template_indices.get(&definition)
         {
@@ -467,10 +479,15 @@ impl Engine {
             )?;
             template
         };
-        self.prove_defining_original(report, facts, &template, &input)?;
-        if facts.generics.has_parameters(definition)
-            || facts.opaques.owners.contains_key(&definition)
-        {
+        let specialize = facts.generics.has_parameters(definition)
+            || facts.opaques.owners.contains_key(&definition);
+        let purpose = if specialize {
+            ProofPurpose::Original
+        } else {
+            ProofPurpose::Code
+        };
+        let checked = self.prove_defining_original(report, facts, &template, &input, purpose)?;
+        if specialize {
             self.reserve_template(report, facts, definition, &template)?;
             self.specialize(report, facts, instance, &template, &input)?;
             self.originals.insert(definition, template);
@@ -479,11 +496,58 @@ impl Engine {
                 .catalog
                 .insert(&template.body)
                 .map_err(|e| report.body_error(source, e))?;
+            self.retain_const_inputs(facts, index, &template.body, checked, Some(instance))
+                .map_err(|e| report.body_error(source, e))?;
             self.catalog.functions.insert(instance, index);
             self.concrete
                 .insert(BodyKey::Declaration(definition), template.body);
         }
         Ok(true)
+    }
+    fn lent_function(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        function: crate::sema::model::Function,
+        instance: crate::types::instance::Instance,
+        input: &Contract,
+    ) -> Result<bool, Error> {
+        let definition = function.definition;
+        let source = function.body.unwrap_or(function.node);
+        let inputs = Rc::clone(&self.inputs);
+        let stored = inputs.try_borrow().map_err(|_| {
+            report.body_error(source, "constant CFG lender is preparing another body")
+        })?;
+        if let Some(body) = stored.get(&BodyKey::Declaration(definition)) {
+            body::constants::eligibility(report, facts, body)?;
+            let mut needed = crate::types::destruction::NeedsDrop::new(
+                facts.destructors.implementations().iter().map(|i| i.item),
+            );
+            let destruction = body::drops::requirements(facts, body, &mut needed)
+                .map_err(|e| report.body_error(source, e))?;
+            let parameters = Arc::new(
+                facts
+                    .generics
+                    .parameter_environment(&facts.types, definition)
+                    .map_err(|e| report.body_error(source, e))?,
+            );
+            let checked = self.prove_body(
+                report,
+                facts,
+                body,
+                &destruction,
+                ProofInput::code(&parameters, input),
+            )?;
+            let index = self
+                .catalog
+                .insert(body)
+                .map_err(|e| report.body_error(source, e))?;
+            self.retain_const_inputs(facts, index, body, checked, Some(instance))
+                .map_err(|e| report.body_error(source, e))?;
+            self.catalog.functions.insert(instance, index);
+            return Ok(true);
+        }
+        Ok(false)
     }
     fn cached_function(
         &self,
@@ -545,7 +609,13 @@ impl Engine {
                 &row.contract,
             )
             .map_err(|e| report.body_error(row.template.body.source, e))?;
-            self.prove(report, facts, &row.template, &row.contract)?;
+            self.prove(
+                report,
+                facts,
+                &row.template,
+                &row.contract,
+                ProofPurpose::Original,
+            )?;
         }
         let retained = facts
             .constant_work
@@ -643,17 +713,18 @@ impl Engine {
             &materialized.destruction,
             &mut self.promotions,
         )?;
-        self.prove_body(
+        let checked = self.prove_body(
             report,
             facts,
             &materialized.body,
             &materialized.destruction,
-            &template.environment,
-            &materialized.contract,
+            ProofInput::code(&template.environment, &materialized.contract),
         )?;
         let index = self
             .catalog
             .insert(&materialized.body)
+            .map_err(|e| report.body_error(source, e))?;
+        self.retain_const_inputs(facts, index, &materialized.body, checked, Some(instance))
             .map_err(|e| report.body_error(source, e))?;
         self.catalog.functions.insert(instance, index);
         Ok(())
@@ -664,14 +735,18 @@ impl Engine {
         facts: &mut Declarations,
         template: &Template,
         contract: &Contract,
-    ) -> Result<(), Error> {
+        purpose: ProofPurpose,
+    ) -> Result<CheckedInput, Error> {
         self.prove_body(
             report,
             facts,
             &template.body,
             &template.destruction,
-            &template.environment,
-            contract,
+            ProofInput {
+                parameters: &template.environment,
+                contract,
+                purpose,
+            },
         )
     }
     fn prove_body(
@@ -680,21 +755,34 @@ impl Engine {
         facts: &mut Declarations,
         body: &Body,
         destruction: &body::drops::Requirements,
-        parameters: &Arc<Environment>,
-        contract: &Contract,
-    ) -> Result<(), Error> {
-        let prepared;
-        let contract = if facts.source_bindings.is_some() {
-            let mut input = contract.clone();
-            body::copy_requirements::prepare(facts, body, &mut input)
-                .map_err(|e| report.body_error(body.source, e))?;
-            prepared = input;
-            &prepared
+        input: ProofInput<'_>,
+    ) -> Result<CheckedInput, Error> {
+        let mut prepared = if facts.source_bindings.is_some() {
+            Some(input.contract.clone())
         } else {
-            contract
+            None
         };
+        if let Some(contract) = prepared.as_mut() {
+            body::copy_requirements::prepare(facts, body, contract)
+                .map_err(|e| report.body_error(body.source, e))?;
+        }
+        let contract = prepared.as_ref().unwrap_or(input.contract);
         let regions = Self::source_regions(report, facts, body, contract)?;
-        self.prove_loans(report, facts, body, destruction, parameters, &regions)
+        self.prove_loans(report, facts, body, destruction, input.parameters, &regions)?;
+        let retained = if input.purpose == ProofPurpose::Code
+            && const_eval::use_inputs::Inputs::needs(facts, body)
+                .map_err(|e| report.body_error(body.source, e))?
+        {
+            Some(Arc::new(prepared.ok_or_else(|| {
+                report.body_error(
+                    body.source,
+                    "source const-call retention has no proved contract",
+                )
+            })?))
+        } else {
+            None
+        };
+        Ok(CheckedInput(retained))
     }
     fn source_regions(
         report: &Report,

@@ -1,0 +1,266 @@
+{
+  "profile": "Rust1.98/edition2024/x86_64-unknown-linux-gnu actual source Copy/Clone; independent-v1 frozen receipts reused by exact bytes",
+  "independent_provenance": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/independent-v1/provenance.json",
+  "independent_results": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/independent-v1/results.json",
+  "rows": [
+    {
+      "name": "repeated-reached-8",
+      "path": "pa31/tests/spec/source-const-payment/work/repeated-reached-8.rs",
+      "sha256": "e974c241595e13e6fe96553d2b32074264d1aef074efbabd23fbfdc1763a5970",
+      "rust_object": true,
+      "native": 7,
+      "axis": {
+        "reached_calls": 8,
+        "caller_definitions": 1,
+        "full_instances": 1,
+        "noise_definitions": 0
+      },
+      "expected_work": {
+        "fresh_payments": 8,
+        "requirement_rows": 1
+      },
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/repeated-reached-8.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "distinct-callers-8",
+      "path": "pa31/tests/spec/source-const-payment/work/distinct-callers-8.rs",
+      "sha256": "b8b6688a7c83a06d9bfea126ef8fc5a33231d7a9154a6700d75ce14e5a2300ce",
+      "rust_object": true,
+      "native": 7,
+      "axis": {
+        "outer_calls": 8,
+        "caller_definitions": 8,
+        "full_instances": 9,
+        "noise_definitions": 0
+      },
+      "expected_work": {
+        "fresh_payments": 16,
+        "requirement_rows": 9
+      },
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/distinct-callers-8.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "distinct-instances-8",
+      "path": "pa31/tests/spec/source-const-payment/work/distinct-instances-8.rs",
+      "sha256": "7b0c6d3e6cc1b54c547ad40c32951266caa1d705c7ea0d9d9a4abc2457be5c5c",
+      "rust_object": true,
+      "native": 7,
+      "axis": {
+        "reached_calls": 8,
+        "caller_definitions": 1,
+        "full_instances": 8,
+        "noise_definitions": 0
+      },
+      "expected_work": {
+        "fresh_payments": 8,
+        "requirement_rows": 8
+      },
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/distinct-instances-8.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "repeated-reached-32",
+      "path": "pa31/tests/spec/source-const-payment/work/repeated-reached-32.rs",
+      "sha256": "f0f8c888fa1fe1e61144fd99e4d1a6c178c658a366181150dca2f1fca5c2706d",
+      "rust_object": true,
+      "native": 7,
+      "axis": {
+        "reached_calls": 32,
+        "caller_definitions": 1,
+        "full_instances": 1,
+        "noise_definitions": 0
+      },
+      "expected_work": {
+        "fresh_payments": 32,
+        "requirement_rows": 1
+      },
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/repeated-reached-32.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "distinct-callers-32",
+      "path": "pa31/tests/spec/source-const-payment/work/distinct-callers-32.rs",
+      "sha256": "c1b3cc422f5c2c97e8c99e7206d92a8f8ce0fd8edcfad2819a36fdeb43454bc8",
+      "rust_object": true,
+      "native": 7,
+      "axis": {
+        "outer_calls": 32,
+        "caller_definitions": 32,
+        "full_instances": 33,
+        "noise_definitions": 0
+      },
+      "expected_work": {
+        "fresh_payments": 64,
+        "requirement_rows": 33
+      },
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/distinct-callers-32.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "distinct-instances-32",
+      "path": "pa31/tests/spec/source-const-payment/work/distinct-instances-32.rs",
+      "sha256": "71c2ddbf4a7d66f9752316f475276892e9eb4e7444f59df80d5758b39f2251d2",
+      "rust_object": true,
+      "native": 7,
+      "axis": {
+        "reached_calls": 32,
+        "caller_definitions": 1,
+        "full_instances": 32,
+        "noise_definitions": 0
+      },
+      "expected_work": {
+        "fresh_payments": 32,
+        "requirement_rows": 32
+      },
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/distinct-instances-32.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "repeated-reached-128",
+      "path": "pa31/tests/spec/source-const-payment/work/repeated-reached-128.rs",
+      "sha256": "f68739d0df3f06b77c3f54227f4125ab1ed5ef9c1c48a769bb4930908c7ef241",
+      "rust_object": true,
+      "native": 7,
+      "axis": {
+        "reached_calls": 128,
+        "caller_definitions": 1,
+        "full_instances": 1,
+        "noise_definitions": 0
+      },
+      "expected_work": {
+        "fresh_payments": 128,
+        "requirement_rows": 1
+      },
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/repeated-reached-128.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "distinct-callers-128",
+      "path": "pa31/tests/spec/source-const-payment/work/distinct-callers-128.rs",
+      "sha256": "5f2d7f6860fd9a901ab64047f381cc9f16eaee67aa9db06a88fdc967e64acbd1",
+      "rust_object": true,
+      "native": 7,
+      "axis": {
+        "outer_calls": 128,
+        "caller_definitions": 128,
+        "full_instances": 129,
+        "noise_definitions": 0
+      },
+      "expected_work": {
+        "fresh_payments": 256,
+        "requirement_rows": 129
+      },
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/distinct-callers-128.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "distinct-instances-128",
+      "path": "pa31/tests/spec/source-const-payment/work/distinct-instances-128.rs",
+      "sha256": "46a79dae31b66065a0d9d012b991a467fa94a4724cde9f78a89e00de951ad6eb",
+      "rust_object": true,
+      "native": 7,
+      "axis": {
+        "reached_calls": 128,
+        "caller_definitions": 1,
+        "full_instances": 128,
+        "noise_definitions": 0
+      },
+      "expected_work": {
+        "fresh_payments": 128,
+        "requirement_rows": 128
+      },
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/distinct-instances-128.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "unrelated-noise-0",
+      "path": "pa31/tests/spec/source-const-payment/work/unrelated-noise-0.rs",
+      "sha256": "e974c241595e13e6fe96553d2b32074264d1aef074efbabd23fbfdc1763a5970",
+      "rust_object": true,
+      "native": 7,
+      "axis": {
+        "reached_calls": 8,
+        "caller_definitions": 1,
+        "full_instances": 1,
+        "noise_definitions": 0
+      },
+      "expected_work": {
+        "fresh_payments": 8,
+        "requirement_rows": 1
+      },
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/unrelated-noise-0.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "unrelated-noise-128",
+      "path": "pa31/tests/spec/source-const-payment/work/unrelated-noise-128.rs",
+      "sha256": "0150b73903f487f1d3ad7163873589cd783cd7e77c35d41e3c2bd702a14894f1",
+      "rust_object": true,
+      "native": 7,
+      "axis": {
+        "reached_calls": 8,
+        "caller_definitions": 1,
+        "full_instances": 1,
+        "noise_definitions": 128
+      },
+      "expected_work": {
+        "fresh_payments": 8,
+        "requirement_rows": 1
+      },
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/unrelated-noise-128.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "generic-defining-conditional-paid",
+      "path": "pa31/tests/spec/source-const-payment/work/generic-defining-conditional-paid.rs",
+      "sha256": "ec91c1a734bd0b490297608f624b6732d11e88b07fe6f4e0798f39428ef7404d",
+      "rust_object": true,
+      "native": 7,
+      "axis": null,
+      "expected_work": {
+        "fresh_payments": 2,
+        "requirement_rows": 2
+      },
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/generic-defining-conditional-paid.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "generic-defining-conditional-runtime",
+      "path": "pa31/tests/spec/source-const-payment/work/generic-defining-conditional-runtime.rs",
+      "sha256": "d1abb702b06bd9edea67cbf5144f7438c029471313a79d8f3a5da2055145657b",
+      "rust_object": true,
+      "native": 7,
+      "axis": null,
+      "expected_work": null,
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/generic-defining-conditional-runtime.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    },
+    {
+      "name": "generic-defining-conditional-unpaid",
+      "path": "pa31/tests/spec/source-const-payment/work/generic-defining-conditional-unpaid.rs",
+      "sha256": "0ef8870345f257148368543b3a08dee1c2ddbf7fb414792035f91c217dbdcd98",
+      "rust_object": false,
+      "native": null,
+      "axis": null,
+      "expected_work": null,
+      "original_path": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v1/inputs/generic-defining-conditional-unpaid.rs",
+      "mode": "--emit-lowir",
+      "source_context": "actual minicore source provider, source_traits_v1 (native) / const_payment_work (private counter replay)"
+    }
+  ]
+}

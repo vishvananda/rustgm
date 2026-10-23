@@ -171,3 +171,7 @@ fn validate_source(facts: &Declarations, goal: Predicate, source: Source) -> Res
 #[cfg(test)]
 #[path = "../../../../../tests/invariants/sharing_sizing.rs"]
 mod sizing_tests;
+
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/effect_capabilities.rs"]
+mod const_capability_tests;

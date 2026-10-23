@@ -1,5 +1,5 @@
 //! Only fully proved original defining bodies may publish hidden storage heads.
-use super::{Contract, Declarations, Engine, Error, Report, Template, Templates};
+use super::{CheckedInput, Contract, Declarations, Engine, Error, Report, Template, Templates};
 use crate::{body::ir::Owner, pipeline::original_contexts::Original, types::ItemId};
 
 #[cfg(test)]
@@ -13,13 +13,14 @@ impl Engine {
         facts: &mut Declarations,
         template: &Template,
         contract: &Contract,
-    ) -> Result<(), Error> {
+        purpose: super::ProofPurpose,
+    ) -> Result<CheckedInput, Error> {
         let body = &template.body;
         let Owner::Function { definition, .. } = body.owner else {
             return Err(identity_error("defining proof is not a function"));
         };
         if !facts.opaques.owners.contains_key(&definition) {
-            return self.prove(report, facts, template, contract);
+            return self.prove(report, facts, template, contract, purpose);
         }
         Original::validate_parts(facts, body, contract).map_err(identity_error)?;
         let regions = Self::source_regions(report, facts, body, contract)?;
@@ -33,7 +34,8 @@ impl Engine {
         )?;
         facts
             .close_opaque_results(definition, &regions.hidden_regions)
-            .map_err(|e| report.body_error(body.source, e))
+            .map_err(|e| report.body_error(body.source, e))?;
+        Ok(CheckedInput(None))
     }
 }
 

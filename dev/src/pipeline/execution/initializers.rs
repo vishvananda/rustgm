@@ -40,7 +40,13 @@ impl Engine {
             &template.destruction,
             &mut self.promotions,
         )?;
-        self.prove(report, facts, &template, &contract)?;
+        let checked = self.prove(
+            report,
+            facts,
+            &template,
+            &contract,
+            super::ProofPurpose::Code,
+        )?;
         let additional = template
             .body
             .retained_bytes()
@@ -56,6 +62,8 @@ impl Engine {
         let index = self
             .catalog
             .insert(&template.body)
+            .map_err(|e| report.body_error(source, e))?;
+        self.retain_const_inputs(facts, index, &template.body, checked, None)
             .map_err(|e| report.body_error(source, e))?;
         if self
             .concrete

@@ -67,20 +67,7 @@ impl Prepared {
     }
 }
 fn signatures(body: &Body) -> Option<(TypeId, TypeId)> {
-    match body.owner {
-        super::ir::Owner::Function {
-            signature,
-            execution,
-            ..
-        }
-        | super::ir::Owner::Closure {
-            signature,
-            execution,
-            ..
-        } => Some((signature, execution.unwrap_or(signature))),
-        super::ir::Owner::ClosureAdapter { signature, .. } => Some((signature, signature)),
-        _ => None,
-    }
+    body.owner.signatures()
 }
 fn same_environment(a: Option<&Arc<Environment>>, b: Option<&Arc<Environment>>) -> bool {
     match (a, b) {

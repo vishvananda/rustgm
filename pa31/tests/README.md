@@ -48,3 +48,11 @@ Grouped `coercion_provider` tests qualify the bounded source-role family while
 retaining valid unsupported nominal/header sources as required positives. This
 is a prerequisite for runtime unsized cleanup, not cleanup completion. See
 [the source unsizing review](../../docs/pa31-source-unsizing.md).
+
+`spec/source-const-payment/` retains declared const-impl overlap/body legality and
+intrinsic-versus-ordinary-name controls. `work/` contains exact copies of the
+previously independently qualified reached-call, caller-definition, full-instance
+and unrelated-definition inputs. The grouped `provider_traits` source/native
+tests and private `reached_work` controls consume them; the Rust-positive
+conditional intrinsic stays explicitly unsupported. No references or PA31
+activation are implied. See [the per-use payment review](../../docs/pa31-reached-const-payment.md).

@@ -383,6 +383,45 @@ pub enum Owner {
         kind: InitializerKind,
     },
 }
+impl Owner {
+    pub(crate) const fn signatures(self) -> Option<(TypeId, TypeId)> {
+        match self {
+            Self::Function {
+                signature,
+                execution,
+                ..
+            }
+            | Self::Closure {
+                signature,
+                execution,
+                ..
+            } => Some((
+                signature,
+                match execution {
+                    Some(owned) => owned,
+                    None => signature,
+                },
+            )),
+            Self::ClosureAdapter { signature, .. } => Some((signature, signature)),
+            _ => None,
+        }
+    }
+    pub(crate) const fn key(self, source: BodyOrigin) -> BodyKey {
+        match self {
+            Self::ClosureAdapter { adapter, .. } => BodyKey::ClosureAdapter(adapter),
+            Self::Function { definition, .. } | Self::Initializer { definition, .. } => {
+                BodyKey::Declaration(definition)
+            }
+            Self::AnonymousConstant => match source {
+                BodyOrigin::Source(source) => BodyKey::Anonymous(source),
+                BodyOrigin::Imported(body) => BodyKey::Imported(body.id()),
+            },
+            Self::AnonymousInstance(instance) => BodyKey::AnonymousInstance(instance),
+            Self::InitializerInstance { instance, .. } => BodyKey::InitializerInstance(instance),
+            Self::Closure { identity, .. } => BodyKey::Closure(identity),
+        }
+    }
+}
 /// Declaration identity is separate from shared diagnostic provenance.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum BodyKey {
@@ -544,19 +583,7 @@ impl Body {
     }
     #[must_use]
     pub const fn key(&self) -> BodyKey {
-        match self.owner {
-            Owner::ClosureAdapter { adapter, .. } => BodyKey::ClosureAdapter(adapter),
-            Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
-                BodyKey::Declaration(definition)
-            }
-            Owner::AnonymousConstant => match self.source {
-                BodyOrigin::Source(source) => BodyKey::Anonymous(source),
-                BodyOrigin::Imported(body) => BodyKey::Imported(body.id()),
-            },
-            Owner::AnonymousInstance(instance) => BodyKey::AnonymousInstance(instance),
-            Owner::InitializerInstance { instance, .. } => BodyKey::InitializerInstance(instance),
-            Owner::Closure { identity, .. } => BodyKey::Closure(identity),
-        }
+        self.owner.key(self.source)
     }
     pub(crate) fn callable_targets(
         &self,

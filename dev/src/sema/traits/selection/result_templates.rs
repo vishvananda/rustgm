@@ -152,8 +152,13 @@ impl Candidate {
             .equalities
             .sort_unstable_by_key(|&(free, original)| (free.0, original.0));
         let application = application(facts, probe.context(), root)?;
-        let instance =
-            instantiation::instantiate(facts, probe.context(), owner, proof.regions.end)?;
+        let instance = instantiation::instantiate(
+            facts,
+            probe.context(),
+            owner,
+            proof.regions.end,
+            application.predicate.constness(),
+        )?;
         proof.regions.end +=
             u32::try_from(instance.regions.len()).map_err(|_| "impl region count overflow")?;
         let compatible =

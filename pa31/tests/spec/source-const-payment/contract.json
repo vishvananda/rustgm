@@ -1,0 +1,63 @@
+{
+  "status": "planned PA31 development fixtures; no stage activation or text references",
+  "source_mode": "actual minicore@source_traits_v1 declarations, edition2024, x86_64-unknown-linux-gnu",
+  "independent_rustc": "1.98.0",
+  "independent_rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "rows": [
+    {
+      "name": "overlapping-effects",
+      "path": "overlapping-effects.rs",
+      "sha256": "6f7a13c4e8bcf5c103521ce99a457bb866f1e1170d70937eb97229e42a929f83",
+      "mode": "--emit-lowir",
+      "rust_object": false,
+      "rust_native": null,
+      "candidate": "reject",
+      "native_reason": "Expected source rejection.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v2/independent-legality-v1"
+    },
+    {
+      "name": "unused-invalid-const-override",
+      "path": "unused-invalid-const-override.rs",
+      "sha256": "59383203b0c5939fcd98ca574fc9ff6df9d16446bcf244481e5747679c6704fc",
+      "mode": "--emit-lowir",
+      "rust_object": false,
+      "rust_native": null,
+      "candidate": "reject",
+      "native_reason": "Expected source rejection.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v2/independent-legality-v1"
+    },
+    {
+      "name": "unused-valid-const-override",
+      "path": "unused-valid-const-override.rs",
+      "sha256": "87674e85817e1432a9ecd7a1389795ac5652dd46aa69bf65b6767ba140d2c294",
+      "mode": "--emit-lowir",
+      "rust_object": true,
+      "rust_native": 7,
+      "candidate": "accept",
+      "native_reason": "C observer checks answer().",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v2/independent-legality-v1"
+    },
+    {
+      "name": "conditional-intrinsic-fallback",
+      "path": "conditional-intrinsic-fallback.rs",
+      "sha256": "53a60bf0d7a39a4e3a52561a5618cf1bd1be6b04939d851cb104a590b6ded909",
+      "mode": "--emit-lowir",
+      "rust_object": true,
+      "rust_native": 1,
+      "candidate": "required-unsupported",
+      "native_reason": "Required unsupported intrinsic use; its original Rust value differs from placeholder.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v2/independent-intrinsic-v1"
+    },
+    {
+      "name": "conditional-ordinary-lookalike",
+      "path": "conditional-ordinary-lookalike.rs",
+      "sha256": "06d9030a01f7d1d683c10b7ec9679b64e7a7c756403e3d6d64d6320f060ed947",
+      "mode": "--emit-lowir",
+      "rust_object": true,
+      "rust_native": 0,
+      "candidate": "accept",
+      "native_reason": "C observer checks answer().",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/reached-const-payment-v2/independent-intrinsic-v1"
+    }
+  ]
+}

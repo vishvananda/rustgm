@@ -78,6 +78,23 @@ pub(super) fn checked_call(
     target: Instance,
     contract: (crate::resolve::model::DefId, Primitive),
 ) -> Result<(), &'static str> {
+    checked_direct_call(facts, body, frame, position, target, contract)?;
+    facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source intrinsic catalog disappeared")?
+        .check_const_call(contract.0)
+}
+
+/// Structural equality is data validation; callers must separately establish permission.
+pub(super) fn checked_direct_call(
+    facts: &Declarations,
+    body: &Code,
+    frame: &Frame,
+    position: u32,
+    target: Instance,
+    contract: (crate::resolve::model::DefId, Primitive),
+) -> Result<(), &'static str> {
     let block = body
         .blocks
         .get(frame.block.0 as usize)
@@ -128,11 +145,6 @@ pub(super) fn checked_call(
     {
         return Err("source intrinsic call differs from its checked const contract");
     }
-    facts
-        .source_bindings
-        .as_deref()
-        .ok_or("source intrinsic catalog disappeared")?
-        .check_const_call(contract.0)?;
     Ok(())
 }
 

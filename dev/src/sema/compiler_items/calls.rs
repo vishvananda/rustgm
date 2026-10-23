@@ -111,3 +111,11 @@ fn declared_effect(facts: &mut Declarations, definition: DefId) -> Result<Effect
 #[cfg(test)]
 #[path = "../../../tests/invariants/reached_effects.rs"]
 mod tests;
+
+#[cfg(test)]
+pub(super) fn declared_effect_for_test(
+    facts: &mut Declarations,
+    definition: DefId,
+) -> Result<Effect, &'static str> {
+    declared_effect(facts, definition)
+}

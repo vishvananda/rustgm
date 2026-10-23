@@ -105,9 +105,7 @@ fn source_const_call_gate_rejects_cold_and_warm_invalid_execution_attempts() -> 
             if conditional {
                 let error = result.err().ok_or("unpaid const execution accepted")?;
                 assert!(
-                    error
-                        .message
-                        .contains("conditional const-call debt payment is not implemented"),
+                    error.message.contains("missing demanded constant body"),
                     "warm={warm}: {}",
                     error.message
                 );

@@ -133,7 +133,8 @@ impl Trial {
             .initialize_predicate(&facts.types, &mut frame.inputs.context, &frame.goal)
             .map_err(inference)?;
         let first = frame.available_region().max(floor);
-        let instance = instantiation::instantiate(facts, &mut inputs.context, owner, first)?;
+        let instance =
+            instantiation::instantiate(facts, &mut inputs.context, owner, first, goal.constness())?;
         let end = first
             + u32::try_from(instance.regions.len()).map_err(|_| "impl region count overflow")?;
         let pending = instance

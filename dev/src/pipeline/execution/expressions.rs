@@ -57,7 +57,7 @@ impl Engine {
             self.roots.insert(target, index);
             return Ok(index);
         }
-        let templates = self.checked_expression(report, facts, source, result)?;
+        let (templates, checked) = self.checked_expression(report, facts, source, result)?;
         let retain = facts
             .inline_constants
             .as_deref()
@@ -81,6 +81,8 @@ impl Engine {
         let index = self
             .catalog
             .insert(&templates.bodies[0].body)
+            .map_err(|e| report.body_error(source, e))?;
+        self.retain_const_inputs(facts, index, &templates.bodies[0].body, checked, None)
             .map_err(|e| report.body_error(source, e))?;
         if retain {
             let template = templates
@@ -109,7 +111,7 @@ impl Engine {
         facts: &mut Declarations,
         source: NodeKey,
         result: TypeId,
-    ) -> Result<Templates, Error> {
+    ) -> Result<(Templates, super::CheckedInput), Error> {
         let environment = Arc::new(
             Environment::new(&facts.types, &[]).map_err(|e| report.body_error(source, e))?,
         );
@@ -139,8 +141,14 @@ impl Engine {
             environment,
         };
         let templates = Templates::source(vec![template]);
-        self.prove(report, facts, &templates.bodies[0], &contract)?;
-        Ok(templates)
+        let checked = self.prove(
+            report,
+            facts,
+            &templates.bodies[0],
+            &contract,
+            super::ProofPurpose::Code,
+        )?;
+        Ok((templates, checked))
     }
 
     fn lent_expression(
@@ -179,10 +187,18 @@ impl Engine {
         let environment = Arc::new(
             Environment::new(&facts.types, &[]).map_err(|e| report.body_error(source, e))?,
         );
-        self.prove_body(report, facts, body, &destruction, &environment, &contract)?;
+        let checked = self.prove_body(
+            report,
+            facts,
+            body,
+            &destruction,
+            super::ProofInput::code(&environment, &contract),
+        )?;
         let index = self
             .catalog
             .insert(body)
+            .map_err(|e| report.body_error(source, e))?;
+        self.retain_const_inputs(facts, index, body, checked, None)
             .map_err(|e| report.body_error(source, e))?;
         Ok(Some(index))
     }

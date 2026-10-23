@@ -66,13 +66,12 @@ impl Engine {
             &mut self.promotions,
         )?;
         let environment = std::sync::Arc::clone(&self.anonymous[&source].0.environment);
-        self.prove_body(
+        let checked = self.prove_body(
             report,
             facts,
             &concrete.body,
             &concrete.destruction,
-            &environment,
-            &concrete.contract,
+            super::ProofInput::code(&environment, &concrete.contract),
         )?;
         let results = if let crate::sema::inline_constants::Context::SourceInitializer(witness) =
             instance.enclosing()
@@ -90,6 +89,8 @@ impl Engine {
         let index = self
             .catalog
             .anonymous_result(&concrete.body, result, &results)
+            .map_err(|e| report.body_error(source, e))?;
+        self.retain_const_inputs(facts, index, &concrete.body, checked, None)
             .map_err(|e| report.body_error(source, e))?;
         facts.constant_work.anonymous_instances += 1;
         self.roots
@@ -125,7 +126,13 @@ impl Engine {
             );
         }
         if contract.output.is_none() {
-            self.prove(report, facts, &template, &contract)?;
+            self.prove(
+                report,
+                facts,
+                &template,
+                &contract,
+                super::ProofPurpose::Original,
+            )?;
         }
         Self::reserve_anonymous(report, facts, &template, &contract)?;
         facts.constant_work.anonymous_templates += 1;

@@ -20,6 +20,14 @@ use crate::{
 pub(in crate::sema::declarations) use validation::impl_contract_obligations;
 
 impl Checker<'_> {
+    pub(in crate::sema::declarations) fn const_impl_member(&self, definition: DefId) -> bool {
+        self.facts
+            .associated
+            .owner(definition)
+            .and_then(|owner| self.facts.associated.get(owner))
+            .is_some_and(|owner| matches!(owner.kind, OwnerKind::Impl { constant: true, .. }))
+    }
+
     pub(in crate::sema::declarations) fn prepare_trait_implementations(
         &mut self,
         steps: &mut usize,
@@ -171,7 +179,14 @@ impl Checker<'_> {
         let (path, definition) = self.resolved_impl_trait_path(path)?;
         let identity = self.impl_trait_identity(definition);
         let bound = match identity {
-            Identity::User(_) => Bound::Trait(self.trait_path(path, definition, ty, context)?),
+            Identity::User(_) => Bound::trait_application(
+                self.trait_path(path, definition, ty, context)?,
+                if matches!(owner.kind, OwnerKind::Impl { constant: true, .. }) {
+                    crate::support::constness::Constness::Const
+                } else {
+                    crate::support::constness::Constness::Ordinary
+                },
+            ),
             Identity::Auto(marker) => {
                 if !matches!(self.facts.types.kind(ty), Some(crate::types::Kind::Adt(..))) {
                     return Err(self.error(

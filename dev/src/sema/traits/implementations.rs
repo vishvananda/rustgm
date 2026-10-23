@@ -163,7 +163,8 @@ impl Implementations {
                     .contains_parameters(store)
                     .map_err(|_| Error::InvalidIdentity)? =>
             {
-                let (shape, work) = store.shape_key(value).map_err(|_| Error::InvalidIdentity)?;
+                let (shape, work) =
+                    candidate_shape(store, value).map_err(|_| Error::InvalidIdentity)?;
                 context.account_work(work)?;
                 Some(shape)
             }
@@ -332,7 +333,7 @@ impl Implementations {
         let shape = if value.predicate.contains_parameters(store)? {
             None
         } else {
-            Some(store.shape_key(value.predicate)?.0)
+            Some(candidate_shape(store, value.predicate)?.0)
         };
         let (first, second, third) = if let Some(shape) = shape {
             (
@@ -503,4 +504,16 @@ fn pending_subject(
         )))),
         Err(error) => Err(error),
     }
+}
+
+/// Coarse input buckets do not authorize a trait use. Effects remain exact in
+/// canonical headers, trial views, evidence and every proof/memo key.
+fn candidate_shape(
+    store: &mut Store,
+    mut predicate: Predicate,
+) -> Result<(ShapeKey, usize), &'static str> {
+    if let Some((application, _)) = predicate.bound.trait_parts() {
+        predicate.bound = crate::types::parameters::predicates::Bound::Trait(application);
+    }
+    store.shape_key(predicate)
 }

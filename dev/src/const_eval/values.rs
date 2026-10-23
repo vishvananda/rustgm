@@ -294,7 +294,23 @@ impl Machine<'_, '_> {
                             "non-const calls are not allowed during constant execution".into()
                         );
                     }
+                    crate::sema::compiler_items::check_const_drop_glue(
+                        self.evaluator.facts(),
+                        target,
+                    )?;
                     if let Some(catalog) = self.evaluator.facts().source_bindings.as_deref() {
+                        if catalog.requires_const_payment(definition)? {
+                            if let Some(index) = self.consume_const_call(&body, frame, target)? {
+                                return Ok(Some((index, arguments, id)));
+                            }
+                            self.waiting = Some(super::Requirement::FunctionBody(target));
+                            return Ok(None);
+                        }
+                        if self.paid_call.is_some() {
+                            return Err(
+                                "source const payment changed its declaration effect".into()
+                            );
+                        }
                         catalog.check_const_call(definition)?;
                     }
                     match self.source_intrinsic_call(&body, frame, target)? {

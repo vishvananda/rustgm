@@ -15,6 +15,8 @@ use std::path::Path;
 mod borrowed_destructors;
 #[path = "provider_traits/cases.rs"]
 mod cases;
+#[path = "provider_traits/const_contexts.rs"]
+mod const_contexts;
 #[path = "provider_traits/destructibility.rs"]
 mod destructibility;
 #[path = "provider_traits/forbidden_cleanup.rs"]
@@ -185,20 +187,12 @@ fn source_conditional_calls_preserve_runtime_and_const_opposites() -> TestResult
     ] {
         assert!(lower(source).is_err(), "{source}");
     }
-    for source in [
-        cases::UNUSED_CONDITIONAL_CONST_UNPAID,
-        cases::UNUSED_CONDITIONAL_CONST_PAID,
-    ] {
-        let report = report(source)?;
-        let error = rustgm::pipeline::analyze_source(&report)
-            .err()
-            .ok_or("unsupported const payment accepted")?
-            .to_string();
-        assert!(
-            error.contains("conditional const-call debt payment is not implemented")
-                || error.contains("trait obligation"),
-            "{error}"
-        );
-    }
+    lower(cases::UNUSED_CONDITIONAL_CONST_PAID)?;
+    let report = report(cases::UNUSED_CONDITIONAL_CONST_UNPAID)?;
+    assert!(
+        rustgm::pipeline::analyze_source(&report).is_err(),
+        "unpaid source const clause accepted"
+    );
+
     Ok(())
 }

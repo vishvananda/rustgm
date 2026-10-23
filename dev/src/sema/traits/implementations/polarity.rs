@@ -44,7 +44,10 @@ impl Implementations {
         owner: Owner,
         value: Implementation,
     ) -> Result<(), &'static str> {
-        let OwnerKind::Impl { negative, .. } = owner.kind else {
+        let OwnerKind::Impl {
+            negative, constant, ..
+        } = owner.kind
+        else {
             return Err("source implementation requires an actual impl owner");
         };
         if associated
@@ -57,6 +60,7 @@ impl Implementations {
         {
             return Err("source implementation changed its retained owner");
         }
+        check_effect(value.predicate, constant)?;
         let status = if negative {
             Status::NegativeHeader
         } else {
@@ -78,6 +82,9 @@ impl Implementations {
         {
             return Err("positive factory requires a registered source-free schema");
         }
+        // Existing registered factories carry ordinary contracts only. A source
+        // const owner cannot be reconstructed from a source-free schema.
+        check_effect(value.predicate, false)?;
         self.prepare_with_status(store, identity.into(), value, Status::PositiveHeader)
     }
 
@@ -97,20 +104,27 @@ impl Implementations {
             .owner(definition)
             .and_then(|id| associated.get(id))
         {
-            let OwnerKind::Impl { negative, .. } = owner.kind else {
+            let OwnerKind::Impl {
+                negative, constant, ..
+            } = owner.kind
+            else {
                 return Err("implementation polarity belongs to a non-impl owner");
             };
+            check_effect(entry.value.predicate, constant)?;
             if owner.self_definition != definition
                 || owner.source != entry.value.source
                 || negative != entry.status.negative()
             {
                 return Err("implementation polarity disagrees with its source owner");
             }
-        } else if entry.status.negative()
-            || associated.declaration_owner(definition) != Some(definition)
-            || associated.schema(definition).is_none()
-        {
-            return Err("implementation polarity has no registered source or factory owner");
+        } else {
+            check_effect(entry.value.predicate, false)?;
+            if entry.status.negative()
+                || associated.declaration_owner(definition) != Some(definition)
+                || associated.schema(definition).is_none()
+            {
+                return Err("implementation polarity has no registered source or factory owner");
+            }
         }
         Ok(if entry.status.negative() {
             Polarity::Negative
@@ -118,4 +132,25 @@ impl Implementations {
             Polarity::Positive
         })
     }
+}
+
+fn check_effect(
+    predicate: crate::types::parameters::predicates::Predicate,
+    constant: bool,
+) -> Result<(), &'static str> {
+    use crate::support::constness::Constness;
+    let expected = if constant {
+        Constness::Const
+    } else {
+        Constness::Ordinary
+    };
+    if predicate
+        .bound
+        .trait_parts()
+        .is_some_and(|(_, effect)| effect != expected)
+        || (constant && predicate.bound.trait_parts().is_none())
+    {
+        return Err("implementation effect disagrees with its actual source owner");
+    }
+    Ok(())
 }

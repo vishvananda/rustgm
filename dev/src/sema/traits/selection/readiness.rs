@@ -74,7 +74,13 @@ pub(in crate::sema) fn requires_resolved_inputs(
         .context()
         .projection_application(&facts.types, input)
         .map_err(inference)?;
-    let instance = instantiation::instantiate(facts, probe.context(), *owner, caller.first_region)?;
+    let instance = instantiation::instantiate(
+        facts,
+        probe.context(),
+        *owner,
+        caller.first_region,
+        trial.predicate.constness(),
+    )?;
     probe
         .context()
         .account_work(instance.goals.len())

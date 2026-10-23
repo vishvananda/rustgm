@@ -1,5 +1,6 @@
 //! Actual source compiler declarations remain distinct from bootstrap identities.
 mod calls;
+pub(crate) mod const_payments;
 mod copying;
 mod explicit_cleanup;
 mod glue_calls;

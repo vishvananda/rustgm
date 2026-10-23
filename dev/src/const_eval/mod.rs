@@ -5,6 +5,9 @@ mod executed_calls;
 pub(crate) mod lease_codes;
 mod memory;
 mod offsets;
+mod use_calls;
+pub(crate) mod use_inputs;
+pub(crate) use use_calls::Reached as ReachedConstCall;
 mod place_cache;
 mod raw_reads;
 mod reached_drop;
@@ -91,11 +94,13 @@ pub struct Machine<'a, 'b> {
         crate::sema::inline_constants::InlineInstance,
         crate::types::TypeId,
     )>,
+    paid_call: Option<Box<use_calls::Continuation>>,
     waiting: Option<Requirement>,
     read_operation: Option<ReadOperation>,
     context: EvaluationContext,
 }
 pub(crate) struct State {
+    paid_call: Option<Box<use_calls::Continuation>>,
     frames: Vec<Frame>,
     memory: memory::Memory,
     work: Work,
@@ -110,7 +115,11 @@ pub(crate) struct State {
 }
 impl State {
     pub(crate) fn retained_slots(&self) -> usize {
-        self.slots.saturating_add(self.memory.retained_cells())
+        self.slots
+            .saturating_add(self.memory.retained_cells())
+            .saturating_add(self.paid_call.as_ref().map_or(0, |_| {
+                size_of::<use_calls::Continuation>().div_ceil(size_of::<Constant>())
+            }))
     }
 }
 impl<'a, 'b> Machine<'a, 'b> {
@@ -155,6 +164,7 @@ impl<'a, 'b> Machine<'a, 'b> {
             active_associated: HashSet::default(),
             active_inline: HashSet::default(),
             active_anonymous: HashSet::default(),
+            paid_call: None,
             waiting: None,
             read_operation: None,
             context: EvaluationContext::Constant,
@@ -197,6 +207,7 @@ impl<'a, 'b> Machine<'a, 'b> {
         }
     }
     pub(crate) fn restore(&mut self, state: State) {
+        self.paid_call = state.paid_call;
         self.frames = state.frames;
         self.memory = state.memory;
         self.work = state.work;
@@ -208,6 +219,7 @@ impl<'a, 'b> Machine<'a, 'b> {
     }
     pub(crate) fn suspend(self) -> (State, crate::sema::values::Scratch) {
         let state = State {
+            paid_call: self.paid_call,
             frames: self.frames,
             memory: self.memory,
             work: self.work,
@@ -292,10 +304,13 @@ impl<'a, 'b> Machine<'a, 'b> {
             .checked_add(slots)
             .filter(|n| n.saturating_add(self.memory.retained_cells()) <= self.limits.slots)
             .ok_or(Failure::Fault("constant execution storage limit exceeded"))?;
-        self.work.peak_slots = self
-            .work
-            .peak_slots
-            .max(self.slots.saturating_add(self.memory.retained_cells()));
+        self.work.peak_slots = self.work.peak_slots.max(
+            self.slots
+                .saturating_add(self.memory.retained_cells())
+                .saturating_add(self.paid_call.as_ref().map_or(0, |_| {
+                    size_of::<use_calls::Continuation>().div_ceil(size_of::<Constant>())
+                })),
+        );
         self.charge(slots)?;
         let first = body
             .blocks
@@ -348,6 +363,8 @@ impl<'a, 'b> Machine<'a, 'b> {
                 return Err((0, "missing constant execution frame".into()));
             };
             let index = frame.body;
+            self.validate_const_resume(&frame)
+                .map_err(|e| (index, e.into()))?;
             self.context = frame.context;
             self.read_operation = Some(ReadOperation {
                 frame: frame.instance,
@@ -509,4 +526,9 @@ impl<'a, 'b> Machine<'a, 'b> {
         }
         Ok(None)
     }
+}
+
+#[cfg(test)]
+pub(crate) fn const_continuation_size() -> usize {
+    size_of::<use_calls::Continuation>()
 }

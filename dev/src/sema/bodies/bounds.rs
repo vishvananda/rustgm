@@ -422,16 +422,13 @@ impl Checker<'_> {
         // Keep declaration clauses intact and retain the first clause's own binder.
         let mut quantified = crate::support::hash::HashSet::default();
         for predicate in predicates {
-            let clause = if self.runtime_callee_context() {
-                crate::sema::traits::effects::in_context(
-                    &mut self.facts.types,
-                    predicate.value,
-                    crate::support::constness::Constness::Ordinary,
-                )
-                .map_err(|e| self.error(node, e))?
-            } else {
-                predicate.value
-            };
+            let effect = self.callee_use_effect();
+            let clause = crate::sema::traits::effects::in_context(
+                &mut self.facts.types,
+                predicate.value,
+                effect,
+            )
+            .map_err(|e| self.error(node, e))?;
             if let crate::types::parameters::clauses::Clause::ForAll(id) = clause {
                 let (key, work) = self
                     .facts
@@ -456,6 +453,25 @@ impl Checker<'_> {
         }
         inference.recycle(&mut self.state.call_types.instantiations);
         Ok(())
+    }
+
+    fn callee_use_effect(&self) -> crate::support::constness::Constness {
+        use crate::support::constness::Constness;
+        if self.runtime_callee_context() {
+            return Constness::Ordinary;
+        }
+        // Only this actual closed initializer has unconditional const demand.
+        // Defining generic const bodies and inline children retain Conditional.
+        if let super::readiness::Completion::Initializer(index) = self.state.completion
+            && !self.state.in_function
+            && self.state.body_binders == 0
+            && let Some(initializer) = self.facts.initializers.get(index)
+            && initializer.value == self.state.body
+            && !self.facts.generics.has_parameters(initializer.definition)
+        {
+            return Constness::Const;
+        }
+        Constness::Conditional
     }
 
     fn runtime_callee_context(&self) -> bool {

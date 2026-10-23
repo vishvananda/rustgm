@@ -27,14 +27,9 @@ pub(super) fn instantiate(
     context: &mut Context,
     owner: DefId,
     first: u32,
+    effect: Option<crate::support::constness::Constness>,
 ) -> Result<Instance, String> {
-    let predicate = facts
-        .generics
-        .implementations
-        .as_ref()
-        .and_then(|registry| registry.header(owner))
-        .ok_or("missing selected impl header")?
-        .predicate;
+    let predicate = capability(facts, owner, effect)?;
     let schema = facts
         .associated
         .schema(owner)
@@ -86,7 +81,12 @@ pub(super) fn instantiate(
     for predicate in
         crate::sema::declaration_inputs::declared(&facts.generics, facts.crates.as_deref(), owner)?
     {
-        match predicate.value {
+        let value = crate::sema::traits::effects::in_context(
+            &mut facts.types,
+            predicate.value,
+            effect.unwrap_or(crate::support::constness::Constness::Ordinary),
+        )?;
+        match value {
             Clause::Predicate(predicate) => predicates.push(predicate),
             clause @ Clause::ForAll(_) => {
                 let clause = fold.clause(&mut facts.types, clause)?;
@@ -123,6 +123,33 @@ pub(super) fn instantiate(
         regions,
         outlives,
     })
+}
+
+fn capability(
+    facts: &Declarations,
+    owner: DefId,
+    effect: Option<crate::support::constness::Constness>,
+) -> Result<Predicate, String> {
+    let registry = facts
+        .generics
+        .implementations
+        .as_ref()
+        .ok_or("missing selected impl registry")?;
+    registry.polarity(&facts.associated, owner)?;
+    let mut predicate = registry
+        .header(owner)
+        .ok_or("missing selected impl header")?
+        .predicate;
+    // A checked actual const impl is a capability, not a weaker stored header.
+    // Only this candidate view adopts the requested use effect. Ordinary impls
+    // retain Ordinary and cannot match a Const or Conditional goal.
+    if let Some((application, crate::support::constness::Constness::Const)) =
+        predicate.bound.trait_parts()
+        && let Some(effect) = effect
+    {
+        predicate.bound = Bound::trait_application(application, effect);
+    }
+    Ok(predicate)
 }
 
 impl Instance {

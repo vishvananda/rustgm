@@ -45,49 +45,17 @@ fn source_copy_clone_and_function_item_native_answers() -> TestResult {
         ("clone", CLONE_EXECUTION, 11),
         ("callable", CALL_EXECUTION, 23),
         (
+            "paid-unused-conditional",
+            super::cases::UNUSED_CONDITIONAL_CONST_PAID,
+            7,
+        ),
+        (
             "unused-conditional-runtime",
             super::cases::UNUSED_CONDITIONAL_RUNTIME,
             7,
         ),
     ] {
-        let program = lower(source)?;
-        let ir = folder.join(format!("{name}.lowir"));
-        let object = folder.join(format!("{name}.o"));
-        let binary = folder.join(format!("{name}.native"));
-        let client = folder.join(format!("{name}.c"));
-        let mut text = Vec::new();
-        rustgm::lowir::writer::write(&program, &mut text)?;
-        std::fs::write(&ir, text)?;
-        std::fs::write(
-            &client,
-            format!(
-                "extern unsigned char answer(void);int main(void){{return answer()!={expected};}}\n"
-            ),
-        )?;
-        run(
-            &folder,
-            &format!("{name}-backend"),
-            Command::new("python3")
-                .arg(root.join("scripts/backend.py"))
-                .arg("--emit-object")
-                .arg(&ir)
-                .arg("-o")
-                .arg(&object),
-        )?;
-        run(
-            &folder,
-            &format!("{name}-link"),
-            Command::new("cc")
-                .arg(&client)
-                .arg(&object)
-                .arg("-o")
-                .arg(&binary),
-        )?;
-        run(
-            &folder,
-            &format!("{name}-execute"),
-            &mut Command::new(binary),
-        )?;
+        execute(&folder, name, source, expected)?;
     }
     Ok(())
 }
@@ -272,6 +240,120 @@ fn original_full_typed_source_sizing_depths_keep_native_seven() -> TestResult {
             let name = format!("typed-depth-{depth}-noise-{noise}");
             native_observe_fixture(&name, &format!("formation/{name}.rs"), 7)?;
         }
+    }
+    Ok(())
+}
+
+fn execute(folder: &Path, name: &str, source: &str, expected: u8) -> TestResult {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let program = lower(source)?;
+    let ir = folder.join(format!("{name}.lowir"));
+    let object = folder.join(format!("{name}.o"));
+    let binary = folder.join(format!("{name}.native"));
+    let client = folder.join(format!("{name}.c"));
+    let mut text = Vec::new();
+    rustgm::lowir::writer::write(&program, &mut text)?;
+    std::fs::write(&ir, text)?;
+    std::fs::write(
+        &client,
+        format!(
+            "extern unsigned char answer(void);int main(void){{return answer()!={expected};}}\n"
+        ),
+    )?;
+    run(
+        folder,
+        &format!("{name}-backend"),
+        Command::new("python3")
+            .arg(root.join("scripts/backend.py"))
+            .arg("--emit-object")
+            .arg(&ir)
+            .arg("-o")
+            .arg(&object),
+    )?;
+    run(
+        folder,
+        &format!("{name}-link"),
+        Command::new("cc")
+            .arg(&client)
+            .arg(&object)
+            .arg("-o")
+            .arg(&binary),
+    )?;
+    run(
+        folder,
+        &format!("{name}-execute"),
+        &mut Command::new(&binary),
+    )?;
+    run(
+        folder,
+        &format!("{name}-hashes"),
+        Command::new("sha256sum").arg(&object).arg(&binary),
+    )?;
+    std::fs::remove_file(object)?;
+    std::fs::remove_file(binary)?;
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn reached_conditional_native_work_preserves_required_answers() -> TestResult {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let fixtures = root.join("pa31/tests/spec/source-const-payment");
+    let folder = root
+        .join("obj/parallel/pa31/const-payment-native")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    for (name, source, expected) in [
+        (
+            "original-paid",
+            super::cases::UNUSED_CONDITIONAL_CONST_PAID.to_owned(),
+            7,
+        ),
+        (
+            "original-runtime",
+            super::cases::UNUSED_CONDITIONAL_RUNTIME.to_owned(),
+            7,
+        ),
+        (
+            "unused-valid-const-override",
+            std::fs::read_to_string(fixtures.join("unused-valid-const-override.rs"))?,
+            7,
+        ),
+        (
+            "conditional-ordinary-lookalike",
+            std::fs::read_to_string(fixtures.join("conditional-ordinary-lookalike.rs"))?,
+            0,
+        ),
+    ] {
+        execute(&folder, name, &source, expected)?;
+    }
+    for family in ["repeated-reached", "distinct-callers", "distinct-instances"] {
+        for width in [8, 32, 128] {
+            let name = format!("{family}-{width}");
+            execute(
+                &folder,
+                &name,
+                &std::fs::read_to_string(fixtures.join("work").join(format!("{name}.rs")))?,
+                7,
+            )?;
+        }
+    }
+    for name in [
+        "unrelated-noise-0",
+        "unrelated-noise-128",
+        "generic-defining-conditional-paid",
+        "generic-defining-conditional-runtime",
+    ] {
+        execute(
+            &folder,
+            name,
+            &std::fs::read_to_string(fixtures.join("work").join(format!("{name}.rs")))?,
+            7,
+        )?;
     }
     Ok(())
 }
