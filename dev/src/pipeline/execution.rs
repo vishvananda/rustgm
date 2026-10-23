@@ -6,6 +6,8 @@ mod expressions;
 mod initializers;
 mod inputs;
 mod layout_kernel;
+mod parent_children;
+mod parent_scope;
 mod selected;
 #[cfg(test)]
 #[path = "../../tests/invariants/execution_storage.rs"]
@@ -151,6 +153,10 @@ impl Engine {
         facts: &mut Declarations,
         request: &Request,
     ) -> Result<Progress, Error> {
+        self.validate_parent_scope(facts, request.target)
+            .map_err(|e| Error::at(FileId(0), 0, e))?;
+        self.reserve_parent_request(request)
+            .map_err(|e| Error::at(FileId(0), 0, e))?;
         if let Target::SourceAssociated { source, result } = request.target {
             source
                 .validate(facts, result)

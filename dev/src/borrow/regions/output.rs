@@ -37,6 +37,17 @@ impl Summary {
         }
         Ok(self.conditions.as_ref())
     }
+    pub(crate) fn parent_goals(
+        &self,
+        input: &Contract,
+    ) -> Result<Option<(NodeKey, &[Obligation])>, &'static str> {
+        if !self.matches(input) {
+            return Err("parent goals belong to another checked source contract");
+        }
+        Ok(self
+            .requires_parent()
+            .then_some((self.parent, &self.requirements)))
+    }
     fn matches(&self, input: &Contract) -> bool {
         self.source == input.source
             && self.key == input.key

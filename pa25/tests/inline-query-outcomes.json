@@ -148,13 +148,13 @@
         "default_lints": true
       },
       "modes": {
-        "--emit-types": 1,
-        "--emit-constants": 1,
-        "--emit-lowir": 1
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
       },
-      "native": false,
-      "status": "required lifetime/output continuation; original outcome retained",
-      "diagnostic": "nested output requires its checked parent contract"
+      "native": true,
+      "status": "implemented; actual proved parent and complete original group pay conditional inline output",
+      "diagnostic": ""
     },
     {
       "name": "paid-lifetime",
@@ -167,13 +167,13 @@
         "default_lints": true
       },
       "modes": {
-        "--emit-types": 1,
-        "--emit-constants": 1,
-        "--emit-lowir": 1
+        "--emit-types": 0,
+        "--emit-constants": 0,
+        "--emit-lowir": 0
       },
-      "native": false,
-      "status": "required lifetime/output continuation; original outcome retained",
-      "diagnostic": "nested output requires its checked parent contract"
+      "native": true,
+      "status": "implemented; actual proved parent and complete original group pay conditional inline output",
+      "diagnostic": ""
     },
     {
       "name": "foreign-lifetime",
@@ -250,6 +250,25 @@
       "native": false,
       "status": "retained wrong positive hypothesis: pinned Rust rejects generic destructor E0493",
       "diagnostic": "cannot run destructors"
+    },
+    {
+      "name": "faulting-child",
+      "path": "tests/spec/inline-query-context/faulting-child.rs",
+      "source_sha256": "59dad0c1345558d31512ef39f777269f614d0013c1c504f5991c4ef97f6375a8",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "modes": {
+        "--emit-types": 0,
+        "--emit-constants": 1,
+        "--emit-lowir": 1
+      },
+      "native": false,
+      "status": "required child fault rolls back only scope-owned values and Code authority",
+      "diagnostic": "divides by zero"
     }
   ]
 }

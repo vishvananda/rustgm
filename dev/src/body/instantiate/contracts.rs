@@ -8,13 +8,27 @@ use crate::{
     types::{Kind as Type, RegionId, arguments::Argument, instance::Instance, outlives::Queries},
 };
 
+#[derive(Clone, Copy)]
+enum ResultRequest {
+    None,
+    Source(crate::types::TypeId),
+    Conditional(crate::types::TypeId),
+}
 pub(super) fn specialize(
     facts: &mut Declarations,
     original: &Contract,
     inputs: &mut Inputs,
     premises: super::Premises,
 ) -> Result<(Bound, Contract), &'static str> {
-    let (bound, contract, _) = prepare(facts, original, inputs, premises, None, false, None)?;
+    let (bound, contract, _) = prepare(
+        facts,
+        original,
+        inputs,
+        premises,
+        ResultRequest::None,
+        false,
+        None,
+    )?;
     Ok((bound, contract))
 }
 pub(super) fn initializer(
@@ -32,7 +46,7 @@ pub(super) fn initializer(
         original,
         inputs,
         super::Premises::Required,
-        None,
+        ResultRequest::None,
         close_static,
         None,
     )?;
@@ -49,7 +63,7 @@ pub(super) fn source_result(
         original,
         inputs,
         super::Premises::Required,
-        Some(requested),
+        ResultRequest::Source(requested),
         false,
         None,
     )?;
@@ -57,6 +71,27 @@ pub(super) fn source_result(
         bound,
         contract,
         imported.ok_or("source result import was lost")?,
+    ))
+}
+pub(super) fn conditional_result(
+    facts: &mut Declarations,
+    original: &Contract,
+    inputs: &mut Inputs,
+    requested: crate::types::TypeId,
+) -> Result<(Bound, Contract, crate::types::TypeId), &'static str> {
+    let (bound, contract, imported) = prepare(
+        facts,
+        original,
+        inputs,
+        super::Premises::Required,
+        ResultRequest::Conditional(requested),
+        false,
+        None,
+    )?;
+    Ok((
+        bound,
+        contract,
+        imported.ok_or("conditional result import was lost")?,
     ))
 }
 pub(super) fn rigid_initializer(
@@ -70,7 +105,7 @@ pub(super) fn rigid_initializer(
         original,
         inputs,
         super::Premises::Required,
-        None,
+        ResultRequest::None,
         false,
         Some(parameters),
     )?;
@@ -81,16 +116,28 @@ fn prepare(
     original: &Contract,
     inputs: &mut Inputs,
     premises: super::Premises,
-    mut requested: Option<crate::types::TypeId>,
+    request: ResultRequest,
     close_static: bool,
     parameters: Option<Vec<crate::types::parameters::ParameterId>>,
 ) -> Result<(Bound, Contract, Option<crate::types::TypeId>), &'static str> {
+    let retain_output = matches!(request, ResultRequest::Conditional(_));
+    let mut requested = match request {
+        ResultRequest::None => None,
+        ResultRequest::Source(ty) | ResultRequest::Conditional(ty) => Some(ty),
+    };
     let mut contract = original.clone();
-    if requested.is_some() && matches!(original.key, crate::body::ir::BodyKey::Anonymous(_)) {
+    if !retain_output
+        && requested.is_some()
+        && matches!(original.key, crate::body::ir::BodyKey::Anonymous(_))
+    {
         // Reprove the complete child without assuming its conditional conclusion.
         super::closures::formation(&mut contract);
     }
-    super::caller_transport::contract(facts, &mut contract, inputs.caller)?;
+    if retain_output {
+        super::caller_transport::conditional_contract(facts, &mut contract, inputs.caller)?;
+    } else {
+        super::caller_transport::contract(facts, &mut contract, inputs.caller)?;
+    }
     let regions = import_regions(facts, inputs, original.universals, &mut requested)?;
     let mut bound = if close_static {
         Bound::parameters_captured(&facts.types, &inputs.bindings, inputs.captures.clone())?

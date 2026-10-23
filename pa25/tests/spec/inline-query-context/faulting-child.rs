@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait Pick<'a>{type Out;const V:Self::Out;}struct Tag;impl<'a>Pick<'a> for Tag{type Out=&'a u8;const V:Self::Out=&7;}struct S<'a,T>(&'a u8,T);impl<'a,T:Pick<'a>>S<'a,T>{const C:T::Out={const{let n=T::V;n}};}fn get<'a,'b>(_:&'a u8,_:&'b u8)->&'b u8 where 'a:'b{let f=||{let _=const{S::<'a,Tag>::C};const{let _=1u8/0;S::<'a,Tag>::C}};f()}fn main(){let n=7;check(*get(&n,&n)==7);}

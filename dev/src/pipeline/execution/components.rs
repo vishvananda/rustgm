@@ -9,6 +9,7 @@ pub(super) struct Retained {
     rows: HashMap<BodyKey, Original>,
     members: HashSet<BodyKey>,
     order: Vec<BodyKey>,
+    pub(super) active: Option<Box<super::parent_scope::Active>>,
 }
 impl Engine {
     pub(super) fn component_original(&self, key: BodyKey) -> Option<&Original> {
@@ -48,6 +49,7 @@ impl Engine {
                     rows: HashMap::default(),
                     members: HashSet::default(),
                     order: Vec::new(),
+                    active: None,
                 })
             };
             let result = self.complete_component(report, facts, &mut retained, seed, &mut work);

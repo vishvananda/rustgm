@@ -19,8 +19,17 @@ use crate::{
         arguments::{Argument, ConstKind},
     },
 };
+pub(crate) use catalog::DeclarationEpoch;
 pub(crate) use catalog::Enclosing as CallerInstance;
 pub(crate) use prepared_callers::{BodyCaller, PreparedConstant};
+
+pub(crate) fn declaration_epoch(facts: &Declarations) -> Result<DeclarationEpoch, &'static str> {
+    facts
+        .source_computations
+        .as_deref()
+        .map(|c| c.0.epoch())
+        .ok_or("conditional parent has no declaration catalog identity")
+}
 
 /// An opaque source-computation request scoped to one declaration catalog.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

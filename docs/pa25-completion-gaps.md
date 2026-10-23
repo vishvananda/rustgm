@@ -19,12 +19,13 @@ required as described below:
   They require the real original const context and source-only callee proof,
   respectively. Generic inline dependencies and composite rigid arguments also
   remain required; no ordinary concrete admission or callable permit is relaxed.
-- `pa25/tests/spec/inline-query-context/closure.rs` and `paid-lifetime.rs`: the
-  nested closure/inline associated reference result requires the checked parent
-  output contract. The current parent namespace/result transport rejects that
-  conditional interface. It must transport/prove the real conditional child and
-  caller obligations, retaining private storage/escape upper bounds. Clearing an
-  OutputLink, assuming its conclusion, or equating lifetimes by shape is invalid.
+- The lifetime-only `inline-query-context/{closure,paid-lifetime}.rs` originals
+  now reach checked execution through their actual proved parent. See
+  `pa25-paid-parents.md`. Generic and source-initializer conditional parents,
+  additional nested conditional instances and non-output-only links remain
+  required followups. Their exact actual parent/caller debt must be transported;
+  original component success alone remains insufficient. No OutputLink is cleared.
+
 
 The original `open-type-initializer-context/generic-pattern.rs` is now implemented
 for direct owned rigid type arguments with a closed complete executable footprint,
@@ -121,8 +122,9 @@ The provider's original-component consumer is now implemented and its focused
 source/native/private/strict and archived active-text checks pass; see
 `pa25-original-contexts.md` for exact qualification and the
 strict separation of proof-context parents from runtime candidates.
-Actual anonymous instance output specialization and
-caller namespace transport still reject conditional outputs. They must consume
+Actual anonymous specialization for the lifetime-only original parent family now
+uses the scoped actual-parent consumer described in `pa25-paid-parents.md`.
+Generic/source-initializer conditional consumers remain unimplemented. They must consume
 an exact checked parent/component and preserve all obligations, sibling/owner
 identity, escape and ordinary original/instance proofs; this test does not grant
 permission to bypass those gates.

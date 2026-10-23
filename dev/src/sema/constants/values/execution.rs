@@ -1,8 +1,9 @@
 //! Phase-neutral execution requests retain semantic identity across body readiness.
 pub use super::super::computation::SourceComputation;
 pub(crate) use super::super::computation::{
-    BodyCaller, CallerInstance, PreparedConstant, caller_namespace_available, caller_published,
-    reserve_normalization, with_namespace, with_registered_namespace,
+    BodyCaller, CallerInstance, DeclarationEpoch, PreparedConstant, caller_namespace_available,
+    caller_published, declaration_epoch, reserve_normalization, with_namespace,
+    with_registered_namespace,
 };
 use super::{Constant, Instance};
 use crate::{

@@ -58,10 +58,32 @@ pub(super) fn contract(
     contract: &mut Contract,
     caller: CallerInstance,
 ) -> Result<(), &'static str> {
+    transport_contract(facts, contract, caller, false)
+}
+pub(super) fn conditional_contract(
+    facts: &mut Declarations,
+    contract: &mut Contract,
+    caller: CallerInstance,
+) -> Result<(), &'static str> {
+    if contract
+        .output
+        .as_ref()
+        .is_none_or(|link| link.formation.is_some())
+    {
+        return Err("conditional namespace requires an exact output-only child link");
+    }
+    transport_contract(facts, contract, caller, true)
+}
+fn transport_contract(
+    facts: &mut Declarations,
+    contract: &mut Contract,
+    caller: CallerInstance,
+    conditional: bool,
+) -> Result<(), &'static str> {
     if matches!(caller, CallerInstance::Original) || !caller_published(facts, contract.source) {
         return Ok(());
     }
-    if contract.output.is_some() {
+    if contract.output.is_some() && !conditional {
         return Err("source caller namespace requires its nested output transport");
     }
     let (owned, visits) = segments(contract, caller_namespace_available(facts))?;
