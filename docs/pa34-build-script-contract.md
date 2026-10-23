@@ -139,3 +139,66 @@ bytes. No RustGM rebuild was needed. Scoped cleanup removed the two generated
 host executables and retained sources, outputs and receipts. The first focused
 attempt's standalone test import-path error is retained under the v1 root;
 the fix makes this test root runnable independently of test discovery order.
+
+## Graph-bound host execution
+
+`scripts/planned_build_script.py` now pairs a selected host-execution unit with
+its exact host-compilation unit and authenticated registry package snapshot.
+It validates package identity, source membership, edition, features, platform
+and both profiles before launching. Selecting a target compilation, another
+package's source, the wrong target context or an unbuilt host dependency fails.
+The initial executor handles dependency-free script pairs; host dependency
+scheduling and DEP links metadata are explicit remaining requirements.
+
+`scripts/host_profile.py` translates the supported pinned profile fields into
+explicit host rustc flags. It preserves debug assertions, overflow checks, panic,
+optimization, debug information, codegen units, split debuginfo, rpath and LTO
+semantics. Cargo's `lto=false` retains local thin LTO; it is distinct from `off`.
+Unknown settings, custom profile inheritance, alternate codegen backends,
+incremental caching and unimplemented strip representations fail rather than
+disappear. The host task's optional profile is retained in its receipt.
+
+`scripts/build_environment.py` derives package variables from the original
+normalized manifest and keeps explicitly pinned host/target configuration
+separate. Host compilation receives package/feature inputs; script execution
+receives its selected target context and run profile. `DEBUG` describes generated
+debug information, not `cfg(debug_assertions)`. Unimplemented manifest lint and
+unstable policy is diagnosed. Arbitrary ambient environment is never inherited.
+The declared cfg context and its input pins are retained in the outer receipt;
+they are not evidence of RustGM backend capabilities or a complete source sysroot.
+
+The script's `RUSTC` is the restricted query wrapper, while actual host compilation
+uses the explicit pinned host compiler. A source-compiling probe is rejected.
+Even if a script swallows that subprocess failure and exits successfully, the
+outer task rejects its result; it cannot select an apparent missing capability
+from an unsupported compiler probe. All query arguments/output/status are kept.
+Sources, configuration inputs and implementation pins are rechecked before
+publishing generated-file hashes and ordered directives. Cache reuse remains
+disabled. General compiler-probe support, full toolchain/runtime closure and
+target consumption still need implementation.
+
+The original serde_core 1.0.229 archive now passes from the frozen four-unit graph
+through this executor. Its host script emits the same complete stdout hash and
+`private.rs` hash declared above, and its only compiler query is `--version`.
+No target source is compiled. The final guarded batch under
+`obj/parallel/pa34-planned-host-v2/` passes all 152 harness tests, registration,
+assignment layout and upstream checks. Its outer host receipt SHA-256 is
+`b5f0dfa4789af71197f0537721395fea7b62e7e3a0e3ec9da8abcb183fb6ecc7`.
+Scoped cleanup removed the host executable and retained its generated source.
+
+An independent Cargo probe under `obj/parallel/pa34-host-context-v1/` deliberately
+stops target compilation with `compile_error!` after running its host script.
+It falsified the initial assumption that host debug assertions stay enabled:
+the selected false setting is inherited, while host panic remains unwind when
+the target uses abort. The exact source, initial failed hypothesis and diagnostics
+remain. `pa34-host-profile-v1/` plans that unchanged workspace and compiles its
+script through the host task; actual cfg behavior and nine selected environment
+observations match the independent Cargo execution.
+
+The same study exposed bootstrap environment leakage into planning queries.
+The query wrapper now uses only explicit PATH/LANG. Its complete target-query
+stdout matches an independent pinned-tool invocation byte-for-byte. Cargo's
+query includes the proc-macro crate type, so its `proc_macro` cfg is expected;
+the earlier hypothesis that it would disappear is retained and corrected.
+Unstable-only target facts disappear with bootstrap removed. These raw package
+planning queries must not become the RustGM target compiler's capability table.

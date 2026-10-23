@@ -9,7 +9,10 @@ The adapter uses pinned Cargo 1.98.0's
 [unit graph](https://doc.rust-lang.org/cargo/reference/unstable.html#unit-graph)
 with `--frozen --unit-graph -Z unstable-options`. Cargo is a package planner here.
 `RUSTC_BOOTSTRAP=1` enables that introspection; the compiler wrapper rejects
-compilation. The ordinary metadata graph cannot express the distinct feature
+compilation and forwards queries with only explicit PATH/LANG, without inheriting
+Cargo's bootstrap switch, Rust flags or loader configuration. Enabling the
+planner must not change the query compiler's reported target capabilities.
+The ordinary metadata graph cannot express the distinct feature
 sets needed when the same package is both a build and a target dependency.
 
 ## Current interface and evidence
@@ -122,9 +125,11 @@ closure. Cargo's implicit sysroot is absent from this package graph: RustGM must
 add and compile the original source sysroot rather than consume rustc's target
 libraries. Four planned package units are not the complete frontend build graph.
 
-Next, lower authenticated units into the existing `host_build_script.py`
-interface, and consume ordered generated cfg,
-environment and source outputs in target jobs. Implement actual Rust 2021
+The [host task binding](pa34-build-script-contract.md#graph-bound-host-execution)
+now executes authenticated dependency-free registry script pairs, retaining
+their actual generated inputs. Next, schedule host dependency artifacts and
+DEP metadata, close local package/configuration provenance, and consume ordered
+generated cfg, environment and source outputs in target jobs. Implement actual Rust 2021
 semantics and per-crate macro edition provenance before claiming that profile.
 Then execute dependency-first target jobs through RustGM's typed metadata and
 CPPGM backend. Library acceptance requires the original selected dependency

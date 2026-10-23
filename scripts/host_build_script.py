@@ -12,6 +12,7 @@ import subprocess
 import time
 
 from build_script_output import MAX_BYTES, parse
+import host_profile
 
 MAX_FILES = 100_000
 MAX_GENERATED_BYTES = 256 * 1024 * 1024
@@ -38,8 +39,11 @@ class Job:
     features: tuple[str, ...] = ()
     # Explicit already built host libraries. Target artifacts never enter here.
     dependencies: tuple[tuple[str, Path, str], ...] = ()
+    profile_json: str | None = None
 
     def validate(self):
+        if self.profile_json is not None:
+            host_profile.decode(self.profile_json)
         if not self.package.is_absolute() or not self.source.is_absolute():
             raise ValueError('host task requires absolute package/source paths')
         if self.edition not in ('2021', '2024'):
@@ -116,6 +120,7 @@ def execute(job, folder):
         'package': str(job.package), 'source': str(job.source), 'edition': job.edition,
         'compiler': str(job.compiler), 'compiler_sha256': job.compiler_sha256,
         'inputs': job.inputs, 'features': list(job.features),
+        'profile': None if job.profile_json is None else json.loads(job.profile_json),
         'dependencies': [(alias, str(path), sha) for alias, path, sha in job.dependencies],
         'commands': commands, 'state': 'running',
     }
@@ -152,6 +157,8 @@ def execute(job, folder):
         binary = folder / 'build-script'
         command = [job.compiler, f'--edition={job.edition}', '--crate-name',
                    'build_script_build', job.source, '-o', binary]
+        if job.profile_json is not None:
+            command += host_profile.arguments(job.profile_json)
         for feature in sorted(job.features):
             command += ['--cfg', 'feature=' + json.dumps(feature, ensure_ascii=False)]
         for alias, path, _ in sorted(job.dependencies):

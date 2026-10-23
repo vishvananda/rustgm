@@ -44,6 +44,13 @@ preparatory checkpoint does not activate PA34 or establish library compilation;
 network acquisition, complete configuration provenance, edition behavior and
 target execution remain part of this assignment.
 
+Its authenticated host script now executes through the exact paired graph units,
+with explicit compiler/run profiles and package/target environment. Original
+generated source and directives match independent observations. Host dependency
+scheduling, DEP metadata and target consumption remain required. The query wrapper
+isolates Cargo's bootstrap environment and rejects source-compiling probes even
+when a build script catches their failure.
+
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
 Reference and CPPGM's efficient representation principles. Parse once, retain

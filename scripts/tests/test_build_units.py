@@ -232,6 +232,27 @@ class Planning(unittest.TestCase):
 
 
 class Queries(unittest.TestCase):
+    def test_cargo_bootstrap_and_ambient_flags_do_not_change_query_capabilities(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            compiler = root / 'rustc'
+            compiler.write_text('query compiler')
+            environment = {'RUSTGM_PLAN_QUERY_COMPILER': str(compiler),
+                           'RUSTGM_PLAN_QUERY_SHA256': digest(compiler), 'RUSTGM_PLAN_TARGET': TRIPLE,
+                           'RUSTGM_PLAN_QUERY_LOG': str(root / 'queries'), 'RUSTC_BOOTSTRAP': '1',
+                           'RUSTFLAGS': '--cfg hidden_capability', 'LD_LIBRARY_PATH': '/ambient'}
+            completed = subprocess.CompletedProcess([], 0, b'explicit compiler version\n', b'')
+            stdout, stderr = io.TextIOWrapper(io.BytesIO()), io.TextIOWrapper(io.BytesIO())
+            with patch.dict('os.environ', environment, clear=True), \
+                    patch.object(sys, 'argv', ['query', '--version']), \
+                    patch.object(sys, 'stdout', stdout), patch.object(sys, 'stderr', stderr), \
+                    patch('cargo_query.subprocess.run', return_value=completed) as run:
+                self.assertEqual(cargo_query.main(), 0)
+            self.assertEqual(run.call_args.kwargs['env'], {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'})
+            receipt = json.loads((root / 'queries').read_text())
+            self.assertEqual(receipt['environment'], run.call_args.kwargs['env'])
+            self.assertEqual(receipt['compiler_sha256'], digest(compiler))
+
     def test_only_observed_queries_are_allowed(self):
         self.assertFalse(cargo_query.validate(['-vV'], TRIPLE))
         for arguments in (['source.rs'], ['--print=cfg'], ['--emit=metadata', '-'],
