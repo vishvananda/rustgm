@@ -1,5 +1,9 @@
 //! Completed configured owners reserve source identities before semantic queries.
-use super::{SourceCore, policy::Feature};
+use super::{
+    SourceCore,
+    policy::Feature,
+    role_attributes::{HeaderAttribute, HeaderAttributes},
+};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{
@@ -31,6 +35,9 @@ pub struct Reservations {
     languages: [Option<Declaration>; LangItem::ALL.len()],
     intrinsics: HashMap<DefId, IntrinsicDeclaration>,
     denied_implementations: HashSet<DefId>,
+    pub(super) header_attributes: [HeaderAttributes; LangItem::ALL.len()],
+    pub(super) trivial_field_reads: Option<DefId>,
+    pub(super) diagnostics: [Option<Declaration>; 3],
     pub steps: usize,
 }
 impl Reservations {
@@ -65,14 +72,19 @@ impl Reservations {
     pub fn denies_implementation(&self, definition: DefId) -> bool {
         self.denied_implementations.contains(&definition)
     }
+    pub(crate) fn role_attributes(&self, role: LangItem) -> HeaderAttributes {
+        self.header_attributes[role.index()]
+    }
 }
 #[derive(Clone, Copy)]
-enum Claim {
+pub(super) enum Claim {
     Language(LangItem),
     Intrinsic,
     DenyImplementations,
     BuiltinMacro,
-    DynIncompatible,
+    Header(HeaderAttribute),
+    TrivialFieldReads,
+    DiagnosticItem(super::annotations::DiagnosticItem),
 }
 
 pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> Result<(), Error> {
@@ -117,6 +129,9 @@ pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> R
         languages: [None; LangItem::ALL.len()],
         intrinsics: HashMap::default(),
         denied_implementations: HashSet::default(),
+        header_attributes: [HeaderAttributes::EMPTY; LangItem::ALL.len()],
+        trivial_field_reads: None,
+        diagnostics: [None; 3],
         steps: 0,
     };
     let parents = parents(package, facts);
@@ -147,7 +162,8 @@ pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> R
             reserved.steps += 1;
             reserve(package, source, &mut reserved, declaration, *claim)?;
         }
-        validate_unsizing_claims(package, declaration, claims)?;
+        super::role_attributes::validate(package, source, &mut reserved, declaration, claims)?;
+        super::annotations::validate(package, source, &mut reserved, declaration, claims)?;
     }
     if claims.keys().any(|key| !claimed.contains(key)) {
         return Err(Error::at(
@@ -181,13 +197,12 @@ fn reserve(
         )
     };
     match claim {
-        // The configured-owner facade has already validated this exact declaration.
-        Claim::BuiltinMacro => {}
-        Claim::DynIncompatible => {
-            if !source.features.has(Feature::RustcAttributes) {
-                return Err(error("dyn restriction requires rustc_attrs"));
-            }
-        }
+        // Builtin claims were checked by their facade; the remaining complete
+        // claims are validated below independently of attribute order.
+        Claim::BuiltinMacro
+        | Claim::Header(_)
+        | Claim::TrivialFieldReads
+        | Claim::DiagnosticItem(_) => {}
         Claim::DenyImplementations => {
             if !source.features.has(Feature::RustcAttributes) {
                 return Err(error("implementation restriction requires rustc_attrs"));
@@ -351,51 +366,58 @@ fn claims(package: &Package) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
             }
             for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
                 let error = |message| Error::at(file, attribute.span.start, message);
-                let claim = match attribute.name(forest, unit.source.text()) {
-                    Some("lang") => {
-                        let Input::Equals(range) = attribute.input else {
-                            return Err(error("lang requires a string literal"));
-                        };
-                        if range.end != range.start + 1 {
-                            return Err(error("lang requires one string literal"));
+                let name = attribute.name(forest, unit.source.text());
+                let header_claim = name
+                    .map(|name| super::role_attributes::claim(name, attribute.input))
+                    .transpose()
+                    .map_err(error)?
+                    .flatten();
+                let claim = if let Some(claim) = header_claim {
+                    claim
+                } else {
+                    match name {
+                        Some("lang") => {
+                            let Input::Equals(range) = attribute.input else {
+                                return Err(error("lang requires a string literal"));
+                            };
+                            if range.end != range.start + 1 {
+                                return Err(error("lang requires one string literal"));
+                            }
+                            let token = forest
+                                .token(range.start)
+                                .ok_or_else(|| error("lang requires a string literal"))?;
+                            let Some(crate::literal::Value::String(bytes)) =
+                                crate::literal::interpret(unit.source.text(), token)
+                                    .map_err(|e| Error::at(file, e.offset, e.message))?
+                            else {
+                                return Err(error("lang requires a string literal"));
+                            };
+                            let name = std::str::from_utf8(&bytes)
+                                .map_err(|_| error("language item name requires UTF-8"))?;
+                            Claim::Language(
+                                LangItem::from_name(name)
+                                    .ok_or_else(|| error("unsupported source language item"))?,
+                            )
                         }
-                        let token = forest
-                            .token(range.start)
-                            .ok_or_else(|| error("lang requires a string literal"))?;
-                        let Some(crate::literal::Value::String(bytes)) =
-                            crate::literal::interpret(unit.source.text(), token)
-                                .map_err(|e| Error::at(file, e.offset, e.message))?
-                        else {
-                            return Err(error("lang requires a string literal"));
-                        };
-                        let name = std::str::from_utf8(&bytes)
-                            .map_err(|_| error("language item name requires UTF-8"))?;
-                        Claim::Language(
-                            LangItem::from_name(name)
-                                .ok_or_else(|| error("unsupported source language item"))?,
-                        )
-                    }
-                    Some("rustc_intrinsic") => {
-                        if attribute.input != Input::Empty {
-                            return Err(error("rustc_intrinsic requires no arguments"));
+                        Some("rustc_intrinsic") => {
+                            if attribute.input != Input::Empty {
+                                return Err(error("rustc_intrinsic requires no arguments"));
+                            }
+                            Claim::Intrinsic
                         }
-                        Claim::Intrinsic
-                    }
-                    Some("rustc_deny_explicit_impl") => {
-                        if attribute.input != Input::Empty {
-                            return Err(error("rustc_deny_explicit_impl requires no arguments"));
+                        Some("rustc_deny_explicit_impl") => {
+                            if attribute.input != Input::Empty {
+                                return Err(error(
+                                    "rustc_deny_explicit_impl requires no arguments",
+                                ));
+                            }
+                            Claim::DenyImplementations
                         }
-                        Claim::DenyImplementations
+                        Some("rustc_diagnostic_item") => Claim::DiagnosticItem(
+                            super::annotations::parse(unit, file, attribute, forest)?,
+                        ),
+                        _ => continue,
                     }
-                    Some("rustc_dyn_incompatible_trait") => {
-                        if attribute.input != Input::Empty {
-                            return Err(error(
-                                "rustc_dyn_incompatible_trait requires no arguments",
-                            ));
-                        }
-                        Claim::DynIncompatible
-                    }
-                    _ => continue,
                 };
                 result
                     .entry(NodeKey { file, node })
@@ -407,31 +429,16 @@ fn claims(package: &Package) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
     Ok(result)
 }
 
-/// The first attribute consumer is the exact pinned Unsize role. Other uses
-/// remain unsupported rather than silently losing their semantic restriction.
-fn validate_unsizing_claims(
-    package: &Package,
-    declaration: Declaration,
-    claims: &[Claim],
-) -> Result<(), Error> {
-    let unsize = claims
-        .iter()
-        .any(|claim| matches!(claim, Claim::Language(LangItem::Unsize)));
-    let restricted = claims
-        .iter()
-        .any(|claim| matches!(claim, Claim::DynIncompatible));
-    if unsize != restricted {
-        return Err(Error::at(
-            declaration.origin.file,
-            package
-                .unit(declaration.origin.file)
-                .configured
-                .ast
-                .node(declaration.origin.node)
-                .span
-                .start,
-            "dyn restriction currently requires the exact pinned source Unsize declaration",
-        ));
-    }
-    Ok(())
+pub(super) fn error(package: &Package, key: NodeKey, message: &'static str) -> Error {
+    Error::at(
+        key.file,
+        package
+            .unit(key.file)
+            .configured
+            .ast
+            .node(key.node)
+            .span
+            .start,
+        message,
+    )
 }

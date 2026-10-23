@@ -34,6 +34,7 @@ pub(super) struct Trait<'a> {
     pub self_definition: DefId,
     pub self_type: TypeId,
     pub flags: Flags,
+    pub attributes: crate::resolve::bindings::HeaderAttributes,
     pub captures: u32,
     pub parameters: &'a [Parameter],
     pub members: &'a [DefId],

@@ -1,5 +1,10 @@
 # Provider capability review before checked-body inspection
 
+Historical proposal. The bounded implementation and actual checked-original
+results are recorded in [the capability checkpoint](pa29-provider-capability-checkpoint.md).
+In particular, the implemented const_destruct boundary preserves qualified
+bounds; its feature request supplies no live-destruction capability.
+
 Base: clean `8df70b06`, after borrowed validators `6049ded5`. This is a source
 review and bounded implementation proposal, not admission of these constructs.
 No wire descriptor or imported permission is enabled. B confirmed that policy,

@@ -1,0 +1,23 @@
+{
+  "reason": "The new bound-use gate must not reject existing qualified DropGlue premises; independently locate actual operation gate",
+  "cases": [
+    {
+      "file": "conditional-destruct-bound-only.rs",
+      "rust": 0,
+      "candidate": "preserve exact existing premise/unsupported const-destruct kernel; clarify gate owning consumer before changing",
+      "source_sha256": "cd55d337c30da020dc220ffec804cd0598bb62e6d82c4fbfab7282c179663bcb"
+    },
+    {
+      "file": "conditional-destruct-drop-without-gate.rs",
+      "rust": 1,
+      "candidate": "preserve exact existing premise/unsupported const-destruct kernel; clarify gate owning consumer before changing",
+      "source_sha256": "883ad1b469cae657fdc2591d2ec1f237c8fa4a46d6f0715fab68bf3c0a68cd09"
+    },
+    {
+      "file": "conditional-destruct-drop-with-gate.rs",
+      "rust": 0,
+      "candidate": "preserve exact existing premise/unsupported const-destruct kernel; clarify gate owning consumer before changing",
+      "source_sha256": "5d478ba03a20f853e8a6888e2623b8bf6cbd90f3930c6170e437066c4f2a6704"
+    }
+  ]
+}

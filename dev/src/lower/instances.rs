@@ -2,6 +2,9 @@
 mod demand;
 mod dependencies;
 mod proof;
+#[cfg(test)]
+#[path = "../../tests/invariants/upstream_originals.rs"]
+mod upstream_originals;
 use crate::{
     body::{self, regions::Contracts},
     borrow,

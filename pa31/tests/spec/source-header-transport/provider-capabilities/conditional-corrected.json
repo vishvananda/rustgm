@@ -1,0 +1,11 @@
+{
+  "cases": [
+    {
+      "file": "conditional-destruct-bound-only-freeze.rs",
+      "rust": 0,
+      "candidate": "preserve exact existing premise/unsupported const-destruct kernel; clarify gate owning consumer before changing",
+      "source_sha256": "1762571a16ad017351a707434112181c355802cfdd7c49aa8502dd8ffd3e2948",
+      "correction": "add actual Freeze prerequisite, preserve original failed source/receipt"
+    }
+  ]
+}

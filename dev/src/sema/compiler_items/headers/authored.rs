@@ -74,6 +74,10 @@ impl<'a> Trait<'a> {
                 constant,
                 auto_,
             },
+            attributes: facts.source_bindings.as_deref().map_or(
+                crate::resolve::bindings::HeaderAttributes::EMPTY,
+                |catalog| catalog.header_attributes(actual),
+            ),
             captures: schema.captures,
             parameters: facts
                 .generics
