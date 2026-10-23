@@ -1,8 +1,8 @@
 # Scoped actual parent proofs
 
 The measurements below qualify the original `73353ab9` checkpoint only. The
-source-only frontend-performance adaptation is described in
-[the port record](pa25-parent-perf-port.md); its validation is pending.
+frontend-performance adaptation and its focused qualification are described in
+[the port record](pa25-parent-perf-port.md).
 
 The unchanged `inline-query-context/closure.rs` and `paid-lifetime.rs` positives
 now complete checked constant execution and LowIR. Their original component proof
