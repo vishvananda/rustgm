@@ -78,3 +78,6 @@ mod token_trees;
 
 #[path = "../../needs_drop_provider.rs"]
 mod needs_drop_provider;
+
+#[path = "../../never_editions.rs"]
+mod never_editions;

@@ -16,8 +16,8 @@ with real-crate acceptance beginning after core and expanding with alloc/std.
 Rustc-private binary/metadata compatibility
 and a drop-in Cargo/rustc interface remain separate objectives.
 
-Use the shared typed `support::edition::Edition` for defining semantics; never
-infer it from the current consumer. Select a macro's expression fragment grammar
+Use the shared typed `support::edition::Edition` and select each rule's defining
+context explicitly. Select a macro's expression fragment grammar
 once from its defining edition, retaining the completed fragment kind for matching
 and memoization. Token provenance remains separate from that grammar selection.
 Only edition-sensitive syntax demands a token's originating edition. Borrow this
@@ -46,6 +46,15 @@ including when an unsafe qualifier or captured tail has another edition. Keep
 ordinary scope facts and storage-exit events unchanged. The
 [temporary scope checkpoint](docs/pa34-temporary-editions.md) includes opposing
 borrow cases and actual destructor traces for both editions.
+
+Never-coercion fallback uses the compiling crate's physical unit edition,
+including inside macro-generated bodies. After body constraints settle, default
+only unconstrained general roots targeted by never coercions to unit in 2021
+or never in 2024. Preserve numeric domains, already constrained types, ordinary
+unknowns and existing dependency wakeups. Token-origin ancestry is irrelevant to
+this rule; imported original bodies retain their own checked inference results.
+The [fallback checkpoint](docs/pa34-never-editions.md) records independent
+cross-edition macro and runtime trait-selection controls.
 
 For edition-sensitive explicit pattern modifiers, consume the parsed flags and
 the introducer's original token edition. A complete pattern can span captured

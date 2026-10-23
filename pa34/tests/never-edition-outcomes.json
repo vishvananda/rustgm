@@ -1,0 +1,192 @@
+{
+  "scope": "Never-coercion fallback follows containing crate edition, not macro token provenance; no ordinary/numeric unknown fallback",
+  "cases": [
+    {
+      "name": "unit-only",
+      "edition": 2021,
+      "sha256": "83009e3b869bc1b2ff3b2f39edad3cb52ee0da8c5fa7276e813e7770d4b277f1",
+      "accepted": true,
+      "native": true,
+      "answer": 21,
+      "path": "tests/spec/never-editions/unit-only-2021.rs"
+    },
+    {
+      "name": "unit-only",
+      "edition": 2024,
+      "sha256": "b5d8edbdbebb20154017b2125e023526e344b3079d289ac55ede4b0be9034128",
+      "accepted": false,
+      "native": false,
+      "answer": 24,
+      "path": "tests/spec/never-editions/unit-only-2024.rs"
+    },
+    {
+      "name": "never-only",
+      "edition": 2021,
+      "sha256": "61d5e9cf30b3f39d2f133e6df1c813565882d3c82f3c04ac4bb59427480350bf",
+      "accepted": false,
+      "native": false,
+      "answer": 21,
+      "path": "tests/spec/never-editions/never-only-2021.rs"
+    },
+    {
+      "name": "never-only",
+      "edition": 2024,
+      "sha256": "4b0633d953dc49769ed8506396d1de84bfe9130be921e9823bff740b4ad4a0ac",
+      "accepted": true,
+      "native": true,
+      "answer": 24,
+      "path": "tests/spec/never-editions/never-only-2024.rs"
+    },
+    {
+      "name": "native-fallback",
+      "edition": 2021,
+      "sha256": "82d669131bc0c081825f48052bfc6b394a350b1317c9246987e8b10cab3a95ef",
+      "accepted": true,
+      "native": true,
+      "answer": 21,
+      "path": "tests/spec/never-editions/native-fallback-2021.rs"
+    },
+    {
+      "name": "native-fallback",
+      "edition": 2024,
+      "sha256": "64bd6169ed1e7f4acc3b109ad9cf8f9ede3af6a90e7b9ceab6666d22bd4a8a17",
+      "accepted": true,
+      "native": true,
+      "answer": 24,
+      "path": "tests/spec/never-editions/native-fallback-2024.rs"
+    },
+    {
+      "name": "native-closure",
+      "edition": 2021,
+      "sha256": "40f36a73810888ec814bb671d2719bdc92c6101a57fb23dcec58c3eccfc678a9",
+      "accepted": true,
+      "native": true,
+      "answer": 21,
+      "path": "tests/spec/never-editions/native-closure-2021.rs"
+    },
+    {
+      "name": "native-closure",
+      "edition": 2024,
+      "sha256": "55bd33470cb067b094990db15887ef4245b0ccf3da8e4a6933ed6f976404e563",
+      "accepted": true,
+      "native": true,
+      "answer": 24,
+      "path": "tests/spec/never-editions/native-closure-2024.rs"
+    },
+    {
+      "name": "native-macro",
+      "edition": 2021,
+      "sha256": "70d9d582d8277519019fba4ba7ece821722f389d5505a36f2d0e9f63ec3ce12a",
+      "accepted": true,
+      "native": true,
+      "answer": 21,
+      "path": "tests/spec/never-editions/native-macro-2021.rs"
+    },
+    {
+      "name": "native-macro",
+      "edition": 2024,
+      "sha256": "75a00becdf6edca8613ec6c5777720f18f63e2fc80de594bc5b2d7a85534a155",
+      "accepted": true,
+      "native": true,
+      "answer": 24,
+      "path": "tests/spec/never-editions/native-macro-2024.rs"
+    },
+    {
+      "name": "explicit-unit",
+      "edition": 2021,
+      "sha256": "83dbb3bfa5aed06c9f1c59b4d285ef78ff3a487fa2415875fa49cfc0824b7968",
+      "accepted": true,
+      "native": true,
+      "answer": 21,
+      "path": "tests/spec/never-editions/explicit-unit-2021.rs"
+    },
+    {
+      "name": "explicit-unit",
+      "edition": 2024,
+      "sha256": "83dbb3bfa5aed06c9f1c59b4d285ef78ff3a487fa2415875fa49cfc0824b7968",
+      "accepted": true,
+      "native": true,
+      "answer": 21,
+      "path": "tests/spec/never-editions/explicit-unit-2024.rs"
+    },
+    {
+      "name": "numeric-constraint",
+      "edition": 2021,
+      "sha256": "2fec4498a5ddc1d8c2a29169e8770df9580e0047869ecedd0a98b7ff37fcfde5",
+      "accepted": true,
+      "native": true,
+      "answer": 7,
+      "path": "tests/spec/never-editions/numeric-constraint-2021.rs"
+    },
+    {
+      "name": "numeric-constraint",
+      "edition": 2024,
+      "sha256": "2fec4498a5ddc1d8c2a29169e8770df9580e0047869ecedd0a98b7ff37fcfde5",
+      "accepted": true,
+      "native": true,
+      "answer": 7,
+      "path": "tests/spec/never-editions/numeric-constraint-2024.rs"
+    },
+    {
+      "name": "ordinary-unknown",
+      "edition": 2021,
+      "sha256": "cd2c0ccf6476eca777f5a8f64e6e76a8d5e9486d398c8159e3732050f908ccda",
+      "accepted": false,
+      "native": false,
+      "answer": 7,
+      "path": "tests/spec/never-editions/ordinary-unknown-2021.rs"
+    },
+    {
+      "name": "ordinary-unknown",
+      "edition": 2024,
+      "sha256": "cd2c0ccf6476eca777f5a8f64e6e76a8d5e9486d398c8159e3732050f908ccda",
+      "accepted": false,
+      "native": false,
+      "answer": 7,
+      "path": "tests/spec/never-editions/ordinary-unknown-2024.rs"
+    }
+  ],
+  "mixed": [
+    {
+      "provider": "tests/spec/never-editions/macro-provider.rs",
+      "provider_sha256": "dbc4764f7ddf9eb30a35a3dcf271bae3889dabcd175873af750da5440a7085bf",
+      "definition_edition": 2021,
+      "edition": 2021,
+      "sha256": "2644214499baeea9a14be1009f205087c54da93a12513227b426e798211baf1f",
+      "accepted": true,
+      "native": true,
+      "path": "tests/spec/never-editions/macro-consumer-2021-2021.rs"
+    },
+    {
+      "provider": "tests/spec/never-editions/macro-provider.rs",
+      "provider_sha256": "dbc4764f7ddf9eb30a35a3dcf271bae3889dabcd175873af750da5440a7085bf",
+      "definition_edition": 2021,
+      "edition": 2024,
+      "sha256": "1abb5aad7b196ffb68029791a5303d4ba4ce2c943726bff085e19285d44780bd",
+      "accepted": true,
+      "native": true,
+      "path": "tests/spec/never-editions/macro-consumer-2021-2024.rs"
+    },
+    {
+      "provider": "tests/spec/never-editions/macro-provider.rs",
+      "provider_sha256": "dbc4764f7ddf9eb30a35a3dcf271bae3889dabcd175873af750da5440a7085bf",
+      "definition_edition": 2024,
+      "edition": 2021,
+      "sha256": "2644214499baeea9a14be1009f205087c54da93a12513227b426e798211baf1f",
+      "accepted": true,
+      "native": true,
+      "path": "tests/spec/never-editions/macro-consumer-2024-2021.rs"
+    },
+    {
+      "provider": "tests/spec/never-editions/macro-provider.rs",
+      "provider_sha256": "dbc4764f7ddf9eb30a35a3dcf271bae3889dabcd175873af750da5440a7085bf",
+      "definition_edition": 2024,
+      "edition": 2024,
+      "sha256": "1abb5aad7b196ffb68029791a5303d4ba4ce2c943726bff085e19285d44780bd",
+      "accepted": true,
+      "native": true,
+      "path": "tests/spec/never-editions/macro-consumer-2024-2024.rs"
+    }
+  ],
+  "observer": "The authored check/fail observer replaces the unavailable bootstrap assert macro. Earlier unchanged fixtures and observations remain in obj/parallel/pa34-never-editions/inputs and independent-v1."
+}

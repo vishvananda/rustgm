@@ -24,3 +24,8 @@ Declare independent outcomes before creating text references. Register every
 input in a nonempty `manifest.json` when the stage is ready for activation;
 no undiscovered fixtures or empty-suite success. Preserve upstream checksums,
 configuration/build provenance and linked native output evidence.
+
+`never-edition-outcomes.json` declares sixteen paired source outcomes, twelve
+local native outcomes and four independently checked cross-edition macro native
+outcomes. All hypotheses match pinned rustc. The candidate implementation and
+its focused qualification are in development; no driver profile is activated.

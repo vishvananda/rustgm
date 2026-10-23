@@ -58,7 +58,7 @@ fn cfg_admission_uses_only_demanded_token_provenance() -> Result<(), rustgm::lex
 }
 
 #[derive(Default)]
-struct Files(Vec<(PathBuf, String)>);
+pub(super) struct Files(Vec<(PathBuf, String)>);
 impl Sources for Files {
     fn read(&mut self, path: &Path) -> Result<Option<InputFile>, String> {
         self.0
@@ -75,7 +75,11 @@ fn input(path: &Path, text: &str) -> Result<InputFile, String> {
         source: SourceFile::new(text.as_bytes().to_vec())?,
     })
 }
-fn analyze(source: &str, edition: Edition, files: &mut Files) -> Result<expansion::Report, String> {
+pub(super) fn analyze(
+    source: &str,
+    edition: Edition,
+    files: &mut Files,
+) -> Result<expansion::Report, String> {
     let report = expansion::analyze(
         input(Path::new("/crate/main.rs"), source)?,
         files,

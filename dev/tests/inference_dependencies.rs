@@ -142,10 +142,42 @@ fn fallback_wakes_types_but_does_not_default_const_inputs() -> TestResult {
     assert!(context.default_numbers()?);
     assert_eq!(context.ready_resolution(&store)?, Some(numeric));
     assert_eq!(context.ready_resolution(&store)?, None);
-    context.default_never(never)?;
+    context.default_never(never, rustgm::support::edition::Edition::Rust2024)?;
     assert_eq!(context.ready_resolution(&store)?, Some(diverging));
     assert_eq!(context.ready_resolution(&store)?, None);
     assert!(!context.default_numbers()?);
+    Ok(())
+}
+
+#[test]
+fn edition_fallback_changes_only_unconstrained_never_coercion_roots() -> TestResult {
+    use rustgm::support::edition::Edition;
+    for (edition, expected) in [
+        (Edition::Rust2021, TypeId::UNIT),
+        (Edition::Rust2024, TypeId::NEVER),
+    ] {
+        let mut store = Store::default();
+        let mut context = Context::default();
+        let first = context.variable(Domain::Any)?;
+        let alias = context.variable(Domain::Any)?;
+        context.equate(&store, first, alias)?;
+        let ordinary = context.variable(Domain::Any)?;
+        let integer = context.variable(Domain::Integer)?;
+        let known = context.known(&store, BYTE)?;
+        let waiting = context.watch_resolution(&[first, alias], &[])?;
+        assert_eq!(context.ready_resolution(&store)?, None);
+        context.default_never(alias, edition)?;
+        assert_eq!(context.ready_resolution(&store)?, Some(waiting));
+        assert_eq!(context.resolved(&mut store, first)?, expected);
+        assert_eq!(context.resolved(&mut store, alias)?, expected);
+        context.default_never(first, edition)?;
+        context.default_never(integer, edition)?;
+        context.default_never(known, edition)?;
+        assert_eq!(context.ready_resolution(&store)?, None);
+        assert_eq!(context.unresolved_domain(ordinary)?, Some(Domain::Any));
+        assert_eq!(context.unresolved_domain(integer)?, Some(Domain::Integer));
+        assert_eq!(context.resolved(&mut store, known)?, BYTE);
+    }
     Ok(())
 }
 

@@ -34,7 +34,10 @@ impl Checker<'_> {
                 if adjustment.kind == AdjustmentKind::Never {
                     self.state
                         .infer
-                        .default_never(adjustment.expected)
+                        .default_never(
+                            adjustment.expected,
+                            self.report.package.unit(self.state.file).edition(),
+                        )
                         .map_err(|e| self.error(body, e))?;
                 }
             }

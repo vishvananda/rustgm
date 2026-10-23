@@ -609,19 +609,26 @@ impl Context {
         let term = self.terms[id.0 as usize];
         Ok(Some((term.end - term.start) as usize))
     }
-    /// Apply the edition-2024 never fallback to an otherwise unconstrained
+    /// Apply the compilation unit's never fallback to an otherwise unconstrained
     /// general variable at a never-coercion site, after all body constraints.
     /// Numeric variables retain their own defaults.
     ///
     /// # Errors
     /// Rejects an invalid inference identity.
-    pub fn default_never(&mut self, id: TermId) -> Result<(), Error> {
+    pub fn default_never(
+        &mut self,
+        id: TermId,
+        edition: crate::support::edition::Edition,
+    ) -> Result<(), Error> {
         let id = self.root(id)?;
         if matches!(
             self.terms[id.0 as usize].value,
             Value::Variable(Domain::Any)
         ) {
-            self.terms[id.0 as usize].value = Value::Known(TypeId::NEVER);
+            self.terms[id.0 as usize].value = Value::Known(match edition {
+                crate::support::edition::Edition::Rust2021 => TypeId::UNIT,
+                crate::support::edition::Edition::Rust2024 => TypeId::NEVER,
+            });
             self.wake_resolution(dependencies::Dependency::Type(id))?;
         }
         Ok(())
