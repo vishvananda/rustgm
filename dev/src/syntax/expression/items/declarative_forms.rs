@@ -5,7 +5,7 @@ impl Parser<'_, '_> {
     pub(super) fn macro_definition(&mut self, scoped: bool) -> Result<ItemKind, LexError> {
         let mut first = self.required()?;
         let parameters = if scoped && first.kind == TokenKind::Punctuation(P::OpenParen) {
-            let parameters = self.macro_capture(first)?;
+            let parameters = self.capture_definition_group(first)?;
             first = self.required()?;
             Some(parameters)
         } else {
@@ -20,7 +20,7 @@ impl Parser<'_, '_> {
         ) {
             return Err(error(first.start, "expected macro definition delimiter"));
         }
-        let capture = self.macro_capture(first)?;
+        let capture = self.capture_definition_group(first)?;
         if scoped {
             Ok(ItemKind::DeclarativeMacro {
                 parameters,
@@ -34,7 +34,10 @@ impl Parser<'_, '_> {
         }
     }
 
-    fn macro_capture(&mut self, first: crate::lex::token::Token) -> Result<u32, LexError> {
+    fn capture_definition_group(
+        &mut self,
+        first: crate::lex::token::Token,
+    ) -> Result<u32, LexError> {
         let forest = self.cursor.capture(first)?;
         let capture = u32::try_from(self.ast.captures.len())
             .map_err(|_| error(first.start, "too many captures"))?;
