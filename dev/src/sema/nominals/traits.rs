@@ -321,6 +321,10 @@ impl State {
                 self.obligations.append(evidence)?;
                 Ok(Some(source))
             }
+            selection::Selection::Refuted(refutation) => {
+                refutation.reject()?;
+                Ok(None)
+            }
             selection::Selection::Absent | selection::Selection::Deferred => Ok(None),
         }
     }

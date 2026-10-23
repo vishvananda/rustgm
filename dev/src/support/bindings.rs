@@ -28,9 +28,11 @@ pub enum LangItem {
     FnOnceOutput,
     Drop,
     Destruct,
+    Freeze,
+    DropGlue,
 }
 impl LangItem {
-    pub const ALL: [Self; 16] = [
+    pub const ALL: [Self; 18] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -47,6 +49,8 @@ impl LangItem {
         Self::FnOnceOutput,
         Self::Drop,
         Self::Destruct,
+        Self::Freeze,
+        Self::DropGlue,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -67,6 +71,8 @@ impl LangItem {
             Self::FnOnceOutput => 13,
             Self::Drop => 14,
             Self::Destruct => 15,
+            Self::Freeze => 16,
+            Self::DropGlue => 17,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -89,6 +95,8 @@ impl LangItem {
             "fn_once_output" => Some(Self::FnOnceOutput),
             "drop" => Some(Self::Drop),
             "destruct" => Some(Self::Destruct),
+            "freeze" => Some(Self::Freeze),
+            "drop_glue" => Some(Self::DropGlue),
             _ => None,
         }
     }

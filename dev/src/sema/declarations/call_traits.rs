@@ -67,6 +67,9 @@ impl Checker<'_> {
                     .copied(),
             );
         }
+        if let Some(declaration) = catalog.language(crate::support::bindings::LangItem::DropGlue) {
+            methods.push(declaration.definition);
+        }
         for method in methods {
             self.work.push(super::Work::Definition(method, false));
             self.drain(steps, limit)?;

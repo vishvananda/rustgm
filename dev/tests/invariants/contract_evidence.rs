@@ -61,7 +61,7 @@ fn quantified_result_evidence_keeps_its_parent_and_does_not_escape_to_another_ca
             found_parent,
             "result proof discarded its parent application"
         );
-        let evidence = search.evidence(root)?;
+        let evidence = search.evidence(&facts, root)?;
         assert!(
             matches!(evidence.source, Source::QuantifiedResultBound { subject, .. } if subject == projected)
         );

@@ -31,6 +31,9 @@ pub struct SourceCore {
 }
 impl SourceCore {
     /// This admits declaration syntax; it does not establish callable evidence.
+    pub(crate) fn permits_freeze_impls(&self) -> bool {
+        self.features.has(policy::Feature::FreezeImpls)
+    }
     pub(crate) fn permits_rust_call(&self) -> bool {
         self.features.has(policy::Feature::UnboxedClosures)
     }

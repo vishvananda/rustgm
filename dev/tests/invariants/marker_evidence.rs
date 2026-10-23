@@ -56,7 +56,7 @@ fn projected_auto_promises_preserve_parent_proofs_in_each_scope()
             let Decision::Proven(root) = search.run(&mut facts, frame)? else {
                 return Err("missing conditional projected auto-trait proof".into());
             };
-            let evidence = search.evidence(root)?;
+            let evidence = search.evidence(&facts, root)?;
             assert_eq!(evidence.proof.regions.start, first);
             assert!(
                 !evidence.proof.is_empty(),

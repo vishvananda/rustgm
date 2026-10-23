@@ -252,7 +252,7 @@ fn an_empty_quantifier_cannot_enter_the_flat_completed_cache() -> TestResult {
         return Err("missing empty-binder proof".into());
     };
     assert!(search.query.completed.is_empty());
-    let evidence = search.evidence(root)?;
+    let evidence = search.evidence(&facts, root)?;
     assert_eq!(evidence.proof.scope_count(), 1);
     assert!(evidence.proof.regions.is_empty());
     assert!(quantified_tests::valid(&facts, &evidence.proof, 0)?);
@@ -289,7 +289,7 @@ fn header_waits_preserve_the_universal_and_exclude_foreign_allocations() -> Test
     else {
         return Err("universal condition did not resume".into());
     };
-    let evidence = search.evidence(root)?;
+    let evidence = search.evidence(&facts, root)?;
     assert_eq!(evidence.proof.scope_count(), 1);
     for id in frontier..frontier + 3 {
         assert!(!evidence.proof.owns_region(RegionId(id)));

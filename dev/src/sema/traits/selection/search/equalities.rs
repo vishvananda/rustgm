@@ -131,6 +131,7 @@ impl Search<'_> {
         };
         let node = self.query.push(
             Node {
+                debt_free: false,
                 cycle_dependent: false,
                 provisional_size: false,
                 goal,

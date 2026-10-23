@@ -106,7 +106,7 @@ fn explicit_auto_diamonds_share_cyclic_subgoals() -> Result<(), Box<dyn std::err
                 "{graph:?} {width}: {}",
                 search.query.steps
             );
-            let evidence = search.evidence(root)?;
+            let evidence = search.evidence(&facts, root)?;
             assert!(super::size_evidence_tests::valid(&facts, &evidence.proof)?);
             if matches!(graph, Graph::Captured) {
                 assert!(evidence.proof.equalities.len() >= width);

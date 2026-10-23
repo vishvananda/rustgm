@@ -17,6 +17,9 @@ impl Search<'_> {
         if let Some(action) = self.source_destruct_result(facts, frame)? {
             return Ok(action);
         }
+        if let Some(action) = self.source_freeze_result(facts, frame)? {
+            return Ok(action);
+        }
         if let Some(action) = self.clone_marker_result(facts, frame)? {
             return Ok(action);
         }
@@ -39,6 +42,7 @@ impl Search<'_> {
                 let end = frame.available_region();
                 let node = self.query.push(
                     Node {
+                        debt_free: false,
                         cycle_dependent: false,
                         provisional_size: false,
                         goal,
@@ -54,7 +58,7 @@ impl Search<'_> {
                     frame.scope,
                     end..end,
                 );
-                frame.selected = Some(node);
+                frame.selected = Some(super::frames::Chosen::Positive(node));
             }
             Ok(Candidate::Conditional {
                 descriptor,
@@ -73,7 +77,9 @@ impl Search<'_> {
             if frame.deferred || frame.partial.is_some() {
                 Decision::Deferred
             } else {
-                frame.selected.map_or(Decision::Absent, Decision::Proven)
+                frame
+                    .selected
+                    .map_or(Decision::Absent, super::frames::Chosen::decision)
             },
         ))
     }

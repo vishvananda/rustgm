@@ -188,7 +188,7 @@ fn selected_implementation_keeps_provisional_size_evidence_out_of_its_cache() ->
             assert!(!search.query.nodes[*index].provisional_size);
         }
     }
-    assert!(search.evidence(root)?.provisional_size);
+    assert!(search.evidence(&facts, root)?.provisional_size);
 
     define(&mut facts, item, STR)?;
     facts

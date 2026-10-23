@@ -183,3 +183,21 @@ fn checked_constants_do_not_authorize_unvalidated_operations()
     assert_eq!(registry.constant(owner, declaration), Some(selected));
     Ok(())
 }
+
+#[test]
+fn header_polarity_status_preserves_entry_layout_and_rejects_missing_factory_owner()
+-> Result<(), Box<dyn std::error::Error>> {
+    assert_eq!(size_of::<super::Entry>(), 136);
+    assert_eq!(size_of::<super::polarity::Status>(), 1);
+    let mut store = Store::default();
+    let mut registry = Implementations::default();
+    let header = header(&mut store, 0, &[])?;
+    let owner = header.owner;
+    registry.prepare(&mut store, ItemId(1), header)?;
+    assert!(
+        registry
+            .polarity(&crate::sema::associated::Inventory::default(), owner)
+            .is_err()
+    );
+    Ok(())
+}

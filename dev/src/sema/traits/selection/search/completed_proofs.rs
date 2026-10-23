@@ -64,6 +64,7 @@ impl Query {
             return Ok(());
         };
         let node = &self.nodes[index];
+        super::super::refutation::require_positive_source(facts, node.source)?;
         if active.debt_free[index]
             && node.goal.is_concrete(&facts.types)?
             && let Some(source) = node.source
@@ -80,6 +81,7 @@ impl Query {
         let first = frame.available_region().max(self.allocations.floor());
         Some(Decision::Proven(self.push(
             Node {
+                debt_free: false,
                 cycle_dependent: false,
                 provisional_size: false,
                 goal,

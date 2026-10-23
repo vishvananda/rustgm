@@ -119,7 +119,7 @@ fn callable_input_header_waits_preserve_scoped_debts_and_foreign_gaps() -> TestR
         let Progress::Ready(Decision::Proven(root)) = progress else {
             return Err("callable normalization failed to resume".into());
         };
-        let proof = search.evidence(root)?.proof;
+        let proof = search.evidence(&facts, root)?.proof;
         assert!(proof.scope_count() > 0);
         for id in gaps.into_iter().flatten() {
             assert!(!proof.owns_region(RegionId(id)), "foreign allocation {id}");

@@ -187,15 +187,20 @@ impl Search<'_> {
         frame: &mut Frame,
         decision: Decision,
     ) -> Result<Decision, String> {
-        let Decision::Proven(selected) = decision else {
+        let (Decision::Proven(selected) | Decision::Refuted(selected)) = decision else {
             return Ok(decision);
+        };
+        let selected_result = |node| {
+            if matches!(decision, Decision::Refuted(_)) {
+                Decision::Refuted(node)
+            } else {
+                Decision::Proven(node)
+            }
         };
         if let Some(inputs) = frame.normalized_inputs.take() {
             frame.inputs.context.account_work(2).map_err(inference)?;
             self.charge(&mut frame.inputs.context)?;
-            return Ok(Decision::Proven(
-                self.inherit_inputs(selected, inputs.proof),
-            ));
+            return Ok(selected_result(self.inherit_inputs(selected, inputs.proof)));
         }
         let Some(normalization) = &mut frame.normalization else {
             return Ok(decision);
@@ -209,6 +214,9 @@ impl Search<'_> {
         let goal = if let Some(original) = frame.canonical {
             original
         } else {
+            if matches!(decision, Decision::Refuted(_)) {
+                return Err("negative input normalization cannot infer an unresolved goal".into());
+            }
             // Only ordinary shared holes can be refined by normal-form selection.
             // Projection inputs were already resolved before normalization began.
             frame
@@ -231,6 +239,7 @@ impl Search<'_> {
         let children = normalization.proof.into_iter().chain([selected]).collect();
         let index = self.query.push(
             Node {
+                debt_free: false,
                 cycle_dependent: false,
                 provisional_size: false,
                 goal,
@@ -247,7 +256,7 @@ impl Search<'_> {
             frame.first..frame.first,
         );
         self.charge(&mut frame.inputs.context)?;
-        Ok(Decision::Proven(index))
+        Ok(selected_result(index))
     }
 
     pub(super) fn inherit_inputs(&mut self, selected: usize, prefix: Option<usize>) -> usize {
@@ -264,6 +273,7 @@ impl Search<'_> {
         let scope = self.query.node_scope(selected);
         let index = self.query.push(
             Node {
+                debt_free: false,
                 cycle_dependent: false,
                 provisional_size: false,
                 goal,

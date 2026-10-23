@@ -13,7 +13,7 @@ pub(super) type Key = (Application, ScopeId);
 pub(super) struct Formation {
     application: Application,
     requirements: families::Requirements,
-    parent: Option<usize>,
+    parent: Option<super::frames::Chosen>,
     cursor: usize,
     children: Vec<usize>,
     universes: HashMap<u32, ScopeId>,
@@ -91,8 +91,12 @@ impl Search<'_> {
                 self.remember(frame, decision);
             }
             let decision = self.input_evidence(facts, frame, decision)?;
-            let (Some(formation), Decision::Proven(parent)) = (&mut frame.formation, decision)
-            else {
+            let parent = match decision {
+                Decision::Proven(parent) => super::frames::Chosen::Positive(parent),
+                Decision::Refuted(parent) => super::frames::Chosen::Negative(parent),
+                _ => return Ok(Some(decision)),
+            };
+            let Some(formation) = &mut frame.formation else {
                 return Ok(Some(decision));
             };
             if let Some(key) = frame.key.take() {
@@ -105,7 +109,7 @@ impl Search<'_> {
             }
             formation.registered = true;
             formation.parent = Some(parent);
-            formation.children.push(parent);
+            formation.children.push(parent.node());
             // No refinement from a family's proof may escape before all of its
             // conditions finish. Already selected parent inputs remain known.
             return Ok(None);
@@ -133,8 +137,9 @@ impl Search<'_> {
         let parent = formation
             .parent
             .ok_or("family formation has no parent proof")?;
-        let proof = &self.query.nodes[parent];
+        let proof = &self.query.nodes[parent.node()];
         let node = Node {
+            debt_free: false,
             cycle_dependent: false,
             provisional_size: false,
             goal: proof.goal,
@@ -149,7 +154,10 @@ impl Search<'_> {
         };
         let selected = self.query.push(node, frame.scope, frame.first..frame.first);
         formation.finished = true;
-        Ok(Action::Complete(Decision::Proven(selected)))
+        Ok(Action::Complete(match parent {
+            super::frames::Chosen::Positive(_) => Decision::Proven(selected),
+            super::frames::Chosen::Negative(_) => Decision::Refuted(selected),
+        }))
     }
 
     pub(super) fn formation_child(
@@ -221,6 +229,7 @@ impl Search<'_> {
             .as_mut()
             .ok_or("missing family condition owner")?;
         match decision {
+            Decision::Refuted(_) => return Err("negative child was not classified".into()),
             Decision::Proven(node) => {
                 formation.children.push(node);
                 formation.cursor += 1;

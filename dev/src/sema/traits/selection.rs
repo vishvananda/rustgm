@@ -5,7 +5,9 @@ mod known_premises;
 mod memo;
 mod range_inputs;
 mod readiness;
+mod refutation;
 pub(in crate::sema) use range_inputs::range_element;
+pub(in crate::sema) use refutation::Refutation;
 mod result_templates;
 mod search;
 use super::assumptions::{Assumptions, ScopedEvidence, ScopedSelection as Assumed};
@@ -137,6 +139,7 @@ pub(in crate::sema) enum Selection {
     Absent,
     Deferred,
     Proven(Evidence),
+    Refuted(Refutation),
 }
 pub(in crate::sema) struct Caller<'a> {
     pub assumptions: &'a Assumptions,

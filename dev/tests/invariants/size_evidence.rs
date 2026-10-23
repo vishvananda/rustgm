@@ -78,7 +78,7 @@ fn hidden_sized_projection_preserves_each_callers_lifetime_debt()
                 let Decision::Proven(root) = search.run(&mut facts, frame)? else {
                     return Err("missing conditional sizedness proof".into());
                 };
-                let evidence = search.evidence(root)?;
+                let evidence = search.evidence(&facts, root)?;
                 assert_eq!(evidence.proof.regions.start, first);
                 assert!(!evidence.proof.is_empty());
                 assert_eq!(valid(&facts, &evidence.proof)?, expected);

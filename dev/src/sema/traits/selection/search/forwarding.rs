@@ -201,7 +201,9 @@ impl Search<'_> {
                     if frame.deferred || frame.partial.is_some() {
                         Decision::Deferred
                     } else {
-                        frame.selected.map_or(Decision::Absent, Decision::Proven)
+                        frame
+                            .selected
+                            .map_or(Decision::Absent, super::frames::Chosen::decision)
                     }
                 } else {
                     decision
@@ -243,6 +245,7 @@ impl Search<'_> {
         };
         let node = self.query.push(
             Node {
+                debt_free: false,
                 cycle_dependent: false,
                 provisional_size: false,
                 goal,

@@ -396,6 +396,7 @@ impl super::Query {
         self.allocations.record(regions.end);
         Ok(self.push(
             super::Node {
+                debt_free: false,
                 cycle_dependent: false,
                 provisional_size: false,
                 goal: evidence.premise.predicate,

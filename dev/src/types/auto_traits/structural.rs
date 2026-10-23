@@ -53,6 +53,10 @@ impl Query {
             Kind::Pointer { pointee, .. } => match marker {
                 AutoTrait::Send | AutoTrait::Sync => self.nodes[self.cursor].value = false,
                 AutoTrait::Unpin => {}
+                AutoTrait::Freeze => self.dependency(Obligation {
+                    ty: pointee,
+                    marker,
+                })?,
                 AutoTrait::UnwindSafe | AutoTrait::RefUnwindSafe => {
                     self.dependency(Obligation {
                         ty: pointee,

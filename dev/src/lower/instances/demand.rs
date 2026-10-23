@@ -72,6 +72,9 @@ impl Ordinary {
     ) -> Result<Option<Selected<'a>>, &'static str> {
         Ok(Some(match facts.types.kind(instance.ty()) {
             Some(Kind::FunctionItem { item, .. }) => {
+                if crate::sema::compiler_items::drop_glue_member(facts, DefId(item.0))? {
+                    return Err("source drop_glue runtime cleanup lowering is not implemented");
+                }
                 if let Some(kind) = facts
                     .source_bindings
                     .as_deref()

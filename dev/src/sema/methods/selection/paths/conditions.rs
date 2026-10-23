@@ -50,6 +50,10 @@ impl Pending {
                         self.query = Some(query);
                         return Ok(Progress::Pending(owner));
                     }
+                    selection::Progress::Ready(Selection::Refuted(refutation)) => {
+                        refutation.reject()?;
+                        return Ok(Progress::Ready(false));
+                    }
                     selection::Progress::Ready(Selection::Absent) => {
                         return Ok(Progress::Ready(false));
                     }

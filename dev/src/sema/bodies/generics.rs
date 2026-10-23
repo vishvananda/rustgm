@@ -320,6 +320,8 @@ impl Checker<'_> {
                 Some(Source::Builtin) => {
                     if crate::sema::compiler_items::sizing_predicate(self.facts, *predicate)
                         .map_err(|e| self.error(node, e))?
+                        || crate::sema::compiler_items::freeze_predicate(self.facts, *predicate)
+                            .map_err(|e| self.error(node, e))?
                         || crate::sema::compiler_items::destruct_predicate(self.facts, *predicate)
                             .map_err(|e| self.error(node, e))?
                         || crate::sema::compiler_items::tuple_predicate(self.facts, *predicate)

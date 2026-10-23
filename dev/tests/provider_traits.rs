@@ -17,6 +17,10 @@ mod cases;
 mod destructibility;
 #[path = "provider_traits/forbidden_cleanup.rs"]
 mod forbidden_cleanup;
+#[path = "provider_traits/freeze_cases.rs"]
+mod freeze_cases;
+#[path = "provider_traits/freezing.rs"]
+mod freezing;
 #[path = "provider_traits/native.rs"]
 pub(super) mod native;
 #[path = "provider_traits/signature_views.rs"]

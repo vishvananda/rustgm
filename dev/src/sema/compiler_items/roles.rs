@@ -1,7 +1,11 @@
 //! Source roles become usable only after their actual complete headers validate.
 mod copying;
 mod destructibility;
+mod freezing;
+mod glue;
 pub(crate) use destructibility::destruct_predicate;
+pub(crate) use freezing::predicate as freeze_predicate;
+pub(crate) use glue::member as drop_glue_member;
 mod invocation;
 use super::Catalog;
 use crate::{
@@ -63,6 +67,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         LangItem::Fn,
         LangItem::Drop,
         LangItem::Destruct,
+        LangItem::Freeze,
     ] {
         let Some(declaration) = catalog.language(role) else {
             continue;
@@ -79,6 +84,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
                 &mut complete.roles,
             )?,
             LangItem::Tuple => validate_marker(report, facts, declaration)?,
+            LangItem::Freeze => freezing::validate(report, facts, declaration)?,
             LangItem::Drop | LangItem::Destruct => {
                 destructibility::validate(report, facts, catalog, declaration, role, self_type)?;
             }
@@ -100,6 +106,10 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
             }
         }
         complete.roles |= 1 << role.index();
+    }
+    if let Some(declaration) = catalog.language(LangItem::DropGlue) {
+        glue::validate(report, facts, catalog, declaration, complete.roles)?;
+        complete.roles |= 1 << LangItem::DropGlue.index();
     }
     for role in [LangItem::CloneFn, LangItem::FnOnceOutput] {
         if let Some(declaration) = catalog.language(role)
@@ -172,8 +182,10 @@ fn header(
         || definition.kind != DefKind::Trait
         || owner.source != declaration.origin
         || schema.captures != 0
-        || !matches!(owner.kind, OwnerKind::Trait { definition, unsafe_: false, constant: actual }
-            if definition == declaration.definition && actual == constant)
+        || !matches!(owner.kind, OwnerKind::Trait { definition, unsafe_: actual_unsafe, constant: actual, auto_: actual_auto }
+            if definition == declaration.definition && actual == constant
+                && actual_unsafe == (role == LangItem::Freeze)
+                && actual_auto == (role == LangItem::Freeze))
     {
         return Err(error(
             "source trait header is outside the pinned provider profile",

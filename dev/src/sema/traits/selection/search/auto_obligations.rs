@@ -57,6 +57,22 @@ impl Search<'_> {
                     return Ok(ControlFlow::Break(Action::Wait(Dependency::Fields(item))));
                 }
                 Step::Proof(obligation)
+                    if root.marker == crate::types::auto_traits::AutoTrait::Freeze =>
+                {
+                    if obligation == root {
+                        // An abstract source application requires its actual
+                        // caller premise; physical shape supplies no permission.
+                        pending.query.answer(obligation, false)?;
+                    } else {
+                        pending.needed = Some(Leaf {
+                            requested: obligation,
+                            proof: obligation,
+                            reveal: false,
+                        });
+                        return Ok(ControlFlow::Break(Action::Descend));
+                    }
+                }
+                Step::Proof(obligation)
                     if matches!(
                         facts.types.kind(obligation.ty),
                         Some(Kind::Projection(_) | Kind::Adt(..))
@@ -135,6 +151,11 @@ impl Search<'_> {
         let first = pending.end.max(self.query.allocations.floor());
         let mut substitution =
             Instantiation::new(&mut frame.inputs.context, &facts.types, &[]).map_err(inference)?;
+        let bound = if needed.proof.marker == crate::types::auto_traits::AutoTrait::Freeze {
+            super::freezing::bound(facts)?
+        } else {
+            Bound::Auto(needed.proof.marker)
+        };
         let goal = frame
             .inputs
             .context
@@ -142,7 +163,7 @@ impl Search<'_> {
                 &mut facts.types,
                 Predicate {
                     ty: needed.proof.ty,
-                    bound: Bound::Auto(needed.proof.marker),
+                    bound,
                 },
                 &mut substitution,
             )
@@ -166,6 +187,7 @@ impl Search<'_> {
             .take()
             .ok_or("missing auto-trait proof request")?;
         let satisfied = match decision {
+            Decision::Refuted(_) => return Err("negative child was not classified".into()),
             Decision::Proven(index) => {
                 pending.children.push(index);
                 pending.end = pending.end.max(self.query.nodes[index].end);
@@ -183,6 +205,9 @@ impl Search<'_> {
 }
 
 impl Pending {
+    pub(super) fn source_freeze(&self) -> bool {
+        self.root.marker == crate::types::auto_traits::AutoTrait::Freeze
+    }
     pub(super) fn revealing(&self) -> bool {
         self.needed.as_ref().is_some_and(|leaf| leaf.reveal)
     }
@@ -230,6 +255,15 @@ impl Pending {
             &mut facts.types,
             &mut facts.aggregates,
             |types, obligation| {
+                if obligation.marker == crate::types::auto_traits::AutoTrait::Freeze {
+                    // Every immediate child returns through actual source
+                    // selection before structural propagation can use it.
+                    return Ok(if obligation == self.root {
+                        Rule::Structural
+                    } else {
+                        Rule::External
+                    });
+                }
                 if environment.map_or(Ok(false), |environment| {
                     environment.matching_auto(types, obligation, &mut self.permissions)
                 })? {

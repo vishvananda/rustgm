@@ -18,6 +18,7 @@ impl Search<'_> {
             // out of completed caches while any sibling obligation is open.
             let index = self.query.push(
                 Node {
+                    debt_free: false,
                     cycle_dependent: true,
                     provisional_size: false,
                     goal,
@@ -67,10 +68,13 @@ impl super::Query {
     /// assumption has no completed frame key and must never replace that proof.
     pub(super) fn remember_auto(&mut self, frame: &Frame, goal: Predicate, decision: Decision) {
         if frame.key.is_some()
-            && matches!(
+            && (matches!(
                 goal.bound,
                 crate::types::parameters::predicates::Bound::Auto(_)
-            )
+            ) || frame
+                .autos
+                .as_deref()
+                .is_some_and(super::auto_obligations::Pending::source_freeze))
         {
             self.auto_provisional
                 .entry(frame.auto_segment)
@@ -85,13 +89,17 @@ impl super::Query {
 
     pub(super) fn prepare_auto_child(&mut self, frame: &Frame, child: &mut Frame) {
         if !child.started {
-            if matches!(
+            if (matches!(
                 frame.goal.builtin_bound(),
                 Some(crate::types::parameters::predicates::Bound::Auto(_))
-            ) && !frame
+            ) || frame
                 .autos
-                .as_ref()
-                .is_some_and(|pending| pending.revealing())
+                .as_deref()
+                .is_some_and(super::auto_obligations::Pending::source_freeze))
+                && !frame
+                    .autos
+                    .as_ref()
+                    .is_some_and(|pending| pending.revealing())
             {
                 child.auto_segment = frame.auto_segment;
             } else {

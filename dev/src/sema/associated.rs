@@ -39,6 +39,7 @@ pub struct OwnerId(pub u32);
 pub enum OwnerKind {
     Trait {
         definition: DefId,
+        auto_: bool,
         unsafe_: bool,
         constant: bool,
     },
@@ -384,7 +385,10 @@ fn owner_kind(
     };
     match ast.items[index as usize].kind {
         ItemKind::Trait {
-            unsafe_, constant, ..
+            auto_,
+            unsafe_,
+            constant,
+            ..
         } => {
             let module = report.resolution.scopes[scope.0 as usize].module;
             let definition = *report
@@ -392,8 +396,19 @@ fn owner_kind(
                 .item_definitions
                 .get(&(module, source.node, Namespace::Type))
                 .ok_or_else(|| error("missing trait declaration identity"))?;
+            if auto_
+                && !report
+                    .resolution
+                    .source_bindings
+                    .as_deref()
+                    .and_then(|r| r.language(crate::support::bindings::LangItem::Freeze))
+                    .is_some_and(|actual| actual.definition == definition)
+            {
+                return Err(error("custom source auto traits are not implemented"));
+            }
             Ok(OwnerKind::Trait {
                 definition,
+                auto_,
                 unsafe_,
                 constant,
             })

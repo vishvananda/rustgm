@@ -77,7 +77,7 @@ fn nested_header_waits_keep_private_lifetimes_disjoint_from_declaration_allocati
             return Err("interleaved lifetime query was not proved".into());
         };
         assert!(search.resume_at(search.query.allocations.end()).is_err());
-        let evidence = search.evidence(root)?;
+        let evidence = search.evidence(&facts, root)?;
         assert_eq!(evidence.proof.owned_regions().count(), depth + 1);
         let mut restore = evidence.proof.body_restoration()?;
         for interval in &foreign {
@@ -369,7 +369,7 @@ fn input_normalization_suspends_for_its_actual_trait_premise()
     let Progress::Ready(Decision::Proven(root)) = search.poll(&mut facts)? else {
         return Err("normalization did not resume after its header dependency".into());
     };
-    let proof = search.evidence(root)?;
+    let proof = search.evidence(&facts, root)?;
     assert!(matches!(proof.source, super::Source::Implementation { .. }));
     Ok(())
 }

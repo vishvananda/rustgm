@@ -56,8 +56,9 @@ impl super::super::comparisons::LibraryContracts<'_> {
             .implementations
             .as_mut()
             .ok_or_else(|| Error::at(source.file, 0, "missing Clone header inventory"))?
-            .prepare(
+            .prepare_factory(
                 &mut self.facts.types,
+                &self.facts.associated,
                 ItemId(canonical.definition.0),
                 Implementation {
                     owner: declaration.definition,

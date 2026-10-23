@@ -101,7 +101,7 @@ fn retained_candidate_waits_for_its_condition_header_after_caller_inference() ->
     };
     context.equate_proved_predicate(&mut facts.types, &goal, search.query.nodes[root].goal)?;
     assert!(search.query.suspended.iter().all(Option::is_none));
-    let evidence = search.evidence(root)?;
+    let evidence = search.evidence(&facts, root)?;
     assert_eq!(evidence.proof.owned_regions().count(), 0);
     for id in 1..7 {
         assert!(!evidence.proof.owns_region(crate::types::RegionId(id)));
@@ -205,7 +205,7 @@ fn deep_retained_conditions_have_flat_storage_and_bounded_work() -> TestResult {
         assert_eq!(search.query.suspended.len(), slots);
         assert!(search.query.suspended.iter().all(Option::is_none));
         assert_eq!(search.query.nodes.len(), depth + 1);
-        let proof = search.evidence(root)?;
+        let proof = search.evidence(&facts, root)?;
         assert_eq!(proof.proof.owned_regions().count(), 0);
         assert!(
             before <= 200 * (depth + 1),

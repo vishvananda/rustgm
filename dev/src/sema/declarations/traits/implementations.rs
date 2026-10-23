@@ -2,6 +2,7 @@
 mod constants;
 mod copying;
 mod methods;
+mod negative;
 mod orphans;
 mod readiness;
 pub(in crate::sema::declarations) use readiness::Readiness;
@@ -59,13 +60,25 @@ impl Checker<'_> {
         unsafe_: bool,
         negative: bool,
     ) -> Result<(), Error> {
-        if negative {
+        let (path, definition) = self.resolved_impl_trait_path(path)?;
+        if self
+            .facts
+            .source_bindings
+            .as_deref()
+            .and_then(|catalog| catalog.language(crate::support::bindings::LangItem::Freeze))
+            .is_some_and(|role| role.definition == definition)
+            && !self
+                .report
+                .package
+                .source_core
+                .as_deref()
+                .is_some_and(crate::resolve::bindings::SourceCore::permits_freeze_impls)
+        {
             return Err(self.error(
                 owner.source,
-                "negative trait implementations require trait coherence",
+                "explicit source Freeze implementations require freeze_impls",
             ));
         }
-        let (path, definition) = self.resolved_impl_trait_path(path)?;
         if self
             .report
             .resolution
@@ -78,13 +91,31 @@ impl Checker<'_> {
                 "explicit implementation is prohibited by its source trait declaration",
             ));
         }
-        if self.impl_trait_safety(path, definition)? != unsafe_ {
+        let trait_unsafe = self.impl_trait_safety(path, definition)?;
+        if if negative {
+            unsafe_
+        } else {
+            trait_unsafe != unsafe_
+        } {
             return Err(self.error(
                 owner.source,
                 "trait and implementation safety declarations disagree",
             ));
         }
-        if matches!(self.impl_trait_identity(definition), Identity::Auto(_)) {
+        let auto_ = matches!(self.impl_trait_identity(definition), Identity::Auto(_))
+            || self
+                .facts
+                .associated
+                .owner(definition)
+                .and_then(|id| self.facts.associated.get(id))
+                .is_some_and(|owner| matches!(owner.kind, OwnerKind::Trait { auto_: true, .. }));
+        if negative && !auto_ {
+            return Err(self.error(
+                owner.source,
+                "negative non-auto trait selection is not implemented",
+            ));
+        }
+        if auto_ {
             self.trait_bound(path)?;
             if self
                 .facts
@@ -157,9 +188,11 @@ impl Checker<'_> {
             .generics
             .implementations
             .get_or_insert_with(Default::default)
-            .prepare(
+            .prepare_source(
                 &mut self.facts.types,
+                &self.facts.associated,
                 identity,
+                owner,
                 Implementation {
                     owner: owner.self_definition,
                     source: owner.source,

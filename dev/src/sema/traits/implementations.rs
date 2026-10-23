@@ -3,7 +3,10 @@ mod identity;
 mod member_contracts;
 pub(in crate::sema) use identity::Identity;
 mod pending;
+mod polarity;
 pub(in crate::sema) use pending::{Candidates, Header as PendingHeader};
+pub(in crate::sema) use polarity::Polarity;
+use polarity::Status;
 pub(in crate::sema) mod overlap;
 use super::heads::{Head, Subject};
 use crate::support::hash::HashMap;
@@ -34,7 +37,7 @@ pub struct Implementation {
 }
 struct Entry {
     value: Implementation,
-    validated: bool,
+    status: Status,
     checked_constants: HashMap<DefId, DefId>,
 }
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
@@ -76,6 +79,15 @@ impl Implementations {
                 .is_some_and(|pending| pending.may_have_subject(identity, Subject::Rigid(head)))
     }
 
+    /// An actual source auto impl replaces the structural default for its
+    /// entire typed head family, independently of a particular RHS match.
+    pub(in crate::sema) fn source_auto_override(&self, item: ItemId, kind: Kind) -> bool {
+        let identity = Identity::User(item);
+        self.heads
+            .contains_key(&(identity, Some(Head::canonical(kind))))
+            || self.heads.contains_key(&(identity, None))
+    }
+
     /// Reserve the complete source inventory before any early candidate selection.
     pub fn reserve(&mut self, headers: Vec<PendingHeader>) -> Result<(), &'static str> {
         if self.pending.is_some() || !self.entries.is_empty() || self.headers != Headers::Open {
@@ -109,7 +121,9 @@ impl Implementations {
         self.headers == Headers::Validated
     }
     pub(in crate::sema) fn finish_validation(&mut self) -> Result<(), &'static str> {
-        if self.headers == Headers::Open || self.entries.iter().any(|entry| !entry.validated) {
+        if self.headers == Headers::Open
+            || self.entries.iter().any(|entry| !entry.status.validated())
+        {
             return Err("implementation inventory contains unvalidated declarations");
         }
         self.headers = Headers::Validated;
@@ -267,19 +281,29 @@ impl Implementations {
         context.account_work(bucket.map_or(0, Vec::len))?;
         for &index in bucket.into_iter().flatten() {
             let entry = &self.entries[index];
-            if entry.validated || matches!(availability, Availability::Declarations) {
+            if entry.status.validated() || matches!(availability, Availability::Declarations) {
                 output.push(entry.value.owner);
             }
         }
         Ok(())
     }
+    #[cfg(test)]
     pub fn prepare(
         &mut self,
         store: &mut Store,
         item: impl Into<Identity>,
         value: Implementation,
     ) -> Result<(), &'static str> {
-        let item = item.into();
+        self.prepare_with_status(store, item.into(), value, Status::PositiveHeader)
+    }
+
+    fn prepare_with_status(
+        &mut self,
+        store: &mut Store,
+        item: Identity,
+        value: Implementation,
+        status: Status,
+    ) -> Result<(), &'static str> {
         if self.headers != Headers::Open
             && (!value.constants.is_empty()
                 || !self
@@ -357,7 +381,7 @@ impl Implementations {
         }
         self.entries.push(Entry {
             value,
-            validated: false,
+            status,
             checked_constants: HashMap::default(),
         });
         Ok(())
@@ -383,17 +407,17 @@ impl Implementations {
     pub fn validated(&self) -> impl Iterator<Item = &Implementation> {
         self.entries
             .iter()
-            .filter(|entry| entry.validated)
+            .filter(|entry| entry.status.validated())
             .map(|entry| &entry.value)
     }
     pub fn is_validated(&self, owner: DefId) -> bool {
         self.owners
             .get(&owner)
-            .is_some_and(|&index| self.entries[index].validated)
+            .is_some_and(|&index| self.entries[index].status.validated())
     }
     pub fn method(&self, owner: DefId, declaration: DefId) -> Option<DefId> {
         let entry = &self.entries[*self.owners.get(&owner)?];
-        if !entry.validated {
+        if !entry.status.validated() {
             return None;
         }
         let index = entry
@@ -405,7 +429,7 @@ impl Implementations {
     }
     pub fn constant(&self, owner: DefId, declaration: DefId) -> Option<DefId> {
         let entry = &self.entries[*self.owners.get(&owner)?];
-        if !entry.validated {
+        if !entry.status.validated() {
             return None;
         }
         let index = entry
@@ -427,8 +451,13 @@ impl Implementations {
             .get(&owner)
             .ok_or("missing prepared trait implementation")?;
         let entry = &mut self.entries[index];
-        if entry.validated {
+        if entry.status.validated() {
             return Err("trait implementation was validated twice");
+        }
+        if entry.status.negative()
+            && (!methods.is_empty() || !types.is_empty() || !constants.is_empty())
+        {
+            return Err("negative implementation cannot publish members");
         }
         methods.sort_unstable_by_key(|(declaration, _)| declaration.0);
         if methods.windows(2).any(|pair| pair[0].0 == pair[1].0) {
@@ -453,7 +482,7 @@ impl Implementations {
         entry.value.methods = methods;
         entry.value.types = types;
         entry.value.constants = constants;
-        entry.validated = true;
+        entry.status = entry.status.complete();
         Ok(())
     }
 }

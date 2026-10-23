@@ -127,6 +127,10 @@ impl Checker<'_> {
                 Selection::Proven(evidence) => {
                     self.retain_trait_evidence(node, evidence)?;
                 }
+                Selection::Refuted(refutation) => {
+                    refutation.reject().map_err(|e| self.error(node, e))?;
+                    return Err(self.error(node, "selected call permission is explicitly refuted"));
+                }
                 Selection::Deferred => {}
                 Selection::Absent => {
                     return Err(self.error(node, "selected call permission changed"));

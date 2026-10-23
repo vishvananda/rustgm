@@ -512,7 +512,7 @@ fn recursive_result_inputs_reuse_their_completed_parent_proofs()
             edges < 8 * (depth + 1),
             "depth {depth}: {edges} proof edges"
         );
-        let evidence = search.evidence(root)?;
+        let evidence = search.evidence(&facts, root)?;
         assert!(evidence.proof.regions.is_empty());
         assert!(evidence.proof.equalities.is_empty());
     }
@@ -584,7 +584,7 @@ fn cached_normalized_result_keeps_its_inputs_lifetime_equations()
         })
         .ok_or("missing reusable derived result")?;
     // This child must remain valid even if its original candidate is discarded.
-    let proof = search.evidence(cached)?;
+    let proof = search.evidence(&facts, cached)?;
     assert!(proof.proof.regions.is_empty());
     assert!(proof.proof.equalities.iter().any(
         |&(a, b)| (a, b) == (RegionId(1), RegionId(2)) || (a, b) == (RegionId(2), RegionId(1))
@@ -668,7 +668,7 @@ fn normalized_inputs_keep_fresh_impl_debts_out_of_the_reusable_cache()
             .iter()
             .all(|(predicate, _)| facts.types.contains_projections(predicate.ty) == Some(false))
     );
-    let proof = search.evidence(root)?;
+    let proof = search.evidence(&facts, root)?;
     assert!(proof.proof.regions.end > 3);
     assert!(!proof.proof.outlives.is_empty());
     assert!(!proof.proof.equalities.is_empty());
