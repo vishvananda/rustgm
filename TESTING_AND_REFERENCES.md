@@ -15,8 +15,8 @@ List the mapping with `python3 scripts/maintainer_suites.py list`.
 Focused selection retains the original suite name:
 
 ```sh
-python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run constant_patterns --release
-python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run lexer --release --case lifetime_and_character_boundaries
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run constant_patterns
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run lexer --case lifetime_and_character_boundaries
 ```
 
 Add `--ignored` to run a suite's backend and interoperability controls.
@@ -26,6 +26,25 @@ Unknown cases and empty selections fail. `--list` shows that selected inventory.
 Cargo's ordinary filters match substrings, so a bare `loans::` filter can also
 select `template_loans::`; use the runner for suite selection. Apply the ordinary
 resource/storage wrapper to direct Cargo commands.
+
+Batch related selections to compile their targets once. The batch runner reads
+Cargo's executable records, enumerates each binary, excludes ignored tests from
+the ordinary lane, and runs the union of exact names once per binary. Missing,
+overlapping and empty selections fail. It also checks the executed count against
+the selected inventory; a successful zero-test process cannot qualify a batch.
+The private library lane accepts complete test paths, with no substring filters:
+
+```sh
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py batch lexer constant_patterns
+python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py batch lexer --lib-case resolve::body_origin::tests::example
+```
+
+The private path above illustrates the syntax; choose an existing test from the
+library inventory. Add `--release` for optimization-sensitive controls and
+`--ignored` for native controls. Each batch creates a fresh directory under
+`obj/qualification/focused/` with commands, raw output, timings, binary hashes,
+exact inventories and terminal status. `--evidence-root obj/NEW-BATCH` chooses
+that directory explicitly. A listing receipt is never recorded as a passing run.
 
 Object interoperability tests are always registered and retain their explicit
 `#[ignore]` markers. Select them with `--ignored`, like the other native tests;
@@ -45,17 +64,30 @@ itself invalidate every compiler measurement or require another full native run.
   native controls when lowering or runtime behavior is involved. Run formatting,
   strict Clippy, file/layout audits and harness checks early, before investing in
   a complete qualification run. Fix wiring failures before broadening tests.
+  Settle related fixture and test edits first, then run all-target strict Clippy
+  as the type/lint gate instead of running both `cargo check` and Clippy. Use
+  focused debug tests for ordinary private invariants: changes to `cfg(test)`
+  still rebuild the library, but debug code generation is substantially cheaper.
+  Do not rebuild release test binaries for each test-only correction. Performance
+  measurements and optimization-sensitive failures still require release builds.
 - Keep all active PA text suites as a cheap candidate regression check. These
   protect the supported language; planned-stage rejection is not evidence for
   the semantic rule a new negative test is intended to exercise.
 - Before pushing a compiler checkpoint, run the full release Cargo tests, native
   maintainer tests, lint/audits/harness, all active PA text suites and independent
-  source/native suites for affected assignments. Verify upstream fixtures after
+  source/native suites for affected assignments. `make test-maintainer` runs
+  regular and ignored maintainer tests together in release after qualifying the
+  backend, with one Cargo invocation and one cleanup scan. It replaces separate
+  full regular/private/native passes; do not also run `--lib` and then repeat those
+  same tests in the full suite. Run `make test-report` for the course text checks.
+  Verify upstream fixtures after
   fixture changes and qualify the backend after contract/bridge changes. Preserve
   the receipts for the exact candidate tested.
 - Before releasing an assignment or new grading contract, run all active earlier
   independent source/native suites and the owning handout's release checks.
   Independently qualify new outcomes before generating and reviewing oracles.
+  Run `make test-debug` at assignment release to retain the complete debug-profile
+  execution check, including overflow and assertion behavior.
 - For hot-path development, measure changed-path scaling inputs and a common-case
   control with immutable binaries, A/A calibration, paired ABBA blocks and output
   equality. Include algorithmic work/storage invariants where relevant. Run the
@@ -66,7 +98,15 @@ itself invalidate every compiler measurement or require another full native run.
 After checks pass, repeat only what subsequent changes, failures or unresolved
 concerns invalidate. Documentation-only edits after a measured snapshot do not
 require rebuilding an unchanged compiler; retain the original snapshot and
-identify those later edits separately. Keep the existing CI checks. Use the
+identify those later edits separately. `make test` uses release throughout and
+lets Cargo build the CLI needed by integration tests, avoiding an extra initial
+CLI build. `make test-maintainer-native` uses the same release artifacts. CI runs
+the full release suite once, all debug library invariants, course text, strict
+lint, architecture/harness/upstream and independent source checks. It no longer
+builds and executes all 13 integration binaries in both profiles on every push.
+The debug library lane retains the compiler's assertion-only validation paths;
+the full debug integration lane remains available through `make test-debug`.
+Use the
 storage guard throughout, with scoped cleanup when all output roots are known.
 
 For a validation batch, pass `scripts/course.py --evidence-root obj/BATCH/course`

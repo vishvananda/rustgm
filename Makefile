@@ -8,12 +8,18 @@ ACTIVE_PAS := pa1 pa2 pa3 pa4 pa5 pa6 pa7 pa8 pa9 pa10 pa11 pa12 pa13 pa14 pa15 
 RUSTGM_TEST_APP ?= $(ROOT)/dev/rustgm
 REF_TEST_APP ?= $(ROOT)/dev/rustgm-ref
 
-.PHONY: all test test-report ref-test lint setup-audit audit-rust test-harness test-backend test-native test-maintainer-native test-layouts test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-layouts perf-body-ir perf-ownership perf-lowir clean tidy tidy-build check-space
+.PHONY: all test test-debug test-debug-invariants test-maintainer test-report ref-test lint setup-audit audit-rust test-harness test-backend test-native test-maintainer-native test-layouts test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-layouts perf-body-ir perf-ownership perf-lowir clean tidy tidy-build check-space
 all:
 	$(PYTHON) scripts/storage.py run --no-prune -- $(CARGO) build --manifest-path dev/Cargo.toml --release --locked
-test: all
-	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --locked
+test:
+	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
+test-debug:
+	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --locked
+test-debug-invariants:
+	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --locked --lib
+test-maintainer: test-backend
+	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked -- --include-ignored
 test-report: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
 	@echo 'PA25-PA44: planned, not included in acceptance totals'
@@ -38,9 +44,9 @@ test-harness:
 	$(PYTHON) scripts/check_layout.py
 test-backend:
 	$(PYTHON) scripts/backend.py --test
-test-maintainer-native: all test-backend
-	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --locked -- --ignored
-test-native: all test-maintainer-native
+test-maintainer-native: test-backend
+	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked -- --ignored
+test-native: test-maintainer-native
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa11 --app "$(RUSTGM_TEST_APP)"
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa12 --app "$(RUSTGM_TEST_APP)"
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa13 --app "$(RUSTGM_TEST_APP)"

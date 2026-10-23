@@ -170,6 +170,19 @@ active text suites as a candidate regression check when the checkpoint is cohere
 Coordinate full suites and broad performance matrices with the integrator.
 Do not mutate the source while a build or qualification is running.
 
+Use all-target strict Clippy before code generation to catch type/lint failures
+in both new tests and production code. A separate `cargo check` normally repeats
+that work. Settle related test edits first, then use debug focused tests, batching
+suite and exact private selections with `scripts/maintainer_suites.py batch`.
+Keep release code generation for optimization-sensitive checks, performance and
+the combined integration checkpoint. Workers do not each repeat the full release
+suite; the integrator runs it once against the merged candidate. Local
+`make test-maintainer` includes regular and native tests in the same release
+build and performs one cleanup scan. Existing successful independent observations
+can be cited for identical frozen inputs/toolchain/profile; candidate execution
+and candidate-specific proofs must still be checked after integration. Do not
+turn an object-only rustc observation into executable or runtime qualification.
+
 For hot-path changes, apply the frontend performance precedent in `spec.md`:
 identify repeated work removed, cache and ownership boundaries, and dimensions
 that can multiply work. Include cold, warm and invalidated controls where

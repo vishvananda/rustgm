@@ -114,11 +114,20 @@ def main():
     run.add_argument("--case", help="exact test path within the suite, including nested modules")
     for flag in ("release", "all-features", "ignored", "list"):
         run.add_argument("--" + flag, action="store_true")
+    batch = actions.add_parser("batch", help="build once for several exact suite/case selections")
+    batch.add_argument("suites", nargs="*", metavar="SUITE[::CASE]")
+    batch.add_argument("--lib-case", action="append", default=[], help="exact private test path")
+    batch.add_argument("--evidence-root", help="fresh evidence directory inside obj")
+    for flag in ("release", "all-features", "ignored", "list"):
+        batch.add_argument("--" + flag, action="store_true")
     args = parser.parse_args()
     try:
         suites = discover()
         if args.action == "run":
             return run_suite(suites, args)
+        if args.action == "batch":
+            from maintainer_batch import run_batch
+            return run_batch(suites, args, root=ROOT)
         if args.action == "list":
             for suite, target in sorted(suites.items()):
                 print(f"{suite}: {target}")
