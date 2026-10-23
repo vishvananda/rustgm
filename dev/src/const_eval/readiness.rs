@@ -5,6 +5,29 @@ use super::{
 };
 use crate::sema::values::Reader;
 impl Machine<'_, '_> {
+    /// Only actual registered source inline bodies enter the source value cache.
+    pub(super) fn start_source_inline(&mut self, body: &super::code::Code) -> Result<(), Failure> {
+        if !matches!(body.owner, crate::body::ir::Owner::AnonymousConstant) {
+            return Ok(());
+        }
+        let Some(source) = body.source.source() else {
+            return Ok(());
+        };
+        if self
+            .evaluator
+            .facts()
+            .inline_constants
+            .as_deref()
+            .is_none_or(|registry| registry.get(source).is_none())
+        {
+            return Ok(());
+        }
+        self.evaluator.require_inline(source, body.result)?;
+        if !self.active_inline.insert(source) {
+            return Err(Failure::Fault("cycle in inline constant values"));
+        }
+        Ok(())
+    }
     pub(super) fn cast(
         &mut self,
         kind: crate::sema::model::Cast,

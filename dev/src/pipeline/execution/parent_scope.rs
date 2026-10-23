@@ -42,7 +42,7 @@ impl Context {
             Ok(())
         })();
         if let Err(error) = enter {
-            return Err(Declarations::error(report, source, error));
+            return Err(report.body_error(source, error));
         }
         // The wrapper retains the same immutable Proved while the provider holds
         // only its cold scope guard. No Engine borrow spans executor callbacks.
@@ -59,7 +59,7 @@ impl Context {
                 .ok_or("active parent ownership disappeared")?;
             engine.retire_parent(facts, *active, result.is_ok())
         })();
-        result.and_then(|()| restored.map_err(|e| Declarations::error(report, source, e)))
+        result.and_then(|()| restored.map_err(|e| report.body_error(source, e)))
     }
 }
 
@@ -199,7 +199,7 @@ impl Engine {
             }
             let pending = active.owner.pending();
             if let Target::Anonymous { instance, result } = target
-                && pending.has_source(instance.source())
+                && pending.has_source(instance.source().into())
             {
                 pending.request(
                     facts,

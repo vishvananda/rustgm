@@ -14,6 +14,7 @@ use crate::support::hash::HashMap;
 use std::sync::Arc;
 
 pub struct Imported {
+    origins: super::body_origin::CatalogSlot,
     dependencies: Arc<Dependencies>,
     definitions: HashMap<ExternalDef, DefId>,
     functions: Vec<(DefId, usize, usize)>,
@@ -22,6 +23,22 @@ pub struct Imported {
     statics: Vec<(DefId, usize, usize)>,
 }
 impl Imported {
+    fn new(dependencies: Arc<Dependencies>) -> Self {
+        Self {
+            origins: super::body_origin::CatalogSlot::default(),
+            dependencies,
+            definitions: HashMap::default(),
+            functions: Vec::new(),
+            constants: Vec::new(),
+            records: Vec::new(),
+            statics: Vec::new(),
+        }
+    }
+    pub(crate) fn origin_catalog(
+        &self,
+    ) -> Result<Option<std::rc::Rc<super::body_origin::Catalog>>, &'static str> {
+        self.origins.shared()
+    }
     #[must_use]
     pub fn dependencies(&self) -> &Dependencies {
         &self.dependencies
@@ -80,14 +97,7 @@ impl Resolver<'_> {
     pub(super) fn import_crates(&mut self, dependencies: Arc<Dependencies>) -> Result<(), Error> {
         let external = self.new_scope(None, ModuleId(0), true)?;
         let artifacts = Arc::clone(&dependencies);
-        let mut imported = Imported {
-            dependencies,
-            definitions: HashMap::default(),
-            functions: Vec::new(),
-            constants: Vec::new(),
-            records: Vec::new(),
-            statics: Vec::new(),
-        };
+        let mut imported = Imported::new(dependencies);
         for (artifact_index, artifact) in artifacts.artifacts().iter().enumerate() {
             let scope = self.new_scope(None, ModuleId(0), true)?;
             let name = self
@@ -176,6 +186,7 @@ impl Resolver<'_> {
                 .map_err(error)?;
         }
         self.facts.extern_scope = Some(external);
+        imported.origins.freeze().map_err(error)?;
         self.facts.crates = Some(Box::new(imported));
         Ok(())
     }

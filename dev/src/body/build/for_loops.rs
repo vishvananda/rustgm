@@ -19,7 +19,7 @@ impl Builder<'_> {
             .as_deref()
             .and_then(|r| {
                 r.plans.get(&crate::resolve::unit::NodeKey {
-                    file: self.body.source.file,
+                    file: self.source.file,
                     node,
                 })
             })

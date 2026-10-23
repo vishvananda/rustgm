@@ -1,6 +1,6 @@
 //! Exact original ports carry transport data, never paid-parent authority.
 use super::{
-    ir::{Body, BodyKey, Owner, Rvalue, ValueId},
+    ir::{Body, BodyKey, BodyOrigin, Owner, Rvalue, ValueId},
     regions::{Contract, Obligation, OutputLink},
 };
 use crate::support::hash::{HashMap, HashSet};
@@ -18,15 +18,15 @@ const LIMIT: usize = 1_000_000;
 const BYTES: usize = 64 * 1024 * 1024;
 
 pub(crate) struct Child {
-    pub parent: NodeKey,
+    pub parent: BodyOrigin,
     pub link: Arc<OutputLink>,
     pub requirements: Vec<Obligation>,
     pub conditions: Option<Arc<[Pair]>>,
 }
 #[derive(Default)]
 pub(crate) struct Sources {
-    children: HashMap<NodeKey, Child>,
-    parents: HashMap<NodeKey, Vec<NodeKey>>,
+    children: HashMap<BodyOrigin, Child>,
+    parents: HashMap<BodyOrigin, Vec<BodyOrigin>>,
     bytes: usize,
     pub steps: usize,
 }
@@ -42,7 +42,7 @@ pub(crate) struct Port {
 pub(crate) struct Pending {
     epoch: DeclarationEpoch,
     key: BodyKey,
-    source: NodeKey,
+    source: BodyOrigin,
     // One owner for all exact child ports; identical numeric regions elsewhere
     // cannot join this immutable parent interface.
     unit: NodeKey,
@@ -91,8 +91,8 @@ impl Child {
             .ok_or("conditional child lost its source link")?;
         if actual != instance
             || instance.enclosing() != crate::sema::inline_constants::Context::Callable(enclosing)
-            || row.parent_body != body.source
-            || row.context_owner() != body.source
+            || BodyOrigin::from(row.parent_body) != body.source
+            || BodyOrigin::from(row.context_owner()) != body.source
             || owner_unit(facts, instance.source(), work) != unit
             || !Arc::ptr_eq(link, &self.link)
             || self.link.formation.is_some()
@@ -138,8 +138,8 @@ impl Sources {
     }
     pub fn insert(
         &mut self,
-        source: NodeKey,
-        parent: NodeKey,
+        source: BodyOrigin,
+        parent: BodyOrigin,
         link: &Arc<OutputLink>,
         requirements: &[Obligation],
         conditions: Option<&Arc<[Pair]>>,
@@ -148,11 +148,12 @@ impl Sources {
             .bytes
             .saturating_add(size_of::<Child>())
             .saturating_add(requirements.len().saturating_mul(size_of::<Obligation>()))
-            .saturating_add(crate::support::retained::new_map::<NodeKey, Child>(1))
-            .saturating_add(crate::support::retained::new_map::<NodeKey, Vec<NodeKey>>(
-                1,
-            ))
-            .saturating_add(4 * size_of::<NodeKey>());
+            .saturating_add(crate::support::retained::new_map::<BodyOrigin, Child>(1))
+            .saturating_add(crate::support::retained::new_map::<
+                BodyOrigin,
+                Vec<BodyOrigin>,
+            >(1))
+            .saturating_add(4 * size_of::<BodyOrigin>());
         if self.children.len() >= LIMIT || bytes > BYTES {
             return Err("conditional original ports exceed storage budget");
         }
@@ -183,7 +184,13 @@ impl Sources {
             return Ok(None);
         }
         let enclosing = parent_context(facts, body, input)?;
-        let unit = owner_unit(facts, body.source, &mut self.steps);
+        let unit = owner_unit(
+            facts,
+            body.source
+                .source()
+                .ok_or("conditional source caller has no real source owner")?,
+            &mut self.steps,
+        );
         let mut ports = Vec::new();
         let mut seen = HashSet::default();
         let mut obligations = Vec::new();
@@ -195,7 +202,7 @@ impl Sources {
             let Rvalue::InlineInstance(instance) = value.kind else {
                 continue;
             };
-            let Some(child) = self.children.get(&instance.source()) else {
+            let Some(child) = self.children.get(&BodyOrigin::from(instance.source())) else {
                 continue;
             };
             if child.parent != body.source {
@@ -273,8 +280,10 @@ impl Pending {
     pub fn ports(&self) -> &[Port] {
         &self.ports
     }
-    pub fn has_source(&self, source: NodeKey) -> bool {
-        self.index.contains_key(&source)
+    pub fn has_source(&self, source: BodyOrigin) -> bool {
+        source
+            .source()
+            .is_some_and(|source| self.index.contains_key(&source))
     }
     pub fn validate_context(
         &self,
@@ -289,7 +298,13 @@ impl Pending {
             || body.instance != self.instance
             || input.key != self.key
             || input.source != self.source
-            || owner_unit(facts, body.source, work) != self.unit
+            || owner_unit(
+                facts,
+                body.source
+                    .source()
+                    .ok_or("conditional source caller has no real source owner")?,
+                work,
+            ) != self.unit
         {
             return Err("conditional request belongs to another actual paid owner");
         }
@@ -366,7 +381,7 @@ impl Pending {
         for port in &self.ports {
             if !body.values.get(port.operand.0 as usize).is_some_and(|value|
                 matches!(value.kind, Rvalue::InlineInstance(instance) if instance == port.instance) && value.ty == port.result)
-                || port.link.parent != self.source || port.link.source != port.instance.source() {
+                || port.link.parent != self.source || port.link.source != port.instance.source().into() {
                 return Err("conditional parent changed its exact operand or result");
             }
         }

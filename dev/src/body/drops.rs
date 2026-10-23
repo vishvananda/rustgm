@@ -66,7 +66,7 @@ pub(crate) fn collect(
     facts: &Declarations,
     program: &Program,
     query: Option<&mut NeedsDrop>,
-) -> Result<Option<Pending>, (NodeKey, &'static str)> {
+) -> Result<Option<Pending>, (crate::body::ir::ProofSite, &'static str)> {
     let Some(first) = facts.destructors.implementations().first() else {
         return Ok(None);
     };
@@ -79,7 +79,7 @@ pub(crate) fn collect(
             .flatten()
             .and_then(|ty| facts.types.kind(ty))
         else {
-            return Err((implementation.source, "missing destructor signature"));
+            return Err((implementation.source.into(), "missing destructor signature"));
         };
         methods.push(Method {
             item: implementation.item,
@@ -90,11 +90,13 @@ pub(crate) fn collect(
             source: implementation.source,
         });
     }
-    let query = query.ok_or((first.source, "missing destruction query"))?;
+    let query = query.ok_or((first.source.into(), "missing destruction query"))?;
     let bodies = program
         .bodies
         .iter()
-        .map(|body| requirements(facts, body, query).map_err(|message| (body.source, message)))
+        .map(|body| {
+            requirements(facts, body, query).map_err(|message| (body.source.into(), message))
+        })
         .collect::<Result<Vec<_>, _>>()?;
     Ok(Some(Pending {
         source: first.source,

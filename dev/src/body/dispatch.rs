@@ -105,7 +105,7 @@ fn resolve_with_original(
     let mut obligations = proof
         .regions
         .map(|id| Obligation {
-            source: body.source,
+            source: body.source.into(),
             kind: Kind::Variable {
                 id: RegionId(id),
                 needs_provenance: false,
@@ -114,15 +114,15 @@ fn resolve_with_original(
         .collect::<Vec<_>>();
     obligations.append(&mut contract.obligations);
     obligations.extend(proof.equalities.into_iter().map(|pair| Obligation {
-        source: body.source,
+        source: body.source.into(),
         kind: Kind::Equality(pair),
     }));
     obligations.extend(proof.outlives.into_iter().map(|pair| Obligation {
-        source: body.source,
+        source: body.source.into(),
         kind: Kind::Outlives(pair),
     }));
     obligations.extend(proof.types.into_iter().map(|(ty, shorter)| Obligation {
-        source: body.source,
+        source: body.source.into(),
         kind: Kind::TypeOutlives { ty, shorter },
     }));
     contract.obligations = obligations;

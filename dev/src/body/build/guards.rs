@@ -29,7 +29,7 @@ impl Builder<'_> {
         input: Place,
     ) -> Result<(u32, u32), Error> {
         let mut work = Vec::new();
-        let first = self.index(self.body.source.node, self.body.guard_places.len())?;
+        let first = self.index(self.source.node, self.body.guard_places.len())?;
         for arm in &self.facts.patterns.arms[start as usize..end as usize] {
             if let Some(pattern) = arm.pattern {
                 work.push((pattern, input, None));
@@ -108,7 +108,7 @@ impl Builder<'_> {
         }
         Ok((
             first,
-            self.index(self.body.source.node, self.body.guard_places.len())?,
+            self.index(self.source.node, self.body.guard_places.len())?,
         ))
     }
     pub(super) fn guarded_arm(
@@ -184,7 +184,7 @@ impl Builder<'_> {
     pub(super) fn finish_guard(&mut self, index: usize) -> Result<(), Error> {
         let frame = self.scratch.guard_frames[index]
             .take()
-            .ok_or_else(|| self.error(self.body.source.node, "missing guard continuation"))?;
+            .ok_or_else(|| self.error(self.source.node, "missing guard continuation"))?;
         let node = frame.arm.source.node;
         self.switch(node, frame.rejected)?;
         self.terminate(node, Terminator::Jump(frame.retry));

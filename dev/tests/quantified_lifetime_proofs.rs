@@ -199,7 +199,7 @@ fn body_relations_can_use_retained_witnesses_without_granting_their_debts() -> T
             builtins: None,
             output: None,
             require_result_formation: false,
-            source,
+            source: source.into(),
             signature: None,
             universals: 1,
             assumptions: Vec::new(),
@@ -211,18 +211,18 @@ fn body_relations_can_use_retained_witnesses_without_granting_their_debts() -> T
             )],
             obligations: vec![
                 Obligation {
-                    source,
+                    source: source.into(),
                     kind: Kind::Variable {
                         id: RegionId(1),
                         needs_provenance: false,
                     },
                 },
                 Obligation {
-                    source,
+                    source: source.into(),
                     kind: Kind::Equality((RegionId(1), RegionId(10))),
                 },
                 Obligation {
-                    source: debt,
+                    source: debt.into(),
                     kind: Kind::Outlives((universal, RegionId(1))),
                 },
             ],
@@ -231,7 +231,7 @@ fn body_relations_can_use_retained_witnesses_without_granting_their_debts() -> T
     let error = rustgm::borrow::regions::check(&store, &variances, &contracts)
         .err()
         .ok_or("unpaid retained witness was accepted")?;
-    assert_eq!(error.source, Some(debt));
+    assert_eq!(error.source, Some(debt.into()));
     assert_eq!(
         error.message,
         "required lifetime does not outlive its target"

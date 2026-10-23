@@ -11,19 +11,15 @@ impl Engine {
     ) -> Result<usize, Error> {
         let source = instance.source();
         let selected = InlineInstance::select(facts, source, instance.enclosing())
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         if selected != instance {
-            return Err(Declarations::error(
-                report,
-                source,
-                "anonymous instance identity changed",
-            ));
+            return Err(report.body_error(source, "anonymous instance identity changed"));
         }
         if self
             .original_components
             .as_ref()
             .and_then(|rows| rows.active.as_ref())
-            .is_some_and(|active| active.owner.pending().has_source(source))
+            .is_some_and(|active| active.owner.pending().has_source(source.into()))
         {
             return self.paid_anonymous_root(report, facts, instance, result);
         }
@@ -32,10 +28,10 @@ impl Engine {
         {
             let parent_result = witness
                 .result(facts)
-                .map_err(|e| Declarations::error(report, source, e))?;
+                .map_err(|e| report.body_error(source, e))?;
             witness
                 .validate(facts, parent_result)
-                .map_err(|e| Declarations::error(report, source, e))?;
+                .map_err(|e| report.body_error(source, e))?;
             self.root(
                 report,
                 facts,
@@ -56,12 +52,12 @@ impl Engine {
         let built =
             body::instantiate::anonymous_result(facts, &template, instance, result, &contract)
                 .and_then(|materialized| materialized.into_requested(result))
-                .map_err(|e| Declarations::error(report, source, e));
+                .map_err(|e| report.body_error(source, e));
         self.anonymous.insert(source, (template, contract));
         let mut concrete = built?;
         body::constants::eligibility(report, facts, &concrete.body)?;
         body::dispatch::resolve(facts, &mut concrete.body, &mut concrete.contract)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         body::promote::instance_reusing(
             report,
             facts,
@@ -87,14 +83,14 @@ impl Engine {
                 &concrete.contract,
                 witness,
             )
-            .map_err(|e| Declarations::error(report, source, e))?
+            .map_err(|e| report.body_error(source, e))?
         } else {
             Vec::new()
         };
         let index = self
             .catalog
             .anonymous_result(&concrete.body, result, &results)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         facts.constant_work.anonymous_instances += 1;
         self.roots
             .insert(Target::Anonymous { instance, result }, index);
@@ -145,7 +141,7 @@ impl Engine {
         let source = template.body.source;
         contract
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         let mut queries = crate::types::outlives::Queries::new(
             &facts.types,
             &facts.lifetimes.nominal_requirements,
@@ -158,7 +154,7 @@ impl Engine {
             contract,
             &template.body,
         )
-        .map_err(|e| Declarations::error(report, e.source.unwrap_or(source), e.message))?;
+        .map_err(|e| report.body_error(e.source.unwrap_or(source.into()), e.message))?;
         let Some(regions) = region else {
             return Ok(true);
         };
@@ -182,9 +178,9 @@ impl Engine {
         let mut contract = self
             .contracts
             .expression(facts, source)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         body::dispatch::original_anonymous(facts, &mut template.body, &mut contract)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         body::promote::instance_reusing(
             report,
             facts,
@@ -216,8 +212,7 @@ impl Engine {
             .checked_add(bytes)
             .filter(|&n| n <= 64 * 1024 * 1024)
             .ok_or_else(|| {
-                Declarations::error(
-                    report,
+                report.body_error(
                     template.body.source,
                     "anonymous template storage exceeds 64 MiB budget",
                 )

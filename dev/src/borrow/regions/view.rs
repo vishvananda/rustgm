@@ -5,18 +5,24 @@ use std::io::{self, Write};
 /// # Errors
 /// Propagates output failures or malformed retained graph identities.
 pub fn write(analysis: &Analysis, out: &mut impl Write) -> io::Result<()> {
+    write_with_origins(analysis, crate::body::BodyOrigins::source_only(), out)
+}
+/// # Errors
+/// Rejects missing/foreign imported locations and propagates output failures.
+pub fn write_with_origins(
+    analysis: &Analysis,
+    origins: crate::body::BodyOrigins<'_>,
+    out: &mut impl Write,
+) -> io::Result<()> {
     writeln!(out, "regions-crate 1")?;
     let mut variables = Vec::new();
     let mut parameters = Vec::new();
     let mut assumptions = Vec::new();
     let mut requirements = Vec::new();
     for (index, body) in analysis.bodies.iter().enumerate() {
-        writeln!(
-            out,
-            "body {index} source={}:{}",
-            body.source.file.0,
-            body.source.node.get()
-        )?;
+        write!(out, "body {index} source=")?;
+        origins.body(body.source, out)?;
+        writeln!(out)?;
         for (id, region) in body.identities.universals().enumerate() {
             writeln!(out, "  universal b{id}=g{}", region.0)?;
         }

@@ -34,7 +34,7 @@ impl Selection {
             }
             Self::SourceInitializer(witness) => {
                 let (instance, original) = witness.identity(facts)?;
-                if original != source.source {
+                if crate::body::ir::BodyOrigin::from(original) != source.source {
                     return Err("source initializer selects another anonymous operand owner");
                 }
                 Self::Initializer(instance).owner(facts, source)
@@ -45,7 +45,7 @@ impl Selection {
                     .and_then(|index| facts.initializers.get(index))
                     .ok_or("selected initializer has no original declaration")?;
                 if source.instance.is_some()
-                    || source.source != original.semantic_source()
+                    || source.source != original.semantic_source().into()
                     || !matches!(source.owner, Owner::Initializer { definition, kind: crate::sema::model::InitializerKind::Const } if definition==instance.definition)
                 {
                     return Err("selected initializer selects another original body");
@@ -60,7 +60,11 @@ impl Selection {
                 ))
             }
             Self::Anonymous(instance) => {
-                let selected = InlineInstance::select(facts, source.source, instance.enclosing())?;
+                let actual_source = source
+                    .source
+                    .source()
+                    .ok_or("source inline instance has an imported original")?;
+                let selected = InlineInstance::select(facts, actual_source, instance.enclosing())?;
                 if selected != instance
                     || source.instance.is_some()
                     || !matches!(source.owner, Owner::AnonymousConstant)
@@ -70,7 +74,7 @@ impl Selection {
                 let definition = facts
                     .inline_constants
                     .as_deref()
-                    .and_then(|r| r.get(source.source))
+                    .and_then(|r| source.source.source().and_then(|source| r.get(source)))
                     .and_then(|b| b.declaration)
                     .ok_or("anonymous template has no declaration")?;
                 Ok((Owner::AnonymousInstance(instance), definition, None))
@@ -139,7 +143,7 @@ pub(crate) fn with_contract(
     original: &Contract,
 ) -> Result<Materialized, &'static str> {
     if original.key != template.body.key()
-        || original.source != instance.source()
+        || original.source != instance.source().into()
         || original.output.is_some()
     {
         return Err("anonymous specialized output interface is not implemented");
@@ -164,7 +168,7 @@ pub(crate) fn with_result(
         return with_contract(facts, template, instance, original)
             .map(super::initializers::SourceMaterialized::plain);
     }
-    if original.key != template.body.key() || original.source != instance.source() {
+    if original.key != template.body.key() || original.source != instance.source().into() {
         return Err("anonymous result selects another original contract");
     }
     let mut inputs = anonymous_inputs(facts, instance, original)?;
@@ -192,7 +196,7 @@ pub(crate) fn conditional_result(
     let instance = port.instance;
     let requested = port.result;
     if original.key != template.body.key()
-        || original.source != instance.source()
+        || original.source != instance.source().into()
         || !original
             .output
             .as_ref()
@@ -263,7 +267,7 @@ fn finish_result(
     facts.body_work.canonical_steps += substitution.steps - before;
     let obligation = contract.obligations.len();
     contract.obligations.push(crate::body::regions::Obligation {
-        source: original.source,
+        source: original.source.into(),
         kind: crate::body::regions::Kind::Coercion {
             actual,
             expected: imported,
@@ -408,11 +412,11 @@ pub(crate) fn original_context(
     facts: &Declarations,
     body: &Body,
 ) -> Result<Option<Instance>, &'static str> {
-    if !facts
-        .inline_constants
-        .as_deref()
-        .is_some_and(|registry| registry.has_children(body.source))
-    {
+    if !facts.inline_constants.as_deref().is_some_and(|registry| {
+        body.source
+            .source()
+            .is_some_and(|source| registry.has_children(source))
+    }) {
         return Ok(None);
     }
     let owner = match body.owner {
@@ -432,7 +436,11 @@ pub(crate) fn original_context(
             .get(definition.0 as usize)
             .copied()
             .flatten(),
-        Owner::Closure { .. } => facts.node(body.source).and_then(|node| node.ty),
+        Owner::Closure { .. } => body
+            .source
+            .source()
+            .and_then(|source| facts.node(source))
+            .and_then(|node| node.ty),
         _ => None,
     };
     let Some(ty) = ty else {

@@ -90,12 +90,12 @@ impl Prepared {
             Body::new(crate::body::ir::Owner::AnonymousConstant, source, result),
             scope_plan,
             Some(query),
-        )
+        )?
         .run(None)
         .map_err(|e| report.diagnostic(e))?;
         crate::body::constants::eligibility(report, facts, &body)?;
         let requirements = crate::body::drops::requirements(facts, &body, query)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         Ok((body, requirements))
     }
     pub(crate) fn initializer(
@@ -105,12 +105,11 @@ impl Prepared {
         initializer: &crate::sema::model::Initializer,
     ) -> Result<Template, Error> {
         if let Some(template) = self.bodies.remove(&initializer.definition) {
-            if template.body.source != initializer.semantic_source()
+            if template.body.source != initializer.semantic_source().into()
                 || template.body.result != initializer.ty
                 || !matches!(template.body.owner,crate::body::ir::Owner::Initializer {definition,..} if definition==initializer.definition)
             {
-                return Err(Declarations::error(
-                    report,
+                return Err(report.body_error(
                     initializer.semantic_source(),
                     "retained initializer template changed",
                 ));
@@ -134,7 +133,7 @@ impl Prepared {
         let body = super::initializer_body(report, facts, scratch, initializer, Some(&mut scoped))?;
         crate::body::constants::eligibility(report, facts, &body)?;
         let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
-            .map_err(|e| Declarations::error(report, body.source, e))?;
+            .map_err(|e| report.body_error(body.source, e))?;
         Ok(Template {
             body,
             destruction,
@@ -155,13 +154,13 @@ impl Prepared {
             .inline_constants
             .as_deref()
             .and_then(|r| r.get(source))
-            .ok_or_else(|| Declarations::error(report, source, "missing anonymous template"))?;
-        let owner = inline.declaration.ok_or_else(|| {
-            Declarations::error(report, source, "anonymous template has no declaration")
-        })?;
-        let result = inline.result.ok_or_else(|| {
-            Declarations::error(report, source, "anonymous template result is not ready")
-        })?;
+            .ok_or_else(|| report.body_error(source, "missing anonymous template"))?;
+        let owner = inline
+            .declaration
+            .ok_or_else(|| report.body_error(source, "anonymous template has no declaration"))?;
+        let result = inline
+            .result
+            .ok_or_else(|| report.body_error(source, "anonymous template result is not ready"))?;
         let environment = environment(report, facts, owner, source)?;
         let query = self.query.get_or_insert_with(|| {
             NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item))
@@ -183,12 +182,12 @@ impl Prepared {
             Body::new(crate::body::ir::Owner::AnonymousConstant, source, result),
             scope_plan,
             Some(&mut scoped),
-        )
+        )?
         .run(None)
         .map_err(|e| report.diagnostic(e))?;
         crate::body::constants::eligibility(report, facts, &body)?;
         let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         self.built += 1;
         Ok(Template {
             body,
@@ -226,7 +225,7 @@ impl Prepared {
         let body = function_body(report, facts, scratch, function, Some(&mut scoped))?;
         crate::body::constants::eligibility(report, facts, &body)?;
         let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
-            .map_err(|message| Declarations::error(report, body.source, message))?;
+            .map_err(|message| report.body_error(body.source, message))?;
         self.built += 1;
         Ok(Template {
             body,
@@ -254,9 +253,10 @@ impl Prepared {
                     .closures
                     .as_ref()
                     .is_some_and(|c| c.bodies.contains_key(&identity)),
-                crate::body::ir::Owner::AnonymousConstant => {
-                    self.anonymous.contains_key(&body.source)
-                }
+                crate::body::ir::Owner::AnonymousConstant => body
+                    .source
+                    .source()
+                    .is_some_and(|source| self.anonymous.contains_key(&source)),
                 _ => return Err("original component contains a selected instance"),
             };
             if body.instance.is_some() || present || !keys.insert(body.key()) {
@@ -276,11 +276,12 @@ impl Prepared {
             template.body.owner,
             crate::body::ir::Owner::AnonymousConstant
         ) {
-            if self
-                .anonymous
-                .insert(template.body.source, template)
-                .is_some()
-            {
+            let source = template
+                .body
+                .source
+                .source()
+                .ok_or("imported anonymous template requires its authenticated body catalog")?;
+            if self.anonymous.insert(source, template).is_some() {
                 return Err("anonymous template was retained twice");
             }
             return Ok(());
@@ -357,8 +358,7 @@ impl Prepared {
             }
         }
         if !self.anonymous.is_empty() {
-            return Err(Declarations::error(
-                report,
+            return Err(report.body_error(
                 *self.anonymous.keys().next().ok_or_else(|| {
                     Error::at(
                         crate::resolve::unit::FileId(0),
@@ -377,8 +377,7 @@ impl Prepared {
             ));
         }
         if let Some(template) = self.bodies.values().next() {
-            return Err(Declarations::error(
-                report,
+            return Err(report.body_error(
                 template.body.source,
                 "retained template has no program owner",
             ));
@@ -399,14 +398,12 @@ impl Prepared {
             .as_mut()
             .and_then(|c| c.bodies.remove(&closure.identity))
         {
-            if template.body.source != closure.semantic_source()
+            if template.body.source != closure.semantic_source().into()
                 || template.body.key() != crate::body::ir::BodyKey::Closure(closure.identity)
             {
-                return Err(Declarations::error(
-                    report,
-                    closure.source,
-                    "retained closure original changed owner",
-                ));
+                return Err(
+                    report.body_error(closure.source, "retained closure original changed owner")
+                );
             }
             self.reused += 1;
             return Ok(template);
@@ -421,7 +418,7 @@ impl Prepared {
             .get_or_insert_with(|| Box::new(Scratch::new(facts)));
         let body = super::closures::body(report, facts, scratch, closure, Some(&mut scoped))?;
         let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
-            .map_err(|message| Declarations::error(report, body.source, message))?;
+            .map_err(|message| report.body_error(body.source, message))?;
         self.built += 1;
         Ok(Template {
             body,
@@ -443,7 +440,7 @@ fn environment(
             .generics
             .parameter_environment(&facts.types, owner)
             .map(Arc::new)
-            .map_err(|e| Declarations::error(report, source, e))
+            .map_err(|e| report.body_error(source, e))
     }
 }
 

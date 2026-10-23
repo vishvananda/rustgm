@@ -3,7 +3,7 @@ mod demand;
 mod dependencies;
 mod proof;
 use crate::{
-    body::{self, ir::NodeKey, regions::Contracts},
+    body::{self, regions::Contracts},
     borrow,
     resolve::{expansion::Report, model::DefId, package::Error},
     sema::model::Declarations,
@@ -46,7 +46,7 @@ pub fn build_roots_prepared(
     inspect_roots(report, facts, roots, prepared, |facts, assembled, roots| {
         super::build_assembled(facts, assembled, roots)
     })?
-    .map_err(|e| diagnostic(report, Some(e.node), e.message.into()))
+    .map_err(|e| diagnostic(report, e.node, e.message.into()))
 }
 
 /// Prove source originals before forming the library's transport interface and roots.
@@ -79,7 +79,7 @@ pub fn build_library_prepared(
         },
         super::build_assembled,
     )?
-    .map_err(|e| diagnostic(report, Some(e.node), e.message.into()))?;
+    .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
     let interface = interface
         .ok_or_else(|| diagnostic(report, None, "missing checked library exports".into()))?;
     Ok((program, interface))
@@ -118,7 +118,7 @@ pub fn inspect_prepared<R>(
             })
         },
     )?
-    .map_err(|e: super::Error| diagnostic(report, Some(e.node), e.message.into()))
+    .map_err(|e: super::Error| diagnostic(report, e.node, e.message.into()))
 }
 
 fn inspect_roots<R>(
@@ -187,6 +187,7 @@ fn inspect_selected<R>(
             .templates(std::rc::Rc::clone(&templates))
             .map_err(|e| diagnostic(report, None, e.into()))?;
     }
+
     let contracts = Contracts {
         bodies: inputs,
         callables: &facts.lifetimes.callables,
@@ -218,24 +219,11 @@ fn inspect_selected<R>(
     .map_err(|e| diagnostic(report, e.node, e.message))?;
     let inputs = contracts.bodies;
     publish_closure_conditions(facts, &checked).map_err(|e| diagnostic(report, None, e.into()))?;
-    if !facts.opaques.owners.is_empty() {
-        let owners: crate::support::hash::HashMap<_, _> = facts
-            .functions
-            .iter()
-            .filter(|f| facts.opaques.owners.contains_key(&f.definition))
-            .filter_map(|f| f.body.map(|body| (body, f.definition)))
-            .collect();
-        for proof in &checked.regions().bodies {
-            if let Some(&owner) = owners.get(&proof.source) {
-                facts
-                    .close_opaque_results(owner, &proof.hidden_regions)
-                    .map_err(|e| diagnostic(report, Some(proof.source), e.into()))?;
-            }
-        }
-    }
+    publish_source_opaque_heads(facts, &checked)
+        .map_err(|(source, message)| diagnostic(report, Some(source.into()), message.into()))?;
     facts
-        .prepare_opaque_storage()
-        .map_err(|e| diagnostic(report, None, e.into()))?;
+        .prepare_opaque_storage_located()
+        .map_err(|failure| opaque_storage_error(report, facts, failure))?;
     let (entry, exports) = select(facts)?;
     let roots = exports.selected(entry);
     let program = demand::prepare(
@@ -271,12 +259,52 @@ fn publish_closure_conditions(
     Ok(())
 }
 
-fn diagnostic(report: &Report, node: Option<NodeKey>, message: String) -> Error {
-    if let Some(key) = node {
-        report.diagnostic(Declarations::error(report, key, message))
-    } else {
-        Error::at(crate::resolve::unit::FileId(0), 0, message)
+fn publish_source_opaque_heads(
+    facts: &mut Declarations,
+    checked: &borrow::templates::Checked<'_>,
+) -> Result<(), (crate::body::ir::BodyOrigin, &'static str)> {
+    if facts.opaques.owners.is_empty() {
+        return Ok(());
     }
+    let owners: crate::support::hash::HashMap<_, _> = facts
+        .functions
+        .iter()
+        .filter(|f| facts.opaques.owners.contains_key(&f.definition))
+        .filter_map(|f| f.body.map(|body| (body, f.definition)))
+        .collect();
+    for proof in &checked.regions().bodies {
+        if let Some(source) = proof.source.source()
+            && let Some(&owner) = owners.get(&source)
+        {
+            facts
+                .close_opaque_results(owner, &proof.hidden_regions)
+                .map_err(|error| (proof.source, error))?;
+        }
+    }
+    Ok(())
+}
+
+fn opaque_storage_error(
+    report: &Report,
+    facts: &Declarations,
+    failure: crate::sema::opaque::StorageFailure,
+) -> Error {
+    let source = failure.owner.and_then(|owner| {
+        let function = facts
+            .function_indices
+            .get(&owner)
+            .and_then(|&index| facts.functions.get(index))?;
+        let declaration = report.resolution.definitions.get(owner.0 as usize)?;
+        (function.definition == owner
+            && declaration.kind == crate::resolve::model::DefKind::Function
+            && declaration.node == Some(function.node))
+        .then_some(function.node.into())
+    });
+    diagnostic(report, source, failure.message.into())
+}
+
+fn diagnostic(report: &Report, node: Option<crate::body::ir::ProofSite>, message: String) -> Error {
+    report.diagnostic(report.body_optional_error(node, message))
 }
 
 fn prepare_original_contracts(
@@ -313,7 +341,7 @@ fn prepare_original_contracts(
     for input in inputs {
         input
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
-            .map_err(|e| diagnostic(report, Some(input.source), e.into()))?;
+            .map_err(|e| diagnostic(report, Some(input.source.into()), e.into()))?;
     }
     Ok(())
 }

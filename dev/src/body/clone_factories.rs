@@ -30,7 +30,7 @@ pub(super) fn append(
         .ok_or_else(|| Error::at(crate::resolve::unit::FileId(0), 0, "missing Clone registry"))?
         .canonical
         .origin;
-    let error = |e| Declarations::error(report, source, e);
+    let error = |e| report.body_error(source, e);
     original.validate(facts).map_err(error)?;
     let environment = Arc::new(
         facts

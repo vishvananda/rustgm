@@ -355,7 +355,7 @@ pub(super) fn verify(body: &Body, facts: &BodyFacts, types: &Store) -> Result<()
         return Ok(());
     }
     let error = |message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     };
     let mut proof = Proof::new(body, facts).map_err(error)?;
@@ -411,10 +411,7 @@ pub(super) fn verify(body: &Body, facts: &BodyFacts, types: &Store) -> Result<()
         }
         for statement in body.statements(block).iter().rev() {
             let error = |message| Error {
-                node: crate::body::ir::NodeKey {
-                    node: statement.source,
-                    ..body.source
-                },
+                node: body.diagnostic_site(statement.source),
                 message,
             };
             proof

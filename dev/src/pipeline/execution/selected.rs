@@ -87,11 +87,7 @@ impl Engine {
         if !initializer.type_checked()
             || !matches!(initializer.kind, crate::sema::model::InitializerKind::Const)
         {
-            return Err(Declarations::error(
-                report,
-                source,
-                "selected associated initializer is not ready",
-            ));
+            return Err(report.body_error(source, "selected associated initializer is not ready"));
         }
         let (template, contract) = if let Some(value) = self
             .associated
@@ -108,21 +104,19 @@ impl Engine {
         } else {
             body::instantiate::selected_initializer(facts, &template, instance, &contract)
         }
-        .map_err(|e| Declarations::error(report, source, e));
+        .map_err(|e| report.body_error(source, e));
         self.associated
             .get_or_insert_with(Default::default)
             .insert(instance.definition, (template, contract));
         let mut concrete = built?;
         if source_value.is_none() && concrete.body.result != result {
-            return Err(Declarations::error(
-                report,
-                source,
-                "selected initializer materialized result changed",
-            ));
+            return Err(
+                report.body_error(source, "selected initializer materialized result changed")
+            );
         }
         body::constants::eligibility(report, facts, &concrete.body)?;
         body::dispatch::resolve(facts, &mut concrete.body, &mut concrete.contract)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         body::promote::instance_reusing(
             report,
             facts,
@@ -135,9 +129,7 @@ impl Engine {
                 .associated
                 .as_deref()
                 .and_then(|map| map.get(&instance.definition))
-                .ok_or_else(|| {
-                    Declarations::error(report, source, "lost selected initializer template")
-                })?
+                .ok_or_else(|| report.body_error(source, "lost selected initializer template"))?
                 .0
                 .environment,
         );
@@ -151,7 +143,7 @@ impl Engine {
         )?;
         let index = self
             .publish_selected(facts, &concrete, source_value, result)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         facts.constant_work.associated_instances += 1;
         let target = source_value.map_or(Target::Associated { instance, result }, |source| {
             Target::SourceAssociated { source, result }
@@ -182,7 +174,15 @@ impl Engine {
         self.catalog.source_initializer(
             facts,
             &concrete.body,
-            (instance, concrete.body.source, result),
+            (
+                instance,
+                concrete
+                    .body
+                    .source
+                    .source()
+                    .ok_or("source initializer witness has an imported body")?,
+                result,
+            ),
             witness,
             &results,
         )
@@ -196,7 +196,7 @@ impl Engine {
         let source = initializer.semantic_source();
         if let Some(row) = self.component_original(BodyKey::Declaration(initializer.definition)) {
             row.validate(facts)
-                .map_err(|e| Declarations::error(report, source, e))?;
+                .map_err(|e| report.body_error(source, e))?;
             Self::associated_storage(
                 report,
                 facts,
@@ -235,9 +235,9 @@ impl Engine {
         let mut contract = self
             .contracts
             .initializer(facts, initializer)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         body::dispatch::original_initializer(facts, &mut template.body, &mut contract, initializer)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         body::promote::instance_reusing(
             report,
             facts,
@@ -272,8 +272,7 @@ impl Engine {
             .checked_add(bytes)
             .filter(|&n| n <= 64 * 1024 * 1024)
             .ok_or_else(|| {
-                Declarations::error(
-                    report,
+                report.body_error(
                     source,
                     "selected initializer template storage exceeds 64 MiB budget",
                 )

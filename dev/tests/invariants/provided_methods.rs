@@ -123,7 +123,7 @@ fn comparison_physical_borrows_retain_each_owning_coercion_once() -> Result {
             .collect::<Vec<_>>();
         assert_eq!(coercions.len(), 1);
         let coercion = coercions[0];
-        let obligations=contracts.bodies.iter().flat_map(|contract|contract.obligations.iter()).filter(|obligation|obligation.source==source && matches!(obligation.kind,body::regions::Kind::Coercion{actual:from,expected:to,..} if from==actual && to==coercion.expected)).count();
+        let obligations=contracts.bodies.iter().flat_map(|contract|contract.obligations.iter()).filter(|obligation|obligation.source==source.into() && matches!(obligation.kind,body::regions::Kind::Coercion{actual:from,expected:to,..} if from==actual && to==coercion.expected)).count();
         assert_eq!(obligations, 1);
     }
     Ok(())

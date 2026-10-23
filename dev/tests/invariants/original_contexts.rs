@@ -52,7 +52,7 @@ fn lifetime_only_original_context_rejects_forged_headers_and_preserves_call_admi
     assert!(original_function_context(&mut facts, selected, &contract).is_err());
     contract.key = BodyKey::Anonymous(source);
     let original_source = contract.source;
-    contract.source = facts.functions[index].node;
+    contract.source = facts.functions[index].node.into();
     assert!(original_function_context(&mut facts, selected, &contract).is_err());
     contract.source = original_source;
     let function = facts.functions[index];

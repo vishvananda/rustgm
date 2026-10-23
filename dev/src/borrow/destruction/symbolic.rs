@@ -57,7 +57,7 @@ pub fn select(
 ) -> Result<Plan, Error> {
     facts.destructor_moves(types, &custom)?;
     let error = |message| Error {
-        node: facts.body().source,
+        node: facts.body().source.into(),
         message,
     };
     let mut builder = Builder {

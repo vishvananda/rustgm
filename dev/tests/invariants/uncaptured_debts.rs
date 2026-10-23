@@ -50,7 +50,7 @@ fn uncaptured_specialization_retains_every_source_lifetime_debt()
         let mut source = original.clone();
         if unpaid {
             source.obligations.push(Obligation {
-                source: source.source,
+                source: source.source.into(),
                 kind: body::regions::Kind::Outlives((RegionId::bound(0, 0)?, RegionId::STATIC)),
             });
         }

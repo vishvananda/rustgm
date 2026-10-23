@@ -63,7 +63,7 @@ fn original_dispatch_keeps_full_operands_and_concrete_dispatch_stays_strict() ->
 fn template_entry_rejects_foreign_source_key_and_changed_declared_result() -> Result {
     let (mut facts, initializer, body, contract) = fixture()?;
     let mut wrong_body = body.clone();
-    wrong_body.source.node = crate::syntax::ast::NodeId::new(wrong_body.source.node.get() + 1);
+    wrong_body.source = crate::test_sites::next_node(wrong_body.source)?.into();
     assert!(
         super::initializer(
             &mut facts,
@@ -74,7 +74,7 @@ fn template_entry_rejects_foreign_source_key_and_changed_declared_result() -> Re
         .is_err()
     );
     let mut wrong_contract = contract.clone();
-    wrong_contract.key = BodyKey::Anonymous(body.source);
+    wrong_contract.key = BodyKey::Anonymous(crate::test_sites::node(body.source)?);
     assert!(
         super::initializer(
             &mut facts,
@@ -180,7 +180,7 @@ fn declared_source_aliases_do_not_admit_missing_or_foreign_ownership() -> Result
     assert!(facts.body_work.canonical_steps > before);
     let record = facts
         .body_regions
-        .get_mut(contract.source, region)
+        .get_mut(crate::test_sites::node(contract.source)?, region)
         .ok_or("missing owned region")?;
     record.body.node = crate::syntax::ast::NodeId::new(record.body.node.get() + 1);
     assert!(owned_regions(&mut facts, &contract).is_err());
@@ -297,7 +297,7 @@ fn original_anonymous_dispatch_keeps_the_exact_deferred_operand() -> Result {
 fn original_anonymous_entry_rejects_foreign_contract_and_result() -> Result {
     let (mut facts, body, contract) = anonymous_fixture()?;
     let mut wrong = contract.clone();
-    wrong.source.node = crate::syntax::ast::NodeId::new(wrong.source.node.get() + 1);
+    wrong.source = crate::test_sites::next_node(wrong.source)?.into();
     assert!(super::anonymous(&mut facts, &mut body.clone(), &mut wrong).is_err());
     let mut wrong = contract.clone();
     wrong.universals += 1;
@@ -306,7 +306,7 @@ fn original_anonymous_entry_rejects_foreign_contract_and_result() -> Result {
     wrong.result = TypeId::primitive(Primitive::U16);
     assert!(super::anonymous(&mut facts, &mut wrong, &mut contract.clone()).is_err());
     let mut wrong = body;
-    wrong.source.node = crate::syntax::ast::NodeId::new(wrong.source.node.get() + 1);
+    wrong.source = crate::test_sites::next_node(wrong.source)?.into();
     assert!(super::anonymous(&mut facts, &mut wrong, &mut contract.clone()).is_err());
     Ok(())
 }

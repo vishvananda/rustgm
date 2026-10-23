@@ -41,7 +41,7 @@ struct OriginContract<O> {
     type_assumptions: Vec<crate::types::parameters::clauses::Clause>,
     obligations: Vec<regions::Obligation>,
     proofs: Vec<regions::Proof>,
-    builtins: Option<Arc<crate::sema::model::BuiltinRequirements>>,
+    builtins: Option<Arc<regions::BuiltinRequirements>>,
     output: Option<Arc<crate::sema::nested_outputs::Link>>,
     require_result_formation: bool,
 }
@@ -54,12 +54,60 @@ struct SiteProof<S> {
     sources: Vec<S>,
     proof: crate::types::lifetime_proof::Obligations,
 }
+struct SitePredicate<S> {
+    site: S,
+    value: crate::types::parameters::clauses::Clause,
+}
+struct LegacyImported {
+    dependencies: Arc<crate::support::crates::Dependencies>,
+    definitions: crate::support::hash::HashMap<crate::support::crates::ExternalDef, ir::DefId>,
+    functions: Vec<(ir::DefId, usize, usize)>,
+    constants: Vec<(ir::DefId, usize, usize)>,
+    records: Vec<(ir::DefId, usize, usize)>,
+    statics: Vec<(ir::DefId, usize, usize)>,
+}
+struct LegacyLinkage {
+    identity: Option<crate::support::crates::CrateIdentity>,
+    prefix: Option<String>,
+    symbols: crate::support::hash::HashMap<ir::DefId, String>,
+    imported_constants: crate::support::hash::HashSet<ir::DefId>,
+    imported_records: crate::support::hash::HashSet<ir::DefId>,
+    imported_storage: crate::support::hash::HashMap<ir::DefId, bool>,
+    work: crate::sema::crates::ImportWork,
+}
+
+#[test]
+fn frozen_catalog_sharing_adds_only_cold_import_owner_slots() {
+    assert_eq!(
+        size_of::<crate::resolve::crates::Imported>(),
+        size_of::<LegacyImported>() + size_of::<usize>()
+    );
+    assert_eq!(
+        size_of::<crate::sema::crates::Linkage>(),
+        size_of::<LegacyLinkage>() + size_of::<usize>()
+    );
+    assert_eq!(size_of::<CatalogSlot>(), size_of::<usize>());
+    assert_eq!(size_of::<ir::Value>(), 24);
+    println!(
+        "resolver_import={}/{} sema_linkage={}/{} catalog={} slot={} Rc_control={}",
+        size_of::<LegacyImported>(),
+        size_of::<crate::resolve::crates::Imported>(),
+        size_of::<LegacyLinkage>(),
+        size_of::<crate::sema::crates::Linkage>(),
+        size_of::<Catalog>(),
+        size_of::<CatalogSlot>(),
+        2 * size_of::<usize>()
+    );
+}
 
 #[test]
 fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {
     assert_eq!(size_of::<ir::Value>(), 24);
     assert_eq!(size_of::<CatalogSlot>(), size_of::<usize>());
     assert_eq!(size_of::<ImportedBodyId>(), 8);
+    assert_eq!(size_of::<ImportedBodyOrigin>(), 12);
+    assert_eq!(size_of::<BodyOrigin>(), 12);
+    assert_eq!(size_of::<ProofSite>(), 12);
     assert_eq!(size_of::<Option<ImportedBodyId>>(), 8);
     assert_eq!(size_of::<BodySite>(), size_of::<NodeId>());
     assert_eq!(size_of::<Option<BodySite>>(), size_of::<Option<NodeId>>());
@@ -70,15 +118,19 @@ fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {
         size_of::<regions::Contract>()
     );
     assert_eq!(
-        size_of::<SiteObligation<NodeKey>>(),
+        size_of::<SiteObligation<ProofSite>>(),
         size_of::<regions::Obligation>()
     );
     assert_eq!(
         size_of::<SiteProof<NodeKey>>(),
         size_of::<crate::sema::model::LifetimeProof>()
     );
+    assert_eq!(
+        size_of::<SitePredicate<NodeKey>>(),
+        size_of::<crate::sema::generics::Predicate>()
+    );
     println!(
-        "identity={} origin={} site={} proof_site={} catalog={} row={} artifact={} slot={}",
+        "identity={} origin={} site={} proof_site={} catalog={} row={} artifact={} slot={} owner_row={} declaration_row={}",
         size_of::<ImportedBodyId>(),
         size_of::<BodyOrigin>(),
         size_of::<BodySite>(),
@@ -86,7 +138,9 @@ fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {
         size_of::<Catalog>(),
         size_of::<catalog::Row>(),
         size_of::<catalog::Artifact>(),
-        size_of::<CatalogSlot>()
+        size_of::<CatalogSlot>(),
+        size_of::<catalog::OwnerRow>(),
+        size_of::<catalog::DeclarationRow>()
     );
     println!(
         "body={}/{} contract={}/{} obligation={}/{} lifetime_proof={}/{} Value={}",
@@ -99,5 +153,22 @@ fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {
         size_of::<crate::sema::model::LifetimeProof>(),
         size_of::<SiteProof<ProofSite>>(),
         size_of::<ir::Value>()
+    );
+    println!(
+        "canonical_predicate={} located_predicate={}/{} builtin_use={}/{}",
+        size_of::<crate::types::parameters::predicates::Predicate>(),
+        size_of::<crate::sema::generics::Predicate>(),
+        size_of::<SitePredicate<ProofSite>>(),
+        size_of::<(NodeKey, crate::types::parameters::predicates::Predicate)>(),
+        size_of::<(ProofSite, crate::types::parameters::predicates::Predicate)>(),
+    );
+    println!(
+        "Code={} Target={} Request={} Template={} Proved={} paired_proof={}",
+        size_of::<crate::const_eval::code::Code>(),
+        size_of::<crate::sema::values::execution::Target>(),
+        size_of::<crate::sema::values::execution::Request>(),
+        size_of::<crate::body::templates::Template>(),
+        size_of::<crate::borrow::incremental::Proved>(),
+        size_of::<crate::borrow::incremental::PairedProved>(),
     );
 }

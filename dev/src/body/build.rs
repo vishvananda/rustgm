@@ -134,11 +134,7 @@ pub(crate) fn concrete_prepared(
     )?;
     constructors::concrete(report, facts, &mut program, drop_query.as_mut())?;
     if let Some(body) = prepared.values().next() {
-        return Err(Declarations::error(
-            report,
-            body.source,
-            "retained constant CFG owner was not consumed",
-        ));
+        return Err(report.body_error(body.source, "retained constant CFG owner was not consumed"));
     }
     drops::finish(report, facts, &mut program, drop_query.as_mut())?;
     Ok(program)
@@ -151,17 +147,17 @@ fn function_body(
     query: Option<&mut crate::types::destruction::NeedsDrop>,
 ) -> Result<Body, Error> {
     if let Some(mut body) = super::length_methods::build(facts, function)
-        .map_err(|e| Declarations::error(report, function.node, e))?
+        .map_err(|e| report.body_error(function.node, e))?
     {
         if let Some(query) = query {
             factory_owned_values(facts, &mut body, query)
-                .map_err(|e| Declarations::error(report, function.node, e))?;
+                .map_err(|e| report.body_error(function.node, e))?;
         }
         return Ok(body);
     }
     let source = function
         .body
-        .ok_or_else(|| Declarations::error(report, function.node, "missing function body"))?;
+        .ok_or_else(|| report.body_error(function.node, "missing function body"))?;
     let Some(Type::Function { result, .. }) = facts.types.kind(function.signature) else {
         return Err(Error::at(source.file, 0, "missing function signature"));
     };
@@ -186,11 +182,11 @@ fn function_body(
         function,
         std::mem::take(&mut scratch.scopes),
     )?;
-    let mut body = Builder::new(report, facts, scratch, body, scope_plan, query)
+    let mut body = Builder::new(report, facts, scratch, body, scope_plan, query)?
         .run(Some(function.parameters))
         .map_err(|e| report.diagnostic(e))?;
     crate::body::instantiate::close_inline_operands(facts, &mut body)
-        .map_err(|e| Declarations::error(report, source, e))?;
+        .map_err(|e| report.body_error(source, e))?;
     facts
         .body_work
         .cfg_functions
@@ -219,7 +215,7 @@ impl Body {
             guard_places: Vec::new(),
             projections: Vec::new(),
             owner,
-            source,
+            source: source.into(),
             result,
             locals: Vec::new(),
             values: Vec::new(),
@@ -390,6 +386,8 @@ struct Builder<'a> {
     node_facts: &'a [NodeFacts],
     scratch: &'a mut Scratch,
     body: Body,
+    /// Source builders never interpret imported operation ordinals as AST nodes.
+    source: NodeKey,
     current: Option<BlockId>,
     scope_plan: scopes::Facts,
     scope_exits: Vec<super::storage::Exit>,
@@ -433,7 +431,11 @@ impl<'a> Builder<'a> {
         mut body: Body,
         scope_plan: scopes::Facts,
         drop_query: Option<&'a mut crate::types::destruction::NeedsDrop>,
-    ) -> Self {
+    ) -> Result<Self, Error> {
+        let source = body
+            .source
+            .source()
+            .ok_or_else(|| Error::unlocated("syntax construction requires a real source body"))?;
         body.mutable_statics.clone_from(&facts.mutable_statics);
         let cfg = &mut scratch.cfg;
         lend(&mut body.statements, &mut cfg.statements);
@@ -445,8 +447,8 @@ impl<'a> Builder<'a> {
         lend(&mut body.projections, &mut cfg.projections);
         let mut scope_exits = Vec::new();
         lend(&mut scope_exits, &mut cfg.exits);
-        let file = body.source.file;
-        Self {
+        let file = source.file;
+        Ok(Self {
             drop_query,
             report,
             facts,
@@ -454,11 +456,12 @@ impl<'a> Builder<'a> {
             node_facts: facts.nodes.get(file.0 as usize).map_or(&[], Vec::as_slice),
             scratch,
             body,
+            source,
             current: None,
             scope_plan,
             scope_exits,
             capture_places: None,
-        }
+        })
     }
     /// Give the finished body exact-size vectors and recycle construction capacity.
     fn settle(&mut self) {
@@ -474,7 +477,7 @@ impl<'a> Builder<'a> {
     }
     fn error(&self, node: NodeId, message: impl Into<String>) -> Error {
         Error::at(
-            self.body.source.file,
+            self.source.file,
             self.unit.configured.ast.node(node).span.start,
             message,
         )
@@ -505,7 +508,7 @@ impl<'a> Builder<'a> {
             .ok_or_else(|| self.error(node, "missing solved type"))
     }
     fn value(&self, node: NodeId) -> Result<ValueId, Error> {
-        let value = self.scratch.values[self.body.source.file.0 as usize][node.get() as usize];
+        let value = self.scratch.values[self.source.file.0 as usize][node.get() as usize];
         if value == NO_VALUE {
             return Err(self.error(node, "missing evaluated value"));
         }
@@ -550,7 +553,7 @@ impl<'a> Builder<'a> {
                 AdjustmentKind::Never => {}
             }
         }
-        let slot = &mut self.scratch.values[self.body.source.file.0 as usize][node.get() as usize];
+        let slot = &mut self.scratch.values[self.source.file.0 as usize][node.get() as usize];
         if *slot == NO_VALUE {
             self.scratch.touched.push(node);
         }
@@ -564,7 +567,7 @@ impl<'a> Builder<'a> {
             .ok_or_else(|| self.error(node, "statement without an open block"))?;
         let end = self.index(node, self.body.statements.len() + 1)?;
         self.body.statements.push(Statement {
-            source: node,
+            source: node.into(),
             action,
         });
         self.body.blocks[block.0 as usize].end = end;
@@ -585,7 +588,7 @@ impl<'a> Builder<'a> {
         self.body.blocks.push(Block {
             start: 0,
             end: 0,
-            source: node,
+            source: node.into(),
             terminator: Terminator::Unreachable,
         });
         self.scratch.reach.push(Reach::default());
@@ -621,7 +624,7 @@ impl<'a> Builder<'a> {
             }
             let block = &mut self.body.blocks[block.0 as usize];
             block.terminator = terminator;
-            block.source = node;
+            block.source = node.into();
         }
     }
     fn local(
@@ -643,7 +646,7 @@ impl<'a> Builder<'a> {
             kind,
             definition: binding,
             mutable,
-            source: node,
+            source: node.into(),
         });
         if let Some(definition) = binding {
             self.scratch.definitions[definition.0 as usize] = Some(local);
@@ -726,7 +729,7 @@ impl<'a> Builder<'a> {
                 return Err(self.error(parameter, "missing parameter syntax"));
             };
             if let Some(receiver) = self.facts.receivers.get(&NodeKey {
-                file: self.body.source.file,
+                file: self.source.file,
                 node: parameter,
             }) {
                 self.local(
@@ -744,7 +747,7 @@ impl<'a> Builder<'a> {
                 .patterns
                 .roots
                 .get(&NodeKey {
-                    file: self.body.source.file,
+                    file: self.source.file,
                     node: pattern,
                 })
                 .copied()
@@ -765,16 +768,11 @@ impl<'a> Builder<'a> {
         Ok(())
     }
     fn run(self, parameters: Option<List>) -> Result<Body, Error> {
-        let root = self.body.source.node;
+        let root = self.source.node;
         self.run_root(root, parameters)
     }
     fn run_root(mut self, root: NodeId, parameters: Option<List>) -> Result<Body, Error> {
-        if self
-            .facts
-            .patterns
-            .pending_bodies
-            .contains(&self.body.source)
-        {
+        if self.facts.patterns.pending_bodies.contains(&self.source) {
             return Err(self.error(
                 root,
                 "body patterns require completed constant dependencies",
@@ -799,7 +797,7 @@ impl<'a> Builder<'a> {
             self.return_value(root, value, self.boundary(root, scopes::Kind::Body)?)?;
         }
         for node in self.scratch.touched.drain(..) {
-            self.scratch.values[self.body.source.file.0 as usize][node.get() as usize] = NO_VALUE;
+            self.scratch.values[self.source.file.0 as usize][node.get() as usize] = NO_VALUE;
         }
         for definition in self.scratch.bindings.drain(..) {
             self.scratch.definitions[definition.0 as usize] = None;
@@ -842,7 +840,7 @@ impl<'a> Builder<'a> {
                 .facts
                 .inline_constants
                 .as_deref()
-                .is_some_and(|registry| registry.get(self.body.source).is_some())
+                .is_some_and(|registry| registry.get(self.source).is_some())
             {
                 self.facts.body_work.cfg_inline_expressions.set(
                     self.facts
@@ -946,7 +944,13 @@ impl<'a> Builder<'a> {
             Work::EnterUnadjusted(_) | Work::Enter(_) => {}
             Work::EndBlock { node, tail, base } => self.finish_scope(node, tail, base)?,
             Work::Switch(target) => {
-                self.switch(self.body.blocks[target.0 as usize].source, target)?;
+                self.switch(
+                    self.body
+                        .syntax_site(self.body.blocks[target.0 as usize].source)
+                        .map_err(|message| self.report.body_error(self.body.source, message))?
+                        .node,
+                    target,
+                )?;
             }
             Work::Branch {
                 node,
@@ -1066,7 +1070,7 @@ impl<'a> Builder<'a> {
     fn enter(&mut self, node: NodeId) -> Result<(), Error> {
         let source = NodeKey {
             node,
-            ..self.body.source
+            ..self.source
         };
         if matches!(
             self.kind(node),
@@ -1074,7 +1078,7 @@ impl<'a> Builder<'a> {
                 flavor: BlockFlavor::Const,
                 ..
             }
-        ) && source != self.body.source
+        ) && source != self.source
         {
             if self.current.is_some() {
                 let value = self.evaluate(node, self.ty(node)?, Rvalue::InlineConstant(source))?;
@@ -1491,7 +1495,7 @@ impl<'a> Builder<'a> {
         if let Some(value) = crate::sema::primitive_constants::selected(
             self.facts,
             NodeKey {
-                file: self.body.source.file,
+                file: self.source.file,
                 node,
             },
         )
@@ -1519,7 +1523,7 @@ impl<'a> Builder<'a> {
                 }
                 DefKind::Const => {
                     if let Some(&instance) = self.facts.constant_uses.get(&NodeKey {
-                        file: self.body.source.file,
+                        file: self.source.file,
                         node,
                     }) {
                         Rvalue::AssociatedConstant(instance)
@@ -1547,7 +1551,7 @@ impl<'a> Builder<'a> {
         ) {
             let key = NodeKey {
                 node,
-                ..self.body.source
+                ..self.source
             };
             let text = self
                 .facts
@@ -1647,6 +1651,18 @@ impl<'a> Builder<'a> {
         if let Some(value) = self.language_call(node, &[left, right])? {
             return Ok(value);
         }
+        let operator = match self.fact(node)?.operation {
+            Some(Operation::Binary { operator, .. }) => Some(operator),
+            Some(Operation::Assign { operator, .. } | Operation::AssignPlace { operator, .. }) => {
+                operator
+            }
+            _ => None,
+        };
+        let operands = if matches!(operator, Some(Op::Slash | Op::Percent)) {
+            self.binary_operands(left, right)?
+        } else {
+            crate::body::ir::BinaryOperands::NotRequired
+        };
         let right = self.value(right)?;
         match self.fact(node)?.operation {
             Some(Operation::AssignPlace {
@@ -1661,6 +1677,7 @@ impl<'a> Builder<'a> {
                         node,
                         ty,
                         Rvalue::Binary {
+                            operands,
                             operator,
                             left,
                             right,
@@ -1676,6 +1693,7 @@ impl<'a> Builder<'a> {
                 node,
                 self.ty(node)?,
                 Rvalue::Binary {
+                    operands,
                     operator,
                     left: self.value(left)?,
                     right,
@@ -1701,6 +1719,7 @@ impl<'a> Builder<'a> {
                         node,
                         ty,
                         Rvalue::Binary {
+                            operands,
                             operator,
                             left,
                             right,

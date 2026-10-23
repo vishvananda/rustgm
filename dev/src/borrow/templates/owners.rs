@@ -15,7 +15,7 @@ pub(super) fn indices(templates: &Templates) -> Result<Indices, Error> {
     for (ordinal, template) in templates.bodies.iter().enumerate() {
         let body = &template.body;
         let error = |message: &str| Error {
-            node: Some(body.source),
+            node: Some(body.source.into()),
             message: message.into(),
         };
         let duplicate = match body.owner {

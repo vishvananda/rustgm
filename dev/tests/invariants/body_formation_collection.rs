@@ -194,7 +194,7 @@ fn declaration_clauses_reach_body_formation_with_their_independent_debts() -> Re
             );
             if let Err(error) = result {
                 assert!(error.message.contains("does not outlive"), "{error}");
-                assert_eq!(error.source, Some(source));
+                assert_eq!(error.source, Some(source.into()));
             }
         }
     }

@@ -82,7 +82,7 @@ pub(crate) fn verify<'a, S: BuildHasher>(
                     .get(&template.body.key())
                     .map(|&input| (input, &template.body))
                     .ok_or_else(|| regions::Error {
-                        source: Some(template.body.source),
+                        source: Some(template.body.source.into()),
                         message: "original context requires its exact input contract".into(),
                     })
             }),
@@ -171,7 +171,7 @@ fn source_regions<S: BuildHasher>(
         context.source.iter().map(|input| {
             if !keys.insert(input.key) {
                 return Err(regions::Error {
-                    source: Some(input.source),
+                    source: Some(input.source.into()),
                     message: "duplicate retained source contract".into(),
                 });
             }
@@ -180,7 +180,7 @@ fn source_regions<S: BuildHasher>(
                 .copied()
                 .map(|body| (input, body))
                 .ok_or_else(|| regions::Error {
-                    source: Some(input.source),
+                    source: Some(input.source.into()),
                     message: "retained source contract lost its exact component body".into(),
                 })
         }),

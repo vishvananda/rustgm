@@ -18,7 +18,7 @@ impl Builder<'_> {
                     self.report,
                     crate::resolve::unit::NodeKey {
                         node: operand,
-                        ..self.body.source
+                        ..self.source
                     },
                 )
                 .is_some();
@@ -65,7 +65,7 @@ impl Builder<'_> {
     ) -> Result<Option<ValueId>, Error> {
         let key = crate::resolve::unit::NodeKey {
             node,
-            ..self.body.source
+            ..self.source
         };
         let Some(selected) = self.facts.methods.calls.get(&key).copied() else {
             return Ok(None);
@@ -119,7 +119,7 @@ impl Builder<'_> {
             .calls
             .get(&crate::resolve::unit::NodeKey {
                 node,
-                ..self.body.source
+                ..self.source
             })
             .is_some_and(|selected| {
                 self.facts
@@ -155,7 +155,7 @@ impl Builder<'_> {
             .methods
             .comparison_borrow(crate::resolve::unit::NodeKey {
                 node,
-                ..self.body.source
+                ..self.source
             })
             .ok_or_else(|| self.error(node, "comparison RHS lacks physical shared-borrow type"))?;
         let value = self.receiver_value(
@@ -178,7 +178,7 @@ impl Builder<'_> {
             .calls
             .get(&crate::resolve::unit::NodeKey {
                 node,
-                ..self.body.source
+                ..self.source
             })
             .is_some_and(|selected| selected.borrow.is_some())
     }
@@ -190,7 +190,7 @@ impl Builder<'_> {
             };
             let key = crate::resolve::unit::NodeKey {
                 node,
-                ..self.body.source
+                ..self.source
             };
             let selected = self
                 .facts
@@ -220,7 +220,7 @@ impl Builder<'_> {
     pub(super) fn language_index_receiver(&mut self, node: NodeId) -> Result<(), Error> {
         let key = crate::resolve::unit::NodeKey {
             node,
-            ..self.body.source
+            ..self.source
         };
         let selected = self
             .facts
@@ -250,7 +250,7 @@ impl Builder<'_> {
     ) -> Result<crate::body::ir::Place, Error> {
         let key = crate::resolve::unit::NodeKey {
             node,
-            ..self.body.source
+            ..self.source
         };
         let selected = self
             .facts
@@ -293,5 +293,47 @@ impl Builder<'_> {
             .materialize_place(node, reference)?
             .ok_or_else(|| self.error(node, "missing index reference storage"))?;
         self.dereference_place(node, place)
+    }
+}
+
+impl Builder<'_> {
+    pub(super) fn binary_operands(
+        &self,
+        left: NodeId,
+        right: NodeId,
+    ) -> Result<crate::body::ir::BinaryOperands, Error> {
+        Ok(crate::body::ir::BinaryOperands::new(
+            self.immediate_operand(left)?,
+            self.immediate_operand(right)?,
+        ))
+    }
+    fn immediate_operand(&self, mut node: NodeId) -> Result<bool, Error> {
+        for _ in 0..self.unit.configured.ast.nodes.len() {
+            let visits = &self.facts.body_work.cfg_operand_visits;
+            visits.set(visits.get().saturating_add(1));
+            match self.kind(node) {
+                super::Kind::Group(child) | super::Kind::Attributed { value: child, .. } => {
+                    node = child;
+                }
+                super::Kind::Expansion {
+                    children,
+                    tail: Some(child),
+                } if children.start == children.end => node = child,
+                super::Kind::Literal(_) | super::Kind::Name(..) | super::Kind::Path { .. } => {
+                    return Ok(true);
+                }
+                super::Kind::Unary {
+                    op: crate::syntax::ast::Unary::Negate,
+                    ..
+                } => {
+                    return Ok(matches!(
+                        self.fact(node)?.operation,
+                        Some(Operation::Unary { literal: true, .. })
+                    ));
+                }
+                _ => return Ok(false),
+            }
+        }
+        Err(self.error(node, "cycle in binary operand source wrappers"))
     }
 }

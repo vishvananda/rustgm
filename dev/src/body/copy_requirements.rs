@@ -27,7 +27,7 @@ mod tests;
 #[derive(Clone)]
 pub(crate) struct Prepared {
     key: BodyKey,
-    source: super::ir::NodeKey,
+    source: super::ir::BodyOrigin,
     instance: Option<Instance>,
     signature: Option<TypeId>,
     requirements: Arc<SourceCopyRequirements>,

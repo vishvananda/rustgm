@@ -38,6 +38,10 @@ impl Original {
         if body.instance.is_some() || contract.key != body.key() || contract.source != body.source {
             return Err("original component contract belongs to another body");
         }
+        let source = body
+            .source
+            .source()
+            .ok_or("source-free original requires its authenticated imported header")?;
         let valid = match body.owner {
             Owner::Function {
                 definition,
@@ -47,7 +51,7 @@ impl Original {
                 .get(&definition)
                 .and_then(|&i| facts.functions.get(i))
                 .is_some_and(|f| {
-                    f.body == Some(body.source)
+                    f.body == Some(source)
                         && f.signature == signature
                         && contract.signature == Some(signature)
                         && contract.universals
@@ -61,7 +65,7 @@ impl Original {
                 .initializer_index(definition)
                 .and_then(|i| facts.initializers.get(i))
                 .is_some_and(|i| {
-                    i.semantic_source() == body.source
+                    i.semantic_source() == source
                         && i.ty == body.result
                         && contract.signature.is_none()
                         && contract.universals
@@ -86,7 +90,7 @@ impl Original {
                 signature,
                 execution,
             } => facts.closures.identity(identity).is_some_and(|c| {
-                c.semantic_source() == body.source
+                c.semantic_source() == source
                     && c.signature == signature
                     && c.execution.map(|e| e.signature) == execution
                     && contract.signature == Some(c.execution.map_or(signature, |e| e.signature))
@@ -95,7 +99,7 @@ impl Original {
             Owner::AnonymousConstant => facts
                 .inline_constants
                 .as_deref()
-                .and_then(|r| r.get(body.source))
+                .and_then(|r| r.get(source))
                 .is_some_and(|i| {
                     i.result == Some(body.result)
                         && i.universals == contract.universals
@@ -103,10 +107,7 @@ impl Original {
                 }),
             _ => false,
         };
-        let link = facts
-            .nested_outputs
-            .as_deref()
-            .and_then(|r| r.get(&body.source));
+        let link = facts.nested_outputs.as_deref().and_then(|r| r.get(&source));
         if !valid
             || match (&contract.output, link) {
                 (Some(a), Some(b)) => !Arc::ptr_eq(a, b),
@@ -133,7 +134,13 @@ impl Original {
             Owner::AnonymousConstant => facts
                 .inline_constants
                 .as_deref()
-                .and_then(|r| r.get(self.template.body.source))
+                .and_then(|r| {
+                    self.template
+                        .body
+                        .source
+                        .source()
+                        .and_then(|source| r.get(source))
+                })
                 .is_some_and(|i| {
                     i.evaluation == crate::sema::inline_constants::Evaluation::DeferredTemplate
                 }),

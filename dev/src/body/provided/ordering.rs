@@ -127,7 +127,7 @@ fn branch(body: &mut Body, start: u32, end: u32, condition: ValueId, yes: u32, n
     body.blocks.push(Block {
         start,
         end,
-        source: body.source.node,
+        source: body.root_site(),
         terminator: Terminator::Branch {
             condition,
             yes: BlockId(yes),
@@ -225,7 +225,7 @@ fn initialize(
             },
             definition: None,
             mutable: false,
-            source: source.node,
+            source: source.node.into(),
         });
         statement(&mut body, Action::StorageLive(LocalId(index)));
         if index < 2 {

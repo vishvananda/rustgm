@@ -1,6 +1,6 @@
 //! Source facts become body-owned requirements without changing their proof scope.
 use crate::{
-    resolve::unit::NodeKey,
+    body::ir::ProofSite,
     types::parameters::{environment::Environment, predicates::Predicate},
 };
 use std::sync::Arc;
@@ -8,7 +8,7 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct BuiltinRequirements {
     pub(crate) environment: Option<Arc<Environment>>,
-    pub(crate) predicates: Vec<(NodeKey, Predicate)>,
+    pub(crate) predicates: Vec<(ProofSite, Predicate)>,
     pub(crate) source_copy: Option<Arc<crate::sema::model::SourceCopyRequirements>>,
     prepared_copy: Option<Box<super::super::copy_requirements::Prepared>>,
 }
@@ -16,7 +16,11 @@ impl From<&crate::sema::model::BuiltinRequirements> for BuiltinRequirements {
     fn from(source: &crate::sema::model::BuiltinRequirements) -> Self {
         Self {
             environment: source.environment.clone(),
-            predicates: source.predicates.clone(),
+            predicates: source
+                .predicates
+                .iter()
+                .map(|&(site, predicate)| (site.into(), predicate))
+                .collect(),
             source_copy: source.source_copy.clone(),
             prepared_copy: None,
         }

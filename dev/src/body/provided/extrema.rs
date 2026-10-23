@@ -71,7 +71,7 @@ impl Helper {
                 kind: LocalKind::Parameter(index),
                 definition: None,
                 mutable: false,
-                source: source.node,
+                source: source.node.into(),
             });
             statement(&mut body, Action::StorageLive(LocalId(index)));
         }
@@ -99,14 +99,14 @@ impl Helper {
                 .checked_add(1)
                 .ok_or("too many helper borrow regions")?;
             contract.obligations.push(Obligation {
-                source: self.body.source,
+                source: self.body.source.into(),
                 kind: Debt::Variable {
                     id: region,
                     needs_provenance: true,
                 },
             });
             contract.obligations.push(Obligation {
-                source: self.body.source,
+                source: self.body.source.into(),
                 kind: Debt::LocalBorrow(region),
             });
             regions.push(region);
@@ -173,7 +173,7 @@ impl Helper {
         self.body.blocks.push(Block {
             start,
             end,
-            source: self.body.source.node,
+            source: self.body.root_site(),
             terminator: Terminator::Branch {
                 condition,
                 yes: BlockId(yes),
@@ -242,7 +242,7 @@ impl Helper {
             kind: LocalKind::Binding,
             definition: None,
             mutable: false,
-            source: self.body.source.node,
+            source: self.body.root_site(),
         });
         statement(&mut self.body, Action::StorageLive(local));
         statement(
@@ -284,7 +284,7 @@ impl Helper {
         self.body.blocks.push(Block {
             start: end,
             end,
-            source: self.body.source.node,
+            source: self.body.root_site(),
             terminator: Terminator::Panic,
         });
         Ok(())

@@ -19,7 +19,7 @@ use super::{
 };
 use crate::{
     body::{
-        ir::{Action, BlockId, Body, BorrowKind, NodeKey, Place, Rvalue, Terminator, ValueId},
+        ir::{Action, BlockId, Body, BorrowKind, Place, Rvalue, Terminator, ValueId},
         scopes::Lifetime,
         storage::End,
     },
@@ -42,7 +42,7 @@ struct Loan {
 }
 #[derive(Debug)]
 pub struct Error {
-    pub node: NodeKey,
+    pub node: crate::body::ir::ProofSite,
     pub message: &'static str,
 }
 impl std::fmt::Display for Error {
@@ -375,7 +375,7 @@ impl Flow<'_> {
                 .ordered
                 .as_ref()
                 .ok_or(Error {
-                    node: self.body.source,
+                    node: self.body.source.into(),
                     message: "missing cleanup loan timeline",
                 })?
                 .blocks[block]
@@ -394,10 +394,7 @@ impl Flow<'_> {
                     .find(|&statement| self.generates(statement))
                     .unwrap_or(data.end + 1);
                 if next > at {
-                    let node = NodeKey {
-                        node: data.source,
-                        ..self.body.source
-                    };
+                    let node = self.body.diagnostic_site(data.source);
                     self.charge((next - at) as usize)
                         .map_err(|message| Error { node, message })?;
                     while ends.next_if(|(position, _)| *position < next).is_some() {}
@@ -405,14 +402,11 @@ impl Flow<'_> {
                     continue;
                 }
             }
-            let node = NodeKey {
-                node: if at < data.end {
-                    self.body.statements[at as usize].source
-                } else {
-                    data.source
-                },
-                ..self.body.source
-            };
+            let node = self.body.diagnostic_site(if at < data.end {
+                self.body.statements[at as usize].source
+            } else {
+                data.source
+            });
             let error = |message| Error { node, message };
             let current = at;
             at += 1;
@@ -460,7 +454,7 @@ impl Flow<'_> {
     }
     fn solve<const RECORD: bool>(&mut self) -> Result<(), Error> {
         let error = |message| Error {
-            node: self.body.source,
+            node: self.body.source.into(),
             message,
         };
         let words = self.loans.len().div_ceil(64);
@@ -607,7 +601,7 @@ pub(crate) fn check_schedule(
 ) -> Result<Analysis, Error> {
     let body = facts.body();
     let error = |message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     };
     if contract.key != body.key() || contract.source != body.source {
@@ -643,7 +637,7 @@ pub(super) fn analyze<const RECORD: bool>(
     storage: &storage::Analysis,
 ) -> Result<Report, Error> {
     let error = |message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     };
     if contract.key != body.key()
@@ -683,7 +677,7 @@ fn finish<const RECORD: bool>(
     destruction: Option<super::destruction::schedule::Schedule<'_>>,
 ) -> Result<Report, Error> {
     let error = |message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     };
     let mut seeds = Vec::with_capacity(uses.seeds.len().saturating_add(uses.parameter_seeds.len()));

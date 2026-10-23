@@ -79,7 +79,7 @@ fn rigid_context_rejects_foreign_catalog_owner_parameters_and_missing_publicatio
             .is_err()
     );
     let mut wrong = key;
-    wrong.source.node = crate::syntax::ast::NodeId::new(wrong.source.node.get() + 1);
+    wrong.source = crate::test_sites::next_node(wrong.source)?;
     assert!(context.validate(&facts, entry.caller, wrong).is_err());
     let foreign = facts.types.intern_parameter(Parameter {
         owner: ItemId(entry.selected.definition.0),

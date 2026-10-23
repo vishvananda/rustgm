@@ -16,14 +16,9 @@ mod roots;
 pub use roots::Roots;
 mod virtual_dispatch;
 
-use crate::{
-    borrow::Checked,
-    lowir::program,
-    resolve::{model::DefId, unit::NodeKey},
-    sema::model::Declarations,
-};
+use crate::{borrow::Checked, lowir::program, resolve::model::DefId, sema::model::Declarations};
 pub struct Error {
-    pub node: NodeKey,
+    pub node: Option<crate::body::ir::ProofSite>,
     pub message: &'static str,
 }
 
@@ -47,13 +42,11 @@ pub fn build_roots(
     roots: Roots<'_>,
 ) -> Result<program::Program, Error> {
     let exports = roots::exports(facts, roots.exports).map_err(|message| Error {
-        node: bodies.program().bodies.first().map_or(
-            NodeKey {
-                file: crate::resolve::unit::FileId(0),
-                node: crate::syntax::ast::NodeId::new(0),
-            },
-            |body| body.source,
-        ),
+        node: bodies
+            .program()
+            .bodies
+            .first()
+            .map(|body| body.source.root_site()),
         message,
     })?;
     build_exact_roots(facts, bodies, exports.selected(roots.entry))

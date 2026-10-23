@@ -292,6 +292,8 @@ pub struct BodyWork {
     /// Actual anonymous CFG constructions, including demanded inline bodies.
     pub cfg_expressions: std::cell::Cell<usize>,
     pub cfg_inline_expressions: std::cell::Cell<usize>,
+    /// Exact one-time wrapper visits retained as Binary operand source facts.
+    pub cfg_operand_visits: std::cell::Cell<usize>,
     /// Actual typed unsizing DAG inputs and reuse, separate from eligibility queries.
     pub unsizing_inputs: usize,
     pub unsizing_fields: usize,

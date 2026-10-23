@@ -1,14 +1,17 @@
 //! Source-computation identities must agree with the retained semantic body owner.
-use super::ir::{NodeKey, Owner};
+use super::ir::Owner;
 use crate::sema::model::InitializerKind;
 impl Owner {
     pub(crate) fn source_caller(
         self,
         facts: &crate::sema::model::Declarations,
-        source: NodeKey,
+        source: crate::body::ir::BodyOrigin,
         instance: Option<crate::types::instance::Instance>,
     ) -> Result<crate::sema::values::execution::CallerInstance, &'static str> {
         use crate::{sema::values::execution::CallerInstance, types::Kind};
+        let source = source
+            .source()
+            .ok_or("imported body cannot reuse a source caller catalog")?;
         match self {
             Self::Function {
                 definition,

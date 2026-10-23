@@ -44,14 +44,14 @@ fn paid_selection_work_is_linear_for_distinct_and_repeated_roots() -> Result {
                 return Err("caller".into());
             };
             let key = catalog::CallerKey {
-                source: contract.source,
+                source: crate::test_sites::node(contract.source)?,
                 declaration: Some(declaration),
                 universals: contract.universals,
                 enclosing: catalog::Enclosing::Original,
             };
             let publication = catalog::Publication::new([0..0, 0..0])?;
             let inputs = Inputs {
-                source: contract.source,
+                source: crate::test_sites::node(contract.source)?,
                 universals: contract.universals,
                 signature: contract.signature,
                 parameters: &contract.parameters,
@@ -121,7 +121,7 @@ fn paid_selection_work_is_linear_for_distinct_and_repeated_roots() -> Result {
 fn declared_outlives_is_not_an_alias_equality_assumption() -> Result {
     let (facts, contract, _) = fixture()?;
     let inputs = Inputs {
-        source: contract.source,
+        source: crate::test_sites::node(contract.source)?,
         universals: contract.universals,
         signature: contract.signature,
         parameters: &contract.parameters,

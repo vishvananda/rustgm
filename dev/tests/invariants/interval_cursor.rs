@@ -22,7 +22,7 @@ fn repeated_proofs_keep_disjoint_intervals_and_linear_allocation_work()
             .ok_or("missing contract")?;
         for index in 0..count {
             contract.obligations.push(Obligation {
-                source: contract.source,
+                source: contract.source.into(),
                 kind: Kind::Variable {
                     id: RegionId(42 + index),
                     needs_provenance: false,

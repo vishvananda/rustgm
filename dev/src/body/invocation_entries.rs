@@ -430,7 +430,7 @@ fn require_conditions(
     facts: &Declarations,
     identity: crate::types::closure::ClosureId,
     bindings: &matching::Bindings,
-    source: crate::resolve::unit::NodeKey,
+    source: crate::body::ir::ProofSite,
     contract: &mut Contract,
 ) -> Result<(), &'static str> {
     let conditions = facts

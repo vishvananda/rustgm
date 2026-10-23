@@ -219,10 +219,20 @@ fn concrete_proofs_require_the_matching_instance_owner_and_original() -> TestRes
         .ok_or("swapped proof accepted")?;
     assert!(error.message.contains("another body"));
     let (body, mut contract) = specialize(&mut f.facts, &checked, first)?;
-    contract.source.node = crate::syntax::ast::NodeId::new(contract.source.node.get() + 1);
+    let mut source = contract.source.source().ok_or("missing source fixture")?;
+    source.node = crate::syntax::ast::NodeId::checked(
+        source
+            .node
+            .get()
+            .checked_add(1)
+            .ok_or("test node overflow")?,
+    )
+    .ok_or("test node overflow")?;
+    contract.source = source.into();
     assert!(prove(&mut f.facts, &checked, body, &contract).is_err());
     let (body, mut contract) = specialize(&mut f.facts, &checked, first)?;
-    contract.key = crate::body::ir::BodyKey::Anonymous(body.source);
+    contract.key =
+        crate::body::ir::BodyKey::Anonymous(body.source.source().ok_or("missing source fixture")?);
     assert!(prove(&mut f.facts, &checked, body, &contract).is_err());
     let (mut body, contract) = specialize(&mut f.facts, &checked, first)?;
     let Some(Kind::FunctionItem {
@@ -371,5 +381,34 @@ fn instances_share_template_structure_exactly_as_full_reproof() -> TestResult {
             "shared instance structure changed LowIR (destructors: {with_drop})"
         );
     }
+    Ok(())
+}
+
+#[test]
+fn opaque_diagnostics_reject_missing_foreign_or_non_source_owner_locations() -> TestResult {
+    let mut report = resolve_source("fn id<T>(x:T)->T{x}fn main(){}")?;
+    let facts = sema::declarations::analyze(&report)?;
+    let function = *facts.functions.first().ok_or("function")?;
+    let failure = |owner| crate::sema::opaque::StorageFailure {
+        owner,
+        message: "opaque storage failure",
+    };
+    for owner in [None, Some(resolve::model::DefId(u32::MAX))] {
+        let error = super::super::opaque_storage_error(&report, &facts, failure(owner));
+        assert!(matches!(
+            error.file,
+            resolve::package::DiagnosticFile::Unlocated
+        ));
+    }
+    let error =
+        super::super::opaque_storage_error(&report, &facts, failure(Some(function.definition)));
+    assert_eq!(error.file.source(), Some(function.node.file));
+    report.resolution.definitions[function.definition.0 as usize].node = None;
+    let error =
+        super::super::opaque_storage_error(&report, &facts, failure(Some(function.definition)));
+    assert!(matches!(
+        error.file,
+        resolve::package::DiagnosticFile::Unlocated
+    ));
     Ok(())
 }

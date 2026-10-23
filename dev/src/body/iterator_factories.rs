@@ -42,7 +42,7 @@ pub(crate) fn append(
             })?
             .canonical
             .origin;
-        let error = |e| Declarations::error(report, source, e);
+        let error = |e| report.body_error(source, e);
         if facts
             .iteration
             .as_deref()
@@ -136,7 +136,7 @@ fn build(
         kind: LocalKind::Parameter(0),
         definition: None,
         mutable: false,
-        source: source.node,
+        source: source.node.into(),
     });
     statement(&mut body, Action::StorageLive(LocalId(0)));
     let returned = match original.declaration.kind {
@@ -214,14 +214,14 @@ fn forward(
     let callee = value(body, callable, Rvalue::Function(DefId(member.method.0)))?;
     body.arguments.push(borrowed);
     contract.obligations.push(Obligation {
-        source,
+        source: source.into(),
         kind: Debt::Variable {
             id: RegionId(1),
             needs_provenance: false,
         },
     });
     contract.obligations.push(Obligation {
-        source,
+        source: source.into(),
         kind: Debt::LocalBorrow(RegionId(1)),
     });
     if called_result != result {

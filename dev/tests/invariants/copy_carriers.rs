@@ -101,7 +101,7 @@ fn source_copy_missing_carrier_and_wrong_owner_never_fall_back() -> Result {
             .is_err()
     );
     let mut wrong = prepared.clone();
-    wrong.key = BodyKey::Anonymous(body.source);
+    wrong.key = BodyKey::Anonymous(body.source.source().ok_or("source fixture")?);
     assert!(
         wrong
             .decision(body, source, requirements.environment.as_ref(), ty)

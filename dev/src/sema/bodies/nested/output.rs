@@ -249,8 +249,8 @@ impl Checker<'_> {
         }
         bridges.sort_unstable_by_key(|bridge| bridge.slot);
         let link = Link {
-            source,
-            parent,
+            source: source.into(),
+            parent: parent.into(),
             revision: u32::try_from(outputs.len())
                 .map_err(|_| self.error(source.node, "too many output ports"))?,
             universals: self.state.body_binders,

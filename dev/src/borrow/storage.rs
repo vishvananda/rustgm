@@ -2,7 +2,7 @@
 mod index;
 mod state;
 use crate::body::{
-    ir::{Action, BlockId, Body, NodeKey, Place, Rvalue, ValueId},
+    ir::{Action, BlockId, Body, Place, Rvalue, ValueId},
     storage::End,
 };
 pub(crate) use index::{Event, EventKind};
@@ -11,7 +11,7 @@ use state::State;
 
 #[derive(Debug)]
 pub struct Error {
-    pub node: NodeKey,
+    pub node: crate::body::ir::ProofSite,
     pub message: &'static str,
 }
 /// Equal storage inputs yield equal analyses: no field depends on types.
@@ -116,7 +116,7 @@ fn analyze(
     trust: Trust,
 ) -> Result<Analysis, Error> {
     let error = |message| Error {
-        node: body.source,
+        node: body.source.into(),
         message,
     };
     let mut state = State::new(body.temporaries.len());

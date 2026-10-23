@@ -15,7 +15,7 @@ pub(super) fn check<S: BuildHasher>(
         return Ok(None);
     };
     let error = |message: &str| Error {
-        node: Some(proof.source),
+        node: Some(proof.source.into()),
         message: message.into(),
     };
     let parameters = requirements

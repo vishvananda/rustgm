@@ -121,7 +121,7 @@ impl Cache {
             let Proved { order, storage } = Proved::new(body)?;
             if structure.proved.order != order || structure.proved.storage != storage {
                 return Err(Error {
-                    node: Some(body.source),
+                    node: Some(body.source.into()),
                     message: "shared instance structure differs from its re-proof".into(),
                 });
             }

@@ -1,7 +1,7 @@
 //! Borrow limits follow typed places and share persistent reborrow ancestry.
 use crate::{
     body::{
-        ir::{Action, Body, NodeKey, Place, ProjectionKind, Rvalue, ValueId},
+        ir::{Action, Body, Place, ProjectionKind, ProofSite, Rvalue, ValueId},
         regions::{Kind as Bound, Obligation},
     },
     types::{Kind, RegionId, Store},
@@ -85,7 +85,7 @@ impl<'a> Places<'a> {
         &mut self,
         place: Place,
         region: RegionId,
-        source: NodeKey,
+        source: ProofSite,
         output: &mut Vec<Obligation>,
     ) -> Result<(), &'static str> {
         self.step()?;
@@ -154,10 +154,7 @@ pub(super) fn bounds(types: &Store, body: &Body) -> Result<Vec<Obligation>, &'st
         places.borrow(
             place,
             region,
-            NodeKey {
-                node: statement.source,
-                ..body.source
-            },
+            body.source.proof_site(statement.source)?,
             &mut output,
         )?;
     }

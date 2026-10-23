@@ -11,6 +11,16 @@ use std::io::{self, Write};
 /// # Errors
 /// Propagates output errors and inconsistent type identities.
 pub fn write(program: &Program, types: &Store, out: &mut impl Write) -> io::Result<()> {
+    write_with_origins(program, types, super::BodyOrigins::source_only(), out)
+}
+/// # Errors
+/// Rejects missing/foreign imported locations and propagates output failures.
+pub fn write_with_origins(
+    program: &Program,
+    types: &Store,
+    origins: super::BodyOrigins<'_>,
+    out: &mut impl Write,
+) -> io::Result<()> {
     writeln!(out, "body-crate 1")?;
     type_view::types(types, out)?;
     type_view::regions(&program.region_equalities, out)?;
@@ -65,13 +75,9 @@ pub fn write(program: &Program, types: &Store, out: &mut impl Write) -> io::Resu
                 write!(out, "{kind} def={}", definition.0)?;
             }
         }
-        writeln!(
-            out,
-            " result={} source={}:{}",
-            body.result.0,
-            body.source.file.0,
-            body.source.node.get()
-        )?;
+        write!(out, " result={} source=", body.result.0)?;
+        origins.body(body.source, out)?;
+        writeln!(out)?;
         contents(body, out)?;
         writeln!(out, "end-body")?;
     }
@@ -337,6 +343,7 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             operator,
             left,
             right,
+            ..
         } => write!(out, "binary {operator:?} v{} v{}", left.0, right.0),
         Rvalue::Cast { kind, operand, .. } => write!(out, "cast {kind:?} v{}", operand.0),
         Rvalue::Invoke { .. } | Rvalue::Intrinsic { .. } | Rvalue::Call { .. } => {

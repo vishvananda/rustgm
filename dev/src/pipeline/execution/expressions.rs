@@ -48,8 +48,7 @@ impl Engine {
             ));
         };
         if context.is_some() {
-            return Err(Declarations::error(
-                report,
+            return Err(report.body_error(
                 source,
                 "associated constant execution needs a specialized body",
             ));
@@ -77,31 +76,24 @@ impl Engine {
             .checked_add(additional)
             .filter(|&bytes| bytes <= 64 * 1024 * 1024)
             .ok_or_else(|| {
-                Declarations::error(
-                    report,
-                    source,
-                    "retained constant bodies exceed 64 MiB budget",
-                )
+                report.body_error(source, "retained constant bodies exceed 64 MiB budget")
             })?;
         let index = self
             .catalog
             .insert(&templates.bodies[0].body)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         if retain {
-            let template =
-                templates.bodies.into_iter().next().ok_or_else(|| {
-                    Declarations::error(report, source, "lost retained inline body")
-                })?;
+            let template = templates
+                .bodies
+                .into_iter()
+                .next()
+                .ok_or_else(|| report.body_error(source, "lost retained inline body"))?;
             if self
                 .concrete
                 .insert(BodyKey::Anonymous(source), template.body)
                 .is_some()
             {
-                return Err(Declarations::error(
-                    report,
-                    source,
-                    "duplicate retained inline CFG owner",
-                ));
+                return Err(report.body_error(source, "duplicate retained inline CFG owner"));
             }
             self.retained_expressions = self.retained_expressions.saturating_add(additional);
             facts.constant_work.expression_bytes = self.retained_expressions;
@@ -119,8 +111,7 @@ impl Engine {
         result: TypeId,
     ) -> Result<Templates, Error> {
         let environment = Arc::new(
-            Environment::new(&facts.types, &[])
-                .map_err(|e| Declarations::error(report, source, e))?,
+            Environment::new(&facts.types, &[]).map_err(|e| report.body_error(source, e))?,
         );
         let (mut body, destruction) = self.construction.expression(
             report,
@@ -139,9 +130,9 @@ impl Engine {
         let mut contract = self
             .contracts
             .expression(facts, source)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         body::dispatch::resolve(facts, &mut body, &mut contract)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         let template = Template {
             body,
             destruction,
@@ -163,8 +154,7 @@ impl Engine {
     ) -> Result<Option<usize>, Error> {
         let inputs = std::rc::Rc::clone(&self.inputs);
         let stored = inputs.try_borrow().map_err(|_| {
-            Declarations::error(
-                report,
+            report.body_error(
                 source,
                 "constant CFG lender is preparing another expression",
             )
@@ -172,35 +162,30 @@ impl Engine {
         let Some(body) = stored.get(&BodyKey::Anonymous(source)) else {
             return Ok(None);
         };
-        if body.source != source
+        if body.source != source.into()
             || body.result != result
             || !matches!(body.owner, crate::body::ir::Owner::AnonymousConstant)
         {
-            return Err(Declarations::error(
-                report,
-                source,
-                "lent inline CFG identity or result changed",
-            ));
+            return Err(report.body_error(source, "lent inline CFG identity or result changed"));
         }
         body::constants::eligibility(report, facts, body)?;
         let mut needed = crate::types::destruction::NeedsDrop::new(
             facts.destructors.implementations().iter().map(|i| i.item),
         );
         let destruction = body::drops::requirements(facts, body, &mut needed)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         let contract = self
             .contracts
             .expression(facts, source)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         let environment = Arc::new(
-            Environment::new(&facts.types, &[])
-                .map_err(|e| Declarations::error(report, source, e))?,
+            Environment::new(&facts.types, &[]).map_err(|e| report.body_error(source, e))?,
         );
         self.prove_body(report, facts, body, &destruction, &environment, &contract)?;
         let index = self
             .catalog
             .insert(body)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         Ok(Some(index))
     }
 }

@@ -17,12 +17,11 @@ pub(super) fn concrete(
             continue;
         }
         if let Some(body) = prepared.remove(&BodyKey::Declaration(initializer.definition)) {
-            if body.source != initializer.semantic_source()
+            if body.source != initializer.semantic_source().into()
                 || body.result != initializer.ty
                 || !matches!(body.owner,Owner::Initializer{definition,..} if definition==initializer.definition)
             {
-                return Err(Declarations::error(
-                    report,
+                return Err(report.body_error(
                     initializer.value,
                     "retained initializer identity or result changed",
                 ));
@@ -61,7 +60,7 @@ pub(super) fn body(
         initializer,
         std::mem::take(&mut scratch.scopes),
     )?;
-    let builder = Builder::new(report, facts, scratch, body, scope_plan, query);
+    let builder = Builder::new(report, facts, scratch, body, scope_plan, query)?;
     builder
         .run_root(initializer.value.node, None)
         .map_err(|e| report.diagnostic(e))

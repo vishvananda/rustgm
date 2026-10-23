@@ -21,8 +21,7 @@ impl Engine {
             || facts.associated.owner(definition).is_some()
             || facts.generics.has_parameters(definition)
         {
-            return Err(Declarations::error(
-                report,
+            return Err(report.body_error(
                 source,
                 "selected initializer requires a completed closed body",
             ));
@@ -31,9 +30,9 @@ impl Engine {
         let mut contract = self
             .contracts
             .initializer(facts, &initializer)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         body::dispatch::resolve(facts, &mut template.body, &mut contract)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         body::promote::instance_reusing(
             report,
             facts,
@@ -52,22 +51,18 @@ impl Engine {
             .checked_add(additional)
             .filter(|&bytes| bytes <= 64 * 1024 * 1024)
             .ok_or_else(|| {
-                Declarations::error(report, source, "retained initializer exceeds 64 MiB budget")
+                report.body_error(source, "retained initializer exceeds 64 MiB budget")
             })?;
         let index = self
             .catalog
             .insert(&template.body)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         if self
             .concrete
             .insert(BodyKey::Declaration(definition), template.body)
             .is_some()
         {
-            return Err(Declarations::error(
-                report,
-                source,
-                "duplicate retained initializer CFG",
-            ));
+            return Err(report.body_error(source, "duplicate retained initializer CFG"));
         }
         facts.constant_work.template_bytes = retained;
         self.retained_expressions = self.retained_expressions.saturating_add(additional);

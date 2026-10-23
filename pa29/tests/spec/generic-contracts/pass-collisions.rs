@@ -1,0 +1,1 @@
+struct Counter(u8);impl base::Step for Counter{fn step(self)->u8{self.0+1}}impl other::Step for Counter{fn step(self)->u8{self.0+2}}fn fail(x:u8)->u8{1/x}fn main(){if base::through(3u8)!=3||other::through(4u8)!=4||base::invoke(Counter(5))!=6||other::invoke(Counter(5))!=7{let _=fail(0);}}

@@ -32,11 +32,11 @@ fn component(source: &str) -> Result<Component> {
     let links = facts.nested_outputs.as_deref().ok_or("output links")?;
     assert_eq!(
         links.get(&child_source).ok_or("child link")?.parent,
-        closure.source
+        closure.source.into()
     );
     assert_eq!(
         links.get(&closure.source).ok_or("closure link")?.parent,
-        function.body.ok_or("actual function body")?,
+        function.body.ok_or("actual function body")?.into(),
     );
     let mut prepared = Prepared::default();
     let mut child = prepared.anonymous(&report, &facts, child_source)?;
@@ -343,7 +343,7 @@ fn source_and_provider_component_debts_are_both_mandatory() -> Result {
             .find(|row| row.key == component.templates.bodies[2].body.key())
             .ok_or("function contract")?;
         parent.obligations.push(crate::body::regions::Obligation {
-            source: parent.source,
+            source: parent.source.into(),
             kind: crate::body::regions::Kind::Outlives((
                 crate::types::RegionId::bound(0, 0)?,
                 crate::types::RegionId::STATIC,

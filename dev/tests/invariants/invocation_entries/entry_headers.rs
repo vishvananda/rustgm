@@ -27,13 +27,13 @@ fn malformed_opened_headers_cannot_select_execution()
     );
     let wrong = crate::resolve::unit::NodeKey {
         node: crate::syntax::ast::NodeId::new(u32::MAX),
-        ..caller
+        ..crate::test_sites::node(caller)?
     };
     assert!(
         select_execution(
             &mut facts,
             &mut input,
-            wrong,
+            wrong.into(),
             CallTrait::FnOnce,
             TypeId::UNIT,
             selected,

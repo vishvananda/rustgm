@@ -29,22 +29,17 @@ pub(super) fn append(
         return Ok(());
     };
     let canonical = report.resolution.builtin_traits.ranges().ok_or_else(|| {
-        Declarations::error(
-            report,
-            registry.canonical.origin,
-            "unregistered range originals",
-        )
+        report.body_error(registry.canonical.origin, "unregistered range originals")
     })?;
     if &registry.canonical != canonical {
-        return Err(Declarations::error(
-            report,
+        return Err(report.body_error(
             canonical.origin,
             "range originals differ from canonical identities",
         ));
     }
     let source = canonical.origin;
     let originals = registry.originals.clone();
-    let error = |e| Declarations::error(report, source, e);
+    let error = |e| report.body_error(source, e);
     for original in originals {
         original.validate(facts).map_err(error)?;
         let environment = Arc::new(
@@ -173,13 +168,14 @@ fn next_blocks(
     start: Place,
     end: Place,
 ) -> Result<(), &'static str> {
-    let source = body.source;
+    let source = body.root_site();
     let first = value(body, element, Rvalue::Read(start))?;
     let last = value(body, element, Rvalue::Read(end))?;
     let condition = value(
         body,
         TypeId::primitive(Primitive::Bool),
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: crate::lex::token::Punctuation::Less,
             left: first,
             right: last,
@@ -189,7 +185,7 @@ fn next_blocks(
     body.blocks.push(Block {
         start: 0,
         end,
-        source: source.node,
+        source,
         terminator: Terminator::Branch {
             condition,
             yes: BlockId(2),
@@ -219,6 +215,7 @@ fn next_blocks(
         body,
         element,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: crate::lex::token::Punctuation::Plus,
             left: first,
             right: one,

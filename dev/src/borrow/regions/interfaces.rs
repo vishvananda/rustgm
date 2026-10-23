@@ -11,7 +11,7 @@ pub(super) fn assume_inputs(
     constraints: &mut Constraints<'_>,
 ) -> Result<(), Error> {
     let error = |message| Error {
-        source: Some(input.source),
+        source: Some(input.source.into()),
         message,
     };
     if input
@@ -76,7 +76,7 @@ pub(super) fn require_return(
     first_proof: usize,
 ) -> Result<(), Error> {
     let error = |message| Error {
-        source: Some(input.source),
+        source: Some(input.source.into()),
         message,
     };
     if let Some(cfg) = cfg
@@ -100,7 +100,7 @@ pub(super) fn require_return(
 
 pub(super) fn validate_body(input: &Contract, cfg: Option<&Body>) -> Result<(), Error> {
     let error = |message| Error {
-        source: Some(input.source),
+        source: Some(input.source.into()),
         message,
     };
     if cfg.is_some_and(|body| body.source != input.source || body.key() != input.key) {

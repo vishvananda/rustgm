@@ -1,16 +1,13 @@
 //! Prove body contracts against immutable declared and implied assumptions.
 use super::{constraints::Constraints, graph};
 use crate::{
-    body::{
-        ir::NodeKey,
-        regions::{Contract, Contracts, Kind as Obligation},
-    },
+    body::regions::{Contract, Contracts, Kind as Obligation},
     types::{Store, outlives::Queries, variance::Variances},
 };
 
 pub struct Body {
     pub key: crate::body::ir::BodyKey,
-    pub source: NodeKey,
+    pub source: crate::body::ir::BodyOrigin,
     pub instance: Option<crate::types::instance::Instance>,
     pub solution: graph::Solution,
     pub hidden_regions: Vec<crate::types::opaque::RegionChoice>,
@@ -30,7 +27,7 @@ pub struct Analysis {
 }
 #[derive(Debug)]
 pub struct Error {
-    pub source: Option<NodeKey>,
+    pub source: Option<crate::body::ir::ProofSite>,
     pub message: String,
 }
 impl std::fmt::Display for Error {
@@ -64,7 +61,7 @@ pub fn check_bodies(
 ) -> Result<Analysis, Error> {
     if let Some(pending) = &program.drops {
         return Err(Error {
-            source: Some(pending.source),
+            source: Some(pending.source.into()),
             message: crate::body::drops::PENDING_MESSAGE.into(),
         });
     }
@@ -106,7 +103,7 @@ pub fn check_templates(
     for input in &contracts.bodies {
         if index.insert(input.key, input).is_some() {
             return Err(Error {
-                source: Some(input.source),
+                source: Some(input.source.into()),
                 message: "duplicate lifetime body contract".into(),
             });
         }
@@ -117,7 +114,7 @@ pub fn check_templates(
             .remove(&cfg.key())
             .map(|input| (input, Some(cfg)))
             .ok_or_else(|| Error {
-                source: Some(cfg.source),
+                source: Some(cfg.source.into()),
                 message: "template requires a unique lifetime body contract".into(),
             })
     });
@@ -147,7 +144,7 @@ pub fn check_ordered(
         .map(|(input, cfg)| {
             if input.key != cfg.key() || input.source != cfg.source {
                 return Err(Error {
-                    source: Some(cfg.source),
+                    source: Some(cfg.source.into()),
                     message: "instance contract does not match its body".into(),
                 });
             }
@@ -168,14 +165,14 @@ pub(crate) fn check_one(
 ) -> Result<Body, Error> {
     if input.key != cfg.key() || input.source != cfg.source {
         return Err(Error {
-            source: Some(cfg.source),
+            source: Some(cfg.source.into()),
             message: "instance contract does not match its body".into(),
         });
     }
     let result = body(types, variances, queries, input, Some(cfg), &[])?;
     if result.needs_parent() {
         return Err(Error {
-            source: Some(input.source),
+            source: Some(input.source.into()),
             message: "nested output requires its checked parent contract".into(),
         });
     }
@@ -197,7 +194,7 @@ pub(crate) fn check_original_child(
         || input.source != cfg.source
     {
         return Err(Error {
-            source: Some(cfg.source),
+            source: Some(cfg.source.into()),
             message: "original child contract does not match its anonymous body".into(),
         });
     }
@@ -215,7 +212,7 @@ pub(crate) fn check_nested_bodies<'a>(
         let (input, body) = pair?;
         if input.key != body.key() || input.source != body.source || body.instance.is_some() {
             return Err(Error {
-                source: Some(body.source),
+                source: Some(body.source.into()),
                 message: "nested original proof has mismatched CFG ownership".into(),
             });
         }
@@ -231,7 +228,7 @@ fn run(
 ) -> Result<Analysis, Error> {
     if let Some(body) = program.and_then(|p| p.bodies.iter().find(|b| b.instance.is_some())) {
         return Err(Error {
-            source: Some(body.source),
+            source: Some(body.source.into()),
             message: "specialized bodies require ordered instance contracts".into(),
         });
     }
@@ -244,7 +241,7 @@ fn run(
         let cfg = cfgs.get(&input.key).copied();
         if program.is_some() && cfg.is_none() {
             return Err(Error {
-                source: Some(input.source),
+                source: Some(input.source.into()),
                 message: "lifetime contract has no typed body".into(),
             });
         }
@@ -295,7 +292,7 @@ pub(crate) fn paid_inline(
     let result = body_inner(types, variances, queries, input, Some(cfg), &[], Some(paid))?;
     if result.needs_parent() {
         return Err(Error {
-            source: Some(input.source),
+            source: Some(input.source.into()),
             message: "paid child retains an unpaid parent requirement".into(),
         });
     }
@@ -311,7 +308,7 @@ fn body_inner(
     paid: Option<&crate::borrow::incremental::PaidInline<'_>>,
 ) -> Result<Body, Error> {
     let error = |message| Error {
-        source: Some(input.source),
+        source: Some(input.source.into()),
         message,
     };
     super::interfaces::validate_body(input, cfg)?;
@@ -387,8 +384,8 @@ fn body_inner(
                         .checked_sub(first_proof)
                         .and_then(|i| proof_source(input, i))
                 })
-                .unwrap_or(input.source),
-            _ => input.source,
+                .unwrap_or(input.source.into()),
+            _ => input.source.into(),
         };
         Error {
             source: Some(source),
@@ -461,7 +458,7 @@ fn quantified(
     Ok(())
 }
 // Resolve only a failed constraint; successful proofs allocate no source index.
-fn proof_source(input: &Contract, mut index: usize) -> Option<crate::body::ir::NodeKey> {
+fn proof_source(input: &Contract, mut index: usize) -> Option<crate::body::ir::ProofSite> {
     for evidence in &input.proofs {
         if index == 0 {
             return Some(evidence.source);

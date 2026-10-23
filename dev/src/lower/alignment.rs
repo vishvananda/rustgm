@@ -14,7 +14,7 @@ pub fn check(facts: &mut Declarations, program: &Program) -> Result<(), Error> {
     let mut retained = crate::support::hash::HashSet::default();
     for obligation in &facts.reference_alignment {
         let error = |message| Error {
-            node: obligation.source,
+            node: Some(obligation.source.into()),
             message,
         };
         let required = facts
@@ -28,7 +28,7 @@ pub fn check(facts: &mut Declarations, program: &Program) -> Result<(), Error> {
                 "reference to an unaligned packed field"
             }));
         }
-        retained.insert(obligation.source);
+        retained.insert(crate::body::ir::ProofSite::from(obligation.source));
     }
     for body in &program.bodies {
         if body.guards.is_empty()
@@ -46,10 +46,7 @@ pub fn check(facts: &mut Declarations, program: &Program) -> Result<(), Error> {
             work: Vec::new(),
         };
         for statement in &body.statements {
-            if retained.contains(&crate::resolve::unit::NodeKey {
-                node: statement.source,
-                ..body.source
-            }) {
+            if retained.contains(&body.diagnostic_site(statement.source)) {
                 continue;
             }
             let (place, message) = match statement.action {
@@ -66,10 +63,7 @@ pub fn check(facts: &mut Declarations, program: &Program) -> Result<(), Error> {
                 _ => continue,
             };
             let error = |message| Error {
-                node: crate::resolve::unit::NodeKey {
-                    node: statement.source,
-                    ..body.source
-                },
+                node: Some(body.diagnostic_site(statement.source)),
                 message,
             };
             let ty = check.place_type(place).map_err(error)?;

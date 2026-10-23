@@ -30,7 +30,7 @@ fn initialize(
             kind: LocalKind::Binding,
             definition: None,
             mutable: true,
-            source: body.source.node,
+            source: body.root_site(),
         });
         statement(body, Action::StorageLive(id));
     }
@@ -100,6 +100,7 @@ pub(super) fn operation(
         body,
         boolean,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::Less,
             left: index,
             right: input.length,
@@ -109,6 +110,7 @@ pub(super) fn operation(
         body,
         boolean,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::Less,
             left: index,
             right: input.other,
@@ -118,6 +120,7 @@ pub(super) fn operation(
         body,
         boolean,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::And,
             left,
             right,
@@ -154,6 +157,7 @@ pub(super) fn operation(
         body,
         usize_,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::Plus,
             left: index,
             right: one,

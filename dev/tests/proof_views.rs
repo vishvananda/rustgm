@@ -40,7 +40,8 @@ fn contract_view_distinguishes_assumptions_variables_and_retained_requirements()
             source: NodeKey {
                 file: FileId(0),
                 node: NodeId::new(1),
-            },
+            }
+            .into(),
             solution: proof.solution,
             instance: None,
             identities: proof.identities,

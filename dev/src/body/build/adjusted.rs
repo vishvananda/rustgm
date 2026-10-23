@@ -9,7 +9,7 @@ impl Builder<'_> {
             .get(&(
                 NodeKey {
                     node: site,
-                    ..self.body.source
+                    ..self.source
                 },
                 kind,
             ))
@@ -59,7 +59,7 @@ impl Builder<'_> {
             .accesses
             .get(&NodeKey {
                 node: operand,
-                ..self.body.source
+                ..self.source
             })
             .ok_or_else(|| self.error(site, "adjusted capture has no original source place"))?;
         if access.dereferences == 0 || access.dereferences as usize > environment.plan.path_count()

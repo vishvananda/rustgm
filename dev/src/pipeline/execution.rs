@@ -103,11 +103,7 @@ impl Engine {
         self.transfer_components(report, facts, prepared)?;
         for (key, body) in std::mem::take(&mut self.concrete) {
             if prepared.concrete.contains_key(&key) {
-                return Err(Declarations::error(
-                    report,
-                    body.source,
-                    "duplicate retained constant CFG owner",
-                ));
+                return Err(report.body_error(body.source, "duplicate retained constant CFG owner"));
             }
             prepared.concrete.insert(key, body);
         }
@@ -118,7 +114,7 @@ impl Engine {
             prepared
                 .templates
                 .retain(template.clone())
-                .map_err(|e| Declarations::error(report, template.body.source, e))?;
+                .map_err(|e| report.body_error(template.body.source, e))?;
         }
         for (template, _) in self.anonymous.values() {
             if self.component_contains(template.body.key()) {
@@ -127,7 +123,7 @@ impl Engine {
             prepared
                 .templates
                 .retain(template.clone())
-                .map_err(|e| Declarations::error(report, template.body.source, e))?;
+                .map_err(|e| report.body_error(template.body.source, e))?;
         }
         for (&definition, template) in &self.originals {
             if self.component_contains(template.body.key()) {
@@ -137,7 +133,7 @@ impl Engine {
                 prepared
                     .templates
                     .retain(template.clone())
-                    .map_err(|e| Declarations::error(report, template.body.source, e))?;
+                    .map_err(|e| report.body_error(template.body.source, e))?;
             } else {
                 return Err(Error::at(
                     FileId(0),
@@ -203,11 +199,11 @@ impl Engine {
             } else {
                 machine
                     .begin(root, &request.arguments)
-                    .map_err(|e| Declarations::error(report, e.source, e.message))?;
+                    .map_err(|e| report.body_optional_error(e.source, e.message))?;
             }
             let progress = machine
                 .advance()
-                .map_err(|e| Declarations::error(report, e.source, e.message))?;
+                .map_err(|e| report.body_optional_error(e.source, e.message))?;
             let work = machine.work();
             match progress {
                 Progress::Complete(value) => {
@@ -322,11 +318,9 @@ impl Engine {
                 facts
                     .inline_constants
                     .as_mut()
-                    .ok_or_else(|| {
-                        Declarations::error(report, source, "missing required inline constant")
-                    })?
+                    .ok_or_else(|| report.body_error(source, "missing required inline constant"))?
                     .require(source, result)
-                    .map_err(|e| Declarations::error(report, source, e))?;
+                    .map_err(|e| report.body_error(source, e))?;
                 if facts.patterns.pending_bodies.contains(&source) {
                     return Ok(false);
                 }
@@ -366,7 +360,7 @@ impl Engine {
                 let index = self.root(report, facts, target)?;
                 self.catalog
                     .initializer(index, definition, initializer.kind)
-                    .map_err(|e| Declarations::error(report, initializer.value, e))?;
+                    .map_err(|e| report.body_error(initializer.value, e))?;
                 Ok(true)
             }
             Requirement::SourceAssociatedBody(source) => {
@@ -411,15 +405,11 @@ impl Engine {
         let input = self
             .contracts
             .function(facts, &function)
-            .map_err(|e| Declarations::error(report, source, e))?
+            .map_err(|e| report.body_error(source, e))?
             .clone();
         let inputs = Rc::clone(&self.inputs);
         let stored = inputs.try_borrow().map_err(|_| {
-            Declarations::error(
-                report,
-                source,
-                "constant CFG lender is preparing another body",
-            )
+            report.body_error(source, "constant CFG lender is preparing another body")
         })?;
         if let Some(body) = stored.get(&BodyKey::Declaration(definition)) {
             body::constants::eligibility(report, facts, body)?;
@@ -427,18 +417,18 @@ impl Engine {
                 facts.destructors.implementations().iter().map(|i| i.item),
             );
             let destruction = body::drops::requirements(facts, body, &mut needed)
-                .map_err(|e| Declarations::error(report, source, e))?;
+                .map_err(|e| report.body_error(source, e))?;
             let parameters = Arc::new(
                 facts
                     .generics
                     .parameter_environment(&facts.types, definition)
-                    .map_err(|e| Declarations::error(report, source, e))?,
+                    .map_err(|e| report.body_error(source, e))?,
             );
             self.prove_body(report, facts, body, &destruction, &parameters, &input)?;
             let index = self
                 .catalog
                 .insert(body)
-                .map_err(|e| Declarations::error(report, source, e))?;
+                .map_err(|e| report.body_error(source, e))?;
             self.catalog.functions.insert(instance, index);
             return Ok(true);
         }
@@ -473,7 +463,7 @@ impl Engine {
             let index = self
                 .catalog
                 .insert(&template.body)
-                .map_err(|e| Declarations::error(report, source, e))?;
+                .map_err(|e| report.body_error(source, e))?;
             self.catalog.functions.insert(instance, index);
             self.concrete
                 .insert(BodyKey::Declaration(definition), template.body);
@@ -497,8 +487,7 @@ impl Engine {
                 .saturating_add(bytes.saturating_mul(2))
         };
         if retained > 64 * 1024 * 1024 {
-            return Err(Declarations::error(
-                report,
+            return Err(report.body_error(
                 template.body.source,
                 "constant template copies exceed 64 MiB budget",
             ));
@@ -517,16 +506,12 @@ impl Engine {
     ) -> Result<(), Error> {
         let source = template.body.source;
         if template.retained_bytes() > 64 * 1024 * 1024 {
-            return Err(Declarations::error(
-                report,
-                source,
-                "constant instance copy exceeds 64 MiB budget",
-            ));
+            return Err(report.body_error(source, "constant instance copy exceeds 64 MiB budget"));
         }
         let mut materialized = body::instantiate::with_contract(facts, template, instance, input)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         body::promote::instance_reusing(
             report,
             facts,
@@ -545,7 +530,7 @@ impl Engine {
         let index = self
             .catalog
             .insert(&materialized.body)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         self.catalog.functions.insert(instance, index);
         Ok(())
     }
@@ -578,7 +563,7 @@ impl Engine {
         let contract = if facts.source_bindings.is_some() {
             let mut input = contract.clone();
             body::copy_requirements::prepare(facts, body, &mut input)
-                .map_err(|e| Declarations::error(report, body.source, e))?;
+                .map_err(|e| report.body_error(body.source, e))?;
             prepared = input;
             &prepared
         } else {
@@ -596,7 +581,7 @@ impl Engine {
         let source = body.source;
         contract
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
-            .map_err(|e| Declarations::error(report, source, e))?;
+            .map_err(|e| report.body_error(source, e))?;
         let mut queries = crate::types::outlives::Queries::new(
             &facts.types,
             &facts.lifetimes.nominal_requirements,
@@ -609,7 +594,7 @@ impl Engine {
             contract,
             body,
         )
-        .map_err(|e| Declarations::error(report, e.source.unwrap_or(source), e.message))
+        .map_err(|e| report.body_error(e.source.unwrap_or(source.into()), e.message))
     }
     fn prove_loans(
         &mut self,
@@ -635,13 +620,13 @@ impl Engine {
             self.loans = Some((
                 custom.len(),
                 borrow::loans::templates::Verifier::new(&custom)
-                    .map_err(|e| Declarations::error(report, source, e))?,
+                    .map_err(|e| report.body_error(source, e))?,
             ));
         }
         let (_, loans) = self
             .loans
             .as_mut()
-            .ok_or_else(|| Declarations::error(report, source, "missing constant loan verifier"))?;
+            .ok_or_else(|| report.body_error(source, "missing constant loan verifier"))?;
         let mut copies = crate::types::copy::Copies::default();
         loans
             .body(
@@ -658,7 +643,7 @@ impl Engine {
                 regions,
                 &|ty, field| body::drops::nominal_position(facts, ty, field),
             )
-            .map_err(|e| Declarations::error(report, e.node.unwrap_or(source), e.message))?;
+            .map_err(|e| report.body_error(e.node.unwrap_or(source.into()), e.message))?;
         Ok(())
     }
 }

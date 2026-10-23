@@ -18,7 +18,7 @@ fn contract(f: &Fixture, ty: TypeId) -> Contract {
         builtins: None,
         output: None,
         require_result_formation: false,
-        source: source(1),
+        source: source(1).into(),
         signature: None,
         universals: 2,
         assumptions: Vec::new(),
@@ -26,7 +26,7 @@ fn contract(f: &Fixture, ty: TypeId) -> Contract {
         type_assumptions: Vec::new(),
         proofs: Vec::new(),
         obligations: vec![Obligation {
-            source: source(2),
+            source: source(2).into(),
             kind: ObligationKind::ScopedWellFormed {
                 ty,
                 bound_regions: 1,
@@ -43,7 +43,7 @@ fn valid(f: &Fixture, c: Contract, expected: bool, at: u32) {
     let result = rustgm::borrow::regions::check(&f.types, &f.variances, &contracts);
     assert_eq!(result.is_ok(), expected, "{:?}", result.as_ref().err());
     if let Err(error) = result {
-        assert_eq!(error.source, Some(source(at)));
+        assert_eq!(error.source, Some(source(at).into()));
         assert!(error.message.contains("does not outlive"), "{error}");
     }
 }
@@ -98,7 +98,7 @@ fn mixed_local_referents_defer_whole_debts_and_grant_no_body_permissions() -> Re
         let mut c = contract(&f, root);
         if demand {
             c.obligations.push(Obligation {
-                source: source(3),
+                source: source(3).into(),
                 kind: ObligationKind::TypeOutlives {
                     ty: t,
                     shorter: RegionId::bound(0, 0)?,
@@ -143,7 +143,7 @@ fn repeated_debts_keep_their_first_real_source_and_do_not_cross_body_environment
     let root = f.reference(RegionId::bound(1, 0)?, t)?;
     let mut c = contract(&f, root);
     c.obligations.push(Obligation {
-        source: source(3),
+        source: source(3).into(),
         kind: c.obligations[0].kind,
     });
     let mut given = c.clone();
@@ -163,7 +163,7 @@ fn repeated_debts_keep_their_first_real_source_and_do_not_cross_body_environment
     let error = result
         .err()
         .ok_or("second body inherited first body's permission")?;
-    assert_eq!(error.source, Some(source(2)));
+    assert_eq!(error.source, Some(source(2).into()));
     assert!(error.message.contains("does not outlive"), "{error}");
     Ok(())
 }
@@ -264,7 +264,7 @@ fn growing_prefixes_with_distinct_targets_finish_the_actual_body_proof() -> Resu
         root = f.tuple(&[root, t])?;
         let ty = f.reference(RegionId::bound(1, slot)?, root)?;
         c.obligations.push(Obligation {
-            source: source(u32::from(slot) + 2),
+            source: source(u32::from(slot) + 2).into(),
             kind: ObligationKind::ScopedWellFormed {
                 ty,
                 bound_regions: 0,
@@ -286,7 +286,7 @@ fn growing_prefixes_with_distinct_targets_finish_the_actual_body_proof() -> Resu
     let ty = f.reference(RegionId::bound(1, 0)?, other)?;
     paid.parameters.clone_from(&f.parameters);
     paid.obligations.push(Obligation {
-        source: source(5000),
+        source: source(5000).into(),
         kind: ObligationKind::ScopedWellFormed {
             ty,
             bound_regions: 0,
@@ -304,7 +304,7 @@ fn promotion_keeps_the_first_source_of_an_unpaid_debt() -> Result {
     let other = f.reference(RegionId::bound(1, 1)?, t)?;
     let mut c = contract(&f, root);
     c.obligations.push(Obligation {
-        source: source(3),
+        source: source(3).into(),
         kind: ObligationKind::ScopedWellFormed {
             ty: other,
             bound_regions: 1,
@@ -314,7 +314,7 @@ fn promotion_keeps_the_first_source_of_an_unpaid_debt() -> Result {
     let prefix = f.tuple(&[t, t])?;
     let repeated = f.reference(RegionId::bound(1, 0)?, prefix)?;
     c.obligations.push(Obligation {
-        source: source(4),
+        source: source(4).into(),
         kind: ObligationKind::ScopedWellFormed {
             ty: repeated,
             bound_regions: 1,

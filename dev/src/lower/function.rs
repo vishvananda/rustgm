@@ -26,12 +26,11 @@ use crate::{
         program::{BlockId, Function, Literal, Operand, Terminator, Value},
         vocabulary::Type,
     },
-    resolve::{model::DefId, unit::NodeKey},
+    resolve::model::DefId,
     sema::{
         model::{Cast, Scalar},
         values::View,
     },
-    syntax::ast::NodeId,
     types::{Kind, Primitive, TypeId, instance::Instance},
 };
 
@@ -118,7 +117,7 @@ struct Lower<'a, 'b, 'c> {
     values: Vec<Option<Selected>>,
     blocks: Vec<BlockId>,
     panic: Option<BlockId>,
-    source: NodeId,
+    source: ir::BodySite,
     arguments: Vec<Value>,
     order: BlockOrder,
 }
@@ -133,7 +132,7 @@ pub(super) fn lower<'b>(
         .map(|p| cleanup::Pending::new(body, p).map(Box::new))
         .transpose()
         .map_err(|message| Error {
-            node: body.source,
+            node: Some(body.source.into()),
             message,
         })?;
     let builder = context.output.body_builder();
@@ -174,15 +173,12 @@ pub(super) fn lower<'b>(
         values: scratch.values,
         blocks: scratch.blocks,
         panic: None,
-        source: body.source.node,
+        source: body.root_site(),
         arguments: scratch.arguments,
         order: scratch.order,
     };
     lower.run().map_err(|message| Error {
-        node: NodeKey {
-            file: body.source.file,
-            node: lower.source,
-        },
+        node: Some(body.diagnostic_site(lower.source)),
         message,
     })?;
     lower.context.lowering = Scratch {
@@ -201,7 +197,7 @@ pub(super) fn lower<'b>(
         order: lower.order,
     };
     lower.builder.finish().map_err(|message| Error {
-        node: body.source,
+        node: Some(body.source.into()),
         message,
     })
 }
@@ -775,6 +771,7 @@ impl Lower<'_, '_, '_> {
                 operator,
                 left,
                 right,
+                ..
             } => {
                 if matches!(
                     self.context

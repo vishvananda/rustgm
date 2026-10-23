@@ -1,6 +1,9 @@
 //! Output ports are semantic identities, not lifetime proof or execution authority.
 use crate::support::hash::HashMap;
-use crate::{resolve::unit::NodeKey, types::RegionId};
+use crate::{
+    resolve::{body_origin::BodyOrigin, unit::NodeKey},
+    types::RegionId,
+};
 use std::sync::Arc;
 
 #[derive(Default)]
@@ -26,7 +29,10 @@ impl Registry {
         Ok(())
     }
     pub(crate) fn insert(&mut self, source: NodeKey, link: Link) -> Result<(), &'static str> {
-        if link.source != source || link.parent == source {
+        if link.source.source() != Some(source)
+            || link.parent.source().is_none()
+            || link.parent.source() == Some(source)
+        {
             return Err("nested output link has mismatched source ownership");
         }
         if link
@@ -94,8 +100,8 @@ pub struct Bridge {
     pub output: bool,
 }
 pub struct Link {
-    pub source: NodeKey,
-    pub parent: NodeKey,
+    pub source: BodyOrigin,
+    pub parent: BodyOrigin,
     pub revision: u32,
     pub universals: u32,
     pub bridges: Box<[Bridge]>,
@@ -119,8 +125,8 @@ mod tests {
     }
     fn link() -> Link {
         Link {
-            source: source(1),
-            parent: source(2),
+            source: source(1).into(),
+            parent: source(2).into(),
             revision: 0,
             universals: 0,
             bridges: Box::new([]),

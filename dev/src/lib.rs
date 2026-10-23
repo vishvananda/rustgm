@@ -26,5 +26,9 @@ pub mod types;
 mod test_source;
 
 #[cfg(test)]
+#[path = "../tests/helpers/locations.rs"]
+mod test_sites;
+
+#[cfg(test)]
 #[path = "../tests/provider_traits/cases.rs"]
 pub(crate) mod provider_cases;

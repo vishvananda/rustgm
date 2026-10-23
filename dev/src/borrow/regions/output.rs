@@ -3,7 +3,7 @@ use super::{Analysis, Body, Error, check};
 use crate::support::hash::HashMap;
 use crate::{
     body::{
-        ir::{Body as Cfg, NodeKey},
+        ir::{Body as Cfg, BodyOrigin},
         regions::{Contract, Contracts, Kind, Obligation},
     },
     types::{
@@ -17,10 +17,10 @@ use crate::{
 use std::collections::VecDeque;
 
 pub struct Summary {
-    pub(super) parent: NodeKey,
+    pub(super) parent: BodyOrigin,
     pub(super) requirements: Vec<Obligation>,
     conditions: Option<std::sync::Arc<[crate::types::outlives::Pair]>>,
-    source: NodeKey,
+    source: crate::body::ir::BodyOrigin,
     key: crate::body::ir::BodyKey,
     link: std::sync::Arc<crate::body::regions::OutputLink>,
 }
@@ -40,7 +40,7 @@ impl Summary {
     pub(crate) fn parent_goals(
         &self,
         input: &Contract,
-    ) -> Result<Option<(NodeKey, &[Obligation])>, &'static str> {
+    ) -> Result<Option<(BodyOrigin, &[Obligation])>, &'static str> {
         if !self.matches(input) {
             return Err("parent goals belong to another checked source contract");
         }
@@ -103,14 +103,14 @@ pub(super) fn finish(
         .into_iter()
         .map(|(longer, shorter, _)| {
             Ok(Obligation {
-                source: input.source,
+                source: input.source.into(),
                 kind: Kind::Outlives((parent(longer)?, parent(shorter)?)),
             })
         })
         .collect::<Result<Vec<_>, region_graph::Error>>()?;
     if let Some(formation) = &link.formation {
         requirements.extend(formation.inputs.iter().map(|formation| Obligation {
-            source: input.source,
+            source: input.source.into(),
             kind: Kind::WellFormed(formation.parent),
         }));
     }
@@ -135,7 +135,7 @@ struct Order {
 }
 fn ordering(inputs: &[(&Contract, Option<&Cfg>)]) -> Result<Order, Error> {
     let error = |index: usize, message: &str| Error {
-        source: Some(inputs[index].0.source),
+        source: Some(inputs[index].0.source.into()),
         message: message.into(),
     };
     let mut index = HashMap::with_capacity_and_hasher(
@@ -195,7 +195,7 @@ pub(super) fn prove<'a>(
 ) -> Result<Analysis, Error> {
     let inputs = inputs.collect::<Result<Vec<_>, _>>()?;
     let error = |index: usize, message: &str| Error {
-        source: Some(inputs[index].0.source),
+        source: Some(inputs[index].0.source.into()),
         message: message.into(),
     };
     let Order {

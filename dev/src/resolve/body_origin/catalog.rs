@@ -1,5 +1,8 @@
 //! Dense catalog rows own exact remaps; no row is a checked body or permission.
-use super::{BodyOrigin, Edition, Epoch, ImportedBodyId, Label, NEXT_CATALOG, ProviderFile};
+use super::{
+    BodyOrigin, DeclarationBinding, Edition, Epoch, ImportedBodyId, ImportedBodyOrigin,
+    ImportedDeclarationId, ImportedOwnerId, Label, NEXT_CATALOG, ProviderFile,
+};
 use crate::{
     resolve::model::{DefId, Definition},
     support::{
@@ -10,7 +13,7 @@ use crate::{
         hash::HashMap,
     },
 };
-use std::{cell::Cell, ops::Range};
+use std::{cell::Cell, ops::Range, rc::Rc};
 
 #[derive(Clone, Copy)]
 pub(crate) struct Limits {
@@ -37,9 +40,11 @@ pub(crate) struct Input {
     pub owners: BodyCatalog,
     pub edition: Edition,
     pub definitions: Vec<DefId>,
+    pub declarations: Vec<DeclarationBinding>,
     pub bindings: Vec<Binding>,
     pub files: Vec<ProviderFile>,
     pub labels: Vec<Option<Label>>,
+    pub declaration_labels: Vec<Option<Label>>,
 }
 pub(super) struct Artifact {
     pub owner: CrateIdentity,
@@ -47,6 +52,7 @@ pub(super) struct Artifact {
     pub definitions: Vec<DefId>,
     pub files: Vec<ProviderFile>,
     pub labels: Vec<Option<Label>>,
+    pub declaration_labels: Vec<Option<Label>>,
 }
 pub(crate) struct Row {
     pub definition: DefId,
@@ -56,6 +62,17 @@ pub(crate) struct Row {
     pub(super) artifact: u32,
     pub(super) body: BodyRef,
     pub(super) sites: Range<u32>,
+}
+pub(super) struct DeclarationRow {
+    pub definition: DefId,
+    pub kind: crate::resolve::model::DefKind,
+    pub artifact: u32,
+    pub ordinal: u32,
+    pub sites: Range<u32>,
+}
+pub(super) enum OwnerRow {
+    Body(Row),
+    Declaration(DeclarationRow),
 }
 pub(crate) struct Expected {
     pub definition: DefId,
@@ -73,35 +90,68 @@ impl Installed {
         if body.0 >= self.len {
             return Err("body reference belongs outside this installed artifact");
         }
-        Ok(ImportedBodyId {
+        Ok(ImportedBodyId(ImportedOwnerId {
             epoch: self.epoch.0,
             row: self.first + body.0,
-        })
+        }))
     }
 }
+#[cfg(test)]
+#[path = "../../../tests/invariants/catalog_freezing.rs"]
+mod freezing_tests;
 pub(crate) struct Catalog {
     pub(super) epoch: Epoch,
     pub(super) artifacts: Vec<Artifact>,
-    pub(super) rows: Vec<Row>,
+    pub(super) rows: Vec<OwnerRow>,
     pub(super) owners: HashMap<CrateIdentity, u32>,
-    pub(super) definitions: HashMap<DefId, (u32, u32)>,
+    pub(super) definitions: HashMap<DefId, ImportedDeclarationId>,
     pub(super) bytes: usize,
     work: Cell<usize>,
     pub(super) limits: Limits,
+    frozen: bool,
 }
 #[derive(Default)]
-pub(crate) struct CatalogSlot(Option<Box<Catalog>>);
+pub(crate) struct CatalogSlot(Option<Rc<Catalog>>);
 impl CatalogSlot {
     pub(crate) fn get(&self) -> Option<&Catalog> {
         self.0.as_deref()
     }
     pub(crate) fn ensure(&mut self) -> Result<&mut Catalog, &'static str> {
         if self.0.is_none() {
-            self.0 = Some(Box::new(Catalog::new(Limits::default())?));
+            let mut catalog = Catalog::new(Limits::default())?;
+            // The single owning catalog pays its Rc control block once. Clones
+            // share this payload; ordinary source-only compilation has no Rc.
+            catalog.bytes = catalog.bytes.saturating_add(2 * size_of::<usize>());
+            if catalog.bytes > catalog.limits.bytes {
+                return Err("imported catalog shared header exceeds storage budget");
+            }
+            self.0 = Some(Rc::new(catalog));
         }
-        self.0
-            .as_deref_mut()
-            .ok_or("imported body catalog disappeared")
+        let catalog = self.0.as_mut().ok_or("imported body catalog disappeared")?;
+        catalog.mutable()?;
+        Rc::get_mut(catalog).ok_or("unfrozen imported catalog has foreign shared ownership")
+    }
+    pub(crate) fn freeze(&mut self) -> Result<(), &'static str> {
+        let Some(catalog) = self.0.as_mut() else {
+            return Ok(());
+        };
+        catalog.charge(1)?;
+        if !catalog.frozen {
+            Rc::get_mut(catalog)
+                .ok_or("unfrozen imported catalog has foreign shared ownership")?
+                .frozen = true;
+        }
+        Ok(())
+    }
+    pub(crate) fn shared(&self) -> Result<Option<Rc<Catalog>>, &'static str> {
+        let Some(catalog) = self.0.as_ref() else {
+            return Ok(None);
+        };
+        catalog.charge(1)?;
+        if !catalog.frozen {
+            return Err("imported catalog must be frozen before sharing");
+        }
+        Ok(Some(Rc::clone(catalog)))
     }
 }
 impl Catalog {
@@ -118,6 +168,7 @@ impl Catalog {
             bytes: size_of::<Self>(),
             work: Cell::new(0),
             limits,
+            frozen: false,
         })
     }
     pub(super) fn charge(&self, steps: usize) -> Result<(), &'static str> {
@@ -134,14 +185,30 @@ impl Catalog {
     pub(crate) fn retained_bytes(&self) -> usize {
         self.bytes
     }
-    pub(super) fn get(&self, id: ImportedBodyId) -> Result<&Row, &'static str> {
+    pub(super) fn mutable(&self) -> Result<(), &'static str> {
+        self.charge(1)?;
+        if self.frozen {
+            return Err("imported catalog is permanently frozen");
+        }
+        Ok(())
+    }
+    pub(crate) fn body_count(&self) -> usize {
+        self.rows.len() - self.definitions.len()
+    }
+    pub(super) fn owner(&self, id: ImportedOwnerId) -> Result<&OwnerRow, &'static str> {
         self.charge(1)?;
         if id.epoch != self.epoch.0 {
-            return Err("imported body belongs to a foreign or retired catalog");
+            return Err("imported owner belongs to a foreign or retired catalog");
         }
         self.rows
             .get(id.row as usize)
-            .ok_or("imported body row is missing or stale")
+            .ok_or("imported owner row is missing or stale")
+    }
+    pub(super) fn get(&self, id: ImportedBodyId) -> Result<&Row, &'static str> {
+        match self.owner(id.0)? {
+            OwnerRow::Body(row) => Ok(row),
+            OwnerRow::Declaration(_) => Err("imported body handle names a declaration row"),
+        }
     }
     pub(crate) fn validate(
         &self,
@@ -156,7 +223,30 @@ impl Catalog {
         {
             return Err("imported body changed its declaration, kind, parent or numbering unit");
         }
-        Ok(BodyOrigin::Imported(id))
+        Self::origin_of(id, row)
+    }
+    pub(crate) fn validate_origin(
+        &self,
+        origin: BodyOrigin,
+        expected: &Expected,
+    ) -> Result<(), &'static str> {
+        let BodyOrigin::Imported(imported) = origin else {
+            return Err("source body is not an imported original");
+        };
+        if self.validate(imported.id(), expected)? != origin {
+            return Err("imported origin changed its catalog-owned site bounds");
+        }
+        Ok(())
+    }
+    pub(crate) fn origin(&self, id: ImportedBodyId) -> Result<BodyOrigin, &'static str> {
+        Self::origin_of(id, self.get(id)?)
+    }
+    fn origin_of(id: ImportedBodyId, row: &Row) -> Result<BodyOrigin, &'static str> {
+        // Every executable body has a root site, even an empty source function.
+        // A declaration without a body has no Body row at all.
+        let sites = std::num::NonZeroU32::new(row.sites.end - row.sites.start)
+            .ok_or("imported body has no root operation site")?;
+        Ok(BodyOrigin::Imported(ImportedBodyOrigin { id, sites }))
     }
     pub(crate) fn coordinate(
         &self,

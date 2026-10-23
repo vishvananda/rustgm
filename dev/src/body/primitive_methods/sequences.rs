@@ -27,7 +27,7 @@ fn block(body: &mut Body, start: u32, terminator: Terminator) -> Result<u32, &'s
         start,
         end,
         terminator,
-        source: body.source.node,
+        source: body.root_site(),
     });
     Ok(end)
 }
@@ -165,7 +165,7 @@ pub(super) fn operation(
         kind: LocalKind::Binding,
         definition: None,
         mutable: true,
-        source: body.source.node,
+        source: body.root_site(),
     });
     statement(body, Action::StorageLive(INDEX));
     let zero = integer(body, 0, usize_)?;
@@ -184,6 +184,7 @@ pub(super) fn operation(
         body,
         boolean,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::EqualEqual,
             left: len,
             right: other,
@@ -195,6 +196,7 @@ pub(super) fn operation(
         body,
         boolean,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::Less,
             left: index,
             right: len,
@@ -210,6 +212,7 @@ pub(super) fn operation(
         body,
         usize_,
         Rvalue::Binary {
+            operands: crate::body::ir::BinaryOperands::Neither,
             operator: Punctuation::Plus,
             left: index,
             right: one,

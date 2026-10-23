@@ -168,7 +168,7 @@ fn source_seal_precedes_declared_specialization_and_required_stays_unpaid() -> R
 fn caller(
     facts: &mut Declarations,
     ty: TypeId,
-    source: body::ir::NodeKey,
+    source: body::ir::BodyOrigin,
     swapped: bool,
     paid: bool,
 ) -> Result<Contract> {
@@ -204,7 +204,7 @@ fn caller(
         result: TypeId::primitive(types::Primitive::U8),
     })?;
     let mut input = Contract {
-        key: body::ir::BodyKey::Anonymous(source),
+        key: body::ir::BodyKey::Anonymous(crate::test_sites::node(source)?),
         source,
         signature: None,
         universals: 2,

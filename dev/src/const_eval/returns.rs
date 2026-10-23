@@ -35,9 +35,11 @@ impl Machine<'_, '_> {
                     .complete_associated(instance, body.result, result)?;
             }
         }
-        if self.active_inline.remove(&body.source) {
+        if let Some(source) = body.source.source()
+            && self.active_inline.remove(&source)
+        {
             self.validate_result(result, result_ty)?;
-            self.evaluator.complete_inline(body.source, result)?;
+            self.evaluator.complete_inline(source, result)?;
         }
         if let Owner::AnonymousInstance(instance) = body.owner {
             if body.source_only

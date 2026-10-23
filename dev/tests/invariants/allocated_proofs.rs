@@ -71,7 +71,7 @@ fn fixture() -> Result<(Declarations, Body, Contract)> {
     )?;
     let contract = Contract {
         key: body.key(),
-        source,
+        source: source.into(),
         signature: None,
         universals: 1,
         assumptions: Vec::new(),
@@ -85,7 +85,11 @@ fn fixture() -> Result<(Declarations, Body, Contract)> {
     };
     Ok((facts, body, contract))
 }
-fn proof(source: NodeKey, range: Range<u32>) -> Proof {
+fn frontier(facts: &Declarations, source: crate::body::ir::BodyOrigin) -> Result<u32> {
+    Ok(super::frontier(facts, crate::test_sites::node(source)?)?)
+}
+
+fn proof(source: impl Into<ProofSite>, range: Range<u32>) -> Proof {
     let mut proof = Obligations::new(range.start);
     proof.regions.end = range.end;
     Proof::new(source, proof)
@@ -107,10 +111,10 @@ fn completed_and_resumed_proofs_reserve_only_their_actual_owned_ranges() -> Resu
     assert_eq!(owner.rows.len(), 2);
     for (_, region) in facts
         .body_regions
-        .regions_after(body.source, first as usize - 1)
+        .regions_after(crate::test_sites::node(body.source)?, first as usize - 1)
     {
-        assert_eq!(region.body, body.source);
-        assert_eq!(region.source, body.source);
+        assert_eq!(region.body, crate::test_sites::node(body.source)?);
+        assert_eq!(region.source, crate::test_sites::node(body.source)?);
     }
     eprintln!(
         "retained_rows=3 recorder_capacity={} work={}",
@@ -128,7 +132,7 @@ fn gaps_foreign_sources_stale_proofs_and_incomplete_records_do_not_publish() -> 
     let evidence = proof(body.source, first..first + 2);
     assert!(owner.record(0, &evidence, first + 1..first + 2).is_err());
     let mut foreign = evidence.clone();
-    foreign.source.node = crate::syntax::ast::NodeId::new(foreign.source.node.get() + 1);
+    foreign.source = crate::test_sites::next_node(foreign.source)?.into();
     assert!(owner.record(0, &foreign, first..first + 2).is_err());
     let mut gapped = evidence.clone();
     gapped.proof = Obligations::new(first);
@@ -148,14 +152,13 @@ fn gaps_foreign_sources_stale_proofs_and_incomplete_records_do_not_publish() -> 
             .is_err()
     );
     contract.proofs.push(evidence);
-    contract.proofs[0].source.node =
-        crate::syntax::ast::NodeId::new(contract.proofs[0].source.node.get() + 1);
+    contract.proofs[0].source = crate::test_sites::next_node(contract.proofs[0].source)?.into();
     assert!(
         owner
             .finish(&mut facts, &body, &contract, first + 2)
             .is_err()
     );
-    contract.proofs[0].source = body.source;
+    contract.proofs[0].source = body.source.into();
     contract.proofs[0].proof.regions.end -= 1;
     assert!(
         owner
@@ -209,7 +212,7 @@ fn distinct_instances_and_interleaved_normalization_cannot_reuse_operation_owner
     other.instance = Some(instance);
     with_namespace(
         &mut facts,
-        other.source,
+        crate::test_sites::node(other.source)?,
         CallerInstance::Callable(instance),
         1,
         &[],
@@ -290,7 +293,8 @@ fn unrelated_source_normalization_keeps_a_parked_operation_and_claims_only_its_r
         .iter()
         .find(|f| {
             f.body.is_some_and(|s| {
-                s != body.source && crate::sema::values::execution::caller_published(&facts, s)
+                crate::body::ir::BodyOrigin::from(s) != body.source
+                    && crate::sema::values::execution::caller_published(&facts, s)
             })
         })
         .copied()
@@ -340,7 +344,7 @@ fn unrelated_source_normalization_keeps_a_parked_operation_and_claims_only_its_r
         |_, _| Ok(()),
     )?;
     let mut other_contract = contract.clone();
-    other_contract.source = source;
+    other_contract.source = source.into();
     other_contract.key = other_body.key();
     let mut operation = Operation::begin(&mut facts, &other_body, &other_contract)?
         .ok_or("missing unrelated owner")?;
@@ -354,8 +358,8 @@ fn unrelated_source_normalization_keeps_a_parked_operation_and_claims_only_its_r
     facts
         .body_regions
         .allocate(crate::sema::model::BodyRegion {
-            body: body.source,
-            source: body.source,
+            body: crate::test_sites::node(body.source)?,
+            source: crate::test_sites::node(body.source)?,
             origin: crate::sema::model::BodyRegionOrigin::Inference,
         })?;
     assert!(

@@ -74,7 +74,7 @@ fn associated_and_component_demand_orders_reuse_the_complete_contract() -> Resul
             .get_mut(&key)
             .ok_or("initializer")?
             .contract
-            .source = source;
+            .source = source.into();
         assert!(
             engine
                 .associated_template(&report, &mut facts, &initializer)
@@ -238,7 +238,7 @@ fn original_index_rejects_missing_foreign_stale_and_cyclic_owners() -> Result {
                     copy_link(
                         link,
                         if node.source == source {
-                            parent
+                            parent.into()
                         } else {
                             link.parent
                         },
@@ -259,8 +259,8 @@ fn original_index_rejects_missing_foreign_stale_and_cyclic_owners() -> Result {
                 node.source,
                 copy_link(
                     original,
-                    if node.source == link.parent {
-                        source
+                    if crate::body::ir::BodyOrigin::from(node.source) == link.parent {
+                        source.into()
                     } else {
                         original.parent
                     },
@@ -301,11 +301,11 @@ fn original_index_rejects_missing_foreign_stale_and_cyclic_owners() -> Result {
 }
 fn copy_link(
     link: &crate::sema::nested_outputs::Link,
-    parent: crate::resolve::unit::NodeKey,
+    parent: impl Into<crate::body::ir::BodyOrigin>,
 ) -> crate::sema::nested_outputs::Link {
     crate::sema::nested_outputs::Link {
         source: link.source,
-        parent,
+        parent: parent.into(),
         revision: link.revision,
         universals: link.universals,
         bridges: link.bridges.clone(),

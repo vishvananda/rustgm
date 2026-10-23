@@ -2,7 +2,7 @@
 use super::{Declarations, projections};
 use crate::{
     body::{
-        ir::{Body, BodyKey},
+        ir::{Body, BodyKey, ProofSite},
         regions::{Contract, Kind, Proof},
     },
     resolve::unit::NodeKey,
@@ -13,7 +13,7 @@ use std::ops::Range;
 
 struct Allocation {
     proof: usize,
-    source: NodeKey,
+    source: ProofSite,
     regions: Range<u32>,
 }
 pub(super) struct Operation {
@@ -22,7 +22,7 @@ pub(super) struct Operation {
     caller: CallerInstance,
     first: u32,
     next: u32,
-    originals: Vec<(NodeKey, u32)>,
+    originals: Vec<(ProofSite, u32)>,
     rows: Vec<Allocation>,
     bytes: usize,
     work: usize,
@@ -53,7 +53,10 @@ impl Operation {
         contract: &Contract,
     ) -> Result<Option<Self>, &'static str> {
         use crate::sema::values::execution::{caller_published, with_registered_namespace};
-        if !caller_published(facts, body.source) {
+        let Some(source) = body.source.source() else {
+            return Ok(None);
+        };
+        if !caller_published(facts, source) {
             return Ok(None);
         }
         if body.source != contract.source || body.key() != contract.key {
@@ -61,9 +64,9 @@ impl Operation {
         }
         let caller = body
             .owner
-            .source_caller(facts, body.source, body.instance)?;
-        with_registered_namespace(facts, body.source, caller, |_, _| Ok(()))?;
-        let first = frontier(facts, body.source)?;
+            .source_caller(facts, source.into(), body.instance)?;
+        with_registered_namespace(facts, source, caller, |_, _| Ok(()))?;
+        let first = frontier(facts, source)?;
         facts.body_work.canonical_steps = facts
             .body_work
             .canonical_steps
@@ -78,14 +81,14 @@ impl Operation {
         let original_bytes = contract
             .proofs
             .len()
-            .saturating_mul(size_of::<(NodeKey, u32)>());
+            .saturating_mul(size_of::<(ProofSite, u32)>());
         if contract.proofs.len() > 1_000_000
             || original_bytes.saturating_add(size_of::<Self>()) > bytes
         {
             return Err("normalization original recorder storage budget exceeded");
         }
         let mut owner = Self {
-            source: body.source,
+            source,
             key: body.key(),
             caller,
             first,
@@ -154,7 +157,7 @@ impl Operation {
             if source != evidence.source || regions.start < end {
                 return Err("normalization resumed proof identity changed");
             }
-        } else if evidence.source != self.source {
+        } else if evidence.source != self.source.into() {
             return Err("normalization new proof has a foreign source");
         }
         self.coverage(evidence, &regions)?;
@@ -205,13 +208,13 @@ impl Operation {
         next: u32,
     ) -> Result<(), &'static str> {
         self.charge(1)?;
-        if body.source != self.source
+        if body.source != self.source.into()
             || body.key() != self.key
-            || contract.source != self.source
+            || contract.source != self.source.into()
             || contract.key != self.key
             || body
                 .owner
-                .source_caller(facts, body.source, body.instance)?
+                .source_caller(facts, self.source.into(), body.instance)?
                 != self.caller
             || frontier(facts, self.source)? != self.first
             || next != self.next

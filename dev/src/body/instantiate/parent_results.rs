@@ -33,15 +33,15 @@ pub(crate) fn prepare(
         let parent = match body.owner {
             Owner::InitializerInstance { instance, .. } => {
                 instance == selected.selected
-                    && body.source == selected.original
+                    && body.source == selected.original.into()
                     && contract.key == BodyKey::InitializerInstance(instance)
             }
             Owner::AnonymousInstance(instance) => {
-                instance.source() == body.source
+                crate::body::ir::BodyOrigin::from(instance.source()) == body.source
                     && instance.enclosing() == Context::SourceInitializer(witness)
                     && crate::sema::inline_constants::InlineInstance::select(
                         facts,
-                        body.source,
+                        instance.source(),
                         instance.enclosing(),
                     )? == instance
             }
@@ -103,7 +103,9 @@ fn roots(
                     .inline_constants
                     .as_deref()
                     .and_then(|r| r.get(instance.source()))
-                    .is_some_and(|row| row.parent_body == body.source)
+                    .is_some_and(|row| {
+                        crate::body::ir::BodyOrigin::from(row.parent_body) == body.source
+                    })
                 || crate::sema::inline_constants::InlineInstance::select(
                     facts,
                     instance.source(),

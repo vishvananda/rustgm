@@ -33,7 +33,7 @@ impl Builder<'_> {
             .patterns
             .matches
             .get(&super::NodeKey {
-                file: self.body.source.file,
+                file: self.source.file,
                 node,
             })
             .ok_or_else(|| self.error(node, "missing checked match decisions"))?;
@@ -243,6 +243,7 @@ impl Builder<'_> {
                     node,
                     boolean,
                     Rvalue::Binary {
+                        operands: crate::body::ir::BinaryOperands::Neither,
                         operator: Op::EqualEqual,
                         left: input,
                         right: low,
@@ -255,6 +256,7 @@ impl Builder<'_> {
             node,
             boolean,
             Rvalue::Binary {
+                operands: crate::body::ir::BinaryOperands::Neither,
                 operator: Op::GreaterEqual,
                 left: input,
                 right: low,
@@ -264,6 +266,7 @@ impl Builder<'_> {
             node,
             boolean,
             Rvalue::Binary {
+                operands: crate::body::ir::BinaryOperands::Neither,
                 operator: Op::LessEqual,
                 left: input,
                 right: high,
@@ -273,6 +276,7 @@ impl Builder<'_> {
             node,
             boolean,
             Rvalue::Binary {
+                operands: crate::body::ir::BinaryOperands::Neither,
                 operator: Op::And,
                 left: lower,
                 right: upper,

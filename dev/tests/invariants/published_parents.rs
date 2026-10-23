@@ -74,7 +74,11 @@ fn duplicate_handoff_is_transactional_and_foreign_headers_fail() -> Result {
             2 => row.contract.signature = None,
             3 => {
                 // Preserve the node number while changing its actual source unit.
-                row.template.body.source.file = crate::resolve::unit::FileId(u32::MAX);
+                row.template.body.source = crate::resolve::unit::NodeKey {
+                    file: crate::resolve::unit::FileId(u32::MAX),
+                    ..crate::test_sites::node(row.template.body.source)?
+                }
+                .into();
                 row.contract.source = row.template.body.source;
             }
             _ => row.contract.key = child.body.key(),

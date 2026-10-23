@@ -4,7 +4,9 @@ Design and private prerequisite, refreshed against frontend `46d8b82a`, the
 focused actual-parent port `4eb1a20f`, and C's current `defining_heads` proposal.
 The private resolver identity foundation is qualified in
 [its checkpoint note](pa29-origin-foundation.md); no live body/proof field, artifact
-profile tag or edition encoding has migrated yet. The broad required
+profile tag or edition encoding has migrated yet. The live body/proof/site migration is now recorded in
+[its source-compatibility checkpoint](pa29-body-sites-checkpoint.md); the design
+baseline statements below describe the original proposal snapshot. The broad required
 scope remains in [the generic transport proposal](pa29-generic-transport-proposal.md).
 This prerequisite must lead to actual generic/const cross-crate execution, not
 stop at another neutral vocabulary. Root owns edition/build integration.
@@ -20,8 +22,10 @@ enum BodyOrigin { Source(NodeKey), Imported(ImportedBodyId) }
 struct BodySite(NonZeroU32);
 enum ProofSite {
     Source(NodeKey),
-    Imported { body: ImportedBodyId, site: BodySite },
+    Imported(ImportedProofSite),
 }
+// ImportedProofSite carries a sealed common owner-row ID plus checked ordinal.
+// Distinct ImportedBodyId/ImportedDeclarationId wrappers validate the row kind.
 ```
 
 Only the compiler-local imported catalog constructs ImportedBodyId. `catalog`
@@ -62,7 +66,11 @@ full Proved=472, paired Proved=496 bytes. NodeKey is two four-byte IDs, and Node
 is NonZeroU32. The proposed ImportedBodyId payload is eight bytes and BodySite
 four. The private foundation measures BodyOrigin=12 and ProofSite=12, with
 candidate Body=448/Contract=184 unchanged, Obligation28→32 and LifetimeProof120→128.
-No production field migration has run. Later error, Function/header,
+Declaration clauses now have distinct owner/site constructors in the common
+owner-row catalog. The measured16-byte candidate and compact12-byte correction
+are retained in [declaration-site evidence](pa29-declaration-sites.md). Located
+predicates are20→24 and builtin uses20→24 with the compact candidate. No production
+field migration has run. Later error, Function/header,
 Prepared/Checked and Code layouts must be measured before their field changes.
 Value remains 24 bytes. Do not claim a Body size increase simply by summing fields;
 actual compiler layout/padding and cold vector capacities must be recorded.

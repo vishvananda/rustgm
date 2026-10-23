@@ -93,7 +93,13 @@ impl Builder<'_> {
         while let Some(task) = work.pop() {
             match task {
                 Decision::Switch(block) => {
-                    self.switch(self.body.blocks[block.0 as usize].source, block)?;
+                    self.switch(
+                        self.body
+                            .syntax_site(self.body.blocks[block.0 as usize].source)
+                            .map_err(|message| self.report.body_error(self.body.source, message))?
+                            .node,
+                        block,
+                    )?;
                 }
                 _ if self.current.is_none() => {}
                 Decision::Test(test) => self.constructor_test(test, &mut work)?,
@@ -456,7 +462,13 @@ impl Builder<'_> {
         while let Some(task) = work.pop() {
             match task {
                 Commit::Switch(block) => {
-                    self.switch(self.body.blocks[block.0 as usize].source, block)?;
+                    self.switch(
+                        self.body
+                            .syntax_site(self.body.blocks[block.0 as usize].source)
+                            .map_err(|message| self.report.body_error(self.body.source, message))?
+                            .node,
+                        block,
+                    )?;
                 }
                 _ if self.current.is_none() => {}
                 Commit::Jump(node, block) => self.terminate(node, Terminator::Jump(block)),
@@ -488,6 +500,7 @@ impl Builder<'_> {
                             node,
                             TypeId::primitive(Primitive::Bool),
                             Rvalue::Binary {
+                                operands: crate::body::ir::BinaryOperands::Neither,
                                 operator: Op::EqualEqual,
                                 left: input,
                                 right: value,
@@ -584,7 +597,7 @@ impl Builder<'_> {
                 }
             }
         }
-        let first_view = self.index(self.body.source.node, self.body.locals.len())?;
+        let first_view = self.index(self.source.node, self.body.locals.len())?;
         for &id in &plan.bindings {
             let pattern = &self.facts.patterns.nodes[id.0 as usize];
             let node = pattern.source.node;
@@ -607,7 +620,7 @@ impl Builder<'_> {
             )?;
         }
         if let Some(guard) = guard {
-            let end = self.index(self.body.source.node, self.body.locals.len())?;
+            let end = self.index(self.source.node, self.body.locals.len())?;
             self.body.guards[guard.0 as usize].views_start = first_view;
             self.body.guards[guard.0 as usize].views_end = end;
         }
