@@ -17,6 +17,29 @@ pub(in crate::resolve) enum Feature {
     LangItems,
     Intrinsics,
     RustcAttributes,
+    NeverType,
+    ExpressionAttributes,
+}
+
+/// Recognizing a gate request is not evidence that its active constructs work.
+enum Request {
+    Capability(Feature),
+    /// This target-independent request grants no assembly binding or lowering.
+    NoCapability,
+}
+impl Request {
+    fn named(name: &str) -> Option<Self> {
+        Some(match name {
+            "no_core" => Self::Capability(Feature::NoCore),
+            "lang_items" => Self::Capability(Feature::LangItems),
+            "intrinsics" => Self::Capability(Feature::Intrinsics),
+            "rustc_attrs" => Self::Capability(Feature::RustcAttributes),
+            "never_type" => Self::Capability(Feature::NeverType),
+            "stmt_expr_attributes" => Self::Capability(Feature::ExpressionAttributes),
+            "asm_experimental_arch" => Self::NoCapability,
+            _ => return None,
+        })
+    }
 }
 impl Features {
     pub(in crate::resolve) fn has(&self, feature: Feature) -> bool {
@@ -104,15 +127,13 @@ fn features(unit: &Unit) -> Result<Features, Error> {
         let range = forest.children(group).ok_or_else(failure)?;
         let mut cursor = range.start;
         while cursor < range.end {
-            match forest
+            let name = forest
                 .name(unit.source.text(), cursor)
-                .ok_or_else(failure)?
-            {
-                "no_core" => result.insert(Feature::NoCore),
-                "lang_items" => result.insert(Feature::LangItems),
-                "intrinsics" => result.insert(Feature::Intrinsics),
-                "rustc_attrs" => result.insert(Feature::RustcAttributes),
-                _ => {
+                .ok_or_else(failure)?;
+            match Request::named(name) {
+                Some(Request::Capability(feature)) => result.insert(feature),
+                Some(Request::NoCapability) => {}
+                None => {
                     return Err(Error::at(
                         FileId(0),
                         attribute.span.start,

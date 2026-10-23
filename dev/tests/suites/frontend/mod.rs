@@ -45,6 +45,8 @@ mod option_environment;
 pub(crate) mod qualify;
 #[path = "../../resolution.rs"]
 mod resolution;
+#[path = "../../feature_requests.rs"]
+mod feature_requests;
 #[path = "../../syntax_transfer.rs"]
 mod syntax_transfer;
 #[path = "../../textual_scopes.rs"]

@@ -142,6 +142,7 @@ pub fn load_with_context(
             });
         }
     }
+    super::bindings::validate_features(&loader.package)?;
     Ok(loader.package)
 }
 impl<'a, S: Sources> Loader<'a, S> {
