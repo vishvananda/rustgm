@@ -1,5 +1,6 @@
 //! Immutable canonical type shapes and interned child lists; no source/text keys.
 pub mod aggregate;
+pub(crate) mod arena;
 pub mod arguments;
 pub mod auto_traits;
 mod binder_shift;
@@ -228,6 +229,7 @@ pub enum Kind {
 /// Child lists occupy one shared arena. Hash collisions compare their typed slices.
 /// Type/list IDs are valid only in the store that produced them.
 pub struct Store {
+    identity: Option<arena::Identity>,
     properties: Vec<Properties>,
     kinds: Vec<Kind>,
     index: HashMap<Kind, TypeId>,
@@ -266,6 +268,7 @@ impl Default for Store {
             })
             .collect();
         Self {
+            identity: None,
             properties,
             kinds,
             index,

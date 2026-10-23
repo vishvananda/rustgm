@@ -12,6 +12,7 @@ use crate::{
 pub(super) enum Input {
     Sized,
     Slice,
+    Dynamic,
 }
 impl Input {
     pub(super) fn prepare(
@@ -28,21 +29,25 @@ impl Input {
                 Err("source drop glue requires its selected thin-reference ABI")
             };
         }
-        let Some(Kind::Slice(element)) = context.types.kind(selection.element) else {
-            return Err("unsized source drop glue requires metadata-aware cleanup");
+        let (input, expected) = match context.types.kind(selection.element) {
+            Some(Kind::Slice(element)) => {
+                if context.types.is_sized(element) != Some(true) {
+                    return Err("slice cleanup requires a completed sized element");
+                }
+                context.layout(element)?;
+                (Self::Slice, Metadata::Length)
+            }
+            Some(Kind::Dynamic { .. }) => (Self::Dynamic, Metadata::VTable(selection.element)),
+            _ => return Err("unsized source drop glue requires metadata-aware cleanup"),
         };
-        if context.types.is_sized(element) != Some(true) {
-            return Err("slice cleanup requires a completed sized element");
-        }
-        context.layout(element)?;
         let metadata = context.layouts.pointer_metadata(
             context.types,
             context.aggregates,
             selection.element,
         )?;
         let reference_layout = context.layout(reference)?;
-        wide_reference(metadata, reference_layout, representation)?;
-        Ok(Self::Slice)
+        wide_reference(expected, metadata, reference_layout, representation)?;
+        Ok(input)
     }
     pub(super) fn call(
         self,
@@ -55,12 +60,16 @@ impl Input {
             .destruction
             .and_then(|p| p.recipes().get(id))
             .ok_or("source cleanup lacks its exposed recipe")?;
-        match (self, recipe.kind) {
-            (Self::Slice, glue::Shape::Slice { .. }) if recipe.ty == selected => {}
-            (Self::Sized, glue::Shape::Slice { .. }) | (Self::Slice, _) => {
-                return Err("source cleanup recipe differs from its selected metadata");
-            }
-            (Self::Sized, _) => {}
+        if !matches!(
+            (self, recipe.kind),
+            (
+                Self::Sized,
+                glue::Shape::Fields(_) | glue::Shape::Variants(_) | glue::Shape::Array { .. }
+            ) | (Self::Slice, glue::Shape::Slice { .. })
+                | (Self::Dynamic, glue::Shape::Dynamic)
+        ) || (!matches!(self, Self::Sized) && recipe.ty != selected)
+        {
+            return Err("source cleanup recipe differs from its selected metadata");
         }
         let symbol = context.demand_drop(id)?;
         let signature = context.output.symbols[symbol.0 as usize].signature;
@@ -72,16 +81,21 @@ impl Input {
             Self::Sized => {
                 builder.call(signature, Type::Void, Operand::Symbol(symbol), &[input])?;
             }
-            Self::Slice => {
+            Self::Slice | Self::Dynamic => {
                 let data = builder.load(Type::Ptr, input.operand)?;
                 let offset = builder.integer(Type::I64, 8)?;
                 let metadata = builder.index(Type::U8, input, offset)?;
-                let length = builder.load(Type::I64, metadata.operand)?;
+                let kind = if matches!(self, Self::Slice) {
+                    Type::I64
+                } else {
+                    Type::Ptr
+                };
+                let metadata = builder.load(kind, metadata.operand)?;
                 builder.call(
                     signature,
                     Type::Void,
                     Operand::Symbol(symbol),
-                    &[data, length],
+                    &[data, metadata],
                 )?;
             }
         }
@@ -90,11 +104,13 @@ impl Input {
 }
 
 fn wide_reference(
+    expected: Metadata,
     metadata: Metadata,
     layout: crate::abi::layout::Layout,
     representation: Representation,
 ) -> Result<(), &'static str> {
-    if metadata != Metadata::Length
+    if !matches!(expected, Metadata::Length | Metadata::VTable(_))
+        || metadata != expected
         || !matches!(layout.shape, Shape::WidePointer)
         || layout.size != 16
         || layout.align != 8

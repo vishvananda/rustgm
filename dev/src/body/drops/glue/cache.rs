@@ -1,4 +1,5 @@
 //! Recipe state survives append-only type and instance discovery without retaining borrows.
+mod exposure;
 use super::{Catalog, Recipes};
 use crate::support::hash::HashMap;
 use crate::{
@@ -14,6 +15,9 @@ pub(super) enum Key {
     Structural(TypeId),
 }
 
+#[cfg(test)]
+#[path = "../../../../tests/invariants/exposure_arenas.rs"]
+mod exposure_arenas;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/slice_recipes.rs"]
 mod tests;
@@ -113,6 +117,9 @@ impl Cache {
         Ok(())
     }
     pub(super) fn retain<T>(&mut self, count: usize) -> Result<(), &'static str> {
+        if self.needs.catalogue_bytes()?.is_some() {
+            return self.reserve_exposure(count);
+        }
         self.retained = count
             .checked_mul(size_of::<T>())
             .and_then(|n| self.retained.checked_add(n))

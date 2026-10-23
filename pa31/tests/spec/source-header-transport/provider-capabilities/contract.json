@@ -1,0 +1,156 @@
+{
+  "base": "8df70b06",
+  "proposal": "11295e30",
+  "prefix": "custom minimal typed role fixture; not a replacement for original Clone/clone_from",
+  "cases": [
+    {
+      "file": "scoped-sizing.rs",
+      "rust": 0,
+      "candidate": 0,
+      "classification": "supported-positive",
+      "reason": "fixed sizing profiles retain all actual role attributes and deny explicit impls",
+      "source_sha256": "573029d6c243567c69de12ac6dc67b9103db08f2f1de880ad8191cf7b82f357b"
+    },
+    {
+      "file": "fundamental-request-only.rs",
+      "rust": 0,
+      "candidate": 0,
+      "classification": "supported-positive",
+      "reason": "request alone grants no trait or implementation",
+      "source_sha256": "74dca09266b797f1d8a7b3f9ada69f2bf1ac830bf61da946f226fb1aa07ba748"
+    },
+    {
+      "file": "user-fundamental.rs",
+      "rust": 0,
+      "candidate": 1,
+      "classification": "valid-unsupported",
+      "reason": "general fundamental trait coherence not implemented",
+      "source_sha256": "552930827f93af6e316629a73417dde3697d90c28c53bce78ef9793bde4c6ec6"
+    },
+    {
+      "file": "lookalike-fundamental.rs",
+      "rust": 0,
+      "candidate": 1,
+      "classification": "valid-unsupported",
+      "reason": "spelling does not select actual role",
+      "source_sha256": "4be82fd2cae8e27eaa84e0034991b8d5c69377ec8c66ab67f827710ded1f5a87"
+    },
+    {
+      "file": "user-coinductive.rs",
+      "rust": 0,
+      "candidate": 1,
+      "classification": "valid-unsupported",
+      "reason": "general coinductive trait semantics not implemented",
+      "source_sha256": "ec24ed962ca8768ddd7e851c1b6b549064c0556a4003f5f5ab8c101dc770f405"
+    },
+    {
+      "file": "user-specialization.rs",
+      "rust": 0,
+      "candidate": 1,
+      "classification": "valid-unsupported",
+      "reason": "general specialization not implemented",
+      "source_sha256": "4579e40cfffe7455a955c6e809a73f21d69b76e282c7a88ed013ecee79aac552"
+    },
+    {
+      "file": "missing-fundamental-gate.rs",
+      "rust": 1,
+      "candidate": 1,
+      "classification": "invalid-source",
+      "reason": "actual fundamental use requires its feature",
+      "source_sha256": "c1455df0601c0bb71d491d615c6dbb0a5e614864c3ff84679788b8bc6f1cbe2b"
+    },
+    {
+      "file": "malformed-coinductive.rs",
+      "rust": 1,
+      "candidate": 1,
+      "classification": "invalid-source",
+      "reason": "no-argument attribute shape is checked",
+      "source_sha256": "0e8ffeb6460d2f68d461e856e633c7cd9a23959f7d7c5bb84a46d324d9c4d9df"
+    },
+    {
+      "file": "sizing-explicit-impl.rs",
+      "rust": 1,
+      "candidate": 1,
+      "classification": "invalid-source",
+      "reason": "attribute does not waive deny explicit impl",
+      "source_sha256": "10c803723e743c9b16177cd81058ed1ef456c2f442b5ab9083d269af04a6be3c"
+    },
+    {
+      "file": "const-destruct-request-only.rs",
+      "rust": 0,
+      "candidate": 0,
+      "classification": "supported-positive",
+      "reason": "request supplies no proof",
+      "source_sha256": "fec031a607dc295d72b9976bc569b9f023291737136d8fe8aeae75157d6d8591"
+    },
+    {
+      "file": "dyn-destruct.rs",
+      "rust": 1,
+      "candidate": 1,
+      "classification": "invalid-source",
+      "reason": "actual forced-incompatible trait",
+      "source_sha256": "09dbaaea6d9e2796978eec7a8faacbae79acd0f71742f79df71c8b01a9474871"
+    },
+    {
+      "file": "dyn-destruct-supertrait.rs",
+      "rust": 1,
+      "candidate": 1,
+      "classification": "invalid-source",
+      "reason": "forced incompatibility propagates through actual supertrait",
+      "source_sha256": "4a1aae424eb62f2629fe21deec51bd3e15cc4aea195d28f597b99808273e3049"
+    },
+    {
+      "file": "dyn-lookalike.rs",
+      "rust": 0,
+      "candidate": 0,
+      "classification": "supported-positive",
+      "reason": "same spelling has ordinary dyn rules",
+      "source_sha256": "56cf8bf7c341f15aa67db6209f171d11d22a14c6f0f547212f10f522b5472bc6"
+    },
+    {
+      "file": "diagnostic-malformed.rs",
+      "rust": 1,
+      "candidate": 1,
+      "classification": "invalid-source",
+      "reason": "diagnostic binding requires one string",
+      "source_sha256": "c2b8a67e80755f358fcdf5c0277d6ad93fe0179a6941d3f0567f0f68340fcd7f"
+    },
+    {
+      "file": "diagnostic-duplicate.rs",
+      "rust": 1,
+      "candidate": 1,
+      "classification": "invalid-source",
+      "reason": "diagnostic identity does not alias two definitions",
+      "source_sha256": "8e84b6f44bab159896654a739c81b463cf9ee0a85f16a4cf637ccc15e2768fff"
+    },
+    {
+      "file": "trivial-field-read-no-copy.rs",
+      "rust": 1,
+      "candidate": 1,
+      "classification": "invalid-source",
+      "reason": "diagnostic marker supplies no read/Copy permission",
+      "source_sha256": "5fa398247dde011b81fbde583413a57fdae6b5d6c3da1361ee2573479f744a11"
+    },
+    {
+      "file": "trivial-field-read-header.rs",
+      "rust": 0,
+      "candidate": 0,
+      "classification": "supported-positive",
+      "reason": "diagnostic-only trait attribute does not change header proof",
+      "source_sha256": "b6eb70fcbde7dbe5fe12c1a355e75bc38f34a0b4d2910bed98cc228a1bace352"
+    }
+  ],
+  "unchanged_targets": [
+    {
+      "path": "../semantic-provider-qualified.rs",
+      "rust": 0,
+      "candidate": "required checked-body target after scoped prerequisites"
+    },
+    {
+      "path": "../original-attributes-provider-qualified.rs",
+      "rust": 0,
+      "candidate": 1,
+      "classification": "valid-unsupported API/const-stability target"
+    }
+  ]
+}

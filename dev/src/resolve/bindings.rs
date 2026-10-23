@@ -1,8 +1,10 @@
 //! Configured source providers own real declaration claims and explicit features.
 mod admission;
+mod annotations;
 pub(super) mod policy;
 mod positions;
 mod reservations;
+mod role_attributes;
 #[path = "bindings/claimed_macros.rs"]
 mod source_builtin;
 use crate::support::{
@@ -12,6 +14,7 @@ use crate::support::{
 pub(super) use admission::validate as validate_features;
 pub(super) use reservations::finish;
 pub use reservations::{Declaration, IntrinsicDeclaration, Reservations};
+pub(crate) use role_attributes::{HeaderAttribute, HeaderAttributes};
 pub(super) use source_builtin::claim as builtin_macro;
 use std::sync::Arc;
 

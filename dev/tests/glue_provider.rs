@@ -5,6 +5,8 @@ use std::path::Path;
 mod answers;
 #[path = "glue_provider/unsized_elements.rs"]
 mod unsized_elements;
+#[path = "glue_provider/virtual_receivers.rs"]
+mod virtual_receivers;
 
 const POSITIVE: &[(&str, &str)] = &[
     ("original-cleanup-count", "7\n"),

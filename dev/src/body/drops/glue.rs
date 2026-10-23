@@ -26,6 +26,8 @@ pub enum Shape {
     Array { element: Id, length: u64 },
     /// Runtime element count comes from the selected wide reference.
     Slice { element: Id },
+    /// The caller's proved vtable supplies the complete concrete cleanup entry.
+    Dynamic,
 }
 /// Generic recipes require a concrete method selection before emission.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -61,6 +63,9 @@ pub struct Recipes {
     exposed: crate::support::hash::HashMap<TypeId, Option<Id>>,
 }
 impl Recipes {
+    pub(crate) fn has_exposed(&self) -> bool {
+        !self.exposed.is_empty()
+    }
     /// The selected element must share the catalog's exact canonical recipe key.
     pub(crate) fn slice(&self, types: &Store, id: Id) -> Result<(TypeId, Id), &'static str> {
         let recipe = self.get(id).ok_or("missing slice cleanup recipe")?;
@@ -110,6 +115,8 @@ pub struct Catalog<'a> {
 impl<'a> Catalog<'a> {
     /// Retain a requested concrete type's recipe for indirect destruction.
     pub(crate) fn expose(&mut self, ty: TypeId) -> Result<Option<Id>, &'static str> {
+        self.cache
+            .require_environment(self.types, self.definitions)?;
         if let Some(&recipe) = self.cache.storage.exposed.get(&ty) {
             return Ok(recipe);
         }
@@ -169,22 +176,14 @@ impl<'a> Catalog<'a> {
     /// Rejects invalid type/member facts, by-value cycles, unsupported unsized
     /// ownership and resource exhaustion. Failed dependencies remain memoized.
     pub fn demand(&mut self, ty: TypeId) -> Result<Option<Id>, &'static str> {
+        self.cache
+            .require_environment(self.types, self.definitions)?;
         let key = self.key(ty)?;
         if let Some(State::Ready(_) | State::Failed(_)) = self.cache.states.get(&key) {
             return self.result(ty);
         }
-        self.cache.work.push((ty, false));
-        if let Err(message) = self.run() {
-            for state in self.cache.states.values_mut() {
-                if matches!(state, State::Active) {
-                    *state = State::Failed(message);
-                }
-            }
-            self.cache.work.clear();
-            self.cache
-                .states
-                .entry(key)
-                .or_insert(State::Failed(message));
+        if let Err(message) = self.cache.push_work((ty, false)).and_then(|()| self.run()) {
+            self.cache.fail(key, message);
             return Err(message);
         }
         self.result(ty)
@@ -217,20 +216,21 @@ impl<'a> Catalog<'a> {
                 self.cache.states.insert(key, State::Ready(Some(recipe)));
                 continue;
             }
-            if !self.cache.needs.demand(self.types, self.definitions, ty)? {
+            if !self.cache.requirement(self.types, self.definitions, ty)? {
                 self.cache.retain::<(Key, State)>(2)?;
                 self.cache.states.insert(key, State::Ready(None));
                 continue;
             }
             self.cache.retain::<(Key, State)>(2)?;
             self.cache.states.insert(key, State::Active);
-            self.cache.work.push((ty, true));
+            self.cache.push_work((ty, true))?;
             match self
                 .types
                 .kind(ty)
                 .ok_or("invalid destruction recipe type")?
             {
                 Kind::Array { element, .. } | Kind::Slice(element) => self.schedule(element)?,
+                Kind::Dynamic { .. } => {}
                 Kind::Tuple(list) => self.schedule_fields(list)?,
                 Kind::Closure { environment, .. } => {
                     let Some(Kind::Tuple(list)) = self.types.kind(environment) else {
@@ -268,7 +268,7 @@ impl<'a> Catalog<'a> {
     }
     fn schedule(&mut self, ty: TypeId) -> Result<(), &'static str> {
         self.cache.charge(1)?;
-        self.cache.work.push((ty, false));
+        self.cache.push_work((ty, false))?;
         Ok(())
     }
     fn field(&mut self, ty: TypeId, selection: Selection) -> Result<(), &'static str> {
@@ -297,6 +297,7 @@ impl<'a> Catalog<'a> {
                     .result(element)?
                     .ok_or("missing slice element destruction")?,
             },
+            Kind::Dynamic { .. } => Shape::Dynamic,
             Kind::Tuple(list) => self.tuple_fields(list)?,
             Kind::Closure { environment, .. } => {
                 let Some(Kind::Tuple(list)) = self.types.kind(environment) else {

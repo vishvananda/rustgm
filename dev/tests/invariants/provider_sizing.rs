@@ -158,3 +158,16 @@ fn actual_source_implementation_restrictions_do_not_follow_names() -> Result {
     assert!(sema::declarations::analyze(&report).is_err());
     Ok(())
 }
+
+#[test]
+fn source_header_attribute_claims_do_not_authorize_unprepared_role_queries() -> Result {
+    let source = std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join(
+        "../pa31/tests/spec/source-header-transport/provider-capabilities/scoped-sizing.rs",
+    ))?;
+    let report = resolve(&source)?;
+    let unprepared = sema::model::Declarations::new(&report)?;
+    let catalog = unprepared.source_bindings.as_deref().ok_or("catalog")?;
+    let sized = catalog.language(LangItem::Sized).ok_or("sized")?.definition;
+    assert!(catalog.forces_dyn_incompatible(sized).is_err());
+    Ok(())
+}

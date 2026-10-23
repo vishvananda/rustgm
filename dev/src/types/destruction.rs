@@ -1,5 +1,6 @@
 //! Possible destruction requirements under immutable parameter assumptions.
 mod bounded;
+mod catalogue;
 pub mod regions;
 use super::parameters::environment::{BuiltinQuery, Environment};
 use super::{ItemId, Kind, Store, TypeId, aggregate::Definitions};
@@ -17,6 +18,7 @@ enum State {
 struct Scope {
     environment: Option<Arc<Environment>>,
     builtins: Option<Box<BuiltinQuery>>,
+    binding: Option<Box<catalogue::Binding>>,
     states: HashMap<TypeId, State>,
 }
 /// One canonical store, completed nominal definitions and immutable custom Drop set.
@@ -47,6 +49,7 @@ impl NeedsDrop {
         query.scope = Some(Box::new(Scope {
             environment: None,
             builtins: None,
+            binding: None,
             states: HashMap::default(),
         }));
         query
@@ -67,6 +70,7 @@ impl NeedsDrop {
             scope: Some(Box::new(Scope {
                 environment: Some(environment),
                 builtins: None,
+                binding: None,
                 states: HashMap::default(),
             })),
             custom: Arc::clone(&self.custom),

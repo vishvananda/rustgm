@@ -42,6 +42,7 @@ pub(crate) struct Catalog {
     traits: Option<Box<roles::Validated>>,
     call_effects: Option<Box<crate::support::hash::HashMap<DefId, calls::Effect>>>,
     intrinsics: crate::support::hash::HashMap<DefId, intrinsic_contracts::Intrinsic>,
+    attributes: [crate::resolve::bindings::HeaderAttributes; LangItem::ALL.len()],
 }
 impl Catalog {
     pub(crate) fn reserve(report: &Report) -> Result<Option<Box<Self>>, Error> {
@@ -101,6 +102,7 @@ impl Catalog {
                     )
                 })
                 .collect(),
+            attributes: LangItem::ALL.map(|role| reserved.role_attributes(role)),
         })))
     }
     /// Closure formation requires the actual completed source role family.
@@ -136,6 +138,36 @@ impl Catalog {
     }
     pub(crate) fn language(&self, kind: LangItem) -> Option<Declaration> {
         self.languages[kind.index()]
+    }
+    fn header_attributes(&self, definition: DefId) -> crate::resolve::bindings::HeaderAttributes {
+        LangItem::ALL
+            .into_iter()
+            .find_map(|role| {
+                self.language(role)
+                    .filter(|declaration| declaration.definition == definition)
+                    .map(|_| self.attributes[role.index()])
+            })
+            .unwrap_or(crate::resolve::bindings::HeaderAttributes::EMPTY)
+    }
+    pub(crate) fn forces_dyn_incompatible(&self, definition: DefId) -> Result<bool, &'static str> {
+        for role in [LangItem::Sized, LangItem::Destruct, LangItem::Unsize] {
+            if self
+                .language(role)
+                .is_some_and(|declaration| declaration.definition == definition)
+                && self.attributes[role.index()]
+                    .contains(crate::resolve::bindings::HeaderAttribute::DynIncompatible)
+            {
+                if role == LangItem::Sized {
+                    if self.sizing.is_none() {
+                        return Err("source dyn restriction requires completed sizing headers");
+                    }
+                } else {
+                    self.validated_language(role)?;
+                }
+                return Ok(true);
+            }
+        }
+        Ok(false)
     }
     /// Reached source intrinsics require target-specific runtime selection even
     /// when bodyless declarations contributed no ordinary checked templates.

@@ -68,6 +68,7 @@ pub struct Definition {
 }
 #[derive(Default)]
 pub struct Definitions {
+    identity: Option<super::arena::Identity>,
     pending_discriminants: HashMap<ItemId, crate::support::hash::HashSet<u32>>,
     discriminant_indexing: usize,
     discriminant_publications: usize,
@@ -85,6 +86,16 @@ pub struct Definitions {
     nullable_enums: Option<Box<nullable::Policies>>,
 }
 impl Definitions {
+    pub(crate) fn arena_identity(&mut self) -> super::arena::Identity {
+        self.identity
+            .get_or_insert_with(super::arena::Identity::new)
+            .clone()
+    }
+    pub(crate) fn has_identity(&self, expected: &super::arena::Identity) -> bool {
+        self.identity
+            .as_ref()
+            .is_some_and(|found| found.same(expected))
+    }
     pub(crate) fn mark_discriminants_pending(&mut self, item: ItemId) -> Result<(), &'static str> {
         let definition = self.get(item).ok_or("missing pending enum declaration")?;
         if definition.kind != Kind::Enum || self.pending_discriminants.contains_key(&item) {

@@ -24,6 +24,7 @@ pub(in crate::resolve) enum Feature {
     AutoTraits,
     NegativeImpls,
     FreezeImpls,
+    Fundamental,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -46,7 +47,9 @@ impl Request {
             "auto_traits" => Self::Capability(Feature::AutoTraits),
             "negative_impls" => Self::Capability(Feature::NegativeImpls),
             "freeze_impls" => Self::Capability(Feature::FreezeImpls),
-            "asm_experimental_arch" => Self::NoCapability,
+            "fundamental" => Self::Capability(Feature::Fundamental),
+            // Requests do not authorize the unsupported live const-drop operation.
+            "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
             _ => return None,
         })
     }

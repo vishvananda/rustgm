@@ -93,6 +93,26 @@ includes declaration and owning crate; familiar names are not implementation
 evidence. Transport checked generic/const bodies and their retained contracts
 through deterministic crate metadata with indexed external-to-local remapping.
 
+Library feature requests come from enabled source declarations and authenticated
+dependency inventories, separately from compiler language capabilities. Complete
+their validation after configured expansion; unknown requests grant no capability.
+Retain regular, const and default-body API stability as distinct declaration facts,
+separate from callable effects and each caller's proof. Compute owner inheritance
+and feature indexes once, then check actual uses without whole-crate rescanning.
+Macro-internal allowances follow exact defining/captured token provenance. The
+[stability investigation](docs/pa31-library-stability.md) records the independent
+cases and required implementation seams; this contract is not yet implemented.
+
+Source-role semantic attributes are validated claims on exact declarations.
+The bounded sizing profile requires actual sizing identities, complete headers
+and deny-explicit-impl restrictions before retaining fundamental, specialization
+or coinductive markers; those markers grant no general implementation or cycle
+permission. Forced dyn restrictions consult the completed actual role, while
+diagnostic identities and field-read hints grant no move or body permission.
+Keep this state in fixed cold provider tables and preserve real provided bodies
+and conditional Environment clauses. The [capability checkpoint](docs/pa29-provider-capability-checkpoint.md)
+records actual checked originals and containing layouts.
+
 Imported executable originals have authenticated external declaration/body/site
 coordinates. Install their complete canonical header graph before original
 proof, without inventing source AST nodes or marking body proof complete when
@@ -216,7 +236,21 @@ logical element. Complete-empty cleanup still requires its ordinary proof and
 registry checks. Keep recipe traversal, emitted code and inherited dense query
 storage measurements distinct. The [sized runtime checkpoint](docs/pa31-source-drop-glue.md)
 and [slice continuation](docs/pa31-slice-drop-glue.md) record these boundaries;
-dynamic trait-object, owned-box and CTFE cleanup remain required.
+owned-box, unsized-tail and CTFE cleanup remain required.
+
+Dynamic helper recipes retain the complete object type and use the caller's
+proved vtable metadata. A null drop entry performs no call; a nonnull entry
+executes the complete concrete cleanup through the established internal ABI.
+Do not change public Rust pointer-pair layout or vtable field offsets. The first
+nonempty vtable exposure may precede any drop-helper root: retain its lazy exact
+recipe family across table drains, separately from owned-body cleanup proof.
+Empty exposure batches leave it absent. Bind that family to stable identities
+of the exact type and aggregate arenas before every cold or warm lookup; moves
+and append-only growth preserve identity, replacement does not. No address reuse
+or same-shaped foreign arena can inherit a cached dropless answer. Charge query,
+recipe, worklist and failure storage together under the existing budget, and
+poison failed work before warm reuse. The [dynamic cleanup checkpoint](docs/pa31-dyn-drop-glue.md)
+records source/native controls and the cold record-size tradeoff.
 Internal features active in an earlier library must work then, regardless of
 later broad edition/target closure. Measure complete library time and peak memory
 as well as changed-path scaling, with existing resource and cleanup limits.
@@ -1527,6 +1561,19 @@ the same hidden inference term. Keep the public callable signature intact when
 building its CFG: the CFG result uses the solved private result, including
 nested opaque occurrences and early returns. Caller inference, equality and
 trait permissions consume published promises, never storage representations.
+
+Implicit return captures follow the edition of the parsed `impl` introducer's
+exact token origin. Rust 2021 free and inherent functions capture only lifetimes
+written in the opaque bounds; trait declarations and trait implementations keep
+automatic captures in both supported editions. Type and const parameters remain
+captured, and an explicit `use<...>` list overrides implicit selection. A where
+clause does not add a written opaque-bound capture. Collect resolved lifetime
+identities during the existing bound traversal, before alias normalization can
+erase them; intersect bound-local identities with the defining signature's slots.
+Do not reparse source, walk the entire crate or infer captures from normalized
+trait arguments. The legacy inventory belongs to the pending opaque declaration,
+not every type, owner or CFG node. Token origin here differs from never-type
+fallback, whose rule belongs to the containing compilation unit.
 
 Resolve precise capture lists to existing parameter identities and retain
 declaration order. Require every type/const parameter, reject anonymous input

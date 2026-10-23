@@ -22,6 +22,11 @@ pub(super) fn collect(
     {
         return Err("actual source Unsize is not dyn compatible".into());
     }
+    if let Some(catalog) = facts.source_bindings.as_deref()
+        && catalog.forces_dyn_incompatible(item)?
+    {
+        return Err("actual source trait requires dyn incompatibility".into());
+    }
     if let Some(kind) = facts.associated.callable(item) {
         return callable(facts, item, kind, steps);
     }

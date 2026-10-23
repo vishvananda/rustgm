@@ -81,3 +81,6 @@ mod needs_drop_provider;
 
 #[path = "../../never_editions.rs"]
 mod never_editions;
+
+#[path = "../../return_editions.rs"]
+mod return_editions;

@@ -66,10 +66,10 @@ impl Context<'_> {
             .destruction
             .and_then(|proof| proof.recipes().get(id))
             .ok_or("missing proved destructor recipe")?;
-        let parameters: &[Type] = if matches!(recipe.kind, glue::Shape::Slice { .. }) {
-            &[Type::Ptr, Type::I64]
-        } else {
-            &[Type::Ptr]
+        let parameters: &[Type] = match recipe.kind {
+            glue::Shape::Slice { .. } => &[Type::Ptr, Type::I64],
+            glue::Shape::Dynamic => &[Type::Ptr, Type::Ptr],
+            _ => &[Type::Ptr],
         };
         let signature = self.output.signature(parameters, Type::Void, false)?;
         let symbol = self.output.declare(

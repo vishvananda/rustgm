@@ -1,5 +1,5 @@
 //! Source-query budgets cover owned logical slots before registry or work growth.
-use super::{Definitions, HashSet, ItemId, NeedsDrop, Scope, State, Store, TypeId};
+use super::{Definitions, HashSet, ItemId, NeedsDrop, Scope, State, Store, TypeId, catalogue};
 use crate::support::retained;
 
 impl NeedsDrop {
@@ -39,6 +39,7 @@ impl NeedsDrop {
         if !self.exact_heads() {
             return Err("bounded destruction requires an exact sparse query");
         }
+        self.require_catalogue_environment(types, definitions)?;
         self.charge::<true>()?;
         self.retain::<true>(0, 0, limit)?;
         self.demand_inside::<true>(types, definitions, ty, limit)
@@ -57,6 +58,10 @@ impl NeedsDrop {
         retained::sum([
             size_of::<Self>(),
             self.scope.as_ref().map_or(0, |_| size_of::<Scope>()),
+            self.scope
+                .as_ref()
+                .and_then(|s| s.binding.as_ref())
+                .map_or(0, |_| catalogue::Binding::allocation_bytes()),
             size_of::<HashSet<ItemId>>(),
             self.custom.capacity().saturating_mul(size_of::<ItemId>()),
             states.saturating_mul(size_of::<(TypeId, State)>()),

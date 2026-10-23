@@ -180,14 +180,14 @@ fn range_catalog_preserves_ordinary_record_sizes() {
         size_of::<types::Kind>(),
         size_of::<body::ir::Value>()
     );
-    // The public nullable policy/layout caches add 16 bytes; source bindings add 8.
-    assert_eq!(size_of::<Declarations>(), 7048);
+    // Two lazy arena identity slots add 16 bytes to the previous 7048-byte baseline.
+    assert_eq!(size_of::<Declarations>(), 7064);
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<sema::iteration::Registry>(), 304);
     assert_eq!(size_of::<types::Kind>(), 24);
     assert_eq!(size_of::<body::ir::Value>(), 24);
     assert_eq!(size_of::<types::infer::Context>(), 400);
-    assert_eq!(size_of::<types::Store>(), 464);
+    assert_eq!(size_of::<types::Store>(), 472);
 }
 
 #[test]

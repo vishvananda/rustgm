@@ -258,8 +258,8 @@ fn iterator_layout_keeps_ordinary_records_compact() {
         size_of::<crate::sema::iteration::Call>(),
         size_of::<body::ir::Value>()
     );
-    // Nullable policy/layout caches add 16 bytes; source bindings add one cold pointer.
-    assert_eq!(size_of::<Declarations>(), 7048);
+    // Two lazy arena identity slots add 16 bytes to the previous 7048-byte baseline.
+    assert_eq!(size_of::<Declarations>(), 7064);
     assert_eq!(size_of::<Original>(), 56);
     // The demand-only collection catalog adds one optional Box to this owner.
     // Range adds one more lazy pointer to this demand-only owner.

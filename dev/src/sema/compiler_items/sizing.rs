@@ -76,6 +76,17 @@ fn validate_header(
     let key = declaration.origin;
     let error = |message| Declarations::error(report, key, message);
     let header = Trait::source(report, facts, declaration).map_err(error)?;
+    if header.attributes.requires_sizing_profile()
+        && !report
+            .resolution
+            .source_bindings
+            .as_deref()
+            .is_some_and(|reserved| reserved.denies_implementation(declaration.definition))
+    {
+        return Err(error(
+            "source sizing attributes require the actual deny-implementation contract",
+        ));
+    }
     if header.flags.unsafe_ {
         return Err(error(
             "source sizing profile requires a safe trait declaration",

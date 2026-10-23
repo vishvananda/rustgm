@@ -2,6 +2,13 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/library-stability/` retains 31 independently qualified local/client
+hypotheses and two providers. Its `contract.json` binds exact sources, declared
+outcomes and original evidence. Eight clients executed with pinned rustc; local
+library cases are metadata-only checks. Candidate implementation and maintainer
+registration remain pending. See the [stability investigation](../../docs/pa31-library-stability.md),
+including the retained module-stability confounder and corrected controls.
+
 `spec/needs-drop/` retains independently declared source-provider inputs for the
 actual `needs_drop<T: ?Sized>` intrinsic and its ordinary const-block wrapper.
 The grouped maintainer `needs_drop_provider` tests discover these files directly;
@@ -68,3 +75,10 @@ actual sizing, Copy/Clone/default-method, Destruct/Freeze and receiver transport
 Its historical hypothesis disagreements are retained separately from corrected
 Rust/native controls. This preparation does not enable generic source-role
 metadata or source-sysroot client policy; see the scoped interface review.
+
+`spec/drop-glue-dyn/` retains 14 independently settled source contracts and ten
+native observers, including the unchanged original dyn helper. Grouped
+`glue_provider::virtual_receivers` tests own its focused runtime/null/ordered
+cleanup coverage. Lazy exposed-only recipes preserve ordinary body proof flags;
+CTFE, Box ordering and unsized tails remain required separately. See
+[the dynamic-helper boundary](../../docs/pa31-dyn-drop-glue.md).

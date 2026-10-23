@@ -443,6 +443,16 @@ impl Checker<'_> {
         key: NodeKey,
         owner: DefId,
     ) -> Result<(), Error> {
+        self.bound_subject_inputs(key, owner, None)
+    }
+    /// Retain written identities during the existing syntax walk, before aliases
+    /// erase arguments. Nested binders have distinct resolved definitions.
+    pub(in super::super) fn bound_subject_inputs(
+        &mut self,
+        key: NodeKey,
+        owner: DefId,
+        mut captures: Option<&mut crate::support::hash::HashSet<DefId>>,
+    ) -> Result<(), Error> {
         let ast = &self.report.package.unit(key.file).configured.ast;
         let raw = matches!(
             self.report.resolution.definitions[owner.0 as usize].kind,
@@ -464,6 +474,14 @@ impl Checker<'_> {
                 return Err(self.error(key, "bound syntax work budget exceeded"));
             }
             let source = NodeKey { node, ..key };
+            if let Some(captures) = captures.as_deref_mut()
+                && let Some(Target::Definition(id)) =
+                    self.facts.node(source).and_then(|facts| facts.reference)
+                && self.report.resolution.definitions[id.0 as usize].namespace
+                    == crate::resolve::model::Namespace::Lifetime
+            {
+                captures.insert(id);
+            }
             if raw {
                 self.defer_bound_type(source);
             }
