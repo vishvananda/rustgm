@@ -8,6 +8,8 @@ import sys
 
 from host_build_script import digest
 
+QUERY_ENVIRONMENT = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'}
+
 
 def validate(arguments, target):
     if arguments in (['-vV'], ['--version']):
@@ -35,8 +37,12 @@ def main():
             raise ValueError('Cargo planning supplied source input to rustc')
         if not compiler.is_absolute() or digest(compiler) != expected:
             raise ValueError('planning query compiler differs from its pin')
-        row.update(state='query', empty_input=empty_input)
-        result = subprocess.run([str(compiler), *arguments], input=b'', capture_output=True, timeout=30)
+        row.update(state='query', empty_input=empty_input, compiler_sha256=expected,
+                   environment=QUERY_ENVIRONMENT)
+        # Cargo's unstable introspection switch is not a target capability.
+        # In particular, RUSTC_BOOTSTRAP changes --print=cfg even with no source.
+        result = subprocess.run([str(compiler), *arguments], input=b'', capture_output=True,
+                                timeout=30, env=QUERY_ENVIRONMENT)
         row['status'] = result.returncode
         for name, data in (('stdout', result.stdout), ('stderr', result.stderr)):
             path = log.with_name(f'query-{os.getpid()}.{name}')

@@ -63,6 +63,12 @@ the host while carrying the configuration of its consuming target. Traverse the
 selected graph once, retaining dependency-first order and diagnosing cycles,
 missing nodes and unsupported protocol fields. Graph rows and Cargo path IDs
 are invocation-local, not portable crate identities or persistent cache keys.
+Isolate package-planner introspection switches from compiler-query environments;
+enabling Cargo's unit graph must not enable additional target cfg capabilities.
+Pair a host script with its exact compilation unit and package snapshot, retaining
+distinct compile and execution profiles. Validate every supported profile setting
+and reject unsupported ones. A script that catches a rejected compiler probe must
+still fail the outer task; probe failure is not evidence of language incapability.
 Planning receipts are not compilation results. The
 [planning adapter](docs/crate-planning.md) supports frozen local path inputs and
 authenticated crates.io archive snapshots. Preserve original package bytes and
