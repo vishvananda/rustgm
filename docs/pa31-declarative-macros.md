@@ -136,3 +136,25 @@ Local scoped expansion does not by itself provide cross-crate macro export,
 imported definition-token provenance, or macro stability allowances. Keep these
 requirements explicit in the source-library metadata/bootstrap roadmap; no local
 fixture or parser frontier can stand in for the original alloc/std crate graph.
+
+## Isolated local-history draft
+
+The source draft adds a lazy context index only after an entry gains its second
+local. A single-local entry retains its existing direct lookup and allocates no
+index. Indexed histories keep the newest LocalId inline and allocate a vector
+only for older shadows in that same entry/context. Duplicate checks and ordinary
+newest lookup use the context hash; historical visibility uses a binary
+predecessor over strictly increasing actual declaration identities. Publication
+rejects an out-of-order definition before changing local records or histories.
+Hash lookup retains the compiler's ordinary expected-time hash-table model; it
+is not a collision-resistant worst-case bound.
+
+Entry and Local fields are unchanged. BindingTable and its containing Resolution
+add one optional boxed index pointer (expected eight bytes on the qualified
+x86-64 profile); the three existing Resolution layout contracts account for it.
+Private draft controls cover single-local no-allocation, 128 unrelated contexts
+by 32 shadows with bounded predecessor comparisons, historical strict visibility,
+duplicate/out-of-order atomicity, and separate scope/namespace histories. This
+code has not yet been audited, compiled or executed. It still uses the existing
+context identity and must migrate to normalized LocalContext with the scoped
+hygiene implementation. Whole-frontend allocation and timing remain unmeasured.

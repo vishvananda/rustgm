@@ -182,7 +182,8 @@ fn range_catalog_preserves_ordinary_record_sizes() {
     );
     // Two lazy arena identity slots add 16 bytes to the previous 7048-byte baseline.
     assert_eq!(size_of::<Declarations>(), 7064);
-    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
+    // One cold local-history index pointer adds eight bytes; hot binding rows are unchanged.
+    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2040);
     assert_eq!(size_of::<sema::iteration::Registry>(), 304);
     assert_eq!(size_of::<types::Kind>(), 24);
     assert_eq!(size_of::<body::ir::Value>(), 24);

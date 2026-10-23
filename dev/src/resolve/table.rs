@@ -1,6 +1,7 @@
 //! One open-addressed table holds every lexical binding, keyed by scope, name
 //! and namespace after CPPGM's `NameLookup` (`sema/lookup.cpp`). Hygienic local
-//! histories chain from the same entry, so one probe answers both lookups.
+//! histories share that entry; a cold context index avoids scanning other marks.
+mod histories;
 use super::{
     model::{Binding, Namespace, Origin, ScopeId},
     names::NameId,
@@ -73,6 +74,8 @@ pub struct BindingTable {
     shift: u32,
     entries: Vec<Entry>,
     locals: Vec<Local>,
+    /// Single-local entries need no secondary index or history allocation.
+    histories: Option<Box<histories::Index>>,
     scopes: Vec<Order>,
 }
 /// A multiplicative hash of `(scope + 1) << 32 | name` beside the namespace,
@@ -297,20 +300,22 @@ impl BindingTable {
         context: ContextId,
         visible: usize,
     ) -> Option<Binding> {
-        let mut current = self.entries[entry.0 as usize].local;
-        while let Some(local) = self.locals.get(current as usize) {
-            if local.context == context && (local.binding.target.0 as usize) < visible {
-                return Some(local.binding);
-            }
-            current = local.next;
+        let local = self
+            .locals
+            .get(self.entries[entry.0 as usize].local as usize)?;
+        if local.next == NONE {
+            return (local.context == context && (local.binding.target.0 as usize) < visible)
+                .then_some(local.binding);
         }
-        None
+        self.histories
+            .as_ref()?
+            .get(entry.0, context, visible, &self.locals)
     }
     /// Add a hygienic local. Locals stay outside the ordinary binding order;
     /// shadowing keeps the older definitions for definition-site visibility.
     ///
     /// # Errors
-    /// Rejects an unshadowed duplicate and table identity overflow.
+    /// Rejects an unshadowed duplicate, unordered definitions and identity overflow.
     pub(crate) fn define_local(
         &mut self,
         key: (ScopeId, NameId, Namespace),
@@ -321,19 +326,32 @@ impl BindingTable {
         let entry = self.entry(key.0, key.1, key.2)?;
         self.order_mut(key.0).local |= name_bit(key.1);
         let head = self.entries[entry as usize].local;
-        if !shadow {
-            let mut current = head;
-            while let Some(local) = self.locals.get(current as usize) {
-                if local.context == context {
-                    return Err("duplicate hygienic local binding");
-                }
-                current = local.next;
+        if let Some(previous) = self.locals.get(head as usize) {
+            let duplicate = if previous.next == NONE {
+                previous.context == context
+            } else {
+                self.histories
+                    .as_ref()
+                    .is_some_and(|index| index.contains(entry, context))
+            };
+            if !shadow && duplicate {
+                return Err("duplicate hygienic local binding");
+            }
+            if previous.binding.target.0 >= binding.target.0 {
+                return Err("hygienic local definitions are not in creation order");
             }
         }
         let id = u32::try_from(self.locals.len())
             .ok()
             .filter(|id| *id < NONE)
             .ok_or("too many hygienic locals")?;
+        if let Some(previous) = self.locals.get(head as usize) {
+            let index = self.histories.get_or_insert_with(Box::default);
+            if previous.next == NONE {
+                index.push(entry, previous.context, head);
+            }
+            index.push(entry, context, id);
+        }
         self.locals.push(Local {
             context,
             binding,
@@ -380,3 +398,7 @@ impl BindingTable {
         u32::try_from(self.entries.len()).unwrap_or(NONE)
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/local_histories.rs"]
+mod tests;
