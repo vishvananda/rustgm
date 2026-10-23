@@ -5,6 +5,12 @@ pinned whole-core root gets past `option_env` import resolution and reaches
 `core/src/macros/mod.rs:170`, where `pub macro assert_matches` fails parsing.
 The current public compiler checkpoint does not include the changes below.
 
+The isolated branch now drafts typed concise/braced syntax and shared matcher
+compilation, with parser/transfer/separator tests. It has only been formatted,
+not audited, compiled or executed. Expansion and direct resolution still reject
+scoped macro semantics explicitly while normalized hygiene is being implemented;
+this is not a passing semantic checkpoint or a parser-frontier success claim.
+
 ## Evidence and corrected hypothesis
 
 The predeclared 19 inputs have 60 independent rustc observations, including

@@ -554,6 +554,13 @@ impl<S: Sources> Engine<'_, S> {
             if let ItemKind::MacroRules { capture } = item.kind {
                 return self.define(visit, file, index, capture);
             }
+            if matches!(item.kind, ItemKind::DeclarativeMacro { .. }) {
+                return Err(Error::at(
+                    file,
+                    unit.configured.ast.node(visit.node).span.start,
+                    "scoped declarative macro hygiene is not implemented",
+                ));
+            }
             if let ItemKind::Use(tree) = item.kind {
                 return self.paths.import(
                     &mut self.loader.package,

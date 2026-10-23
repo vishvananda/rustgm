@@ -3,6 +3,7 @@ use super::{
     Ast, BlockFlavor, Kind, LexError, List, NORMAL, NodeId, P, Parser, Span, TokenKind, Word, error,
 };
 use crate::syntax::item::{FunctionFlags, Item, ItemKind, Safety, Shape, Visibility};
+mod macro_definitions;
 
 pub(super) use crate::syntax::item::ItemContext as Scope;
 
@@ -96,6 +97,7 @@ impl Parser<'_, '_> {
                     })
             }
             Word::Fn
+            | Word::Macro
             | Word::Struct
             | Word::Enum
             | Word::Trait
@@ -212,24 +214,13 @@ impl Parser<'_, '_> {
             let tree = self.use_tree()?;
             self.expect(P::Semicolon)?;
             ItemKind::Use(tree)
-        } else if self.eat_word(Word::MacroRules)? {
-            self.expect(P::Bang)?;
+        } else if self.eat_word(Word::MacroRules)? || self.eat_word(Word::Macro)? {
+            let scoped = self.cursor.last_word() == Word::Macro;
+            if !scoped {
+                self.expect(P::Bang)?;
+            }
             item.name = Some(self.name()?);
-            let first = self.required()?;
-            if !matches!(
-                first.kind,
-                TokenKind::Punctuation(P::OpenBrace | P::OpenParen | P::OpenBracket)
-            ) {
-                return Err(error(first.start, "expected macro definition delimiter"));
-            }
-            let forest = self.cursor.capture(first)?;
-            if first.kind != TokenKind::Punctuation(P::OpenBrace) {
-                self.expect(P::Semicolon)?;
-            }
-            let capture = u32::try_from(self.ast.captures.len())
-                .map_err(|_| error(start, "too many captures"))?;
-            self.ast.captures.push(forest);
-            ItemKind::MacroRules { capture }
+            self.macro_definition(scoped)?
         } else if self.cursor.at_word(Word::Static)?
             || (self.cursor.at_word(Word::Const)? && !self.function_after_const()?)
         {

@@ -7,6 +7,8 @@ mod coercion_provider;
 mod crate_expansion;
 #[path = "../../crate_syntax.rs"]
 mod crate_syntax;
+#[path = "../../declarative_macros.rs"]
+mod declarative_macros;
 #[path = "../../edition_fragments.rs"]
 mod edition_fragments;
 #[path = "../../edition_origins.rs"]

@@ -389,6 +389,11 @@ impl Resolver<'_> {
             | ItemKind::Use(_)
             | ItemKind::ExternCrate { .. }
             | ItemKind::MacroRules { .. } => Ok(()),
+            ItemKind::DeclarativeMacro { .. } => Err(self.error(
+                c,
+                node,
+                "scoped declarative macro hygiene is not implemented",
+            )),
             ItemKind::MacroInvocation(value) => self.visit(c, value, Namespace::Value),
             ItemKind::Function {
                 parameters,

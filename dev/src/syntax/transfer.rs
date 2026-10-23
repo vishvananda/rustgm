@@ -582,6 +582,15 @@ impl Bases {
                 self.list(items);
             }
             ItemKind::MacroRules { capture } => *capture += self.captures,
+            ItemKind::DeclarativeMacro {
+                parameters,
+                capture,
+            } => {
+                if let Some(parameters) = parameters {
+                    *parameters += self.captures;
+                }
+                *capture += self.captures;
+            }
         }
         Ok(())
     }

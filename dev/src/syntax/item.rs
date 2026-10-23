@@ -126,6 +126,10 @@ pub enum ItemKind {
     MacroRules {
         capture: u32,
     },
+    DeclarativeMacro {
+        parameters: Option<u32>,
+        capture: u32,
+    },
     MacroInvocation(NodeId),
 }
 

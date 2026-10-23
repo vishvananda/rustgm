@@ -327,6 +327,18 @@ pub(super) fn item<L>(
             Children(ast, items)
         ),
         ItemKind::MacroRules { capture } => write!(output, "macro-rules {capture}"),
+        ItemKind::DeclarativeMacro {
+            parameters,
+            capture,
+        } => {
+            write!(output, "declarative-macro ")?;
+            if let Some(parameters) = parameters {
+                write!(output, "{parameters}")?;
+            } else {
+                write!(output, "-")?;
+            }
+            write!(output, " {capture}")
+        }
         ItemKind::MacroInvocation(value) => write!(output, "macro-invocation {}", value.get()),
     }
 }

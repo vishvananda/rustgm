@@ -583,6 +583,13 @@ impl Resolver<'_> {
             ItemKind::Static { .. } => (Namespace::Value, DefKind::Static),
             ItemKind::TypeAlias { .. } => (Namespace::Type, DefKind::TypeAlias),
             ItemKind::MacroRules { .. } => (Namespace::Macro, DefKind::Macro),
+            ItemKind::DeclarativeMacro { .. } => {
+                return Err(self.error(
+                    c,
+                    node,
+                    "scoped declarative macro hygiene is not implemented",
+                ));
+            }
             ItemKind::ExternCrate { .. } => (Namespace::Type, DefKind::ExternCrate),
             _ => (Namespace::Type, DefKind::SelfType),
         };

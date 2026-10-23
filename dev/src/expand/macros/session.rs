@@ -74,6 +74,12 @@ pub fn analyze(source: &str, config: &Config) -> Result<Report, LexError> {
         let mut scope = matches!(data.kind, Kind::Block { .. });
         if let Kind::Item(index) = data.kind {
             let item = ast.items[index as usize];
+            if matches!(item.kind, ItemKind::DeclarativeMacro { .. }) {
+                return Err(error(
+                    data.span.start,
+                    "scoped declarative macros require PA31 expansion resolution",
+                ));
+            }
             if let ItemKind::MacroRules { capture } = item.kind {
                 let name_span = item
                     .name

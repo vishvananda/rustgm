@@ -228,6 +228,7 @@ fn item(kind: ItemKind, child: NodeId) -> Position {
         | ItemKind::ExternCrate { .. }
         | ItemKind::ExternBlock { .. }
         | ItemKind::MacroRules { .. }
+        | ItemKind::DeclarativeMacro { .. }
         | ItemKind::MacroInvocation(_) => Position::Other,
     }
 }
