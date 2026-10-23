@@ -42,6 +42,16 @@ PA31 manifest or whole-core acceptance. See the
 
 Required families: lang-item identity and signatures; intrinsic declarations and const eligibility; builtin expansion and capability answers; duplicate and forged bindings; panic-abort runtime boundary.
 
+`spec/source-const-callable/` retains the unchanged const function-item/u8
+callback positive, runtime pointer opposites, declared root-entry controls and
+8/32/128 repeated reached calls. Its contract records twelve independent
+source/object outcomes and nine native expectations. Grouped `provider_traits`
+tests use the sources directly; actual candidate execution, per-use payment,
+private ownership checks and native observations remain distinct. The callback
+with its own Conditional debt is Rust-positive and remains required beyond the
+first executable profile. See the
+[const callable review](../../docs/pa31-const-callable-execution.md).
+
 Follow the [owning brief](../README.md) and
 [library bootstrap plan](../../docs/library-bootstrap-roadmap.md).
 Declare independent outcomes before creating text references. Register every

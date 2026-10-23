@@ -10,6 +10,9 @@ mod imported_tests;
 mod initializers;
 mod inputs;
 mod layout_kernel;
+#[cfg(test)]
+#[path = "../../tests/helpers/materialized_bodies.rs"]
+pub(crate) mod materialized_bodies;
 mod needs_drop_kernel;
 mod parent_children;
 mod parent_scope;
@@ -519,7 +522,7 @@ impl Engine {
             report.body_error(source, "constant CFG lender is preparing another body")
         })?;
         if let Some(body) = stored.get(&BodyKey::Declaration(definition)) {
-            body::constants::eligibility(report, facts, body)?;
+            body::constants::eligibility_charged(report, facts, body)?;
             let mut needed = crate::types::destruction::NeedsDrop::new(
                 facts.destructors.implementations().iter().map(|i| i.item),
             );
@@ -769,6 +772,10 @@ impl Engine {
         let contract = prepared.as_ref().unwrap_or(input.contract);
         let regions = Self::source_regions(report, facts, body, contract)?;
         self.prove_loans(report, facts, body, destruction, input.parameters, &regions)?;
+        #[cfg(test)]
+        if input.purpose == ProofPurpose::Code {
+            materialized_bodies::record(body).map_err(|e| report.body_error(body.source, e))?;
+        }
         let retained = if input.purpose == ProofPurpose::Code
             && const_eval::use_inputs::Inputs::needs(facts, body)
                 .map_err(|e| report.body_error(body.source, e))?

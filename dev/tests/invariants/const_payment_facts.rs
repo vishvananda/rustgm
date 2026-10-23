@@ -28,12 +28,12 @@ fn closed_const_requirements_preserve_effects_and_environment_identity() -> Resu
     let instance = Instance::new(&facts.types, ty)?;
     assert!(prepare(&mut facts, instance, 0).is_err());
     let requirements = prepare(&mut facts, instance, 64 * 1024 * 1024)?;
-    assert!(
-        requirements
-            .goals
-            .iter()
-            .all(|g| matches!(g.bound, Bound::ConstTrait(_)))
-    );
+    for &clause in &requirements.goals {
+        assert!(matches!(
+            closed_clause(&facts.types, clause)?.bound,
+            Bound::ConstTrait(_)
+        ));
+    }
     assert_eq!(
         crate::sema::compiler_items::calls::declared_effect_for_test(&mut facts, definition)?,
         Effect::Conditional

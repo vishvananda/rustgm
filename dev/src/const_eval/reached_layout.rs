@@ -95,6 +95,26 @@ pub(super) fn checked_direct_call(
     target: Instance,
     contract: (crate::resolve::model::DefId, Primitive),
 ) -> Result<(), &'static str> {
+    let arguments = checked_call_arguments(facts, body, frame, position, target, contract)?;
+    if !body
+        .arguments
+        .get(arguments.start as usize..arguments.end as usize)
+        .is_some_and(<[ValueId]>::is_empty)
+    {
+        return Err("source intrinsic call differs from its checked const contract");
+    }
+    Ok(())
+}
+
+/// Shared structural shape; intrinsic callers separately enforce zero arguments.
+pub(super) fn checked_call_arguments(
+    facts: &Declarations,
+    body: &Code,
+    frame: &Frame,
+    position: u32,
+    target: Instance,
+    contract: (crate::resolve::model::DefId, Primitive),
+) -> Result<crate::body::ir::ValueList, &'static str> {
     let block = body
         .blocks
         .get(frame.block.0 as usize)
@@ -134,10 +154,6 @@ pub(super) fn checked_direct_call(
             .values
             .get(callee.0 as usize)
             .is_none_or(|v| v.ty != target.ty())
-        || !body
-            .arguments
-            .get(arguments.start as usize..arguments.end as usize)
-            .is_some_and(<[ValueId]>::is_empty)
         || Machine::value(frame, callee)
             .map_err(|_| "source intrinsic call has no evaluated callee")?
             .as_function()
@@ -145,7 +161,10 @@ pub(super) fn checked_direct_call(
     {
         return Err("source intrinsic call differs from its checked const contract");
     }
-    Ok(())
+    body.arguments
+        .get(arguments.start as usize..arguments.end as usize)
+        .ok_or("source const call has invalid arguments")?;
+    Ok(arguments)
 }
 
 #[cfg(test)]

@@ -281,59 +281,53 @@ impl Machine<'_, '_> {
                 if let Some(variant) = self.evaluator.facts().members.constructor(definition) {
                     self.evaluator.fields(&arguments, Some(variant))?
                 } else {
-                    if !self.evaluator.facts().is_const_function(definition)
-                        || !matches!(
-                            self.evaluator
-                                .facts()
-                                .types
-                                .kind(body.values[callee.0 as usize].ty),
-                            Some(Kind::FunctionItem { .. })
-                        )
-                    {
+                    if !matches!(
+                        self.evaluator
+                            .facts()
+                            .types
+                            .kind(body.values[callee.0 as usize].ty),
+                        Some(Kind::FunctionItem { .. })
+                    ) {
                         return Err(
                             "non-const calls are not allowed during constant execution".into()
                         );
                     }
-                    crate::sema::compiler_items::check_const_drop_glue(
-                        self.evaluator.facts(),
+                    match self.function_call(
+                        &body,
+                        frame,
                         target,
-                    )?;
-                    if let Some(catalog) = self.evaluator.facts().source_bindings.as_deref() {
-                        if catalog.requires_const_payment(definition)? {
-                            if let Some(index) = self.consume_const_call(&body, frame, target)? {
-                                return Ok(Some((index, arguments, id)));
-                            }
-                            self.waiting = Some(super::Requirement::FunctionBody(target));
-                            return Ok(None);
-                        }
-                        if self.paid_call.is_some() {
-                            return Err(
-                                "source const payment changed its declaration effect".into()
-                            );
-                        }
-                        catalog.check_const_call(definition)?;
-                    }
-                    match self.source_intrinsic_call(&body, frame, target)? {
-                        super::executed_calls::Answer::Ready(value) => value,
-                        super::executed_calls::Answer::Pending => return Ok(None),
-                        super::executed_calls::Answer::Ordinary => {
-                            let Some(index) = self
-                                .bodies
-                                .functions
-                                .get(&target)
-                                .or_else(|| self.bodies.definitions.get(&definition))
-                                .copied()
-                            else {
-                                self.waiting = Some(super::Requirement::FunctionBody(target));
-                                return Ok(None);
-                            };
+                        super::function_calls::Form::Direct,
+                    )? {
+                        super::function_calls::Outcome::Constant(value) => value,
+                        super::function_calls::Outcome::Pending => return Ok(None),
+                        super::function_calls::Outcome::Enter(index) => {
                             return Ok(Some((index, arguments, id)));
                         }
                     }
                 }
             }
-            Rvalue::Invoke { .. } => {
-                return Err("call operators are not allowed during constant execution".into());
+            Rvalue::Invoke {
+                kind,
+                signature,
+                arguments,
+            } => {
+                let (target, arguments) =
+                    self.invoked_item(&body, frame, id, kind, signature, arguments)?;
+                let arguments = self.arguments(frame, arguments)?;
+                match self.function_call(
+                    &body,
+                    frame,
+                    target,
+                    super::function_calls::Form::Invoke,
+                )? {
+                    super::function_calls::Outcome::Enter(index) => {
+                        return Ok(Some((index, arguments, id)));
+                    }
+                    super::function_calls::Outcome::Pending => return Ok(None),
+                    super::function_calls::Outcome::Constant(_) => {
+                        return Err("const Invoke cannot substitute an intrinsic result".into());
+                    }
+                }
             }
             Rvalue::Unsize { value, conversion } => {
                 let value = Self::value(frame, value)?;

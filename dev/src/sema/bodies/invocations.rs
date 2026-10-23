@@ -84,6 +84,14 @@ impl Checker<'_> {
         }
     }
 
+    fn invocation_effect(&self) -> crate::support::constness::Constness {
+        if self.facts.source_bindings.is_some() {
+            self.callee_use_effect()
+        } else {
+            crate::support::constness::Constness::Ordinary
+        }
+    }
+
     fn select_invocation(
         &mut self,
         node: NodeId,
@@ -107,8 +115,12 @@ impl Checker<'_> {
             // Only the chosen kind creates caller variables. Rejected alternatives
             // must not leave unconstrained tuple holes in the body's inference graph.
             let tuple = self.variable(node, Domain::Any)?;
-            let goal =
-                Predicate::trait_application(subject, ItemId(item.0), vec![Argument::Type(tuple)]);
+            let goal = Predicate::trait_application_with_effect(
+                subject,
+                ItemId(item.0),
+                vec![Argument::Type(tuple)],
+                self.invocation_effect(),
+            );
             let first_region = self.trait_region_start(node)?;
             let selected = selection::select_available(
                 self.facts,
@@ -157,7 +169,12 @@ impl Checker<'_> {
         let tuple = probe
             .variable(Domain::Any)
             .map_err(|e| self.error(node, e))?;
-        let goal = Predicate::trait_application(subject, item, vec![Argument::Type(tuple)]);
+        let goal = Predicate::trait_application_with_effect(
+            subject,
+            item,
+            vec![Argument::Type(tuple)],
+            self.invocation_effect(),
+        );
         let first_region = self.trait_region_start(node)?;
         let selected = selection::select_available(
             self.facts,

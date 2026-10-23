@@ -7,6 +7,28 @@ use crate::{
     support::constness::Constness,
     types::{arguments::Argument, callable::Convention},
 };
+#[cfg(test)]
+#[path = "../../../../tests/invariants/invocation_roles.rs"]
+mod tests;
+
+/// Identity data only; no trait application or callable permission is proved here.
+pub(crate) fn definition(facts: &Declarations, kind: CallTrait) -> Result<DefId, &'static str> {
+    let role = match kind {
+        CallTrait::FnOnce => LangItem::FnOnce,
+        CallTrait::FnMut => LangItem::FnMut,
+        CallTrait::Fn => LangItem::Fn,
+    };
+    let declaration = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source invocation requires actual source roles")?
+        .validated_language(role)?
+        .ok_or("source invocation requires its actual callable role")?;
+    if facts.associated.callable_definition(kind) != Some(declaration.definition) {
+        return Err("source invocation changed its actual callable declaration");
+    }
+    Ok(declaration.definition)
+}
 
 pub(super) fn validate(
     report: &Report,

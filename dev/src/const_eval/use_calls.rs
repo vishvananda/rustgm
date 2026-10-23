@@ -47,7 +47,7 @@ fn inspect(
         .code(frame.body)
         .ok_or("source const caller code disappeared")?;
     let (definition, _, _, primitive) = const_payments::profile(facts, target)?;
-    super::reached_layout::checked_direct_call(
+    super::argument_witness::checked_call(
         facts,
         body,
         frame,

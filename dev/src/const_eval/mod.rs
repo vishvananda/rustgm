@@ -8,6 +8,10 @@ mod offsets;
 mod use_calls;
 pub(crate) mod use_inputs;
 pub(crate) use use_calls::Reached as ReachedConstCall;
+mod argument_witness;
+mod entry_policy;
+mod function_calls;
+mod operator_calls;
 mod place_cache;
 mod raw_reads;
 mod reached_drop;
@@ -197,6 +201,8 @@ impl<'a, 'b> Machine<'a, 'b> {
         {
             return Ok(value);
         }
+        self.check_source_function_root(index)
+            .map_err(|failure| self.error(index, failure))?;
         self.push(index, arguments, None)
             .map_err(|failure| self.error(index, failure))?;
         match self.advance()? {
@@ -232,6 +238,8 @@ impl<'a, 'b> Machine<'a, 'b> {
         (state, self.evaluator.into_scratch())
     }
     pub(crate) fn begin(&mut self, index: usize, arguments: &[Constant]) -> Result<(), Error> {
+        self.check_source_function_root(index)
+            .map_err(|failure| self.error(index, failure))?;
         self.push(index, arguments, None)
             .map_err(|failure| self.error(index, failure))
     }

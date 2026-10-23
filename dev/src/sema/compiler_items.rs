@@ -15,6 +15,7 @@ mod layout;
 mod needs_drop;
 pub(crate) use copying::copy_decisions;
 mod roles;
+pub(crate) use roles::callable_role;
 pub(crate) use roles::{destruct_predicate, drop_glue_member, freeze_predicate};
 pub(crate) use roles::{unsizing_predicate, unsizing_role};
 mod sizing;
@@ -46,6 +47,23 @@ pub(crate) struct Catalog {
     attributes: [crate::resolve::bindings::HeaderAttributes; LangItem::ALL.len()],
 }
 impl Catalog {
+    /// A provider catalog cannot authenticate a different source report or mode.
+    pub(crate) fn require_provider_report(&self, report: &Report) -> Result<(), &'static str> {
+        let source = report.package.source_core.as_deref()
+            .ok_or("source catalog requires its actual provider report; SourceClient mode is not implemented")?;
+        let reserved = report
+            .resolution
+            .source_bindings
+            .as_deref()
+            .ok_or("source provider report has no reserved declaration identities")?;
+        if source.provider != self.provider
+            || source.current != self.provider
+            || reserved.provider != self.provider
+        {
+            return Err("source catalog belongs to another provider report");
+        }
+        Ok(())
+    }
     pub(crate) fn reserve(report: &Report) -> Result<Option<Box<Self>>, Error> {
         let Some(reserved) = report.resolution.source_bindings.as_deref() else {
             if report.package.source_core.is_some() {

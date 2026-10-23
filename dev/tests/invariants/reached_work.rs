@@ -15,7 +15,8 @@ fn replay(
     catalog: &Catalog,
     rows: &Inputs,
     root: usize,
-) -> TestResult<(usize, usize)> {
+    answer: u128,
+) -> TestResult<(usize, usize, usize)> {
     let before = facts.body_work.canonical_steps;
     let mut pending = None;
     let mut payments = 0;
@@ -29,9 +30,13 @@ fn replay(
         }
         match machine.advance().map_err(|e| e.message)? {
             Progress::Complete(value) => {
-                assert_eq!(value.as_scalar()?, crate::sema::model::Scalar::Integer(7));
+                assert_eq!(
+                    value.as_scalar()?,
+                    crate::sema::model::Scalar::Integer(answer)
+                );
+                let executed = machine.work().steps;
                 drop(machine);
-                return Ok((payments, facts.body_work.canonical_steps - before));
+                return Ok((payments, facts.body_work.canonical_steps - before, executed));
             }
             Progress::Prepare(Requirement::FunctionBody(target)) => {
                 let (mut state, _) = machine.suspend();
@@ -47,8 +52,21 @@ fn replay(
         }
     }
 }
-fn observe(name: &str, expected: usize, requirements: usize) -> TestResult<(usize, usize, usize)> {
-    let report = crate::test_source::source_provider(&fixture(name)?, "const_payment_work")?;
+fn observe(
+    name: &str,
+    expected: usize,
+    requirements: usize,
+) -> TestResult<(usize, usize, usize, usize)> {
+    observe_source(name, &fixture(name)?, expected, requirements, 7)
+}
+fn observe_source(
+    name: &str,
+    source: &str,
+    expected: usize,
+    requirements: usize,
+    answer: u128,
+) -> TestResult<(usize, usize, usize, usize)> {
+    let report = crate::test_source::source_provider(source, "const_payment_work")?;
     let crate::pipeline::Analysis {
         mut facts,
         prepared,
@@ -69,13 +87,14 @@ fn observe(name: &str, expected: usize, requirements: usize) -> TestResult<(usiz
     context.inspect_const_call(Target::Initializer(definition), |catalog, rows, root| -> TestResult<_> {
         let storage = rows.observations();
         assert_eq!(storage.1, requirements);
-        let (first, work) = replay(&report, &mut facts, catalog, rows, root)?;
-        let (second, warm) = replay(&report, &mut facts, catalog, rows, root)?;
+        let (first, work, executed) = replay(&report, &mut facts, catalog, rows, root, answer)?;
+        let (second, warm, warmed_execution) = replay(&report, &mut facts, catalog, rows, root, answer)?;
         assert_eq!(first, expected); assert_eq!(second, expected);
         assert_eq!(rows.observations(), storage);
         assert!(work > 0 && warm > 0);
-        println!("{name}: payments={first}/{second} work={work}/{warm} rows={} requirements={} bytes={}", storage.0, storage.1, storage.2);
-        Ok((warm, storage.1, storage.2))
+        assert_eq!(executed, warmed_execution);
+        println!("{name}: payments={first}/{second} work={work}/{warm} executed={executed}/{warmed_execution} rows={} requirements={} bytes={}", storage.0, storage.1, storage.2);
+        Ok((warm, storage.1, storage.2, warmed_execution))
     })?
 }
 #[test]
@@ -105,5 +124,34 @@ fn reached_calls_instances_and_unrelated_materialization_have_bounded_work() -> 
         observe("unrelated-noise-0", 8, 1)?,
         observe("unrelated-noise-128", 8, 1)?
     );
+    Ok(())
+}
+#[test]
+fn function_item_argument_and_invoke_replays_pay_at_every_reached_use() -> TestResult {
+    let mut previous = None;
+    for calls in [8, 32, 128] {
+        let name = format!("repeated-{calls}");
+        let source = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../pa31/tests/spec/source-const-callable/work")
+                .join(format!("{name}.rs")),
+        )?;
+        let measured = observe_source(&name, &source, calls, 1, 29)?;
+        if let Some((work, bytes, execution)) = previous {
+            assert!(
+                measured.0 <= work * 5,
+                "argument-bearing repeated prefix work"
+            );
+            assert!(
+                measured.2 <= bytes * 5,
+                "argument-bearing retained prefix growth"
+            );
+            assert!(
+                measured.3 <= execution * 5,
+                "argument-bearing repeated execution work"
+            );
+        }
+        previous = Some((measured.0, measured.2, measured.3));
+    }
     Ok(())
 }

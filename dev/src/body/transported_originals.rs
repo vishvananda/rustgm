@@ -310,7 +310,7 @@ fn row(
     )
     .map_err(|e| report.body_error(source, e))?;
     crate::body::promote::instance_reusing(report, facts, &mut body, &destruction, scratch)?;
-    crate::body::constants::eligibility(report, facts, &body)?;
+    crate::body::constants::eligibility_charged(report, facts, &body)?;
     let template = Template {
         body,
         destruction,

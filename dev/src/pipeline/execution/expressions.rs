@@ -174,7 +174,7 @@ impl Engine {
         {
             return Err(report.body_error(source, "lent inline CFG identity or result changed"));
         }
-        body::constants::eligibility(report, facts, body)?;
+        body::constants::eligibility_charged(report, facts, body)?;
         let mut needed = crate::types::destruction::NeedsDrop::new(
             facts.destructors.implementations().iter().map(|i| i.item),
         );

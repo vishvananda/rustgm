@@ -13,6 +13,8 @@ use rustgm::{
 use std::path::Path;
 #[path = "provider_traits/borrowed_destructors.rs"]
 mod borrowed_destructors;
+#[path = "provider_traits/callback_execution.rs"]
+mod callback_execution;
 #[path = "provider_traits/cases.rs"]
 mod cases;
 #[path = "provider_traits/const_contexts.rs"]

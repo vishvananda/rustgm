@@ -244,7 +244,7 @@ fn original_full_typed_source_sizing_depths_keep_native_seven() -> TestResult {
     Ok(())
 }
 
-fn execute(folder: &Path, name: &str, source: &str, expected: u8) -> TestResult {
+pub(super) fn execute(folder: &Path, name: &str, source: &str, expected: u8) -> TestResult {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("root")?;

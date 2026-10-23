@@ -114,7 +114,7 @@ impl Engine {
                 report.body_error(source, "selected initializer materialized result changed")
             );
         }
-        body::constants::eligibility(report, facts, &concrete.body)?;
+        body::constants::eligibility_charged(report, facts, &concrete.body)?;
         body::dispatch::resolve(facts, &mut concrete.body, &mut concrete.contract)
             .map_err(|e| report.body_error(source, e))?;
         body::promote::instance_reusing(

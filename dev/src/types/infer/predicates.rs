@@ -157,10 +157,24 @@ impl Predicate {
         item: ItemId,
         arguments: Vec<Argument>,
     ) -> Self {
+        Self::trait_application_with_effect(
+            subject,
+            item,
+            arguments,
+            crate::support::constness::Constness::Ordinary,
+        )
+    }
+    /// An operation requirement's use effect, never implementation permission.
+    pub(crate) fn trait_application_with_effect(
+        subject: TermId,
+        item: ItemId,
+        arguments: Vec<Argument>,
+        constness: crate::support::constness::Constness,
+    ) -> Self {
         Self {
             subject,
             requirement: Requirement::Trait(Box::new(Trait {
-                constness: crate::support::constness::Constness::Ordinary,
+                constness,
                 item,
                 arguments,
             })),

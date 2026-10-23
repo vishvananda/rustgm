@@ -1,0 +1,128 @@
+{
+  "status": "Planned PA31 exact source FnOnce continuation; no stage activation",
+  "edition": 2024,
+  "rustc": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "rows": [
+    {
+      "name": "conditional-target-required",
+      "path": "conditional-target-required.rs",
+      "sha256": "295eedd224a1c8aa20ac68d4c1f36968448ca71530b84869f772ff1be2cfd992",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": false,
+      "mode": "--emit-lowir",
+      "status": "Declared before independent/candidate execution; conditional-target-required is valid required continuation, not a language-negative."
+    },
+    {
+      "name": "ordinary-pointer29",
+      "path": "ordinary-pointer29.rs",
+      "sha256": "d95e4e766854a77b8a9eb5a00c5a9aecceaa8c73b0883ee85fc1f88026a349d5",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "mode": "--emit-lowir",
+      "status": "Declared before execution; original positive/negative retain identical prior Rust observations."
+    },
+    {
+      "name": "original-native29",
+      "path": "original-native29.rs",
+      "sha256": "781192de892cac77522d5e1f70041d18ac34ff30a6103a96c0f45841c0fe519c",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "mode": "--emit-lowir",
+      "status": "Declared before execution; original positive/negative retain identical prior Rust observations."
+    },
+    {
+      "name": "original-nonconst-reject",
+      "path": "original-nonconst-reject.rs",
+      "sha256": "fe2923a3f3ce95a2f2db5e12bd952ea5487ed95e92a9fdfadaee1512ac15e9ed",
+      "rust_object": false,
+      "native": null,
+      "candidate_required": false,
+      "mode": "--emit-lowir",
+      "status": "Declared before execution; original positive/negative retain identical prior Rust observations."
+    },
+    {
+      "name": "runtime-nonconst29",
+      "path": "runtime-nonconst29.rs",
+      "sha256": "662150c1503344d393165a71f6138335bd281faf662ca1d043cd039ac4fc81c0",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "mode": "--emit-lowir",
+      "status": "Declared before execution; original positive/negative retain identical prior Rust observations."
+    },
+    {
+      "name": "unused-ordinary-bound-reject",
+      "path": "unused-ordinary-bound-reject.rs",
+      "sha256": "45f6536c4938358aae706300c5fccd617fe312c23bebaa085344561f9a1ba0d5",
+      "rust_object": false,
+      "native": null,
+      "candidate_required": false,
+      "mode": "--emit-lowir",
+      "status": "Declared before execution; original positive/negative retain identical prior Rust observations."
+    },
+    {
+      "name": "repeated-128",
+      "path": "work/repeated-128.rs",
+      "sha256": "c1c7283ab2e077135434b10ba6192f2cde3546082ca65dc1c779a2e5c3721bec",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "mode": "--emit-lowir",
+      "status": "Declared before execution; original positive/negative retain identical prior Rust observations."
+    },
+    {
+      "name": "repeated-32",
+      "path": "work/repeated-32.rs",
+      "sha256": "2cdb57cb3cf03a033ee398df30933122b4eff912908e7d261dc4299a9ef9d450",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "mode": "--emit-lowir",
+      "status": "Declared before execution; original positive/negative retain identical prior Rust observations."
+    },
+    {
+      "name": "repeated-8",
+      "path": "work/repeated-8.rs",
+      "sha256": "9fdf3b0b0dec205bc425c40d20dad8ba39302ebc1f46721c4d63225ea2d2bd9c",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "mode": "--emit-lowir",
+      "status": "Declared before execution; original positive/negative retain identical prior Rust observations."
+    },
+    {
+      "name": "runtime-const-helper-pointer29",
+      "path": "runtime-const-helper-pointer29.rs",
+      "sha256": "577db766f60313495082c41523aec7635ee94efe7f9a581d6b43318ae488731e",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "mode": "--emit-lowir",
+      "status": "Declared before independent/candidate execution: same defining Conditional helper is runtime-valid with a pointer, but closed Const use is invalid."
+    },
+    {
+      "name": "const-helper-pointer-reject",
+      "path": "const-helper-pointer-reject.rs",
+      "sha256": "f484ade94dac9fcc356e5efa799bd82912e5cc1b48e5d6a2c9e289e0e5059c5d",
+      "rust_object": false,
+      "native": null,
+      "candidate_required": false,
+      "mode": "--emit-lowir",
+      "status": "Declared before independent/candidate execution: same defining Conditional helper is runtime-valid with a pointer, but closed Const use is invalid."
+    },
+    {
+      "name": "ordinary-function-root7",
+      "path": "ordinary-function-root7.rs",
+      "sha256": "3aeb70e89f0550eb87abea56e11f77b66d5670cf7f34d3cb8593448ae337a6ad",
+      "rust_object": true,
+      "native": 7,
+      "candidate_required": true,
+      "mode": "--emit-lowir",
+      "status": "Declared genuine const function-root positive (ordinary where-clause), replacing a forged caller const-context bit as positive coverage."
+    }
+  ]
+}

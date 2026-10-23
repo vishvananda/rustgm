@@ -7,6 +7,7 @@ pub(crate) use destructibility::destruct_predicate;
 pub(crate) use freezing::predicate as freeze_predicate;
 pub(crate) use glue::member as drop_glue_member;
 mod invocation;
+pub(crate) use invocation::definition as callable_role;
 mod unsizing;
 use super::Catalog;
 use crate::{

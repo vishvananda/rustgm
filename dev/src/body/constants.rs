@@ -1,4 +1,5 @@
 //! Complete named values required by typed bodies before the read-only lowerer.
+mod invocations;
 use super::ir::{Place, Program, Rvalue};
 use crate::support::hash::HashSet;
 use crate::{
@@ -55,7 +56,7 @@ fn prepare<'a>(
         demand(id, true);
     }
     for body in bodies {
-        eligibility(report, facts, body)?;
+        eligibility_charged(report, facts, body)?;
         if matches!(body.owner, super::ir::Owner::AnonymousConstant)
             && facts.inline_constants.as_deref().is_some_and(|registry| {
                 body.source
@@ -139,13 +140,42 @@ pub(crate) fn eligibility(
     facts: &Declarations,
     body: &super::ir::Body,
 ) -> Result<(), Error> {
+    eligibility_counted(report, facts, body, &mut invocations::Work::new(1_000_000))
+}
+/// Mutable owners retain attempted preparation work even when validation fails.
+pub(crate) fn eligibility_charged(
+    report: &Report,
+    facts: &mut Declarations,
+    body: &super::ir::Body,
+) -> Result<(), Error> {
+    if !body.const_context {
+        return Ok(());
+    }
+    let mut work = invocations::Work::new(1_000_000);
+    let result = eligibility_counted(report, facts, body, &mut work);
+    if work.steps != 0 {
+        facts.body_work.canonical_steps =
+            facts.body_work.canonical_steps.saturating_add(work.steps);
+    }
+    result
+}
+fn eligibility_counted(
+    report: &Report,
+    facts: &Declarations,
+    body: &super::ir::Body,
+    work: &mut invocations::Work,
+) -> Result<(), Error> {
     if !body.const_context {
         return Ok(());
     }
     let function = matches!(body.owner, super::ir::Owner::Function { .. });
     // The CFG retains both sides of a conditional, but not source after an
     // unconditional transfer. Const permission is checked before value demand.
+    let mut operators = 0;
     for value in &body.values {
+        if matches!(value.kind, Rvalue::Invoke { .. }) {
+            operators += 1;
+        }
         let message = match value.kind {
             Rvalue::Intrinsic { intrinsic, .. }
                 if intrinsic.descriptor().constant
@@ -155,6 +185,7 @@ pub(crate) fn eligibility(
             }
             Rvalue::Call { .. } | Rvalue::Invoke { .. }
                 if matches!(value.kind, Rvalue::Invoke { .. })
+                    && facts.source_bindings.is_none()
                     || function_call(facts, body, value.kind) =>
             {
                 if function {
@@ -180,6 +211,10 @@ pub(crate) fn eligibility(
         if let Some(message) = message {
             return Err(report.diagnostic(report.body_error(body.source, message)));
         }
+    }
+    if operators != 0 {
+        invocations::check(facts, body, operators, work)
+            .map_err(|e| report.diagnostic(report.body_error(body.source, e)))?;
     }
     Ok(())
 }

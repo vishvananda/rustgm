@@ -63,7 +63,10 @@ fn source_const_call_gate_rejects_cold_and_warm_invalid_execution_attempts() -> 
         let source = if conditional {
             source.to_owned()
         } else {
-            source.replace("T:[const]Clone", "T:Clone")
+            source.replace("T:[const]Clone", "T:Clone").replace(
+                "pub extern \"C\" fn answer",
+                "pub const extern \"C\" fn answer",
+            )
         };
         for warm in [false, true] {
             let report = report(&source)?;
@@ -87,7 +90,7 @@ fn source_const_call_gate_rejects_cold_and_warm_invalid_execution_attempts() -> 
                         }
                         let caller = matches!(body.owner,body::ir::Owner::Function{definition,..}if definition==answer);
                         let mut snapshot = body.clone();
-                        if caller {
+                        if caller && conditional {
                             snapshot.const_context = true;
                         }
                         let index = catalog.insert(&snapshot)?;
@@ -105,7 +108,9 @@ fn source_const_call_gate_rejects_cold_and_warm_invalid_execution_attempts() -> 
             if conditional {
                 let error = result.err().ok_or("unpaid const execution accepted")?;
                 assert!(
-                    error.message.contains("missing demanded constant body"),
+                    error
+                        .message
+                        .contains("source function root differs from its actual const owner"),
                     "warm={warm}: {}",
                     error.message
                 );

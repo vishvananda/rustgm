@@ -10,14 +10,12 @@ use crate::{
         Kind, Primitive, TypeId,
         infer::{Context, Instantiation},
         instance::Instance,
-        parameters::{
-            clauses::Clause,
-            environment::Environment,
-            predicates::{Bound, Predicate},
-        },
+        parameters::{clauses::Clause, environment::Environment, predicates::Bound},
     },
 };
 use std::sync::Arc;
+mod closed_inputs;
+use closed_inputs::{closed_arguments, closed_clause, open_closed_clause};
 
 /// Immutable materialization data, without caller permission or a selected proof.
 pub(crate) struct Requirements {
@@ -26,7 +24,7 @@ pub(crate) struct Requirements {
     signature: TypeId,
     result: Primitive,
     environment: Arc<Environment>,
-    goals: Vec<Predicate>,
+    goals: Vec<Clause>,
 }
 /// Fresh semantic success is still not an interpreter execution token.
 /// The later owner binds it to one checked caller statement and consumes it.
@@ -145,15 +143,12 @@ pub(crate) fn profile(
         return Err("source const payment currently requires a primitive result");
     };
     if primitive == Primitive::Str
-        || !facts
-            .types
-            .list(parameters)
-            .is_some_and(<[TypeId]>::is_empty)
+        || !closed_arguments(&facts.types, parameters)?
         || !facts.types.arguments_are_concrete(arguments)?
         || facts.types.needs_region_context(instance.ty()) != Some(false)
     {
         return Err(
-            "source const payment for open, argument-bearing or lifetime-bearing calls is not implemented",
+            "source const payment for this open, lifetime-bearing or argument shape is not implemented",
         );
     }
     Ok((definition, signature, arguments, primitive))
@@ -177,8 +172,8 @@ pub(crate) fn prepare(
         .declared_predicates_in_scope(definition)
         .count();
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(count);
-    let storage = size_of::<Requirements>()
-        .saturating_add(count.saturating_mul(size_of::<Clause>() + size_of::<Predicate>()));
+    let storage =
+        size_of::<Requirements>().saturating_add(count.saturating_mul(size_of::<Clause>() * 2));
     if storage > budget {
         return Err("source const-call requirements exceed retained storage budget");
     }
@@ -191,35 +186,30 @@ pub(crate) fn prepare(
     for clause in clauses {
         facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
         let predicate = match clause {
-            Clause::Predicate(p) => p,
+            Clause::Predicate(predicate) => predicate,
             Clause::ForAll(id) => {
-                let p = facts
+                facts
                     .types
                     .quantified(id)
                     .ok_or("source const clause binder is missing")?
-                    .predicate;
-                if matches!(p.bound, Bound::MaybeConstTrait(_)) {
-                    return Err("quantified source const-call payment is not implemented");
-                }
-                continue;
+                    .predicate
             }
         };
-        let Bound::MaybeConstTrait(application) = predicate.bound else {
+        if !matches!(predicate.bound, Bound::MaybeConstTrait(_)) {
             continue;
-        };
-        let mapped = facts.generics.substitute_clause(
+        }
+        closed_clause(&facts.types, clause)?;
+        let copied = crate::sema::traits::effects::in_context(
             &mut facts.types,
-            definition,
-            arguments,
-            Clause::Predicate(Predicate {
-                bound: Bound::ConstTrait(application),
-                ..predicate
-            }),
+            clause,
+            crate::support::constness::Constness::Const,
         )?;
-        let Clause::Predicate(mapped) = mapped else {
-            return Err("source const payment changed its clause binder");
-        };
-        if !mapped.is_concrete(&facts.types)? || mapped.contains_projections(&facts.types)? {
+        let mapped =
+            facts
+                .generics
+                .substitute_clause(&mut facts.types, definition, arguments, copied)?;
+        let predicate = closed_clause(&facts.types, mapped)?;
+        if !predicate.is_concrete(&facts.types)? || predicate.contains_projections(&facts.types)? {
             return Err("source const payment requires closed normalized obligations");
         }
         goals.push(mapped);
@@ -244,7 +234,8 @@ pub(crate) fn pay(
     requirements.matches(facts, requirements.instance)?;
     let (assumptions, work) = Assumptions::from_environment(&facts.types, caller.map(Arc::as_ref))?;
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
-    for &predicate in &requirements.goals {
+    for &clause in &requirements.goals {
+        let predicate = open_closed_clause(facts, clause)?;
         let mut context = Context::default();
         let mut fold = Instantiation::new(&mut context, &facts.types, &[])
             .map_err(|_| "source const goal instantiation failed")?;
