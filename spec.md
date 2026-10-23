@@ -176,8 +176,17 @@ Ordinary non-hook bodies allocate no adapter query. A dropless answer requires
 the same immutable type/definition inventory and completed empty registry;
 missing structural or proof data is not evidence of no destruction. Keep sized
 thin-reference cleanup distinct from required unsized metadata, owned-box order
-and constant-evaluation cleanup. The [runtime checkpoint](docs/pa31-source-drop-glue.md)
-records its accepted consumers and remaining boundaries.
+and constant-evaluation cleanup. Slice cleanup retains one proved element recipe
+and consumes the actual length-bearing wide reference. Validate the selected
+reference layout before loading its data/length pair; preserve the public Rust
+ABI and pass that pair only to the internal cleanup entry. Share the ascending
+array/slice loop without enumerating runtime elements during compilation.
+Zero length executes no destructor, while zero stride still executes once per
+logical element. Complete-empty cleanup still requires its ordinary proof and
+registry checks. Keep recipe traversal, emitted code and inherited dense query
+storage measurements distinct. The [sized runtime checkpoint](docs/pa31-source-drop-glue.md)
+and [slice continuation](docs/pa31-slice-drop-glue.md) record these boundaries;
+dynamic trait-object, owned-box and CTFE cleanup remain required.
 Internal features active in an earlier library must work then, regardless of
 later broad edition/target closure. Measure complete library time and peak memory
 as well as changed-path scaling, with existing resource and cleanup limits.
