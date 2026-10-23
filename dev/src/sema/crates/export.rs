@@ -74,6 +74,7 @@ pub(crate) fn export_with_originals(
     for (definition, external) in plan.owned {
         match report.resolution.definitions[definition.0 as usize].kind {
             DefKind::Function => {
+                lifetime_profile(facts, definition)?;
                 if needs_original(facts, definition) {
                     if facts.target_feature_functions.contains(&definition) {
                         return Err(error(
@@ -157,15 +158,23 @@ fn needs_original(facts: &Declarations, definition: DefId) -> bool {
             .parameters_in_scope(definition)
             .any(|p| !matches!(p.argument, Argument::Lifetime(_)))
         || facts
-            .lifetimes
-            .functions
-            .get(&definition)
-            .is_some_and(|s| s.captures != 0 || !s.early.is_empty() || !s.bounds.is_empty())
-        || facts
             .generics
             .predicates_in_scope(definition)
             .next()
             .is_some()
+}
+fn lifetime_profile(facts: &Declarations, definition: DefId) -> Result<(), Error> {
+    if facts
+        .lifetimes
+        .functions
+        .get(&definition)
+        .is_some_and(|s| s.captures != 0 || !s.early.is_empty() || !s.bounds.is_empty())
+    {
+        return Err(error(
+            "early lifetime parameters and explicit bounds are outside the metadata profile",
+        ));
+    }
+    Ok(())
 }
 fn validate_original_exports(
     requests: &[GenericRequest],
@@ -284,17 +293,10 @@ fn callable(report: &Report, facts: &Declarations, definition: DefId) -> Result<
         ));
     }
     if facts
-        .lifetimes
-        .functions
+        .generics
+        .predicates
         .get(&definition)
-        .is_some_and(|scheme| {
-            scheme.captures != 0 || !scheme.early.is_empty() || !scheme.bounds.is_empty()
-        })
-        || facts
-            .generics
-            .predicates
-            .get(&definition)
-            .is_some_and(|predicates| !predicates.is_empty())
+        .is_some_and(|predicates| !predicates.is_empty())
     {
         return Err(error(
             "early lifetime parameters and explicit bounds are outside the metadata profile",

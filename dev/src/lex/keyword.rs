@@ -242,6 +242,6 @@ mod tests {
         assert_eq!(Word::classify(b"macro_rules"), Word::MacroRules);
         assert_eq!(Word::classify(b"safe"), Word::Safe);
         assert_eq!(Word::classify(b"raw"), Word::Raw);
-        assert_eq!(Word::classify(b"auto"), Word::Other);
+        assert_eq!(Word::classify(b"auto"), Word::Auto);
     }
 }
