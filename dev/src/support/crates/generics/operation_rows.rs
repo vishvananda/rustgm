@@ -23,9 +23,16 @@ pub struct Projection {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct OwnedRegion {
-    pub scope: u32,
     pub site: u32,
-    pub needs_provenance: bool,
+    pub allocation: RegionAllocation,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RegionAllocation {
+    Inference {
+        needs_provenance: bool,
+    },
+    /// Ordinal of the exact owning raw normalization input in this body.
+    Normalization(u32),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ValueKind {

@@ -14,6 +14,12 @@ use crate::support::{
 pub use operations::Relation;
 pub use rows::*;
 
+/// Readers distinguish supported representations without inventing legacy rows.
+pub enum PayloadView<'a> {
+    Legacy(&'a Rows),
+    Source(&'a source::ValidatedRows),
+}
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Work {
     pub steps: usize,
@@ -48,6 +54,12 @@ impl PartialEq for Payload {
 }
 impl Eq for Payload {}
 impl Payload {
+    /// Existing payload construction supports legacy rows only. Source dispatch
+    /// is wired only when its complete validator can mint ValidatedRows.
+    #[must_use]
+    pub const fn view(&self) -> PayloadView<'_> {
+        PayloadView::Legacy(&self.rows)
+    }
     /// Work is charged even on failure; no partial payload is returned.
     /// # Errors
     /// Rejects malformed owners, roots, operations and bounded storage/work.

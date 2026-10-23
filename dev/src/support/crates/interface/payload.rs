@@ -2,6 +2,14 @@
 use super::{Interface, MAX_COMPONENTS, MAX_NAME_BYTES};
 use crate::support::crates::generics;
 impl Interface {
+    /// A legacy or incomplete source artifact cannot authenticate source mode.
+    #[must_use]
+    pub fn source_descriptor(&self) -> Option<super::super::generics::source::Descriptor<'_>> {
+        match self.generic_payload.as_deref()?.view() {
+            generics::PayloadView::Legacy(_) => None,
+            generics::PayloadView::Source(source) => Some(source.descriptor()),
+        }
+    }
     /// Owned headers/boxes/strings count even when immutable. Canonical shared
     /// identity and type-graph Arc pointees retain the existing exclusion.
     pub(crate) fn base_retained_bytes(&self) -> usize {

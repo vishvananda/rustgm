@@ -12,6 +12,7 @@ mod scalar_value;
 mod type_graph;
 pub use codec::{SCHEMA, decode, encode};
 pub use dependencies::{Dependencies, Dependency};
+pub use generics::source::{Descriptor as SourceDescriptor, Profile as SourceProfile};
 pub use globals::{
     Static, StaticRef, Storage, StorageOrigin, StoredKind, StoredProjection, StoredValue, ValueRef,
 };

@@ -1,6 +1,10 @@
 //! Raw source contracts retain complete requests; only validation can publish data.
 #[path = "operation_rows.rs"]
 mod bodies;
+#[path = "profile_descriptor.rs"]
+mod descriptor;
+#[path = "relation_inputs.rs"]
+mod inputs;
 #[path = "slot_domains.rs"]
 mod scopes;
 use super::{BinderRef, Range, Signature, TypeRef};
@@ -14,6 +18,8 @@ use crate::support::{
     edition::Edition,
 };
 pub use bodies::*;
+pub use descriptor::{Descriptor, Profile, ValidatedRows};
+pub use inputs::*;
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -82,11 +88,16 @@ pub struct ParameterScope {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BinderKind {
+    /// Actual trait/impl declaration frame, including implicit captured regions.
+    DeclarationHeader,
     OriginalFunction,
     PublicFunction,
     Clause,
     CallableType,
-    CallSignature { body: BodyRef, value: u32 },
+    CallSignature {
+        body: BodyRef,
+        value: u32,
+    },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Binder {
@@ -303,5 +314,6 @@ pub struct Rows {
     pub member_links: Vec<MemberLink>,
     pub roles: Vec<RoleBinding>,
     pub originals: Vec<Original>,
+    pub body_inputs: Vec<BodyInputs>,
 }
 pub type SourceRows = Rows;
