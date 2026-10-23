@@ -62,10 +62,16 @@ impl Context<'_> {
         if let Some(Some(symbol)) = self.drop_symbols.get(id.0 as usize) {
             return Ok(*symbol);
         }
-        self.destruction
+        let recipe = self
+            .destruction
             .and_then(|proof| proof.recipes().get(id))
             .ok_or("missing proved destructor recipe")?;
-        let signature = self.output.signature(&[Type::Ptr], Type::Void, false)?;
+        let parameters: &[Type] = if matches!(recipe.kind, glue::Shape::Slice { .. }) {
+            &[Type::Ptr, Type::I64]
+        } else {
+            &[Type::Ptr]
+        };
+        let signature = self.output.signature(parameters, Type::Void, false)?;
         let symbol = self.output.declare(
             self.internal_name(format!("rg.drop.{}", id.0)),
             signature,

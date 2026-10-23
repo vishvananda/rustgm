@@ -24,6 +24,8 @@ pub enum Shape {
     Variants(Range),
     /// Iterate in ascending index order, including zero-sized elements.
     Array { element: Id, length: u64 },
+    /// Runtime element count comes from the selected wide reference.
+    Slice { element: Id },
 }
 /// Generic recipes require a concrete method selection before emission.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -59,6 +61,21 @@ pub struct Recipes {
     exposed: crate::support::hash::HashMap<TypeId, Option<Id>>,
 }
 impl Recipes {
+    /// The selected element must share the catalog's exact canonical recipe key.
+    pub(crate) fn slice(&self, types: &Store, id: Id) -> Result<(TypeId, Id), &'static str> {
+        let recipe = self.get(id).ok_or("missing slice cleanup recipe")?;
+        let (Some(Kind::Slice(element)), Shape::Slice { element: child }) =
+            (types.kind(recipe.ty), recipe.kind)
+        else {
+            return Err("slice cleanup requires its exact slice recipe type");
+        };
+        let child_type = self.get(child).ok_or("missing slice cleanup child")?.ty;
+        if recipe.method.is_some() || recipe_key(types, element)? != recipe_key(types, child_type)?
+        {
+            return Err("slice cleanup child belongs to another selected element");
+        }
+        Ok((element, child))
+    }
     pub(crate) fn exposed(&self, ty: TypeId) -> Result<Option<Id>, &'static str> {
         self.exposed
             .get(&ty)
@@ -173,16 +190,7 @@ impl<'a> Catalog<'a> {
         self.result(ty)
     }
     fn key(&self, ty: TypeId) -> Result<Key, &'static str> {
-        let ty = self.types.storage_head(ty)?;
-        self.types
-            .kind(ty)
-            .map(|kind| match kind {
-                Kind::Adt(item, args) if self.types.region_args(args).is_some() => {
-                    Key::Nominal(item)
-                }
-                _ => Key::Structural(ty),
-            })
-            .ok_or("invalid destruction recipe type")
+        recipe_key(self.types, ty)
     }
     fn result(&self, ty: TypeId) -> Result<Option<Id>, &'static str> {
         match self.cache.states.get(&self.key(ty)?) {
@@ -222,7 +230,7 @@ impl<'a> Catalog<'a> {
                 .kind(ty)
                 .ok_or("invalid destruction recipe type")?
             {
-                Kind::Array { element, .. } => self.schedule(element)?,
+                Kind::Array { element, .. } | Kind::Slice(element) => self.schedule(element)?,
                 Kind::Tuple(list) => self.schedule_fields(list)?,
                 Kind::Closure { environment, .. } => {
                     let Some(Kind::Tuple(list)) = self.types.kind(environment) else {
@@ -283,6 +291,11 @@ impl<'a> Catalog<'a> {
                     .result(element)?
                     .ok_or("missing array element destruction")?,
                 length,
+            },
+            Kind::Slice(element) => Shape::Slice {
+                element: self
+                    .result(element)?
+                    .ok_or("missing slice element destruction")?,
             },
             Kind::Tuple(list) => self.tuple_fields(list)?,
             Kind::Closure { environment, .. } => {
@@ -410,4 +423,14 @@ impl<'a> Catalog<'a> {
 }
 fn compact(value: usize) -> Result<u32, &'static str> {
     u32::try_from(value).map_err(|_| "too many destruction recipe entries")
+}
+fn recipe_key(types: &Store, ty: TypeId) -> Result<Key, &'static str> {
+    let ty = types.storage_head(ty)?;
+    types
+        .kind(ty)
+        .map(|kind| match kind {
+            Kind::Adt(item, args) if types.region_args(args).is_some() => Key::Nominal(item),
+            _ => Key::Structural(ty),
+        })
+        .ok_or("invalid destruction recipe type")
 }

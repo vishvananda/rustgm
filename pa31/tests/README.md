@@ -56,3 +56,9 @@ and unrelated-definition inputs. The grouped `provider_traits` source/native
 tests and private `reached_work` controls consume them; the Rust-positive
 conditional intrinsic stays explicitly unsupported. No references or PA31
 activation are implied. See [the per-use payment review](../../docs/pa31-reached-const-payment.md).
+
+`spec/drop-glue-slices/` retains the original ZST slice helper and14 independently
+settled runtime/borrow controls. Grouped `glue_provider::unsized_elements` tests
+own its focused source/native coverage. The worker slice implementation is focused source/native qualified; combined
+publication is separate. Dyn, owned Box and CTFE remain required work.
+See [the slice-helper boundary](../../docs/pa31-slice-drop-glue.md).

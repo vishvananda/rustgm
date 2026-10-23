@@ -13,6 +13,10 @@ pub(super) enum Key {
     Nominal(ItemId),
     Structural(TypeId),
 }
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/slice_recipes.rs"]
+mod tests;
 #[derive(Clone, Copy)]
 pub(super) enum State {
     Active,

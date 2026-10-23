@@ -3,6 +3,8 @@ use crate::provider_traits::{TestResult, lower};
 use std::path::Path;
 #[path = "glue_provider/answers.rs"]
 mod answers;
+#[path = "glue_provider/unsized_elements.rs"]
+mod unsized_elements;
 
 const POSITIVE: &[(&str, &str)] = &[
     ("original-cleanup-count", "7\n"),

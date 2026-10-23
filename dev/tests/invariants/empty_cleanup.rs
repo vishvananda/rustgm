@@ -136,3 +136,56 @@ fn empty_cleanup_never_publishes_missing_heads_or_copy_flags_as_false() -> Resul
     );
     Ok(())
 }
+
+#[test]
+fn empty_slice_cleanup_requires_fresh_exact_element_readiness() -> Result<(), &'static str> {
+    let mut types = Store::default();
+    let definitions = Definitions::default();
+    let byte = TypeId::primitive(Primitive::U8);
+    let slice = types.intern(Kind::Slice(byte))?;
+    let opaque = types.declare_opaque(opaque::Declaration {
+        trait_result: false,
+        sized: true,
+        copies: copy::Properties {
+            copy: true,
+            clone_: true,
+        },
+    })?;
+    let pending = types.intern(Kind::Opaque(opaque, GenericArgs::EMPTY))?;
+    let pending_slice = types.intern(Kind::Slice(pending))?;
+    {
+        let mut state = State {
+            types: &types,
+            definitions: &definitions,
+            definition: None,
+            empty: None,
+        };
+        state.dropless(&types, &definitions, slice, true, LIMIT)?;
+        let before = state.empty.as_deref().ok_or("query")?.steps;
+        for _ in 0..128 {
+            state.dropless(&types, &definitions, slice, true, LIMIT)?;
+        }
+        assert_eq!(state.empty.as_deref().ok_or("query")?.steps, before + 128);
+        assert!(
+            state
+                .dropless(&types, &definitions, slice, false, LIMIT)
+                .is_err()
+        );
+        for _ in 0..128 {
+            assert!(
+                state
+                    .dropless(&types, &definitions, pending_slice, true, LIMIT)
+                    .is_err()
+            );
+        }
+    }
+    types.publish_storage_head(pending, byte)?;
+    let mut fresh = State {
+        types: &types,
+        definitions: &definitions,
+        definition: None,
+        empty: None,
+    };
+    fresh.dropless(&types, &definitions, pending_slice, true, LIMIT)?;
+    Ok(())
+}

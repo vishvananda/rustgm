@@ -74,6 +74,7 @@ impl Dependencies {
                         glue::Shape::Array { element, length } if length != 0 => {
                             work.push(Work::Recipe(element));
                         }
+                        glue::Shape::Slice { element } => work.push(Work::Recipe(element)),
                         glue::Shape::Fields(fields) => self.fields(recipes, fields, &mut work)?,
                         glue::Shape::Variants(variants) => {
                             for variant in recipes

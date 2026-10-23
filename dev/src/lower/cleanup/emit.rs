@@ -70,6 +70,11 @@ impl Emitter<'_, '_> {
     }
     pub fn recipe(&mut self, id: glue::Id) -> Result<(), &'static str> {
         let recipe = *self.recipes()?.get(id).ok_or("invalid cleanup recipe")?;
+        if let glue::Shape::Slice { .. } = recipe.kind {
+            let (element, child) = self.recipes()?.slice(self.context.types, id)?;
+            self.slice(element, child)?;
+            return self.run();
+        }
         let layout = self.context.layout(recipe.ty)?;
         let base = Address {
             operand: Operand::Parameter(0),
@@ -104,6 +109,7 @@ impl Emitter<'_, '_> {
             glue::Shape::Array { element, length } => {
                 self.array(Target::Glue(element), recipe.ty, base, 0, length)?;
             }
+            glue::Shape::Slice { .. } => return Err("slice cleanup lost its wide entry"),
         }
         self.run()
     }
@@ -437,8 +443,43 @@ impl Emitter<'_, '_> {
             self.state.work.push(Work::Drop(target, element, base));
             return Ok(());
         }
-        let slot = self.builder.slot(Type::I64)?;
         let initial = self.builder.integer(Type::I64, u128::from(start))?;
+        let limit = self.builder.integer(Type::I64, u128::from(end))?;
+        self.repeat(target, element, base, stride, initial, limit)
+    }
+    fn slice(&mut self, element: TypeId, child: glue::Id) -> Result<(), &'static str> {
+        if self.context.types.is_sized(element) != Some(true) {
+            return Err("slice cleanup requires a completed sized element");
+        }
+        let layout = self.context.layout(element)?;
+        let base = Address {
+            operand: Operand::Parameter(0),
+            align: layout.align,
+        };
+        let initial = self.builder.integer(Type::I64, 0)?;
+        let limit = Value {
+            ty: Type::I64,
+            operand: Operand::Parameter(1),
+        };
+        self.repeat(
+            Target::Glue(child),
+            element,
+            base,
+            layout.size,
+            initial,
+            limit,
+        )
+    }
+    fn repeat(
+        &mut self,
+        target: Target,
+        element: TypeId,
+        base: Address,
+        stride: u64,
+        initial: Value,
+        limit: Value,
+    ) -> Result<(), &'static str> {
+        let slot = self.builder.slot(Type::I64)?;
         self.builder.store(initial, Operand::Slot(slot))?;
         let header = self.builder.block()?;
         let body = self.builder.block()?;
@@ -446,7 +487,6 @@ impl Emitter<'_, '_> {
         self.builder.terminate(Terminator::Jump(header))?;
         self.builder.enter(header)?;
         let index = self.builder.load(Type::I64, Operand::Slot(slot))?;
-        let limit = self.builder.integer(Type::I64, u128::from(end))?;
         let condition = self.builder.compare(Predicate::Ult, index, limit)?;
         self.builder.terminate(Terminator::Branch {
             condition: condition.operand,

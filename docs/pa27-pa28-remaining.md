@@ -222,3 +222,15 @@ Actual source Copy/Drop readiness, complete destructor preparation and fresh
 reached-caller proof precede result caching. Full Drop/Pin/default-method,
 const-drop and unresolved-storage continuations remain required as recorded in
 `pa28-source-needs-drop.md`; missing roles never imply false.
+
+The worker runtime slice-helper checkpoint now qualifies actual
+`drop_glue::<[T]>` with the retained wide-reference ABI and one runtime-length
+loop, including the unchanged ZST slice source, nonzero stride, zero count,
+reference elements, generic and reified calls. This supersedes the slice part
+of the earlier sized-only runtime boundary; central integration/publication is
+separate. Full instance/original/owned-signature proofs and completed registration
+remain mandatory. No owned-body proof flag or catalog packaging rule changes.
+Dynamic/tail cleanup, lazy exposed-only recipes, actual Box ownership/ordering,
+full Drop/Pin/default methods and CTFE cleanup remain required. See
+`pa31-slice-drop-glue.md` for exact outcomes, retained dense-query costs and the
+separate deterministic work/native evidence.

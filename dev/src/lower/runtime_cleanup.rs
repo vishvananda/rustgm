@@ -1,4 +1,5 @@
 //! Actual helper bodies consume proved recipes, never their placeholder CFG.
+mod argument_pair;
 mod empty;
 #[cfg(test)]
 #[path = "../../tests/invariants/glue_witnesses.rs"]
@@ -84,16 +85,7 @@ impl<'a> State<'a> {
             .source_drop_glue(instance)?
             .ok_or("source drop glue lost its exact actual declaration")?;
         checked(context.types, body, selection)?;
-        if context.types.is_sized(selection.element) != Some(true) {
-            return Err("unsized source drop glue requires metadata-aware cleanup");
-        }
-        context.layout(selection.element)?;
-        if !matches!(
-            context.representation(parameter(context.types, selection.signature)?)?,
-            Representation::Scalar(Type::Ptr)
-        ) {
-            return Err("source drop glue requires its selected thin-reference ABI");
-        }
+        let input = argument_pair::Input::prepare(context, selection)?;
         native_signature(context, native)?;
         let recipe = if let Some(proof) = context.destruction {
             proof.recipes().exposed(selection.element)?
@@ -111,17 +103,7 @@ impl<'a> State<'a> {
         let entry = builder.block()?;
         builder.enter(entry)?;
         if let Some(recipe) = recipe {
-            let symbol = context.demand_drop(recipe)?;
-            let signature = context.output.symbols[symbol.0 as usize].signature;
-            builder.call(
-                signature,
-                Type::Void,
-                Operand::Symbol(symbol),
-                &[Value {
-                    ty: Type::Ptr,
-                    operand: Operand::Parameter(0),
-                }],
-            )?;
+            input.call(context, &mut builder, selection.element, recipe)?;
         }
         builder.terminate(Terminator::Return(None))?;
         builder.finish().map(Some)
