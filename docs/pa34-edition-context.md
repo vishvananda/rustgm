@@ -105,9 +105,24 @@ destruction-query invariants; strict Clippy, the architecture audit and all 152
 harness tests passed. Its debug code generation took 138.68 seconds; test
 execution took 0.30 seconds. These shared-machine observations illustrate the
 reason for batching code generation, not a compiler speedup measurement.
-The subsequent opaque attribute-path correction and its new regressions await
-combined focused qualification with the next source-trait integration. Neither
-snapshot has completed the combined release/native/performance publication gate.
+The subsequent opaque attribute-path correction passed its mixed-edition
+independent plan (`b907b04c6ae9f1daf7dbbec158d3344a1dc473dfba3fec82b27e6ee6cb6ddd65`):
+two provider builds and eight source checks, all matching the declared outcomes.
+
+The combined source-trait/token-context candidate at `3da05b3c` passes all 104
+selected tests: 76 frontend and 28 private checks. The first combined run passed
+all frontend checks and 27 private checks; one closure-binding negative still
+expected the old diagnostic wording. Its updated assertion preserves the required
+rejection and passed an exact retry. The unaffected successes were retained.
+All-target/all-feature strict Clippy, architecture and harness checks pass.
+`qualification-v2` and `qualification-v3` retain both the failure and correction.
+
+That same production CLI passes all 8,362 active PA1–PA24 text comparisons in
+40.87 seconds, with no reference changes or additional Cargo invocation. The
+`combined-text-v1/course-complete.json` receipt binds the source commit and CLI
+SHA-256 `750d1f1a05178046edc7aff25b0d697eb06f3a3e4be01c3da74b5f23328f5f09`.
+Scoped cleanup keeps the source inputs, diagnostics and receipts. Combined
+release/native/performance qualification remains required before publication.
 
 ## Required continuation
 
