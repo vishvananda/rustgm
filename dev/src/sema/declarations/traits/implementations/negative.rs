@@ -5,6 +5,26 @@ use crate::{
     types::{Kind, arguments::Argument, parameters::ParameterKind},
 };
 impl Checker<'_> {
+    pub(super) fn validate_impl_polarity_profile(
+        &self,
+        source: NodeKey,
+        negative: bool,
+    ) -> Result<(), Error> {
+        if negative
+            && !self
+                .report
+                .package
+                .source_core
+                .as_deref()
+                .is_some_and(crate::resolve::bindings::SourceCore::permits_negative_impls)
+        {
+            return Err(self.error(
+                source,
+                "negative trait implementations require trait coherence",
+            ));
+        }
+        Ok(())
+    }
     pub(super) fn validate_negative_header(
         &mut self,
         owner: DefId,

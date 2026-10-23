@@ -60,19 +60,7 @@ impl Checker<'_> {
         unsafe_: bool,
         negative: bool,
     ) -> Result<(), Error> {
-        if negative
-            && !self
-                .report
-                .package
-                .source_core
-                .as_deref()
-                .is_some_and(crate::resolve::bindings::SourceCore::permits_negative_impls)
-        {
-            return Err(self.error(
-                owner.source,
-                "negative trait implementations require trait coherence",
-            ));
-        }
+        self.validate_impl_polarity_profile(owner.source, negative)?;
         let (path, definition) = self.resolved_impl_trait_path(path)?;
         if self
             .facts
