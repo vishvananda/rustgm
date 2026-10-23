@@ -1,0 +1,18 @@
+{
+  "scope": "Independent pinned rustc exported legacy bridge followup only; no RustGM scoped hygiene acceptance",
+  "contract": "pa31/tests/spec/declarative-macros/mixed-export-contract.json",
+  "contract_sha256": "12082317eb584d6a968db1921ce5e14929c01eca9ade65da9a55e8f7938f7630",
+  "evidence": "/home/vishvananda/rustgm-pa29-work/obj/parallel/pa31-declarative-macros/mixed-export-independent-v1",
+  "binding_sha256": "6551fb58b9ef606dcd7dff9739935876bf12b3f60ce5b5c006318889db14bd11",
+  "results_sha256": "241244fd70c4be894d624ac20ac1ef23638aef07963096267cedd4612713606d",
+  "summary": {
+    "cases": 1,
+    "observations": 4,
+    "hypothesis_mismatches": 0,
+    "infrastructure_failures": 0,
+    "inputs_unchanged": true,
+    "results_sha256": "241244fd70c4be894d624ac20ac1ef23638aef07963096267cedd4612713606d",
+    "binding_sha256": "6551fb58b9ef606dcd7dff9739935876bf12b3f60ce5b5c006318889db14bd11",
+    "state": "independent evidence; inspect mismatches before candidate contract; no RustGM acceptance claim"
+  }
+}

@@ -88,6 +88,11 @@ The original source, expectation and rejection remain unchanged. The captured
 generated macro name, captured module segment, captured import/alias and
 opaque-inside-legacy cases independently pass.
 
+The exported legacy followup also independently passes metadata, object, linking
+and native answer `7`; `mixed-export-observations.json` binds those four results.
+This isolates mixed-policy rebasing from textual-macro visibility, without
+changing the original negative observation.
+
 ## Qualification and bounded work
 
 Run the authored source/native corpus with the corrected private-helper contract
@@ -181,6 +186,43 @@ The earlier formatting, audit, naming and Clippy failures remain alongside it.
 Sixteen independently declared legacy-history scaling sources vary width
 8/32/128/512 across distinct introduced contexts, historical predecessors,
 ordinary unrelated locals and newest shadows. Their metadata and object checks
-pass, but the initial C links lack the upstream overflow-panic runtime; no native
-or timing result is claimed. A separately bound pinned-Rust native consumer will
-provide that runtime while preserving every source and overflow-check setting.
+pass, but the initial C links lack the upstream overflow-panic runtime. Those
+failures remain under `obj/parallel/local-history-scaling-v1`. A separately bound
+pinned-Rust native consumer supplies that runtime with every original source and
+overflow-check setting unchanged: all 64 metadata/object/link/native observations
+pass, including 16 native answers. The v2 results SHA-256 is
+`e393996137a27f937d35c3871a2aff0792a491848e26a9d35f51bc009a4d9f58`.
+These inputs are independently qualified, not measured RustGM performance results.
+
+## Normalized mark arena draft
+
+`expand::marks` now implements distinct expansion and token-context identities,
+constructor-only item/local normalized wrappers, and cached projections. It is
+not yet connected to Package, token production or lookup. The isolated module
+passes fresh formatting, architecture/file audits, all-target strict Clippy,
+harness/upstream verification and five focused private controls. The live
+resolver still uses the previous context model; this module grants no scoped-macro
+acceptance.
+
+The arena keeps the physical root allocation-free and interns the
+actual `(definition-token parent, invocation, transparency)` key. Projection
+construction recurses only into already-normalized parents, giving constant
+depth. Mixed-policy rebasing shares each definition prefix for a normalized
+call-site context; its cache excludes the final actual invocation mark so
+independent expansions stay distinct. First misses cost definition depth per
+distinct call-site context, rather than per output token. Passing controls cover
+the 128-mark first miss, cache hits across 128 actual invocations, a distinct
+call-site context, captured-name/literal-parent differences, transparency
+projections and invalid inputs. Measured layouts are Marks8, Node20, Key12 and
+normalized context wrappers4 bytes. Private work counters record 128 rebasing
+steps for the first 128-mark prefix, no additional steps for 128 distinct actual
+invocations at that call-site context, and another 128 steps for a different
+call-site context. This is an arena construction bound, not a whole-frontend
+throughput or semantic compatibility claim. Evidence is retained in
+`obj/parallel/pa31-declarative-macros/marks-development-v1`.
+
+Next, connect these identities to actual token origins and definition sites,
+then migrate local histories and item/import dependency keys together. The
+existing one-context-per-definition path must be replaced before scoped
+expansion can be enabled. Cross-crate macro transport remains a separate required
+consumer of these identities.
