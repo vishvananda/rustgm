@@ -27,13 +27,18 @@ RustGM owns both the full maintainer frontend and its assignments. Read
 - Follow the checkpoint cadence in `TESTING_AND_REFERENCES.md`. During related
   implementation edits, run focused tests and independent rustc/native probes,
   then lint/audits early enough to catch wiring errors before expensive suites.
+  Settle related test edits before code generation; use all-target strict Clippy
+  instead of duplicating it with `cargo check`, then focused debug tests. Batch
+  selections with `scripts/maintainer_suites.py batch` to build each target once.
   Keep all active PA text suites as the cheap candidate regression check.
 - Batch related edits into coherent checkpoints. Before pushing compiler changes,
   run the full release Cargo suite, native maintainer suite, lint/audits/harness,
   all active PA text suites and affected independent source/native suites.
   Run `make test-upstream` after fixture changes and `make test-backend` after
   changing the backend contract or bridge. Assignment releases additionally run
-  all active independent suites and their owning handout's release checks.
+  all active independent suites, full debug tests and their owning handout's
+  release checks. `make test-maintainer` combines full release regular/native
+  execution; do not repeat its library tests in a separate full private pass.
 - Keep generated builds, logs and measurements in `obj/`, out of commits.
   Inspect Git state from the repository root. Commit only relevant work.
 - Measure hot-path changes using immutable binaries, frozen inputs, A/A

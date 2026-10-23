@@ -10,9 +10,11 @@ jobs:
       - uses: actions/checkout@v6
       - name: Pinned Rust
         run: rustup toolchain install 1.98.0 --profile minimal --component rustfmt --component clippy
-      - name: Build and course tests
-        run: make test lint
-      - name: Release invariants
-        run: CARGO_TARGET_DIR="$PWD/obj/rust" python3 scripts/storage.py run -- cargo test --manifest-path dev/Cargo.toml --release --locked
-      - name: Architecture and harness
-        run: make setup-audit audit-rust test-harness test-upstream test-rustc
+      - name: Lint, architecture and harness
+        run: make lint setup-audit audit-rust test-harness test-upstream
+      - name: Release and course tests
+        run: make test
+      - name: Debug invariants
+        run: make test-debug-invariants
+      - name: Independent Rust qualification
+        run: make test-rustc
