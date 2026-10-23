@@ -6,4 +6,4 @@ macro make($name:ident) {
 make!(first);
 make!(second);
 fn helper() -> u32 { 43 }
-#[unsafe(no_mangle)] pub extern "C" fn answer() -> u32 { first() + second() }
+#[unsafe(no_mangle)] pub extern "C" fn answer() -> u32 { if first() == 41 && second() == 41 { 82 } else { 0 } }

@@ -165,10 +165,11 @@
     {
       "name": "introduced-items-remain-hygienic",
       "entry": "pa31/tests/spec/declarative-macros/introduced-items-remain-hygienic.rs",
-      "sha256": "a7e078bbb9eb80304d0b04f8fbca93b0f75f2d930da4daeab7adad733534cdd5",
+      "sha256": "09094afd4e9d83e578d986d6a457b901947c7d0870ad921b412f9297449b42fd",
       "expected_metadata": 0,
       "expected_object": 0,
-      "expected_native": "82\n"
+      "expected_native": "82\n",
+      "isolation": "Observe both introduced helpers without requiring an unrelated Rust panic runtime at C linkage."
     }
   ]
 }
