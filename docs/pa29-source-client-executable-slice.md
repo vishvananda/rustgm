@@ -266,6 +266,14 @@ names actual Copy and u8. Neither relation can be inferred from the body rows or
 omitted because the ordinary original already passed proof. This observed
 signature pair is not a generic rule about every ordinary body.
 
+The retained `clone_from` use-effect Ordinary is also an observation of the
+then-current compiler, not the intended source rule. B's independent default-body
+matrix subsequently established that a const-trait provided body must reject
+nonconst calls at definition time. B owns the separate defining-context correction
+without turning every ordinary impl into an executable const implementation. The
+source profile must consume that corrected authoritative context before its wire
+version can freeze; the previous trace remains preserved as pre-fix evidence.
+
 The raw DTOs are still unpublished drafts. Before freezing their version, add
 independent raw normalization inputs (exact owned intervals, diagnostic sites,
 equalities, outlives and type-outlives) and source Copy policy/query inputs.
@@ -301,3 +309,60 @@ then collects only after all actual group proofs and parent sessions succeed.
 Both paths reject mismatched owner/key/origin/signature; neither reconstructs a
 paired proof or repeats verification. Neutral stage completion and executable
 lowering remain separate gates, and source payload publication requires both.
+
+### Required independent raw input rows, not yet encoded
+
+The following addition is a design prerequisite for the source version, not an
+enabled field layout. Index a complete `BodyInput` table by BodyRef independently
+of operation rows. Each row retains the exact original universal frame, parameter
+slot references, explicit region and type assumptions, original formation/coercion
+obligations and raw normalization inputs. Input lookup always includes its actual
+body owner; a header binder, scope envelope or coincident numeric region is not
+allocation ownership.
+
+Build one per-body allocation index from actual Variable declarations and each
+raw normalization input's exact `owned_regions()` intervals. Record which input
+owns each normalization slot. Preserve disjoint intervals and reject foreign or
+overlapping ownership rather than padding a frontier. Every variable reference
+then addresses that body's explicit dense allocation slot; header-bound, static
+and parameter regions retain their separate representations. Import allocates
+fresh IDs for those exact rows and translates all labelled equality, outlives and
+formation goals through that single checked map. It never serializes a local
+region number, allocation envelope, solver result or proof token. Unsupported
+quantified input must reject before payload completion.
+
+Body builtin input separately retains the actual Copy declaration-or-absence and
+complete queried type applications. Validate query coverage against actual body
+reads and reselect it in the exact imported environment, preserving the ordinary
+move fallback. These queries neither assert Copy nor replace mandatory builtin
+predicates. For this provider, u8 clone queries Copy(u8), while identity queries
+Copy(T) without declaring a Copy bound.
+
+Preserve three environment states explicitly: absent, the exact declaration
+environment, and the environment derived from the original Contract by the
+existing Copy preparation path. The u8 declaration has no separate body
+environment; Copy preparation derives a present empty one from its Contract.
+Neither a missing row nor an arbitrary same-shaped environment can stand in for
+that derivation. A declaration with no environment cannot import additional
+assumptions merely because the Template API stores an environment Arc. All
+imported premise data must be checked against the actual complete declaration
+header or the exact existing contract-derived construction before original proof.
+
+### Private collector validation before binding factoring
+
+The first staged-flow gate (`obj/parallel/pa29-source-client-staging/staged-flow-first/`)
+passed fresh formatting, architecture/file audit, all-target strict Clippy and
+six exact private cases. Execution took0.083s; this is not an A/B performance claim.
+The cases cover partial collector failure, a real late uninitialized original,
+actual faulting conditional child, completed paid group, cloned same-shaped
+foreign Contract rejection, legacy unit-state exact LowIR/CFG/canonical-work
+agreement, and the unchanged real-original observer. The explicit pointer check
+uses actual solver-owned Contracts and completed proofs, not fabricated pairs.
+
+The immutable private binary is `pins/rustgm-lib-tests`, SHA-256
+`ae9bbd4fd393c391bfc28a8bc0fc3dda45b490ff22d8e049de4d385b7df20a35`,
+354,795,400bytes. The previous observer binary was about322MB. New tests and
+generic collector code both changed; the full difference is not attributed to
+either without a comparison. A source-only followup will move collector binding
+outside final-result generic scope and give the legacy no-op a concrete shared
+function identity, preserving these successful observations and all semantics.

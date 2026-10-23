@@ -22,6 +22,53 @@ use std::path::Path;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
 #[test]
+fn completed_original_rejects_equal_shaped_foreign_contract_before_collection() -> TestResult {
+    use crate::support::hash::HashMap;
+    use std::{cell::Cell, sync::Arc};
+    let report = resolve_source("fn one()->u8{7}")?;
+    let mut facts = crate::pipeline::analyze_source(&report)?.facts;
+    let templates = Templates::source(Vec::new());
+    let inputs = body::regions::collect(&facts)?.bodies;
+    let input = Arc::new(inputs.first().ok_or("actual input")?.clone());
+    let indexed: HashMap<_, _> = [(input.key, Arc::clone(&input))].into_iter().collect();
+    let mut program = body::build_concrete(&report, &facts)?;
+    body::promote::analyze(&report, &mut facts, &mut program)?;
+    let checked = originals(&mut facts, &templates, &inputs)?;
+    let (mut builder, mut bodies) = super::Builder::new(program)?;
+    builder.prepare_parent_regions(&mut facts, &indexed, &bodies)?;
+    let staged = builder.stage_parent(
+        &mut facts,
+        &checked,
+        bodies.pop().ok_or("actual original")?,
+        None,
+    )?;
+    let mut work = 0;
+    let group = incremental::CompleteGroup::new(
+        std::iter::once(staged.paired()),
+        64 * 1024 * 1024,
+        &mut work,
+    )?;
+    drop(group);
+    let foreign = input.as_ref().clone();
+    let visits = Cell::new(0);
+    let mut collector = |_: &Declarations, _: &incremental::Proved, _: &Contract| {
+        visits.set(visits.get() + 1);
+        Ok(())
+    };
+    let mut context = super::super::staged_originals::Context {
+        checked: &checked,
+        collector: &mut collector,
+    };
+    let error = builder
+        .append_original(&report, &mut facts, &mut context, staged, &foreign)
+        .err()
+        .ok_or("foreign retained input must reject")?;
+    assert!(error.to_string().contains("exact retained input"));
+    assert_eq!(visits.get(), 0);
+    Ok(())
+}
+
+#[test]
 fn instance_cleanup_shares_completed_types_across_distinct_callees() -> TestResult {
     use std::fmt::Write as _;
     for depth in [4, 16, 64] {

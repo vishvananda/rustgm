@@ -57,6 +57,69 @@ enum Original<'a> {
     Adapter(usize, &'a crate::body::adapters::Template),
 }
 impl Builder {
+    pub(super) fn append_original<C: super::staged_originals::Collect>(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &mut Declarations,
+        originals: &mut super::staged_originals::Context<'_, '_, C>,
+        staged: Staged,
+        input: &Contract,
+    ) -> Result<usize, crate::resolve::package::Error> {
+        let error = |message: &str| report.body_error(input.source, message);
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
+        let body = staged.body();
+        let signature = match body.owner {
+            crate::body::ir::Owner::Function {
+                signature,
+                execution,
+                ..
+            }
+            | crate::body::ir::Owner::Closure {
+                signature,
+                execution,
+                ..
+            } => Some(execution.unwrap_or(signature)),
+            _ => None,
+        };
+        if !std::ptr::eq(staged.paired().input(), input)
+            || body.instance.is_some()
+            || body.key() != input.key
+            || body.source != input.source
+            || input.signature != signature
+        {
+            return Err(error(
+                "completed original changed its exact retained input or owner",
+            ));
+        }
+        let proved = match staged {
+            Staged::Ordinary(proved) => (*proved).into_proved(),
+            Staged::Parent(parent) => parent.into_proved().map_err(|(_, e)| error(e))?,
+        };
+        let index = self
+            .append_proved(facts, proved)
+            .map_err(|e| super::diagnostic(report, e.node, e.message))?;
+        originals
+            .collector
+            .original(facts, &self.bodies[index], input)?;
+        Ok(index)
+    }
+
+    pub(super) fn push_original<C: super::staged_originals::Collect>(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &mut Declarations,
+        originals: &mut super::staged_originals::Context<'_, '_, C>,
+        body: Body,
+        input: &Contract,
+    ) -> Result<usize, crate::resolve::package::Error> {
+        let index = self
+            .push(facts, originals.checked, body, input, None)
+            .map_err(|e| super::diagnostic(report, e.node, e.message))?;
+        let proved = &self.bodies[index];
+        originals.collector.original(facts, proved, input)?;
+        Ok(index)
+    }
+
     pub(super) fn new(mut program: Program) -> Result<(Self, Vec<Body>), &'static str> {
         let ordinary = std::mem::take(&mut program.bodies);
         // Whole-program region tables exist only for body inspection views;

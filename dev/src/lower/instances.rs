@@ -2,6 +2,7 @@
 mod demand;
 mod dependencies;
 mod proof;
+mod staged_originals;
 #[cfg(test)]
 #[path = "../../tests/invariants/upstream_originals.rs"]
 mod upstream_originals;
@@ -158,7 +159,7 @@ fn inspect_roots<R>(
 fn inspect_selected<R>(
     report: &Report,
     facts: &mut Declarations,
-    mut prepared: crate::pipeline::Prepared,
+    prepared: crate::pipeline::Prepared,
     select: impl FnOnce(
         &mut Declarations,
         &borrow::templates::Checked<'_>,
@@ -167,6 +168,37 @@ fn inspect_selected<R>(
         &mut Declarations,
         borrow::incremental::Assembled,
         super::roots::Selected<'_>,
+    ) -> R,
+) -> Result<R, Error> {
+    inspect_staged(
+        report,
+        facts,
+        prepared,
+        |facts, checked| select(facts, checked).map(|(entry, exports)| (entry, exports, ())),
+        |(), _, _, _| Ok(()),
+        |facts, assembled, roots, ()| inspect(facts, assembled, roots),
+    )
+}
+
+fn inspect_staged<S, R>(
+    report: &Report,
+    facts: &mut Declarations,
+    mut prepared: crate::pipeline::Prepared,
+    select: impl FnOnce(
+        &mut Declarations,
+        &borrow::templates::Checked<'_>,
+    ) -> Result<(Option<DefId>, super::roots::Exports, S), Error>,
+    mut collect: impl FnMut(
+        &mut S,
+        &Declarations,
+        &borrow::incremental::Proved,
+        &body::regions::Contract,
+    ) -> Result<(), Error>,
+    inspect: impl FnOnce(
+        &mut Declarations,
+        borrow::incremental::Assembled,
+        super::roots::Selected<'_>,
+        S,
     ) -> R,
 ) -> Result<R, Error> {
     let mut templates = prepared.templates.finish(report, facts)?;
@@ -240,13 +272,20 @@ fn inspect_selected<R>(
     facts
         .prepare_opaque_storage_located()
         .map_err(|failure| opaque_storage_error(report, facts, failure))?;
-    let (entry, exports) = select(facts, &checked)?;
+    let (entry, exports, mut stage) = select(facts, &checked)?;
     let roots = exports.selected(entry);
+    let mut collect =
+        |facts: &Declarations,
+         proved: &borrow::incremental::Proved,
+         input: &body::regions::Contract| { collect(&mut stage, facts, proved, input) };
     let program = demand::prepare(
         report,
         facts,
         roots,
-        &checked,
+        staged_originals::Context {
+            checked: &checked,
+            collector: &mut collect,
+        },
         inputs,
         prepared.concrete,
         prepared.constants,
@@ -254,7 +293,7 @@ fn inspect_selected<R>(
     let assembled = program
         .assemble()
         .map_err(|e| diagnostic(report, e.node, e.message))?;
-    Ok(inspect(facts, assembled, roots))
+    Ok(inspect(facts, assembled, roots, stage))
 }
 
 fn publish_closure_conditions(
