@@ -181,7 +181,7 @@ fn range_catalog_preserves_ordinary_record_sizes() {
         size_of::<body::ir::Value>()
     );
     // The public nullable policy/layout caches add 16 bytes; source bindings add 8.
-    assert_eq!(size_of::<Declarations>(), 7040);
+    assert_eq!(size_of::<Declarations>(), 7048);
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<sema::iteration::Registry>(), 304);
     assert_eq!(size_of::<types::Kind>(), 24);

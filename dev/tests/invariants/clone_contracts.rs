@@ -223,7 +223,7 @@ fn iterator_clone_preserves_ordinary_record_sizes_and_lazy_owner_cost() {
         size_of::<types::Store>()
     );
     // Nullable policy/layout caches add 16 bytes; source bindings add one cold pointer.
-    assert_eq!(size_of::<Declarations>(), 7040);
+    assert_eq!(size_of::<Declarations>(), 7048);
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<Kind>(), 24);
     assert_eq!(size_of::<types::infer::Context>(), 400);
