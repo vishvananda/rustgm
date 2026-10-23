@@ -3,6 +3,12 @@
 mod crate_expansion;
 #[path = "../../crate_syntax.rs"]
 mod crate_syntax;
+#[path = "../../edition_fragments.rs"]
+mod edition_fragments;
+#[path = "../../edition_origins.rs"]
+mod edition_origins;
+#[path = "../../edition_tokens.rs"]
+mod edition_tokens;
 #[path = "../../expanded_cli.rs"]
 mod expanded_cli;
 #[path = "../../expansion_install.rs"]
@@ -43,6 +49,8 @@ mod name_storage;
 pub(crate) mod native_references;
 #[path = "../../option_environment.rs"]
 mod option_environment;
+#[path = "../../provider_traits.rs"]
+mod provider_traits;
 #[path = "../../helpers/qualify.rs"]
 pub(crate) mod qualify;
 #[path = "../../resolution.rs"]

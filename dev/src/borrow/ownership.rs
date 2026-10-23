@@ -148,14 +148,21 @@ pub fn analyze_body<S: BuildHasher>(
     copies: &mut Copies,
     body: &Body,
 ) -> Result<BodyFacts, Error> {
-    analyze_body_ordered(types, definitions, derives, copies, body, None)
+    analyze_body_ordered(
+        types,
+        definitions,
+        derives,
+        &mut super::copy_view::CopyView::ordinary(copies),
+        body,
+        None,
+    )
 }
 /// `analyze_body`, reusing a reverse-postorder walk already computed for it.
 pub(crate) fn analyze_body_ordered<S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
     derives: &std::collections::HashMap<ItemId, Declaration, S>,
-    copies: &mut Copies,
+    copies: &mut super::copy_view::CopyView<'_>,
     body: &Body,
     order: Option<&super::order::Order>,
 ) -> Result<BodyFacts, Error> {
@@ -168,7 +175,7 @@ fn prepare<S: BuildHasher>(
     types: &Store,
     definitions: &Definitions,
     derives: &std::collections::HashMap<ItemId, Declaration, S>,
-    copies: &mut Copies,
+    copies: &mut super::copy_view::CopyView<'_>,
     body: &Body,
     retain_initialization: bool,
 ) -> Result<BodyFacts, Error> {
@@ -182,7 +189,6 @@ fn prepare<S: BuildHasher>(
             uses[index] = if copies
                 .demand(types, definitions, derives, value.ty)
                 .map_err(error)?
-                .copy
             {
                 Use::Copy
             } else {
@@ -202,7 +208,6 @@ fn prepare<S: BuildHasher>(
                 && !copies
                     .demand(types, definitions, derives, element)
                     .map_err(error)?
-                    .copy
             {
                 return Err(error("repeated array element must implement Copy"));
             }

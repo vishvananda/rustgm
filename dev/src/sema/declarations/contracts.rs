@@ -12,6 +12,15 @@ pub(super) struct SignatureTypes {
 }
 
 impl Checker<'_> {
+    pub(super) fn validate_published_intrinsic(&mut self, key: NodeKey) -> Result<(), Error> {
+        let function = *self
+            .facts
+            .functions
+            .last()
+            .ok_or_else(|| self.error(key, "source function publication disappeared"))?;
+        crate::sema::compiler_items::validate_intrinsic(self.report, &mut self.facts, function)
+    }
+
     pub(super) fn function_bounds(
         &mut self,
         key: NodeKey,
@@ -107,6 +116,7 @@ impl Checker<'_> {
         for mut node in ast.list(list).iter().copied() {
             if let Kind::Bound {
                 optional: false,
+                constness: crate::support::constness::Constness::Ordinary,
                 quantified,
                 binders: _,
                 value,

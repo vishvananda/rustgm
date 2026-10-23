@@ -201,11 +201,16 @@ impl Checker<'_> {
         if parameters.into_iter().all(|id| constraints.determines(id)) {
             return Ok(());
         }
-        Err(error(if matches!(header.bound, Bound::Trait(_)) {
-            "impl type and const parameters must constrain Self or the trait application"
-        } else {
-            "impl type and const parameters must constrain its target"
-        }))
+        Err(error(
+            if matches!(
+                header.bound,
+                Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_)
+            ) {
+                "impl type and const parameters must constrain Self or the trait application"
+            } else {
+                "impl type and const parameters must constrain its target"
+            },
+        ))
     }
 
     pub(super) fn impl_header(

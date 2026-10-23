@@ -95,7 +95,7 @@ fn folders(
     actual: &FunctionRegions,
     method_parameters: &[(Parameter, Parameter)],
 ) -> Result<Folders, &'static str> {
-    let Bound::Trait(id) = predicate.bound else {
+    let Some((id, _)) = predicate.bound.trait_parts() else {
         return Err("missing impl trait application");
     };
     let app = facts
@@ -268,7 +268,7 @@ pub(super) fn contract(
             .iter()
             .copied(),
     );
-    let Bound::Trait(id) = predicate.bound else {
+    let Some((id, _)) = predicate.bound.trait_parts() else {
         return Err("missing impl trait application".into());
     };
     let app = facts

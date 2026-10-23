@@ -40,7 +40,7 @@ pub(in crate::sema) fn reference_comparison(
         primitive_methods::{self, Candidate},
         traits::selection,
     };
-    let crate::types::parameters::predicates::Bound::Trait(application) = header.0.bound else {
+    let Some((application, _)) = header.0.bound.trait_parts() else {
         return Ok((false, 0));
     };
     let item = facts

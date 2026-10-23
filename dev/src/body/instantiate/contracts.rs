@@ -160,6 +160,12 @@ fn prepare(
     if let Some(pending) = &mut contract.builtins {
         let pending = std::sync::Arc::make_mut(pending);
         pending.environment = None;
+        pending.clear_source_copy();
+        if let Some(requirements) = &mut pending.source_copy {
+            for goal in &mut std::sync::Arc::make_mut(requirements).goals {
+                *goal = bound.predicate(&mut facts.types, *goal)?;
+            }
+        }
         for (_, predicate) in &mut pending.predicates {
             *predicate = bound.predicate(&mut facts.types, *predicate)?;
             facts.aggregates.prepare(&mut facts.types, predicate.ty)?;

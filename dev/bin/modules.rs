@@ -155,10 +155,31 @@ fn phase_error(
 
 fn region_proofs(
     report: &resolve::expansion::Report,
-    facts: &rustgm::sema::model::Declarations,
+    facts: &mut rustgm::sema::model::Declarations,
     program: &rustgm::body::ir::Program,
 ) -> Result<rustgm::borrow::regions::Analysis, String> {
-    let contracts = rustgm::body::regions::collect(facts).map_err(str::to_owned)?;
+    let mut bodies = rustgm::body::regions::collect(facts)
+        .map_err(str::to_owned)?
+        .bodies;
+    if facts.uses_source_copy() {
+        let mut rows = rustgm::support::hash::HashMap::default();
+        for (index, contract) in bodies.iter().enumerate() {
+            if rows.insert(contract.key, index).is_some() {
+                return Err("source Copy inspection has duplicate contracts".into());
+            }
+        }
+        for body in &program.bodies {
+            let index = *rows
+                .get(&body.key())
+                .ok_or("source Copy inspection body has no contract")?;
+            rustgm::body::prepare_source_copy(facts, body, &mut bodies[index])?;
+        }
+    }
+    let contracts = rustgm::body::regions::Contracts {
+        bodies,
+        callables: &facts.lifetimes.callables,
+        nominal_requirements: &facts.lifetimes.nominal_requirements,
+    };
     rustgm::borrow::regions::check_bodies(
         &facts.types,
         &facts.lifetimes.variances,
@@ -200,6 +221,7 @@ fn ownership_view(
             types: &facts.types,
             definitions: &facts.aggregates,
             derives: &facts.derives,
+            source_copy: facts.uses_source_copy(),
             copies: &mut facts.copies,
         },
         &contracts,
@@ -305,7 +327,7 @@ fn semantic(
         // Ownership and lowering consume those actions, so release this arena.
         drop(std::mem::take(&mut facts.patterns));
         if matches!(mode, Mode::Regions) {
-            let contracts = region_proofs(&report, &facts, &program)?;
+            let contracts = region_proofs(&report, &mut facts, &program)?;
             return if count {
                 rustgm::borrow::regions::view::count(&contracts, out)
             } else {

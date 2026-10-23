@@ -96,7 +96,11 @@ impl Closure {
                     (predicate.ty == template
                         && matches!(
                             predicate.bound,
-                            Bound::Trait(_) | Bound::Outlives(_) | Bound::Auto(_)
+                            Bound::Trait(_)
+                                | Bound::ConstTrait(_)
+                                | Bound::MaybeConstTrait(_)
+                                | Bound::Outlives(_)
+                                | Bound::Auto(_)
                         ))
                         || matches!(predicate.bound, Bound::ProjectionEqual(_))
                 }
@@ -179,7 +183,7 @@ impl Closure {
             self.index.outlives.push(region);
             return Ok(());
         }
-        let Bound::Trait(application) = predicate.bound else {
+        let Some((application, _)) = predicate.bound.trait_parts() else {
             return Ok(());
         };
         let item = facts

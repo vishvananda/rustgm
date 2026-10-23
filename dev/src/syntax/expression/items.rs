@@ -20,8 +20,22 @@ pub fn parse_crate_with<'s>(
     source: &'s str,
     names: Option<&mut crate::support::names::Names>,
 ) -> Result<Ast<'s>, LexError> {
+    parse_crate_in_edition(source, names, crate::support::edition::Edition::Rust2024)
+}
+
+/// Parse source with an explicit token edition. This syntax entrypoint does not
+/// enable a complete semantic or driver profile for that edition.
+///
+/// # Errors
+/// Rejects malformed syntax, excessive nesting and name-table overflow.
+pub fn parse_crate_in_edition<'s>(
+    source: &'s str,
+    names: Option<&mut crate::support::names::Names>,
+    edition: crate::support::edition::Edition,
+) -> Result<Ast<'s>, LexError> {
     let mut parser = Parser::new(source, true)?;
     parser.names = names;
+    parser.inputs = &edition;
     let attrs = parser.attributes(true)?;
     parser.item_attributes(attrs);
     let items = parser.item_list(false, Scope::Module)?;
@@ -242,7 +256,7 @@ impl Parser<'_, '_> {
                 }
                 self.value_item(&mut item, safety)?
             } else if self.eat_word(Word::Trait)? {
-                if constant || asynchronous || safe {
+                if asynchronous || safe {
                     return Err(error(start, "invalid trait qualifier"));
                 }
                 item.name = Some(self.name()?);
@@ -258,11 +272,12 @@ impl Parser<'_, '_> {
                 self.item_attributes(inner);
                 ItemKind::Trait {
                     unsafe_,
+                    constant,
                     bounds,
                     items: self.item_list(true, Scope::Trait)?,
                 }
             } else if self.eat_word(Word::Impl)? {
-                if constant || asynchronous || safe {
+                if asynchronous || safe {
                     return Err(error(start, "invalid impl qualifier"));
                 }
                 item.generics = self.generics()?;
@@ -279,6 +294,7 @@ impl Parser<'_, '_> {
                 self.item_attributes(inner);
                 ItemKind::Impl {
                     unsafe_,
+                    constant,
                     negative,
                     trait_path,
                     ty,
@@ -469,7 +485,7 @@ impl Parser<'_, '_> {
     fn function_after_const(&mut self) -> Result<bool, LexError> {
         Ok(matches!(
             self.cursor.peek_word(1)?,
-            Word::Fn | Word::Async | Word::Unsafe | Word::Extern
+            Word::Fn | Word::Async | Word::Unsafe | Word::Extern | Word::Trait | Word::Impl
         ))
     }
 
@@ -753,7 +769,7 @@ impl Parser<'_, '_> {
     fn use_path_segment(&mut self, first: bool) -> Result<NodeId, LexError> {
         let token = self.required()?;
         let text = self.cursor.spelling(token);
-        if !(super::keyword::identifier(token.kind, text.strip_prefix("r#").unwrap_or(text))
+        if !(self.identifier(token, self.cursor.last_word())?
             || matches!(text, "self" | "super" | "crate")
             || matches!(token.kind, TokenKind::CrateRoot(_)))
         {

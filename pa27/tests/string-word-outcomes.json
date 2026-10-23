@@ -1,0 +1,306 @@
+{
+  "schema": 1,
+  "profile": "Rust 1.98.0 / x86_64 / 2024",
+  "cases": [
+    {
+      "name": "string-union-roundtrip",
+      "path": "pa27/tests/spec/string-byte-words/string-union-roundtrip.rs",
+      "sha256": "080d11903714cdf8303592bf8f6417f7bd269e40527f542f0e4ea9a24cc38f79",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "origin": "unchanged original obj/parallel/pa27/opaque-string-backing/inputs/string-union-roundtrip.rs",
+      "scope": "symbolic str wide-word union transport; original panic macro dependency retained separately",
+      "remaining_dependency": "Original required positive remains blocked by unresolved ordinary panic! macro; required_views stays all0. Storage helper reductions are distinct controls."
+    },
+    {
+      "name": "string-raw-word-roundtrip",
+      "path": "pa27/tests/spec/string-byte-words/string-raw-word-roundtrip.rs",
+      "sha256": "36bdae5982a3926a6ac275b54583c313d5ac3949f1899edf7f98dcf152fc016b",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "origin": "unchanged original obj/parallel/pa27/opaque-string-backing/inputs/string-raw-word-roundtrip.rs",
+      "scope": "symbolic str wide-word union transport; original panic macro dependency retained separately",
+      "remaining_dependency": "Original required positive remains blocked by unresolved ordinary panic! macro; required_views stays all0. Storage helper reductions are distinct controls."
+    },
+    {
+      "name": "string-union-roundtrip-check",
+      "path": "pa27/tests/spec/string-byte-words/string-union-roundtrip-check.rs",
+      "sha256": "b5e085d8ecc9fe91c49909415bb567facfaa1a891e1f0c121c3121df374d288b",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "origin": "unchanged original obj/parallel/pa27/opaque-string-backing/inputs/string-union-roundtrip-check.rs",
+      "scope": "symbolic str wide-word union transport; original panic macro dependency retained separately"
+    },
+    {
+      "name": "string-raw-word-roundtrip-check",
+      "path": "pa27/tests/spec/string-byte-words/string-raw-word-roundtrip-check.rs",
+      "sha256": "812a715e8cc9dff91bfec55f7f944f12122589a82d6b37d9a26e8ebadf1bbcec",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "origin": "unchanged original obj/parallel/pa27/opaque-string-backing/inputs/string-raw-word-roundtrip-check.rs",
+      "scope": "symbolic str wide-word union transport; original panic macro dependency retained separately"
+    },
+    {
+      "name": "ordinary-string-control",
+      "path": "pa27/tests/spec/string-byte-words/ordinary-string-control.rs",
+      "sha256": "09e8f9bc7e933be53e743f7a3e837ffeae9fbe84de8d19d5786cad6aecc1d2dc",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "hypothesis": "ordinary literal without byte transport remains unchanged",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory"
+    },
+    {
+      "name": "utf8-valid-widths",
+      "path": "pa27/tests/spec/string-byte-words/utf8-valid-widths.rs",
+      "sha256": "20d25691eabfb0ca3e53129a439d4afceca42f625b339ae745b2a345b7c73ce2",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "hypothesis": "valid ASCII/NUL and two/three/four-byte UTF8 ranges retain byte length and source backing",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory"
+    },
+    {
+      "name": "utf8-mutable-roundtrip",
+      "path": "pa27/tests/spec/string-byte-words/utf8-mutable-roundtrip.rs",
+      "sha256": "67c9d4c4124786acc9899cdbcac7853b6fb0ad09deac1c57c419f0d9c08eb1b5",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "hypothesis": "exact reduced pinned mutable-conversion body preserves writable provenance through word transport",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory"
+    },
+    {
+      "name": "utf8-empty-roundtrip",
+      "path": "pa27/tests/spec/string-byte-words/utf8-empty-roundtrip.rs",
+      "sha256": "875442b1cd5023f5a55867910f1adf01a9fc832508ae53d7e71be2ec27dab644",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "required_views": [
+        1,
+        1,
+        1
+      ],
+      "hypothesis": "Raw address of a const temporary rejects (E0745); empty Str storage is qualified by distinct corrected local-cell/one-past inputs.",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory",
+      "initial_rustc_hypothesis": 0,
+      "classification": "rejected original setup E0745: raw address of const temporary; retain as separate source-rule control, not an empty-string validity rejection",
+      "initial_hypothesis": "zero-byte referent still has valid address and zero metadata; no data access"
+    },
+    {
+      "name": "utf8-offset-view",
+      "path": "pa27/tests/spec/string-byte-words/utf8-offset-view.rs",
+      "sha256": "68c173e9b85f210013b50690e63db31d015b817064ce6d504b0f5abea6a99432",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "hypothesis": "target-qualified data pointer offset and independent length select complete multibyte subrange",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory"
+    },
+    {
+      "name": "raw-invalid-utf8",
+      "path": "pa27/tests/spec/string-byte-words/raw-invalid-utf8.rs",
+      "sha256": "82cccae2e865c2c3af4fe99eb7464957d2e62ae49d040686ee0a5338449c90ba",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "hypothesis": "raw str word transport and U8 read do not create str reference or demand UTF8",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory"
+    },
+    {
+      "name": "invalid-utf8-reference",
+      "path": "pa27/tests/spec/string-byte-words/invalid-utf8-reference.rs",
+      "sha256": "a522fa8f55df65d4137d36a8f158657bf7510a5ba7fe5cca407f84806240f6b8",
+      "rustc_hypothesis": 0,
+      "native_valid": false,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "hypothesis": "Raw-cast Str storage retains initialized U8 validity without an eager UTF8 check; ordinary library UTF8 preconditions are not exercised.",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory",
+      "initial_rustc_hypothesis": 1,
+      "classification": "initialized raw-cast Str memory is language-valid; no ordinary UTF8-assuming library function is called; native qualification deliberately unclaimed",
+      "superseding_evidence": "pinned primitive_docs.rs:1010-1017; Reference undefined.validity.str; independent-v1 exact Rust acceptance",
+      "initial_hypothesis": "violates pinned str conversion UTF8 safety precondition; preserve any oracle acceptance discrepancy, never native"
+    },
+    {
+      "name": "truncated-utf8-reference",
+      "path": "pa27/tests/spec/string-byte-words/truncated-utf8-reference.rs",
+      "sha256": "28fac2a6f1e4882cf2e9875059a1304a162ee7f0ecfb31059945a2809ba05779",
+      "rustc_hypothesis": 0,
+      "native_valid": false,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "hypothesis": "Raw-cast Str storage retains initialized U8 validity without an eager UTF8 check; ordinary library UTF8 preconditions are not exercised.",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory",
+      "initial_rustc_hypothesis": 1,
+      "classification": "initialized raw-cast Str memory is language-valid; no ordinary UTF8-assuming library function is called; native qualification deliberately unclaimed",
+      "superseding_evidence": "pinned primitive_docs.rs:1010-1017; Reference undefined.validity.str; independent-v1 exact Rust acceptance",
+      "initial_hypothesis": "truncated code point at selected extent; no native claim"
+    },
+    {
+      "name": "oversized-raw-string",
+      "path": "pa27/tests/spec/string-byte-words/oversized-raw-string.rs",
+      "sha256": "351f56237e6f2fa8a036a4afc5c77393fdf620f42852f42e33f02f50887a797d",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "hypothesis": "oversized raw metadata is retained; selected U8 read uses physical one-byte bounds",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory"
+    },
+    {
+      "name": "oversized-string-reference",
+      "path": "pa27/tests/spec/string-byte-words/oversized-string-reference.rs",
+      "sha256": "0cc516dc6df507fafc1f67bd45db8cb7830ce9850ba3a6b89c2ba81139ce0c1c",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "required_views": [
+        1,
+        1,
+        1
+      ],
+      "hypothesis": "reference formation must validate full length against physical bounds",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory"
+    },
+    {
+      "name": "shared-mutable-string",
+      "path": "pa27/tests/spec/string-byte-words/shared-mutable-string.rs",
+      "sha256": "6a26096dd21b00da7ff138318670010791861ffc1101a081354888fc28d97f4a",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "required_views": [
+        1,
+        1,
+        1
+      ],
+      "hypothesis": "final mut pointer or str cast must not upgrade shared-derived write authority",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory"
+    },
+    {
+      "name": "expired-string-reference",
+      "path": "pa27/tests/spec/string-byte-words/expired-string-reference.rs",
+      "sha256": "74b386e4598a55c4411815c0cef7c51fdd4bb4df337ad5b0194a8037da3e8743",
+      "rustc_hypothesis": 1,
+      "native_valid": false,
+      "required_views": [
+        1,
+        1,
+        1
+      ],
+      "hypothesis": "raw cast cannot make local array backing escape its lifetime",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory"
+    },
+    {
+      "name": "utf8-reread-after-write",
+      "path": "pa27/tests/spec/string-byte-words/utf8-reread-after-write.rs",
+      "sha256": "0fcf71978a4c87e24502e4d166532301da0d6fb2bd218d8474fcbeebb96e5599",
+      "rustc_hypothesis": 0,
+      "native_valid": false,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "hypothesis": "Raw-cast Str storage retains initialized U8 validity without an eager UTF8 check; ordinary library UTF8 preconditions are not exercised.",
+      "origin": "reduced storage contract derived from pinned core/str/converts.rs:178-181 or208-213; no library/API factory",
+      "initial_rustc_hypothesis": 1,
+      "classification": "initialized raw-cast Str memory is language-valid; no ordinary UTF8-assuming library function is called; native qualification deliberately unclaimed",
+      "superseding_evidence": "pinned primitive_docs.rs:1010-1017; Reference undefined.validity.str; independent-v1 exact Rust acceptance",
+      "initial_hypothesis": "violates UTF8/alias obligations after mutation; warm decode cannot reuse prior reference validity; oracle outcome is a hypothesis"
+    },
+    {
+      "name": "utf8-empty-local-cell",
+      "path": "pa27/tests/spec/string-byte-words/utf8-empty-local-cell.rs",
+      "sha256": "f04bbc01a9a6fb741ea8af2d641e595ab2fbeb89a51b8e27eec17b9cddbe1437",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "hypothesis": "distinct corrected empty control uses a real local reference cell; zero-length data range, full initialized wide pointer and live provenance",
+      "origin": "corrected local-cell hypothesis; original utf8-empty-roundtrip.rs remains unchanged"
+    },
+    {
+      "name": "utf8-empty-one-past",
+      "path": "pa27/tests/spec/string-byte-words/utf8-empty-one-past.rs",
+      "sha256": "65ad7e5faccfec77f109ad2631807ae23c731025291ceec533013e4d23900cad",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "hypothesis": "one-past aligned live array pointer with zero byte extent forms empty str; no data access; target-qualified tuple-word construction"
+    },
+    {
+      "name": "published-string-runtime",
+      "path": "pa27/tests/spec/string-byte-words/published-string-runtime.rs",
+      "sha256": "7a10e93de4741f1a185b0b531d0c0efee8d95840ff182cb6864c6a459247d88a",
+      "rustc_hypothesis": 0,
+      "native_valid": true,
+      "required_views": [
+        0,
+        0,
+        0
+      ],
+      "hypothesis": "published const Str data/length words pass ordinary runtime argument ABI; exact scalar byte observations and empty metadata, no empty data access"
+    }
+  ],
+  "scope": "Raw Str storage uses initialized U8 validity. No eager UTF8 check or ordinary string library implementation.",
+  "initial_hypotheses": "obj/parallel/pa27/string-byte-words/declared-v1.json",
+  "corrected_declaration_sha256": "b5d80147b43d53928628ce624b6ecb98713b56b917506c71d468a6485572da81",
+  "additional_declaration_sha256": "60bd856965a0e6dbfeba3f1d85247d1ea374abceee17f576fdefde9bedff89c5",
+  "runtime_declaration_sha256": "d241a7c5e811e98af3147aa0edcef4b390cf8a5451146c87688e0961d1de81ee"
+}

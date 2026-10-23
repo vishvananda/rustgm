@@ -9,6 +9,7 @@ pub(crate) mod conditional_inputs;
 pub mod constants;
 mod diagnostics;
 pub use diagnostics::BodyOrigins;
+pub(crate) mod copy_requirements;
 pub(crate) mod dispatch;
 pub mod drops;
 pub mod instantiate;
@@ -28,3 +29,17 @@ pub use build::build;
 pub use build::concrete as build_concrete;
 pub(crate) use build::concrete_prepared;
 pub use build::templates;
+
+/// Prepare source-provider Copy requirements for this exact body and contract.
+/// Ordinary compilation returns without source-only allocation. This selects
+/// requirements; callers must still prove the contract and ordinary ownership.
+/// # Errors
+/// Rejects foreign body/contract identities, unvalidated roles, pending selection
+/// and exhausted work. A missing Copy role remains an explicit read-time policy.
+pub fn prepare_source_copy(
+    facts: &mut crate::sema::model::Declarations,
+    body: &ir::Body,
+    contract: &mut regions::Contract,
+) -> Result<(), String> {
+    copy_requirements::prepare(facts, body, contract)
+}

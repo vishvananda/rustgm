@@ -27,12 +27,14 @@ struct Work {
 enum Use {
     NeverType,
     ExpressionAttribute,
+    ConstTrait,
 }
 impl Use {
     fn feature(self) -> Feature {
         match self {
             Self::NeverType => Feature::NeverType,
             Self::ExpressionAttribute => Feature::ExpressionAttributes,
+            Self::ConstTrait => Feature::ConstTrait,
         }
     }
     fn message(self) -> &'static str {
@@ -41,6 +43,7 @@ impl Use {
             Self::ExpressionAttribute => {
                 "source expression attributes require stmt_expr_attributes"
             }
+            Self::ConstTrait => "source const traits and bounds require const_trait_impl",
         }
     }
 }
@@ -86,6 +89,9 @@ fn inspect(package: &Package, work: &mut Work) -> Result<(), Error> {
             if matches!(kind, Kind::NeverType) && position != Position::FunctionResult {
                 require(source, Use::NeverType, unit, file, node)?;
             }
+            if const_trait_use(unit, kind) {
+                require(source, Use::ConstTrait, unit, file, node)?;
+            }
             attributes(source, unit, file, node, position, work)?;
             children.clear();
             unit.configured.ast.push_children(node, &mut children);
@@ -99,6 +105,18 @@ fn inspect(package: &Package, work: &mut Work) -> Result<(), Error> {
         }
     }
     Ok(())
+}
+
+fn const_trait_use(unit: &Unit, kind: Kind) -> bool {
+    use crate::{support::constness::Constness, syntax::item::ItemKind};
+    match kind {
+        Kind::Bound { constness, .. } => constness != Constness::Ordinary,
+        Kind::Item(index) => matches!(
+            unit.configured.ast.items[index as usize].kind,
+            ItemKind::Trait { constant: true, .. } | ItemKind::Impl { constant: true, .. }
+        ),
+        _ => false,
+    }
 }
 
 fn require(

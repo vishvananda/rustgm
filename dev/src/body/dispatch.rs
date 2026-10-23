@@ -32,7 +32,7 @@ fn resolve_with_original(
             || matches!(value.kind, Rvalue::Function(id) if facts.associated.trait_owner(id).is_some())
     });
     if !dispatch {
-        return super::invocation_entries::select(facts, body, contract).map_err(String::from);
+        return finish(facts, body, contract);
     }
     let (mut caller, mut dispatcher) = callers::prepare(facts, body, contract)?;
     let mut replacements = HashMap::default();
@@ -100,7 +100,7 @@ fn resolve_with_original(
         contract
             .proofs
             .push(crate::body::regions::Proof::new(body.source, proof));
-        return super::invocation_entries::select(facts, body, contract).map_err(String::from);
+        return finish(facts, body, contract);
     }
     let mut obligations = proof
         .regions
@@ -126,7 +126,22 @@ fn resolve_with_original(
         kind: Kind::TypeOutlives { ty, shorter },
     }));
     contract.obligations = obligations;
-    super::invocation_entries::select(facts, body, contract).map_err(String::from)
+    finish(facts, body, contract)
+}
+
+fn finish(
+    facts: &mut Declarations,
+    body: &mut Body,
+    contract: &mut Contract,
+) -> Result<(), String> {
+    super::invocation_entries::select(facts, body, contract).map_err(String::from)?;
+    super::copy_requirements::prepare(facts, body, contract)
+}
+pub(super) fn copy_frontier(
+    facts: &Declarations,
+    contract: &Contract,
+) -> Result<u32, &'static str> {
+    callers::first_region(facts, contract, false)
 }
 
 fn rewrite(

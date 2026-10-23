@@ -133,7 +133,10 @@ impl Checker<'_> {
                         .predicate
                 }
             };
-            if !matches!(body.bound, Bound::Trait(_)) {
+            if !matches!(
+                body.bound,
+                Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_)
+            ) {
                 continue;
             }
             let contract = self
@@ -271,7 +274,7 @@ impl Checker<'_> {
         };
         constraints.assume_well_formed(queries, header.predicate.ty)?;
         let id = match header.predicate.bound {
-            Bound::Trait(id) => id,
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => id,
             Bound::Auto(_) => return Ok(()),
             _ => return Err("invalid implementation trait predicate".into()),
         };

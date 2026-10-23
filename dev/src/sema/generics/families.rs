@@ -34,7 +34,7 @@ impl Declarations {
         predicate: crate::types::parameters::predicates::Predicate,
         family: Option<(DefId, GenericArgs)>,
     ) -> Result<Bound, &'static str> {
-        let crate::types::parameters::predicates::Bound::Trait(id) = predicate.bound else {
+        let Some((id, _)) = predicate.bound.trait_parts() else {
             return Err("missing associated result trait");
         };
         let parent = self

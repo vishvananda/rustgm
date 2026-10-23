@@ -1,0 +1,1 @@
+union U{a:&'static str,b:&'static str}const S:&str=unsafe{U{a:"\u{e9}"}.b};const E:&str=unsafe{U{a:""}.b};fn observe(s:&str)->usize{let b:&[u8]=unsafe{*(&raw const s as *const &[u8])};let n=b.len();if n==0{0}else{n+b[0] as usize+b[n-1] as usize}}fn main(){if observe(S)!=366||observe(E)!=0{let _=fail(0);}}fn fail(x:u8)->u8{1/x}

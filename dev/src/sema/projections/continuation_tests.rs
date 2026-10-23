@@ -9,8 +9,7 @@ use crate::{
     sema,
     support::source::SourceFile,
     types::{
-        GenericArgs, ItemId, Kind, Primitive, Store, parameters::predicates::Bound,
-        projection::Application, substitute::Request,
+        GenericArgs, ItemId, Kind, Primitive, Store, projection::Application, substitute::Request,
     },
 };
 use std::{fmt::Write as _, path::Path};
@@ -49,7 +48,7 @@ fn fixture(count: usize, lifetimes: bool, restricted: bool) -> TestResult<Fixtur
         .collect();
     let mut roots = Vec::new();
     for (predicate, (item, definition)) in implementations {
-        let Bound::Trait(trait_application) = predicate.bound else {
+        let Some((trait_application, _)) = predicate.bound.trait_parts() else {
             return Err("missing trait application".into());
         };
         let ty = facts.types.intern(Kind::Projection(Application {
@@ -97,7 +96,7 @@ fn a_wait_retains_complete_arguments_and_never_reselects_a_member() -> TestResul
             .ok_or("missing header")?;
         let (member, definition) = header.types[0];
         let subject = header.predicate.ty;
-        let Bound::Trait(application) = header.predicate.bound else {
+        let Some((application, _)) = header.predicate.bound.trait_parts() else {
             return Err("missing trait application".into());
         };
         let item = facts

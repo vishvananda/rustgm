@@ -294,7 +294,7 @@ impl Parser<'_, '_> {
             let by_ref = self.eat_word(Word::Ref)?;
             let mutable = self.eat_word(Word::Mut)?;
             let token = self.required()?;
-            if !self.field_name(token, self.cursor.last_word()) {
+            if !self.field_name(token, self.cursor.last_word())? {
                 return Err(error(token.start, "expected pattern field"));
             }
             let name = Span {

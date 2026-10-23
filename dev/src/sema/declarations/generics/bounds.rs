@@ -27,7 +27,11 @@ pub(in super::super) struct Syntax {
 #[derive(Clone, Copy)]
 pub(in super::super) enum Written {
     Trait(Bound),
-    User { path: NodeKey, definition: DefId },
+    User {
+        path: NodeKey,
+        definition: DefId,
+        constness: crate::support::constness::Constness,
+    },
     SourceSizing(DefId),
     Outlives(NodeKey),
 }
@@ -141,7 +145,13 @@ impl Checker<'_> {
             {
                 self.retain_object_container_bound(subject, key);
             }
-            if let (Some(subject), Written::User { path, definition }) = (subject, bound.bound) {
+            if let (
+                Some(subject),
+                Written::User {
+                    path, definition, ..
+                },
+            ) = (subject, bound.bound)
+            {
                 self.retain_projection_bound(
                     owner,
                     subject,
@@ -184,6 +194,7 @@ impl Checker<'_> {
             }
             let Kind::Bound {
                 optional,
+                constness,
                 quantified,
                 binders,
                 value,
@@ -216,7 +227,7 @@ impl Checker<'_> {
                 });
                 continue;
             }
-            let bound = self.trait_bound(value)?;
+            let bound = self.qualified_trait_bound(value, constness)?;
             let scope = self.call_bound_scope(key, bound, scope, context)?;
             if optional {
                 if !matches!(bound, Written::Trait(Bound::Sized)) {
@@ -284,6 +295,29 @@ impl Checker<'_> {
                 (subject == Some(self_definition)).then_some((syntax.source, syntax.bound))
             })
     }
+    pub(in super::super) fn qualified_trait_bound(
+        &self,
+        key: NodeKey,
+        constness: crate::support::constness::Constness,
+    ) -> Result<Written, Error> {
+        let bound = self.trait_bound(key)?;
+        if constness == crate::support::constness::Constness::Ordinary {
+            return Ok(bound);
+        }
+        match bound {
+            Written::User {
+                path, definition, ..
+            } => Ok(Written::User {
+                path,
+                definition,
+                constness,
+            }),
+            _ => Err(self.error(
+                key,
+                "const qualification requires an actual trait application",
+            )),
+        }
+    }
     pub(in super::super) fn trait_bound(&self, mut key: NodeKey) -> Result<Written, Error> {
         loop {
             if self.lifetime_argument(key) {
@@ -297,8 +331,10 @@ impl Checker<'_> {
                 if self.source_sized_bound(key, id)? {
                     return Ok(Written::Trait(Bound::Sized));
                 }
-                if matches!(builtin, Some(BuiltinTrait::Callable(_))) {
-                    if crate::sema::lifetimes::call_arguments(self.report, key)?.is_none() {
+                if self.declared_callable(id) {
+                    if matches!(builtin, Some(BuiltinTrait::Callable(_)))
+                        && crate::sema::lifetimes::call_arguments(self.report, key)?.is_none()
+                    {
                         return Err(
                             self.error(key, "call traits require stable parenthesized arguments")
                         );
@@ -306,6 +342,7 @@ impl Checker<'_> {
                     return Ok(Written::User {
                         path: key,
                         definition: id,
+                        constness: crate::support::constness::Constness::Ordinary,
                     });
                 }
                 if matches!(
@@ -319,6 +356,7 @@ impl Checker<'_> {
                     return Ok(Written::User {
                         path: key,
                         definition: id,
+                        constness: crate::support::constness::Constness::Ordinary,
                     });
                 }
                 if builtin.is_some()
@@ -339,6 +377,7 @@ impl Checker<'_> {
                     ) => Ok(Written::User {
                         path: key,
                         definition: id,
+                        constness: crate::support::constness::Constness::Ordinary,
                     }),
                     Some(BuiltinTrait::Callable(_)) => {
                         Err(self.error(key, "missing call-trait syntax"))
@@ -355,6 +394,7 @@ impl Checker<'_> {
                         Ok(Written::User {
                             path: key,
                             definition: id,
+                            constness: crate::support::constness::Constness::Ordinary,
                         })
                     }
                     None => Err(self.error(key, "bound requires a trait declaration")),
@@ -378,7 +418,10 @@ impl Checker<'_> {
         let mut subjects = crate::support::hash::HashSet::default();
         for bound in bounds.iter().rev() {
             let bound_context = bound.context(context);
-            if let Written::User { path, definition } = bound.bound {
+            if let Written::User {
+                path, definition, ..
+            } = bound.bound
+            {
                 self.bound_subject_lifetimes(path, owner)?;
                 self.schedule_associated_bindings(path, bound_context)?;
                 self.work
@@ -562,7 +605,14 @@ impl Checker<'_> {
                     .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
                 Bound::Trait(application)
             }
-            Written::User { path, definition } => {
+            Written::User {
+                path,
+                definition,
+                constness,
+            } => {
+                if constness != crate::support::constness::Constness::Ordinary {
+                    self.require_const_trait(path, definition)?;
+                }
                 let arguments = self.application_arguments(path, definition, context)?;
                 let original_arguments = self.facts.unreduced.arguments(path).unwrap_or(arguments);
                 let value = self.applied_trait(path, definition, subject, arguments)?;
@@ -571,7 +621,10 @@ impl Checker<'_> {
                 } else {
                     value
                 };
-                return Ok((Bound::Trait(value), Bound::Trait(original)));
+                return Ok((
+                    Bound::trait_application(value, constness),
+                    Bound::trait_application(original, constness),
+                ));
             }
             Written::Outlives(key) => {
                 let Kind::Name(span, _) = self.kind(key) else {
@@ -590,6 +643,20 @@ impl Checker<'_> {
             }
         };
         Ok((value, value))
+    }
+    pub(in crate::sema::declarations) fn require_const_trait(
+        &self,
+        source: NodeKey,
+        definition: DefId,
+    ) -> Result<(), Error> {
+        match self.facts.associated.constant_trait(definition) {
+            Some(true) => Ok(()),
+            Some(false) => Err(self.error(source, "const qualification requires a const trait")),
+            None => Err(self.error(
+                source,
+                "const trait owner requires completed declaration preparation",
+            )),
+        }
     }
 }
 
@@ -616,7 +683,9 @@ impl Syntax {
     }
     pub(in super::super) fn trait_path(self) -> Option<(NodeKey, DefId)> {
         match self.bound {
-            Written::User { path, definition } => Some((path, definition)),
+            Written::User {
+                path, definition, ..
+            } => Some((path, definition)),
             Written::Trait(_) | Written::SourceSizing(_) | Written::Outlives(_) => None,
         }
     }

@@ -41,7 +41,7 @@ struct OriginContract<O> {
     type_assumptions: Vec<crate::types::parameters::clauses::Clause>,
     obligations: Vec<regions::Obligation>,
     proofs: Vec<regions::Proof>,
-    builtins: Option<Arc<crate::sema::model::BuiltinRequirements>>,
+    builtins: Option<Arc<regions::BuiltinRequirements>>,
     output: Option<Arc<crate::sema::nested_outputs::Link>>,
     require_result_formation: bool,
 }

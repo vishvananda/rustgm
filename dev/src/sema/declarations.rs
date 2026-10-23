@@ -328,6 +328,7 @@ impl Checker<'_> {
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
         self.prepare_trait_owners(&mut steps, work_limit)?;
+        self.prepare_source_call_contracts(&mut steps, work_limit)?;
         self.prepare_destructors(destructors, &mut steps, work_limit)?;
         self.prepare_trait_implementations(&mut steps, work_limit)?;
         self.prepare_inherent_owners(&mut steps, work_limit)?;
@@ -1417,14 +1418,7 @@ impl Checker<'_> {
                             node,
                         }),
                     });
-                    let function = *self.facts.functions.last().ok_or_else(|| {
-                        self.error(key, "source function publication disappeared")
-                    })?;
-                    crate::sema::compiler_items::validate_intrinsic(
-                        self.report,
-                        &mut self.facts,
-                        function,
-                    )?;
+                    self.validate_published_intrinsic(key)?;
                     let item = self.intern(
                         key,
                         Type::FunctionItem {
@@ -1445,6 +1439,8 @@ impl Checker<'_> {
                         self.facts.unreduced.retain_node(key, original);
                     }
                     self.complete(id, key, item)?;
+                    crate::sema::compiler_items::record_call_effects(&mut self.facts, id)
+                        .map_err(|e| self.error(key, e))?;
                 } else {
                     if original != ty {
                         self.facts.unreduced.retain_node(key, original);

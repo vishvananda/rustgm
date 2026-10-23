@@ -7,10 +7,42 @@ pub enum Bound {
     Sized,
     Auto(crate::types::auto_traits::AutoTrait),
     Trait(crate::types::traits::ApplicationId),
+    ConstTrait(crate::types::traits::ApplicationId),
+    MaybeConstTrait(crate::types::traits::ApplicationId),
     Outlives(crate::types::RegionId),
     /// The projected subject equals this result; its inputs are not injective.
     /// A discharged normalizer may replace either root with its normal form.
     ProjectionEqual(TypeId),
+}
+impl Bound {
+    /// Changing a trait's arguments must preserve its effect qualification.
+    #[must_use]
+    pub const fn trait_application(
+        application: crate::types::traits::ApplicationId,
+        constness: crate::support::constness::Constness,
+    ) -> Self {
+        use crate::support::constness::Constness;
+        match constness {
+            Constness::Ordinary => Self::Trait(application),
+            Constness::Const => Self::ConstTrait(application),
+            Constness::Conditional => Self::MaybeConstTrait(application),
+        }
+    }
+    #[must_use]
+    pub const fn trait_parts(
+        self,
+    ) -> Option<(
+        crate::types::traits::ApplicationId,
+        crate::support::constness::Constness,
+    )> {
+        use crate::support::constness::Constness;
+        match self {
+            Self::Trait(id) => Some((id, Constness::Ordinary)),
+            Self::ConstTrait(id) => Some((id, Constness::Const)),
+            Self::MaybeConstTrait(id) => Some((id, Constness::Conditional)),
+            _ => None,
+        }
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Predicate {
@@ -46,7 +78,7 @@ impl Predicate {
             return Ok(false);
         }
         Ok(match self.bound {
-            Bound::Trait(id) => closed(
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => closed(
                 store
                     .trait_properties(id)
                     .ok_or("invalid definition bound application")?,
@@ -73,7 +105,7 @@ impl Predicate {
             return Ok(false);
         }
         Ok(match self.bound {
-            Bound::Trait(id) => store
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => store
                 .trait_properties(id)
                 .ok_or("invalid predicate trait application")?
                 .is_concrete(),
@@ -91,7 +123,7 @@ impl Predicate {
             .contains_projections(self.ty)
             .ok_or("invalid predicate subject")?;
         let arguments = match self.bound {
-            Bound::Trait(id) => store
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => store
                 .trait_properties(id)
                 .ok_or("invalid predicate trait application")?
                 .has(crate::types::Property::Projections),
@@ -113,7 +145,7 @@ impl Predicate {
             .contains_opaques(self.ty)
             .ok_or("invalid predicate subject")?;
         let arguments = match self.bound {
-            Bound::Trait(id) => store
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => store
                 .trait_properties(id)
                 .ok_or("invalid predicate trait application")?
                 .has(crate::types::Property::Opaques),
@@ -142,7 +174,7 @@ impl Predicate {
             .has_free_regions(self.ty, depth)
             .ok_or("invalid predicate subject")?;
         let arguments = match self.bound {
-            Bound::Trait(id) => {
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => {
                 let properties = store
                     .trait_properties(id)
                     .ok_or("invalid predicate trait application")?;
@@ -167,7 +199,7 @@ impl Predicate {
             .contains_parameters(self.ty)
             .ok_or("invalid predicate subject")?;
         let arguments = match self.bound {
-            Bound::Trait(id) => store
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => store
                 .trait_properties(id)
                 .ok_or("invalid predicate trait application")?
                 .has(crate::types::Property::Parameters),
@@ -188,7 +220,7 @@ impl Predicate {
             .escaping_binders(self.ty)
             .ok_or("invalid predicate subject")?;
         let arguments = match self.bound {
-            Bound::Trait(id) => {
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => {
                 store
                     .trait_properties(id)
                     .ok_or("invalid predicate trait application")?

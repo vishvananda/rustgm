@@ -190,7 +190,11 @@ fn trait_input(
             (value.predicate, Some(value.bound_regions))
         }
     };
-    Ok(matches!(predicate.bound, Bound::Trait(_)).then_some((predicate, count)))
+    Ok(matches!(
+        predicate.bound,
+        Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_)
+    )
+    .then_some((predicate, count)))
 }
 
 fn lift(

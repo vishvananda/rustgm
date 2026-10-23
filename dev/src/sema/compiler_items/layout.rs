@@ -1,29 +1,11 @@
-//! Validated source intrinsic contracts retain actual declarations and substitutions.
+//! Layout selections retain their existing usize contract and carry no permission.
 use super::Catalog;
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error},
-    sema::model::{Declarations, Function},
-    support::bindings::{LangItem, LayoutIntrinsic},
-    types::{
-        Kind, Primitive, TypeId, arguments::Argument, callable::Convention, instance::Instance,
-        parameters::ParameterKind,
-    },
+    sema::model::Declarations,
+    support::bindings::{LangItem, LayoutIntrinsic, SourceIntrinsic},
+    types::{Primitive, TypeId, instance::Instance},
 };
-
-pub(super) struct Intrinsic {
-    declaration: crate::resolve::bindings::Declaration,
-    kind: LayoutIntrinsic,
-    signature: Option<TypeId>,
-}
-impl Intrinsic {
-    pub(super) fn reserved(entry: crate::resolve::bindings::IntrinsicDeclaration) -> Self {
-        Self {
-            declaration: entry.declaration,
-            kind: entry.kind,
-            signature: None,
-        }
-    }
-}
 /// Data describing a validated target; execution still requires its own checked call.
 #[derive(Clone, Copy)]
 pub(crate) struct Selection {
@@ -31,76 +13,6 @@ pub(crate) struct Selection {
     pub element: TypeId,
     pub kind: LayoutIntrinsic,
     pub fallback: bool,
-}
-
-pub(in crate::sema) fn validate(
-    report: &Report,
-    facts: &mut Declarations,
-    function: Function,
-) -> Result<(), Error> {
-    let Some(entry) = facts
-        .source_bindings
-        .as_deref()
-        .and_then(|c| c.intrinsics.get(&function.definition))
-    else {
-        return Ok(());
-    };
-    let error = |message| Declarations::error(report, function.node, message);
-    if entry.signature.is_some()
-        || entry.declaration.origin != function.node
-        || entry.declaration.parent.is_some()
-    {
-        return Err(error("source intrinsic declaration identity changed"));
-    }
-    let Some(Kind::Function {
-        bound_regions: 0,
-        parameters,
-        result,
-        unsafe_: false,
-        convention: Convention::RUST,
-    }) = facts.types.kind(function.signature)
-    else {
-        return Err(error(
-            "source layout intrinsic requires a safe Rust signature without late lifetimes",
-        ));
-    };
-    let parameters = facts
-        .types
-        .list(parameters)
-        .ok_or_else(|| error("missing source intrinsic inputs"))?;
-    let generic = facts
-        .generics
-        .parameters
-        .get(&function.definition)
-        .ok_or_else(|| error("source layout intrinsic requires one type parameter"))?;
-    if !parameters.is_empty()
-        || facts.types.kind(result) != Some(Kind::Primitive(Primitive::Usize))
-        || generic.len() != 1
-    {
-        return Err(error(
-            "source layout intrinsic requires one type parameter, no values and usize result",
-        ));
-    }
-    let Argument::Type(ty) = generic[0].argument else {
-        return Err(error("source layout intrinsic requires a type parameter"));
-    };
-    let Some(Kind::Parameter(id)) = facts.types.kind(ty) else {
-        return Err(error("source layout intrinsic lost its type parameter"));
-    };
-    if facts.types.parameter(id).is_none_or(|p| {
-        p.owner.0 != function.definition.0 || !matches!(p.kind, ParameterKind::Type { sized: true })
-    }) {
-        return Err(error(
-            "source layout intrinsic requires its own Sized type parameter",
-        ));
-    }
-    facts
-        .source_bindings
-        .as_deref_mut()
-        .and_then(|c| c.intrinsics.get_mut(&function.definition))
-        .ok_or_else(|| error("source intrinsic reservation disappeared"))?
-        .signature = Some(function.signature);
-    Ok(())
 }
 
 /// The actual source member has completed type elaboration, not evaluation.
@@ -157,70 +69,22 @@ pub(in crate::sema) fn validate_member(
 }
 
 impl Catalog {
-    pub(crate) fn intrinsic(&self, definition: DefId) -> Result<bool, &'static str> {
-        let Some(entry) = self.intrinsics.get(&definition) else {
-            return Ok(false);
-        };
-        if entry.signature.is_none() {
-            return Err("source intrinsic declaration is not validated");
-        }
-        Ok(true)
-    }
     pub(crate) fn layout_selection(
         &self,
         facts: &Declarations,
         instance: Instance,
     ) -> Result<Option<Selection>, &'static str> {
-        let Some(Kind::FunctionItem {
-            item,
-            arguments,
-            signature,
-        }) = facts.types.kind(instance.ty())
-        else {
+        let Some(selected) = self.selected_intrinsic(facts, instance)? else {
             return Ok(None);
         };
-        let definition = DefId(item.0);
-        let Some(entry) = self.intrinsics.get(&definition) else {
+        let SourceIntrinsic::Layout(kind) = selected.kind else {
             return Ok(None);
         };
-        let original = entry
-            .signature
-            .ok_or("source intrinsic declaration is not validated")?;
-        // This profile's public signature has no parameter occurrences. Matching
-        // the complete retained signature therefore validates its substitution.
-        if signature != original {
-            return Err("selected source intrinsic signature differs from its validated contract");
-        }
-        let mut arguments = facts
-            .types
-            .arguments(arguments)
-            .ok_or("invalid source intrinsic arguments")?;
-        let Some(Argument::Type(element)) = arguments.next() else {
-            return Err("selected source layout intrinsic lacks its type argument");
-        };
-        if arguments.next().is_some()
-            || facts.types.contains_parameters(element) != Some(false)
-            || facts.types.contains_projections(element) != Some(false)
-        {
-            return Err("source layout intrinsic requires a complete closed type argument");
-        }
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&i| facts.functions.get(i))
-            .ok_or("source intrinsic has no completed declaration")?;
-        if function.signature != original || function.node != entry.declaration.origin {
-            return Err("source intrinsic completed declaration changed");
-        }
         Ok(Some(Selection {
-            definition,
-            element,
-            kind: entry.kind,
-            fallback: function.body.is_some(),
+            definition: selected.definition,
+            element: selected.element,
+            kind,
+            fallback: selected.fallback,
         }))
     }
 }
-
-#[cfg(test)]
-#[path = "../../../tests/invariants/provider_layout.rs"]
-mod tests;

@@ -1,7 +1,5 @@
 //! Type paths, binders and generic argument syntax; no name/type resolution.
-use super::{
-    Kind, LexError, List, NORMAL, NodeId, P, Parser, Span, TokenKind, Word, error, keyword,
-};
+use super::{Kind, LexError, List, NORMAL, NodeId, P, Parser, Span, TokenKind, Word, error};
 use crate::syntax::item::GenericFlavor;
 
 use super::fragment::FragmentKind as F;
@@ -13,7 +11,7 @@ impl Parser<'_, '_> {
 
     pub(super) fn name(&mut self) -> Result<Span, LexError> {
         let token = self.required()?;
-        if !self.identifier(token, self.cursor.last_word()) {
+        if !self.identifier(token, self.cursor.last_word())? {
             return Err(error(token.start, "expected identifier"));
         }
         Ok(Span {
@@ -103,7 +101,7 @@ impl Parser<'_, '_> {
                 }
                 self.node(token.start, Kind::CrateRoot(crate_id.get()))?
             } else {
-                if !self.path_segment(token, self.cursor.last_word()) {
+                if !self.path_segment(token, self.cursor.last_word())? {
                     return Err(error(token.start, "expected path segment"));
                 }
                 self.name_node(token)?
@@ -389,6 +387,20 @@ impl Parser<'_, '_> {
                 continue;
             }
             let optional = self.eat(P::Question)?;
+            let constness = if self.eat(P::OpenBracket)? {
+                if !self.eat_word(Word::Const)? {
+                    return Err(self.error("conditional trait bound requires const")?);
+                }
+                self.expect(P::CloseBracket)?;
+                crate::support::constness::Constness::Conditional
+            } else if self.eat_word(Word::Const)? {
+                crate::support::constness::Constness::Const
+            } else {
+                crate::support::constness::Constness::Ordinary
+            };
+            if optional && constness != crate::support::constness::Constness::Ordinary {
+                return Err(self.error("const trait bounds cannot be relaxed")?);
+            }
             let quantified = self.cursor.at_word(Word::For)?;
             let binders = self.binders()?;
             if quantified && (optional || self.cursor.at(P::Question)?) {
@@ -418,6 +430,7 @@ impl Parser<'_, '_> {
                 token.start,
                 Kind::Bound {
                     optional,
+                    constness,
                     quantified,
                     binders,
                     value,
@@ -438,7 +451,7 @@ impl Parser<'_, '_> {
             let token = self.required()?;
             let spelling = self.cursor.spelling(token);
             if !(matches!(token.kind, TokenKind::Lifetime | TokenKind::RawLifetime)
-                || keyword::identifier(token.kind, spelling.strip_prefix("r#").unwrap_or(spelling))
+                || self.identifier(token, self.cursor.last_word())?
                 || (token.kind == TokenKind::Identifier && spelling == "Self"))
             {
                 return Err(error(token.start, "expected captured generic parameter"));

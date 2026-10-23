@@ -20,6 +20,7 @@ mod marker_evidence_tests;
 mod marker_readiness_tests;
 mod primitive_methods;
 mod sizing_fallback;
+mod tuple_role;
 pub(in crate::sema) use completed_proofs::Reuse;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/erased_formation.rs"]

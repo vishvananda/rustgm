@@ -277,7 +277,7 @@ impl Checker<'_> {
             if seen.len() + work.len() > 1_000_000 {
                 return Err(self.error(key, "shorthand supertrait work budget exceeded"));
             }
-            let Bound::Trait(application) = predicate.bound else {
+            let Some((application, _)) = predicate.bound.trait_parts() else {
                 continue;
             };
             let trait_item = self
@@ -326,7 +326,12 @@ impl Checker<'_> {
                 .map_err(|e| self.error(key, e))?;
             for clause in &requirements.implied {
                 let implied = clause.ordinary().map_err(|e| self.error(key, e))?;
-                if implied.ty == predicate.ty && matches!(implied.bound, Bound::Trait(_)) {
+                if implied.ty == predicate.ty
+                    && matches!(
+                        implied.bound,
+                        Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_)
+                    )
+                {
                     work.push(implied);
                 }
             }

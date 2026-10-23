@@ -158,7 +158,7 @@ impl Machine<'_, '_> {
                         let length = u64::try_from(crate::const_eval::values::integer(length)?)
                             .map_err(|_| "slice metadata exceeds usize")?;
                         (
-                            self.reconstruct_slice_word(
+                            self.reconstruct_sequence_word(
                                 address,
                                 pointee,
                                 length,
@@ -218,34 +218,29 @@ impl Machine<'_, '_> {
             }
         }
     }
-    fn reconstruct_slice_word(
+    pub(super) fn reconstruct_sequence_word(
         &mut self,
         address: crate::sema::values::WordAddress,
         pointee: TypeId,
         length: u64,
         reference: bool,
     ) -> Result<Constant, Failure> {
-        let Some(crate::types::Kind::Slice(element)) = self.evaluator.facts().types.kind(pointee)
-        else {
-            return Err("symbolic string pointer reconstruction is not implemented".into());
-        };
+        let element = Reader::new(self.evaluator.facts()).sequence_element(pointee)?;
         let root = Reader::new(self.evaluator.facts())
             .location(address.root())?
             .ty;
         if let Some(crate::types::Kind::Array {
-            element: actual,
-            length: bound,
+            element: actual, ..
         }) = self.evaluator.facts().types.kind(root)
-            && address.offset() == 0
             && Reader::new(self.evaluator.facts()).same_storage_type(actual, element)
-            && (!reference || length <= bound)
         {
-            let base = self.reconstruct_word(address, root)?;
-            return if reference {
-                self.evaluator.subsequence(base, 0, length, pointee)
-            } else {
-                base.unsize(length)
-            };
+            if reference {
+                self.footprint(root)?;
+                return self.evaluator.word_sequence_range(address, length, pointee);
+            }
+            if address.offset() == 0 {
+                return self.reconstruct_word(address, root)?.unsize(length);
+            }
         }
         let selected = self.reconstruct_word(address, element)?;
         if !reference {
@@ -262,9 +257,12 @@ impl Machine<'_, '_> {
     ) -> Result<Read<Constant>, Failure> {
         if matches!(
             self.evaluator.facts().types.kind(ty),
-            Some(crate::types::Kind::Slice(_))
+            Some(
+                crate::types::Kind::Slice(_)
+                    | crate::types::Kind::Primitive(crate::types::Primitive::Str)
+            )
         ) {
-            return self.validate_slice_word_reference(address, ty, mutable);
+            return self.validate_sequence_word_reference(address, ty, mutable);
         }
         let place = Resolved {
             address,

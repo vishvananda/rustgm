@@ -23,6 +23,68 @@ use crate::{
 };
 
 impl Checker<'_> {
+    pub(super) fn prepare_source_call_contracts(
+        &mut self,
+        steps: &mut usize,
+        limit: usize,
+    ) -> Result<(), Error> {
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Ok(());
+        };
+        let mut methods = Vec::new();
+        for role in [
+            crate::support::bindings::LangItem::Clone,
+            crate::support::bindings::LangItem::FnOnce,
+            crate::support::bindings::LangItem::FnMut,
+            crate::support::bindings::LangItem::Fn,
+        ] {
+            let Some(declaration) = catalog.language(role) else {
+                continue;
+            };
+            let owner = self
+                .facts
+                .associated
+                .owner(declaration.definition)
+                .ok_or_else(|| {
+                    self.error(
+                        declaration.origin,
+                        "source role has no prepared trait owner",
+                    )
+                })?;
+            let members = self
+                .facts
+                .associated
+                .owner_members(owner)
+                .ok_or_else(|| self.error(declaration.origin, "source role has no members"))?;
+            methods.extend(
+                members
+                    .iter()
+                    .filter(|m| {
+                        self.report.resolution.definitions[m.0 as usize].kind
+                            == crate::resolve::model::DefKind::Function
+                    })
+                    .copied(),
+            );
+        }
+        for method in methods {
+            self.work.push(super::Work::Definition(method, false));
+            self.drain(steps, limit)?;
+        }
+        crate::sema::compiler_items::validate_traits(self.report, &mut self.facts)
+    }
+    /// Reserve-only identity is sufficient for parsing this declaration's Args;
+    /// selection still waits for completed source callable validation.
+    pub(in crate::sema::declarations) fn declared_callable(&self, definition: DefId) -> bool {
+        matches!(
+            self.report.resolution.builtin_traits.identify(definition),
+            Some(crate::resolve::model::BuiltinTrait::Callable(_))
+        ) || self
+            .report
+            .resolution
+            .source_bindings
+            .as_deref()
+            .is_some_and(|r| r.callable(definition).is_some())
+    }
     /// Attribute presence affects language call permission independently of the
     /// function's safe signature. Consume configured ownership once per declaration.
     pub(super) fn register_function_call_traits(&mut self, key: NodeKey, definition: DefId) {

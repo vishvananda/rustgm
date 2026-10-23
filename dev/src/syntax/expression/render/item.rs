@@ -86,15 +86,17 @@ pub(super) fn node<L>(
         ),
         Kind::Bound {
             optional,
+            constness,
             binders,
             value,
             ..
-        } => write!(
-            output,
-            "bound {optional} {} {}",
-            Children(ast, binders),
-            value.get()
-        ),
+        } => {
+            write!(output, "bound {optional} ")?;
+            if constness != crate::support::constness::Constness::Ordinary {
+                write!(output, "{constness:?} ")?;
+            }
+            write!(output, "{} {}", Children(ast, binders), value.get())
+        }
         Kind::Generic(index) => {
             let crate::syntax::item::GenericParameter {
                 flavor,
@@ -212,6 +214,10 @@ pub(super) fn node<L>(
     }
 }
 
+#[expect(
+    clippy::too_many_lines,
+    reason = "one exhaustive item-vocabulary dispatch preserves the existing ordinary rendering"
+)]
 pub(super) fn item<L>(
     source: &str,
     ast: &Syntax<L>,
@@ -253,23 +259,27 @@ pub(super) fn item<L>(
         ItemKind::Union { fields } => write!(output, "union {}", Children(ast, fields)),
         ItemKind::Trait {
             unsafe_,
+            constant,
             bounds,
             items,
         } => write!(
             output,
-            "trait {unsafe_} {} {}",
+            "trait {unsafe_} {}{} {}",
+            if constant { "const " } else { "" },
             Children(ast, bounds),
             Children(ast, items)
         ),
         ItemKind::Impl {
             unsafe_,
+            constant,
             negative,
             trait_path,
             ty,
             items,
         } => write!(
             output,
-            "impl {unsafe_} {negative} {} {} {}",
+            "impl {unsafe_} {negative} {}{} {} {}",
+            if constant { "const " } else { "" },
             Optional(trait_path),
             ty.get(),
             Children(ast, items)

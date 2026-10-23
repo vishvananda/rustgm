@@ -153,7 +153,25 @@ pub fn visibility<'s>(
     tokens: &'s [Token],
     start: TokenPosition,
 ) -> Result<ParsedVisibility<'s>, LexError> {
+    visibility_with_inputs(
+        source,
+        tokens,
+        start,
+        &crate::syntax::interpolation::EMPTY_INPUTS,
+    )
+}
+
+/// # Errors
+/// Reports malformed visibility and missing path-token edition provenance.
+pub fn visibility_with_inputs<'s>(
+    source: &'s str,
+    tokens: &'s [Token],
+    start: TokenPosition,
+    inputs: &dyn crate::syntax::interpolation::Inputs,
+) -> Result<ParsedVisibility<'s>, LexError> {
     let mut parser = Parser::with_cursor(Cursor::from_position(source, tokens, start)?, true);
+    parser.inputs = inputs;
+    parser.has_opaque = !inputs.is_empty();
     let value = parser.visibility()?;
     let position = parser.cursor.token_position()?;
     let ast = if let crate::syntax::item::Visibility::Restricted(root) = value {
@@ -240,6 +258,7 @@ pub fn metadata_with_inputs<'s>(
     let end = parser.cursor.end();
     let mut cursor = Cursor::from_position(source, tokens, start)?;
     let mut builder = crate::syntax::token_tree::ForestBuilder::default();
+    let mut context = crate::syntax::attribute::Context::new(inputs);
     while cursor.token_position()? != position {
         let token = cursor
             .take()?
@@ -251,16 +270,18 @@ pub fn metadata_with_inputs<'s>(
                 splice.fragment
             {
                 builder.append(forest, |span| splice.span(span))?;
+                context.parsed_path(splice.destination)?;
                 continue;
             }
             if splice.append_attribute_path(source, &mut builder)? {
+                context.parsed_path(splice.destination)?;
                 continue;
             }
         }
         builder.push(source, token)?;
     }
     let forest = builder.finish(end)?;
-    let attribute = crate::syntax::attribute::parse(
+    let attribute = crate::syntax::attribute::parse_with_context(
         &forest,
         source,
         forest.roots(),
@@ -269,6 +290,7 @@ pub fn metadata_with_inputs<'s>(
             start: first.start,
             end,
         },
+        &context,
     )?;
     let expression = expression.map(|root| {
         parser.ast.root = root;

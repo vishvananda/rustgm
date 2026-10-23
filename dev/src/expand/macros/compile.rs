@@ -2,7 +2,7 @@
 use super::model::{
     Atom, Definition, Fragment, Kind, List, Node, NodeId, Repetition, Rule, Variable, VariableId,
 };
-use crate::support::hash::HashMap;
+use crate::support::{edition::Edition, hash::HashMap};
 use crate::{
     lex::token::{Kind as TokenKind, LexError, Punctuation as P, Token},
     support::names::{NameId, Names},
@@ -26,10 +26,26 @@ struct Compiler<'a> {
     repetitions: Vec<NodeId>,
     scratch: Vec<NodeId>,
     depth: u32,
+    edition: Edition,
 }
 /// # Errors
 /// Reports malformed rules, metavariables, fragment names and repetition syntax.
 pub fn compile(source: &str, forest: &Forest, names: &mut Names) -> Result<Definition, LexError> {
+    in_edition(source, forest, names, Edition::Rust2024)
+}
+
+/// Compile fragment grammar using the macro's defining edition. Call-site
+/// editions must not change this selection. Tokens retain their own provenance;
+/// this parameter does not supply an edition for captured or transcribed tokens.
+///
+/// # Errors
+/// Reports malformed rules, metavariables, fragment names and repetition syntax.
+pub fn in_edition(
+    source: &str,
+    forest: &Forest,
+    names: &mut Names,
+    edition: Edition,
+) -> Result<Definition, LexError> {
     let mut compiler = Compiler {
         source,
         forest,
@@ -40,6 +56,7 @@ pub fn compile(source: &str, forest: &Forest, names: &mut Names) -> Result<Defin
         repetitions: Vec::new(),
         scratch: Vec::new(),
         depth: 0,
+        edition,
     };
     let body = forest
         .children(forest.roots().start)
@@ -205,7 +222,7 @@ impl Compiler<'_> {
             .forest
             .name(self.source, index + 3)
             .ok_or_else(|| error(self.forest.offset(index + 3), "expected fragment specifier"))?;
-        let fragment = fragment(fragment_name).ok_or_else(|| {
+        let fragment = fragment(fragment_name, self.edition).ok_or_else(|| {
             error(
                 self.forest.offset(index + 3),
                 "unknown macro fragment specifier",
@@ -333,7 +350,7 @@ impl Compiler<'_> {
         Ok(id)
     }
 }
-fn fragment(name: &str) -> Option<Fragment> {
+fn fragment(name: &str, edition: Edition) -> Option<Fragment> {
     Some(match name {
         "ident" => Fragment::Identifier,
         "lifetime" => Fragment::Lifetime,
@@ -341,6 +358,7 @@ fn fragment(name: &str) -> Option<Fragment> {
         "meta" => Fragment::Metadata,
         "vis" => Fragment::Visibility,
         "block" => Fragment::Syntax(FragmentKind::Block),
+        "expr" if edition == Edition::Rust2021 => Fragment::Syntax(FragmentKind::Expression2021),
         "expr" => Fragment::Syntax(FragmentKind::Expression),
         "expr_2021" => Fragment::Syntax(FragmentKind::Expression2021),
         "item" => Fragment::Syntax(FragmentKind::Item),

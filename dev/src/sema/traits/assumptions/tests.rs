@@ -244,7 +244,7 @@ fn only_selected_lifetime_equations_escape_the_probe() -> Result<(), Box<dyn std
     use crate::types::RegionId;
     let (mut store, opaque, exact) = projected_alternatives()?;
     let mut with_region = |predicate: Predicate, region| -> Result<Predicate, &'static str> {
-        let Bound::Trait(id) = predicate.bound else {
+        let Some((id, _)) = predicate.bound.trait_parts() else {
             return Err("missing test trait application");
         };
         let application = store.trait_application(id).ok_or("missing test trait")?;
@@ -283,5 +283,50 @@ fn only_selected_lifetime_equations_escape_the_probe() -> Result<(), Box<dyn std
             .is_none()
     );
     assert!(context.region_equalities.is_empty());
+    Ok(())
+}
+
+#[test]
+fn ordinary_duplicate_effects_do_not_pay_const_obligations()
+-> Result<(), Box<dyn std::error::Error>> {
+    use super::Selection;
+    use crate::{support::constness::Constness, types::GenericArgs};
+    let mut store = Store::default();
+    let application = store.intern_trait_application(Application {
+        item: ItemId(7),
+        arguments: GenericArgs::EMPTY,
+    })?;
+    let ty = TypeId::primitive(Primitive::U8);
+    let mut assumptions = Assumptions::default();
+    for effect in [Constness::Ordinary, Constness::Conditional] {
+        assumptions.insert(
+            &store,
+            Predicate {
+                ty,
+                bound: Bound::trait_application(application, effect),
+            },
+        )?;
+    }
+    for effect in [
+        Constness::Ordinary,
+        Constness::Conditional,
+        Constness::Const,
+    ] {
+        let mut context = Context::default();
+        let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+        let goal = context.instantiate_predicate(
+            &mut store,
+            Predicate {
+                ty,
+                bound: Bound::trait_application(application, effect),
+            },
+            &mut substitution,
+        )?;
+        let selected = assumptions.select(&mut store, &mut context, &goal)?;
+        assert_eq!(
+            matches!(selected, Selection::Proven(_)),
+            effect != Constness::Const
+        );
+    }
     Ok(())
 }

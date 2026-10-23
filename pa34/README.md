@@ -35,6 +35,22 @@ Keep orchestration outside dev/src frontend phases. Cache completed per-crate
 work by explicit inputs; do not rescan or reparse dependency sources for each
 consumer. Preserve the existing three-job controller and scoped cleanup.
 
+The maintainer's [planning adapter](../docs/crate-planning.md) establishes a
+pinned, compile-free unit graph for local packages and authenticated crates.io
+archive snapshots. It preserves separate host and target feature sets, validates
+the full registry lockfile closure and retains build-script execution context.
+The original serde_core graph replays offline without compiling source. This
+preparatory checkpoint does not activate PA34 or establish library compilation;
+network acquisition, complete configuration provenance, edition behavior and
+target execution remain part of this assignment.
+
+Its authenticated host script now executes through the exact paired graph units,
+with explicit compiler/run profiles and package/target environment. Original
+generated source and directives match independent observations. Host dependency
+scheduling, DEP metadata and target consumption remain required. The query wrapper
+isolates Cargo's bootstrap environment and rejects source-compiling probes even
+when a build script catches their failure.
+
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
 Reference and CPPGM's efficient representation principles. Parse once, retain

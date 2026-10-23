@@ -378,8 +378,8 @@ impl Evaluator<'_> {
             Some(Kind::Array { element, length }) => {
                 (element, base.length().unwrap_or(length).min(length))
             }
-            Some(Kind::Slice(element)) => (
-                element,
+            Some(Kind::Slice(_) | Kind::Primitive(crate::types::Primitive::Str)) => (
+                Reader::new(facts).sequence_element(original.ty)?,
                 base.length()
                     .ok_or("constant slice lacks length metadata")?,
             ),
@@ -392,8 +392,9 @@ impl Evaluator<'_> {
             }) if super::Reader::new(facts).same_storage_type(selected, element) && n == length => {
                 false
             }
-            Some(Kind::Slice(selected))
-                if super::Reader::new(facts).same_storage_type(selected, element) =>
+            Some(Kind::Slice(_) | Kind::Primitive(crate::types::Primitive::Str))
+                if Reader::new(facts)
+                    .same_storage_type(Reader::new(facts).sequence_element(ty)?, element) =>
             {
                 true
             }

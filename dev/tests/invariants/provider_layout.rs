@@ -271,3 +271,6 @@ fn source_closure_demand_cannot_borrow_bootstrap_copy_or_callable_bindings() -> 
 
 #[path = "provider_layout/native.rs"]
 mod native;
+
+#[path = "provider_layout/needs_drop.rs"]
+mod needs_drop;

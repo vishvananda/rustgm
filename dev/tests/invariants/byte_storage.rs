@@ -9,6 +9,8 @@ mod captures;
 mod fragment_ranges;
 #[path = "hidden_memory.rs"]
 mod opaques;
+#[path = "string_memory.rs"]
+mod strings;
 use super::{Cell, Constant, Failure, Machine, Reader, Snapshot};
 use crate::{
     const_eval::{

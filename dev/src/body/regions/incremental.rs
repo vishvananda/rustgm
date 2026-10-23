@@ -220,7 +220,9 @@ impl Collector {
             .generics
             .builtin_requirements
             .get(&source)
-            .map(|requirements| std::sync::Arc::new(requirements.clone()));
+            .map(|requirements| {
+                std::sync::Arc::new(super::BuiltinRequirements::from(requirements))
+            });
         Ok(())
     }
 

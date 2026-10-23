@@ -47,7 +47,7 @@ pub(super) fn collect(
     for bound in &header.predicates {
         charge(steps, 1)?;
         let value = predicate(&facts.types, bound.value)?;
-        if let Bound::Trait(id) = value.bound {
+        if let Some((id, _)) = value.bound.trait_parts() {
             let application = facts
                 .types
                 .trait_application(id)
@@ -219,7 +219,7 @@ fn requirements(
         }
         let mut forbidden = uses.forbidden(&facts.types, value.ty, steps)?;
         match value.bound {
-            Bound::Trait(id) => {
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => {
                 let application = facts
                     .types
                     .trait_application(id)

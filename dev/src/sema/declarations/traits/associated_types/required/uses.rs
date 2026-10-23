@@ -29,7 +29,7 @@ impl Collector {
                 1,
             ),
         };
-        if let Bound::Trait(id) = predicate.bound {
+        if let Some((id, _)) = predicate.bound.trait_parts() {
             self.arguments(
                 types,
                 types

@@ -161,6 +161,14 @@ impl Word {
         (self as u8) < (Self::Union as u8)
     }
 
+    /// Classifying an edition-sensitive spelling does not change other keywords.
+    #[must_use]
+    pub const fn reserved_in(self, edition: crate::support::edition::Edition) -> bool {
+        self.reserved()
+            && !(matches!(self, Self::Gen)
+                && matches!(edition, crate::support::edition::Edition::Rust2021))
+    }
+
     /// Path-segment keywords accepted where other reserved words are not.
     #[must_use]
     pub const fn path_keyword(self) -> bool {

@@ -3328,6 +3328,343 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/image_storage.rs:CASES"
+    },
+    {
+      "path": "tests/spec/string-byte-words/string-union-roundtrip.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "reason": "Literal native value contract",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/string-raw-word-roundtrip.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "reason": "Literal native value contract",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/string-union-roundtrip-check.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "reason": "Literal native value contract",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/string-raw-word-roundtrip-check.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "reason": "Literal native value contract",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/ordinary-string-control.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "reason": "Literal native value contract",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/utf8-valid-widths.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "reason": "Literal native value contract",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/utf8-mutable-roundtrip.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "reason": "Literal native value contract",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/utf8-empty-roundtrip.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES"
+    },
+    {
+      "path": "tests/spec/string-byte-words/utf8-offset-view.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "reason": "Literal native value contract",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/raw-invalid-utf8.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "reason": "Literal native value contract",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/invalid-utf8-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Source/CTFE only; no native validity claim"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/truncated-utf8-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Source/CTFE only; no native validity claim"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/oversized-raw-string.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "reason": "Literal native value contract",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/oversized-string-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES"
+    },
+    {
+      "path": "tests/spec/string-byte-words/shared-mutable-string.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES"
+    },
+    {
+      "path": "tests/spec/string-byte-words/expired-string-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES"
+    },
+    {
+      "path": "tests/spec/string-byte-words/utf8-reread-after-write.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Source/CTFE only; no native validity claim"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/utf8-empty-local-cell.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "reason": "Literal native value contract",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/utf8-empty-one-past.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "reason": "Qualified empty live one-past range, no data access",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/string-byte-words/published-string-runtime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa27.string-byte-words"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/string_words.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "reason": "Qualified published nonempty/empty Str data and length through ordinary runtime argument ABI"
+      }
     }
   ]
 }

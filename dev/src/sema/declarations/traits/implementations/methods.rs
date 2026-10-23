@@ -8,7 +8,7 @@ use crate::{
         traits::conformance,
     },
     syntax::item::{ItemKind, Safety, Visibility},
-    types::parameters::predicates::{Bound, Predicate},
+    types::parameters::predicates::Predicate,
 };
 
 #[derive(Default)]
@@ -49,7 +49,7 @@ impl Checker<'_> {
         members: &Members,
         definitions: &conformance::Definitions,
     ) -> Result<Vec<(DefId, Option<DefId>)>, Error> {
-        let Bound::Trait(id) = predicate.bound else {
+        let Some((id, _)) = predicate.bound.trait_parts() else {
             return Err(self.error(source, "missing impl trait predicate"));
         };
         let app = self

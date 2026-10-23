@@ -70,6 +70,7 @@ fn originals<'a>(
         types: &facts.types,
         definitions: &facts.aggregates,
         derives: &facts.derives,
+        source_copy: facts.uses_source_copy(),
         copies: &mut facts.copies,
     };
     Ok(crate::borrow::templates::verify(
@@ -104,6 +105,7 @@ fn prove(
         types: &facts.types,
         definitions: &facts.aggregates,
         derives: &facts.derives,
+        source_copy: facts.uses_source_copy(),
         copies: &mut facts.copies,
     };
     Ok(crate::borrow::incremental::Verifier::new(None)?.prove(

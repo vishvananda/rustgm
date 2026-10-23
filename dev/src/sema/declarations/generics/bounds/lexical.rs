@@ -43,11 +43,11 @@ impl Checker<'_> {
         if scope.is_some() {
             return Ok(scope);
         }
-        if let super::Written::User { definition, .. } = written
-            && matches!(
-                self.report.resolution.builtin_traits.identify(definition),
-                Some(crate::resolve::model::BuiltinTrait::Callable(_))
-            )
+        if let super::Written::User {
+            definition, path, ..
+        } = written
+            && self.declared_callable(definition)
+            && crate::sema::lifetimes::call_arguments(self.report, path)?.is_some()
         {
             return self.bound_scope(source, Some(List { start: 0, end: 0 }), parent, false);
         }

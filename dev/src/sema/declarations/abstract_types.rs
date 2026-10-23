@@ -139,6 +139,7 @@ impl Checker<'_> {
             }
             let Kind::Bound {
                 optional,
+                constness,
                 quantified,
                 binders,
                 value,
@@ -154,7 +155,7 @@ impl Checker<'_> {
             let written = if self.lifetime_argument(value) {
                 Written::Outlives(value)
             } else {
-                self.trait_bound(value)?
+                self.qualified_trait_bound(value, constness)?
             };
             let scope = self.call_bound_scope(source, written, scope, context)?;
             let context = scope.map_or(context, |scope| scope.context(context));
@@ -162,7 +163,10 @@ impl Checker<'_> {
                 pending.promises.copy |= bound == Bound::Copy;
                 pending.promises.clone_ |= matches!(bound, Bound::Copy | Bound::Clone);
             }
-            if let Written::User { path, definition } = written {
+            if let Written::User {
+                path, definition, ..
+            } = written
+            {
                 self.bound_subject_lifetimes(path, owner)?;
                 self.schedule_associated_bindings(path, context)?;
                 self.work

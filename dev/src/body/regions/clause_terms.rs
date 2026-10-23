@@ -28,7 +28,7 @@ pub(super) fn collect(
                     .quantified(id)
                     .ok_or("invalid body formation clause")?;
                 let ty = match value.predicate.bound {
-                    Bound::Trait(_) => {
+                    Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_) => {
                         // Whole local-dependent inputs were deferred at declaration.
                         // Completed independent roots already live outside the binder.
                         for ty in facts.generics.trait_formation_inputs(id)? {

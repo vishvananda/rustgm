@@ -2,17 +2,18 @@
 pub use crate::sema::nested_outputs::Link as OutputLink;
 mod allocation;
 mod anonymous;
+mod builtins;
 mod clause_terms;
 mod incremental;
 mod proof;
 use super::ir::{BodyOrigin, NodeKey, ProofSite};
-pub use crate::sema::model::BuiltinRequirements;
 use crate::support::hash::HashMap;
 use crate::{
     sema::model::Declarations,
     types::{RegionId, TypeId, outlives::Pair},
 };
 use anonymous::header as anonymous_header;
+pub use builtins::BuiltinRequirements;
 pub use incremental::Collector;
 pub use proof::Proof;
 
@@ -63,7 +64,7 @@ pub struct Contract {
     pub type_assumptions: Vec<crate::types::parameters::clauses::Clause>,
     pub obligations: Vec<Obligation>,
     pub proofs: Vec<Proof>,
-    pub builtins: Option<std::sync::Arc<crate::sema::model::BuiltinRequirements>>,
+    pub builtins: Option<std::sync::Arc<BuiltinRequirements>>,
     pub output: Option<std::sync::Arc<crate::sema::nested_outputs::Link>>,
     /// Specialized nested inputs can be discharged without granting output formation.
     pub require_result_formation: bool,
@@ -195,7 +196,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             .get(source)
             .copied()
             .ok_or("builtin requirement has no body contract")?;
-        bodies[index].builtins = Some(std::sync::Arc::new(requirements.clone()));
+        bodies[index].builtins = Some(std::sync::Arc::new(BuiltinRequirements::from(requirements)));
     }
     super::length_methods::append_contract(facts, &mut bodies)?;
     Ok(Contracts {

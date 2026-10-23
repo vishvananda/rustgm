@@ -1,0 +1,1 @@
+union U<'a>{a:&'a str,b:&'a str}const N:u8={let mut b=[65u8];let p=&raw mut b;let s=unsafe{&*(p as *mut [u8] as *mut str)};let _first=unsafe{U{a:s}.b};unsafe{*(p as *mut u8)=255;}let _second=unsafe{U{a:s}.b};0};fn main(){let _=N;}

@@ -46,8 +46,7 @@ impl Original {
             let Some(predicate) = self.predicate else {
                 return Err("collection impl lacks its trait contract");
             };
-            let crate::types::parameters::predicates::Bound::Trait(application) = predicate.bound
-            else {
+            let Some((application, _)) = predicate.bound.trait_parts() else {
                 return Err("collection impl lacks a trait application");
             };
             let application = facts

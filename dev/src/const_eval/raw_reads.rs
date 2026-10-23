@@ -182,6 +182,12 @@ impl Machine<'_, '_> {
         place: Resolved,
         mutable: bool,
     ) -> Result<Option<crate::sema::values::Constant>, Failure> {
+        if matches!(
+            self.evaluator.facts().types.kind(place.ty),
+            Some(crate::types::Kind::Primitive(crate::types::Primitive::Str))
+        ) {
+            return self.checked_string_reference(place, mutable);
+        }
         if let Some(selected) = self.byte_place(place)? {
             return self.checked_byte_reference(place, selected, mutable);
         }

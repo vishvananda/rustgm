@@ -285,6 +285,7 @@ fn deferred_proofs_cannot_authorize_concrete_execution() -> Result<(), Box<dyn s
         types: &facts.types,
         definitions: &facts.aggregates,
         derives: &facts.derives,
+        source_copy: facts.uses_source_copy(),
         copies: &mut copies,
     };
     let error = borrow::verify(&mut environment, &contracts, &program)

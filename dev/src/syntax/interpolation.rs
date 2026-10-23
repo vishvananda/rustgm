@@ -63,6 +63,16 @@ pub trait Inputs {
     /// # Errors
     /// Rejects missing handles or invalid provenance for an opaque token.
     fn get(&self, token: Token) -> Result<Option<Splice<'_>>, LexError>;
+    /// Defining edition of one token, independent of a macro's fragment grammar.
+    /// Existing callers supply the ordinary Rust 2024 source profile. A mixed
+    /// stream must provide its immutable provenance for the entire invocation.
+    /// The parser only demands this lookup for edition-sensitive syntax.
+    ///
+    /// # Errors
+    /// Rejects missing or invalid token provenance instead of choosing an edition.
+    fn edition(&self, _token: Token) -> Result<crate::support::edition::Edition, LexError> {
+        Ok(crate::support::edition::Edition::Rust2024)
+    }
 }
 pub struct Slice<'a>(pub &'a [Splice<'a>]);
 impl Inputs for Slice<'_> {

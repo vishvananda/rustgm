@@ -156,10 +156,34 @@ impl Checker<'_> {
         source: NodeKey,
         predicate: Predicate,
     ) -> Result<(), Error> {
+        if self
+            .facts
+            .associated
+            .owner(owner)
+            .and_then(|id| self.facts.associated.get(id))
+            .is_some_and(|owner| {
+                matches!(
+                    owner.kind,
+                    crate::sema::associated::OwnerKind::Impl { constant: true, .. }
+                )
+            })
+        {
+            let (application, _) = predicate.bound.trait_parts().ok_or_else(|| {
+                self.error(source, "const implementation requires a trait application")
+            })?;
+            let item = self
+                .facts
+                .types
+                .trait_application(application)
+                .ok_or_else(|| self.error(source, "const implementation trait is not prepared"))?
+                .item;
+            self.require_const_trait(source, DefId(item.0))?;
+        }
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(owner, environment);
         let requirements = impl_contract_obligations(&mut self.facts, predicate, &mut proof)
             .map_err(|e| self.error(source, e))?;
+        self.validate_source_copy_impl(source, predicate, &mut proof)?;
         self.retain_trait_proof(owner, source, &mut proof);
         let mut queries = Queries::new(
             &self.facts.types,

@@ -294,6 +294,9 @@ impl Machine<'_, '_> {
                             "non-const calls are not allowed during constant execution".into()
                         );
                     }
+                    if let Some(catalog) = self.evaluator.facts().source_bindings.as_deref() {
+                        catalog.check_const_call(definition)?;
+                    }
                     if let Some(call) = super::reached_layout::validate(
                         self.evaluator.facts(),
                         &body,

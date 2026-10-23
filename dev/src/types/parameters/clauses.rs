@@ -49,7 +49,7 @@ impl Clause {
             .contains_regions(predicate.ty)
             .ok_or("invalid default bound subject")?;
         let bound = match predicate.bound {
-            Bound::Trait(id) => store
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => store
                 .trait_properties(id)
                 .ok_or("invalid default bound application")?
                 .has(crate::types::Property::Regions),

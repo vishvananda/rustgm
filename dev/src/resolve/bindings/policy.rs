@@ -19,6 +19,8 @@ pub(in crate::resolve) enum Feature {
     RustcAttributes,
     NeverType,
     ExpressionAttributes,
+    ConstTrait,
+    UnboxedClosures,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -36,6 +38,8 @@ impl Request {
             "rustc_attrs" => Self::Capability(Feature::RustcAttributes),
             "never_type" => Self::Capability(Feature::NeverType),
             "stmt_expr_attributes" => Self::Capability(Feature::ExpressionAttributes),
+            "const_trait_impl" => Self::Capability(Feature::ConstTrait),
+            "unboxed_closures" => Self::Capability(Feature::UnboxedClosures),
             "asm_experimental_arch" => Self::NoCapability,
             _ => return None,
         })

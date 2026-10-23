@@ -293,7 +293,17 @@ impl Checker<'_> {
                     }
                     crate::types::parameters::predicates::Predicate {
                         ty: *subject,
-                        bound: Bound::Trait(*application),
+                        bound: Bound::trait_application(
+                            *application,
+                            self.facts
+                                .types
+                                .quantified(*clause)
+                                .and_then(|value| value.predicate.bound.trait_parts())
+                                .map(|(_, effect)| effect)
+                                .ok_or_else(|| {
+                                    self.error(node, "quantified evidence lost its trait effect")
+                                })?,
+                        ),
                     }
                 }
                 Some(Source::QuantifiedResultBound {
@@ -310,6 +320,8 @@ impl Checker<'_> {
                 Some(Source::Builtin) => {
                     if crate::sema::compiler_items::sizing_predicate(self.facts, *predicate)
                         .map_err(|e| self.error(node, e))?
+                        || crate::sema::compiler_items::tuple_predicate(self.facts, *predicate)
+                            .map_err(|e| self.error(node, e))?
                     {
                         continue;
                     }
@@ -404,7 +416,15 @@ impl Checker<'_> {
         }
         Ok(crate::types::parameters::predicates::Predicate {
             ty: subject,
-            bound: Bound::Trait(application),
+            bound: Bound::trait_application(
+                application,
+                self.facts
+                    .types
+                    .quantified(clause)
+                    .and_then(|value| value.predicate.bound.trait_parts())
+                    .map(|(_, effect)| effect)
+                    .ok_or_else(|| self.error(node, "quantified result lost its trait effect"))?,
+            ),
         })
     }
 }

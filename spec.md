@@ -16,6 +16,19 @@ with real-crate acceptance beginning after core and expanding with alloc/std.
 Rustc-private binary/metadata compatibility
 and a drop-in Cargo/rustc interface remain separate objectives.
 
+Use the shared typed `support::edition::Edition` for defining semantics; never
+infer it from the current consumer. Select a macro's expression fragment grammar
+once from its defining edition, retaining the completed fragment kind for matching
+and memoization. Token provenance remains separate from that grammar selection.
+Only edition-sensitive syntax demands a token's originating edition. Borrow this
+context through the existing parser input provider, and use retained expansion
+origin ranges; do not grow ordinary tokens or relex generated spelling. A parsed
+opaque fragment retains its identifier validity when converted to attribute
+paths. Keep that evidence scoped to the actual grafted ranges, rather than
+assigning the output stream or neighboring tokens the capture's edition.
+The [PA34 context foundation](docs/pa34-edition-context.md) records the independent
+mixed-edition controls and the remaining work before enabling Rust 2021 in the CLI.
+
 ```text
 source image -> Rust lexer -> token-tree/parser/expansion/resolution worklist
              -> syntax with canonical semantic facts
@@ -53,6 +66,31 @@ native consumers are required; source reducers guide work but do not replace it.
 Internal features active in an earlier library must work then, regardless of
 later broad edition/target closure. Measure complete library time and peak memory
 as well as changed-path scaling, with existing resource and cleanup limits.
+
+Build orchestration may use an explicitly pinned Cargo unit graph as a package
+planner, outside the frontend. Its compiler adapter permits only version and
+empty-input target-information queries; Cargo never compiles a target dependency.
+Retain each unit's features, edition, full profile and dependency renames. Host
+and target units for the same package are distinct: a build script executes on
+the host while carrying the configuration of its consuming target. Traverse the
+selected graph once, retaining dependency-first order and diagnosing cycles,
+missing nodes and unsupported protocol fields. Graph rows and Cargo path IDs
+are invocation-local, not portable crate identities or persistent cache keys.
+Isolate package-planner introspection switches from compiler-query environments;
+enabling Cargo's unit graph must not enable additional target cfg capabilities.
+Pair a host script with its exact compilation unit and package snapshot, retaining
+distinct compile and execution profiles. Validate every supported profile setting
+and reject unsupported ones. A script that catches a rejected compiler probe must
+still fail the outer task; probe failure is not evidence of language incapability.
+Planning receipts are not compilation results. The
+[planning adapter](docs/crate-planning.md) supports frozen local path inputs and
+authenticated crates.io archive snapshots. Preserve original package bytes and
+validate the complete registry lockfile set, including inactive dependencies.
+Hash each package once per validation boundary, then use indexed source ownership
+to bind its units; do not rescan each package per host/target unit. Complete local
+source/configuration closure, per-crate edition semantics and the target executor
+remain required before upstream acceptance. Cargo's implicit sysroot is not a
+selected package unit: add original source-sysroot jobs explicitly.
 
 ## Source, lexing and parsing
 

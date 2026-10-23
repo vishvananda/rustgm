@@ -180,12 +180,7 @@ impl From<NodeKey> for ProofSite {
     }
 }
 
-/// Defining semantics are explicit; no wire/edition tag is assigned here.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum Edition {
-    Rust2021,
-    Rust2024,
-}
+pub(crate) use crate::support::edition::Edition;
 
 #[cfg(test)]
 #[path = "../../../tests/invariants/declaration_origins.rs"]

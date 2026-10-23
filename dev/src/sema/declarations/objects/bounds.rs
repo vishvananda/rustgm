@@ -35,7 +35,7 @@ impl Checker<'_> {
             .principal
             .as_ref()
             .ok_or_else(|| self.error(key, "missing principal object syntax"))?;
-        let Bound::Trait(id) = predicate.bound else {
+        let Some((id, _)) = predicate.bound.trait_parts() else {
             return Err(self.error(key, "missing principal object application"));
         };
         let principal = self
@@ -192,7 +192,7 @@ impl Checker<'_> {
             .next(&mut self.facts)
             .map_err(|e| self.error(source, e))?
         {
-            let Bound::Trait(id) = visit.predicate.bound else {
+            let Some((id, _)) = visit.predicate.bound.trait_parts() else {
                 return Err(self.error(source, "object graph requires a trait application"));
             };
             let item = self

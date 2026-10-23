@@ -4,6 +4,9 @@ impl Contract {
     pub(crate) fn retained_bytes(&self) -> usize {
         [
             size_of::<Self>(),
+            self.builtins
+                .as_ref()
+                .map_or(0, |requirements| requirements.retained_bytes()),
             crate::support::retained::vector(&self.assumptions),
             crate::support::retained::vector(&self.parameters),
             crate::support::retained::vector(&self.type_assumptions),

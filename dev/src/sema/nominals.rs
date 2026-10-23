@@ -281,7 +281,7 @@ impl Proof {
                         Bound::Clone => "nominal type argument must implement Clone",
                         Bound::Sized => "nominal type argument must be sized",
                         Bound::Auto(_) => "nominal type argument must implement its auto trait",
-                        Bound::Trait(_) => {
+                        Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_) => {
                             "nominal type argument must implement its declared trait"
                         }
                         Bound::Outlives(_) => "nominal type argument must outlive its bound",
@@ -317,7 +317,9 @@ impl Proof {
                 self.trait_state(facts)?
                     .prove_equality(facts, requirement, false)?
             }
-            Bound::Trait(_) => self.prove_trait(facts, requirement)?,
+            Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_) => {
+                self.prove_trait(facts, requirement)?
+            }
             Bound::Auto(_) => self.trait_state(facts)?.prove(facts, requirement, false)?,
             Bound::Sized => self.shape(facts, requirement.ty)?.sized,
             Bound::Copy | Bound::Clone => {
@@ -348,13 +350,13 @@ impl Proof {
         facts: &mut Declarations,
         requirement: Predicate,
     ) -> Result<bool, &'static str> {
-        let Bound::Trait(application) = requirement.bound else {
+        let Some(_) = requirement.bound.trait_parts() else {
             return Err("expected a canonical trait requirement");
         };
         if self
             .environment
             .as_ref()
-            .is_some_and(|env| env.assumes_trait(requirement.ty, application))
+            .is_some_and(|env| env.assumes_predicate(requirement))
         {
             return Ok(true);
         }

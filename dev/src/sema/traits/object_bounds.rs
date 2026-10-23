@@ -77,7 +77,7 @@ pub(in crate::sema) fn get(
             rules
                 .insert_clause(&facts.types, visit.clause)
                 .map_err(|_| "invalid object membership clause")?;
-            let Bound::Trait(application) = visit.predicate.bound else {
+            let Some((application, _)) = visit.predicate.bound.trait_parts() else {
                 return Err("object membership graph requires a trait");
             };
             traits.insert(

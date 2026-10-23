@@ -8,6 +8,7 @@ use crate::support::hash::HashMap;
 pub enum Abi {
     #[default]
     Rust,
+    RustCall,
     C,
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
@@ -22,6 +23,10 @@ impl Convention {
     };
     pub const C: Self = Self {
         abi: Abi::C,
+        variadic: false,
+    };
+    pub const RUST_CALL: Self = Self {
+        abi: Abi::RustCall,
         variadic: false,
     };
 }

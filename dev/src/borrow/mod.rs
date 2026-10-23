@@ -1,6 +1,7 @@
 //! Ownership and region proofs retain source semantics before executable erasure.
 mod active;
 mod check;
+pub(crate) mod copy_view;
 pub use check::{
     Analysis, Checked, Environment, Error, check, inspect, verify, verify_destruction,
     verify_instances,

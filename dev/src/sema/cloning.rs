@@ -25,9 +25,7 @@ impl Registry {
 impl Original {
     pub fn validate(self, facts: &super::model::Declarations) -> Result<(), &'static str> {
         use crate::types::{
-            GenericArgs, ItemId, Kind, RegionId,
-            arguments::Argument,
-            parameters::{ParameterKind, predicates::Bound},
+            GenericArgs, ItemId, Kind, RegionId, arguments::Argument, parameters::ParameterKind,
         };
         let registry = facts.cloning.as_deref().ok_or("missing Clone registry")?;
         if !registry.complete
@@ -80,7 +78,7 @@ impl Original {
             return Err("iterator Clone subject differs from canonical schema");
         }
         self.validate_signature(facts)?;
-        let Bound::Trait(application) = self.predicate.bound else {
+        let Some((application, _)) = self.predicate.bound.trait_parts() else {
             return Err("iterator Clone requires a real trait application");
         };
         let application = facts
@@ -157,9 +155,7 @@ pub(in crate::sema) fn marker_predicate(
     predicate: Predicate,
 ) -> Option<Predicate> {
     let registry = facts.cloning.as_deref()?;
-    let crate::types::parameters::predicates::Bound::Trait(application) = predicate.bound else {
-        return None;
-    };
+    let (application, _) = predicate.bound.trait_parts()?;
     let application = facts.types.trait_application(application)?;
     if application.item.0 != registry.canonical.definition.0
         || facts.types.arguments(application.arguments)?.count() != 0

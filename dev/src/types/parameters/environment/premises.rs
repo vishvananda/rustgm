@@ -1,6 +1,6 @@
 //! Ordered trait clauses retain binders without widening each ordinary predicate.
 use super::super::premise_index::ClauseIndex;
-use super::{Bound, Clause, ParameterId, Predicate};
+use super::{Clause, ParameterId, Predicate};
 use crate::support::hash::{HashMap, HashSet};
 use crate::types::{ItemId, Kind, Store, parameters::clauses::QuantifiedId, substitute};
 use std::sync::{Arc, OnceLock};
@@ -30,7 +30,7 @@ fn projection(types: &Store, predicate: Predicate) -> Result<Option<ProjectionKe
     let Some(Kind::Projection(subject)) = types.kind(predicate.ty) else {
         return Ok(None);
     };
-    let Bound::Trait(id) = predicate.bound else {
+    let Some((id, _)) = predicate.bound.trait_parts() else {
         return Err("invalid projected trait assumption");
     };
     let trait_item = types
@@ -125,7 +125,7 @@ impl TraitAssumptions {
                 let value = types
                     .quantified(id)
                     .ok_or("invalid quantified assumption")?;
-                if !matches!(value.predicate.bound, Bound::Trait(_)) {
+                if value.predicate.bound.trait_parts().is_none() {
                     return Err("quantified environment assumptions require a user trait");
                 }
                 let quantified = self.quantified.get_or_insert_with(Default::default);

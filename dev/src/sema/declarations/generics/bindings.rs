@@ -279,7 +279,7 @@ impl Checker<'_> {
             if seen.len().saturating_add(work.len()) > 1_000_000 {
                 return Err(self.error(source, "associated binding lookup budget exceeded"));
             }
-            let Bound::Trait(trait_application) = predicate.bound else {
+            let Some((trait_application, _)) = predicate.bound.trait_parts() else {
                 continue;
             };
             let application = self
@@ -336,7 +336,10 @@ impl Checker<'_> {
                 .map_err(|e| self.error(source, e))?;
             for clause in &requirements.implied {
                 let implied = clause.ordinary().map_err(|e| self.error(source, e))?;
-                if matches!(implied.bound, Bound::Trait(_)) {
+                if matches!(
+                    implied.bound,
+                    Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_)
+                ) {
                     work.push(implied);
                 }
             }

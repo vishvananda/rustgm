@@ -74,7 +74,9 @@ impl Sole {
         self.charge(1)?;
         let subject = self.collect(store, Node::Type(predicate.ty))?;
         let bound = match predicate.bound {
-            Bound::Trait(id) => self.collect(store, Node::Trait(id))?,
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => {
+                self.collect(store, Node::Trait(id))?
+            }
             Bound::ProjectionEqual(result) => self.collect(store, Node::Type(result))?,
             Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) | Bound::Outlives(_) => {
                 Value::Empty

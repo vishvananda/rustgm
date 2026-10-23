@@ -17,14 +17,32 @@ pub enum LangItem {
     PointeeSized,
     MemSizeConst,
     MemAlignConst,
+    Copy,
+    Clone,
+    CloneFn,
+    LegacyReceiver,
+    Tuple,
+    FnOnce,
+    FnMut,
+    Fn,
+    FnOnceOutput,
 }
 impl LangItem {
-    pub const ALL: [Self; 5] = [
+    pub const ALL: [Self; 14] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
         Self::MemSizeConst,
         Self::MemAlignConst,
+        Self::Copy,
+        Self::Clone,
+        Self::CloneFn,
+        Self::LegacyReceiver,
+        Self::Tuple,
+        Self::FnOnce,
+        Self::FnMut,
+        Self::Fn,
+        Self::FnOnceOutput,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -34,6 +52,15 @@ impl LangItem {
             Self::PointeeSized => 2,
             Self::MemSizeConst => 3,
             Self::MemAlignConst => 4,
+            Self::Copy => 5,
+            Self::Clone => 6,
+            Self::CloneFn => 7,
+            Self::LegacyReceiver => 8,
+            Self::Tuple => 9,
+            Self::FnOnce => 10,
+            Self::FnMut => 11,
+            Self::Fn => 12,
+            Self::FnOnceOutput => 13,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -45,6 +72,15 @@ impl LangItem {
             "pointee_sized" => Some(Self::PointeeSized),
             "mem_size_const" => Some(Self::MemSizeConst),
             "mem_align_const" => Some(Self::MemAlignConst),
+            "copy" => Some(Self::Copy),
+            "clone" => Some(Self::Clone),
+            "clone_fn" => Some(Self::CloneFn),
+            "legacy_receiver" => Some(Self::LegacyReceiver),
+            "tuple_trait" => Some(Self::Tuple),
+            "fn_once" => Some(Self::FnOnce),
+            "fn_mut" => Some(Self::FnMut),
+            "fn" => Some(Self::Fn),
+            "fn_once_output" => Some(Self::FnOnceOutput),
             _ => None,
         }
     }
@@ -64,6 +100,24 @@ impl LayoutIntrinsic {
             "size_of" => Some(Self::SizeOf),
             "align_of" => Some(Self::AlignOf),
             _ => None,
+        }
+    }
+}
+
+/// Validated source declarations select a compiler contract, not an ordinary API.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum SourceIntrinsic {
+    Layout(LayoutIntrinsic),
+    NeedsDrop,
+}
+impl SourceIntrinsic {
+    /// Declaration attribute decoding only; consumers retain the actual `DefId`.
+    #[must_use]
+    pub fn from_name(name: &str) -> Option<Self> {
+        if name == "needs_drop" {
+            Some(Self::NeedsDrop)
+        } else {
+            LayoutIntrinsic::from_name(name).map(Self::Layout)
         }
     }
 }

@@ -61,6 +61,15 @@ pub(crate) enum WordShape {
     },
 }
 impl super::Reader<'_> {
+    /// The byte storage of `str` has the same element validity as `[u8]`.
+    pub(crate) fn sequence_element(self, ty: TypeId) -> Result<TypeId, &'static str> {
+        use crate::types::{Kind, Primitive};
+        match self.facts.types.kind(ty) {
+            Some(Kind::Slice(element)) => Ok(element),
+            Some(Kind::Primitive(Primitive::Str)) => Ok(TypeId::primitive(Primitive::U8)),
+            _ => Err("symbolic sequence requires a slice or str type"),
+        }
+    }
     pub(crate) fn word_shape(self, ty: TypeId) -> Result<WordShape, &'static str> {
         use crate::{abi::layout::Shape, types::Kind};
         let shape = match self.facts.types.kind(ty) {
@@ -127,7 +136,7 @@ impl Evaluator<'_> {
         &mut self,
         value: Constant,
     ) -> Result<(WordTarget, Option<Metadata>), Failure> {
-        let value = if matches!(value.0, Value::BytePointer { .. }) {
+        let value = if matches!(value.0, Value::BytePointer { .. } | Value::Text(_)) {
             self.literal_address(value)?
         } else {
             value

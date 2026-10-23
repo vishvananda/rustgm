@@ -95,8 +95,17 @@ impl Bound {
     ) -> Result<Predicate, &'static str> {
         let ty = self.apply_inside(store, predicate.ty, depth)?;
         let bound = match predicate.bound {
-            Requirement::Trait(id) => {
-                Requirement::Trait(self.trait_application_inside(store, id, depth)?)
+            Requirement::Trait(id)
+            | Requirement::ConstTrait(id)
+            | Requirement::MaybeConstTrait(id) => {
+                let (_, constness) = predicate
+                    .bound
+                    .trait_parts()
+                    .ok_or("missing trait qualification")?;
+                Requirement::trait_application(
+                    self.trait_application_inside(store, id, depth)?,
+                    constness,
+                )
             }
             Requirement::Outlives(region) => Requirement::Outlives(self.region(region, depth)?),
             Requirement::ProjectionEqual(result) => {

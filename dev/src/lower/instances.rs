@@ -164,7 +164,7 @@ fn inspect_selected<R>(
     }
     .map_err(|e| diagnostic(report, None, e.into()))?
     .bodies;
-    let contexts = if let Some(originals) = prepared.original_contexts.take() {
+    let mut contexts = if let Some(originals) = prepared.original_contexts.take() {
         originals
             .apply(&templates, &mut inputs)
             .map_err(|e| diagnostic(report, None, e.into()))?
@@ -180,17 +180,14 @@ fn inspect_selected<R>(
         &mut templates,
         &mut prepared.promotions,
     )?;
+    prepare_original_contracts(report, facts, &templates, &mut contexts, &mut inputs)?;
     let templates = std::rc::Rc::new(templates);
     if let Some(context) = &prepared.constants {
         context
             .templates(std::rc::Rc::clone(&templates))
             .map_err(|e| diagnostic(report, None, e.into()))?;
     }
-    for input in &inputs {
-        input
-            .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
-            .map_err(|e| diagnostic(report, Some(input.source.into()), e.into()))?;
-    }
+
     let contracts = Contracts {
         bodies: inputs,
         callables: &facts.lifetimes.callables,
@@ -207,6 +204,7 @@ fn inspect_selected<R>(
         types: &facts.types,
         definitions: &facts.aggregates,
         derives: &facts.derives,
+        source_copy: facts.uses_source_copy(),
         copies: &mut copies,
     };
     let checked = borrow::templates::verify_with_context(
@@ -307,4 +305,43 @@ fn opaque_storage_error(
 
 fn diagnostic(report: &Report, node: Option<crate::body::ir::ProofSite>, message: String) -> Error {
     report.diagnostic(report.body_optional_error(node, message))
+}
+
+fn prepare_original_contracts(
+    report: &Report,
+    facts: &mut Declarations,
+    templates: &body::templates::Templates,
+    contexts: &mut borrow::templates::Contexts,
+    inputs: &mut [body::regions::Contract],
+) -> Result<(), Error> {
+    if facts.uses_source_copy() {
+        // The shared input inventory also contains concrete bodies built later.
+        // Only actual original rows enter this proof; each concrete body must
+        // independently prepare its carrier at dispatch before it can execute.
+        let originals: crate::support::hash::HashSet<_> = templates
+            .bodies
+            .iter()
+            .chain(&contexts.bodies.bodies)
+            .map(|template| template.body.key())
+            .collect();
+        body::copy_requirements::originals(
+            facts,
+            templates
+                .bodies
+                .iter()
+                .chain(&contexts.bodies.bodies)
+                .map(|template| &template.body),
+            inputs
+                .iter_mut()
+                .chain(&mut contexts.source)
+                .filter(|contract| originals.contains(&contract.key)),
+        )
+        .map_err(|e| diagnostic(report, None, e))?;
+    }
+    for input in inputs {
+        input
+            .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+            .map_err(|e| diagnostic(report, Some(input.source.into()), e.into()))?;
+    }
+    Ok(())
 }
