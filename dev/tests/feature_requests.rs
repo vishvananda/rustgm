@@ -81,7 +81,6 @@ fn declared_source_feature_requests_preserve_actual_use_contracts() {
         ("", "const N:u8=#[allow(unused)]1u8;", false),
         ("", "#[cfg(any())]const N:u8=#[allow(unused)]1u8;", true),
         ("", "#[allow(unused)]const N:u8=1u8;", true),
-        ("unknown_source_gate", "", false),
     ] {
         let source = format!("#![feature({request})]{HEADER}{tail}");
         for expanded in [false, true] {
@@ -94,6 +93,60 @@ fn declared_source_feature_requests_preserve_actual_use_contracts() {
             );
         }
     }
+}
+
+#[test]
+fn unknown_source_requests_are_retained_then_rejected_by_completed_inventory() -> Result {
+    let source = format!("#![feature(unknown_source_gate)]{HEADER}");
+    let mut loaded = package(&source, &mut Files::default(), false)?;
+    assert!(
+        loaded
+            .library_policy()
+            .ok_or("missing request owner")?
+            .inventory()
+            .is_none()
+    );
+    let error = resolve::analyze(&mut loaded)
+        .err()
+        .ok_or("unknown request accepted")?;
+    assert!(
+        error
+            .to_string()
+            .contains("undefined library feature request"),
+        "{error}"
+    );
+    assert!(
+        loaded
+            .library_policy()
+            .ok_or("lost request owner")?
+            .inventory()
+            .is_none()
+    );
+
+    let expanded = expansion::analyze_with_context(
+        input(Path::new("lib.rs"), &source)?,
+        &mut Files::default(),
+        &Config::default(),
+        &context()?,
+    )?;
+    assert!(
+        expanded
+            .package
+            .library_policy()
+            .ok_or("missing expanded request owner")?
+            .inventory()
+            .is_none()
+    );
+    let error = resolve::analyze_expanded(expanded)
+        .err()
+        .ok_or("unknown expanded request accepted")?;
+    assert!(
+        error
+            .to_string()
+            .contains("undefined library feature request"),
+        "{error}"
+    );
+    Ok(())
 }
 
 #[test]
