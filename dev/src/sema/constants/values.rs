@@ -378,15 +378,15 @@ impl<'a> Evaluator<'a> {
     pub fn facts(&self) -> &Declarations {
         self.queries.typing.facts
     }
-    /// Actual compiler-owned provider mode, independent from optional catalog presence.
-    pub(crate) fn is_source_provider(&self) -> bool {
-        self.queries.report.package.source_core.is_some()
+    /// Actual compiler-owned source mode, independent from optional catalog presence.
+    pub(crate) fn requires_source_catalog(&self) -> bool {
+        self.queries.report.package.uses_source_bindings()
     }
     /// Mode/identity data is required before ordinary fallback; it is not call permission.
     pub(crate) fn check_source_call_policy(&self) -> Result<(), &'static str> {
         match self.facts().source_bindings.as_deref() {
             Some(catalog) => catalog.require_provider_report(self.queries.report),
-            None if self.is_source_provider() => {
+            None if self.requires_source_catalog() => {
                 Err("source provider call is missing its prepared catalog")
             }
             None => Ok(()),

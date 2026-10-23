@@ -35,7 +35,7 @@ impl Traits {
 }
 impl Resolver<'_> {
     pub(in crate::resolve) fn note_clone_name(&mut self, c: Context, node: NodeId, name: NameId) {
-        if self.package.source_core.is_none() && self.package.names.get(name) == "clone" {
+        if !self.package.uses_source_bindings() && self.package.names.get(name) == "clone" {
             self.facts
                 .builtin_traits
                 .cloning
@@ -51,7 +51,7 @@ impl Resolver<'_> {
         absolute: bool,
         path: &[NameId],
     ) -> Result<(), Error> {
-        if self.package.source_core.is_some() {
+        if self.package.uses_source_bindings() {
             return Ok(());
         }
         let Some((&name, prefix)) = path.split_last() else {
@@ -83,7 +83,7 @@ impl Resolver<'_> {
         Ok(())
     }
     pub(in crate::resolve) fn reserve_cloning(&mut self) -> Result<(), Error> {
-        if self.package.source_core.is_some() {
+        if self.package.uses_source_bindings() {
             return Ok(());
         }
         let Some((module, source)) = self

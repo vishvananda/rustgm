@@ -77,12 +77,7 @@ impl Checker<'_> {
             .as_deref()
             .and_then(|catalog| catalog.language(crate::support::bindings::LangItem::Freeze))
             .is_some_and(|role| role.definition == definition)
-            && !self
-                .report
-                .package
-                .source_core
-                .as_deref()
-                .is_some_and(crate::resolve::bindings::SourceCore::permits_freeze_impls)
+            && !self.report.package.permits_source_freeze_impls()
         {
             return Err(self.error(
                 owner.source,

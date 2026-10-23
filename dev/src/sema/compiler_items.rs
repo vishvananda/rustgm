@@ -52,7 +52,7 @@ pub(crate) struct Catalog {
 impl Catalog {
     /// A provider catalog cannot authenticate a different source report or mode.
     pub(crate) fn require_provider_report(&self, report: &Report) -> Result<(), &'static str> {
-        let source = report.package.source_core.as_deref()
+        let source = report.package.source_core()
             .ok_or("source catalog requires its actual provider report; SourceClient mode is not implemented")?;
         let reserved = report
             .resolution
@@ -69,7 +69,7 @@ impl Catalog {
     }
     pub(crate) fn reserve(report: &Report) -> Result<Option<Box<Self>>, Error> {
         let Some(reserved) = report.resolution.source_bindings.as_deref() else {
-            if report.package.source_core.is_some() {
+            if report.package.source_core().is_some() {
                 return Err(Error::at(
                     FileId(0),
                     0,
@@ -78,7 +78,7 @@ impl Catalog {
             }
             return Ok(None);
         };
-        let source = report.package.source_core.as_deref().ok_or_else(|| {
+        let source = report.package.source_core().ok_or_else(|| {
             Error::at(
                 FileId(0),
                 0,

@@ -33,7 +33,7 @@ pub(in crate::resolve) fn claim(package: &Package, key: NodeKey) -> Result<Optio
         if result.is_some() {
             return Err(error("duplicate source builtin macro claim"));
         }
-        let source = package.source_core.as_deref().ok_or_else(|| {
+        let source = package.source_core().ok_or_else(|| {
             error("builtin macro binding requires an explicit source-core provider")
         })?;
         if !source.features.has(Feature::RustcAttributes) {

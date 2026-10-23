@@ -1,5 +1,5 @@
 //! Source-provider admission consumes retained root attributes before any fallback.
-use super::{Context, SourceCore};
+use super::{Context, Source, SourceCore};
 use crate::{
     resolve::{
         package::Error,
@@ -65,7 +65,7 @@ impl Features {
 }
 
 pub(in crate::resolve) struct Prepared {
-    pub source: Option<Box<SourceCore>>,
+    pub source: Option<Box<Source>>,
     pub library: Option<Box<Library>>,
 }
 
@@ -75,6 +75,9 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
         .word_attribute(Some(root), "no_core")
         .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
     let (features, library) = features(unit)?;
+    if let Mode::SourceClient { provider } = &context.mode {
+        return super::client::prepare(unit, context, provider, no_core, features, library);
+    }
     let Mode::Source { provider } = &context.mode else {
         if no_core {
             return Err(Error::at(
@@ -117,11 +120,11 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
         ));
     }
     Ok(Prepared {
-        source: Some(Box::new(SourceCore {
+        source: Some(Box::new(Source::Core(SourceCore {
             current: current.clone(),
             provider: provider.clone(),
             features,
-        })),
+        }))),
         library,
     })
 }
