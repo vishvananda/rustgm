@@ -1,0 +1,166 @@
+{
+  "state": "declared independent hypotheses before execution; no RustGM acceptance or text-oracle claim",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "frontier": {
+    "original_source": "rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/macros/mod.rs",
+    "offset": 6527,
+    "line": 170,
+    "syntax": "pub macro assert_matches",
+    "probe": "rustgm-validation-work/obj/parallel/library-stability-whole-core-frontier-v2/result.json",
+    "candidate_status": 1
+  },
+  "rows": [
+    {
+      "name": "concise-parameter",
+      "entry": "pa31/tests/spec/declarative-macros/concise-parameter.rs",
+      "sha256": "2656173fb24cacfe4d11f602f43a7615d527e77b4d6314578af6024a3ede9b9f",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n"
+    },
+    {
+      "name": "ordered-arms",
+      "entry": "pa31/tests/spec/declarative-macros/ordered-arms.rs",
+      "sha256": "5a175d1b8d67c1a1335e803e1c90975ad4ec0eec8e26683e5016b70bef7df13a",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "9\n"
+    },
+    {
+      "name": "forward-item",
+      "entry": "pa31/tests/spec/declarative-macros/forward-item.rs",
+      "sha256": "e9196beed7cbee50652c2c5720c4c21f3cbb8a092752ec1d8ea50a2fd42cfce9",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "11\n"
+    },
+    {
+      "name": "imported-alias",
+      "entry": "pa31/tests/spec/declarative-macros/imported-alias.rs",
+      "sha256": "95f518b1d710d6209cfc797129235907cf193b4d948a824d69eefb6731200850",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "13\n"
+    },
+    {
+      "name": "private-definition-helper",
+      "entry": "pa31/tests/spec/declarative-macros/private-definition-helper.rs",
+      "sha256": "ea66233b57c5bb90535604dff67ce3717a465ac5794fc1cfa41cd1aa9d6d237d",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "3\n"
+    },
+    {
+      "name": "captured-caller-expression",
+      "entry": "pa31/tests/spec/declarative-macros/captured-caller-expression.rs",
+      "sha256": "dcdabace6ec75437888f3fbf1f74fc56a391272b989f467a4631eea8ca53c783",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "17\n"
+    },
+    {
+      "name": "opaque-local-does-not-leak",
+      "entry": "pa31/tests/spec/declarative-macros/opaque-local-does-not-leak.rs",
+      "sha256": "e854aef3036764d5a607bb94d89d21038bd176d31c986f98d501008a400bb176",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "opaque-local-no-capture",
+      "entry": "pa31/tests/spec/declarative-macros/opaque-local-no-capture.rs",
+      "sha256": "6e1b68636b178d96ee02b7db837cebeeab3fb901c4a8ea5badfcc66db23ace77",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "semiopaque-caller-item",
+      "entry": "pa31/tests/spec/declarative-macros/semiopaque-caller-item.rs",
+      "sha256": "ee22f38c85a492e3c495c2914f722826d57565612dab3f7de8d1bb9e188ddd2e",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "5\n"
+    },
+    {
+      "name": "semiopaque-local-no-capture",
+      "entry": "pa31/tests/spec/declarative-macros/semiopaque-local-no-capture.rs",
+      "sha256": "fb7b361072a441ea6db706926ca182d65fa7050bb955f9c0ad4f80daa7398054",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "transparent-caller-local",
+      "entry": "pa31/tests/spec/declarative-macros/transparent-caller-local.rs",
+      "sha256": "470265e2f513c594176b7434858566999ae173fab9d0fd4f0d8a8c03f8e5d90a",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "19\n"
+    },
+    {
+      "name": "restricted-visibility",
+      "entry": "pa31/tests/spec/declarative-macros/restricted-visibility.rs",
+      "sha256": "668925242a81007e6ccc03d66e671fed80d5e1faf1bf5b0fdb22ef85cd48695a",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "23\n"
+    },
+    {
+      "name": "private-sibling-use",
+      "entry": "pa31/tests/spec/declarative-macros/private-sibling-use.rs",
+      "sha256": "ddaf21f617763061aacc9bbbf8be977c954a283e1152d0ca2c37126482895c27",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "missing-feature",
+      "entry": "pa31/tests/spec/declarative-macros/missing-feature.rs",
+      "sha256": "f5e186d24543e3e408638f13671bd13ccdb69109ede19fef1896c4b51a2da8f2",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "comma-required",
+      "entry": "pa31/tests/spec/declarative-macros/comma-required.rs",
+      "sha256": "cc8a84e4cff38ac43d0df23c54f33d441c543272964b8cc283a8f8d28ee83ebd",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "legacy-semicolon-control",
+      "entry": "pa31/tests/spec/declarative-macros/legacy-semicolon-control.rs",
+      "sha256": "dc4c26d730bf0cc43ddf5523a0f8c1fbaa92d51372eee30e376a5e8306563846",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "31\n"
+    },
+    {
+      "name": "legacy-comma-rejected",
+      "entry": "pa31/tests/spec/declarative-macros/legacy-comma-rejected.rs",
+      "sha256": "e74cc71ca5b518c520c82ba44f5d41abfb1975459d815aa0fa69530f4bf47978",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "crate-marker",
+      "entry": "pa31/tests/spec/declarative-macros/crate-marker.rs",
+      "sha256": "288410ddd2046bca55c4550edea4fcbbbdd9db01a3547c0c497e8dde7ac193a3",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "37\n"
+    }
+  ]
+}
