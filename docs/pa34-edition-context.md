@@ -60,6 +60,11 @@ test-filename findings remain in the prior receipts; neither reached expensive
 test code generation. Full release/native and performance qualification remain
 required before publishing this combined compiler checkpoint.
 
+The same debug candidate also passed all 8,362 active PA1–PA24 byte-exact text
+comparisons in 52.96 seconds. `course-complete.json` in the evidence root binds
+the source commit, binary hash and individual receipts. This cheap regression
+pass reused the focused batch's CLI build; it did not invoke Cargo again.
+
 ## Required continuation
 
 Carry explicit source editions through the lexer, bounded parser cursor, module
