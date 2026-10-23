@@ -133,6 +133,27 @@ cycle checks, binder-local deferral and complete child obligations. See the
 [source Freeze checkpoint](docs/pa31-source-freeze-proposal.md) for the measured
 depth, width, unrelated-node and cold/warm controls.
 
+Share completed ordinary source MetaSized/PointeeSized answers across nominal
+roots in one immutable caller. Eligibility comes from the checked actual sizing
+producer; arbitrary builtin evidence cannot opt in. Preserve the full goal,
+root scope, empty lifetime/formation debt and noncyclic/nonprovisional status.
+Revalidate the actual declaration role on publication and both direct and
+iterative reuse. A wrapper may inherit eligibility only from an identical-goal
+eligible child, with every sibling and normalization prefix paid. Keep the
+reuse owner absent on ordinary scalar paths and keep hot query records unchanged.
+The [whole-caller sizing investigation](docs/pa31-source-sizing-reuse.md) shows
+why isolated query DAG counters must be complemented by full typed source calls:
+separate roots can repeat a complete nested suffix despite each query being linear.
+
+Actual source Unsize selection checks both endpoint formations even after a
+conversion mismatch or an unresolved peer. Pointee shape alone does not pay
+nominal lifetime requirements: retain their existing symbolic region/type-outlives
+debts as input proof nodes. Deferred selection stays deferred; completed absence
+requires every inherited normalization and formation debt to be paid. Preserve
+those conditions across cold and warm lookup. The
+[source unsizing checkpoint](docs/pa31-source-unsizing.md) defines the actual
+Unsize/CoerceUnsized roles and the retained runtime/CTFE boundaries.
+
 An actual source drop-glue helper is a compiler hook, not an executable empty
 body. Its runtime adapter consumes the exact registered declaration, full proved
 instance, retained source/body signature pair and caller's destruction recipe.
