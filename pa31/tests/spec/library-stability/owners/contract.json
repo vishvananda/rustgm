@@ -1,0 +1,455 @@
+{
+  "state": "candidate hypotheses declared before first candidate run; original source and independent observations preserved",
+  "profile": {
+    "state": "hypotheses frozen before independent/candidate observations",
+    "toolchain": "1.98.0",
+    "target": "x86_64-unknown-linux-gnu",
+    "edition": "2024",
+    "panic": "abort",
+    "overflow_checks": true,
+    "bootstrap": true,
+    "lint": "allow; diagnostic semantics require review, not just nonzero status",
+    "purpose": "Close declaration owner, effective visibility, shared-module identity and attribute-shape rules before implementing the first local stability profile; accepted wider cases may remain explicit candidate limitations."
+  },
+  "independent_original_results_sha256": "1adcbd583fd96369ab4c1ae8443f7ee4efbcc68071757b4ce14a07fc42f9821a",
+  "independent_followup_results_sha256": "cf1cab06ac31d84757889c74461a14cc493429831da355577714050bb620fb64",
+  "rows": [
+    {
+      "name": "private-function",
+      "entry": "pa31/tests/spec/library-stability/owners/private-function/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/private-function/lib.rs": "96266724ba5868631a5da83611b0e512d29d5fc945b5af6016c98fceb21a23e4"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "Private unreachable ordinary functions need no regular annotation.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "hidden-public-function",
+      "entry": "pa31/tests/spec/library-stability/owners/hidden-public-function/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/hidden-public-function/lib.rs": "2dc5999d21f240360f4be399e902c9ccd3e473f160cb62a67e981611ddd7ee78"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "Spelled pub inside an unreachable private module is not by itself external reachability.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "reexport-missing-target",
+      "entry": "pa31/tests/spec/library-stability/owners/reexport-missing-target/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/reexport-missing-target/lib.rs": "776ee507a5cc2914e3e8f0554c04848ad721330cd356b140dc2a6a01529b78ba"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "A public alias makes the original function reachable; its missing stability must be diagnosed.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "reexport-marked-target",
+      "entry": "pa31/tests/spec/library-stability/owners/reexport-marked-target/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/reexport-marked-target/lib.rs": "33345386704cbbd0111d3ec80f49e64cd9dc407fa38443c99c190493bd7d501a"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "Public aliases retain the actual target stability without requiring a new item definition for a use.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "stable-module-public-child",
+      "entry": "pa31/tests/spec/library-stability/owners/stable-module-public-child/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/stable-module-public-child/lib.rs": "1da9e97b5b2070e1e354b2d839ddccddfb5a8171f0fd3aa00c46eb3f84a74e55"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "Stable module annotations do not supply child function stability.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "stable-module-private-child",
+      "entry": "pa31/tests/spec/library-stability/owners/stable-module-private-child/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/stable-module-private-child/lib.rs": "6151dddd6687d93a86d3890905821d23b8df2de102eacc4c2f2f757d2c69f9d7"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "Private unreachable child is exempt from the missing-stability requirement.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "unstable-module-public-child",
+      "entry": "pa31/tests/spec/library-stability/owners/unstable-module-public-child/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/unstable-module-public-child/lib.rs": "5545d33b3544133b51daafb60f5b361d68caa529e91434c931054b0554edad2c"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "Unstable module policy is inherited by an ordinary public child.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "stable-child-overrides-unstable-parent",
+      "entry": "pa31/tests/spec/library-stability/owners/stable-child-overrides-unstable-parent/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/stable-child-overrides-unstable-parent/lib.rs": "fd8595a7e60db4ac6b3877bc013544bc43ef75ac6855f3fbfb100fe0b2f7a41c"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "An explicit stable intermediate owner stops general unstable inheritance.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "unstable-root-inherited",
+      "entry": "pa31/tests/spec/library-stability/owners/unstable-root-inherited/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/unstable-root-inherited/lib.rs": "6859b2d2c78093dbaa0443c3613080653cfa29c939b06537898b700a6e8bc60d"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "The real crate root is an inheritance owner.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "missing-root-annotation",
+      "entry": "pa31/tests/spec/library-stability/owners/missing-root-annotation/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/missing-root-annotation/lib.rs": "b5f6ce6b35672af9a300b131114db61ec238909ce1547e52376efc7df3b711e7"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "A staged crate root itself needs regular stability.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "duplicate-stable",
+      "entry": "pa31/tests/spec/library-stability/owners/duplicate-stable/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/duplicate-stable/lib.rs": "8da1dce2bfb3a1f55bdaf7293b8cd3012ebb96423df3c0df41c55423d2831b65"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "Identical duplicate regular stability declarations remain invalid.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "duplicate-feature-key",
+      "entry": "pa31/tests/spec/library-stability/owners/duplicate-feature-key/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/duplicate-feature-key/lib.rs": "6981da81dd7b152ff71c64c93d590169b84604648e176e10ff4bae67b8178abf"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "Attribute key duplication is diagnosed before feature inventory publication.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "stable-minor-version",
+      "entry": "pa31/tests/spec/library-stability/owners/stable-minor-version/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/stable-minor-version/lib.rs": "5a6ce37bf2165472f039827590ba87db04a7632d57e0968340e8d1026c1d4152"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "Pinned rustc permits omitted patch component.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "stable-current-version",
+      "entry": "pa31/tests/spec/library-stability/owners/stable-current-version/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/stable-current-version/lib.rs": "1661868e9efd2de47406d098db119dd5c19163ce7cf735ba95e00db678123159"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "Pinned current-version marker is a typed version alternative.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "stable-prerelease-version",
+      "entry": "pa31/tests/spec/library-stability/owners/stable-prerelease-version/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/stable-prerelease-version/lib.rs": "0d8204bc431eb899c992a78c516695f816c4414ad71c6a8037056a238d2384c8"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "Stability versions do not accept prerelease suffixes.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "invalid-feature-name",
+      "entry": "pa31/tests/spec/library-stability/owners/invalid-feature-name/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/invalid-feature-name/lib.rs": "111143c83796c7ba37e6340b2dd78b192b0e8f7657c16ac24838072ad08c3dd1"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "Library feature declarations require valid identifier spellings.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "zero-issue",
+      "entry": "pa31/tests/spec/library-stability/owners/zero-issue/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/zero-issue/lib.rs": "d169acfe7a9f1b66ef4c2b8bd7325612cf0e76df34b580452f96f1c0f59a45d4"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "Issue zero is not a valid nonzero tracking issue.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "missing-issue",
+      "entry": "pa31/tests/spec/library-stability/owners/missing-issue/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/missing-issue/lib.rs": "9a4f2c2f947e20bf3f4f886e4fa61a1e5d0b489ce043f9778fa06bd198aa76a4"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "Unstable declarations require their issue field.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "nonzero-issue",
+      "entry": "pa31/tests/spec/library-stability/owners/nonzero-issue/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/nonzero-issue/lib.rs": "2982967b934859266b1cbc35c9ebd1c2b253d17a58afb7bce88993948205b32e"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "A nonzero issue and ordinary reason are accepted declaration data.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "signature-exposes-unmarked-type",
+      "entry": "pa31/tests/spec/library-stability/owners/signature-exposes-unmarked-type/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/signature-exposes-unmarked-type/lib.rs": "d5c436db1ff31aa79e032bde60c91f473847f5272ed218493f610fdba3f4c502"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "Reachability includes types exposed by a public signature, beyond public namespace bindings.",
+      "candidate_expected": "unsupported"
+    },
+    {
+      "name": "signature-exposes-marked-type",
+      "entry": "pa31/tests/spec/library-stability/owners/signature-exposes-marked-type/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/signature-exposes-marked-type/lib.rs": "c0fa9e11353002abcab95b8bcb6d482757d8ba6247a50879d6bba74cca8609b8"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "An explicitly marked type can be reached through a signature despite private naming.",
+      "candidate_expected": "unsupported"
+    },
+    {
+      "name": "shared-file-both-unstable",
+      "entry": "pa31/tests/spec/library-stability/owners/shared-file-both-unstable/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/shared-file-both-unstable/lib.rs": "018cca01877d17fc07bb225927f0d0886eb35ad935ab51b63b32d241ea699598",
+        "pa31/tests/spec/library-stability/owners/shared-file-both-unstable/shared.rs": "6cc6a443ccbdb055a5260d4720550a79ac3825f5cf82d9b89493edb47ff95727"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "Two actual module instances may reuse one parsed file while inheriting different unstable feature identities.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "shared-file-stable-second",
+      "entry": "pa31/tests/spec/library-stability/owners/shared-file-stable-second/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/shared-file-stable-second/lib.rs": "be62bbf348749ec5bcb10982427f1acad882feadb22f46afdeeccb9960c2ac2b",
+        "pa31/tests/spec/library-stability/owners/shared-file-stable-second/shared.rs": "6cc6a443ccbdb055a5260d4720550a79ac3825f5cf82d9b89493edb47ff95727"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "The stable second module cannot reuse the first module instance's inherited instability.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "shared-file-private-second",
+      "entry": "pa31/tests/spec/library-stability/owners/shared-file-private-second/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/shared-file-private-second/lib.rs": "190564928901e1b03eecf530411ccc200f72c651f706bb18892c1814260c3efa",
+        "pa31/tests/spec/library-stability/owners/shared-file-private-second/shared.rs": "6cc6a443ccbdb055a5260d4720550a79ac3825f5cf82d9b89493edb47ff95727"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "Reachability is also module-instance-specific for shared parsed file identities.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "loaded-inner-unstable",
+      "entry": "pa31/tests/spec/library-stability/owners/loaded-inner-unstable/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/loaded-inner-unstable/lib.rs": "a6e94023b8aa48e79c525e14923bdac62f8a85e335d2460fad57f388d154c0ad",
+        "pa31/tests/spec/library-stability/owners/loaded-inner-unstable/child.rs": "000672bd6ec665c128ca1bcd8ce82bd1c432012ac353bd3e98f3d1025ee30b8c"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "A loaded file's inner unstable annotation belongs to its module.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "outer-inner-duplicate",
+      "entry": "pa31/tests/spec/library-stability/owners/outer-inner-duplicate/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/outer-inner-duplicate/lib.rs": "85390bb02548358c64d8739d7517653eecc167159b2001671c1f61d314fc1ffd",
+        "pa31/tests/spec/library-stability/owners/outer-inner-duplicate/child.rs": "000672bd6ec665c128ca1bcd8ce82bd1c432012ac353bd3e98f3d1025ee30b8c"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "Outer declaration and loaded inner attributes are combined on one actual owner, so duplicate levels reject.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "local-unstable-runtime",
+      "entry": "pa31/tests/spec/library-stability/owners/local-unstable-runtime/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/local-unstable-runtime/lib.rs": "596123e196a2e1838f29066c10f463ced388f991480197168903e1d384299151"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": true,
+      "rule": "A same-crate ordinary runtime call needs no local library opt-in.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "stable-override-runtime",
+      "entry": "pa31/tests/spec/library-stability/owners/stable-override-runtime/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/stable-override-runtime/lib.rs": "38da0583aa55edc97fe40cfa3a7bc8e8ad2a90b202b8ba1fd0f1969753719760"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": true,
+      "rule": "Local runtime calls retain ordinary behavior across a stable child override.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "marked-import-and-target",
+      "entry": "pa31/tests/spec/library-stability/owners/marked-import-and-target/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/marked-import-and-target/lib.rs": "401856457e5fa44ccff03eaf0ec4fe63c6d8c4f3763a5817df36d0026765226a"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "The import itself has a stability owner independent of its marked target.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "marked-import-unmarked-target",
+      "entry": "pa31/tests/spec/library-stability/owners/marked-import-unmarked-target/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/marked-import-unmarked-target/lib.rs": "1d40b3163a4e5f6f59a9ed45d7c0a4bb714e529dd5d4f4a951fd59a7d74996a6"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "With import annotation supplied, rejection isolates the newly reachable unmarked function.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "public-type-through-signature",
+      "entry": "pa31/tests/spec/library-stability/owners/public-type-through-signature/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/public-type-through-signature/lib.rs": "49104c476a029973ad92592de5d7c15f4ab7a0e38fbb3a1c0fcb49e77957cc91"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "A nominal with public declared access inside a private module is exposed by the signature; contrast the previously accepted truly private struct.",
+      "candidate_expected": "unsupported"
+    },
+    {
+      "name": "marked-public-type-through-signature",
+      "entry": "pa31/tests/spec/library-stability/owners/marked-public-type-through-signature/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/marked-public-type-through-signature/lib.rs": "3b82c40ee178d773721b4bb52806b196ced7cac86fe982ffbbe9f655fa3dcd1f"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "The same signature with an explicitly marked public nominal is valid.",
+      "candidate_expected": "unsupported"
+    },
+    {
+      "name": "marked-reexported-public-type",
+      "entry": "pa31/tests/spec/library-stability/owners/marked-reexported-public-type/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/marked-reexported-public-type/lib.rs": "1b4953c65d64130f19126b763538c6997c6602c1055acb2aa472b1a36eaa003d"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "Import and nominal each have their own completed regular policy.",
+      "candidate_expected": "unsupported"
+    },
+    {
+      "name": "unmarked-group-import",
+      "entry": "pa31/tests/spec/library-stability/owners/unmarked-group-import/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/unmarked-group-import/lib.rs": "2cc5f93be820bd21ee4db8f72c90cb027cfe54897aa4888ba0d8066f7e2dd958"
+      },
+      "original_hypothesis": 1,
+      "observed_metadata": 1,
+      "native": false,
+      "rule": "A group import has its own missing annotation even when both target functions are marked.",
+      "candidate_expected": "reject"
+    },
+    {
+      "name": "marked-group-import",
+      "entry": "pa31/tests/spec/library-stability/owners/marked-group-import/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/marked-group-import/lib.rs": "f9acb93a7ab76a68a67ed10f8136bc063c241b41f5534b69c7e814403a8d9d88"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "One parsed group attribute applies to both actual import entries without assigning one target declaration's policy to another.",
+      "candidate_expected": "accept"
+    },
+    {
+      "name": "marked-glob-import",
+      "entry": "pa31/tests/spec/library-stability/owners/marked-glob-import/lib.rs",
+      "files": {
+        "pa31/tests/spec/library-stability/owners/marked-glob-import/lib.rs": "8a36c041929a9bfa6cc2d9c7e9b9cfe7efe504c68331a49dae81f70703fe8176"
+      },
+      "original_hypothesis": 0,
+      "observed_metadata": 0,
+      "native": false,
+      "rule": "The glob import owner has policy independently of each binding target.",
+      "candidate_expected": "accept"
+    }
+  ]
+}

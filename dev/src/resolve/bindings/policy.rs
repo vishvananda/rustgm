@@ -3,6 +3,7 @@ use super::{Context, SourceCore};
 use crate::{
     resolve::{
         package::Error,
+        stability::Library,
         unit::{FileId, Unit},
     },
     support::bindings::Mode,
@@ -63,14 +64,17 @@ impl Features {
     }
 }
 
-pub(in crate::resolve) fn prepare(
-    unit: &Unit,
-    context: &Context,
-) -> Result<Option<Box<SourceCore>>, Error> {
+pub(in crate::resolve) struct Prepared {
+    pub source: Option<Box<SourceCore>>,
+    pub library: Option<Box<Library>>,
+}
+
+pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prepared, Error> {
     let root = unit.configured.ast.root;
     let no_core = unit
         .word_attribute(Some(root), "no_core")
         .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
+    let (features, library) = features(unit)?;
     let Mode::Source { provider } = &context.mode else {
         if no_core {
             return Err(Error::at(
@@ -79,7 +83,10 @@ pub(in crate::resolve) fn prepare(
                 "no_core requires explicit source-core configuration",
             ));
         }
-        return Ok(None);
+        return Ok(Prepared {
+            source: None,
+            library,
+        });
     };
     let current = context.current.as_ref().ok_or_else(|| {
         Error::at(
@@ -102,7 +109,6 @@ pub(in crate::resolve) fn prepare(
             "source-core provider requires no_core",
         ));
     }
-    let features = features(unit)?;
     if !features.has(Feature::NoCore) {
         return Err(Error::at(
             FileId(0),
@@ -110,17 +116,21 @@ pub(in crate::resolve) fn prepare(
             "no_core requires its explicit source feature",
         ));
     }
-    Ok(Some(Box::new(SourceCore {
-        current: current.clone(),
-        provider: provider.clone(),
-        features,
-    })))
+    Ok(Prepared {
+        source: Some(Box::new(SourceCore {
+            current: current.clone(),
+            provider: provider.clone(),
+            features,
+        })),
+        library,
+    })
 }
 
-fn features(unit: &Unit) -> Result<Features, Error> {
+fn features(unit: &Unit) -> Result<(Features, Option<Box<Library>>), Error> {
     let mut result = Features::default();
+    let mut library: Option<Box<Library>> = None;
     let Some(index) = unit.owner_indices[unit.configured.ast.root.get() as usize] else {
-        return Ok(result);
+        return Ok((result, library));
     };
     let owner = &unit.configured.owners[index.get() as usize - 1];
     for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
@@ -147,11 +157,10 @@ fn features(unit: &Unit) -> Result<Features, Error> {
                 Some(Request::Capability(feature)) => result.insert(feature),
                 Some(Request::NoCapability) => {}
                 None => {
-                    return Err(Error::at(
-                        FileId(0),
-                        attribute.span.start,
-                        "unsupported active source-core feature",
-                    ));
+                    library
+                        .get_or_insert_with(|| Box::new(Library::default()))
+                        .request(name)
+                        .map_err(|message| Error::at(FileId(0), attribute.span.start, message))?;
                 }
             }
             cursor += 1;
@@ -163,5 +172,5 @@ fn features(unit: &Unit) -> Result<Features, Error> {
             }
         }
     }
-    Ok(result)
+    Ok((result, library))
 }

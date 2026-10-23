@@ -1,0 +1,34 @@
+#![feature(staged_api)]
+#![unstable(feature="local_scaling",issue="none")]
+pub mod m0{pub fn value()->u8{7}}
+pub mod m1{pub fn value()->u8{7}}
+pub mod m2{pub fn value()->u8{7}}
+pub mod m3{pub fn value()->u8{7}}
+pub mod m4{pub fn value()->u8{7}}
+pub mod m5{pub fn value()->u8{7}}
+pub mod m6{pub fn value()->u8{7}}
+pub mod m7{pub fn value()->u8{7}}
+pub mod m8{pub fn value()->u8{7}}
+pub mod m9{pub fn value()->u8{7}}
+pub mod m10{pub fn value()->u8{7}}
+pub mod m11{pub fn value()->u8{7}}
+pub mod m12{pub fn value()->u8{7}}
+pub mod m13{pub fn value()->u8{7}}
+pub mod m14{pub fn value()->u8{7}}
+pub mod m15{pub fn value()->u8{7}}
+pub mod m16{pub fn value()->u8{7}}
+pub mod m17{pub fn value()->u8{7}}
+pub mod m18{pub fn value()->u8{7}}
+pub mod m19{pub fn value()->u8{7}}
+pub mod m20{pub fn value()->u8{7}}
+pub mod m21{pub fn value()->u8{7}}
+pub mod m22{pub fn value()->u8{7}}
+pub mod m23{pub fn value()->u8{7}}
+pub mod m24{pub fn value()->u8{7}}
+pub mod m25{pub fn value()->u8{7}}
+pub mod m26{pub fn value()->u8{7}}
+pub mod m27{pub fn value()->u8{7}}
+pub mod m28{pub fn value()->u8{7}}
+pub mod m29{pub fn value()->u8{7}}
+pub mod m30{pub fn value()->u8{7}}
+pub mod m31{pub fn value()->u8{7}}

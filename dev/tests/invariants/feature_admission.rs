@@ -98,7 +98,7 @@ fn unique_nodes(package: &Package) -> usize {
 }
 
 #[test]
-fn ordinary_path_inspects_no_syntax_and_requests_add_no_record_fields() -> Result {
+fn ordinary_admission_inspects_no_syntax_and_language_requests_stay_packed() -> Result {
     let mut package = original(HEADER)?;
     package.source_core = None;
     // The empty ordinary path must not even demand a valid loaded root.
@@ -107,8 +107,11 @@ fn ordinary_path_inspects_no_syntax_and_requests_add_no_record_fields() -> Resul
     // Source auto-trait and negative-impl gates extend the packed request bits.
     assert_eq!(size_of::<super::super::policy::Features>(), 2);
     assert_eq!(size_of::<Position>(), 1);
-    // The flat-table performance base already reduced Package from 272 to 240.
-    assert_eq!(size_of::<Package>(), 240);
+    // One independent cold library-policy pointer extends the 240-byte base.
+    assert_eq!(
+        size_of::<Package>(),
+        240 + size_of::<Option<Box<crate::resolve::stability::Library>>>()
+    );
     assert_eq!(size_of::<super::super::SourceCore>(), 72);
     Ok(())
 }

@@ -87,8 +87,27 @@ pub(super) enum Claim {
     DiagnosticItem(super::annotations::DiagnosticItem),
 }
 
-pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> Result<(), Error> {
-    let claims = claims(package)?;
+pub(in crate::resolve) fn finish(
+    package: &mut Package,
+    facts: &mut Resolution,
+) -> Result<(), Error> {
+    let mut library = None;
+    let claims = claims(package, &mut library)?;
+    let inventory = crate::resolve::stability::complete(package, facts, library)?;
+    let reserved = reserve_all(package, facts, &claims)?;
+    // Both drafts are complete before either owner publishes new state.
+    facts.source_bindings = reserved;
+    if let (Some(library), Some(inventory)) = (package.library.as_deref_mut(), inventory) {
+        library.publish(inventory);
+    }
+    Ok(())
+}
+
+fn reserve_all(
+    package: &Package,
+    facts: &Resolution,
+    claims: &HashMap<NodeKey, Vec<Claim>>,
+) -> Result<Option<Box<Reservations>>, Error> {
     let Some(source) = package.source_core.as_deref() else {
         if !claims.is_empty() {
             return Err(Error::at(
@@ -97,7 +116,7 @@ pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> R
                 "compiler bindings require an explicit source-core provider",
             ));
         }
-        return Ok(());
+        return Ok(None);
     };
     if facts.source_bindings.is_some() {
         return Err(Error::at(
@@ -172,8 +191,7 @@ pub(in crate::resolve) fn finish(package: &Package, facts: &mut Resolution) -> R
             "source binding requires an indexed declaration owner",
         ));
     }
-    facts.source_bindings = Some(Box::new(reserved));
-    Ok(())
+    Ok(Some(Box::new(reserved)))
 }
 
 fn reserve(
@@ -338,7 +356,10 @@ fn parents(package: &Package, facts: &Resolution) -> HashMap<ScopeId, DefId> {
         .collect()
 }
 
-fn claims(package: &Package) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
+fn claims(
+    package: &Package,
+    library: &mut Option<crate::resolve::stability::Draft>,
+) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
     let mut result: HashMap<NodeKey, Vec<Claim>> = HashMap::default();
     for (file, unit) in package.units.iter().enumerate() {
         let file = FileId(
@@ -365,6 +386,16 @@ fn claims(package: &Package) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
                     .push(Claim::BuiltinMacro);
             }
             for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
+                if crate::resolve::stability::collect(
+                    package.library.as_deref(),
+                    library,
+                    unit,
+                    NodeKey { file, node },
+                    attribute,
+                    forest,
+                )? {
+                    continue;
+                }
                 let error = |message| Error::at(file, attribute.span.start, message);
                 let name = attribute.name(forest, unit.source.text());
                 let header_claim = name

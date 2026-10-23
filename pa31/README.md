@@ -25,7 +25,9 @@ Library feature requests also depend on enabled local/dependency stability
 declarations. Implement their inventory, regular/const API checks and macro
 allowance provenance; a compiler feature whitelist cannot replace them. The
 [stability investigation](../docs/pa31-library-stability.md) supplies independently
-qualified seed cases and keeps this still-unimplemented contract explicit.
+qualified seed cases. The [local stability candidate](../docs/pa31-local-stability.md)
+implements ordinary function/module ownership and feature inventory; dependency,
+const/default-body and macro-use contracts remain required.
 
 Define explicit source-sysroot selection and crate identity. Replace bootstrap
 library factories with real declarations without duplicate identities or a

@@ -162,7 +162,9 @@ impl<'a, S: Sources> Loader<'a, S> {
         let no_std = unit
             .word_attribute(Some(root_node), "no_std")
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
-        let source_core = super::bindings::policy::prepare(&unit, context)?;
+        let prepared = super::bindings::policy::prepare(&unit, context)?;
+        let source_core = prepared.source;
+        let library = prepared.library;
         let implicit_prelude = !unit
             .word_attribute(Some(root_node), "no_implicit_prelude")
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?
@@ -170,6 +172,7 @@ impl<'a, S: Sources> Loader<'a, S> {
         let mut loader = Self {
             package: Package {
                 source_core,
+                library,
                 no_std,
                 file_paths: vec![root.path.components().collect()],
                 crate_name: if root.path == Path::new("<anon>") {

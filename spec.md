@@ -101,7 +101,13 @@ separate from callable effects and each caller's proof. Compute owner inheritanc
 and feature indexes once, then check actual uses without whole-crate rescanning.
 Macro-internal allowances follow exact defining/captured token provenance. The
 [stability investigation](docs/pa31-library-stability.md) records the independent
-cases and required implementation seams; this contract is not yet implemented.
+cases and required implementation seams. The
+[local inventory candidate](docs/pa31-local-stability.md) uses a single cold,
+resolver-owned policy carrier and the existing configured-owner traversal.
+Publish it with source reservations only after both drafts complete. Follow
+actual module/scope and import-target identities, excluding local and synthetic
+bindings from API inheritance. Stability-bearing metadata must reject until its
+transport and use consumers exist; regular policy cannot grant const-callability.
 
 Source-role semantic attributes are validated claims on exact declarations.
 The bounded sizing profile requires actual sizing identities, complete headers

@@ -22,6 +22,7 @@ pub struct Module {
 }
 pub struct Package {
     pub source_core: Option<Box<super::bindings::SourceCore>>,
+    pub(super) library: Option<Box<super::stability::Library>>,
     pub no_std: bool,
     pub units: Vec<Unit>,
     pub file_paths: Vec<std::path::PathBuf>,
@@ -157,6 +158,12 @@ impl std::fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 impl Package {
+    /// Library requests and completed policy are published only by resolution.
+    #[must_use]
+    pub fn library_policy(&self) -> Option<&super::stability::Library> {
+        self.library.as_deref()
+    }
+
     pub(crate) fn origin(&self, file: FileId, offset: u32) -> Option<Origin> {
         let origins = &self.unit(file).origins;
         // Generated text is appended after the original source, so offsets

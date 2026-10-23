@@ -1,0 +1,128 @@
+# Local library stability candidate
+
+This candidate follows the [stability investigation](pa31-library-stability.md).
+Focused static, semantic, ownership and native checks pass. Full checkpoint
+qualification and immutable-binary performance checks remain pending. PA31 stays
+planned; this is not a whole-core build result.
+
+## Ownership and first supported profile
+
+One optional boxed, resolver-owned `Package.library` owns root library requests separately from
+source language capability bits. Root requests are parsed once; unknown possible
+library names remain deferred until configured expansion and name resolution
+complete. A library declaration never sets a compiler language capability.
+Nested `feature` attributes do not change root requests. Ordinary programs with
+no library requests allocate no library inventory. Consumers borrow the completed
+state through `Package::library_policy()`; they cannot publish or replace it.
+
+The existing configured-owner attribute pass validates regular `stable` and
+`unstable` annotations, retaining their actual source owners, feature names,
+versions, issue numbers and reasons. Duplicate levels/arguments, malformed
+versions and non-identifier feature names reject. Cached include templates are
+provenance; only installed active syntax contributes library annotations.
+
+The first functional profile is local ordinary functions with bodies, modules,
+and their named/group/glob imports. Generic and const functions, nominal/trait
+owners and nominal type reachability remain explicit unsupported boundaries.
+Const/default-body stability, implied/renamed features, macro allowances and
+external dependency availability also remain unsupported. Metadata export
+rejects library policy rather than silently omitting it. These boundaries must
+be extended to build the original upstream libraries.
+
+Module instances retain separate effective policies even when they share a
+parsed source file. Outer and loaded inner annotations identify the same actual
+module. Module policy follows the existing parent-first module inventory; lexical
+inheritance follows the indexed scope forest. Unstable policy inherits, while
+an explicit stable policy stops general unstable inheritance. Only actual API
+owners receive policies: local bindings, primitives and synthetic modules do not
+inherit one merely because they share an unstable root. Public bindings
+are traversed once by scope identity, preserving actual reexport targets. An
+import has its own policy independently of the declaration it names.
+
+Both source binding reservations and library inventory are built before either
+is published. Failure retains root requests and cannot turn a retry into the
+ordinary fallback. Same-crate ordinary unstable calls require no additional
+library opt-in; no API feature pays a trait obligation or grants const execution.
+
+## Independent owner evidence
+
+`pa31/tests/spec/library-stability/owners/contract.json` retains 36 frozen source
+families, including loaded/shared modules, and their declared candidate boundary.
+The first 28 hypotheses produced 32 process observations including two native
+programs. Two original hypotheses were wrong and remain recorded: marking a
+reexport target does not annotate its import; a truly private type in a public
+signature is accepted with capped lints. Eight isolating followups all matched:
+publicly declared types reached through signatures need their own stability,
+and marked import/group/glob cases distinguish import from target ownership.
+The current candidate explicitly defers the five nominal families.
+
+Original owner results SHA-256:
+`1adcbd583fd96369ab4c1ae8443f7ee4efbcc68071757b4ce14a07fc42f9821a`.
+Followup results SHA-256:
+`cf1cab06ac31d84757889c74461a14cc493429831da355577714050bb620fb64`.
+These are independent Rust 1.98.0 observations. The earlier 33 API/macro sources
+and their original outcomes remain unchanged.
+
+The frozen `owners/contract-v2.json` retains all 36 original sources and adds two
+explicit-helper runtime variants. The originals use a standard `assert!` macro
+that this standalone candidate profile does not supply; they remain valid
+unsupported inputs. Before candidate execution, both new variants passed pinned
+rustc metadata, executable compilation and native execution (six observations,
+empty output and status zero). Their independent results SHA-256 is
+`613f27cf745141ed94d360ffe9e92a0b8b6e0eb5d2b41b90da700c26a842495a`.
+No original fixture was rewritten to obtain acceptance.
+
+## Work, storage and qualification
+
+Attributes are consumed in their existing owner traversal. Effective owner
+policy is computed once; public reachability uses a scope worklist, and each
+annotated import tree is expanded once. The inventory uses bounded cold tables,
+with one million work units and a conservative 64 MiB payload policy. These
+charges are not whole-heap measurements. Hot semantic node/value records do not
+acquire library fields. Actual layout checks measure Package at 248 bytes
+(one pointer above its 240-byte base), Owner at 32 and NodeFacts at 80.
+
+Nine independent scaling hypotheses are frozen under
+`pa31/tests/spec/library-stability/scaling`: owner width and repeated uses at
+8/32/128, and owner depth at 8/16/32. All nine pass independent metadata checks;
+results SHA-256 is
+`4eadd5246ebebe66ba3df969611c5ef485a09034a115e7f38f4d177524a477b9`.
+The actual inventory counter observations are:
+
+| Axis | Input sizes | Work units |
+| --- | --- | --- |
+| Owner width | 8, 32, 128 | 239, 647, 2279 |
+| Repeated uses | 8, 32, 128 | 129, 153, 249 |
+| Owner depth | 8, 16, 32 | 176, 240, 368 |
+
+Successive work differences grow exactly with these input changes. They measure
+the new inventory work, not whole-frontend work, allocation or elapsed time.
+Immutable-binary comparisons remain required before publication.
+
+`local-development-v1` stopped at a filename-stem audit. V2 passed the audit
+but strict Clippy requested a typed preparation result and a borrowed claims
+map. V3 passed architecture checks and production type/lint checking but stopped
+on one integration-test semicolon. V4 is the exact test-only recovery; it retains
+V3's audit only after checking every source hash and that one-character delta.
+V4 passed static checks but exposed a real ownership mismatch: module roots retain
+their attribute wrapper, while the existing claims pass indexes its underlying
+owner. V5 follows those retained wrapper edges with charged work. It also restricts
+inheritance to actual API owners and adds the independently checked helper variants.
+All original failures and admission refusals remain in their evidence directories.
+
+`local-development-v5` passes formatting, the 2,120-file audit (zero findings),
+all-target strict Clippy, harness checks (164 Python tests, 373 roots in 13
+binaries), upstream verification, three frontend tests, seven private tests and
+one native test executing both helper programs. The frontend table covers 38 owner
+families and ten earlier API controls; explicit unsupported outcomes remain
+distinct from language rejections. Private checks cover exact import/target
+identity, ordinary no-allocation behavior, failed publication, exhausted work and
+storage budgets, and the three growth axes.
+
+Evidence root: `obj/parallel/pa31-library-stability/local-development-v5`.
+Compiler/test/fixture snapshot SHA-256:
+`7d0ed0fec7b7bbe2a01d49e9a67c823b2c3a6477219900826bf5373b8106ec7e`.
+Checks receipt SHA-256:
+`4014df9e1dba4885b939db417c65631e0812e8bb898cfd2f684ea59aee2e0b8f`.
+These are focused candidate results; broad release/native/text qualification is
+still required for integration and public publication.
