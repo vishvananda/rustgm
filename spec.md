@@ -103,6 +103,15 @@ assumptions do not pay substituted instance obligations. Retain a single cold
 owner for immutable imported templates/contracts, with exact owner validation
 at every borrowed view and ordinary per-instance proof on execution.
 
+Role validators consume borrowed declaration headers rather than reconstructing
+source syntax. The source adapter validates the actual declaration, separate
+Self owner/slot, flags, parent and completed member/input inventories before
+borrowing them. Keep source vectors directly owned and preserve required versus
+provided method bodies. Header validation grants neither imported role authority
+nor executable proof. The [neutral header view](docs/pa29-neutral-role-headers.md)
+prepares shared validation; authenticated source-client publication and its wire
+profile remain a separate reviewed transaction.
+
 Direct generic helper calls retain one indexed dependency closure, distinct
 from the acyclic lexical owner forest. Callable recursion must not become a
 false owner-cycle error. Derive each complete target/argument signature once;
