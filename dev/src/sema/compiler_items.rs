@@ -4,6 +4,7 @@ pub(crate) mod const_payments;
 mod copying;
 mod explicit_cleanup;
 mod glue_calls;
+mod headers;
 pub(crate) use calls::check_instance as check_const_instance;
 pub(super) use calls::record as record_call_effects;
 pub(in crate::sema) use explicit_cleanup::explicit_drop_member;

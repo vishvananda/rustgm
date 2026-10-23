@@ -20,6 +20,35 @@ impl From<&Predicate> for Input {
     }
 }
 
+/// Borrow both representations without copying source predicates or losing sites.
+#[derive(Clone, Copy)]
+pub(crate) struct Inputs<'a> {
+    source: &'a [Predicate],
+    imported: &'a [Input],
+}
+impl<'a> Inputs<'a> {
+    pub(crate) fn new(source: &'a [Predicate], imported: &'a [Input]) -> Self {
+        Self { source, imported }
+    }
+    pub(crate) fn iter(self) -> impl Iterator<Item = Input> + 'a {
+        self.source
+            .iter()
+            .map(Input::from)
+            .chain(self.imported.iter().copied())
+    }
+}
+
+pub(crate) fn own_view<'a>(
+    generics: &'a Generics,
+    linkage: Option<&'a super::crates::Linkage>,
+    owner: DefId,
+) -> Result<Inputs<'a>, &'static str> {
+    Ok(Inputs::new(
+        generics.predicates.get(&owner).map_or(&[], Vec::as_slice),
+        imported(linkage, owner, false)?,
+    ))
+}
+
 fn imported(
     linkage: Option<&super::crates::Linkage>,
     owner: DefId,
@@ -52,13 +81,7 @@ pub(crate) fn own<'a>(
     linkage: Option<&'a super::crates::Linkage>,
     owner: DefId,
 ) -> Result<impl Iterator<Item = Input> + 'a, &'static str> {
-    Ok(generics
-        .predicates
-        .get(&owner)
-        .into_iter()
-        .flatten()
-        .map(Input::from)
-        .chain(imported(linkage, owner, false)?.iter().copied()))
+    Ok(own_view(generics, linkage, owner)?.iter())
 }
 
 #[cfg(test)]

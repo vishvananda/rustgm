@@ -1,19 +1,13 @@
 //! Complete source sizing headers precede every source-dependent selection answer.
-use super::Catalog;
+use super::{
+    Catalog,
+    headers::{Flags, Trait},
+};
 use crate::{
-    resolve::{
-        expansion::Report,
-        model::{DefId, DefKind},
-        package::Error,
-        unit::FileId,
-    },
-    sema::{associated::OwnerKind, model::Declarations},
+    resolve::{expansion::Report, model::DefId, package::Error, unit::FileId},
+    sema::model::Declarations,
     support::bindings::LangItem,
-    syntax::{ast::Kind as Syntax, item::ItemKind},
-    types::{
-        Kind,
-        parameters::{clauses::Clause, predicates::Bound},
-    },
+    types::parameters::{clauses::Clause, predicates::Bound},
 };
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -81,61 +75,31 @@ fn validate_header(
 ) -> Result<(), Error> {
     let key = declaration.origin;
     let error = |message| Declarations::error(report, key, message);
-    let definition = report
-        .resolution
-        .definitions
-        .get(declaration.definition.0 as usize)
-        .ok_or_else(|| error("source sizing identity has no declaration"))?;
-    let unit = report.package.unit(key.file);
-    let Syntax::Item(index) = unit.configured.ast.node(key.node).kind else {
-        return Err(error("source sizing identity has no item owner"));
-    };
-    let item = unit.configured.ast.items[index as usize];
-    let ItemKind::Trait {
-        unsafe_: false,
-        bounds,
-        ..
-    } = item.kind
-    else {
+    let header = Trait::source(report, facts, declaration).map_err(error)?;
+    if header.flags.unsafe_ {
         return Err(error(
             "source sizing profile requires a safe trait declaration",
         ));
-    };
-    let owner = facts
-        .associated
-        .owner(declaration.definition)
-        .and_then(|id| facts.associated.get(id))
-        .ok_or_else(|| error("source sizing trait is not prepared"))?;
-    let owner_id = facts
-        .associated
-        .owner(declaration.definition)
-        .ok_or_else(|| error("source sizing trait lost its owner"))?;
-    let self_type = facts
-        .associated
-        .schema(declaration.definition)
-        .ok_or_else(|| error("source sizing trait has no completed Self schema"))?
-        .self_type;
-    if definition.kind != DefKind::Trait
-        || definition.node != Some(key)
-        || declaration.parent.is_some()
-        || !matches!(owner.kind, OwnerKind::Trait { definition, unsafe_: false, constant: false, auto_: false } if definition == declaration.definition)
-        || !matches!(facts.types.kind(self_type), Some(Kind::Parameter(_)))
-        || item.generics.start != item.generics.end
-        || facts
-            .generics
-            .parameters
-            .get(&declaration.definition)
-            .is_none_or(|p| !p.is_empty())
-        || facts
-            .associated
-            .owner_members(owner_id)
-            .is_none_or(|m| !m.is_empty())
+    }
+    if header
+        .profile(
+            &facts.types,
+            Flags {
+                unsafe_: false,
+                constant: false,
+                auto_: false,
+            },
+            0,
+        )
+        .is_err()
+        || header.written.parameters != 0
+        || !header.members.is_empty()
     {
         return Err(error(
             "source sizing trait header is outside the supported provider profile",
         ));
     }
-    validate_hierarchy(report, facts, catalog, kind, declaration, self_type, bounds)
+    validate_hierarchy(report, facts, catalog, kind, declaration, &header)
 }
 
 fn validate_hierarchy(
@@ -144,11 +108,9 @@ fn validate_hierarchy(
     catalog: &Catalog,
     kind: LangItem,
     declaration: crate::resolve::bindings::Declaration,
-    self_type: crate::types::TypeId,
-    bounds: crate::syntax::ast::List,
+    header: &Trait<'_>,
 ) -> Result<(), Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
-    let unit = report.package.unit(declaration.origin.file);
     let expected = match kind {
         LangItem::Sized => Some(LangItem::MetaSized),
         LangItem::MetaSized => Some(LangItem::PointeeSized),
@@ -157,7 +119,7 @@ fn validate_hierarchy(
             return Err(error("non-sizing language item in sizing validation"));
         }
     };
-    if unit.configured.ast.list(bounds).len() != usize::from(expected.is_some()) {
+    if header.written.supertraits != usize::from(expected.is_some()) {
         return Err(error(
             "source sizing supertrait shape is outside the supported provider profile",
         ));
@@ -166,13 +128,7 @@ fn validate_hierarchy(
         .and_then(|kind| catalog.language(kind))
         .map(|d| d.definition);
     let mut found = false;
-    for predicate in facts
-        .generics
-        .predicates
-        .get(&declaration.definition)
-        .into_iter()
-        .flatten()
-    {
+    for predicate in header.inputs.iter() {
         let Clause::Predicate(predicate) = predicate.value else {
             return Err(error(
                 "source sizing profile does not support quantified header clauses",
@@ -187,7 +143,7 @@ fn validate_hierarchy(
             .types
             .trait_application(application)
             .ok_or_else(|| error("source sizing header has an invalid trait application"))?;
-        if predicate.ty != self_type
+        if predicate.ty != header.self_type
             || facts
                 .types
                 .arguments(application.arguments)

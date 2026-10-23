@@ -16,10 +16,7 @@ use crate::{
         model::{DefId, DefKind},
         package::Error,
     },
-    sema::{
-        associated::OwnerKind,
-        model::{Declarations, Function},
-    },
+    sema::model::{Declarations, Function},
     support::{bindings::LangItem, call_traits::CallTrait},
     syntax::{ast::Kind as Syntax, item::ItemKind},
     types::{Kind, TypeId, parameters::predicates::Bound},
@@ -76,7 +73,8 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         let Some(declaration) = catalog.language(role) else {
             continue;
         };
-        let self_type = header(report, facts, declaration, role)?;
+        let header = header(report, facts, declaration, role)?;
+        let self_type = header.self_type;
         match role {
             LangItem::Clone | LangItem::Copy | LangItem::LegacyReceiver => copying::validate(
                 report,
@@ -84,7 +82,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
                 catalog,
                 declaration,
                 role,
-                self_type,
+                &header,
                 &mut complete.roles,
             )?,
             LangItem::Tuple => validate_marker(report, facts, declaration)?,
@@ -163,23 +161,14 @@ fn validate_owned_members(report: &Report, catalog: &Catalog, roles: u32) -> Res
     Ok(())
 }
 
-fn header(
+fn header<'a>(
     report: &Report,
-    facts: &Declarations,
+    facts: &'a Declarations,
     declaration: Declaration,
     role: LangItem,
-) -> Result<TypeId, Error> {
+) -> Result<super::headers::Trait<'a>, Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
-    let definition = &report.resolution.definitions[declaration.definition.0 as usize];
-    let owner = facts
-        .associated
-        .owner(declaration.definition)
-        .and_then(|id| facts.associated.get(id))
-        .ok_or_else(|| error("source trait role has no prepared owner"))?;
-    let schema = facts
-        .associated
-        .schema(declaration.definition)
-        .ok_or_else(|| error("source trait role has no completed schema"))?;
+    let header = super::headers::Trait::source(report, facts, declaration).map_err(error)?;
     let constant = matches!(
         role,
         LangItem::Clone
@@ -189,25 +178,6 @@ fn header(
             | LangItem::Drop
             | LangItem::Destruct
     );
-    if declaration.parent.is_some()
-        || definition.node != Some(declaration.origin)
-        || definition.kind != DefKind::Trait
-        || owner.source != declaration.origin
-        || schema.captures != 0
-        || !matches!(owner.kind, OwnerKind::Trait { definition, unsafe_: actual_unsafe, constant: actual, auto_: actual_auto }
-            if definition == declaration.definition && actual == constant
-                && actual_unsafe == (role == LangItem::Freeze)
-                && actual_auto == (role == LangItem::Freeze))
-    {
-        return Err(error(
-            "source trait header is outside the pinned provider profile",
-        ));
-    }
-    let parameters = facts
-        .generics
-        .parameters
-        .get(&declaration.definition)
-        .ok_or_else(|| error("source trait role has no parameter contract"))?;
     let expected = usize::from(matches!(
         role,
         LangItem::FnOnce
@@ -216,14 +186,18 @@ fn header(
             | LangItem::Unsize
             | LangItem::CoerceUnsized
     ));
-    if parameters.len() != expected
-        || !matches!(facts.types.kind(schema.self_type), Some(Kind::Parameter(_)))
-    {
-        return Err(error(
-            "source trait role has unsupported generic parameters",
-        ));
-    }
-    Ok(schema.self_type)
+    header
+        .profile(
+            &facts.types,
+            super::headers::Flags {
+                unsafe_: role == LangItem::Freeze,
+                constant,
+                auto_: role == LangItem::Freeze,
+            },
+            expected,
+        )
+        .map_err(error)?;
+    Ok(header)
 }
 
 fn function(facts: &Declarations, definition: DefId) -> Option<Function> {

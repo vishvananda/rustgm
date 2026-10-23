@@ -4,6 +4,8 @@ This is a source-only proposal on `a6aa69628aca2b256dd785cf72bf856e62d048fe`,
 not an implementation, new wire version or upstream-core acceptance claim.
 The completed helper branch and `22f9d758` receipts remain preserved. No
 compiler source has changed in this successor branch.
+The later [borrowed validator checkpoint](pa29-neutral-role-headers.md) records
+its actual implementation and focused retained/fresh evidence separately.
 
 ## Independently established closure
 
