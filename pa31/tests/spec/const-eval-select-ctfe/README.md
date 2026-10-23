@@ -24,3 +24,9 @@ No original source is altered or stripped of attributes.
 The [interface proposal](../../../../docs/pa31-const-select-ctfe-proposal.md)
 names the actual reached-call, tuple, source-body and payment consumers and the
 remaining scope. Neither these fixtures nor that proposal activates PA31.
+
+The additive static-opponent contract preserves the mapped-return original and
+uses a separate source without a static premise. It declares a valid Rust/native
+hypothesis while retaining RustGM's explicit unresolved callback lifetime boundary;
+solved canonicalization cannot invent that premise. Candidate qualification is
+pending.

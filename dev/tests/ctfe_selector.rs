@@ -35,7 +35,7 @@ fn source_ctfe_selector_keeps_reached_fault_and_argument_ownership() -> TestResu
         ),
         (
             "owned-argument-reuse-reject",
-            "local may be uninitialized or moved at this read",
+            "local may be uninitialized at this read",
         ),
     ] {
         let error = lower(&fixture(name, "rs")?)
@@ -54,6 +54,16 @@ fn source_ctfe_selector_retains_valid_binder_and_conditional_payment_frontiers()
         .to_string();
     assert!(
         error.contains("source const_eval_select callback binders are not implemented"),
+        "{error}"
+    );
+    let error = lower(&fixture("mapped-without-static-proof", "rs")?)
+        .err()
+        .ok_or("unproved callback lifetime acquired a static execution identity")?
+        .to_string();
+    assert!(
+        error.contains(
+            "source const_eval_select lifetime-bearing callback entry is not implemented"
+        ),
         "{error}"
     );
     for name in ["conditional-empty", "conditional-nonempty"] {

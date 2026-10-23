@@ -13,7 +13,10 @@ impl Engine {
         checked: CheckedInput,
         selected: Option<Instance>,
     ) -> Result<(), &'static str> {
-        let Some(input) = checked.0 else {
+        if checked.code.is_some() {
+            return Err("checked executable snapshot was not consumed before retention");
+        }
+        let Some(input) = checked.retained else {
             return Ok(());
         };
         let rows = self.const_calls.get_or_insert_with(Default::default);

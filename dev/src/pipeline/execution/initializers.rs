@@ -40,7 +40,7 @@ impl Engine {
             &template.destruction,
             &mut self.promotions,
         )?;
-        let checked = self.prove(
+        let mut checked = self.prove(
             report,
             facts,
             &template,
@@ -61,7 +61,11 @@ impl Engine {
             })?;
         let index = self
             .catalog
-            .insert(&template.body)
+            .insert_prepared(
+                checked
+                    .take_code()
+                    .map_err(|e| report.body_error(source, e))?,
+            )
             .map_err(|e| report.body_error(source, e))?;
         self.retain_const_inputs(facts, index, &template.body, checked, None)
             .map_err(|e| report.body_error(source, e))?;

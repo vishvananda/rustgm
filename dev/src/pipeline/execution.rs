@@ -1,5 +1,6 @@
 //! Checked constant execution shares demanded CFGs with ordinary compilation.
 mod anonymous;
+mod code_inputs;
 mod component_index;
 mod components;
 mod defining_heads;
@@ -71,7 +72,17 @@ impl Executor for Proxy {
             .advance(report, facts, request)
     }
 }
-struct CheckedInput(Option<Arc<Contract>>);
+struct CheckedInput {
+    retained: Option<Arc<Contract>>,
+    code: Option<const_eval::code::Prepared>,
+}
+impl CheckedInput {
+    fn take_code(&mut self) -> Result<const_eval::code::Prepared, &'static str> {
+        self.code
+            .take()
+            .ok_or("original proof has no owned executable snapshot")
+    }
+}
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum ProofPurpose {
     Original,
@@ -489,7 +500,8 @@ impl Engine {
         } else {
             ProofPurpose::Code
         };
-        let checked = self.prove_defining_original(report, facts, &template, &input, purpose)?;
+        let mut checked =
+            self.prove_defining_original(report, facts, &template, &input, purpose)?;
         if specialize {
             self.reserve_template(report, facts, definition, &template)?;
             self.specialize(report, facts, instance, &template, &input)?;
@@ -497,7 +509,11 @@ impl Engine {
         } else {
             let index = self
                 .catalog
-                .insert(&template.body)
+                .insert_prepared(
+                    checked
+                        .take_code()
+                        .map_err(|e| report.body_error(source, e))?,
+                )
                 .map_err(|e| report.body_error(source, e))?;
             self.retain_const_inputs(facts, index, &template.body, checked, Some(instance))
                 .map_err(|e| report.body_error(source, e))?;
@@ -534,7 +550,7 @@ impl Engine {
                     .parameter_environment(&facts.types, definition)
                     .map_err(|e| report.body_error(source, e))?,
             );
-            let checked = self.prove_body(
+            let mut checked = self.prove_body(
                 report,
                 facts,
                 body,
@@ -543,7 +559,11 @@ impl Engine {
             )?;
             let index = self
                 .catalog
-                .insert(body)
+                .insert_prepared(
+                    checked
+                        .take_code()
+                        .map_err(|e| report.body_error(source, e))?,
+                )
                 .map_err(|e| report.body_error(source, e))?;
             self.retain_const_inputs(facts, index, body, checked, Some(instance))
                 .map_err(|e| report.body_error(source, e))?;
@@ -716,7 +736,7 @@ impl Engine {
             &materialized.destruction,
             &mut self.promotions,
         )?;
-        let checked = self.prove_body(
+        let mut checked = self.prove_body(
             report,
             facts,
             &materialized.body,
@@ -725,7 +745,11 @@ impl Engine {
         )?;
         let index = self
             .catalog
-            .insert(&materialized.body)
+            .insert_prepared(
+                checked
+                    .take_code()
+                    .map_err(|e| report.body_error(source, e))?,
+            )
             .map_err(|e| report.body_error(source, e))?;
         self.retain_const_inputs(facts, index, &materialized.body, checked, Some(instance))
             .map_err(|e| report.body_error(source, e))?;
@@ -776,10 +800,10 @@ impl Engine {
         if input.purpose == ProofPurpose::Code {
             materialized_bodies::record(body).map_err(|e| report.body_error(body.source, e))?;
         }
-        let retained = if input.purpose == ProofPurpose::Code
-            && const_eval::use_inputs::Inputs::prepare(facts, body)
-                .map_err(|e| report.body_error(body.source, e))?
-        {
+        let (code, needed) = self
+            .finish_code(facts, body, contract, &regions, input.purpose)
+            .map_err(|e| report.body_error(body.source, e))?;
+        let retained = if needed {
             Some(Arc::new(prepared.ok_or_else(|| {
                 report.body_error(
                     body.source,
@@ -789,8 +813,9 @@ impl Engine {
         } else {
             None
         };
-        Ok(CheckedInput(retained))
+        Ok(CheckedInput { retained, code })
     }
+
     fn source_regions(
         report: &Report,
         facts: &mut Declarations,

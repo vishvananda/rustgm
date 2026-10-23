@@ -3,9 +3,9 @@
 The preserved interface/declaration checkpoint is `3184e65c`. The qualified
 shared API merge is `dd415264`, whose tree differs from root `2da35cf0` only by
 that proposal and its declared fixtures. The production draft below is
-**unqualified**: no C build, audit or candidate execution has run. The first
-independent-only guard and its recovery hypotheses are recorded below. Recovery
-submission remains held while B takes its next coordinated development lease.
+**unqualified as a completed source/native feature**. Static, focused and independent
+observations for frozen predecessors are recorded below; the owned publication
+correction is source-only and awaits coordinated qualification.
 
 The original [proposal](pa31-const-select-ctfe-proposal.md) and initial fixture
 contract remain unchanged. Two additive, pre-probe source contexts in
@@ -97,3 +97,52 @@ The initial guard's cleanup receipt is
 successful reference object/native teardown had already removed them. Inputs,
 diagnostics, all oracle rows and pinned evidence are retained. No recovery
 compiler/probe result is claimed yet.
+
+
+## Reached-source recovery and solved callable publication
+
+Frozen `230f046e` guard73506 authenticated twelve prior oracle rows and observed
+both new raw-read hypotheses exactly: selected constant F rejects with E0080;
+the runtime opposite emits metadata/object code and executes with output nine.
+Format and the 2,149-file audit passed. Strict Clippy stopped on one test-only
+semicolon. Commit `a4b05d27` changes only that semicolon; an exact inverse restores
+every audited source byte. Its guard36168 retained the authenticated audit/oracles,
+then passed fresh formatting, all-target/all-feature strict Clippy, harness,
+upstream and backend checks. All 37 private controls passed. The frontend batch
+passed eight of ten test functions and stopped before native execution.
+
+The two frontend failures are retained separately. The owned-argument negative
+reaches the intended uninitialized/moved read rejection; its expected diagnostic
+now names the actual `local may be uninitialized at this read` gate. The original
+mapped-through-return source is valid Rust and was rejected as unsupported by
+the lifetime-bearing entry check. Its callback ABI is closed, but its generic
+reference argument retains a caller region whose static equality was already
+proved. No native acceptance is inferred from the other frontend results.
+
+The reviewed correction reuses `borrow::check::static_targets` after actual
+region and loan proof. Original-purpose checks create no Code. Code-purpose
+checks create one owned cold Prepared snapshot while the exact Body, Contract
+and solved region identities are borrowed. The solved sparse callable map moves
+into the existing Code.callables field; the Body remains unchanged. Empty static
+solutions allocate no map and do not scan values. Existing canonicalization
+caches bound graph work, and attempted fold/value work is charged to the CTFE
+owner even on failure. The cold snapshot preflights payload, and Catalog checks
+final mode, scope and index storage before registering the owned code.
+
+CheckedInput owns the prepared snapshot, so expression preparation can safely
+return it beside Templates. Catalog consumes that snapshot for ordinary,
+anonymous, selected source and paid-child publication. Later Body metadata or
+matching cardinalities cannot retarget its instructions. Actual source witness
+and live parent-scope authority remain independent prerequisites. The opaque
+defining-head branch uses the same completion helper rather than returning a
+missing executable snapshot. No Body, Code, Frame, Machine, State or Engine
+field is added; cold CheckedInput and Prepared sizes are reported separately.
+
+The original mapped source bytes are preserved. A separate predeclared
+`mapped-without-static-proof.rs` removes the static premise and retains a valid
+Rust/native hypothesis with an explicit candidate lifetime-context boundary.
+`contract-static-opponent.json` binds that new input before its independent
+probe. The `needs_region_context` and callback-binder gates remain unchanged.
+New private controls inspect actual raw/static F and G identities and the owned
+snapshot's independence from a later changed source Body. This correction has
+not yet run a build, audit, compiler probe or candidate execution.

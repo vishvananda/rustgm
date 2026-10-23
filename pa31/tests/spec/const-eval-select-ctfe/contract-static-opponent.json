@@ -1,0 +1,15 @@
+{
+  "declared_before_probes": true,
+  "source": "pa31/tests/spec/const-eval-select-ctfe/mapped-without-static-proof.rs",
+  "sha256": "67a4de41aa1459b5ca7f15b265a997b3971c77b31c6d6377c62fc5e5aadea4ab",
+  "client": "pa31/tests/spec/const-eval-select-ctfe/mapped-through-return.c",
+  "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+  "rustc_metadata_hypothesis": 0,
+  "rustc_object_hypothesis": 0,
+  "native_stdout_hypothesis": "7 1\n",
+  "native_status_hypothesis": 0,
+  "native_stderr_hypothesis": "",
+  "candidate_profile": "valid but unsupported: generic callback lifetime arguments without proved static identity retain the exact needs_region_context boundary",
+  "candidate_diagnostic_hypothesis": "source const_eval_select lifetime-bearing callback entry is not implemented",
+  "reason": "Same returned callback operands, independently declared with no static premise; successful solved-static canonicalization may not turn unconstrained regions into static."
+}

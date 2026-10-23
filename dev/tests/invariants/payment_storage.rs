@@ -19,9 +19,12 @@ fn ordinary_and_effect_free_source_constants_keep_payment_storage_absent() -> Te
         assert!(engine.const_calls.is_none());
         assert!(!engine.catalog.functions.is_empty());
     }
-    assert_eq!(size_of::<CheckedInput>(), size_of::<usize>());
+    // Only this cold proof result grows; executable record density is unchanged.
+    assert!(size_of::<CheckedInput>() >= size_of::<const_eval::code::Prepared>());
+    assert_eq!(size_of::<const_eval::code::Code>(), 304);
+    assert_eq!(size_of::<const_eval::State>(), 448);
     println!(
-        "Engine={} Machine={} State={} Body={} Code={} Value={} CheckedInput={} Row={} Continuation={}",
+        "Engine={} Machine={} State={} Body={} Code={} Value={} CheckedInput={} Prepared={} Row={} Continuation={}",
         size_of::<Engine>(),
         size_of::<const_eval::Machine<'_, '_>>(),
         size_of::<const_eval::State>(),
@@ -29,6 +32,7 @@ fn ordinary_and_effect_free_source_constants_keep_payment_storage_absent() -> Te
         size_of::<const_eval::code::Code>(),
         size_of::<crate::body::ir::Value>(),
         size_of::<CheckedInput>(),
+        size_of::<const_eval::code::Prepared>(),
         size_of::<const_eval::use_inputs::Row>(),
         const_eval::const_continuation_size()
     );

@@ -127,3 +127,30 @@ fn malformed_direct_variant_facts_do_not_publish_snapshots() -> Result<(), Strin
     }
     Ok(())
 }
+
+#[test]
+fn owned_publication_consumes_the_snapshot_without_reading_a_later_body() -> Result<(), String> {
+    let report = source::resolve("const fn f()->u8{7}", true)?;
+    let facts = sema::declarations::analyze(&report).map_err(|e| e.to_string())?;
+    let facts = sema::bodies::analyze(&report, facts).map_err(|e| e.to_string())?;
+    let mut program = body::build(&report, &facts).map_err(|e| e.to_string())?;
+    let body = program.bodies.first_mut().ok_or("body")?;
+    let values = body.values.len();
+    let source = body.source;
+    let mut catalog = Catalog::default();
+    assert!(super::Prepared::plain(body, 0).is_err());
+    assert!(catalog.bodies.is_empty());
+    let prepared = super::Prepared::plain(body, 64 * 1024 * 1024)?;
+    // No execution permission is asserted by this structural snapshot control.
+    // The modified source body is never supplied to the publication consumer.
+    body.values.clear();
+    body.const_context = false;
+    let index = catalog.insert_prepared(prepared)?;
+    let code = catalog.code(index).ok_or("owned snapshot")?;
+    assert_eq!(code.values.len(), values);
+    assert_eq!(code.source, source);
+    assert!(code.const_context);
+    assert!(code.callables.is_empty());
+    assert_eq!(code.callables.capacity(), 0);
+    Ok(())
+}
