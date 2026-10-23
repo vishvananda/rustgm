@@ -49,8 +49,9 @@ fn full_bodies_charge_proof_storage_and_snapshots_charge_callable_maps() -> Resu
         .definition;
     let ty = facts.definitions[definition.0 as usize].ok_or("missing callable")?;
     let instance = Instance::new(&facts.types, ty)?;
-    let targets = body.resolved_callables.get_or_insert_with(Box::default);
-    targets.insert(instance, instance);
+    body.resolved_callables = Some(Box::new(body::ir::ResolvedCallables::from_targets(
+        crate::support::hash::HashMap::from_iter([(instance, instance)]),
+    )));
     assert!(Code::storage_bytes(body)? > code);
     let mut catalog = Catalog {
         bytes: 64 * 1024 * 1024,

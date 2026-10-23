@@ -482,13 +482,6 @@ impl ResolvedCallables {
     ) -> Self {
         Self { targets }
     }
-    pub(crate) fn insert(
-        &mut self,
-        original: crate::types::instance::Instance,
-        target: crate::types::instance::Instance,
-    ) {
-        self.targets.insert(original, target);
-    }
 }
 impl Body {
     pub(crate) const fn root_site(&self) -> BodySite {
