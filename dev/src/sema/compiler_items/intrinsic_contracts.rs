@@ -67,6 +67,9 @@ fn signature(
     function: Function,
     kind: SourceIntrinsic,
 ) -> Result<(), &'static str> {
+    if kind == SourceIntrinsic::ConstEvalSelect {
+        return super::select_contract::validate(facts, function);
+    }
     let needs_drop = kind == SourceIntrinsic::NeedsDrop;
     let Some(Kind::Function {
         bound_regions: 0,
@@ -141,6 +144,30 @@ fn signature(
 }
 
 impl Catalog {
+    pub(super) fn intrinsic_record(
+        &self,
+        definition: DefId,
+    ) -> Result<
+        Option<(
+            crate::resolve::bindings::Declaration,
+            SourceIntrinsic,
+            TypeId,
+        )>,
+        &'static str,
+    > {
+        self.intrinsics
+            .get(&definition)
+            .map(|entry| {
+                Ok((
+                    entry.declaration,
+                    entry.kind,
+                    entry
+                        .signature
+                        .ok_or("source intrinsic declaration is not validated")?,
+                ))
+            })
+            .transpose()
+    }
     pub(crate) fn intrinsic(&self, definition: DefId) -> Result<bool, &'static str> {
         Ok(self.intrinsic_kind(definition)?.is_some())
     }
@@ -176,6 +203,10 @@ impl Catalog {
         let original = entry
             .signature
             .ok_or("source intrinsic declaration is not validated")?;
+        if entry.kind == SourceIntrinsic::ConstEvalSelect {
+            // Callback selection has four arguments and its own typed descriptor.
+            return Ok(None);
+        }
         // This profile's public signature has no parameter occurrences. Matching
         // the complete retained signature therefore validates its substitution.
         if signature != original {
@@ -191,6 +222,9 @@ impl Catalog {
                     "selected source layout intrinsic lacks its type argument"
                 }
                 SourceIntrinsic::NeedsDrop => "selected source needs_drop lacks its type argument",
+                SourceIntrinsic::ConstEvalSelect => {
+                    "source callback selection requires its own descriptor"
+                }
             });
         };
         if arguments.next().is_some()
@@ -203,6 +237,9 @@ impl Catalog {
                 }
                 SourceIntrinsic::NeedsDrop => {
                     "source needs_drop requires a complete closed type argument"
+                }
+                SourceIntrinsic::ConstEvalSelect => {
+                    "source callback selection requires its own descriptor"
                 }
             });
         }

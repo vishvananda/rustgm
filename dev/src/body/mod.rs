@@ -8,6 +8,7 @@ mod collection_factories;
 pub(crate) mod conditional_inputs;
 pub mod constants;
 mod diagnostics;
+pub(crate) mod operand_origins;
 pub use diagnostics::BodyOrigins;
 pub(crate) mod copy_requirements;
 pub(crate) mod dispatch;

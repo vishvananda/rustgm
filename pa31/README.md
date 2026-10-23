@@ -90,3 +90,7 @@ Do not activate a stage merely because a reduced example or an empty suite passe
 The focused [callable const eligibility checkpoint](../docs/pa31-callable-const-eligibility.md)
 records independently qualified source contracts and the remaining original
 const-callable execution requirement; PA31 remains planned.
+
+The [runtime callback checkpoint](../docs/pa31-runtime-const-select.md) records
+actual evaluated G selection, owned tuple transfer, constrained value origins
+and the separately retained CTFE/full-staged-provider boundaries.

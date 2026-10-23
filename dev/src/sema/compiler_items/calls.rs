@@ -27,6 +27,11 @@ impl Catalog {
     }
     pub(crate) fn check_const_call(&self, definition: DefId) -> Result<(), &'static str> {
         self.require_source_destructors_prepared()?;
+        if self.intrinsic_kind(definition)?
+            == Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect)
+        {
+            return Err("source const_eval_select constant callback execution is not implemented");
+        }
         match self
             .call_effects
             .as_deref()

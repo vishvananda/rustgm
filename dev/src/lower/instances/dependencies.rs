@@ -34,11 +34,27 @@ struct Discovered {
     adapters: Vec<crate::body::invocation_entries::Entry>,
     closures: Vec<TypeId>,
     calls: Vec<Instance>,
+    selectors: Vec<crate::body::ir::ValueId>,
     tables: Vec<(TypeId, TypeId)>,
     captured: Vec<(TypeId, [Option<crate::body::invocation_entries::Entry>; 2])>,
     upcasts: Vec<(TypeId, TypeId)>,
     operators: Vec<(TypeId, crate::support::call_traits::CallTrait, TypeId)>,
 }
+
+/// Registry identity only; execution selection still requires an actual Call.
+fn source_selector(facts: &Declarations, ty: TypeId) -> Result<bool, &'static str> {
+    let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(ty) else {
+        return Ok(false);
+    };
+    Ok(facts
+        .source_bindings
+        .as_deref()
+        .map(|catalog| catalog.intrinsic_kind(crate::resolve::model::DefId(item.0)))
+        .transpose()?
+        .flatten()
+        == Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect))
+}
+
 impl Discovered {
     fn conversion(
         &mut self,
@@ -67,16 +83,10 @@ impl Discovered {
         }
         Ok(())
     }
-    fn callable(
-        &mut self,
-        types: &crate::types::Store,
-        body: &Body,
-        ty: TypeId,
-    ) -> Result<(), &'static str> {
+    fn callable(&mut self, types: &crate::types::Store, ty: TypeId) -> Result<(), &'static str> {
         match types.kind(ty) {
             Some(Kind::FunctionItem { .. }) => {
-                self.calls
-                    .push(body.callable_target(Instance::new(types, ty)?));
+                self.calls.push(Instance::new(types, ty)?);
             }
             Some(Kind::Closure { .. }) => self.closures.push(ty),
             _ => {}
@@ -95,7 +105,7 @@ impl Dependencies {
         let result = self.run(facts, &mut layouts, body);
         facts.layouts = layouts;
         let result = result?;
-        Self::prepared(report, facts, result)
+        self.prepared(report, facts, Some(body), result)
     }
     pub(super) fn global(
         &mut self,
@@ -122,16 +132,59 @@ impl Dependencies {
         );
         facts.layouts = layouts;
         evaluated?;
-        Self::prepared(report, facts, result)
+        self.prepared(report, facts, None, result)
+    }
+    fn selector_origins(
+        &mut self,
+        facts: &mut Declarations,
+        body: &Body,
+        selectors: &[crate::body::ir::ValueId],
+        calls: &mut Vec<Instance>,
+    ) -> Result<(), String> {
+        self.charge(selectors.len())?;
+        let mut origins = None;
+        for call in selectors {
+            let Rvalue::Call { callee, .. } = body.values[call.0 as usize].kind else {
+                return Err("source selector dependency lost its actual Call".into());
+            };
+            let raw = Instance::new(&facts.types, body.values[callee.0 as usize].ty)?;
+            let selection = crate::sema::compiler_items::prepare_select(facts, raw)?
+                .ok_or("source selector dependency changed its declaration")?;
+            let inputs = crate::body::operand_origins::inputs(body, *call, selection.types)?;
+            match facts.types.kind(selection.types[2]) {
+                Some(Kind::FunctionItem { .. }) => {
+                    let origins = origins
+                        .get_or_insert_with(|| crate::body::operand_origins::Origins::new(body));
+                    origins.prepare(&facts.types, |count| self.charge(count))?;
+                    let origin = origins.origin(&facts.types, body, inputs[2])?;
+                    calls.push(Instance::new(
+                        &facts.types,
+                        body.values[origin.0 as usize].ty,
+                    )?);
+                }
+                Some(Kind::Function { .. }) => {}
+                _ => return Err("source selector runtime callback lost its callable type".into()),
+            }
+        }
+        Ok(())
     }
     fn prepared(
+        &mut self,
         report: &crate::resolve::expansion::Report,
         facts: &mut Declarations,
+        caller: Option<&Body>,
         mut result: Discovered,
     ) -> Result<Demands, String> {
         let mut concrete = Vec::new();
         let mut object_types = Vec::new();
+        if !result.selectors.is_empty() {
+            let body = caller.ok_or("source selector requires its actual caller body")?;
+            self.selector_origins(facts, body, &result.selectors, &mut result.calls)?;
+        }
         for instance in result.calls {
+            // Actual evaluated origins remain in their caller namespace until
+            // this single crossing into the proved executable target map.
+            let instance = caller.map_or(instance, |body| body.callable_target(instance));
             if let Some(selection) = crate::sema::compiler_items::source_drop_glue(facts, instance)?
             {
                 object_types.push(selection.element);
@@ -247,7 +300,13 @@ impl Dependencies {
                     .get(id.0 as usize)
                     .ok_or("invalid callable operand")?
                     .ty;
-                result.callable(&facts.types, body, ty)?;
+                if matches!(value.kind, Rvalue::Call { .. }) && source_selector(facts, ty)? {
+                    result.selectors.push(crate::body::ir::ValueId(
+                        u32::try_from(index).map_err(|_| "too many source selector values")?,
+                    ));
+                } else {
+                    result.callable(&facts.types, ty)?;
+                }
             }
         }
         for (id, static_) in body::constants::references(body) {
@@ -337,7 +396,7 @@ impl Dependencies {
             result.operators.push((receiver, kind, signature));
             return Ok(());
         }
-        result.callable(&facts.types, body, ty)
+        result.callable(&facts.types, ty)
     }
     fn image_dependencies(
         &mut self,

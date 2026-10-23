@@ -133,12 +133,15 @@ impl LayoutIntrinsic {
 pub enum SourceIntrinsic {
     Layout(LayoutIntrinsic),
     NeedsDrop,
+    ConstEvalSelect,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
-        if name == "needs_drop" {
+        if name == "const_eval_select" {
+            Some(Self::ConstEvalSelect)
+        } else if name == "needs_drop" {
             Some(Self::NeedsDrop)
         } else {
             LayoutIntrinsic::from_name(name).map(Self::Layout)

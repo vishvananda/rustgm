@@ -92,3 +92,10 @@ native observers, including the unchanged original dyn helper. Grouped
 cleanup coverage. Lazy exposed-only recipes preserve ordinary body proof flags;
 CTFE, Box ordering and unsized tails remain required separately. See
 [the dynamic-helper boundary](../../docs/pa31-dyn-drop-glue.md).
+
+`spec/const-eval-select-runtime/` retains21 independently settled source contexts
+for runtime callback selection, including13 native observers and the full
+attributed declaration. Grouped `callback_provider` tests cover runtime
+items/pointers, owned tuple transport and source opposites. The accepted CTFE
+program remains required; the malformed-header rustc ICE is a separate compiler
+robustness observation. Candidate qualification is pending.

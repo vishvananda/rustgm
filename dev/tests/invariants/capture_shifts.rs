@@ -112,3 +112,55 @@ fn failed_capture_shift_preserves_completed_results_and_budget() -> Result<(), &
     );
     Ok(())
 }
+
+#[test]
+fn completed_capture_lookup_is_cold_readonly_and_bound_to_exact_amount_and_type()
+-> Result<(), &'static str> {
+    let mut store = Store::default();
+    let local = reference(&mut store, 0)?;
+    let capture = reference(&mut store, 1)?;
+    let callback = callable(&mut store, local, capture)?;
+    assert_eq!(store.prepared_shift(TypeId::UNIT, 1)?, Some(TypeId::UNIT));
+    assert!(store.shifts.is_none());
+    assert_eq!(store.prepared_shift(callback, 1)?, None);
+    assert!(store.shifts.is_none());
+    assert!(store.prepared_shift(TypeId(u32::MAX), 0).is_err());
+    let (expected, _) = store.shift_type(callback, 1)?;
+    let before = (store.len(), store.shifts.as_ref().ok_or("shifts")?.steps);
+    for _ in 0..128 {
+        assert_eq!(store.prepared_shift(callback, 1)?, Some(expected));
+        assert_eq!(store.prepared_shift(callback, 2)?, None);
+    }
+    assert_eq!(
+        (store.len(), store.shifts.as_ref().ok_or("shifts")?.steps),
+        before
+    );
+    // A completed child at depth one cannot substitute for its root key.
+    assert_eq!(store.prepared_shift(capture, 1)?, None);
+    let (shifted_capture, _) = store.shift_type(capture, 1)?;
+    assert_eq!(shifted_capture, reference(&mut store, 2)?);
+    assert_eq!(store.prepared_shift(capture, 1)?, Some(shifted_capture));
+    let foreign = reference(&mut store, 3)?;
+    assert_eq!(store.prepared_shift(foreign, 1)?, None);
+    Ok(())
+}
+
+#[test]
+fn completed_capture_lookup_preserves_both_folder_and_shared_budget_failure()
+-> Result<(), &'static str> {
+    let mut store = Store::default();
+    let input = reference(&mut store, 0)?;
+    let (expected, _) = store.shift_type(input, 1)?;
+    assert_eq!(store.prepared_shift(input, 1)?, Some(expected));
+    let shifts = store.shifts.as_mut().ok_or("shifts")?;
+    shifts.folders.get_mut(&1).ok_or("folder")?.steps = 1_000_001;
+    assert!(store.prepared_shift(input, 1).is_err());
+    assert!(store.prepared_shift(TypeId::UNIT, 1).is_err());
+    let shifts = store.shifts.as_mut().ok_or("shifts")?;
+    shifts.folders.get_mut(&1).ok_or("folder")?.steps = 0;
+    shifts.steps = 1_000_001;
+    assert!(store.prepared_shift(input, 1).is_err());
+    assert!(store.prepared_shift(input, 2).is_err());
+    assert!(store.prepared_shift(TypeId::UNIT, 0).is_err());
+    Ok(())
+}

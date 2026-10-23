@@ -127,6 +127,17 @@ impl Bound {
     pub fn apply(&mut self, store: &mut Store, ty: TypeId) -> Result<TypeId, &'static str> {
         self.apply_inside(store, ty, 0)
     }
+    /// A completed structural result is data, never substitution or caller proof.
+    pub(super) fn completed_type(
+        &self,
+        store: &Store,
+        ty: TypeId,
+    ) -> Result<Option<TypeId>, &'static str> {
+        if self.steps > WORK_LIMIT {
+            return Err("lifetime substitution work budget exceeded");
+        }
+        self.result(store, (ty, 0))
+    }
     pub(crate) fn apply_inside(
         &mut self,
         store: &mut Store,

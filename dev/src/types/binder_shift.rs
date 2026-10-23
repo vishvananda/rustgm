@@ -10,6 +10,38 @@ pub(super) struct Shifts {
 }
 
 impl Store {
+    /// Cumulative bounded relocation work, including failed attempts. Callers
+    /// may attribute a delta without changing the relocation budget owner.
+    pub(crate) fn capture_shift_steps(&self) -> usize {
+        self.shifts.as_deref().map_or(0, |shifts| shifts.steps)
+    }
+    /// Read a completed capture relocation in this Store without allocating or
+    /// interning. A miss does not mean identity, and failed budgets stay failed.
+    pub(crate) fn prepared_shift(
+        &self,
+        ty: TypeId,
+        amount: u16,
+    ) -> Result<Option<TypeId>, &'static str> {
+        let escaping = self.escaping_binders(ty).ok_or("invalid shifted type")?;
+        let folder = self
+            .shifts
+            .as_deref()
+            .and_then(|shifts| shifts.folders.get(&amount));
+        if self
+            .shifts
+            .as_deref()
+            .is_some_and(|shifts| shifts.steps > 1_000_000)
+        {
+            return Err("capture shift work budget exceeded");
+        }
+        if folder.is_some_and(|folder| folder.steps > 1_000_000) {
+            return Err("lifetime substitution work budget exceeded");
+        }
+        if amount == 0 || escaping == 0 {
+            return Ok(Some(ty));
+        }
+        folder.map_or(Ok(None), |folder| folder.completed_type(self, ty))
+    }
     /// Share simultaneous argument insertion across independent parameter mappings.
     /// Each folder keeps nested binder depth in its own keys. Local slots stay local.
     /// The cumulative budget bounds both work and retained structural cache storage.

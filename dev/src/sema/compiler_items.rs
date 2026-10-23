@@ -13,7 +13,10 @@ pub(crate) use glue_calls::{DropGlueSelection, check_const_drop_glue, source_dro
 mod intrinsic_contracts;
 mod layout;
 mod needs_drop;
+mod select_calls;
+mod select_contract;
 pub(crate) use copying::copy_decisions;
+pub(crate) use select_calls::{Select, check_const_select, prepare_select, source_select};
 mod roles;
 pub(crate) use roles::callable_role;
 pub(crate) use roles::{destruct_predicate, drop_glue_member, freeze_predicate};

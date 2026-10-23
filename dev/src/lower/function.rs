@@ -1,6 +1,8 @@
 //! Function-local slots, snapshots and control flow consume the PA10 typed body.
 mod aggregate;
+mod argument_sources;
 mod c_boundary;
+mod callback_dispatch;
 mod cleanup;
 mod intrinsics;
 mod invocations;
@@ -103,6 +105,7 @@ struct Lower<'a, 'b, 'c> {
     object_arguments: Vec<crate::lowir::boundary::Value>,
     context: &'a mut Context<'c>,
     body: &'b ir::Body,
+    callable_origins: Option<Box<crate::body::operand_origins::Origins<'b>>>,
     cleanup: Option<Box<cleanup::Pending<'b>>>,
     builder: Builder,
     locals: Vec<Option<Address>>,
@@ -159,6 +162,7 @@ pub(super) fn lower<'b>(
         object_arguments: scratch.object_arguments,
         context,
         body,
+        callable_origins: None,
         cleanup,
         builder,
         locals: scratch.locals,
@@ -827,7 +831,12 @@ impl Lower<'_, '_, '_> {
                 signature,
                 callee,
                 arguments,
-            } => return self.call(signature, callee, arguments, value.ty),
+            } => {
+                if let Some(call) = self.runtime_select(id)? {
+                    return self.selected_callback(call);
+                }
+                return self.call(signature, callee, arguments, value.ty);
+            }
         };
         Ok(Selected::Runtime(runtime))
     }
@@ -861,59 +870,12 @@ impl Lower<'_, '_, '_> {
         arguments: ir::ValueList,
         result: TypeId,
     ) -> Result<Selected, &'static str> {
-        let signature = self.context.signature(signature)?;
-        if matches!(
-            self.context.output.signatures.get(signature.0 as usize),
-            Some(crate::lowir::program::Signature::Object(_))
-        ) || self.context.output.variadic(signature)?
-        {
-            return self.boundary_call(signature, callee, arguments, result);
-        }
-        let representation = self.context.representation(result)?;
-        self.arguments.clear();
-        let destination = if matches!(representation, Representation::Object(_)) {
-            let address = self.allocate(result)?.ok_or("missing result allocation")?;
-            let pointer = self.pointer(address)?;
-            self.arguments.push(pointer);
-            Some(address)
-        } else {
-            None
-        };
-        for id in &self.body.arguments[arguments.start as usize..arguments.end as usize] {
-            match self.value(*id)? {
-                Selected::Runtime(value) => self.arguments.push(value),
-                Selected::Object(address) => {
-                    let ty = self.body.values[id.0 as usize].ty;
-                    let value = if matches!(
-                        self.context.representation(ty)?,
-                        Representation::PointerObject(_)
-                    ) {
-                        self.builder.load(Type::Ptr, address.operand)?
-                    } else {
-                        self.pointer(address)?
-                    };
-                    self.arguments.push(value);
-                }
-                Selected::Unit | Selected::Item(_) => {}
-            }
-        }
-        let value =
-            self.builder
-                .call(signature, representation.result(), callee, &self.arguments)?;
-        if matches!(representation, Representation::PointerObject(_)) {
-            let destination = self
-                .allocate(result)?
-                .ok_or("missing nullable result storage")?;
-            self.builder.store(
-                value.ok_or("missing nullable result word")?,
-                destination.operand,
-            )?;
-            return Ok(Selected::Object(destination));
-        }
-        Ok(destination.map_or_else(
-            || value.map_or(Selected::Unit, Selected::Runtime),
-            Selected::Object,
-        ))
+        self.call_arguments(
+            signature,
+            callee,
+            argument_sources::Arguments::Values(arguments),
+            result,
+        )
     }
 }
 

@@ -3,6 +3,12 @@ use super::{Constant, Evaluator, Failure, Reader, Type, TypeId, View};
 use crate::types::instance::Instance;
 
 impl Reader<'_> {
+    pub(crate) fn source_select(
+        self,
+        instance: Instance,
+    ) -> Result<Option<crate::sema::compiler_items::Select>, &'static str> {
+        crate::sema::compiler_items::source_select(self.facts, instance)
+    }
     pub(crate) fn source_drop_glue_definition(
         self,
     ) -> Result<Option<crate::resolve::model::DefId>, &'static str> {
