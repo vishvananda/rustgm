@@ -209,9 +209,22 @@ than cloning it again or widening every Body/Value. Charge retained rows and
 suspended continuations to the existing storage limits. Actual const impls may
 satisfy ordinary uses, but only coarse candidate indexes erase effects: canonical
 headers, exact goals and completed proof keys preserve them. The
-[reached-call checkpoint](docs/pa31-reached-const-payment.md) covers closed,
-argument-free ordinary functions; conditional intrinsics, open/lifetime-bearing
-contracts, callable adapters and CTFE cleanup retain separate required checks.
+[reached-call checkpoint](docs/pa31-reached-const-payment.md) establishes the
+argument-free profile. The [closed callable execution checkpoint](docs/pa31-const-callable-execution.md)
+adds a complete owned function item and a `u8` argument, with actual Invoke
+execution. Preserve empty quantified binders when copying requirements, then
+open them with the existing binder-aware fold during each fresh payment.
+Conditional callback targets need their own Invoke-bound payment; open or
+lifetime-bearing contracts, broader callable arguments, intrinsic callbacks and
+CTFE cleanup remain separate requirements.
+
+Retain each source call's defining owner and effect through a compact indexed
+handle into the current catalog. Share one immutable descriptor per semantic
+body rather than repeating its full context at every call. Validate the actual
+owner on lookup; a copied handle cannot authorize another catalog or body.
+The defining effect remains distinct from the reached caller's Const payment.
+Keep ordinary calls allocation-free and preserve the common operation and node
+fact layouts. Preflight bounded descriptor storage before publishing any rows.
 
 Callable signature equations do not establish const-callability. For actual
 source Fn/FnMut/FnOnce roles, nonordinary use validates the completed declaration,
@@ -223,7 +236,8 @@ missing headers/templates remain pending, while conditional item/member debt
 retains its complete Instance until scoped proof is implemented. Reference
 subjects use actual source impl selection rather than effect-erasing forwarding.
 The [eligibility checkpoint](docs/pa31-callable-const-eligibility.md) records
-the supported source controls and separate remaining callable execution work.
+source selection independently of the closed execution profile above. A complete
+signature alone grants neither an execution entry nor another call's payment.
 
 An actual source drop-glue helper is a compiler hook, not an executable empty
 body. Its runtime adapter consumes the exact registered declaration, full proved
