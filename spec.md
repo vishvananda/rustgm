@@ -277,6 +277,25 @@ trigger a fresh walk per selector. The
 [runtime selector checkpoint](docs/pa31-runtime-const-select.md) records the
 source/native contracts, ownership controls and remaining const profile.
 
+Constant selection authenticates the current evaluated selector, actual callback
+and owned tuple against the reached Call in its proved Code. Demand only the
+selected constant callback through ordinary function entry, preserving its full
+instance and public/opened signatures. Suspension must retain operand values,
+the original return destination and one-use caller payment; cached callback code
+does not pay another reached use. The
+[constant selector checkpoint](docs/pa31-const-select-ctfe-progress.md) distinguishes
+qualified source profiles from the remaining binder and conditional-call debts.
+
+Prepare an owned executable snapshot while its exact Body, Contract and solved
+region/loan proof are available. Reuse the solved callable mapping producer,
+moving its sparse map into the existing Code field before publication. Empty
+static solutions do not scan values or allocate a target map, and original-only
+proofs do not build Code. Charge attempted mapping work and preflight snapshot
+payload within the existing execution budget. Catalog registration consumes the
+owned proved snapshot; later matching body metadata cannot authorize a new CFG.
+Keep source witnesses and live conditional scopes as separate prerequisites,
+and validate mode/index storage before publishing any executable entry.
+
 An actual source drop-glue helper is a compiler hook, not an executable empty
 body. Its runtime adapter consumes the exact registered declaration, full proved
 instance, retained source/body signature pair and caller's destruction recipe.
