@@ -94,3 +94,45 @@ source rescanning or speculative name resolution. After the coherent source
 contract passes, rerun the original whole-core root with the complete pinned
 opened-source/configuration inventory. Passing one parser frontier does not
 qualify all of core or an assignment release.
+
+## Resolver review refinements
+
+The read-only second review identifies the following required distinctions:
+
+- Use separate `ExpansionId`, `SyntaxContextId`, normalized `ItemContext` and
+  normalized `LocalContext` types. Only the mark arena constructs normalized
+  wrappers; cache both projections. A proposed context node contains parent,
+  expansion, opaque projection, local projection and transparency (logical
+  20-byte estimate, not a measured Rust layout). Preserve the actual call-site
+  syntax context independently from expansion ancestry.
+- Value const-generic parameters use item/parameter normalization, rather than
+  local-variable normalization. Keep parameter kind and lexical barriers when
+  choosing the lookup policy; the value namespace alone is insufficient.
+- Adjust a path segment against the target module's expansion, retaining its
+  definition-site/privacy context. Preserve distinct segment and alias-destination
+  contexts. Import candidate/provided sets, glob/reexport journals and declaration
+  notifications need the same normalized key as waiting maps and direct lookup.
+- Apply literal marks to each definition token's retained raw context. A generated
+  macro's captured name may be root-owned while its literal body retains an outer
+  opaque mark. The present one `Environment.context` for all definition pieces
+  cannot represent this. Captured pieces preserve their contexts without literal
+  marking. Keep source/edition locations as a separate provenance axis.
+- Cache mixed-policy prefix rebasing separately from the final mark. Prefix keys
+  may share raw token context, normalized call-site context and policy; final
+  interning must include the actual expansion identity. Two repeated introductions
+  must never collapse. Count first-miss depth by distinct call-site contexts;
+  cached O(1) projection alone does not prove total linear construction.
+- Current local histories walk unrelated contexts both for lookup and duplicate
+  checks. Add a cold `(entry, normalized local context)` index to ordered LocalIds:
+  bucket presence checks duplicates and binary predecessor finds the latest
+  `DefId < visible`. Preserve older same-context shadows and lexical barriers.
+  Validate monotonic insertion rather than silently assuming it. Measure width
+  by contexts by shadows by historical visibility, including transparent context
+  collapse, absent contexts and unrelated declarations. No Entry/Local/Token
+  record growth is needed for this index; any aggregate pointer/allocation cost
+  still needs measurement.
+
+Local scoped expansion does not by itself provide cross-crate macro export,
+imported definition-token provenance, or macro stability allowances. Keep these
+requirements explicit in the source-library metadata/bootstrap roadmap; no local
+fixture or parser frontier can stand in for the original alloc/std crate graph.
