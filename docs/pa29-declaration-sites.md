@@ -76,3 +76,34 @@ bytes and the12 passing controls were unchanged. The frozen binary also ran the
 layout/retained-payload observers with uncaptured output, retaining its binary
 hash and originating receipt in `frozen-layout-provenance.json`. No compiler
 candidate, full Cargo/native/text sweep or wire profile is claimed.
+
+## Permanently frozen shared metadata
+
+The resolver's already cold Imported record owns CatalogSlot. After complete
+installation it permanently freezes the catalog before publication. Semantic
+Linkage shares the same immutable metadata-only Rc when one exists; no original
+Template, Contract or proof payload enters resolve. No-import/default slots
+allocate neither Rc nor catalog, and old closed imports leave the slot empty.
+
+Freeze is a retained catalog state, not a conclusion from Rc uniqueness. Every
+installation entry checks it before touching incoming data. Dropping all shared
+borrowers, obtaining unique mutable Rc access, or repeating freeze never permits
+reinstallation. Failed attempts retain observer work. Partial/unfrozen catalogs
+cannot be shared. Ordinary exact epoch/row/kind validation still rejects foreign
+catalogs with numerically equal rows and definitions.
+
+Measured Catalog remains168 bytes and CatalogSlot8. Resolver Imported changes
+136→144 and semantic Linkage224→232; both live only in preexisting optional/cold
+owners. Value remains24. CatalogSlot charges its16-byte Rc control block once
+before allocation, in addition to its actual catalog/header/storage budget.
+Standalone catalog tests do not pay an unallocated shared header.
+
+`frozen-catalog-first` stopped at the existing import_crates function's102-line
+Clippy limit. A natural Imported constructor now initializes its owned cold state
+without extending the import driver. The coherent `frozen-catalog-second` run
+passed format, strict all-target/all-feature debug Clippy, architecture audit,
+registration and one debug batch of17 exact private tests plus two unchanged
+scalar-import semantic contracts. The library/group targets were each built
+once; no full maintainer/native/text sweep ran. Its frozen binary also records
+the actual cold/hot layouts in layout.log. Real source-free original validation
+and executable generic import remain the next live consumers.

@@ -17,6 +17,7 @@ pub(super) fn install(
     definitions: &[Definition],
     input: Input,
 ) -> Result<Installed, &'static str> {
+    catalog.mutable()?;
     catalog.charge(
         1 + input.owners.owner().name().len() + input.owners.owner().disambiguator().len(),
     )?;

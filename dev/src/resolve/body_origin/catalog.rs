@@ -13,7 +13,7 @@ use crate::{
         hash::HashMap,
     },
 };
-use std::{cell::Cell, ops::Range};
+use std::{cell::Cell, ops::Range, rc::Rc};
 
 #[derive(Clone, Copy)]
 pub(crate) struct Limits {
@@ -96,6 +96,9 @@ impl Installed {
         }))
     }
 }
+#[cfg(test)]
+#[path = "../../../tests/invariants/catalog_freezing.rs"]
+mod freezing_tests;
 pub(crate) struct Catalog {
     pub(super) epoch: Epoch,
     pub(super) artifacts: Vec<Artifact>,
@@ -105,20 +108,50 @@ pub(crate) struct Catalog {
     pub(super) bytes: usize,
     work: Cell<usize>,
     pub(super) limits: Limits,
+    frozen: bool,
 }
 #[derive(Default)]
-pub(crate) struct CatalogSlot(Option<Box<Catalog>>);
+pub(crate) struct CatalogSlot(Option<Rc<Catalog>>);
 impl CatalogSlot {
     pub(crate) fn get(&self) -> Option<&Catalog> {
         self.0.as_deref()
     }
     pub(crate) fn ensure(&mut self) -> Result<&mut Catalog, &'static str> {
         if self.0.is_none() {
-            self.0 = Some(Box::new(Catalog::new(Limits::default())?));
+            let mut catalog = Catalog::new(Limits::default())?;
+            // The single owning catalog pays its Rc control block once. Clones
+            // share this payload; ordinary source-only compilation has no Rc.
+            catalog.bytes = catalog.bytes.saturating_add(2 * size_of::<usize>());
+            if catalog.bytes > catalog.limits.bytes {
+                return Err("imported catalog shared header exceeds storage budget");
+            }
+            self.0 = Some(Rc::new(catalog));
         }
-        self.0
-            .as_deref_mut()
-            .ok_or("imported body catalog disappeared")
+        let catalog = self.0.as_mut().ok_or("imported body catalog disappeared")?;
+        catalog.mutable()?;
+        Rc::get_mut(catalog).ok_or("unfrozen imported catalog has foreign shared ownership")
+    }
+    pub(crate) fn freeze(&mut self) -> Result<(), &'static str> {
+        let Some(catalog) = self.0.as_mut() else {
+            return Ok(());
+        };
+        catalog.charge(1)?;
+        if !catalog.frozen {
+            Rc::get_mut(catalog)
+                .ok_or("unfrozen imported catalog has foreign shared ownership")?
+                .frozen = true;
+        }
+        Ok(())
+    }
+    pub(crate) fn shared(&self) -> Result<Option<Rc<Catalog>>, &'static str> {
+        let Some(catalog) = self.0.as_ref() else {
+            return Ok(None);
+        };
+        catalog.charge(1)?;
+        if !catalog.frozen {
+            return Err("imported catalog must be frozen before sharing");
+        }
+        Ok(Some(Rc::clone(catalog)))
     }
 }
 impl Catalog {
@@ -135,6 +168,7 @@ impl Catalog {
             bytes: size_of::<Self>(),
             work: Cell::new(0),
             limits,
+            frozen: false,
         })
     }
     pub(super) fn charge(&self, steps: usize) -> Result<(), &'static str> {
@@ -150,6 +184,13 @@ impl Catalog {
     }
     pub(crate) fn retained_bytes(&self) -> usize {
         self.bytes
+    }
+    pub(super) fn mutable(&self) -> Result<(), &'static str> {
+        self.charge(1)?;
+        if self.frozen {
+            return Err("imported catalog is permanently frozen");
+        }
+        Ok(())
     }
     pub(crate) fn body_count(&self) -> usize {
         self.rows.len() - self.definitions.len()

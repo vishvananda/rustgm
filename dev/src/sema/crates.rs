@@ -19,6 +19,7 @@ pub use export::{Exports, export};
 
 #[derive(Default)]
 pub struct Linkage {
+    origins: Option<std::rc::Rc<crate::resolve::body_origin::Catalog>>,
     identity: Option<CrateIdentity>,
     prefix: Option<String>,
     symbols: HashMap<DefId, String>,
@@ -37,6 +38,13 @@ pub struct ImportWork {
     pub fields: usize,
 }
 impl Linkage {
+    #[expect(
+        dead_code,
+        reason = "facts-only imported Original validation consumes this during body-origin migration"
+    )]
+    pub(crate) fn origin_catalog(&self) -> Option<&crate::resolve::body_origin::Catalog> {
+        self.origins.as_deref()
+    }
     /// Imported Rust storage has completed contents; foreign declarations do not.
     #[must_use]
     pub fn imported_storage(&self, definition: DefId) -> Option<bool> {
@@ -86,6 +94,9 @@ pub(super) fn import(report: &Report, facts: &mut Declarations) -> Result<(), Er
     let Some(imported) = &report.resolution.crates else {
         return Ok(());
     };
+    if let Some(origins) = imported.origin_catalog().map_err(error)? {
+        facts.crates.get_or_insert_default().origins = Some(origins);
+    }
     let records = imported_records::prepare(imported, facts)?;
     for (definition, function) in imported.functions() {
         let signature = records.signature(facts, function)?;

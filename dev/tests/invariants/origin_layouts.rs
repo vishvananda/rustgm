@@ -58,6 +58,47 @@ struct SitePredicate<S> {
     site: S,
     value: crate::types::parameters::clauses::Clause,
 }
+struct LegacyImported {
+    dependencies: Arc<crate::support::crates::Dependencies>,
+    definitions: crate::support::hash::HashMap<crate::support::crates::ExternalDef, ir::DefId>,
+    functions: Vec<(ir::DefId, usize, usize)>,
+    constants: Vec<(ir::DefId, usize, usize)>,
+    records: Vec<(ir::DefId, usize, usize)>,
+    statics: Vec<(ir::DefId, usize, usize)>,
+}
+struct LegacyLinkage {
+    identity: Option<crate::support::crates::CrateIdentity>,
+    prefix: Option<String>,
+    symbols: crate::support::hash::HashMap<ir::DefId, String>,
+    imported_constants: crate::support::hash::HashSet<ir::DefId>,
+    imported_records: crate::support::hash::HashSet<ir::DefId>,
+    imported_storage: crate::support::hash::HashMap<ir::DefId, bool>,
+    work: crate::sema::crates::ImportWork,
+}
+
+#[test]
+fn frozen_catalog_sharing_adds_only_cold_import_owner_slots() {
+    assert_eq!(
+        size_of::<crate::resolve::crates::Imported>(),
+        size_of::<LegacyImported>() + size_of::<usize>()
+    );
+    assert_eq!(
+        size_of::<crate::sema::crates::Linkage>(),
+        size_of::<LegacyLinkage>() + size_of::<usize>()
+    );
+    assert_eq!(size_of::<CatalogSlot>(), size_of::<usize>());
+    assert_eq!(size_of::<ir::Value>(), 24);
+    println!(
+        "resolver_import={}/{} sema_linkage={}/{} catalog={} slot={} Rc_control={}",
+        size_of::<LegacyImported>(),
+        size_of::<crate::resolve::crates::Imported>(),
+        size_of::<LegacyLinkage>(),
+        size_of::<crate::sema::crates::Linkage>(),
+        size_of::<Catalog>(),
+        size_of::<CatalogSlot>(),
+        2 * size_of::<usize>()
+    );
+}
 
 #[test]
 fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {

@@ -338,7 +338,7 @@ fn quotas_are_preflighted_and_warm_queries_are_constant_work() -> Result<(), &'s
             }
             let start = catalog.work();
             let installed = catalog.install(&defs, input("wanted", noise, width)?)?;
-            assert_eq!(catalog.work() - start, 28 + 5 * width as usize);
+            assert_eq!(catalog.work() - start, 29 + 5 * width as usize);
             let body = installed.body(BodyRef(width - 1))?;
             let retained = catalog.retained_bytes();
             let start = catalog.work();
