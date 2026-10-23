@@ -192,6 +192,10 @@ impl Checker<'_> {
                 query.parent = Some(Box::new(Parent::Proven));
                 Ok(None)
             }
+            selection::Progress::Ready(Selection::Refuted(refutation)) => {
+                refutation.reject().map_err(|e| self.error(node, e))?;
+                Err(self.error(node, "projection parent is explicitly refuted"))
+            }
             selection::Progress::Ready(Selection::Absent | Selection::Deferred) => {
                 if refined {
                     return Err(self.error(

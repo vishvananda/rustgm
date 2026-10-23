@@ -292,8 +292,9 @@ impl super::super::comparisons::LibraryContracts<'_> {
             .implementations
             .as_mut()
             .ok_or_else(|| Error::at(source.file, 0, "range headers were not reserved"))?
-            .prepare(
+            .prepare_factory(
                 &mut self.facts.types,
+                &self.facts.associated,
                 ItemId(expected.definition.0),
                 Implementation {
                     owner: declaration.definition,

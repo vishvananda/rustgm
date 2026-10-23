@@ -100,7 +100,7 @@ pub fn check_templates(
         contracts.bodies.len(),
         crate::support::hash::BuildFxHasher::default(),
     );
-    for input in &contracts.bodies {
+    for input in templates.inputs(&contracts.bodies) {
         if index.insert(input.key, input).is_some() {
             return Err(Error {
                 source: Some(input.source.into()),
@@ -108,7 +108,7 @@ pub fn check_templates(
             });
         }
     }
-    let inputs = templates.bodies.iter().map(|template| {
+    let inputs = templates.iter().map(|template| {
         let cfg = &template.body;
         index
             .remove(&cfg.key())

@@ -28,6 +28,18 @@ impl From<&crate::sema::model::BuiltinRequirements> for BuiltinRequirements {
 }
 
 impl BuiltinRequirements {
+    pub(crate) fn imported(
+        environment: Arc<Environment>,
+        predicates: Vec<(ProofSite, Predicate)>,
+    ) -> Self {
+        Self {
+            environment: Some(environment),
+            predicates,
+            source_copy: None,
+            prepared_copy: None,
+        }
+    }
+
     #[cfg(test)]
     pub(crate) fn prepared_for_test(
         &self,

@@ -23,7 +23,7 @@ mod declaration_tests;
 #[cfg(test)]
 mod tests;
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(in crate::sema) struct Assumptions {
     index: Option<Arc<ClauseIndex>>,
 }
@@ -44,6 +44,13 @@ impl Evidence {
 }
 
 impl Assumptions {
+    pub(super) fn same_snapshot(&self, other: &Self) -> bool {
+        match (&self.index, &other.index) {
+            (None, None) => true,
+            (Some(a), Some(b)) => Arc::ptr_eq(a, b),
+            _ => false,
+        }
+    }
     pub(in crate::sema) fn retain_allocation(
         &self,
         observer: &mut crate::types::parameters::premise_index::Retained,

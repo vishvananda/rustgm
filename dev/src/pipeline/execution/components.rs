@@ -230,9 +230,7 @@ impl Engine {
         rows: Vec<Original>,
         retained: &mut Retained,
     ) -> Result<(), Error> {
-        let mut templates = Templates {
-            bodies: Vec::with_capacity(rows.len()),
-        };
+        let mut templates = Templates::source(Vec::with_capacity(rows.len()));
         let mut contracts = Vec::with_capacity(rows.len());
         for mut row in rows {
             crate::body::copy_requirements::prepare(facts, &row.template.body, &mut row.contract)

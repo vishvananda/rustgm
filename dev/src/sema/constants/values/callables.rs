@@ -2,6 +2,25 @@
 use super::{Constant, Evaluator, Failure, Reader, Type, TypeId, View};
 use crate::types::instance::Instance;
 
+impl Reader<'_> {
+    pub(crate) fn source_drop_glue_definition(
+        self,
+    ) -> Result<Option<crate::resolve::model::DefId>, &'static str> {
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Ok(None);
+        };
+        Ok(catalog
+            .validated_language(crate::support::bindings::LangItem::DropGlue)?
+            .map(|declaration| declaration.definition))
+    }
+    pub(crate) fn source_drop_glue(
+        self,
+        instance: Instance,
+    ) -> Result<Option<crate::sema::compiler_items::DropGlueSelection>, &'static str> {
+        crate::sema::compiler_items::source_drop_glue(self.facts, instance)
+    }
+}
+
 impl Evaluator<'_> {
     pub(crate) fn reify(&self, source: TypeId, value: Constant) -> Result<Constant, Failure> {
         match self.facts().types.kind(source) {

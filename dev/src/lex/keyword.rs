@@ -64,6 +64,7 @@ pub enum Word {
     MacroRules,
     Safe,
     Raw,
+    Auto,
     /// Any other spelling, and every non-identifier token.
     Other,
 }
@@ -98,6 +99,7 @@ impl Word {
                 _ => Self::Other,
             },
             4 => match name {
+                b"auto" => Self::Auto,
                 b"else" => Self::Else,
                 b"enum" => Self::Enum,
                 b"impl" => Self::Impl,
@@ -240,6 +242,6 @@ mod tests {
         assert_eq!(Word::classify(b"macro_rules"), Word::MacroRules);
         assert_eq!(Word::classify(b"safe"), Word::Safe);
         assert_eq!(Word::classify(b"raw"), Word::Raw);
-        assert_eq!(Word::classify(b"auto"), Word::Other);
+        assert_eq!(Word::classify(b"auto"), Word::Auto);
     }
 }

@@ -138,9 +138,7 @@ impl Engine {
             destruction,
             environment,
         };
-        let templates = Templates {
-            bodies: vec![template],
-        };
+        let templates = Templates::source(vec![template]);
         self.prove(report, facts, &templates.bodies[0], &contract)?;
         Ok(templates)
     }

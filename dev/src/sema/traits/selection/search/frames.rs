@@ -8,6 +8,25 @@ use crate::{
     types::{infer, lifetime_proof::ScopeId, parameters::predicates::Bound, shape_key::ShapeKey},
 };
 
+#[derive(Clone, Copy)]
+pub(super) enum Chosen {
+    Positive(usize),
+    Negative(usize),
+}
+impl Chosen {
+    pub(super) fn node(self) -> usize {
+        match self {
+            Self::Positive(node) | Self::Negative(node) => node,
+        }
+    }
+    pub(super) fn decision(self) -> Decision {
+        match self {
+            Self::Positive(node) => Decision::Proven(node),
+            Self::Negative(node) => Decision::Refuted(node),
+        }
+    }
+}
+
 pub(super) struct Frame {
     pub language: Option<Box<super::mechanical::Pending>>,
     pub equality_hint: Option<Box<crate::sema::traits::callables::Matched>>,
@@ -32,7 +51,7 @@ pub(super) struct Frame {
     pub pending_headers: Option<std::vec::IntoIter<DefId>>,
     pub cursor: usize,
     pub trial: Option<Trial>,
-    pub selected: Option<usize>,
+    pub selected: Option<Chosen>,
     pub deferred: bool,
     pub partial: Option<Box<Trial>>,
     pub inference: Inference,
@@ -193,8 +212,13 @@ impl Search<'_> {
                 }
             }
             Decision::Deferred => frame.deferred = true,
-            Decision::Proven(node) => {
-                if frame.selected.replace(node).is_some() {
+            Decision::Proven(node) | Decision::Refuted(node) => {
+                let chosen = if matches!(result, Decision::Proven(_)) {
+                    Chosen::Positive(node)
+                } else {
+                    Chosen::Negative(node)
+                };
+                if frame.selected.replace(chosen).is_some() {
                     return Ok(Action::Complete(Decision::Deferred));
                 }
             }
@@ -265,6 +289,7 @@ impl Search<'_> {
                 .map_err(|_| "impl region count overflow")?;
         let node = self.query.push(
             Node {
+                debt_free: false,
                 cycle_dependent: false,
                 provisional_size: false,
                 goal,
@@ -283,6 +308,12 @@ impl Search<'_> {
             trial.scope,
             trial.first..owned_end,
         );
-        Ok(Some(Decision::Proven(node)))
+        let negative =
+            super::super::refutation::implementation_negative(facts, trial.instance.owner)?;
+        Ok(Some(if negative {
+            Decision::Refuted(node)
+        } else {
+            Decision::Proven(node)
+        }))
     }
 }

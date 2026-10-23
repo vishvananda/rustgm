@@ -268,6 +268,12 @@ impl<'a> Context<'a> {
     /// Newly discovered functions, drop glue and data append without recursion.
     fn emit_pending(&mut self, source: Option<crate::body::ir::ProofSite>) -> Result<(), Error> {
         let destruction = self.destruction;
+        let mut runtime_cleanup =
+            super::runtime_cleanup::State::new(self.types, self.aggregates, self.constants)
+                .map_err(|message| Error {
+                    node: source,
+                    message,
+                })?;
         let (mut next, mut next_data, mut next_drop, mut next_table) = (0, 0, 0, 0);
         while next < self.queue.len()
             || next_data < self.data.pending.len()
@@ -328,7 +334,12 @@ impl<'a> Context<'a> {
                 .as_deref()
                 .or_else(|| destruction.and_then(|proof| proof.plan(index)));
             let signature = self.output.symbols[symbol.0 as usize].signature;
-            let lowered = function::lower(self, index, &body, plan, signature)?;
+            let lowered =
+                if let Some(lowered) = runtime_cleanup.lower(self, index, &body, signature)? {
+                    lowered
+                } else {
+                    function::lower(self, index, &body, plan, signature)?
+                };
             self.output
                 .define(symbol, lowered)
                 .map_err(|message| Error {
@@ -339,6 +350,31 @@ impl<'a> Context<'a> {
             next += 1;
         }
         Ok(())
+    }
+    /// The emission boundary retains the original proved owner/instance header.
+    pub(super) fn source_body_site(&self, index: usize) -> Option<crate::body::ir::ProofSite> {
+        self.bodies
+            .as_slice()
+            .get(index)
+            .map(|body| body.source.into())
+    }
+    pub(super) fn require_source_body(
+        &self,
+        index: usize,
+        body: &ir::Body,
+    ) -> Result<(), &'static str> {
+        let retained = self
+            .bodies
+            .as_slice()
+            .get(index)
+            .ok_or("source cleanup has no retained proved body")?;
+        let instance = body
+            .instance
+            .ok_or("source cleanup lacks its full instance")?;
+        if self.instance_indices.get(&instance) != Some(&index) {
+            return Err("source cleanup differs from its retained proved body");
+        }
+        super::runtime_cleanup::retained_header(retained, body)
     }
     fn index_bodies(&mut self) -> Result<(), &'static str> {
         for (index, body) in self.bodies.as_slice().iter().enumerate() {

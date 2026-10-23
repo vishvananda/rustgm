@@ -10,6 +10,7 @@ pub struct Options {
     pub library: bool,
     pub metadata: Option<String>,
     pub externs: Vec<String>,
+    pub dependency_metadata: Vec<String>,
     pub source_core: Option<String>,
 }
 impl Options {
@@ -17,7 +18,7 @@ impl Options {
         let enabled = self.library
             || self.disambiguator.is_some()
             || self.metadata.is_some()
-            || !self.externs.is_empty();
+            || self.dependency_count() != 0;
         if enabled && mode != "--emit-lowir" && self.source_core.is_none() {
             return Err("crate artifact options require --emit-lowir".into());
         }
@@ -41,9 +42,9 @@ impl Options {
             ) {
                 return Err("source-core configuration requires a name or semantic view".into());
             }
-            self.context()?;
+            self.bindings_mode()?;
             if mode != "--emit-lowir"
-                && (self.library || self.metadata.is_some() || !self.externs.is_empty())
+                && (self.library || self.metadata.is_some() || self.dependency_count() != 0)
             {
                 return Err("source-core artifact options require --emit-lowir".into());
             }
@@ -62,10 +63,15 @@ impl Options {
         {
             return Err("metadata and LowIR output paths must differ".into());
         }
-        if self.externs.len() > 1024 {
+        if self.dependency_count() > 1024 {
             return Err("external crate arguments exceed profile budget".into());
         }
         Ok(())
+    }
+    pub fn dependency_count(&self) -> usize {
+        self.externs
+            .len()
+            .saturating_add(self.dependency_metadata.len())
     }
     pub fn identity(&self) -> Result<Option<CrateIdentity>, String> {
         self.disambiguator
@@ -80,7 +86,15 @@ impl Options {
             .transpose()
     }
     pub fn context(&self) -> Result<rustgm::resolve::bindings::Context, String> {
-        let mode = if let Some(provider) = &self.source_core {
+        Ok(rustgm::resolve::bindings::Context {
+            crate_name: self.name.clone(),
+            current: self.identity()?,
+            dependencies: self.dependencies()?,
+            mode: self.bindings_mode()?,
+        })
+    }
+    fn bindings_mode(&self) -> Result<rustgm::support::bindings::Mode, String> {
+        if let Some(provider) = &self.source_core {
             let (name, disambiguator) = provider
                 .split_once('@')
                 .ok_or("--source-core requires NAME@DISAMBIGUATOR")?;
@@ -91,29 +105,31 @@ impl Options {
             if current != provider {
                 return Err("source-core provider differs from current crate identity".into());
             }
-            rustgm::support::bindings::Mode::Source { provider }
+            Ok(rustgm::support::bindings::Mode::Source { provider })
         } else {
-            rustgm::support::bindings::Mode::Bootstrap
-        };
-        Ok(rustgm::resolve::bindings::Context {
-            crate_name: self.name.clone(),
-            current: self.identity()?,
-            dependencies: self.dependencies()?,
-            mode,
-        })
+            Ok(rustgm::support::bindings::Mode::Bootstrap)
+        }
     }
     pub fn dependencies(&self) -> Result<Option<Arc<Dependencies>>, String> {
-        if self.externs.is_empty() {
+        if self.dependency_count() == 0 {
             return Ok(None);
         }
         let mut paths = HashMap::default();
         let mut artifacts = Vec::new();
         let mut aliases = Vec::new();
         let mut total = 0usize;
-        for argument in &self.externs {
-            let (alias, path) = argument
+        let named = self.externs.iter().map(|argument| {
+            argument
                 .split_once('=')
-                .ok_or("--extern requires ALIAS=METADATA")?;
+                .map(|(alias, path)| (Some(alias), path))
+                .ok_or("--extern requires ALIAS=METADATA")
+        });
+        let inventory = self
+            .dependency_metadata
+            .iter()
+            .map(|path| Ok((None, path.as_str())));
+        for input in named.chain(inventory) {
+            let (alias, path) = input?;
             let path = fs::canonicalize(path).map_err(|error| error.to_string())?;
             let identity = if let Some(identity) = paths.get(&path) {
                 CrateIdentity::clone(identity)
@@ -138,7 +154,9 @@ impl Options {
                 artifacts.push(artifact);
                 identity
             };
-            aliases.push(Dependency::new(alias.to_owned(), identity).map_err(str::to_owned)?);
+            if let Some(alias) = alias {
+                aliases.push(Dependency::new(alias.to_owned(), identity).map_err(str::to_owned)?);
+            }
         }
         Dependencies::new(artifacts, aliases)
             .map(|dependencies| Some(Arc::new(dependencies)))

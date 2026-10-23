@@ -7,7 +7,7 @@ use crate::{
     },
     syntax::ast::NodeId,
     types::{
-        ItemId, Primitive, RegionId, Store, TypeId,
+        ItemId, Kind, Primitive, RegionId, Store, TypeId,
         arguments::{Argument, Constant},
         parameters::predicates::{Bound, Predicate},
         traits::Application,
@@ -181,5 +181,171 @@ fn checked_constants_do_not_authorize_unvalidated_operations()
         vec![(declaration, Some(selected))],
     )?;
     assert_eq!(registry.constant(owner, declaration), Some(selected));
+    Ok(())
+}
+
+#[test]
+fn header_polarity_status_preserves_entry_layout_and_rejects_missing_factory_owner()
+-> Result<(), Box<dyn std::error::Error>> {
+    assert_eq!(size_of::<super::Entry>(), 136);
+    assert_eq!(size_of::<super::polarity::Status>(), 1);
+    let mut store = Store::default();
+    let mut registry = Implementations::default();
+    let header = header(&mut store, 0, &[])?;
+    let owner = header.owner;
+    registry.prepare(&mut store, ItemId(1), header)?;
+    assert!(
+        registry
+            .polarity(&crate::sema::associated::Inventory::default(), owner)
+            .is_err()
+    );
+    Ok(())
+}
+
+#[test]
+fn source_polarity_publication_checks_the_actual_inventory_row()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source = crate::test_source::fixture("pa31/tests/spec/source-freeze/shared-default.rs")?;
+    let report = crate::test_source::source_provider(&source, "negative_polarity")?;
+    let mut facts = crate::sema::declarations::analyze(&report)?;
+    let freeze = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source bindings")?
+        .validated_language(crate::support::bindings::LangItem::Freeze)?
+        .ok_or("Freeze")?
+        .definition;
+    let original = facts
+        .generics
+        .implementations
+        .as_ref()
+        .ok_or("registry")?
+        .headers()
+        .find(|header| {
+            header
+                .predicate
+                .bound
+                .trait_parts()
+                .is_some_and(|(application, _)| {
+                    facts
+                        .types
+                        .trait_application(application)
+                        .is_some_and(|a| a.item.0 == freeze.0)
+                })
+        })
+        .ok_or("header")?;
+    let implementation = Implementation {
+        owner: original.owner,
+        source: original.source,
+        predicate: original.predicate,
+        methods: Vec::new(),
+        types: Vec::new(),
+        constants: Vec::new(),
+    };
+    let owner = *facts
+        .associated
+        .owner(implementation.owner)
+        .and_then(|id| facts.associated.get(id))
+        .ok_or("owner")?;
+    assert!(matches!(
+        owner.kind,
+        crate::sema::associated::OwnerKind::Impl { negative: true, .. }
+    ));
+    let mut forged = owner;
+    if let crate::sema::associated::OwnerKind::Impl { negative, .. } = &mut forged.kind {
+        *negative = false;
+    }
+    let mut registry = Implementations::default();
+    assert!(
+        registry
+            .prepare_source(
+                &mut facts.types,
+                &facts.associated,
+                super::Identity::User(ItemId(freeze.0)),
+                forged,
+                implementation
+            )
+            .is_err()
+    );
+    assert_eq!(registry.headers().count(), 0);
+    Ok(())
+}
+
+#[test]
+fn source_auto_override_incomplete_bucket_is_not_cached_absence()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crate::sema::traits::{assumptions::Assumptions, selection};
+    use crate::types::infer::{Context, Instantiation};
+    let source = crate::test_source::fixture(
+        "pa31/tests/spec/source-freeze/disjoint-reference-positive.rs",
+    )?;
+    let report = crate::test_source::source_provider(&source, "freeze_pending")?;
+    let mut facts = crate::sema::declarations::analyze(&report)?;
+    let role = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("catalog")?
+        .validated_language(crate::support::bindings::LangItem::Freeze)?
+        .ok_or("Freeze")?;
+    let application = facts.types.intern_trait_application(Application {
+        item: ItemId(role.definition.0),
+        arguments: crate::types::GenericArgs::EMPTY,
+    })?;
+    for complete in [false, true] {
+        facts
+            .generics
+            .implementations
+            .as_mut()
+            .ok_or("registry")?
+            .headers = if complete {
+            super::Headers::Validated
+        } else {
+            super::Headers::Constants
+        };
+        let n = report
+            .resolution
+            .definitions
+            .iter()
+            .position(|d| report.package.names.get(d.name) == "M")
+            .ok_or("M")?;
+        let referent = facts.definitions[n].ok_or("M type")?;
+        let ty = facts.types.intern(Kind::Reference {
+            mutable: false,
+            region: RegionId::STATIC,
+            referent,
+        })?;
+        let mut context = Context::default();
+        let mut substitution = Instantiation::new(&mut context, &facts.types, &[])?;
+        let goal = context.instantiate_predicate(
+            &mut facts.types,
+            Predicate {
+                ty,
+                bound: Bound::Trait(application),
+            },
+            &mut substitution,
+        )?;
+        let assumptions = Assumptions::default();
+        let result = selection::select(
+            &mut facts,
+            &mut context,
+            &goal,
+            selection::Caller {
+                assumptions: &assumptions,
+                environment: None,
+                first_region: 1,
+                retain_sized: false,
+            },
+        );
+        if complete {
+            assert!(matches!(result?, selection::Selection::Absent));
+        } else {
+            assert!(
+                result
+                    .err()
+                    .ok_or("incomplete header yielded absence")?
+                    .contains("validated implementation headers")
+            );
+        }
+    }
     Ok(())
 }

@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[derive(Default)]
-pub(in crate::resolve) struct Features(u8);
+pub(in crate::resolve) struct Features(u16);
 #[derive(Clone, Copy)]
 pub(in crate::resolve) enum Feature {
     NoCore,
@@ -21,6 +21,9 @@ pub(in crate::resolve) enum Feature {
     ExpressionAttributes,
     ConstTrait,
     UnboxedClosures,
+    AutoTraits,
+    NegativeImpls,
+    FreezeImpls,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -40,6 +43,9 @@ impl Request {
             "stmt_expr_attributes" => Self::Capability(Feature::ExpressionAttributes),
             "const_trait_impl" => Self::Capability(Feature::ConstTrait),
             "unboxed_closures" => Self::Capability(Feature::UnboxedClosures),
+            "auto_traits" => Self::Capability(Feature::AutoTraits),
+            "negative_impls" => Self::Capability(Feature::NegativeImpls),
+            "freeze_impls" => Self::Capability(Feature::FreezeImpls),
             "asm_experimental_arch" => Self::NoCapability,
             _ => return None,
         })

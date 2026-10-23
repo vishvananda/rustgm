@@ -48,7 +48,8 @@ impl Checker<'_> {
         ) && self.facts.types.nominal_sizes_sealed();
         if enabled
             && self.state.canonical_trait_proofs.is_none()
-            && self.facts.types.contains_projected_sizes(predicate.ty) == Some(true)
+            && selection::Reuse::needed(self.facts, predicate)
+                .map_err(|e| crate::sema::model::Declarations::error(self.report, key, e))?
         {
             self.state.canonical_trait_proofs = Some(Box::default());
         }
@@ -59,7 +60,10 @@ impl Checker<'_> {
         };
         let cached = reuse
             .as_ref()
-            .and_then(|reuse| reuse.selection(predicate, first_region));
+            .map(|reuse| reuse.selection(self.facts, predicate, first_region))
+            .transpose()
+            .map_err(|e| crate::sema::model::Declarations::error(self.report, key, e))?
+            .flatten();
         let evidence = if let Some(cached) = cached {
             context.account_work(1).map_err(|e| {
                 crate::sema::model::Declarations::error(self.report, key, e.to_string())
@@ -223,3 +227,7 @@ impl Checker<'_> {
         Ok(Some(assumptions))
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/typed_sizing_work.rs"]
+mod sizing_work_tests;

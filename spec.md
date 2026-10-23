@@ -29,6 +29,32 @@ assigning the output stream or neighboring tokens the capture's edition.
 The [PA34 context foundation](docs/pa34-edition-context.md) records the independent
 mixed-edition controls and the remaining work before enabling Rust 2021 in the CLI.
 
+External block safety follows the parsed introducer's originating edition;
+explicit member safety qualifiers still require an explicitly unsafe block in
+both editions. For supported unsafe linkage attributes, query the actual name
+token's edition, independently of a macro-generated wrapper or owning item.
+Use existing bounded origin ancestry only when bare syntax demands it. Missing
+required provenance must fail; ordinary call/access permissions remain separate.
+The [external declaration checkpoint](docs/pa34-extern-editions.md) records the
+paired source and native controls without enabling a new driver profile.
+
+Temporary scope narrowing follows the defining if introducer or block delimiter
+edition. Preserve binding scopes independently of temporary endpoints; older
+block tails and if-let scrutinees inherit the enclosing temporary lifetime.
+Use the existing checked conditional-chain facts and paired delimiter origins,
+including when an unsafe qualifier or captured tail has another edition. Keep
+ordinary scope facts and storage-exit events unchanged. The
+[temporary scope checkpoint](docs/pa34-temporary-editions.md) includes opposing
+borrow cases and actual destructor traces for both editions.
+
+For edition-sensitive explicit pattern modifiers, consume the parsed flags and
+the introducer's original token edition. A complete pattern can span captured
+syntax from multiple editions; do not require one edition for its full span.
+Only those modifiers demand origin lookup. Preserve ordinary move/loan checks
+after selecting the default binding mode; legacy syntax is not proof of Copy or
+mutable access. The [pattern checkpoint](docs/pa34-pattern-editions.md) records
+the paired Rust 2021/2024 semantic and native controls.
+
 ```text
 source image -> Rust lexer -> token-tree/parser/expansion/resolution worklist
              -> syntax with canonical semantic facts
@@ -58,11 +84,85 @@ includes declaration and owning crate; familiar names are not implementation
 evidence. Transport checked generic/const bodies and their retained contracts
 through deterministic crate metadata with indexed external-to-local remapping.
 
+Imported executable originals have authenticated external declaration/body/site
+coordinates. Install their complete canonical header graph before original
+proof, without inventing source AST nodes or marking body proof complete when
+headers become ready. Keep declared and relocated callable signatures distinct.
+Derive mandatory formation and flagged Sized requirements for every actual
+formal, including unused parameters; preserve explicit `?Sized`. Original
+assumptions do not pay substituted instance obligations. Retain a single cold
+owner for immutable imported templates/contracts, with exact owner validation
+at every borrowed view and ordinary per-instance proof on execution.
+
+Direct generic helper calls retain one indexed dependency closure, distinct
+from the acyclic lexical owner forest. Callable recursion must not become a
+false owner-cycle error. Derive each complete target/argument signature once;
+reuse its structure and goal templates, never its caller proof. Each actual call
+reconstructs formal well-formedness, declared predicates and input/result
+coercions under its original Environment. Preserve unused formal obligations.
+Canonical dependency sorting observes key sizes once and charges comparisons
+without rescanning bodies. The [direct-call metadata contract](docs/pa29-direct-call-transport.md)
+defines row version 1 and preserves exact version-zero bytes. Source-language
+roles, unsafe/indirect calls and wider types retain their explicit boundaries.
+
+Reserve imported graph storage from actual declaration-owner summaries during
+the existing topological walk. Count nodes/edges once, deduplicate reached owners
+in reusable scratch, and retain shared dependency edges instead of flattened
+per-root closures. Separate conservative preflight reservations from observed
+retained payload and reject partial publication on either work or storage limit.
+An artifact's total size repeated for every declaration is a quadratic bound,
+even when each actual lookup is indexed.
+
 Every target Rust dependency must pass through RustGM. Explicitly declared host
 tools may bootstrap build-time execution, but rustc-built target libraries or
 frontend fallbacks cannot satisfy upstream acceptance. Keep build/configuration
 orchestration outside the frontend. A whole selected crate build and independent
 native consumers are required; source reducers guide work but do not replace it.
+
+Source auto-trait selection preserves explicit positive and negative identities.
+A refutation is not positive evidence, and an applicable explicit implementation
+family replaces its structural default even when its conditions are unpaid.
+Validate that family's headers before publishing a completed absence. Retain
+nominal well-formedness prerequisites before using physical shape for source
+Freeze, sizing or ordinary destruction. Share immediate formation dependencies
+in a query-local DAG keyed by the resolved type, surrounding callable depth and
+immutable caller scope; flattening each nested prefix repeats quadratic work.
+Formation-only nodes supply no trait implementation or dispatch permission.
+Never cache an absence that discards an unpaid prerequisite. Preserve active
+cycle checks, binder-local deferral and complete child obligations. See the
+[source Freeze checkpoint](docs/pa31-source-freeze-proposal.md) for the measured
+depth, width, unrelated-node and cold/warm controls.
+
+Share completed ordinary source MetaSized/PointeeSized answers across nominal
+roots in one immutable caller. Eligibility comes from the checked actual sizing
+producer; arbitrary builtin evidence cannot opt in. Preserve the full goal,
+root scope, empty lifetime/formation debt and noncyclic/nonprovisional status.
+Revalidate the actual declaration role on publication and both direct and
+iterative reuse. A wrapper may inherit eligibility only from an identical-goal
+eligible child, with every sibling and normalization prefix paid. Keep the
+reuse owner absent on ordinary scalar paths and keep hot query records unchanged.
+The [whole-caller sizing investigation](docs/pa31-source-sizing-reuse.md) shows
+why isolated query DAG counters must be complemented by full typed source calls:
+separate roots can repeat a complete nested suffix despite each query being linear.
+
+Actual source Unsize selection checks both endpoint formations even after a
+conversion mismatch or an unresolved peer. Pointee shape alone does not pay
+nominal lifetime requirements: retain their existing symbolic region/type-outlives
+debts as input proof nodes. Deferred selection stays deferred; completed absence
+requires every inherited normalization and formation debt to be paid. Preserve
+those conditions across cold and warm lookup. The
+[source unsizing checkpoint](docs/pa31-source-unsizing.md) defines the actual
+Unsize/CoerceUnsized roles and the retained runtime/CTFE boundaries.
+
+An actual source drop-glue helper is a compiler hook, not an executable empty
+body. Its runtime adapter consumes the exact registered declaration, full proved
+instance, retained source/body signature pair and caller's destruction recipe.
+Ordinary non-hook bodies allocate no adapter query. A dropless answer requires
+the same immutable type/definition inventory and completed empty registry;
+missing structural or proof data is not evidence of no destruction. Keep sized
+thin-reference cleanup distinct from required unsized metadata, owned-box order
+and constant-evaluation cleanup. The [runtime checkpoint](docs/pa31-source-drop-glue.md)
+records its accepted consumers and remaining boundaries.
 Internal features active in an earlier library must work then, regardless of
 later broad edition/target closure. Measure complete library time and peak memory
 as well as changed-path scaling, with existing resource and cleanup limits.
@@ -106,6 +206,13 @@ Complete local
 source/configuration closure, per-crate edition semantics and the target executor
 remain required before upstream acceptance. Cargo's implicit sysroot is not a
 selected package unit: add original source-sysroot jobs explicitly.
+
+Target crate inputs distinguish the complete metadata artifact inventory from
+source-visible dependency aliases. The driver loads each canonical artifact
+path once across both kinds of input, under shared count and byte budgets.
+Transitive metadata validates the dependency graph without publishing an extern
+prelude name; only explicit direct aliases grant that binding. Retain ordinary
+identity, visibility, graph and proof validation for inventory-only artifacts.
 
 ## Source, lexing and parsing
 

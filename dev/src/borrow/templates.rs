@@ -41,8 +41,12 @@ impl Checked<'_> {
         let mut collector = preconditions::Collector::new(types, bounds, callables);
         for (&identity, &index) in &self.closures {
             let contract = &self.contracts[index];
+            let template = self
+                .templates
+                .get(index)
+                .ok_or("checked closure template index is stale")?;
             if !matches!(
-                self.templates.bodies[index].body.owner,
+                template.body.owner,
                 Owner::Closure {
                     execution: Some(_),
                     ..
@@ -57,7 +61,7 @@ impl Checked<'_> {
                 }
                 None => None,
             };
-            let source = self.templates.bodies[index].body.source;
+            let source = template.body.source;
             let kind = types
                 .closure_kind(identity)
                 .ok_or("closure conditions require complete call permission")?;
@@ -125,13 +129,13 @@ impl Checked<'_> {
         Ok((input, summary))
     }
     pub(crate) fn is_empty(&self) -> bool {
-        self.templates.bodies.is_empty()
+        self.templates.len() == 0
     }
     #[must_use]
     pub fn get(&self, item: ItemId) -> Option<&Template> {
         self.index
             .get(&item)
-            .map(|&index| &self.templates.bodies[index])
+            .and_then(|&index| self.templates.get(index))
     }
     #[must_use]
     pub const fn regions(&self) -> &regions::Analysis {
@@ -152,7 +156,7 @@ impl Checked<'_> {
     ) -> Option<(&Template, &Contract, &regions::Body)> {
         let &index = self.index.get(&item)?;
         Some((
-            &self.templates.bodies[index],
+            self.templates.get(index)?,
             &self.contracts[index],
             &self.regions.bodies[index],
         ))
@@ -160,7 +164,7 @@ impl Checked<'_> {
     #[must_use]
     pub fn closure(&self, identity: ClosureId) -> Option<(&Template, &Contract)> {
         let &index = self.closures.get(&identity)?;
-        Some((&self.templates.bodies[index], &self.contracts[index]))
+        Some((self.templates.get(index)?, &self.contracts[index]))
     }
     pub(super) fn contract(&self, body: &crate::body::ir::Body) -> Option<&regions::Body> {
         let &index = match body.key() {
@@ -171,7 +175,7 @@ impl Checked<'_> {
             | BodyKey::AnonymousInstance(_)
             | BodyKey::ClosureAdapter(_) => None,
         }?;
-        (self.templates.bodies[index].body.key() == body.key()).then(|| &self.regions.bodies[index])
+        (self.templates.get(index)?.body.key() == body.key()).then(|| &self.regions.bodies[index])
     }
 }
 
@@ -198,9 +202,11 @@ pub fn verify<'a, S: BuildHasher>(
             message: e.message,
         })?;
     let loans = loans::templates::verify(environment, templates, &regions, custom, position)?;
-    let mut inputs: HashMap<_, _> = contracts.bodies.iter().map(|c| (c.key, c)).collect();
+    let mut inputs: HashMap<_, _> = templates
+        .inputs(&contracts.bodies)
+        .map(|c| (c.key, c))
+        .collect();
     let contracts = templates
-        .bodies
         .iter()
         .map(|template| {
             inputs

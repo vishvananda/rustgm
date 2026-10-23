@@ -25,7 +25,7 @@ pub(super) struct Query {
     pub next_auto_segment: usize,
     pub auto_provisional:
         HashMap<usize, HashMap<(crate::types::lifetime_proof::ScopeId, Predicate), Decision>>,
-    pub families: HashSet<super::member_conditions::Key>,
+    pub families: HashMap<super::member_conditions::Key, super::member_conditions::Entry>,
     // Completed answers belong to one immutable caller, mode and region scope.
     pub completed: HashMap<Predicate, Decision>,
     pub cycles: usize,
@@ -37,6 +37,23 @@ pub(super) struct Query {
     pub stack: Vec<Frame>,
     waiting: Option<Dependency>,
     decision: Option<Decision>,
+}
+
+#[cfg(test)]
+impl Query {
+    /// Exercise a later sibling using the same caller's completed prefix graph.
+    pub(super) fn resume_sibling_for_test(&mut self) -> Result<(), &'static str> {
+        if !self.stack.is_empty()
+            || self.waiting.is_some()
+            || self.universal.is_some()
+            || !self.active.is_empty()
+            || self.decision.is_none()
+        {
+            return Err("cannot reuse an unfinished test query");
+        }
+        self.decision = None;
+        Ok(())
+    }
 }
 
 impl<'a> Search<'a> {
@@ -69,7 +86,7 @@ impl<'a> Search<'a> {
                 auto_active: HashMap::default(),
                 next_auto_segment: 0,
                 auto_provisional: HashMap::default(),
-                families: HashSet::default(),
+                families: HashMap::default(),
                 completed: HashMap::default(),
                 cycles: 0,
                 reused: false,
@@ -190,7 +207,7 @@ impl<'a> Search<'a> {
                         self.query.decision = Some(decision);
                         return Ok(Progress::Ready(decision));
                     };
-                    if completed.formation.is_none() {
+                    if completed.formation_cacheable() {
                         self.remember(&completed, decision);
                         self.query.export_completed(facts, decision)?;
                     }

@@ -1,4 +1,5 @@
 //! External metadata keeps its origin while local scopes receive canonical IDs.
+mod original_declarations;
 mod public_names;
 use super::{
     index::Resolver,
@@ -15,6 +16,7 @@ use std::sync::Arc;
 
 pub struct Imported {
     origins: super::body_origin::CatalogSlot,
+    generic_work: Option<Box<original_declarations::Work>>,
     dependencies: Arc<Dependencies>,
     definitions: HashMap<ExternalDef, DefId>,
     functions: Vec<(DefId, usize, usize)>,
@@ -26,6 +28,7 @@ impl Imported {
     fn new(dependencies: Arc<Dependencies>) -> Self {
         Self {
             origins: super::body_origin::CatalogSlot::default(),
+            generic_work: None,
             dependencies,
             definitions: HashMap::default(),
             functions: Vec::new(),
@@ -38,6 +41,54 @@ impl Imported {
         &self,
     ) -> Result<Option<std::rc::Rc<super::body_origin::Catalog>>, &'static str> {
         self.origins.shared()
+    }
+    /// Resolve only a coordinate authenticated by this completed import catalog.
+    /// # Errors
+    /// Rejects absent, foreign and stale artifact/declaration coordinates.
+    pub fn generic_definition(
+        &self,
+        owner: &crate::support::crates::CrateIdentity,
+        declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    ) -> Result<DefId, &'static str> {
+        self.origins
+            .get()
+            .ok_or("imported body catalog is absent")?
+            .definition_at(owner, declaration)
+    }
+    /// This identifies a typed original location, never a checked executable.
+    /// # Errors
+    /// Rejects missing artifacts and body ordinals outside their exact owner.
+    pub fn generic_body(
+        &self,
+        owner: &crate::support::crates::CrateIdentity,
+        body: crate::support::crates::owner_catalog::BodyRef,
+    ) -> Result<super::body_origin::ImportedBodyId, &'static str> {
+        self.origins
+            .get()
+            .ok_or("imported body catalog is absent")?
+            .body_at(owner, body)
+    }
+    /// Only declarations from completed authenticated generic artifacts are
+    /// eligible for the semantic header-readiness handshake. Bodies stay unproved.
+    pub(crate) fn generic_definitions(&self) -> impl Iterator<Item = Result<DefId, &'static str>> {
+        self.dependencies
+            .artifacts()
+            .iter()
+            .filter_map(|artifact| {
+                artifact
+                    .generic_payload()
+                    .map(|payload| (artifact.identity(), payload.rows()))
+            })
+            .flat_map(move |(owner, rows)| {
+                (0..rows.declarations.len()).map(move |index| {
+                    let index = u32::try_from(index)
+                        .map_err(|_| "imported generic declaration ordinal overflow")?;
+                    self.generic_definition(
+                        owner,
+                        crate::support::crates::owner_catalog::DeclarationRef(index),
+                    )
+                })
+            })
     }
     #[must_use]
     pub fn dependencies(&self) -> &Dependencies {
@@ -130,6 +181,7 @@ impl Resolver<'_> {
             if artifact.public_names().is_some() {
                 self.reserve_public_modules(scope, artifact, &mut imported)?;
             }
+            self.import_original_declarations(scope, artifact, &mut imported)?;
             if artifact.nominals().is_some() || artifact.public_names().is_some() {
                 self.import_nominal_items(scope, artifact, artifact_index, &mut imported)?;
                 continue;

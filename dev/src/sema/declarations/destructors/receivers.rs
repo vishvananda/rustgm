@@ -63,18 +63,96 @@ impl Checker<'_> {
             .destructors
             .method(owner)
             .ok_or_else(|| self.error(key, "missing Drop contract"))?;
-        self.facts.lifetimes.functions.insert(
-            owner,
-            FunctionRegions {
-                total: self.regions.count(binder),
-                captures: 0,
-                early: Vec::new(),
-                late: vec![receiver_slot],
-                has_declared_late: !declared.is_empty(),
-                bounds: implementation.bounds.clone(),
-            },
-        );
+        let bounds = implementation.bounds.clone();
+        let captures = self.source_drop_captures(key, owner)?;
+        if u32::from(receiver_slot) < captures {
+            return Err(self.error(
+                key,
+                "source Drop receiver requires an independent late lifetime",
+            ));
+        }
+        let scheme = FunctionRegions {
+            total: self.regions.count(binder),
+            captures,
+            early: Vec::new(),
+            late: vec![receiver_slot],
+            has_declared_late: !declared.is_empty(),
+            bounds,
+        };
+        if self.facts.source_bindings.is_some() {
+            self.callable_template(key, owner, signature, &scheme)?;
+        }
+        self.facts.lifetimes.functions.insert(owner, scheme);
         self.function_binders.insert(key, binder);
         Ok(())
+    }
+    /// Bootstrap cleanup supplies its own flattened argument mapping. An actual
+    /// source Drop method also participates in ordinary trait conformance and
+    /// must preserve its impl captures independently from the receiver borrow.
+    fn source_drop_captures(&self, key: NodeKey, method: DefId) -> Result<u32, Error> {
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Ok(0);
+        };
+        let role = catalog
+            .validated_language(crate::support::bindings::LangItem::Drop)
+            .map_err(|e| self.error(key, e))?
+            .ok_or_else(|| {
+                self.error(key, "registered source destructor has no actual Drop role")
+            })?;
+        let implementation = self
+            .facts
+            .destructors
+            .method(method)
+            .ok_or_else(|| self.error(key, "missing registered source Drop method"))?;
+        let owner = self
+            .facts
+            .associated
+            .owner(method)
+            .and_then(|id| self.facts.associated.get(id))
+            .ok_or_else(|| self.error(key, "registered source Drop method has no owner"))?;
+        let schema = self
+            .facts
+            .associated
+            .schema(method)
+            .ok_or_else(|| self.error(key, "registered source Drop method has no schema"))?;
+        let header = self
+            .facts
+            .generics
+            .implementations
+            .as_ref()
+            .and_then(|registry| registry.header(implementation.self_definition))
+            .ok_or_else(|| {
+                self.error(key, "registered source Drop requires its ordinary header")
+            })?;
+        let Some((application, crate::support::constness::Constness::Ordinary)) =
+            header.predicate.bound.trait_parts()
+        else {
+            return Err(self.error(
+                key,
+                "registered source Drop header lost its trait application",
+            ));
+        };
+        let application = self
+            .facts
+            .types
+            .trait_application(application)
+            .ok_or_else(|| self.error(key, "registered source Drop application is missing"))?;
+        if owner.self_definition != implementation.self_definition
+            || header.owner != implementation.self_definition
+            || schema.self_type != implementation.target
+            || schema.captures != implementation.parameters
+            || application.item.0 != role.definition.0
+            || self
+                .facts
+                .types
+                .arguments(application.arguments)
+                .is_none_or(|a| a.len() != 0)
+        {
+            return Err(self.error(
+                key,
+                "registered source Drop capture contract changed its owner",
+            ));
+        }
+        Ok(implementation.parameters)
     }
 }

@@ -62,7 +62,7 @@ fn pending_capture_kind_retains_signature_inference_without_granting_permission(
         search.refresh_inputs(&mut facts, &mut context)?;
         match search.poll(&mut facts)? {
             Progress::Ready(Decision::Proven(root)) if actual == CallKind::Shared => {
-                let evidence = search.evidence(root)?;
+                let evidence = search.evidence(&facts, root)?;
                 assert!(
                     matches!(evidence.source, Source::Callable { output } if output == TypeId::primitive(Primitive::U8))
                 );

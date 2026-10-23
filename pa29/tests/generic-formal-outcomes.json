@@ -1,0 +1,54 @@
+{
+  "status": "Independently declared before mandatory unused-formal WF/Sized goal repair; full original generic contract remains required.",
+  "profile": "Rust 1.98.0 edition2024 x86_64-unknown-linux-gnu; panic abort; overflow checks enabled",
+  "cases": [
+    {
+      "name": "unused-provider",
+      "path": "tests/spec/generic-contracts/minimal-unused-library.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "5a6cf1e794ee5d1ec6ecfe521df2210f305ca273d35b866220f5b7939dc92a7e"
+    },
+    {
+      "name": "relaxed-provider",
+      "path": "tests/spec/generic-contracts/minimal-unsized-library.rs",
+      "kind": "rlib",
+      "deps": {},
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "2646dad54acc7fc7ddea56643ea243b8a746ba0b067d179bbdbde0a3be056556"
+    },
+    {
+      "name": "unpaid-unused-sized",
+      "path": "tests/spec/generic-contracts/unused-unsized-argument.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "unused-provider"
+      },
+      "rustc": 1,
+      "code": "E0277",
+      "native": false,
+      "frontend_expected_after_implementation": 1,
+      "source_sha256": "f4bf448f902ecd75f740ddc7a238b6e3b3d15d4137e91eb68952d27d761af9fa"
+    },
+    {
+      "name": "paid-relaxed-sized",
+      "path": "tests/spec/generic-contracts/unused-unsized-argument.rs",
+      "kind": "bin",
+      "deps": {
+        "base": "relaxed-provider"
+      },
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0,
+      "source_sha256": "f4bf448f902ecd75f740ddc7a238b6e3b3d15d4137e91eb68952d27d761af9fa"
+    }
+  ]
+}

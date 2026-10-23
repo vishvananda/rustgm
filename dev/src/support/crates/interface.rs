@@ -1,4 +1,5 @@
 //! The first wire profile exports closed scalar Rust functions, with explicit symbols.
+mod payload;
 use super::{
     Constant, CrateIdentity, ExternalDef, ExternalKind, MAX_COMPONENTS, MAX_DEPENDENCIES,
     MAX_FUNCTIONS, MAX_NAME_BYTES, Nominals, PublicNames, Record, Signature, Storage, TypeNode,
@@ -93,6 +94,7 @@ pub struct Interface {
     nominals: Option<Nominals>,
     storage: Option<Storage>,
     public_names: Option<Box<PublicNames>>,
+    generic_payload: Option<Box<super::generics::Payload>>,
     atoms: usize,
     names: usize,
 }
@@ -284,6 +286,7 @@ impl Interface {
             nominals,
             storage,
             public_names: None,
+            generic_payload: None,
             atoms: components,
             names: bytes,
         })
@@ -303,6 +306,7 @@ impl Interface {
         if self.public_names.is_some() {
             return Err("public metadata names are already published");
         }
+        self.check_generic_names_storage(&public_names, true)?;
         public_names.validate(&self)?;
         let (atoms, names) = public_names.budget();
         self.atoms = self.atoms.saturating_add(atoms);

@@ -2,15 +2,18 @@
 mod calls;
 mod copying;
 mod explicit_cleanup;
+mod glue_calls;
 pub(crate) use calls::check_instance as check_const_instance;
 pub(super) use calls::record as record_call_effects;
 pub(in crate::sema) use explicit_cleanup::explicit_drop_member;
+pub(crate) use glue_calls::{DropGlueSelection, check_const_drop_glue, source_drop_glue};
 mod intrinsic_contracts;
 mod layout;
 mod needs_drop;
 pub(crate) use copying::copy_decisions;
 mod roles;
-pub(crate) use roles::destruct_predicate;
+pub(crate) use roles::{destruct_predicate, drop_glue_member, freeze_predicate};
+pub(crate) use roles::{unsizing_predicate, unsizing_role};
 mod sizing;
 use crate::{
     resolve::{

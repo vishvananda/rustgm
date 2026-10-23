@@ -60,3 +60,11 @@ pub fn source_provider(source: &str, tag: &str) -> Result<Report, String> {
             .map_err(|e| e.to_string())?;
     resolve::analyze_expanded(expanded).map_err(|e| e.to_string())
 }
+
+#[allow(
+    dead_code,
+    reason = "shared test helper is compiled by suites without owning fixtures"
+)]
+pub fn fixture(path: &str) -> std::io::Result<String> {
+    std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join(path))
+}

@@ -222,6 +222,10 @@ fn trait_requirements(
             )
             .map_err(|_| "invalid or exhausted method trait selection")?
             {
+                Selection::Refuted(refutation) => {
+                    refutation.reject()?;
+                    return Ok(false);
+                }
                 Selection::Absent => return Ok(false),
                 Selection::Deferred => next.push(goal),
                 Selection::Proven(proof) => first_region = proof.proof.regions.end,

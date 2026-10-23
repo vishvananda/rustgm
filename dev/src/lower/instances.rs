@@ -70,8 +70,15 @@ pub fn build_library_prepared(
         report,
         facts,
         prepared,
-        |facts| {
-            let exported = crate::sema::crates::export(report, facts, identity)?;
+        |facts, checked| {
+            let exported = crate::sema::crates::export_with_originals(
+                report,
+                facts,
+                identity,
+                |facts, requests, base| {
+                    super::crate_originals::export(report, facts, checked, requests, base)
+                },
+            )?;
             let roots = super::roots::exports(facts, &exported.roots)
                 .map_err(|e| diagnostic(report, None, e.into()))?;
             interface = Some(exported.interface);
@@ -136,7 +143,7 @@ fn inspect_roots<R>(
         report,
         facts,
         prepared,
-        |facts| {
+        |facts, _| {
             let exports = super::roots::exports(facts, roots.exports)
                 .map_err(|e| diagnostic(report, None, e.into()))?;
             Ok((roots.entry, exports))
@@ -149,7 +156,10 @@ fn inspect_selected<R>(
     report: &Report,
     facts: &mut Declarations,
     mut prepared: crate::pipeline::Prepared,
-    select: impl FnOnce(&mut Declarations) -> Result<(Option<DefId>, super::roots::Exports), Error>,
+    select: impl FnOnce(
+        &mut Declarations,
+        &borrow::templates::Checked<'_>,
+    ) -> Result<(Option<DefId>, super::roots::Exports), Error>,
     inspect: impl FnOnce(
         &mut Declarations,
         borrow::incremental::Assembled,
@@ -157,6 +167,9 @@ fn inspect_selected<R>(
     ) -> R,
 ) -> Result<R, Error> {
     let mut templates = prepared.templates.finish(report, facts)?;
+    templates
+        .attach(prepared.imported.take())
+        .map_err(|e| diagnostic(report, None, e.into()))?;
     let mut inputs = if let Some(collector) = prepared.contracts {
         collector.finish(facts)
     } else {
@@ -224,7 +237,7 @@ fn inspect_selected<R>(
     facts
         .prepare_opaque_storage_located()
         .map_err(|failure| opaque_storage_error(report, facts, failure))?;
-    let (entry, exports) = select(facts)?;
+    let (entry, exports) = select(facts, &checked)?;
     let roots = exports.selected(entry);
     let program = demand::prepare(
         report,

@@ -8,6 +8,46 @@ pub(crate) struct Retained {
     index: premise_index::Retained,
 }
 impl Environment {
+    /// Preflight only a validated region-free scalar/parameter/function graph
+    /// with Copy/Sized clauses. This is allocation accounting, not validation
+    /// or permission to interpret an arbitrary predicate as a builtin.
+    pub(crate) fn builtin_allocation_bound(
+        parameters: usize,
+        clauses: usize,
+        nodes: usize,
+        edges: usize,
+    ) -> usize {
+        use crate::support::retained::new_map;
+        use crate::types::{
+            TypeId,
+            parameters::{ParameterId, uses::Uses},
+        };
+        let parameters = new_map::<ParameterId, super::Abilities>(parameters);
+        let ordinary = size_of::<super::Assumptions>()
+            .saturating_add(2 * size_of::<usize>())
+            .saturating_add(new_map::<TypeId, super::Abilities>(clauses))
+            .saturating_add(new_map::<TypeId, ()>(clauses));
+        let quantified =
+            super::permissions::Index::callable_allocation_bound(clauses, nodes, edges);
+        // Uses shares one memoized graph walk across all clauses. No trait or
+        // const application is possible in this deliberately narrow mode.
+        let scratch = size_of::<Uses>()
+            .saturating_add(new_map::<ParameterId, ()>(nodes))
+            .saturating_add(new_map::<TypeId, ()>(nodes))
+            .saturating_add(
+                edges
+                    .saturating_add(nodes)
+                    .saturating_mul(4 * size_of::<TypeId>()),
+            );
+        size_of::<Self>()
+            .saturating_add(
+                4 * size_of::<usize>() + size_of::<super::HashMap<ParameterId, super::Abilities>>(),
+            )
+            .saturating_add(parameters)
+            .saturating_add(ordinary)
+            .saturating_add(quantified)
+            .saturating_add(scratch)
+    }
     pub(crate) fn retain_owned_from(&self, shared: &Self, observer: &mut Retained) -> Allocation {
         let mut total = Allocation::default();
         if !observer.base {

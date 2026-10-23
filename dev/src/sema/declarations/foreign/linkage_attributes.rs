@@ -1,4 +1,7 @@
 //! Retained linkage attributes decode literal tokens once into the owning exact-name pool.
+#[cfg(test)]
+#[path = "../../../../tests/invariants/linkage_editions.rs"]
+mod tests;
 use crate::support::hash::HashMap;
 use crate::{
     literal::{self, Value},
@@ -63,9 +66,7 @@ pub(in crate::sema::declarations) fn collect(
                         "linkage attribute requires a function or static item",
                     ));
                 }
-                if attribute.unsafe_wrapper != (name != "link_name") {
-                    return Err(error("invalid unsafe wrapper for linkage attribute"));
-                }
+                safety(report, file, forest, attribute, name)?;
                 let selected = sources
                     .entry(NodeKey { file, node })
                     .or_insert_with(Attributes::default);
@@ -88,6 +89,33 @@ pub(in crate::sema::declarations) fn collect(
         }
     }
     Ok(sources)
+}
+fn safety(
+    report: &Report,
+    file: FileId,
+    forest: &Forest,
+    attribute: Attribute,
+    name: &str,
+) -> Result<(), Error> {
+    if attribute.unsafe_wrapper == (name != "link_name") {
+        return Ok(());
+    }
+    let error = |message| Error::at(file, attribute.span.start, message);
+    if !attribute.unsafe_wrapper && name != "link_name" {
+        // The name owns the edition; a macro may supply the surrounding #[...]
+        // from another edition. Retain the parsed token's exact source ancestry.
+        let token = forest
+            .token(attribute.path.start)
+            .ok_or_else(|| error("missing linkage attribute name token"))?;
+        let edition = crate::resolve::unit::editions::token(file, token, |file| {
+            report.package.units.get(file.0 as usize)
+        })
+        .map_err(|failure| error(failure.message))?;
+        if edition == crate::support::edition::Edition::Rust2021 {
+            return Ok(());
+        }
+    }
+    Err(error("invalid unsafe wrapper for linkage attribute"))
 }
 fn exact(
     source: &str,

@@ -50,6 +50,8 @@ pub(super) struct Artifact {
     pub owner: CrateIdentity,
     pub edition: Edition,
     pub definitions: Vec<DefId>,
+    pub first_body: u32,
+    pub body_count: u32,
     pub files: Vec<ProviderFile>,
     pub labels: Vec<Option<Label>>,
     pub declaration_labels: Vec<Option<Label>>,
@@ -238,6 +240,24 @@ impl Catalog {
         }
         Ok(())
     }
+    pub(crate) fn validate_function_origin(
+        &self,
+        definition: DefId,
+        origin: BodyOrigin,
+    ) -> Result<(), &'static str> {
+        let BodyOrigin::Imported(imported) = origin else {
+            return Err("imported function requires its actual imported body");
+        };
+        self.validate_origin(
+            origin,
+            &Expected {
+                definition,
+                kind: BodyKind::Function,
+                parent: None,
+                unit: imported.id(),
+            },
+        )
+    }
     pub(crate) fn origin(&self, id: ImportedBodyId) -> Result<BodyOrigin, &'static str> {
         Self::origin_of(id, self.get(id)?)
     }
@@ -247,6 +267,63 @@ impl Catalog {
         let sites = std::num::NonZeroU32::new(row.sites.end - row.sites.start)
             .ok_or("imported body has no root operation site")?;
         Ok(BodyOrigin::Imported(ImportedBodyOrigin { id, sites }))
+    }
+    pub(crate) fn definition_at(
+        &self,
+        owner: &CrateIdentity,
+        declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    ) -> Result<DefId, &'static str> {
+        self.charge(1)?;
+        let artifact = *self
+            .owners
+            .get(owner)
+            .ok_or("imported declaration artifact is unknown")?;
+        let record = self
+            .artifacts
+            .get(artifact as usize)
+            .filter(|record| &record.owner == owner)
+            .ok_or("imported declaration artifact record is missing or foreign")?;
+        let definition = *record
+            .definitions
+            .get(declaration.0 as usize)
+            .ok_or("imported declaration coordinate is outside its artifact")?;
+        let row = self.declaration_row(self.declaration(definition)?)?;
+        if row.artifact != artifact || row.ordinal != declaration.0 {
+            return Err("imported declaration coordinate changed its exact remap");
+        }
+        Ok(definition)
+    }
+    pub(crate) fn body_at(
+        &self,
+        owner: &CrateIdentity,
+        body: BodyRef,
+    ) -> Result<ImportedBodyId, &'static str> {
+        self.charge(1)?;
+        let artifact = *self
+            .owners
+            .get(owner)
+            .ok_or("imported body artifact is unknown")?;
+        let record = self
+            .artifacts
+            .get(artifact as usize)
+            .filter(|record| &record.owner == owner)
+            .ok_or("imported body artifact record is missing or foreign")?;
+        if body.0 >= record.body_count {
+            return Err("imported body coordinate is outside its artifact");
+        }
+        let row = record
+            .first_body
+            .checked_add(body.0)
+            .ok_or("imported body coordinate overflows")?;
+        let id = ImportedBodyId(ImportedOwnerId {
+            epoch: self.epoch.0,
+            row,
+        });
+        let actual = self.get(id)?;
+        if actual.artifact != artifact || actual.body != body {
+            return Err("imported body coordinate changed its exact owner");
+        }
+        Ok(id)
     }
     pub(crate) fn coordinate(
         &self,
@@ -269,3 +346,7 @@ impl Installed {
         Self { epoch, first, len }
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/coordinate_owners.rs"]
+mod coordinate_tests;

@@ -4,6 +4,8 @@ mod artifacts;
 mod borrowed;
 #[path = "crate_linking/convention_transport.rs"]
 mod convention_transport;
+#[path = "crate_linking/direct_calls.rs"]
+mod direct_calls;
 #[path = "crate_linking/exports.rs"]
 mod exports;
 #[path = "crate_linking/imported_records.rs"]
@@ -12,6 +14,8 @@ mod imported_records;
 mod imported_regions;
 #[path = "crate_linking/imports.rs"]
 mod imports;
+#[path = "crate_linking/instantiable.rs"]
+mod instantiable;
 #[path = "crate_linking/named_values.rs"]
 mod named_values;
 #[path = "crate_linking/records.rs"]
@@ -22,6 +26,8 @@ mod reexports;
 mod representations;
 #[path = "crate_linking/static_transport.rs"]
 mod static_transport;
+#[path = "crate_linking/transitive.rs"]
+mod transitive;
 #[path = "crate_linking/variadic_transport.rs"]
 mod variadic_transport;
 use rustgm::support::crates;

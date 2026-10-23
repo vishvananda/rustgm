@@ -34,8 +34,8 @@ pub fn verify<S: std::hash::BuildHasher>(
 ) -> Result<Vec<Analysis>, Error> {
     verify_iter(
         environment,
-        templates.bodies.iter(),
-        templates.bodies.len(),
+        templates.iter(),
+        templates.len(),
         contracts,
         custom,
         position,
@@ -234,8 +234,7 @@ pub fn check(
     contracts: &regions::Analysis,
     ownership: &[BodyFacts],
 ) -> Result<Vec<Analysis>, Error> {
-    if ownership.len() != templates.bodies.len() || contracts.bodies.len() != templates.bodies.len()
-    {
+    if ownership.len() != templates.len() || contracts.bodies.len() != templates.len() {
         return Err(Error {
             node: templates.bodies.first().map(|t| t.body.source.root_site()),
             message: "template loan facts have different body coverage".into(),
@@ -253,8 +252,8 @@ pub fn check(
             });
         }
     }
-    let mut results = Vec::with_capacity(templates.bodies.len());
-    for (ordinal, template) in templates.bodies.iter().enumerate() {
+    let mut results = Vec::with_capacity(templates.len());
+    for (ordinal, template) in templates.iter().enumerate() {
         let body = &template.body;
         let error = |message: &str| Error {
             node: Some(body.source.into()),

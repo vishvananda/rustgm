@@ -1,0 +1,181 @@
+{
+  "scope": "Paired temporary scope hypotheses, before Rust observations or implementation. Native main assertions encode predeclared trace per edition; actual destructor body unchanged.",
+  "cases": [
+    {
+      "name": "if-failure",
+      "edition": 2021,
+      "sha256": "09cc9f88f2452f690e573ed37c2cee3bdf275efbd86575083f86c9c5e25bf37c",
+      "accepted": true,
+      "native": true,
+      "trace": "31",
+      "path": "tests/spec/temporary-editions/if-failure-2021.rs"
+    },
+    {
+      "name": "if-failure",
+      "edition": 2024,
+      "sha256": "06d10994696dab538b564cbcf6fd416d6e102b2410da4400fcf0ae3896953dc7",
+      "accepted": true,
+      "native": true,
+      "trace": "13",
+      "path": "tests/spec/temporary-editions/if-failure-2024.rs"
+    },
+    {
+      "name": "if-success",
+      "edition": 2021,
+      "sha256": "603675a62e9e397b7876694a6a203e1afb0dc7cdcf6833a6cf1c7aefa7a529ee",
+      "accepted": true,
+      "native": true,
+      "trace": "20",
+      "path": "tests/spec/temporary-editions/if-success-2021.rs"
+    },
+    {
+      "name": "if-success",
+      "edition": 2024,
+      "sha256": "603675a62e9e397b7876694a6a203e1afb0dc7cdcf6833a6cf1c7aefa7a529ee",
+      "accepted": true,
+      "native": true,
+      "trace": "20",
+      "path": "tests/spec/temporary-editions/if-success-2024.rs"
+    },
+    {
+      "name": "function-tail",
+      "edition": 2021,
+      "sha256": "d4071dd6375b1f064ff872ee40fbec1a2d68b352dbeb2877a9c7dccf249dfa4e",
+      "accepted": true,
+      "native": true,
+      "trace": "123",
+      "path": "tests/spec/temporary-editions/function-tail-2021.rs"
+    },
+    {
+      "name": "function-tail",
+      "edition": 2024,
+      "sha256": "187ab8ace8f0fdf8c8ec1f1f337004c47f33bc0fc78a03dd6ae66f7610b6f85e",
+      "accepted": true,
+      "native": true,
+      "trace": "213",
+      "path": "tests/spec/temporary-editions/function-tail-2024.rs"
+    },
+    {
+      "name": "nested-tail",
+      "edition": 2021,
+      "sha256": "1978f7b0459978f85f45683ed68285d31ba6fd0bfb544d650866fe2f1ad1d041",
+      "accepted": true,
+      "native": true,
+      "trace": "123",
+      "path": "tests/spec/temporary-editions/nested-tail-2021.rs"
+    },
+    {
+      "name": "nested-tail",
+      "edition": 2024,
+      "sha256": "3dd4ca634c3a275ac32e4a7e0df0ab79528ec143cac846add4814618e03bdb86",
+      "accepted": true,
+      "native": true,
+      "trace": "213",
+      "path": "tests/spec/temporary-editions/nested-tail-2024.rs"
+    },
+    {
+      "name": "extended-borrow",
+      "edition": 2021,
+      "sha256": "18f90edf69bcb98e02ad2165394ea6a2d337dd6baf5ed4cc3076199f7b803295",
+      "accepted": true,
+      "native": true,
+      "trace": "21",
+      "path": "tests/spec/temporary-editions/extended-borrow-2021.rs"
+    },
+    {
+      "name": "extended-borrow",
+      "edition": 2024,
+      "sha256": "18f90edf69bcb98e02ad2165394ea6a2d337dd6baf5ed4cc3076199f7b803295",
+      "accepted": true,
+      "native": true,
+      "trace": "21",
+      "path": "tests/spec/temporary-editions/extended-borrow-2024.rs"
+    },
+    {
+      "name": "boolean-condition",
+      "edition": 2021,
+      "sha256": "8e94cabd564db30dc151f9e0c7d7797c5e6439c6451895999f51cffb477ea3c3",
+      "accepted": true,
+      "native": true,
+      "trace": "123",
+      "path": "tests/spec/temporary-editions/boolean-condition-2021.rs"
+    },
+    {
+      "name": "boolean-condition",
+      "edition": 2024,
+      "sha256": "8e94cabd564db30dc151f9e0c7d7797c5e6439c6451895999f51cffb477ea3c3",
+      "accepted": true,
+      "native": true,
+      "trace": "123",
+      "path": "tests/spec/temporary-editions/boolean-condition-2024.rs"
+    },
+    {
+      "name": "match-scrutinee",
+      "edition": 2021,
+      "sha256": "b181a4c454335c0291ced55d0366c45377ff3ee9266a83126f125f6cad8fc944",
+      "accepted": true,
+      "native": true,
+      "trace": "213",
+      "path": "tests/spec/temporary-editions/match-scrutinee-2021.rs"
+    },
+    {
+      "name": "match-scrutinee",
+      "edition": 2024,
+      "sha256": "b181a4c454335c0291ced55d0366c45377ff3ee9266a83126f125f6cad8fc944",
+      "accepted": true,
+      "native": true,
+      "trace": "213",
+      "path": "tests/spec/temporary-editions/match-scrutinee-2024.rs"
+    },
+    {
+      "name": "macro-tail",
+      "edition": 2021,
+      "sha256": "b18e70a508adbc96a2fac5e04f3a9b2f887d3dca22059444d0c9d15c06b01dfe",
+      "accepted": true,
+      "native": true,
+      "trace": "123",
+      "path": "tests/spec/temporary-editions/macro-tail-2021.rs"
+    },
+    {
+      "name": "macro-tail",
+      "edition": 2024,
+      "sha256": "868576997733917b65be48137a946dafd3e7e36b099782d6647f829905f1db1e",
+      "accepted": true,
+      "native": true,
+      "trace": "213",
+      "path": "tests/spec/temporary-editions/macro-tail-2024.rs"
+    },
+    {
+      "name": "tail-borrow",
+      "edition": 2021,
+      "sha256": "6bf1e9db0d3320d1e8ffd9411bc1e1c7c65d87aff343d1a3f6663edb413682bd",
+      "accepted": false,
+      "native": false,
+      "path": "tests/spec/temporary-editions/tail-borrow.rs"
+    },
+    {
+      "name": "tail-borrow",
+      "edition": 2024,
+      "sha256": "6bf1e9db0d3320d1e8ffd9411bc1e1c7c65d87aff343d1a3f6663edb413682bd",
+      "accepted": true,
+      "native": true,
+      "path": "tests/spec/temporary-editions/tail-borrow.rs"
+    },
+    {
+      "name": "argument-block",
+      "edition": 2021,
+      "sha256": "0b1e15373d9e0e978324ce6687f7a098c7851bba73cea63156a76d0e9c388a6c",
+      "accepted": true,
+      "native": true,
+      "path": "tests/spec/temporary-editions/argument-block.rs"
+    },
+    {
+      "name": "argument-block",
+      "edition": 2024,
+      "sha256": "0b1e15373d9e0e978324ce6687f7a098c7851bba73cea63156a76d0e9c388a6c",
+      "accepted": false,
+      "native": false,
+      "path": "tests/spec/temporary-editions/argument-block.rs"
+    }
+  ]
+}

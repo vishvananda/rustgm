@@ -29,6 +29,18 @@ struct Subject {
     bound: Bound,
 }
 impl Index {
+    pub(super) fn callable_allocation_bound(clauses: usize, nodes: usize, edges: usize) -> usize {
+        use crate::support::retained::new_map;
+        size_of::<Self>()
+            .saturating_add(2 * size_of::<usize>())
+            .saturating_add(
+                clauses.saturating_mul(4 * (size_of::<Clause>() + size_of::<Subject>())),
+            )
+            .saturating_add(new_map::<Clause, ()>(clauses))
+            .saturating_add(new_map::<Subject, ()>(clauses))
+            .saturating_add(new_map::<u64, Vec<Subject>>(clauses))
+            .saturating_add(Shapes::callable_allocation_bound(nodes, edges))
+    }
     pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
         let mut total = crate::support::retained::Allocation::default();
         total.vector(&self.entries);

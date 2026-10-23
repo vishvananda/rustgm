@@ -91,3 +91,187 @@ fn source_copy_clone_and_function_item_native_answers() -> TestResult {
     }
     Ok(())
 }
+
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn actual_source_freeze_original_native_answers() -> TestResult {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root
+        .join("obj/parallel/pa31/freeze-native")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    for &(name, source, _, native) in super::freeze_cases::CASES {
+        if !native {
+            continue;
+        }
+        let source = super::fixture(source)?;
+        let program = lower(&source)?;
+        let mut text = Vec::new();
+        rustgm::lowir::writer::write(&program, &mut text)?;
+        let ir = folder.join(format!("{name}.lowir"));
+        let object = folder.join(format!("{name}.o"));
+        let binary = folder.join(format!("{name}.native"));
+        let client = folder.join(format!("{name}.c"));
+        std::fs::write(&ir, text)?;
+        std::fs::write(
+            &client,
+            "extern unsigned char answer(void);int main(void){return answer()!=7;}\n",
+        )?;
+        run(
+            &folder,
+            &format!("{name}-backend"),
+            Command::new("python3")
+                .arg(root.join("scripts/backend.py"))
+                .arg("--emit-object")
+                .arg(&ir)
+                .arg("-o")
+                .arg(&object),
+        )?;
+        run(
+            &folder,
+            &format!("{name}-link"),
+            Command::new("cc")
+                .arg(&client)
+                .arg(&object)
+                .arg("-o")
+                .arg(&binary),
+        )?;
+        run(
+            &folder,
+            &format!("{name}-execute"),
+            &mut Command::new(&binary),
+        )?;
+        std::fs::remove_file(&binary)?;
+        std::fs::remove_file(&object)?;
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn actual_freeze_and_glue_original_cleanup_native_seven() -> TestResult {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root
+        .join("obj/parallel/pa31/freeze-cleanup-native")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    let program = lower(&super::fixture(super::freezing::AUTOMATIC_CLEANUP)?)?;
+    let mut text = Vec::new();
+    rustgm::lowir::writer::write(&program, &mut text)?;
+    let ir = folder.join("cleanup.lowir");
+    let object = folder.join("cleanup.o");
+    let binary = folder.join("cleanup.native");
+    let client = folder.join("cleanup.c");
+    std::fs::write(&ir, text)?;
+    std::fs::write(
+        &client,
+        "extern unsigned char observe(void);int main(void){return observe()!=7;}\n",
+    )?;
+    run(
+        &folder,
+        "cleanup-backend",
+        Command::new("python3")
+            .arg(root.join("scripts/backend.py"))
+            .arg("--emit-object")
+            .arg(&ir)
+            .arg("-o")
+            .arg(&object),
+    )?;
+    run(
+        &folder,
+        "cleanup-link",
+        Command::new("cc")
+            .arg(&client)
+            .arg(&object)
+            .arg("-o")
+            .arg(&binary),
+    )?;
+    run(&folder, "cleanup-execute", &mut Command::new(&binary))?;
+    std::fs::remove_file(&binary)?;
+    std::fs::remove_file(&object)?;
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn source_nominal_formation_native_answers() -> TestResult {
+    for &(name, path, accepted) in super::freeze_formation::CASES {
+        if accepted {
+            native_observe_fixture(name, path, 7)?;
+        }
+    }
+    Ok(())
+}
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn actual_drop_capture_native_answers() -> TestResult {
+    for &(name, path, accepted, expected) in super::borrowed_destructors::CASES {
+        if accepted {
+            native_observe_fixture(name, path, expected)?;
+        }
+    }
+    Ok(())
+}
+fn native_observe_fixture(name: &str, path: &str, expected: u8) -> TestResult {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root
+        .join("obj/parallel/pa31/formation-native")
+        .join(std::process::id().to_string())
+        .join(name);
+    std::fs::create_dir_all(&folder)?;
+    let program = lower(&super::fixture(path)?)?;
+    let mut text = Vec::new();
+    rustgm::lowir::writer::write(&program, &mut text)?;
+    let ir = folder.join("input.lowir");
+    let object = folder.join("input.o");
+    let binary = folder.join("input.native");
+    let client = folder.join("input.c");
+    std::fs::write(&ir, text)?;
+    std::fs::write(
+        &client,
+        format!(
+            "extern unsigned char observe(void);int main(void){{return observe()!={expected};}}\n"
+        ),
+    )?;
+    run(
+        &folder,
+        "backend",
+        Command::new("python3")
+            .arg(root.join("scripts/backend.py"))
+            .arg("--emit-object")
+            .arg(&ir)
+            .arg("-o")
+            .arg(&object),
+    )?;
+    run(
+        &folder,
+        "link",
+        Command::new("cc")
+            .arg(&client)
+            .arg(&object)
+            .arg("-o")
+            .arg(&binary),
+    )?;
+    run(&folder, "execute", &mut Command::new(&binary))?;
+    std::fs::remove_file(&binary)?;
+    std::fs::remove_file(&object)?;
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn original_full_typed_source_sizing_depths_keep_native_seven() -> TestResult {
+    for depth in [8, 32, 128] {
+        for noise in [0, 128] {
+            let name = format!("typed-depth-{depth}-noise-{noise}");
+            native_observe_fixture(&name, &format!("formation/{name}.rs"), 7)?;
+        }
+    }
+    Ok(())
+}

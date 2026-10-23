@@ -130,7 +130,12 @@ impl Dependencies {
         mut result: Discovered,
     ) -> Result<Demands, String> {
         let mut concrete = Vec::new();
+        let mut object_types = Vec::new();
         for instance in result.calls {
+            if let Some(selection) = crate::sema::compiler_items::source_drop_glue(facts, instance)?
+            {
+                object_types.push(selection.element);
+            }
             if matches!(facts.types.kind(instance.ty()), Some(Kind::FunctionItem { item, .. })
                 if facts.intrinsics.identify(crate::resolve::model::DefId(item.0)).is_some())
             {
@@ -140,7 +145,6 @@ impl Dependencies {
                 concrete.push(instance);
             }
         }
-        let mut object_types = Vec::new();
         for (concrete, entries) in result.captured {
             for entry in entries.into_iter().flatten() {
                 if entry.adapter().is_some() {

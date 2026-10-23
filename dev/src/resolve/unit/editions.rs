@@ -24,6 +24,28 @@ pub(crate) fn token<'a>(
     )
 }
 
+/// A parsed ASCII introducer selects its own edition, even when the rest of
+/// the syntax contains captured tokens from another source. No spelling scan.
+pub(crate) fn introducer<'a>(
+    file: FileId,
+    span: Span,
+    unit: impl Fn(FileId) -> Option<&'a Unit>,
+) -> Result<Edition, LexError> {
+    if span.start >= span.end {
+        return Err(error(span.start, "missing syntax edition introducer"));
+    }
+    at(
+        Location {
+            file,
+            span: Span {
+                start: span.start,
+                end: span.start + 1,
+            },
+        },
+        unit,
+    )
+}
+
 pub(crate) fn at<'a>(
     mut location: Location,
     unit: impl Fn(FileId) -> Option<&'a Unit>,

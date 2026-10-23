@@ -28,6 +28,8 @@ enum Use {
     NeverType,
     ExpressionAttribute,
     ConstTrait,
+    AutoTraits,
+    NegativeImpls,
 }
 impl Use {
     fn feature(self) -> Feature {
@@ -35,6 +37,8 @@ impl Use {
             Self::NeverType => Feature::NeverType,
             Self::ExpressionAttribute => Feature::ExpressionAttributes,
             Self::ConstTrait => Feature::ConstTrait,
+            Self::AutoTraits => Feature::AutoTraits,
+            Self::NegativeImpls => Feature::NegativeImpls,
         }
     }
     fn message(self) -> &'static str {
@@ -44,6 +48,8 @@ impl Use {
                 "source expression attributes require stmt_expr_attributes"
             }
             Self::ConstTrait => "source const traits and bounds require const_trait_impl",
+            Self::AutoTraits => "source auto trait declarations require auto_traits",
+            Self::NegativeImpls => "source negative implementations require negative_impls",
         }
     }
 }
@@ -91,6 +97,17 @@ fn inspect(package: &Package, work: &mut Work) -> Result<(), Error> {
             }
             if const_trait_use(unit, kind) {
                 require(source, Use::ConstTrait, unit, file, node)?;
+            }
+            if let Kind::Item(index) = kind {
+                match unit.configured.ast.items[index as usize].kind {
+                    crate::syntax::item::ItemKind::Trait { auto_: true, .. } => {
+                        require(source, Use::AutoTraits, unit, file, node)?;
+                    }
+                    crate::syntax::item::ItemKind::Impl { negative: true, .. } => {
+                        require(source, Use::NegativeImpls, unit, file, node)?;
+                    }
+                    _ => {}
+                }
             }
             attributes(source, unit, file, node, position, work)?;
             children.clear();

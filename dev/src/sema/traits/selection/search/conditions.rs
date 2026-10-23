@@ -172,6 +172,7 @@ impl Search<'_> {
             .as_mut()
             .ok_or("missing quantified impl conditions")?;
         match decision {
+            Decision::Refuted(_) => return Err("negative child was not classified".into()),
             Decision::Proven(node) => {
                 trial.children.push(node);
                 trial.end = trial

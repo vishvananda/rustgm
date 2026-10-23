@@ -104,7 +104,8 @@ fn ordinary_path_inspects_no_syntax_and_requests_add_no_record_fields() -> Resul
     // The empty ordinary path must not even demand a valid loaded root.
     package.units.clear();
     assert_eq!(counted(&package)?, Work::default());
-    assert_eq!(size_of::<super::super::policy::Features>(), 1);
+    // Source auto-trait and negative-impl gates extend the packed request bits.
+    assert_eq!(size_of::<super::super::policy::Features>(), 2);
     assert_eq!(size_of::<Position>(), 1);
     // The flat-table performance base already reduced Package from 272 to 240.
     assert_eq!(size_of::<Package>(), 240);

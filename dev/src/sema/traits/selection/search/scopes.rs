@@ -1,5 +1,5 @@
 //! Sparse universe metadata preserves selected graph debts without copying ancestor proofs.
-use super::{Decision, Declarations, Evidence, Node, Predicate, Query};
+use super::{Decision, Declarations, Node, Predicate, Query};
 use crate::support::hash::HashMap;
 use crate::types::{
     RegionId,
@@ -54,12 +54,46 @@ impl Query {
         }
         Ok(())
     }
-    pub(super) fn push(&mut self, mut node: Node, scope: ScopeId, regions: Range<u32>) -> usize {
+    pub(super) fn push(&mut self, node: Node, scope: ScopeId, regions: Range<u32>) -> usize {
+        self.push_inner(node, scope, regions, false)
+    }
+    pub(super) fn push_source_sizing(
+        &mut self,
+        facts: &Declarations,
+        node: Node,
+        scope: ScopeId,
+        regions: Range<u32>,
+    ) -> Result<usize, String> {
+        if !matches!(node.source, Some(super::Source::Builtin))
+            || !crate::sema::compiler_items::sizing_predicate(facts, node.goal)?
+        {
+            return Err("completed source sizing node lacks its validated declaration".into());
+        }
+        Ok(self.push_inner(node, scope, regions, true))
+    }
+    fn push_inner(
+        &mut self,
+        mut node: Node,
+        scope: ScopeId,
+        regions: Range<u32>,
+        source_sizing: bool,
+    ) -> usize {
         let index = self.nodes.len();
+        node.debt_free = scope == ScopeId::ROOT
+            && regions.is_empty()
+            && node.first == node.end
+            && node.equalities.is_empty()
+            && node.outlives.is_empty()
+            && node.type_outlives.is_empty()
+            && node.sized.is_empty();
+        // Prepay both bounded completion and a later extraction visit.
+        self.steps = self.steps.saturating_add(2 * (1 + node.children.len()));
         for &child in &node.children {
+            node.debt_free &= self.nodes[child].debt_free;
             node.provisional_size |= self.nodes[child].provisional_size;
             node.cycle_dependent |= self.nodes[child].cycle_dependent;
         }
+        node.debt_free &= !node.provisional_size && !node.cycle_dependent;
         if let Some(scopes) = &mut self.scopes {
             let nested = node.children.iter().any(|child| {
                 scopes
@@ -79,7 +113,9 @@ impl Query {
             }
         }
         if let Some(active) = &mut self.reuse {
-            active.push(&node, scope);
+            // This is a separate bounded completion pass only when reuse exists.
+            self.steps = self.steps.saturating_add(1 + node.children.len());
+            active.push(&node, &self.nodes, scope, source_sizing);
         }
         self.nodes.push(node);
         index
@@ -394,7 +430,8 @@ impl Scopes {
         &mut self,
         index: usize,
         node: &mut Node,
-        evidence: &mut Evidence,
+        output: &mut Obligations,
+        sized: &mut Vec<crate::types::TypeId>,
     ) -> Result<(), &'static str> {
         let local = self
             .nodes
@@ -426,8 +463,8 @@ impl Scopes {
             }
             &mut universe.proof
         } else {
-            evidence.sized.append(&mut node.sized);
-            &mut evidence.proof
+            sized.append(&mut node.sized);
+            output
         };
         proof.equalities.append(&mut node.equalities);
         proof.outlives.append(&mut node.outlives);

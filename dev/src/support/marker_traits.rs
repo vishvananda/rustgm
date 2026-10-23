@@ -7,6 +7,8 @@ pub enum AutoTrait {
     Unpin,
     UnwindSafe,
     RefUnwindSafe,
+    /// Internal structural rule; actual source Freeze retains its Trait application.
+    Freeze,
 }
 impl AutoTrait {
     pub const ALL: [Self; 5] = [
@@ -25,6 +27,7 @@ impl AutoTrait {
             Self::Unpin => "Unpin",
             Self::UnwindSafe => "UnwindSafe",
             Self::RefUnwindSafe => "RefUnwindSafe",
+            Self::Freeze => "Freeze",
         }
     }
 }

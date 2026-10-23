@@ -140,3 +140,70 @@ fn malformed_or_cyclic_provenance_never_falls_back_to_the_consumer() -> Result<(
     assert!(at(query, |_| Some(&source)).is_err());
     Ok(())
 }
+
+#[test]
+fn parsed_introducer_uses_its_origin_without_demanding_the_complete_syntax_range()
+-> Result<(), String> {
+    let first = unit(Edition::Rust2021)?;
+    let mut second = unit(Edition::Rust2024)?;
+    let start = second.source.append("gen r#gen").map_err(str::to_owned)?;
+    second.origins.push(origin(
+        Span {
+            start,
+            end: start + 3,
+        },
+        FileId(0),
+        Span { start: 5, end: 8 },
+    ));
+    second.origins.push(origin(
+        Span {
+            start: start + 4,
+            end: start + 9,
+        },
+        FileId(1),
+        Span { start: 3, end: 8 },
+    ));
+    let units = [first, second];
+    let lookups = std::cell::Cell::new(0);
+    let lookup = |file: FileId| {
+        lookups.set(lookups.get() + 1);
+        units.get(file.0 as usize)
+    };
+    assert_eq!(
+        introducer(
+            FileId(1),
+            Span {
+                start,
+                end: start + 9
+            },
+            lookup
+        ),
+        Ok(Edition::Rust2021)
+    );
+    assert_eq!(lookups.get(), 2);
+    assert!(
+        at(
+            Location {
+                file: FileId(1),
+                span: Span {
+                    start,
+                    end: start + 9
+                }
+            },
+            lookup
+        )
+        .is_err()
+    );
+    assert!(
+        introducer(
+            FileId(1),
+            Span {
+                start: u32::MAX,
+                end: u32::MAX
+            },
+            lookup
+        )
+        .is_err()
+    );
+    Ok(())
+}

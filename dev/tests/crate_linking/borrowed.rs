@@ -106,9 +106,13 @@ fn explicit_early_bounds_remain_a_declared_profile_boundary()
             .output()?;
         std::fs::write(build.folder.join(format!("{name}.stderr")), &output.stderr)?;
         assert_eq!(output.status.code(), Some(1));
-        assert!(String::from_utf8_lossy(&output.stderr).contains(
-            "early lifetime parameters and explicit bounds are outside the metadata profile"
-        ));
+        let diagnostic = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            diagnostic.contains(
+                "early lifetime parameters and explicit bounds are outside the metadata profile"
+            ),
+            "{name}: {diagnostic}"
+        );
         assert!(!metadata.exists());
     }
     Ok(())

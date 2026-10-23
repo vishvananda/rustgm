@@ -107,6 +107,12 @@ impl<'a> Reader<'a> {
         Ok(count)
     }
     pub(super) fn string(&mut self, limit: usize) -> Result<String, &'static str> {
+        self.text(limit).map(str::to_owned)
+    }
+    pub(super) const fn used_atoms(&self) -> usize {
+        self.atoms
+    }
+    pub(super) fn text(&mut self, limit: usize) -> Result<&'a str, &'static str> {
         let length = self.u32()?;
         if length > limit {
             return Err("metadata string exceeds profile budget");
@@ -118,7 +124,7 @@ impl<'a> Reader<'a> {
             .ok_or("metadata names exceed profile budget")?;
         let value =
             std::str::from_utf8(self.bytes(length)?).map_err(|_| "metadata name is not UTF-8")?;
-        Ok(value.to_owned())
+        Ok(value)
     }
     pub(super) fn identity(&mut self) -> Result<CrateIdentity, &'static str> {
         CrateIdentity::new(&self.string(64)?, &self.string(64)?)

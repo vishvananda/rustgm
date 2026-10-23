@@ -2,6 +2,21 @@
 use super::{Action, Bound};
 use crate::support::retained::Allocation;
 impl Bound {
+    /// Conservative scratch/cache reservation for validated scalar/parameter roots.
+    /// The caller validates the complete bindings and leaf domain before allocation.
+    pub(crate) fn parameter_leaf_allocation_bound(bindings: usize, roots: usize) -> usize {
+        use crate::{
+            support::retained::new_map,
+            types::{TypeId, arguments::Argument, parameters::ParameterId},
+        };
+        size_of::<Self>()
+            .saturating_add(size_of::<super::parameters::Bindings>())
+            .saturating_add(new_map::<ParameterId, Argument>(bindings))
+            .saturating_add(new_map::<super::Key, TypeId>(roots))
+            .saturating_add(
+                4 * roots.saturating_mul(size_of::<(super::Key, bool)>() + size_of::<TypeId>()),
+            )
+    }
     pub(crate) fn retained_allocation(&self) -> (usize, usize) {
         let mut total = Allocation::default();
         let mut work = vec![self];

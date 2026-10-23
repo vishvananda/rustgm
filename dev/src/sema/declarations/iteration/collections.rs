@@ -314,8 +314,9 @@ impl super::super::comparisons::LibraryContracts<'_> {
                 .implementations
                 .as_mut()
                 .ok_or_else(|| Error::at(source.file, 0, "collection header was not reserved"))?
-                .prepare(
+                .prepare_factory(
                     &mut self.facts.types,
+                    &self.facts.associated,
                     ItemId(iteration.get(trait_).definition.0),
                     Implementation {
                         owner: declaration.definition,

@@ -74,8 +74,8 @@ impl Checker<'_> {
                 continue;
             }
             self.validate_reference_coherence(owner, source, predicate, &mut steps)?;
-            self.validate_trait_impl_contract(owner, source, predicate)?;
-            if matches!(predicate.bound, Bound::Auto(_)) {
+            let negative = self.negative_impl_contract(owner, source, predicate)?;
+            if negative || matches!(predicate.bound, Bound::Auto(_)) {
                 self.facts
                     .generics
                     .implementations
@@ -116,6 +116,28 @@ impl Checker<'_> {
             })?
             .finish_validation()
             .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))
+    }
+
+    fn negative_impl_contract(
+        &mut self,
+        owner: DefId,
+        source: NodeKey,
+        predicate: Predicate,
+    ) -> Result<bool, Error> {
+        let negative = self
+            .facts
+            .generics
+            .implementations
+            .as_ref()
+            .ok_or_else(|| self.error(source, "missing implementation registry"))?
+            .polarity(&self.facts.associated, owner)
+            .map_err(|e| self.error(source, e))?
+            == crate::sema::traits::implementations::Polarity::Negative;
+        if negative {
+            self.validate_negative_header(owner, source, predicate)?;
+        }
+        self.validate_trait_impl_contract(owner, source, predicate)?;
+        Ok(negative)
     }
 
     fn finish_iteration_contracts(&mut self) -> Result<(), Error> {
@@ -184,6 +206,7 @@ impl Checker<'_> {
         let requirements = impl_contract_obligations(&mut self.facts, predicate, &mut proof)
             .map_err(|e| self.error(source, e))?;
         self.validate_source_copy_impl(source, predicate, &mut proof)?;
+        let coerced = self.validate_source_coercion_impl(source, predicate, &mut proof)?;
         self.retain_trait_proof(owner, source, &mut proof);
         let mut queries = Queries::new(
             &self.facts.types,
@@ -193,6 +216,11 @@ impl Checker<'_> {
         let mut constraints = self
             .trait_region_environment(owner, &mut queries)
             .map_err(|e| self.error(source, e))?;
+        if let Some((longer, shorter)) = coerced {
+            constraints
+                .outlives(longer, shorter, 0)
+                .map_err(|e| self.error(source, e.to_string()))?;
+        }
         for &(a, b) in &requirements.regions {
             constraints
                 .outlives(a, b, 0)

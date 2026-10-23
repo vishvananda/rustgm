@@ -26,6 +26,9 @@ impl Search<'_> {
             }
             Err(error) => return Err(inference(error)),
         };
+        if goal.bound == Bound::Auto(crate::types::auto_traits::AutoTrait::Freeze) {
+            return Err("internal Freeze rule requires an actual source trait application".into());
+        }
         let mut type_outlives = Vec::new();
         let mut sized = Vec::new();
         let mut provisional_size = false;
@@ -75,6 +78,7 @@ impl Search<'_> {
         }
         let node = self.query.push(
             Node {
+                debt_free: false,
                 cycle_dependent: false,
                 provisional_size,
                 goal,

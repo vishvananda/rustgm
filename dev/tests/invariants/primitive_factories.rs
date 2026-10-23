@@ -126,7 +126,7 @@ fn primitive_factory_requires_matching_selection_and_preserves_ordinary_template
         crate::body::primitive_methods::build(&report, &mut facts, selected[1])?;
     let other_permit =
         crate::body::primitive_methods::validate(&mut facts, selected[1], &other, &other_input)?;
-    let templates = crate::body::templates::Templates { bodies: Vec::new() };
+    let templates = crate::body::templates::Templates::source(Vec::new());
     let checked = originals(&mut facts, &templates)?;
     let error = prove(&mut facts, &checked, body.clone(), &input, None)
         .err()
@@ -193,7 +193,7 @@ fn value_factory_requires_its_exact_form_result_and_output_member() -> Result {
     assert_eq!(body.result, TypeId::primitive(Primitive::U8));
     assert_eq!(input.universals, 0);
     let permit = crate::body::primitive_methods::validate(&mut facts, selected, &body, &input)?;
-    let templates = crate::body::templates::Templates { bodies: Vec::new() };
+    let templates = crate::body::templates::Templates::source(Vec::new());
     let checked = originals(&mut facts, &templates)?;
     assert!(prove(&mut facts, &checked, body.clone(), &input, None).is_err());
     prove(&mut facts, &checked, body.clone(), &input, Some(permit))?;
@@ -314,7 +314,7 @@ fn primitive_comparison_factory_preserves_both_borrow_slots_and_exact_member() -
         "fn main(){let a=3u8;let _=<u8 as PartialEq>::eq(&a,&a);let _=<u8 as PartialEq>::ne(&a,&a);}",
     )?;
     assert_eq!(selected.len(), 2);
-    let empty = crate::body::templates::Templates { bodies: Vec::new() };
+    let empty = crate::body::templates::Templates::source(Vec::new());
     let checked = originals(&mut facts, &empty)?;
     let mut operators = Vec::new();
     for selection in selected {
@@ -454,7 +454,7 @@ fn primitive_ordering_factories_keep_exact_member_results_and_slots() -> Result 
         "fn main(){let _=u8::partial_cmp(&1,&2);let _=u8::lt(&1,&2);let _=u8::le(&1,&2);let _=u8::gt(&1,&2);let _=u8::ge(&1,&2);let _=u8::cmp(&1,&2);}",
     )?;
     assert_eq!(selected.len(), 6);
-    let empty = crate::body::templates::Templates { bodies: Vec::new() };
+    let empty = crate::body::templates::Templates::source(Vec::new());
     let checked = originals(&mut facts, &empty)?;
     let mut methods = crate::support::hash::HashSet::default();
     for selection in selected {
@@ -557,7 +557,7 @@ fn ordering_factory_preserves_nominal_inputs_and_rejects_primitive_tokens() -> R
             .count(),
         2
     );
-    let empty = crate::body::templates::Templates { bodies: Vec::new() };
+    let empty = crate::body::templates::Templates::source(Vec::new());
     let checked = originals(&mut facts, &empty)?;
     let permit = crate::body::primitive_methods::validate(&mut facts, nominal, &body, &input)?;
     prove(&mut facts, &checked, body, &input, Some(permit))?;

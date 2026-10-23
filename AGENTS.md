@@ -27,7 +27,9 @@ RustGM owns both the full maintainer frontend and its assignments. Read
 - Follow the checkpoint cadence in `TESTING_AND_REFERENCES.md`. During related
   implementation edits, run focused tests and independent rustc/native probes,
   then lint/audits early enough to catch wiring errors before expensive suites.
-  Settle related test edits before code generation; use all-target strict Clippy
+  Settle related test edits, format, then run the architecture/file audit before
+  all-target strict Clippy so naming/layout failures precede its compilation.
+  Do not repeat the audit after unchanged Clippy. Use strict Clippy
   instead of duplicating it with `cargo check`, then focused debug tests. Batch
   selections with `scripts/maintainer_suites.py batch` to build each target once.
   Keep all active PA text suites as the cheap candidate regression check.

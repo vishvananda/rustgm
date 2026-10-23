@@ -250,7 +250,7 @@ fn concrete_proofs_require_the_matching_instance_owner_and_original() -> TestRes
         .err()
         .ok_or("wrong owner accepted")?;
     assert!(error.message.contains("different owner"));
-    let empty = Templates { bodies: vec![] };
+    let empty = Templates::source(vec![]);
     let no_originals = originals(&mut f.facts, &empty, &f.inputs)?;
     let (body, contract) = specialize(&mut f.facts, &checked, first)?;
     let error = prove(&mut f.facts, &no_originals, body, &contract)

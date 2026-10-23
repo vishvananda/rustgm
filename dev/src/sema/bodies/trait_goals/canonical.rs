@@ -157,14 +157,14 @@ impl Checker<'_> {
             .state
             .canonical_trait_inference
             .get_or_insert_with(Default::default);
-        let error = |message| super::super::Declarations::error(self.report, key, message);
+        let error = |message: String| super::super::Declarations::error(self.report, key, message);
         if count.is_none()
             && self.facts.types.nominal_sizes_sealed()
             && matches!(
                 self.availability,
                 crate::sema::traits::implementations::Availability::Validated
             )
-            && self.facts.types.contains_projected_sizes(predicate.ty) == Some(true)
+            && selection::Reuse::needed(self.facts, predicate).map_err(|e| error(e.to_owned()))?
         {
             self.state
                 .canonical_trait_proofs
@@ -179,7 +179,10 @@ impl Checker<'_> {
         let progress = if let Some(selected) = reuse
             .as_ref()
             .filter(|_| count.is_none())
-            .and_then(|r| r.selection(predicate, first))
+            .map(|r| r.selection(self.facts, predicate, first))
+            .transpose()
+            .map_err(error)?
+            .flatten()
         {
             context.account_work(1).map_err(|e| error(e.to_string()))?;
             selection::Progress::Ready(selected)

@@ -13,7 +13,7 @@ pub(crate) struct Contexts {
 impl Default for Contexts {
     fn default() -> Self {
         Self {
-            bodies: Templates { bodies: Vec::new() },
+            bodies: Templates::source(Vec::new()),
             source: Vec::new(),
         }
     }
@@ -39,7 +39,6 @@ pub(crate) fn verify<'a, S: BuildHasher>(
     }
     let contexts = &context.bodies;
     let count = templates
-        .bodies
         .len()
         .checked_add(contexts.bodies.len())
         .ok_or_else(|| error("original context count overflow"))?;
@@ -52,7 +51,7 @@ pub(crate) fn verify<'a, S: BuildHasher>(
         .saturating_add(crate::support::retained::new_map::<
             crate::body::ir::BodyKey,
             &Contract,
-        >(contracts.bodies.len()))
+        >(templates.input_count(contracts.bodies.len())))
         .saturating_add(crate::support::retained::new_map::<
             crate::body::ir::BodyKey,
             (),
@@ -73,19 +72,15 @@ pub(crate) fn verify<'a, S: BuildHasher>(
         environment.types,
         variances,
         contracts,
-        templates
-            .bodies
-            .iter()
-            .chain(&contexts.bodies)
-            .map(|template| {
-                inputs
-                    .get(&template.body.key())
-                    .map(|&input| (input, &template.body))
-                    .ok_or_else(|| regions::Error {
-                        source: Some(template.body.source.into()),
-                        message: "original context requires its exact input contract".into(),
-                    })
-            }),
+        templates.iter().chain(&contexts.bodies).map(|template| {
+            inputs
+                .get(&template.body.key())
+                .map(|&input| (input, &template.body))
+                .ok_or_else(|| regions::Error {
+                    source: Some(template.body.source.into()),
+                    message: "original context requires its exact input contract".into(),
+                })
+        }),
     )
     .map_err(|e| Error {
         node: e.source,
@@ -93,7 +88,7 @@ pub(crate) fn verify<'a, S: BuildHasher>(
     })?;
     let mut loans = loans::templates::verify_iter(
         environment,
-        templates.bodies.iter().chain(&contexts.bodies),
+        templates.iter().chain(&contexts.bodies),
         count,
         &regions,
         custom,
@@ -101,10 +96,9 @@ pub(crate) fn verify<'a, S: BuildHasher>(
     )?;
     // Context rows paid the original component, but remain absent from every
     // checked lookup and observed executable-template row.
-    regions.bodies.truncate(templates.bodies.len());
-    loans.truncate(templates.bodies.len());
+    regions.bodies.truncate(templates.len());
+    loans.truncate(templates.len());
     let contracts = templates
-        .bodies
         .iter()
         .map(|template| {
             inputs
@@ -126,21 +120,21 @@ pub(crate) fn verify<'a, S: BuildHasher>(
 }
 fn context_inputs<'a>(
     contracts: &'a Contracts<'_>,
-    templates: &Templates,
+    templates: &'a Templates,
     contexts: &Templates,
 ) -> Result<HashMap<crate::body::ir::BodyKey, &'a Contract>, Error> {
-    let mut keys: HashSet<_> = templates.bodies.iter().map(|t| t.body.key()).collect();
-    let mut sources: HashSet<_> = templates.bodies.iter().map(|t| t.body.source).collect();
+    let mut keys: HashSet<_> = templates.iter().map(|t| t.body.key()).collect();
+    let mut sources: HashSet<_> = templates.iter().map(|t| t.body.source).collect();
     for template in &contexts.bodies {
         if !keys.insert(template.body.key()) || !sources.insert(template.body.source) {
             return Err(error("duplicate original context owner or source"));
         }
     }
     let mut inputs = HashMap::with_capacity_and_hasher(
-        contracts.bodies.len(),
+        templates.input_count(contracts.bodies.len()),
         crate::support::hash::BuildFxHasher::default(),
     );
-    for contract in &contracts.bodies {
+    for contract in templates.inputs(&contracts.bodies) {
         if inputs.insert(contract.key, contract).is_some() {
             return Err(error("duplicate original context input contract"));
         }
@@ -158,7 +152,6 @@ fn source_regions<S: BuildHasher>(
         return Ok(());
     }
     let bodies: HashMap<_, _> = templates
-        .bodies
         .iter()
         .chain(&context.bodies.bodies)
         .map(|t| (t.body.key(), &t.body))

@@ -107,7 +107,7 @@ impl Context {
             .try_borrow_mut()
             .map_err(|_| "constant provider is still executing during template publication")?;
         engine.runtime_template_indices.clear();
-        for (index, template) in templates.bodies.iter().enumerate() {
+        for (index, template) in templates.iter().enumerate() {
             if let Owner::Function { definition, .. } | Owner::Initializer { definition, .. } =
                 template.body.owner
             {

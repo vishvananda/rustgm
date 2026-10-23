@@ -85,7 +85,7 @@ fn analyze(source: &str, edition: Edition, files: &mut Files) -> Result<expansio
     rustgm::resolve::analyze_expanded(report).map_err(|error| format!("{error:?}"))
 }
 
-fn lowir(source: &str, edition: Edition) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+pub(super) fn lowir(source: &str, edition: Edition) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let mut report = analyze(source, edition, &mut Files::default())?;
     let rustgm::pipeline::Analysis {
         mut facts,
@@ -96,6 +96,49 @@ fn lowir(source: &str, edition: Edition) -> Result<Vec<u8>, Box<dyn std::error::
     let mut bytes = Vec::new();
     rustgm::lowir::writer::write(&program, &mut bytes)?;
     Ok(bytes)
+}
+
+#[test]
+fn generic_metadata_never_relabels_the_defining_crate_edition()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa29/tests/spec/generic-contracts/minimal-id-library.rs"),
+    )?;
+    for edition in [Edition::Rust2021, Edition::Rust2024] {
+        let report = analyze(&source, edition, &mut Files::default())?;
+        let rustgm::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = rustgm::pipeline::analyze_source(&report)?;
+        let result = rustgm::lower::instances::build_library_prepared(
+            &report,
+            &mut facts,
+            rustgm::support::crates::CrateIdentity::new("library", "edition_originals")?,
+            prepared,
+        );
+        if edition == Edition::Rust2021 {
+            let Err(error) = result else {
+                return Err("unsupported source edition was silently exported".into());
+            };
+            assert!(
+                error
+                    .to_string()
+                    .contains("requires the Rust 2024 source profile")
+            );
+        } else {
+            let (_, interface) = result?;
+            assert_eq!(
+                interface
+                    .generic_payload()
+                    .ok_or("missing generic original")?
+                    .rows()
+                    .edition,
+                edition
+            );
+        }
+    }
+    Ok(())
 }
 
 const EXECUTABLES: &[(&str, &str, Edition)] = &[
@@ -133,7 +176,6 @@ fn explicit_editions_reach_ordinary_proof_and_lowering() -> Result<(), Box<dyn s
 #[test]
 #[ignore = "requires pinned rustc and CPPGM native backend"]
 fn native_answers_match_the_selected_lexical_edition() -> Result<(), Box<dyn std::error::Error>> {
-    use std::process::Command;
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("missing root")?;
@@ -143,58 +185,68 @@ fn native_answers_match_the_selected_lexical_edition() -> Result<(), Box<dyn std
     std::fs::create_dir_all(&folder)?;
     for &(name, body, edition) in EXECUTABLES {
         let source = format!("{}{body}", crate::native_references::CHECK);
-        let input = folder.join(format!("{name}.rs"));
-        let ir = folder.join(format!("{name}.lowir"));
-        let candidate = folder.join(format!("{name}.candidate"));
-        let reference = folder.join(format!("{name}.rustc"));
-        std::fs::write(&input, &source)?;
-        let flag = match edition {
-            Edition::Rust2021 => "--edition=2021",
-            Edition::Rust2024 => "--edition=2024",
-        };
-        run(
-            &folder,
-            &format!("{name}-reference"),
-            Command::new("rustc")
-                .args([
-                    "+1.98.0",
-                    flag,
-                    "--crate-name=probe",
-                    "--cap-lints=allow",
-                    "-C",
-                    "panic=abort",
-                    "-C",
-                    "overflow-checks=yes",
-                ])
-                .arg(&input)
-                .arg("-o")
-                .arg(&reference),
-        )?;
-        run(
-            &folder,
-            &format!("{name}-reference-run"),
-            &mut Command::new(reference),
-        )?;
-        std::fs::write(&ir, lowir(&source, edition)?)?;
-        run(
-            &folder,
-            &format!("{name}-backend"),
-            Command::new("python3")
-                .arg(root.join("scripts/backend.py"))
-                .arg(ir)
-                .arg("-o")
-                .arg(&candidate),
-        )?;
-        run(
-            &folder,
-            &format!("{name}-candidate-run"),
-            &mut Command::new(candidate),
-        )?;
+        native(&folder, name, &source, edition, root)?;
     }
     Ok(())
 }
 
-fn run(
+pub(super) fn native(
+    folder: &Path,
+    name: &str,
+    source: &str,
+    edition: Edition,
+    root: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
+    use std::process::Command;
+    let flag = match edition {
+        Edition::Rust2021 => "--edition=2021",
+        Edition::Rust2024 => "--edition=2024",
+    };
+    let tag = format!("{name}-{edition:?}");
+    let input = folder.join(format!("{tag}.rs"));
+    let ir = folder.join(format!("{tag}.lowir"));
+    let reference = folder.join(format!("{tag}.reference"));
+    let candidate = folder.join(format!("{tag}.candidate"));
+    std::fs::write(&input, source)?;
+    run(
+        folder,
+        &format!("{tag}-reference"),
+        Command::new("rustc")
+            .args([
+                "+1.98.0",
+                flag,
+                "--crate-name=probe",
+                "--cap-lints=allow",
+                "-C",
+                "panic=abort",
+                "-C",
+                "overflow-checks=yes",
+            ])
+            .arg(input)
+            .arg("-o")
+            .arg(&reference),
+    )?;
+    std::fs::write(&ir, lowir(source, edition)?)?;
+    run(
+        folder,
+        &format!("{tag}-backend"),
+        Command::new("python3")
+            .arg(root.join("scripts/backend.py"))
+            .arg(ir)
+            .arg("-o")
+            .arg(&candidate),
+    )?;
+    for (kind, binary) in [("reference", reference), ("candidate", candidate)] {
+        let executed = format!("{tag}-{kind}-run");
+        run(folder, &executed, &mut Command::new(binary))?;
+        for stream in ["stdout", "stderr"] {
+            assert!(std::fs::read(folder.join(format!("{executed}.{stream}")))?.is_empty());
+        }
+    }
+    Ok(())
+}
+
+pub(super) fn run(
     folder: &Path,
     name: &str,
     command: &mut std::process::Command,

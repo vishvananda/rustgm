@@ -100,6 +100,7 @@ impl Search<'_> {
             .ok_or("missing size proof frontier")?;
         let ty = pending.needed.take().ok_or("missing size proof request")?;
         let (sized, provisional) = match decision {
+            Decision::Refuted(_) => return Err("negative child was not classified".into()),
             Decision::Proven(index) => {
                 let child = &self.query.nodes[index];
                 pending.children.push(index);

@@ -367,7 +367,10 @@ impl Checker<'_> {
         rest: bool,
     ) -> Result<PatternKind, Error> {
         let (by_ref, mutable) = written;
-        if mode != Mode::Value && (by_ref || mutable) {
+        if mode != Mode::Value
+            && (by_ref || mutable)
+            && self.pattern_edition(node)? == crate::support::edition::Edition::Rust2024
+        {
             return Err(self.error(
                 node,
                 "explicit binding qualifiers require the move default binding mode in edition 2024",
@@ -375,6 +378,8 @@ impl Checker<'_> {
         }
         let capture_mode = if by_ref {
             Mode::Reference { mutable }
+        } else if mutable {
+            Mode::Value
         } else {
             mode
         };
@@ -419,7 +424,9 @@ impl Checker<'_> {
         mutable: bool,
         pattern: NodeId,
     ) -> Result<PatternKind, Error> {
-        if mode != Mode::Value {
+        if mode != Mode::Value
+            && self.pattern_edition(node)? == crate::support::edition::Edition::Rust2024
+        {
             return Err(self.error(
                 node,
                 "reference patterns require the move default binding mode in edition 2024",
@@ -451,6 +458,14 @@ impl Checker<'_> {
             implicit: false,
             pattern,
         })
+    }
+    fn pattern_edition(&self, node: NodeId) -> Result<crate::support::edition::Edition, Error> {
+        let package = &self.report.package;
+        let span = package.unit(self.state.file).configured.ast.node(node).span;
+        crate::resolve::unit::editions::introducer(self.state.file, span, |file| {
+            package.units.get(file.0 as usize)
+        })
+        .map_err(|error| self.error(node, error.message))
     }
     fn slice_pattern(
         &mut self,

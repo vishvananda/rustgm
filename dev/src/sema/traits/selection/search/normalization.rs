@@ -128,9 +128,14 @@ impl Frame {
             .storage
             .as_ref()
             .map_or(first, |storage| first.max(storage.end));
-        self.autos
+        let first = self
+            .autos
             .as_ref()
-            .map_or(first, |autos| first.max(autos.end))
+            .map_or(first, |autos| first.max(autos.end));
+        match self.language.as_deref() {
+            Some(super::mechanical::Pending::Unsize(pending)) => first.max(pending.end),
+            _ => first,
+        }
     }
     pub(super) fn normalizing(&self) -> bool {
         self.normalization
@@ -396,6 +401,7 @@ impl super::Query {
         self.allocations.record(regions.end);
         Ok(self.push(
             super::Node {
+                debt_free: false,
                 cycle_dependent: false,
                 provisional_size: false,
                 goal: evidence.premise.predicate,

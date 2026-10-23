@@ -63,7 +63,7 @@ fn mutable_kernel_enters_both_original_proofs_and_rejects_overlapping_split() ->
         } else {
             body::regions::collect(&facts)?.bodies
         };
-        let mut templates = Templates { bodies: Vec::new() };
+        let mut templates = Templates::source(Vec::new());
         append(&report, &mut facts, &mut templates, &mut contracts)?;
         assert_eq!(templates.bodies.len(), 10);
         body::promote::analyze_templates(&report, &mut facts, &mut templates)?;
@@ -115,7 +115,7 @@ fn mutable_read_identity_is_independently_checked_by_factory() -> Result {
         .canonical
         .read
         .kind = Intrinsic::Write;
-    let mut templates = Templates { bodies: Vec::new() };
+    let mut templates = Templates::source(Vec::new());
     let mut contracts = Vec::new();
     assert!(append(&report, &mut facts, &mut templates, &mut contracts).is_err());
     Ok(())

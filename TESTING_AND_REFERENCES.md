@@ -62,8 +62,11 @@ itself invalidate every compiler measurement or require another full native run.
 - During implementation, declare positive/negative outcomes, run the affected
   maintainer tests and independent pinned-rustc probes, and execute affected
   native controls when lowering or runtime behavior is involved. Run formatting,
-  strict Clippy, file/layout audits and harness checks early, before investing in
-  a complete qualification run. Fix wiring failures before broadening tests.
+  file/layout audits, strict Clippy and harness checks early, before investing in
+  a complete qualification run. Run the audit after formatting and before
+  Clippy: naming/placement failures do not need a compiler build to diagnose.
+  Retain that audit result if Clippy leaves its source snapshot unchanged.
+  Fix wiring failures before broadening tests.
   Settle related fixture and test edits first, then run all-target strict Clippy
   as the type/lint gate instead of running both `cargo check` and Clippy. Use
   focused debug tests for ordinary private invariants: changes to `cfg(test)`
@@ -143,6 +146,12 @@ instruction, memory and scaling gates.
 The [source-trait checkpoint measurements](docs/source-traits-editions-checkpoint.md)
 separate observed build, execution and text-suite costs under this cadence.
 They are shared-machine observations, not a controlled harness speedup claim.
+
+The [source sizing and generic-call checkpoint](docs/source-calls-sizing-checkpoint.md)
+passes 3,362 fresh release/native tests and 8,382 text cases. Its text sweep takes
+19.29 seconds; optimized compilation takes 17 minutes 13 seconds. It records
+separate independent checks, retained failures, 59 performance inputs and
+17.20 GiB of automatic artifact cleanup.
 
 For a validation batch, pass `scripts/course.py --evidence-root obj/BATCH/course`
 and include that directory in the storage guard's `--prune-under` roots. This

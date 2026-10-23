@@ -1,6 +1,7 @@
 //! Stable external identities and bounded scalar metadata never contain local arena IDs.
 mod codec;
 mod dependencies;
+pub mod generics;
 mod globals;
 mod identity;
 mod interface;

@@ -135,7 +135,12 @@ reserved-token rejection at the appropriate grammar boundary without silently
 changing PA1's documented boundary-only token view.
 
 Then qualify edition-sensitive semantic behavior required by the actual crate
-graph, including match ergonomics, unsafe declarations/attributes, temporary
-scopes, opaque captures, prelude/method selection and never-type fallback. The
+graph. The [explicit pattern checkpoint](pa34-pattern-editions.md) now qualifies
+the modifier/reset portion of match ergonomics. The
+[external declaration checkpoint](pa34-extern-editions.md) covers extern blocks
+and supported linkage attributes. The
+[temporary scope checkpoint](pa34-temporary-editions.md) adds tail and if-let
+endpoints with opposing borrow and destructor-order controls. Remaining work
+includes opaque captures, prelude/method selection and never-type fallback. The
 2021/2024 profile and imported body edition must agree with the frozen Cargo unit
 graph. No assignment is activated by this foundation.

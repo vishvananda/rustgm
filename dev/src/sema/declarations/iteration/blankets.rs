@@ -99,8 +99,9 @@ impl Checker<'_> {
             .implementations
             .as_mut()
             .ok_or_else(|| Error::at(source.file, 0, "iteration headers were not reserved"))?
-            .prepare(
+            .prepare_factory(
                 &mut self.facts.types,
+                &self.facts.associated,
                 ItemId(owner.definition.0),
                 Implementation {
                     owner: declaration.definition,

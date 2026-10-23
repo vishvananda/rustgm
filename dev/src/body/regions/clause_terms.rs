@@ -1,5 +1,6 @@
 //! Keep clause formation distinct from the permissions available inside a body.
-use super::{Kind, NodeKey};
+use super::Kind;
+use crate::resolve::body_origin::ProofSite;
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
@@ -9,9 +10,11 @@ use crate::{
 pub(super) fn collect(
     facts: &Declarations,
     owner: DefId,
-    mut add: impl FnMut(NodeKey, Kind) -> Result<(), &'static str>,
+    mut add: impl FnMut(ProofSite, Kind) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
-    for predicate in facts.generics.predicates.get(&owner).into_iter().flatten() {
+    for predicate in
+        crate::sema::declaration_inputs::own(&facts.generics, facts.crates.as_deref(), owner)?
+    {
         match predicate.value {
             Clause::Predicate(value) => {
                 // Equality formation follows its separate trait premise. The

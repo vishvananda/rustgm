@@ -230,7 +230,7 @@ impl Generics {
         }
         Ok(uses.indices)
     }
-    pub(super) fn parameter_ids(
+    pub(crate) fn parameter_ids(
         &self,
         store: &Store,
         owner: DefId,

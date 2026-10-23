@@ -11,17 +11,32 @@ use rustgm::{
     support::{bindings::Mode, crates::CrateIdentity, source::SourceFile},
 };
 use std::path::Path;
+#[path = "provider_traits/borrowed_destructors.rs"]
+mod borrowed_destructors;
 #[path = "provider_traits/cases.rs"]
 mod cases;
 #[path = "provider_traits/destructibility.rs"]
 mod destructibility;
 #[path = "provider_traits/forbidden_cleanup.rs"]
 mod forbidden_cleanup;
+#[path = "provider_traits/freeze_cases.rs"]
+mod freeze_cases;
+#[path = "provider_traits/freeze_formation.rs"]
+mod freeze_formation;
+#[path = "provider_traits/freezing.rs"]
+mod freezing;
 #[path = "provider_traits/native.rs"]
 pub(super) mod native;
 #[path = "provider_traits/signature_views.rs"]
 mod signature_views;
 pub(super) type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+pub(super) fn fixture(name: &str) -> std::io::Result<String> {
+    std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa31/tests/spec/source-freeze")
+            .join(name),
+    )
+}
 const PROVIDER: &str = r#"#![feature(unboxed_closures)]
 #![feature(no_core,lang_items,rustc_attrs,const_trait_impl)]
 #![no_core]

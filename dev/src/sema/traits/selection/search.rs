@@ -10,6 +10,9 @@ mod callables;
 mod cloning;
 mod coherence;
 mod coinduction;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/refutation_layout.rs"]
+mod refutation_layout;
 pub(in crate::sema) use coherence::may_overlap;
 mod completed_proofs;
 mod destructibility;
@@ -22,6 +25,7 @@ mod marker_readiness_tests;
 mod primitive_methods;
 mod sizing_fallback;
 mod tuple_role;
+mod unsizing;
 pub(in crate::sema) use completed_proofs::Reuse;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/erased_formation.rs"]
@@ -30,6 +34,8 @@ mod callable_tests;
 #[path = "../../../../tests/invariants/implementation_conditions.rs"]
 mod condition_tests;
 pub(super) mod conditions;
+mod construction_completion;
+mod construction_conditions;
 mod continuation;
 mod equalities;
 #[cfg(test)]
@@ -40,6 +46,7 @@ mod forwarding;
 #[path = "../../../../tests/invariants/forwarded_calls.rs"]
 mod forwarding_tests;
 mod frames;
+mod freezing;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/selection_headers.rs"]
 mod header_tests;
@@ -58,6 +65,10 @@ mod partial_tests;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/pending_closures.rs"]
 mod pending_closure_tests;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/refutation_completion.rs"]
+mod refutation_completion;
+mod refutations;
 mod result_bounds;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/contract_evidence.rs"]
@@ -78,6 +89,12 @@ mod suspension;
 #[path = "../../../../tests/invariants/universal_inference.rs"]
 mod universal_inference_tests;
 mod wakeups;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/wf_graph_work.rs"]
+mod wf_graph_work;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/wf_scope_cache.rs"]
+mod wf_scope_cache;
 pub(in crate::sema) use suspension::{
     Pending, Progress, begin, begin_canonical, begin_normalized, begin_projection, begin_refining,
     begin_refining_untouched, begin_scoped_refining,
@@ -107,6 +124,7 @@ enum Decision {
     Absent,
     Deferred,
     Proven(usize),
+    Refuted(usize),
 }
 enum Action {
     Continue,
@@ -116,6 +134,8 @@ enum Action {
     Yield,
 }
 struct Node {
+    /// Completed subtree carries no unpaid or private-scope obligations.
+    debt_free: bool,
     cycle_dependent: bool,
     provisional_size: bool,
     goal: Predicate,
@@ -187,6 +207,19 @@ impl Search<'_> {
         match decision {
             Decision::Absent => Ok(Selection::Absent),
             Decision::Deferred => Ok(Selection::Deferred),
+            Decision::Refuted(root) => {
+                let expected = context
+                    .resolved_predicate(&mut facts.types, goal)
+                    .map_err(inference)?;
+                let refutation = self.refutation(facts, root, expected)?;
+                // External consumers in this first profile cannot pay a scoped
+                // negative. Retain its full proof until this explicit boundary.
+                if matches!(refutation, super::Refutation::Conditional(_)) {
+                    refutation.reject()?;
+                    return Err("conditional refutation unexpectedly became debt-free".into());
+                }
+                Ok(Selection::Refuted(refutation))
+            }
             Decision::Proven(root) => {
                 if self.query.universal.is_none() {
                     context
@@ -197,7 +230,7 @@ impl Search<'_> {
                         )
                         .map_err(inference)?;
                 }
-                self.evidence(root).map(Selection::Proven)
+                self.evidence(facts, root).map(Selection::Proven)
             }
         }
     }
@@ -232,12 +265,12 @@ impl Search<'_> {
                     self.query.remember(frame.scope, goal, decision);
                 }
             }
-            Decision::Absent | Decision::Deferred => {}
+            Decision::Absent | Decision::Deferred | Decision::Refuted(_) => {}
         }
     }
     fn advance(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
         if frame.forming() {
-            return self.advance_formation(frame);
+            return self.advance_formation(facts, frame);
         }
         if frame.pending_headers.is_some() {
             return self.await_header(facts, frame);
@@ -262,6 +295,12 @@ impl Search<'_> {
         }
         if let Some(&owner) = frame.candidates.get(frame.cursor) {
             frame.cursor += 1;
+            if super::refutation::implementation_negative(facts, owner)?
+                && frame.canonical.is_none()
+            {
+                frame.deferred = true;
+                return Ok(Action::Continue);
+            }
             let mut trial = Trial::new(facts, frame, owner, self.query.allocations.floor())?;
             self.query.allocations.record(trial.end);
             self.query.reserve(trial.scope, trial.first..trial.end)?;
@@ -272,7 +311,12 @@ impl Search<'_> {
             );
             self.charge(&mut trial.inputs.context)?;
             match result {
-                Ok(()) => frame.trial = Some(trial),
+                Ok(()) => {
+                    if Self::source_freeze_goal(facts, &frame.goal)? {
+                        frame.explicit_auto = true;
+                    }
+                    frame.trial = Some(trial);
+                }
                 Err(infer::Error::Mismatch | infer::Error::Occurs) => {}
                 Err(infer::Error::Normalization) => frame.deferred = true,
                 Err(error) => return Err(inference(error)),
@@ -291,6 +335,7 @@ impl Search<'_> {
     }
     fn start(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
         Self::source_sizing_kind(facts, &frame.goal)?;
+        let unsizing = Self::source_unsizing_kind(facts, &frame.goal)?;
         frame.started = true;
         frame.cycles = self.query.cycles;
         if frame.goal.projection_result().is_some() {
@@ -307,6 +352,13 @@ impl Search<'_> {
             };
         }
         let needs_normalization = match self.assume(facts, frame) {
+            Ok(Some(Action::Complete(Decision::Deferred)))
+                if unsizing == Some(crate::support::bindings::LangItem::Unsize) =>
+            {
+                // No positive selection is possible yet. Still form known peers.
+                frame.deferred = true;
+                false
+            }
             Ok(Some(action)) => return Ok(action),
             Ok(None) => false,
             Err(infer::Error::Normalization) => true,
@@ -362,6 +414,7 @@ impl Search<'_> {
                     .map_err(|_| infer::Error::InvalidIdentity)?;
                 let index = self.query.push(
                     Node {
+                        debt_free: false,
                         cycle_dependent: false,
                         provisional_size: false,
                         goal,
@@ -390,6 +443,9 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
+        if self.prepare_nominal_formation(facts, frame)? {
+            return Ok(Action::Continue);
+        }
         if let Some(action) = self.start_callable(facts, frame)? {
             return Ok(action);
         }
@@ -440,13 +496,14 @@ impl Search<'_> {
                     self.query.reused |= matches!(decision, Decision::Proven(_));
                     return Ok(Some(decision));
                 }
-                if let Some(decision) = self.query.reuse_completed(frame, goal) {
+                if let Some(decision) = self.query.reuse_completed(facts, frame, goal)? {
                     return Ok(Some(decision));
                 }
                 if matches!(
                     goal.bound,
                     crate::types::parameters::predicates::Bound::Auto(_)
-                ) {
+                ) || Self::source_freeze_goal(facts, &frame.goal)?
+                {
                     return self.auto_cycle(facts, frame, goal);
                 }
                 let (key, work) = facts.types.shape_key(goal)?;
@@ -468,6 +525,7 @@ impl Search<'_> {
         frame: &mut Frame,
         decision: Decision,
     ) -> Result<(), String> {
+        let decision = self.negative_child(decision)?;
         if !matches!(decision, Decision::Proven(_)) {
             self.query.invalidate_auto(frame);
         }
@@ -476,6 +534,12 @@ impl Search<'_> {
         }
         if frame.normalizing() {
             return self.accept_normalization(facts, frame, decision);
+        }
+        if matches!(
+            frame.language.as_deref(),
+            Some(mechanical::Pending::Unsize(_))
+        ) {
+            return self.accept_unsizing(facts, frame, decision);
         }
         if matches!(
             frame.language.as_deref(),
@@ -512,6 +576,7 @@ impl Search<'_> {
                 frame.trial = None;
             }
             Decision::Deferred => trial.defer_condition(facts, index)?,
+            Decision::Refuted(_) => return Err("negative child was not classified".into()),
             Decision::Proven(node) => {
                 trial
                     .inputs
@@ -532,17 +597,31 @@ impl Search<'_> {
         }
         Ok(())
     }
-    fn evidence(mut self, root: usize) -> Result<Evidence, String> {
+    fn evidence(mut self, facts: &Declarations, root: usize) -> Result<Evidence, String> {
         let source = self.query.nodes[root]
             .source
-            .take()
             .ok_or("missing selected trait evidence")?;
         let mut evidence = Evidence {
             provisional_size: self.query.nodes[root].provisional_size,
             source,
-            proof: self.query.allocations.finish(self.query.nodes[root].end),
+            proof: std::mem::replace(
+                &mut self.query.allocations,
+                allocations::Allocations::new(1),
+            )
+            .finish(self.query.nodes[root].end),
             sized: Vec::new(),
         };
+        self.collect_graph(facts, root, None, &mut evidence.proof, &mut evidence.sized)?;
+        Ok(evidence)
+    }
+    fn collect_graph(
+        &mut self,
+        facts: &Declarations,
+        root: usize,
+        negative: Option<(crate::resolve::model::DefId, crate::types::GenericArgs)>,
+        proof: &mut super::Obligations,
+        sized: &mut Vec<super::TypeId>,
+    ) -> Result<(), String> {
         let mut scopes = self.query.scopes.take();
         let mut work = vec![root];
         let mut visited = self
@@ -557,19 +636,29 @@ impl Search<'_> {
                 visited[index] = true;
             }
             let node = &mut self.query.nodes[index];
+            match (node.source, negative) {
+                (Some(Source::Implementation { owner, arguments }), Some(expected))
+                    if (owner, arguments) == expected =>
+                {
+                    if !super::refutation::implementation_negative(facts, owner)? {
+                        return Err("negative extraction lost its actual owner polarity".into());
+                    }
+                }
+                _ => super::refutation::require_positive_source(facts, node.source)?,
+            }
             work.extend(std::mem::take(&mut node.children));
             if let Some(scopes) = &mut scopes {
-                scopes.collect(index, node, &mut evidence)?;
+                scopes.collect(index, node, proof, sized)?;
             } else {
-                evidence.proof.equalities.append(&mut node.equalities);
-                evidence.proof.outlives.append(&mut node.outlives);
-                evidence.proof.types.append(&mut node.type_outlives);
-                evidence.sized.append(&mut node.sized);
+                proof.equalities.append(&mut node.equalities);
+                proof.outlives.append(&mut node.outlives);
+                proof.types.append(&mut node.type_outlives);
+                sized.append(&mut node.sized);
             }
         }
         if let Some(scopes) = scopes {
-            scopes.finish(&mut evidence.proof)?;
+            scopes.finish(proof)?;
         }
-        Ok(evidence)
+        Ok(())
     }
 }

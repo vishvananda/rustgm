@@ -13,6 +13,7 @@ impl Machine<'_, '_> {
         frame: &Frame,
         target: Instance,
     ) -> Result<Answer, Failure> {
+        crate::sema::compiler_items::check_const_drop_glue(self.evaluator.facts(), target)?;
         let position = frame
             .next
             .checked_sub(1)

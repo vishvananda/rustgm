@@ -25,7 +25,61 @@ impl Template {
 }
 pub struct Templates {
     pub bodies: Vec<Template>,
+    imported: Option<std::rc::Rc<crate::body::transported_originals::ImportedOriginals>>,
 }
+impl Templates {
+    #[must_use]
+    pub const fn source(bodies: Vec<Template>) -> Self {
+        Self {
+            bodies,
+            imported: None,
+        }
+    }
+    pub(crate) fn attach(
+        &mut self,
+        imported: Option<std::rc::Rc<crate::body::transported_originals::ImportedOriginals>>,
+    ) -> Result<(), &'static str> {
+        if self.imported.is_some() {
+            return Err("imported originals are already attached");
+        }
+        self.imported = imported;
+        Ok(())
+    }
+    pub(crate) fn iter(&self) -> impl Iterator<Item = &Template> {
+        self.bodies.iter().chain(
+            self.imported
+                .iter()
+                .flat_map(|i| i.iter().map(|row| &row.template)),
+        )
+    }
+    pub(crate) fn len(&self) -> usize {
+        self.bodies.len() + self.imported.as_ref().map_or(0, |i| i.len())
+    }
+    pub(crate) fn input_count(&self, sources: usize) -> usize {
+        sources.saturating_add(self.imported.as_ref().map_or(0, |i| i.len()))
+    }
+    pub(crate) fn get(&self, index: usize) -> Option<&Template> {
+        if index < self.bodies.len() {
+            self.bodies.get(index)
+        } else {
+            self.imported
+                .as_ref()?
+                .at(index - self.bodies.len())
+                .map(|row| &row.template)
+        }
+    }
+    pub(crate) fn inputs<'a>(
+        &'a self,
+        sources: &'a [crate::body::regions::Contract],
+    ) -> impl Iterator<Item = &'a crate::body::regions::Contract> {
+        sources.iter().chain(
+            self.imported
+                .iter()
+                .flat_map(|i| i.iter().map(|row| &row.contract)),
+        )
+    }
+}
+
 #[derive(Default)]
 struct ClosureTemplates {
     bodies: crate::support::hash::HashMap<crate::types::closure::ClosureId, Template>,
@@ -383,7 +437,7 @@ impl Prepared {
             ));
         }
         crate::body::constants::alias_cycles(report, facts, &bodies)?;
-        Ok(Templates { bodies })
+        Ok(Templates::source(bodies))
     }
 
     pub(crate) fn closure(

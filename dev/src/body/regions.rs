@@ -170,15 +170,12 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         }
         Ok(())
     })?;
-    let mut add = |body, source: NodeKey, kind| -> Result<(), &'static str> {
+    let mut add = |body, source: ProofSite, kind| -> Result<(), &'static str> {
         let target = index
             .get(&body)
             .copied()
             .ok_or("lifetime obligation has no body owner")?;
-        bodies[target].obligations.push(Obligation {
-            source: source.into(),
-            kind,
-        });
+        bodies[target].obligations.push(Obligation { source, kind });
         Ok(())
     };
     for function in &facts.functions {
@@ -187,7 +184,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
                 add(body, source, kind)
             })?;
             opaque_members(facts, function.definition, |source, kind| {
-                add(body, source, kind)
+                add(body, source.into(), kind)
             })?;
         }
     }

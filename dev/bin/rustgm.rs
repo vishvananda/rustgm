@@ -89,14 +89,20 @@ fn options() -> Result<Options, String> {
             }
             "--crate-type=lib" => options.crates.library = true,
             "--crate-type=bin" => options.crates.library = false,
-            "--extern" => {
-                if options.crates.externs.len() >= 1024 {
+            "--extern" | "--dependency-metadata" => {
+                if options.crates.dependency_count() >= 1024 {
                     return Err("external crate arguments exceed profile budget".into());
                 }
-                options
-                    .crates
-                    .externs
-                    .push(args.next().ok_or("--extern requires ALIAS=METADATA")?);
+                let value = args.next().ok_or(if arg == "--extern" {
+                    "--extern requires ALIAS=METADATA"
+                } else {
+                    "--dependency-metadata requires a path"
+                })?;
+                if arg == "--extern" {
+                    options.crates.externs.push(value);
+                } else {
+                    options.crates.dependency_metadata.push(value);
+                }
             }
             "--cfg" => {
                 let setting = args.next().ok_or("--cfg requires an option")?;

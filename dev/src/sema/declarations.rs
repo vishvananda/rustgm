@@ -283,6 +283,20 @@ impl<'a> Checker<'a> {
             owner_binders: crate::support::hash::HashMap::default(),
         };
         if let Some(imported) = &report.resolution.crates {
+            for definition in imported.generic_definitions() {
+                let definition = definition.map_err(Error::unlocated)?;
+                if checker
+                    .facts
+                    .definitions
+                    .get(definition.0 as usize)
+                    .is_none_or(Option::is_none)
+                {
+                    return Err(Error::unlocated(
+                        "imported generic declaration lacks its completed canonical type",
+                    ));
+                }
+                checker.states[definition.0 as usize] = State::Complete;
+            }
             for (definition, _) in imported.functions() {
                 checker.states[definition.0 as usize] = State::Complete;
             }

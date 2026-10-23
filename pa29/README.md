@@ -26,9 +26,23 @@ python3 scripts/backend.py first.lowir client.lowir -o client
 
 Multi-unit native linking requires the explicitly configured reviewed ELF object
 backend profile. Ordinary single-unit builds retain the existing executable
-bridge. Supply metadata for every dependency; repeat `--extern ALIAS=FILE` for
-the complete graph. Metadata is written only after the ordinary semantic, body,
+bridge. Supply metadata for every dependency. `--extern ALIAS=FILE` introduces a
+direct source-visible alias; `--dependency-metadata FILE` supplies transitive
+metadata without adding a name to the extern prelude. Both options share one
+canonical-path decoder and combined count/byte budgets. For a client depending
+only on the second library of a chain, use `--extern renamed=second.rgm
+--dependency-metadata first.rgm`; the first library remains required for linkage
+but its name and the second library's dependency alias remain inaccessible.
+Metadata is written only after the ordinary semantic, body,
 ownership and lowering gates succeed. `--crate-name` alone retains legacy names.
+
+`tests/transitive-metadata-outcomes.json` declares the three-crate source/native
+controls. `scripts/check_transitive_metadata.py` qualifies direct aliases,
+inventory-only failures, duplicate/reordered inputs, missing and malformed
+artifacts, and combined argument budgets. Supplying an inventory grants no extra
+source-core role, generic-body permission or library implementation.
+See [the development checkpoint](../docs/pa29-transitive-metadata.md) for exact
+evidence and the remaining release gate.
 
 Profiles zero and one export public nongeneric, nonconst Rust functions with scalar
 parameters/results, nested public module paths and explicit unsafe permission,
@@ -108,6 +122,17 @@ is a typed prerequisite for generic transport. It validates defining artifact,
 declaration, parent and ordinal relationships with bounded linear work. It does
 not yet encode/import bodies, provide executable permission or activate a new
 wire profile. The full generic-body and contract transport remains required.
+
+The first executable generic checkpoint adds envelope nine, row version zero,
+for defining Rust 2024 and the legacy language-role policy. An actual checked
+`const fn id<T: Copy>(value: T) -> T` survives export/import and normal runtime
+and constant instantiation; Copy debts are re-proved for each actual instance.
+Artifacts contain typed original operations rather than proof tokens. The
+narrow operation/type family rejects unsupported source-role, trait, lifetime,
+call and other body contracts explicitly. Profiles zero through eight retain
+their encodings. This does not activate PA29 or replace the full generic-body
+requirement; see [the checkpoint](../docs/pa29-executable-generics.md) and the
+unchanged complete `tests/generic-contract-outcomes.json` inventory.
 
 ## Tests to develop with the reference
 

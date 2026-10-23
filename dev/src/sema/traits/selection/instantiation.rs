@@ -83,7 +83,9 @@ pub(super) fn instantiate(
         }
     }
     let mut quantified = None;
-    for predicate in facts.generics.declared_predicates_in_scope(owner) {
+    for predicate in
+        crate::sema::declaration_inputs::declared(&facts.generics, facts.crates.as_deref(), owner)?
+    {
         match predicate.value {
             Clause::Predicate(predicate) => predicates.push(predicate),
             clause @ Clause::ForAll(_) => {

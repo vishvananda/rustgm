@@ -1,0 +1,125 @@
+{
+  "profile": "Rust 1.98.0 edition2024 x86_64-unknown-linux-gnu; declared before independent or candidate execution",
+  "cases": [
+    {
+      "name": "first",
+      "path": "tests/spec/scalar/first.rs",
+      "source_sha256": "41e2aab092e3b7c4af90191f51ec48ad8a2939201804b4196e32fcc1330dc794",
+      "kind": "rlib",
+      "crate": "shared",
+      "deps": {},
+      "inventory": [],
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0
+    },
+    {
+      "name": "second",
+      "path": "tests/spec/scalar/second.rs",
+      "source_sha256": "ab0517a0287007d32918dc18069c951ef35db2263e8eb5cd2ff21790f78ae2c6",
+      "kind": "rlib",
+      "crate": "shared",
+      "deps": {
+        "one": "first"
+      },
+      "inventory": [],
+      "rustc": 0,
+      "code": null,
+      "native": false,
+      "frontend_expected_after_implementation": 0
+    },
+    {
+      "name": "client",
+      "path": "tests/spec/transitive-metadata/client.rs",
+      "source_sha256": "ffc20e6793055d249ec60b9dcb7147e8179bde48fbda638cb62f37437e980832",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "renamed": "second"
+      },
+      "inventory": [
+        "first"
+      ],
+      "rustc": 0,
+      "code": null,
+      "native": true,
+      "frontend_expected_after_implementation": 0
+    },
+    {
+      "name": "reject-alias",
+      "path": "tests/spec/transitive-metadata/reject-alias.rs",
+      "source_sha256": "bc30879ce9653d9c0789bc8529571d939b4801ed44f80a9dc308d8172bef0ea7",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "renamed": "second"
+      },
+      "inventory": [
+        "first"
+      ],
+      "rustc": 1,
+      "code": "E0433",
+      "native": false,
+      "frontend_expected_after_implementation": 1
+    },
+    {
+      "name": "reject-name",
+      "path": "tests/spec/transitive-metadata/reject-name.rs",
+      "source_sha256": "4e42c020ab2de39492cc904bc54492c42ae9ff1754957d61e782b30b4e09a809",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "renamed": "second"
+      },
+      "inventory": [
+        "first"
+      ],
+      "rustc": 1,
+      "code": "E0433",
+      "native": false,
+      "frontend_expected_after_implementation": 1
+    },
+    {
+      "name": "inventory-only",
+      "path": "tests/spec/transitive-metadata/client.rs",
+      "source_sha256": "ffc20e6793055d249ec60b9dcb7147e8179bde48fbda638cb62f37437e980832",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {},
+      "inventory": [
+        "first",
+        "second"
+      ],
+      "rustc": 1,
+      "code": "E0433",
+      "native": false,
+      "frontend_expected_after_implementation": 1
+    },
+    {
+      "name": "direct-alias",
+      "path": "tests/spec/transitive-metadata/direct-alias.rs",
+      "source_sha256": "bf3915fdc27643ddd7626ae0e7a1de23259bd12873de4b04b1a0b5b552eddd29",
+      "kind": "bin",
+      "crate": "client",
+      "deps": {
+        "renamed": "second",
+        "one": "first"
+      },
+      "inventory": [
+        "first"
+      ],
+      "rustc": 0,
+      "code": null,
+      "native": true,
+      "frontend_expected_after_implementation": 0
+    }
+  ],
+  "invariants": [
+    "inventory metadata grants no alias",
+    "exact canonical path shared by named and inventory input is decoded once",
+    "all dependency artifacts remain required",
+    "reordered and duplicate inventory paths preserve output",
+    "malformed input, missing inventory and combined argument budget fail"
+  ]
+}

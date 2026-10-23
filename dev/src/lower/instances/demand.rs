@@ -72,6 +72,9 @@ impl Ordinary {
     ) -> Result<Option<Selected<'a>>, &'static str> {
         Ok(Some(match facts.types.kind(instance.ty()) {
             Some(Kind::FunctionItem { item, .. }) => {
+                // Actual helpers still follow ordinary original/materialized proofs.
+                // The typed descriptor only gates their later cleanup adapter.
+                crate::sema::compiler_items::source_drop_glue(facts, instance)?;
                 if let Some(kind) = facts
                     .source_bindings
                     .as_deref()
@@ -88,11 +91,12 @@ impl Ordinary {
                         }
                     });
                 }
-                if facts
-                    .foreign
-                    .as_deref()
-                    .and_then(|r| r.function(DefId(item.0)))
-                    .is_some_and(|f| f.linkage == crate::support::linkage::Linkage::Import)
+                if templates.get(item).is_none()
+                    && facts
+                        .foreign
+                        .as_deref()
+                        .and_then(|r| r.function(DefId(item.0)))
+                        .is_some_and(|f| f.linkage == crate::support::linkage::Linkage::Import)
                 {
                     return Ok(None);
                 }

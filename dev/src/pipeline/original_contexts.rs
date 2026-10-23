@@ -28,7 +28,16 @@ pub(crate) struct Original {
 }
 impl Original {
     pub fn validate(&self, facts: &Declarations) -> Result<(), &'static str> {
-        Self::validate_parts(facts, &self.template.body, &self.contract)
+        Self::validate_parts(facts, &self.template.body, &self.contract)?;
+        if let Owner::Function { definition, .. } = self.template.body.owner
+            && let Some(environment) = facts
+                .function_header(definition)?
+                .and_then(|h| h.environment)
+            && !Arc::ptr_eq(environment, &self.template.environment)
+        {
+            return Err("original function changed its exact declaration environment");
+        }
+        Ok(())
     }
     pub(super) fn validate_parts(
         facts: &Declarations,
@@ -37,6 +46,9 @@ impl Original {
     ) -> Result<(), &'static str> {
         if body.instance.is_some() || contract.key != body.key() || contract.source != body.source {
             return Err("original component contract belongs to another body");
+        }
+        if body.source.source().is_none() {
+            return Self::validate_imported_parts(facts, body, contract);
         }
         let source = body
             .source
@@ -47,21 +59,13 @@ impl Original {
                 definition,
                 signature,
                 execution: None,
-            } => facts
-                .function_indices
-                .get(&definition)
-                .and_then(|&i| facts.functions.get(i))
-                .is_some_and(|f| {
-                    f.body == Some(source)
-                        && f.signature == signature
-                        && contract.signature == Some(signature)
-                        && contract.universals
-                            == facts
-                                .lifetimes
-                                .functions
-                                .get(&definition)
-                                .map_or(0, |s| s.total)
-                }),
+            } => facts.function_header(definition)?.is_some_and(|header| {
+                header.body == Some(body.source)
+                    && header.signature == signature
+                    && contract.signature == Some(signature)
+                    && contract.universals == header.universals
+                    && header.declaration.source().is_some()
+            }),
             Owner::Initializer { definition, kind } => facts
                 .initializer_index(definition)
                 .and_then(|i| facts.initializers.get(i))
@@ -117,6 +121,56 @@ impl Original {
             }
         {
             return Err("original component changed its typed owner or output link");
+        }
+        Ok(())
+    }
+    fn validate_imported_parts(
+        facts: &Declarations,
+        body: &crate::body::ir::Body,
+        contract: &Contract,
+    ) -> Result<(), &'static str> {
+        let Owner::Function {
+            definition,
+            signature,
+            execution: None,
+        } = body.owner
+        else {
+            return Err("unsupported imported original owner category");
+        };
+        let header = facts
+            .function_header(definition)?
+            .ok_or("imported original header is absent")?;
+        let environment = header
+            .environment
+            .ok_or("imported original environment is absent")?;
+        let expected_inputs = crate::sema::declaration_inputs::own(
+            &facts.generics,
+            facts.crates.as_deref(),
+            definition,
+        )?
+        .map(|input| input.value);
+        let actual_environment = contract
+            .builtins
+            .as_deref()
+            .and_then(|b| b.environment.as_ref());
+        if header.body != Some(body.source)
+            || header.signature != signature
+            || header.declaration.source().is_some()
+            || contract.signature != Some(signature)
+            || contract.universals != header.universals
+            || contract.output.is_some()
+            || !matches!(facts.types.kind(signature), Some(crate::types::Kind::Function { result, .. }) if result == body.result)
+            || contract.parameters != facts.generics.parameter_ids(&facts.types, definition)?
+            || !contract
+                .type_assumptions
+                .iter()
+                .copied()
+                .eq(expected_inputs)
+            || actual_environment.is_none_or(|actual| !Arc::ptr_eq(actual, environment))
+        {
+            return Err(
+                "imported original changed its exact header, environment or contract owner",
+            );
         }
         Ok(())
     }
@@ -271,9 +325,7 @@ impl Originals {
             source.push(std::mem::replace(&mut inputs[position], contract));
         }
         Ok(crate::borrow::templates::Contexts {
-            bodies: Templates {
-                bodies: self.contexts,
-            },
+            bodies: Templates::source(self.contexts),
             source,
         })
     }

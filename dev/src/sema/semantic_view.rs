@@ -162,10 +162,14 @@ fn owners(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Re
         )?;
         if let OwnerKind::Trait {
             definition,
+            auto_,
             unsafe_,
             constant,
         } = owner.kind
         {
+            if auto_ {
+                write!(out, " auto=true")?;
+            }
             if constant {
                 write!(out, " const=true")?;
             }

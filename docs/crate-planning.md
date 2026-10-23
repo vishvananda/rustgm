@@ -125,11 +125,13 @@ closure. Cargo's implicit sysroot is absent from this package graph: RustGM must
 add and compile the original source sysroot rather than consume rustc's target
 libraries. Four planned package units are not the complete frontend build graph.
 
-The [host task binding](pa34-build-script-contract.md#graph-bound-host-execution)
-now executes authenticated dependency-free registry script pairs, retaining
-their actual generated inputs. Next, schedule host dependency artifacts and
-DEP metadata, close local package/configuration provenance, and consume ordered
-generated cfg, environment and source outputs in target jobs. Implement actual Rust 2021
+The [host graph executor](pa34-build-script-contract.md#shared-host-dependency-execution)
+now schedules ordinary host rlibs and scripts, retaining their own generated
+configuration and immediate DEP links metadata. Next, close local
+package/configuration provenance and consume ordered generated cfg, environment
+and source outputs in target jobs. Target metadata inventory must remain separate
+from source-visible direct aliases: `--dependency-metadata` supplies transitive
+artifacts without inventing extern-prelude bindings. Implement actual Rust 2021
 semantics and per-crate macro edition provenance before claiming that profile.
 Then execute dependency-first target jobs through RustGM's typed metadata and
 CPPGM backend. Library acceptance requires the original selected dependency

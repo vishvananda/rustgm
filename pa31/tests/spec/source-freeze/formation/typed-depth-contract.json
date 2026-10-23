@@ -1,0 +1,118 @@
+{
+  "kind": "development-fixture-contract-v1",
+  "stage": "PA31 planned; no generated references or activation",
+  "family": "whole typed source-sizing argument formation",
+  "origin": "Exact copies of frozen source-freeze-generics-perf-v2 alias inputs; prior nested-syntax and whole-call budget failures retained separately",
+  "rust": "1.98.0 88d9e12ae178fab0fb5cc050a94da85685d449ea; edition2024; x86_64-unknown-linux-gnu; RUSTC_BOOTSTRAP=1",
+  "source_core": "minicore@freeze_perf_v1",
+  "cases": [
+    {
+      "path": "typed-depth-8-noise-0.rs",
+      "sha256": "a6e4b5fa4f6f8529b09ce36dbd79b24b44746f367f744972e763c9de1021e9d7",
+      "dimensions": {
+        "axis": "depth",
+        "n": 8,
+        "unrelated_source_definitions": 0
+      },
+      "mode": "--emit-lowir",
+      "outcome": "accept",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "observer": "observe()->u8 == 7"
+      },
+      "independent_original": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-freeze-generics-perf-v2/inputs/freeze-depth-8-noise-0.rs",
+      "independent_receipts": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-freeze-generics-perf-v2/independent"
+    },
+    {
+      "path": "typed-depth-8-noise-128.rs",
+      "sha256": "9d0ff9718e2f45554a33f4760727483bb85a34ca7288f53af00eff492749620c",
+      "dimensions": {
+        "axis": "depth",
+        "n": 8,
+        "unrelated_source_definitions": 128
+      },
+      "mode": "--emit-lowir",
+      "outcome": "accept",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "observer": "observe()->u8 == 7"
+      },
+      "independent_original": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-freeze-generics-perf-v2/inputs/freeze-depth-8-noise-128.rs",
+      "independent_receipts": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-freeze-generics-perf-v2/independent"
+    },
+    {
+      "path": "typed-depth-32-noise-0.rs",
+      "sha256": "a887abbd7303d01576df9b140b8c473abf179053979d5bbbf94ffcafd252bb33",
+      "dimensions": {
+        "axis": "depth",
+        "n": 32,
+        "unrelated_source_definitions": 0
+      },
+      "mode": "--emit-lowir",
+      "outcome": "accept",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "observer": "observe()->u8 == 7"
+      },
+      "independent_original": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-freeze-generics-perf-v2/inputs/freeze-depth-32-noise-0.rs",
+      "independent_receipts": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-freeze-generics-perf-v2/independent"
+    },
+    {
+      "path": "typed-depth-32-noise-128.rs",
+      "sha256": "8e5265cbf058b1e70f6283fce035d3a9389067752771d32ec4f9e291f7ba4ee9",
+      "dimensions": {
+        "axis": "depth",
+        "n": 32,
+        "unrelated_source_definitions": 128
+      },
+      "mode": "--emit-lowir",
+      "outcome": "accept",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "observer": "observe()->u8 == 7"
+      },
+      "independent_original": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-freeze-generics-perf-v2/inputs/freeze-depth-32-noise-128.rs",
+      "independent_receipts": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-freeze-generics-perf-v2/independent"
+    },
+    {
+      "path": "typed-depth-128-noise-0.rs",
+      "sha256": "f70d23412f037db173d189a7670efd9d7e1dbab4746efc5213b91254e89b0f15",
+      "dimensions": {
+        "axis": "depth",
+        "n": 128,
+        "unrelated_source_definitions": 0
+      },
+      "mode": "--emit-lowir",
+      "outcome": "accept",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "observer": "observe()->u8 == 7"
+      },
+      "independent_original": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-freeze-generics-perf-v2/inputs/freeze-depth-128-noise-0.rs",
+      "independent_receipts": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-freeze-generics-perf-v2/independent"
+    },
+    {
+      "path": "typed-depth-128-noise-128.rs",
+      "sha256": "73ffc94b99b09c95a4859a90c94a53ee2e122e8ae0efabdb2d8808317ce5a22e",
+      "dimensions": {
+        "axis": "depth",
+        "n": 128,
+        "unrelated_source_definitions": 128
+      },
+      "mode": "--emit-lowir",
+      "outcome": "accept",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "observer": "observe()->u8 == 7"
+      },
+      "independent_original": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-freeze-generics-perf-v2/inputs/freeze-depth-128-noise-128.rs",
+      "independent_receipts": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-freeze-generics-perf-v2/independent"
+    }
+  ]
+}

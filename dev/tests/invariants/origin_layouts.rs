@@ -78,13 +78,15 @@ struct LegacyLinkage {
 
 #[test]
 fn frozen_catalog_sharing_adds_only_cold_import_owner_slots() {
+    // Each import owner keeps the shared origin catalog and one optional
+    // original-declaration/header workspace; neither grows hot body records.
     assert_eq!(
         size_of::<crate::resolve::crates::Imported>(),
-        size_of::<LegacyImported>() + size_of::<usize>()
+        size_of::<LegacyImported>() + 2 * size_of::<usize>()
     );
     assert_eq!(
         size_of::<crate::sema::crates::Linkage>(),
-        size_of::<LegacyLinkage>() + size_of::<usize>()
+        size_of::<LegacyLinkage>() + 2 * size_of::<usize>()
     );
     assert_eq!(size_of::<CatalogSlot>(), size_of::<usize>());
     assert_eq!(size_of::<ir::Value>(), 24);

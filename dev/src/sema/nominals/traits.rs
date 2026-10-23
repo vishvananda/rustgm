@@ -293,7 +293,7 @@ impl State {
         let reuse = &mut self.reusable[usize::from(closed)];
         if reuse.is_none()
             && facts.types.nominal_sizes_sealed()
-            && facts.types.contains_projected_sizes(requirement.ty) == Some(true)
+            && selection::Reuse::needed(facts, requirement)?
         {
             *reuse = Some(Box::default());
         }
@@ -321,6 +321,10 @@ impl State {
                 self.obligations.append(evidence)?;
                 Ok(Some(source))
             }
+            selection::Selection::Refuted(refutation) => {
+                refutation.reject()?;
+                Ok(None)
+            }
             selection::Selection::Absent | selection::Selection::Deferred => Ok(None),
         }
     }
@@ -344,7 +348,10 @@ fn select_requirement(
 ) -> Result<selection::Selection, &'static str> {
     if let Some(selected) = reuse
         .as_ref()
-        .and_then(|reuse| reuse.selection(requirement, caller.first_region))
+        .map(|reuse| reuse.selection(facts, requirement, caller.first_region))
+        .transpose()
+        .map_err(|_| "completed declaration proof has invalid source provenance")?
+        .flatten()
     {
         context
             .account_work(1)

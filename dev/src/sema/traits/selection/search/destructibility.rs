@@ -44,17 +44,8 @@ impl Search<'_> {
             }
             Err(error) => return Err(inference(error)),
         };
-        let shape = self.query.builtins.check(facts, goal.ty)?;
-        if self
-            .query
-            .builtins
-            .take_trait_proof()
-            .is_some_and(|p| !p.is_empty())
-        {
-            return Err(
-                "source destruction formation requires retained trait prerequisites".into(),
-            );
-        }
+        frame.require_nominal_formed(facts, goal.ty)?;
+        let shape = self.query.builtins.physical_shape(facts, goal.ty)?;
         if !shape.well_formed {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }

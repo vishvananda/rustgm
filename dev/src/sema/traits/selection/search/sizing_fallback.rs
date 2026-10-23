@@ -48,17 +48,8 @@ impl Search<'_> {
             }
             Err(error) => return Err(inference(error)),
         };
-        let shape = self.query.builtins.check(facts, goal.ty)?;
-        if self
-            .query
-            .builtins
-            .take_trait_proof()
-            .is_some_and(|proof| !proof.is_empty())
-        {
-            return Err(
-                "source sizing formation requires retained trait prerequisite obligations".into(),
-            );
-        }
+        frame.require_nominal_formed(facts, goal.ty)?;
+        let shape = self.query.builtins.physical_shape(facts, goal.ty)?;
         if !shape.well_formed {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
@@ -116,7 +107,14 @@ impl Search<'_> {
         }
         match kind {
             LangItem::MetaSized | LangItem::PointeeSized => {
-                Ok(Some(self.complete_source_builtin(frame, goal, shape.sized)))
+                let node = self.source_builtin_node(frame, goal, shape.sized);
+                let selected = self.query.push_source_sizing(
+                    facts,
+                    node,
+                    frame.scope,
+                    frame.first..frame.first,
+                )?;
+                Ok(Some(Action::Complete(Decision::Proven(selected))))
             }
             _ => Err("invalid source sizing fallback kind".into()),
         }
@@ -127,28 +125,29 @@ impl Search<'_> {
         goal: Predicate,
         is_sized: bool,
     ) -> Action {
+        let node = self.source_builtin_node(frame, goal, is_sized);
+        let selected = self.query.push(node, frame.scope, frame.first..frame.first);
+        Action::Complete(Decision::Proven(selected))
+    }
+    fn source_builtin_node(&self, frame: &mut Frame, goal: Predicate, is_sized: bool) -> Node {
         let mut sized = Vec::new();
         if is_sized && self.caller.retain_sized {
             sized.push(goal.ty);
         }
         let end = frame.available_region();
-        let node = self.query.push(
-            Node {
-                cycle_dependent: false,
-                provisional_size: false,
-                goal,
-                source: Some(Source::Builtin),
-                children: Vec::new(),
-                first: frame.first,
-                end,
-                equalities: std::mem::take(&mut frame.inputs.context.region_equalities),
-                outlives: Vec::new(),
-                type_outlives: Vec::new(),
-                sized,
-            },
-            frame.scope,
-            frame.first..frame.first,
-        );
-        Action::Complete(Decision::Proven(node))
+        Node {
+            debt_free: false,
+            cycle_dependent: false,
+            provisional_size: false,
+            goal,
+            source: Some(Source::Builtin),
+            children: Vec::new(),
+            first: frame.first,
+            end,
+            equalities: std::mem::take(&mut frame.inputs.context.region_equalities),
+            outlives: Vec::new(),
+            type_outlives: Vec::new(),
+            sized,
+        }
     }
 }

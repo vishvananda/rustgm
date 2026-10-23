@@ -5,7 +5,7 @@ mod locations;
 mod publication;
 use super::unit::NodeKey;
 use crate::syntax::ast::NodeId;
-pub(crate) use catalog::{Catalog, CatalogSlot, Input, Installed};
+pub(crate) use catalog::{Binding as BodyBinding, Catalog, CatalogSlot, Input, Installed};
 pub(crate) use declarations::{
     DeclarationBinding, DeclarationOrigin, DeclarationSite, ImportedDeclarationId,
 };

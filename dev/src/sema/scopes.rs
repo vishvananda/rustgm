@@ -1,5 +1,8 @@
-//! Rust 2024 temporary scopes, distinct from promotion and inferred loan regions.
+//! Edition-selected temporary scopes, distinct from promotion and inferred loan regions.
 mod controls;
+#[cfg(test)]
+#[path = "../../tests/invariants/scope_delimiters.rs"]
+mod edition_tests;
 mod extend;
 mod walk;
 use crate::support::hash::HashMap;
@@ -264,6 +267,7 @@ struct Walker<'a> {
     source: NodeKey,
     /// The owner file's configured syntax, resolved once per body.
     unit: &'a crate::resolve::unit::Unit,
+    package: &'a crate::resolve::package::Package,
     facts: Facts,
 }
 fn analyze(
@@ -294,6 +298,7 @@ fn analyze_at(
         types,
         source,
         unit: report.package.unit(source.file),
+        package: &report.package,
         facts: Facts::with_scratch(root.node, scratch),
     };
     let context = Context {
