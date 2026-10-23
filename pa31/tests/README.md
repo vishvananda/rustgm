@@ -15,6 +15,13 @@ destruction support remain required. Public generic/trait metadata and executabl
 entry readiness are distinct from checked LowIR/native kernel qualification.
 See [the source-query review](../../docs/pa28-source-needs-drop.md).
 
+`spec/drop-glue/` retains exact independently declared helper/cleanup sources and
+C observers. Its contract separates the initial runtime family and semantic
+opposites from still-required const and extra-role contexts. The grouped
+`glue_provider` maintainer tests use the runtime inputs directly; registration
+does not claim complete Drop/Pin, const or unsized support. See
+[the destruction-helper review](../../docs/pa31-source-drop-glue.md).
+
 Required families: lang-item identity and signatures; intrinsic declarations and const eligibility; builtin expansion and capability answers; duplicate and forged bindings; panic-abort runtime boundary.
 
 Follow the [owning brief](../README.md) and

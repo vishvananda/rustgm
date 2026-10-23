@@ -384,6 +384,8 @@ impl Engine {
     ) -> Result<bool, Error> {
         crate::sema::compiler_items::check_const_instance(facts, instance)
             .map_err(|e| Error::at(FileId(0), 0, e))?;
+        crate::sema::compiler_items::check_const_drop_glue(facts, instance)
+            .map_err(|e| Error::at(FileId(0), 0, e))?;
         if self.catalog.functions.contains_key(&instance) {
             return Ok(true);
         }

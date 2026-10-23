@@ -1,7 +1,6 @@
 //! The unchanged independently settled source bytes supply each native bool result.
 use super::{POSITIVE, SCALING, TestResult, lower, read_source};
-use crate::provider_traits::native::run;
-use std::{path::Path, process::Command};
+use std::path::Path;
 #[test]
 #[ignore = "requires the pinned CPPGM backend and host C linker"]
 fn source_needs_drop_native_wrappers_and_fallbacks() -> TestResult {
@@ -35,46 +34,13 @@ fn check_cases(cases: &[(&str, &str, u8)]) -> TestResult {
 
 fn check_one(root: &Path, folder: &Path, name: &str, source: &str, expected: u8) -> TestResult {
     let program = lower(source).map_err(|e| format!("{name}: {e}"))?;
-    let ir = folder.join(format!("{name}.lowir"));
-    let object = folder.join(format!("{name}.o"));
-    let binary = folder.join(format!("{name}.native"));
-    let client = folder.join(format!("{name}.c"));
-    let mut text = Vec::new();
-    rustgm::lowir::writer::write(&program, &mut text)?;
-    std::fs::write(&ir, text)?;
     std::fs::write(folder.join(format!("{name}.rs")), source)?;
-    std::fs::write(
-        &client,
+    crate::ffi_program::check(
+        root,
+        folder,
+        name,
+        &program,
         "#include <stdio.h>\nextern unsigned char observe(void);int main(void){printf(\"%u\\n\",(unsigned)observe());return 0;}\n",
-    )?;
-    run(
-        folder,
-        &format!("{name}-backend"),
-        Command::new("python3")
-            .arg(root.join("scripts/backend.py"))
-            .arg("--emit-object")
-            .arg(&ir)
-            .arg("-o")
-            .arg(&object),
-    )?;
-    run(
-        folder,
-        &format!("{name}-link"),
-        Command::new("cc")
-            .arg(&client)
-            .arg(&object)
-            .arg("-o")
-            .arg(&binary),
-    )?;
-    run(
-        folder,
-        &format!("{name}-execute"),
-        &mut Command::new(&binary),
-    )?;
-    assert_eq!(
-        std::fs::read(folder.join(format!("{name}-execute.stdout")))?,
-        format!("{expected}\n").as_bytes(),
-        "{name}"
-    );
-    Ok(())
+        &format!("{expected}\n"),
+    )
 }

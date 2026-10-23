@@ -21,8 +21,12 @@ mod expansion_stream;
 mod expressions;
 #[path = "../../feature_requests.rs"]
 mod feature_requests;
+#[path = "../../helpers/ffi_program.rs"]
+pub(crate) mod ffi_program;
 #[path = "../../fragments.rs"]
 mod fragments;
+#[path = "../../glue_provider.rs"]
+mod glue_provider;
 #[path = "../../hygiene.rs"]
 mod hygiene;
 #[path = "../../interpolation.rs"]

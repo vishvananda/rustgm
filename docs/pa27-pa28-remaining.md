@@ -188,6 +188,16 @@ Drop/Pin, Freeze/drop_glue or conditional destruction, and does not close the
 public source-library metadata/entry boundaries. See
 `pa28-source-needs-drop.md`; all original required controls remain retained.
 
+Actual source destruction also requires metadata-aware slice/dynamic/tail cleanup
+and a const cleanup continuation with real per-call const obligations. Independent
+slice/dyn source controls now execute three/one drops; they are required positives
+beyond the qualified sized runtime-helper consumer. The original full
+Drop/Pin/default override sources remain required. Actual `owned_box` additionally
+requires pointee destruction before Box's allocator/deallocation method, unlike
+ordinary record method-before-fields cleanup. Preserve genuine ownership/Unique,
+`may_dangle` and allocator ABI protocols; no pointer-layout/name inference. See
+`pa31-source-drop-glue.md` for the exact pinned source paths and current boundaries.
+
 Retained closure environments now use their exact completed capture tuple layout
 and the existing iterative Product codec. Owned/shared/mutable captures preserve
 ownership and pointer restrictions, including fresh selected-reference validity;
@@ -200,14 +210,15 @@ Prepared opaque storage heads now drive the physical byte codec and readonly
 product inspection without changing source equality, traits, ownership or
 lifetime authority. Shared-head family validation is reused. Reference/owned
 opaque applications now retain conservative source cleanup and replay after an
-exact defining-source proof publishes their head. String words/UTF-8 validation,
+exact defining-source proof publishes their head. Ordinary UTF-8 source routines,
 unprepared or otherwise unsupported defining heads and the other families above
 remain required; see
 `pa27-opaque-byte-storage.md` and the exact desired/observed outcomes.
 
-Source-bound `needs_drop<T:?Sized>` remains required. Its real intrinsic identity
-and bool signature are separate from the existing source layout provider; runtime
-`core::mem::needs_drop` must execute its original const block. Actual source
-Copy/Drop readiness, complete destructor preparation and fresh reached-caller proof
-precede result caching. Drop/Destruct, Pin/default-method and const-drop prerequisites
-are retained in `pa28-source-needs-drop.md`; missing roles never imply false.
+The source-bound `needs_drop<T:?Sized>` kernel now evaluates its independently
+qualified concrete instances and ordinary original const-block wrapper. Its real
+intrinsic identity and bool signature remain separate from the layout provider.
+Actual source Copy/Drop readiness, complete destructor preparation and fresh
+reached-caller proof precede result caching. Full Drop/Pin/default-method,
+const-drop and unresolved-storage continuations remain required as recorded in
+`pa28-source-needs-drop.md`; missing roles never imply false.

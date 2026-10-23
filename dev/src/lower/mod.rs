@@ -13,6 +13,7 @@ mod intrinsics;
 pub mod linkage;
 mod remainder;
 mod roots;
+mod runtime_cleanup;
 pub use roots::Roots;
 mod virtual_dispatch;
 

@@ -2,9 +2,11 @@
 mod calls;
 mod copying;
 mod explicit_cleanup;
+mod glue_calls;
 pub(crate) use calls::check_instance as check_const_instance;
 pub(super) use calls::record as record_call_effects;
 pub(in crate::sema) use explicit_cleanup::explicit_drop_member;
+pub(crate) use glue_calls::{DropGlueSelection, check_const_drop_glue, source_drop_glue};
 mod intrinsic_contracts;
 mod layout;
 mod needs_drop;
