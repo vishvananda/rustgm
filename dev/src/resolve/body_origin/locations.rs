@@ -1,5 +1,5 @@
 //! Provider labels cannot create a source node or change operation identity.
-use super::{BodySite, Catalog, ProofSite};
+use super::{BodySite, Catalog, ImportedProofSite, ProofSite, catalog::OwnerRow};
 
 pub(crate) struct ProviderFile {
     pub path: String,
@@ -35,27 +35,31 @@ impl Catalog {
         site: BodySite,
     ) -> Result<ProofSite, &'static str> {
         let actual = self.site(body, site.index())?;
-        Ok(ProofSite::Imported { body, site: actual })
+        Ok(ProofSite::Imported(ImportedProofSite {
+            owner: body.0,
+            ordinal: actual.0,
+        }))
     }
     pub(crate) fn location(&self, site: ProofSite) -> Result<Option<Location<'_>>, &'static str> {
-        let (artifact, label) = match site {
-            ProofSite::Source(_) => return Ok(None),
-            ProofSite::Imported { body, site } => {
-                let row = self.get(body)?;
-                self.charge(1)?;
-                if site.index() >= row.sites.end - row.sites.start {
-                    return Err("diagnostic site belongs outside its imported body");
-                }
-                let artifact = &self.artifacts[row.artifact as usize];
-                (
-                    artifact,
-                    artifact.labels[(row.sites.start + site.index()) as usize],
-                )
-            }
-            ProofSite::Declaration { declaration, site } => {
-                self.declaration_label(declaration, site)?
-            }
+        let ProofSite::Imported(site) = site else {
+            return Ok(None);
         };
+        let (artifact, sites, declaration) = match self.owner(site.owner)? {
+            OwnerRow::Body(row) => (row.artifact, &row.sites, false),
+            OwnerRow::Declaration(row) => (row.artifact, &row.sites, true),
+        };
+        self.charge(1)?;
+        let index = site.ordinal.get() - 1;
+        if index >= sites.end - sites.start {
+            return Err("diagnostic site belongs outside its imported owner");
+        }
+        let artifact = &self.artifacts[artifact as usize];
+        let labels = if declaration {
+            &artifact.declaration_labels
+        } else {
+            &artifact.labels
+        };
+        let label = labels[(sites.start + index) as usize];
         Ok(label.map(|label| Location {
             file: &artifact.files[label.file as usize].path,
             start: label.start,

@@ -132,10 +132,10 @@ fn source_nodes_and_provider_labels_remain_separate() -> Result<(), &'static str
         ("provider.rs", 2, 8)
     );
     assert!(catalog.site(body, 1).is_err());
-    let missing = ImportedBodyId {
+    let missing = ImportedBodyId(ImportedOwnerId {
         row: u32::MAX,
-        ..body
-    };
+        ..body.0
+    });
     assert!(catalog.site(missing, 0).is_err());
     assert!(BodySite::checked(u32::MAX).is_err());
     assert!(catalog.location(ProofSite::Source(source))?.is_none());
@@ -155,7 +155,7 @@ fn exact_remaps_and_failed_installs_are_transactional() -> Result<(), &'static s
     assert!(catalog.install(&defs, bad).is_err());
     assert_eq!(
         (
-            catalog.rows.len(),
+            catalog.body_count(),
             catalog.artifacts.len(),
             catalog.retained_bytes()
         ),
@@ -179,7 +179,7 @@ fn exact_remaps_and_failed_installs_are_transactional() -> Result<(), &'static s
     });
     assert!(catalog.install(&bad_defs, input("three", 2, 1)?).is_err());
     assert!(catalog.install(&defs, input("three", 3, 1)?).is_err());
-    assert_eq!(catalog.rows.len(), 2);
+    assert_eq!(catalog.body_count(), 2);
     Ok(())
 }
 
@@ -338,7 +338,7 @@ fn quotas_are_preflighted_and_warm_queries_are_constant_work() -> Result<(), &'s
             }
             let start = catalog.work();
             let installed = catalog.install(&defs, input("wanted", noise, width)?)?;
-            assert_eq!(catalog.work() - start, 28 + 4 * width as usize);
+            assert_eq!(catalog.work() - start, 28 + 5 * width as usize);
             let body = installed.body(BodyRef(width - 1))?;
             let retained = catalog.retained_bytes();
             let start = catalog.work();

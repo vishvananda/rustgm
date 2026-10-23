@@ -42,3 +42,37 @@ source-map.json, checks.json, batch/receipt.json and layout.log. The independent
 executable generic source family is recorded in
 [its source contract](pa29-generic-contract-sources.md); real cross-crate execution
 remains required after the ownership and proof consumer migration.
+
+## Compact common-owner correction
+
+The measured16-byte candidate above is preserved in commit53d72269 and the
+`declaration-second` receipt. The approved correction now stores one vector of
+`OwnerRow::{Declaration,Body}`, with distinct sealed eight-byte declaration and
+body handles over the same catalog-local row identity. Lookup validates the row
+kind before any body/declaration API can consume it. Common imported ProofSite
+locations do not grant either body identity or proof authority. BodySite and
+DeclarationSite constructors remain distinct and validate the exact owner.
+
+The enum measures40 bytes, exactly the existing body-row payload size; its
+separate declaration payload measures24. No duplicate declaration binding vector
+is retained. The cold Artifact header is136 bytes, Catalog168 and Slot8. ProofSite
+returns to12 bytes. Actual candidate located predicates and builtin uses are
+20→24, Obligation28→32 and LifetimeProof120→128; Body448, Contract184, canonical
+Predicate12 and Value24 stay unchanged. No live proof/body field migrated yet.
+
+At8/32/128 declaration+body pairs the actual owned vector/map/string payloads
+(including the catalog header, excluding shared immutable identity pointees and
+allocator metadata) are1971/5259/18411 bytes. Conservative retained charges are
+4147/13843/52627 bytes and cover these measured capacities. Complete publication
+charges five visits per pair plus fixed28 for the frozen fixture; warm indexed
+lookup remains four visits per request independent of unrelated prior rows.
+
+`owner-rows-second` passed strict all-target/all-feature debug Clippy, the audit,
+registration and12 focused controls. Its thirteenth test stopped in setup because
+`typed-rows` is an invalid crate disambiguator, before exercising authority. The
+only correction was that private fixture spelling to `typed_rows`;
+`owner-rows-third` reran the exact authority control successfully. Production
+bytes and the12 passing controls were unchanged. The frozen binary also ran the
+layout/retained-payload observers with uncaptured output, retaining its binary
+hash and originating receipt in `frozen-layout-provenance.json`. No compiler
+candidate, full Cargo/native/text sweep or wire profile is claimed.

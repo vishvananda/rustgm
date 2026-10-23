@@ -86,7 +86,7 @@ fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {
         size_of::<crate::sema::generics::Predicate>()
     );
     println!(
-        "identity={} origin={} site={} proof_site={} catalog={} row={} artifact={} slot={}",
+        "identity={} origin={} site={} proof_site={} catalog={} row={} artifact={} slot={} owner_row={} declaration_row={}",
         size_of::<ImportedBodyId>(),
         size_of::<BodyOrigin>(),
         size_of::<BodySite>(),
@@ -94,7 +94,9 @@ fn source_free_candidates_preserve_hot_value_and_lazy_catalog_layouts() {
         size_of::<Catalog>(),
         size_of::<catalog::Row>(),
         size_of::<catalog::Artifact>(),
-        size_of::<CatalogSlot>()
+        size_of::<CatalogSlot>(),
+        size_of::<catalog::OwnerRow>(),
+        size_of::<catalog::DeclarationRow>()
     );
     println!(
         "body={}/{} contract={}/{} obligation={}/{} lifetime_proof={}/{} Value={}",

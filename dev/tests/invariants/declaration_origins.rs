@@ -31,7 +31,8 @@ fn declarations_without_bodies_retain_exact_clause_ownership() -> Result<(), &'s
     });
     let mut catalog = Catalog::new(Limits::default())?;
     catalog.install(&defs, request)?;
-    assert!(catalog.rows.is_empty());
+    assert_eq!(catalog.body_count(), 0);
+    assert_eq!(catalog.rows.len(), 2);
     let owner = catalog.declaration(DefId(0))?;
     assert!(
         catalog
@@ -134,12 +135,21 @@ fn declaration_lookup_work_is_indexed_and_storage_stays_cold() -> Result<(), &'s
     assert_eq!(size_of::<ImportedDeclarationId>(), 8);
     assert_eq!(size_of::<DeclarationOrigin>(), 12);
     assert_eq!(size_of::<DeclarationSite>(), 4);
-    assert_eq!(size_of::<ProofSite>(), 16);
+    assert_eq!(size_of::<ProofSite>(), 12);
     assert_eq!(size_of::<crate::body::ir::Value>(), 24);
     assert_eq!(size_of::<catalog::CatalogSlot>(), size_of::<usize>());
     for width in [8, 32, 128] {
         let mut catalog = Catalog::new(Limits::default())?;
         catalog.install(&definitions(width), input("lookup", 0, width)?)?;
+        let actual = owned_payload(&catalog);
+        assert!(actual <= catalog.retained_bytes());
+        println!(
+            "width={width} owner_row={} declaration_row={} body_row={} owned_payload={actual} charged={}",
+            size_of::<catalog::OwnerRow>(),
+            size_of::<catalog::DeclarationRow>(),
+            size_of::<catalog::Row>(),
+            catalog.retained_bytes()
+        );
         let start = catalog.work();
         for index in 0..width {
             let id = catalog.declaration(DefId(index))?;
@@ -149,4 +159,47 @@ fn declaration_lookup_work_is_indexed_and_storage_stays_cold() -> Result<(), &'s
         assert_eq!(catalog.work() - start, 4 * width as usize);
     }
     Ok(())
+}
+
+#[test]
+fn common_locations_cannot_change_body_or_declaration_row_kind() -> Result<(), &'static str> {
+    let mut catalog = Catalog::new(Limits::default())?;
+    let installed = catalog.install(&definitions(1), input("typed_rows", 0, 1)?)?;
+    let body = installed.body(crate::support::crates::owner_catalog::BodyRef(0))?;
+    let declaration = catalog.declaration(DefId(0))?;
+    assert!(catalog.get(ImportedBodyId(declaration.0)).is_err());
+    let wrong = ImportedDeclarationId(body.0);
+    assert!(
+        catalog
+            .validate_declaration(wrong, DefId(0), DefKind::Function)
+            .is_err()
+    );
+    assert!(catalog.declaration_site(wrong, 0).is_err());
+    let body_site = catalog.proof_site(body, catalog.site(body, 0)?)?;
+    let clause_site =
+        catalog.declaration_proof_site(declaration, catalog.declaration_site(declaration, 0)?)?;
+    assert_ne!(body_site, clause_site);
+    assert!(body_site.source().is_none() && clause_site.source().is_none());
+    Ok(())
+}
+
+fn owned_payload(catalog: &Catalog) -> usize {
+    use crate::support::retained::{map, vector};
+    let root = size_of::<Catalog>()
+        + vector(&catalog.rows)
+        + vector(&catalog.artifacts)
+        + map(&catalog.owners)
+        + map(&catalog.definitions);
+    catalog.artifacts.iter().fold(root, |bytes, artifact| {
+        bytes
+            + vector(&artifact.definitions)
+            + vector(&artifact.files)
+            + vector(&artifact.labels)
+            + vector(&artifact.declaration_labels)
+            + artifact
+                .files
+                .iter()
+                .map(|file| file.path.capacity())
+                .sum::<usize>()
+    })
 }

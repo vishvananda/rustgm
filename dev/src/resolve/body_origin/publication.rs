@@ -1,7 +1,7 @@
 //! Validate complete incoming ownership before publishing any dense remap.
 use super::{
-    Catalog, ImportedBodyId, Input, Installed,
-    catalog::{Artifact, Row},
+    Catalog, ImportedBodyId, ImportedDeclarationId, ImportedOwnerId, Input, Installed,
+    catalog::{Artifact, DeclarationRow, OwnerRow, Row},
 };
 use crate::{
     resolve::model::{DefId, DefKind, Definition},
@@ -24,6 +24,11 @@ pub(super) fn install(
         return Err("defining artifact already has an imported body catalog");
     }
     let first = u32::try_from(catalog.rows.len()).map_err(|_| "imported body row overflow")?;
+    let declarations =
+        u32::try_from(input.definitions.len()).map_err(|_| "imported declaration row overflow")?;
+    let first_body = first
+        .checked_add(declarations)
+        .ok_or("imported owner row overflow")?;
     let len = u32::try_from(input.owners.rows().len()).map_err(|_| "imported body row overflow")?;
     let artifact =
         u32::try_from(catalog.artifacts.len()).map_err(|_| "imported artifact overflow")?;
@@ -31,7 +36,7 @@ pub(super) fn install(
     let retained = storage(catalog, &input)?;
     validate_definitions(catalog, definitions, &input)?;
     super::locations::validate(catalog, &input)?;
-    let rows = rows(catalog, definitions, &input, first, artifact)?;
+    let rows = rows(catalog, definitions, &input, first_body, artifact)?;
     // Every fallible check, bounded scratch allocation and integer conversion is
     // complete. Source-free ownership remains data, not executable permission.
     let owner = input.owners.owner().clone();
@@ -41,9 +46,13 @@ pub(super) fn install(
             clippy::cast_possible_truncation,
             reason = "bounded declaration ordinal"
         )]
-        catalog
-            .definitions
-            .insert(*definition, (artifact, index as u32));
+        catalog.definitions.insert(
+            *definition,
+            ImportedDeclarationId(ImportedOwnerId {
+                epoch: catalog.epoch.0,
+                row: first + index as u32,
+            }),
+        );
     }
     catalog.owners.insert(owner.clone(), artifact);
     catalog.rows.extend(rows);
@@ -51,13 +60,12 @@ pub(super) fn install(
         owner,
         edition: input.edition,
         definitions: input.definitions,
-        declarations: input.declarations,
         files: input.files,
         labels: input.labels,
         declaration_labels: input.declaration_labels,
     });
     catalog.bytes = retained;
-    Ok(Installed::new(catalog.epoch, first, len))
+    Ok(Installed::new(catalog.epoch, first_body, len))
 }
 
 fn quotas(catalog: &Catalog, input: &Input) -> Result<(), &'static str> {
@@ -65,11 +73,12 @@ fn quotas(catalog: &Catalog, input: &Input) -> Result<(), &'static str> {
     if input.definitions.len() > BodyCatalog::MAX_DECLARATIONS
         || input.declarations.len() != input.definitions.len()
         || input.bindings.len() != input.owners.rows().len()
-        || catalog.rows.len().saturating_add(input.bindings.len()) > catalog.limits.bodies
+        || catalog.body_count().saturating_add(input.bindings.len()) > catalog.limits.bodies
         || catalog
             .rows
             .len()
             .checked_add(input.bindings.len())
+            .and_then(|n| n.checked_add(input.definitions.len()))
             .is_none_or(|n| u32::try_from(n).is_err())
         || catalog.artifacts.len() >= catalog.limits.artifacts
     {
@@ -82,20 +91,18 @@ fn storage(catalog: &Catalog, input: &Input) -> Result<usize, &'static str> {
     // Four slots per appended entry conservatively cover amortized vector/map
     // capacity including old+new allocations during growth. Shared immutable
     // owner-catalog/identity Arc pointees are excluded by retained policy.
-    let growth = input
-        .bindings
-        .len()
-        .saturating_mul(4 * size_of::<Row>())
+    let count = input.bindings.len().saturating_add(input.definitions.len());
+    let growth = count
+        .saturating_mul(4 * size_of::<OwnerRow>())
         .saturating_add(4 * size_of::<Artifact>())
         .saturating_add(4 * size_of::<(crate::support::crates::CrateIdentity, u32)>())
         .saturating_add(
             input
                 .definitions
                 .len()
-                .saturating_mul(4 * size_of::<(DefId, (u32, u32))>()),
+                .saturating_mul(4 * size_of::<(DefId, ImportedDeclarationId)>()),
         );
     let mut payload = retained::vector(&input.definitions)
-        .saturating_add(retained::vector(&input.declarations))
         .saturating_add(retained::vector(&input.files))
         .saturating_add(retained::vector(&input.labels))
         .saturating_add(retained::vector(&input.declaration_labels));
@@ -105,7 +112,8 @@ fn storage(catalog: &Catalog, input: &Input) -> Result<usize, &'static str> {
     }
     let retained = catalog.bytes.saturating_add(growth).saturating_add(payload);
     let scratch = retained::vector(&input.bindings)
-        .saturating_add(input.bindings.len().saturating_mul(size_of::<Row>()))
+        .saturating_add(retained::vector(&input.declarations))
+        .saturating_add(count.saturating_mul(size_of::<OwnerRow>()))
         .saturating_add(
             input
                 .definitions
@@ -169,8 +177,8 @@ fn rows(
     input: &Input,
     first: u32,
     artifact: u32,
-) -> Result<Vec<Row>, &'static str> {
-    let mut result = Vec::<Row>::with_capacity(input.bindings.len());
+) -> Result<Vec<OwnerRow>, &'static str> {
+    let mut result = declaration_rows(catalog, input, artifact)?;
     let mut next_site = 0;
     for (index, (owner, binding)) in input.owners.rows().iter().zip(&input.bindings).enumerate() {
         catalog.charge(1)?;
@@ -195,11 +203,13 @@ fn rows(
             return Err("body numbering unit is forward or unknown");
         }
         let unit = id(catalog, first, binding.unit);
-        if binding.unit != body
-            && owner
-                .parent
-                .is_none_or(|parent| result[parent.0 as usize].unit != unit)
-        {
+        let inherited = owner.parent.and_then(|parent| {
+            match &result[input.definitions.len() + parent.0 as usize] {
+                OwnerRow::Body(row) => Some(row.unit),
+                OwnerRow::Declaration(_) => None,
+            }
+        });
+        if binding.unit != body && inherited != Some(unit) {
             return Err("body numbering unit is neither this body nor its exact parent's unit");
         }
         if binding.sites.start != next_site
@@ -209,7 +219,7 @@ fn rows(
             return Err("imported body operation sites are not a complete ordered partition");
         }
         next_site = binding.sites.end;
-        result.push(Row {
+        result.push(OwnerRow::Body(Row {
             definition,
             kind: owner.kind,
             parent,
@@ -217,7 +227,7 @@ fn rows(
             artifact,
             body,
             sites: binding.sites.clone(),
-        });
+        }));
     }
     if next_site as usize != input.labels.len() {
         return Err("imported body diagnostic sites are unreachable");
@@ -225,8 +235,33 @@ fn rows(
     Ok(result)
 }
 fn id(catalog: &Catalog, first: u32, body: BodyRef) -> ImportedBodyId {
-    ImportedBodyId {
+    ImportedBodyId(ImportedOwnerId {
         epoch: catalog.epoch.0,
         row: first + body.0,
+    })
+}
+
+fn declaration_rows(
+    catalog: &Catalog,
+    input: &Input,
+    artifact: u32,
+) -> Result<Vec<OwnerRow>, &'static str> {
+    let mut rows = Vec::with_capacity(input.definitions.len() + input.bindings.len());
+    for (ordinal, (definition, binding)) in input
+        .definitions
+        .iter()
+        .zip(&input.declarations)
+        .enumerate()
+    {
+        catalog.charge(1)?;
+        let ordinal = u32::try_from(ordinal).map_err(|_| "imported declaration row overflow")?;
+        rows.push(OwnerRow::Declaration(DeclarationRow {
+            definition: *definition,
+            kind: binding.kind,
+            artifact,
+            ordinal,
+            sites: binding.sites.clone(),
+        }));
     }
+    Ok(rows)
 }

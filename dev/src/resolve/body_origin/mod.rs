@@ -33,10 +33,17 @@ impl Epoch {
 
 /// Compiler-local rejection identity. Never serialize it or order symbols by it.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) struct ImportedBodyId {
+pub(crate) struct ImportedOwnerId {
     epoch: NonZeroU32,
     row: u32,
 }
+impl std::fmt::Debug for ImportedOwnerId {
+    fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        out.write_str("ImportedOwnerId(..)")
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub(crate) struct ImportedBodyId(ImportedOwnerId);
 impl std::fmt::Debug for ImportedBodyId {
     fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         out.write_str("ImportedBodyId(..)")
@@ -82,20 +89,19 @@ impl BodySite {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) enum ProofSite {
     Source(NodeKey),
-    Imported {
-        body: ImportedBodyId,
-        site: BodySite,
-    },
-    Declaration {
-        declaration: ImportedDeclarationId,
-        site: DeclarationSite,
-    },
+    Imported(ImportedProofSite),
+}
+/// A checked location in the common owner table, not a body or proof handle.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub(crate) struct ImportedProofSite {
+    owner: ImportedOwnerId,
+    ordinal: NonZeroU32,
 }
 impl ProofSite {
     pub(crate) const fn source(self) -> Option<NodeKey> {
         match self {
             Self::Source(source) => Some(source),
-            Self::Imported { .. } | Self::Declaration { .. } => None,
+            Self::Imported(_) => None,
         }
     }
 }

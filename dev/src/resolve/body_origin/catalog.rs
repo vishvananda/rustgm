@@ -1,7 +1,7 @@
 //! Dense catalog rows own exact remaps; no row is a checked body or permission.
 use super::{
-    BodyOrigin, DeclarationBinding, Edition, Epoch, ImportedBodyId, Label, NEXT_CATALOG,
-    ProviderFile,
+    BodyOrigin, DeclarationBinding, Edition, Epoch, ImportedBodyId, ImportedDeclarationId,
+    ImportedOwnerId, Label, NEXT_CATALOG, ProviderFile,
 };
 use crate::{
     resolve::model::{DefId, Definition},
@@ -50,7 +50,6 @@ pub(super) struct Artifact {
     pub owner: CrateIdentity,
     pub edition: Edition,
     pub definitions: Vec<DefId>,
-    pub declarations: Vec<DeclarationBinding>,
     pub files: Vec<ProviderFile>,
     pub labels: Vec<Option<Label>>,
     pub declaration_labels: Vec<Option<Label>>,
@@ -63,6 +62,17 @@ pub(crate) struct Row {
     pub(super) artifact: u32,
     pub(super) body: BodyRef,
     pub(super) sites: Range<u32>,
+}
+pub(super) struct DeclarationRow {
+    pub definition: DefId,
+    pub kind: crate::resolve::model::DefKind,
+    pub artifact: u32,
+    pub ordinal: u32,
+    pub sites: Range<u32>,
+}
+pub(super) enum OwnerRow {
+    Body(Row),
+    Declaration(DeclarationRow),
 }
 pub(crate) struct Expected {
     pub definition: DefId,
@@ -80,18 +90,18 @@ impl Installed {
         if body.0 >= self.len {
             return Err("body reference belongs outside this installed artifact");
         }
-        Ok(ImportedBodyId {
+        Ok(ImportedBodyId(ImportedOwnerId {
             epoch: self.epoch.0,
             row: self.first + body.0,
-        })
+        }))
     }
 }
 pub(crate) struct Catalog {
     pub(super) epoch: Epoch,
     pub(super) artifacts: Vec<Artifact>,
-    pub(super) rows: Vec<Row>,
+    pub(super) rows: Vec<OwnerRow>,
     pub(super) owners: HashMap<CrateIdentity, u32>,
-    pub(super) definitions: HashMap<DefId, (u32, u32)>,
+    pub(super) definitions: HashMap<DefId, ImportedDeclarationId>,
     pub(super) bytes: usize,
     work: Cell<usize>,
     pub(super) limits: Limits,
@@ -141,14 +151,23 @@ impl Catalog {
     pub(crate) fn retained_bytes(&self) -> usize {
         self.bytes
     }
-    pub(super) fn get(&self, id: ImportedBodyId) -> Result<&Row, &'static str> {
+    pub(crate) fn body_count(&self) -> usize {
+        self.rows.len() - self.definitions.len()
+    }
+    pub(super) fn owner(&self, id: ImportedOwnerId) -> Result<&OwnerRow, &'static str> {
         self.charge(1)?;
         if id.epoch != self.epoch.0 {
-            return Err("imported body belongs to a foreign or retired catalog");
+            return Err("imported owner belongs to a foreign or retired catalog");
         }
         self.rows
             .get(id.row as usize)
-            .ok_or("imported body row is missing or stale")
+            .ok_or("imported owner row is missing or stale")
+    }
+    pub(super) fn get(&self, id: ImportedBodyId) -> Result<&Row, &'static str> {
+        match self.owner(id.0)? {
+            OwnerRow::Body(row) => Ok(row),
+            OwnerRow::Declaration(_) => Err("imported body handle names a declaration row"),
+        }
     }
     pub(crate) fn validate(
         &self,
