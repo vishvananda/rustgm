@@ -70,6 +70,7 @@ pub(crate) fn build(
         Owner::Function {
             definition: length.definition,
             signature: length.signature,
+            execution: None,
         },
         length.origin,
         result,

@@ -55,6 +55,7 @@ pub(crate) fn build(
         Owner::Function {
             definition: source.definition,
             signature: source.signature,
+            execution: None,
         },
         source.source,
         source.result,
@@ -278,7 +279,7 @@ pub(crate) fn validate(
         || input.key != body.key()
         || input.source != body.source
         || body.source != source.source.into()
-        || !matches!(body.owner,Owner::Function{definition,signature} if definition==source.definition && signature==source.signature)
+        || !matches!(body.owner,Owner::Function {definition,signature,execution:None} if definition==source.definition && signature==source.signature)
         || body.result != source.result
         || !input.parameters.is_empty()
     {

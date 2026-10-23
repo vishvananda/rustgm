@@ -16,6 +16,7 @@ impl Owner {
             Self::Function {
                 definition,
                 signature,
+                ..
             } => {
                 let declared = facts
                     .function_indices

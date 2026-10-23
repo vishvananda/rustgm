@@ -55,6 +55,7 @@ fn fixture() -> Result<(Declarations, Body, Contract)> {
         Owner::Function {
             definition: function.definition,
             signature,
+            execution: None,
         },
         source,
         TypeId::primitive(Primitive::U8),
@@ -329,6 +330,7 @@ fn unrelated_source_normalization_keeps_a_parked_operation_and_claims_only_its_r
         Owner::Function {
             definition: other.definition,
             signature,
+            execution: None,
         },
         source,
         body.result,

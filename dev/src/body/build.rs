@@ -171,6 +171,7 @@ fn function_body(
         Owner::Function {
             definition: function.definition,
             signature: function.signature,
+            execution: None,
         },
         source,
         result,

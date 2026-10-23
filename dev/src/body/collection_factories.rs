@@ -107,6 +107,7 @@ fn build(
         Owner::Function {
             definition: original.declaration.method,
             signature: original.signature,
+            execution: None,
         },
         source,
         result,

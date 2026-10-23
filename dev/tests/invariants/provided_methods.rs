@@ -188,6 +188,7 @@ fn owned_helpers_require_original_contracts_with_method_only_sized() -> Result {
         let body::ir::Owner::Function {
             definition,
             signature,
+            ..
         } = templates.bodies[helper].body.owner
         else {
             return Err("owned helper owner".into());

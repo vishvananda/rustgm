@@ -1076,6 +1076,16 @@ body proof scope; independently proved closed selections use the separate shared
 certificate described above. Generic templates and their source facts remain
 reusable by other instances.
 
+Retain a selected function's public callable signature separately from the
+specialized body's opened signature. Validate the original template and contract
+before transporting their namespace, then retain the actual completed signature;
+later caller premises can enlarge the proof universe without changing that
+signature's binder. Source Copy decisions bind both exact signatures, the full
+instance, original owner and immutable environment. Dispatch folds the owned
+signature with its contract while preserving the selected public identity. These
+are constant-size identity checks over retained typed facts; never rescan a body
+or reconstruct a signature from its final universal count to establish pairing.
+
 Validate unused inherent methods for overlap after completing owner signatures.
 Use isolated existential header equations, preserving repeated type and const
 parameters. Impl predicates constrain overlap; method predicates, visibility,

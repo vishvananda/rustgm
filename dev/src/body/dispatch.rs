@@ -150,6 +150,17 @@ fn rewrite(
     contract: &mut Contract,
     fold: &mut Bound,
 ) -> Result<(), &'static str> {
+    if let super::ir::Owner::Function {
+        execution: Some(signature),
+        ..
+    }
+    | super::ir::Owner::Closure {
+        execution: Some(signature),
+        ..
+    } = &mut body.owner
+    {
+        *signature = fold.apply(&mut facts.types, *signature)?;
+    }
     body.result = fold.apply(&mut facts.types, body.result)?;
     for local in &mut body.locals {
         local.ty = fold.apply(&mut facts.types, local.ty)?;

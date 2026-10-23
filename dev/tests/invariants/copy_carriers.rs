@@ -9,6 +9,8 @@ use crate::support::{crates::CrateIdentity, source::SourceFile};
 use crate::{body, borrow, expand::config::Config, resolve, support::bindings::Mode};
 use std::path::Path;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+#[path = "copy_signatures.rs"]
+mod signatures;
 struct NoFiles;
 impl Sources for NoFiles {
     fn read(&mut self, _: &Path) -> std::result::Result<Option<InputFile>, String> {
@@ -16,12 +18,17 @@ impl Sources for NoFiles {
     }
 }
 fn fixture() -> Result<(Declarations, body::templates::Templates, Vec<Contract>)> {
+    fixture_source(cases::GENERIC_COPY)
+}
+fn fixture_source(
+    source: &str,
+) -> Result<(Declarations, body::templates::Templates, Vec<Contract>)> {
     let identity = CrateIdentity::new("minicore", "source_copy_invariant")?;
     let report = resolve::analyze_expanded(resolve::expansion::analyze_with_context(
         InputFile {
             identity: "provider.rs".into(),
             path: "provider.rs".into(),
-            source: SourceFile::new(cases::GENERIC_COPY.as_bytes().to_vec())?,
+            source: SourceFile::new(source.as_bytes().to_vec())?,
         },
         &mut NoFiles,
         &Config::default(),

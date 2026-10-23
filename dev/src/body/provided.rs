@@ -193,6 +193,7 @@ fn build(
         Owner::Function {
             definition,
             signature,
+            execution: None,
         },
         source,
         result,

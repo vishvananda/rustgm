@@ -61,6 +61,7 @@ pub fn write_with_origins(
             Owner::Function {
                 definition,
                 signature,
+                ..
             } => write!(
                 out,
                 "function def={} signature={}",

@@ -1,7 +1,7 @@
 //! Native answers use the exact independently settled source cutouts.
 use super::{CALL_EXECUTION, CLONE_EXECUTION, COPY_EXECUTION, TestResult, lower};
 use std::{path::Path, process::Command};
-fn run(folder: &Path, name: &str, command: &mut Command) -> TestResult {
+pub(super) fn run(folder: &Path, name: &str, command: &mut Command) -> TestResult {
     let output = command.output()?;
     std::fs::write(folder.join(format!("{name}.stdout")), &output.stdout)?;
     std::fs::write(folder.join(format!("{name}.stderr")), &output.stderr)?;

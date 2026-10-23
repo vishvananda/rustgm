@@ -365,6 +365,7 @@ impl<'a> Context<'a> {
             let Owner::Function {
                 definition,
                 signature,
+                ..
             } = body.owner
             else {
                 if body.instance.is_some() {

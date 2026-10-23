@@ -372,7 +372,11 @@ pub enum Owner {
     },
     Function {
         definition: DefId,
+        /// Selected public callable signature, including its own binder.
         signature: TypeId,
+        /// Body-local signature retained by actual specialization. Originals
+        /// have no separate execution view; this is data, not proof permission.
+        execution: Option<TypeId>,
     },
     Initializer {
         definition: DefId,

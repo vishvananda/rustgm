@@ -36,6 +36,7 @@ impl Fixture {
                 owner: Owner::Function {
                     definition: DefId(0),
                     signature: TypeId::UNIT,
+                    execution: None,
                 },
                 source: NodeKey {
                     file: FileId(0),

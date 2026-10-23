@@ -106,6 +106,7 @@ impl Original<'_> {
                     Owner::Function {
                         definition,
                         signature,
+                        ..
                     },
                     Some(Kind::FunctionItem {
                         item,

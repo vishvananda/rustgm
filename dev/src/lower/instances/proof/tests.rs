@@ -244,6 +244,7 @@ fn concrete_proofs_require_the_matching_instance_owner_and_original() -> TestRes
     body.owner = body::ir::Owner::Function {
         definition: resolve::model::DefId(item.0),
         signature,
+        execution: None,
     };
     let error = prove(&mut f.facts, &checked, body, &contract)
         .err()

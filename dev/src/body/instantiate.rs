@@ -161,6 +161,15 @@ fn with_premises(
     if original.key != template.body.key() || original.source != template.body.source {
         return Err("instance contract belongs to another template");
     }
+    if let super::ir::Owner::Function {
+        signature,
+        execution,
+        ..
+    } = template.body.owner
+        && (execution.is_some() || original.signature != Some(signature))
+    {
+        return Err("instance original signature differs from its exact template");
+    }
     let mut inputs = inputs::select(facts, instance)?;
     let (mut substitution, mut contract) =
         contracts::specialize(facts, original, &mut inputs, context.premises)?;
@@ -251,17 +260,7 @@ fn materialize(
             .ok_or("projected instance requires its lifetime contract")?;
         caller_transport::normalize(facts, &mut body, contract, comparison)?;
     }
-    if let super::ir::Owner::Closure {
-        execution: Some(execution),
-        ..
-    } = &mut body.owner
-    {
-        *execution = contract
-            .as_deref()
-            .and_then(|c| c.signature)
-            .ok_or("captured execution requires its specialized contract")?;
-    }
-    inputs::prepare_signature(facts, body.owner)?;
+    inputs::finish_owner(facts, &mut body.owner, contract.as_deref())?;
     facts.prepare_opaque_storage()?;
     let needed = &mut cleanup.needed;
     if let Some(owned) = &source.owned {

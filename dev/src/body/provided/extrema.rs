@@ -55,6 +55,7 @@ impl Helper {
             Owner::Function {
                 definition,
                 signature,
+                execution: None,
             },
             source,
             result,

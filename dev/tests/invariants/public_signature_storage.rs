@@ -44,6 +44,7 @@ fn public_signature_prepares_distinct_binder_storage_without_rewriting() -> Resu
     let owner = Owner::Function {
         definition: DefId(0),
         signature,
+        execution: None,
     };
     prepare_signature(&mut facts, owner)?;
     facts.aggregates.shape(&facts.types, roots[0])?;
@@ -61,6 +62,7 @@ fn public_signature_prepares_distinct_binder_storage_without_rewriting() -> Resu
             Owner::Function {
                 definition: DefId(0),
                 signature: TypeId::UNIT,
+                execution: None,
             }
         )
         .is_err()

@@ -29,7 +29,7 @@ pub(crate) struct Prepared {
     key: BodyKey,
     source: super::ir::BodyOrigin,
     instance: Option<Instance>,
-    signature: Option<TypeId>,
+    signatures: Option<(TypeId, TypeId)>,
     requirements: Arc<SourceCopyRequirements>,
     environment: Option<Arc<Environment>>,
     decisions: HashMap<TypeId, bool>,
@@ -51,7 +51,7 @@ impl Prepared {
         if self.source != body.source
             || self.key != body.key()
             || self.instance != body.instance
-            || self.signature != signature(body)
+            || self.signatures != signatures(body)
             || !Arc::ptr_eq(&self.requirements, requirements)
             || !same_environment(self.environment.as_ref(), environment)
         {
@@ -66,11 +66,19 @@ impl Prepared {
             .ok_or("source Copy read has no exact selected requirement")
     }
 }
-fn signature(body: &Body) -> Option<TypeId> {
+fn signatures(body: &Body) -> Option<(TypeId, TypeId)> {
     match body.owner {
-        super::ir::Owner::Function { signature, .. }
-        | super::ir::Owner::Closure { signature, .. }
-        | super::ir::Owner::ClosureAdapter { signature, .. } => Some(signature),
+        super::ir::Owner::Function {
+            signature,
+            execution,
+            ..
+        }
+        | super::ir::Owner::Closure {
+            signature,
+            execution,
+            ..
+        } => Some((signature, execution.unwrap_or(signature))),
+        super::ir::Owner::ClosureAdapter { signature, .. } => Some((signature, signature)),
         _ => None,
     }
 }
@@ -93,7 +101,7 @@ pub(crate) fn prepare(
     catalog.require_source_destructors_prepared()?;
     if contract.key != body.key()
         || contract.source != body.source
-        || contract.signature != signature(body)
+        || contract.signature != signatures(body).map(|(_, owned)| owned)
     {
         return Err("source Copy contract belongs to another body".into());
     }
@@ -150,7 +158,7 @@ pub(crate) fn prepare(
         key: body.key(),
         source: body.source,
         instance: body.instance,
-        signature: signature(body),
+        signatures: signatures(body),
         requirements: Arc::clone(&requirements),
         environment: environment.clone(),
         decisions,

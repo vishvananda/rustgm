@@ -11,6 +11,27 @@ mod tests;
 
 type Binding = (crate::types::parameters::ParameterId, Argument);
 
+/// Retain the completed body's signature and prepare the distinct public roots.
+/// Call only after actual namespace transport and projection normalization.
+pub(super) fn finish_owner(
+    facts: &mut Declarations,
+    owner: &mut Owner,
+    contract: Option<&crate::body::regions::Contract>,
+) -> Result<(), &'static str> {
+    let signature = contract.and_then(|input| input.signature);
+    match owner {
+        Owner::Function { execution, .. } => *execution = signature,
+        Owner::Closure {
+            execution: Some(execution),
+            ..
+        } => {
+            *execution = signature.ok_or("captured execution requires its specialized contract")?;
+        }
+        _ => {}
+    }
+    prepare_signature(facts, *owner)
+}
+
 /// The selected public callable keeps its own binder, distinct from the body's
 /// opened proof interface. Prepare its physical roots without substituting them
 /// again or treating field readiness as lifetime or callable evidence.
@@ -309,7 +330,11 @@ pub(super) fn owner(
     }
     match (source.owner, facts.types.kind(instance.ty())) {
         (
-            Owner::Function { definition, .. },
+            Owner::Function {
+                definition,
+                execution: None,
+                ..
+            },
             Some(Kind::FunctionItem {
                 item, signature, ..
             }),
@@ -317,6 +342,7 @@ pub(super) fn owner(
             Owner::Function {
                 definition,
                 signature,
+                execution: None,
             },
             definition,
         )),

@@ -46,6 +46,7 @@ impl Original {
             Owner::Function {
                 definition,
                 signature,
+                execution: None,
             } => facts
                 .function_indices
                 .get(&definition)

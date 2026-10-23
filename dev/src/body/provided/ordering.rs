@@ -201,6 +201,7 @@ fn initialize(
         Owner::Function {
             definition,
             signature,
+            execution: None,
         },
         source,
         boolean,

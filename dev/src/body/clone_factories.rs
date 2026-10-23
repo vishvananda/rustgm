@@ -99,6 +99,7 @@ fn build(facts: &mut Declarations, original: Original) -> Result<Body, &'static 
         Owner::Function {
             definition: original.declaration.method,
             signature: original.signature,
+            execution: None,
         },
         source,
         result,

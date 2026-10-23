@@ -19,6 +19,8 @@ mod destructibility;
 mod forbidden_cleanup;
 #[path = "provider_traits/native.rs"]
 mod native;
+#[path = "provider_traits/signature_views.rs"]
+mod signature_views;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 const PROVIDER: &str = r#"#![feature(unboxed_closures)]
 #![feature(no_core,lang_items,rustc_attrs,const_trait_impl)]
