@@ -222,7 +222,7 @@ fn coincident_foreign_unit_ids_cannot_replace_a_prepared_child() -> Result {
     assert!(sources.prepare(&facts, &body, &mut copied_input).is_err());
     // A changed shared unit is foreign even when parent and child still agree.
     assert_ne!(foreign_source, pending.unit);
-    facts.body_regions = Default::default();
+    facts.body_regions = crate::sema::numbered_regions::BodyRegions::default();
     facts.body_regions.nest(body.source, foreign_source)?;
     facts
         .body_regions

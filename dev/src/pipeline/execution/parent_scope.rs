@@ -57,7 +57,7 @@ impl Context {
                 .as_mut()
                 .and_then(|rows| rows.active.take())
                 .ok_or("active parent ownership disappeared")?;
-            engine.retire_parent(facts, active, result.is_ok())
+            engine.retire_parent(facts, *active, result.is_ok())
         })();
         result.and_then(|()| restored.map_err(|e| Declarations::error(report, source, e)))
     }
@@ -141,7 +141,7 @@ impl Engine {
     fn retire_parent(
         &mut self,
         facts: &mut Declarations,
-        active: Box<Active>,
+        active: Active,
         commit: bool,
     ) -> Result<(), &'static str> {
         let Active {
@@ -156,7 +156,7 @@ impl Engine {
             inherited_bytes: _,
             request_bytes: _,
             previous,
-        } = *active;
+        } = active;
         self.roots = roots;
         self.sessions = sessions;
         self.completed = completed;
