@@ -85,6 +85,17 @@ assumptions do not pay substituted instance obligations. Retain a single cold
 owner for immutable imported templates/contracts, with exact owner validation
 at every borrowed view and ordinary per-instance proof on execution.
 
+Direct generic helper calls retain one indexed dependency closure, distinct
+from the acyclic lexical owner forest. Callable recursion must not become a
+false owner-cycle error. Derive each complete target/argument signature once;
+reuse its structure and goal templates, never its caller proof. Each actual call
+reconstructs formal well-formedness, declared predicates and input/result
+coercions under its original Environment. Preserve unused formal obligations.
+Canonical dependency sorting observes key sizes once and charges comparisons
+without rescanning bodies. The [direct-call metadata contract](docs/pa29-direct-call-transport.md)
+defines row version 1 and preserves exact version-zero bytes. Source-language
+roles, unsafe/indirect calls and wider types retain their explicit boundaries.
+
 Reserve imported graph storage from actual declaration-owner summaries during
 the existing topological walk. Count nodes/edges once, deduplicate reached owners
 in reusable scratch, and retain shared dependency edges instead of flattened

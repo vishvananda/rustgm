@@ -62,8 +62,11 @@ itself invalidate every compiler measurement or require another full native run.
 - During implementation, declare positive/negative outcomes, run the affected
   maintainer tests and independent pinned-rustc probes, and execute affected
   native controls when lowering or runtime behavior is involved. Run formatting,
-  strict Clippy, file/layout audits and harness checks early, before investing in
-  a complete qualification run. Fix wiring failures before broadening tests.
+  file/layout audits, strict Clippy and harness checks early, before investing in
+  a complete qualification run. Run the audit after formatting and before
+  Clippy: naming/placement failures do not need a compiler build to diagnose.
+  Retain that audit result if Clippy leaves its source snapshot unchanged.
+  Fix wiring failures before broadening tests.
   Settle related fixture and test edits first, then run all-target strict Clippy
   as the type/lint gate instead of running both `cargo check` and Clippy. Use
   focused debug tests for ordinary private invariants: changes to `cfg(test)`
