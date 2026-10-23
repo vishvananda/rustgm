@@ -327,14 +327,15 @@ impl BindingTable {
         self.order_mut(key.0).local |= name_bit(key.1);
         let head = self.entries[entry as usize].local;
         if let Some(previous) = self.locals.get(head as usize) {
-            let duplicate = if previous.next == NONE {
-                previous.context == context
-            } else {
-                self.histories
-                    .as_ref()
-                    .is_some_and(|index| index.contains(entry, context))
-            };
-            if !shadow && duplicate {
+            if !shadow
+                && if previous.next == NONE {
+                    previous.context == context
+                } else {
+                    self.histories
+                        .as_ref()
+                        .is_some_and(|index| index.contains(entry, context))
+                }
+            {
                 return Err("duplicate hygienic local binding");
             }
             if previous.binding.target.0 >= binding.target.0 {

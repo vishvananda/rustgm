@@ -34,10 +34,10 @@ fn single_locals_use_the_original_entry_without_allocating_a_context_index() {
 
 #[test]
 fn local_predecessors_ignore_unrelated_contexts_and_preserve_every_shadow() {
-    let mut table = BindingTable::default();
-    let key = (ScopeId(0), NameId(0), Namespace::Value);
     const CONTEXTS: u32 = 128;
     const SHADOWS: u32 = 32;
+    let mut table = BindingTable::default();
+    let key = (ScopeId(0), NameId(0), Namespace::Value);
     for generation in 0..SHADOWS {
         for context in 0..CONTEXTS {
             let id = generation * CONTEXTS + context;

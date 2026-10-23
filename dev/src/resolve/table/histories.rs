@@ -17,7 +17,7 @@ impl Index {
     pub fn contains(&self, entry: u32, context: ContextId) -> bool {
         self.contexts.contains_key(&(entry, context))
     }
-    /// BindingTable checks increasing declaration identities before publication.
+    /// `BindingTable` checks increasing declaration identities before publication.
     pub fn push(&mut self, entry: u32, context: ContextId, local: u32) {
         match self.contexts.entry((entry, context)) {
             std::collections::hash_map::Entry::Vacant(slot) => {
