@@ -107,6 +107,13 @@ source/configuration closure, per-crate edition semantics and the target executo
 remain required before upstream acceptance. Cargo's implicit sysroot is not a
 selected package unit: add original source-sysroot jobs explicitly.
 
+Target crate inputs distinguish the complete metadata artifact inventory from
+source-visible dependency aliases. The driver loads each canonical artifact
+path once across both kinds of input, under shared count and byte budgets.
+Transitive metadata validates the dependency graph without publishing an extern
+prelude name; only explicit direct aliases grant that binding. Retain ordinary
+identity, visibility, graph and proof validation for inventory-only artifacts.
+
 ## Source, lexing and parsing
 
 Read source in bulk; retain immutable source images and compact file/offset
