@@ -103,6 +103,16 @@ Macro-internal allowances follow exact defining/captured token provenance. The
 [stability investigation](docs/pa31-library-stability.md) records the independent
 cases and required implementation seams; this contract is not yet implemented.
 
+Source-role semantic attributes are validated claims on exact declarations.
+The bounded sizing profile requires actual sizing identities, complete headers
+and deny-explicit-impl restrictions before retaining fundamental, specialization
+or coinductive markers; those markers grant no general implementation or cycle
+permission. Forced dyn restrictions consult the completed actual role, while
+diagnostic identities and field-read hints grant no move or body permission.
+Keep this state in fixed cold provider tables and preserve real provided bodies
+and conditional Environment clauses. The [capability checkpoint](docs/pa29-provider-capability-checkpoint.md)
+records actual checked originals and containing layouts.
+
 Imported executable originals have authenticated external declaration/body/site
 coordinates. Install their complete canonical header graph before original
 proof, without inventing source AST nodes or marking body proof complete when
@@ -226,7 +236,21 @@ logical element. Complete-empty cleanup still requires its ordinary proof and
 registry checks. Keep recipe traversal, emitted code and inherited dense query
 storage measurements distinct. The [sized runtime checkpoint](docs/pa31-source-drop-glue.md)
 and [slice continuation](docs/pa31-slice-drop-glue.md) record these boundaries;
-dynamic trait-object, owned-box and CTFE cleanup remain required.
+owned-box, unsized-tail and CTFE cleanup remain required.
+
+Dynamic helper recipes retain the complete object type and use the caller's
+proved vtable metadata. A null drop entry performs no call; a nonnull entry
+executes the complete concrete cleanup through the established internal ABI.
+Do not change public Rust pointer-pair layout or vtable field offsets. The first
+nonempty vtable exposure may precede any drop-helper root: retain its lazy exact
+recipe family across table drains, separately from owned-body cleanup proof.
+Empty exposure batches leave it absent. Bind that family to stable identities
+of the exact type and aggregate arenas before every cold or warm lookup; moves
+and append-only growth preserve identity, replacement does not. No address reuse
+or same-shaped foreign arena can inherit a cached dropless answer. Charge query,
+recipe, worklist and failure storage together under the existing budget, and
+poison failed work before warm reuse. The [dynamic cleanup checkpoint](docs/pa31-dyn-drop-glue.md)
+records source/native controls and the cold record-size tradeoff.
 Internal features active in an earlier library must work then, regardless of
 later broad edition/target closure. Measure complete library time and peak memory
 as well as changed-path scaling, with existing resource and cleanup limits.
