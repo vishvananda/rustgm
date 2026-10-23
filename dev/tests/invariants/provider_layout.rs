@@ -263,7 +263,9 @@ fn source_closure_demand_cannot_borrow_bootstrap_copy_or_callable_bindings() -> 
         .ok_or("missing source closure bindings accepted")?
         .to_string();
     assert!(
-        error.contains("source Copy and callable bindings"),
+        error.contains(
+            "source closure typing requires actual source Copy and callable declarations"
+        ),
         "{error}"
     );
     Ok(())
