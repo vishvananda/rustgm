@@ -14,6 +14,7 @@ pub(super) enum Effect {
 }
 impl Catalog {
     pub(crate) fn check_const_call(&self, definition: DefId) -> Result<(), &'static str> {
+        self.require_source_destructors_prepared()?;
         match self
             .call_effects
             .as_deref()

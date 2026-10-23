@@ -37,6 +37,7 @@ impl Checker<'_> {
             crate::support::bindings::LangItem::FnOnce,
             crate::support::bindings::LangItem::FnMut,
             crate::support::bindings::LangItem::Fn,
+            crate::support::bindings::LangItem::Drop,
         ] {
             let Some(declaration) = catalog.language(role) else {
                 continue;

@@ -12,6 +12,7 @@ mod coherence;
 mod coinduction;
 pub(in crate::sema) use coherence::may_overlap;
 mod completed_proofs;
+mod destructibility;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/marker_evidence.rs"]
 mod marker_evidence_tests;

@@ -12,7 +12,7 @@ pub(super) fn validate(
     declaration: Declaration,
     role: LangItem,
     self_type: TypeId,
-    complete: &mut u16,
+    complete: &mut u32,
 ) -> Result<(), Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
     let expected = match role {

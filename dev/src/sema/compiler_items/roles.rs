@@ -1,5 +1,7 @@
 //! Source roles become usable only after their actual complete headers validate.
 mod copying;
+mod destructibility;
+pub(crate) use destructibility::destruct_predicate;
 mod invocation;
 use super::Catalog;
 use crate::{
@@ -19,7 +21,7 @@ use crate::{
 };
 
 pub(super) struct Validated {
-    roles: u16,
+    roles: u32,
     pub(super) methods: [Option<DefId>; 3],
 }
 impl Catalog {
@@ -59,6 +61,8 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         LangItem::FnOnce,
         LangItem::FnMut,
         LangItem::Fn,
+        LangItem::Drop,
+        LangItem::Destruct,
     ] {
         let Some(declaration) = catalog.language(role) else {
             continue;
@@ -74,7 +78,10 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
                 self_type,
                 &mut complete.roles,
             )?,
-            LangItem::Tuple => validate_tuple(report, facts, declaration)?,
+            LangItem::Tuple => validate_marker(report, facts, declaration)?,
+            LangItem::Drop | LangItem::Destruct => {
+                destructibility::validate(report, facts, catalog, declaration, role, self_type)?;
+            }
             LangItem::FnOnce | LangItem::FnMut | LangItem::Fn => {
                 let (kind, method) =
                     invocation::validate(report, facts, catalog, declaration, role, self_type)?;
@@ -153,7 +160,12 @@ fn header(
         .ok_or_else(|| error("source trait role has no completed schema"))?;
     let constant = matches!(
         role,
-        LangItem::Clone | LangItem::FnOnce | LangItem::FnMut | LangItem::Fn
+        LangItem::Clone
+            | LangItem::FnOnce
+            | LangItem::FnMut
+            | LangItem::Fn
+            | LangItem::Drop
+            | LangItem::Destruct
     );
     if declaration.parent.is_some()
         || definition.node != Some(declaration.origin)
@@ -206,7 +218,7 @@ fn item(report: &Report, declaration: Declaration) -> Result<crate::syntax::item
     Ok(unit.configured.ast.items[index as usize])
 }
 
-fn validate_tuple(
+fn validate_marker(
     report: &Report,
     facts: &Declarations,
     declaration: Declaration,
@@ -220,14 +232,14 @@ fn validate_tuple(
         return Err(Declarations::error(
             report,
             declaration.origin,
-            "source Tuple requires its declared implementation restriction",
+            "source compiler marker requires its declared implementation restriction",
         ));
     }
     let owner = facts
         .associated
         .owner(declaration.definition)
         .ok_or_else(|| {
-            Declarations::error(report, declaration.origin, "missing source Tuple owner")
+            Declarations::error(report, declaration.origin, "missing source marker owner")
         })?;
     if facts
         .associated
@@ -237,7 +249,7 @@ fn validate_tuple(
         return Err(Declarations::error(
             report,
             declaration.origin,
-            "source Tuple must not declare members",
+            "source compiler marker must not declare members",
         ));
     }
     Ok(())

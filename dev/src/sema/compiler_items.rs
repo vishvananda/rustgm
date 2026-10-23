@@ -7,6 +7,7 @@ mod intrinsic_contracts;
 mod layout;
 pub(crate) use copying::copy_decisions;
 mod roles;
+pub(crate) use roles::destruct_predicate;
 mod sizing;
 use crate::{
     resolve::{

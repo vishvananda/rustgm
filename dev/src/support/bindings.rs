@@ -26,9 +26,11 @@ pub enum LangItem {
     FnMut,
     Fn,
     FnOnceOutput,
+    Drop,
+    Destruct,
 }
 impl LangItem {
-    pub const ALL: [Self; 14] = [
+    pub const ALL: [Self; 16] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -43,6 +45,8 @@ impl LangItem {
         Self::FnMut,
         Self::Fn,
         Self::FnOnceOutput,
+        Self::Drop,
+        Self::Destruct,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -61,6 +65,8 @@ impl LangItem {
             Self::FnMut => 11,
             Self::Fn => 12,
             Self::FnOnceOutput => 13,
+            Self::Drop => 14,
+            Self::Destruct => 15,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -81,6 +87,8 @@ impl LangItem {
             "fn_mut" => Some(Self::FnMut),
             "fn" => Some(Self::Fn),
             "fn_once_output" => Some(Self::FnOnceOutput),
+            "drop" => Some(Self::Drop),
+            "destruct" => Some(Self::Destruct),
             _ => None,
         }
     }

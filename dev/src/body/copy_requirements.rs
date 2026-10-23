@@ -90,6 +90,7 @@ pub(crate) fn prepare(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
     };
+    catalog.require_source_destructors_prepared()?;
     if contract.key != body.key()
         || contract.source != body.source
         || contract.signature != signature(body)

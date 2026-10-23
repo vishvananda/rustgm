@@ -14,6 +14,9 @@ impl Search<'_> {
         if let Some(action) = self.source_tuple_result(facts, frame)? {
             return Ok(action);
         }
+        if let Some(action) = self.source_destruct_result(facts, frame)? {
+            return Ok(action);
+        }
         if let Some(action) = self.clone_marker_result(facts, frame)? {
             return Ok(action);
         }

@@ -26,7 +26,9 @@ fn source_copy_clone_and_function_item_native_answers() -> TestResult {
         .join("obj/parallel/pa31/source-native")
         .join(std::process::id().to_string());
     std::fs::create_dir_all(&folder)?;
+    let destruct = super::destructibility::ordinary_source();
     for (name, source, expected) in [
+        ("ordinary-destruct", destruct.as_str(), 7),
         ("copy", COPY_EXECUTION, 7),
         ("clone", CLONE_EXECUTION, 11),
         ("callable", CALL_EXECUTION, 23),
