@@ -32,7 +32,7 @@ fn reached_payment_is_one_use_and_keeps_the_same_box_across_suspension() -> Resu
     context.inspect_const_call(
         Target::Initializer(definition),
         |catalog, rows, root| -> Result {
-            for corrupt in [0, 1, 2, 3, 4, 5, 6] {
+            for corrupt in [0, 1, 2, 3, 4, 5, 6, 7] {
                 let evaluator = crate::sema::values::Evaluator::new(&report, &mut facts);
                 let mut machine =
                     Machine::catalog(evaluator, catalog, const_eval::Limits::default());
@@ -75,6 +75,13 @@ fn reached_payment_is_one_use_and_keeps_the_same_box_across_suspension() -> Resu
                     4 => state.frames.last_mut().ok_or("frame")?.next += 1,
                     5 => paid.callee = Arc::clone(&paid.caller),
                     6 => paid.target_code = usize::MAX,
+                    7 => {
+                        paid.site.form = crate::const_eval::function_calls::Form::Selected {
+                            // A genuine direct-call payment cannot acquire selected
+                            // callback authority by changing its cold form tag.
+                            selector: paid.site.target,
+                        }
+                    }
                     _ => {}
                 }
                 let evaluator = crate::sema::values::Evaluator::new(&report, &mut facts);

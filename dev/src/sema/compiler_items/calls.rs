@@ -27,11 +27,6 @@ impl Catalog {
     }
     pub(crate) fn check_const_call(&self, definition: DefId) -> Result<(), &'static str> {
         self.require_source_destructors_prepared()?;
-        if self.intrinsic_kind(definition)?
-            == Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect)
-        {
-            return Err("source const_eval_select constant callback execution is not implemented");
-        }
         match self
             .call_effects
             .as_deref()
@@ -50,6 +45,9 @@ pub(crate) fn check_instance(
     facts: &Declarations,
     instance: crate::types::instance::Instance,
 ) -> Result<(), &'static str> {
+    // The reached selector adapter requests F, never an executable selector
+    // body. Function-root/unadapted demand must still reject its placeholder.
+    super::select_calls::check_const_select(facts, instance)?;
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
     };

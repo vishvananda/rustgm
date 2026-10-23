@@ -777,7 +777,7 @@ impl Engine {
             materialized_bodies::record(body).map_err(|e| report.body_error(body.source, e))?;
         }
         let retained = if input.purpose == ProofPurpose::Code
-            && const_eval::use_inputs::Inputs::needs(facts, body)
+            && const_eval::use_inputs::Inputs::prepare(facts, body)
                 .map_err(|e| report.body_error(body.source, e))?
         {
             Some(Arc::new(prepared.ok_or_else(|| {

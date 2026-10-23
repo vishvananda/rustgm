@@ -68,39 +68,53 @@ impl Row {
     }
 }
 impl Inputs {
-    pub(crate) fn needs(facts: &mut Declarations, body: &Body) -> Result<bool, &'static str> {
+    /// Canonical relocation preparation is data, never callback body demand.
+    /// Complete every selector even when an earlier use already needs its row.
+    pub(crate) fn prepare(facts: &mut Declarations, body: &Body) -> Result<bool, &'static str> {
         let Some(catalog) = facts.source_bindings.as_deref() else {
             return Ok(false);
         };
         if !body.const_context {
             return Ok(false);
         }
-        if let Owner::Function { definition, .. } = body.owner
-            && catalog.requires_const_payment(definition)?
-        {
-            return Ok(true);
-        }
+        let mut needed = if let Owner::Function { definition, .. } = body.owner {
+            catalog.requires_const_payment(definition)?
+        } else {
+            false
+        };
         for value in &body.values {
             facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
             let Rvalue::Call { callee, .. } = value.kind else {
                 continue;
             };
-            let Some(Kind::FunctionItem { item, .. }) = body
-                .values
-                .get(callee.0 as usize)
-                .and_then(|v| facts.types.kind(v.ty))
-            else {
+            let Some(ty) = body.values.get(callee.0 as usize).map(|v| v.ty) else {
+                continue;
+            };
+            let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(ty) else {
                 continue;
             };
             let definition = crate::resolve::model::DefId(item.0);
+            let catalog = facts
+                .source_bindings
+                .as_deref()
+                .ok_or("source catalog disappeared")?;
+            if catalog.intrinsic_kind(definition)?
+                == Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect)
+            {
+                let raw = Instance::new(&facts.types, ty)?;
+                crate::sema::compiler_items::prepare_select(facts, raw)?
+                    .ok_or("source selector preparation lost its actual declaration")?;
+                needed = true;
+                continue;
+            }
             if facts.members.constructor(definition).is_none()
                 && facts.is_const_function(definition)
                 && catalog.requires_const_payment(definition)?
             {
-                return Ok(true);
+                needed = true;
             }
         }
-        Ok(false)
+        Ok(needed)
     }
     pub(crate) fn record(
         &mut self,
