@@ -1,6 +1,7 @@
 //! Concrete trait callables select checked overrides while retaining their lifetime proof.
 mod allocation;
 mod arguments;
+pub(in crate::sema) use arguments::instantiate_charged as instantiate_callable;
 mod dependencies;
 mod observed_constants;
 pub(in crate::sema) use observed_constants::{ConstantDecision, ConstantProof};

@@ -662,3 +662,8 @@ impl Search<'_> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+pub(in crate::sema) const fn callable_layouts() -> (usize, usize) {
+    (size_of::<Frame>(), size_of::<mechanical::Pending>())
+}

@@ -19,6 +19,8 @@ mod cases;
 mod const_contexts;
 #[path = "provider_traits/destructibility.rs"]
 mod destructibility;
+#[path = "provider_traits/effect_opponents.rs"]
+mod effect_opponents;
 #[path = "provider_traits/forbidden_cleanup.rs"]
 mod forbidden_cleanup;
 #[path = "provider_traits/freeze_cases.rs"]

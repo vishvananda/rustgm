@@ -197,6 +197,28 @@ pub(super) fn instantiate(
     method: DefId,
     arguments: &[Argument],
 ) -> Result<TypeId, &'static str> {
+    instantiate_with(facts, method, arguments, |_| {})
+}
+
+/// Structural reconstruction is not an implementation or caller permission.
+pub(in crate::sema) fn instantiate_charged(
+    facts: &mut Declarations,
+    method: DefId,
+    arguments: &[Argument],
+    work: &mut usize,
+) -> Result<TypeId, &'static str> {
+    instantiate_with(facts, method, arguments, |steps| {
+        *work = work.saturating_add(steps);
+    })
+}
+
+fn instantiate_with(
+    facts: &mut Declarations,
+    method: DefId,
+    arguments: &[Argument],
+    mut account: impl FnMut(usize),
+) -> Result<TypeId, &'static str> {
+    account(arguments.len().saturating_add(1));
     let item = ItemId(method.0);
     let signature = if let Some(template) = facts.lifetimes.callables.get(item) {
         let early = template.parameters as usize;
@@ -224,13 +246,15 @@ pub(super) fn instantiate(
             .zip(arguments[early..].iter().copied())
             .collect::<Vec<_>>();
         let signature = template.signature;
-        substitute::Bound::parameters_captured(&facts.types, &bindings, regions)?
-            .apply(&mut facts.types, signature)?
+        let mut fold = substitute::Bound::parameters_captured(&facts.types, &bindings, regions)?;
+        let result = fold.apply(&mut facts.types, signature);
+        account(fold.steps);
+        result?
     } else {
         if !arguments.is_empty() {
             return Err("implementation method lacks its generic template");
         }
-        ordinary_signature(facts, method)?
+        ordinary_signature(facts, method, &mut account)?
     };
     let arguments = facts.types.intern_arguments(arguments)?;
     facts.types.intern(Kind::FunctionItem {
@@ -240,7 +264,11 @@ pub(super) fn instantiate(
     })
 }
 
-fn ordinary_signature(facts: &mut Declarations, method: DefId) -> Result<TypeId, &'static str> {
+fn ordinary_signature(
+    facts: &mut Declarations,
+    method: DefId,
+    mut account: impl FnMut(usize),
+) -> Result<TypeId, &'static str> {
     let ty = facts
         .definitions
         .get(method.0 as usize)
@@ -256,6 +284,7 @@ fn ordinary_signature(facts: &mut Declarations, method: DefId) -> Result<TypeId,
     if scheme.captures != 0 || !scheme.early.is_empty() {
         return Err("implementation method requires a captured template");
     }
+    account((scheme.total as usize).saturating_add(scheme.late.len()));
     let mut regions = vec![RegionId::STATIC; scheme.total as usize];
     for (index, &slot) in scheme.late.iter().enumerate() {
         regions[usize::from(slot)] = RegionId::bound(
@@ -264,5 +293,8 @@ fn ordinary_signature(facts: &mut Declarations, method: DefId) -> Result<TypeId,
         )?;
     }
     let late = u32::try_from(scheme.late.len()).map_err(|_| "too many method late lifetimes")?;
-    substitute::Bound::new(regions).signature(&mut facts.types, signature, late)
+    let mut fold = substitute::Bound::new(regions);
+    let signature = fold.signature(&mut facts.types, signature, late);
+    account(fold.steps);
+    signature
 }

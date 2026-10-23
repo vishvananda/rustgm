@@ -78,3 +78,7 @@ run the required coherent checkpoint checks from
 suites, strict Clippy, file/architecture audits, harness checks and affected
 performance measurements. Use the resource/storage guards and scoped cleanup.
 Do not activate a stage merely because a reduced example or an empty suite passes.
+
+The focused [callable const eligibility checkpoint](../docs/pa31-callable-const-eligibility.md)
+records independently qualified source contracts and the remaining original
+const-callable execution requirement; PA31 remains planned.

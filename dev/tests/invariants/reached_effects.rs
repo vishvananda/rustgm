@@ -140,3 +140,91 @@ fn source_const_call_effects_include_actual_inherited_clauses_and_keep_pending_d
     );
     Ok(())
 }
+
+#[test]
+fn missing_prepared_callable_effect_remains_pending_after_real_header_completion() -> Result {
+    use crate::types::{
+        ItemId, Kind,
+        infer::{Context as Infer, Instantiation},
+        parameters::predicates::{Bound, Predicate},
+        traits::Application,
+    };
+    let source = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa31/tests/spec/source-const-payment/callable/const-function-item.rs"),
+    )?;
+    let report = report(&source)?;
+    let mut facts = crate::pipeline::analyze_source(&report)?.facts;
+    let item = definition(&report, &facts, "item")?;
+    let ty = facts.definitions[item.0 as usize].ok_or("item")?;
+    let role = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("catalog")?
+        .validated_language(crate::support::bindings::LangItem::FnOnce)?
+        .ok_or("role")?;
+    let list = facts.types.intern_list(&[])?;
+    let unit = facts.types.intern(Kind::Tuple(list))?;
+    let arguments = facts
+        .types
+        .intern_arguments(&[crate::types::arguments::Argument::Type(unit)])?;
+    let application = facts.types.intern_trait_application(Application {
+        item: ItemId(role.definition.0),
+        arguments,
+    })?;
+    let predicate = Predicate {
+        ty,
+        bound: Bound::ConstTrait(application),
+    };
+    let previous = facts
+        .source_bindings
+        .as_deref_mut()
+        .ok_or("catalog")?
+        .call_effects
+        .as_deref_mut()
+        .ok_or("effects")?
+        .remove(&item)
+        .ok_or("prepared")?;
+    let mut context = Infer::default();
+    let mut fold = Instantiation::new(&mut context, &facts.types, &[])?;
+    let goal = context.instantiate_predicate(&mut facts.types, predicate, &mut fold)?;
+    let selected = crate::sema::traits::selection::select(
+        &mut facts,
+        &mut context,
+        &goal,
+        crate::sema::traits::selection::Caller {
+            assumptions: &crate::sema::traits::assumptions::Assumptions::default(),
+            environment: None,
+            first_region: 1,
+            retain_sized: false,
+        },
+    )?;
+    assert!(matches!(
+        selected,
+        crate::sema::traits::selection::Selection::Deferred
+    ));
+    facts
+        .source_bindings
+        .as_deref_mut()
+        .ok_or("catalog")?
+        .call_effects
+        .as_deref_mut()
+        .ok_or("effects")?
+        .insert(item, previous);
+    let selected = crate::sema::traits::selection::select(
+        &mut facts,
+        &mut context,
+        &goal,
+        crate::sema::traits::selection::Caller {
+            assumptions: &crate::sema::traits::assumptions::Assumptions::default(),
+            environment: None,
+            first_region: 1,
+            retain_sized: false,
+        },
+    )?;
+    assert!(matches!(
+        selected,
+        crate::sema::traits::selection::Selection::Proven(_)
+    ));
+    Ok(())
+}

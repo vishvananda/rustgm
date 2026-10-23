@@ -95,6 +95,23 @@ impl Search<'_> {
         let Some(kind) = facts.associated.callable(DefId(item.0)) else {
             return Ok(None);
         };
+        // Nonordinary reference implementations come from actual source headers.
+        // The bootstrap forwarding shortcut must not erase their use effect.
+        if frame
+            .goal
+            .constness()
+            .is_some_and(|effect| effect != crate::support::constness::Constness::Ordinary)
+            && matches!(
+                frame
+                    .inputs
+                    .context
+                    .head(&facts.types, frame.goal.subject())
+                    .map_err(inference)?,
+                Some(infer::Constructor::Reference { .. })
+            )
+        {
+            return Ok(None);
+        }
         // Completed normalization can retain an opaque associated result. Its
         // caller and declared result permissions have already been tried. Such
         // a subject cannot acquire a language implementation from an unknown
@@ -150,10 +167,10 @@ impl Search<'_> {
         let Some(Pending::Direct(matched)) = frame.language.as_deref() else {
             return Err("missing callable equations".into());
         };
-        match matched.permitted(&facts.types).map_err(inference)? {
-            Some(true) => {}
-            Some(false) => return Ok(Action::Complete(Decision::Absent)),
-            None => {
+        match matched.permitted(facts, &mut frame.inputs.context, &frame.goal)? {
+            callables::Eligibility::Allowed => {}
+            callables::Eligibility::Rejected => return Ok(Action::Complete(Decision::Absent)),
+            callables::Eligibility::Pending => {
                 return Ok(
                     if self.query.refining && frame.scope == self.query.input_scope() {
                         Action::Yield
@@ -162,6 +179,19 @@ impl Search<'_> {
                     },
                 );
             }
+            callables::Eligibility::Unpaid(instance) => {
+                if !matches!(
+                    facts.types.kind(instance.ty()),
+                    Some(crate::types::Kind::FunctionItem { .. })
+                ) {
+                    return Err("unpaid const callable lost its complete function item".into());
+                }
+                return Err(
+                    "source const callable conditional obligations require a scoped continuation"
+                        .into(),
+                );
+            }
+            callables::Eligibility::Unsupported(message) => return Err(message.into()),
         }
         let Matched {
             output, regions, ..

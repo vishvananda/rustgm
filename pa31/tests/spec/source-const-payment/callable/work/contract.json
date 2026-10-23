@@ -1,0 +1,226 @@
+{
+  "declared_before_execution": true,
+  "rows": [
+    {
+      "name": "same-item-8",
+      "path": "same-item-8.rs",
+      "sha256": "4064b075ca11d66d8d8ad9458a2331c80ea21b3266d5d1558737881757e496ec",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 8,
+        "instances": 1,
+        "signature_depth": 0
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "distinct-instances-8",
+      "path": "distinct-instances-8.rs",
+      "sha256": "b2cac0357084e8f72a0de0d4464b9366be23cbf5b145d67d267fc0bb0f33abde",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 8,
+        "instances": 8,
+        "signature_depth": 0
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "ordinary-pointer-8",
+      "path": "ordinary-pointer-8.rs",
+      "sha256": "65aba5e58adbadb4905259c0f3ca717ae71903ee63639e06af400be8ac446bbf",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 8,
+        "instances": 1,
+        "ordinary": true,
+        "signature_depth": 0
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "same-item-32",
+      "path": "same-item-32.rs",
+      "sha256": "397046ac9ce3597c85fbf8d6287ee11bf8a34c70e7269f0a26cb65136e4e0261",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 32,
+        "instances": 1,
+        "signature_depth": 0
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "distinct-instances-32",
+      "path": "distinct-instances-32.rs",
+      "sha256": "5b3e7e8e6da594d59c9825fb6a34ef10ceb4d45a5be949d3aedc5dae2d795f4f",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 32,
+        "instances": 32,
+        "signature_depth": 0
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "ordinary-pointer-32",
+      "path": "ordinary-pointer-32.rs",
+      "sha256": "59e424aaf9426a7d129af0688b6c23f1985dd98c0ccbe7ea20a1346a03c0c9eb",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 32,
+        "instances": 1,
+        "ordinary": true,
+        "signature_depth": 0
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "same-item-128",
+      "path": "same-item-128.rs",
+      "sha256": "bcb49c5241391828d579566fd8b803aac458aec9f603a5e5f113c6b7d5d0547a",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 128,
+        "instances": 1,
+        "signature_depth": 0
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "distinct-instances-128",
+      "path": "distinct-instances-128.rs",
+      "sha256": "60fcc1185728b7d836cb0574bb59912449fcfa81925a081f4e205920aca52e94",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 128,
+        "instances": 128,
+        "signature_depth": 0
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "ordinary-pointer-128",
+      "path": "ordinary-pointer-128.rs",
+      "sha256": "a8b367ca68bb0c1414684ea1e92502833d97621ff819ad7a77bc8666b5703313",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 128,
+        "instances": 1,
+        "ordinary": true,
+        "signature_depth": 0
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "shared-signature-8-calls-8",
+      "path": "shared-signature-8-calls-8.rs",
+      "sha256": "502359cb89a732db2b336bbeb8da2ea304862c799c9126b6854b27e1a3c3b8a5",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 8,
+        "instances": 1,
+        "signature_depth": 8,
+        "generic_leaf": true
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "shared-signature-32-calls-8",
+      "path": "shared-signature-32-calls-8.rs",
+      "sha256": "189d8756053d355a19d16cdf5f7654ad8d112979cbd870c43b8582295bcf6676",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 8,
+        "instances": 1,
+        "signature_depth": 32,
+        "generic_leaf": true
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "shared-signature-128-calls-8",
+      "path": "shared-signature-128-calls-8.rs",
+      "sha256": "35670d63863e2fd7637ed77231f408a0a28aceef84997b40c2942791c761a792",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 8,
+        "instances": 1,
+        "signature_depth": 128,
+        "generic_leaf": true
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "shared-signature-32-calls-32",
+      "path": "shared-signature-32-calls-32.rs",
+      "sha256": "cfd87974eb4437d617b214a5cccd5cbb4d656d179480d604ab29b2499d7cd181",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 32,
+        "instances": 1,
+        "signature_depth": 32,
+        "generic_leaf": true
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    },
+    {
+      "name": "shared-signature-32-calls-128",
+      "path": "shared-signature-32-calls-128.rs",
+      "sha256": "e5171e65ebdc31a5cbb1b19fa3d6fc2fcefebf263dab3bd125239917d8b4c695",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-types",
+      "dimensions": {
+        "goals": 128,
+        "instances": 1,
+        "signature_depth": 32,
+        "generic_leaf": true
+      },
+      "expected": "Every explicit Const callable goal validates its actual function item; ordinary pointer takes no const reconstruction.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/scaling-independent-v1"
+    }
+  ],
+  "source_mode": "minicore@source_traits_v1",
+  "rustc": "1.98.0/edition2024/x86_64-unknown-linux-gnu",
+  "status": "Planned PA31; independent object/native qualification, candidate complete lowering and deterministic work are separate claims; combined performance/native preflight owned by integrator."
+}

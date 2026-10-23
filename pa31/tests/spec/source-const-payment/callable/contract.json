@@ -1,0 +1,59 @@
+{
+  "base": "33b1220c",
+  "declared_before_execution": true,
+  "rows": [
+    {
+      "name": "unused-const-function-pointer",
+      "path": "unused-const-function-pointer.rs",
+      "sha256": "0e528d85f84b05d04345857478eb04024d30af82ef8b29fcbc22372cf992a38b",
+      "rust_object": false,
+      "native": null,
+      "mode": "--emit-lowir",
+      "basis": "Pinned rustc_trait_selection/src/traits/effects.rs551-575: FnPtr has no const Fn host effect; FnDef uses actual constness and its conditions.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/independent-v3"
+    },
+    {
+      "name": "ordinary-function-pointer",
+      "path": "ordinary-function-pointer.rs",
+      "sha256": "ef8abcbbf61b8767646eea92855e8236efe2261198a0a8fce10096371ec0ea59",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-lowir",
+      "basis": "Pinned rustc_trait_selection/src/traits/effects.rs551-575: FnPtr has no const Fn host effect; FnDef uses actual constness and its conditions.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/independent-v3"
+    },
+    {
+      "name": "const-function-item",
+      "path": "const-function-item.rs",
+      "sha256": "a3ce8378d2bfc90c217674e7dc8577519de4bf1a5e2a496f698dc782d80a41a4",
+      "rust_object": true,
+      "native": 7,
+      "mode": "--emit-lowir",
+      "basis": "Pinned rustc_trait_selection/src/traits/effects.rs551-575: FnPtr has no const Fn host effect; FnDef uses actual constness and its conditions.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/independent-v3"
+    },
+    {
+      "name": "nonconst-function-item",
+      "path": "nonconst-function-item.rs",
+      "sha256": "bc9446a45faaddc2ce31f50b0278a539cf43184fc6c78a105725534583143da5",
+      "rust_object": false,
+      "native": null,
+      "mode": "--emit-lowir",
+      "basis": "Pinned rustc_trait_selection/src/traits/effects.rs551-575: FnPtr has no const Fn host effect; FnDef uses actual constness and its conditions.",
+      "independent_receipts": "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/callable-const-eligibility-v1/independent-v3"
+    },
+    {
+      "name": "nonconst-invocation",
+      "path": "nonconst-invocation.rs",
+      "sha256": "fe2923a3f3ce95a2f2db5e12bd952ea5487ed95e92a9fdfadaee1512ac15e9ed",
+      "rust_object": false,
+      "native": null,
+      "mode": "--emit-lowir",
+      "candidate": "reject",
+      "basis": "Unchanged independently rejected actual invocation from source-traits-v1/inputs-v2; retained required opposition."
+    }
+  ],
+  "reason": "Unquantified FnOnce<()> separates callable eligibility from arrow-sugar quantified boundary; borrowed item excludes separate generic const-drop/Copy duties.",
+  "status": "Planned PA31 development only; no activation or generated oracles.",
+  "scaling_manifest": "work/contract.json"
+}

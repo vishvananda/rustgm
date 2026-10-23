@@ -1,4 +1,5 @@
 //! Callable equations preserve unresolved inputs and instantiate one signature binder.
+mod eligibility;
 mod output;
 use crate::{
     resolve::model::DefId,
@@ -10,6 +11,7 @@ use crate::{
         infer::{self, Constructor, Context, TermId, arguments::Argument, predicates::Predicate},
     },
 };
+pub(in crate::sema) use eligibility::Eligibility;
 pub(in crate::sema) use output::symbolic;
 use std::ops::Range;
 
@@ -26,7 +28,10 @@ enum Permission {
 impl Matched {
     /// Signature equations can precede capture analysis, but implementation
     /// evidence must wait for the body's immutable call permission.
-    pub fn permitted(&self, types: &crate::types::Store) -> Result<Option<bool>, infer::Error> {
+    fn captures_permitted(
+        &self,
+        types: &crate::types::Store,
+    ) -> Result<Option<bool>, infer::Error> {
         let Permission::Pending(id, required) = self.permission else {
             return Ok(Some(true));
         };
@@ -35,6 +40,22 @@ impl Matched {
             Some(Declaration::Complete(actual)) => Some(actual.implements(required)),
             None => return Err(infer::Error::InvalidIdentity),
         })
+    }
+    pub fn permitted(
+        &self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        goal: &Predicate,
+    ) -> Result<Eligibility, String> {
+        match self
+            .captures_permitted(&facts.types)
+            .map_err(|e| e.to_string())?
+        {
+            Some(false) => return Ok(Eligibility::Rejected),
+            None => return Ok(Eligibility::Pending),
+            Some(true) => {}
+        }
+        eligibility::for_goal(facts, context, goal)
     }
 }
 

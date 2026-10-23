@@ -8,11 +8,23 @@ use crate::{
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(super) enum Effect {
+pub(in crate::sema) enum Effect {
     Ordinary,
     Conditional,
 }
 impl Catalog {
+    /// Completed declaration data, never per-use const eligibility or payment.
+    pub(in crate::sema) fn prepared_call_effect(
+        &self,
+        definition: DefId,
+    ) -> Result<Option<Effect>, &'static str> {
+        self.require_source_destructors_prepared()?;
+        Ok(self
+            .call_effects
+            .as_deref()
+            .and_then(|effects| effects.get(&definition))
+            .copied())
+    }
     pub(crate) fn check_const_call(&self, definition: DefId) -> Result<(), &'static str> {
         self.require_source_destructors_prepared()?;
         match self

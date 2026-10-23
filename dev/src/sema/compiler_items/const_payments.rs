@@ -36,12 +36,7 @@ pub(crate) struct Payment {
 }
 impl Catalog {
     pub(crate) fn requires_const_payment(&self, definition: DefId) -> Result<bool, &'static str> {
-        self.require_source_destructors_prepared()?;
-        match self
-            .call_effects
-            .as_deref()
-            .and_then(|m| m.get(&definition))
-        {
+        match self.prepared_call_effect(definition)? {
             Some(Effect::Ordinary) => Ok(false),
             Some(Effect::Conditional) => Ok(true),
             None => Err("source const-call effects require completed declaration preparation"),
