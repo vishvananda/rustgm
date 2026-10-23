@@ -16,6 +16,13 @@ with real-crate acceptance beginning after core and expanding with alloc/std.
 Rustc-private binary/metadata compatibility
 and a drop-in Cargo/rustc interface remain separate objectives.
 
+Use the shared typed `support::edition::Edition` for defining semantics; never
+infer it from the current consumer. Select a macro's expression fragment grammar
+once from its defining edition, retaining the completed fragment kind for matching
+and memoization. Token provenance remains separate from that grammar selection.
+The [PA34 context foundation](docs/pa34-edition-context.md) records the independent
+mixed-edition controls and the remaining work before enabling Rust 2021 in the CLI.
+
 ```text
 source image -> Rust lexer -> token-tree/parser/expansion/resolution worklist
              -> syntax with canonical semantic facts

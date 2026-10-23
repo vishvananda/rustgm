@@ -3,6 +3,8 @@
 mod crate_expansion;
 #[path = "../../crate_syntax.rs"]
 mod crate_syntax;
+#[path = "../../edition_fragments.rs"]
+mod edition_fragments;
 #[path = "../../expanded_cli.rs"]
 mod expanded_cli;
 #[path = "../../expansion_install.rs"]
