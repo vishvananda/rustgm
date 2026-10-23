@@ -16890,6 +16890,326 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/self-constructors/alias-impl.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/self-constructors/const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/self-constructors/enum-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/self-constructors/escaped-borrow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/self-constructors/extra-arguments.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/self-constructors/generic-barrier.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/self-constructors/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/self-constructors/lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/self-constructors/macro.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/self-constructors/nested-concrete.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/self-constructors/pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/self-constructors/private-fields.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/self-constructors/record-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/self-constructors/trait-default.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/self-constructors/trait-impl.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/self-constructors/tuple.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/self-constructors/unit-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/self-constructors/unit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/self-constructors/unused-generic-capture.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/self-constructors/wrong-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.self-constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/self_constructors.rs",
+      "mode": "--emit-lowir"
     }
   ]
 }

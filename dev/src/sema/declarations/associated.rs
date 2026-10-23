@@ -152,7 +152,10 @@ impl Checker<'_> {
             .node_mut(key)
             .ok_or_else(|| Error::at(key.file, 0, "missing alias variant fact"))?
             .reference = Some(Target::Definition(target));
-        self.facts.generics.constructor_uses.insert(key, prefix);
+        self.facts
+            .generics
+            .constructor_uses
+            .insert(key, crate::sema::generics::ConstructorUse::Prefix(prefix));
         self.constructor(target)
     }
     pub(super) fn complete_associated_prefix(

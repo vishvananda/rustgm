@@ -26,8 +26,13 @@ impl Checker<'_> {
         owner: ItemId,
         expected: Option<TermId>,
     ) -> Result<TermId, Error> {
-        if let Some(&prefix) = self.facts.generics.constructor_uses.get(&self.key(path)) {
-            return self.annotation(prefix.node);
+        if let Some(&use_) = self.facts.generics.constructor_uses.get(&self.key(path)) {
+            return match use_ {
+                crate::sema::generics::ConstructorUse::Prefix(prefix) => {
+                    self.annotation(prefix.node)
+                }
+                crate::sema::generics::ConstructorUse::SelfType(ty) => self.known(node, ty),
+            };
         }
         if let Some(super::Target::Definition(id)) =
             self.facts.node(self.key(path)).and_then(|f| f.reference)

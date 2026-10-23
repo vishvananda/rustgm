@@ -497,7 +497,7 @@ impl Paths {
                 .copied()
                 .map(Some)
                 .ok_or_else(|| resolver.error(context, node, "path does not name a macro")),
-            Lookup::Associated(..) | Lookup::Member(..) => {
+            Lookup::Associated(..) | Lookup::Member(..) | Lookup::SelfConstructor(..) => {
                 Err(resolver.error(context, node, "associated items are not macro paths"))
             }
         }

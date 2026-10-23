@@ -1,0 +1,1 @@
+ERROR: file 0: 56: Self constructor cannot capture outer implementation parameters

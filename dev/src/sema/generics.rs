@@ -65,6 +65,12 @@ pub struct ItemUse {
     pub lifetimes: Option<crate::syntax::ast::List>,
     pub arguments: Vec<SourceArgument>,
 }
+/// Constructor arguments come from a separately typed path or an impl's exact Self.
+#[derive(Clone, Copy)]
+pub enum ConstructorUse {
+    Prefix(crate::resolve::unit::NodeKey),
+    SelfType(TypeId),
+}
 pub(super) struct TraitUse {
     pub owner: DefId,
     /// A written trait prefix supplies arguments and type-path defaults.
@@ -143,7 +149,7 @@ pub struct Generics {
     /// Sparse overrides for free universal aliases used by completed body facts.
     pub(super) body_environments: HashMap<DefId, Arc<Environment>>,
     pub item_uses: HashMap<crate::resolve::unit::NodeKey, ItemUse>,
-    pub constructor_uses: HashMap<crate::resolve::unit::NodeKey, crate::resolve::unit::NodeKey>,
+    pub constructor_uses: HashMap<crate::resolve::unit::NodeKey, ConstructorUse>,
     /// Implicit callable factories selected while checking expressions. Nominal
     /// declarations alone do not require synthetic field-transfer bodies.
     pub(crate) referenced_constructors: crate::support::hash::HashSet<ItemId>,

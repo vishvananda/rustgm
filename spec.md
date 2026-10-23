@@ -2242,6 +2242,15 @@ enum discriminant expressions and local cast annotations in their lexical contex
 These prerequisites make values available; final unused-declaration, variance,
 derive, lifetime and layout checks remain mandatory.
 
+Value-form `Self` resolves to its actual impl owner before selecting a callable.
+Suspend on that owner's header, retain the exact instantiated Self type and
+select the nominal's existing tuple or unit constructor with its ordinary access
+checks. Reuse the sparse constructor-use index, distinguishing a syntax prefix
+from a retained Self type; the value node cannot also serve as its own nominal
+annotation. Nested items may retain a closed outer Self constructor but cannot
+capture impl parameters or free regions. Do not relax ordinary Self type lookup,
+manufacture a constructor declaration or add a dense field to every body.
+
 Early expression paths use the ordinary argument scheduler, including alias
 variant selection, function values, partial annotations and consumed trailing
 defaults. Nested const arguments own their dependency work and lifetime context.

@@ -19,6 +19,16 @@ method parameters, early/late lifetime distinctions and receiver output elision.
 Check unused methods and reject invalid Self placement, foreign parameters,
 unconstrained impl parameters and invalid parameter defaults.
 
+Inside an impl, value-form `Self` selects its actual tuple or unit struct
+constructor, including the impl's type, const and lifetime arguments. It may
+be called or coerced to the matching function pointer. Constructor visibility
+still applies; a record, enum, trait-default Self or ordinary type alias does
+not become a tuple constructor. Reject extra arguments on `Self` and invalid
+borrows through its fields. A nested item may use a closed enclosing impl's
+constructor (the pinned compiler accepts this with a lint), but cannot capture
+generic parameters from that impl. Check even unused nested items.
+`tests/spec/self-constructors/` records these source and native contracts.
+
 Traits support type, const and lifetime arguments, defaults, required methods,
 default bodies, associated functions, supertraits and where clauses within the
 existing type profile. Preserve the trait's Self identity separately from its

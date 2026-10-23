@@ -81,3 +81,6 @@ mod trait_headers;
 pub(crate) mod verified_regions;
 #[path = "../../witness_sources.rs"]
 mod witness_sources;
+
+#[path = "../../self_constructors.rs"]
+mod self_constructors;

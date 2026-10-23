@@ -31,6 +31,9 @@ impl Checker<'_> {
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
         self.work.push(Work::ConstantArguments(key));
+        if self.schedule_self_constructor(key, context)? {
+            return Ok(());
+        }
         if self.schedule_method_path(key, context, steps, limit, scan)? {
             return Ok(());
         }
@@ -46,14 +49,16 @@ impl Checker<'_> {
     }
     pub(in super::super) fn constant_arguments(&mut self, key: NodeKey) -> Result<(), Error> {
         use crate::{sema::generics::SourceArgument, types::arguments::Argument};
-        let prefix = self
-            .facts
-            .generics
-            .constructor_uses
-            .get(&key)
-            .copied()
-            .unwrap_or(key);
-        self.constant_annotation(prefix, Readiness::Value)?;
+        let constructor = self.facts.generics.constructor_uses.get(&key).copied();
+        match constructor {
+            Some(crate::sema::generics::ConstructorUse::SelfType(ty)) => {
+                self.work.push(Work::ValueShape(ty));
+            }
+            Some(crate::sema::generics::ConstructorUse::Prefix(prefix)) => {
+                self.constant_annotation(prefix, Readiness::Value)?;
+            }
+            None => self.constant_annotation(key, Readiness::Value)?,
+        }
         self.constant_trait_contracts(key)?;
         if let Some(Target::Definition(owner)) =
             self.facts.node(key).and_then(|fact| fact.reference)

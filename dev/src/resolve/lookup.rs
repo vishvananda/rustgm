@@ -27,9 +27,30 @@ pub(crate) enum Lookup {
     /// A member resolved directly in an associated scope still has a typed prefix.
     Member(Binding, DefId, usize),
     Associated(DefId, usize),
+    SelfConstructor(DefId, bool),
     Missing,
 }
 impl Resolver<'_> {
+    /// Rust's value-form Self crosses item barriers only when its eventual type
+    /// is closed. Keep that distinction for the typed constructor elaborator.
+    pub fn self_constructor(&self, c: Context, name: NameId) -> Lookup {
+        let mut current = Some(c.scope);
+        let mut barriers = 0_u32;
+        while let Some(scope) = current {
+            let frame = &self.facts.scopes[scope.0 as usize];
+            if frame.module != c.module {
+                break;
+            }
+            if let Some(binding) = self.facts.bindings.get(scope, name, Namespace::Type)
+                && self.facts.definitions[binding.target.0 as usize].kind == DefKind::SelfType
+            {
+                return Lookup::SelfConstructor(binding.target, barriers > 1);
+            }
+            barriers += u32::from(frame.barrier);
+            current = frame.parent;
+        }
+        Lookup::Missing
+    }
     pub fn textual_conflict(
         &self,
         scope: ScopeId,
@@ -400,6 +421,8 @@ impl Resolver<'_> {
                 Ok(Target::Definition(binding.target))
             }
             Lookup::Associated(def, _) => Ok(Target::Associated(*def)),
+            Lookup::SelfConstructor(def, false) => Ok(Target::SelfConstructor(*def)),
+            Lookup::SelfConstructor(def, true) => Ok(Target::InheritedSelfConstructor(*def)),
             Lookup::Missing => {
                 let mut current = Some(c.scope);
                 while let Some(scope) = current {

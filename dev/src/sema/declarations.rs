@@ -38,6 +38,7 @@ mod offset_paths;
 mod primitive_constants;
 mod projections;
 mod receivers;
+mod self_constructors;
 mod slice_methods;
 mod slice_paths;
 mod trait_paths;
@@ -110,6 +111,7 @@ enum Work {
     Fields(ItemId, bool),
     OpaqueHidden(crate::types::opaque::OpaqueId),
     Constructor(DefId),
+    SelfConstructor(NodeKey, DefId, regions::Context),
     PrepareConstructor(DefId),
     ValueType(DefId),
     ValueContract(TypeId, bool),
@@ -496,6 +498,9 @@ impl Checker<'_> {
                     ));
                 }
                 Work::Constructor(id) => self.constructor(id)?,
+                Work::SelfConstructor(key, owner, context) => {
+                    self.complete_self_constructor(key, owner, context)?;
+                }
                 Work::PrepareConstructor(id) => self.constant_constructor(id)?,
                 Work::ValueType(id) => self.constant_value_type(id),
                 Work::ValueContract(ty, finish) => self.constant_type_contract(ty, finish)?,
@@ -637,6 +642,10 @@ impl Checker<'_> {
         }
         if let Kind::GenericMethodCall { method, .. } = kind {
             self.prepare_method_arguments(key, method, context, steps, limit, scan)?;
+        }
+        if self.schedule_self_constructor(key, context)? {
+            self.drain(steps, limit)?;
+            return Ok(());
         }
         if self.schedule_method_path(key, context, steps, limit, scan)? {
             self.drain(steps, limit)?;

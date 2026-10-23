@@ -224,12 +224,15 @@ impl Checker<'_> {
         path: NodeId,
         owner: ItemId,
     ) -> Result<TypeId, Error> {
-        if let Some(&prefix) = self.facts.generics.constructor_uses.get(&self.key(path)) {
-            return self
-                .facts
-                .node(prefix)
-                .and_then(|f| f.ty)
-                .ok_or_else(|| self.error(node, "missing alias constructor type"));
+        if let Some(&use_) = self.facts.generics.constructor_uses.get(&self.key(path)) {
+            return match use_ {
+                crate::sema::generics::ConstructorUse::SelfType(ty) => Ok(ty),
+                crate::sema::generics::ConstructorUse::Prefix(prefix) => self
+                    .facts
+                    .node(prefix)
+                    .and_then(|f| f.ty)
+                    .ok_or_else(|| self.error(node, "missing alias constructor type")),
+            };
         }
         let template = self.facts.definitions[owner.0 as usize]
             .ok_or_else(|| self.error(node, "missing nominal template"))?;

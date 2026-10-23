@@ -86,6 +86,10 @@ pub fn write(package: &Package, facts: &Resolution, out: &mut impl Write) -> io:
         match reference.target {
             Target::Definition(id) => writeln!(out, "def={}", id.0)?,
             Target::Associated(id) => writeln!(out, "associated={}", id.0)?,
+            Target::SelfConstructor(id) => writeln!(out, "self-constructor={}", id.0)?,
+            Target::InheritedSelfConstructor(id) => {
+                writeln!(out, "outer-self-constructor={}", id.0)?;
+            }
             Target::Expansion(scope) => writeln!(out, "pending-expansion={}", scope.0)?,
         }
     }

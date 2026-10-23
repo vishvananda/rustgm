@@ -451,6 +451,10 @@ impl Resolver<'_> {
             return self.lifetime(c, node, span, name);
         }
         let (absolute, path) = self.pooled_path(c, node)?;
+        let self_constructor = ns == Namespace::Value
+            && !absolute
+            && path.len() == 1
+            && self.package.names.get(path[0]) == "Self";
         let mut builtin = false;
         for &name in &path {
             builtin |= self.builtin_name(name);
@@ -489,6 +493,7 @@ impl Resolver<'_> {
         }
         let found = match found {
             Some(found) => found,
+            None if self_constructor => self.self_constructor(c, path[0]),
             None => self.lookup_path(c, node, absolute, &path, LookupMode::Use(ns), None)?,
         };
         let target = self.target(c, node, &found, ns)?;

@@ -174,6 +174,10 @@ pub struct Import {
 pub enum Target {
     Definition(DefId),
     Associated(DefId),
+    /// A value-form `Self` selects its constructor after the impl target is typed.
+    SelfConstructor(DefId),
+    /// A nested item may use a closed Self constructor, but cannot capture parameters.
+    InheritedSelfConstructor(DefId),
     Expansion(ScopeId),
 }
 /// The namespace-resolved prefix and canonical names of the remaining segments.
