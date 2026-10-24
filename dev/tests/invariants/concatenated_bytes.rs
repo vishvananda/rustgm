@@ -71,7 +71,7 @@ fn eager_byte_shapes_preserve_zero_non_utf8_and_actual_repeat_count_magnitudes()
     Ok(())
 }
 #[test]
-fn byte_repeat_and_overflow_attempts_are_charged_before_any_output_copy() -> Result {
+fn byte_repeat_and_overflow_attempts_are_charged_before_any_output_copy() {
     for source in [
         "[b'A';100000]",
         "[b'A';340282366920938463463374607431768211455u128]",
@@ -93,7 +93,6 @@ fn byte_repeat_and_overflow_attempts_are_charged_before_any_output_copy() -> Res
         assert!(produce("b'A'", &mut charge).is_err());
         assert!(failed.get());
     }
-    Ok(())
 }
 #[test]
 fn byte_output_width_has_two_bounded_typed_passes_and_linear_payload() -> Result {
