@@ -1,5 +1,6 @@
 //! Source-owned macro claims and the one implemented internal edition permission.
 use super::policy::Feature;
+mod witness;
 use crate::{
     expand::{builtin::Builtin, marks::ExpansionId},
     lex::token::Punctuation,
@@ -12,10 +13,11 @@ use crate::{
         ast::Kind,
         attribute::{Attribute, Input},
         item::ItemKind,
-        token_tree::{Delimiter, Forest, Span, Tree, TreeKind},
+        token_tree::{Delimiter, Forest, Span, TreeKind},
     },
 };
 use std::cell::RefCell;
+use witness::{Node as WitnessNode, Witness};
 
 #[derive(Clone, Copy)]
 pub(in crate::resolve) struct Allowance {
@@ -95,76 +97,10 @@ struct Owner<'a> {
     node: NodeKey,
     attributes: std::ops::Range<usize>,
 }
-struct Witness {
-    index: usize,
-    capture: u32,
-    attribute: Attribute,
-    nodes: Vec<(u32, Tree)>,
-}
 struct Entry {
     declaration: Declaration,
     witnesses: Vec<Witness>,
     witness_work: usize,
-}
-impl Witness {
-    fn capture(
-        owner: &Owner<'_>,
-        index: usize,
-        attribute: Attribute,
-        forest: &Forest,
-        work: &mut State,
-    ) -> Result<Self, &'static str> {
-        let mut count = attribute.path.end - attribute.path.start;
-        let input = if let Input::Delimited(group) = attribute.input {
-            let end = forest.after(group);
-            count = count
-                .checked_add(end - group)
-                .ok_or("macro attribute witness size overflow")?;
-            group..end
-        } else {
-            0..0
-        };
-        work.charge(
-            count as usize,
-            (count as usize).saturating_mul(4 * size_of::<(u32, Tree)>()),
-        )?;
-        let mut nodes = Vec::new();
-        nodes
-            .try_reserve_exact(count as usize)
-            .map_err(|_| "macro attribute witness allocation failed")?;
-        for node in (attribute.path.start..attribute.path.end).chain(input) {
-            nodes.push((
-                node,
-                forest
-                    .tree(node)
-                    .ok_or("invalid macro attribute witness tree")?,
-            ));
-        }
-        Ok(Self {
-            index,
-            capture: owner.unit.configured.effects[index].capture,
-            attribute,
-            nodes,
-        })
-    }
-    fn valid(&self, unit: &Unit) -> bool {
-        let Some(effect) = unit.configured.effects.get(self.index) else {
-            return false;
-        };
-        effect.attribute.effect == crate::expand::configured::Effect::Keep
-            && effect.capture == self.capture
-            && effect.attribute.attribute == self.attribute
-            && unit
-                .configured
-                .ast
-                .attributes
-                .get(self.capture as usize)
-                .is_some_and(|capture| {
-                    self.nodes
-                        .iter()
-                        .all(|&(index, node)| capture.forest.tree(index) == Some(node))
-                })
-    }
 }
 fn owner(package: &Package, key: NodeKey) -> Result<Option<Owner<'_>>, Error> {
     let unit = package
@@ -271,7 +207,7 @@ pub(in crate::resolve) fn declaration(
                             witness
                                 .nodes
                                 .capacity()
-                                .saturating_mul(size_of::<(u32, Tree)>())
+                                .saturating_mul(size_of::<WitnessNode>())
                         })
                         .sum::<usize>(),
                 );
@@ -366,9 +302,14 @@ fn parse(package: &Package, owner: &Owner<'_>, work: &mut State) -> Result<Optio
             }
             _ => continue,
         }
-        let witness = Witness::capture(owner, index, attribute, forest, work).map_err(error)?;
+        let witness = Witness::capture(owner, index, attribute, forest, result.builtin, work)
+            .map_err(error)?;
         work.charge(1, 4 * size_of::<Witness>()).map_err(error)?;
-        witness_work += 1 + witness.nodes.len();
+        witness_work += 1 + witness
+            .nodes
+            .iter()
+            .map(|(_, _, spelling)| 1 + spelling.map_or(0, |spelling| spelling.name().len()))
+            .sum::<usize>();
         witnesses.push(witness);
     }
     if result.builtin.is_some()

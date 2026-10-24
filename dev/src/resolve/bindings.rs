@@ -1,6 +1,7 @@
 //! Configured source providers own real declaration claims and explicit features.
 mod admission;
 mod annotations;
+mod claim_tokens;
 mod client;
 pub(in crate::resolve) mod panic_contracts;
 pub(super) mod policy;

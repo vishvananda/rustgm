@@ -12,6 +12,9 @@ use crate::{
 };
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
+#[path = "claim_spellings.rs"]
+mod spellings;
+
 fn actual() -> TestResult<Report> {
     let source = crate::test_source::fixture(
         "pa31/tests/spec/source-panic-macros/permission-valid-wrapper.rs",
