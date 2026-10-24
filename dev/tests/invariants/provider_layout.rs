@@ -127,14 +127,14 @@ fn layout_members_require_their_completed_associated_usize_contract() -> Result 
         .and_then(|id| facts.associated.get(id))
         .ok_or("owner")?
         .self_definition;
-    facts
-        .source_bindings
-        .as_deref_mut()
-        .ok_or("catalog")?
-        .languages[LangItem::MemSizeConst.index()]
-    .as_mut()
-    .ok_or("claim")?
-    .parent = Some(actual_owner);
+    let catalog = facts.source_bindings.as_deref_mut().ok_or("catalog")?;
+    let super::super::binding_views::Bindings::Provider(languages) = &mut catalog.bindings else {
+        return Err("layout opponent requires its actual source provider".into());
+    };
+    languages[LangItem::MemSizeConst.index()]
+        .as_mut()
+        .ok_or("claim")?
+        .parent = Some(actual_owner);
     assert!(validate_member(&report, &facts, member).is_err());
     for tail in [
         "pub trait Properties:Sized{#[lang=\"mem_size_const\"]const SIZE:u32=0;}",

@@ -55,7 +55,7 @@ impl PartialEq for Payload {
 impl Eq for Payload {}
 impl Payload {
     /// Existing payload construction supports legacy rows only. Source dispatch
-    /// is wired only when its complete validator can mint ValidatedRows.
+    /// is wired only when its complete validator can mint `ValidatedRows`.
     #[must_use]
     pub const fn view(&self) -> PayloadView<'_> {
         PayloadView::Legacy(&self.rows)

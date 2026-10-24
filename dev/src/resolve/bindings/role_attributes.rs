@@ -31,6 +31,15 @@ impl HeaderAttribute {
 pub(crate) struct HeaderAttributes(u8);
 impl HeaderAttributes {
     pub(crate) const EMPTY: Self = Self(0);
+    /// Retained claims only. Consumers still validate their exact role owner,
+    /// profile and deny-implementation contract before assigning any semantics.
+    pub(crate) fn retained(attributes: impl IntoIterator<Item = HeaderAttribute>) -> Self {
+        Self(
+            attributes
+                .into_iter()
+                .fold(0, |bits, attribute| bits | attribute.bit()),
+        )
+    }
     pub(crate) const fn contains(self, attribute: HeaderAttribute) -> bool {
         self.0 & attribute.bit() != 0
     }

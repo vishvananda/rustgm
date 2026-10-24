@@ -84,7 +84,21 @@ pub struct CallRequest {
     pub method: Option<TraitApplicationRef>,
     pub signature: TypeRef,
     pub opening: Option<Opening>,
+    /// Defining request data. Reached instantiation still derives and proves its
+    /// actual runtime/const obligations; this is never a paid call witness.
     pub effect: Constness,
+}
+/// Exact owned-rvalue storage inputs; ordinary destruction proof remains required.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Release {
+    pub value: u32,
+    pub location: g::Location,
+    pub exits_before: u32,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct OwnedValues {
+    pub created: Vec<g::Temporary>,
+    pub returned: Vec<Release>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CallContext {
@@ -119,6 +133,7 @@ pub struct Original {
     pub scopes: Vec<g::Scope>,
     pub exits: Vec<g::Exit>,
     pub temporaries: Vec<g::Temporary>,
+    pub owned: Option<OwnedValues>,
     pub arguments: Vec<u32>,
     pub openings: Vec<RegionRef>,
     pub calls: Vec<CallRequest>,

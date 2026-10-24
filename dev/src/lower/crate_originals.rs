@@ -2,7 +2,7 @@
 mod applications;
 mod declarations;
 mod formal_links;
-mod lexical;
+pub(super) mod lexical;
 mod ports;
 mod reachability;
 mod signatures;

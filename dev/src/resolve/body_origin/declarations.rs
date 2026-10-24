@@ -58,6 +58,19 @@ pub(crate) struct DeclarationBinding {
     pub sites: Range<u32>,
 }
 impl Catalog {
+    /// Read one sealed current declaration without fabricating a source node or
+    /// accepting an equal-shaped row from another catalog.
+    pub(crate) fn declaration_identity(
+        &self,
+        id: ImportedDeclarationId,
+        kind: DefKind,
+    ) -> Result<DefId, &'static str> {
+        let row = self.declaration_row(id)?;
+        if row.kind != kind {
+            return Err("imported declaration handle changed its actual kind");
+        }
+        Ok(row.definition)
+    }
     pub(crate) fn declaration(
         &self,
         definition: DefId,

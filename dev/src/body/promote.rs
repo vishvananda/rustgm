@@ -15,6 +15,9 @@ use crate::{
     },
     types::Kind as Type,
 };
+#[cfg(test)]
+#[path = "../../tests/invariants/promotion_presence.rs"]
+mod tests;
 
 /// Completed promotion facts, distinct from storage-liveness and loan proofs.
 #[derive(Clone, Default)]
@@ -24,6 +27,12 @@ pub struct Facts {
     pub steps: usize,
 }
 impl Facts {
+    /// Empty analysis has no promoted or deferred roots to transport. Work is
+    /// telemetry only; this query grants no promotion or execution permission.
+    #[must_use]
+    pub(crate) fn is_empty(&self) -> bool {
+        self.entries.is_empty() && self.index.is_empty()
+    }
     pub(crate) fn allocation_bytes(&self) -> usize {
         use crate::support::retained::{map, sum, vector};
         sum([vector(&self.entries), map(&self.index)])

@@ -102,5 +102,5 @@ pub(super) fn prepare(
 }
 
 #[cfg(test)]
-#[path = "../../../tests/invariants/source_client_policy.rs"]
+#[path = "../../../tests/invariants/client_selection_policy.rs"]
 mod tests;

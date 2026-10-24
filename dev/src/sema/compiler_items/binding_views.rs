@@ -1,0 +1,291 @@
+//! Neutral role identity is checked catalog data, never implementation or call proof.
+use super::{Catalog, CrateIdentity, Declaration, DefId, LangItem, Report};
+use crate::{
+    resolve::{
+        bindings::{HeaderAttribute, HeaderAttributes},
+        body_origin::{Catalog as Origins, DeclarationOrigin, ImportedDeclarationId},
+        model::DefKind,
+    },
+    support::crates::{
+        Dependencies, SourceDescriptor, generics::source as s, owner_catalog::DeclarationRef,
+    },
+};
+use std::{rc::Rc, sync::Arc};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(in crate::sema) struct Role {
+    pub definition: DefId,
+    pub parent: Option<DefId>,
+    pub origin: DeclarationOrigin,
+}
+impl From<Declaration> for Role {
+    fn from(source: Declaration) -> Self {
+        Self {
+            definition: source.definition,
+            parent: source.parent,
+            origin: source.origin.into(),
+        }
+    }
+}
+pub(super) enum Bindings {
+    Provider([Option<Declaration>; LangItem::ALL.len()]),
+    Imported(Imported),
+}
+#[derive(Clone, Copy)]
+struct ImportedRole {
+    declaration: ImportedDeclarationId,
+    parent: Option<DefId>,
+}
+pub(super) struct Imported {
+    current: CrateIdentity,
+    dependencies: Arc<Dependencies>,
+    provider_index: u32,
+    origins: Rc<Origins>,
+    roles: [Option<ImportedRole>; LangItem::ALL.len()],
+    installation_work: usize,
+}
+impl Imported {
+    pub(super) fn require_report(
+        &self,
+        report: &Report,
+        provider: &CrateIdentity,
+    ) -> Result<(), &'static str> {
+        let source = report
+            .package
+            .source_client()
+            .ok_or("imported role catalog requires its actual source client report")?;
+        let imported = report
+            .resolution
+            .crates
+            .as_deref()
+            .ok_or("source client report has no actual imported inventory")?;
+        let index = source.require_inventory(imported.dependencies())?;
+        if source.current() != &self.current
+            || source.provider() != provider
+            || index != self.provider_index
+            || !std::ptr::eq(imported.dependencies(), self.dependencies.as_ref())
+        {
+            return Err("imported role catalog belongs to another source client inventory");
+        }
+        let origins = imported
+            .origin_catalog()?
+            .ok_or("source client report has no completed origin catalog")?;
+        if !Rc::ptr_eq(&origins, &self.origins) {
+            return Err("source client role catalog belongs to another actual declaration remap");
+        }
+        Ok(())
+    }
+
+    fn role(&self, kind: LangItem, provider: &CrateIdentity) -> Result<Option<Role>, &'static str> {
+        let Some(role) = self.roles[kind.index()] else {
+            return Ok(None);
+        };
+        let (owner, _, _) = self.origins.declaration_coordinate(role.declaration)?;
+        if owner != provider {
+            return Err("imported language role belongs to a foreign provider artifact");
+        }
+        let definition = self
+            .origins
+            .declaration_identity(role.declaration, role_kind(kind))?;
+        Ok(Some(Role {
+            definition,
+            parent: role.parent,
+            origin: DeclarationOrigin::Imported(role.declaration),
+        }))
+    }
+}
+
+impl Catalog {
+    #[cfg(test)]
+    pub(crate) const fn binding_layouts() -> (usize, usize, usize) {
+        (
+            size_of::<Bindings>(),
+            size_of::<Imported>(),
+            size_of::<ImportedRole>(),
+        )
+    }
+    pub(crate) fn binding_work(&self) -> usize {
+        match &self.bindings {
+            Bindings::Provider(_) => 0,
+            Bindings::Imported(imported) => imported.installation_work,
+        }
+    }
+    pub(in crate::sema) fn neutral_attributes(
+        &self,
+        requested: Role,
+    ) -> Result<crate::resolve::bindings::HeaderAttributes, &'static str> {
+        for role in LangItem::ALL {
+            if let Some(actual) = self.role(role)?
+                && actual.definition == requested.definition
+            {
+                if actual.parent != requested.parent || actual.origin != requested.origin {
+                    return Err(
+                        "source role attributes belong to another actual declaration origin or parent",
+                    );
+                }
+                return Ok(self.attributes[role.index()]);
+            }
+        }
+        Ok(crate::resolve::bindings::HeaderAttributes::EMPTY)
+    }
+    /// Neutral semantic identity. Source-only syntax adapters continue using
+    /// `language()`; absence there must never select a bootstrap implementation.
+    pub(in crate::sema) fn role(&self, role: LangItem) -> Result<Option<Role>, &'static str> {
+        match &self.bindings {
+            Bindings::Provider(languages) => Ok(languages[role.index()].map(Role::from)),
+            Bindings::Imported(imported) => imported.role(role, &self.provider),
+        }
+    }
+}
+
+pub(super) fn client_catalog(report: &Report) -> Result<Box<Catalog>, &'static str> {
+    let client = report
+        .package
+        .source_client()
+        .ok_or("source client role installation has no client policy")?;
+    let imported = report
+        .resolution
+        .crates
+        .as_deref()
+        .ok_or("source client role installation has no imported declarations")?;
+    let provider_index = client.require_inventory(imported.dependencies())?;
+    let origins = imported
+        .origin_catalog()?
+        .ok_or("source client has no completed authenticated origin catalog")?;
+    let descriptor = imported
+        .dependencies()
+        .artifacts()
+        .get(provider_index as usize)
+        .and_then(crate::support::crates::Interface::source_descriptor)
+        .ok_or("source client provider descriptor is absent")?;
+    let mut installation_work = 0usize;
+    let (roles, attributes) = reserve_roles(descriptor, &origins, &mut installation_work)?;
+    let dependencies = imported.shared_dependencies();
+    let bindings = Imported {
+        current: client.current().clone(),
+        dependencies,
+        provider_index,
+        origins,
+        roles,
+        installation_work,
+    };
+    bindings.require_report(report, client.provider())?;
+    Ok(Box::new(Catalog {
+        provider: client.provider().clone(),
+        bindings: Bindings::Imported(bindings),
+        sizing: None,
+        destruction_registration: None,
+        traits: None,
+        call_effects: None,
+        call_contexts: None,
+        intrinsics: crate::support::hash::HashMap::default(),
+        attributes,
+    }))
+}
+
+type Reserved = (
+    [Option<ImportedRole>; LangItem::ALL.len()],
+    [crate::resolve::bindings::HeaderAttributes; LangItem::ALL.len()],
+);
+fn reserve_roles(
+    descriptor: SourceDescriptor<'_>,
+    origins: &Origins,
+    work: &mut usize,
+) -> Result<Reserved, &'static str> {
+    let rows = descriptor.rows();
+    let roles = rows
+        .roles
+        .get(rows.policy.roles.start as usize..rows.policy.roles.end as usize)
+        .ok_or("source role range is outside its validated payload")?;
+    let mut result = [None; LangItem::ALL.len()];
+    let mut attributes = [crate::resolve::bindings::HeaderAttributes::EMPTY; LangItem::ALL.len()];
+    for role in roles {
+        charge(work, 1)?;
+        if role.declaration.artifact != s::ArtifactRef(0) {
+            return Err("source provider role names a foreign defining artifact");
+        }
+        let definition =
+            origins.definition_at(descriptor.provider(), role.declaration.declaration)?;
+        let declaration = origins.declaration(definition)?;
+        origins.validate_declaration(declaration, definition, role_kind(role.role))?;
+        let parent = role_parent(rows, role.role, role.declaration.declaration, work)?
+            .map(|parent| origins.definition_at(descriptor.provider(), parent))
+            .transpose()?;
+        if result[role.role.index()]
+            .replace(ImportedRole {
+                declaration,
+                parent,
+            })
+            .is_some()
+        {
+            return Err("source descriptor has duplicate language roles");
+        }
+        if role_kind(role.role) == DefKind::Trait {
+            let mut found = None;
+            for header in &rows.traits {
+                charge(work, 1)?;
+                if header.declaration == role.declaration.declaration
+                    && found.replace(header.flags).is_some()
+                {
+                    return Err("source role has duplicate canonical trait headers");
+                }
+            }
+            let flags = found
+                .ok_or("source trait role has no actual canonical header")?
+                .bits();
+            charge(work, 4)?;
+            attributes[role.role.index()] = HeaderAttributes::retained(
+                [
+                    (s::TraitFlags::FUNDAMENTAL, HeaderAttribute::Fundamental),
+                    (
+                        s::TraitFlags::SPECIALIZATION,
+                        HeaderAttribute::Specialization,
+                    ),
+                    (s::TraitFlags::COINDUCTIVE, HeaderAttribute::Coinductive),
+                    (
+                        s::TraitFlags::DYN_INCOMPATIBLE,
+                        HeaderAttribute::DynIncompatible,
+                    ),
+                ]
+                .into_iter()
+                .filter_map(|(bit, attribute)| (flags & bit != 0).then_some(attribute)),
+            );
+        }
+    }
+    Ok((result, attributes))
+}
+
+fn role_parent(
+    rows: &s::SourceRows,
+    role: LangItem,
+    declaration: DeclarationRef,
+    work: &mut usize,
+) -> Result<Option<DeclarationRef>, &'static str> {
+    charge(work, 1)?;
+    if role_kind(role) != DefKind::Function {
+        return Ok(None);
+    }
+    let mut comparisons = 0usize;
+    let found = rows.functions.binary_search_by(|function| {
+        comparisons = comparisons.saturating_add(1);
+        function.declaration.0.cmp(&declaration.0)
+    });
+    charge(work, comparisons)?;
+    let index = found.map_err(|_| "source function role has no actual canonical header")?;
+    Ok(rows.functions[index].parent)
+}
+fn charge(work: &mut usize, count: usize) -> Result<(), &'static str> {
+    *work = work.saturating_add(count);
+    if *work > crate::support::crates::MAX_COMPONENTS {
+        return Err("source role installation work budget exceeded");
+    }
+    Ok(())
+}
+fn role_kind(role: LangItem) -> DefKind {
+    match role {
+        LangItem::CloneFn | LangItem::DropGlue => DefKind::Function,
+        LangItem::MemSizeConst | LangItem::MemAlignConst => DefKind::Const,
+        LangItem::FnOnceOutput => DefKind::TypeAlias,
+        _ => DefKind::Trait,
+    }
+}

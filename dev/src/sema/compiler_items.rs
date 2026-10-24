@@ -1,11 +1,13 @@
 //! Actual source compiler declarations remain distinct from bootstrap identities.
+mod binding_views;
 mod calls;
+pub(in crate::sema) use binding_views::Role;
 pub(in crate::sema) use calls::Effect as CallEffect;
 pub(crate) mod const_payments;
 mod copying;
 mod explicit_cleanup;
 mod glue_calls;
-mod headers;
+pub(in crate::sema) mod headers;
 pub(crate) use calls::check_instance as check_const_instance;
 pub(super) use calls::record as record_call_effects;
 pub(in crate::sema) use explicit_cleanup::explicit_drop_member;
@@ -40,7 +42,7 @@ mod tests;
 
 pub(crate) struct Catalog {
     provider: CrateIdentity,
-    languages: [Option<Declaration>; LangItem::ALL.len()],
+    bindings: binding_views::Bindings,
     sizing: Option<[DefId; 3]>,
     destruction_registration: Option<DefId>,
     traits: Option<Box<roles::Validated>>,
@@ -52,6 +54,9 @@ pub(crate) struct Catalog {
 impl Catalog {
     /// A provider catalog cannot authenticate a different source report or mode.
     pub(crate) fn require_provider_report(&self, report: &Report) -> Result<(), &'static str> {
+        if let binding_views::Bindings::Imported(imported) = &self.bindings {
+            return imported.require_report(report, &self.provider);
+        }
         let source = report.package.source_core()
             .ok_or("source catalog requires its actual provider report; SourceClient mode is not implemented")?;
         let reserved = report
@@ -68,6 +73,11 @@ impl Catalog {
         Ok(())
     }
     pub(crate) fn reserve(report: &Report) -> Result<Option<Box<Self>>, Error> {
+        if report.package.source_client().is_some() {
+            return binding_views::client_catalog(report)
+                .map(Some)
+                .map_err(Error::unlocated);
+        }
         let Some(reserved) = report.resolution.source_bindings.as_deref() else {
             if report.package.source_core().is_some() {
                 return Err(Error::at(
@@ -110,7 +120,9 @@ impl Catalog {
         }
         Ok(Some(Box::new(Self {
             provider: reserved.provider.clone(),
-            languages: LangItem::ALL.map(|kind| reserved.language(kind)),
+            bindings: binding_views::Bindings::Provider(
+                LangItem::ALL.map(|kind| reserved.language(kind)),
+            ),
             sizing: None,
             destruction_registration: None,
             traits: None,
@@ -160,17 +172,10 @@ impl Catalog {
         Ok(())
     }
     pub(crate) fn language(&self, kind: LangItem) -> Option<Declaration> {
-        self.languages[kind.index()]
-    }
-    fn header_attributes(&self, definition: DefId) -> crate::resolve::bindings::HeaderAttributes {
-        LangItem::ALL
-            .into_iter()
-            .find_map(|role| {
-                self.language(role)
-                    .filter(|declaration| declaration.definition == definition)
-                    .map(|_| self.attributes[role.index()])
-            })
-            .unwrap_or(crate::resolve::bindings::HeaderAttributes::EMPTY)
+        match &self.bindings {
+            binding_views::Bindings::Provider(languages) => languages[kind.index()],
+            binding_views::Bindings::Imported(_) => None,
+        }
     }
     pub(crate) fn forces_dyn_incompatible(&self, definition: DefId) -> Result<bool, &'static str> {
         for role in [LangItem::Sized, LangItem::Destruct, LangItem::Unsize] {

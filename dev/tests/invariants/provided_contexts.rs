@@ -164,7 +164,7 @@ fn ordinary_nonprovider_defining_check_keeps_zero_added_work() -> Result {
         .ok_or("ordinary function")?;
     let template = prepared.templates.function(&report, &facts, &function)?;
     assert!(!template.body.const_context);
-    assert!(report.package.source_core.is_none());
+    assert!(report.package.source_core().is_none());
     let before = facts.body_work.canonical_steps;
     crate::body::constants::eligibility_charged(&report, &mut facts, &template.body)?;
     assert_eq!(facts.body_work.canonical_steps, before);
@@ -177,7 +177,7 @@ fn nonprovider_const_defaults_do_not_skip_actual_defining_checks() -> Result {
         "pa31/tests/spec/trait-default-effects/default-nonconst-definition.rs",
     )?;
     let report = crate::test_source::resolve(&source, true)?;
-    assert!(report.package.source_core.is_none());
+    assert!(report.package.source_core().is_none());
     let crate::pipeline::Analysis {
         mut facts,
         prepared,

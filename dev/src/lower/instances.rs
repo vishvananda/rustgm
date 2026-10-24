@@ -6,12 +6,52 @@ mod staged_originals;
 #[cfg(test)]
 #[path = "../../tests/invariants/upstream_originals.rs"]
 mod upstream_originals;
+pub use super::transported_source::SourceInspection;
+pub use crate::sema::crates::authored_export::SourceWork;
 use crate::{
     body::{self, regions::Contracts},
     borrow,
     resolve::{expansion::Report, model::DefId, package::Error},
     sema::model::Declarations,
 };
+
+/// Inspect actual source-provider transport rows after complete original,
+/// instance and assembly success. This publishes no metadata descriptor or
+/// imported role/execution permission.
+/// # Errors
+/// Preserves unsupported source forms, incomplete coverage and every ordinary
+/// proof/lowering failure before returning neutral observations.
+pub fn inspect_source_transport(
+    report: &Report,
+    facts: &mut Declarations,
+    identity: &crate::support::crates::CrateIdentity,
+    prepared: crate::pipeline::Prepared,
+) -> Result<SourceInspection, Error> {
+    inspect_staged(
+        report,
+        facts,
+        prepared,
+        |facts, checked| {
+            let source = super::transported_source::Source::begin(report, facts, checked, identity)
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            let exports = super::roots::exports(facts, &[])
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            Ok((None, exports, source))
+        },
+        |source, facts, proved, input| {
+            source
+                .collect(facts, proved, input)
+                .map_err(|e| diagnostic(report, None, e.into()))
+        },
+        |facts, assembled, roots, source| {
+            super::build_assembled(facts, assembled, roots)
+                .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
+            source
+                .complete()
+                .map_err(|e| diagnostic(report, None, e.into()))
+        },
+    )?
+}
 
 /// Compile selected instances using retained syntax/type facts and checked templates.
 /// Each demanded body has its own substituted contract; source keys are diagnostic

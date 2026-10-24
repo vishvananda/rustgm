@@ -94,6 +94,11 @@ impl Imported {
     pub fn dependencies(&self) -> &Dependencies {
         &self.dependencies
     }
+    /// Share this exact immutable imported inventory; no decoding or new owner
+    /// table is performed by a semantic source-client view.
+    pub(crate) fn shared_dependencies(&self) -> Arc<Dependencies> {
+        Arc::clone(&self.dependencies)
+    }
     #[must_use]
     pub fn definition(&self, external: &ExternalDef) -> Option<DefId> {
         self.definitions.get(external).copied()

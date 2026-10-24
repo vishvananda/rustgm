@@ -18,6 +18,8 @@ use crate::{
     },
 };
 use std::path::Path;
+#[path = "qualified_source_rows.rs"]
+mod captured;
 #[path = "ordinary_original_probe.rs"]
 mod ordinary;
 pub(super) use ordinary::observe as observe_ordinary;
@@ -31,28 +33,7 @@ impl Sources for NoFiles {
 
 #[test]
 fn genuine_clone_from_and_identity_reach_paired_checked_original_inspection() -> Result {
-    let source = std::fs::read(
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs"),
-    )?;
-    let provider = CrateIdentity::new("minicore", "source_headers")?;
-    let context = Context {
-        crate_name: Some("minicore".into()),
-        current: Some(provider.clone()),
-        mode: Mode::Source { provider },
-        ..Default::default()
-    };
-    let report = resolve::analyze_expanded(resolve::expansion::analyze_with_context(
-        InputFile {
-            identity: "provider.rs".into(),
-            path: "provider.rs".into(),
-            source: SourceFile::new(source)?,
-        },
-        &mut NoFiles,
-        &Config::default(),
-        &context,
-    )?)?;
-    let analysis = crate::pipeline::analyze_source(&report)?;
+    let (report, analysis, _) = analyzed_provider()?;
     let mut facts = analysis.facts;
     let concrete = source_function(&report, &facts, "clone")?;
     let ordinary = ordinary::Probe::new(concrete);
@@ -80,6 +61,34 @@ fn genuine_clone_from_and_identity_reach_paired_checked_original_inspection() ->
     )?;
     ordinary.finish();
     Ok(())
+}
+
+fn analyzed_provider() -> Result<(Report, crate::pipeline::Analysis, CrateIdentity)> {
+    let source = std::fs::read(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs"),
+    )?;
+    let provider = CrateIdentity::new("minicore", "source_headers")?;
+    let context = Context {
+        crate_name: Some("minicore".into()),
+        current: Some(provider.clone()),
+        mode: Mode::Source {
+            provider: provider.clone(),
+        },
+        ..Default::default()
+    };
+    let report = resolve::analyze_expanded(resolve::expansion::analyze_with_context(
+        InputFile {
+            identity: "provider.rs".into(),
+            path: "provider.rs".into(),
+            source: SourceFile::new(source)?,
+        },
+        &mut NoFiles,
+        &Config::default(),
+        &context,
+    )?)?;
+    let analysis = crate::pipeline::analyze_source(&report)?;
+    Ok((report, analysis, provider))
 }
 
 fn source_function(
@@ -179,9 +188,35 @@ fn trace_body(
     contract: &body::regions::Contract,
 ) {
     trace_shape(facts, name, &template.body, contract);
+    trace_sidecars(name, &template.body);
     println!("{name} cleanup-sites={}", template.destruction.sites.len());
     for site in &template.destruction.sites {
         println!("{name} cleanup: {:?}", site.trigger);
+    }
+}
+
+fn trace_sidecars(name: &str, body: &body::ir::Body) {
+    println!(
+        "{name} auxiliary guards={} guard-places={} scalars={} closure-calls={} resolved-callables={} promotion-state={:?}",
+        body.guards.len(),
+        body.guard_places.len(),
+        body.scalars.len(),
+        body.closure_calls.is_some(),
+        body.resolved_callables.is_some(),
+        body.promotions.as_ref().map(|facts| (
+            facts.is_empty(),
+            facts.entries().count(),
+            facts.deferred().count(),
+            facts.steps
+        ))
+    );
+    if name == "clone_from" {
+        assert!(
+            body.promotions
+                .as_ref()
+                .is_some_and(body::promote::Facts::is_empty),
+            "actual completed Clone analysis retains no promoted or deferred roots"
+        );
     }
 }
 

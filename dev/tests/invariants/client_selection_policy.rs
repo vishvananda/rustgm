@@ -23,7 +23,8 @@ fn rejected(source: &str, edition: Edition, context: &Context, message: &str) ->
         SourceFile::new(source.as_bytes().to_vec())?,
         &Config::in_edition(edition),
         &mut Names::default(),
-    )?;
+    )
+    .map_err(|error| format!("{error:?}"))?;
     let Err(error) = policy::prepare(&unit, context) else {
         return Err("unauthenticated source client admitted".into());
     };
@@ -124,7 +125,8 @@ fn source_modes_keep_one_pointer_and_bootstrap_keeps_no_source_policy() -> Resul
         SourceFile::new(b"fn f(){}".to_vec())?,
         &Config::default(),
         &mut Names::default(),
-    )?;
+    )
+    .map_err(|error| format!("{error:?}"))?;
     let prepared = policy::prepare(&unit, &Context::default())?;
     assert!(prepared.source.is_none());
     assert!(prepared.library.is_none());

@@ -25,8 +25,13 @@ pub struct Definition {
 pub struct ScopeIndex<'a> {
     rows: &'a SourceRows,
     owners: Vec<Option<u32>>,
-    totals: Vec<u32>,
+    totals: Vec<Counts>,
     ends: Vec<u32>,
+}
+#[derive(Clone, Copy)]
+struct Counts {
+    all: u32,
+    types: u32,
 }
 impl<'a> ScopeIndex<'a> {
     /// Canonical preorder lets each scope open/close once, without ancestry walks.
@@ -41,7 +46,7 @@ impl<'a> ScopeIndex<'a> {
         preflight(rows, definitions.len(), retained_bytes, work)?;
         let mut owners = vec![None; definitions.len()];
         let mut bindings = vec![None; definitions.len()];
-        let mut totals = Vec::<u32>::with_capacity(rows.scopes.len());
+        let mut totals = Vec::<Counts>::with_capacity(rows.scopes.len());
         let mut ends = vec![0; rows.scopes.len()];
         let mut stack = Vec::<u32>::with_capacity(rows.scopes.len());
         let mut cursor = 0;
@@ -78,14 +83,17 @@ impl<'a> ScopeIndex<'a> {
                     .ok_or("source parameter scope parent is foreign or closed")?;
                 ends[closed as usize] = index;
             }
-            let captured = parent.map_or(0, |parent| totals[parent as usize]);
-            if scope.captures != captured
+            let captured = parent.map_or(Counts { all: 0, types: 0 }, |parent| {
+                totals[parent as usize]
+            });
+            if scope.captures != captured.all
                 || scope.declared.start != cursor
                 || scope.declared.end < cursor
                 || scope.declared.end as usize > rows.slots.len()
             {
                 return Err("source parameter scope changed its exact prefix or declared range");
             }
+            let mut types = captured.types;
             for (ordinal, slot) in rows.slots[cursor as usize..scope.declared.end as usize]
                 .iter()
                 .enumerate()
@@ -97,12 +105,18 @@ impl<'a> ScopeIndex<'a> {
                 if matches!(slot.kind, ParameterKind::Type { .. }) && slot.index != slot.ordinal {
                     return Err("source type parameter changed its exact declared index");
                 }
+                if matches!(slot.kind, ParameterKind::Type { .. }) {
+                    types = types
+                        .checked_add(1)
+                        .ok_or("source type parameter count overflow")?;
+                }
                 validate_binding(slot, definitions, &mut bindings, work)?;
             }
             let total = captured
+                .all
                 .checked_add(scope.declared.end - cursor)
                 .ok_or("source parameter scope count overflow")?;
-            totals.push(total);
+            totals.push(Counts { all: total, types });
             owners[scope.owner.0 as usize] = Some(index);
             stack.push(index);
             cursor = scope.declared.end;
@@ -165,8 +179,26 @@ impl<'a> ScopeIndex<'a> {
             .get(owner.0 as usize)
             .copied()
             .flatten()
-            .map(|index| self.totals[index as usize])
+            .map(|index| self.totals[index as usize].all)
             .ok_or("source parameter count has no owner scope")
+    }
+
+    /// Complete type formals include inherited and unused slots, without copying
+    /// or walking each owner's ancestry again. Region formals remain distinct.
+    /// # Errors
+    /// Rejects unknown owners and charges failed queries as well as successes.
+    pub fn complete_type_slots(
+        &self,
+        owner: DeclarationRef,
+        work: &mut Work,
+    ) -> Result<u32, &'static str> {
+        work.charge(2)?;
+        self.owners
+            .get(owner.0 as usize)
+            .copied()
+            .flatten()
+            .map(|index| self.totals[index as usize].types)
+            .ok_or("source type parameter count has no owner scope")
     }
 
     #[must_use]
@@ -273,7 +305,11 @@ fn preflight(
     }
     let bytes = declarations
         .saturating_mul(2 * size_of::<Option<u32>>())
-        .saturating_add(rows.scopes.len().saturating_mul(3 * size_of::<u32>()))
+        .saturating_add(
+            rows.scopes
+                .len()
+                .saturating_mul(size_of::<Counts>() + 2 * size_of::<u32>()),
+        )
         .saturating_add(size_of::<ScopeIndex<'_>>());
     if retained_bytes.saturating_add(bytes) > crates::MAX_BYTES {
         return Err("source parameter scope scratch budget exceeded");

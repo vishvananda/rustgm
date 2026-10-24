@@ -170,8 +170,10 @@ pub struct Clause {
     pub site: u32,
     pub binder: Option<BinderRef>,
     pub requirement: Requirement,
-    /// Actual written subject; canonical type equality cannot invent Self syntax.
-    pub written_subject: Option<SlotRef>,
+    /// Actual canonical Self subject, including typed generated sizing defaults.
+    /// Only the exact trait-contract prefix may supply this classification;
+    /// canonical type equality cannot invent Self syntax or an own-trait premise.
+    pub self_subject: Option<SlotRef>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RegionBound {
@@ -213,9 +215,13 @@ pub struct TraitHeader {
     pub region_captures: u32,
     pub region_bounds: Range,
     pub inputs: Range,
+    /// Exact original trait-contract prefix, before implicit own-trait premises
+    /// and the later elaborated declaration assumption environment.
+    pub canonical_inputs: u32,
     pub declared_inputs: u32,
     pub written_parameters: u32,
-    /// Range in `clause_indices`, independently of complete input order.
+    /// Literal colon-bound indices, independently of complete semantic Self
+    /// requirements (including defaults and written where-Self clauses).
     pub written_supertraits: Range,
     pub members: Range,
 }

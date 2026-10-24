@@ -40,6 +40,7 @@ pub enum InputKind {
     },
     Membership {
         region: RegionRef,
+        /// Range in SourceRows.arguments; every element must be a region.
         captures: Range,
     },
     LocalBorrow(RegionRef),

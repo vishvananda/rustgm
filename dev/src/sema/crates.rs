@@ -1,4 +1,5 @@
 //! Imported contracts are remapped once; const execution still requires checked bodies.
+pub(crate) mod authored_export;
 mod export;
 mod imported_records;
 mod imported_storage;

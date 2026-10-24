@@ -1,6 +1,7 @@
 //! Header-slot indexes preserve real owners; successful lookup is not proof.
 use super::*;
 use crate::support::crates::generics::{Range, source::*};
+const _: [(); 80] = [(); size_of::<ScopeIndex<'static>>()];
 
 fn empty_rows(slots: Vec<ParameterSlot>, scopes: Vec<ParameterScope>) -> SourceRows {
     SourceRows {
@@ -109,6 +110,7 @@ fn inherited_slots_keep_self_and_method_owners_distinct() -> Result<(), &'static
         size_of::<ScopeIndex<'_>>()
     );
     assert_eq!(index.complete_slots(DeclarationRef(2), &mut work)?, 2);
+    assert_eq!(index.complete_type_slots(DeclarationRef(2), &mut work)?, 2);
     assert!(index.contains(DeclarationRef(2), SlotRef(0), &mut work)?);
     assert!(index.contains(DeclarationRef(2), SlotRef(1), &mut work)?);
     assert!(!index.contains(DeclarationRef(2), SlotRef(2), &mut work)?);
@@ -125,6 +127,41 @@ fn inherited_slots_keep_self_and_method_owners_distinct() -> Result<(), &'static
             .is_err()
     );
     assert_eq!(work.steps - before, 8);
+    Ok(())
+}
+
+#[test]
+fn complete_type_formals_exclude_region_slots_without_losing_unused_parameters()
+-> Result<(), &'static str> {
+    let definitions = vec![
+        definition(DefinitionKind::Function, None),
+        definition(DefinitionKind::TypeParameter, Some(0)),
+        definition(DefinitionKind::RegionParameter, Some(0)),
+    ];
+    let rows = empty_rows(
+        vec![
+            slot(0, 0, Some(1), false),
+            ParameterSlot {
+                owner: DeclarationRef(0),
+                ordinal: 1,
+                index: 0,
+                definition: Some(DeclarationRef(2)),
+                kind: ParameterKind::Region,
+            },
+        ],
+        vec![scope(0, None, 0, 2, 0)],
+    );
+    let mut work = Work::default();
+    let index = ScopeIndex::new(&rows, &definitions, 0, &mut work)?;
+    assert_eq!(index.complete_slots(DeclarationRef(0), &mut work)?, 2);
+    let before = work.steps;
+    assert_eq!(index.complete_type_slots(DeclarationRef(0), &mut work)?, 1);
+    assert!(
+        index
+            .complete_type_slots(DeclarationRef(99), &mut work)
+            .is_err()
+    );
+    assert_eq!(work.steps - before, 4);
     Ok(())
 }
 

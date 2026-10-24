@@ -27,7 +27,10 @@ impl ValidatedRows {
 pub struct Descriptor<'a> {
     source: &'a ValidatedRows,
 }
-impl Descriptor<'_> {
+impl<'a> Descriptor<'a> {
+    pub(crate) const fn rows(self) -> &'a SourceRows {
+        &self.source.rows
+    }
     #[must_use]
     pub fn identity(&self) -> &CrateIdentity {
         &self.source.owner
