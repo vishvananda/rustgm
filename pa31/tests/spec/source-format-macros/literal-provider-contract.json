@@ -1,0 +1,200 @@
+{
+  "status": "Separately declared complete-provider recovery after original V1 missing Freeze observations; original sources/outcomes immutable",
+  "editions": [
+    2021,
+    2024
+  ],
+  "profile": {
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "crate_type": "lib",
+    "cap_lints": "allow"
+  },
+  "original_contract_sha256": "523756ee74be4b9b55456a8b13a76b93fb255af41d62e7be9179625ba636b4d6",
+  "provider_origin": "pa31/tests/spec/source-functions-transport/ordinary-clone-concrete-provider.rs",
+  "provider_sha256": "aed3deb935be1f89e7429073cc9f209e58b56a425d65b70c34df48e7a8a408a9",
+  "added_slice_sha256": "d82a15f42fcd9f5d5d7fa6bfe2d2f03d160aadcbd006d66c4c958261303727bf",
+  "cases": [
+    {
+      "name": "literal-complete-basic",
+      "path": "literal-complete-basic.rs",
+      "sha256": "a23527d5a3ca0a4e00d5f67ce675bcf6f2229f65b4118e2e6a9254120ebc7245",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "68656c6c6f",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated",
+      "original_hypothesis": "literal-basic.rs",
+      "original_sha256": "4d0d5a3ea05b80cfd682eeb5619220256f584676377aa55956a49cf053f1cd22",
+      "additional_prerequisites": "Exact Destruct+Freeze declaration bytes from qualified A6c concrete provider; necessary const/lint feature requests; no formatting behavior or source constructor rewrite"
+    },
+    {
+      "name": "literal-complete-const",
+      "path": "literal-complete-const.rs",
+      "sha256": "8783c649a933841b2e4016794b4499bf18a855ad63d13d38b33eb1b46e20a574",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "68656c6c6f",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated",
+      "original_hypothesis": "literal-const.rs",
+      "original_sha256": "9f46ac1ad5e386d1d9cb2a8de1ef55e791d85be0f22fcee52f60222c6c248ea9",
+      "additional_prerequisites": "Exact Destruct+Freeze declaration bytes from qualified A6c concrete provider; necessary const/lint feature requests; no formatting behavior or source constructor rewrite"
+    },
+    {
+      "name": "literal-complete-newline",
+      "path": "literal-complete-newline.rs",
+      "sha256": "9dee2629c41a1d95dc0dd58df4aaf8df9d88321175c594de236ac39e82133dbd",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "68656c6c6f0a",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated",
+      "original_hypothesis": "literal-newline.rs",
+      "original_sha256": "4a209c527b768884e22d406237ed2be3c376be35cf00e4183f6a5fd6266ff147",
+      "additional_prerequisites": "Exact Destruct+Freeze declaration bytes from qualified A6c concrete provider; necessary const/lint feature requests; no formatting behavior or source constructor rewrite"
+    },
+    {
+      "name": "literal-complete-empty",
+      "path": "literal-complete-empty.rs",
+      "sha256": "56b58c5e4a395c3ed1f930e24cd030ab1a2741e0ecec9a68f8a653001a8f4a2f",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated",
+      "original_hypothesis": "literal-empty.rs",
+      "original_sha256": "d05dd69ea71b8065370726bfb82d357645ccfe3d758a5c1cf8f21c960db472a6",
+      "additional_prerequisites": "Exact Destruct+Freeze declaration bytes from qualified A6c concrete provider; necessary const/lint feature requests; no formatting behavior or source constructor rewrite"
+    },
+    {
+      "name": "literal-complete-escaped-braces",
+      "path": "literal-complete-escaped-braces.rs",
+      "sha256": "2e6b9cf0cebda218af7b88a97a04c13bcdc0e4adcda958a7507f6d40e797f688",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "7b787d",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated",
+      "original_hypothesis": "literal-escaped-braces.rs",
+      "original_sha256": "af8d97d8649233325b990d5e353e54f8ad262e97e24a509a8e88a2c05f06bc96",
+      "additional_prerequisites": "Exact Destruct+Freeze declaration bytes from qualified A6c concrete provider; necessary const/lint feature requests; no formatting behavior or source constructor rewrite"
+    },
+    {
+      "name": "literal-complete-raw",
+      "path": "literal-complete-raw.rs",
+      "sha256": "9832adc080813e232ca8068ba44070a2bc871b7ee985c6c2a02d33c0d354fbde",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "615c6e62",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated",
+      "original_hypothesis": "literal-raw.rs",
+      "original_sha256": "28a39eb80a0542ce3993be692bbe7869ac36ccd5337a37142bb02b4016f3740a",
+      "additional_prerequisites": "Exact Destruct+Freeze declaration bytes from qualified A6c concrete provider; necessary const/lint feature requests; no formatting behavior or source constructor rewrite"
+    },
+    {
+      "name": "literal-complete-renamed-role",
+      "path": "literal-complete-renamed-role.rs",
+      "sha256": "0b3a0a79c373c0ed7474bc7859e22de6446bf21a106b00b18b83b17847b6576d",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual selected role, no spelling privilege",
+      "native_bytes_hex": "68656c6c6f",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated",
+      "original_hypothesis": "literal-renamed-role.rs",
+      "original_sha256": "f6badd8c0275b4261abb8feb8534ab52f589e5691410790a2a34bc350763c87d",
+      "additional_prerequisites": "Exact Destruct+Freeze declaration bytes from qualified A6c concrete provider; necessary const/lint feature requests; no formatting behavior or source constructor rewrite"
+    },
+    {
+      "name": "literal-complete-missing-language-owner",
+      "path": "literal-complete-missing-language-owner.rs",
+      "sha256": "291daa5caf90563e2549150071e40a09c5300b9b1034dcbcc04b377f1412c112",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "format_arguments"
+      ],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "original_hypothesis": "literal-missing-language-owner.rs",
+      "original_sha256": "992f1c6c58e25d0e04a985b778b8639479258515b8f90e626a8f01ab0354dce2",
+      "additional_prerequisites": "Exact Destruct+Freeze declaration bytes from qualified A6c concrete provider; necessary const/lint feature requests; no formatting behavior or source constructor rewrite"
+    },
+    {
+      "name": "literal-complete-wrong-constructor-input",
+      "path": "literal-complete-wrong-constructor-input.rs",
+      "sha256": "442f129b9ecbec438d0c3650478dd21e05f9261fdf88979dfedb1339544a6dc3",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "mismatched types"
+      ],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "original_hypothesis": "literal-wrong-constructor-input.rs",
+      "original_sha256": "3fc698990525431af307bab0971ba8f00172a5862f5253166df99e34d87d52de",
+      "additional_prerequisites": "Exact Destruct+Freeze declaration bytes from qualified A6c concrete provider; necessary const/lint feature requests; no formatting behavior or source constructor rewrite"
+    },
+    {
+      "name": "literal-complete-nonconst-constructor",
+      "path": "literal-complete-nonconst-constructor.rs",
+      "sha256": "23e83cc798e6c40dd182cec0290c8abe319fda889e7f17bfe862e05f39c5ba38",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "non-const"
+      ],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "original_hypothesis": "literal-nonconst-constructor.rs",
+      "original_sha256": "113af9cd5446a7994b7fad6ab5cb788e8fe367ccd93184d5d375ab6351d09015",
+      "additional_prerequisites": "Exact Destruct+Freeze declaration bytes from qualified A6c concrete provider; necessary const/lint feature requests; no formatting behavior or source constructor rewrite"
+    },
+    {
+      "name": "literal-complete-private-constructor",
+      "path": "literal-complete-private-constructor.rs",
+      "sha256": "82911a3aaf2bb65775f2f777702351c491fe983591ec808aac8194447b3f62d2",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "private"
+      ],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "original_hypothesis": "literal-private-constructor.rs",
+      "original_sha256": "4314c7b5461659d94f7066674fd028bef790ff4261f236d70bbc5757244a7cc9",
+      "additional_prerequisites": "Exact Destruct+Freeze declaration bytes from qualified A6c concrete provider; necessary const/lint feature requests; no formatting behavior or source constructor rewrite"
+    },
+    {
+      "name": "literal-complete-captured-expression",
+      "path": "literal-complete-captured-expression.rs",
+      "sha256": "7c4d2f322cc687e6fd4b4f791ce7962934b4cbf74b86b00ba9c0545ec4f4a6c9",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "68656c6c6f",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated",
+      "original_hypothesis": "literal-captured-expression.rs",
+      "original_sha256": "4c1aeed8dbc63d2afa6081b7d3fc295470f133d143047e4dda53ecdd17843e8f",
+      "additional_prerequisites": "Exact Destruct+Freeze declaration bytes from qualified A6c concrete provider; necessary const/lint feature requests; no formatting behavior or source constructor rewrite"
+    }
+  ]
+}
