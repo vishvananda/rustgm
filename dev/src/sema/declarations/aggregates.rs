@@ -13,10 +13,10 @@ use super::{
 };
 use crate::{
     resolve::{
-        model::{Access, Namespace},
+        model::{Access, ItemContext, Namespace},
         unit::FileId,
     },
-    sema::members::{Field, Name},
+    sema::members::{Field, Name, VariantId},
     syntax::{ast::NodeId, item::Shape},
     types::{
         Primitive, TypeId,
@@ -31,6 +31,11 @@ struct Group {
     shape: Shape,
     fields: List,
     discriminant: Option<NodeId>,
+}
+struct DeclaredFields {
+    fields: Vec<Field>,
+    declared: Option<crate::types::ListId>,
+    contexts: Option<Vec<ItemContext>>,
 }
 impl Checker<'_> {
     fn nominal_defaults(&mut self) -> Result<(), Error> {
@@ -98,9 +103,10 @@ impl Checker<'_> {
         let mut variants = Vec::with_capacity(self.nominals.entries[index].groups.len());
         for ordinal in 0..self.nominals.entries[index].groups.len() {
             let group = self.nominals.entries[index].groups[ordinal];
-            let (fields, declared) = self.fields(&group, kind == aggregate::Kind::Enum)?;
+            let fields = self.fields(&group, kind == aggregate::Kind::Enum)?;
             self.children.clear();
-            self.children.extend(fields.iter().map(|field| field.ty));
+            self.children
+                .extend(fields.fields.iter().map(|field| field.ty));
             let list = self
                 .facts
                 .types
@@ -116,14 +122,10 @@ impl Checker<'_> {
             });
             let ordinal =
                 u32::try_from(ordinal).map_err(|_| self.error(group.key, "too many variants"))?;
-            if let Some(declared) = declared {
+            if let Some(declared) = fields.declared {
                 self.facts.unreduced.retain_fields(item, ordinal, declared);
             }
-            let variant = self
-                .facts
-                .members
-                .insert(item, ordinal, group.key, group.shape, &fields)
-                .map_err(|e| self.error(group.key, e))?;
+            let variant = self.publish_fields(item, ordinal, &group, &fields)?;
             if kind == aggregate::Kind::Enum {
                 self.discriminants
                     .push(super::super::constants::Discriminant {
@@ -301,14 +303,11 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn fields(
-        &mut self,
-        group: &Group,
-        enum_: bool,
-    ) -> Result<(Vec<Field>, Option<crate::types::ListId>), Error> {
+    fn fields(&mut self, group: &Group, enum_: bool) -> Result<DeclaredFields, Error> {
         let unit = self.report.package.unit(group.key.file);
         let mut fields: Vec<Field> = Vec::new();
         let mut declared: Option<Vec<TypeId>> = None;
+        let mut contexts = None;
         for node in unit.configured.ast.list(group.fields).iter().copied() {
             if !unit.configured.active[node.get() as usize] {
                 continue;
@@ -317,6 +316,15 @@ impl Checker<'_> {
             let Kind::FieldDefinition { name, ty, .. } = self.kind(key) else {
                 return Err(self.error(key, "invalid field definition"));
             };
+            let context = name.map_or(Ok(ItemContext::ROOT), |span| {
+                self.report.package.item_context(key.file, span.start)
+            })?;
+            if context != ItemContext::ROOT && contexts.is_none() {
+                contexts = Some(vec![ItemContext::ROOT; fields.len()]);
+            }
+            if let Some(contexts) = &mut contexts {
+                contexts.push(context);
+            }
             let name = if let Some(span) = name {
                 let spelling = unit
                     .spelling(span)
@@ -363,7 +371,33 @@ impl Checker<'_> {
             .map(|fields| self.facts.types.intern_list(&fields))
             .transpose()
             .map_err(|e| self.error(group.key, e))?;
-        Ok((fields, declared))
+        Ok(DeclaredFields {
+            fields,
+            declared,
+            contexts,
+        })
+    }
+    fn publish_fields(
+        &mut self,
+        owner: ItemId,
+        ordinal: u32,
+        group: &Group,
+        fields: &DeclaredFields,
+    ) -> Result<VariantId, Error> {
+        let members = &mut self.facts.members;
+        let variant = if let Some(contexts) = &fields.contexts {
+            members.insert_contextual(
+                owner,
+                ordinal,
+                group.key,
+                group.shape,
+                &fields.fields,
+                contexts,
+            )
+        } else {
+            members.insert(owner, ordinal, group.key, group.shape, &fields.fields)
+        };
+        variant.map_err(|error| self.error(group.key, error))
     }
     fn check_discriminant_forms(
         &self,

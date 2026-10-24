@@ -48,35 +48,60 @@ This arithmetic is a declared layout expectation, not an observed measurement.
 The existing collection, clone, mutable iterator, iterator and progression
 layout controls retain that explicit expectation alongside their hot-row checks.
 
-## Selection and privacy seam (awaiting root's pinned contract)
+## Selection and privacy seam
 
-The reviewed shared signature is
+The shared API source `3d0cea1b`, cherry-picked as `623a46bf`, provides
 `Report::adjust_item(container: DefId, context: ItemContext, caller: ModuleId)`
 returning `ItemAdjustment { context: ItemContext, privacy: ModuleId }`.
-The use context comes from `Package::item_context` at the actual identifier span;
-functional update uses the actual expression provenance. C will use both
-components in record initialization, record patterns and
-field access. Actual container introduction and its captured name context are
+The use context comes from `Package::item_context` at the actual identifier span.
+The source draft consumes both components in record initialization, record
+patterns and field access. Actual container introduction and its captured name context are
 independent facts. Captured field tokens do not inherit literal-token privacy.
 The shorthand value/binding path remains local-normalized independently of its
-field-name path. Functional update needs the pinned expression-site privacy
-rule for omitted fields; no arbitrary explicit field token substitutes for it.
+field-name path. The pinned privacy visitor uses **base-expression** provenance
+for omitted update fields, separately from each explicit field's identifier.
+The draft first marks explicit fields, then checks only unmentioned fields using
+the actual base node span. A complete explicit initializer transfers no omitted
+field and does not demand base privacy adjustment.
+
+Positional field identity remains numeric. Direct `.0` access takes privacy
+from that actual numeric token. Tuple patterns preserve the resolved constructor
+permission (already the intersection of field visibility), and their extra
+semantic guard uses one adjustment from the actual final constructor path
+identifier. Typed Path, Applied and Qualified suffixes retain that identifier;
+captured child bindings do not supply privacy. No transient field work record
+or hot body record grows to carry these spans: completion reads retained syntax.
 
 Root's cache belongs to the existing boxed expansion-mark arena, keyed by the
 normalized context and actual container introduction. C adds no cache. Actual
 enum variant provenance remains retained even though current variant collection
 inherits the enum introduction. No spelling lookup supplies an introduction.
 
-No lookup consumer is enabled until that shared interface is available. Storage
-preparation alone grants no scoped macro expansion, field selection or access.
+The consumer source is unqualified and does not enable scoped macro expansion.
+Shared adjustment and storage preparation alone grant no expansion or access.
 
 ## Required controls and measurement
 
-The declared source cases cover literal and captured construction/pattern/access,
+The initial fifteen declared source cases cover literal and captured construction/pattern/access,
 shorthand locals, same-spelling captured/literal fields, definition-site versus
 caller private reads and updates, actual foreign containers, exact duplicates,
 and ordinary record/tuple controls. Independently observed metadata/object/native
-outcomes must precede candidate acceptance expectations.
+outcomes must precede candidate acceptance expectations. Six additional hypotheses
+in `field-provenance-contract.json` oppose literal and captured update bases,
+constructor paths and numeric field tokens. Two more in
+`field-update-explicit-contract.json` distinguish explicit field authority from
+omitted transfer authority. The original fifteen predictions remain unchanged;
+the original `field-functional-update-definition` predicted success now looks
+suspect from the pinned base-expression privacy rule, but has not been observed.
+Keep any eventual disagreement as original hypothesis evidence.
+
+`field-container-contract.json` separately declares an unrelated-container
+opponent using a captured public factory function name. The earlier
+`field-foreign-opaque-denied` also calls literal `Record::new`, so associated
+method hygiene could reject it before the intended field boundary. Both inputs
+and their original predictions remain intact. The four contracts now declare
+24 hypotheses (13 predicted native positives and 11 predicted rejections),
+without an oracle invocation or an observed outcome.
 
 Private storage controls will cover root-only no-allocation, exact contextual
 lookup, distinct complete identities, wrong variant/owner, duplicate rollback,
@@ -84,5 +109,15 @@ mixed root/context publication, tuple context rejection and source-free import
 opponents. Export controls must reject contextual fields even when public type
 names are root-context. Measure actual `Members` cold growth separately from
 unchanged `Field`/`Variant` and hot layouts, plus retained map payload and lookup
-work at widths 8/32/128 with an ordinary root control. No build, probe or heavy
-qualification is queued by this declaration.
+work at widths 8/32/128 with an ordinary root control. Four additional private
+consumer controls parse actual legacy-generated source, supply opaque context
+only on actual retained field-token origins and use recorded real introductions.
+They check declaration/initializer/pattern/access FieldId agreement, actual
+metadata refusal with a root-named contextual record, unrelated container-context
+rejection, and literal versus captured privacy. They are structural controls,
+not end-to-end macro2 acceptance or independent Rust observations.
+
+Eventual focused selection includes the four storage controls, four consumer
+controls, all five shared adjustment invariants and the five existing cold/hot
+layout controls. No compiler, audit, oracle, source/native candidate or heavy
+qualification has run for this draft; formatting and whitespace review only.

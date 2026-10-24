@@ -200,7 +200,7 @@ impl Checker<'_> {
                         self.error(node, "tuple-struct pattern requires a tuple constructor")
                     );
                 }
-                self.positional_pattern(node, term, elements, Some(variant), mode)
+                self.positional_pattern(node, term, elements, Some((variant, path)), mode)
             }
             Kind::StructPattern { path, fields, rest } => {
                 self.record_pattern(node, term, path, fields, rest, mode)
@@ -555,9 +555,15 @@ impl Checker<'_> {
         node: NodeId,
         term: TermId,
         elements: List,
-        variant: Option<VariantId>,
+        variant: Option<(VariantId, NodeId)>,
         mode: Mode,
     ) -> Result<PatternKind, Error> {
+        let variant = variant
+            .map(|(id, path)| {
+                self.constructor_privacy(node, id, path)
+                    .map(|privacy| (id, privacy))
+            })
+            .transpose()?;
         let unit = self.report.package.unit(self.state.file);
         let elements = unit.configured.ast.list(elements);
         let rest = elements
@@ -573,7 +579,7 @@ impl Checker<'_> {
             return Err(self.error(node, "multiple rest patterns in one product"));
         }
         let explicit = elements.len() - usize::from(rest.is_some());
-        let arity = if let Some(id) = variant {
+        let arity = if let Some((id, _)) = variant {
             let variant = self.facts.members.variants[id.0 as usize];
             (variant.end - variant.start) as usize
         } else {
@@ -613,12 +619,12 @@ impl Checker<'_> {
             } else {
                 index
             };
-            let (selection, child_term) = if let Some(id) = variant {
+            let (selection, child_term) = if let Some((id, privacy)) = variant {
                 let field = FieldId(
                     self.facts.members.variants[id.0 as usize].start
                         + self.pattern_index(node, ordinal)?,
                 );
-                self.accessible(child, field)?;
+                self.accessible_from(child, field, privacy)?;
                 (
                     Selection::Nominal(field),
                     self.instance_field(child, term, field)?,
@@ -637,7 +643,7 @@ impl Checker<'_> {
         }
         let end = self.pattern_index(node, self.facts.patterns.fields.len())?;
         Ok(PatternKind::Product {
-            variant,
+            variant: variant.map(|(id, _)| id),
             fields: Fields { start, end },
         })
     }
@@ -689,13 +695,14 @@ impl Checker<'_> {
                     self.require_unsafe(node, "union pattern access requires an unsafe context")?;
                 }
             }
-            let name = self.member_name(field_node, name)?;
-            let field = self
-                .facts
-                .members
-                .field(variant_id, name)
-                .ok_or_else(|| self.error(field_node, "unknown pattern field"))?;
-            self.accessible(field_node, field)?;
+            let field_name = self.member_name(field_node, name)?;
+            let field = self.select_field(
+                field_node,
+                variant_id,
+                field_name,
+                name,
+                "unknown pattern field",
+            )?;
             if union {
                 selected += 1;
                 if selected > 1 {

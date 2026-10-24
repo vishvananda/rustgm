@@ -8,6 +8,8 @@ use crate::{
     syntax::{ast::NodeId, item::Shape},
     types::{ItemId, TypeId},
 };
+#[path = "provenance_aggregates.rs"]
+mod uses;
 
 fn scoped_contexts() -> Result<(Marks, [ItemContext; 2]), String> {
     let mut marks = Marks::default();
