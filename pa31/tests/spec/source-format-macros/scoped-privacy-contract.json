@@ -1,0 +1,49 @@
+{
+  "status": "Additive preimplementation scoped-format constructor privacy hypotheses; no oracle observations. Existing formatting corpus/evidence unchanged.",
+  "qualified_provider_origin": "literal-complete-basic.rs through actual complete source prelude",
+  "provider_sha256": "46d4675ae6f8892f32269265ae724775b64001c355cd675214ed886144300605",
+  "editions": [
+    2021,
+    2024
+  ],
+  "profile": {
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "crate_type": "lib",
+    "cap_lints": "allow"
+  },
+  "source_evidence": [
+    "compiler/rustc_builtin_macros/src/format.rs:1136 with_def_site_ctxt",
+    "compiler/rustc_ast_lowering/src/format.rs:332 expr_lang_item_type_relative usesmacsp"
+  ],
+  "cases": [
+    {
+      "name": "root-format-holder-wrapper",
+      "path": "root-format-holder-wrapper.rs",
+      "sha256": "1670c37ad4221e38cfc8dba48fab91bc0ff5776cebb0edf13c56dea77bc694df",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "native_bytes_hex": null,
+      "diagnostic_substrings": [
+        "private"
+      ],
+      "hypothesis": "Builtin defining module, not outer wrapper privacy, owns generated from_str lookup. Actual answer is insideholder to distinguish constructor lookup from later fn-item escape privacy.",
+      "candidate_current": "earlier closed scoped-invocation frontier; not current constructor-boundary qualification"
+    },
+    {
+      "name": "holder-format-holder-wrapper",
+      "path": "holder-format-holder-wrapper.rs",
+      "sha256": "492cfbb5042248f3309d8f7e9185e23a560ab9ec51454ca3eac0fa41db5dd539",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "native_bytes_hex": "68656c6c6f",
+      "diagnostic_substrings": [],
+      "hypothesis": "Builtin defining module, not outer wrapper privacy, owns generated from_str lookup. Actual answer is insideholder to distinguish constructor lookup from later fn-item escape privacy.",
+      "candidate_current": "earlier closed scoped-invocation frontier; not current constructor-boundary qualification"
+    }
+  ],
+  "preserve_any_earlier_frontier": "Pinnedrustc codeless fn-item or other readiness outcomes must remain distinct; do not call them ctor-gate qualification. Root owns candidate scope integration."
+}
