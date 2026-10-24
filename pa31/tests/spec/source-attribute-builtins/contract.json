@@ -1,0 +1,502 @@
+{
+  "status": "Immutable preimplementation predictions; no independent or candidate observations",
+  "source_base": "a3d7dc4911757005b1c96b26ce3b7efb1f145f39",
+  "owning_assignments": {
+    "PA31": "authenticated source builtin attribute identity, declaration availability, feature/stability ownership",
+    "PA8": "shared parsed attribute/token provenance and macro namespace lookup",
+    "PA38": "actual item replacement, activity/type checking, generated differentiated function and execution",
+    "PA37": "foreign procedural macro host; not implied by compiler builtin declaration"
+  },
+  "editions": [
+    2021,
+    2024
+  ],
+  "profile": {
+    "target": "x86_64-unknown-linux-gnu",
+    "crate_type": "lib",
+    "panic": "abort",
+    "overflow_checks": true,
+    "cap_lints": "allow"
+  },
+  "minimal_provider_sha256": "0dbd4c727c9b98cb1218d8eb540687336026e9a0e8d6e0a97c632bc84cba61db",
+  "pinned_source": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/macros/mod.rs": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/lib.rs": "cf4abdc69294cd828ce38859d212bba1cb6b64631e131fa7a6a5d2d68275e24e",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/autodiff.rs": "66d527c0495ded2fac76912c10b461856c9d9ab3ecf923d1cd42aba005b2923d",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/builtin_attrs.rs": "0c503aa7399200dc3eaec7aaa8ab39da4d756d6f6f69d0abb7f0a0a0176cf6eb",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/tests/ui/autodiff/macro_hygiene.rs": "af8b3b5f47dd4e95231ee36811eed80d2d26484f32f247620f2a408f24690841",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/tests/ui/autodiff/autodiff_illegal.rs": "00244adc0d553e513963fd92d002734b15e2687283878c6437ac08bd667c9dfc",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/tests/ui/feature-gates/feature-gate-autodiff-use.rs": "de58e43a0997903eec5f1a98b4317195b9aa6168a1206dadc739cb694e1a40ac"
+  },
+  "native_consumer": "#include <stdio.h>\nextern unsigned answer(void);int main(void){if(answer()!=7)return 1;puts(\"7\");return 0;}\n",
+  "native_contract": "Only accepted unused-declaration controls execute answer returning7. No placeholder attribute body or differentiated function is executed.",
+  "declared_cases": 37,
+  "cases": [
+    {
+      "name": "forward-declaration",
+      "path": "forward-declaration.rs",
+      "sha256": "4a8cc1b9ae8c7ec0f8feb43898e8af2429c29c269f0a322a5faede009e33e33a",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": ""
+    },
+    {
+      "name": "reverse-declaration",
+      "path": "reverse-declaration.rs",
+      "sha256": "2896dec744aed3d4af12ebfbb678b183acba6f013cf3731034c4a6c7cbd23036",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": ""
+    },
+    {
+      "name": "distinct-attribute-aliases",
+      "path": "distinct-attribute-aliases.rs",
+      "sha256": "f5a0bd4cb3d130ec9d7a87fd9be323ff6342b46bde6589b2e362c328319e1baa",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": ""
+    },
+    {
+      "name": "holder-import",
+      "path": "holder-import.rs",
+      "sha256": "944fccbb1eedc357129019c202df3ace64bf6b600192255dd4d5bcb4ac3e4be1",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": ""
+    },
+    {
+      "name": "forward-import",
+      "path": "forward-import.rs",
+      "sha256": "4d7f7b6b3528feaf8b5f6e7893ea5ba5d996eecdcbfa005aee0ba35190412920",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": ""
+    },
+    {
+      "name": "disabled-unknown-attribute",
+      "path": "disabled-unknown-attribute.rs",
+      "sha256": "aced844c4ddf113369453c4afa9bcee37bc10b43d15062479f3eb375f1371a67",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": ""
+    },
+    {
+      "name": "compiler-doc-lint",
+      "path": "compiler-doc-lint.rs",
+      "sha256": "9139b8c934b8889e16c0a499db6151ee9e92f75abaa48e5ffff209f536fb6b30",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": ""
+    },
+    {
+      "name": "original-autodiff_forward",
+      "path": "original-autodiff_forward.rs",
+      "sha256": "6eaaa2869af2de03cca4ab1f2a9dd8fa71aa7ec45faf168da6a3b5e4e0ac6239",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "expansion-declaration; exact later local macro stability frontier retained",
+      "hypothesis": "Declaration header byte-exact from pinned core; full execution remains separate."
+    },
+    {
+      "name": "original-autodiff_reverse",
+      "path": "original-autodiff_reverse.rs",
+      "sha256": "dbd54213cfa8e926ac3a4f7cee016d4dfead07d8bb129fcf7a4a261937cb5091",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "expansion-declaration; exact later local macro stability frontier retained",
+      "hypothesis": "Declaration header byte-exact from pinned core; full execution remains separate."
+    },
+    {
+      "name": "wrong-owner",
+      "path": "wrong-owner.rs",
+      "sha256": "8ce5265e3779bb1c544673f3d717cfce11a6bdbd1499a132a5093c16f86ee787",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "macro"
+      ],
+      "candidate": "reject-at-actual-owner-or-kind-boundary",
+      "hypothesis": ""
+    },
+    {
+      "name": "unknown-role",
+      "path": "unknown-role.rs",
+      "sha256": "a9ef61f8392390395a6ccc136489fd4ea508edaa40c17324e4384112e375f2a1",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "built-in"
+      ],
+      "candidate": "reject-at-actual-owner-or-kind-boundary",
+      "hypothesis": ""
+    },
+    {
+      "name": "duplicate-claim",
+      "path": "duplicate-claim.rs",
+      "sha256": "144824130eb09583363660b525075c02334249f4389fb0dd1805d4e1ed27ad4f",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "attribute"
+      ],
+      "candidate": "reject-at-actual-owner-or-kind-boundary",
+      "hypothesis": ""
+    },
+    {
+      "name": "unsafe-claim",
+      "path": "unsafe-claim.rs",
+      "sha256": "16d8779cbf2bd56aa12d2ee44c3a93844427e492d7548d332e698e5c56ff03cf",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "unsafe"
+      ],
+      "candidate": "reject-at-actual-owner-or-kind-boundary",
+      "hypothesis": ""
+    },
+    {
+      "name": "unrequested-builtin",
+      "path": "unrequested-builtin.rs",
+      "sha256": "4c8e145b2274b8b6c5b602ab198483436f5f27f0929559920ad936ab20e20b6d",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "experimental"
+      ],
+      "candidate": "reject-at-actual-owner-or-kind-boundary",
+      "hypothesis": ""
+    },
+    {
+      "name": "unknown-ordinary-attribute",
+      "path": "unknown-ordinary-attribute.rs",
+      "sha256": "abb57e6e991a4f42c2d3821113329d9df04c354dc81f044407a1664b264775fc",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "attribute"
+      ],
+      "candidate": "reject-at-actual-owner-or-kind-boundary",
+      "hypothesis": ""
+    },
+    {
+      "name": "unknown-qualified-attribute",
+      "path": "unknown-qualified-attribute.rs",
+      "sha256": "1e34cf1bebafb8199e36041ce3e3ff43ae96cb2ef44dd0bd6a9ff6296b7f8c7a",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "not_here"
+      ],
+      "candidate": "reject-at-actual-owner-or-kind-boundary",
+      "hypothesis": ""
+    },
+    {
+      "name": "bang-as-attribute",
+      "path": "bang-as-attribute.rs",
+      "sha256": "f07885a9e795cb0f2b722959214cf72aa947321c3dbaf827aab56c1b7a6b8fa7",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "attribute"
+      ],
+      "candidate": "reject-at-actual-owner-or-kind-boundary",
+      "hypothesis": ""
+    },
+    {
+      "name": "scoped-bang-as-attribute",
+      "path": "scoped-bang-as-attribute.rs",
+      "sha256": "fcd6c9b1f2444582c007777ad7c6e3857325fdf88be91979def5568a24bf2d5d",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "attribute"
+      ],
+      "candidate": "reject-at-actual-owner-or-kind-boundary",
+      "hypothesis": ""
+    },
+    {
+      "name": "attribute-as-bang",
+      "path": "attribute-as-bang.rs",
+      "sha256": "8d3a74ef892fc204f1a69676b920e09290a302e5cdac05beb9a912d8bd6f160e",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "attribute"
+      ],
+      "candidate": "reject-at-actual-owner-or-kind-boundary",
+      "hypothesis": ""
+    },
+    {
+      "name": "alias-attribute-as-bang",
+      "path": "alias-attribute-as-bang.rs",
+      "sha256": "c1f7b5eeaeaf250cbce1935544606ef080f735628c23ca248519a867cc2d922c",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "attribute"
+      ],
+      "candidate": "reject-at-actual-owner-or-kind-boundary",
+      "hypothesis": ""
+    },
+    {
+      "name": "direct-attribute-empty",
+      "path": "direct-attribute-empty.rs",
+      "sha256": "d60ad9b457d080ed6ad17bf10c3409d5bf3be43c2d8f153868712be0b66ee162",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "autodiff"
+      ],
+      "candidate": "explicit unavailable attribute execution; not validation of autodiff configuration",
+      "hypothesis": ""
+    },
+    {
+      "name": "qualified-attribute-empty",
+      "path": "qualified-attribute-empty.rs",
+      "sha256": "1bbce6f59e1745fe9fc7acd2af0f3f703136833a179dbd4366a32d8cd5ce4039",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "autodiff"
+      ],
+      "candidate": "explicit unavailable attribute execution",
+      "hypothesis": ""
+    },
+    {
+      "name": "alias-attribute-empty",
+      "path": "alias-attribute-empty.rs",
+      "sha256": "3bd4b18250946a251e64604a11dd054851064c5e61e5d9909d8700467bc2d189",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "autodiff"
+      ],
+      "candidate": "explicit unavailable attribute execution after real import wakeup",
+      "hypothesis": ""
+    },
+    {
+      "name": "generated-captured-path",
+      "path": "generated-captured-path.rs",
+      "sha256": "d9be08f88b0b90bc2d8d50be40065fa02f84ef0b42081d3681d7a58afcdc1d87",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "autodiff"
+      ],
+      "candidate": "explicit unavailable attribute execution; actual captured path provenance",
+      "hypothesis": ""
+    },
+    {
+      "name": "generated-captured-metadata",
+      "path": "generated-captured-metadata.rs",
+      "sha256": "71e8aba384d470a657b6230ec7159558cd76444d1dab60d8301c3a854cf902ff",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "autodiff"
+      ],
+      "candidate": "explicit unavailable attribute execution; actual captured metadata owner",
+      "hypothesis": ""
+    },
+    {
+      "name": "generated-literal-attribute",
+      "path": "generated-literal-attribute.rs",
+      "sha256": "e212e6a37ab4e6117e05fe396ba8a4b709612b33ee04106b116196e9d150ce73",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "autodiff"
+      ],
+      "candidate": "explicit unavailable attribute execution; actual literal context",
+      "hypothesis": ""
+    },
+    {
+      "name": "configured-active-attribute",
+      "path": "configured-active-attribute.rs",
+      "sha256": "228fdc0bfa695699462dabcc2d2e3a98dadf4556843d0388628d380bcaa4e44c",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "autodiff"
+      ],
+      "candidate": "explicit unavailable attribute execution; selected configured attribute",
+      "hypothesis": ""
+    },
+    {
+      "name": "legacy-attribute-claim",
+      "path": "legacy-attribute-claim.rs",
+      "sha256": "d1dac76688e2ce205b63120679f5ead621617d80d3e2f249c8e6ad4442eb6467",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "explicit unsupported legacy attribute declaration until independently reviewed",
+      "hypothesis": "A builtin marker can replace declaration grammar with a different macro kind; preserve any upstream disagreement."
+    },
+    {
+      "name": "private-attribute",
+      "path": "private-attribute.rs",
+      "sha256": "6bc1a3e477eeab5622e1aa59d76d1729ba3d8448f5c736266a753af2e867bab3",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "private"
+      ],
+      "candidate": "actual path privacy rejection before unavailable attribute execution",
+      "hypothesis": ""
+    },
+    {
+      "name": "unclaimed-same-spelling",
+      "path": "unclaimed-same-spelling.rs",
+      "sha256": "e087b1431f80477615676e57e141634bf3454ccfce40374e8ca1b38825398b96",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": "Ordinary declaration has no compiler role by spelling."
+    },
+    {
+      "name": "missing-scoped-gate",
+      "path": "missing-scoped-gate.rs",
+      "sha256": "9a89b7007e9fb9f56ae0b6198c7b9af6d6ff55a20ba8e3069786e860c3d25b9e",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "experimental"
+      ],
+      "candidate": "reject-at-actual-owner-or-kind-boundary",
+      "hypothesis": ""
+    },
+    {
+      "name": "declarations-8",
+      "path": "declarations-8.rs",
+      "sha256": "444f8af08f9de3c7dba4114be628e8d2f76673ab0725055b03d5f7e593acdd20",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": "Distinct real declarations retaining the same typed compiler role; no execution or synthetic identities."
+    },
+    {
+      "name": "imports-8",
+      "path": "imports-8.rs",
+      "sha256": "0fff7481a12384c9915890e6d461a878d860d70344df591f71aa95fcf58b90a1",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": "Repeated imports preserve one actual declaration and use bounded existing import wakeups."
+    },
+    {
+      "name": "declarations-32",
+      "path": "declarations-32.rs",
+      "sha256": "879ac9ec10f64a9d81d59313274054b29547103914840bb6b6a90e957df1fae6",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": "Distinct real declarations retaining the same typed compiler role; no execution or synthetic identities."
+    },
+    {
+      "name": "imports-32",
+      "path": "imports-32.rs",
+      "sha256": "d1d75aadf98dacfb4a660507af9af5d9f6f4089f1527cbc2b6296b5d5e418a18",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": "Repeated imports preserve one actual declaration and use bounded existing import wakeups."
+    },
+    {
+      "name": "declarations-128",
+      "path": "declarations-128.rs",
+      "sha256": "32aaa7947c2e7fd792de9597a37d47d88759572b2b634a19c9d5da89260ee99b",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": "Distinct real declarations retaining the same typed compiler role; no execution or synthetic identities."
+    },
+    {
+      "name": "imports-128",
+      "path": "imports-128.rs",
+      "sha256": "6fa7d5df2eb6cd8a0995ea50a7c9dc6689424185f2b52caac7c1c18ca256cd06",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-declaration",
+      "hypothesis": "Repeated imports preserve one actual declaration and use bounded existing import wakeups."
+    }
+  ],
+  "candidate_scope": "Real authenticated local2021/24 attribute declarations; all actual attribute execution explicitly unsupported. Current scoped root integration is a separate dependency. No foreign export or feature grants.",
+  "full_execution_obligations": {
+    "status": "Required future PA38/PA31 contract, not measured or counted by this corpus",
+    "original_positive": "tests/ui/autodiff/macro_hygiene.rs",
+    "required_toolchain": [
+      "Enzyme",
+      "-Zautodiff=Enable",
+      "-Clto=fat"
+    ],
+    "original_negative": "tests/ui/autodiff/autodiff_illegal.rs",
+    "requirements": [
+      "actual fn-only eligibility",
+      "whole activity/arity/type validation",
+      "correct generated derivative signature/body",
+      "original token/hygiene provenance",
+      "actual native derivative values"
+    ],
+    "capability_failure_is_not_language_rejection": true
+  }
+}
