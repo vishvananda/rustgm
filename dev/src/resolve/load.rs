@@ -171,6 +171,7 @@ impl<'a, S: Sources> Loader<'a, S> {
             && source_core.is_none();
         let mut loader = Self {
             package: Package {
+                marks: crate::expand::marks::Marks::default(),
                 source_core,
                 library,
                 no_std,

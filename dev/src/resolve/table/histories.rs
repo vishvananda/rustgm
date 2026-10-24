@@ -1,5 +1,5 @@
 //! Per-entry context histories: direct newest lookup and logarithmic predecessors.
-use super::{Binding, ContextId, Local};
+use super::{Binding, Local, LocalContext};
 use crate::support::hash::HashMap;
 
 /// The newest local is inline. Most contexts never shadow and allocate no vector.
@@ -9,16 +9,16 @@ struct History {
 }
 #[derive(Default)]
 pub(super) struct Index {
-    contexts: HashMap<(u32, ContextId), History>,
+    contexts: HashMap<(u32, LocalContext), History>,
     #[cfg(test)]
     comparisons: std::cell::Cell<usize>,
 }
 impl Index {
-    pub fn contains(&self, entry: u32, context: ContextId) -> bool {
+    pub fn contains(&self, entry: u32, context: LocalContext) -> bool {
         self.contexts.contains_key(&(entry, context))
     }
     /// `BindingTable` checks increasing declaration identities before publication.
-    pub fn push(&mut self, entry: u32, context: ContextId, local: u32) {
+    pub fn push(&mut self, entry: u32, context: LocalContext, local: u32) {
         match self.contexts.entry((entry, context)) {
             std::collections::hash_map::Entry::Vacant(slot) => {
                 slot.insert(History {
@@ -37,7 +37,7 @@ impl Index {
     pub fn get(
         &self,
         entry: u32,
-        context: ContextId,
+        context: LocalContext,
         visible: usize,
         locals: &[Local],
     ) -> Option<Binding> {

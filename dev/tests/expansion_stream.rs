@@ -2,7 +2,8 @@ use rustgm::{
     expand::{
         config::Config,
         macros::session,
-        stream::{ContextId, Environment, Source, Stream},
+        marks::{ExpansionId, SyntaxContextId},
+        stream::{Environment, Source, Stream},
     },
     lex::token::{Kind as TokenKind, Punctuation as P},
     support::source::FileId,
@@ -22,7 +23,8 @@ fn environment(source: &str) -> Environment<'_> {
             file: FileId(5),
             text: source,
         },
-        context: ContextId(9),
+        context: SyntaxContextId::ROOT,
+        introduction: ExpansionId(9),
         crate_id: 0,
     }
 }
@@ -125,11 +127,13 @@ fn matching_transcription_and_parsing_preserve_opaque_precedence() -> Result<(),
     let first = stream.origin(0).ok_or("missing capture origin")?;
     assert_eq!(first.original.file, FileId(5));
     assert_eq!(first.context, None);
+    assert_eq!(first.introduction, ExpansionId(0));
     let star = stream
         .origin(stream.tokens[1].start)
         .ok_or("missing template origin")?;
     assert_eq!(star.original.file, FileId(2));
-    assert_eq!(star.context, Some(ContextId(9)));
+    assert_eq!(star.context, Some(SyntaxContextId::ROOT));
+    assert_eq!(star.introduction, ExpansionId(9));
     assert_eq!(parsed.position.index, stream.tokens.len());
     Ok(())
 }
@@ -165,7 +169,7 @@ fn template_doc_tokens_are_created_once_with_definition_context() -> Result<(), 
         stream
             .origins
             .iter()
-            .all(|o| o.original.file == FileId(2) && o.context == Some(ContextId(9)))
+            .all(|o| o.original.file == FileId(2) && o.context == Some(SyntaxContextId::ROOT))
     );
     assert_eq!(parsed.position.index, stream.tokens.len());
     Ok(())

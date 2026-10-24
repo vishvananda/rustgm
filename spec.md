@@ -386,6 +386,23 @@ Macro expansion and resolution form a worklist with explicit unresolved,
 in-progress, complete and failed states. Do not repeatedly scan the whole crate
 after each new item. Spans carry compact source and expansion context IDs.
 
+Keep actual expansion ancestry separate from a token's syntax context and its
+physical source/edition provenance. A captured name does not determine the
+contexts of the surrounding generated macro body. Mark each definition token
+from its own retained parent; preserve captured contexts. Cache item and local
+normalizations when interning a context, with distinct typed normalized keys.
+Mixed-transparency rebasing shares definition prefixes by normalized call-site
+context while final interning retains each actual invocation identity. Measure
+first-miss depth across distinct call-site contexts as well as cache hits.
+
+Index local shadow histories by binding entry and normalized context, retaining
+every declaration version needed by definition-site visibility. Unrelated
+contexts must not be scanned for duplicate checks or historical lookup. A
+single-local entry needs no history allocation; older shadows use an ordered
+predecessor query. Scoped item bindings and import dependencies must likewise
+carry their normalized item identity, including per-segment path contexts.
+Hygienic selection does not grant visibility or library-feature permission.
+
 Written lifetime quantifiers retain lexical identity, including an explicit empty
 `for<>`. A where-clause binder owns its subject and all its bounds; a trait-position
 binder owns only that bound's arguments and associated equalities. Decode each

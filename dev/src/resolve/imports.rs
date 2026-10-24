@@ -139,7 +139,7 @@ impl Work {
         &self,
         facts: &super::model::Resolution,
         observations: &Observations,
-        introduction: crate::expand::stream::ContextId,
+        introduction: crate::expand::marks::ExpansionId,
     ) -> bool {
         observations.selected.iter().flatten().any(|selected| {
             let (key, binding) = (selected.key, selected.binding);
@@ -319,7 +319,7 @@ impl Resolver<'_> {
                         .imports
                         .get(&index)
                         .copied()
-                        .unwrap_or(crate::expand::stream::ContextId(0));
+                        .unwrap_or(crate::expand::marks::ExpansionId(0));
                     let conflict = self.textual_conflict(
                         import.scope,
                         path[0],
@@ -364,7 +364,7 @@ impl Resolver<'_> {
             .imports
             .get(&index)
             .copied()
-            .unwrap_or(crate::expand::stream::ContextId(0));
+            .unwrap_or(crate::expand::marks::ExpansionId(0));
         let ambiguous = work.ambiguous_early_path(self.facts, &observed, introduction);
         if let Some(mut selections) = observed.selected.take() {
             selections.clear();

@@ -4,10 +4,10 @@ use crate::support::hash::HashMap;
 /// Actual invocation identity; zero denotes the physical source ancestry root.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ExpansionId(pub u32);
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
-pub struct SyntaxContextId(u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct SyntaxContextId(std::num::NonZeroU32);
 impl SyntaxContextId {
-    pub const ROOT: Self = Self(0);
+    pub const ROOT: Self = Self(std::num::NonZeroU32::MIN);
 }
 /// Only the mark arena can construct an item-normalized context.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -15,6 +15,15 @@ pub struct ItemContext(SyntaxContextId);
 /// Only the mark arena can construct a local-normalized context.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct LocalContext(SyntaxContextId);
+impl LocalContext {
+    pub const ROOT: Self = Self(SyntaxContextId::ROOT);
+    pub(crate) const fn key(self) -> u32 {
+        self.0.0.get()
+    }
+}
+impl ItemContext {
+    pub const ROOT: Self = Self(SyntaxContextId::ROOT);
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Transparency {
     Transparent,
@@ -45,6 +54,10 @@ struct Data {
 #[derive(Default)]
 pub struct Marks(Option<Box<Data>>);
 impl Marks {
+    pub(crate) fn context_count(&self) -> usize {
+        self.0.as_ref().map_or(1, |data| data.nodes.len() + 1)
+    }
+
     /// Apply one invocation to an actual definition token's retained context.
     /// Captured tokens preserve their existing context and do not call this.
     /// # Errors
@@ -122,7 +135,7 @@ impl Marks {
         }
         self.0
             .as_ref()
-            .and_then(|data| data.nodes.get(context.0 as usize - 1))
+            .and_then(|data| data.nodes.get(context.0.get() as usize - 2))
             .map(Some)
             .ok_or("unknown token syntax context")
     }
@@ -143,7 +156,7 @@ impl Data {
         let (parent_item, parent_local) = if key.parent == SyntaxContextId::ROOT {
             (key.parent, key.parent)
         } else {
-            let parent = &self.nodes[key.parent.0 as usize - 1];
+            let parent = &self.nodes[key.parent.0.get() as usize - 2];
             (parent.item, parent.local)
         };
         // None means the new node itself is already normalized. Construct any
@@ -162,8 +175,9 @@ impl Data {
         let id = self
             .nodes
             .len()
-            .checked_add(1)
+            .checked_add(2)
             .and_then(|length| u32::try_from(length).ok())
+            .and_then(std::num::NonZeroU32::new)
             .map(SyntaxContextId)
             .ok_or("token syntax context space exhausted")?;
         self.nodes.push(Node {
@@ -204,10 +218,10 @@ impl Data {
                 self.rebase_steps += 1;
             }
             pending.push(context);
-            context = self.nodes[context.0 as usize - 1].key.parent;
+            context = self.nodes[context.0.get() as usize - 2].key.parent;
         };
         for original in pending.into_iter().rev() {
-            let key = self.nodes[original.0 as usize - 1].key;
+            let key = self.nodes[original.0.get() as usize - 2].key;
             prefix = self.intern(Key {
                 parent: prefix,
                 ..key

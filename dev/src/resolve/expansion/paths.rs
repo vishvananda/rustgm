@@ -5,7 +5,7 @@ use super::{
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     expand::{
-        stream::ContextId,
+        marks::ExpansionId,
         textual::{self, Observer, Scope as TextScope, Scopes},
     },
     resolve::{
@@ -24,7 +24,7 @@ pub(super) struct Paths {
     work: Work,
     macros: Vec<Option<DefId>>,
     macro_targets: HashMap<DefId, MacroTarget>,
-    textual: Vec<Option<(TextScope, ContextId)>>,
+    textual: Vec<Option<(TextScope, ExpansionId)>>,
     text_ready: VecDeque<usize>,
     text_queued: Vec<bool>,
     waiting: HashMap<BindingKey, HashSet<usize>>,
@@ -97,7 +97,7 @@ impl Paths {
         context: Context,
         node: NodeId,
         item: crate::syntax::item::Item,
-        introduction: ContextId,
+        introduction: ExpansionId,
     ) -> Result<ScopeId, Error> {
         let mut resolver = self.state.bind(package);
         let first = resolver.facts.definitions.len();
@@ -177,7 +177,7 @@ impl Paths {
         child: ModuleId,
         node: NodeId,
         visibility: Visibility,
-        expansion: ContextId,
+        expansion: ExpansionId,
     ) -> Result<ScopeId, Error> {
         let mut resolver = self.state.bind(package);
         let access = resolver.visibility(context, visibility)?;
@@ -226,7 +226,7 @@ impl Paths {
         node: NodeId,
         name: NameId,
         exported: bool,
-        introduced: (usize, ContextId),
+        introduced: (usize, ExpansionId),
     ) -> Result<(), Error> {
         let (index, expansion) = introduced;
         let access = if exported {
@@ -315,7 +315,7 @@ impl Paths {
         context: Context,
         node: NodeId,
         visibility: Visibility,
-        textual: (TextScope, ContextId),
+        textual: (TextScope, ExpansionId),
     ) -> Result<(), Error> {
         let first = self.state.facts.imports.len();
         let mut resolver = self.state.bind(package);

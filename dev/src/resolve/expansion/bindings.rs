@@ -2,7 +2,7 @@
 use super::{Definition, Invocation};
 use crate::{
     expand::{
-        stream::ContextId,
+        marks::ExpansionId,
         textual::{Lookup, Scope, Scopes},
     },
     lex::token::LexError,
@@ -16,7 +16,7 @@ pub(super) struct Bindings<'a> {
     pub invocations: &'a [Invocation],
 }
 impl Bindings<'_> {
-    pub fn ancestor(&self, ancestor: ContextId, mut context: ContextId) -> bool {
+    pub fn ancestor(&self, ancestor: ExpansionId, mut context: ExpansionId) -> bool {
         while context != ancestor && context.0 != 0 {
             let Some(call) = self.invocations.get(context.0 as usize - 1) else {
                 return false;
@@ -30,7 +30,7 @@ impl Bindings<'_> {
         scopes: &mut Scopes,
         scope: Scope,
         name: NameId,
-        context: ContextId,
+        context: ExpansionId,
     ) -> Result<Lookup, LexError> {
         let found = scopes.lookup(scope, name)?;
         if let Lookup::Found(index) = found {

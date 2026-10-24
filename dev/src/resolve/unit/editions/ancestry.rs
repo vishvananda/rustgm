@@ -17,6 +17,7 @@ fn origin(generated: Span, file: FileId, span: Span) -> Origin {
         generated,
         original: Location { file, span },
         context: None,
+        introduction: crate::expand::marks::ExpansionId(0),
         joint: None,
     }
 }

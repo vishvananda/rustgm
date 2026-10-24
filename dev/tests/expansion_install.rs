@@ -3,7 +3,8 @@ use rustgm::{
         config::Config,
         crate_syntax,
         macros::session,
-        stream::{ContextId, Environment, Source, Stream},
+        marks::{ExpansionId, SyntaxContextId},
+        stream::{Environment, Source, Stream},
     },
     literal::Value,
     resolve::{
@@ -42,7 +43,8 @@ fn install(unit: &mut Unit, original: &str, corrupt: bool) -> Result<(), String>
                 file: FileId(0),
                 text: original,
             },
-            context: ContextId(1),
+            context: SyntaxContextId::ROOT,
+            introduction: ExpansionId(1),
             crate_id: 0,
         },
     )

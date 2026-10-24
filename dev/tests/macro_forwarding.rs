@@ -7,7 +7,8 @@ use rustgm::{
             matcher::{Compiled, Workspace},
             session, transcribe,
         },
-        stream::{ContextId, Environment, Source, Stream},
+        marks::{ExpansionId, SyntaxContextId},
+        stream::{Environment, Source, Stream},
     },
     support::{names::Names, source::FileId},
     syntax::{
@@ -27,7 +28,8 @@ fn environment<'a>(definition: &'a str, invocation: &'a str) -> Environment<'a> 
             file: FileId(1),
             text: invocation,
         },
-        context: ContextId(2),
+        context: SyntaxContextId::ROOT,
+        introduction: ExpansionId(2),
         crate_id: 0,
     }
 }

@@ -1,6 +1,6 @@
 //! Error-only source projection retains physical definition and invocation traces.
 use super::{
-    ContextId, Definition, Engine, Error, FileId, Invocation, Location, Package, Report, Sources,
+    Definition, Engine, Error, ExpansionId, FileId, Invocation, Location, Package, Report, Sources,
     Span, Stream,
 };
 use crate::support::hash::HashSet;
@@ -53,7 +53,7 @@ fn physical(
     package: &Package,
     invocations: &[Invocation],
     mut location: Location,
-) -> Result<(Location, Option<ContextId>), &'static str> {
+) -> Result<(Location, Option<ExpansionId>), &'static str> {
     let mut context = None;
     for _ in 0..4096 {
         // A new file can fail parsing before its unit is installed. Its error
@@ -65,7 +65,7 @@ fn physical(
             return Ok((location, context));
         };
         if context.is_none() {
-            context = origin.context.filter(|context| context.0 != 0);
+            context = (origin.introduction.0 != 0).then_some(origin.introduction);
             // Includes preserve source hygiene, so their origins have no syntax
             // context. Error-only lookup recovers the separate invocation ancestry.
             if context.is_none() && package.unit(origin.original.file).include_context.is_some() {
@@ -94,7 +94,7 @@ fn project_frame(
     package: &Package,
     invocations: &[Invocation],
     trace: &mut ExpansionTrace,
-) -> Result<Option<ContextId>, &'static str> {
+) -> Result<Option<ExpansionId>, &'static str> {
     let (call, context) = physical(package, invocations, trace.call)?;
     trace.call = call;
     if let Some(definition) = trace.definition {
@@ -156,7 +156,7 @@ fn project(
         }
         Ok(())
     })();
-    error.introduction = ContextId(0);
+    error.introduction = ExpansionId(0);
     if let Err(message) = result {
         error.message.push_str("; ");
         error.message.push_str(message);

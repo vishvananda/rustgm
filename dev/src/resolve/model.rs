@@ -217,26 +217,26 @@ pub struct Reference {
 /// Expansion-only binding provenance; ordinary resolution leaves these tables empty.
 #[derive(Default)]
 pub struct Introductions {
-    pub definitions: HashMap<DefId, crate::expand::stream::ContextId>,
-    pub imports: HashMap<usize, crate::expand::stream::ContextId>,
-    pub parents: Vec<crate::expand::stream::ContextId>,
+    pub definitions: HashMap<DefId, crate::expand::marks::ExpansionId>,
+    pub imports: HashMap<usize, crate::expand::marks::ExpansionId>,
+    pub parents: Vec<crate::expand::marks::ExpansionId>,
 }
 impl Introductions {
     #[must_use]
-    pub fn binding(&self, binding: Binding) -> crate::expand::stream::ContextId {
-        use crate::expand::stream::ContextId;
+    pub fn binding(&self, binding: Binding) -> crate::expand::marks::ExpansionId {
+        use crate::expand::marks::ExpansionId;
         match binding.origin {
             Origin::Direct => self.definitions.get(&binding.target),
             Origin::Import(index) | Origin::Glob(index) => self.imports.get(&(index as usize)),
         }
         .copied()
-        .unwrap_or(ContextId(0))
+        .unwrap_or(ExpansionId(0))
     }
     #[must_use]
     pub fn ancestor(
         &self,
-        ancestor: crate::expand::stream::ContextId,
-        mut context: crate::expand::stream::ContextId,
+        ancestor: crate::expand::marks::ExpansionId,
+        mut context: crate::expand::marks::ExpansionId,
     ) -> bool {
         for _ in 0..=self.parents.len() {
             if context == ancestor {

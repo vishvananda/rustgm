@@ -6,7 +6,7 @@ use super::{
     model::{Binding, Namespace, Origin, ScopeId},
     names::NameId,
 };
-use crate::expand::stream::ContextId;
+use crate::expand::marks::LocalContext;
 
 const NONE: u32 = u32::MAX;
 
@@ -43,7 +43,7 @@ struct Entry {
 /// A hygienic local; older definitions of the same key follow `next`.
 #[derive(Clone, Copy)]
 struct Local {
-    context: ContextId,
+    context: LocalContext,
     binding: Binding,
     next: u32,
 }
@@ -297,7 +297,7 @@ impl BindingTable {
     pub(crate) fn local(
         &self,
         entry: EntryId,
-        context: ContextId,
+        context: LocalContext,
         visible: usize,
     ) -> Option<Binding> {
         let local = self
@@ -319,7 +319,7 @@ impl BindingTable {
     pub(crate) fn define_local(
         &mut self,
         key: (ScopeId, NameId, Namespace),
-        context: ContextId,
+        context: LocalContext,
         binding: Binding,
         shadow: bool,
     ) -> Result<(), &'static str> {

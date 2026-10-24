@@ -3,7 +3,10 @@ use super::{
     names::{NameId, Names},
     unit::{FileId, NodeKey, Unit},
 };
-use crate::expand::stream::{ContextId, Origin};
+use crate::expand::{
+    marks::{ExpansionId, LocalContext, Marks, SyntaxContextId},
+    stream::Origin,
+};
 use crate::support::hash::HashMap;
 use crate::syntax::{
     ast::{Kind, NodeId},
@@ -21,6 +24,7 @@ pub struct Module {
     pub root: NodeId,
 }
 pub struct Package {
+    pub(crate) marks: Marks,
     pub source_core: Option<Box<super::bindings::SourceCore>>,
     pub(super) library: Option<Box<super::stability::Library>>,
     pub no_std: bool,
@@ -61,7 +65,7 @@ pub struct ErrorData {
     pub span: Span,
     pub message: String,
     pub expansions: Vec<ExpansionTrace>,
-    pub(crate) introduction: ContextId,
+    pub(crate) introduction: ExpansionId,
 }
 impl Error {
     #[must_use]
@@ -74,7 +78,7 @@ impl Error {
             },
             message: message.into(),
             expansions: Vec::new(),
-            introduction: ContextId(0),
+            introduction: ExpansionId(0),
         })
     }
     pub(crate) fn imported(
@@ -87,7 +91,7 @@ impl Error {
             span,
             message: message.into(),
             expansions: Vec::new(),
-            introduction: ContextId(0),
+            introduction: ExpansionId(0),
         })
     }
     pub(crate) fn unlocated(message: impl Into<String>) -> Self {
@@ -96,7 +100,7 @@ impl Error {
             span: Span { start: 0, end: 0 },
             message: message.into(),
             expansions: Vec::new(),
-            introduction: ContextId(0),
+            introduction: ExpansionId(0),
         })
     }
 }
@@ -184,24 +188,15 @@ impl Package {
     }
     /// # Errors
     /// Rejects malformed or excessively deep expansion provenance.
-    pub fn expansion_context(&self, mut file: FileId, mut offset: u32) -> Result<ContextId, Error> {
-        for _ in 0..4096 {
-            let Some(origin) = self.origin(file, offset) else {
-                return Ok(ContextId(0));
-            };
-            if let Some(context) = origin.context {
-                return Ok(context);
-            }
-            offset = origin.original.span.start
-                + (offset - origin.generated.start)
-                    .min(origin.original.span.end - origin.original.span.start);
-            file = origin.original.file;
-        }
-        Err(Error::at(
-            file,
-            offset,
-            "expansion provenance chain exceeds 4096",
-        ))
+    pub fn syntax_context(&self, file: FileId, offset: u32) -> Result<SyntaxContextId, Error> {
+        super::unit::contexts::at(&self.units, file, offset)
+    }
+    /// # Errors
+    /// Rejects missing source provenance or a token context outside this package.
+    pub(crate) fn local_context(&self, file: FileId, offset: u32) -> Result<LocalContext, Error> {
+        self.marks
+            .local(self.syntax_context(file, offset)?)
+            .map_err(|message| Error::at(file, offset, message))
     }
 
     /// Read canonical names directly from a parsed path.

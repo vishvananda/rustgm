@@ -107,10 +107,11 @@ fn ordinary_admission_inspects_no_syntax_and_language_requests_stay_packed() -> 
     // Source auto-trait and negative-impl gates extend the packed request bits.
     assert_eq!(size_of::<super::super::policy::Features>(), 2);
     assert_eq!(size_of::<Position>(), 1);
-    // One independent cold library-policy pointer extends the 240-byte base.
+    // Cold library-policy and token-mark pointers extend the 240-byte base.
     assert_eq!(
         size_of::<Package>(),
         240 + size_of::<Option<Box<crate::resolve::stability::Library>>>()
+            + size_of::<crate::expand::marks::Marks>()
     );
     assert_eq!(size_of::<super::super::SourceCore>(), 72);
     Ok(())

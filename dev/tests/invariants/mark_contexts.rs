@@ -7,6 +7,9 @@ fn physical_contexts_need_no_allocation_and_normalized_records_stay_compact() ->
     let marks = Marks::default();
     let root = SyntaxContextId::ROOT;
     assert_eq!(size_of::<Marks>(), 8);
+    assert_eq!(size_of::<Option<SyntaxContextId>>(), 4);
+    assert_eq!(size_of::<crate::expand::stream::Origin>(), 32);
+    assert_eq!(size_of::<crate::lex::token::Token>(), 12);
     assert_eq!(size_of::<Node>(), 20);
     assert_eq!(size_of::<Key>(), 12);
     assert_eq!(size_of::<ItemContext>(), 4);
@@ -122,7 +125,8 @@ fn literal_parents_and_call_site_policy_are_independent_of_macro_name_context() 
 }
 
 #[test]
-fn malformed_roots_and_contexts_do_not_create_partial_marks() {
+fn malformed_roots_and_contexts_do_not_create_partial_marks() -> TestResult {
+    let invalid = SyntaxContextId(std::num::NonZeroU32::new(2).ok_or("missing nonzero identity")?);
     let mut marks = Marks::default();
     let root = SyntaxContextId::ROOT;
     assert!(
@@ -132,23 +136,14 @@ fn malformed_roots_and_contexts_do_not_create_partial_marks() {
     );
     assert!(
         marks
-            .apply(
-                SyntaxContextId(1),
-                ExpansionId(1),
-                Transparency::Opaque,
-                root
-            )
+            .apply(invalid, ExpansionId(1), Transparency::Opaque, root)
             .is_err()
     );
     assert!(
         marks
-            .apply(
-                root,
-                ExpansionId(1),
-                Transparency::Opaque,
-                SyntaxContextId(1)
-            )
+            .apply(root, ExpansionId(1), Transparency::Opaque, invalid)
             .is_err()
     );
     assert!(marks.0.is_none());
+    Ok(())
 }

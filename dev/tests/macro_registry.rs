@@ -7,8 +7,9 @@ use rustgm::{
             matcher::{Compiled, Workspace},
             session, transcribe,
         },
+        marks::{ExpansionId, SyntaxContextId},
         registry::Registry,
-        stream::{ContextId, Environment, Source, Stream},
+        stream::{Environment, Source, Stream},
     },
     lex::token::Punctuation as P,
     support::{names::Names, source::FileId},
@@ -29,7 +30,8 @@ fn environment<'a>(definition: &'a str, invocation: &'a str) -> Environment<'a> 
             file: FileId(1),
             text: invocation,
         },
-        context: ContextId(2),
+        context: SyntaxContextId::ROOT,
+        introduction: ExpansionId(2),
         crate_id: 0,
     }
 }

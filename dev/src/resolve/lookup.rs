@@ -56,7 +56,7 @@ impl Resolver<'_> {
         scope: ScopeId,
         name: NameId,
         target: DefId,
-        introduction: crate::expand::stream::ContextId,
+        introduction: crate::expand::marks::ExpansionId,
         dependencies: &mut Vec<BindingKey>,
     ) -> bool {
         let definition_scope = self.facts.definitions[target.0 as usize].scope;
@@ -65,7 +65,7 @@ impl Resolver<'_> {
             .definitions
             .get(&target)
             .copied()
-            .unwrap_or(crate::expand::stream::ContextId(0));
+            .unwrap_or(crate::expand::marks::ExpansionId(0));
         let more_expanded = !marks.ancestor(defined, introduction);
         let mut inside = true;
         let mut current = Some(scope);
@@ -100,10 +100,11 @@ impl Resolver<'_> {
         if matches!(namespace, Namespace::Value | Namespace::Label)
             && let Some(hygiene) = self.hygiene.as_ref()
         {
-            let context = self.package.expansion_context(c.file, offset)?;
+            let context = self.package.local_context(c.file, offset)?;
             let found = hygiene
                 .lookup(
                     self.facts,
+                    &self.package.marks,
                     super::hygiene::Query {
                         scope: c.scope,
                         name,

@@ -172,9 +172,8 @@ Private draft controls cover single-local no-allocation, 128 unrelated contexts
 by 32 shadows with bounded predecessor comparisons, historical strict visibility,
 duplicate/out-of-order atomicity, and separate scope/namespace histories. This
 code passes the focused development checks above. The three existing Resolution
-layout controls pass at 2040 bytes; the prior record was 2032 bytes. It still uses
-the existing context identity and must migrate to normalized LocalContext with
-the scoped hygiene implementation. Whole-frontend allocation and timing remain
+layout controls pass at 2040 bytes; the prior record was 2032 bytes. The later token-context checkpoint below migrates it to normalized LocalContext.
+Scoped item/import keys remain a separate required consumer. Whole-frontend allocation and timing remain
 unmeasured. This development gate does not replace release/native/performance
 qualification of the coherent scoped-macro implementation.
 
@@ -197,12 +196,12 @@ These inputs are independently qualified, not measured RustGM performance result
 ## Normalized mark arena draft
 
 `expand::marks` now implements distinct expansion and token-context identities,
-constructor-only item/local normalized wrappers, and cached projections. It is
-not yet connected to Package, token production or lookup. The isolated module
-passes fresh formatting, architecture/file audits, all-target strict Clippy,
-harness/upstream verification and five focused private controls. The live
-resolver still uses the previous context model; this module grants no scoped-macro
-acceptance.
+constructor-only item/local normalized wrappers, and cached projections. At snapshot `5919c938` it was
+not connected to Package, token production or lookup. That isolated module passed
+fresh formatting, architecture/file audits, all-target strict Clippy,
+harness/upstream verification and five focused private controls. The later
+checkpoint below connects the live legacy path; neither checkpoint grants
+scoped-macro acceptance.
 
 The arena keeps the physical root allocation-free and interns the
 actual `(definition-token parent, invocation, transparency)` key. Projection
@@ -221,8 +220,46 @@ call-site context. This is an arena construction bound, not a whole-frontend
 throughput or semantic compatibility claim. Evidence is retained in
 `obj/parallel/pa31-declarative-macros/marks-development-v1`.
 
-Next, connect these identities to actual token origins and definition sites,
-then migrate local histories and item/import dependency keys together. The
-existing one-context-per-definition path must be replaced before scoped
-expansion can be enabled. Cross-crate macro transport remains a separate required
-consumer of these identities.
+The next checkpoint connects these identities to actual token origins, definition
+sites and local histories. Item/import dependency keys and scoped lookup remain
+required before scoped expansion can be enabled. Cross-crate macro transport
+remains a separate required consumer of these identities.
+
+
+## Live token-context checkpoint
+
+The isolated implementation now connects the arena to Package, actual expansion
+production and legacy local lookup. Each definition token receives a mark from
+its retained raw context; captured lexical tokens retain their own context.
+Declaration-name context is no longer substituted for every body token.
+Invocation ancestry remains a distinct ExpansionId for diagnostics, textual
+scope ordering and physical introduction. Ordinary macro_rules uses semiopaque
+marks, and builtin production selects the actual terminal callee segment.
+
+Origin keeps a four-byte optional nonzero syntax context beside a four-byte
+introduction identity. Measured sizes remain Origin32 and Token12; Package adds
+one eight-byte cold mark arena handle and is 256 bytes, with no allocation for
+physical-only sources. Normalized local histories retain Resolution2040 and
+avoid scans through unrelated contexts. Their definition-site fallback follows
+the token's own normalized parent. Captured opaque slices still follow bounded
+physical-origin ancestry to resolve their component contexts. This is a retained
+performance obligation: materialize or share mixed context ranges without
+splitting the physical/edition origins or assigning one guessed context to an
+entire mixed fragment. No end-to-end speed or allocation improvement is claimed.
+
+Evidence `obj/parallel/pa31-declarative-macros/token-contexts-v4` records fresh
+formatting, all-target strict Clippy, harness/upstream checks, 135 frontend tests,
+16 exact private controls and unchanged PA7 181/181 plus PA8 94/94 text outputs.
+The private controls include mixed captured contexts, reversed/cyclic provenance,
+normalization/rebasing work and actual layout checks. The prior fresh architecture
+and file audit is retained through an authenticated one-semicolon correction;
+its exact inverse restores every audited byte. Earlier factoring/type/lint
+failures remain in v1–v3. Checks SHA-256 is
+`1d547c3fd2105744fd707ec795b20ad2cc8b900559db2ab29e260c8f260be39e`,
+and the qualified source inventory SHA-256 is
+`6a7fea4becfc0a578ee7c5035d0f7d72070cd7ebd27b32e5f680b5deb2f5f3e5`.
+
+Scoped declarations still reject explicitly. Root language gates, normalized item
+and import keys, module/path adjustment, visibility and cross-crate provenance
+remain required. This development checkpoint is not a release qualification or
+an original whole-core/alloc/std build.

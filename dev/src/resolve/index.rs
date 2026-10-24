@@ -347,7 +347,7 @@ impl Resolver<'_> {
                 .node
                 .ok_or_else(|| Error::at(FileId(0), 0, "local binding has no source"))?;
             let offset = super::hygiene::name_offset(self.package, key);
-            let context = self.package.expansion_context(key.file, offset)?;
+            let context = self.package.local_context(key.file, offset)?;
             self.facts
                 .bindings
                 .define_local(
