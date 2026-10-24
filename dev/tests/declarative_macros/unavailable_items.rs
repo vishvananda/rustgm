@@ -217,7 +217,7 @@ fn unused_scoped_source_items_preserve_their_independently_declared_native_answe
     std::fs::create_dir_all(&folder)?;
     let consumer =
         std::fs::read_to_string(root.join("pa31/tests/spec/source-panic-macros/consumer.c"))?;
-    for name in POSITIVE {
+    for name in POSITIVE.iter().copied().chain(["unbound-variable"]) {
         let program = lower(&source(name)?)?;
         crate::ffi_program::check(root, &folder, name, &program, &consumer, "7\n")?;
     }
