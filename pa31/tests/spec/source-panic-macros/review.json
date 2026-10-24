@@ -1,0 +1,96 @@
+{
+  "state": "Authenticated independent Rust observations; no candidate execution or full LIB013 closure claim.",
+  "evidence": "/home/vishvananda/rustgm-validation-work/obj/parallel/source-panic-independent-v1",
+  "complete_sha256": "32f19917916672e5e4512bb63f375ce6c14e1ecbdea29cfc9248d180eac2fc7c",
+  "results_sha256": "f4e8f14bb4d9fbdd0a8c75db5fcfdc57c742feedafe51d34e9c683c9e5731af0",
+  "binding_sha256": "79235394ffc8b74eef7b08ee8011e2068321867e72b7edf038a9c077b094a572",
+  "summary": {
+    "state": "passed",
+    "observations": 142,
+    "native_programs": 30,
+    "failures": [],
+    "inputs_unchanged": true,
+    "results_sha256": "f4e8f14bb4d9fbdd0a8c75db5fcfdc57c742feedafe51d34e9c683c9e5731af0"
+  },
+  "contexts": 39,
+  "source_bindings": [
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/contract.json",
+      "sha256": "462d86669987aad45e9259e3893f6f71d1e92ca108d644df185075c5b63be1f7"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/consumer.c",
+      "sha256": "a71a6a1bf2fc723e8ff03ffa03eb9940b0cca5f0479ac755626ac7ccdd9a1037"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/direct-core_panic.rs",
+      "sha256": "f22f3a3e6946ea13eee14d09e3dee40cd462ff1decbae08a209c7b7d1df99428"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/direct-std_panic.rs",
+      "sha256": "5be76c8cc01c2d2562ce6708cf3b8a7ce9ecb851767b37888240ca95ddfd5e5c"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/direct-unreachable.rs",
+      "sha256": "7aefd07180aa86d0a15016808d514f47f695dd7d71001a5ab216f28ee2398e35"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/imported-alias.rs",
+      "sha256": "548b7e8f8c12d252320e91d51831a69404a01e07e13dfe0ee9918a5f0a3f47a8"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/caller-module-shadow.rs",
+      "sha256": "77ff1b91ffe597702b4c69d5b7e490378969c6e117085ad5b943bb6d8536a9e8"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/ordinary-spelling.rs",
+      "sha256": "4397d03a693c52a8c14350e541ff575e5e601d403fb5f96dc3123b15dc9fe4fe"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/missing-modern-handler.rs",
+      "sha256": "1b7a6970985cedbd6d7e19bf12f8161bae02c8b55aa03db97616e5fb78004a05"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/missing-legacy-handler.rs",
+      "sha256": "d36e7e5ba7a2df57a61cc9ad81cebb64f5567627e252ae3fee9eed5617994216"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/rejected-argument-tokens.rs",
+      "sha256": "1a2ecdda53c1fc8628623910d8586ce4e7e6ddffe3a5fc9d87c02a41abb67d95"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/unknown-builtin-role.rs",
+      "sha256": "5e7a2f98448166cbad0151d1d26c6bd0b1bdbb61869c1ec0aef405fb45a0b87c"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/edition-provider.rs",
+      "sha256": "791a2174d2cea3eed5409cb3537717b9e8ec840ddc2d0dbba3f02a74d932c231"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/edition-consumer-route.rs",
+      "sha256": "4b6a9a2d4e0d98ebffaddc45557f06442bf28958fe1cbff23347c4c6ecb5271e"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/edition-consumer-ordinary_wrapper.rs",
+      "sha256": "1f48c7f873be013fdabcf8437672e3199ed77a60bf5a8819905d9470831d258c"
+    },
+    {
+      "entry": "pa31/tests/spec/source-panic-macros/edition-consumer-edition_wrapper.rs",
+      "sha256": "ad4654f8ba1684159eebe3122bb3ff5a5af5c480bc1084cf79b41980b1fbe052"
+    }
+  ],
+  "candidate_scope": {
+    "source_mode": "actual local own-provider only; preserve existing rustc_attrs/source-role authorization",
+    "editions": [
+      "2021",
+      "2024"
+    ],
+    "not_supported": [
+      "2018 candidate profile (PA40 prerequisite)",
+      "foreign macro transport and defining-crate relocation (LIB007 prerequisite)",
+      "original std SourceClient role authorization",
+      "other internal allowance features",
+      "panic runtime implementation"
+    ]
+  }
+}
