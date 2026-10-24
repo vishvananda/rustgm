@@ -106,7 +106,7 @@ edition is correct. Token lexical-edition provenance is a separate contract.
    owner and real invocation record. The selected handler then uses the normal
    macro worklist and argument parser. Invalid tokens are its actual rejection.
 
-## Frozen qualification plan
+## Historical frozen qualification plan
 
 Production and controls are source-only. The local candidate selection has
 28 distinct source contexts: the original ten single-source inputs in editions
@@ -154,3 +154,67 @@ oracle, test or cleanup has run for this implementation. Formatting and manual
 API/function-length/filename-family review have completed. Root's newer shared
 `Paths::invocation` publication API must replace this branch's new fourth
 ancestry publication site during integration; it is not silently bypassed.
+
+
+## Observed local qualification and next core blocker
+
+The compiler source checkpoint is `2c31704b57a97e102de08ff732f1c737a31a99aa`.
+The plan above records the pre-execution state; the following receipts supersede
+its unobserved-status statements without changing the original hypotheses.
+No 2018 or foreign macro transport support is claimed.
+
+`obj/parallel/pa31/source-panic-local-v1` authenticated the original 142 Rust
+observations/30 native programs, then independently qualified all eight new
+inputs: 26 observations/five native programs, matching every declared result.
+The missing-feature, nonmacro-owner and malformed-list cases are Rust rejections.
+Unknown, duplicate and empty allowance cases are Rust-positive but remain
+explicitly unsupported by this candidate. All original and new source bytes are
+unchanged. Oracle results SHA is
+`f25aa80f08f34b305bb241ba2245a182b5f62836b47dcb18550b65689d5ec6bf`.
+The total retained oracle evidence is 168 observations/35 native programs.
+
+V1–V5 retain audit, type-wiring and style failures; V6 built the actual compiler
+but stopped on an invalid grouped test selector; V7 stopped on one incorrect
+private-test module name. None was counted as a candidate semantic success.
+V6's fresh format, architecture audit, all-target/all-feature strict checking,
+harness and upstream gates all passed on the exact final source. V8 authenticated
+those unchanged results and corrected only the exact selected test identities.
+It passed all 26 private controls, three frontend test functions covering the
+28 declared local contexts, and all 16 candidate native programs. Its completion
+receipt SHA is `48d27bd7872f70bc20296c2725d0869d326191dc2c44c27d0421338da882e445`;
+checks SHA is `4c207947d367389fdbb77d7368b5a3c7b9e013dda8c3ca33e6d72514ac9c2954`.
+
+Measured cold sizes in bytes: SourceCore 176, Contracts 104, Declaration 80,
+Entry 112, Frame 48, Definition 128. The actual core-header control retained
+432 payload bytes. Depth/width 8, 32, 128 used 361, 1393, 5521 charged steps;
+8, 32, 128 retained frame entries; and 108384, 428928, 1711104 attempted bytes.
+These are focused owner-work measurements, not a general performance result.
+Hot layouts remained at their asserted values; the independent field milestone
+adds its declared optional index pointer to Declarations (observed 7072 bytes).
+Although its 18 structural/shared/layout controls passed, the separate 24 field
+source hypotheses remain independently unqualified. Panic production does not
+require the field consumer changes and may be integrated separately.
+
+The separately guarded `source-panic-whole-core-v1` observation bound the actual
+Cargo-built debug CLI SHA
+`521bc9dab702cb00dac5106717f90f525a51e839be04f898626bffbfb028d772`
+and exact source/static/focused/native receipts. It verified every pinned core
+file, then used unchanged core/lib.rs, edition 2024, original core identity,
+`--source-core`, `--emit-types`, strace and a 120-second bound. Four original
+files opened with verified hashes. The prior core_panic claim was accepted;
+the next diagnostic is file 3 byte 1250, core/macros/mod.rs line 41:
+`internal macro allowance feature is not implemented`, at the actual
+`#[allow_internal_unstable(panic_internals)]` on `macro_rules! assert_eq`.
+Compiler status is 1, infrastructure failure false, inputs unchanged true.
+Result SHA is `da05be67bdb0751ad043a0aec2e1ad70b013ee6da9c716e4b2752dc3298233cd`.
+This is whole-root frontier progress, not crate compilation or LIB013 closure.
+
+All jobs are terminal and released. Successful V8 default cleanup receipt
+`1792834567122382573` removed 32 disposable outputs; the whole-core receipt
+`1792834650905815558` removed none. Failed-run diagnostics, sources, bindings and
+all oracle results remain retained. No successor semantic changes or worker
+performance run are included. Integrator qualification must preserve root's
+shared `Paths::invocation` publication API at the new panic invocation site and
+recheck the merged compiler. Permission propagation beyond edition_panic,
+2018 behavior, foreign transport and the original scoped-macro requirements
+remain open.
