@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "status": "Predeclared native tail-value hypothesis; unobserved. Complements context acceptance without replacing its observations.",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "crate_type": "lib",
+  "bootstrap": true,
+  "cases": [
+    {
+      "name": "selected-statement-tail-value",
+      "path": "selected-statement-tail-value.rs",
+      "sha256": "512536e95b9561ad5bea9673999aaa495d6b9a5b9a877a4d1d523ccbaff0ac18",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "17\n",
+      "cfg": [],
+      "purpose": "Observe the actual selected statement-tail value at the C ABI boundary; an unselected empty branch remains a valid statement fragment."
+    }
+  ]
+}
