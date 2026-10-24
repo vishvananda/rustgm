@@ -524,6 +524,17 @@ identity results; caller-dependent visibility remains separate. Self/super token
 each retain their own context, and visibility paths must still name direct
 ancestor modules.
 
+Trait-method discovery visits actual item scopes using the method identifier's
+context, while collecting all trait bindings in each reached scope, including
+opaque trait names. Preserve item/statement-macro block boundaries before
+expansion, even when their output is empty. Value-only scopes and parenthesized
+expression tails do not create those boundaries. Partition member contexts
+before copying candidates, retain both original and walking contexts in lookup
+memoization, and check actual container identity and caller visibility separately
+from reusable candidate lists. The
+[trait discovery checkpoint](docs/pa31-trait-discovery.md) records independent
+scope opponents, linear sibling work, cold storage costs and remaining consumers.
+
 Glob journals retain source keys while contributions and withdrawals retain the
 mapped destination keys. Reverse only the synchronized glob/use context mapping;
 an ordinary context adjustment is insufficient. Reuse a transformed suffix for

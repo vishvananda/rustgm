@@ -15,14 +15,16 @@ independent blockers in their lanes while preserving a separate coherent handoff
 for each. Current priority is unchanged-core loading and expansion. Worker C
 implements LIB-017 formatting after its qualified `cfg_select` component moved
 unchanged core from line 235 to the `format_args` attribute at line 994.
-The integrator merged cfg_select locally as `4ad4db87` and the separately
-qualified inherent-member contexts through `abae2094`; combined release and
-performance qualification remain pending. Worker B fixes LIB-016's
+The integrator merged cfg_select locally as `4ad4db87`, the separately
+qualified inherent-member contexts through `abae2094`, and qualified trait-method
+scope discovery as `708ee191`; combined release and performance qualification
+remain pending. Worker B fixes LIB-016's
 measured repeated projection-environment opening and premise-index construction,
 with the early-impl readiness draft preserved separately. Worker A owns complete
 generic source-body validation, artifact transport and fresh consumer proof.
 The integrator owns combined qualification, shared interface review and the
-remaining method/associated-member work. C's unqualified field checkpoint and
+remaining impl-to-trait member mapping and associated-member work, coordinated
+with A's imported-header changes. C's unqualified field checkpoint and
 the remaining foreign macro, edition and stability requirements stay open.
 These implementation priorities do not change assignment release ownership or
 the shared resource limits below.
