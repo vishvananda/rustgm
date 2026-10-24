@@ -1,0 +1,86 @@
+{
+  "status": "Observed source contracts; original hypotheses and sources unchanged. No RustGM implementation acceptance is implied.",
+  "context_rules": [
+    "Forced expressions reject empty selected and unselected cfg_select branches.",
+    "Direct brace-delimited block-tail macros and explicit statements permit empty or item-only statement fragments.",
+    "The actual selected tail value crosses the C ABI as17 in the dedicated tail-value control.",
+    "An opaque captured expression keeps expression grammar at both tail and explicit semicolon boundaries.",
+    "Raw tokens may use statement grammar only when the actual enclosing macro invocation has statement context; outer parenthesized tail invocation is expression context."
+  ],
+  "gates": [
+    {
+      "root": "obj/parallel/cfg-select-oracle-v4",
+      "complete_sha256": "1201db1e1ee368863ed8a77cdda631014b7fa225009ff0a55663306cb6ab822d",
+      "results_sha256": "f5c16b7e0ce1fad93109d7b9833e1566e2b6a5ae764d4ab4d255a4239e5c9f14",
+      "plan_sha256": "302eafa12415d02ed53306eeeb2833b2eefce41af6f62f1da36a541d7d1bc345",
+      "passed": true,
+      "observations": 22,
+      "language": 14,
+      "native": 4,
+      "expected_native": 4,
+      "mismatches": [],
+      "inputs_unchanged": true
+    },
+    {
+      "root": "obj/parallel/cfg-select-oracle-v5",
+      "complete_sha256": "eff1f849bf16eecacb5f0bcd2cd89d11962fed91f1b861e8cc86e311947acc22",
+      "results_sha256": "3a8d2b7530a4b91fd769ffa5732c623fa066328b822c6ab0ac830a3fa374d1fd",
+      "plan_sha256": "f272e0520b154b756256b743d9169b42bb7eec2ed3759cc9281e9d5830d1dea8",
+      "passed": true,
+      "observations": 4,
+      "language": 2,
+      "native": 1,
+      "expected_native": 1,
+      "mismatches": [],
+      "inputs_unchanged": true
+    },
+    {
+      "root": "obj/parallel/cfg-select-oracle-v6",
+      "complete_sha256": "f7c03828f21bf8f5430ad14a06acaced967422cdb8d86281a9d9087789d72649",
+      "results_sha256": "5b269e81ffed4b138ecc4462ebddcd9d760dd7af5ab08ca50b9eca01d8cf1061",
+      "plan_sha256": "75911bc5c1f648d78df45772025964e43a0dd4d503c8667a11789fb6f9aa656d",
+      "passed": false,
+      "observations": 10,
+      "language": 8,
+      "native": 1,
+      "expected_native": 2,
+      "mismatches": [
+        [
+          "tokens-empty-statement-tail",
+          "metadata"
+        ],
+        [
+          "tokens-empty-statement-tail",
+          "object"
+        ]
+      ],
+      "inputs_unchanged": true
+    },
+    {
+      "root": "obj/parallel/cfg-select-oracle-v7",
+      "complete_sha256": "c2610fca227b590baae666539d2925f65f22eb07707d477e25eb296166403dda",
+      "results_sha256": "8265929494008e458d39b998540050f6e5116986848902e7aa79214f08c810d9",
+      "plan_sha256": "f8a8378c295acb180e63ccba5a7adbb1757920bd9266adbe89402be848ddd490",
+      "passed": true,
+      "observations": 4,
+      "language": 2,
+      "native": 1,
+      "expected_native": 1,
+      "mismatches": [],
+      "inputs_unchanged": true
+    }
+  ],
+  "disagreements": [
+    {
+      "name": "tokens-empty-statement-tail",
+      "source_sha256": "9409c8cad0e1f556981bc3dbdf024d6c7a6289897f1f800a7a4b33e77adaf423",
+      "predicted": "accept",
+      "observed_status": 1,
+      "diagnostic_messages": [
+        "macro expansion ends with an incomplete expression: expected expression",
+        "aborting due to 1 previous error"
+      ],
+      "explanation": "The outer forward!(...) invocation is parenthesized at block tail and requires an expression. The raw token payload does not override that invocation category. The distinct brace-delimited positive is tested separately; this original source and failed hypothesis remain unchanged."
+    }
+  ]
+}
