@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "status": "Predeclared opaque expression versus token forwarding hypotheses; unobserved.",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "crate_type": "lib",
+  "bootstrap": true,
+  "cases": [
+    {
+      "name": "opaque-empty-expression-tail",
+      "path": "opaque-empty-expression-tail.rs",
+      "sha256": "12f6b47c39ba3347f4d446d685fd494f347604e3ba8eff3057da09e752786295",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "expected expression"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": "Preserve opaque expression capture category at actual statement expansion boundaries."
+    },
+    {
+      "name": "opaque-empty-expression-semicolon",
+      "path": "opaque-empty-expression-semicolon.rs",
+      "sha256": "087a5d2c49aaa7f1793788e1ce22ebd042f76f0ce4cd981262ed0c74158fa61c",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "expected expression"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": "Preserve opaque expression capture category at actual statement expansion boundaries."
+    },
+    {
+      "name": "tokens-empty-statement-tail",
+      "path": "tokens-empty-statement-tail.rs",
+      "sha256": "9409c8cad0e1f556981bc3dbdf024d6c7a6289897f1f800a7a4b33e77adaf423",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Raw token forwarding may enter the actual statement fragment category."
+    },
+    {
+      "name": "tokens-empty-statement-semicolon",
+      "path": "tokens-empty-statement-semicolon.rs",
+      "sha256": "ab7c3b57421c14328ebb48c5439e69063a382d5561b38da847e987af379a81a2",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Raw token forwarding may enter the actual statement fragment category."
+    }
+  ]
+}
