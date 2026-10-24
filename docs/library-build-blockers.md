@@ -90,8 +90,8 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-012 | P2; externally useful acceptance | Original no-default-features serde_core, then alloc/std serde_json graphs | PA35 / PA35 | Integrator | Run the core-only graph as soon as LIB-007/008/009 permit it; do not wait for std. |
 | LIB-013 | P0; prior unchanged-core blocker advanced | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | C + integrator | Local 2021/2024 source delegation and exact warm spelling guards pass combined qualification. The qualified unchanged-core probe advances to LIB-014. Foreign macro transport and Rust 2018 remain required; full LIB-013 is not closed. |
 | LIB-014 | P0; previous unchanged-core failure at `assert_eq`, line 41 | Macro-specific internal unstable feature allowances, beginning with actual `panic_internals` | PA31 source/compiler policy; PA8 token provenance / PA31 with applicable PA8 ordinary controls | C + integrator | Complete local allowance lists and provenance pass combined functional qualification and move original core to LIB-001. The allowance growth controls pass; foreign API/const consumers remain required. |
-| LIB-015 | P0; qualified component's unchanged-core failure at `cfg_select`, line 235 | Authenticated source-declared builtin `cfg_select`, complete predicate/branch parsing and selected token forwarding | PA31 source/compiler role; PA7/PA8 shared cfg/expansion machinery / PA31 plus earlier ordinary controls where expressible | C | Scoped declarations now pass component qualification and the fresh core probe confirms this next blocker. Implement actual expansion, including parsing unselected branches in the invocation fragment category without expanding or type-checking them. Root's 48-source cfg_select corpus has independent observations; candidate builtin support remains pending. |
-| LIB-016 | P0; measured complete-source growth failure | Repeated full caller-environment opening and premise-index construction across independent projections | PA21 projection/formation machinery; PA31 complete source regression / PA31 plus earlier ordinary controls | B | At `5602dc27`, 32→128 projected subjects costs 54.8M→550.4M instructions (10.04×; declared limit 6×). Retained profiles identify repeated structural remapping/index builds. Fix sharing without sharing caller proof; unchanged matrix remains the qualification target. |
+| LIB-015 | P0; qualified component's unchanged-core failure at `cfg_select`, line 235 | Authenticated source-declared builtin `cfg_select`, complete predicate/branch parsing and selected token forwarding | PA31 source/compiler role; PA7/PA8 shared cfg/expansion machinery / PA31 plus earlier ordinary controls where expressible | C | Scoped declarations pass component qualification and the unchanged-core probe confirms this blocker. The actual builtin implementation is an unqualified draft. Independent contracts now cover 61 cfg_select sources plus the original scoped provider; candidate acceptance and a later core result remain pending. |
+| LIB-016 | P0; measured complete-source growth failure | Repeated full caller-environment opening and premise-index construction across independent projections | PA21 projection/formation machinery; PA31 complete source regression / PA31 plus earlier ordinary controls | B | The first structural-sharing repair at `f96ec23a` reduces the 128-subject case from 550.4M to 441.0M instructions, but 32→128 growth remains 9.14× above the unchanged 6× limit. Actual fallback observations identify captured caller-region remapping and repeated indexes; further algorithmic repair is required. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):
@@ -100,6 +100,21 @@ The combined functional recovery is recorded in
 line-170 boundary with the same source/configuration and four opened files.
 Performance measurements completed with one growth failure (LIB-016); public
 integration is held for its repair.
+
+The focused LIB-016 successor at `f96ec23a` passes 1,439 nonignored private
+tests, thirteen frontend cases and 31 native programs. Its fixed optimized
+comparison preserves all nine equal-output pairs and sixteen native executions,
+but still fails subject growth: 48,267,926 to 441,032,521 instructions for
+32 to 128 subjects (9.137×). The previous compiler takes 550,420,452 instructions
+at 128 subjects, so this is about 20% less work without resolving the scaling
+problem. Evidence is in B's
+`obj/parallel/pa31/projection-opening-optimized-v2/`; analysis SHA-256 is
+`49c92d4bd53c839c192a08970cd6d9b8f50af4e4bed1f831ad18d3dc556aa78f`.
+The bounded observation on the same source's qualified debug test records
+1,046 successful exact-owner comparisons and no foreign-owner cache misses;
+867 queries use genuinely captured caller regions. Further work targets that
+structural remapping, preserving fresh proof for every caller. This performance
+result does not advance the unchanged-core source boundary.
 
 The separately qualified scoped-declaration component uses worker CLI
 `1c2298f1ac0ac64e30e3ae6db4ecf5432e86219a69adb64c0ede50747ad2a29f`.
@@ -116,6 +131,17 @@ checks passed. The preceding failed test-contract checks and provisional probe
 remain preserved in the [component handoff](pa31-scoped-declarations-handoff.md).
 The exact reviewed source is integrated locally as `68a30f1b`; combined release
 and performance qualification remain pending. No core artifact has been built.
+
+The next `cfg_select` implementation draft now includes authenticated builtin
+ownership, parsing every branch in its actual fragment category, and configuring
+only the selected branch. It has not passed its first component gate. The
+independent corpus records 206 rustc/object/native observations over 62 sources,
+including 41 native executions; those establish expected behavior, not RustGM
+acceptance. The integrator's inherent-method identity partitions and actual
+container-relative privacy checks are also an unqualified draft. Scoped method
+invocation, trait/associated-member consumers and the complete source artifact
+transaction remain open. There has been no subsequent whole-core success or
+additional assignment release.
 
 The first LIB-007 executable transaction uses a complete smaller provider with
 ordinary sizing/Clone/Copy/receiver declarations and one generic free function.
