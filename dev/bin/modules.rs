@@ -161,7 +161,11 @@ fn region_proofs(
     let mut bodies = rustgm::body::regions::collect(facts)
         .map_err(str::to_owned)?
         .bodies;
-    if facts.uses_source_copy() {
+    if facts.uses_source_copy()
+        || bodies
+            .iter()
+            .any(rustgm::body::regions::Contract::requires_defining_cleanup_preparation)
+    {
         let mut rows = rustgm::support::hash::HashMap::default();
         for (index, contract) in bodies.iter().enumerate() {
             if rows.insert(contract.key, index).is_some() {

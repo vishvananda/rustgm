@@ -193,7 +193,7 @@ impl Checker<'_> {
         if self.facts.source_bindings.is_none() {
             return self.publish_ordinary_calls(solved);
         }
-        let effect = self.callee_use_effect();
+        let effect = self.callee_use_effect()?;
         let (any, mut source_use) = self.existing_call_context(solved, effect)?;
         // Charge all commit ports before retaining a descriptor or changing a node.
         charge(&mut self.state.steps, self.state.calls.len())

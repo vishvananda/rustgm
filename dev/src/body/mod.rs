@@ -11,6 +11,7 @@ mod diagnostics;
 pub(crate) mod operand_origins;
 pub use diagnostics::BodyOrigins;
 pub(crate) mod copy_requirements;
+pub(crate) mod defining_cleanups;
 pub(crate) mod dispatch;
 pub mod drops;
 pub mod instantiate;
@@ -32,9 +33,10 @@ pub use build::concrete as build_concrete;
 pub(crate) use build::concrete_prepared;
 pub use build::templates;
 
-/// Prepare source-provider Copy requirements for this exact body and contract.
-/// Ordinary compilation returns without source-only allocation. This selects
-/// requirements; callers must still prove the contract and ordinary ownership.
+/// Prepare source Copy and actual provided-member defining requirements for
+/// this exact body and contract. Ordinary non-default bodies allocate nothing.
+/// Requirements still need their region, ownership and active-cleanup proofs;
+/// this grants no const execution or native cleanup permission.
 /// # Errors
 /// Rejects foreign body/contract identities, unvalidated roles, pending selection
 /// and exhausted work. A missing Copy role remains an explicit read-time policy.

@@ -1,0 +1,112 @@
+{
+  "status": "Declared before execution; independently qualify exact source-provider context",
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "rows": [
+    {
+      "name": "invalid-unused",
+      "path": "invalid-unused.rs",
+      "sha256": "f440c344d871d2860b6b4befd4b706b9d97f257a775169313614e8e254c57c0d",
+      "rust_object": false,
+      "native": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "invalid-ordinary-runtime",
+      "path": "invalid-ordinary-runtime.rs",
+      "sha256": "d199dee71ddbc246a95b9abed2587470168bb123b4ad0adeb86ca2b9265121e7",
+      "rust_object": false,
+      "native": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "invalid-const-unused",
+      "path": "invalid-const-unused.rs",
+      "sha256": "048f713781b348375a7ca05b393866ccd8e09606571dc56fee4135356b1df138",
+      "rust_object": false,
+      "native": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "pure-unused",
+      "path": "pure-unused.rs",
+      "sha256": "c87f47832d8b0deb1d313e36e3e72b28e851d867f49b92dc019c74bc938dbc91",
+      "rust_object": true,
+      "native": null,
+      "candidate": "accept"
+    },
+    {
+      "name": "ordinary-runtime",
+      "path": "ordinary-runtime.rs",
+      "sha256": "356250236b168d10265450fd7571de8823e4b8239bdf418bede562a9ef62efb1",
+      "rust_object": true,
+      "native": 29,
+      "candidate": "accept"
+    },
+    {
+      "name": "conditional-runtime",
+      "path": "conditional-runtime.rs",
+      "sha256": "26d7205cf8fd63be28f98fafa2518ea6788b77e0c71e4aa7c79f70ade5a20b3c",
+      "rust_object": true,
+      "native": 29,
+      "candidate": "accept"
+    },
+    {
+      "name": "ordinary-const-reject",
+      "path": "ordinary-const-reject.rs",
+      "sha256": "4679dce067352c4b4547de6165cf472415ca60ab578c26ce089f0812bbfab60f",
+      "rust_object": false,
+      "native": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "const-required",
+      "path": "const-required.rs",
+      "sha256": "757bdb3fe510dd2e34026ff99bf7316c5ab1ac34f4cd7d228bc05aa1805b1429",
+      "rust_object": true,
+      "native": 29,
+      "candidate": "unsupported"
+    },
+    {
+      "name": "conditional-const-required",
+      "path": "conditional-const-required.rs",
+      "sha256": "23e2a9aca791f0b7a329cdede8e7f8808051d7daefe2f416471be0c4b13e576c",
+      "rust_object": true,
+      "native": 29,
+      "candidate": "unsupported"
+    },
+    {
+      "name": "conditional-const-unpaid",
+      "path": "conditional-const-unpaid.rs",
+      "sha256": "296538939359a5ea3bb15b25db03815c3fdf3ad0893b4f6a22fe369e95d80249",
+      "rust_object": false,
+      "native": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "nested-ordinary",
+      "path": "nested-ordinary.rs",
+      "sha256": "f195e24580f14d3dba0c4a09b580f7b1f5d39fae2748e45efef6d0ad6f6971e2",
+      "rust_object": true,
+      "native": 29,
+      "candidate": "accept"
+    },
+    {
+      "name": "nested-called-reject",
+      "path": "nested-called-reject.rs",
+      "sha256": "345f04aa7367ba6cefafda60d3722cebecbf62b9a520c51ef8d0237f9b75cf0d",
+      "rust_object": false,
+      "native": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "ordinary-trait",
+      "path": "ordinary-trait.rs",
+      "sha256": "bf8157414640ef578d8aec5d29db45a3d6a094a539a74ba9bd731d90e4b832cf",
+      "rust_object": true,
+      "native": 29,
+      "candidate": "accept"
+    }
+  ]
+}

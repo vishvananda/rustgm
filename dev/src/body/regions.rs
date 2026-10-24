@@ -70,6 +70,13 @@ pub struct Contract {
     pub require_result_formation: bool,
 }
 impl Contract {
+    /// A required defining owner must finish preparation before any loan proof.
+    #[must_use]
+    pub fn requires_defining_cleanup_preparation(&self) -> bool {
+        self.builtins
+            .as_deref()
+            .is_some_and(BuiltinRequirements::has_defining)
+    }
     /// Materialize demanded nominal requirements before borrowing immutable proof facts.
     /// # Errors
     /// Rejects malformed types and exhausted nominal preparation resources.
@@ -193,7 +200,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             .get(source)
             .copied()
             .ok_or("builtin requirement has no body contract")?;
-        bodies[index].builtins = Some(std::sync::Arc::new(BuiltinRequirements::from(requirements)));
+        BuiltinRequirements::replace_source(&mut bodies[index].builtins, requirements);
     }
     super::length_methods::append_contract(facts, &mut bodies)?;
     Ok(Contracts {
@@ -277,6 +284,7 @@ fn function_contract(
     let mut contract = parameter_contract(facts, owner, source, Some(function.signature))?;
     contract.universals = scheme.map_or(0, |s| s.total);
     contract.assumptions = scheme.map_or_else(Vec::new, |s| s.bounds.clone());
+    super::defining_cleanups::mark_required(facts, function, &mut contract)?;
     Ok(contract)
 }
 fn closure_contract(

@@ -48,6 +48,9 @@ pub(crate) fn check_instance(
     // The reached selector adapter requests F, never an executable selector
     // body. Function-root/unadapted demand must still reject its placeholder.
     super::select_calls::check_const_select(facts, instance)?;
+    if let Some(crate::types::Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty()) {
+        facts.check_const_member_execution(DefId(item.0))?;
+    }
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
     };

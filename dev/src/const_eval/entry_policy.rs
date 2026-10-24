@@ -5,6 +5,11 @@ impl Machine<'_, '_> {
     pub(super) fn check_source_function_root(&self, index: usize) -> Result<(), Failure> {
         self.evaluator.check_source_call_policy()?;
         let facts = self.evaluator.facts();
+        if let Some(code) = self.bodies.code(index)
+            && let Owner::Function { definition, .. } = code.owner
+        {
+            facts.check_const_member_execution(definition)?;
+        }
         let Some(catalog) = facts.source_bindings.as_deref() else {
             return Ok(());
         };

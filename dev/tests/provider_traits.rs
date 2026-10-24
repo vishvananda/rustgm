@@ -35,6 +35,8 @@ mod freeze_formation;
 mod freezing;
 #[path = "provider_traits/native.rs"]
 pub(super) mod native;
+#[path = "provider_traits/provided_methods.rs"]
+mod provided_methods;
 #[path = "provider_traits/signature_views.rs"]
 mod signature_views;
 pub(super) type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;

@@ -244,6 +244,28 @@ The defining effect remains distinct from the reached caller's Const payment.
 Keep ordinary calls allocation-free and preserve the common operation and node
 fact layouts. Preflight bounded descriptor storage before publishing any rows.
 
+Derive a function's defining context from its actual completed declaration and
+direct associated owner. Runtime, const function and const-trait default are
+distinct; a default's conditional defining legality never makes its body an
+executable const function. Retain an implicit conditional Self premise only in
+that actual default's body environment. Abstract member checking consumes the
+typed Call, complete target and original clause provenance; a familiar name,
+cached Code or copied effect handle grants no execution authority.
+
+Collect a required cleanup carrier for each actual const-trait default before
+proof. Prepare it after source Copy/environment completion, binding the exact
+function, source, original signature and Environment owner. Consume it only for
+the proved active cleanup Schedule; moved and proved dropless values introduce
+no destruction demand. A direct rigid parameter's explicit conditional Destruct
+premise and its ordinary Copy no-drop premise retain separate validated role
+identities. Clear defining-only claims during specialization. Missing carriers,
+unprepared roles and foreign environments reject rather than becoming empty
+proofs. Index claims once per actual environment and charge failed work as well
+as success; preserve the allocation-free ordinary path. The
+[defining cleanup checkpoint](docs/pa31-defining-cleanup-preparation.md) records
+the focused profile and its remaining projected, composite, quantified and
+imported-owner obligations.
+
 Callable signature equations do not establish const-callability. For actual
 source Fn/FnMut/FnOnce roles, nonordinary use validates the completed declaration,
 source constness, prepared effect and exact substituted full function item.

@@ -1,0 +1,57 @@
+{
+  "scope": "Same frozen independent width/noise sources; no text oracle or activation.",
+  "rows": [
+    {
+      "name": "claims-width-8-noise-0",
+      "path": "claims-width-8-noise-0.rs",
+      "sha256": "67363a92d6eaf84462bc8e0c1f17d49a4b9993e862696cb373b20b631bbdfcd3",
+      "rust_object": true,
+      "native": 7,
+      "axes": {
+        "distinct_declared_parameter_cleanup_subjects": 8,
+        "unrelated_source_function_definitions": 0
+      },
+      "candidate_mode": "complete source-provider build_roots_prepared + checked originals/native; emit-types alone is insufficient",
+      "expected": "one defining environment index; active formal parameter cleanup claims; runtime u8 instances remain dropless"
+    },
+    {
+      "name": "claims-width-32-noise-0",
+      "path": "claims-width-32-noise-0.rs",
+      "sha256": "66e9a8ed85ce36c7dc67004ec10b64821eebad915ac4c8c8382a49f5895bba04",
+      "rust_object": true,
+      "native": 7,
+      "axes": {
+        "distinct_declared_parameter_cleanup_subjects": 32,
+        "unrelated_source_function_definitions": 0
+      },
+      "candidate_mode": "complete source-provider build_roots_prepared + checked originals/native; emit-types alone is insufficient",
+      "expected": "one defining environment index; active formal parameter cleanup claims; runtime u8 instances remain dropless"
+    },
+    {
+      "name": "claims-width-128-noise-0",
+      "path": "claims-width-128-noise-0.rs",
+      "sha256": "66d2c30368ea0371a4d6f3db867887cd9736023849c257662541d31762bfe6e6",
+      "rust_object": true,
+      "native": 7,
+      "axes": {
+        "distinct_declared_parameter_cleanup_subjects": 128,
+        "unrelated_source_function_definitions": 0
+      },
+      "candidate_mode": "complete source-provider build_roots_prepared + checked originals/native; emit-types alone is insufficient",
+      "expected": "one defining environment index; active formal parameter cleanup claims; runtime u8 instances remain dropless"
+    },
+    {
+      "name": "claims-width-8-noise-128",
+      "path": "claims-width-8-noise-128.rs",
+      "sha256": "083f3ae1d51a71d077eadcec947870db3b9817f9dcaabce31b49cd6ff1d02189",
+      "rust_object": true,
+      "native": 7,
+      "axes": {
+        "distinct_declared_parameter_cleanup_subjects": 8,
+        "unrelated_source_function_definitions": 128
+      },
+      "candidate_mode": "complete source-provider build_roots_prepared + checked originals/native; emit-types alone is insufficient",
+      "expected": "one defining environment index; active formal parameter cleanup claims; runtime u8 instances remain dropless"
+    }
+  ]
+}

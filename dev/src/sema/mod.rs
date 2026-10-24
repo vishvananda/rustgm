@@ -19,6 +19,7 @@ pub(crate) mod dispatch;
 pub mod dyn_compat;
 pub mod entry;
 pub mod foreign;
+pub(crate) mod function_context;
 pub(crate) mod function_headers;
 pub mod generics;
 pub mod inline_constants;

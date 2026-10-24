@@ -1,0 +1,35 @@
+{
+  "scope": "Distinct moved-value positives and lookalike/ordinary-effect negatives declared before probing; original five defining-drop rows and prior29 unchanged.",
+  "rows": [
+    {
+      "name": "std-moved-self",
+      "path": "std-moved-self.rs",
+      "sha256": "73b3ab374d241b1194aa0647bbec46dd6ad6fd333fee5c6eb350a7d53c4b1637",
+      "rust_object": true,
+      "native": 7,
+      "hypothesis": "Self returned/moved before callee cleanup; no Destruct bound required for that body. Caller ordinary cleanup executes7."
+    },
+    {
+      "name": "provider-moved-self",
+      "path": "provider-moved-self.rs",
+      "sha256": "40a04d9ddb93d508cf099d1a8f3c14df76f06fb5a43ac185013086a81207f730",
+      "rust_object": true,
+      "native": 7,
+      "hypothesis": "Self returned/moved before callee cleanup; no Destruct bound required for that body. Caller ordinary cleanup executes7."
+    },
+    {
+      "name": "provider-lookalike-copy",
+      "path": "provider-lookalike-copy.rs",
+      "sha256": "8187b7a9d2b5ae8bf5c4d206e9310c0d8ea0384fe70e90068d689386a847f60b",
+      "rust_object": false,
+      "diagnostic_hypothesis": "E0493: no actual Conditional Destruct or genuine ordinary Copy promise"
+    },
+    {
+      "name": "provider-ordinary-destruct",
+      "path": "provider-ordinary-destruct.rs",
+      "sha256": "b0b29caa4dab1d5ee8402aea1879b6f5d39c6f5ca1caf3d2ae14c5643d1951fa",
+      "rust_object": false,
+      "diagnostic_hypothesis": "E0493: no actual Conditional Destruct or genuine ordinary Copy promise"
+    }
+  ]
+}

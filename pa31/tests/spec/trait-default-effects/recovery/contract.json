@@ -1,0 +1,12 @@
+{
+  "context": "Distinct partial-inference recovery opponent; original member matrix unchanged. Rust 1.98 exact pin/edition2024/x86_64.",
+  "rows": [
+    {
+      "name": "partial-inference",
+      "path": "provider-partial-inference.rs",
+      "sha256": "936ba49a2fb93d0213b3598763fbf4b6e968b3d6d6f077cd6d24857d50dde1a5",
+      "rust_object": false,
+      "diagnostic_hypothesis": "E0282: T cannot be inferred; source-negative, not readiness permission."
+    }
+  ]
+}

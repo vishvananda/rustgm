@@ -1,5 +1,6 @@
 //! Complete named values required by typed bodies before the read-only lowerer.
 mod invocations;
+mod provided_calls;
 use super::ir::{Place, Program, Rvalue};
 use crate::support::hash::HashSet;
 use crate::{
@@ -148,9 +149,6 @@ pub(crate) fn eligibility_charged(
     facts: &mut Declarations,
     body: &super::ir::Body,
 ) -> Result<(), Error> {
-    if !body.const_context {
-        return Ok(());
-    }
     let mut work = invocations::Work::new(1_000_000);
     let result = eligibility_counted(report, facts, body, &mut work);
     if work.steps != 0 {
@@ -165,13 +163,17 @@ fn eligibility_counted(
     body: &super::ir::Body,
     work: &mut invocations::Work,
 ) -> Result<(), Error> {
-    if !body.const_context {
+    if !body.const_context
+        && !provided_calls::defining(facts, body, work)
+            .map_err(|e| report.diagnostic(report.body_error(body.source, e)))?
+    {
         return Ok(());
     }
     let function = matches!(body.owner, super::ir::Owner::Function { .. });
     // The CFG retains both sides of a conditional, but not source after an
     // unconditional transfer. Const permission is checked before value demand.
     let mut operators = 0;
+    let mut members = 0;
     for value in &body.values {
         if matches!(value.kind, Rvalue::Invoke { .. }) {
             operators += 1;
@@ -183,17 +185,28 @@ fn eligibility_counted(
             {
                 Some("runtime-only intrinsic is not allowed during constant evaluation")
             }
-            Rvalue::Call { .. } | Rvalue::Invoke { .. }
-                if matches!(value.kind, Rvalue::Invoke { .. })
-                    && facts.source_bindings.is_none()
-                    || function_call(facts, body, value.kind) =>
-            {
+            Rvalue::Invoke { .. } if facts.source_bindings.is_none() => {
                 if function {
                     Some("non-const calls are not allowed in const functions")
                 } else {
                     Some("non-const calls are not allowed in constant initializers")
                 }
             }
+            Rvalue::Call { .. } => match function_call(facts, body, value.kind) {
+                CallPermission::Allowed => None,
+                CallPermission::Member if function => {
+                    members += 1;
+                    None
+                }
+                CallPermission::Member => {
+                    Some("source const-trait member execution is not implemented")
+                }
+                CallPermission::NonConst => Some(if function {
+                    "non-const calls are not allowed in const functions"
+                } else {
+                    "non-const calls are not allowed in constant initializers"
+                }),
+            },
             Rvalue::Cast {
                 kind: crate::sema::model::Cast::PointerToInteger,
                 ..
@@ -212,25 +225,41 @@ fn eligibility_counted(
             return Err(report.diagnostic(report.body_error(body.source, message)));
         }
     }
-    if operators != 0 {
-        invocations::check(facts, body, operators, work)
+    if operators != 0 || members != 0 {
+        invocations::check_calls(facts, body, (operators, members), work)
             .map_err(|e| report.diagnostic(report.body_error(body.source, e)))?;
     }
     Ok(())
 }
-fn function_call(facts: &Declarations, body: &super::ir::Body, value: Rvalue) -> bool {
+enum CallPermission {
+    Allowed,
+    NonConst,
+    Member,
+}
+fn function_call(facts: &Declarations, body: &super::ir::Body, value: Rvalue) -> CallPermission {
     let Rvalue::Call { callee, .. } = value else {
-        return false;
+        return CallPermission::Allowed;
     };
-    let Some(crate::types::Kind::FunctionItem { item, .. }) = body
+    if let Some(crate::types::Kind::FunctionItem { item, .. }) = body
         .values
         .get(callee.0 as usize)
         .and_then(|value| facts.types.kind(value.ty))
-    else {
-        return true;
-    };
-    let definition = crate::resolve::model::DefId(item.0);
-    !facts.is_const_function(definition) && !facts.members.constructors.contains_key(&definition)
+    {
+        let definition = crate::resolve::model::DefId(item.0);
+        if facts.is_const_function(definition)
+            || facts.members.constructors.contains_key(&definition)
+        {
+            return CallPermission::Allowed;
+        }
+        if facts
+            .associated
+            .trait_owner(definition)
+            .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true))
+        {
+            return CallPermission::Member;
+        }
+    }
+    CallPermission::NonConst
 }
 /// Named values used by this CFG, with static storage distinguished from constants.
 pub fn references(

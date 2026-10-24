@@ -29,6 +29,18 @@ impl Machine<'_, '_> {
             return Err("constant callable lost its item identity".into());
         };
         let definition = DefId(item.0);
+        if self
+            .evaluator
+            .facts()
+            .associated
+            .trait_owner(definition)
+            .is_some()
+        {
+            self.charge(5)?;
+            self.evaluator
+                .facts()
+                .check_const_member_execution(definition)?;
+        }
         if !self.evaluator.facts().is_const_function(definition) {
             return Err("non-const calls are not allowed during constant execution".into());
         }

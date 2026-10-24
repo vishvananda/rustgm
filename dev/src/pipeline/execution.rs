@@ -784,7 +784,10 @@ impl Engine {
         destruction: &body::drops::Requirements,
         input: ProofInput<'_>,
     ) -> Result<CheckedInput, Error> {
-        let mut prepared = if facts.source_bindings.is_some() {
+        let mut prepared = if facts.source_bindings.is_some()
+            || input.contract.requires_defining_cleanup_preparation()
+            || body::defining_cleanups::needs_preparation(facts, body)
+        {
             Some(input.contract.clone())
         } else {
             None

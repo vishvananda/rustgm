@@ -1,0 +1,97 @@
+{
+  "status": "Unexecuted independent const-trait default-body hypotheses; do not infer policy from current producer or expected column",
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "context": "ordinary pinned std Rust context, no source-provider substitution; frontend policy not yet changed",
+  "rows": [
+    {
+      "name": "free-const-nonconst-body",
+      "path": "free-const-nonconst-body.rs",
+      "sha256": "44a39f4b33e46fc7dd79fddd440d278db9a1e2a4beb43cde99adfbcef04d7490",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": 29,
+      "classification": "Unsettled hypothesis; preserve falsification and every raw outcome. Source admission or invalidity is not established until pinned rustc executes."
+    },
+    {
+      "name": "default-nonconst-definition",
+      "path": "default-nonconst-definition.rs",
+      "sha256": "7f2738b80a1859ef6d39e560570aec9570478c0c47ba9178a30f22a7f6a48d11",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 29,
+      "classification": "Unsettled hypothesis; preserve falsification and every raw outcome. Source admission or invalidity is not established until pinned rustc executes."
+    },
+    {
+      "name": "ordinary-default-nonconst-runtime",
+      "path": "ordinary-default-nonconst-runtime.rs",
+      "sha256": "6203fe6ca571a2ba76c1fa41678949d2346c649b7caaf82e9f09b36b0a4681f7",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 29,
+      "classification": "Unsettled hypothesis; preserve falsification and every raw outcome. Source admission or invalidity is not established until pinned rustc executes."
+    },
+    {
+      "name": "const-default-nonconst-unused",
+      "path": "const-default-nonconst-unused.rs",
+      "sha256": "01073fd9a91038a36e3be0480e4c3950be3e7c57ae38a875aaaea8856cfe7949",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 29,
+      "classification": "Unsettled hypothesis; preserve falsification and every raw outcome. Source admission or invalidity is not established until pinned rustc executes."
+    },
+    {
+      "name": "const-default-nonconst-reached",
+      "path": "const-default-nonconst-reached.rs",
+      "sha256": "e23c4caf0eafdcb3f67effd6d507195a838abe0cba4f06c375673ad94f22da71",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": 29,
+      "classification": "Unsettled hypothesis; preserve falsification and every raw outcome. Source admission or invalidity is not established until pinned rustc executes."
+    },
+    {
+      "name": "const-default-constant-reached",
+      "path": "const-default-constant-reached.rs",
+      "sha256": "0d2579821b6f861c9ffdb4218836831a06b13ef9ee81ddf61aa6942d40c3f645",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 29,
+      "classification": "Unsettled hypothesis; preserve falsification and every raw outcome. Source admission or invalidity is not established until pinned rustc executes."
+    },
+    {
+      "name": "ordinary-default-conditional-runtime",
+      "path": "ordinary-default-conditional-runtime.rs",
+      "sha256": "67802485ee3307d56f2e1db7951274ccdfc1a0c254bd6de069064e434fde8b36",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 29,
+      "classification": "Unsettled hypothesis; preserve falsification and every raw outcome. Source admission or invalidity is not established until pinned rustc executes."
+    },
+    {
+      "name": "const-default-conditional-paid",
+      "path": "const-default-conditional-paid.rs",
+      "sha256": "d9a919941e447bb6bddf636678fa67a7754e81f5139bc89a2797df60f7ee9b02",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 29,
+      "classification": "Unsettled hypothesis; preserve falsification and every raw outcome. Source admission or invalidity is not established until pinned rustc executes."
+    },
+    {
+      "name": "const-default-conditional-unpaid",
+      "path": "const-default-conditional-unpaid.rs",
+      "sha256": "6ffaf0be1a8105a2246fdc5d215d933673aab549b04aa72400da5266943cb2c2",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": 29,
+      "classification": "Unsettled hypothesis; preserve falsification and every raw outcome. Source admission or invalidity is not established until pinned rustc executes."
+    },
+    {
+      "name": "const-default-nonconst-runtime",
+      "path": "const-default-nonconst-runtime.rs",
+      "sha256": "6d4db3e36a9b32a61db1ca1f1fd3d8141fdcac227b324a841a24289e6b913144",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 29,
+      "classification": "Unsettled hypothesis; preserve falsification and every raw outcome. Source admission or invalidity is not established until pinned rustc executes."
+    },
+    {
+      "name": "ordinary-default-constant-constcall",
+      "path": "ordinary-default-constant-constcall.rs",
+      "sha256": "74337d7ca8bcafa77acf1ddd464787984b09ede573c05faf6c02fc5d113e9e75",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": 29,
+      "classification": "Unsettled hypothesis; preserve falsification and every raw outcome. Source admission or invalidity is not established until pinned rustc executes."
+    }
+  ]
+}

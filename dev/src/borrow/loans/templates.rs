@@ -129,6 +129,15 @@ impl Verifier {
             crate::body::ir::Selection,
         ) -> Result<(u32, u32), &'static str>,
     ) -> Result<Analysis, Error> {
+        let mut defining = crate::body::defining_cleanups::Work::new(1_000_000);
+        if let Some(state) = contract.builtins.as_deref().and_then(|r| r.defining()) {
+            state
+                .check_environment(parameters, &mut defining)
+                .map_err(|message| Error {
+                    node: Some(body.source.into()),
+                    message: message.into(),
+                })?;
+        }
         let parameters = crate::borrow::permissions::check(environment, contract)?
             .unwrap_or_else(|| std::sync::Arc::clone(parameters));
         let mut copies = Copies::in_environment(std::sync::Arc::clone(&parameters));
@@ -197,10 +206,15 @@ impl Verifier {
                 plan.schedule(),
             )
         };
-        analysis.map_err(|e| Error {
-            node: Some(e.node),
-            message: e.message.into(),
-        })
+        analysis
+            .map(|mut analysis| {
+                analysis.steps = analysis.steps.saturating_add(defining.steps);
+                analysis
+            })
+            .map_err(|e| Error {
+                node: Some(e.node),
+                message: e.message.into(),
+            })
     }
 }
 
