@@ -516,6 +516,16 @@ single-local entry needs no history allocation; older shadows use an ordered
 predecessor query. Scoped item bindings and import dependencies must likewise
 carry their normalized item identity, including per-segment path contexts.
 Hygienic selection does not grant visibility or library-feature permission.
+Check semantic type visibility from the physical body module after publishing
+solved types, adjustments and selected calls. A hygienically selected private
+function still has a private function-item type; a public function pointer may
+erase that identity inside its defining module. Walk signatures, nominal and
+trait identities, associated items and generic arguments through completed typed
+facts. Opaque interfaces expose their declared bounds and captured arguments,
+not their hidden representation. Reuse visited type nodes within the immutable
+body instead of flattening shared graphs at each expression. Primitive-only
+checks allocate no graph storage; build physical module ancestry once, lazily,
+and charge attempts and edges against the work budget, including failed uses.
 Retain immutable import paths once and share them across dependency retries;
 waking an import must not copy its complete segment sequence.
 Flatten grouped import trees with one append/truncate prefix buffer and retain

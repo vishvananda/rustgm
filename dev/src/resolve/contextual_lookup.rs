@@ -220,15 +220,13 @@ impl Resolver<'_> {
             barriers += u32::from(frame.barrier);
             current = frame.parent;
         }
-        if context != ItemContext::ROOT {
-            return Ok(None);
-        }
         // Primitive and library preludes have no contextual names. Reuse only
-        // the existing terminal fallback, never restart a spelling-only walk.
+        // the existing terminal fallback, including inside a generated module
+        // whose item context remains opaque at its lexical boundary.
         Ok(self
             .lexical_prelude(privacy, name, namespace)
             .map(|(scope, binding)| Selected {
-                key: (scope, name, namespace, context),
+                key: (scope, name, namespace, ItemContext::ROOT),
                 binding,
                 privacy,
             }))

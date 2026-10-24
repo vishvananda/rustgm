@@ -159,3 +159,6 @@ mod formatted_values;
 
 #[path = "declarative_macros/executed_items.rs"]
 mod executed_items;
+
+#[path = "declarative_macros/semantic_privacy.rs"]
+mod semantic_privacy;
