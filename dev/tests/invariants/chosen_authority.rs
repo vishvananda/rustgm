@@ -128,18 +128,23 @@ fn selected_builtin_requires_exact_canonical_item_header_role_and_provider() -> 
     let node = definitions[0].node.take();
     assert!(checked_contract(&package, &paths, &definitions, 0).is_err());
     definitions[0].node = node;
-    let scope = paths
+    let scope = *paths
         .state
         .facts
         .node_scopes
-        .remove(&(ModuleId(0), owner.node))
+        .get(&(ModuleId(0), owner.node))
         .ok_or("missing actual scope")?;
+    paths
+        .state
+        .facts
+        .node_scopes
+        .insert(ModuleId(0), owner.file, owner.node, ScopeId(u32::MAX));
     assert!(checked_contract(&package, &paths, &definitions, 0).is_err());
     paths
         .state
         .facts
         .node_scopes
-        .insert((ModuleId(0), owner.node), scope);
+        .insert(ModuleId(0), owner.file, owner.node, scope);
     checked_contract(&package, &paths, &definitions, 0)?;
     let source = package.source_core().ok_or("source owner")?;
     assert!(source.macros.charge(1_000_001, 0).is_err());

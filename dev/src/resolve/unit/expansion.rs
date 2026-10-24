@@ -380,7 +380,11 @@ impl Unit {
         let inputs = crate::syntax::edition_context::WithEditions::new(&view, |token| {
             super::editions::token(site.file, token, units)
         });
-        let selected = crate::expand::builtin::choice::select(
+        let crate::expand::builtin::choice::Selected {
+            ast,
+            span,
+            parser_calls,
+        } = crate::expand::builtin::choice::select(
             source,
             input,
             config,
@@ -388,13 +392,9 @@ impl Unit {
             &inputs,
             charge,
         )?;
-        let (ast, mut configuration) =
-            Configuration::take(crate::expand::crate_syntax::configure_with_inputs(
-                source,
-                selected.ast,
-                config,
-                &inputs,
-            )?);
+        let (ast, mut configuration) = Configuration::take(
+            crate::expand::crate_syntax::configure_with_inputs(source, ast, config, &inputs)?,
+        );
         charge(
             ast.nodes.len().saturating_add(ast.edges.len()),
             ast.nodes
@@ -407,8 +407,8 @@ impl Unit {
         let new_root = append_syntax(source, 0, ast, &mut self.configured.ast, &mut self.literals)?;
         self.replace_syntax(site.target, new_root, configuration, indices);
         Ok(crate::expand::builtin::choice::Installed {
-            generated: selected.span,
-            parser_calls: selected.parser_calls,
+            generated: span,
+            parser_calls,
         })
     }
 

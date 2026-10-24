@@ -1,6 +1,6 @@
 //! Statement macro categories preserve opaque expressions and explicit delimiters.
 use super::fragment::Parsed;
-use super::{BlockFlavor, Context, Kind, LexError, NORMAL, NodeId, Parser};
+use super::{BlockFlavor, Kind, LexError, NORMAL, NodeId, Parser};
 use crate::{
     lex::token::Token,
     syntax::cursor::{Cursor, TokenPosition},

@@ -133,7 +133,7 @@ impl Parser<'_, '_> {
         let opaque = self
             .cursor
             .peek(0)?
-            .is_some_and(|token| matches!(token.kind, TokenKind::Interpolated(_)));
+            .is_some_and(|token| matches!(token.kind, super::TokenKind::Interpolated(_)));
         let value = self.expr(
             0,
             Context {
