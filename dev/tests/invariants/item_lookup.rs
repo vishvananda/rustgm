@@ -27,15 +27,7 @@ impl Sources for NoFiles {
 }
 fn input() -> TestResult<(Report, ItemContext)> {
     let source = "mod definition { fn secret() {} macro_rules! make { () => { pub mod generated { pub fn member() {} } } } make!(); } mod caller { fn secret() {} }";
-    let mut report = expansion::analyze(
-        InputFile {
-            identity: "item-lookup.rs".into(),
-            path: "item-lookup.rs".into(),
-            source: SourceFile::new(source.as_bytes().to_vec())?,
-        },
-        &mut NoFiles,
-        &Config::default(),
-    )?;
+    let mut report = program(source)?;
     let expansion = report
         .invocations
         .first()
@@ -49,6 +41,17 @@ fn input() -> TestResult<(Report, ItemContext)> {
     )?;
     let context = report.package.marks.item(raw)?;
     Ok((report, context))
+}
+fn program(source: &str) -> TestResult<Report> {
+    Ok(expansion::analyze(
+        InputFile {
+            identity: "item-lookup.rs".into(),
+            path: "item-lookup.rs".into(),
+            source: SourceFile::new(source.as_bytes().to_vec())?,
+        },
+        &mut NoFiles,
+        &Config::default(),
+    )?)
 }
 fn module(report: &Report, name: &str) -> TestResult<ModuleId> {
     let index = report
@@ -233,5 +236,44 @@ fn a_new_exact_binding_satisfies_a_previous_missing_query_without_absence_cachin
         .ok_or("new binding ignored")?;
     assert_eq!(selected.key, key);
     assert_eq!(selected.binding.target, target);
+    Ok(())
+}
+
+#[test]
+fn definition_scope_rewinds_before_crossing_its_generic_parameter_barrier() -> TestResult {
+    let report = program("fn outer<T>() { macro_rules! mark { () => {} } mark!(); }")?;
+    let mut report = crate::resolve::analyze_expanded(report)?;
+    let invocation = report.invocations.first().ok_or("missing invocation")?;
+    let expansion = invocation.context;
+    let definition = &report.definitions[invocation.definition];
+    let call = Context {
+        module: definition.module,
+        file: definition.node.ok_or("missing macro source")?.file,
+        scope: report
+            .resolution
+            .introductions
+            .definition_scope(expansion)?,
+        foreign: None,
+    };
+    let raw = report.package.marks.apply(
+        SyntaxContextId::ROOT,
+        expansion,
+        Transparency::Opaque,
+        SyntaxContextId::ROOT,
+    )?;
+    let context = report.package.marks.item(raw)?;
+    let name = report.package.names.intern("T")?;
+    let mut state = State::default();
+    state.facts = std::mem::take(&mut report.resolution);
+    let resolver = state.bind(&mut report.package);
+    let found = resolver
+        .item_lexical(call, name, Namespace::Type, context, None)?
+        .ok_or("definition parameter hidden")?;
+    assert_eq!(
+        resolver.facts.definitions[found.binding.target.0 as usize].kind,
+        DefKind::Generic
+    );
+    assert_eq!(found.key.3, ItemContext::ROOT);
+    assert_eq!(found.privacy, call.module);
     Ok(())
 }

@@ -1,0 +1,43 @@
+{
+  "state": "predeclared hypotheses, no independent observation or candidate acceptance",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "rows": [
+    {
+      "name": "definition-generic-literal",
+      "entry": "pa31/tests/spec/declarative-macros/definition-generic-literal.rs",
+      "sha256": "3027338a4bb47b0bc67a402b05ab8e45fc80446f36674821822490ef9e0009fa",
+      "initial_expected_metadata": 0,
+      "initial_expected_object": 0,
+      "competing_prediction": "Pinned ident.rs uses original normalized_ident for generic parameter ribs even after stripping general identifiers. This may reject the opaque literal T with E0412; the positive draft is explicitly an unexecuted hypothesis."
+    },
+    {
+      "name": "definition-generic-captured",
+      "entry": "pa31/tests/spec/declarative-macros/definition-generic-captured.rs",
+      "sha256": "5d0cf1430a9ee934e9bd7d01c45db0cddbb4fa2f59bc677b43bba295fc32a1a3",
+      "initial_expected_metadata": 0,
+      "initial_expected_object": 0
+    },
+    {
+      "name": "definition-generic-legacy",
+      "entry": "pa31/tests/spec/declarative-macros/definition-generic-legacy.rs",
+      "sha256": "b88177923c53a451b56426aea877c5963b207d795edbdfa117fb976d6dae1fdf",
+      "initial_expected_metadata": 0,
+      "initial_expected_object": 0
+    },
+    {
+      "name": "definition-item-literal",
+      "entry": "pa31/tests/spec/declarative-macros/definition-item-literal.rs",
+      "sha256": "1ab378e7bc94cf02e1d31cf3e8274e569be0d101c8747b987c29a8b717c9c57f",
+      "initial_expected_metadata": 0,
+      "initial_expected_object": 0
+    }
+  ],
+  "purpose": "Distinguish defining generic parameter identity from defining block item lookup; qualify before accepting the new private positive query assertion."
+}

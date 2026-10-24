@@ -201,23 +201,25 @@ impl Resolver<'_> {
             if namespace == Namespace::Label && frame.label_barrier {
                 return Ok(None);
             }
-            if frame.parent.is_none()
-                && let Some((parent, expansion)) = self.package.marks.item_parent(context)?
-                && !self
-                    .facts
-                    .introductions
-                    .ancestor(expansion, self.facts.introductions.scope(scope))
-            {
+            if let Some((parent, expansion)) = self.package.marks.item_parent(context)? {
                 let definition = self.facts.introductions.definition_scope(expansion)?;
-                privacy = self
-                    .facts
-                    .scopes
-                    .get(definition.0 as usize)
-                    .ok_or("unknown macro definition scope")?
-                    .module;
-                context = parent;
-                current = Some(definition);
-                continue;
+                if definition == scope
+                    || (frame.parent.is_none()
+                        && !self
+                            .facts
+                            .introductions
+                            .ancestor(expansion, self.facts.introductions.scope(scope)))
+                {
+                    privacy = self
+                        .facts
+                        .scopes
+                        .get(definition.0 as usize)
+                        .ok_or("unknown macro definition scope")?
+                        .module;
+                    context = parent;
+                    current = Some(definition);
+                    continue;
+                }
             }
             barriers += u32::from(frame.barrier);
             current = frame.parent;

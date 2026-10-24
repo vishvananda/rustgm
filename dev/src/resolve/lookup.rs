@@ -115,8 +115,8 @@ impl Resolver<'_> {
             .marks
             .item(raw)
             .map_err(|e| Error::at(c.file, offset, e))?;
-        if let Some(hygiene) = self.hygiene.as_ref()
-            && !(namespace == Namespace::Type && self.package.names.get(name) == "Self")
+        if matches!(namespace, Namespace::Value | Namespace::Label)
+            && let Some(hygiene) = self.hygiene.as_ref()
         {
             let context = self
                 .package
@@ -312,7 +312,10 @@ impl Resolver<'_> {
             let found = if let Some(scope) = scope {
                 self.item_in_scope(c, (scope, name, ns, context), observed.as_deref_mut())
                     .map_err(|e| self.error(c, node, e))?
-            } else if self.hygiene.is_some() && !matches!(mode, LookupMode::Import(_)) {
+            } else if self.hygiene.is_some()
+                && matches!(ns, Namespace::Value | Namespace::Label)
+                && !matches!(mode, LookupMode::Import(_))
+            {
                 let offset = super::hygiene::name_offset(
                     self.package,
                     super::unit::NodeKey { file: c.file, node },
