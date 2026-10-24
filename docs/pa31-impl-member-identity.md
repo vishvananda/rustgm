@@ -27,11 +27,26 @@ duplicate method/type/constant mappings. The private consumer controls use actua
 resolved legacy invocations with a supplied opaque context; general scoped source
 invocation remains disabled.
 
-The current implementation passes formatting, the 2,330-file architecture audit
-and all-target/all-feature strict Clippy in
-`obj/parallel/member-conformance-static-v5/`. Earlier filename-stem and function
-shape findings remain recorded; no lint allowances or audit exceptions were
-added. Candidate runtime/native/text and measured-layout qualification are next.
-The expected declaration-record size drops by the removed name map; runtime
-measurement must confirm the updated layout assertions. Combined release and
-performance qualification, a core artifact and assignment activation remain open.
+The implementation passes formatting, the 2,330-file architecture audit and
+all-target/all-feature strict Clippy. Runtime source `9b6665a6` passes all 1,464
+nonignored private tests, 405 affected integration cases and 109 native test
+functions. Measurements confirm a 240-byte associated inventory and a 7,032-byte
+declaration record, down from 7,064 bytes after removing the redundant name map.
+
+The initial native batch exceeded its 8 GiB worktree cap while retaining completed
+test outputs. The diagnosed continuation preserves eighteen completed stages,
+reruns the interrupted native target and cleans outputs between native groups.
+PA20 then exposed two unchanged-reference diagnostic-location failures: the new
+canonical constant matcher discarded the offending member ID. Recovery
+`51acf093` retains that identity through early and final conformance. It passes
+fresh formatting/audit/strict checks and all 8,382 active text cases with a fresh
+CLI; no reference changed. The earlier private/integration/native results remain
+bound to `9b6665a6`, and the combined release will validate the final compiler.
+
+Evidence remains in the integrator implementation worktree under
+`obj/parallel/member-conformance-runtime-v1/`, `runtime-v2/` (with the same
+`member-conformance-` prefix), `member-conformance-static-v6/` and
+`member-conformance-text-v3/`. Earlier audit/style and test failures remain
+recorded; no lint allowances or audit exceptions were added. Combined release
+and performance qualification, a core artifact and assignment activation remain
+open.
