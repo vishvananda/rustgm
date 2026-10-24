@@ -164,8 +164,15 @@ fn malformed_scoped_declarations_reject_at_their_actual_language_boundary() -> T
 fn original_assert_matches_is_a_real_declaration_with_an_explicit_stability_frontier() -> TestResult
 {
     let original = source("original-assert-matches")?;
-    let error = expanded(&original).err().ok_or("ordinary source borrowed provider permission")?;
-    assert!(error.to_string().contains("internal macro contracts require an actual source provider"), "{error}");
+    let error = expanded(&original)
+        .err()
+        .ok_or("ordinary source borrowed provider permission")?;
+    assert!(
+        error
+            .to_string()
+            .contains("internal macro contracts require an actual source provider"),
+        "{error}"
+    );
     let identity = rustgm::support::crates::CrateIdentity::new("minicore", "scoped_header")?;
     let context = resolve::bindings::Context {
         crate_name: Some("minicore".into()),

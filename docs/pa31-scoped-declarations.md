@@ -185,3 +185,15 @@ Evidence: obj/parallel/pa31/scoped-declarations-provisional-core-v1; result SHA
 CLI SHA1c2298f1ac0ac64e30e3ae6db4ecf5432e86219a69adb64c0ede50747ad2a29f.
 Old success-required probe proposals remain unrun. This discovery does not
 close declaration qualification, scoped invocation, stability, export or cfg_select.
+
+The additive provider fixture is now independently qualified: its exact4 rows
+passed metadata/object/C-link/native7 in root's cfg-select-oracle-v1 mixed batch.
+The enclosing batch remains failed on separately retained cfg_select hypotheses;
+this selected result does not bless that batch. declaration-provider-review.json
+binds the exact source, tools, raw4 streams, original contract and results
+34c38cf8cef5688dbd83834d6027e96a0b9eb5ff7e97e537c4bff6740380f190.
+No oracle repetition is required for this unchanged fixture. Candidate recovery
+has only frontend test/configuration and documentation/fixture changes relative
+to a48 production/private sources; retain the1437 private pass by exact source
+and receipt hashes, build only the affected integration target and run all12
+affected frontend functions plus the previously unrun46 native programs.
