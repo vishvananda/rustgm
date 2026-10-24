@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "status": "Predeclared brace-delimited forwarding hypothesis; unobserved. The earlier parenthesized-tail disagreement remains retained.",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "crate_type": "lib",
+  "bootstrap": true,
+  "cases": [
+    {
+      "name": "tokens-empty-brace-statement-tail",
+      "path": "tokens-empty-brace-statement-tail.rs",
+      "sha256": "b69769045d067392f52134ecd83959b32d6aa52798a2a1768a58ee8137d3d532",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "A raw token forwarding macro with actual outer brace delimiter keeps the block-tail statement fragment category."
+    }
+  ]
+}
