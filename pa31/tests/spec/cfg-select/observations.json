@@ -1,10 +1,10 @@
 {
   "status": "Independent source/native observations, not RustGM implementation qualification. Original hypotheses unchanged.",
-  "source_count": 49,
-  "cfg_select_source_count": 48,
-  "observations": 166,
-  "language_observations": 98,
-  "native_programs": 34,
+  "source_count": 62,
+  "cfg_select_source_count": 61,
+  "observations": 206,
+  "language_observations": 124,
+  "native_programs": 41,
   "reviewed_mismatch_record": "review.json",
   "gates": [
     {
@@ -84,6 +84,67 @@
       "language": 6,
       "native": 2,
       "expected_native": 2,
+      "mismatches": [],
+      "inputs_unchanged": true
+    },
+    {
+      "root": "obj/parallel/cfg-select-oracle-v4",
+      "complete_sha256": "1201db1e1ee368863ed8a77cdda631014b7fa225009ff0a55663306cb6ab822d",
+      "results_sha256": "f5c16b7e0ce1fad93109d7b9833e1566e2b6a5ae764d4ab4d255a4239e5c9f14",
+      "plan_sha256": "302eafa12415d02ed53306eeeb2833b2eefce41af6f62f1da36a541d7d1bc345",
+      "passed": true,
+      "observations": 22,
+      "language": 14,
+      "native": 4,
+      "expected_native": 4,
+      "mismatches": [],
+      "inputs_unchanged": true
+    },
+    {
+      "root": "obj/parallel/cfg-select-oracle-v5",
+      "complete_sha256": "eff1f849bf16eecacb5f0bcd2cd89d11962fed91f1b861e8cc86e311947acc22",
+      "results_sha256": "3a8d2b7530a4b91fd769ffa5732c623fa066328b822c6ab0ac830a3fa374d1fd",
+      "plan_sha256": "f272e0520b154b756256b743d9169b42bb7eec2ed3759cc9281e9d5830d1dea8",
+      "passed": true,
+      "observations": 4,
+      "language": 2,
+      "native": 1,
+      "expected_native": 1,
+      "mismatches": [],
+      "inputs_unchanged": true
+    },
+    {
+      "root": "obj/parallel/cfg-select-oracle-v6",
+      "complete_sha256": "f7c03828f21bf8f5430ad14a06acaced967422cdb8d86281a9d9087789d72649",
+      "results_sha256": "5b269e81ffed4b138ecc4462ebddcd9d760dd7af5ab08ca50b9eca01d8cf1061",
+      "plan_sha256": "75911bc5c1f648d78df45772025964e43a0dd4d503c8667a11789fb6f9aa656d",
+      "passed": false,
+      "observations": 10,
+      "language": 8,
+      "native": 1,
+      "expected_native": 2,
+      "mismatches": [
+        [
+          "tokens-empty-statement-tail",
+          "metadata"
+        ],
+        [
+          "tokens-empty-statement-tail",
+          "object"
+        ]
+      ],
+      "inputs_unchanged": true
+    },
+    {
+      "root": "obj/parallel/cfg-select-oracle-v7",
+      "complete_sha256": "c2610fca227b590baae666539d2925f65f22eb07707d477e25eb296166403dda",
+      "results_sha256": "8265929494008e458d39b998540050f6e5116986848902e7aa79214f08c810d9",
+      "plan_sha256": "f8a8378c295acb180e63ccba5a7adbb1757920bd9266adbe89402be848ddd490",
+      "passed": true,
+      "observations": 4,
+      "language": 2,
+      "native": 1,
+      "expected_native": 1,
       "mismatches": [],
       "inputs_unchanged": true
     }
@@ -676,6 +737,168 @@
       "native_stdout_sha256": null,
       "evidence_root": "obj/parallel/cfg-select-oracle-v3",
       "source_sha256": "b39a4d5da0e173c0fca3ec9d9666dc036a82b5d419d634358e064df08ff58b64"
+    },
+    {
+      "name": "empty-let-expression",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "macro expansion ends with an incomplete expression: expected expression",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v4",
+      "source_sha256": "53638ff4985d2ba68b2138d3a4620cac45123427d4e42427f4c26d18d4637543"
+    },
+    {
+      "name": "empty-parenthesized-expression",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "macro expansion ends with an incomplete expression: expected expression",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v4",
+      "source_sha256": "06b063219484cb769b8e1db3598837e7e80cb581fff2087dbaaa7ff148579379"
+    },
+    {
+      "name": "empty-statement-tail",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v4",
+      "source_sha256": "684362d9210180a9405f860531b8f4ad1e6e496953e6d1845a0175dcd98f2758"
+    },
+    {
+      "name": "empty-statement-semicolon",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v4",
+      "source_sha256": "b64d6bea9c2fa256cf5516f94be87cf0576e6e750c3e8e8479be73f14ba21d57"
+    },
+    {
+      "name": "empty-unselected-expression",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "macro expansion ends with an incomplete expression: expected expression",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v4",
+      "source_sha256": "335dd93771d2c0bd39a35a7d422a07da16fa9f7f32066e37aedd2297da07d9a4"
+    },
+    {
+      "name": "empty-unselected-statement-tail",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v4",
+      "source_sha256": "bb1263d94ce60b87647491d629cb19b78c1cd02127b404d762b005c9fd8ba7f2"
+    },
+    {
+      "name": "item-statement-tail",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v4",
+      "source_sha256": "02c92b2328fca5715ef26fc0fe96a538cf93c4842128072224244ba4df8849a6"
+    },
+    {
+      "name": "selected-statement-tail-value",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v5",
+      "source_sha256": "512536e95b9561ad5bea9673999aaa495d6b9a5b9a877a4d1d523ccbaff0ac18"
+    },
+    {
+      "name": "opaque-empty-expression-tail",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "macro expansion ends with an incomplete expression: expected expression",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v6",
+      "source_sha256": "12f6b47c39ba3347f4d446d685fd494f347604e3ba8eff3057da09e752786295"
+    },
+    {
+      "name": "opaque-empty-expression-semicolon",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "macro expansion ends with an incomplete expression: expected expression",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v6",
+      "source_sha256": "087a5d2c49aaa7f1793788e1ce22ebd042f76f0ce4cd981262ed0c74158fa61c"
+    },
+    {
+      "name": "tokens-empty-statement-tail",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "macro expansion ends with an incomplete expression: expected expression",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v6",
+      "source_sha256": "9409c8cad0e1f556981bc3dbdf024d6c7a6289897f1f800a7a4b33e77adaf423"
+    },
+    {
+      "name": "tokens-empty-statement-semicolon",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v6",
+      "source_sha256": "ab7c3b57421c14328ebb48c5439e69063a382d5561b38da847e987af379a81a2"
+    },
+    {
+      "name": "tokens-empty-brace-statement-tail",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v7",
+      "source_sha256": "b69769045d067392f52134ecd83959b32d6aa52798a2a1768a58ee8137d3d532"
     }
-  ]
+  ],
+  "context_review_record": "context-review.json"
 }
