@@ -295,6 +295,9 @@ payload within the existing execution budget. Catalog registration consumes the
 owned proved snapshot; later matching body metadata cannot authorize a new CFG.
 Keep source witnesses and live conditional scopes as separate prerequisites,
 and validate mode/index storage before publishing any executable entry.
+The [integrated constant selector qualification](docs/source-ctfe-selector-checkpoint.md)
+records output equality, actual reached execution, bounded work controls and
+the remaining source callback profiles against this publication contract.
 
 An actual source drop-glue helper is a compiler hook, not an executable empty
 body. Its runtime adapter consumes the exact registered declaration, full proved

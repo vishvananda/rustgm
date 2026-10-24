@@ -184,6 +184,13 @@ Source feature/inventory edits must include the `feature_requests` suite in focu
 selection: loading may deliberately retain a request that completed expansion
 must reject. The record preserves the failed full run and benchmark preparations.
 
+The [constant selector checkpoint](docs/source-ctfe-selector-checkpoint.md)
+passes 3,488 fresh release/native cases and 8,382 text cases in 18.23 seconds.
+Its 51-input matrix has 48 byte-equal comparisons and 27 candidate native
+preflights; no instruction, RSS or scaling threshold fires. Functional cleanup
+reclaims 17.20 GiB. Documentation-only publication retains these exact qualified
+compiler/test sources and does not repeat the full functional batch.
+
 For a validation batch, pass `scripts/course.py --evidence-root obj/BATCH/course`
 and include that directory in the storage guard's `--prune-under` roots. This
 keeps the same fixture comparisons and complete receipts while avoiding a cleanup

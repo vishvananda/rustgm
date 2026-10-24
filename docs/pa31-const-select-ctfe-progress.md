@@ -7,6 +7,11 @@ that proposal and its declared fixtures. The production draft below is
 Merged release and performance qualification remain integrator-owned. Earlier
 failures and their exact recoveries are retained below.
 
+The later [integrated qualification](source-ctfe-selector-checkpoint.md) passes
+3,488 fresh release/native cases, 8,382 text cases and all 51 performance inputs.
+It includes this isolated production checkpoint and the owned-snapshot repair;
+the chronological development and handoff records below remain unchanged.
+
 The original [proposal](pa31-const-select-ctfe-proposal.md) and initial fixture
 contract remain unchanged. Two additive, pre-probe source contexts in
 `contract-additional.json` cover distinct complete instances of one callback and
