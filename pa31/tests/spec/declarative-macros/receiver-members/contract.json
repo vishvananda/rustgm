@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "owner": "PA31 scoped declarative macros; LIB-002 PA19 method lookup and overlap consumers",
+  "status": "Predeclared hypotheses; unobserved. RustGM scoped invocation remains unsupported.",
+  "rust_source": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "cases": [
+    {
+      "path": "captured-dot.rs",
+      "sha256": "64d7b892126e77c5dbf92dc5c9131894ca16e0fbfd56648f054e9a9387e0039d",
+      "metadata": "accept",
+      "object": "accept",
+      "required_error_codes": [],
+      "native_stdout": "7\n"
+    },
+    {
+      "path": "captured-path.rs",
+      "sha256": "1b8666a41e51cb8c13d75d0df093d944044ec24e9e2005f51e3a76761f12c331",
+      "metadata": "accept",
+      "object": "accept",
+      "required_error_codes": [],
+      "native_stdout": "7\n"
+    },
+    {
+      "path": "introduced-dot-path.rs",
+      "sha256": "6f938e0a4edf6c4601650fe4fd3e6e440b4df1901e5311d911262653ff5bf8bc",
+      "metadata": "accept",
+      "object": "accept",
+      "required_error_codes": [],
+      "native_stdout": "7\n"
+    },
+    {
+      "path": "caller-opponent.rs",
+      "sha256": "a3d9b7eb83e9bc34a3cd8bc4b0a53ae8c86f84314b09588ab5fbcd0a5dbccf86",
+      "metadata": "reject",
+      "object": "reject",
+      "required_error_codes": [
+        "E0599"
+      ],
+      "native_stdout": null
+    },
+    {
+      "path": "captured-opponent.rs",
+      "sha256": "77435a6f5dedbadbdec545efa3790abeeeda16970b6e71462bd8a37a77b57849",
+      "metadata": "reject",
+      "object": "reject",
+      "required_error_codes": [
+        "E0599"
+      ],
+      "native_stdout": null
+    },
+    {
+      "path": "sibling-introductions.rs",
+      "sha256": "82fdbabacb4a0e8ebb6ef0287e3f94da905fc00513d02a4ddf9a0bba40ca5e1f",
+      "metadata": "accept",
+      "object": "accept",
+      "required_error_codes": [],
+      "native_stdout": "7\n"
+    },
+    {
+      "path": "captured-duplicate.rs",
+      "sha256": "1bd8d5f1f5e4a5979250e9b0e765a3a0c3eaf786018c89465ce7012762f6a685",
+      "metadata": "reject",
+      "object": "reject",
+      "required_error_codes": [
+        "E0592"
+      ],
+      "native_stdout": null
+    },
+    {
+      "path": "private-dot.rs",
+      "sha256": "b3e6feffb5e6812bec6e2e3ff31052e5caeb4420684d3e9465d467ee5c5e00cc",
+      "metadata": "accept",
+      "object": "accept",
+      "required_error_codes": [],
+      "native_stdout": "7\n"
+    },
+    {
+      "path": "private-path.rs",
+      "sha256": "8cd13e98814be9a056c420f7e04590ba984db017445bf8f38d4d86de1e65595e",
+      "metadata": "accept",
+      "object": "accept",
+      "required_error_codes": [],
+      "native_stdout": "7\n"
+    },
+    {
+      "path": "private-dot-opponent.rs",
+      "sha256": "cc81250636bc1c9321aace96860b9c1b85bc09a332ed04ef889558e0d66d875b",
+      "metadata": "reject",
+      "object": "reject",
+      "required_error_codes": [
+        "E0624"
+      ],
+      "native_stdout": null
+    },
+    {
+      "path": "private-path-opponent.rs",
+      "sha256": "e2a644fd35fec235e3bb9ac5fb84f5313f842763c774ebfd4fe2975a51b4ab61",
+      "metadata": "reject",
+      "object": "reject",
+      "required_error_codes": [
+        "E0624"
+      ],
+      "native_stdout": null
+    }
+  ]
+}
