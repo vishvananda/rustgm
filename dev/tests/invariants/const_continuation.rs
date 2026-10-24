@@ -71,9 +71,9 @@ fn reached_payment_is_one_use_and_keeps_the_same_box_across_suspension() -> Resu
                 match corrupt {
                     1 => paid.site.frame += 1,
                     2 => paid.site.position += 1,
-                    3 => paid.caller = Arc::clone(&paid.callee),
+                    3 => paid.caller = Rc::clone(&paid.callee),
                     4 => state.frames.last_mut().ok_or("frame")?.next += 1,
-                    5 => paid.callee = Arc::clone(&paid.caller),
+                    5 => paid.callee = Rc::clone(&paid.caller),
                     6 => paid.target_code = usize::MAX,
                     7 => {
                         paid.site.form = crate::const_eval::function_calls::Form::Selected {

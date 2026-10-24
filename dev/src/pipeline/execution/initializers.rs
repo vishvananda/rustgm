@@ -7,10 +7,6 @@ impl Engine {
         facts: &mut Declarations,
         definition: DefId,
     ) -> Result<usize, Error> {
-        if let Some(&index) = self.catalog.definitions.get(&definition) {
-            self.roots.insert(Target::Initializer(definition), index);
-            return Ok(index);
-        }
         let initializer = facts
             .initializer_index(definition)
             .and_then(|index| facts.initializers.get(index))
@@ -26,6 +22,29 @@ impl Engine {
                 "selected initializer requires a completed closed body",
             ));
         }
+        if let Some(&index) = self.catalog.definitions.get(&definition) {
+            self.catalog
+                .validate_entry(index)
+                .and_then(|()| {
+                    self.catalog
+                        .initializer(index, definition, initializer.kind)
+                })
+                .map_err(|e| report.body_error(source, e))?;
+            let code = self.catalog.code(index).ok_or_else(|| {
+                report.body_error(source, "named initializer lost its actual Code")
+            })?;
+            if code.source.source() != Some(source)
+                || code.result != initializer.ty
+                || code.instance.is_some()
+                || !code.const_context
+            {
+                return Err(
+                    report.body_error(source, "named initializer changed its source or type")
+                );
+            }
+            self.roots.insert(Target::Initializer(definition), index);
+            return Ok(index);
+        }
         let mut template = self.construction.initializer(report, facts, &initializer)?;
         let mut contract = self
             .contracts
@@ -40,7 +59,7 @@ impl Engine {
             &template.destruction,
             &mut self.promotions,
         )?;
-        let mut checked = self.prove(
+        let checked = self.prove(
             report,
             facts,
             &template,
@@ -60,14 +79,7 @@ impl Engine {
                 report.body_error(source, "retained initializer exceeds 64 MiB budget")
             })?;
         let index = self
-            .catalog
-            .insert_prepared(
-                checked
-                    .take_code()
-                    .map_err(|e| report.body_error(source, e))?,
-            )
-            .map_err(|e| report.body_error(source, e))?;
-        self.retain_const_inputs(facts, index, &template.body, checked, None)
+            .publish_code(facts, checked, None)
             .map_err(|e| report.body_error(source, e))?;
         if self
             .concrete

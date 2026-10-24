@@ -26,11 +26,13 @@ impl Engine {
             // Warm source-only entries still validate their exact live caller.
             return self.anonymous_root(report, facts, instance, result);
         }
+        if let Target::Initializer(definition) = target {
+            // Named warm entries still authenticate their exact declaration
+            // source, type, kind and canonical Code before reusing proof.
+            return self.initializer_root(report, facts, definition);
+        }
         if let Some(&index) = self.roots.get(&target) {
             return Ok(index);
-        }
-        if let Target::Initializer(definition) = target {
-            return self.initializer_root(report, facts, definition);
         }
         if let Target::Anonymous { instance, result } = target {
             return self.anonymous_root(report, facts, instance, result);
@@ -57,7 +59,7 @@ impl Engine {
             self.roots.insert(target, index);
             return Ok(index);
         }
-        let (templates, mut checked) = self.checked_expression(report, facts, source, result)?;
+        let (templates, checked) = self.checked_expression(report, facts, source, result)?;
         let retain = facts
             .inline_constants
             .as_deref()
@@ -79,14 +81,7 @@ impl Engine {
                 report.body_error(source, "retained constant bodies exceed 64 MiB budget")
             })?;
         let index = self
-            .catalog
-            .insert_prepared(
-                checked
-                    .take_code()
-                    .map_err(|e| report.body_error(source, e))?,
-            )
-            .map_err(|e| report.body_error(source, e))?;
-        self.retain_const_inputs(facts, index, &templates.bodies[0].body, checked, None)
+            .publish_code(facts, checked, None)
             .map_err(|e| report.body_error(source, e))?;
         if retain {
             let template = templates
@@ -191,7 +186,7 @@ impl Engine {
         let environment = Arc::new(
             Environment::new(&facts.types, &[]).map_err(|e| report.body_error(source, e))?,
         );
-        let mut checked = self.prove_body(
+        let checked = self.prove_body(
             report,
             facts,
             body,
@@ -199,14 +194,7 @@ impl Engine {
             super::ProofInput::code(&environment, &contract),
         )?;
         let index = self
-            .catalog
-            .insert_prepared(
-                checked
-                    .take_code()
-                    .map_err(|e| report.body_error(source, e))?,
-            )
-            .map_err(|e| report.body_error(source, e))?;
-        self.retain_const_inputs(facts, index, body, checked, None)
+            .publish_code(facts, checked, None)
             .map_err(|e| report.body_error(source, e))?;
         Ok(Some(index))
     }

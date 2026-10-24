@@ -241,12 +241,19 @@ fn selector_preparation_visits_both_calls_after_early_or_owner_retention() -> Te
         let body = bodies.first().ok_or("caller")?;
         selectors(&facts, body)?;
         let before = facts.body_work.canonical_steps;
-        assert!(crate::const_eval::use_inputs::Inputs::prepare(
-            &mut facts, body
-        )?);
+        let uses = crate::const_eval::use_inputs::Inputs::prepare_uses(
+            &mut facts,
+            body,
+            64 * 1024 * 1024,
+        )?;
+        assert!(uses.needed);
+        assert_eq!(
+            uses.descriptor_work, 2,
+            "generic F is filtered once per call"
+        );
         assert_eq!(
             facts.body_work.canonical_steps - before,
-            body.values.len() + 10,
+            body.values.len() + 10 + uses.descriptor_work,
             "{name}"
         );
         let before = facts.body_work.canonical_steps;

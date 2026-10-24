@@ -9,8 +9,13 @@ use crate::support::{crates::CrateIdentity, source::SourceFile};
 use crate::{body, borrow, expand::config::Config, resolve, support::bindings::Mode};
 use std::path::Path;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+#[path = "read_frontier.rs"]
+mod frontier;
 #[path = "copy_signatures.rs"]
 mod signatures;
+pub(super) fn record(facts: &Declarations, body: &Body, prepared: &Prepared) {
+    frontier::record(facts, body, prepared);
+}
 struct NoFiles;
 impl Sources for NoFiles {
     fn read(&mut self, _: &Path) -> std::result::Result<Option<InputFile>, String> {

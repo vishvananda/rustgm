@@ -1,0 +1,67 @@
+{
+  "declared_before_probes": true,
+  "base_contract": "contract-reference.json",
+  "reason": "Exact initializer-owner reuse and charged owner-width x instance-count controls requested at interface review. No new callback eligibility profile.",
+  "cases": [
+    {
+      "name": "reference-early-named",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-early-named.rs",
+      "sha256": "e80031aa729bf6b1dcce700c205180951e5899bda4890582092ee6cd20b0372d",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/reference-early-named.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 1\n",
+      "native_stderr_hypothesis": "",
+      "candidate_hypothesis": "accept",
+      "scope": "Forward early type-expression use demands the actual named reference initializer before later declaration processing; one finalized owner is reused by late named demand.",
+      "state": "Declared before probes; no result claimed"
+    },
+    {
+      "name": "caller-scaling-8",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/caller-scaling-8.rs",
+      "sha256": "831d9974faca0941c74eea648ba0c024e5676184bdbcb7b5469d8e58204628c2",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/caller-scaling-8.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 1\n",
+      "native_stderr_hypothesis": "",
+      "candidate_hypothesis": "accept",
+      "scope": "Actual caller width 8, one versus four complete caller instances, reference/closed-selector/ordinary profiles in one frozen source; expected 15 caller Code owners, 5 reference descriptor tables, 5 closed tables absent, 5 ordinary rows absent.",
+      "state": "Declared before probes; no result claimed"
+    },
+    {
+      "name": "caller-scaling-32",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/caller-scaling-32.rs",
+      "sha256": "1584624000bb30c2332c9e5441a87b012ba4582373247f2a277c99d2764cdd2c",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/caller-scaling-32.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 1\n",
+      "native_stderr_hypothesis": "",
+      "candidate_hypothesis": "accept",
+      "scope": "Actual caller width 32, one versus four complete caller instances, reference/closed-selector/ordinary profiles in one frozen source; expected 15 caller Code owners, 5 reference descriptor tables, 5 closed tables absent, 5 ordinary rows absent.",
+      "state": "Declared before probes; no result claimed"
+    },
+    {
+      "name": "caller-scaling-128",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/caller-scaling-128.rs",
+      "sha256": "dd0f94c741d487f77c9743afdb3d609c5e79d1eb5fb10225ce87fd0971836159",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/caller-scaling-128.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 1\n",
+      "native_stderr_hypothesis": "",
+      "candidate_hypothesis": "accept",
+      "scope": "Actual caller width 128, one versus four complete caller instances, reference/closed-selector/ordinary profiles in one frozen source; expected 15 caller Code owners, 5 reference descriptor tables, 5 closed tables absent, 5 ordinary rows absent.",
+      "state": "Declared before probes; no result claimed"
+    }
+  ]
+}

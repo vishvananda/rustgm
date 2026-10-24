@@ -60,7 +60,7 @@ impl Engine {
             &environment,
             &regions,
         )?;
-        let (code, needed) = self
+        let (code, uses) = self
             .finish_code(
                 facts,
                 &concrete.body,
@@ -69,19 +69,30 @@ impl Engine {
                 super::ProofPurpose::Code,
             )
             .map_err(error)?;
-        let mut checked = super::CheckedInput {
-            retained: needed.then(|| std::sync::Arc::new(concrete.contract.clone())),
-            code,
+        let retained = if uses.needed {
+            Some(
+                self.retained_source(
+                    code.as_ref(),
+                    std::sync::Arc::new(concrete.contract.clone()),
+                    uses,
+                )
+                .map_err(error)?,
+            )
+        } else {
+            None
         };
+        let mut checked = super::CheckedInput { retained, code };
         let (scope, _) = self
             .paid_interface(facts, instance, result)
             .map_err(error)?;
-        let index = self
+        let registration = self
             .catalog
-            .paid_anonymous_prepared(scope, checked.take_code().map_err(error)?, result)
+            .stage_paid(scope, checked.take_code().map_err(error)?, result)
             .map_err(error)?;
-        self.retain_const_inputs(facts, index, &concrete.body, checked, None)
+        let index = registration
+            .publish_source(facts, &mut self.const_calls, checked.retained, None)
             .map_err(error)?;
+        self.refresh_code_bytes(facts);
         facts.constant_work.anonymous_instances =
             facts.constant_work.anonymous_instances.saturating_add(1);
         self.roots

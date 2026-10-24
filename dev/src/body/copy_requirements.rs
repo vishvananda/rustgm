@@ -151,6 +151,8 @@ pub(crate) fn prepare(
         environment: environment.clone(),
         decisions,
     };
+    #[cfg(test)]
+    tests::record(facts, body, &prepared);
     if let Some(builtins) = &mut contract.builtins {
         let builtins = Arc::make_mut(builtins);
         builtins.environment = environment;

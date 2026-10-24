@@ -238,6 +238,18 @@ impl<'a, 'b> Machine<'a, 'b> {
         };
         (state, self.evaluator.into_scratch())
     }
+    pub(crate) fn source_catalog(
+        evaluator: Evaluator<'a>,
+        catalog: &'b code::Catalog,
+        inputs: Option<&'b use_inputs::Inputs>,
+        limits: Limits,
+    ) -> Self {
+        let mut machine = Self::catalog(evaluator, catalog, limits);
+        if let Some(inputs) = inputs {
+            machine.bodies = code::CatalogRef::Source(catalog, inputs);
+        }
+        machine
+    }
     pub(crate) fn begin(&mut self, index: usize, arguments: &[Constant]) -> Result<(), Error> {
         self.check_source_function_root(index)
             .map_err(|failure| self.error(index, failure))?;

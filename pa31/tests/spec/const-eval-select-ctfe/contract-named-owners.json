@@ -1,0 +1,60 @@
+{
+  "declared_before_probes": true,
+  "base": "8e10868e3b8dc5557cd5f58ae52d6945017464b8",
+  "scope": "Typed named-owner producer/restoration only; no anonymous caller-profile expansion, Query::Instance broadening, hot Code/Frame fields or callback payment change. Original early positive and all31 input histories preserved.",
+  "cases": [
+    {
+      "name": "reference-nested-named",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-nested-named.rs",
+      "sha256": "8fd12f6b0e21d15af2ab59b7df84b06590263feafe21b8cd76ccdc1b8cc21e73",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/reference-nested-named.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 1\n",
+      "native_stderr_hypothesis": "",
+      "candidate_hypothesis": "accept",
+      "scope": "Actual early named M query depends on named N, whose selector requires declaration Code; restoration returns to M and then the anonymous length root."
+    },
+    {
+      "name": "reference-anonymous-selector",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-anonymous-selector.rs",
+      "sha256": "ed3c2609e8941711e25eeb6d0949f418ce5f11de48758653d88b4dbfa42d57b0",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/reference-anonymous-selector.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 1\n",
+      "native_stderr_hypothesis": "",
+      "candidate_hypothesis": "explicitly unsupported",
+      "scope": "A true anonymous array-length selector must stay anonymous, not acquire named-owner permission. Pinned Rust accepts; current RustGM caller-owner profile remains unsupported.",
+      "candidate_diagnostic_hypothesis": "source const_eval_select execution for this caller owner is not implemented"
+    },
+    {
+      "name": "reference-anonymous-runtime-opposite",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-anonymous-runtime-opposite.rs",
+      "sha256": "bfdb3ce8bcf25c1eaf1e19ee01313d9baaddb9115e1b76e4f9034db168d64bc9",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/reference-anonymous-runtime-opposite.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 1\n",
+      "native_stderr_hypothesis": "",
+      "candidate_hypothesis": "accept",
+      "scope": "The same ordinary runtime expression selects G=1 without a named const owner; named-scope changes confer no new const-callability or anonymous ownership."
+    }
+  ],
+  "private_controls": [
+    "actual named-to-named nesting returns to outer anonymous scope",
+    "warm named readiness creates no restore event or CFG/proof repetition",
+    "dependency suspension/resume preserves queued restoration and current scope",
+    "failure/cycle/budget abort restores outer owner/context and drops orphan work",
+    "ordinary literal queries allocate no pattern frames or executable Code",
+    "actual named-root source/type/definition identity checks",
+    "existing root_requests projected nonselected-root admission remains strict",
+    "Work/Continuation layouts plus width/depth actual stack work observed"
+  ]
+}

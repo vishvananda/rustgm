@@ -5,6 +5,62 @@ use super::{
     pending_patterns::{Frame, FrameId, Saved},
 };
 impl Queries<'_> {
+    /// A named query owns its value root even when it needs no pattern frame.
+    /// The restore event captures the caller Context before global selection.
+    pub(super) fn begin_named_value(&mut self, index: usize) -> Result<(), Error> {
+        let initializer = self
+            .typing
+            .facts
+            .initializers
+            .get(index)
+            .copied()
+            .ok_or_else(|| {
+                Error::at(
+                    super::FileId(0),
+                    0,
+                    "named value lost its initializer index",
+                )
+            })?;
+        if self.typing.facts.initializer_index(initializer.definition) != Some(index) {
+            return Err(self.error(
+                super::Query::Constant(index),
+                "named value changed its actual declaration index",
+            ));
+        }
+        let previous = self.value_scope.replace(ValueScope::Initializer {
+            body: initializer.semantic_source(),
+            index,
+        });
+        self.work.push(Work::RestoreValueScope(previous));
+        #[cfg(test)]
+        self.observe_value_scope(true);
+        Ok(())
+    }
+    /// Restore before any fallible bookkeeping: a failed budget charge must
+    /// not lose this popped owner and its already restored query Context.
+    pub(super) fn restore_popped_value_scope(&mut self, work: &Work) -> Result<bool, Error> {
+        let Work::RestoreValueScope(scope) = work else {
+            return Ok(false);
+        };
+        self.value_scope = *scope;
+        #[cfg(test)]
+        self.observe_value_scope(false);
+        self.budget()?;
+        Ok(true)
+    }
+    #[cfg(test)]
+    pub(super) fn observe_value_scope(&self, entered: bool) {
+        owner_tests::record(
+            entered,
+            self.value_scope,
+            self.work.context.0,
+            self.work.observations().0,
+        );
+    }
+    pub(super) fn abort_value_scopes(&mut self) {
+        self.abort_pattern_frames();
+        self.work.abort_scopes(&mut self.value_scope);
+    }
     pub(super) fn begin_variant_value(
         &mut self,
         body: crate::resolve::unit::NodeKey,
@@ -255,6 +311,9 @@ impl Queries<'_> {
     }
 }
 
+#[cfg(test)]
+#[path = "../../../tests/invariants/named_owners.rs"]
+mod owner_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/parked_patterns.rs"]
 mod tests;

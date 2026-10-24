@@ -7,7 +7,22 @@ pub(crate) struct Prepared {
     pub(super) code: Code,
     bytes: usize,
 }
+pub(crate) struct Registration<'catalog> {
+    catalog: &'catalog mut Catalog,
+    code: std::rc::Rc<Code>,
+    bytes: usize,
+    index: usize,
+    expression: Option<super::NodeKey>,
+    scope: Option<crate::const_eval::lease_codes::Scope>,
+    actual: crate::types::TypeId,
+    source: Option<crate::sema::values::execution::SourceComputation>,
+    existing: bool,
+}
 impl Prepared {
+    pub(crate) const fn code(&self) -> &Code {
+        &self.code
+    }
+
     pub(crate) fn plain(body: &Body, budget: usize) -> Result<Self, &'static str> {
         Self::snapshot(body, HashMap::default(), budget)
     }
@@ -52,6 +67,29 @@ impl Prepared {
     }
 }
 impl Catalog {
+    pub(super) fn existing_registration(
+        &mut self,
+        index: usize,
+    ) -> Result<Registration<'_>, &'static str> {
+        let code = self
+            .bodies
+            .get(index)
+            .map(std::rc::Rc::clone)
+            .ok_or("source code index is stale")?;
+        let bytes = self.bytes;
+        let actual = code.result;
+        Ok(Registration {
+            catalog: self,
+            code,
+            bytes,
+            index,
+            expression: None,
+            scope: None,
+            actual,
+            source: None,
+            existing: true,
+        })
+    }
     pub(super) fn insert_body(
         &mut self,
         body: &Body,
@@ -63,14 +101,14 @@ impl Catalog {
         let prepared = Prepared::plain(body, (64 * 1024 * 1024usize).saturating_sub(self.bytes))?;
         self.publish(prepared, source_only, requested, results, scope)
     }
-    pub(super) fn publish(
+    pub(super) fn stage(
         &mut self,
         prepared: Prepared,
         source_only: bool,
         requested: Option<crate::types::TypeId>,
         results: &[(ValueId, crate::types::TypeId)],
         scope: Option<crate::const_eval::lease_codes::Scope>,
-    ) -> Result<usize, &'static str> {
+    ) -> Result<Registration<'_>, &'static str> {
         let Prepared { mut code, bytes } = prepared;
         if !source_only
             && matches!(code.owner, Owner::AnonymousInstance(instance)
@@ -90,35 +128,28 @@ impl Catalog {
         code.source_only = source_only;
         let actual = code.result;
         code.result = published;
-        // All identity/mode/lease and payload checks precede registration.
-        self.register_scope(scope, code.owner, published, index)?;
-        if let Some(instance) = code.instance {
-            self.functions.insert(instance, index);
-        } else if let Owner::Function { definition, .. } | Owner::Initializer { definition, .. } =
-            code.owner
-        {
-            self.definitions.insert(definition, index);
-        } else if let Some(source) = expression {
-            self.expressions.insert(source, index);
-        }
-        if let Owner::AnonymousInstance(instance) = code.owner
-            && scope.is_none()
-        {
-            self.anonymous
-                .get_or_insert_with(Default::default)
-                .ordinary
-                .insert((instance, published), index);
-        }
-        if let Owner::InitializerInstance { instance, .. } = code.owner
-            && !source_only
-        {
-            self.associated
-                .get_or_insert_with(Default::default)
-                .insert((instance, actual), index);
-        }
-        self.bytes = bytes;
-        self.bodies.push(std::rc::Rc::new(code));
-        Ok(index)
+        Ok(Registration {
+            catalog: self,
+            code: std::rc::Rc::new(code),
+            bytes,
+            index,
+            expression,
+            scope,
+            actual,
+            source: None,
+            existing: false,
+        })
+    }
+    pub(super) fn publish(
+        &mut self,
+        prepared: Prepared,
+        source_only: bool,
+        requested: Option<crate::types::TypeId>,
+        results: &[(ValueId, crate::types::TypeId)],
+        scope: Option<crate::const_eval::lease_codes::Scope>,
+    ) -> Result<usize, &'static str> {
+        self.stage(prepared, source_only, requested, results, scope)?
+            .publish()
     }
     fn index_bytes(
         &self,
@@ -241,5 +272,114 @@ impl Catalog {
             .and_then(|map| map.scoped.as_mut())
             .ok_or("conditional code has no live scope")?
             .insert(scope, (instance, published), index, &mut self.bytes)
+    }
+}
+
+impl Registration<'_> {
+    pub(crate) fn publish_source(
+        self,
+        facts: &mut crate::sema::model::Declarations,
+        inputs: &mut Option<Box<crate::const_eval::use_inputs::Inputs>>,
+        source: Option<crate::const_eval::use_inputs::Source>,
+        selected: Option<Instance>,
+    ) -> Result<usize, &'static str> {
+        let Some(source) = source else {
+            return self.publish();
+        };
+        if self.existing {
+            inputs
+                .as_deref()
+                .ok_or("cached source code lost its actual input owner")?
+                .get(self.index, self.catalog)?;
+            return Ok(self.index);
+        }
+        let inputs = inputs.get_or_insert_with(Default::default);
+        let plan = inputs.plan(
+            facts,
+            self.index,
+            std::rc::Rc::clone(&self.code),
+            source,
+            selected,
+        )?;
+        inputs.check_plan(&plan, self.index, &self.code)?;
+        let index = self.publish()?;
+        // Inputs::plan reserved this exact row's map slot; no fallible work or
+        // callback occurs between canonical Code publication and this insertion.
+        inputs.commit(plan);
+        Ok(index)
+    }
+    pub(crate) fn publish(self) -> Result<usize, &'static str> {
+        let Self {
+            catalog,
+            code,
+            bytes,
+            index,
+            expression,
+            scope,
+            actual,
+            source,
+            existing,
+        } = self;
+        if existing {
+            return Ok(index);
+        }
+        // The only remaining fallible operation runs before any Code/Row index.
+        catalog.register_scope(scope, code.owner, code.result, index)?;
+        if let Some(instance) = code.instance {
+            catalog.functions.insert(instance, index);
+        } else if let Owner::Function { definition, .. } | Owner::Initializer { definition, .. } =
+            code.owner
+        {
+            catalog.definitions.insert(definition, index);
+        } else if let Some(source) = expression {
+            catalog.expressions.insert(source, index);
+        }
+        if let Owner::AnonymousInstance(instance) = code.owner
+            && scope.is_none()
+        {
+            catalog
+                .anonymous
+                .get_or_insert_with(Default::default)
+                .ordinary
+                .insert((instance, code.result), index);
+        }
+        if let Owner::InitializerInstance { instance, .. } = code.owner
+            && !code.source_only
+        {
+            catalog
+                .associated
+                .get_or_insert_with(Default::default)
+                .insert((instance, actual), index);
+        }
+        if let Some(source) = source {
+            catalog
+                .sources
+                .get_or_insert_with(Default::default)
+                .insert(source, (index, actual));
+        }
+        catalog.bytes = bytes;
+        catalog.bodies.push(code);
+        Ok(index)
+    }
+    pub(super) fn source(
+        mut self,
+        source: crate::sema::values::execution::SourceComputation,
+    ) -> Result<Self, &'static str> {
+        let extra = crate::support::retained::new_map::<
+            crate::sema::values::execution::SourceComputation,
+            (usize, crate::types::TypeId),
+        >(1)
+        .saturating_add(if self.catalog.sources.is_none() {
+            size_of::<super::SourceIndex>()
+        } else {
+            0
+        });
+        self.bytes = self
+            .bytes
+            .checked_add(extra)
+            .filter(|&n| n <= 64 * 1024 * 1024)
+            .ok_or("source code index storage budget exceeded")?;
+        self.source = Some(source);
+        Ok(self)
     }
 }

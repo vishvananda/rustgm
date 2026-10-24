@@ -59,3 +59,59 @@ fn nonselected_expression_keeps_strict_projected_type_admission()
     );
     Ok(())
 }
+
+#[test]
+fn named_root_selection_requires_actual_source_definition_and_initializer_type()
+-> Result<(), Box<dyn std::error::Error>> {
+    let report = crate::test_source::resolve("const A:u8=7;const B:u8=9;", true)?;
+    let mut facts = crate::sema::declarations::analyze(&report)?;
+    let mut queries = Queries::new(&report, &mut facts);
+    let named = |queries: &Queries<'_>, name: &str| {
+        queries
+            .typing
+            .facts
+            .initializers
+            .iter()
+            .position(|initializer| {
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[initializer.definition.0 as usize].name)
+                    == name
+            })
+            .ok_or("actual named initializer")
+    };
+    let a = named(&queries, "A")?;
+    let b = named(&queries, "B")?;
+    queries
+        .work
+        .push(super::super::Work::Enter(Query::Constant(a)));
+    queries.drain()?;
+    let initializer = queries.typing.facts.initializers[a];
+    let other = queries.typing.facts.initializers[b];
+    queries.begin_named_value(a)?;
+    assert!(
+        matches!(queries.execution_target(initializer.value, initializer.ty)?, Target::Initializer(definition) if definition == initializer.definition)
+    );
+    assert!(
+        queries
+            .execution_target(initializer.value, crate::types::TypeId::UNIT)
+            .is_err()
+    );
+    assert!(matches!(
+        queries.execution_target(other.value, other.ty)?,
+        Target::Expression { .. }
+    ));
+    queries.value_scope = Some(crate::sema::constants::instances::ValueScope::Initializer {
+        body: other.semantic_source(),
+        index: a,
+    });
+    assert!(
+        queries
+            .execution_target(initializer.value, initializer.ty)
+            .is_err()
+    );
+    queries.abort_value_scopes();
+    assert_eq!(queries.value_scope, None);
+    Ok(())
+}

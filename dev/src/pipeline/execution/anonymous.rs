@@ -86,9 +86,9 @@ impl Engine {
         } else {
             Vec::new()
         };
-        let index = self
+        let registration = self
             .catalog
-            .anonymous_result_prepared(
+            .stage_anonymous(
                 checked
                     .take_code()
                     .map_err(|e| report.body_error(source, e))?,
@@ -96,8 +96,10 @@ impl Engine {
                 &results,
             )
             .map_err(|e| report.body_error(source, e))?;
-        self.retain_const_inputs(facts, index, &concrete.body, checked, None)
+        let index = registration
+            .publish_source(facts, &mut self.const_calls, checked.retained, None)
             .map_err(|e| report.body_error(source, e))?;
+        self.refresh_code_bytes(facts);
         facts.constant_work.anonymous_instances += 1;
         self.roots
             .insert(Target::Anonymous { instance, result }, index);

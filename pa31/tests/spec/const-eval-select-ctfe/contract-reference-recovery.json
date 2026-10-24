@@ -1,0 +1,156 @@
+{
+  "declared_before_recovery_probes": true,
+  "production_unchanged_from": "7cd74b97fb5e6271796e9fd319fb20f0d9fe7ce9",
+  "prior_evidence": "obj/parallel/pa28/const-eval-select/reference-source-v1",
+  "prior_binding_sha256": "709f64847facaa3357ebf69c47148d655cf024fb28b72896773278363749a8bc",
+  "prior_results_sha256": "9e8796f446fdd7790ba0c4324abf9b17ab631c0870f387579eccb6cf731f653d",
+  "prior_summary_sha256": "e752bd37df67c45b44811cf245f27d8863a39b34cbeb0ac3586f4e2ab39d4696",
+  "prior_plan_sha256": "2c0930c6d5c30011f4dbcc5191abdb1b67fb907412de8452e3d2e7e6a59a0db5",
+  "retained_unchanged_oracle_rows": [
+    {
+      "name": "reference-local-argument",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-local-argument.rs",
+      "source_sha256": "dcc6d62987cb465d425af762dd34764e56d268c91f7dc2ff8a91ff3d8b6a25aa",
+      "client_sha256": "15277eb339de8ab9e196008f0cfe3a622e020880f4509a1fd2ee9f47425e54c7",
+      "row_sha256": "b11387185f4c8e7b78973d0733d6c62d123148f6320fed6e8ceab59157d5b179",
+      "expected_commands": 4,
+      "rustc_metadata_status": 0
+    },
+    {
+      "name": "reference-nested-caller",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-nested-caller.rs",
+      "source_sha256": "4e5693982c8430cffe544e080d868de25ee414daaa21eefbe85a74f4638b6ed8",
+      "client_sha256": "15277eb339de8ab9e196008f0cfe3a622e020880f4509a1fd2ee9f47425e54c7",
+      "row_sha256": "1ff4e86b2b49811efd0045444de54f7b7725f84c8cd6b00fb2d542ceb6a3c7e9",
+      "expected_commands": 4,
+      "rustc_metadata_status": 0
+    },
+    {
+      "name": "reference-two-arguments",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-two-arguments.rs",
+      "source_sha256": "7b5b782ab17acf09a56e70c0a0ecf95ece4ac0f697852e915a351a61f7084012",
+      "client_sha256": "15277eb339de8ab9e196008f0cfe3a622e020880f4509a1fd2ee9f47425e54c7",
+      "row_sha256": "6bafc4bb8ea37be20bf84d90548912fef70b013bd377b5d008a37cc12f8c7b30",
+      "expected_commands": 4,
+      "rustc_metadata_status": 0
+    },
+    {
+      "name": "reference-return-local-reject",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-return-local-reject.rs",
+      "source_sha256": "318f62cbbe69b970e0f7003f4538a63ff9dc98a2d5beb1485d6ce77089746f69",
+      "client_sha256": null,
+      "row_sha256": "3470d529bb7129302942f68374c6eae9869182b8949453ff9b854d8c3f0883de",
+      "expected_commands": 1,
+      "rustc_metadata_status": 1
+    },
+    {
+      "name": "reference-crossed-result-reject",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-crossed-result-reject.rs",
+      "source_sha256": "eabaf8b16ccf4bf69e9e38c2b6ad46f455567099dc7e782019aa6a7f3a2c6345",
+      "client_sha256": null,
+      "row_sha256": "90b843e51f39193ca3192e5d47d6f2b661a193ddf5b9dec86f423f36e2eb97a4",
+      "expected_commands": 1,
+      "rustc_metadata_status": 1
+    },
+    {
+      "name": "reference-static-result-reject",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-static-result-reject.rs",
+      "source_sha256": "e2f7c5eebdc1cf1db03ace025ff22963d9688da892ad69a1a4c1684486691cdf",
+      "client_sha256": null,
+      "row_sha256": "3a03926491216576024ab808fd22ebf53602802b6c3db87102a7732b6d6c6b3f",
+      "expected_commands": 1,
+      "rustc_metadata_status": 1
+    },
+    {
+      "name": "reference-nonconst-first-reject",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-nonconst-first-reject.rs",
+      "source_sha256": "beb60fc1327a6b541f9b4bf9e52b02968a276497e3bb770e382f5ff103546b53",
+      "client_sha256": null,
+      "row_sha256": "1816562cca95a0124216bfcb1445c455d842affba5cfe0fbb946bc33bb782ea9",
+      "expected_commands": 1,
+      "rustc_metadata_status": 1
+    },
+    {
+      "name": "reference-function-pointer-first-reject",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-function-pointer-first-reject.rs",
+      "source_sha256": "740ed835e4e0133ab3d1ccd6ebf76ce9e18427ad343401552f142906ac98e863",
+      "client_sha256": null,
+      "row_sha256": "1f28b73251fcac89556efb8749d094e1c4ebba635603c7f39fd46abf196bbf2d",
+      "expected_commands": 1,
+      "rustc_metadata_status": 1
+    },
+    {
+      "name": "reference-early-named",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-early-named.rs",
+      "source_sha256": "e80031aa729bf6b1dcce700c205180951e5899bda4890582092ee6cd20b0372d",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "row_sha256": "35fe559a7995e140836dcbbe4b7a02752e4b5ddbdf10a6656f428cbed65f02fd",
+      "expected_commands": 4,
+      "rustc_metadata_status": 0
+    },
+    {
+      "name": "caller-scaling-8",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/caller-scaling-8.rs",
+      "source_sha256": "831d9974faca0941c74eea648ba0c024e5676184bdbcb7b5469d8e58204628c2",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "row_sha256": "7e213c9fe3e6b97e9a8c593577fc0b8e7c304dcbae952299e7dd3a0b581d93ca",
+      "expected_commands": 4,
+      "rustc_metadata_status": 0
+    },
+    {
+      "name": "caller-scaling-32",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/caller-scaling-32.rs",
+      "source_sha256": "1584624000bb30c2332c9e5441a87b012ba4582373247f2a277c99d2764cdd2c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "row_sha256": "44774f46ad449194dce9e6b5f094e159ed5aa728e78b0b4b332ded8dfc9b959f",
+      "expected_commands": 4,
+      "rustc_metadata_status": 0
+    },
+    {
+      "name": "caller-scaling-128",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/caller-scaling-128.rs",
+      "source_sha256": "dd0f94c741d487f77c9743afdb3d609c5e79d1eb5fb10225ce87fd0971836159",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "row_sha256": "3b82d4558c36daccca7318cd4f1bc1fad085237edd4207a286e46a41c8359c6d",
+      "expected_commands": 4,
+      "rustc_metadata_status": 0
+    }
+  ],
+  "archived_invalid_positive_hypotheses": [
+    {
+      "name": "reference-slice-identity",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-slice-identity.rs",
+      "source_sha256": "2a9bf245f875db1ad4a499b7f043129156ee95afd2c9ef2d847192aca5e5acf9",
+      "client_sha256": "7b5fb87c320d9e3f7900d826878967f34388868d660b730e8074e89e36e25c28",
+      "row_sha256": "6064103ac084fe0029f1f5dca2c9ebbb64d7e22fea5274a81b74fddedeca8d9b",
+      "classification": "Invalid positive hypothesis for this incomplete no_core provider: no shared-reference CoerceUnsized implementation; pinned Rust E0308 at rt/N/runtime array-to-slice coercions. Not RustGM qualification.",
+      "rustc_actual_metadata_status": 1,
+      "rustc_actual_object_status": 1,
+      "diagnostic": "E0308"
+    }
+  ],
+  "case": {
+    "name": "reference-slice-complete-provider",
+    "source": "pa31/tests/spec/const-eval-select-ctfe/reference-slice-complete-provider.rs",
+    "sha256": "60ca9f85f0595240277b967448f3a85de24cf29fb2a49890b577a4341d6958c1",
+    "client": "pa31/tests/spec/const-eval-select-ctfe/reference-slice-complete-provider.c",
+    "client_sha256": "7b5fb87c320d9e3f7900d826878967f34388868d660b730e8074e89e36e25c28",
+    "rustc_metadata_hypothesis": 0,
+    "rustc_object_hypothesis": 0,
+    "native_status_hypothesis": 0,
+    "native_stdout_hypothesis": "7 1\n",
+    "native_stderr_hypothesis": "",
+    "candidate_hypothesis": "accept",
+    "scope": "Same slice coercion and identity operations as original; add actual pinned shared-reference CoerceUnsized impl only. No array-only replacement or intrinsic bypass."
+  },
+  "provider_lineage": {
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "path": "library/core/src/ops/unsize.rs",
+    "sha256": "4f0f013efec7392300e9d4415748ffd5e74e990ebb096c1b556922540d9684d6",
+    "line": 58,
+    "implementation": "impl<'a, 'b: 'a, T: PointeeSized + Unsize<U>, U: PointeeSized> CoerceUnsized<&'a U> for &'b T {}",
+    "inserted_bytes_utf8": "// Shared-reference contract from pinned core/src/ops/unsize.rs:58.\nimpl<'a,'b:'a,T:PointeeSized+Unsize<U>,U:PointeeSized> CoerceUnsized<&'a U> for &'b T{}\n",
+    "inverse_removal_restores_original_sha256": "2a9bf245f875db1ad4a499b7f043129156ee95afd2c9ef2d847192aca5e5acf9"
+  },
+  "selection_change": "dev/tests/selected_references.rs POSITIVE replaces reference-slice-identity with reference-slice-complete-provider; same frontend/private/native test identities and counts. Original source/contract/failed observations remain unchanged."
+}

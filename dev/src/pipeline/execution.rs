@@ -73,7 +73,7 @@ impl Executor for Proxy {
     }
 }
 struct CheckedInput {
-    retained: Option<Arc<Contract>>,
+    retained: Option<const_eval::use_inputs::Source>,
     code: Option<const_eval::code::Prepared>,
 }
 impl CheckedInput {
@@ -237,7 +237,12 @@ impl Engine {
             let evaluator =
                 Evaluator::with_scratch(report, facts, std::mem::take(&mut self.values));
             let limits = self.available_limits()?;
-            let mut machine = Machine::catalog(evaluator, &self.catalog, limits);
+            let mut machine = Machine::source_catalog(
+                evaluator,
+                &self.catalog,
+                self.const_calls.as_deref(),
+                limits,
+            );
             if let Some(state) = session.state {
                 machine.restore(state);
             } else {
@@ -396,16 +401,10 @@ impl Engine {
                 {
                     return Ok(false);
                 }
-                let target = if initializer.semantic_source() == initializer.value {
-                    Target::Expression {
-                        source: initializer.value,
-                        result: initializer.ty,
-                        context: None,
-                    }
-                } else {
-                    Target::Initializer(definition)
-                };
-                let index = self.root(report, facts, target)?;
+                // A named demand must construct and prove its declaration
+                // owner before any Code/Row identity is retained. Actual
+                // anonymous expression requests keep their distinct owner.
+                let index = self.root(report, facts, Target::Initializer(definition))?;
                 self.catalog
                     .initializer(index, definition, initializer.kind)
                     .map_err(|e| report.body_error(initializer.value, e))?;
@@ -500,22 +499,14 @@ impl Engine {
         } else {
             ProofPurpose::Code
         };
-        let mut checked =
-            self.prove_defining_original(report, facts, &template, &input, purpose)?;
+        let checked = self.prove_defining_original(report, facts, &template, &input, purpose)?;
         if specialize {
             self.reserve_template(report, facts, definition, &template)?;
             self.specialize(report, facts, instance, &template, &input)?;
             self.originals.insert(definition, template);
         } else {
             let index = self
-                .catalog
-                .insert_prepared(
-                    checked
-                        .take_code()
-                        .map_err(|e| report.body_error(source, e))?,
-                )
-                .map_err(|e| report.body_error(source, e))?;
-            self.retain_const_inputs(facts, index, &template.body, checked, Some(instance))
+                .publish_code(facts, checked, Some(instance))
                 .map_err(|e| report.body_error(source, e))?;
             self.catalog.functions.insert(instance, index);
             self.concrete
@@ -550,7 +541,7 @@ impl Engine {
                     .parameter_environment(&facts.types, definition)
                     .map_err(|e| report.body_error(source, e))?,
             );
-            let mut checked = self.prove_body(
+            let checked = self.prove_body(
                 report,
                 facts,
                 body,
@@ -558,14 +549,7 @@ impl Engine {
                 ProofInput::code(&parameters, input),
             )?;
             let index = self
-                .catalog
-                .insert_prepared(
-                    checked
-                        .take_code()
-                        .map_err(|e| report.body_error(source, e))?,
-                )
-                .map_err(|e| report.body_error(source, e))?;
-            self.retain_const_inputs(facts, index, body, checked, Some(instance))
+                .publish_code(facts, checked, Some(instance))
                 .map_err(|e| report.body_error(source, e))?;
             self.catalog.functions.insert(instance, index);
             return Ok(true);
@@ -736,7 +720,7 @@ impl Engine {
             &materialized.destruction,
             &mut self.promotions,
         )?;
-        let mut checked = self.prove_body(
+        let checked = self.prove_body(
             report,
             facts,
             &materialized.body,
@@ -744,14 +728,7 @@ impl Engine {
             ProofInput::code(&template.environment, &materialized.contract),
         )?;
         let index = self
-            .catalog
-            .insert_prepared(
-                checked
-                    .take_code()
-                    .map_err(|e| report.body_error(source, e))?,
-            )
-            .map_err(|e| report.body_error(source, e))?;
-        self.retain_const_inputs(facts, index, &materialized.body, checked, Some(instance))
+            .publish_code(facts, checked, Some(instance))
             .map_err(|e| report.body_error(source, e))?;
         self.catalog.functions.insert(instance, index);
         Ok(())
@@ -803,16 +780,23 @@ impl Engine {
         if input.purpose == ProofPurpose::Code {
             materialized_bodies::record(body).map_err(|e| report.body_error(body.source, e))?;
         }
-        let (code, needed) = self
+        let (code, uses) = self
             .finish_code(facts, body, contract, &regions, input.purpose)
             .map_err(|e| report.body_error(body.source, e))?;
-        let retained = if needed {
-            Some(Arc::new(prepared.ok_or_else(|| {
-                report.body_error(
-                    body.source,
-                    "source const-call retention has no proved contract",
+        let retained = if uses.needed {
+            Some(
+                self.retained_source(
+                    code.as_ref(),
+                    Arc::new(prepared.ok_or_else(|| {
+                        report.body_error(
+                            body.source,
+                            "source const-call retention has no proved contract",
+                        )
+                    })?),
+                    uses,
                 )
-            })?))
+                .map_err(|e| report.body_error(body.source, e))?,
+            )
         } else {
             None
         };
