@@ -16,25 +16,28 @@ for each. Current priority is the unchanged-core loading/expansion blocker:
 the integrator owns scoped item/path/import/glob lookup, Worker C investigates
 hygienic field/member consumers, Worker B owns projected Copy and early-impl
 readiness, and Worker A owns complete generic source-body validation/transport.
-The qualified integrated lookup/input/panic compiler passes the `core_panic`
-builtin declaration. A fresh unchanged-core probe now stops at the `panic_internals`
-allowance on `assert_eq` in macros/mod.rs, line 41. Worker C takes LIB-014's
-per-token internal feature permissions while preserving its unqualified field
-checkpoint and LIB-013's remaining foreign/edition requirements. The integrator
-retains scoped publication and item/path/import/glob work. Field, method and
-associated-member requirements remain open.
+The public lookup/input/panic compiler stops at the line-41 allowance. C's
+qualified complete-allowance worker advances unchanged core to line 170's
+`pub macro assert_matches`; the combined candidate still needs qualification.
+C now owns declaration-only scoped macro publication, preserving explicit
+invocation/export rejection until complete hygiene is qualified. The integrator
+retains method/associated-member lookup and integration; C's older field
+checkpoint remains separate and unqualified. B's actual early-Copy trace
+identifies premature absence before implementation validation, so its next
+checkpoint separates readiness and evaluates indexed validation scheduling.
 These implementation priorities do not change assignment release ownership or
 the shared resource limits below.
 
 The [combined checkpoint](library-lookup-panic-checkpoint.md) records 3,644
 release/native passes (1,721 fresh and 1,923 retained), 8,382 text cases, all
 84 comparable performance outputs and the sixteen retained RSS review triggers.
-Next gates are A's intermediate source codec/import staging, B's genuine
-nonempty instance-alias scope and C's complete-allowance independent corpus.
-After the idle schema-2 rollout below, select each absolute output cap from
-its actual existing usage plus build headroom; admit concurrent jobs only when
-the unchanged global reserve permits. Each new private binary runs its full
-nonignored inventory once, with required-name and captured-output checks.
+The next combined gate covers B's actual instance-alias scope, C's complete
+allowances and the integrator's enum-alias suffix-context/privacy correction.
+A's intermediate source codec remains a separate pending checkpoint. Each new
+private binary runs its full nonignored inventory once, with required-name and
+captured-output checks. Schema 2 is active after the qualified idle rollout;
+select each absolute cap from actual existing usage plus build headroom, and
+admit concurrent jobs only when the unchanged global reserve permits.
 
 ## Assignment ownership
 
