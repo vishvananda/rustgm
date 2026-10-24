@@ -28,7 +28,11 @@ pub(in crate::resolve) struct ScopedDeclaration {
 }
 
 impl Resolver<'_> {
-    pub(crate) fn scoped_declared(&self, context: Context, node: NodeId) -> Result<(), Error> {
+    pub(in crate::resolve) fn scoped_declared(
+        &self,
+        context: Context,
+        node: NodeId,
+    ) -> Result<(), Error> {
         let key = NodeKey {
             file: context.file,
             node,
@@ -47,7 +51,7 @@ impl Resolver<'_> {
         }
         Ok(())
     }
-    pub(crate) fn declare_scoped(
+    pub(in crate::resolve) fn declare_scoped(
         &mut self,
         context: Context,
         node: NodeId,
@@ -77,7 +81,6 @@ impl Resolver<'_> {
         } else {
             (None, None)
         };
-        let unit = &self.package.units[context.file.0 as usize];
         let edition = if let Some(edition) = header_edition {
             edition
         } else {
@@ -86,40 +89,14 @@ impl Resolver<'_> {
             })
             .map_err(|failure| Error::at(context.file, failure.offset, failure.message))?
         };
-        let body = unit
-            .configured
-            .ast
-            .captures
-            .get(capture as usize)
-            .ok_or_else(|| self.error(context, node, "missing scoped macro body forest"))?;
-        let parameters = parameters
-            .map(|index| {
-                unit.configured
-                    .ast
-                    .captures
-                    .get(index as usize)
-                    .ok_or_else(|| {
-                        self.error(context, node, "missing scoped macro parameter forest")
-                    })
-            })
-            .transpose()?;
-        // Validation happens once in the common producer. No executable matcher
-        // is retained by the declaration-only marker.
-        #[cfg(test)]
-        observation::note(observation::Event::Compile {
-            module: context.module,
-            key,
-            owner,
-            trees: body.nodes().len() + parameters.map_or(0, |forest| forest.nodes().len()),
-        });
-        compile::declarative_in_edition(
-            unit.source.text(),
-            parameters,
-            body,
-            &mut self.package.names,
+        self.compile_scoped(
+            context,
+            node,
+            (parameters, capture),
             edition,
-        )
-        .map_err(|failure| Error::at(context.file, failure.offset, failure.message))?;
+            #[cfg(test)]
+            owner,
+        )?;
         self.item_definition(
             context,
             node,
@@ -144,6 +121,55 @@ impl Resolver<'_> {
                 header,
             },
         ))
+    }
+    fn compile_scoped(
+        &mut self,
+        context: Context,
+        node: NodeId,
+        grammar: (Option<u32>, u32),
+        edition: Edition,
+        #[cfg(test)] owner: Option<NodeId>,
+    ) -> Result<(), Error> {
+        let (parameters, capture) = grammar;
+        let unit = &self.package.units[context.file.0 as usize];
+        let body = unit
+            .configured
+            .ast
+            .captures
+            .get(capture as usize)
+            .ok_or_else(|| self.error(context, node, "missing scoped macro body forest"))?;
+        let parameters = parameters
+            .map(|index| {
+                unit.configured
+                    .ast
+                    .captures
+                    .get(index as usize)
+                    .ok_or_else(|| {
+                        self.error(context, node, "missing scoped macro parameter forest")
+                    })
+            })
+            .transpose()?;
+        // Validation happens once in the common producer. No executable matcher
+        // is retained by the declaration-only marker.
+        #[cfg(test)]
+        observation::note(observation::Event::Compile {
+            module: context.module,
+            key: NodeKey {
+                file: context.file,
+                node,
+            },
+            owner,
+            trees: body.nodes().len() + parameters.map_or(0, |forest| forest.nodes().len()),
+        });
+        compile::declarative_in_edition(
+            unit.source.text(),
+            parameters,
+            body,
+            &mut self.package.names,
+            edition,
+        )
+        .map_err(|failure| Error::at(context.file, failure.offset, failure.message))?;
+        Ok(())
     }
     fn scoped_syntax(
         &self,

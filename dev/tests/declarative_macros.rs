@@ -147,3 +147,6 @@ fn transferred_scoped_macro_keeps_both_capture_owners_and_original_spans() -> Re
     }
     Ok(())
 }
+
+#[path = "declarative_macros/retained_items.rs"]
+mod retained_items;

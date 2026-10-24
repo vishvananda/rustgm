@@ -88,3 +88,21 @@ changed configured owners, duplicates and rejected publication. Measure cold
 Body/Definition and retained storage. Re-run the unchanged original core with
 exact provenance/configuration and report its actual next diagnostic; an
 advanced frontier is not crate acceptance.
+
+## First independent observation
+
+The immutable31-source corpus ran102 observations, including20 native programs.
+Exactly100 rows matched the predeclared predictions. The unused unknown template
+metavariable was accepted by pinned rustc in both metadata and object modes,
+contrary to its predicted rejection. Both original mismatch rows, empty
+stderr, source bytes and contract remain retained. This is accepted unused
+declaration data; no invocation permission follows. The candidate failed-matcher
+invariant instead uses the already declared wrong-separator grammar. No compiler
+matcher semantics were changed to force the falsified hypothesis.
+
+Evidence is obj/parallel/pa31/scoped-declarations-independent-v1. Runner5dec88c9,
+planfa68afe8 and contractc6e7de62 bind the run. Results SHA-256 is
+c8eceeaad3d3eebcb0a69e0619deb98c658bc92a4ac642cb57fad61d217f0e28.
+Resource1cb47966 finished1/errornull; scoped cleanup1792853452947711888
+removed62 disposable outputs while preserving every observation. This is oracle
+evidence, not candidate qualification. The original20 native programs all passed.
