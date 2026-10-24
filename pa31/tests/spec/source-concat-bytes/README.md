@@ -1,7 +1,7 @@
 # Source concat_bytes contracts
 
-`contract.json` freezes immutable preimplementation hypotheses, without oracle or
-candidate observations. The actual unchanged original-core root currently stops
+`contract.json` freezes immutable preimplementation hypotheses, with the initial predictions retained. Independent observations are now bound
+in observations.json; no candidate implementation is qualified. The actual unchanged original-core root currently stops
 at its attributed concat_bytes declaration, macros/mod.rs line1126/byte40135.
 The exact pinned header slice, source checksum and source role ownership are
 retained here. Rust source attribution is MIT OR Apache-2.0 at commit
@@ -31,3 +31,12 @@ checked before growing repeated bytes. Successful and failed publication retain
 only actual typed output; failed budgets must not leave reusable partial roots.
 Shared eager source/header/registry preflight must be reused with formatting.
 The ordinary formatting call/constructor proof remains separate.
+
+Initial V1 executed244 of248 planned observations and42 of44 native programs.
+Its malformed-separator rejection matched, with different diagnostic wording.
+The original include-resource positive and nested-resource negative lacked an
+actual include_bytes declaration in their no_core provider and do not qualify
+the intended resource boundary. Distinct complete-provider variants matched all
+12 additive observations, including two native programs. Combined evidence is
+256 actual rows/168 language observations/44 native programs across42 sources;
+original sources, skipped programs and mismatches remain unchanged.

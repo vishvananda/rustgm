@@ -1,0 +1,413 @@
+{
+  "state": "Independent observations only; compiler implementation not yet authored",
+  "source_files": 42,
+  "candidate_contract_milestone_source_files": 40,
+  "actual_observations": 256,
+  "actual_language_observations": 168,
+  "matched_native_programs": 44,
+  "original_planned_observations": 248,
+  "original_executed_observations": 244,
+  "original_planned_native": 44,
+  "original_executed_native": 42,
+  "original_skips": 2,
+  "original_sources_and_predictions_unchanged": true,
+  "review_sha256": "7fe2ac3cdc2b960359565bf0744513e0ce3378c8855dc291c1cc7c0df7bf8e32",
+  "gates": [
+    {
+      "root": "obj/parallel/pa31/concat-bytes-independent-v1",
+      "actual_observations": 244,
+      "actual_native": 42,
+      "plan_sha256": "f82cd9e9362595befa003af7ae059f46c25744852c31765a1d9e76529a1fdb56",
+      "results_sha256": "94f21c7bf9edba98dc34670549e1c2b1b0b084a0b00e46fcbc822812ba43e9f4",
+      "complete_sha256": "6708662b9603692354fe3f76fdc26ea46c00d2d3faa00641916388cd5ecb3b9f"
+    },
+    {
+      "root": "obj/parallel/pa31/concat-bytes-independent-v2",
+      "actual_observations": 12,
+      "actual_native": 2,
+      "plan_sha256": "34051e0c8fd6343f8050e7218ecc4a2a4a94e89d3d347578fa6c8db805721b8a",
+      "results_sha256": "1276361fca37bba4ae30f8ed00f073ba62355d319b58d4f7c25775c1c6eb1516",
+      "complete_sha256": "8ac0d011acb98e3d255ec9e6123c8d475b0b72e6b2e10ed15bb821d0debdeeb7"
+    }
+  ],
+  "cases": [
+    {
+      "name": "mixed-bytes",
+      "path": "mixed-bytes.rs",
+      "source_sha256": "8f18be0b39404735265aaac666dd6c90ee6cedd8aa7d18b3dba80fd58be17488",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "empty",
+      "path": "empty.rs",
+      "source_sha256": "51caa837e0d731b65c5446b6c2d3095c3e3a6e36ea8dc7da30c414ba12d49600",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "trailing-comma",
+      "path": "trailing-comma.rs",
+      "source_sha256": "86207a16c51632e5b9cc9474a5f8e2881dbc09a654f4ca8b6782f47c37f0e1d3",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "array-literals",
+      "path": "array-literals.rs",
+      "source_sha256": "754485a0db712cfc570662d837ced11c7a4422f1d0fe92e2e0dee666ef9a6360",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "repeat",
+      "path": "repeat.rs",
+      "source_sha256": "15b7bf74c69811b7dbaffad8d1380c34f8a716cb13c2f42f46720cadcaa2187b",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "repeat-zero",
+      "path": "repeat-zero.rs",
+      "source_sha256": "e7cb0d70b5a8991c646089845cb8bba51268c879ba4ff8490aea0db4d786e880",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "count-suffix",
+      "path": "count-suffix.rs",
+      "source_sha256": "754203fbbc9254100c852e210789fd898c69d50aba366c5d1afb80a655b08f10",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "nested-eager",
+      "path": "nested-eager.rs",
+      "source_sha256": "ca286f3aae8042e543b7cb8994ad6959f8006239a662695c1617cda11a760a52",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "captured-expression",
+      "path": "captured-expression.rs",
+      "source_sha256": "e3210c2bc0b867390dde05bf79c04db110a3c5a4d9e6a8fe5d892bf94423d623",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "captured-array",
+      "path": "captured-array.rs",
+      "source_sha256": "370d60b31b5f80d2cc7eaf368b01a2f60bc246d9b4123201e581a61f64186131",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "renamed-role",
+      "path": "renamed-role.rs",
+      "source_sha256": "5dbff6f01dd1f57e3acc3e0dd9b4c0d81a4ff134757b47bdbda304df56d2e297",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "authored-shadow",
+      "path": "authored-shadow.rs",
+      "source_sha256": "49beb8a0518dbb3aafbe2eab8cb0bb3dc5a2ca02f7fe7fa4923dd6dad87acf6f",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "width-8",
+      "path": "width-8.rs",
+      "source_sha256": "f7795f3abd12266ba58fe09d77b4043150eecb0a4e664f50707571a2b0bf3feb",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "uses-8",
+      "path": "uses-8.rs",
+      "source_sha256": "925d445ab2edec1dd9474faa860bafdde68f2fee5eeacb709bd4da1bf1ca4650",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "width-32",
+      "path": "width-32.rs",
+      "source_sha256": "356a0274e28a3becb088ef838dd897569216f694feda03c1d3562bf99ac641e5",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "uses-32",
+      "path": "uses-32.rs",
+      "source_sha256": "eb51ffc7091a5c133c0c2e186a2388731576fb616807b2105c77e6e3040c5918",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "width-128",
+      "path": "width-128.rs",
+      "source_sha256": "0b4b9883660378750f4e8848be7805c0841fbe116d247a1ea9c1d860d2f0202a",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "uses-128",
+      "path": "uses-128.rs",
+      "source_sha256": "53129b55e0dedcda2370b911306cf57808fe4609139322f631ab6318834fe4d8",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "top-level-integer",
+      "path": "top-level-integer.rs",
+      "source_sha256": "d72e87e9a0312b006783c3fec70e5e5dd39bde93c9a24b610379e4af807d7e31",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "signed-array-element",
+      "path": "signed-array-element.rs",
+      "source_sha256": "2225ea058270d2cdf95d92007f3dd770d217fcd43055fb12697a2c50a15ece6b",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "array-element-overflow",
+      "path": "array-element-overflow.rs",
+      "source_sha256": "3e405827706d8f696ff0d305a2f33e7dedd0bb9537556b5d99c57f1c69fa05c6",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "repeat-zero-invalid-element",
+      "path": "repeat-zero-invalid-element.rs",
+      "source_sha256": "db719712dc987012e7662bd52949cd0038d31f4454bde3e71440d5cf078940dd",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "nested-array",
+      "path": "nested-array.rs",
+      "source_sha256": "b615746b44c4048a733f831121da68f472c1b986b73173dec668efacecba4c85",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "nested-byte-string",
+      "path": "nested-byte-string.rs",
+      "source_sha256": "acfed9940fc35164062cdc235845e1f8d46d49fec396da5edd22c8682a84fb5f",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "repeat-expression-count",
+      "path": "repeat-expression-count.rs",
+      "source_sha256": "fd58bc047b96a67a12b63951a77cf95df843836cee69d31306974990a0fffd70",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "repeat-const-count",
+      "path": "repeat-const-count.rs",
+      "source_sha256": "f65af745e6c1750f6946b12e954fb71ca63b6a4328c8b328282d6d1f32962c1f",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "negative-array-element",
+      "path": "negative-array-element.rs",
+      "source_sha256": "c5c08665397427b9e9a7e71ae2dae71dcf3cc8201b6c2ad91658293c0b1bc1f7",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "ordinary-string",
+      "path": "ordinary-string.rs",
+      "source_sha256": "eec142099c7b48738ef309f7a9327302393d5c1c73a1fa9b33f03d4e528ae4cc",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "c-string",
+      "path": "c-string.rs",
+      "source_sha256": "f02e24f5efa6bf81d4391c68357cb4c2a0c485bc13f5509604dc90332ceb91df",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "parenthesized-literal",
+      "path": "parenthesized-literal.rs",
+      "source_sha256": "a8e334ab200bc93244ca09b6c04360c2cbdca88d7698d3836efd15f92ac8d0d7",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "malformed-separator",
+      "path": "malformed-separator.rs",
+      "source_sha256": "a559899a67e90a5435b1d43458c4b91c19ff5ae8b501c5182b7e4269d5ccaa33",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "nonliteral-operand",
+      "path": "nonliteral-operand.rs",
+      "source_sha256": "fdd0f3bb911787b62ec13494e9c474d241cd17f5f496c7ddd2d03a90f665d499",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "original-header",
+      "path": "original-header.rs",
+      "source_sha256": "8bc415a96670467d00c23b663bb77bd70eb65c5e18c2082d1061ae58da6a138f",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "actual-header-expansion-positive; final staged macro stability explicitly pending",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "scoped-role",
+      "path": "scoped-role.rs",
+      "source_sha256": "3449896b96c01fad26b5eebe32c147873ccf6de528b844a808ed0fc8dd9d9192",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "Rust-positive deliberately unsupported scoped builtin declaration",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "ordinary-requested",
+      "path": "ordinary-requested.rs",
+      "source_sha256": "1e4324ed1661d0ca1ebe5ec49578f0a9c3d53b68a952caaa6f96d3ad78aea900",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "Rust-positive ordinary library-feature use remains unsupported; no foreign/source role fabricated",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "ordinary-unrequested",
+      "path": "ordinary-unrequested.rs",
+      "source_sha256": "9122ffc68b4b6039654cf0df3b1785cb2b445d4783f2f919e5c3f1fc6851e43f",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject ordinary unstable library use; stable PA8 bootstrap admission unchanged",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "unknown-role",
+      "path": "unknown-role.rs",
+      "source_sha256": "146a2acb591aa517c7c42c632ce43b08b6dc3dc932abb59b1b77b9f971746e2d",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "explicit actual claimed-role/owner rejection",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "wrong-owner",
+      "path": "wrong-owner.rs",
+      "source_sha256": "beba2b8044fe279e5d35e66ad48f10c1dc1664a4b77082f570bb75dc6d6d3a0b",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "explicit actual claimed-role/owner rejection",
+      "qualification": "independently observed; malformed-separator retains original text disagreement"
+    },
+    {
+      "name": "included-bytes",
+      "path": "included-bytes.rs",
+      "source_sha256": "619f139e38b29790b09987570732c0bb51de76e4a7e0835dcefca2d1ee254eed",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "incomplete-provider original retained; intended boundary unqualified"
+    },
+    {
+      "name": "nested-included-bytes",
+      "path": "nested-included-bytes.rs",
+      "source_sha256": "b0b45aee0f06c9c07c415a3a9d80a59f484634e3f95e5689936abdfc443358d7",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "incomplete-provider original retained; intended boundary unqualified"
+    },
+    {
+      "name": "included-complete-provider",
+      "path": "included-complete-provider.rs",
+      "source_sha256": "448bdf501c8ad71e0b9e3627a06c14e4c77cbbdcba5bde7bbccefee8c39e7dac",
+      "metadata": "accept",
+      "object": "accept",
+      "candidate": "accept-local-source",
+      "qualification": "additive actual include_bytes provider independently matched"
+    },
+    {
+      "name": "nested-included-complete-provider",
+      "path": "nested-included-complete-provider.rs",
+      "source_sha256": "b62a4366d46df21a247bfb7c8e400a5c71bde91cd81f4bbe6a53d3d962f14f15",
+      "metadata": "reject",
+      "object": "reject",
+      "candidate": "reject-at-typed-builtin-boundary",
+      "qualification": "additive actual include_bytes provider independently matched"
+    }
+  ]
+}

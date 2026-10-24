@@ -6,8 +6,10 @@ nonempty formatting arguments remain an open LIB017 requirement. No complete
 core artifact exists. Root owns the live blocker tracker.
 
 The immutable40-source contract lives in
-pa31/tests/spec/source-concat-bytes/contract.json. Its2021/2024 hypotheses are
-unobserved. The initial candidate supports actual local claimed roles only.
+pa31/tests/spec/source-concat-bytes/contract.json. Its2021/2024 hypotheses and original disagreements remain immutable.
+Independent V1 plus the distinct complete include provider now supply256actual
+observations and44native programs; observations.json binds the full evidence.
+No compiler implementation is qualified by that oracle. The initial candidate supports actual local claimed roles only.
 Ordinary stable PA8 bootstrap behavior stays unchanged; explicit ordinary
 library-feature admission and authentic foreign macro/API use are tracked
 requirements. The pinned Rust source lists concat_bytes as a library unstable
