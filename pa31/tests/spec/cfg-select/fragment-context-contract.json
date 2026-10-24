@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "status": "Predeclared statement versus expression hypotheses; unobserved. Preserve disagreements and original source bytes.",
+  "retained_contract_sha256": "1fe8428cbfdefe52b1b93d9cbcfcd5df1c834916b7ce73692d5d53fd5f69fb99",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "crate_type": "lib",
+  "bootstrap": true,
+  "cases": [
+    {
+      "name": "empty-let-expression",
+      "path": "empty-let-expression.rs",
+      "sha256": "53638ff4985d2ba68b2138d3a4620cac45123427d4e42427f4c26d18d4637543",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "expected expression"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": "The initializer forces expression parsing: an empty selected branch cannot synthesize unit."
+    },
+    {
+      "name": "empty-parenthesized-expression",
+      "path": "empty-parenthesized-expression.rs",
+      "sha256": "06b063219484cb769b8e1db3598837e7e80cb581fff2087dbaaa7ff148579379",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "expected expression"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": "Outer parentheses force expression parsing even at the block tail."
+    },
+    {
+      "name": "empty-statement-tail",
+      "path": "empty-statement-tail.rs",
+      "sha256": "684362d9210180a9405f860531b8f4ad1e6e496953e6d1845a0175dcd98f2758",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "A brace-delimited statement macro at block tail may expand to zero statements."
+    },
+    {
+      "name": "empty-statement-semicolon",
+      "path": "empty-statement-semicolon.rs",
+      "sha256": "b64d6bea9c2fa256cf5516f94be87cf0576e6e750c3e8e8479be73f14ba21d57",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "An explicit statement semicolon permits zero generated statements."
+    },
+    {
+      "name": "empty-unselected-expression",
+      "path": "empty-unselected-expression.rs",
+      "sha256": "335dd93771d2c0bd39a35a7d422a07da16fa9f7f32066e37aedd2297da07d9a4",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "expected expression"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": "Every branch must parse in the forced expression category, including an unselected empty branch."
+    },
+    {
+      "name": "empty-unselected-statement-tail",
+      "path": "empty-unselected-statement-tail.rs",
+      "sha256": "bb1263d94ce60b87647491d629cb19b78c1cd02127b404d762b005c9fd8ba7f2",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Statement-tail selection preserves the selected expression value while an unselected branch may contain zero statements."
+    },
+    {
+      "name": "item-statement-tail",
+      "path": "item-statement-tail.rs",
+      "sha256": "02c92b2328fca5715ef26fc0fe96a538cf93c4842128072224244ba4df8849a6",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "A block-tail statement fragment can contain an item; it is not an expression grammar."
+    }
+  ]
+}
