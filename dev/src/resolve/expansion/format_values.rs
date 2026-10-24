@@ -175,6 +175,17 @@ impl<S: Sources> Engine<'_, S> {
     }
 }
 impl Report {
+    /// Charge the cold semantic continuation through the existing resolver-owned
+    /// source budget after authenticating its actual produced value.
+    pub(crate) fn prepare_formatting_value(&self, key: NodeKey, bytes: usize) -> Result<(), Error> {
+        self.formatting_value(key)?;
+        self.package
+            .source_core()
+            .ok_or_else(|| Error::at(key.file, 0, "missing actual formatting provider"))?
+            .macros
+            .charge(1, bytes)
+            .map_err(|message| Error::at(key.file, 0, message))
+    }
     /// Classification and provenance only; ordinary constructor proof is separate.
     pub(crate) fn formatting_value(&self, key: NodeKey) -> Result<Builtin, Error> {
         let unit = self

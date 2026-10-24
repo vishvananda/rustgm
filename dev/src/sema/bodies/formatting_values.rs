@@ -37,7 +37,10 @@ impl Checker<'_> {
             return Ok(None);
         };
         if self.state.call_types.formatting.is_none() {
-            self.report.formatting_value(self.key(node))?;
+            self.report.prepare_formatting_value(
+                self.key(node),
+                size_of::<Pending>() + size_of::<Box<Pending>>(),
+            )?;
             let owner = self.formatting_owner(node, constructor)?;
             if self.facts.aggregates.get(owner).is_none()
                 || !self
@@ -99,15 +102,6 @@ impl Checker<'_> {
         if declaration.definition.0 != owner.0 {
             return Err(self.error(node, "formatting nominal changed its actual owner"));
         }
-        let source = self
-            .report
-            .package
-            .source_core()
-            .ok_or_else(|| self.error(node, "formatting requires its local source provider"))?;
-        source
-            .macros
-            .charge(1, size_of::<Pending>() + size_of::<Box<Pending>>())
-            .map_err(|message| self.error(node, message))?;
         let region = self.body_region(node, BodyRegionOrigin::ItemArgument)?;
         let arguments = self
             .facts
