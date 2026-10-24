@@ -1133,6 +1133,18 @@ keep their identities. Caller environments with captured lifetimes still use the
 same checked substitution as the request and retain its restoration equations.
 Sharing permissions never adds the requested goal to the caller's assumptions.
 
+For captured caller regions, share the canonical premise index and transform only
+the buckets consumed by a fresh query when its actual request supplies the whole
+mapping. Authenticate the source environment, type arena and exact base index.
+Keep query-local substitution, equations, restoration and proof debts separate
+from shared structure. Quantified or incompletely mapped forms retain the eager
+path. A mapped view cannot expose raw canonical clauses as current assumptions;
+consumers must use the indexed view or explicitly materialize it. Charge attempted
+inspection, mapping and retained allocation, including failed queries. Verify the
+algorithm on actual complete-source consumers as well as structural controls; the
+[projection-opening qualification](docs/pa31-projection-opening-sharing.md) records
+the unchanged scaling gate, original failures and measured cold-layout costs.
+
 Projection selection in a signature waits for its owner's immutable parameter
 environment, including requirements inherited by methods. Generic lifetime
 arguments also create this dependency. Nominal defaults demand the existing

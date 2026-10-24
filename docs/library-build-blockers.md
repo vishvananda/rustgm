@@ -14,7 +14,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | The qualified cfg_select compiler passes its declaration at line 235 and stops at the `format_args` builtin attribute at line 994. The same four unchanged original files are opened. It is integrated locally as `4ad4db87`; combined qualification remains pending. | Implement authentic formatting support (LIB-017), fix projection-opening growth (LIB-016), qualify the combined compiler and rerun the unchanged root. |
+| Original core loading and expansion | The qualified cfg_select compiler passes its declaration at line 235 and stops at the `format_args` builtin attribute at line 994. The same four unchanged original files are opened. It is integrated locally as `4ad4db87`; combined qualification remains pending. | Implement authentic formatting support (LIB-017), qualify the integrated projection-opening repair (LIB-016) and combined compiler and rerun the unchanged root. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -79,7 +79,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-001 | P0; preceding whole-core parse blocker removed, scoped semantics still required | Scoped declarative macro publication, item/path/import/glob lookup and definition-site visibility | PA31 internal feature; PA8 shared machinery / PA31, plus applicable PA7–PA8 regressions | C + integrator | Contextual lookup is qualified at `6bba6589`. Scoped declaration publication passes component qualification at `f2b8a493` and is integrated locally as `68a30f1b`; invocation, export and complete hygiene remain explicitly unsupported. |
 | LIB-002 | P0; prerequisite of LIB-001 | Hygienic field, method and associated-member identity; captured names and container-relative privacy | PA31; PA12/PA19 shared consumers / PA31, with earlier ordinary controls | C + integrator | Field storage/consumers at `b937b6da` remain unqualified and excluded from the merge. Enum-alias controls pass combined functional qualification at `5602dc27`. Inherent methods and trait-method scope discovery pass component qualification through `956c9904`, integrated locally as `708ee191`; associated-member conformance, scoped invocation and combined performance remain required. |
 | LIB-003 | P1; actual reduced source failure | Projected Copy proof sees one lifetime premise in inconsistent declaration/body namespaces | PA21 scoped proof + PA31 source const-trait defaults / PA31; add PA21 control where expressible | B | The actual instance-scope carrier and fresh Copy reproof pass component qualification at `c92e2c9b`: 1,275 unique private tests and 54 native programs, including real nonempty alias scopes. Combined functional recovery at `5602dc27` passes, including all ten previously failing projection cases. Actual subject growth 32→128 exceeds the declared bound (10.04×); LIB-016 owns the structural-opening repair. |
-| LIB-004 | P1; actual reduced source failure, readiness cause observed directly | Early const read treats source `u8: Copy` as absent although its impl is present | PA20 implementation readiness + PA25 early CTFE / PA31 source-binding reproduction | B, coordinated with C | A bounded actual-execution trace confirms two fresh queries see a PositiveHeader before implementation validation and incorrectly report absence. B preserved the unqualified readiness draft at `df9758de`; it remains queued while B fixes the observed LIB-016 growth failure. The design separates readiness from negative selection and evaluates indexed per-owner validation before a suspension mechanism. |
+| LIB-004 | P1; actual reduced source failure, readiness cause observed directly | Early const read treats source `u8: Copy` as absent although its impl is present | PA20 implementation readiness + PA25 early CTFE / PA31 source-binding reproduction | B, coordinated with C | A bounded actual-execution trace confirms two fresh queries see a PositiveHeader before implementation validation and incorrectly report absence. B has resumed the preserved unqualified readiness draft `df9758de` after qualifying LIB-016. Shared per-owner conformance must retain the integrator’s canonical member mapping. The design separates readiness from negative selection and evaluates indexed per-owner validation before a suspension mechanism. |
 | LIB-005 | P1; independently qualified reduced program | Anonymous constant-expression `const_eval_select` ownership and cache validation | PA25 execution + PA28 intrinsic semantics + PA31 source identity / PA31 | C | Source-ready at local `379006ad`, unqualified; preserve handoff while C prioritizes LIB-013. |
 | LIB-006 | P1; core-to-consumer prerequisite | Complete substituted signatures, operation types and required inputs for real exported generic originals | PA29 / PA29 data invariants; PA31 source-provider fixtures | A | Complete operation-derived input/signature validation passes the combined checkpoint, including all 11 private controls and actual complete-source A/B output equality. Executable artifact/import proof is still required. |
 | LIB-007 | P1; core-to-consumer prerequisite | Deterministic generic/source metadata, authenticated remapping and fresh imported body proof | PA29 + PA31 source-role admission / PA29 ordinary multi-crate tests and PA31 source-provider tests | A + integrator | Source-owner staging at `fcbcb949` passes format, audit and all-target strict Clippy; no runtime tests ran in that gate. Actual imported declaration readiness and original-body reconstruction are in progress. Public serialization, attachment and source-client admission remain closed until complete fresh proof and the artifact/native transaction pass. |
@@ -91,7 +91,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-013 | P0; prior unchanged-core blocker advanced | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | C + integrator | Local 2021/2024 source delegation and exact warm spelling guards pass combined qualification. The qualified unchanged-core probe advances to LIB-014. Foreign macro transport and Rust 2018 remain required; full LIB-013 is not closed. |
 | LIB-014 | P0; previous unchanged-core failure at `assert_eq`, line 41 | Macro-specific internal unstable feature allowances, beginning with actual `panic_internals` | PA31 source/compiler policy; PA8 token provenance / PA31 with applicable PA8 ordinary controls | C + integrator | Complete local allowance lists and provenance pass combined functional qualification and move original core to LIB-001. The allowance growth controls pass; foreign API/const consumers remain required. |
 | LIB-015 | Component fixed; unchanged-core boundary advanced | Authenticated source-declared builtin `cfg_select`, complete predicate/branch parsing and selected syntax | PA31 source/compiler role; PA7/PA8 shared cfg/expansion machinery / PA31 plus earlier ordinary controls where expressible | C + integrator | Qualified source `d8ed7286` passes 1,449 private tests, twelve frontend cases and 51 native programs, with all static checks. The unchanged-core probe reaches LIB-017. Exact compiler files are integrated locally as `4ad4db87`; combined release/performance and foreign macro transport remain pending. |
-| LIB-016 | P0; measured complete-source growth failure | Repeated full caller-environment opening and premise-index construction across independent projections | PA21 projection/formation machinery; PA31 complete source regression / PA31 plus earlier ordinary controls | B | Mapped-view successor `1b198324` passes static checks, 1,445 private tests, thirteen frontend cases and 31 native programs. Consumed-bucket structural controls scale linearly; actual full-source performance remains unqualified. The preceding measured repair still grows 9.14× from 32 to 128 subjects, above the unchanged 6× limit. |
+| LIB-016 | Component fixed; combined qualification pending | Repeated full caller-environment opening and premise-index construction across independent projections | PA21 projection/formation machinery; PA31 complete source regression / PA31 plus earlier ordinary controls | B + integrator | Mapped-view source `1b198324` passes static checks, 1,445 private tests, thirteen frontend cases, 31 native programs and the unchanged nine-row performance gate. All nine output pairs and sixteen native contexts pass with no triggers; subject growth is 3.732× against the 6× limit. Integrated locally as `5a5e9d51`; combined release/performance remains required. |
 | LIB-017 | P0; qualified component's unchanged-core failure at `format_args`, line 994 | Source-declared formatting builtins, diagnostic/allowance identity, argument parsing and construction using the actual source formatting roles | PA26 formatting semantics + PA31 compiler/source bindings / PA31 complete providers, with earlier ordinary controls where expressible | C | Independent declaration and complete literal-provider contracts at `cb6cc8b8` retain 224 actual observations and 34 matched native programs, including diagnosed original failures. The RustGM declaration/literal-call draft is uncompiled; no formatting support or newer core frontier is claimed. Full argument construction, obligations, evaluation/lifetimes and const permissions remain required. |
 
 The combined functional recovery is recorded in
@@ -99,8 +99,9 @@ The combined functional recovery is recorded in
 2,084 fresh release/native passes, 1,609 authenticated retained passes and all
 8,382 active text cases. Its unchanged-core probe at `5602dc27` confirms the
 line-170 boundary with the same source/configuration and four opened files.
-Performance measurements completed with one growth failure (LIB-016); public
-integration is held for its repair.
+Those performance measurements recorded one growth failure (LIB-016). Its
+qualified repair is now integrated locally; public integration awaits combined
+qualification of the coherent compiler.
 
 The focused LIB-016 successor at `f96ec23a` passes 1,439 nonignored private
 tests, thirteen frontend cases and 31 native programs. Its fixed optimized
@@ -116,6 +117,23 @@ The bounded observation on the same source's qualified debug test records
 867 queries use genuinely captured caller regions. Further work targets that
 structural remapping, preserving fresh proof for every caller. This performance
 result does not advance the unchanged-core source boundary.
+
+The [mapped-view successor](pa31-projection-opening-sharing.md) fixes that measured
+failure without changing its inputs or limit. Complete-source subject counts
+8/32/128 use 9,086,952 / 27,625,883 / 103,096,127 instructions. The largest case
+previously used 550,420,452 instructions: 81.27% of that work was removed, and paired
+wall time fell 75.56%. Subject growth is 3.040× / 3.732×; site growth is
+1.879× / 2.868×, all below 6×. Ordinary Copy and macro instruction controls
+change by -0.163% and -0.018%. All nine output pairs and sixteen native contexts
+pass, with no instruction, RSS or growth triggers. The actual source consumers
+entered the mapped path 867 times, all successfully; that bounded observation
+is separate from the optimized measurements. Hot layouts remain unchanged and
+cold allocation costs are documented. B's `captured-opening-optimized-v1`
+completion SHA-256 is
+`5aa3265a232ed91a7f550a9bc77c19c9128ad35ac3803587baa1faf5c4ca64d2`.
+The exact reviewed implementation is integrated locally as `5a5e9d51`; the
+preceding failed measurements remain retained. This fixes a prerequisite and
+does not produce a core artifact or advance its latest line-994 source boundary.
 
 The separately qualified scoped-declaration component uses worker CLI
 `1c2298f1ac0ac64e30e3ae6db4ecf5432e86219a69adb64c0ede50747ad2a29f`.

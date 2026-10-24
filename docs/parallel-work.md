@@ -17,10 +17,12 @@ implements LIB-017 formatting after its qualified `cfg_select` component moved
 unchanged core from line 235 to the `format_args` attribute at line 994.
 The integrator merged cfg_select locally as `4ad4db87`, the separately
 qualified inherent-member contexts through `abae2094`, and qualified trait-method
-scope discovery as `708ee191`; combined release and performance qualification
-remain pending. Worker B fixes LIB-016's
-measured repeated projection-environment opening and premise-index construction,
-with the early-impl readiness draft preserved separately. Worker A owns complete
+scope discovery as `708ee191`. The qualified projection-opening repair is now
+integrated as `5a5e9d51`: its unchanged nine-row gate passes with no triggers and
+subject growth of 3.732× against the 6× limit. Combined release and performance
+qualification remain pending. Worker B has resumed LIB-004 early impl readiness,
+coordinating its per-owner conformance adapter with the integrator's canonical
+member work. Worker A owns complete
 generic source-body validation, artifact transport and fresh consumer proof.
 The integrator owns combined qualification, shared interface review and the
 remaining impl-to-trait member mapping and associated-member work, coordinated
