@@ -14,7 +14,7 @@ pub(super) struct Selected {
 }
 
 #[cfg(test)]
-#[path = "../../tests/invariants/item_lookup.rs"]
+#[path = "../../tests/invariants/contextual_lookup.rs"]
 mod tests;
 
 impl Resolver<'_> {
