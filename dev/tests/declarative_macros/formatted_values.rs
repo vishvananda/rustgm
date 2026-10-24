@@ -85,7 +85,9 @@ fn real_format_headers_keep_stability_and_claim_opponents_explicit() -> TestResu
 fn consumer(bytes: &str) -> TestResult<String> {
     let expected = bytes
         .as_bytes()
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| Ok(format!("0x{}", std::str::from_utf8(pair)?)))
         .collect::<TestResult<Vec<_>>>()?
         .join(",");
