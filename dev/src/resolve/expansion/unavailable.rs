@@ -45,7 +45,11 @@ impl<S: Sources> Engine<'_, S> {
                 .declaration()
                 .allows(crate::resolve::bindings::KnownFeature::EditionPanic)
         });
-        let body = if let Some(role) = declared.header.as_ref().and_then(|header| header.declaration().builtin) {
+        let body = if let Some(role) = declared
+            .header
+            .as_ref()
+            .and_then(|header| header.declaration().builtin)
+        {
             // The shared producer already authenticated the sole scoped builtin role.
             Body::Builtin(role)
         } else {

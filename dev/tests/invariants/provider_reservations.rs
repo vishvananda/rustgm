@@ -178,3 +178,13 @@ fn source_configuration_keeps_bootstrap_owner_absent() -> Result {
     assert_eq!(size_of::<resolve::model::Resolution>(), 2056);
     Ok(())
 }
+
+#[test]
+fn cfg_select_claim_storage_remains_cold_and_reports_actual_layout() {
+    eprintln!(
+        "cfg_select cold Claim={} Reservations={} Declaration={}",
+        size_of::<super::reservations::Claim>(),
+        size_of::<Reservations>(),
+        size_of::<Declaration>()
+    );
+}

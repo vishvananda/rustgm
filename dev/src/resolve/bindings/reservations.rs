@@ -165,7 +165,12 @@ fn reserve_all(
         let Some(key) = definition.node else {
             continue;
         };
-        if !super::role_attributes::primary(package, key, definition.kind, claims.get(&key).map(Vec::as_slice)) {
+        if !super::role_attributes::primary(
+            package,
+            key,
+            definition.kind,
+            claims.get(&key).map(Vec::as_slice),
+        ) {
             continue;
         }
         let id = DefId(

@@ -173,12 +173,22 @@ pub(super) fn primary(
     kind: crate::resolve::model::DefKind,
     claims: Option<&[Claim]>,
 ) -> bool {
-    use crate::{resolve::model::DefKind, syntax::{ast::Kind, item::ItemKind}};
+    use crate::{
+        resolve::model::DefKind,
+        syntax::{ast::Kind, item::ItemKind},
+    };
     let unit = package.unit(key.file);
-    let Kind::Item(index) = unit.configured.ast.node(key.node).kind else { return false; };
+    let Kind::Item(index) = unit.configured.ast.node(key.node).kind else {
+        return false;
+    };
     match (unit.configured.ast.items[index as usize].kind, kind) {
         (ItemKind::DeclarativeMacro { .. }, DefKind::Macro) => claims.is_some_and(|claims| {
-            claims.iter().any(|claim| matches!(claim, Claim::BuiltinMacro(crate::expand::builtin::Builtin::CfgSelect)))
+            claims.iter().any(|claim| {
+                matches!(
+                    claim,
+                    Claim::BuiltinMacro(crate::expand::builtin::Builtin::CfgSelect)
+                )
+            })
         }),
         (ItemKind::Trait { .. }, DefKind::Trait)
         | (ItemKind::Function { .. }, DefKind::Function)

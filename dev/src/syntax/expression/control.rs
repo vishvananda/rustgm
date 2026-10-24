@@ -75,6 +75,12 @@ impl Parser<'_, '_> {
             } else if self.cursor.at_word(Word::Let)? {
                 self.let_statement(true)?
             } else {
+                // Opaque Expr inputs keep their already established category,
+                // even when their imported root happens to be a macro call.
+                let opaque = self
+                    .cursor
+                    .peek(0)?
+                    .is_some_and(|token| matches!(token.kind, TokenKind::Interpolated(_)));
                 let value = self.expr(
                     0,
                     Context {
@@ -83,9 +89,14 @@ impl Parser<'_, '_> {
                     },
                 )?;
                 if self.eat(P::Semicolon)? {
-                    self.statement_macro(value);
+                    if !opaque {
+                        self.statement_macro(value);
+                    }
                     self.node(self.ast.node(value).span.start, Kind::Statement(value))?
                 } else if self.end_statements(close)? {
+                    if !opaque {
+                        self.statement_tail_macro(value);
+                    }
                     tail = Some(self.attach(attrs, value)?);
                     break;
                 } else if self.with_block(value) {
@@ -100,15 +111,6 @@ impl Parser<'_, '_> {
         let statements = self.list(mark)?;
         Ok((statements, tail))
     }
-    pub(super) fn statement_macro(&mut self, mut node: NodeId) {
-        while let Kind::Attributed { value, .. } = self.ast.node(node).kind {
-            node = value;
-        }
-        if let Kind::Macro { context, .. } = &mut self.ast.nodes[node.get() as usize].kind {
-            *context = crate::syntax::ast::MacroContext::Statements;
-        }
-    }
-
     pub(super) fn let_statement(&mut self, semicolon: bool) -> Result<NodeId, LexError> {
         let start = self.required()?.start;
         let pattern = self.pattern(false)?;

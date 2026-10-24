@@ -87,9 +87,14 @@ pub(super) fn validate(
             }
         } else if matches!(item, DiagnosticItem::CfgSelect) {
             if !claims.iter().any(|claim| {
-                matches!(claim, Claim::BuiltinMacro(crate::expand::builtin::Builtin::CfgSelect))
+                matches!(
+                    claim,
+                    Claim::BuiltinMacro(crate::expand::builtin::Builtin::CfgSelect)
+                )
             }) {
-                return Err(error("cfg_select diagnostic identity requires its actual builtin role"));
+                return Err(error(
+                    "cfg_select diagnostic identity requires its actual builtin role",
+                ));
             }
         } else {
             let unit = package.unit(declaration.origin.file);

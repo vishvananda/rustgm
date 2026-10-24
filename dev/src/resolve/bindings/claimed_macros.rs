@@ -52,7 +52,9 @@ pub(super) fn parse(
     if !matches!(item.kind, ItemKind::MacroRules { .. })
         && !(role == Builtin::CfgSelect && matches!(item.kind, ItemKind::DeclarativeMacro { .. }))
     {
-        return Err(error("builtin macro binding requires its supported declaration kind"));
+        return Err(error(
+            "builtin macro binding requires its supported declaration kind",
+        ));
     }
     Ok(role)
 }

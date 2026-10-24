@@ -173,6 +173,28 @@ impl Unit {
         };
         // All ranges were validated above; this is the transaction's commit point.
         self.source.append(source).map_err(|e| error(0, e))?;
+        self.replace_syntax(target, new_root, configuration, indices);
+        self.origins
+            .extend(origins.iter().copied().map(|mut origin| {
+                origin.generated.start += base;
+                origin.generated.end += base;
+                origin
+            }));
+        Ok(Span {
+            start: base,
+            end: base
+                + u32::try_from(source.len())
+                    .map_err(|_| error(base, "invalid expansion source length"))?,
+        })
+    }
+    /// Commit only a fully prepared replacement; original node IDs remain diagnostic keys.
+    fn replace_syntax(
+        &mut self,
+        target: NodeId,
+        new_root: NodeId,
+        configuration: Configuration,
+        indices: Vec<NonZeroU32>,
+    ) {
         let mut obsolete = vec![target];
         while let Some(node) = obsolete.pop() {
             self.original.save(
@@ -190,19 +212,8 @@ impl Unit {
         self.configured.active[new_root.get() as usize] = false;
         self.configured.ast.nodes[target.get() as usize] =
             self.configured.ast.nodes[new_root.get() as usize];
-        self.origins
-            .extend(origins.iter().copied().map(|mut origin| {
-                origin.generated.start += base;
-                origin.generated.end += base;
-                origin
-            }));
-        Ok(Span {
-            start: base,
-            end: base
-                + u32::try_from(source.len())
-                    .map_err(|_| error(base, "invalid expansion source length"))?,
-        })
     }
+
     fn expansion_metadata<L>(
         &self,
         target: NodeId,
@@ -330,6 +341,77 @@ impl Unit {
         Ok(root)
     }
 
+    /// Select over this unit's real source/opaque registry, without a spelling replay.
+    /// Every inactive RHS is parsed and discarded before only selected configuration
+    /// and syntax are committed. Existing token origins and payload IDs stay intact.
+    pub(crate) fn install_choice<'a>(
+        &mut self,
+        site: crate::expand::builtin::choice::Site,
+        input: &crate::expand::macros::input::Input,
+        registry: &crate::expand::registry::Registry,
+        other: impl Fn(super::FileId) -> Option<&'a Unit>,
+        config: &crate::expand::config::Config,
+        charge: &crate::expand::builtin::choice::Charge<'_>,
+    ) -> Result<crate::expand::builtin::choice::Installed, LexError> {
+        let actual = self
+            .configured
+            .ast
+            .nodes
+            .get(site.target.get() as usize)
+            .ok_or_else(|| error(site.original.start, "missing cfg_select call target"))?;
+        if actual.span != site.original
+            || self.configured.active.get(site.target.get() as usize) != Some(&true)
+            || !matches!(actual.kind, Kind::Macro { context, .. } if context == site.grammar)
+        {
+            return Err(error(
+                site.original.start,
+                "cfg_select changed its actual call target or context",
+            ));
+        }
+        let source = self.source.text();
+        let units = |id| {
+            if id == site.file {
+                Some(&*self)
+            } else {
+                other(id)
+            }
+        };
+        let view = registry.view(|id| units(id).map(|unit| unit.source.text()));
+        let inputs = crate::syntax::edition_context::WithEditions::new(&view, |token| {
+            super::editions::token(site.file, token, units)
+        });
+        let selected = crate::expand::builtin::choice::select(
+            source,
+            input,
+            config,
+            site.grammar,
+            &inputs,
+            charge,
+        )?;
+        let (ast, mut configuration) =
+            Configuration::take(crate::expand::crate_syntax::configure_with_inputs(
+                source,
+                selected.ast,
+                config,
+                &inputs,
+            )?);
+        charge(
+            ast.nodes.len().saturating_add(ast.edges.len()),
+            ast.nodes
+                .len()
+                .saturating_mul(size_of::<crate::syntax::ast::Node>())
+                .saturating_mul(4),
+        )?;
+        let indices =
+            self.expansion_metadata(site.target, &ast, &mut configuration, 0, source.len())?;
+        let new_root = append_syntax(source, 0, ast, &mut self.configured.ast, &mut self.literals)?;
+        self.replace_syntax(site.target, new_root, configuration, indices);
+        Ok(crate::expand::builtin::choice::Installed {
+            generated: selected.span,
+            parser_calls: selected.parser_calls,
+        })
+    }
+
     fn retain_configuration(&mut self, configuration: Configuration, indices: Vec<NonZeroU32>) {
         self.configured.active.extend(configuration.active);
         self.owner_indices
@@ -349,3 +431,7 @@ impl Unit {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/chosen_installation.rs"]
+mod tests;
