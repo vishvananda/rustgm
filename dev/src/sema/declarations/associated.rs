@@ -93,7 +93,17 @@ impl Checker<'_> {
             return Err(self.error(key, "missing enum alias target"));
         };
         let target = self
-            .enum_variant(key, item, path.suffix[0].1, path.namespace, path.scope)?
+            .enum_variant(
+                key,
+                NodeKey {
+                    node: path.suffix[0].0,
+                    ..key
+                },
+                item,
+                path.suffix[0].1,
+                path.namespace,
+                path.scope,
+            )?
             .ok_or_else(|| self.error(key, "unknown enum variant"))?;
         self.complete_associated_prefix(prefix, owner, context)?;
         self.facts
@@ -105,6 +115,7 @@ impl Checker<'_> {
     pub(super) fn enum_variant(
         &self,
         key: NodeKey,
+        suffix: NodeKey,
         item: ItemId,
         name: NameId,
         namespace: crate::resolve::model::Namespace,
@@ -117,12 +128,34 @@ impl Checker<'_> {
         let scope = definition
             .members
             .ok_or_else(|| self.error(key, "missing enum member scope"))?;
-        let Some(binding) = self.report.resolution.bindings.get(scope, name, namespace) else {
+        let module = self.report.resolution.scopes[use_scope.0 as usize].module;
+        let offset = self
+            .report
+            .package
+            .unit(suffix.file)
+            .configured
+            .ast
+            .node(suffix.node)
+            .span
+            .start;
+        let context = self.report.package.item_context(suffix.file, offset)?;
+        let adjustment = self
+            .report
+            .adjust_item(DefId(item.0), context, module)
+            .map_err(|message| self.error(key, message))?;
+        let Some(binding) =
+            self.report
+                .resolution
+                .bindings
+                .get_key((scope, name, namespace, adjustment.context))
+        else {
             return Ok(None);
         };
-        let module = self.report.resolution.scopes[use_scope.0 as usize].module;
         if let Access::Within(ancestor) = binding.access
-            && !self.report.package.is_descendant(module, ancestor)
+            && !self
+                .report
+                .package
+                .is_descendant(adjustment.privacy, ancestor)
         {
             return Err(self.error(key, "enum variant is private"));
         }
@@ -174,3 +207,7 @@ impl Checker<'_> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/variant_contexts.rs"]
+mod tests;

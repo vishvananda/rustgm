@@ -1,0 +1,104 @@
+{
+  "status": "All predeclared language/native hypotheses matched pinned rustc; RustGM scoped-source admission remains disabled.",
+  "receipt_root": "rustgm-pa29-work/obj/parallel/enum-alias-oracle-v1",
+  "results_sha256": "ecfd472a86eb9fd851d528115b22d0638ee6cfa0614b4c9ec6691237b4ba84a8",
+  "plan_sha256": "e5e10a9b2426144daa2100b4e46d45c582cf3eba9ebb539a94a20ee1e0c73271",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "contract_sha256": "95837bb8dab90163499536ce63ffc449ca9c527c44bf04547384e5182937e9d6",
+  "language_observations": 8,
+  "native_programs": 2,
+  "observations": [
+    {
+      "case": "captured",
+      "stage": "metadata",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "captured",
+      "stage": "object",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "captured",
+      "stage": "native-build",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "captured",
+      "stage": "native-run",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "introduced",
+      "stage": "metadata",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "introduced",
+      "stage": "object",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "introduced",
+      "stage": "native-build",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "introduced",
+      "stage": "native-run",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "caller-opponent",
+      "stage": "metadata",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0599"
+      ],
+      "passed": true
+    },
+    {
+      "case": "caller-opponent",
+      "stage": "object",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0599"
+      ],
+      "passed": true
+    },
+    {
+      "case": "suffix-opponent",
+      "stage": "metadata",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0599"
+      ],
+      "passed": true
+    },
+    {
+      "case": "suffix-opponent",
+      "stage": "object",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0599"
+      ],
+      "passed": true
+    }
+  ]
+}

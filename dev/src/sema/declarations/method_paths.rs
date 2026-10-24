@@ -92,9 +92,14 @@ impl Checker<'_> {
             return Ok(true);
         }
         self.method_path_segments(key, path.prefix, path.suffix)?;
-        if let Some(variant) =
-            self.enum_variant(key, path.nominal, path.name, path.namespace, path.scope)?
-        {
+        if let Some(variant) = self.enum_variant(
+            key,
+            path.suffix,
+            path.nominal,
+            path.name,
+            path.namespace,
+            path.scope,
+        )? {
             if path.owner.is_some() {
                 return Ok(false);
             }

@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "owner": "PA31; LIB-002 enum-alias member lookup",
+  "status": "predeclared hypotheses; unobserved; RustGM scoped admission disabled",
+  "rust_source": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": "2024",
+  "panic": "abort",
+  "overflow_checks": true,
+  "cases": [
+    {
+      "path": "captured.rs",
+      "sha256": "eb1f516a24c5bc8f60f69e04667e7e761ff745a242920e7d93f93a0261369108",
+      "metadata": "accept",
+      "object": "accept",
+      "native_stdout": "7\n"
+    },
+    {
+      "path": "introduced.rs",
+      "sha256": "36f298039c1ddcb85f5b554c91ad6c4a96a260ea05e6d7c1e992a7d48a04ecf7",
+      "metadata": "accept",
+      "object": "accept",
+      "native_stdout": "7\n"
+    },
+    {
+      "path": "caller-opponent.rs",
+      "sha256": "a18d3ab96261b56dc143d76edb6752dc7869f7d05779608a1ade42c8aebf4dfd",
+      "metadata": "reject",
+      "object": "reject",
+      "native_stdout": null
+    },
+    {
+      "path": "suffix-opponent.rs",
+      "sha256": "973adaee2b8797a5b4189f3b27525b62b9e323ced53ddd3ebd183bd13edf3e91",
+      "metadata": "reject",
+      "object": "reject",
+      "native_stdout": null
+    }
+  ]
+}
