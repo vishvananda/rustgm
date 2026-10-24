@@ -22,6 +22,7 @@ pub(crate) use closures::{
     substitute as substitute_closure_execution,
 };
 mod inputs;
+mod materialized_copy;
 pub(crate) use anonymous::{
     close_operands as close_inline_operands, conditional_result as conditional_anonymous_result,
     original_context as original_inline_context, with_result as anonymous_result,
@@ -105,6 +106,7 @@ pub struct Materialized {
     pub body: Body,
     pub destruction: drops::Requirements,
     pub contract: super::regions::Contract,
+    copy_scope: Option<Box<super::copy_requirements::materialized::InstanceScope>>,
 }
 /// Materialize a body and its contract in a fresh instance proof context.
 /// Caller lifetimes contained in type arguments become distinct local universals;
@@ -170,6 +172,8 @@ fn with_premises(
     {
         return Err("instance original signature differs from its exact template");
     }
+    let original_scope =
+        super::copy_requirements::materialized::capture(facts, &template.body, original, instance)?;
     let mut inputs = inputs::select(facts, instance)?;
     let (mut substitution, mut contract) =
         contracts::specialize(facts, original, &mut inputs, context.premises)?;
@@ -182,10 +186,14 @@ fn with_premises(
         inputs.comparison,
         context,
     )?;
+    let copy_scope = original_scope
+        .map(|scope| scope.finish(facts, &body, &mut contract))
+        .transpose()?;
     Ok(Materialized {
         body,
         destruction,
         contract,
+        copy_scope,
     })
 }
 

@@ -6,6 +6,34 @@ use crate::types::{
 };
 
 impl Checker<'_> {
+    pub(super) fn body_alias_environment(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+        environment: std::sync::Arc<Environment>,
+    ) -> Result<std::sync::Arc<Environment>, Error> {
+        let aliases = self.state.call_types.universal_arguments();
+        if aliases.is_empty() {
+            return Ok(environment);
+        }
+        self.facts.body_work.canonical_steps += aliases.len();
+        if aliases.len() != self.state.body_binders as usize {
+            return Err(self.error(node, "body aliases do not match the actual defining scope"));
+        }
+        let environment = std::sync::Arc::new(
+            environment
+                .as_ref()
+                .clone()
+                .with_body_aliases(aliases)
+                .map_err(|e| self.error(node, e))?,
+        );
+        self.facts
+            .generics
+            .body_environments
+            .insert(owner, std::sync::Arc::clone(&environment));
+        Ok(environment)
+    }
+
     pub(super) fn defer_builtin_identity(
         &mut self,
         node: NodeId,

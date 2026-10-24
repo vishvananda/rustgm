@@ -39,11 +39,26 @@ pub(super) fn choose<C, E>(
         context.account_work(probe.steps)?;
         match result {
             Ok(()) => {
+                #[cfg(test)]
+                crate::sema::copy_trace::record(|| {
+                    format!(
+                        "assumption-match subject={:?} clause={predicate:?} steps={}",
+                        goal.subject(),
+                        context.steps
+                    )
+                });
                 match &selected {
                     Some((previous, prior))
                         if *previous != predicate
                             && !equivalent(store, context, prior, &evidence)? =>
                     {
+                        #[cfg(test)]
+                        crate::sema::copy_trace::record(|| {
+                            format!(
+                                "assumption-ambiguous previous={previous:?} candidate={predicate:?} subject={:?}",
+                                goal.subject()
+                            )
+                        });
                         return Ok(Selection::Deferred);
                     }
                     // Opening equivalent clauses may erase only unused local slots.
@@ -53,8 +68,26 @@ pub(super) fn choose<C, E>(
                 }
             }
             Err(infer::Error::Mismatch | infer::Error::Occurs) => {}
-            Err(infer::Error::Normalization) => needs_normalization = true,
-            Err(infer::Error::Unresolved) => return Ok(Selection::Deferred),
+            Err(infer::Error::Normalization) => {
+                #[cfg(test)]
+                crate::sema::copy_trace::record(|| {
+                    format!(
+                        "assumption-needs-normalization clause={predicate:?} subject={:?}",
+                        goal.subject()
+                    )
+                });
+                needs_normalization = true;
+            }
+            Err(infer::Error::Unresolved) => {
+                #[cfg(test)]
+                crate::sema::copy_trace::record(|| {
+                    format!(
+                        "assumption-unresolved clause={predicate:?} subject={:?}",
+                        goal.subject()
+                    )
+                });
+                return Ok(Selection::Deferred);
+            }
             Err(error) => return Err(error),
         }
     }

@@ -19,6 +19,8 @@ mod callback_execution;
 mod cases;
 #[path = "provider_traits/const_contexts.rs"]
 mod const_contexts;
+#[path = "provider_traits/destruct_profiles.rs"]
+mod destruct_profiles;
 #[path = "provider_traits/destructibility.rs"]
 mod destructibility;
 #[path = "provider_traits/effect_opponents.rs"]

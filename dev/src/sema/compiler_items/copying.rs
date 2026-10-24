@@ -28,6 +28,7 @@ pub(crate) fn copy_decisions(
         .validated_language(LangItem::Copy)?
         .ok_or("source Copy language item is missing")?;
     let mut state = State::body(facts, environment, universals, first)?;
+    facts.body_work.canonical_steps += state.selection_steps();
     let mut decisions = Vec::with_capacity(goals.len());
     for &goal in goals {
         if !matches!(goal.bound, crate::types::parameters::predicates::Bound::Trait(id)
@@ -36,7 +37,10 @@ pub(crate) fn copy_decisions(
         {
             return Err("source Copy requirement has a different declaration or arguments");
         }
-        decisions.push((goal.ty, state.copy_decision(facts, goal)?));
+        let before = state.selection_steps();
+        let selected = state.copy_decision(facts, goal);
+        facts.body_work.canonical_steps += state.selection_steps().saturating_sub(before);
+        decisions.push((goal.ty, selected?));
     }
     Ok(Decisions {
         choices: decisions,

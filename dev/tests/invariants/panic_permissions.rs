@@ -47,7 +47,7 @@ fn frame(report: &Report) -> TestResult<Frame> {
 #[test]
 fn macro_allowance_warm_queries_authenticate_full_attribute_and_retained_trees() -> TestResult {
     let mut report = actual()?;
-    let (key, owner, index, capture, attribute, allowance) = {
+    let (key, owner, index, capture, attribute) = {
         let state = report
             .package
             .source_core()
@@ -58,13 +58,15 @@ fn macro_allowance_warm_queries_authenticate_full_attribute_and_retained_trees()
         let entry = state
             .declarations
             .values()
-            .find(|entry| entry.declaration.allowance.is_some())
+            .find_map(|entry| match entry {
+                Entry::Owned(data) if data.declaration.has_allowance => Some(data),
+                _ => None,
+            })
             .ok_or("actual allowance owner")?;
-        let allowance = entry.declaration.allowance.ok_or("allowance")?;
         let witness = entry
             .witnesses
             .iter()
-            .find(|witness| witness.attribute == allowance.attribute)
+            .find(|witness| witness.allowance)
             .ok_or("actual attribute witness")?;
         (
             entry.declaration.node,
@@ -72,9 +74,12 @@ fn macro_allowance_warm_queries_authenticate_full_attribute_and_retained_trees()
             witness.index,
             witness.capture,
             witness.attribute,
-            allowance,
         )
     };
+    let allowance = checked(&report.package, owner)?
+        .ok_or("checked macro header")?
+        .allowance_at(index, attribute)?
+        .ok_or("actual allowance witness")?;
     assert!(existing(&report.package, key)?.is_some());
     assert!(allowance.matches(key, attribute));
     assert!(!allowance.matches(
@@ -297,7 +302,7 @@ macro_rules! panic {
     }).ok_or("actual attributed macro_rules declaration")?;
     let contract = declaration(&package, key)?.ok_or("actual source builtin claim")?;
     assert_eq!(contract.builtin, Some(Builtin::CorePanic));
-    assert!(contract.allowance.is_some());
+    assert!(contract.has_allowance);
     let state = package
         .source_core()
         .ok_or("source provider")?
@@ -308,6 +313,9 @@ macro_rules! panic {
         .declarations
         .get(&contract.node)
         .ok_or("retained contract")?;
+    let Entry::Owned(entry) = entry else {
+        return Err("missing owned header".into());
+    };
     assert_eq!(entry.witnesses.len(), 2);
     assert_eq!(
         entry.declaration.attributes.1 - entry.declaration.attributes.0,

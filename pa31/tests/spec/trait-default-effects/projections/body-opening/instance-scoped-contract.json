@@ -1,0 +1,49 @@
+{
+  "status": "additive predeclaration before any new independent or candidate execution",
+  "originals_preserved": {
+    "instance-arguments.rs": "03af7b9f8fe911d5807280a8a193441105d03b78fb83d332b264ad93ecc6d87c",
+    "instance-engine.rs": "8cdb0542b1d065454f46f553a41fe847f9800d4b4605d2a50df55302a579089e",
+    "old_plan": "b9d176f3765e1abc3d0f638a4a95c8c918293c33a2052ddc38eb31c8bdcd21be"
+  },
+  "typed_purpose": "actual lifetime-bearing Marker premise creates producer aliases; identical explicit static lifetime keeps runtime signatures equal while full type arguments differ",
+  "rows": [
+    {
+      "name": "instance-arguments-scoped",
+      "path": "instance-arguments-scoped.rs",
+      "sha256": "6aa461472c4cf770859942da5308295b14b464fefb243525ae2cc9bb49767fa7",
+      "rust_acceptance_hypothesis": true,
+      "native_answer_hypothesis": 7,
+      "profile": {
+        "rustc": "1.98.0",
+        "edition": "2024",
+        "crate_type": "lib",
+        "emit": [
+          "metadata",
+          "obj"
+        ],
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "observer": "extern unsigned char answer(void);int main(void){return answer()!=7;}",
+      "required_candidate": "real original alias_count1, authenticated Some private scope, complete source lowering/native7; no prior None-scope success as evidence"
+    },
+    {
+      "name": "instance-engine-scoped",
+      "path": "instance-engine-scoped.rs",
+      "sha256": "3f5ff4d64eda6646fdd3c549db8e1c95caaa51319da2ad37b4c902cfd57d235d",
+      "rust_acceptance_hypothesis": true,
+      "native_answer_hypothesis": 7,
+      "profile": {
+        "rustc": "1.98.0",
+        "edition": "2024",
+        "crate_type": "lib",
+        "emit": [
+          "metadata",
+          "obj"
+        ],
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "observer": "extern unsigned char answer(void);int main(void){return answer()!=7;}",
+      "required_candidate": "real original alias_count1, authenticated Some private scope, complete source lowering/native7; no prior None-scope success as evidence"
+    }
+  ]
+}

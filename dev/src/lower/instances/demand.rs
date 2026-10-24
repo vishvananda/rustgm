@@ -390,8 +390,7 @@ fn specialize(
         cleanup,
     )
     .map_err(error)?;
-    body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)
-        .map_err(|e| error(&e))?;
+    materialized.resolve(facts).map_err(|e| error(&e))?;
     facts.prepare_opaque_storage().map_err(error)?;
     body::promote::instance(
         report,

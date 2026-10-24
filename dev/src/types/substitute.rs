@@ -2,6 +2,7 @@
 mod allocation;
 mod bounded;
 mod equation_closure;
+mod formal_opening;
 pub(crate) use equation_closure::RegionEquations;
 mod export;
 pub(crate) mod families;
@@ -30,6 +31,7 @@ enum Action {
     Items(Box<items::Replacements>),
     Universals(Box<universals::Mapping>),
     Regions(Box<region_mapping::Mapping>),
+    BodyScope(std::sync::Arc<super::relations::BodyAliases>),
     Shape { preserve_static: bool },
     Normalize,
 }
@@ -82,6 +84,7 @@ impl Bound {
                     | Action::Lower(_)
                     | Action::Universals(_)
                     | Action::Regions(_)
+                    | Action::BodyScope(_)
             )
     }
 
@@ -227,7 +230,10 @@ impl Bound {
         let closed = if matches!(self.action, Action::Shape { .. }) {
             store.has_free_regions(key.0, 0) == Some(false)
                 && store.contains_late_callables(key.0) == Some(false)
-        } else if matches!(self.action, Action::Universals(_) | Action::Regions(_)) {
+        } else if matches!(
+            self.action,
+            Action::Universals(_) | Action::Regions(_) | Action::BodyScope(_)
+        ) {
             store.has_free_regions(key.0, key.1) == Some(false)
         } else {
             escaping <= key.1
@@ -398,6 +404,19 @@ impl Bound {
         }
         if let Action::Regions(mapping) = &mut self.action {
             return mapping.region(region, depth, &mut self.steps);
+        }
+        if let Action::BodyScope(aliases) = &self.action {
+            self.steps = self.steps.saturating_add(1);
+            if self.steps > WORK_LIMIT {
+                return Err("body alias opening work budget exceeded");
+            }
+            if let Some(slot) = aliases.slot(region) {
+                return self
+                    .arguments
+                    .get(usize::from(slot))
+                    .copied()
+                    .ok_or("body alias has no opened lifetime argument");
+            }
         }
         let Some((binder, index)) = region.bound_parts() else {
             return Ok(region);

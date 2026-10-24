@@ -1,0 +1,193 @@
+{
+  "status": "source-only predeclaration before independent or candidate execution",
+  "scope": "actual producer aliases only; distinct full applications remain distinct; no broad alternatives equivalence",
+  "seed": {
+    "path": "../public-context/public-provider-trait-arguments.rs",
+    "sha256": "599e19ea335fee9477320ff4f344d2e963716b97d69ee6e93c04c3ba413337ed"
+  },
+  "preserved": "all earlier fixtures, independent and failure receipts remain immutable",
+  "rows": [
+    {
+      "name": "independent-lifetimes-unpaid",
+      "path": "independent-lifetimes-unpaid.rs",
+      "sha256": "90c81956591121f6b7068c19c7a3775760d68eb657a235102d596a44d5e0ccea",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "reject unpaid exact projection, no collapse of independent lifetime slots"
+    },
+    {
+      "name": "independent-lifetimes-paid",
+      "path": "independent-lifetimes-paid.rs",
+      "sha256": "bb65dea0d8349dfb9a528b9f69cf7885cf8b47e14d568c0a35714923b071fa96",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required exact applications; paid distinct-premise selection may remain explicit pending, never merge independent slots"
+    },
+    {
+      "name": "independent-const-arguments-unpaid",
+      "path": "independent-const-arguments-unpaid.rs",
+      "sha256": "acd81c0c583d538254334ea0870fabd346b55a1d614218ff8386a20351328db4",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "reject unpaid exact full const argument; pending explicit rejection is distinct from false absence"
+    },
+    {
+      "name": "independent-inference-alternatives",
+      "path": "independent-inference-alternatives.rs",
+      "sha256": "2fd2942aad97848268cf5c1fe95f14d7da5264753fb1c2b478357a3f250fa96d",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0283"
+      ],
+      "candidate_contract": "reject unresolved independent alternatives; body opening supplies no type inference"
+    },
+    {
+      "name": "opening-subjects-8-noise-0",
+      "path": "opening-subjects-8-noise-0.rs",
+      "sha256": "92ddc0017f99c306d35e08c689c6553a48b0017456cd9baee054aa5d7f0b73c3",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required full original proof/source lowering/native7",
+      "axis": "subjects",
+      "count": 8,
+      "noise": 0,
+      "expected_work": {
+        "actual_lifetime_alias_slots": 1,
+        "distinct_projected_read_subjects": 8,
+        "read_sites": 8,
+        "actual_selected_copy_queries": 8,
+        "raw_declared_and_aliased_destruct_subjects": 16,
+        "alias_indexes_per_defining_environment": 1
+      }
+    },
+    {
+      "name": "opening-subjects-32-noise-0",
+      "path": "opening-subjects-32-noise-0.rs",
+      "sha256": "bc0ab5546738999e653c94fd3f2177fe3a6b406243f5f45a2d53a9cea73ee613",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required full original proof/source lowering/native7",
+      "axis": "subjects",
+      "count": 32,
+      "noise": 0,
+      "expected_work": {
+        "actual_lifetime_alias_slots": 1,
+        "distinct_projected_read_subjects": 32,
+        "read_sites": 32,
+        "actual_selected_copy_queries": 32,
+        "raw_declared_and_aliased_destruct_subjects": 64,
+        "alias_indexes_per_defining_environment": 1
+      }
+    },
+    {
+      "name": "opening-subjects-128-noise-0",
+      "path": "opening-subjects-128-noise-0.rs",
+      "sha256": "47b146c3272f6bdc9b5305da9eba2e64f227fe38e919c1318134c91c3bfb33b7",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required full original proof/source lowering/native7",
+      "axis": "subjects",
+      "count": 128,
+      "noise": 0,
+      "expected_work": {
+        "actual_lifetime_alias_slots": 1,
+        "distinct_projected_read_subjects": 128,
+        "read_sites": 128,
+        "actual_selected_copy_queries": 128,
+        "raw_declared_and_aliased_destruct_subjects": 256,
+        "alias_indexes_per_defining_environment": 1
+      }
+    },
+    {
+      "name": "opening-subjects-8-noise-128",
+      "path": "opening-subjects-8-noise-128.rs",
+      "sha256": "71caf59934117be16257129121b30cc58cafd86074568ccb17e516932df0bd9f",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required full original proof/source lowering/native7",
+      "axis": "subjects",
+      "count": 8,
+      "noise": 128,
+      "expected_work": {
+        "actual_lifetime_alias_slots": 1,
+        "distinct_projected_read_subjects": 8,
+        "read_sites": 8,
+        "actual_selected_copy_queries": 8,
+        "raw_declared_and_aliased_destruct_subjects": 16,
+        "alias_indexes_per_defining_environment": 1
+      }
+    },
+    {
+      "name": "opening-sites-8-noise-0",
+      "path": "opening-sites-8-noise-0.rs",
+      "sha256": "afc23206dc45652a772780f7d49ff397dc673ea7e888cbcce4257b7220596c17",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required full original proof/source lowering/native7",
+      "axis": "sites",
+      "count": 8,
+      "noise": 0,
+      "expected_work": {
+        "actual_lifetime_alias_slots": 1,
+        "distinct_projected_read_subjects": 1,
+        "read_sites": 8,
+        "actual_selected_copy_queries": 1,
+        "raw_declared_and_aliased_destruct_subjects": 2,
+        "alias_indexes_per_defining_environment": 1
+      }
+    },
+    {
+      "name": "opening-sites-32-noise-0",
+      "path": "opening-sites-32-noise-0.rs",
+      "sha256": "3f3a6172a286ec90551af579f58a33afe647c3eec0128f653dd9bbea9684d2d3",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required full original proof/source lowering/native7",
+      "axis": "sites",
+      "count": 32,
+      "noise": 0,
+      "expected_work": {
+        "actual_lifetime_alias_slots": 1,
+        "distinct_projected_read_subjects": 1,
+        "read_sites": 32,
+        "actual_selected_copy_queries": 1,
+        "raw_declared_and_aliased_destruct_subjects": 2,
+        "alias_indexes_per_defining_environment": 1
+      }
+    },
+    {
+      "name": "opening-sites-128-noise-0",
+      "path": "opening-sites-128-noise-0.rs",
+      "sha256": "f849df467a60674841d7be6e4b9d63bf99abcce09604a190209799519dfefc1c",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required full original proof/source lowering/native7",
+      "axis": "sites",
+      "count": 128,
+      "noise": 0,
+      "expected_work": {
+        "actual_lifetime_alias_slots": 1,
+        "distinct_projected_read_subjects": 1,
+        "read_sites": 128,
+        "actual_selected_copy_queries": 1,
+        "raw_declared_and_aliased_destruct_subjects": 2,
+        "alias_indexes_per_defining_environment": 1
+      }
+    }
+  ]
+}

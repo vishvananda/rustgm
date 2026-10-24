@@ -1,0 +1,41 @@
+{
+  "scope": "Additive NFC/source-lexeme hypotheses before any independent observation; earlier21+7inputs unchanged",
+  "rows": [
+    {
+      "name": "unicode-nfc",
+      "entry": "pa31/tests/spec/source-panic-macros/allowance-unicode-nfc.rs",
+      "sha256": "52918a9451dac72a6e895615327d114a3a4d203ccb2ba901bf8004def0bee338",
+      "edition": "2024",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "hypothesis": "Identifiers normalize to canonical feature symbols while exact source spelling remains a distinct witness. Combined case has two canonical symbols from four distinct lexical forms.",
+      "independent_status": "unobserved",
+      "candidate_status": "unqualified complete-list successor"
+    },
+    {
+      "name": "unicode-nfd",
+      "entry": "pa31/tests/spec/source-panic-macros/allowance-unicode-nfd.rs",
+      "sha256": "b7d60eaa027d74b831828e5327dec83522345964ab8a699b299ac460ad9bd3ca",
+      "edition": "2024",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "hypothesis": "Identifiers normalize to canonical feature symbols while exact source spelling remains a distinct witness. Combined case has two canonical symbols from four distinct lexical forms.",
+      "independent_status": "unobserved",
+      "candidate_status": "unqualified complete-list successor"
+    },
+    {
+      "name": "unicode-combined",
+      "entry": "pa31/tests/spec/source-panic-macros/allowance-unicode-combined.rs",
+      "sha256": "264d94c963e5464aa68a284a80407e8f349b26b040e0da232416d91089ede0c0",
+      "edition": "2024",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "hypothesis": "Identifiers normalize to canonical feature symbols while exact source spelling remains a distinct witness. Combined case has two canonical symbols from four distinct lexical forms.",
+      "independent_status": "unobserved",
+      "candidate_status": "unqualified complete-list successor"
+    }
+  ]
+}

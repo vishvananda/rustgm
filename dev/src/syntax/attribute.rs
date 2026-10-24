@@ -276,6 +276,16 @@ pub(crate) fn parse_with_context(
     })
 }
 
+/// Probe one already-tokenized metadata word without parsing a source image.
+pub(crate) fn word(
+    forest: &Forest,
+    source: &str,
+    index: u32,
+    edition: crate::support::edition::Edition,
+) -> Result<bool, LexError> {
+    path_segment(forest, source, index, &Context::new(&edition))
+}
+
 fn path_segment(
     forest: &Forest,
     source: &str,

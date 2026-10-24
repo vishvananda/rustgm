@@ -245,6 +245,22 @@ fn original_full_typed_source_sizing_depths_keep_native_seven() -> TestResult {
 }
 
 pub(super) fn execute(folder: &Path, name: &str, source: &str, expected: u8) -> TestResult {
+    execute_observed(
+        folder,
+        name,
+        source,
+        &format!(
+            "extern unsigned char answer(void);int main(void){{return answer()!={expected};}}\n"
+        ),
+    )
+}
+
+pub(super) fn execute_observed(
+    folder: &Path,
+    name: &str,
+    source: &str,
+    observer: &str,
+) -> TestResult {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("root")?;
@@ -256,12 +272,7 @@ pub(super) fn execute(folder: &Path, name: &str, source: &str, expected: u8) -> 
     let mut text = Vec::new();
     rustgm::lowir::writer::write(&program, &mut text)?;
     std::fs::write(&ir, text)?;
-    std::fs::write(
-        &client,
-        format!(
-            "extern unsigned char answer(void);int main(void){{return answer()!={expected};}}\n"
-        ),
-    )?;
+    std::fs::write(&client, observer)?;
     run(
         folder,
         &format!("{name}-backend"),

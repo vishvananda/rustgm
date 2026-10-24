@@ -108,6 +108,20 @@ Retain regular, const and default-body API stability as distinct declaration fac
 separate from callable effects and each caller's proof. Compute owner inheritance
 and feature indexes once, then check actual uses without whole-crate rescanning.
 Macro-internal allowances follow exact defining/captured token provenance. The
+local header implementation combines complete identifier lists and repeated
+attributes, stores canonical NFC membership separately from exact raw source
+lexeme/Attribute/Forest witnesses, and shares one immutable cold header with its
+actual macro definition. Unknown names remain inert data. A borrowed Report
+session checks the raw token's outer mark, authenticates the published header's
+actual attributed owner and memoizes positive and negative header/frame results.
+Warm queries still validate identity and budgets; captured tokens cannot inherit
+a literal's allowance and ancestor grants are not unioned. Retained-origin links
+remain a separate per-use traversal cost and must be measured with depth times
+uses. This provenance query does not authorize foreign API use or const calls;
+those consumers and their authenticated metadata remain required. The two panic
+edition consumers test the precise `edition_panic` membership.
+See [the local allowance handoff](docs/pa31-internal-allowances-handoff.md) for
+qualified component evidence and remaining integration requirements. The
 [stability investigation](docs/pa31-library-stability.md) records the independent
 cases and required implementation seams. The
 [local inventory candidate](docs/pa31-local-stability.md) uses a single cold,

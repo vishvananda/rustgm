@@ -95,3 +95,15 @@ fn early_generic_const_functions_keep_closure_annotation_binders() -> Result<(),
     }
     Ok(())
 }
+
+#[test]
+fn materialized_proof_input_is_a_cold_borrow_and_preserves_hot_body_sizes() {
+    assert_eq!(size_of::<super::ProofInput<'_>>(), 32);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::regions::Contract>(), 184);
+    println!(
+        "transient_proof_input={} engine={}",
+        size_of::<super::ProofInput<'_>>(),
+        size_of::<super::Engine>()
+    );
+}

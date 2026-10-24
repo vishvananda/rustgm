@@ -37,6 +37,11 @@ pub(crate) struct Prepared {
     copy_role: claims::Role,
     claims: claims::Claims,
 }
+/// Indexed declaration data; a projected demand still needs the later proof owner.
+pub(crate) enum Requirement {
+    Declared,
+    ProjectedDestruct,
+}
 impl State {
     pub(crate) fn check_environment(
         &self,
@@ -82,18 +87,36 @@ impl State {
     }
 }
 impl Prepared {
+    #[cfg(test)]
     pub(crate) fn check(
         &self,
         types: &crate::types::Store,
         ty: TypeId,
         work: &mut Work,
     ) -> Result<(), &'static str> {
+        match self.requirement(types, ty, work)? {
+            Requirement::Declared => Ok(()),
+            Requirement::ProjectedDestruct => {
+                Err("projected defining cleanup requires completed region formation")
+            }
+        }
+    }
+    pub(crate) fn requirement(
+        &self,
+        types: &crate::types::Store,
+        ty: TypeId,
+        work: &mut Work,
+    ) -> Result<Requirement, &'static str> {
         work.charge(1)?;
         match self.claims.get(ty) {
-            Some(claims::Claim::NoDrop) => return Ok(()),
+            Some(claims::Claim::NoDrop) => return Ok(Requirement::Declared),
             Some(claims::Claim::ConditionalDestruct) => {
                 self.role.require()?;
-                return Ok(());
+                return Ok(Requirement::Declared);
+            }
+            Some(claims::Claim::ProjectedDestruct) => {
+                self.role.require()?;
+                return Ok(Requirement::ProjectedDestruct);
             }
             Some(claims::Claim::PendingCopy) => {
                 self.copy_role.require()?;
@@ -106,7 +129,12 @@ impl Prepared {
         work.charge(1)?;
         let kind = types.kind(ty).ok_or("invalid defining cleanup subject")?;
         Err(
-            if self.claims.unsupported || !matches!(kind, crate::types::Kind::Parameter(_)) {
+            if self.claims.unsupported
+                || !matches!(
+                    kind,
+                    crate::types::Kind::Parameter(_) | crate::types::Kind::Projection(_)
+                )
+            {
                 "quantified or composite const-trait defining Destruct obligations are not implemented"
             } else {
                 "const-trait defining cleanup requires a retained conditional Destruct obligation; implied proofs are not implemented"

@@ -1,9 +1,10 @@
 //! Source-owned macro claims and the one implemented internal edition permission.
-use super::policy::Feature;
+use super::{KnownFeature, policy::Feature};
+mod grants;
+mod lists;
 mod witness;
 use crate::{
     expand::{builtin::Builtin, marks::ExpansionId},
-    lex::token::Punctuation,
     resolve::{
         package::{Error, ModuleId, Package},
         unit::{NodeKey, Unit},
@@ -13,10 +14,12 @@ use crate::{
         ast::Kind,
         attribute::{Attribute, Input},
         item::ItemKind,
-        token_tree::{Delimiter, Forest, Span, TreeKind},
+        token_tree::{Forest, Span},
     },
 };
-use std::cell::RefCell;
+use grants::Entry;
+pub(in crate::resolve) use grants::{CheckedHeader, HeaderData};
+use std::{cell::RefCell, rc::Rc};
 use witness::{Node as WitnessNode, Witness};
 
 #[derive(Clone, Copy)]
@@ -35,8 +38,18 @@ pub(in crate::resolve) struct Declaration {
     owner: NodeKey,
     attributes: (usize, usize),
     pub builtin: Option<Builtin>,
-    pub allowance: Option<Allowance>,
+    pub has_allowance: bool,
+    consumers: u8,
     pub edition: Edition,
+}
+impl Declaration {
+    /// The configured attributed owner retained by the actual header producer.
+    pub(in crate::resolve) const fn source_owner(self) -> NodeKey {
+        self.owner
+    }
+    pub(in crate::resolve) fn allows(self, feature: KnownFeature) -> bool {
+        self.consumers & feature.mask() != 0
+    }
 }
 #[derive(Default)]
 struct State {
@@ -97,11 +110,6 @@ struct Owner<'a> {
     node: NodeKey,
     attributes: std::ops::Range<usize>,
 }
-struct Entry {
-    declaration: Declaration,
-    witnesses: Vec<Witness>,
-    witness_work: usize,
-}
 fn owner(package: &Package, key: NodeKey) -> Result<Option<Owner<'_>>, Error> {
     let unit = package
         .units
@@ -140,10 +148,10 @@ fn owner(package: &Package, key: NodeKey) -> Result<Option<Owner<'_>>, Error> {
         attributes: owner.attributes.clone(),
     }))
 }
-pub(in crate::resolve) fn declaration(
+pub(in crate::resolve) fn checked(
     package: &Package,
     key: NodeKey,
-) -> Result<Option<Declaration>, Error> {
+) -> Result<Option<CheckedHeader<'_>>, Error> {
     let Some(owner) = owner(package, key)? else {
         return Ok(None);
     };
@@ -164,30 +172,24 @@ pub(in crate::resolve) fn declaration(
             .try_borrow_mut()
             .map_err(|_| error("reentrant source macro contract query"))?;
         state.charge(1, 0).map_err(error)?;
-        if let Some((entry, cost)) = state
+        if let Some((declaration, cost)) = state
             .declarations
             .get(&owner.node)
-            .map(|entry| (entry.declaration, entry.witness_work))
+            .map(|entry| (entry.declaration(), entry.work()))
         {
             state.charge(cost, 0).map_err(error)?;
-            if entry.owner != owner.key
-                || entry.attributes != (owner.attributes.start, owner.attributes.end)
+            if declaration.owner != owner.key
+                || declaration.attributes != (owner.attributes.start, owner.attributes.end)
                 || !is_macro(owner.unit, owner.node)
-                || state.declarations.get(&owner.node).is_none_or(|entry| {
-                    !entry
-                        .witnesses
-                        .iter()
-                        .all(|witness| witness.valid(owner.unit))
-                })
+                || state
+                    .declarations
+                    .get(&owner.node)
+                    .is_none_or(|entry| !entry.valid(owner.unit))
             {
                 return Err(error("source macro attribute owner changed"));
             }
-            require_features(package, entry).map_err(error)?;
-            return Ok(Some(entry));
-        }
-        let entry = parse(package, &owner, &mut state)?;
-        let result = entry.as_ref().map(|entry| entry.declaration);
-        if let Some(entry) = entry {
+            require_features(package, declaration).map_err(error)?;
+        } else if let Some(entry) = lists::collect(package, &owner, &mut state)? {
             state
                 .charge(1, 4 * size_of::<(NodeKey, Entry)>())
                 .map_err(error)?;
@@ -195,31 +197,66 @@ pub(in crate::resolve) fn declaration(
                 .declarations
                 .try_reserve(1)
                 .map_err(|_| error("source macro contract allocation failed"))?;
-            let bytes = entry
-                .witnesses
-                .capacity()
-                .saturating_mul(size_of::<Witness>())
-                .saturating_add(
-                    entry
-                        .witnesses
-                        .iter()
-                        .map(|witness| {
-                            witness
-                                .nodes
-                                .capacity()
-                                .saturating_mul(size_of::<WitnessNode>())
-                        })
-                        .sum::<usize>(),
-                );
+            let bytes = entry.payload();
             state.payload(bytes).map_err(error)?;
-            state.witness_bytes += bytes;
-            state.declarations.insert(entry.declaration.node, entry);
+            state.witness_bytes = state.witness_bytes.saturating_add(bytes);
+            state.declarations.insert(entry.declaration().node, entry);
         }
-        Ok(result)
+        Ok(state
+            .declarations
+            .get(&owner.node)
+            .map(|entry| CheckedHeader::new(package, entry)))
     } else {
-        Ok(parse(package, &owner, &mut State::default())?.map(|entry| entry.declaration))
+        Ok(lists::collect(package, &owner, &mut State::default())?
+            .as_ref()
+            .map(|entry| CheckedHeader::new(package, entry)))
     }
 }
+#[cfg(test)]
+pub(in crate::resolve) fn declaration(
+    package: &Package,
+    key: NodeKey,
+) -> Result<Option<Declaration>, Error> {
+    Ok(checked(package, key)?.map(|header| header.summary()))
+}
+/// Only a private expansion owner or a borrowed immutable report session may
+/// consume a published snapshot without repeating its source authentication.
+pub(in crate::resolve) fn published(
+    package: &Package,
+    key: NodeKey,
+    expected: Option<&Rc<HeaderData>>,
+    steps: usize,
+) -> Result<Declaration, Error> {
+    let error = |message| Error::at(key.file, 0, message);
+    let source = package
+        .source_core()
+        .ok_or_else(|| error("missing source macro provider"))?;
+    if source.current != source.provider || source.current.name() != package.crate_name {
+        return Err(error("source macro provider identity changed"));
+    }
+    let mut state = source
+        .macros
+        .0
+        .try_borrow_mut()
+        .map_err(|_| error("reentrant published macro query"))?;
+    state.charge(steps, 0).map_err(error)?;
+    let actual = state
+        .declarations
+        .get(&key)
+        .ok_or_else(|| error("unknown published macro header"))?;
+    let matches = match (actual, expected) {
+        (Entry::Plain(_), None) => true,
+        (Entry::Owned(actual), Some(expected)) => Rc::ptr_eq(actual, expected),
+        _ => false,
+    };
+    if !matches {
+        return Err(error("published macro header owner changed"));
+    }
+    let declaration = actual.declaration();
+    require_features(package, declaration).map_err(error)?;
+    Ok(declaration)
+}
+#[cfg(test)]
 pub(in crate::resolve) fn existing(
     package: &Package,
     key: NodeKey,
@@ -239,7 +276,7 @@ pub(in crate::resolve) fn existing(
         state
             .declarations
             .get(&key)
-            .map(|entry| entry.declaration.owner)
+            .map(|entry| entry.declaration().owner)
     };
     owner
         .map(|owner| declaration(package, owner))
@@ -253,81 +290,10 @@ fn require_features(package: &Package, entry: Declaration) -> Result<(), &'stati
     if entry.builtin.is_some() && !source.features.has(Feature::RustcAttributes) {
         return Err("builtin macro binding requires rustc_attrs");
     }
-    if entry.allowance.is_some() && !source.features.has(Feature::InternalMacroAllowance) {
+    if entry.has_allowance && !source.features.has(Feature::InternalMacroAllowance) {
         return Err("internal macro allowance requires allow_internal_unstable");
     }
     Ok(())
-}
-fn parse(package: &Package, owner: &Owner<'_>, work: &mut State) -> Result<Option<Entry>, Error> {
-    let mut result = Declaration {
-        node: owner.node,
-        owner: owner.key,
-        attributes: (owner.attributes.start, owner.attributes.end),
-        builtin: None,
-        allowance: None,
-        edition: owner.unit.edition(),
-    };
-    let mut witnesses = Vec::new();
-    let mut witness_work = 0;
-    for index in owner.attributes.clone() {
-        let effect = &owner.unit.configured.effects[index];
-        if effect.attribute.effect != crate::expand::configured::Effect::Keep {
-            continue;
-        }
-        let attribute = effect.attribute.attribute;
-        let forest = &owner.unit.configured.ast.attributes[effect.capture as usize].forest;
-        let error = |message| Error::at(owner.key.file, attribute.span.start, message);
-        work.charge(1, 0).map_err(error)?;
-        match attribute.name(forest, owner.unit.source.text()) {
-            Some("rustc_builtin_macro") => {
-                if result.builtin.is_some() {
-                    return Err(error("duplicate source builtin macro claim"));
-                }
-                result.builtin = Some(super::source_builtin::parse(
-                    package, owner.node, attribute, forest,
-                )?);
-            }
-            Some("allow_internal_unstable") => {
-                if result.allowance.is_some() {
-                    return Err(error(
-                        "repeated internal macro allowance is not implemented",
-                    ));
-                }
-                allowance(owner, attribute, forest).map_err(error)?;
-                result.allowance = Some(Allowance {
-                    declaration: owner.node,
-                    attribute,
-                });
-                require_features(package, result).map_err(error)?;
-            }
-            _ => continue,
-        }
-        let witness = Witness::capture(owner, index, attribute, forest, result.builtin, work)
-            .map_err(error)?;
-        work.charge(1, 4 * size_of::<Witness>()).map_err(error)?;
-        witness_work += 1 + witness
-            .nodes
-            .iter()
-            .map(|(_, _, spelling)| 1 + spelling.map_or(0, |spelling| spelling.name().len()))
-            .sum::<usize>();
-        witnesses.push(witness);
-    }
-    if result.builtin.is_some()
-        || result.allowance.is_some()
-        || (package.source_core().is_some() && is_macro(owner.unit, owner.node))
-    {
-        let span = owner.unit.configured.ast.node(owner.node.node).span;
-        result.edition = crate::resolve::unit::editions::introducer(owner.node.file, span, |id| {
-            package.units.get(id.0 as usize)
-        })
-        .map_err(|error| Error::at(owner.node.file, error.offset, error.message))?;
-        return Ok(Some(Entry {
-            declaration: result,
-            witnesses,
-            witness_work,
-        }));
-    }
-    Ok(None)
 }
 fn is_macro(unit: &Unit, key: NodeKey) -> bool {
     let Kind::Item(index) = unit.configured.ast.node(key.node).kind else {
@@ -338,46 +304,18 @@ fn is_macro(unit: &Unit, key: NodeKey) -> bool {
         ItemKind::MacroRules { .. } | ItemKind::DeclarativeMacro { .. }
     )
 }
-fn allowance(owner: &Owner<'_>, attribute: Attribute, forest: &Forest) -> Result<(), &'static str> {
-    if attribute.unsafe_wrapper {
-        return Err("internal macro allowance cannot use an unsafe wrapper");
-    }
-    let Kind::Item(index) = owner.unit.configured.ast.node(owner.node.node).kind else {
-        return Err("internal macro allowance requires a macro declaration");
-    };
-    if !matches!(
-        owner.unit.configured.ast.items[index as usize].kind,
-        ItemKind::MacroRules { .. } | ItemKind::DeclarativeMacro { .. }
-    ) {
-        return Err("internal macro allowance requires a macro declaration");
-    }
-    let Input::Delimited(group) = attribute.input else {
-        return Err("invalid internal macro allowance arguments");
-    };
-    if !forest.tree(group).is_some_and(|tree| {
-        matches!(
-            tree.kind,
-            TreeKind::Group {
-                delimiter: Delimiter::Parenthesis,
-                ..
-            }
-        )
-    }) {
-        return Err("invalid internal macro allowance arguments");
-    }
-    let range = forest
-        .children(group)
-        .ok_or("invalid internal macro allowance arguments")?;
-    if forest.name(owner.unit.source.text(), range.start) != Some("edition_panic") {
-        return Err("internal macro allowance feature is not implemented");
-    }
-    let end = range.start + 1 + u32::from(forest.punctuation(range.start + 1, Punctuation::Comma));
-    if end != range.end {
-        return Err("internal macro allowance list is not implemented");
-    }
-    Ok(())
-}
 impl Contracts {
+    #[cfg(test)]
+    pub(in crate::resolve) fn usage(&self) -> (usize, usize, usize) {
+        let state = self.0.borrow();
+        (state.steps, state.bytes, state.witness_bytes)
+    }
+    pub(in crate::resolve) fn memo_payload(&self, bytes: usize) -> Result<(), &'static str> {
+        self.0
+            .try_borrow_mut()
+            .map_err(|_| "reentrant macro memo accounting")?
+            .payload(bytes)
+    }
     pub(in crate::resolve) fn charge(
         &self,
         steps: usize,

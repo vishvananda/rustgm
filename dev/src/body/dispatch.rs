@@ -18,7 +18,16 @@ pub(crate) fn resolve(
     body: &mut Body,
     contract: &mut Contract,
 ) -> Result<(), String> {
-    resolve_with_original(facts, body, contract, None)
+    resolve_with_original(facts, body, contract, None, None)
+}
+
+pub(in crate::body) fn materialized(
+    facts: &mut Declarations,
+    body: &mut Body,
+    contract: &mut Contract,
+    scope: Option<&mut super::copy_requirements::materialized::InstanceScope>,
+) -> Result<(), String> {
+    resolve_with_original(facts, body, contract, None, scope)
 }
 
 fn resolve_with_original(
@@ -26,13 +35,14 @@ fn resolve_with_original(
     body: &mut Body,
     contract: &mut Contract,
     mut original: Option<originals::Parameters>,
+    mut scope: Option<&mut super::copy_requirements::materialized::InstanceScope>,
 ) -> Result<(), String> {
     let dispatch = body.values.iter().any(|value| {
         matches!(value.kind, Rvalue::AssociatedConstant(_) | Rvalue::SourceAssociated(_))
             || matches!(value.kind, Rvalue::Function(id) if facts.associated.trait_owner(id).is_some())
     });
     if !dispatch {
-        return finish(facts, body, contract);
+        return finish(facts, body, contract, scope.as_deref());
     }
     let (mut caller, mut dispatcher) = callers::prepare(facts, body, contract)?;
     let mut replacements = HashMap::default();
@@ -81,26 +91,18 @@ fn resolve_with_original(
     if !replacements.is_empty() {
         let originals = replacements.keys().copied().collect::<Vec<_>>();
         let mut fold = Bound::selected_items(&facts.types, replacements)?;
-        rewrite(facts, body, contract, &mut fold)?;
-        if matches!(
-            body.owner,
-            super::ir::Owner::Initializer { .. } | super::ir::Owner::AnonymousConstant
-        ) {
-            for original in originals {
-                let selected = fold.apply(&mut facts.types, original)?;
-                facts
-                    .generics
-                    .constant_callable_targets
-                    .insert(original, selected);
-            }
+        if let Some(scope) = scope.as_deref_mut() {
+            scope.rewrite(facts, body, contract, &mut fold)?;
         }
+        rewrite(facts, body, contract, &mut fold)?;
+        retain_initializer_targets(facts, body, &originals, &mut fold)?;
     }
     let proof = dispatcher.finish();
     if proof.has_quantified() {
         contract
             .proofs
             .push(crate::body::regions::Proof::new(body.source, proof));
-        return finish(facts, body, contract);
+        return finish(facts, body, contract, scope.as_deref());
     }
     let mut obligations = proof
         .regions
@@ -126,16 +128,17 @@ fn resolve_with_original(
         kind: Kind::TypeOutlives { ty, shorter },
     }));
     contract.obligations = obligations;
-    finish(facts, body, contract)
+    finish(facts, body, contract, scope.as_deref())
 }
 
 fn finish(
     facts: &mut Declarations,
     body: &mut Body,
     contract: &mut Contract,
+    scope: Option<&super::copy_requirements::materialized::InstanceScope>,
 ) -> Result<(), String> {
     super::invocation_entries::select(facts, body, contract).map_err(String::from)?;
-    super::copy_requirements::prepare(facts, body, contract)
+    super::copy_requirements::prepare_scoped(facts, body, contract, scope)
 }
 pub(super) fn copy_frontier(
     facts: &Declarations,
@@ -222,6 +225,28 @@ fn rewrite(
     }
     if let Some(signature) = &mut contract.signature {
         *signature = fold.apply(&mut facts.types, *signature)?;
+    }
+    Ok(())
+}
+
+// Initializer operands retain these exact selected identities for later constant demand.
+fn retain_initializer_targets(
+    facts: &mut Declarations,
+    body: &Body,
+    originals: &[crate::types::TypeId],
+    fold: &mut Bound,
+) -> Result<(), &'static str> {
+    if matches!(
+        body.owner,
+        super::ir::Owner::Initializer { .. } | super::ir::Owner::AnonymousConstant
+    ) {
+        for &original in originals {
+            let selected = fold.apply(&mut facts.types, original)?;
+            facts
+                .generics
+                .constant_callable_targets
+                .insert(original, selected);
+        }
     }
     Ok(())
 }

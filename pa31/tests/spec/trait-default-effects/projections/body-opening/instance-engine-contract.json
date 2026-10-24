@@ -1,0 +1,43 @@
+{
+  "status": "predeclared additive actual Engine specialization/reproof source; not executed",
+  "rows": [
+    {
+      "name": "instance-engine",
+      "path": "instance-engine.rs",
+      "sha256": "8cdb0542b1d065454f46f553a41fe847f9800d4b4605d2a50df55302a579089e",
+      "rust_acceptance_hypothesis": true,
+      "native_answer_hypothesis": 7,
+      "profile": {
+        "rustc": "1.98.0",
+        "edition": "2024",
+        "crate_type": "lib",
+        "emit": [
+          "metadata",
+          "obj"
+        ],
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "candidate": "actual source provider pipeline::analyze_source + full lowering; actual Engine::prove_body second preparation",
+      "observer": "extern unsigned char answer(void);int main(void){return answer()!=7;}"
+    },
+    {
+      "name": "instance-arguments",
+      "path": "instance-arguments.rs",
+      "sha256": "03af7b9f8fe911d5807280a8a193441105d03b78fb83d332b264ad93ecc6d87c",
+      "rust_acceptance_hypothesis": true,
+      "native_answer_hypothesis": 7,
+      "profile": {
+        "rustc": "1.98.0",
+        "edition": "2024",
+        "crate_type": "lib",
+        "emit": [
+          "metadata",
+          "obj"
+        ],
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "candidate": "actual source materialization, two complete instances differing only unused full type arguments; runtime lowering/native and typed carrier opponents",
+      "observer": "extern unsigned char answer(void);int main(void){return answer()!=7;}"
+    }
+  ]
+}

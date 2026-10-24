@@ -112,6 +112,35 @@ impl Inventory {
     pub fn type_contract(&self, declaration: DefId) -> Option<&TypeContract> {
         self.types.get(&declaration)
     }
+    /// Completed declaration inputs are data, not proof of an instantiated use.
+    pub(crate) fn require_projection_header(
+        &self,
+        declaration: DefId,
+    ) -> Result<&TypeContract, &'static str> {
+        let id = self
+            .owner(declaration)
+            .ok_or("projected cleanup member owner is pending")?;
+        let owner = self
+            .get(id)
+            .ok_or("projected cleanup member has an invalid owner")?;
+        let OwnerKind::Trait { definition, .. } = owner.kind else {
+            return Err("projected cleanup requires its actual trait member");
+        };
+        if self.owner(definition) != Some(id) || !self.schemas.contains_key(&id) {
+            return Err("projected cleanup trait schema is pending or mismatched");
+        }
+        let contract = self
+            .type_contract(declaration)
+            .ok_or("projected cleanup type contract is pending")?;
+        if self
+            .families
+            .get(&declaration)
+            .is_some_and(|family| family.requirements.is_none())
+        {
+            return Err("projected cleanup family input requirements are pending");
+        }
+        Ok(contract)
+    }
     #[must_use]
     pub fn owners(&self) -> &[Owner] {
         &self.owners

@@ -1,0 +1,241 @@
+{
+  "status": "additive predeclaration after initial independent provider failures, before corrected oracle/candidate execution",
+  "initial_contract_sha256": "d5e348c89ba5da56b7e48938f9016c69c9655401f5822f74ff68afc8d4aac2d4",
+  "scope": "same bounded projection Destruct semantics; public-interface and no_core observer corrections only",
+  "preservation": "all initial sources/contracts/observations retained unchanged",
+  "rows": [
+    {
+      "name": "public-std-paid",
+      "path": "public-std-paid.rs",
+      "sha256": "c5ecdd71de1c26c4b9378a5534e5095f64e7734948cc48d75feead0a35951173",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required success",
+      "original": {
+        "path": "../std-paid.rs",
+        "sha256": "955915f45a2a7a12e2c41e551653c570d49f10e92dce5ff8f059fd058befe947",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    },
+    {
+      "name": "public-std-missing",
+      "path": "public-std-missing.rs",
+      "sha256": "1ea524a0dcdcf0a391ce0430c30c57d470f154a611ceb765b47916bcddf3b978",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "required success",
+      "original": {
+        "path": "../std-missing.rs",
+        "sha256": "6054f3ebb6c9ed8a5424c24dd3f67bbd437b741133e1d5ba97e8f7a8aba0fc8c",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    },
+    {
+      "name": "public-provider-paid",
+      "path": "public-provider-paid.rs",
+      "sha256": "ea9c166c592d5a335c11abae647ddb6646399a22cb476e4cbdfdfe33f24454e3",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required success",
+      "original": {
+        "path": "../provider-paid.rs",
+        "sha256": "c11c5a4f4aa9eae7a0f1550e46a549b667ea14ed05a6650bd6bbc2f4fc781a8c",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    },
+    {
+      "name": "public-provider-missing",
+      "path": "public-provider-missing.rs",
+      "sha256": "454e633a7d517e6ebadd9c411b320c55c5c44652fcd9a66d498989b554b0522a",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "required success",
+      "original": {
+        "path": "../provider-missing.rs",
+        "sha256": "35ca43bb400169c3a9b4d70c60282b48a09b06227901f562742182de22443bf5",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    },
+    {
+      "name": "public-provider-ordinary-only",
+      "path": "public-provider-ordinary-only.rs",
+      "sha256": "ffc15c3e7f375911a9775ab8562edf1a8e4f7d3789893fd3844c984e1f10def1",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "required success",
+      "original": {
+        "path": "../provider-ordinary-only.rs",
+        "sha256": "b0422239abdc61bed5b2626b1639f66647c578817100c74c9d0cb158961e0932",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    },
+    {
+      "name": "public-provider-wrong-member",
+      "path": "public-provider-wrong-member.rs",
+      "sha256": "ed6f18f9644fe009471d493bafe7ce333514ac21938c9a8e829ba09be05b94ef",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "required success",
+      "original": {
+        "path": "../provider-wrong-member.rs",
+        "sha256": "25c39a60254a74438fc8f733f3ffd63fee8050ba2395f53bf575e6308d6fe3c1",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    },
+    {
+      "name": "public-provider-trait-arguments",
+      "path": "public-provider-trait-arguments.rs",
+      "sha256": "599e19ea335fee9477320ff4f344d2e963716b97d69ee6e93c04c3ba413337ed",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required success",
+      "original": {
+        "path": "../provider-trait-arguments.rs",
+        "sha256": "860470cbce9d2512e8f725c11f4de030f0f04dd1e736de194b36257962797daa",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    },
+    {
+      "name": "public-provider-trait-arguments-unpaid",
+      "path": "public-provider-trait-arguments-unpaid.rs",
+      "sha256": "3b39d49a7f2f63d80e174366184ef74328d2f19155da38e5de0acbd7a5e39da7",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "required success",
+      "original": {
+        "path": "../provider-trait-arguments-unpaid.rs",
+        "sha256": "93b0614fbc10a86314b5f06c7c8eb68b0052037ddcca7ee4dd6a16e031a91cc1",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    },
+    {
+      "name": "public-provider-family-arguments",
+      "path": "public-provider-family-arguments.rs",
+      "sha256": "145023f1a9da72a3eed16d8af84a40cd44031fe7d070ee7663de9a97182b2327",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required success",
+      "original": {
+        "path": "../provider-family-arguments.rs",
+        "sha256": "42394b50652da5912e0f01d345b05ec10076855d4b4077b086f5655d1dd303af",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    },
+    {
+      "name": "public-provider-family-arguments-unpaid",
+      "path": "public-provider-family-arguments-unpaid.rs",
+      "sha256": "e27116e0e01c2ff11ade9b92a8b83ef70cf76626584e205a646150a2fc3aae74",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "required success",
+      "original": {
+        "path": "../provider-family-arguments-unpaid.rs",
+        "sha256": "815e7080df2d2e48a29a6e2a1c46b6708814b67b4ef67318ef027405d2013320",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    },
+    {
+      "name": "public-provider-moved",
+      "path": "public-provider-moved.rs",
+      "sha256": "318c93ffb679fc7e084527139467f429e740c211fe986e2ea3cdc228944c152b",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required success",
+      "original": {
+        "path": "../provider-moved.rs",
+        "sha256": "75320460a644fcae2292287737a3e35619aec4de868c34444195f37f1444356b",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    },
+    {
+      "name": "public-provider-unavailable-formation",
+      "path": "public-provider-unavailable-formation.rs",
+      "sha256": "bdfce962bfbee8370cf0df086faded2fc5fea6f278c1abf1c359c53a7d692e83",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0277"
+      ],
+      "candidate_contract": "required success",
+      "original": {
+        "path": "../provider-unavailable-formation.rs",
+        "sha256": "0971ddcb326d7d50f5c1e34095b60be06b94955373c8173fb5a1835e95d89099",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    },
+    {
+      "name": "public-provider-partial-container",
+      "path": "public-provider-partial-container.rs",
+      "sha256": "552db05fa559e9c19716fe828859fb8fcfd6ccd3dfc325a6332149f7083a0d3f",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required Rust positive; candidate explicit unsupported composite cleanup; never partial projection structure inference",
+      "original": {
+        "path": "../provider-partial-container.rs",
+        "sha256": "dccab8877c0e061bf13687e265db51e7f069e734e42b019ccb2a4a2141c26067",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed; observer writes both proved initialized C-owned bytes through two output pointers; both must equal7 in C",
+      "observer": {
+        "kind": "two_u8_output_pointers",
+        "symbol": "exercise",
+        "expected": [
+          7,
+          7
+        ],
+        "requirement": "same invocation; C compares both left and right, avoiding no_core equality declarations"
+      }
+    },
+    {
+      "name": "public-provider-composite",
+      "path": "public-provider-composite.rs",
+      "sha256": "4b8b66e298445f14699671c9c88ddf66b5ebe6745da94fb5af05e34fcebf2a92",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required Rust positive; candidate explicit unsupported composite cleanup",
+      "original": {
+        "path": "../provider-composite.rs",
+        "sha256": "b8af1de16242605b9a2b67947011ba6b85697eec0f625d676b933ffd5771f33d",
+        "observation": "retained initial hypothesis; E0446 public-associated-type leakage or E0369 incomplete equality observer, with semantic negatives recorded separately"
+      },
+      "correction": "D is public because it appears as the associated type of a public trait implementation; no const/body obligations changed"
+    }
+  ]
+}

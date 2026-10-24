@@ -1,5 +1,5 @@
 //! Retained configured attribute trees also authenticate each parsed identifier.
-use super::{Attribute, Builtin, Forest, Input, Owner, State, Unit};
+use super::{Attribute, Builtin, Forest, Input, Owner, State, Unit, lists};
 use crate::{resolve::bindings::claim_tokens::Spelling, syntax::token_tree::Tree};
 
 pub(super) struct Witness {
@@ -7,17 +7,32 @@ pub(super) struct Witness {
     pub(super) capture: u32,
     pub(super) attribute: Attribute,
     pub(super) nodes: Vec<Node>,
+    pub(super) allowance: bool,
 }
 pub(super) type Node = (u32, Tree, Option<Spelling>);
+#[derive(Clone, Copy)]
+pub(super) struct Capture<'owner, 'unit> {
+    pub owner: &'owner Owner<'unit>,
+    pub index: usize,
+    pub attribute: Attribute,
+    pub forest: &'owner Forest,
+    pub builtin: Option<Builtin>,
+    pub allowance: bool,
+}
 impl Witness {
     pub(super) fn capture(
-        owner: &Owner<'_>,
-        index: usize,
-        attribute: Attribute,
-        forest: &Forest,
-        builtin: Option<Builtin>,
+        capture: Capture<'_, '_>,
+        names: &mut lists::Builder,
         work: &mut State,
     ) -> Result<Self, &'static str> {
+        let Capture {
+            owner,
+            index,
+            attribute,
+            forest,
+            builtin,
+            allowance,
+        } = capture;
         let mut count = attribute.path.end - attribute.path.start;
         let input = if let Input::Delimited(group) = attribute.input {
             let end = forest.after(group);
@@ -38,10 +53,25 @@ impl Witness {
             .try_reserve_exact(count as usize)
             .map_err(|_| "macro attribute witness allocation failed")?;
         for node in (attribute.path.start..attribute.path.end).chain(input) {
-            let spelling = forest
-                .name(owner.unit.source.text(), node)
-                .map(|name| Spelling::read(name, builtin))
-                .transpose()?;
+            let spelling = if let Some(name) = forest.name(owner.unit.source.text(), node) {
+                if allowance && !(attribute.path.start..attribute.path.end).contains(&node) {
+                    let span = forest
+                        .tree(node)
+                        .ok_or("missing feature witness tree")?
+                        .span;
+                    let source = owner
+                        .unit
+                        .source
+                        .text()
+                        .get(span.start as usize..span.end as usize)
+                        .ok_or("missing feature witness lexeme")?;
+                    Some(Spelling::Feature(names.lexeme(source, work)?))
+                } else {
+                    Some(Spelling::read(name, builtin)?)
+                }
+            } else {
+                None
+            };
             nodes.push((
                 node,
                 forest
@@ -55,6 +85,7 @@ impl Witness {
             capture: owner.unit.configured.effects[index].capture,
             attribute,
             nodes,
+            allowance,
         })
     }
     pub(super) fn valid(&self, unit: &Unit) -> bool {
@@ -70,11 +101,10 @@ impl Witness {
                 .attributes
                 .get(self.capture as usize)
                 .is_some_and(|capture| {
-                    self.nodes.iter().all(|&(index, node, spelling)| {
-                        capture.forest.tree(index) == Some(node)
-                            && spelling.is_none_or(|spelling| {
-                                capture.forest.name(unit.source.text(), index)
-                                    == Some(spelling.name())
+                    self.nodes.iter().all(|(index, node, spelling)| {
+                        capture.forest.tree(*index) == Some(*node)
+                            && spelling.as_ref().is_none_or(|spelling| {
+                                spelling.matches(unit.source.text(), &capture.forest, *index)
                             })
                     })
                 })

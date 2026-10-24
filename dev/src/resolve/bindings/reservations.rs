@@ -9,13 +9,18 @@ use crate::{
     resolve::{
         model::{DefId, DefKind, Resolution, ScopeId},
         package::{Error, Package},
-        unit::{FileId, NodeKey},
+        unit::{FileId, NodeKey, Unit},
     },
     support::{
         bindings::{LangItem, SourceIntrinsic},
         crates::CrateIdentity,
     },
-    syntax::{ast::Kind, attribute::Input, item::ItemKind},
+    syntax::{
+        ast::Kind,
+        attribute::{Attribute, Input},
+        item::ItemKind,
+        token_tree::Forest,
+    },
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -371,20 +376,30 @@ fn claims(
             while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
                 node = value;
             }
-            let contract = super::panic_contracts::declaration(
+            let header = super::panic_contracts::checked(
                 package,
                 NodeKey {
                     file,
                     node: owner.node,
                 },
             )?;
+            let contract = header
+                .as_ref()
+                .map(super::panic_contracts::CheckedHeader::summary);
             if contract.and_then(|contract| contract.builtin).is_some() {
                 result
                     .entry(NodeKey { file, node })
                     .or_default()
                     .push(Claim::BuiltinMacro);
             }
-            for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
+            for (index, attribute, forest) in
+                unit.retained_indexed_attributes(owner.attributes.clone())
+            {
+                let allowance = header
+                    .as_ref()
+                    .map(|header| header.allowance_at(index, attribute))
+                    .transpose()?
+                    .flatten();
                 if crate::resolve::stability::collect(
                     package.library.as_deref(),
                     library,
@@ -392,72 +407,88 @@ fn claims(
                     NodeKey { file, node },
                     attribute,
                     forest,
-                    contract.and_then(|contract| contract.allowance),
+                    allowance,
                 )? {
                     continue;
                 }
-                let error = |message| Error::at(file, attribute.span.start, message);
-                let name = attribute.name(forest, unit.source.text());
-                let header_claim = name
-                    .map(|name| super::role_attributes::claim(name, attribute.input))
-                    .transpose()
-                    .map_err(error)?
-                    .flatten();
-                let claim = if let Some(claim) = header_claim {
-                    claim
-                } else {
-                    match name {
-                        Some("lang") => {
-                            let Input::Equals(range) = attribute.input else {
-                                return Err(error("lang requires a string literal"));
-                            };
-                            if range.end != range.start + 1 {
-                                return Err(error("lang requires one string literal"));
-                            }
-                            let token = forest
-                                .token(range.start)
-                                .ok_or_else(|| error("lang requires a string literal"))?;
-                            let Some(crate::literal::Value::String(bytes)) =
-                                crate::literal::interpret(unit.source.text(), token)
-                                    .map_err(|e| Error::at(file, e.offset, e.message))?
-                            else {
-                                return Err(error("lang requires a string literal"));
-                            };
-                            let name = std::str::from_utf8(&bytes)
-                                .map_err(|_| error("language item name requires UTF-8"))?;
-                            Claim::Language(
-                                LangItem::from_name(name)
-                                    .ok_or_else(|| error("unsupported source language item"))?,
-                            )
-                        }
-                        Some("rustc_intrinsic") => {
-                            if attribute.input != Input::Empty {
-                                return Err(error("rustc_intrinsic requires no arguments"));
-                            }
-                            Claim::Intrinsic
-                        }
-                        Some("rustc_deny_explicit_impl") => {
-                            if attribute.input != Input::Empty {
-                                return Err(error(
-                                    "rustc_deny_explicit_impl requires no arguments",
-                                ));
-                            }
-                            Claim::DenyImplementations
-                        }
-                        Some("rustc_diagnostic_item") => Claim::DiagnosticItem(
-                            super::annotations::parse(unit, file, attribute, forest)?,
-                        ),
-                        _ => continue,
-                    }
-                };
-                result
-                    .entry(NodeKey { file, node })
-                    .or_default()
-                    .push(claim);
+                if let Some(claim) = attribute_claim(unit, file, attribute, forest)? {
+                    result
+                        .entry(NodeKey { file, node })
+                        .or_default()
+                        .push(claim);
+                }
             }
         }
     }
     Ok(result)
+}
+
+/// Decode one declaration claim after its complete macro/stability header was checked.
+fn attribute_claim(
+    unit: &Unit,
+    file: FileId,
+    attribute: Attribute,
+    forest: &Forest,
+) -> Result<Option<Claim>, Error> {
+    let error = |message| Error::at(file, attribute.span.start, message);
+    let name = attribute.name(forest, unit.source.text());
+    if let Some(claim) = name
+        .map(|name| super::role_attributes::claim(name, attribute.input))
+        .transpose()
+        .map_err(error)?
+        .flatten()
+    {
+        return Ok(Some(claim));
+    }
+    let claim = match name {
+        Some("lang") => language_claim(unit, file, attribute, forest)?,
+        Some("rustc_intrinsic") => {
+            if attribute.input != Input::Empty {
+                return Err(error("rustc_intrinsic requires no arguments"));
+            }
+            Claim::Intrinsic
+        }
+        Some("rustc_deny_explicit_impl") => {
+            if attribute.input != Input::Empty {
+                return Err(error("rustc_deny_explicit_impl requires no arguments"));
+            }
+            Claim::DenyImplementations
+        }
+        Some("rustc_diagnostic_item") => {
+            Claim::DiagnosticItem(super::annotations::parse(unit, file, attribute, forest)?)
+        }
+        _ => return Ok(None),
+    };
+    Ok(Some(claim))
+}
+
+fn language_claim(
+    unit: &Unit,
+    file: FileId,
+    attribute: Attribute,
+    forest: &Forest,
+) -> Result<Claim, Error> {
+    let error = |message| Error::at(file, attribute.span.start, message);
+    let Input::Equals(range) = attribute.input else {
+        return Err(error("lang requires a string literal"));
+    };
+    if range.end != range.start + 1 {
+        return Err(error("lang requires one string literal"));
+    }
+    let token = forest
+        .token(range.start)
+        .ok_or_else(|| error("lang requires a string literal"))?;
+    let Some(crate::literal::Value::String(bytes)) =
+        crate::literal::interpret(unit.source.text(), token)
+            .map_err(|e| Error::at(file, e.offset, e.message))?
+    else {
+        return Err(error("lang requires a string literal"));
+    };
+    let name =
+        std::str::from_utf8(&bytes).map_err(|_| error("language item name requires UTF-8"))?;
+    Ok(Claim::Language(LangItem::from_name(name).ok_or_else(
+        || error("unsupported source language item"),
+    )?))
 }
 
 pub(super) fn error(package: &Package, key: NodeKey, message: &'static str) -> Error {

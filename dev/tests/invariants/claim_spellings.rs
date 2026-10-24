@@ -25,12 +25,17 @@ fn warm_claim_witness_rejects_equal_width_source_name_changes() -> TestResult {
             let (entry, index, tree) = state
                 .declarations
                 .values()
+                .filter_map(|entry| match entry {
+                    super::super::Entry::Owned(data) => Some(data),
+                    super::super::Entry::Plain(_) => None,
+                })
                 .find_map(|entry| {
                     entry.witnesses.iter().find_map(|witness| {
-                        witness.nodes.iter().find_map(|&(index, tree, spelling)| {
+                        witness.nodes.iter().find_map(|(index, tree, spelling)| {
                             spelling
+                                .as_ref()
                                 .filter(|spelling| spelling.name() == before)
-                                .map(|_| (entry, index, tree))
+                                .map(|_| (entry, *index, *tree))
                         })
                     })
                 })

@@ -30,6 +30,10 @@ fn specialization_retains_exact_public_and_owned_signatures() -> Result {
         .ok_or("original contract")?;
     let mut materialized =
         body::instantiate::with_contract(&mut facts, template, instance, original)?;
+    assert!(
+        materialized.instance_copy_scope_for_test().is_none(),
+        "ordinary instance allocates no alias carrier"
+    );
     let owned = materialized.contract.signature.ok_or("owned signature")?;
     assert_ne!(owned, public);
     assert!(matches!(

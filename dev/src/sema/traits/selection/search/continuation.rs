@@ -291,6 +291,13 @@ impl<'a> Search<'a> {
             .ok_or("missing pending trait candidates")?;
         for owner in pending.by_ref() {
             if registry.header(owner).is_none() {
+                #[cfg(test)]
+                super::copy_trace::record(|| {
+                    format!(
+                        "pending-header query={:p} scope={:?} owner={owner:?} canonical={:?}",
+                        &self.query, frame.scope, frame.canonical
+                    )
+                });
                 return Ok(Action::Wait(Dependency::Header(owner)));
             }
         }

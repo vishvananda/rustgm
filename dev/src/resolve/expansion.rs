@@ -38,6 +38,9 @@ mod diagnostics;
 mod eager;
 mod location;
 mod panic_dispatch;
+mod permission_frames;
+mod permission_session;
+pub use permission_session::MacroAllowanceSession;
 mod paths;
 mod resources;
 mod transcription;
@@ -62,6 +65,7 @@ pub struct Definition {
     pub local_inner_macros: bool,
     pub edition: Edition,
     pub edition_panic: bool,
+    pub(super) header: Option<std::rc::Rc<super::bindings::panic_contracts::HeaderData>>,
 }
 pub struct Invocation {
     pub context: ExpansionId,
@@ -795,7 +799,9 @@ impl<S: Sources> Engine<'_, S> {
     ) -> Result<(), Error> {
         let flags = self.flags(file, visit.owner)?;
         let contract = self.definition_contract(visit, file)?;
-        let builtin = contract.and_then(|contract| contract.builtin);
+        let builtin = contract
+            .as_ref()
+            .and_then(|contract| contract.declaration().builtin);
         let context = self.context(
             file,
             self.loader
@@ -857,7 +863,12 @@ impl<S: Sources> Engine<'_, S> {
             preceding_scope: self.head,
             local_inner_macros: flags.local_inner_macros,
             edition,
-            edition_panic: contract.is_some_and(|contract| contract.allowance.is_some()),
+            edition_panic: contract.as_ref().is_some_and(|contract| {
+                contract
+                    .declaration()
+                    .allows(super::bindings::KnownFeature::EditionPanic)
+            }),
+            header: contract,
         });
         self.head = self
             .scopes
@@ -950,6 +961,7 @@ impl<S: Sources> Engine<'_, S> {
             context: SyntaxContextId::ROOT,
             introduction: ExpansionId(0),
             preceding_scope: Scope::ROOT,
+            header: None,
             local_inner_macros: false,
             edition: self.loader.package.units[0].edition(),
             edition_panic: false,

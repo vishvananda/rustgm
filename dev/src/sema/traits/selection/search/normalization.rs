@@ -156,62 +156,77 @@ impl Search<'_> {
         if let Some(decision) = normalization.stopped {
             return Ok(Action::Complete(decision));
         }
-        let value =
-            match normalization.step {
-                Step::Complete(value) => value,
-                Step::Resolve(request) => {
-                    let mut application = request.alias;
-                    if request.depth != 0 || normalization.scoped.is_some() {
-                        let scoped = normalization.scoped.get_or_insert_with(|| {
-                            Box::new(super::callable_queries::Scoped::new(
-                                frame.scope,
-                                frame.first,
-                            ))
-                        });
-                        normalization.scope = scoped.request(
-                            &mut self.query,
-                            &mut frame.inputs.context,
-                            &normalization.fold,
-                            request.scope,
-                        )?;
-                        if normalization.scope != scoped.active.scope {
-                            let universes = self
-                                .query
-                                .scopes
-                                .as_mut()
-                                .ok_or("missing normalization universes")?;
-                            let mut current = normalization.scope;
-                            while current != scoped.active.scope {
-                                let (next, steps, parent) = universes
-                                    .open_normalization_application(facts, current, application)?;
-                                frame
-                                    .inputs
-                                    .context
-                                    .account_work(steps)
-                                    .map_err(inference)?;
-                                application = next;
-                                current = parent;
-                            }
-                        }
-                    } else {
-                        normalization.scope = frame.scope;
-                    }
-                    let mut substitution =
-                        Instantiation::new(&mut frame.inputs.context, &facts.types, &[])
-                            .map_err(inference)?;
-                    let predicate =
-                        crate::sema::opaque::overrides::requirement(facts, application)?;
-                    normalization.opened = Some(Opened {
-                        application,
-                        goal: frame
-                            .inputs
-                            .context
-                            .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
-                            .map_err(inference)?,
+        let value = match normalization.step {
+            Step::Complete(value) => value,
+            Step::Resolve(request) => {
+                let mut application = request.alias;
+                if request.depth != 0 || normalization.scoped.is_some() {
+                    let scoped = normalization.scoped.get_or_insert_with(|| {
+                        Box::new(super::callable_queries::Scoped::new(
+                            frame.scope,
+                            frame.first,
+                        ))
                     });
-                    return Ok(Action::Descend);
+                    normalization.scope = scoped.request(
+                        &mut self.query,
+                        &mut frame.inputs.context,
+                        &normalization.fold,
+                        request.scope,
+                    )?;
+                    if normalization.scope != scoped.active.scope {
+                        let universes = self
+                            .query
+                            .scopes
+                            .as_mut()
+                            .ok_or("missing normalization universes")?;
+                        let mut current = normalization.scope;
+                        while current != scoped.active.scope {
+                            let (next, steps, parent) = universes.open_normalization_application(
+                                facts,
+                                current,
+                                application,
+                            )?;
+                            frame
+                                .inputs
+                                .context
+                                .account_work(steps)
+                                .map_err(inference)?;
+                            application = next;
+                            current = parent;
+                        }
+                    }
+                } else {
+                    normalization.scope = frame.scope;
                 }
-            };
+                let mut substitution =
+                    Instantiation::new(&mut frame.inputs.context, &facts.types, &[])
+                        .map_err(inference)?;
+                let predicate = crate::sema::opaque::overrides::requirement(facts, application)?;
+                #[cfg(test)]
+                super::copy_trace::record(|| {
+                    format!(
+                        "normalization-request query={:p} parent={:?} required={predicate:?} original={:?} opened={:?} original_scope={:?} opened_scope={:?} depth={} frontier={}",
+                        &self.query,
+                        frame.canonical,
+                        request.alias.associated(),
+                        application.associated(),
+                        request.scope,
+                        normalization.scope,
+                        request.depth,
+                        normalization.end
+                    )
+                });
+                normalization.opened = Some(Opened {
+                    application,
+                    goal: frame
+                        .inputs
+                        .context
+                        .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
+                        .map_err(inference)?,
+                });
+                return Ok(Action::Descend);
+            }
+        };
         match normalization.purpose {
             Purpose::Equality(_) => self.advance_equality(facts, frame, value),
             Purpose::Inputs(_) => self.advance_inputs(facts, frame, value),
@@ -228,6 +243,17 @@ impl Search<'_> {
             .as_mut()
             .ok_or("missing parent normalization")?;
         let Decision::Proven(mut node) = decision else {
+            #[cfg(test)]
+            super::copy_trace::record(|| {
+                format!(
+                    "normalization-child-incomplete query={:p} scope={:?} outer={:?} absent={} deferred={}",
+                    &self.query,
+                    equality.scope,
+                    frame.canonical,
+                    decision == Decision::Absent,
+                    decision == Decision::Deferred
+                )
+            });
             equality.stopped = Some(decision);
             return Ok(());
         };
@@ -370,7 +396,27 @@ impl Search<'_> {
                         context.region_equalities.extend(equations);
                         Resolution::Type(ty)
                     }
-                    equalities::Selection::Absent => Resolution::Opaque,
+                    equalities::Selection::Absent => {
+                        #[cfg(test)]
+                        super::copy_trace::record(|| {
+                            format!(
+                                "opaque-associated-equality-absent query={:p} scope={:?} node={node} node_scope={:?} node_goal={:?} application={:?} assumption={} result_bound={} quantified={}",
+                                &self.query,
+                                equality.scope,
+                                self.query.node_scope(node),
+                                self.query.nodes[node].goal,
+                                opened.application.associated(),
+                                matches!(source, Source::Assumption(_)),
+                                matches!(source, Source::ResultBound(_)),
+                                matches!(
+                                    source,
+                                    Source::QuantifiedAssumption { .. }
+                                        | Source::QuantifiedResultBound { .. }
+                                )
+                            )
+                        });
+                        Resolution::Opaque
+                    }
                     equalities::Selection::Ambiguous => {
                         return Ok((None, node));
                     }

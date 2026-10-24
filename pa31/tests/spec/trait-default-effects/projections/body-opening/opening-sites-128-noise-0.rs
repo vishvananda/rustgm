@@ -1,0 +1,30 @@
+#![feature(no_core,lang_items,intrinsics,rustc_attrs,const_trait_impl,const_destruct,auto_traits)]
+#![no_core]
+#[lang = "freeze"]
+pub unsafe auto trait Freeze {}
+#[lang="pointee_sized"]pub trait PointeeSized{}
+#[lang="meta_sized"]pub trait MetaSized:PointeeSized{}
+#[lang="sized"]pub trait Sized:MetaSized{}
+#[lang="clone"]pub const trait Clone:Sized{#[lang="clone_fn"]fn clone(&self)->Self;}
+#[lang="copy"]pub trait Copy:Clone{}
+#[lang="legacy_receiver"]pub trait LegacyReceiver:PointeeSized{}
+impl<T:PointeeSized>LegacyReceiver for &T{}
+impl<T:PointeeSized>LegacyReceiver for &mut T{}
+#[lang="drop"]pub const trait Drop{fn drop(&mut self);}
+pub mod intrinsics{use crate::Sized;#[rustc_intrinsic]pub const fn needs_drop<T:?Sized>()->bool;}
+pub const fn needs_drop<T: ?Sized>() -> bool {
+    const { intrinsics::needs_drop::<T>() }
+}
+#[lang="destruct"]#[rustc_deny_explicit_impl]pub const trait Destruct:PointeeSized{}
+#[lang = "drop_glue"]
+pub(crate) const unsafe fn drop_glue<T: PointeeSized>(_: &mut T)
+where
+    T: [const] Destruct,
+{
+    // Code here does not matter - this is replaced by the
+    // real drop glue by the compiler.
+}
+
+pub const trait Family<'a>{type Item0;fn consume(x0:Self::Item0,x1:Self::Item0,x2:Self::Item0,x3:Self::Item0,x4:Self::Item0,x5:Self::Item0,x6:Self::Item0,x7:Self::Item0,x8:Self::Item0,x9:Self::Item0,x10:Self::Item0,x11:Self::Item0,x12:Self::Item0,x13:Self::Item0,x14:Self::Item0,x15:Self::Item0,x16:Self::Item0,x17:Self::Item0,x18:Self::Item0,x19:Self::Item0,x20:Self::Item0,x21:Self::Item0,x22:Self::Item0,x23:Self::Item0,x24:Self::Item0,x25:Self::Item0,x26:Self::Item0,x27:Self::Item0,x28:Self::Item0,x29:Self::Item0,x30:Self::Item0,x31:Self::Item0,x32:Self::Item0,x33:Self::Item0,x34:Self::Item0,x35:Self::Item0,x36:Self::Item0,x37:Self::Item0,x38:Self::Item0,x39:Self::Item0,x40:Self::Item0,x41:Self::Item0,x42:Self::Item0,x43:Self::Item0,x44:Self::Item0,x45:Self::Item0,x46:Self::Item0,x47:Self::Item0,x48:Self::Item0,x49:Self::Item0,x50:Self::Item0,x51:Self::Item0,x52:Self::Item0,x53:Self::Item0,x54:Self::Item0,x55:Self::Item0,x56:Self::Item0,x57:Self::Item0,x58:Self::Item0,x59:Self::Item0,x60:Self::Item0,x61:Self::Item0,x62:Self::Item0,x63:Self::Item0,x64:Self::Item0,x65:Self::Item0,x66:Self::Item0,x67:Self::Item0,x68:Self::Item0,x69:Self::Item0,x70:Self::Item0,x71:Self::Item0,x72:Self::Item0,x73:Self::Item0,x74:Self::Item0,x75:Self::Item0,x76:Self::Item0,x77:Self::Item0,x78:Self::Item0,x79:Self::Item0,x80:Self::Item0,x81:Self::Item0,x82:Self::Item0,x83:Self::Item0,x84:Self::Item0,x85:Self::Item0,x86:Self::Item0,x87:Self::Item0,x88:Self::Item0,x89:Self::Item0,x90:Self::Item0,x91:Self::Item0,x92:Self::Item0,x93:Self::Item0,x94:Self::Item0,x95:Self::Item0,x96:Self::Item0,x97:Self::Item0,x98:Self::Item0,x99:Self::Item0,x100:Self::Item0,x101:Self::Item0,x102:Self::Item0,x103:Self::Item0,x104:Self::Item0,x105:Self::Item0,x106:Self::Item0,x107:Self::Item0,x108:Self::Item0,x109:Self::Item0,x110:Self::Item0,x111:Self::Item0,x112:Self::Item0,x113:Self::Item0,x114:Self::Item0,x115:Self::Item0,x116:Self::Item0,x117:Self::Item0,x118:Self::Item0,x119:Self::Item0,x120:Self::Item0,x121:Self::Item0,x122:Self::Item0,x123:Self::Item0,x124:Self::Item0,x125:Self::Item0,x126:Self::Item0,x127:Self::Item0)where Self::Item0:[const]Destruct{let _moved0=x0;let _moved1=x1;let _moved2=x2;let _moved3=x3;let _moved4=x4;let _moved5=x5;let _moved6=x6;let _moved7=x7;let _moved8=x8;let _moved9=x9;let _moved10=x10;let _moved11=x11;let _moved12=x12;let _moved13=x13;let _moved14=x14;let _moved15=x15;let _moved16=x16;let _moved17=x17;let _moved18=x18;let _moved19=x19;let _moved20=x20;let _moved21=x21;let _moved22=x22;let _moved23=x23;let _moved24=x24;let _moved25=x25;let _moved26=x26;let _moved27=x27;let _moved28=x28;let _moved29=x29;let _moved30=x30;let _moved31=x31;let _moved32=x32;let _moved33=x33;let _moved34=x34;let _moved35=x35;let _moved36=x36;let _moved37=x37;let _moved38=x38;let _moved39=x39;let _moved40=x40;let _moved41=x41;let _moved42=x42;let _moved43=x43;let _moved44=x44;let _moved45=x45;let _moved46=x46;let _moved47=x47;let _moved48=x48;let _moved49=x49;let _moved50=x50;let _moved51=x51;let _moved52=x52;let _moved53=x53;let _moved54=x54;let _moved55=x55;let _moved56=x56;let _moved57=x57;let _moved58=x58;let _moved59=x59;let _moved60=x60;let _moved61=x61;let _moved62=x62;let _moved63=x63;let _moved64=x64;let _moved65=x65;let _moved66=x66;let _moved67=x67;let _moved68=x68;let _moved69=x69;let _moved70=x70;let _moved71=x71;let _moved72=x72;let _moved73=x73;let _moved74=x74;let _moved75=x75;let _moved76=x76;let _moved77=x77;let _moved78=x78;let _moved79=x79;let _moved80=x80;let _moved81=x81;let _moved82=x82;let _moved83=x83;let _moved84=x84;let _moved85=x85;let _moved86=x86;let _moved87=x87;let _moved88=x88;let _moved89=x89;let _moved90=x90;let _moved91=x91;let _moved92=x92;let _moved93=x93;let _moved94=x94;let _moved95=x95;let _moved96=x96;let _moved97=x97;let _moved98=x98;let _moved99=x99;let _moved100=x100;let _moved101=x101;let _moved102=x102;let _moved103=x103;let _moved104=x104;let _moved105=x105;let _moved106=x106;let _moved107=x107;let _moved108=x108;let _moved109=x109;let _moved110=x110;let _moved111=x111;let _moved112=x112;let _moved113=x113;let _moved114=x114;let _moved115=x115;let _moved116=x116;let _moved117=x117;let _moved118=x118;let _moved119=x119;let _moved120=x120;let _moved121=x121;let _moved122=x122;let _moved123=x123;let _moved124=x124;let _moved125=x125;let _moved126=x126;let _moved127=x127;}}
+impl<'a>Family<'a>for u8{type Item0=u8;}
+#[unsafe(no_mangle)]pub extern "C" fn answer()->u8{<u8 as Family<'_>>::consume(7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8,7u8);7}

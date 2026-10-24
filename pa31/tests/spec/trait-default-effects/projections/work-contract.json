@@ -1,0 +1,104 @@
+{
+  "status": "predeclared before any oracle/candidate run",
+  "scope": "exact projection Destruct width and repeated-site controls",
+  "rows": [
+    {
+      "name": "subjects-8-noise-0",
+      "path": "subjects-8-noise-0.rs",
+      "sha256": "5feb3068879c23b361aba6ed8d0b09818d23f0ce17c07886232b4d7d93dfb480",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "candidate_contract": "required complete source original/region/loan/cleanup proof + native7",
+      "axes": {
+        "distinct_projection_subjects": 8,
+        "fully_live_formal_cleanup_sites": 8,
+        "unrelated_function_definitions": 0
+      },
+      "expected_work": "one declaring clause index plus bounded charged per-site lookup; source noise must not change defining index/lookup work"
+    },
+    {
+      "name": "subjects-32-noise-0",
+      "path": "subjects-32-noise-0.rs",
+      "sha256": "e967de8fd3d9ed6897950049b59aafcf5e99f6ad0ed61cee7f74778ea64e4a84",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "candidate_contract": "required complete source original/region/loan/cleanup proof + native7",
+      "axes": {
+        "distinct_projection_subjects": 32,
+        "fully_live_formal_cleanup_sites": 32,
+        "unrelated_function_definitions": 0
+      },
+      "expected_work": "one declaring clause index plus bounded charged per-site lookup; source noise must not change defining index/lookup work"
+    },
+    {
+      "name": "subjects-128-noise-0",
+      "path": "subjects-128-noise-0.rs",
+      "sha256": "e0a0b7fd33ec8b6821a13b2e208d609965dfa429eb648745d877be5589c39cf5",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "candidate_contract": "required complete source original/region/loan/cleanup proof + native7",
+      "axes": {
+        "distinct_projection_subjects": 128,
+        "fully_live_formal_cleanup_sites": 128,
+        "unrelated_function_definitions": 0
+      },
+      "expected_work": "one declaring clause index plus bounded charged per-site lookup; source noise must not change defining index/lookup work"
+    },
+    {
+      "name": "subjects-8-noise-128",
+      "path": "subjects-8-noise-128.rs",
+      "sha256": "af2167930ec459a772cb66fde8218a6aeb854f1bc71f8a477a1579441e588454",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "candidate_contract": "required complete source original/region/loan/cleanup proof + native7",
+      "axes": {
+        "distinct_projection_subjects": 8,
+        "fully_live_formal_cleanup_sites": 8,
+        "unrelated_function_definitions": 128
+      },
+      "expected_work": "one declaring clause index plus bounded charged per-site lookup; source noise must not change defining index/lookup work"
+    },
+    {
+      "name": "sites-8-noise-0",
+      "path": "sites-8-noise-0.rs",
+      "sha256": "97d1ef92075438dc44e76901335ad3196ad043cd707877b7dac757a284cc0d4c",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "candidate_contract": "required complete source original/region/loan/cleanup proof + native7",
+      "axes": {
+        "distinct_projection_subjects": 1,
+        "fully_live_formal_cleanup_sites": 8,
+        "unrelated_function_definitions": 0
+      },
+      "expected_work": "one declaring clause index plus bounded charged per-site lookup; source noise must not change defining index/lookup work"
+    },
+    {
+      "name": "sites-32-noise-0",
+      "path": "sites-32-noise-0.rs",
+      "sha256": "c32117ccfcbd77c47e324c39a6e6eb0238606cd34157995902dd6b7c80519565",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "candidate_contract": "required complete source original/region/loan/cleanup proof + native7",
+      "axes": {
+        "distinct_projection_subjects": 1,
+        "fully_live_formal_cleanup_sites": 32,
+        "unrelated_function_definitions": 0
+      },
+      "expected_work": "one declaring clause index plus bounded charged per-site lookup; source noise must not change defining index/lookup work"
+    },
+    {
+      "name": "sites-128-noise-0",
+      "path": "sites-128-noise-0.rs",
+      "sha256": "6830137c27e18181a338e954a37a731511456fa29269ddf4e7a30cad270cb5b8",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "candidate_contract": "required complete source original/region/loan/cleanup proof + native7",
+      "axes": {
+        "distinct_projection_subjects": 1,
+        "fully_live_formal_cleanup_sites": 128,
+        "unrelated_function_definitions": 0
+      },
+      "expected_work": "one declaring clause index plus bounded charged per-site lookup; source noise must not change defining index/lookup work"
+    }
+  ]
+}

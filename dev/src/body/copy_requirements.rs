@@ -20,6 +20,9 @@ use crate::{
     },
 };
 use std::sync::Arc;
+mod carrier;
+pub(in crate::body) mod materialized;
+mod reproof;
 #[cfg(test)]
 #[path = "../../tests/invariants/copy_carriers.rs"]
 mod tests;
@@ -82,6 +85,18 @@ pub(crate) fn prepare(
     body: &Body,
     contract: &mut Contract,
 ) -> Result<(), String> {
+    prepare_scoped(facts, body, contract, None)
+}
+
+pub(in crate::body) fn prepare_scoped(
+    facts: &mut Declarations,
+    body: &Body,
+    contract: &mut Contract,
+    scope: Option<&materialized::InstanceScope>,
+) -> Result<(), String> {
+    if scope.is_some() && facts.source_bindings.is_none() {
+        return Err("instance Copy scope lost its current source catalog".into());
+    }
     super::defining_cleanups::begin(facts, body, contract)?;
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return super::defining_cleanups::prepare(facts, body, contract);
@@ -98,35 +113,21 @@ pub(crate) fn prepare(
         .map(|d| d.definition);
     let goals = read_requirements(facts, body, declaration)?;
     let requirements = Arc::new(SourceCopyRequirements { declaration, goals });
-    let existing = contract
+    let environment = contract
         .builtins
         .as_deref()
-        .and_then(|r| r.environment.clone());
-    let environment = if existing.is_some() {
-        existing
-    } else {
-        let parameters = contract
-            .parameters
-            .iter()
-            .filter(|&&id| {
-                matches!(
-                    facts.types.parameter(id).map(|p| p.kind),
-                    Some(crate::types::parameters::ParameterKind::Type { .. })
-                )
-            })
-            .map(|&id| {
-                (
-                    id,
-                    crate::types::parameters::environment::Abilities::default(),
-                )
-            })
-            .collect::<Vec<_>>();
-        Some(Arc::new(
-            Environment::new(&facts.types, &parameters)?
-                .with_clauses(&facts.types, &contract.type_assumptions)?,
-        ))
-    };
+        .and_then(|requirements| requirements.environment.clone())
+        .map_or_else(
+            || reproof::fresh(facts, contract).map(Some),
+            |value| Ok(Some(value)),
+        )?;
+    if let Some(scope) = scope {
+        scope.check(facts, body, contract, environment.as_ref())?;
+    }
     let decisions = if declaration.is_some() && !requirements.goals.is_empty() {
+        if scope.is_none() {
+            carrier::check(facts, body, contract, environment.as_ref())?;
+        }
         let first = super::dispatch::copy_frontier(facts, contract)?;
         let selected = crate::sema::compiler_items::copy_decisions(
             facts,
