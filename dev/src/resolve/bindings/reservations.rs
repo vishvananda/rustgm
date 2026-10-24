@@ -371,15 +371,14 @@ fn claims(
             while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
                 node = value;
             }
-            if super::source_builtin::claim(
+            let contract = super::panic_contracts::declaration(
                 package,
                 NodeKey {
                     file,
                     node: owner.node,
                 },
-            )?
-            .is_some()
-            {
+            )?;
+            if contract.and_then(|contract| contract.builtin).is_some() {
                 result
                     .entry(NodeKey { file, node })
                     .or_default()
@@ -393,6 +392,7 @@ fn claims(
                     NodeKey { file, node },
                     attribute,
                     forest,
+                    contract.and_then(|contract| contract.allowance),
                 )? {
                     continue;
                 }

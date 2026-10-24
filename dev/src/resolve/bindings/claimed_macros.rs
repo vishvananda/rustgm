@@ -15,58 +15,43 @@ use crate::{
     },
 };
 
-pub(in crate::resolve) fn claim(package: &Package, key: NodeKey) -> Result<Option<Builtin>, Error> {
+pub(super) fn parse(
+    package: &Package,
+    key: NodeKey,
+    attribute: Attribute,
+    forest: &Forest,
+) -> Result<Builtin, Error> {
     let unit = package.unit(key.file);
-    let Some(index) = unit.owner_indices[key.node.get() as usize] else {
-        return Ok(None);
+    let error = |message| Error::at(key.file, attribute.span.start, message);
+    if attribute.unsafe_wrapper {
+        return Err(error("builtin macro claim cannot use an unsafe wrapper"));
+    }
+    let source = package
+        .source_core()
+        .ok_or_else(|| error("builtin macro binding requires an explicit source-core provider"))?;
+    if !source.features.has(Feature::RustcAttributes) {
+        return Err(error("builtin macro binding requires rustc_attrs"));
+    }
+    let Kind::Item(index) = unit.configured.ast.node(key.node).kind else {
+        return Err(error("builtin macro binding requires a macro declaration"));
     };
-    let owner = &unit.configured.owners[index.get() as usize - 1];
-    if !owner.enabled {
-        return Ok(None);
+    let item = unit.configured.ast.items[index as usize];
+    if !matches!(item.kind, ItemKind::MacroRules { .. }) {
+        return Err(error("builtin macro binding requires a macro declaration"));
     }
-    let mut result = None;
-    for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
-        if attribute.name(forest, unit.source.text()) != Some("rustc_builtin_macro") {
-            continue;
-        }
-        let error = |message| Error::at(key.file, attribute.span.start, message);
-        if result.is_some() {
-            return Err(error("duplicate source builtin macro claim"));
-        }
-        let source = package.source_core().ok_or_else(|| {
-            error("builtin macro binding requires an explicit source-core provider")
-        })?;
-        if !source.features.has(Feature::RustcAttributes) {
-            return Err(error("builtin macro binding requires rustc_attrs"));
-        }
-        let mut node = owner.node;
-        while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
-            node = value;
-        }
-        let Kind::Item(index) = unit.configured.ast.node(node).kind else {
-            return Err(error("builtin macro binding requires a macro declaration"));
-        };
-        let item = unit.configured.ast.items[index as usize];
-        if !matches!(item.kind, ItemKind::MacroRules { .. }) {
-            return Err(error("builtin macro binding requires a macro declaration"));
-        }
-        let span = item
-            .name
-            .ok_or_else(|| error("builtin macro declaration has no name"))?;
-        let declared = unit
-            .spelling(span)
-            .map_err(|e| Error::at(key.file, e.offset, e.message))?;
-        let name = argument(unit.source.text(), forest, attribute)
-            .map_err(&error)?
-            .unwrap_or_else(|| declared.strip_prefix("r#").unwrap_or(declared));
-        result = Some(
-            Builtin::ALL
-                .into_iter()
-                .find(|builtin| builtin.name() == name)
-                .ok_or_else(|| error("source builtin macro expansion is not implemented"))?,
-        );
-    }
-    Ok(result)
+    let span = item
+        .name
+        .ok_or_else(|| error("builtin macro declaration has no name"))?;
+    let declared = unit
+        .spelling(span)
+        .map_err(|e| Error::at(key.file, e.offset, e.message))?;
+    let name = argument(unit.source.text(), forest, attribute)
+        .map_err(&error)?
+        .unwrap_or_else(|| declared.strip_prefix("r#").unwrap_or(declared));
+    Builtin::ALL
+        .into_iter()
+        .find(|builtin| builtin.name() == name)
+        .ok_or_else(|| error("source builtin macro expansion is not implemented"))
 }
 
 fn argument<'a>(

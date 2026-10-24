@@ -112,6 +112,9 @@ impl Forest {
     pub fn nodes(&self) -> &[Tree] {
         &self.nodes
     }
+    pub(crate) fn payload_bytes(&self) -> usize {
+        self.nodes.capacity().saturating_mul(size_of::<Tree>())
+    }
 
     #[must_use]
     pub const fn source_end(&self) -> u32 {

@@ -20,6 +20,7 @@ pub(in crate::resolve) fn collect(
     key: NodeKey,
     attribute: Attribute,
     forest: &Forest,
+    allowance: Option<crate::resolve::bindings::panic_contracts::Allowance>,
 ) -> Result<bool, Error> {
     let name = attribute.name(forest, unit.source.text()).unwrap_or("");
     let extended = matches!(
@@ -33,6 +34,11 @@ pub(in crate::resolve) fn collect(
     );
     if unit.include_context.is_some() {
         return Ok(extended || matches!(name, "stable" | "unstable"));
+    }
+    if name == "allow_internal_unstable"
+        && allowance.is_some_and(|allowance| allowance.matches(key, attribute))
+    {
+        return Ok(true);
     }
     if extended {
         return Err(Error::at(

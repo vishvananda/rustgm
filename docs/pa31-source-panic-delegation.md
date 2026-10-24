@@ -38,7 +38,7 @@ source edition. An ordinary wrapper's edition therefore remains significant;
 neither always using the physical caller nor always using the builtin declaration
 edition is correct. Token lexical-edition provenance is a separate contract.
 
-## Proposed ownership and APIs, before production edits
+## Source implementation (unqualified)
 
 1. Add the three source-only builtin roles. Their explicit classification excludes
    them from bootstrap macro publication. `Body::Builtin` dispatch requires the
@@ -52,7 +52,9 @@ edition is correct. Token lexical-edition provenance is a separate contract.
    remain unsupported. The cold owner retains validated interesting macro
    declarations and edition-walk suffix answers. A declaration record binds its
    actual unwrapped macro `NodeKey`, retained attribute owner and relevant exact
-   attribute spans to its claimed role and narrow permission. It does not contain
+   attribute spans and retained relevant typed argument trees to its claimed
+   role and narrow permission. Warm queries compare those typed inputs, rather
+   than accepting a same-spelling attribute or unsafe wrapper. It does not contain
    callable or ordinary library stability permission.
 
    A shared `Package::source_macro_contract(owner)` query normalizes the actual
@@ -81,7 +83,8 @@ edition is correct. Token lexical-edition provenance is a separate contract.
 
    `Engine::panic_edition(call, original_span)` authenticates actual frame IDs,
    definition ownership and call-site contexts while applying the pinned walk.
-   Cache only immutable non-root expansion-frame answers, sharing suffixes in
+   Cache only immutable non-root expansion-frame answers with their exact cold
+   call-site/definition/permission stamp, sharing suffixes in
    `SourceCore::MacroContracts`; do not globally cache ROOT across physical
    editions. Owner work/storage charges precede parsing, walks and growth, retain
    attempted work on failure, and remain enforced on warmed queries. Actual cold
@@ -103,7 +106,36 @@ edition is correct. Token lexical-edition provenance is a separate contract.
    owner and real invocation record. The selected handler then uses the normal
    macro worklist and argument parser. Invalid tokens are its actual rejection.
 
-## Qualification contract
+## Frozen qualification plan
+
+Production and controls are source-only. The local candidate selection has
+28 distinct source contexts: the original ten single-source inputs in editions
+2021/2024, seven new permission hypotheses in 2024, and one nonzero opaque
+expression-forwarding input in 2024. Sixteen accepted contexts have native
+answers declared before execution. The seven permission hypotheses distinguish
+predicted Rust rejections from three predicted valid-but-unsupported allowance
+profiles (unknown, repeated and empty permissions). Their independent statuses
+are unobserved; neither their source bytes nor their predictions may be blessed
+after a disagreement. The forwarding case is separately declared and unobserved.
+
+The fresh independent batch is eight inputs/26 predicted observations. The
+original 142 observations are authenticated by hash and must not rerun. Five
+private permission/cache controls cover complete typed attribute identity,
+warm frame/call-site opposition, sticky work exhaustion, the actual attributed
+legacy core declaration shape and actual depth/width suffix work at 8/32/128.
+A sixth private control checks typed token/spacing construction without source
+parsing. Three frontend test functions cover the 28 contexts and actual opaque
+registry-handle retention; one ignored native function covers sixteen programs.
+The eighteen retained field/shared-adjustment/layout controls remain selected
+because their unqualified source is part of this branch's base.
+
+The core-header control retains doc, export, stability and diagnostic attributes
+around the genuine `macro_rules! panic` claim. It establishes only the owner
+contract boundary, not that those independent semantic attributes are all
+implemented. Its source basis is core/macros/mod.rs SHA
+`9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c`.
+General scoped-macro admission remains disabled. A real unchanged-core retry
+after qualification is the only basis for reporting whole-root progress.
 
 Reuse authenticated independent observations; do not invoke the oracle again for
 unchanged inputs. Select candidate cases only for the admitted local edition
@@ -118,4 +150,7 @@ before being labeled Rust-negative.
 After the implementation qualifies, retry unchanged core with the exact original
 source/configuration hashes and record the next real frontier. Recognizing its
 declaration alone is not a successful whole-core build. No new worker build,
-oracle, test or cleanup has run for this proposal.
+oracle, test or cleanup has run for this implementation. Formatting and manual
+API/function-length/filename-family review have completed. Root's newer shared
+`Paths::invocation` publication API must replace this branch's new fourth
+ancestry publication site during integration; it is not silently bypassed.

@@ -35,6 +35,8 @@ mod freeze_formation;
 mod freezing;
 #[path = "provider_traits/native.rs"]
 pub(super) mod native;
+#[path = "provider_traits/panic_routing.rs"]
+mod panic_routing;
 #[path = "provider_traits/provided_methods.rs"]
 mod provided_methods;
 #[path = "provider_traits/signature_views.rs"]
@@ -73,6 +75,12 @@ impl Sources for NoFiles {
     }
 }
 pub(super) fn report(source: &str) -> TestResult<resolve::expansion::Report> {
+    report_in_edition(source, rustgm::support::edition::Edition::Rust2024)
+}
+pub(super) fn report_in_edition(
+    source: &str,
+    edition: rustgm::support::edition::Edition,
+) -> TestResult<resolve::expansion::Report> {
     let identity = CrateIdentity::new("minicore", "source_traits_v1")?;
     let context = Context {
         crate_name: Some("minicore".into()),
@@ -88,7 +96,7 @@ pub(super) fn report(source: &str) -> TestResult<resolve::expansion::Report> {
                 source: SourceFile::new(source.as_bytes().to_vec())?,
             },
             &mut NoFiles,
-            &Config::default(),
+            &Config::in_edition(edition),
             &context,
         )?,
     )?)
@@ -139,13 +147,24 @@ const COPY_EXECUTION: &str = cases::GENERIC_COPY;
 const CLONE_EXECUTION: &str = cases::SOURCE_CLONE_UFCS;
 const CALL_EXECUTION: &str = cases::CALLABLE_FUNCTION_ITEM;
 pub(super) fn lower(source: &str) -> TestResult<rustgm::lowir::program::Program> {
-    let report = report(source)?;
+    lower_in_edition(source, rustgm::support::edition::Edition::Rust2024)
+}
+pub(super) fn lower_in_edition(
+    source: &str,
+    edition: rustgm::support::edition::Edition,
+) -> TestResult<rustgm::lowir::program::Program> {
+    let report = report_in_edition(source, edition)?;
+    lower_report(&report)
+}
+pub(super) fn lower_report(
+    report: &resolve::expansion::Report,
+) -> TestResult<rustgm::lowir::program::Program> {
     let rustgm::pipeline::Analysis {
         mut facts,
         prepared,
-    } = rustgm::pipeline::analyze_source(&report)?;
+    } = rustgm::pipeline::analyze_source(report)?;
     Ok(rustgm::lower::instances::build_roots_prepared(
-        &report,
+        report,
         &mut facts,
         rustgm::lower::Roots {
             entry: None,

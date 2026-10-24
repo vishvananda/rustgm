@@ -22,7 +22,7 @@ use crate::{
         stream::{Environment, Location, Origin, Source, Stream},
         textual::{Lookup, Observer, Scope, Scopes},
     },
-    support::names::NameId,
+    support::{edition::Edition, names::NameId},
     syntax::{
         ast::{Kind, MacroContext, NodeId},
         edition_context::WithEditions,
@@ -37,6 +37,7 @@ mod bindings;
 mod diagnostics;
 mod eager;
 mod location;
+mod panic_dispatch;
 mod paths;
 mod resources;
 mod transcription;
@@ -59,6 +60,8 @@ pub struct Definition {
     pub introduction: ExpansionId,
     pub preceding_scope: Scope,
     pub local_inner_macros: bool,
+    pub edition: Edition,
+    pub edition_panic: bool,
 }
 pub struct Invocation {
     pub context: ExpansionId,
@@ -791,13 +794,27 @@ impl<S: Sources> Engine<'_, S> {
         capture: u32,
     ) -> Result<(), Error> {
         let flags = self.flags(file, visit.owner)?;
-        let builtin = super::bindings::builtin_macro(
+        let contract = super::bindings::macro_contract(
             &self.loader.package,
             NodeKey {
                 file,
                 node: visit.owner.unwrap_or(visit.node),
             },
         )?;
+        if contract.is_some_and(|contract| {
+            contract.node
+                != NodeKey {
+                    file,
+                    node: visit.node,
+                }
+        }) {
+            return Err(Error::at(
+                file,
+                0,
+                "source macro contract names another declaration",
+            ));
+        }
+        let builtin = contract.and_then(|contract| contract.builtin);
         let context = self.context(
             file,
             self.loader
@@ -858,6 +875,8 @@ impl<S: Sources> Engine<'_, S> {
             introduction: visit.introduction,
             preceding_scope: self.head,
             local_inner_macros: flags.local_inner_macros,
+            edition,
+            edition_panic: contract.is_some_and(|contract| contract.allowance.is_some()),
         });
         self.head = self
             .scopes
@@ -951,6 +970,8 @@ impl<S: Sources> Engine<'_, S> {
             introduction: ExpansionId(0),
             preceding_scope: Scope::ROOT,
             local_inner_macros: false,
+            edition: self.loader.package.units[0].edition(),
+            edition_panic: false,
         });
         self.builtin_definitions[slot] = Some(index);
         Ok(index)
@@ -1169,6 +1190,9 @@ impl<S: Sources> Engine<'_, S> {
                 .map_err(|_| Error::at(file, 0, "too many expansion contexts"))?,
         );
         if let Body::Builtin(builtin) = self.definitions[definition].body {
+            if builtin.source_only() {
+                return self.invoke_panic(visit, grammar, definition, context, &input, builtin);
+            }
             return self.invoke_builtin(visit, grammar, definition, context, &input, builtin);
         }
         let transcription::Transcribed {

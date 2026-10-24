@@ -1,6 +1,20 @@
 //! Physical builtin locations follow complete captured spans and template calls.
 use super::{Engine, Error, Location, Sources};
 impl<S: Sources> Engine<'_, S> {
+    pub(super) fn token_joint(
+        &self,
+        file: super::FileId,
+        token: crate::lex::token::Token,
+    ) -> Result<bool, crate::lex::token::LexError> {
+        crate::expand::stringify::Sources::joint(
+            &TokenSources {
+                package: &self.loader.package,
+                captures: &self.captures,
+            },
+            file,
+            token,
+        )
+    }
     pub(super) fn module_path(&self, mut module: super::ModuleId) -> String {
         let package = &self.loader.package;
         let mut parts = Vec::new();

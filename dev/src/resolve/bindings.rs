@@ -2,6 +2,7 @@
 mod admission;
 mod annotations;
 mod client;
+pub(in crate::resolve) mod panic_contracts;
 pub(super) mod policy;
 mod positions;
 mod reservations;
@@ -14,10 +15,10 @@ use crate::support::{
 };
 pub(super) use admission::validate as validate_features;
 pub use client::SourceClient;
+pub(super) use panic_contracts::declaration as macro_contract;
 pub(super) use reservations::finish;
 pub use reservations::{Declaration, IntrinsicDeclaration, Reservations};
 pub(crate) use role_attributes::{HeaderAttribute, HeaderAttributes};
-pub(super) use source_builtin::claim as builtin_macro;
 use std::sync::Arc;
 
 pub(in crate::resolve) enum Source {
@@ -38,6 +39,7 @@ pub struct SourceCore {
     pub current: CrateIdentity,
     pub provider: CrateIdentity,
     pub(super) features: policy::Features,
+    pub(in crate::resolve) macros: panic_contracts::Contracts,
 }
 impl super::package::Package {
     #[must_use]

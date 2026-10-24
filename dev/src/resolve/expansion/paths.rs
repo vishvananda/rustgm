@@ -79,7 +79,7 @@ impl Paths {
         let bootstrap = !package.uses_source_bindings();
         for builtin in Builtin::ALL
             .into_iter()
-            .filter(|builtin| bootstrap && *builtin != Builtin::OptionEnv)
+            .filter(|builtin| bootstrap && *builtin != Builtin::OptionEnv && !builtin.source_only())
         {
             let name = package
                 .names

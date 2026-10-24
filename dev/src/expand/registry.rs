@@ -29,6 +29,52 @@ pub struct View<'a, F> {
     source: F,
 }
 impl Registry {
+    /// Relocate only handles already owned by this actual registry. No payload
+    /// is added, cloned, or inferred from a constructed matcher result.
+    pub(crate) fn forward(&self, stream: &mut Stream) -> Result<(), LexError> {
+        if stream.registered {
+            return Err(error(0, "expansion stream is already registered"));
+        }
+        for opaque in &stream.opaque {
+            let OpaqueSource::Forwarded { index, .. } = opaque.payload else {
+                return Err(error(
+                    opaque.original.start,
+                    "forwarding cannot create a capture payload",
+                ));
+            };
+            let entry = self.entries.get(index as usize).ok_or_else(|| {
+                error(
+                    opaque.original.start,
+                    "missing persistent forwarded capture",
+                )
+            })?;
+            entry.payload.nonterminal(entry.fragment)?;
+            ExpansionId::new(index)?;
+        }
+        for token in &stream.tokens {
+            if let Kind::Interpolated(index) = token.kind
+                && index.get() as usize >= stream.opaque.len()
+            {
+                return Err(error(token.start, "invalid forwarded token handle"));
+            }
+        }
+        for token in &mut stream.tokens {
+            if let Kind::Interpolated(index) = &mut token.kind {
+                let OpaqueSource::Forwarded {
+                    index: original, ..
+                } = stream.opaque[index.get() as usize].payload
+                else {
+                    return Err(error(
+                        token.start,
+                        "forwarding capture changed after validation",
+                    ));
+                };
+                *index = ExpansionId::new(original)?;
+            }
+        }
+        stream.registered = true;
+        Ok(())
+    }
     #[must_use]
     pub fn view<'a, F>(&'a self, source: F) -> View<'a, F>
     where

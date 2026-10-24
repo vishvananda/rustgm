@@ -1,4 +1,5 @@
 //! Builtin expansion consumes classified inputs and constructs typed syntax directly.
+pub(crate) mod delegation;
 mod library;
 use super::{
     config::{self, Config},
@@ -35,9 +36,12 @@ pub enum Builtin {
     IncludeBytes,
     Include,
     OptionEnv,
+    CorePanic,
+    StdPanic,
+    Unreachable,
 }
 impl Builtin {
-    pub const ALL: [Self; 13] = [
+    pub const ALL: [Self; 16] = [
         Self::Cfg,
         Self::Line,
         Self::Column,
@@ -51,7 +55,14 @@ impl Builtin {
         Self::IncludeBytes,
         Self::Include,
         Self::OptionEnv,
+        Self::CorePanic,
+        Self::StdPanic,
+        Self::Unreachable,
     ];
+    #[must_use]
+    pub const fn source_only(self) -> bool {
+        matches!(self, Self::CorePanic | Self::StdPanic | Self::Unreachable)
+    }
     #[must_use]
     pub const fn eager(self) -> bool {
         matches!(
@@ -85,6 +96,9 @@ impl Builtin {
             Self::IncludeStr => "include_str",
             Self::IncludeBytes => "include_bytes",
             Self::Include => "include",
+            Self::CorePanic => "core_panic",
+            Self::StdPanic => "std_panic",
+            Self::Unreachable => "unreachable",
         }
     }
 }
@@ -118,6 +132,10 @@ pub fn expand(
         | Builtin::IncludeStr
         | Builtin::IncludeBytes
         | Builtin::Include => Err(error(0, "builtin requires expanded argument facts")),
+        Builtin::CorePanic | Builtin::StdPanic | Builtin::Unreachable => Err(error(
+            0,
+            "source panic delegation requires its actual defining macro",
+        )),
         Builtin::Cfg => cfg(
             source,
             input,

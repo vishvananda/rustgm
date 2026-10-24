@@ -27,6 +27,7 @@ pub(in crate::resolve) enum Feature {
     FreezeImpls,
     Fundamental,
     DeclarativeMacros,
+    InternalMacroAllowance,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -51,6 +52,7 @@ impl Request {
             "freeze_impls" => Self::Capability(Feature::FreezeImpls),
             "fundamental" => Self::Capability(Feature::Fundamental),
             "decl_macro" => Self::Capability(Feature::DeclarativeMacros),
+            "allow_internal_unstable" => Self::Capability(Feature::InternalMacroAllowance),
             // Requests do not authorize the unsupported live const-drop operation.
             "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
             _ => return None,
@@ -148,6 +150,7 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
             current: current.clone(),
             provider: provider.clone(),
             features,
+            macros: super::panic_contracts::Contracts::default(),
         }))),
         library,
         macros,

@@ -226,13 +226,28 @@ impl Stream {
         context: Option<SyntaxContextId>,
         introduction: ExpansionId,
     ) -> Result<Span, LexError> {
+        let generated = self.image(spelling, original, context, introduction)?;
+        self.tokens.push(Token {
+            kind,
+            start: generated.start,
+            end: generated.end,
+        });
+        Ok(generated)
+    }
+    /// A builtin can construct typed syntax over a diagnostic image directly.
+    pub(crate) fn image(
+        &mut self,
+        spelling: &str,
+        original: Location,
+        context: Option<SyntaxContextId>,
+        introduction: ExpansionId,
+    ) -> Result<Span, LexError> {
         let start = u32::try_from(self.source.len())
             .map_err(|_| error(original.span.start, "expansion source exceeds 32 bits"))?;
         self.source.push_str(spelling);
         let end = u32::try_from(self.source.len())
             .map_err(|_| error(original.span.start, "expansion source exceeds 32 bits"))?;
         let generated = Span { start, end };
-        self.tokens.push(Token { kind, start, end });
         self.origins.push(Origin {
             generated,
             original,
@@ -242,6 +257,32 @@ impl Stream {
         });
         self.source.push(' ');
         Ok(generated)
+    }
+    /// Forward actual classified input without matching or manufacturing captures.
+    pub(crate) fn forward_input(
+        &mut self,
+        input: &Input,
+        source: Source<'_>,
+        mut provenance: impl FnMut(Token) -> Result<(SyntaxContextId, bool), LexError>,
+    ) -> Result<(), LexError> {
+        let environment = Environment {
+            definition: source,
+            invocation: source,
+            context: SyntaxContextId::ROOT,
+            introduction: ExpansionId(0),
+            crate_id: 0,
+        };
+        for &token in &input.tokens {
+            let (context, joint) = provenance(token)?;
+            self.copy_token(token, PieceOrigin::Invocation, &environment, &mut |_, _| {
+                Ok(Some(context))
+            })?;
+            self.origins
+                .last_mut()
+                .ok_or_else(|| error(token.start, "forwarded token has no origin"))?
+                .joint = Some(joint);
+        }
+        Ok(())
     }
     /// Borrow opaque syntax for the parser without allocating or interpreting its tokens.
     ///
