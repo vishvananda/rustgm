@@ -25,10 +25,10 @@ count still validates its element. Nested arrays and byte strings, C/ordinary
 strings, characters, booleans, floats, negatives, groups and nonliteral operands
 are rejected by their actual typed kind. All operands are validated.
 
-Implementation will append the actual Builtin role and use the existing eager
+The implementation appends the actual Builtin role and uses the existing eager
 argument arena, literal storage and ordinary owned ByteString result. Rendered
 spelling is only diagnostic data and is never reparsed. The formatting source
-header/input/opaque-registry budget helpers will be generalized for both exact
+header/input/opaque-registry budget helpers are generalized for both exact
 source-eager roles, with no extra hot record or parallel proof mechanism. The
 formatting-specific constructor call and its permissions remain separate.
 
@@ -62,4 +62,66 @@ requested-output/overflow budget failures, actual width and invocation counts,
 an ordinary eager fast-path control and layouts. Oversized private repetitions
 are budget opponents, not Rust language rejections or completed rustc probes.
 Changing the shared producer justifies retaining the affected formatting source
-and native controls in this gate. No candidate result has been generated yet.
+and native controls in this gate. The component results below distinguish the
+original failed checkpoints from the exact retained-evidence recovery.
+
+
+## Qualified local component and actual core frontier
+
+Production is `95e9265c`; test-only recoveries are `83f8f7a1` and `1f12b765`.
+The development component covers 1,464 private cases, 18 affected frontend test
+functions and 48 native programs: 19 byte programs in both admitted editions plus
+10 formatting programs affected by the shared producer. Fresh format, architecture
+and placement audit (2,335 files, zero findings), all-target strict Clippy, harness
+and upstream checks pass. This is a local component result; integrated release and
+shared-algorithm performance qualification remain integrator work.
+
+`obj/parallel/pa31/concat-bytes-source-v1` retains the initial test-only Clippy
+failure, with no candidate execution. V2 retains all 1,464 passing private cases
+and 16 passing frontend functions, plus two failed test setup assertions. The
+ordinary string operand was accidentally assigned ordinary crate mode by a
+filename-prefix rule. The wrong-owner opponent was inspected before final source
+reservation, its actual validation phase. The correction uses an explicit pair of
+ordinary control names and checks the actual final configured declaration. The
+unchanged CLI independently confirms its exact supported-declaration-kind error.
+No production check or fixture expectation was weakened.
+
+`concat-bytes-native-continuation-v1` runs the previously unrun 48 native programs
+on the exact V2 binary. `concat-bytes-diagnostic-recovery-v1` authenticates the
+unchanged production, private tests, fixtures and retained streams, then runs fresh
+static checks and the two corrected frontend functions. Its `complete.json` is
+SHA-256 `b77b30937e9b5668c1dfd88717f6a4ab688af4c153a23852f2bcde7e0475b8ee`.
+Original failed snapshots, the native admission refusal, and cleanup receipts stay
+retained. These counts do not imply all independently Rust-positive ordinary,
+foreign or scoped-builtin profiles are supported.
+
+The same built CLI is SHA-256
+`d35c36327dcbffc1fe6d20670f88ec5e0515c51a780ae6b1f9e56c6a6abebc6f`.
+Its unchanged-core observation passes the prior `concat_bytes` header at line 1126,
+byte 40135, and stops at `#[rustc_builtin_macro]` on `autodiff_forward` at
+`library/core/src/macros/mod.rs:1553`, byte 57236, with
+`source builtin macro expansion is not implemented`. The same four original files
+match pinned provenance. Compiler exit 1 is frontier evidence; no core artifact
+exists. The original observation remains labeled provisional in place because it
+preceded the test-only recovery; the final component binds it by unchanged
+production and actual CLI identity, without rewriting history or repeating it.
+Its result SHA-256 is
+`149f260fa6707aaf5263988b9961daee0327be3574a72fabeb454e660ec5adc1`.
+
+This next source-binding prerequisite belongs to PA31. The pinned compiler's
+`rustc_builtin_macros/src/lib.rs` registers `autodiff_forward` and
+`autodiff_reverse` as **attribute** builtins, despite their scoped declaration
+syntax in core. PA38 owns general derive/attribute execution and PA37 the foreign
+procedural-macro host; an actual core prerequisite must be implemented and tested
+at its earlier required source-binding boundary. Declaration admission cannot
+claim attribute execution, run the placeholder declarative body, grant foreign
+export permission or silently produce an empty expansion. The live blocker
+tracker and next implementation scope remain integrator-owned.
+
+Measured layouts are unchanged: Builtin 1, expansion Body 96, Definition 136,
+syntax Kind 28, Node 36, SourceCore 176 and Package 256 bytes. Actual width
+8/32/128 uses one argument parse and source-budget work 167/335/1007, with payload
+15200/54368/211040 bytes. Repeated invocation counts 8/32/128 have one parse each,
+work 191/455/1511 and payload 22624/87136/345184. The ordinary concat control's
+shared source-budget work/payload stays 80/1120 at all three widths; this describes
+the source budget, not the entire ordinary expansion cost or an A/B timing claim.
