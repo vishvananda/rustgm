@@ -1,4 +1,4 @@
-//! Scoped declarations publish real items while their execution stays unavailable.
+//! Scoped declarations publish real items and retain their prepared matcher.
 use super::{Context, Resolver};
 use crate::{
     expand::{macros::compile, marks::Transparency},
@@ -25,6 +25,7 @@ pub(in crate::resolve) struct ScopedDeclaration {
     pub mode: Transparency,
     pub edition: Edition,
     pub header: Option<Rc<HeaderData>>,
+    pub matcher: crate::expand::macros::model::Definition,
 }
 
 impl Resolver<'_> {
@@ -99,7 +100,7 @@ impl Resolver<'_> {
             })
             .map_err(|failure| Error::at(context.file, failure.offset, failure.message))?
         };
-        self.compile_scoped(
+        let matcher = self.compile_scoped(
             context,
             node,
             (parameters, capture),
@@ -129,6 +130,7 @@ impl Resolver<'_> {
                 mode,
                 edition,
                 header,
+                matcher,
             },
         ))
     }
@@ -139,7 +141,7 @@ impl Resolver<'_> {
         grammar: (Option<u32>, u32),
         edition: Edition,
         #[cfg(test)] owner: Option<NodeId>,
-    ) -> Result<(), Error> {
+    ) -> Result<crate::expand::macros::model::Definition, Error> {
         let (parameters, capture) = grammar;
         let unit = &self.package.units[context.file.0 as usize];
         let body = unit
@@ -159,8 +161,8 @@ impl Resolver<'_> {
                     })
             })
             .transpose()?;
-        // Validation happens once in the common producer. No executable matcher
-        // is retained by the declaration-only marker.
+        // The common producer prepares this grammar once. Expansion consumes
+        // the retained definition rather than compiling the source again.
         #[cfg(test)]
         observation::note(observation::Event::Compile {
             module: context.module,
@@ -178,8 +180,7 @@ impl Resolver<'_> {
             &mut self.package.names,
             edition,
         )
-        .map_err(|failure| Error::at(context.file, failure.offset, failure.message))?;
-        Ok(())
+        .map_err(|failure| Error::at(context.file, failure.offset, failure.message))
     }
     fn scoped_syntax(
         &self,

@@ -115,18 +115,14 @@ fn scoped_declarations_require_the_gate_before_semantic_admission() -> Result {
     let report = crate::test_source::resolve(source, true)?;
     assert!(report.definitions.iter().any(|definition| matches!(
         definition.body,
-        crate::resolve::expansion::Body::ScopedDeclaration(_)
+        crate::resolve::expansion::Body::Scoped { .. }
     )));
-    let error = crate::test_source::resolve(
+    let invoked = crate::test_source::resolve(
         "#![feature(decl_macro)]macro m(){7u32}fn ordinary()->u32{m!()}",
         true,
-    )
-    .err()
-    .ok_or("scoped declaration enabled execution")?;
-    assert!(
-        error.contains("scoped macro invocation is not implemented"),
-        "{error}"
-    );
+    )?;
+    assert_eq!(invoked.invocations.len(), 1);
+    crate::pipeline::analyze_source(&invoked)?;
     Ok(())
 }
 

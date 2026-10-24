@@ -1,0 +1,146 @@
+{
+  "state": "Declared independent hypotheses before any execution; no observed Rust or RustGM acceptance claim. Preserve any disagreement as an invalid hypothesis rather than rewriting its source or expectation.",
+  "blocker": "LIB-002",
+  "base": "1df5234945079aa8efb3c097708dfd08b206d6a3",
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "rows": [
+    {
+      "name": "field-literal-roundtrip",
+      "entry": "pa31/tests/spec/declarative-macros/field-literal-roundtrip.rs",
+      "sha256": "bc2bfb6fd49b7b82dd0aa9c11e4aab4a10b3877e3a0dc0815578ff4566667736",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "One opaque field identifier selects the same declared FieldId through construction, pattern and access.",
+      "expected_native": "7\n"
+    },
+    {
+      "name": "field-captured-roundtrip",
+      "entry": "pa31/tests/spec/declarative-macros/field-captured-roundtrip.rs",
+      "sha256": "6ee54104c935737d08d43842d18a1446526213148f2cab7282bc50d7e2b6afe3",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "Captured field tokens retain caller item identity independently of the generated record container.",
+      "expected_native": "11\n"
+    },
+    {
+      "name": "field-shorthand-local",
+      "entry": "pa31/tests/spec/declarative-macros/field-shorthand-local.rs",
+      "sha256": "9763b52d21e58412413d47ce22a17255936350558a2cb27753acf4b5a7fe1cd3",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "A shorthand field token participates in item-normalized field matching and separately in local-normalized value binding.",
+      "expected_native": "17\n"
+    },
+    {
+      "name": "field-capture-literal-distinct",
+      "entry": "pa31/tests/spec/declarative-macros/field-capture-literal-distinct.rs",
+      "sha256": "357a8e87fed02a8faac138137e87815b4811c24d32778e303e86338c43992254",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "Same-spelling captured and opaque literal fields remain distinct within one captured-name record.",
+      "expected_native": "31\n"
+    },
+    {
+      "name": "field-private-definition-access",
+      "entry": "pa31/tests/spec/declarative-macros/field-private-definition-access.rs",
+      "sha256": "44004cb8b5c24bf93541711dd06ecd7f506ab3d711a71fc88c202d7ae245a8b8",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "A literal macro field use keeps provider definition-site privacy authority.",
+      "expected_native": "23\n"
+    },
+    {
+      "name": "field-private-captured-denied",
+      "entry": "pa31/tests/spec/declarative-macros/field-private-captured-denied.rs",
+      "sha256": "9858638ec50a35994c18dee132d1ac8b99199bf70f532f4eb8223b4d772da42b",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "hypothesis": "A captured caller field name does not acquire the macro definition privacy scope."
+    },
+    {
+      "name": "field-private-caller-denied",
+      "entry": "pa31/tests/spec/declarative-macros/field-private-caller-denied.rs",
+      "sha256": "0c38ab132f62df1dc3d7638be0a5db4a1ca86cbdf744fce7e1989e5d417dde8e",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "hypothesis": "An ordinary caller cannot read a provider private field."
+    },
+    {
+      "name": "field-functional-update-definition",
+      "entry": "pa31/tests/spec/declarative-macros/field-functional-update-definition.rs",
+      "sha256": "ce51947c7ae7f579232320724edb0561f5a7c501c311ff03160e32e36254cde1",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "A definition-site record update may transfer private omitted fields while preserving the caller-owned base value.",
+      "expected_native": "29\n"
+    },
+    {
+      "name": "field-functional-update-caller-denied",
+      "entry": "pa31/tests/spec/declarative-macros/field-functional-update-caller-denied.rs",
+      "sha256": "123154e77e0653edd5a7d0824f607f62559e69b64f6a05513e95ef0155006927",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "hypothesis": "Caller record update cannot transfer private omitted fields merely because explicit fields are public."
+    },
+    {
+      "name": "field-foreign-root-container",
+      "entry": "pa31/tests/spec/declarative-macros/field-foreign-root-container.rs",
+      "sha256": "e03886f22627751ff3aefea7d4a641701e4bf1bc6fb3379b4dfba97653ed91ab",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "A literal field use adjusts against the actual root-defined record, rather than its macro definition alone.",
+      "expected_native": "37\n"
+    },
+    {
+      "name": "field-foreign-opaque-denied",
+      "entry": "pa31/tests/spec/declarative-macros/field-foreign-opaque-denied.rs",
+      "sha256": "7be3235ef9300e88a0fc5354b39bd2a63063cda2e47539d9300d65e46fd1d0d3",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "hypothesis": "A literal field from an unrelated opaque expansion cannot select an opaque field belonging to another container introduction."
+    },
+    {
+      "name": "field-duplicate-declaration",
+      "entry": "pa31/tests/spec/declarative-macros/field-duplicate-declaration.rs",
+      "sha256": "48ba62d0c089ca1c555501e415a2235d4e1c3cf7938de8218c3fcbc13ed74fc0",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "hypothesis": "Two exact-identical declaration field identities reject even inside one opaque expansion."
+    },
+    {
+      "name": "field-duplicate-initializer",
+      "entry": "pa31/tests/spec/declarative-macros/field-duplicate-initializer.rs",
+      "sha256": "6643bc0fc94ce23fbca3e794d2372091f84f1d09a6190d028bf9a49cf46a4804",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "hypothesis": "Two uses selecting the same FieldId reject as a duplicate initializer."
+    },
+    {
+      "name": "field-ordinary-tuple-control",
+      "entry": "pa31/tests/spec/declarative-macros/field-ordinary-tuple-control.rs",
+      "sha256": "70f875227b740e67b326d00430b3465851a858addbcbb70718167b65738a79ae",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "Ordinary numeric tuple fields preserve index selection without a contextual field index.",
+      "expected_native": "43\n"
+    },
+    {
+      "name": "field-ordinary-record-control",
+      "entry": "pa31/tests/spec/declarative-macros/field-ordinary-record-control.rs",
+      "sha256": "285b52acd2f2f5c84fedc850f1d7b482f44e662750bb53883d10f9b250323bcb",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "Ordinary root record shorthand preserves exact existing field and local behavior.",
+      "expected_native": "47\n"
+    }
+  ]
+}

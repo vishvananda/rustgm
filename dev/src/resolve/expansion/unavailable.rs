@@ -1,4 +1,4 @@
-//! Declarations use item scope; an unavailable body never enters transcription.
+//! Item-scoped macros retain normal matching and their actual definition site.
 use super::{Body, Context, Definition, Engine, Error, FileId, ItemKind, NodeKey, Sources, Visit};
 use crate::syntax::item::Item;
 
@@ -53,7 +53,10 @@ impl<S: Sources> Engine<'_, S> {
             // The shared producer already authenticated the sole scoped builtin role.
             Body::Builtin(role)
         } else {
-            Body::ScopedDeclaration(declared.mode)
+            Body::Scoped {
+                compiled: crate::expand::macros::matcher::Compiled::new(declared.matcher),
+                mode: declared.mode,
+            }
         };
         self.definitions.push(Definition {
             node: Some(NodeKey {
@@ -81,23 +84,9 @@ impl<S: Sources> Engine<'_, S> {
         file: FileId,
         offset: u32,
     ) -> Result<(), Error> {
-        let actual = self
-            .definitions
+        self.definitions
             .get(definition)
             .ok_or_else(|| Error::at(file, offset, "unknown selected macro definition"))?;
-        if matches!(actual.body, Body::ScopedDeclaration(_)) {
-            #[cfg(test)]
-            crate::resolve::index::unavailable_macros::observation::note(
-                crate::resolve::index::unavailable_macros::observation::Event::Denied(
-                    self.scoped_snapshot(definition),
-                ),
-            );
-            return Err(Error::at(
-                file,
-                offset,
-                "scoped macro invocation is not implemented",
-            ));
-        }
         Ok(())
     }
 

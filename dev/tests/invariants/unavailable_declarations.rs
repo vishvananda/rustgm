@@ -37,7 +37,6 @@ pub(in crate::resolve) enum Event {
         key: NodeKey,
     },
     Selected(Snapshot),
-    Denied(Snapshot),
 }
 #[derive(Default)]
 struct Trace {
@@ -152,7 +151,7 @@ fn assert_prepared(trace: &Trace, width: usize) -> TestResult<usize> {
             Event::Published { module, key } => {
                 assert!(published.insert((*module, *key)));
             }
-            Event::Selected(_) | Event::Denied(_) => {
+            Event::Selected(_) => {
                 return Err("unused declaration executed".into());
             }
         }
@@ -198,7 +197,10 @@ fn real_scoped_declarations_compile_once_across_width_and_repeated_imports() -> 
                 .iter()
                 .filter(|definition| matches!(
                     definition.body,
-                    crate::resolve::expansion::Body::ScopedDeclaration(Transparency::Opaque)
+                    crate::resolve::expansion::Body::Scoped {
+                        mode: Transparency::Opaque,
+                        ..
+                    }
                 ))
                 .count(),
             width
@@ -215,8 +217,7 @@ fn real_scoped_declarations_compile_once_across_width_and_repeated_imports() -> 
 }
 
 #[test]
-fn selected_scoped_calls_fail_before_their_matching_capture_mark_and_invocation_work() -> TestResult
-{
+fn selected_scoped_calls_use_the_prepared_matcher_and_real_invocation() -> TestResult {
     for name in [
         "direct",
         "qualified",
@@ -230,13 +231,23 @@ fn selected_scoped_calls_fail_before_their_matching_capture_mark_and_invocation_
             "pa31/tests/spec/declarative-macros/declaration-invoke-{name}.rs"
         ))?;
         let probe = Probe::start()?;
-        let error = crate::test_source::resolve(&source, true)
-            .err()
-            .ok_or("scoped invocation executed")?;
+        let report = crate::test_source::resolve(&source, true)?;
         let trace = probe.finish()?;
-        assert!(
-            error.contains("scoped macro invocation is not implemented"),
-            "{name}: {error}"
+        assert_eq!(
+            trace
+                .events
+                .iter()
+                .filter(|event| matches!(event, Event::Compile { .. }))
+                .count(),
+            1
+        );
+        assert_eq!(
+            trace
+                .events
+                .iter()
+                .filter(|event| matches!(event, Event::Published { .. }))
+                .count(),
+            1
         );
         let selected: Vec<_> = trace
             .events
@@ -249,28 +260,28 @@ fn selected_scoped_calls_fail_before_their_matching_capture_mark_and_invocation_
                 }
             })
             .collect();
-        let denied: Vec<_> = trace
-            .events
-            .iter()
-            .filter_map(|event| {
-                if let Event::Denied(snapshot) = event {
-                    Some(*snapshot)
-                } else {
-                    None
-                }
-            })
-            .collect();
-        assert_eq!(selected.len(), 1, "{name}");
-        assert_eq!(selected, denied, "scoped child consumed work in {name}");
-        assert!(selected[0].owner.is_some());
-        eprintln!(
-            "scoped denial {name}: target={} owner={:?} captures={} invocations={} marks={}",
-            selected[0].target,
-            selected[0].owner,
-            selected[0].captures,
-            selected[0].invocations,
-            selected[0].marks
-        );
+        assert!(!selected.is_empty(), "{name}");
+        for snapshot in selected {
+            assert!(snapshot.owner.is_some());
+            assert!(snapshot.captures <= report.captures.len());
+            assert!(snapshot.invocations <= report.invocations.len());
+            assert!(snapshot.marks <= report.package.marks.context_count());
+            let calls: Vec<_> = report
+                .invocations
+                .iter()
+                .filter(|call| call.definition == snapshot.target)
+                .collect();
+            assert_eq!(calls.len(), 1, "{name}");
+            assert_eq!(calls[0].rule, Some(0));
+            assert_eq!(
+                report
+                    .resolution
+                    .introductions
+                    .definition_owner(calls[0].context)?,
+                snapshot.owner
+            );
+        }
+        crate::pipeline::analyze_source(&report)?;
     }
     Ok(())
 }
@@ -290,7 +301,7 @@ fn ordinary_macro_rules_allocate_no_scoped_descriptor_and_keep_their_real_execut
     )));
     assert!(!report.definitions.iter().any(|definition| matches!(
         definition.body,
-        crate::resolve::expansion::Body::ScopedDeclaration(_)
+        crate::resolve::expansion::Body::Scoped { .. }
     )));
     Ok(())
 }

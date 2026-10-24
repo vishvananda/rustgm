@@ -1,0 +1,15 @@
+{
+  "state": "Independent actual defining-site privacy pair passed; current C scoped invocation remains earlier unsupported",
+  "contract_sha256": "44072cbd76af85e982cbc0b83b2708285cc059e3d30c075d5db8fd8b4d6594ad",
+  "root": "obj/parallel/pa31/format-scoped-privacy-independent-v1",
+  "plan_sha256": "23f47178d69db39da09b7c6e0cc0fe2e55a20024df211ff7ddbc6de4b7946e44",
+  "results_sha256": "dda39ba29145f0eb55e8047e78b3d4c4351369b2b9d92edf231329c668e9e73b",
+  "complete_sha256": "6ebbc1304555de1d271ab2d1eb22b1c8e1e2c453b5584012c0f3eb7cf8fc3b5c",
+  "observations": 12,
+  "language": 8,
+  "native": 2,
+  "root_builtin_holder_wrapper": "E0624 private associated function from_str; genuine lookup gate, not codeless fn-item privacy",
+  "holder_builtin_holder_wrapper": "metadata/object/nativehello accepted in both2021/2024",
+  "source_unchanged": true,
+  "cleanup": "obj/cleanup/1792872787505640546.jsonl"
+}

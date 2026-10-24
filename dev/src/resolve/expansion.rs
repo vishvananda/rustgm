@@ -51,8 +51,11 @@ mod unavailable;
 pub enum Body {
     Declarative(Compiled),
     Builtin(Builtin),
-    /// A validated local declaration; scoped matching/execution is unsupported.
-    ScopedDeclaration(Transparency),
+    /// A prepared item-scoped macro keeps its declared literal transparency.
+    Scoped {
+        compiled: Compiled,
+        mode: Transparency,
+    },
 }
 #[derive(Clone, Copy)]
 enum MacroTarget {
@@ -487,10 +490,7 @@ impl<S: Sources> Engine<'_, S> {
         if let Some(definition) = found {
             let call = &self.calls[index];
             #[cfg(test)]
-            if matches!(
-                self.definitions[definition].body,
-                Body::ScopedDeclaration(_)
-            ) {
+            if matches!(self.definitions[definition].body, Body::Scoped { .. }) {
                 crate::resolve::index::unavailable_macros::observation::note(
                     crate::resolve::index::unavailable_macros::observation::Event::Selected(
                         self.scoped_snapshot(definition),
@@ -1117,7 +1117,14 @@ impl<S: Sources> Engine<'_, S> {
                 e.message,
             )
         })?;
-        let generated = self.install_builtin(file, visit.node, original, context, generated)?;
+        let generated = self.install_builtin(
+            file,
+            visit.node,
+            original,
+            context,
+            Transparency::SemiOpaque,
+            generated,
+        )?;
         self.paths
             .invocation(context, parent, &self.definitions[definition])
             .map_err(|message| Error::at(file, original.start, message))?;
@@ -1142,6 +1149,7 @@ impl<S: Sources> Engine<'_, S> {
         target: NodeId,
         original: Span,
         context: ExpansionId,
+        mode: Transparency,
         generated: builtin::Expansion,
     ) -> Result<Span, Error> {
         let span = Span {
@@ -1154,12 +1162,7 @@ impl<S: Sources> Engine<'_, S> {
             .loader
             .package
             .marks
-            .apply(
-                SyntaxContextId::ROOT,
-                context,
-                Transparency::SemiOpaque,
-                call_site,
-            )
+            .apply(SyntaxContextId::ROOT, context, mode, call_site)
             .map_err(|message| Error::at(file, original.start, message))?;
         let origins = [Origin {
             generated: span,

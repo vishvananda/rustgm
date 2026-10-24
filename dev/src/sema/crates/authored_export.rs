@@ -167,6 +167,9 @@ impl Stage {
         if provider.current != *identity || provider.provider != *identity {
             return Err("source export identity differs from its actual provider");
         }
+        if facts.members.has_contextual_fields() {
+            return Err("contextual aggregate field metadata is not implemented");
+        }
         if report.package.library_policy().is_some() {
             return Err("source stability contracts are outside this metadata profile");
         }

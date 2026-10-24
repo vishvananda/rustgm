@@ -1,0 +1,67 @@
+{
+  "state": "Declared before execution; no observation or candidate acceptance claim. Retain original field-contract.json hypotheses unchanged, including its now suspect predicted acceptance of field-functional-update-definition.",
+  "source_basis": "Pinned rustc_privacy/lib.rs1020-1040,1068: explicit field ident versus base expression provenance; tuple constructor visibility intersection and actual final constructor path token.",
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "rows": [
+    {
+      "name": "field-update-literal-base",
+      "entry": "pa31/tests/spec/declarative-macros/field-update-literal-base.rs",
+      "sha256": "fb6dd1293ab67d758e87cde71e053b72e4e26939f0ae98e867ee4d49c15d172a",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "Transferred private fields use literal base-expression provenance and its definition-site privacy.",
+      "expected_native": "29\n"
+    },
+    {
+      "name": "field-update-captured-base-denied",
+      "entry": "pa31/tests/spec/declarative-macros/field-update-captured-base-denied.rs",
+      "sha256": "75ce5c737ba493e74c40c3806bb286c9ac7b4fafb921fe123edd9e73d77482b8",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "hypothesis": "A caller-captured base expression does not acquire definition-site permission for transferred private fields."
+    },
+    {
+      "name": "field-tuple-pattern-captured-binding",
+      "entry": "pa31/tests/spec/declarative-macros/field-tuple-pattern-captured-binding.rs",
+      "sha256": "d5c08295e1ab9ebfb037ddc66da91612834e80a8a94d7b81b153bdb31979ce75",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "The literal tuple constructor path owns privacy; captured pattern bindings do not determine that permission.",
+      "expected_native": "41\n"
+    },
+    {
+      "name": "field-tuple-pattern-captured-constructor-denied",
+      "entry": "pa31/tests/spec/declarative-macros/field-tuple-pattern-captured-constructor-denied.rs",
+      "sha256": "49d90ebf22e2cef291bd4430c064d75a9874d2a9a1d8377fadff093a130c74b4",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "hypothesis": "A captured caller constructor path cannot name a provider-private tuple constructor."
+    },
+    {
+      "name": "field-tuple-access-definition",
+      "entry": "pa31/tests/spec/declarative-macros/field-tuple-access-definition.rs",
+      "sha256": "08264377a7eec37cc1d580a039d0a1cad9585a8a61b25b766b8ba9381412b04f",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "A numeric field keeps index identity but literal field-token provenance still selects definition-site privacy.",
+      "expected_native": "43\n"
+    },
+    {
+      "name": "field-tuple-access-captured-index-denied",
+      "entry": "pa31/tests/spec/declarative-macros/field-tuple-access-captured-index-denied.rs",
+      "sha256": "fb400aea99a92dcc976201af0724506b2efe8c3f95595114fbcdb7cd2ac3581d",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "hypothesis": "Captured numeric field tokens retain caller privacy even though numeric identity has no hygienic key."
+    }
+  ]
+}

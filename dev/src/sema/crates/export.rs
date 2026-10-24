@@ -56,19 +56,7 @@ pub(crate) fn export_with_originals(
         &Interface,
     ) -> Result<crate::support::crates::generics::Payload, Error>,
 ) -> Result<Exports, Error> {
-    if report.package.library_policy().is_some() {
-        return Err(error(
-            "library stability metadata export is not implemented",
-        ));
-    }
-    if facts
-        .crates
-        .as_ref()
-        .and_then(|linkage| linkage.identity())
-        .is_some_and(|old| old != &identity)
-    {
-        return Err(error("conflicting local crate linkage identity"));
-    }
+    validate_profile(report, facts, &identity)?;
     let mut functions = Vec::new();
     let mut originals = Vec::new();
     let mut constants = Vec::new();
@@ -155,6 +143,31 @@ pub(crate) fn export_with_originals(
     linkage.set_identity(identity).map_err(error)?;
     roots.sort_unstable_by_key(|definition| definition.0);
     Ok(Exports { interface, roots })
+}
+fn validate_profile(
+    report: &Report,
+    facts: &Declarations,
+    identity: &CrateIdentity,
+) -> Result<(), Error> {
+    if facts.members.has_contextual_fields() {
+        return Err(error(
+            "contextual aggregate field metadata is not implemented",
+        ));
+    }
+    if report.package.library_policy().is_some() {
+        return Err(error(
+            "library stability metadata export is not implemented",
+        ));
+    }
+    if facts
+        .crates
+        .as_ref()
+        .and_then(|linkage| linkage.identity())
+        .is_some_and(|old| old != identity)
+    {
+        return Err(error("conflicting local crate linkage identity"));
+    }
+    Ok(())
 }
 fn needs_original(facts: &Declarations, definition: DefId) -> bool {
     facts.is_const_function(definition)

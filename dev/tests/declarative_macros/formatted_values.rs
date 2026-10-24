@@ -47,6 +47,29 @@ fn literal_formatting_keeps_actual_owner_input_constness_and_visibility_checks()
     Ok(())
 }
 #[test]
+fn scoped_wrappers_preserve_the_actual_format_builtin_constructor_privacy() -> TestResult {
+    use rustgm::support::edition::Edition;
+    for edition in [Edition::Rust2021, Edition::Rust2024] {
+        crate::provider_traits::lower_in_edition(
+            &fixture("holder-format-holder-wrapper")?,
+            edition,
+        )?;
+        let error = crate::provider_traits::lower_in_edition(
+            &fixture("root-format-holder-wrapper")?,
+            edition,
+        )
+        .err()
+        .ok_or("wrapper lent its private constructor access to another builtin")?;
+        assert!(
+            error
+                .to_string()
+                .contains("no applicable formatting constructor"),
+            "{error}"
+        );
+    }
+    Ok(())
+}
+#[test]
 fn real_format_headers_keep_stability_and_claim_opponents_explicit() -> TestResult {
     for name in [
         "format-args",
@@ -118,6 +141,23 @@ fn actual_format_literal_constructors_preserve_independently_observed_native_byt
     for &(name, bytes) in LITERALS {
         let program = lower(&fixture(&format!("literal-complete-{name}"))?)?;
         crate::ffi_program::check(root, &folder, name, &program, &consumer(bytes)?, "7\n")?;
+    }
+    for edition in [
+        rustgm::support::edition::Edition::Rust2021,
+        rustgm::support::edition::Edition::Rust2024,
+    ] {
+        let program = crate::provider_traits::lower_in_edition(
+            &fixture("holder-format-holder-wrapper")?,
+            edition,
+        )?;
+        crate::ffi_program::check(
+            root,
+            &folder,
+            &format!("scoped-holder-{edition:?}"),
+            &program,
+            &consumer("68656c6c6f")?,
+            "7\n",
+        )?;
     }
     let c =
         std::fs::read_to_string(root.join("pa31/tests/spec/source-format-macros/consumer-u32.c"))?;

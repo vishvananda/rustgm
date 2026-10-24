@@ -291,8 +291,17 @@ impl<S: Sources> Engine<'_, S> {
             let generated = self
                 .eager_value(index, definition, root)
                 .map_err(|e| self.eager_error(index, definition, e))?;
+            // Formatting's constructor path is generated at the actual builtin
+            // definition site. An enclosing wrapper cannot lend it privacy.
+            let mode = if matches!(self.definitions[definition].body,
+                Body::Builtin(role) if role.formatting())
+            {
+                super::Transparency::Opaque
+            } else {
+                super::Transparency::SemiOpaque
+            };
             (
-                self.install_builtin(file, visit.node, original, context, generated)?,
+                self.install_builtin(file, visit.node, original, context, mode, generated)?,
                 visit.include,
             )
         };

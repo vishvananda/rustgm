@@ -1,0 +1,95 @@
+{
+  "state": "Declared independent hypotheses; oracle and RustGM qualification pending. Preserve disproven predictions without rewriting source.",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "ownership": "PA6/PA9 semantic type visibility; PA19 associated items; complete scoped macro reproductions belong to PA31. Hidden opaque representations must not escape their source owner.",
+  "rows": [
+    {
+      "name": "private-function-value",
+      "entry": "pa31/tests/spec/declarative-macros/semantic-privacy/private-function-value.rs",
+      "sha256": "c16b335f2e9b085ce47377c3f9e873e3316bc06a7ec9b2bbad5c63e9ce2252d3",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "private-return-value",
+      "entry": "pa31/tests/spec/declarative-macros/semantic-privacy/private-return-value.rs",
+      "sha256": "d4d7fec4a03a5e6cad1c5b41d6fe4b1fe077ad321550e544521c005a80821c8d",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "private-nested-signature",
+      "entry": "pa31/tests/spec/declarative-macros/semantic-privacy/private-nested-signature.rs",
+      "sha256": "bc450572d496ab04ed48b1ae8705ac519822f33f2df411b42245bc0623e141ae",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "private-inherent-method",
+      "entry": "pa31/tests/spec/declarative-macros/semantic-privacy/private-inherent-method.rs",
+      "sha256": "886ca89b009c9f26e94f60033ebb7ed16d164d4a7c00f1ef6b9b8033741f5351",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "private-associated-constant",
+      "entry": "pa31/tests/spec/declarative-macros/semantic-privacy/private-associated-constant.rs",
+      "sha256": "3535e774f7ffb143b4ffdd55466dc7c4c5a902a48bf44b3c5a32cc8dcd37cc13",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "private-opaque-bound",
+      "entry": "pa31/tests/spec/declarative-macros/semantic-privacy/private-opaque-bound.rs",
+      "sha256": "9e203e1ef5301f631a4c3edf6d2833561a4fbabbdb6d0e28aab64d1fedd40d76",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "expected_native": null
+    },
+    {
+      "name": "public-function-pointer",
+      "entry": "pa31/tests/spec/declarative-macros/semantic-privacy/public-function-pointer.rs",
+      "sha256": "a5194c436900de1f95a233a29216cac8f99724c7b5d0fb3f671e518de42a55fc",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n"
+    },
+    {
+      "name": "public-trait-method",
+      "entry": "pa31/tests/spec/declarative-macros/semantic-privacy/public-trait-method.rs",
+      "sha256": "eae5186d268dc858ea03da143a93fc55d9074b193ce58802f08bfad9f71bb8ee",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n"
+    },
+    {
+      "name": "public-opaque-bound",
+      "entry": "pa31/tests/spec/declarative-macros/semantic-privacy/public-opaque-bound.rs",
+      "sha256": "b5508fc9a2fe3d6648852e6279ce254eb0c796a00b51c557bf1a455e4524db4d",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n"
+    },
+    {
+      "name": "public-nested-adt",
+      "entry": "pa31/tests/spec/declarative-macros/semantic-privacy/public-nested-adt.rs",
+      "sha256": "4c329ed476d1bde0ba8f2aeaadc0f11f1edf686efc784c19d6d19da4264c3eeb",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n"
+    }
+  ]
+}

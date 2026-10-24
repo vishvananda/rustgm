@@ -1,0 +1,13 @@
+{
+  "status": "independently observed; RustGM implementation qualification pending",
+  "rustc": "1.98.0 (88d9e12ae178fab0fb5cc050a94da85685d449ea)",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "source_contract_sha256": "8185d66c770324abbd0b0bc2d858cba6628e40337b6ec2fb866f9b0de1aedcaa",
+  "evidence_root": "obj/parallel/semantic-privacy-oracle-v1",
+  "results_sha256": "664c0a1360406d5607d71801b55041cd9b050b009c9440ad6914757cf3a74cbc",
+  "observations": 36,
+  "metadata_and_object": 26,
+  "native": 5,
+  "scope": "Ten PA31 scoped cases and three ordinary PA12 companions in frozen evidence inputs; no source/prediction changes."
+}
