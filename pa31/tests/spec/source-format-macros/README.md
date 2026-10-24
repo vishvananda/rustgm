@@ -28,3 +28,12 @@ attribution and provenance remain in `third_party/sources.json`. Source/slice
 hashes and exact starting lines are in the declaration contract. Never edit a
 frozen hypothesis in response to an observation: retain disagreements and add a
 separately declared correction when a provider is incomplete.
+
+The first frozen independent run executed 140 of 172 planned rows and 18 of 34
+native programs. All declaration-language outcomes matched; unknown-role text
+uses `built-in`, so its four textual predicates differ. Eight literal positives
+stop at missing Freeze in their const source constructor, and their 16 native
+programs remain unrun. The original sources/expectations/results are unchanged.
+`independent-review.json` binds this disagreement; `literal-provider-contract.json`
+predeclares distinct variants with the exact already-qualified Destruct/Freeze
+source declarations and required feature requests. Their outcomes are unobserved.

@@ -1,0 +1,18 @@
+{
+  "status": "Review of immutable original observations; no source/expectation rewrite or support claim",
+  "original_source_head": "75501ab8",
+  "evidence_root": "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/format-source-independent-v1",
+  "results_sha256": "4deb369a8b9010bdc54c1c14e2b65cd14d4a005a262d8e53198a1f0e876bc35c",
+  "complete_sha256": "2fd4dbf3c1ba96c8ee6f15ee2f76b7761352e7ca319c69f629753b70ad056c75",
+  "diagnosis_sha256": "97a4d141366133495f79fa2f6d48353bf92506e388e1cb984e4cb0c9b06e04fb",
+  "observations": 140,
+  "planned": 172,
+  "native": 18,
+  "planned_native": 34,
+  "source_unchanged": true,
+  "unknown_role_actual_error": "cannot find a built-in macro with name `marked`",
+  "declaration_language_outcomes_all_match": true,
+  "literal_original_provider": "incomplete for const from_str: missing Freeze",
+  "additive_provider_contract": "literal-provider-contract.json",
+  "additive_provider_contract_sha256": "d7b4879c6e14d6efcabf396d52193074de52881c4a73e43fe66cfbc44d8e688b"
+}
