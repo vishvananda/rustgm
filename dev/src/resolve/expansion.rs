@@ -842,6 +842,7 @@ impl<S: Sources> Engine<'_, S> {
         )
         .map_err(|e| Error::at(file, e.offset, e.message))?;
         let index = self.definitions.len();
+        let name_context = package.item_context(file, span.start)?;
         self.definitions.push(Definition {
             node: Some(NodeKey {
                 file,
@@ -860,7 +861,7 @@ impl<S: Sources> Engine<'_, S> {
         });
         self.head = self
             .scopes
-            .define(self.head, name, index)
+            .define_context(self.head, name, name_context, index)
             .map_err(|e| Error::at(file, e.offset, e.message))?;
         let context = Context {
             module: visit.module,
@@ -894,7 +895,13 @@ impl<S: Sources> Engine<'_, S> {
                 &mut self.scopes,
                 &self.paths.state.facts.introductions.ancestry,
                 call.scope,
-                name,
+                (
+                    name,
+                    call.path
+                        .view()
+                        .context(0)
+                        .map_err(|e| call.diagnostic(e))?,
+                ),
                 call.visit.introduction,
             )
             .map_err(|e| self.calls[index].diagnostic(e.message))?

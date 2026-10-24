@@ -429,12 +429,15 @@ impl Paths {
             };
             let import = &self.state.facts.imports[index];
             let name = import.path[0];
+            let item_context = crate::resolve::paths::Identified::imported(import)
+                .context(0)
+                .map_err(|e| Error::at(import.node.file, 0, e))?;
             let source = match bindings
                 .textual(
                     scopes,
                     &self.state.facts.introductions.ancestry,
                     scope,
-                    name,
+                    (name, item_context),
                     context,
                 )
                 .map_err(|e| Error::at(import.node.file, e.offset, e.message))?

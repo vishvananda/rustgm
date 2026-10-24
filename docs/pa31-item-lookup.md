@@ -41,6 +41,14 @@ withdrawals use the mapped identity. Identical names sharing one source context
 share the transformed glob suffix. Privacy is evaluated separately from that
 cached mapping. Unknown provenance cannot create a cached successful answer.
 
+Legacy textual macro declarations, single-name calls and import fallbacks now
+use the declared name's exact normalized item identity too. The immutable scope
+entries and root-name cache keep their existing layouts. One optional cold owner
+stores non-root definition contexts and contextual query answers. Pending answers
+retain their actual output dependency, so publication resumes each context
+without flushing unrelated answers or accepting a sibling name. These names are
+never inferred from the expansion that introduced the declaration.
+
 ## Declared controls and costs
 
 Before execution, the new private controls require:
@@ -56,6 +64,9 @@ Before execution, the new private controls require:
   preserving an identically spelled direct binding in the root context.
 - A literal generic parameter cannot be captured by opaque definition-site
   rewinding; a parameter supplied by the caller retains its original identity.
+- Textual scopes preserve independent contexts, historical branches and pending
+  output wakeups; ordinary queries allocate no context owner. Repeated queries
+  with the same context share the reached suffix at depth plus use-count cost.
 
 These are structural controls using real parser/expansion owners with supplied
 opaque token provenance. They are not evidence of scoped macro source acceptance.
@@ -74,9 +85,15 @@ publication; all regressions must remain visible.
 Formatting is the only completed check at this source checkpoint. Architecture
 audit, strict all-target/all-feature Clippy, focused debug tests, text regression,
 independent/native source controls and combined release qualification are pending.
-Legacy textual macro context keys, scoped publication, full member consumers and
+Scoped publication, full member consumers and
 foreign macro transport remain separate required work. Do not enable scoped
 admission merely because these private controls pass.
+
+The textual controls measure reuse of a reached suffix, not linear work for
+arbitrarily many distinct cold query contexts. The current persistent-link cache
+can visit a scope suffix for each distinct name/context; the broad width/depth
+matrix must expose that cost before scoped source admission. Context-sensitive
+lookup must not be described as universally constant-time.
 
 ## Independent parameter observation
 

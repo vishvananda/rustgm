@@ -1,4 +1,5 @@
 //! Persistent textual scope links stop lookup at unresolved expansion output.
+use super::marks::ItemContext;
 use crate::support::hash::HashMap;
 use crate::{lex::token::LexError, support::names::NameId, syntax::token_tree::error};
 
@@ -29,11 +30,18 @@ enum Entry {
         resolved: Option<Scope>,
     },
 }
+/// Physical and legacy-only sources retain the original entries and cache.
+#[derive(Default)]
+struct Contexts {
+    definitions: HashMap<Scope, ItemContext>,
+    cache: HashMap<(Scope, NameId, ItemContext), Lookup>,
+}
 pub struct Scopes {
     entries: Vec<Entry>,
     cache: HashMap<(Scope, NameId), Lookup>,
     waiting: HashMap<Scope, Vec<Observer>>,
     scratch: Vec<Scope>,
+    contexts: Option<Box<Contexts>>,
     pub lookup_steps: usize,
 }
 impl Default for Scopes {
@@ -43,6 +51,7 @@ impl Default for Scopes {
             cache: HashMap::default(),
             waiting: HashMap::default(),
             scratch: Vec::new(),
+            contexts: None,
             lookup_steps: 0,
         }
     }
@@ -73,6 +82,41 @@ impl Scopes {
             previous,
         })
     }
+    pub(crate) fn define_context(
+        &mut self,
+        previous: Scope,
+        name: NameId,
+        context: ItemContext,
+        definition: usize,
+    ) -> Result<Scope, LexError> {
+        let scope = self.define(previous, name, definition)?;
+        if context != ItemContext::ROOT {
+            self.contexts
+                .get_or_insert_with(Box::default)
+                .definitions
+                .insert(scope, context);
+        }
+        Ok(scope)
+    }
+
+    fn definition_context(&self, scope: Scope) -> ItemContext {
+        self.contexts
+            .as_ref()
+            .and_then(|contexts| contexts.definitions.get(&scope))
+            .copied()
+            .unwrap_or(ItemContext::ROOT)
+    }
+
+    fn cached(&self, scope: Scope, name: NameId, context: ItemContext) -> Option<Lookup> {
+        if context == ItemContext::ROOT {
+            self.cache.get(&(scope, name)).copied()
+        } else {
+            self.contexts
+                .as_ref()
+                .and_then(|contexts| contexts.cache.get(&(scope, name, context)))
+                .copied()
+        }
+    }
     /// # Errors
     /// Rejects scope-identity overflow.
     pub fn output(&mut self) -> Result<Scope, LexError> {
@@ -101,7 +145,16 @@ impl Scopes {
     ///
     /// # Errors
     /// Rejects malformed identities and cycles in caller-constructed graphs.
-    pub fn lookup(&mut self, mut scope: Scope, name: NameId) -> Result<Lookup, LexError> {
+    pub fn lookup(&mut self, scope: Scope, name: NameId) -> Result<Lookup, LexError> {
+        self.lookup_context(scope, name, ItemContext::ROOT)
+    }
+
+    pub(crate) fn lookup_context(
+        &mut self,
+        mut scope: Scope,
+        name: NameId,
+        context: ItemContext,
+    ) -> Result<Lookup, LexError> {
         self.scratch.clear();
         let mut steps = 0;
         let result = loop {
@@ -110,7 +163,7 @@ impl Scopes {
             }
             steps += 1;
             self.lookup_steps += 1;
-            if let Some(found) = self.cache.get(&(scope, name)).copied() {
+            if let Some(found) = self.cached(scope, name, context) {
                 if let Lookup::Pending(dependency) = found {
                     if let Some(Entry::Output { resolved: Some(_) }) =
                         self.entries.get(dependency.0 as usize)
@@ -136,7 +189,7 @@ impl Scopes {
                     definition,
                     previous,
                 } => {
-                    if *bound == name {
+                    if *bound == name && self.definition_context(scope) == context {
                         break Lookup::Found(*definition);
                     }
                     scope = *previous;
@@ -147,9 +200,20 @@ impl Scopes {
                 Entry::Output { resolved: None } => break Lookup::Pending(scope),
             }
         };
-        for scope in self.scratch.drain(..) {
-            self.cache.insert((scope, name), result);
+        if context == ItemContext::ROOT {
+            for scope in self.scratch.drain(..) {
+                self.cache.insert((scope, name), result);
+            }
+        } else {
+            let contexts = self.contexts.get_or_insert_with(Box::default);
+            for scope in self.scratch.drain(..) {
+                contexts.cache.insert((scope, name, context), result);
+            }
         }
         Ok(result)
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/textual_contexts.rs"]
+mod tests;
