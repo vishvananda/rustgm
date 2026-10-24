@@ -10,23 +10,29 @@ fn physical_scopes_and_rejected_invocations_allocate_no_item_owner() -> TestResu
     assert!(introductions.item_scopes.is_none());
     assert!(
         introductions
-            .invocation(ExpansionId(2), ExpansionId(0), ScopeId(0))
+            .invocation(ExpansionId(2), ExpansionId(0), ScopeId(0), None)
             .is_err()
     );
     assert!(
         introductions
-            .invocation(ExpansionId(1), ExpansionId(9), ScopeId(0))
+            .invocation(ExpansionId(1), ExpansionId(9), ScopeId(0), None)
             .is_err()
     );
     assert!(introductions.item_scopes.is_none());
     assert!(!introductions.ancestor(ExpansionId(1), ExpansionId(1)));
-    introductions.invocation(ExpansionId(1), ExpansionId(0), ScopeId(3))?;
+    let owner = Some(NodeKey {
+        file: crate::resolve::unit::FileId(2),
+        node: crate::syntax::ast::NodeId::new(3),
+    });
+    introductions.invocation(ExpansionId(1), ExpansionId(0), ScopeId(3), owner)?;
     assert!(
         introductions
-            .invocation(ExpansionId(1), ExpansionId(0), ScopeId(8))
+            .invocation(ExpansionId(1), ExpansionId(0), ScopeId(8), None)
             .is_err()
     );
     assert_eq!(introductions.definition_scope(ExpansionId(1))?, ScopeId(3));
+    assert_eq!(introductions.definition_owner(ExpansionId(1))?, owner);
+    assert!(introductions.definition_owner(ExpansionId(2)).is_err());
     assert!(introductions.definition_scope(ExpansionId(2)).is_err());
     assert!(introductions.definition_scope(ExpansionId(0)).is_err());
     Ok(())
@@ -37,7 +43,7 @@ fn scope_storage_is_linear_and_hot_records_do_not_gain_provenance() -> TestResul
     for count in [8_u32, 32, 128, 512] {
         let mut introductions = Introductions::default();
         for id in 1..=count {
-            introductions.invocation(ExpansionId(id), ExpansionId(id - 1), ScopeId(id))?;
+            introductions.invocation(ExpansionId(id), ExpansionId(id - 1), ScopeId(id), None)?;
             introductions.introduce_scope(ScopeId(id), ExpansionId(id));
         }
         let sites = introductions
@@ -69,5 +75,6 @@ fn scope_storage_is_linear_and_hot_records_do_not_gain_provenance() -> TestResul
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<crate::body::ir::Value>(), 24);
     assert_eq!(size_of::<crate::types::Kind>(), 24);
+    assert_eq!(size_of::<DefinitionSite>(), 12);
     Ok(())
 }

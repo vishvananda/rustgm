@@ -132,6 +132,22 @@ The independent oracle above does not enable or qualify scoped macro invocation.
 
 ## Current evidence and next acceptance
 
+The field consumer component at `14a71f1b` passes 1,496 private tests, 138
+affected integration cases and 22 native test functions. Formatting, the audit
+and strict Clippy pass. Its immutable CLI passes all 8,382 active text cases:
+nineteen stages were retained from the diagnostic recovery and five rerun after
+the independently reviewed projection-arena reference update. The original
+PA12 struct-update diagnostic location is preserved; privacy still comes from
+the actual base expression. No reference was changed for that diagnostic.
+Measured storage is Members 360, Field 32, Variant 32 and Declarations 7,040
+bytes. Only the cold optional field-index pointer grows the declarations owner.
+
+Evidence is retained under `obj/parallel/field-identity-runtime-v1/`,
+`field-identity-recovery-v1/` and `field-identity-text-continuation-v1/` in the
+integrator field worktree. The successor draft enables actual scoped invocation
+and adds fifty original source controls and builtin-format privacy opponents;
+that successor is not yet qualified by these component results.
+
 Native outputs cover literal/captured field identity, shorthand, distinct
 same-spelling fields, provider-private reads, numeric fields, constructor provenance and
 complete versus omitted update fields. Candidate source execution still requires

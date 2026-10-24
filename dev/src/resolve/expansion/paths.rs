@@ -63,7 +63,7 @@ impl Paths {
         self.state
             .facts
             .introductions
-            .invocation(expansion, parent, scope)
+            .invocation(expansion, parent, scope, definition.node)
     }
 
     /// Bind an executing local builtin to its actual canonical source item.

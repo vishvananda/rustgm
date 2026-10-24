@@ -202,7 +202,7 @@ fn sibling_trait_member_queries_copy_only_their_own_context_partition() -> TestR
             report
                 .resolution
                 .introductions
-                .invocation(expansion, ExpansionId(0), scope)?;
+                .invocation(expansion, ExpansionId(0), scope, None)?;
             let syntax = report.package.marks.apply(
                 SyntaxContextId::ROOT,
                 expansion,

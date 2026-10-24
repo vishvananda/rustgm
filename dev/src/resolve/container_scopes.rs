@@ -1,5 +1,6 @@
 //! Actual lexical containers and macro definition sites, separate from names.
 use super::model::{Introductions, ScopeId};
+use super::unit::NodeKey;
 use crate::{
     expand::marks::ExpansionId,
     support::hash::{HashMap, HashSet},
@@ -9,10 +10,16 @@ use crate::{
 #[derive(Default)]
 pub(crate) struct ItemScopes {
     introduced: HashMap<ScopeId, ExpansionId>,
-    definitions: Vec<ScopeId>,
+    definitions: Vec<DefinitionSite>,
     /// Original item/statement-macro blocks remain lookup boundaries even when
     /// expansion removes all their declarations. Value-only scopes are not.
     blocks: HashSet<ScopeId>,
+}
+
+#[derive(Clone, Copy)]
+struct DefinitionSite {
+    scope: ScopeId,
+    owner: Option<NodeKey>,
 }
 
 #[cfg(test)]
@@ -96,6 +103,7 @@ impl Introductions {
         expansion: ExpansionId,
         parent: ExpansionId,
         definition: ScopeId,
+        owner: Option<NodeKey>,
     ) -> Result<(), &'static str> {
         let count = self
             .item_scopes
@@ -108,11 +116,25 @@ impl Introductions {
         self.item_scopes
             .get_or_insert_with(Box::default)
             .definitions
-            .push(definition);
+            .push(DefinitionSite {
+                scope: definition,
+                owner,
+            });
         Ok(())
     }
 
     pub(crate) fn definition_scope(&self, expansion: ExpansionId) -> Result<ScopeId, &'static str> {
+        self.definition_site(expansion).map(|site| site.scope)
+    }
+
+    pub(crate) fn definition_owner(
+        &self,
+        expansion: ExpansionId,
+    ) -> Result<Option<NodeKey>, &'static str> {
+        self.definition_site(expansion).map(|site| site.owner)
+    }
+
+    fn definition_site(&self, expansion: ExpansionId) -> Result<DefinitionSite, &'static str> {
         expansion
             .0
             .checked_sub(1)

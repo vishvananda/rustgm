@@ -7,7 +7,6 @@ use crate::resolve::{
     },
     model::{DefKind, Resolution},
 };
-use crate::syntax::{ast::Kind, item::ItemKind};
 use std::rc::Rc;
 
 pub(super) struct FrameView<'a> {
@@ -31,12 +30,28 @@ impl<'a> FrameView<'a> {
             .definitions
             .get(frame.definition)
             .is_some_and(|actual| {
-                !matches!(actual.body, Body::ScopedDeclaration(_))
+                self.executed(frame.context, actual)
                     && actual.node == frame.owner
                     && actual.module == frame.module
                     && actual.edition == frame.edition
                     && actual.edition_panic == frame.skip
             })
+    }
+    fn executed(&self, context: ExpansionId, definition: &Definition) -> bool {
+        let scope = if let Some(node) = definition.node {
+            self.facts.node_scopes.get(&(definition.module, node.node))
+        } else {
+            self.facts.module_scopes.get(definition.module.0 as usize)
+        };
+        self.facts
+            .introductions
+            .definition_scope(context)
+            .is_ok_and(|actual| Some(&actual) == scope)
+            && self
+                .facts
+                .introductions
+                .definition_owner(context)
+                .is_ok_and(|owner| owner == definition.node)
     }
     pub(super) fn definition(&self, index: usize) -> Result<&'a Definition, Error> {
         let error = |message| Error::at(FileId(0), 0, message);
@@ -44,9 +59,6 @@ impl<'a> FrameView<'a> {
             .definitions
             .get(index)
             .ok_or_else(|| error("unknown panic macro definition"))?;
-        if matches!(definition.body, Body::ScopedDeclaration(_)) {
-            return Err(error("scoped declaration has no executed expansion frame"));
-        }
         let package = self.package;
         let root = self
             .facts
@@ -64,24 +76,6 @@ impl<'a> FrameView<'a> {
             }
             return Ok(definition);
         };
-        if self
-            .package
-            .units
-            .get(node.file.0 as usize)
-            .is_some_and(|unit| {
-                unit.configured
-                    .ast
-                    .nodes
-                    .get(node.node.get() as usize)
-                    .is_some_and(|actual| {
-                        matches!(actual.kind, Kind::Item(index)
-                    if unit.configured.ast.items.get(index as usize)
-                        .is_some_and(|item| matches!(item.kind, ItemKind::DeclarativeMacro { .. })))
-                    })
-            })
-        {
-            return Err(error("scoped declaration has no executed expansion frame"));
-        }
         let scope = self
             .facts
             .node_scopes
@@ -162,6 +156,11 @@ impl<'a> FrameView<'a> {
             return Err(error("invalid panic expansion call site"));
         }
         let definition = self.definition(invocation.definition)?;
+        if !self.executed(context, definition) {
+            return Err(error(
+                "macro declaration differs from its executed expansion frame",
+            ));
+        }
         Ok(Frame {
             context,
             definition: invocation.definition,
