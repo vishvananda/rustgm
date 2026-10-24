@@ -101,3 +101,29 @@ visibility API changes are proposed. All new expansion publication uses the
 existing Paths::invocation(actual Definition) method. Cold containing layouts,
 ordinary no-format allocations, template width × argument-use work and warmed
 failed-budget controls must be observed during the owning qualification.
+
+## Independent observations before implementation
+
+The first frozen corpus remains unchanged: 140 actual rows of 172 planned,
+18 actual native programs, all declaration-language predictions matched. Its
+unknown-role predicate used `builtin` while rustc spells `built-in`. All eight
+literal-positive hypotheses stopped at missing Freeze in their source const
+constructor. Negatives with that extra error were not accepted as qualified
+constructor opposition.
+
+A distinct 12-source contract adds the exact qualified Destruct/Freeze source
+prerequisites and required feature requests, preserving every original source.
+All 48 metadata/object checks then match, with genuine E0308, E0015 and E0624
+constructor negatives and no missing-Freeze mask. Fourteen native programs pass.
+The raw source has an actual newline, while its initial consumer predicted a
+backslash escape; both failed comparisons remain. A separately declared
+four-row continuation reuses the exact two compiled objects and compares actual
+`610a62` bytes; both native programs pass without repeating language checks.
+
+The [immutable review](../pa31/tests/spec/source-format-macros/independent-review.json)
+and [observed cases](../pa31/tests/spec/source-format-macros/observations.json)
+bind all roots, source and stream hashes. Across the preserved history there
+are 38 unique source inputs, 224 actual observations and 34 matched native
+programs. The qualified milestone set is 14 declaration plus 12 complete literal
+sources; original incomplete literal inputs and original failed comparisons
+remain explicit. No compiler implementation is qualified by these results.

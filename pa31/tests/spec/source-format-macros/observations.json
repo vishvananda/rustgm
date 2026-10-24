@@ -1,0 +1,453 @@
+{
+  "status": "Independent observations only; no RustGM source activation or candidate qualification",
+  "qualified_milestone_sources": 26,
+  "retained_incomplete_original_literal_sources": 12,
+  "combined_actual_observations": 224,
+  "combined_actual_metadata_object": 152,
+  "matched_native_programs": 34,
+  "review_sha256": "0e9f6f9a9bf89cea6cdc9254abc3a4747b8427f02f06193d7936e1d5bb47f527",
+  "cases": [
+    {
+      "name": "declaration-original-format-args",
+      "path": "declaration-original-format-args.rs",
+      "source_sha256": "7d2b6b999aa944ca2ca67f4a2de35d7ee0532c2b72dfc9589eb6fa326f2b31e1",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": null,
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual original source header retained; later staged policy remains explicit"
+    },
+    {
+      "name": "declaration-original-const-format-args",
+      "path": "declaration-original-const-format-args.rs",
+      "source_sha256": "7aa25b8e164a5e1cbbac78a30be9f7ba7d4c9150bc41019cd6c18db6f622d273",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": null,
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual original source header retained; later staged policy remains explicit"
+    },
+    {
+      "name": "declaration-original-format-args-nl",
+      "path": "declaration-original-format-args-nl.rs",
+      "source_sha256": "fb711544ef3d0981f42a2b342cefb3c084d7c2315bd43d192102984cfee058ff",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": null,
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual original source header retained; later staged policy remains explicit"
+    },
+    {
+      "name": "declaration-original-three",
+      "path": "declaration-original-three.rs",
+      "source_sha256": "15e1d0637934a0f16891b71ef1dc9ec4010aa19411f20b84f935bb45341052e8",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": null,
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "all actual original source headers"
+    },
+    {
+      "name": "declaration-renamed-role",
+      "path": "declaration-renamed-role.rs",
+      "source_sha256": "1893be35b1ff3ddb766fc72337a22e02de80d107b57e8b9ecdf96299f9d60f04",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": null,
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual role identity independent of declared spelling"
+    },
+    {
+      "name": "declaration-authored-same-spelling",
+      "path": "declaration-authored-same-spelling.rs",
+      "source_sha256": "5059af4f128a42108e3ad8317097c6b8cf93014d92bd77f7b07a17888a3e55a4",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "9\n",
+      "native_bytes_hex": null,
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "ordinary authored behavior unchanged"
+    },
+    {
+      "name": "declaration-diagnostic-only",
+      "path": "declaration-diagnostic-only.rs",
+      "source_sha256": "6314f3b9716da27d748d5d8abeefb50e85d762640e529f65fff661948ec57e62",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": null,
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "Rust-positive; candidate must not infer builtin execution from diagnostic alone"
+    },
+    {
+      "name": "declaration-wrong-diagnostic-role",
+      "path": "declaration-wrong-diagnostic-role.rs",
+      "source_sha256": "75e640761ce168f174a9eb72390826fe77be209b0e266a3c93cff784d5614a05",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": null,
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "Rust-positive; candidate rejects wrong actual source role for its reserved protocol"
+    },
+    {
+      "name": "declaration-scoped-format-role",
+      "path": "declaration-scoped-format-role.rs",
+      "source_sha256": "b0cbc26c9f223b9ac9bdced71f6300c66e68062e4f0bf87e382a0c3b149a7817",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": null,
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "Rust-positive deliberately unsupported scoped builtin role"
+    },
+    {
+      "name": "declaration-unknown-role",
+      "path": "declaration-unknown-role.rs",
+      "source_sha256": "4eb8a1320e4a620a545021a68486eb830108ab7845be104571c9fc1062a3ad82",
+      "metadata": "reject",
+      "object": "reject",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": null,
+      "native_bytes_hex": null,
+      "native_successes": 0,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": "actual unknown role text built-in",
+      "candidate_scope": "unknown role remains unsupported"
+    },
+    {
+      "name": "declaration-wrong-target",
+      "path": "declaration-wrong-target.rs",
+      "source_sha256": "a18995d3951469a33d8e13e32d242023d81b20b67292f1bcb278bf0635a50789",
+      "metadata": "reject",
+      "object": "reject",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": null,
+      "native_bytes_hex": null,
+      "native_successes": 0,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual macro owner required"
+    },
+    {
+      "name": "declaration-unsafe-missing-feature",
+      "path": "declaration-unsafe-missing-feature.rs",
+      "source_sha256": "152e7212655cf2c9b42f08de193eda05d140ad5a78c16bb7f83a91983fb81b1f",
+      "metadata": "reject",
+      "object": "reject",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": null,
+      "native_bytes_hex": null,
+      "native_successes": 0,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual attribute feature authorization required"
+    },
+    {
+      "name": "declaration-unsafe-malformed",
+      "path": "declaration-unsafe-malformed.rs",
+      "source_sha256": "0d6f124fbec8c83cb8c340e8ef17b602a8156cf0890ede7f6ad178be8b75ed8a",
+      "metadata": "reject",
+      "object": "reject",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": null,
+      "native_bytes_hex": null,
+      "native_successes": 0,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "no-arguments attribute grammar required"
+    },
+    {
+      "name": "declaration-duplicate-diagnostic",
+      "path": "declaration-duplicate-diagnostic.rs",
+      "source_sha256": "4d1e9dad0206cec8302f8140ea1fffd03dafa80ba7774bf048d35fc1b7160cd1",
+      "metadata": "reject",
+      "object": "reject",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": null,
+      "native_bytes_hex": null,
+      "native_successes": 0,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "duplicate actual diagnostic identity"
+    },
+    {
+      "name": "literal-complete-basic",
+      "path": "literal-complete-basic.rs",
+      "source_sha256": "a23527d5a3ca0a4e00d5f67ce675bcf6f2229f65b4118e2e6a9254120ebc7245",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": "68656c6c6f",
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-complete-const",
+      "path": "literal-complete-const.rs",
+      "source_sha256": "8783c649a933841b2e4016794b4499bf18a855ad63d13d38b33eb1b46e20a574",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": "68656c6c6f",
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-complete-newline",
+      "path": "literal-complete-newline.rs",
+      "source_sha256": "9dee2629c41a1d95dc0dd58df4aaf8df9d88321175c594de236ac39e82133dbd",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": "68656c6c6f0a",
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-complete-empty",
+      "path": "literal-complete-empty.rs",
+      "source_sha256": "56b58c5e4a395c3ed1f930e24cd030ab1a2741e0ecec9a68f8a653001a8f4a2f",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": "",
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-complete-escaped-braces",
+      "path": "literal-complete-escaped-braces.rs",
+      "source_sha256": "2e6b9cf0cebda218af7b88a97a04c13bcdc0e4adcda958a7507f6d40e797f688",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": "7b787d",
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-complete-raw",
+      "path": "literal-complete-raw.rs",
+      "source_sha256": "9832adc080813e232ca8068ba44070a2bc871b7ee985c6c2a02d33c0d354fbde",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": "610a62",
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-complete-renamed-role",
+      "path": "literal-complete-renamed-role.rs",
+      "source_sha256": "0b3a0a79c373c0ed7474bc7859e22de6446bf21a106b00b18b83b17847b6576d",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": "68656c6c6f",
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual selected role, no spelling privilege"
+    },
+    {
+      "name": "literal-complete-missing-language-owner",
+      "path": "literal-complete-missing-language-owner.rs",
+      "source_sha256": "291daa5caf90563e2549150071e40a09c5300b9b1034dcbcc04b377f1412c112",
+      "metadata": "reject",
+      "object": "reject",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": null,
+      "native_bytes_hex": null,
+      "native_successes": 0,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-complete-wrong-constructor-input",
+      "path": "literal-complete-wrong-constructor-input.rs",
+      "source_sha256": "442f129b9ecbec438d0c3650478dd21e05f9261fdf88979dfedb1339544a6dc3",
+      "metadata": "reject",
+      "object": "reject",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": null,
+      "native_bytes_hex": null,
+      "native_successes": 0,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-complete-nonconst-constructor",
+      "path": "literal-complete-nonconst-constructor.rs",
+      "source_sha256": "23e83cc798e6c40dd182cec0290c8abe319fda889e7f17bfe862e05f39c5ba38",
+      "metadata": "reject",
+      "object": "reject",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": null,
+      "native_bytes_hex": null,
+      "native_successes": 0,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-complete-private-constructor",
+      "path": "literal-complete-private-constructor.rs",
+      "source_sha256": "82911a3aaf2bb65775f2f777702351c491fe983591ec808aac8194447b3f62d2",
+      "metadata": "reject",
+      "object": "reject",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": null,
+      "native_bytes_hex": null,
+      "native_successes": 0,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-complete-captured-expression",
+      "path": "literal-complete-captured-expression.rs",
+      "source_sha256": "7c4d2f322cc687e6fd4b4f791ce7962934b4cbf74b86b00ba9c0545ec4f4a6c9",
+      "metadata": "accept",
+      "object": "accept",
+      "editions": [
+        2021,
+        2024
+      ],
+      "native_stdout": "7\n",
+      "native_bytes_hex": "68656c6c6f",
+      "native_successes": 2,
+      "original_hypothesis_unchanged": true,
+      "diagnostic_reason_review": null,
+      "candidate_scope": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    }
+  ]
+}

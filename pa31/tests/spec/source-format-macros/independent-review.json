@@ -14,5 +14,38 @@
   "declaration_language_outcomes_all_match": true,
   "literal_original_provider": "incomplete for const from_str: missing Freeze",
   "additive_provider_contract": "literal-provider-contract.json",
-  "additive_provider_contract_sha256": "d7b4879c6e14d6efcabf396d52193074de52881c4a73e43fe66cfbc44d8e688b"
+  "additive_provider_contract_sha256": "d7b4879c6e14d6efcabf396d52193074de52881c4a73e43fe66cfbc44d8e688b",
+  "additive_complete_provider": {
+    "source_head": "75864bfbee58f4c7fcc14be47826b7794453962f",
+    "evidence_root": "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/format-source-independent-v2",
+    "plan_sha256": "608d363cb07c1655d2e0ecd267b98333ba543f7daa3c2de3b65613a18d13b85c",
+    "results_sha256": "71f016f96bc095bb094c048781e1a9826216d96e06d2f56865f6c1b6535a1c72",
+    "complete_sha256": "b4fc4b828311c7200ed98b629da247a0fd26513d003fdce7546f35c9d6a5cc57",
+    "actual_observations": 80,
+    "metadata_object_all48_match": true,
+    "matched_native14": true,
+    "original_raw_comparison_mismatch": "Immutable source contains actualLF610a62; original predicted comparison615c6e62 is invalid. Both native failures retained; not compiler behavior disagreement."
+  },
+  "raw_native_continuation": {
+    "evidence_root": "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/format-raw-native-continuation-v1",
+    "plan_sha256": "4436b81b333794a2803b9b78c2469d869687a5721e9494ac89816ccc55eb82f2",
+    "results_sha256": "b3f4754291aa376f3f23a7ae2a21261831b8fda679d69a435d66a958c8a7f88e",
+    "complete_sha256": "8722436f03594a0192991d1be8f9a2144d7f683fb9c21a5e3b87d5ab92e46811",
+    "same_source_and_existing_objects": true,
+    "new_link_run_observations": 4,
+    "new_native": 2,
+    "corrected_expected_bytes_hex": "610a62",
+    "language_observations_repeated": 0
+  },
+  "combined_coverage": {
+    "unique_source_inputs": 38,
+    "actual_observations": 224,
+    "actual_language_observations": 152,
+    "actual_native_runs": 36,
+    "matched_native_programs": 34,
+    "supported_declaration_native": 18,
+    "supported_complete_literal_native": 16,
+    "candidate_qualification": false,
+    "missing_native_from_original_incomplete_provider_still_unrun": 16
+  }
 }
