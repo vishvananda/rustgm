@@ -168,6 +168,27 @@ fn evaluate(
     if range.start == range.end {
         return Err(error(offset, "expected cfg predicate"));
     }
+    if let Some(token) = forest.token(range.start)
+        && matches!(token.kind, Kind::Interpolated(_))
+    {
+        if range.end != range.start + 1 {
+            return Err(error(offset, "opaque cfg predicate has trailing tokens"));
+        }
+        let splice = inputs
+            .get(token)?
+            .ok_or_else(|| error(offset, "missing opaque cfg predicate"))?;
+        let captured = splice.metadata()?;
+        // Typed relocation preserves the caller token editions and raw origins.
+        // The retained metadata is not parsed from a rendered spelling image.
+        return evaluate(
+            &captured.forest,
+            source,
+            captured.forest.roots(),
+            config,
+            inputs,
+            depth + 1,
+        );
+    }
     let name = forest
         .name(source, range.start)
         .ok_or_else(|| error(offset, "expected cfg predicate name"))?;

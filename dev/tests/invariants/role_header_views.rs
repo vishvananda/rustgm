@@ -1,4 +1,6 @@
 //! Neutral header views preserve actual Self, member and qualifier identities.
+#[path = "ordinary_clone_role.rs"]
+mod ordinary;
 use super::*;
 use crate::{
     expand::config::Config,

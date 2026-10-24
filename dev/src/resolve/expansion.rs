@@ -41,6 +41,7 @@ mod panic_dispatch;
 mod permission_frames;
 mod permission_session;
 pub use permission_session::MacroAllowanceSession;
+mod choice_dispatch;
 mod paths;
 mod resources;
 mod transcription;
@@ -1203,6 +1204,9 @@ impl<S: Sources> Engine<'_, S> {
                 .map_err(|_| Error::at(file, 0, "too many expansion contexts"))?,
         );
         if let Body::Builtin(builtin) = self.definitions[definition].body {
+            if builtin == Builtin::CfgSelect {
+                return self.invoke_choice(visit, grammar, definition, context, &input);
+            }
             if builtin.source_only() {
                 return self.invoke_panic(visit, grammar, definition, context, &input, builtin);
             }

@@ -1,4 +1,5 @@
 //! Builtin expansion consumes classified inputs and constructs typed syntax directly.
+pub(crate) mod choice;
 pub(crate) mod delegation;
 mod library;
 use super::{
@@ -24,6 +25,7 @@ pub use library::option_environment;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Builtin {
     Cfg,
+    CfgSelect,
     Line,
     Column,
     File,
@@ -41,8 +43,9 @@ pub enum Builtin {
     Unreachable,
 }
 impl Builtin {
-    pub const ALL: [Self; 16] = [
+    pub const ALL: [Self; 17] = [
         Self::Cfg,
+        Self::CfgSelect,
         Self::Line,
         Self::Column,
         Self::File,
@@ -61,7 +64,10 @@ impl Builtin {
     ];
     #[must_use]
     pub const fn source_only(self) -> bool {
-        matches!(self, Self::CorePanic | Self::StdPanic | Self::Unreachable)
+        matches!(
+            self,
+            Self::CorePanic | Self::StdPanic | Self::Unreachable | Self::CfgSelect
+        )
     }
     #[must_use]
     pub const fn eager(self) -> bool {
@@ -84,6 +90,7 @@ impl Builtin {
     pub const fn name(self) -> &'static str {
         match self {
             Self::Cfg => "cfg",
+            Self::CfgSelect => "cfg_select",
             Self::Line => "line",
             Self::Column => "column",
             Self::File => "file",
@@ -132,6 +139,10 @@ pub fn expand(
         | Builtin::IncludeStr
         | Builtin::IncludeBytes
         | Builtin::Include => Err(error(0, "builtin requires expanded argument facts")),
+        Builtin::CfgSelect => Err(error(
+            0,
+            "cfg selection requires its actual source declaration",
+        )),
         Builtin::CorePanic | Builtin::StdPanic | Builtin::Unreachable => Err(error(
             0,
             "source panic delegation requires its actual defining macro",

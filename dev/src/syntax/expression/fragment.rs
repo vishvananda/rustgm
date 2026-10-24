@@ -114,6 +114,7 @@ pub fn parse_with_inputs<'s>(
         position,
     })
 }
+pub(crate) use super::statement_modes::statement_expression;
 impl Parser<'_, '_> {
     fn fragment_statement(&mut self) -> Result<NodeId, LexError> {
         if let Some(node) = self.interpolated(&[FragmentKind::Statement])? {
@@ -129,6 +130,10 @@ impl Parser<'_, '_> {
         if self.cursor.at_word(Word::Let)? {
             return self.let_statement(false);
         }
+        let opaque = self
+            .cursor
+            .peek(0)?
+            .is_some_and(|token| matches!(token.kind, super::TokenKind::Interpolated(_)));
         let value = self.expr(
             0,
             Context {
@@ -136,7 +141,9 @@ impl Parser<'_, '_> {
                 ..NORMAL
             },
         )?;
-        self.statement_macro(value);
+        if !opaque {
+            self.statement_macro(value);
+        }
         self.node(self.ast.node(value).span.start, Kind::Statement(value))
     }
 }

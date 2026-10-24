@@ -77,6 +77,16 @@ impl Resolver<'_> {
             if summary.node != key {
                 return Err(self.error(context, node, "scoped header names another declaration"));
             }
+            if summary
+                .builtin
+                .is_some_and(|role| role != crate::expand::builtin::Builtin::CfgSelect)
+            {
+                return Err(self.error(
+                    context,
+                    node,
+                    "scoped builtin role has no implemented source contract",
+                ));
+            }
             (checked.into_data(), Some(summary.edition))
         } else {
             (None, None)
@@ -303,7 +313,7 @@ fn declaration_attributes(
                 }
                 mode = Some(transparency(package, unit, key, attribute, forest)?);
             }
-            Some("rustc_builtin_macro") => {
+            Some("rustc_builtin_macro") if package.source_core().is_none() => {
                 return Err(Error::at(
                     key.file,
                     attribute.span.start,

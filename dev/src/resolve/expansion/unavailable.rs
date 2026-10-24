@@ -45,6 +45,16 @@ impl<S: Sources> Engine<'_, S> {
                 .declaration()
                 .allows(crate::resolve::bindings::KnownFeature::EditionPanic)
         });
+        let body = if let Some(role) = declared
+            .header
+            .as_ref()
+            .and_then(|header| header.declaration().builtin)
+        {
+            // The shared producer already authenticated the sole scoped builtin role.
+            Body::Builtin(role)
+        } else {
+            Body::ScopedDeclaration(declared.mode)
+        };
         self.definitions.push(Definition {
             node: Some(NodeKey {
                 file,
@@ -52,7 +62,7 @@ impl<S: Sources> Engine<'_, S> {
             }),
             module: visit.module,
             name,
-            body: Body::ScopedDeclaration(declared.mode),
+            body,
             context,
             introduction: visit.introduction,
             preceding_scope: self.head,

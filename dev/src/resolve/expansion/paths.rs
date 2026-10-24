@@ -66,6 +66,47 @@ impl Paths {
             .invocation(expansion, parent, scope)
     }
 
+    /// Bind an executing local builtin to its actual canonical source item.
+    pub(super) fn checked_source_macro(
+        &self,
+        index: usize,
+        entry: &super::Definition,
+    ) -> Result<NodeKey, &'static str> {
+        let id = self
+            .macros
+            .get(index)
+            .copied()
+            .flatten()
+            .ok_or("source builtin has no canonical macro index")?;
+        let actual = self
+            .state
+            .facts
+            .definitions
+            .get(id.0 as usize)
+            .ok_or("missing canonical macro definition")?;
+        let scope = self
+            .state
+            .facts
+            .scopes
+            .get(actual.scope.0 as usize)
+            .ok_or("missing canonical macro scope")?;
+        if actual.kind != DefKind::Macro
+            || actual.namespace != Namespace::Macro
+            || actual.name != entry.name
+            || actual.node != entry.node
+            || scope.module != entry.module
+        {
+            return Err("source builtin canonical owner changed");
+        }
+        let node = actual
+            .node
+            .ok_or("source builtin has no declaration node")?;
+        if self.state.facts.node_scopes.get(&(entry.module, node.node)) != Some(&actual.scope) {
+            return Err("source builtin definition scope changed");
+        }
+        Ok(node)
+    }
+
     pub fn new(
         package: &mut Package,
         dependencies: Option<std::sync::Arc<crate::support::crates::Dependencies>>,

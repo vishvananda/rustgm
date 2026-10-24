@@ -150,3 +150,6 @@ fn transferred_scoped_macro_keeps_both_capture_owners_and_original_spans() -> Re
 
 #[path = "declarative_macros/unavailable_items.rs"]
 mod retained_items;
+
+#[path = "declarative_macros/chosen_sources.rs"]
+mod chosen_sources;
