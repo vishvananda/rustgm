@@ -33,7 +33,10 @@ fn source(name: &str) -> TestResult<String> {
     Ok(super::fixture(&format!("declaration-{name}"))?)
 }
 fn expanded(source: &str) -> TestResult<Report> {
-    Ok(resolve::expansion::analyze(
+    expanded_with_context(source, &resolve::bindings::Context::default())
+}
+fn expanded_with_context(source: &str, context: &resolve::bindings::Context) -> TestResult<Report> {
+    Ok(resolve::expansion::analyze_with_context(
         InputFile {
             identity: "declaration.rs".into(),
             path: "declaration.rs".into(),
@@ -41,6 +44,7 @@ fn expanded(source: &str) -> TestResult<Report> {
         },
         &mut NoFiles,
         &Config::default(),
+        context,
     )?)
 }
 fn checked(source: &str) -> TestResult<Report> {
@@ -129,7 +133,7 @@ fn malformed_scoped_declarations_reject_at_their_actual_language_boundary() -> T
             "scoped macro rules require comma separation",
         ),
         ("duplicate", "duplicate macro name"),
-        ("private-import", "private macro name"),
+        ("private-import", "private import or widened visibility"),
         (
             "nonancestor-restriction",
             "visibility must name an ancestor module",
@@ -159,7 +163,17 @@ fn malformed_scoped_declarations_reject_at_their_actual_language_boundary() -> T
 #[test]
 fn original_assert_matches_is_a_real_declaration_with_an_explicit_stability_frontier() -> TestResult
 {
-    let report = expanded(&source("original-assert-matches")?)?;
+    let original = source("original-assert-matches")?;
+    let error = expanded(&original).err().ok_or("ordinary source borrowed provider permission")?;
+    assert!(error.to_string().contains("internal macro contracts require an actual source provider"), "{error}");
+    let identity = rustgm::support::crates::CrateIdentity::new("minicore", "scoped_header")?;
+    let context = resolve::bindings::Context {
+        crate_name: Some("minicore".into()),
+        current: Some(identity.clone()),
+        mode: rustgm::support::bindings::Mode::Source { provider: identity },
+        ..Default::default()
+    };
+    let report = expanded_with_context(&source("source-assert-matches")?, &context)?;
     let definition = report
         .definitions
         .iter()

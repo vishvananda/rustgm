@@ -148,3 +148,40 @@ execution=unsupported diagnostic, without executable rules. The source-view
 control checks that marker and excludes a rules count on those lines.
 count_expanded counts real declarations without describing them as invocations.
 Metadata rejection remains at the existing public-name/authored-export owners.
+
+## Provisional core discovery and actual provider correction
+
+CandidateV3 at a48b40e7 passed fresh static gates and all1437 nonignored private
+cases, including36 required names. Body=96, Definition=136 and the temporary
+ScopedDeclaration=16 bytes were measured. Width8/32/128 had80/320/1280 input
+forest trees, exactly one compile per declaration,8 aliases per declaration,
+and no selected scoped execution. Actual denied-call snapshots were unchanged
+across the guard, including nested legacy/eager parent work counted separately.
+The frontend batch passed10 of12; native was not run and the overall gate
+remains failed101. One diagnostic expectation used private macro name instead
+of the actual intended private import or widened visibility rejection. The
+ordinary original-header fixture hits the existing actual-source-provider
+permission boundary before the predicted final stability frontier.
+
+The original source and candidate disagreement remain retained. A distinct
+predeclared declaration-source-assert-matches.rs adds the actual no_core profile
+and genuine sizing-role declarations; the original attributed assert_matches
+slice remains byte-exact. declaration-provider-contract.json declares metadata,
+object and native7 expectations before any observation. These new4 observations
+are unrun. A real Mode::Source configuration is required for its candidate
+expansion; ordinary source must keep rejecting borrowed provider permission.
+No production authorization or stability rule changes are part of this recovery.
+
+At root's request, the exact failedV3 CLI was pinned for a separately declared
+provisional unchanged-core discovery. It is not a qualified-component claim.
+The original root advances beyond the assert_matches declaration at line170
+and stops at macros/mod.rs line234 byte8704: rustc_builtin_macro on cfg_select
+whose pub macro declaration is line235. The diagnostic is scoped builtin macro
+declarations are not implemented. The same4 original files were opened; all
+core/source/tool provenance remained unchanged. The compiler exited1/noninfra;
+wrapper c09b7d2d finished0/errornull and cleanup1792854985778441011 removed0files.
+Evidence: obj/parallel/pa31/scoped-declarations-provisional-core-v1; result SHA
+ a672235c3e492411f263cfbda96ea6755f6315c71b98c7c5822f68b632c1f9f8.
+CLI SHA1c2298f1ac0ac64e30e3ae6db4ecf5432e86219a69adb64c0ede50747ad2a29f.
+Old success-required probe proposals remain unrun. This discovery does not
+close declaration qualification, scoped invocation, stability, export or cfg_select.
