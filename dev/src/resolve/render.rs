@@ -168,6 +168,9 @@ pub fn expanded(report: &Report, out: &mut impl Write) -> io::Result<()> {
                 definition.local_inner_macros
             )?,
             Body::Builtin(builtin) => writeln!(out, " builtin={}", builtin.name())?,
+            Body::ScopedDeclaration(mode) => {
+                writeln!(out, " scoped-declaration={mode:?} execution=unsupported")?;
+            }
         }
     }
     for (index, invocation) in report.invocations.iter().enumerate() {

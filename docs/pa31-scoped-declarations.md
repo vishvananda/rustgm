@@ -126,3 +126,25 @@ the known earlier projection regressions are not reinterpreted as scoped results
 Both are separate from this declaration-only feature. Cold Body and Definition
 have no added fields; their actual sizes and the temporary descriptor size are
 reported by the private width control when executed.
+
+## Body consumer review before candidate recovery
+
+The complete production variant inventory includes the ordinary legacy/builtin
+constructors in expansion.rs and the sole scoped marker constructor in
+expansion/unavailable.rs. The selected-call guard in Engine::attempt runs before
+cached completion and eager dispatch; Engine::invoke repeats it before input or
+context construction. transcription.rs repeats the guard before the existing
+Declarative-only body match. The Stringify/eager predicates cannot select this
+marker; eager.rs's final wildcard returns an invalid-builtin error. The source
+panic dispatcher requires the exact Builtin role. permission_frames.rs rejects
+both the marker and the actual typed scoped AST item, including a substituted
+body tag; immutable session warm checks cannot mutate a report behind a borrowed
+session. No definition is promoted into an executed permission frame.
+
+render.rs has the only other exhaustive body match. CandidateV1 exposed its
+missing arm at strictE0004, after fresh format and architecture audit passed;
+no tests executed. The recovery adds an explicit scoped-declaration mode and
+execution=unsupported diagnostic, without executable rules. The source-view
+control checks that marker and excludes a rules count on those lines.
+count_expanded counts real declarations without describing them as invocations.
+Metadata rejection remains at the existing public-name/authored-export owners.

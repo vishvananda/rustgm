@@ -69,6 +69,20 @@ fn unused_scoped_source_items_keep_context_visibility_and_validate_without_execu
     for name in POSITIVE {
         let source = source(name)?;
         let report = checked(&source).map_err(|error| format!("{name}: {error}"))?;
+        let mut rendered = Vec::new();
+        resolve::render::expanded(&report, &mut rendered)?;
+        let rendered = String::from_utf8(rendered)?;
+        assert_eq!(
+            rendered.contains(" scoped-declaration="),
+            *name != "cfg-disabled-no-gate",
+            "{name}"
+        );
+        assert!(
+            rendered
+                .lines()
+                .filter(|line| line.contains(" scoped-declaration="))
+                .all(|line| line.ends_with(" execution=unsupported") && !line.contains(" rules="))
+        );
         let modes = report
             .definitions
             .iter()
