@@ -1,0 +1,921 @@
+{
+  "state": "Independent observations only; no scoped RustGM invocation acceptance claimed. Original24sources and all four prediction contracts remain unchanged.",
+  "profile": {
+    "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "crate_type": "lib",
+    "panic": "abort",
+    "overflow_checks": true,
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "counts": {
+    "sources": 24,
+    "language_observations": 48,
+    "matched_native": 12,
+    "original_predicted_native": 13
+  },
+  "evidence": {
+    "results_sha256": "7c685af7324b4f30fd54863a6b03383e7b00e11bbb03c7ad4c1fa8d06e11eaf7",
+    "plan_sha256": "8ba6b12859aadc0ead90cb48717646f4b9090daf7a37c9f8747b366857397cb7",
+    "complete_sha256": "2bb395cfd4d78ebe82f2fd6e4246013281c4d0f907df74abed08d2c45a3a2e85"
+  },
+  "review": {
+    "falsified_hypothesis": "field-functional-update-definition rejects with E0451: a captured update base does not inherit definition-site authority for omitted private fields. No native execution was attempted for the rejected source.",
+    "earlier_boundary": "field-foreign-opaque-denied rejects at associated method new (E0599); it does not establish field rejection. Separate field-unrelated-container-denied reaches the intended missing-field E0609 boundary.",
+    "invalid_first_attempt": "field-identity-oracle-v1 omitted --crate-type=lib, causing E0601 for every source. Those48 observations are retained but qualify no field contract, including matching negative statuses. V2 changes command/profile only.",
+    "native_profile": "Exact emitted provider object linked into a pinned-rustc consumer calling C-ABI answer()->u32. The consumer prints the actual returned value; original expected stdout retained."
+  },
+  "observations": [
+    {
+      "name": "field-literal-roundtrip",
+      "source_sha256": "bc2bfb6fd49b7b82dd0aa9c11e4aab4a10b3877e3a0dc0815578ff4566667736",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "7\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "object": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "native-build": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "native-run": {
+          "status": 0,
+          "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "7\n"
+        }
+      }
+    },
+    {
+      "name": "field-captured-roundtrip",
+      "source_sha256": "6ee54104c935737d08d43842d18a1446526213148f2cab7282bc50d7e2b6afe3",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "11\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "object": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "native-build": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "native-run": {
+          "status": 0,
+          "stdout_sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "11\n"
+        }
+      }
+    },
+    {
+      "name": "field-shorthand-local",
+      "source_sha256": "9763b52d21e58412413d47ce22a17255936350558a2cb27753acf4b5a7fe1cd3",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "17\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "object": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "native-build": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "native-run": {
+          "status": 0,
+          "stdout_sha256": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "17\n"
+        }
+      }
+    },
+    {
+      "name": "field-capture-literal-distinct",
+      "source_sha256": "357a8e87fed02a8faac138137e87815b4811c24d32778e303e86338c43992254",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "31\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "object": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "native-build": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "native-run": {
+          "status": 0,
+          "stdout_sha256": "32c2643e0dc65524c9f1f6f9f00937322fd68d59986bc381d9ff2285d23e353d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "31\n"
+        }
+      }
+    },
+    {
+      "name": "field-private-definition-access",
+      "source_sha256": "44004cb8b5c24bf93541711dd06ecd7f506ab3d711a71fc88c202d7ae245a8b8",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "23\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "object": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "native-build": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "native-run": {
+          "status": 0,
+          "stdout_sha256": "076320a2a08267b4c026d06573bba408ea68841e73cdc20e62cce59de165ece3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "23\n"
+        }
+      }
+    },
+    {
+      "name": "field-private-captured-denied",
+      "source_sha256": "9858638ec50a35994c18dee132d1ac8b99199bf70f532f4eb8223b4d772da42b",
+      "original_prediction": {
+        "expected_metadata": 1,
+        "expected_object": 1
+      },
+      "observed": {
+        "metadata": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ed51c967f65f870dd883e1b1b6fac1c6e63ee1df4c2f0ee10aedf39c287de74a",
+          "errors": [
+            {
+              "message": "field `hidden` of struct `Record` is private",
+              "code": "E0616"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        },
+        "object": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ed51c967f65f870dd883e1b1b6fac1c6e63ee1df4c2f0ee10aedf39c287de74a",
+          "errors": [
+            {
+              "message": "field `hidden` of struct `Record` is private",
+              "code": "E0616"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "field-private-caller-denied",
+      "source_sha256": "0c38ab132f62df1dc3d7638be0a5db4a1ca86cbdf744fce7e1989e5d417dde8e",
+      "original_prediction": {
+        "expected_metadata": 1,
+        "expected_object": 1
+      },
+      "observed": {
+        "metadata": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2b1f92028215457b8d91944926d8515fa75b201e36268176a03c54edd6ac9967",
+          "errors": [
+            {
+              "message": "field `hidden` of struct `Record` is private",
+              "code": "E0616"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        },
+        "object": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2b1f92028215457b8d91944926d8515fa75b201e36268176a03c54edd6ac9967",
+          "errors": [
+            {
+              "message": "field `hidden` of struct `Record` is private",
+              "code": "E0616"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "field-functional-update-definition",
+      "source_sha256": "ce51947c7ae7f579232320724edb0561f5a7c501c311ff03160e32e36254cde1",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "29\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4f0a7b0bd7a7d1fc25d67046766cf7ad7913e08e3559e1ac39ed966183e44190",
+          "errors": [
+            {
+              "message": "field `hidden` of struct `Record` is private",
+              "code": "E0451"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        },
+        "object": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4f0a7b0bd7a7d1fc25d67046766cf7ad7913e08e3559e1ac39ed966183e44190",
+          "errors": [
+            {
+              "message": "field `hidden` of struct `Record` is private",
+              "code": "E0451"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "field-functional-update-caller-denied",
+      "source_sha256": "123154e77e0653edd5a7d0824f607f62559e69b64f6a05513e95ef0155006927",
+      "original_prediction": {
+        "expected_metadata": 1,
+        "expected_object": 1
+      },
+      "observed": {
+        "metadata": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "327ac8a8103d30999547ab06c06e4a4911042de1a6045fe9d2cc4857b10d470d",
+          "errors": [
+            {
+              "message": "field `hidden` of struct `Record` is private",
+              "code": "E0451"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        },
+        "object": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "327ac8a8103d30999547ab06c06e4a4911042de1a6045fe9d2cc4857b10d470d",
+          "errors": [
+            {
+              "message": "field `hidden` of struct `Record` is private",
+              "code": "E0451"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "field-foreign-root-container",
+      "source_sha256": "e03886f22627751ff3aefea7d4a641701e4bf1bc6fb3379b4dfba97653ed91ab",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "37\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "object": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "native-build": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "native-run": {
+          "status": 0,
+          "stdout_sha256": "b58a3da5fde2680191877ec88a1aa7d06927cc3b30cdf0d0db8c39b488891576",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "37\n"
+        }
+      }
+    },
+    {
+      "name": "field-foreign-opaque-denied",
+      "source_sha256": "7be3235ef9300e88a0fc5354b39bd2a63063cda2e47539d9300d65e46fd1d0d3",
+      "original_prediction": {
+        "expected_metadata": 1,
+        "expected_object": 1
+      },
+      "observed": {
+        "metadata": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ee8707b61e07d1870b9f546f15bb472a7f08b4c9643bef21298d593239cbdfa3",
+          "errors": [
+            {
+              "message": "no associated function or constant named `new` found for struct `Record` in the current scope",
+              "code": "E0599"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        },
+        "object": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ee8707b61e07d1870b9f546f15bb472a7f08b4c9643bef21298d593239cbdfa3",
+          "errors": [
+            {
+              "message": "no associated function or constant named `new` found for struct `Record` in the current scope",
+              "code": "E0599"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "field-duplicate-declaration",
+      "source_sha256": "48ba62d0c089ca1c555501e415a2235d4e1c3cf7938de8218c3fcbc13ed74fc0",
+      "original_prediction": {
+        "expected_metadata": 1,
+        "expected_object": 1
+      },
+      "observed": {
+        "metadata": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a49a51d45e73b2e3053f94be2fb8b8c8d443a4b46c40cc2b7148c4387fabaa00",
+          "errors": [
+            {
+              "message": "field `value` is already declared",
+              "code": "E0124"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        },
+        "object": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a49a51d45e73b2e3053f94be2fb8b8c8d443a4b46c40cc2b7148c4387fabaa00",
+          "errors": [
+            {
+              "message": "field `value` is already declared",
+              "code": "E0124"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "field-duplicate-initializer",
+      "source_sha256": "6643bc0fc94ce23fbca3e794d2372091f84f1d09a6190d028bf9a49cf46a4804",
+      "original_prediction": {
+        "expected_metadata": 1,
+        "expected_object": 1
+      },
+      "observed": {
+        "metadata": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "eb6a401f75685f6722f87aeb0d2489cda72e80edcb33fd8f9bbba2a18c619b31",
+          "errors": [
+            {
+              "message": "field `value` specified more than once",
+              "code": "E0062"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        },
+        "object": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "eb6a401f75685f6722f87aeb0d2489cda72e80edcb33fd8f9bbba2a18c619b31",
+          "errors": [
+            {
+              "message": "field `value` specified more than once",
+              "code": "E0062"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "field-ordinary-tuple-control",
+      "source_sha256": "70f875227b740e67b326d00430b3465851a858addbcbb70718167b65738a79ae",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "43\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "object": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "native-build": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "native-run": {
+          "status": 0,
+          "stdout_sha256": "0e55092af0746630c98d1b2e0d960617c33f8ea7b55739fd18cb7cd5342a28ca",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "43\n"
+        }
+      }
+    },
+    {
+      "name": "field-ordinary-record-control",
+      "source_sha256": "285b52acd2f2f5c84fedc850f1d7b482f44e662750bb53883d10f9b250323bcb",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "47\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "object": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "native-build": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "native-run": {
+          "status": 0,
+          "stdout_sha256": "e3667f7d8c030260bf49046f955ec9bebdb9a4cb8a66b812fd498ded5431a821",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "47\n"
+        }
+      }
+    },
+    {
+      "name": "field-update-literal-base",
+      "source_sha256": "fb6dd1293ab67d758e87cde71e053b72e4e26939f0ae98e867ee4d49c15d172a",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "29\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "object": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "native-build": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "native-run": {
+          "status": 0,
+          "stdout_sha256": "3840bc236ee03aacbb1ef7d5108ddfa347c59f10b68d4174affbb53140f31273",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "29\n"
+        }
+      }
+    },
+    {
+      "name": "field-update-captured-base-denied",
+      "source_sha256": "75ce5c737ba493e74c40c3806bb286c9ac7b4fafb921fe123edd9e73d77482b8",
+      "original_prediction": {
+        "expected_metadata": 1,
+        "expected_object": 1
+      },
+      "observed": {
+        "metadata": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ff158be45c81b34b8c2f331971be4598dfce47511fb69e5b1c2916156123acf6",
+          "errors": [
+            {
+              "message": "field `hidden` of struct `Record` is private",
+              "code": "E0451"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        },
+        "object": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ff158be45c81b34b8c2f331971be4598dfce47511fb69e5b1c2916156123acf6",
+          "errors": [
+            {
+              "message": "field `hidden` of struct `Record` is private",
+              "code": "E0451"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "field-tuple-pattern-captured-binding",
+      "source_sha256": "d5c08295e1ab9ebfb037ddc66da91612834e80a8a94d7b81b153bdb31979ce75",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "41\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "object": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "native-build": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "native-run": {
+          "status": 0,
+          "stdout_sha256": "040316eca5e77dbb2212c1efe8b81cb23bc67ce0ac8cb5c9d902d98bd45ddfa1",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "41\n"
+        }
+      }
+    },
+    {
+      "name": "field-tuple-pattern-captured-constructor-denied",
+      "source_sha256": "49d90ebf22e2cef291bd4430c064d75a9874d2a9a1d8377fadff093a130c74b4",
+      "original_prediction": {
+        "expected_metadata": 1,
+        "expected_object": 1
+      },
+      "observed": {
+        "metadata": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3f5d1d21a0bd2078eaac82d8de70eab1b41a9764aca00d4b82d19e3ed69f4912",
+          "errors": [
+            {
+              "message": "tuple struct constructor `Record` is private",
+              "code": "E0603"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        },
+        "object": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "3f5d1d21a0bd2078eaac82d8de70eab1b41a9764aca00d4b82d19e3ed69f4912",
+          "errors": [
+            {
+              "message": "tuple struct constructor `Record` is private",
+              "code": "E0603"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "field-tuple-access-definition",
+      "source_sha256": "08264377a7eec37cc1d580a039d0a1cad9585a8a61b25b766b8ba9381412b04f",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "43\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "object": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "native-build": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "native-run": {
+          "status": 0,
+          "stdout_sha256": "0e55092af0746630c98d1b2e0d960617c33f8ea7b55739fd18cb7cd5342a28ca",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "43\n"
+        }
+      }
+    },
+    {
+      "name": "field-tuple-access-captured-index-denied",
+      "source_sha256": "fb400aea99a92dcc976201af0724506b2efe8c3f95595114fbcdb7cd2ac3581d",
+      "original_prediction": {
+        "expected_metadata": 1,
+        "expected_object": 1
+      },
+      "observed": {
+        "metadata": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d3a2c4a3e914dc457c5c4a5ae0b10817d4d6e3548f75a0bf6c9dc89cefbed312",
+          "errors": [
+            {
+              "message": "field `0` of struct `Record` is private",
+              "code": "E0616"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        },
+        "object": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d3a2c4a3e914dc457c5c4a5ae0b10817d4d6e3548f75a0bf6c9dc89cefbed312",
+          "errors": [
+            {
+              "message": "field `0` of struct `Record` is private",
+              "code": "E0616"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "field-update-complete-captured-base",
+      "source_sha256": "2115cf9b38db59ea30fa158a393cf6f7f5efc407515fd4bb6f2ad22694551e1f",
+      "original_prediction": {
+        "expected_metadata": 0,
+        "expected_object": 0,
+        "expected_native": "29\n"
+      },
+      "observed": {
+        "metadata": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "object": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "errors": []
+        },
+        "native-build": {
+          "status": 0,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "native-run": {
+          "status": 0,
+          "stdout_sha256": "3840bc236ee03aacbb1ef7d5108ddfa347c59f10b68d4174affbb53140f31273",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "29\n"
+        }
+      }
+    },
+    {
+      "name": "field-update-captured-explicit-denied",
+      "source_sha256": "9ad28bbc803d4b1cdb9632993e647bd8c4926b1773f6054dae1d443a31458663",
+      "original_prediction": {
+        "expected_metadata": 1,
+        "expected_object": 1
+      },
+      "observed": {
+        "metadata": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4cea761dfd3dca185e2fb8c29ec0e88f7e65c8aeb3d1f958bf51ff90886fd418",
+          "errors": [
+            {
+              "message": "field `hidden` of struct `Record` is private",
+              "code": "E0451"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        },
+        "object": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4cea761dfd3dca185e2fb8c29ec0e88f7e65c8aeb3d1f958bf51ff90886fd418",
+          "errors": [
+            {
+              "message": "field `hidden` of struct `Record` is private",
+              "code": "E0451"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "field-unrelated-container-denied",
+      "source_sha256": "1afcf08a7f742952756fda083e56a5d24e3e2d19fb73933c7c08daf41c041a2d",
+      "original_prediction": {
+        "expected_metadata": 1,
+        "expected_object": 1
+      },
+      "observed": {
+        "metadata": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ff93995a0b8781da0d4b9da2374f21c09d07df260926b6595e2d0d45292b5c78",
+          "errors": [
+            {
+              "message": "no field `value` on type `Record`",
+              "code": "E0609"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        },
+        "object": {
+          "status": 1,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "ff93995a0b8781da0d4b9da2374f21c09d07df260926b6595e2d0d45292b5c78",
+          "errors": [
+            {
+              "message": "no field `value` on type `Record`",
+              "code": "E0609"
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,17 +1,24 @@
 # Scoped macro field identity (LIB-002)
 
-This source-only work starts at combined `1df52349`. The independent hypotheses
-in `pa31/tests/spec/declarative-macros/field-contract.json` are declared before
-execution. They predict nine accepted source/native programs and six rejections;
-none has been observed. Any disagreement must retain its original bytes and
-expectation. Existing qualified item/path/privacy fixtures do not establish
-field semantics. The clean anonymous-selector checkpoint `379006ad` remains on
-`pa28-anonymous-select`, outside this branch.
+The preserved field draft is now ported onto integration `96103c07` in the
+integrator worktree. The original four contracts and all 24 source files remain
+unchanged. Their [independent observations](../pa31/tests/spec/declarative-macros/field-observations.json)
+now contain 48 metadata/object results and twelve matching native programs.
+One original positive prediction is false: `field-functional-update-definition`
+rejects with E0451 because its captured base grants no authority for omitted
+private fields. The separate complete-explicit update remains accepted.
+
+The first oracle invocation omitted library crate mode and produced E0601 for
+every input. It qualifies no field behavior, including negative statuses.
+The corrected run retains that failure and changes only the invocation profile
+and native driver. The foreign opaque case rejects earlier at an associated
+method (E0599); the separately declared unrelated-container case reaches the
+intended field boundary (E0609). No original outcome was rewritten.
 
 ## Ownership and publication interface
 
 Root owns item/path/import/glob/restricted-visibility lookup and the shared
-container adjustment. C owns this first aggregate-field slice. Method candidate
+container adjustment. The integrator now owns the preserved aggregate-field slice while C advances source builtins. Method candidate
 retention, associated-member indexes and impl-to-trait matching are a distinct
 follow-up coordinated with B's conformance work.
 
@@ -43,7 +50,7 @@ The storage draft re-exports the existing mark-arena `ItemContext` through
 `resolve::model`; semantic code consumes that resolved identity without depending
 on the expansion phase. It adds no adjustment cache. Cold `Members` and its
 inline `Declarations` owner are predicted to grow by `size_of::<usize>()` for
-the optional index handle, from the qualified 7064-byte `Declarations` baseline.
+the optional index handle, from the measured 7032-byte `Declarations` baseline after canonical member matching.
 This arithmetic is a declared layout expectation, not an observed measurement.
 The existing collection, clone, mutable iterator, iterator and progression
 layout controls retain that explicit expectation alongside their hot-row checks.
@@ -119,5 +126,15 @@ not end-to-end macro2 acceptance or independent Rust observations.
 
 Eventual focused selection includes the four storage controls, four consumer
 controls, all five shared adjustment invariants and the five existing cold/hot
-layout controls. No compiler, audit, oracle, source/native candidate or heavy
-qualification has run for this draft; formatting and whitespace review only.
+layout controls. Candidate static/private/integration qualification remains required after the port.
+The independent oracle above does not enable or qualify scoped macro invocation.
+
+## Current evidence and next acceptance
+
+Earlier paragraphs retain the original preimplementation hypotheses; the current
+observation supersedes their statements that the corpus is unobserved. Native
+outputs cover literal/captured field identity, shorthand, distinct same-spelling
+fields, provider-private reads, numeric fields, constructor provenance and
+complete versus omitted update fields. Candidate source execution still requires
+scoped macro invocation; private typed-consumer controls are an intermediate
+check, not a replacement for that final source/native qualification.
