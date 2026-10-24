@@ -135,7 +135,7 @@ fn duplicates_never_replace_an_existing_actual_macro_binding() -> TestResult {
 #[test]
 fn scoped_markers_have_no_legacy_textual_binding_or_external_metadata_permission() -> TestResult {
     use crate::expand::textual::{Lookup, Scope};
-    let report = crate::test_source::resolve(
+    let mut report = crate::test_source::resolve(
         "#![feature(decl_macro)]pub macro unused(){unresolved()}pub fn answer()->u32{7u32}",
         true,
     )?;

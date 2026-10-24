@@ -25,8 +25,10 @@ unsupported. No original macro, field or allowance hypothesis is rewritten.
 ## Typed producer and consumers
 
 The shared cold producer belongs to declaration resolution. A proposed
-Resolver::declare_scoped(Context,NodeId,Item,Access) returns the actual declaration
-Context and validated Transparency. It consumes the exact enabled item,
+Resolver::declare_scoped(Context,NodeId,Item,Access,Option<NodeId>) returns the
+actual declaration Context and an owned cold ScopedDeclaration: transparency,
+defining edition and existing optional Rc header. The optional owner comes from
+the actual attributed traversal, without inferred owners or a source scan. It consumes the exact enabled item,
 configured attributed owner, defining edition and retained parameter/body
 forests. It uses compile::declarative_in_edition once to validate matcher,
 fragment/follow-set and repetition syntax, even for unused declarations.
@@ -106,3 +108,21 @@ c8eceeaad3d3eebcb0a69e0619deb98c658bc92a4ac642cb57fad61d217f0e28.
 Resource1cb47966 finished1/errornull; scoped cleanup1792853452947711888
 removed62 disposable outputs while preserving every observation. This is oracle
 evidence, not candidate qualification. The original20 native programs all passed.
+
+The unchanged unknown-substitution source separately passed its missing native
+continuation: native-build, link and execution returned0, and actual stdout was
+7 followed by a newline. Results SHA-256 is
+6feb51115230d6cf5a810f69195bf7c1399da1fba0acd7115d811ee854bc6f8f.
+The new3 rows supplement the original102 rather than replacing the two original
+mismatches. All31 source programs now have62 compile observations;21 accepted
+programs have actual native evidence. Nine sources retain language rejection
+observations, while the unknown builtin rejection remains a separate claim-role
+frontier. Candidate-only scoped invocation and stability restrictions remain.
+
+Before candidate validation, source dependency821fcb7b retains integrator4653's
+attribute_claim extraction and environment-to-reproof module rename. Dependency
+3fa5ac2b retains qualifiedfa14's callable marker projection-normalization repair;
+the known earlier projection regressions are not reinterpreted as scoped results.
+Both are separate from this declaration-only feature. Cold Body and Definition
+have no added fields; their actual sizes and the temporary descriptor size are
+reported by the private width control when executed.
