@@ -11,6 +11,8 @@ use std::path::Path;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 #[path = "read_frontier.rs"]
 mod frontier;
+#[path = "carrier_owners.rs"]
+mod alias_tests;
 #[path = "copy_signatures.rs"]
 mod signatures;
 pub(super) fn record(facts: &Declarations, body: &Body, prepared: &Prepared) {

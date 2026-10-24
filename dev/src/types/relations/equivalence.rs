@@ -2,16 +2,31 @@
 use super::{Constraints, Error, Graph, Identities, Region, RegionId, RegionKind, Solution};
 use crate::support::hash::HashMap;
 use crate::types::substitute;
+use std::sync::Arc;
 
 #[derive(Clone, Default)]
 pub(crate) struct RegionEqualities {
     representatives: HashMap<RegionId, RegionId>,
+    body_aliases: Option<Arc<super::BodyAliases>>,
 }
 impl RegionEqualities {
     pub(crate) fn allocation(&self) -> crate::support::retained::Allocation {
         let mut total = crate::support::retained::Allocation::default();
         total.map(&self.representatives);
+        if let Some(aliases) = &self.body_aliases {
+            total.boxed(aliases.as_ref());
+            total.include(aliases.allocation());
+        }
         total
+    }
+
+    pub(crate) fn body_aliases(&self) -> Option<&Arc<super::BodyAliases>> {
+        self.body_aliases.as_ref()
+    }
+
+    pub(crate) fn with_body_aliases(mut self, aliases: Arc<super::BodyAliases>) -> Self {
+        self.body_aliases = Some(aliases);
+        self
     }
 }
 impl Constraints<'_> {
@@ -107,6 +122,8 @@ impl RegionEqualities {
         Ok(self)
     }
     pub(crate) fn substitute(&self, fold: &mut substitute::Bound) -> Result<Self, &'static str> {
+        // A mapped proof view is not another semantic body producer. Its caller
+        // already retained the original alias metadata in the opening fold.
         let mut graph = Graph::new(1_000_000);
         let mut names = HashMap::from_iter([(RegionId::STATIC, Region::STATIC)]);
         let mut pairs: Vec<_> = self.representatives.iter().map(|(&a, &b)| (a, b)).collect();

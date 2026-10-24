@@ -5,6 +5,57 @@ use crate::{
     types::{Kind as Type, arguments::Argument, parameters::predicates::Bound},
 };
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+
+#[test]
+fn projected_header_readiness_keeps_empty_completed_and_pending_family_inputs_distinct() -> Result {
+    let mut facts = fixture("trait Family{type Item<M>;}")?;
+    let member = *facts
+        .associated
+        .families
+        .keys()
+        .next()
+        .ok_or("actual associated family")?;
+    facts.associated.require_projection_header(member)?;
+    let requirements = facts
+        .associated
+        .families
+        .get_mut(&member)
+        .ok_or("family")?
+        .requirements
+        .take()
+        .ok_or("completed inputs")?;
+    assert!(facts.associated.require_projection_header(member).is_err());
+    facts
+        .associated
+        .families
+        .get_mut(&member)
+        .ok_or("family")?
+        .requirements = Some(Vec::new());
+    facts.associated.require_projection_header(member)?;
+    facts
+        .associated
+        .families
+        .get_mut(&member)
+        .ok_or("family")?
+        .requirements = Some(requirements);
+    let contract = facts
+        .associated
+        .types
+        .remove(&member)
+        .ok_or("type contract")?;
+    assert!(facts.associated.require_projection_header(member).is_err());
+    facts.associated.types.insert(member, contract);
+    let owner = facts.associated.owner(member).ok_or("member owner")?;
+    let schema = facts
+        .associated
+        .schemas
+        .remove(&owner)
+        .ok_or("actual trait schema")?;
+    assert!(facts.associated.require_projection_header(member).is_err());
+    facts.associated.schemas.insert(owner, schema);
+    facts.associated.require_projection_header(member)?;
+    Ok(())
+}
 fn fixture(source: &str) -> Result<Declarations> {
     let report = crate::test_source::resolve(source, true)?;
     Ok(crate::pipeline::analyze_source(&report)?.facts)

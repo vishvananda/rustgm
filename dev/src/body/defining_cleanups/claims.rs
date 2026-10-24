@@ -54,13 +54,14 @@ impl Role {
 pub(super) enum Claim {
     NoDrop,
     ConditionalDestruct,
+    ProjectedDestruct,
     PendingCopy,
 }
 impl Claim {
     fn priority(self) -> u8 {
         match self {
             Self::PendingCopy => 0,
-            Self::ConditionalDestruct => 1,
+            Self::ConditionalDestruct | Self::ProjectedDestruct => 1,
             Self::NoDrop => 2,
         }
     }
@@ -133,7 +134,12 @@ impl Claims {
         if !copy && !destruct {
             return Ok(None);
         }
-        if !matches!(facts.types.kind(predicate.ty), Some(Kind::Parameter(_)))
+        let subject = facts
+            .types
+            .kind(predicate.ty)
+            .ok_or("invalid defining cleanup subject")?;
+        let projected = destruct && matches!(subject, Kind::Projection(_));
+        if !(matches!(subject, Kind::Parameter(_)) || projected)
             || facts
                 .types
                 .arguments(application.arguments)
@@ -149,11 +155,51 @@ impl Claims {
                 Claim::PendingCopy
             }
         } else if matches!(role, Role::Validated(_)) {
-            Claim::ConditionalDestruct
+            if projected {
+                self.require_projected_header(facts, predicate.ty, work)?;
+                Claim::ProjectedDestruct
+            } else {
+                Claim::ConditionalDestruct
+            }
         } else {
             return Ok(None);
         };
         Ok(Some((predicate.ty, claim)))
+    }
+    fn require_projected_header(
+        &self,
+        facts: &Declarations,
+        ty: TypeId,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        work.charge(1)?;
+        if self.values.get(&ty) == Some(&Claim::ProjectedDestruct) {
+            return Ok(());
+        }
+        work.charge(12)?;
+        let Some(Kind::Projection(application)) = facts.types.kind(ty) else {
+            return Err("defining cleanup changed its projected subject");
+        };
+        let schema = facts
+            .types
+            .projection_schema(application.item)
+            .ok_or("defining projection schema is pending")?;
+        let trait_ = facts
+            .types
+            .trait_application(application.trait_application)
+            .ok_or("defining projection has invalid trait inputs")?;
+        if trait_.item != schema.trait_item
+            || facts.associated.trait_owner(DefId(application.item.0))
+                != Some(DefId(schema.trait_item.0))
+            || facts.types.arguments(application.arguments).is_none()
+            || facts.types.arguments(trait_.arguments).is_none()
+        {
+            return Err("defining projection changed its actual member or complete application");
+        }
+        facts
+            .associated
+            .require_projection_header(DefId(application.item.0))
+            .map(|_| ())
     }
     fn insert(&mut self, ty: TypeId, claim: Claim, work: &mut Work) -> Result<(), &'static str> {
         work.charge(1)?;
@@ -189,5 +235,11 @@ impl Claims {
     #[cfg(test)]
     pub(super) fn len(&self) -> usize {
         self.values.len()
+    }
+    #[cfg(test)]
+    pub(super) fn projected_subjects(&self) -> impl Iterator<Item = TypeId> + '_ {
+        self.values
+            .iter()
+            .filter_map(|(&ty, &claim)| (claim == Claim::ProjectedDestruct).then_some(ty))
     }
 }

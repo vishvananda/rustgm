@@ -20,6 +20,7 @@ use crate::{
     },
 };
 use std::sync::Arc;
+mod carrier;
 #[cfg(test)]
 #[path = "../../tests/invariants/copy_carriers.rs"]
 mod tests;
@@ -127,6 +128,7 @@ pub(crate) fn prepare(
         ))
     };
     let decisions = if declaration.is_some() && !requirements.goals.is_empty() {
+        carrier::check(facts, body, contract, environment.as_ref())?;
         let first = super::dispatch::copy_frontier(facts, contract)?;
         let selected = crate::sema::compiler_items::copy_decisions(
             facts,

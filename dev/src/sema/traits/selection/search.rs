@@ -18,6 +18,9 @@ mod fn_copying_tests;
 mod refutation_layout;
 pub(in crate::sema) use coherence::may_overlap;
 mod completed_proofs;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/classification_trace.rs"]
+pub(crate) mod copy_trace;
 mod destructibility;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/marker_evidence.rs"]
@@ -321,7 +324,16 @@ impl Search<'_> {
                     frame.trial = Some(trial);
                 }
                 Err(infer::Error::Mismatch | infer::Error::Occurs) => {}
-                Err(infer::Error::Normalization) => frame.deferred = true,
+                Err(infer::Error::Normalization) => {
+                    #[cfg(test)]
+                    copy_trace::record(|| {
+                        format!(
+                            "candidate-normalization query={:p} scope={:?} owner={owner:?} outer={:?}",
+                            &self.query, frame.scope, frame.canonical
+                        )
+                    });
+                    frame.deferred = true;
+                }
                 Err(error) => return Err(inference(error)),
             }
             return Ok(Action::Continue);
@@ -436,7 +448,19 @@ impl Search<'_> {
                 self.query.allocations.record(proof.regions.end);
                 return Ok(Some(Action::Complete(Decision::Proven(index))));
             }
-            Assumed::Deferred => return Ok(Some(Action::Complete(Decision::Deferred))),
+            Assumed::Deferred => {
+                #[cfg(test)]
+                copy_trace::record(|| {
+                    format!(
+                        "assumed-deferred query={:p} scope={:?} first={first} subject={:?} canonical={:?}",
+                        &self.query,
+                        frame.scope,
+                        frame.goal.subject(),
+                        frame.canonical
+                    )
+                });
+                return Ok(Some(Action::Complete(Decision::Deferred)));
+            }
             Assumed::Absent => {}
         }
         Ok(None)

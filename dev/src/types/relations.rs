@@ -1,6 +1,8 @@
 //! Directed type relations use actual region arguments and explicit binder scopes.
 type OutputConditions = Vec<(RegionId, RegionId, u32)>;
+mod alias_slots;
 mod ancestry;
+pub(crate) use alias_slots::BodyAliases;
 mod equivalence;
 pub(crate) use equivalence::RegionEqualities;
 mod clauses;

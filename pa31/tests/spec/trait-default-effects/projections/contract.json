@@ -1,0 +1,189 @@
+{
+  "pin": "Rust1.98.0 revision88d9e12ae178fab0fb5cc050a94da85685d449ea; edition2024; x86_64-unknown-linux-gnu",
+  "base": "46b25ef2b7122fb22390c1a15c1ae0b78b8e854e",
+  "scope": "direct nonquantified exact projection Destruct premise; fully live Schedule only; Copy-NoDrop parameter-only",
+  "status": "predeclared before oracle/candidate execution; falsifications retained",
+  "originals": [
+    {
+      "path": "iterator-count.excerpt.rs",
+      "sha256": "09d09eecce09a7de66abfd6155e6603c5256c09748453994ad3b2682324402a4",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/iter/traits/iterator.rs",
+      "source_sha256": "db43b7acc33fca53d85fef3ddea29ec9f8c1e768df428676fe2de160f21d5f6b",
+      "lines": [
+        224,
+        235
+      ],
+      "status": "required unchanged original; standalone fragment not executable; Iterator role/const closure/nested const Option helper remain distinct blockers"
+    },
+    {
+      "path": "iterator-last.excerpt.rs",
+      "sha256": "2ce4b5a7c11d8454a98a8d9fc351bbe5d5a895d1e76962230027e5beb8a3b3b2",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/iter/traits/iterator.rs",
+      "source_sha256": "db43b7acc33fca53d85fef3ddea29ec9f8c1e768df428676fe2de160f21d5f6b",
+      "lines": [
+        257,
+        272
+      ],
+      "status": "required unchanged original; standalone fragment not executable; Iterator role/const closure/nested const Option helper remain distinct blockers"
+    }
+  ],
+  "rows": [
+    {
+      "name": "std-paid",
+      "path": "std-paid.rs",
+      "sha256": "955915f45a2a7a12e2c41e551653c570d49f10e92dce5ff8f059fd058befe947",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required success"
+    },
+    {
+      "name": "std-missing",
+      "path": "std-missing.rs",
+      "sha256": "6054f3ebb6c9ed8a5424c24dd3f67bbd437b741133e1d5ba97e8f7a8aba0fc8c",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "required success"
+    },
+    {
+      "name": "provider-paid",
+      "path": "provider-paid.rs",
+      "sha256": "c11c5a4f4aa9eae7a0f1550e46a549b667ea14ed05a6650bd6bbc2f4fc781a8c",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required success"
+    },
+    {
+      "name": "provider-missing",
+      "path": "provider-missing.rs",
+      "sha256": "35ca43bb400169c3a9b4d70c60282b48a09b06227901f562742182de22443bf5",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "required success"
+    },
+    {
+      "name": "provider-ordinary-only",
+      "path": "provider-ordinary-only.rs",
+      "sha256": "b0422239abdc61bed5b2626b1639f66647c578817100c74c9d0cb158961e0932",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "required success"
+    },
+    {
+      "name": "provider-wrong-member",
+      "path": "provider-wrong-member.rs",
+      "sha256": "25c39a60254a74438fc8f733f3ffd63fee8050ba2395f53bf575e6308d6fe3c1",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "required success"
+    },
+    {
+      "name": "provider-trait-arguments",
+      "path": "provider-trait-arguments.rs",
+      "sha256": "860470cbce9d2512e8f725c11f4de030f0f04dd1e736de194b36257962797daa",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required success"
+    },
+    {
+      "name": "provider-trait-arguments-unpaid",
+      "path": "provider-trait-arguments-unpaid.rs",
+      "sha256": "93b0614fbc10a86314b5f06c7c8eb68b0052037ddcca7ee4dd6a16e031a91cc1",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "required success"
+    },
+    {
+      "name": "provider-family-arguments",
+      "path": "provider-family-arguments.rs",
+      "sha256": "42394b50652da5912e0f01d345b05ec10076855d4b4077b086f5655d1dd303af",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required success"
+    },
+    {
+      "name": "provider-family-arguments-unpaid",
+      "path": "provider-family-arguments-unpaid.rs",
+      "sha256": "815e7080df2d2e48a29a6e2a1c46b6708814b67b4ef67318ef027405d2013320",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "candidate_contract": "required success"
+    },
+    {
+      "name": "provider-moved",
+      "path": "provider-moved.rs",
+      "sha256": "75320460a644fcae2292287737a3e35619aec4de868c34444195f37f1444356b",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required success"
+    },
+    {
+      "name": "provider-unavailable-formation",
+      "path": "provider-unavailable-formation.rs",
+      "sha256": "0971ddcb326d7d50f5c1e34095b60be06b94955373c8173fb5a1835e95d89099",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0277"
+      ],
+      "candidate_contract": "required success"
+    },
+    {
+      "name": "provider-partial-container",
+      "path": "provider-partial-container.rs",
+      "sha256": "dccab8877c0e061bf13687e265db51e7f069e734e42b019ccb2a4a2141c26067",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required Rust positive; candidate explicit unsupported composite cleanup; never partial projection structure inference"
+    },
+    {
+      "name": "provider-composite",
+      "path": "provider-composite.rs",
+      "sha256": "b8af1de16242605b9a2b67947011ba6b85697eec0f625d676b933ffd5771f33d",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "candidate_contract": "required Rust positive; candidate explicit unsupported composite cleanup"
+    }
+  ],
+  "private_opponents": [
+    "raw Prepared cannot consume ProjectedDestruct before region formation",
+    "genuine failed formation returns no Formed view",
+    "same-header proof with different retained defining State/Environment rejects",
+    "missing/pending actual role or function header before preparation rejects",
+    "same member+subject differing complete trait/family arguments do not share a claim",
+    "fully moved/no-cleanup projection needs no Destruct claim",
+    "partial projection tracking remains unsupported; no Maybe-to-Always conversion",
+    "ordinary baseline no cold owner/claim allocation"
+  ],
+  "work_controls": [
+    "width8/32/128 distinct projected subjects",
+    "8/32/128 repeated same-subject lookups",
+    "128 unrelated source definitions",
+    "failed-lookup/tiny-work-budget attempts and retained logical bytes"
+  ],
+  "layout_contract": "BuiltinRequirements56, Contract184, Body448, State96; no persistent field or central model growth"
+}

@@ -130,7 +130,20 @@ impl Assumptions {
         goal: &Goal,
         first: u32,
     ) -> Result<ScopedSelection, infer::Error> {
-        let Some(index) = self.quantified() else {
+        let quantified = self.quantified();
+        #[cfg(test)]
+        crate::sema::copy_trace::record(|| {
+            format!(
+                "assumption-context snapshot={:?} subject={:?} trait_shape={:?} first={first} quantified={} steps={}",
+                self.index.as_ref().map(std::sync::Arc::as_ptr),
+                goal.subject(),
+                goal.trait_arguments()
+                    .map(|(item, args)| (item, args.len())),
+                quantified.is_some(),
+                context.steps
+            )
+        });
+        let Some(index) = quantified else {
             return Ok(match self.select(store, context, goal)? {
                 Selection::Absent => Selection::Absent,
                 Selection::Deferred => Selection::Deferred,

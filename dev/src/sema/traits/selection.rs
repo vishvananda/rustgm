@@ -34,6 +34,8 @@ pub(in crate::sema) use readiness::{has_known_subject, requires_resolved_inputs}
 pub(in crate::sema) use result_templates::symbolic_result;
 #[cfg(test)]
 pub(in crate::sema) use search::callable_layouts;
+#[cfg(test)]
+pub(crate) use search::copy_trace;
 pub(in crate::sema) use search::may_overlap;
 pub(in crate::sema) use search::{
     Pending, Progress, Reuse, begin, begin_canonical, begin_normalized, begin_projection,

@@ -48,6 +48,10 @@ impl Bound {
                     total.boxed(value.as_ref());
                     total.include(value.allocation());
                 }
+                Action::BodyScope(aliases) => {
+                    total.boxed(aliases.as_ref());
+                    total.include(aliases.allocation());
+                }
                 Action::Remove
                 | Action::Shift(_)
                 | Action::Lower(_)

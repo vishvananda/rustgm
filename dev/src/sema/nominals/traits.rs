@@ -3,6 +3,7 @@ pub(in crate::sema) mod normal_form;
 mod normalization;
 mod quantified;
 pub(in crate::sema) use quantified::{Goal as QuantifiedGoal, Queries as QuantifiedQueries};
+mod opening;
 mod shape_normalization;
 mod term_normalization;
 use crate::{
@@ -20,6 +21,7 @@ use crate::{
         substitute,
     },
 };
+use opening::Opening;
 use std::sync::Arc;
 
 pub(crate) struct State {
@@ -83,7 +85,7 @@ impl State {
         universals: u32,
         first: u32,
     ) -> Result<Self, &'static str> {
-        let mut state = Self::new(facts, environment, Some((universals, first)))?;
+        let mut state = Self::scoped(facts, environment, Some((universals, first)), Opening::Body)?;
         state.availability = Availability::Validated;
         Ok(state)
     }
@@ -94,6 +96,8 @@ impl State {
         facts: &mut Declarations,
         predicate: Predicate,
     ) -> Result<bool, &'static str> {
+        #[cfg(test)]
+        let original = predicate;
         let fold = self
             .fold
             .as_mut()
@@ -109,6 +113,24 @@ impl State {
             first_region: self.obligations.regions.end,
             retain_sized: false,
         };
+        #[cfg(test)]
+        selection::copy_trace::record_checked(|| {
+            let clauses = self
+                .environment
+                .as_ref()
+                .map(|environment| environment.trait_clauses().take(65).collect::<Vec<_>>());
+            if clauses.as_ref().is_some_and(|clauses| clauses.len() > 64) {
+                return None;
+            }
+            Some(format!(
+                "copy-owner original={original:?} folded={predicate:?} environment={:?} validated={} frontier={} regions={:?} steps={} clauses={clauses:?}",
+                self.environment.as_ref().map(Arc::as_ptr),
+                self.availability == Availability::Validated,
+                caller.first_region,
+                self.obligations.regions,
+                self.context.steps
+            ))
+        });
         let selected = select_requirement(
             facts,
             &mut self.context,
@@ -118,6 +140,15 @@ impl State {
             false,
             None,
         )?;
+        #[cfg(test)]
+        selection::copy_trace::record(|| {
+            format!(
+                "copy-classification goal={predicate:?} subject={:?} deferred={} absent={}",
+                facts.types.kind(predicate.ty),
+                matches!(selected, selection::Selection::Deferred),
+                matches!(selected, selection::Selection::Absent)
+            )
+        });
         match selected {
             selection::Selection::Deferred => Err("source Copy selection is still pending"),
             selected => self
@@ -130,6 +161,15 @@ impl State {
         facts: &mut Declarations,
         environment: Option<Arc<Environment>>,
         scope: Option<(u32, u32)>,
+    ) -> Result<Self, &'static str> {
+        Self::scoped(facts, environment, scope, Opening::Declaration)
+    }
+
+    fn scoped(
+        facts: &mut Declarations,
+        environment: Option<Arc<Environment>>,
+        scope: Option<(u32, u32)>,
+        opening: Opening,
     ) -> Result<Self, &'static str> {
         let mut obligations = Obligations::new(scope.map_or(1, |(_, first)| first));
         let mut context = Context::default();
@@ -151,7 +191,12 @@ impl State {
                     .push((region, RegionId::bound(0, slot)?));
             }
             obligations.regions.end = end;
-            let mut substitution = substitute::Bound::new(regions);
+            let mut substitution = opening.fold(
+                environment.as_ref(),
+                regions,
+                &mut context,
+                &mut obligations,
+            )?;
             if let Some(env) = environment {
                 environment = Some(Arc::new(
                     env.substitute_regions(&mut facts.types, &mut substitution)?,

@@ -1,6 +1,8 @@
 //! Forward loan reachability constrained by inferred use regions.
 mod cleanup;
 mod expiration;
+mod formed;
+pub(crate) use formed::Formed;
 mod inspection;
 mod legality;
 mod state;

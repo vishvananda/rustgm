@@ -46,6 +46,8 @@ pub mod scopes;
 pub mod semantic_view;
 pub(crate) mod stored_fields;
 mod traits;
+#[cfg(test)]
+pub(crate) use traits::selection::copy_trace;
 pub mod type_view;
 pub mod unreduced;
 pub(crate) mod vtable_plans;

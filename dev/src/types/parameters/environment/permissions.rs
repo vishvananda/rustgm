@@ -208,9 +208,12 @@ impl Environment {
     }
     pub(crate) fn with_region_equalities(
         mut self,
-        equalities: crate::types::relations::RegionEqualities,
+        mut equalities: crate::types::relations::RegionEqualities,
     ) -> Self {
-        if !equalities.is_empty() {
+        if let Some(aliases) = self.body_aliases() {
+            equalities = equalities.with_body_aliases(Arc::clone(aliases));
+        }
+        if !equalities.is_empty() || equalities.body_aliases().is_some() {
             self.regions = Some(Arc::new(equalities));
             self.region_mapping = true;
         }

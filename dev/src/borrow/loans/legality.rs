@@ -16,7 +16,7 @@ pub(super) fn check(
     let Some(state) = requirements.defining() else {
         return Ok(());
     };
-    let prepared = state.checked(body, requirements.environment.as_ref(), work)?;
+    let prepared = super::Formed::new(state, body, proof, work)?;
     if let Some(schedule) = schedule {
         for cleanup in schedule.cleanups() {
             work.charge(1)?;

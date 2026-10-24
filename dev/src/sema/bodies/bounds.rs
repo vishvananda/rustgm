@@ -159,6 +159,9 @@ impl Checker<'_> {
                 .insert(owner, std::sync::Arc::clone(&updated));
             environment = Some(updated);
         }
+        if let Some(original) = environment.take() {
+            environment = Some(self.body_alias_environment(node, owner, original)?);
+        }
         self.state.method_environment.clone_from(&environment);
         self.state.prepare_parameter_queries();
         if let Some(catalog) = self.facts.source_bindings.as_deref() {
