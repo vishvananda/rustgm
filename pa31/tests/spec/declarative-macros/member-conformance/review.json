@@ -1,0 +1,273 @@
+{
+  "status": "Independent language/native contracts reviewed; RustGM scoped invocation remains unsupported",
+  "unique_sources": 8,
+  "language_observations": 16,
+  "native_programs": 4,
+  "executed_observations": 24,
+  "interpretation": "Adjust each impl identifier against the actual trait container before matching its namespace and kind. Distinct source contexts may map to one canonical trait member; reject duplicate mappings. Captured names preserve their identities; unrelated opaque trait members remain inaccessible.",
+  "binding": {
+    "root": "obj/parallel/member-conformance-oracle-v1",
+    "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "profile": [
+      "--edition=2024",
+      "--target=x86_64-unknown-linux-gnu",
+      "-Cpanic=abort",
+      "-Coverflow-checks=yes",
+      "-Awarnings"
+    ],
+    "environment_override": {
+      "RUSTC_BOOTSTRAP": "1"
+    },
+    "hashes": {
+      "plan.json": "8dcc1f13ae1fabdac34bec4ba8b83a6acfae1f6e7e8b88ad6847aae37494697e",
+      "results.json": "e192af424d12df870f7c590ca1a8b7d0d9e8549298ba9ec1e986b4e9f168197b",
+      "complete.json": "c037c4224b211162aedfe4c33107e0639b28bcfec4f4884675b56e599ed07042",
+      "run.py": "98364f4d6159d47be5c52c10fc5d0eac5d548c9735bef46b77324e8218978607"
+    },
+    "contract_sha256": "f29b17c97cc2b9e4715c3c5c1c4303b0cc0fa339cefb2c92fd2a30151bcc579a"
+  },
+  "observations": [
+    {
+      "case": "literal-root-method",
+      "stage": "metadata",
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "literal-root-method",
+      "stage": "object",
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "literal-root-method",
+      "stage": "native-build",
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "literal-root-method",
+      "stage": "native-run",
+      "returncode": 0,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "duplicate-adjusted-method",
+      "stage": "metadata",
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "961f8e5f9627813867b45b483fde12bd55e71fe0fd393051a4f8d5b87c2c778a",
+      "expected": "reject",
+      "diagnostic_codes": [
+        "E0201"
+      ],
+      "passed": true
+    },
+    {
+      "case": "duplicate-adjusted-method",
+      "stage": "object",
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "961f8e5f9627813867b45b483fde12bd55e71fe0fd393051a4f8d5b87c2c778a",
+      "expected": "reject",
+      "diagnostic_codes": [
+        "E0201"
+      ],
+      "passed": true
+    },
+    {
+      "case": "captured-member-separate-expansion",
+      "stage": "metadata",
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "captured-member-separate-expansion",
+      "stage": "object",
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "captured-member-separate-expansion",
+      "stage": "native-build",
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "captured-member-separate-expansion",
+      "stage": "native-run",
+      "returncode": 0,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "opaque-member-opponent",
+      "stage": "metadata",
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a7852eb3c1513b35076d2bb1c738602e4ff5e42cf06b39577f3c624751ff72fc",
+      "expected": "reject",
+      "diagnostic_codes": [
+        "E0407",
+        "E0046"
+      ],
+      "passed": true
+    },
+    {
+      "case": "opaque-member-opponent",
+      "stage": "object",
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a7852eb3c1513b35076d2bb1c738602e4ff5e42cf06b39577f3c624751ff72fc",
+      "expected": "reject",
+      "diagnostic_codes": [
+        "E0407",
+        "E0046"
+      ],
+      "passed": true
+    },
+    {
+      "case": "literal-root-associated-type",
+      "stage": "metadata",
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "literal-root-associated-type",
+      "stage": "object",
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "literal-root-associated-type",
+      "stage": "native-build",
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "literal-root-associated-type",
+      "stage": "native-run",
+      "returncode": 0,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "literal-root-associated-const",
+      "stage": "metadata",
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "literal-root-associated-const",
+      "stage": "object",
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "literal-root-associated-const",
+      "stage": "native-build",
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "literal-root-associated-const",
+      "stage": "native-run",
+      "returncode": 0,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "duplicate-adjusted-type",
+      "stage": "metadata",
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0367da3d5d735c2c69efea83d4298dc2aa2c59ce8d45e933924b64e199fdf3a8",
+      "expected": "reject",
+      "diagnostic_codes": [
+        "E0201"
+      ],
+      "passed": true
+    },
+    {
+      "case": "duplicate-adjusted-type",
+      "stage": "object",
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0367da3d5d735c2c69efea83d4298dc2aa2c59ce8d45e933924b64e199fdf3a8",
+      "expected": "reject",
+      "diagnostic_codes": [
+        "E0201"
+      ],
+      "passed": true
+    },
+    {
+      "case": "duplicate-adjusted-const",
+      "stage": "metadata",
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7240064e0313005f5eb6760bf9768b48b4665d51628f1a84a1513ebbacc709dc",
+      "expected": "reject",
+      "diagnostic_codes": [
+        "E0201"
+      ],
+      "passed": true
+    },
+    {
+      "case": "duplicate-adjusted-const",
+      "stage": "object",
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7240064e0313005f5eb6760bf9768b48b4665d51628f1a84a1513ebbacc709dc",
+      "expected": "reject",
+      "diagnostic_codes": [
+        "E0201"
+      ],
+      "passed": true
+    }
+  ]
+}

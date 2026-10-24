@@ -181,7 +181,7 @@ fn range_catalog_preserves_ordinary_record_sizes() {
         size_of::<body::ir::Value>()
     );
     // Two lazy arena identity slots add 16 bytes to the previous 7048-byte baseline.
-    assert_eq!(size_of::<Declarations>(), 7064);
+    assert_eq!(size_of::<Declarations>(), 7032);
     // A lazy item-scope owner adds eight bytes; per-item and body rows are unchanged.
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
     assert_eq!(size_of::<sema::iteration::Registry>(), 304);

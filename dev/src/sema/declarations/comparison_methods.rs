@@ -171,12 +171,7 @@ impl super::comparisons::LibraryContracts<'_> {
                 parameters: List { start: 0, end: 0 },
                 body: None,
             },
-            output.map(|output| {
-                (
-                    output,
-                    self.report.resolution.definitions[output.0 as usize].name,
-                )
-            }),
+            output,
         );
         Ok(())
     }

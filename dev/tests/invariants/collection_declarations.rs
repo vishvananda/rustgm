@@ -306,7 +306,7 @@ fn collection_layout_preserves_scalar_owners_and_padded_derive_entries() {
         size_of::<(ItemId, Declaration)>()
     );
     // Two lazy arena identity slots add 16 bytes to the previous 7048-byte baseline.
-    assert_eq!(size_of::<crate::sema::model::Declarations>(), 7064);
+    assert_eq!(size_of::<crate::sema::model::Declarations>(), 7032);
     assert_eq!(size_of::<Type>(), 24);
     assert_eq!(
         size_of::<(ItemId, Declaration)>(),

@@ -5,13 +5,33 @@ use crate::sema::traits::{
     implementations::{Availability, ConstantRequest},
 };
 use crate::support::hash::{HashMap, HashSet};
-use std::sync::Arc;
 
 #[derive(Default)]
 pub(in crate::sema::declarations) struct Readiness {
-    members: Option<Arc<Members>>,
+    pub(super) members: Option<Box<Members>>,
     active: HashSet<ConstantRequest>,
     pub(super) contracts: HashMap<ConstantRequest, super::constants::Contract>,
+}
+
+impl Readiness {
+    fn members(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &crate::sema::model::Declarations,
+    ) -> &mut Members {
+        self.members
+            .get_or_insert_with(|| Box::new(Members::new(report, facts)))
+    }
+
+    pub(super) fn take_members(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &crate::sema::model::Declarations,
+    ) -> Members {
+        self.members
+            .take()
+            .map_or_else(|| Members::new(report, facts), |members| *members)
+    }
 }
 
 impl Checker<'_> {
@@ -46,12 +66,9 @@ impl Checker<'_> {
         {
             return Ok(());
         }
-        let members = Arc::clone(
-            self.constant_members
-                .members
-                .get_or_insert_with(|| Arc::new(Members::new(self.report, &self.facts))),
-        );
-        let selected = members
+        let selected = self
+            .constant_members
+            .members(self.report, &self.facts)
             .selected(&self.facts, self.report, request.owner, request.declaration)
             .map_err(|e| self.error(key, e))?;
         if !finish {

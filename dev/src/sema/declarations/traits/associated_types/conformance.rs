@@ -2,7 +2,7 @@
 use super::{Checker, DefId, Error, NodeKey};
 use crate::support::hash::HashMap;
 use crate::{
-    resolve::{expansion::Report, model::DefKind, names::NameId},
+    resolve::{expansion::Report, model::DefKind},
     sema::model::Declarations,
     types::{
         outlives::Queries,
@@ -16,7 +16,6 @@ use crate::{
 #[derive(Default)]
 pub(in super::super) struct Members {
     owners: HashMap<DefId, Vec<DefId>>,
-    names: HashMap<(DefId, NameId), DefId>,
 }
 impl Members {
     pub(in super::super) fn new(report: &Report, facts: &Declarations) -> Self {
@@ -25,7 +24,6 @@ impl Members {
             let definition = &report.resolution.definitions[member.0 as usize];
             if definition.kind == DefKind::TypeAlias {
                 result.owners.entry(owner).or_default().push(member);
-                result.names.insert((owner, definition.name), member);
             }
         }
         result
@@ -48,10 +46,11 @@ impl Checker<'_> {
             .types
             .trait_application(id)
             .ok_or_else(|| self.error(source, "missing impl trait application"))?;
+        let trait_item = DefId(app.item.0);
         let trait_owner = self
             .facts
             .associated
-            .declaration_owner(DefId(app.item.0))
+            .declaration_owner(trait_item)
             .ok_or_else(|| self.error(source, "missing trait owner"))?;
         let impl_owner = self
             .facts
@@ -61,28 +60,24 @@ impl Checker<'_> {
         if !members.owners.contains_key(&trait_owner) && !members.owners.contains_key(&impl_owner) {
             return Ok(Vec::new());
         }
-        for &actual in members.owners.get(&impl_owner).into_iter().flatten() {
-            let definition = &self.report.resolution.definitions[actual.0 as usize];
-            if !members.names.contains_key(&(trait_owner, definition.name)) {
-                return Err(self.error(
-                    definition.node.unwrap_or(source),
-                    "implementation type is not a member of the trait",
-                ));
-            }
-        }
+        // Header preparation already checked every actual type identifier and
+        // duplicate mapping. Reuse those canonical links for the result proofs.
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(owner, environment);
         let mut result = Vec::new();
         let mut lifetimes = Vec::new();
         let mut substitution: Option<crate::types::substitute::Bound> = None;
         for &expected in members.owners.get(&trait_owner).into_iter().flatten() {
-            let name = self.report.resolution.definitions[expected.0 as usize].name;
-            let &actual = members.names.get(&(impl_owner, name)).ok_or_else(|| {
-                self.error(
-                    source,
-                    "implementation is missing a required associated type",
-                )
-            })?;
+            let actual = self
+                .facts
+                .associated
+                .type_definition(impl_owner, expected)
+                .ok_or_else(|| {
+                    self.error(
+                        source,
+                        "implementation is missing a required associated type",
+                    )
+                })?;
             let key = self.report.resolution.definitions[actual.0 as usize]
                 .node
                 .ok_or_else(|| self.error(source, "missing associated type definition"))?;

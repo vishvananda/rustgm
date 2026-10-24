@@ -85,6 +85,11 @@ the configured CPPGM backend; text output alone is insufficient.
   expression tails retain their expression category. The independent
   [scope contracts](tests/spec/declarative-macros/method-scopes/README.md) include
   caller/definition imports, ambiguity and captured-name opponents.
+- Implementation members must map to their actual trait declarations after
+  identifier adjustment. Reject duplicate canonical mappings across different
+  source contexts and preserve namespace/member-kind distinctions. The
+  [conformance contracts](tests/spec/declarative-macros/member-conformance/README.md)
+  cover methods, associated types and constants, including captured identifiers.
 - Duplicate and forged bindings.
 - Panic-abort runtime boundary.
 

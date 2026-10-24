@@ -64,7 +64,7 @@ impl Checker<'_> {
         }
         let members = Members::new(self.report, &self.facts);
         let types = super::super::associated_types::Members::new(self.report, &self.facts);
-        let constants = super::constants::Members::new(self.report, &self.facts);
+        let mut constants = self.constant_members.take_members(self.report, &self.facts);
         for (owner, source, predicate) in headers {
             if self.validate_iteration_blanket(owner)?
                 || self.validate_collection_impl(owner)?
@@ -92,7 +92,7 @@ impl Checker<'_> {
             let methods =
                 self.trait_impl_methods(owner, source, predicate, &members, &definitions)?;
             let constants =
-                self.trait_impl_constants(owner, source, predicate, &constants, &definitions)?;
+                self.trait_impl_constants(owner, source, predicate, &mut constants, &definitions)?;
             self.facts
                 .generics
                 .implementations

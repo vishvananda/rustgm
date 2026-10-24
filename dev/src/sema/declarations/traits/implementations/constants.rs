@@ -2,7 +2,7 @@
 use super::{Checker, DefId, Error, NodeKey};
 use crate::support::hash::HashMap;
 use crate::{
-    resolve::{expansion::Report, model::DefKind, names::NameId},
+    resolve::{expansion::Report, model::DefKind},
     sema::{model::Declarations, traits::conformance::Definitions},
     syntax::item::ItemKind,
     types::{
@@ -22,22 +22,63 @@ pub(super) struct Contract {
 #[derive(Default)]
 pub(super) struct Members {
     owners: HashMap<DefId, Vec<DefId>>,
-    names: HashMap<(DefId, NameId), DefId>,
+    matches: HashMap<DefId, HashMap<DefId, DefId>>,
 }
 impl Members {
     pub(super) fn selected(
-        &self,
+        &mut self,
         facts: &Declarations,
         report: &Report,
         owner: DefId,
         declaration: DefId,
     ) -> Result<Option<DefId>, &'static str> {
-        let owner = facts
+        self.prepare(report, facts, owner)?;
+        Ok(self
+            .matches
+            .get(&owner)
+            .and_then(|members| members.get(&declaration))
+            .copied())
+    }
+
+    fn prepare(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        owner: DefId,
+    ) -> Result<(), &'static str> {
+        if self.matches.contains_key(&owner) {
+            return Ok(());
+        }
+        let predicate = facts
+            .generics
+            .implementations
+            .as_ref()
+            .and_then(|registry| registry.header(owner))
+            .ok_or("missing constant implementation header")?
+            .predicate;
+        let (application, _) = predicate
+            .bound
+            .trait_parts()
+            .ok_or("constant implementation has no trait application")?;
+        let trait_item = facts
+            .types
+            .trait_application(application)
+            .ok_or("missing constant implementation trait application")?
+            .item;
+        let impl_owner = facts
             .associated
             .declaration_owner(owner)
             .ok_or("missing constant implementation owner")?;
-        let name = report.resolution.definitions[declaration.0 as usize].name;
-        Ok(self.names.get(&(owner, name)).copied())
+        let matches = super::super::override_identity::overrides(
+            report,
+            &facts.associated,
+            DefId(trait_item.0),
+            self.owners.get(&impl_owner).map_or(&[], Vec::as_slice),
+            "implementation constant is not a member of the trait",
+        )
+        .map_err(|(_, error)| error)?;
+        self.matches.insert(owner, matches);
+        Ok(())
     }
     pub(super) fn new(report: &Report, facts: &Declarations) -> Self {
         let mut result = Self::default();
@@ -45,7 +86,6 @@ impl Members {
             let definition = &report.resolution.definitions[member.0 as usize];
             if definition.kind == DefKind::Const {
                 result.owners.entry(owner).or_default().push(member);
-                result.names.insert((owner, definition.name), member);
             }
         }
         result
@@ -58,7 +98,7 @@ impl Checker<'_> {
         owner: DefId,
         source: NodeKey,
         predicate: Predicate,
-        members: &Members,
+        members: &mut Members,
         definitions: &Definitions,
     ) -> Result<Vec<(DefId, Option<DefId>)>, Error> {
         let Some((id, _)) = predicate.bound.trait_parts() else {
@@ -74,25 +114,18 @@ impl Checker<'_> {
             .associated
             .declaration_owner(DefId(app.item.0))
             .ok_or_else(|| self.error(source, "missing constant trait owner"))?;
-        let impl_owner = self
-            .facts
-            .associated
-            .declaration_owner(owner)
-            .ok_or_else(|| self.error(source, "missing constant impl owner"))?;
-        for &actual in members.owners.get(&impl_owner).into_iter().flatten() {
-            let definition = &self.report.resolution.definitions[actual.0 as usize];
-            if !members.names.contains_key(&(trait_owner, definition.name)) {
-                return Err(self.error(
-                    definition.node.unwrap_or(source),
-                    "implementation constant is not a member of the trait",
-                ));
-            }
-        }
+        members
+            .prepare(self.report, &self.facts, owner)
+            .map_err(|e| self.error(source, e))?;
+        let overrides = members
+            .matches
+            .get(&owner)
+            .ok_or_else(|| self.error(source, "missing constant member identity map"))?;
         let mut result = Vec::new();
         let mut substitution = None;
         for &expected in members.owners.get(&trait_owner).into_iter().flatten() {
             let declaration = &self.report.resolution.definitions[expected.0 as usize];
-            if let Some(&actual) = members.names.get(&(impl_owner, declaration.name)) {
+            if let Some(&actual) = overrides.get(&expected) {
                 if substitution.is_none() {
                     substitution = Some(
                         crate::sema::traits::results::substitution(&self.facts, predicate)

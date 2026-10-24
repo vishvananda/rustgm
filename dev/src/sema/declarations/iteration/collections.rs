@@ -360,11 +360,9 @@ impl super::super::comparisons::LibraryContracts<'_> {
             .parents
             .insert(member, declaration.definition);
         self.facts.generics.parameters.insert(member, Vec::new());
-        self.facts.associated.register_library_type_member(
-            declaration.definition,
-            member,
-            self.report.resolution.definitions[member.0 as usize].name,
-        );
+        self.facts
+            .associated
+            .register_library_type_member(declaration.definition, member);
         self.facts
             .associated
             .library_impl_member(declaration.definition, member)

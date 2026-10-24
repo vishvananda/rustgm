@@ -2054,12 +2054,25 @@ queries also charge the incremental transformation work. Restore the cache on
 failure. Candidate availability, active cycles and completed selection answers
 remain separate caller/query facts and cannot be cached in the type store.
 
-Method conformance checks unused implementations too. Match direct members by
-owner and name, require every nondefault method, and reject extra members. The
+Method conformance checks unused implementations too. Adjust each implementation
+identifier against the actual trait container, then match its exact namespace,
+normalized context and member kind in the resolver's retained member table.
+Reject two implementation declarations mapping to the same canonical trait
+member, even when their original identifier contexts differ. Retain every actual
+member in the inventory; a spelling-keyed overwrite must not hide a duplicate.
+Require every nondefault method and reject extra members. The
 trait method's type/const parameters are rigid proof inputs; using the impl's
 parameter identities would assume a stronger implicit Sized requirement. Prove
 the impl method's requirements under the impl owner and substituted trait method
 contract, while checking its body under its own declared assumptions.
+
+Associated types and constants consume the same identity rule before early
+declaration queries. Publish canonical type-member links before a prepared impl
+header becomes selectable; normalize through those links, not through spelling.
+Constant readiness builds one identity map per actual impl and reuses it during
+final conformance. These maps contain declaration identity only, never a signature,
+body, lifetime or execution proof. Reuse the resolver's exact member table rather
+than maintaining another parallel name/context index.
 
 Construct that conformance environment from the actual impl's bounds and the
 trait method's own predicates. The impl-header check already proves the containing

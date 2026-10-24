@@ -127,3 +127,10 @@ parenthesized-tail hypothesis disagreements remain visible beside the distinct
 brace/semicolon recovery contract. The consumer implementation must retain actual
 item/statement-macro block boundaries before expansion, including empty results.
 These contracts do not activate scoped invocation or the assignment.
+
+`spec/declarative-macros/member-conformance/` retains eight independent impl-member
+contracts: sixteen metadata/object observations and four native programs. Methods,
+associated types and constants match after adjustment against the actual trait
+container; duplicate canonical mappings must be rejected. Captured names and
+unrelated opaque declarations remain distinct. Candidate conformance is separate
+from these independent observations and from complete scoped invocation support.
