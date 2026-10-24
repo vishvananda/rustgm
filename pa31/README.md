@@ -70,7 +70,10 @@ the configured CPPGM backend; text output alone is insufficient.
   unchanged argument tokens, edition selection through internal macro allowances,
   and opposing imported-wrapper editions. The
   [predeclared source contracts](tests/spec/source-panic-macros/README.md)
-  reproduce the current original-core declaration blocker; they remain unqualified.
+  reproduce the preceding original-core declaration blocker. The
+  [combined checkpoint](../docs/library-lookup-panic-checkpoint.md) qualifies
+  local 2021/2024 delegation; foreign transport and Rust 2018 remain required.
+  Unchanged core now reaches the internal allowance on `assert_eq`, line 41.
 - Duplicate and forged bindings.
 - Panic-abort runtime boundary.
 

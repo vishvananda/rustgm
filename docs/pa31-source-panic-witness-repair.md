@@ -42,3 +42,14 @@ That integration-specific call-site change must survive this repair's merge;
 this isolated local source still has the accepted older publication API.
 Broader LIB014 complete identifier-list/combined-attribute storage is separate,
 and foreign API availability/metadata consumers remain unsupported.
+
+## Integrated qualification
+
+The [combined checkpoint](library-lookup-panic-checkpoint.md) qualifies this
+repair together with contextual lookup and the actual invocation publication API.
+Its first complete private gate found that the witness omitted the already
+supported `attributes()` metadata word; the original failure remains retained.
+`6bba6589` adds the exact typed word identity, ordinary/raw warm mutation and
+restoration controls, and the measured 176-byte cold `SourceCore` expectations.
+All 1,395 private tests and 326 frontend tests pass freshly in the recovery.
+This preserves existing grammar and does not add complete LIB014 allowances.

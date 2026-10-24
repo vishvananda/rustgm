@@ -14,7 +14,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Blocked. The fresh worker candidate passes the prior `core_panic` declaration, then rejects `#[allow_internal_unstable(panic_internals)]` on `assert_eq` at `library/core/src/macros/mod.rs:41`. | Implement and qualify the observed macro allowance contract, then rerun the unchanged root and retain its next error and opened source set. |
+| Original core loading and expansion | Blocked. The qualified integrated compiler passes the prior `core_panic` declaration, then rejects `#[allow_internal_unstable(panic_internals)]` on `assert_eq` at `library/core/src/macros/mod.rs:41`. | Implement and qualify the observed macro allowance contract, then rerun the unchanged root and retain its next error and opened source set. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -33,18 +33,21 @@ Its result SHA-256 is `b2f6bb683c0c6800b0dc2e89fa46d616bbdc925e66a444829c02cb7f7
 The preceding probe's `expected path segment` error at byte 6527 is retained in
 `library-stability-whole-core-frontier-v2/`; it no longer describes the fresh
 frontier. Parsing that file now succeeds, but neither probe completes core.
-The published integration passes 3,605 release/native tests, 8,382 active text tests and
-all 60 functional qualification stages. These counts do not establish a new
-crate milestone or release a PA.
+The preceding integration passed 3,605 release/native tests, 8,382 active text
+tests and all 60 functional qualification stages. The newer
+[lookup/input/panic checkpoint](library-lookup-panic-checkpoint.md) passes
+3,644 release/native tests (1,721 fresh plus 1,923 authenticated retained),
+8,382 text cases and 65 functional stages. Neither count releases a PA.
 
-The newest unchanged-core observation uses the development-qualified panic
-compiler `521bc9dab702cb00dac5106717f90f525a51e839be04f898626bffbfb028d772`,
-source `2c31704b`, in worker C's
-`obj/parallel/pa31/source-panic-whole-core-v1/`. It exits 1 at file 3, byte 1250,
+The newest unchanged-core observation uses the qualified integrated compiler
+`20eb54f33961841b6e496bec52dae3a41f51e10ee97dbdb4b03de68d8e728134`,
+source `6bba6589`, in the validation worktree's
+`obj/parallel/whole-core-blockers-v5/`. It exits 1 at file 3, byte 1250,
 with `internal macro allowance feature is not implemented`. This is the
 `panic_internals` allowance on `assert_eq`, line 41. The same four original files
 were opened; all hashes and configuration remain unchanged. Its result SHA-256
-is `da05be67bdb0751ad043a0aec2e1ad70b013ee6da9c716e4b2752dc3298233cd`.
+is `b333b6b448ed489df47726a86aac71040c8025d3ad32e664b2ce0dcd9a8c940a`.
+The preceding worker-only result at `2c31704b` is retained separately.
 Passing the prior declaration advances this specific crate boundary; it does not
 complete expansion, semantic checking, an artifact, or an assignment.
 
@@ -59,19 +62,19 @@ without those later features. Do not move fixtures mechanically by subsystem.
 
 | ID | Priority and evidence | Blocking issue | Owner PA / test PA | Worker | State / dependencies |
 | --- | --- | --- | --- | --- | --- |
-| LIB-001 | P0; preceding whole-core parse blocker removed, scoped semantics still required | Scoped declarative macro publication, item/path/import/glob lookup and definition-site visibility | PA31 internal feature; PA8 shared machinery / PA31, plus applicable PA7–PA8 regressions | Integrator | Contextual item/path/import/glob/textual lookup is development-qualified: 66 private checks, 138 frontend tests and 8,382 text cases. Scoped publication and complete semantics remain disabled. |
+| LIB-001 | P0; preceding whole-core parse blocker removed, scoped semantics still required | Scoped declarative macro publication, item/path/import/glob lookup and definition-site visibility | PA31 internal feature; PA8 shared machinery / PA31, plus applicable PA7–PA8 regressions | Integrator | Contextual item/path/import/glob/textual lookup passes combined functional and performance qualification at `6bba6589`. Scoped publication and complete semantics remain disabled. |
 | LIB-002 | P0; prerequisite of LIB-001 | Hygienic field, method and associated-member identity; captured names and container-relative privacy | PA31; PA12/PA19 shared consumers / PA31, with earlier ordinary controls | C + integrator | Field storage/consumers and shared adjustment API frozen at local `b937b6da`, unqualified. Methods/associated members remain required. |
 | LIB-003 | P1; actual reduced source failure | Projected Copy proof sees one lifetime premise in inconsistent declaration/body namespaces | PA21 scoped proof + PA31 source const-trait defaults / PA31; add PA21 control where expressible | B | Original alias opening passes 39 private controls; three full-lowering cases expose an instance handoff mismatch. A private materialization carrier preserving the original guard and fresh instance Copy proof is frozen for qualification. |
 | LIB-004 | P1; actual reduced source failure, readiness cause not yet observed directly | Early const read treats source `u8: Copy` as absent although its impl is present | PA20 implementation readiness + PA25 early CTFE / PA31 source-binding reproduction | B, coordinated with C | Diagnosing prepared-header versus validated-impl scheduling; needs exact state/wakeup evidence. |
 | LIB-005 | P1; independently qualified reduced program | Anonymous constant-expression `const_eval_select` ownership and cache validation | PA25 execution + PA28 intrinsic semantics + PA31 source identity / PA31 | C | Source-ready at local `379006ad`, unqualified; preserve handoff while C prioritizes LIB-013. |
-| LIB-006 | P1; core-to-consumer prerequisite | Complete substituted signatures, operation types and required inputs for real exported generic originals | PA29 / PA29 data invariants; PA31 source-provider fixtures | A | Complete operation-derived input/signature validation passes 11 focused controls, including exact late-slot, Copy-query and unused-body opponents. Executable artifact/import proof is still required. |
+| LIB-006 | P1; core-to-consumer prerequisite | Complete substituted signatures, operation types and required inputs for real exported generic originals | PA29 / PA29 data invariants; PA31 source-provider fixtures | A | Complete operation-derived input/signature validation passes the combined checkpoint, including all 11 private controls and actual complete-source A/B output equality. Executable artifact/import proof is still required. |
 | LIB-007 | P1; core-to-consumer prerequisite | Deterministic generic/source metadata, authenticated remapping and fresh imported body proof | PA29 + PA31 source-role admission / PA29 ordinary multi-crate tests and PA31 source-provider tests | A + integrator | Implementing a restricted ordinary-function source profile through actual serialization and fresh imported proof. A complete one-body provider independently passes rustc/native controls; candidate descriptor/codec dispatch remains disabled until the full transaction works. |
 | LIB-008 | P1; next whole-crate acceptance gate | Close remaining active core source requirements and emit a real core artifact | PA32, with each failure assigned back to its language owner / PA32 original crate plus reduced owning-PA cases | Integrator | Blocked on LIB-001/002; discover concrete additional issues from unchanged-root runs, not guesses. |
 | LIB-009 | P2; crate-graph prerequisite | Source dependency identity, edition/build configuration and reproducible build orchestration | PA34 / PA34 | Integrator | Partial interfaces exist; complete original graph qualification remains required. |
 | LIB-010 | P2; not yet reached as a whole crate | Original alloc, allocator/runtime contracts and collection consumers | PA33; PA27/PA28 operation prerequisites / PA33 plus reduced owning-PA cases | Unassigned until core advances | Blocked on LIB-007/008/009; split observed alloc failures into concrete issues when reached. |
 | LIB-011 | P2; not yet reached as a whole crate | Original std, platform linkage and abort-profile consumers | PA36; PA30/PA34 platform/build prerequisites / PA36 plus reduced owning-PA cases | Unassigned until prerequisites advance | Blocked on the original core/alloc graph; no unsupported percentage-complete estimate. |
 | LIB-012 | P2; externally useful acceptance | Original no-default-features serde_core, then alloc/std serde_json graphs | PA35 / PA35 | Integrator | Run the core-only graph as soon as LIB-007/008/009 permit it; do not wait for std. |
-| LIB-013 | P0; prior unchanged-core blocker advanced | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | C + integrator | Local source delegation passes static checks, 8 relevant private checks, 28 source contexts and 16 native programs; 168 independent rustc observations and 35 native oracle programs are retained. Original core advances to LIB-014. Foreign macro transport and Rust 2018 remain required; full LIB-013 is not closed. |
+| LIB-013 | P0; prior unchanged-core blocker advanced | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | C + integrator | Local 2021/2024 source delegation and exact warm spelling guards pass combined qualification. The qualified unchanged-core probe advances to LIB-014. Foreign macro transport and Rust 2018 remain required; full LIB-013 is not closed. |
 | LIB-014 | P0; new unchanged-core failure at `assert_eq`, line 41 | Macro-specific internal unstable feature allowances, beginning with actual `panic_internals` | PA31 source/compiler policy; PA8 token provenance / PA31 with applicable PA8 ordinary controls | C + integrator | API and consumer review; retain declaration/attribute identity and actual literal/captured-token provenance. Never grant features globally or ignore the attribute. |
 
 
@@ -85,9 +88,11 @@ required. Every actual provided body must cross the boundary and prove again.
 The larger three-body const-trait/default provider remains a required successor;
 this first transaction does not claim to build core or finish PA29.
 
-The contextual lookup and input-plan checkpoints are staged locally for combined
-qualification. Their focused results are not a public release/native/performance
-result. The whole-core boundary above remains authoritative until a fresh
+The contextual lookup, input-plan and local panic checkpoints are integrated
+and qualified together; their exact fresh/retained counts and measured costs
+are in the linked checkpoint. Worker A's subsequent column codec and importer
+staging, B's actual alias-scope recovery and C's complete-allowance work remain
+unqualified. The whole-core boundary above remains authoritative until a fresh
 unchanged-crate observation replaces it.
 
 ## Reproductions, tests and closure criteria
@@ -146,8 +151,8 @@ branch is not a passing test or a released assignment contract.
   result. Add a reduced owning-PA fixture for every newly reached failure while
   retaining the unchanged whole-crate acceptance test. An earlier parser error
   must not make a later semantic negative appear to pass.
-- **LIB-013:** `pa31/tests/spec/source-panic-macros/contract.json` (local source
-  checkpoint `af49643a`, unqualified) declares ten single-source cases in three
+- **LIB-013:** `pa31/tests/spec/source-panic-macros/contract.json` (original source
+  checkpoint `af49643a`) declares ten single-source cases in three
   editions and nine imported-wrapper contexts. These source-builtin controls cover real
   declaration identity, aliases, call-site edition, unchanged argument tokens,
   definition-crate delegation, and forged/missing/duplicate claims. Independently
@@ -178,9 +183,11 @@ primary lanes are A: LIB-006/007; B: LIB-003/004; C: LIB-014 with the qualified 
 field checkpoint and LIB-005 preserved for qualification;
 integrator: LIB-001/008/009/012 and integration.
 
-Source work proceeds concurrently. Heavy jobs remain serialized at current disk
-headroom under the existing 150-GiB reserve, 50-GiB/worktree allowance and CPU/RAM
-limits. Use focused batched checks during a fix and one combined release gate
+Source work proceeds concurrently. Heavy jobs use the existing 150-GiB reserve,
+50-GiB/worktree ceiling and CPU/RAM limits. After the qualified schema-2 tooling
+is installed at an idle boundary, admit up to three jobs with explicit smaller
+absolute caps and measured headroom. Keep measurements exclusive.
+Use focused batched checks during a fix and one combined release gate
 for a coherent integration. Reuse unchanged qualification and independent
 observations with exact source/tool bindings; retain failures and clean outputs.
 

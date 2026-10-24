@@ -16,8 +16,8 @@ for each. Current priority is the unchanged-core loading/expansion blocker:
 the integrator owns scoped item/path/import/glob lookup, Worker C investigates
 hygienic field/member consumers, Worker B owns projected Copy and early-impl
 readiness, and Worker A owns complete generic source-body validation/transport.
-The development-qualified local panic candidate passes the `core_panic` builtin
-declaration. A fresh unchanged-core probe now stops at the `panic_internals`
+The qualified integrated lookup/input/panic compiler passes the `core_panic`
+builtin declaration. A fresh unchanged-core probe now stops at the `panic_internals`
 allowance on `assert_eq` in macros/mod.rs, line 41. Worker C takes LIB-014's
 per-token internal feature permissions while preserving its unqualified field
 checkpoint and LIB-013's remaining foreign/edition requirements. The integrator
@@ -25,6 +25,16 @@ retains scoped publication and item/path/import/glob work. Field, method and
 associated-member requirements remain open.
 These implementation priorities do not change assignment release ownership or
 the shared resource limits below.
+
+The [combined checkpoint](library-lookup-panic-checkpoint.md) records 3,644
+release/native passes (1,721 fresh and 1,923 retained), 8,382 text cases, all
+84 comparable performance outputs and the sixteen retained RSS review triggers.
+Next gates are A's intermediate source codec/import staging, B's genuine
+nonempty instance-alias scope and C's complete-allowance independent corpus.
+After the idle schema-2 rollout below, select each absolute output cap from
+its actual existing usage plus build headroom; admit concurrent jobs only when
+the unchanged global reserve permits. Each new private binary runs its full
+nonignored inventory once, with required-name and captured-output checks.
 
 ## Assignment ownership
 
@@ -223,10 +233,12 @@ scan. This remains monitored accounting rather than an instantaneous filesystem
 quota. The 150 GiB reserve, three-slot maximum, exclusive benchmarks, CPU/RAM/task
 limits and two Cargo/test threads are unchanged.
 
-The implementation handoff does not activate schema 2. Its source tests use
-small temporary files or simulated usage; they cover mixed reservations, stale
+The implementation handoff does not activate schema 2. Its tests use small
+temporary files or simulated usage; they cover mixed reservations, stale
 publication, nested requests, all three accounting phases and idle activation.
-The integrator must run the resource/storage tests and harness before rollout.
+The integrator qualified all 183 harness tests (including 30 resource tests),
+suite registration and assignment layout at `441373fe`. Local deployment and
+the explicit idle activation remain separate from that source qualification.
 
 ## Worker completion contract
 

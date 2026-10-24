@@ -92,7 +92,9 @@ The receipt lives in `obj/parallel/item-lookup-v5/` in the integrator's isolated
 the complete check inventory is
 `e787008bbdfdd8910bdb71ffa374520b289f35afd40b7eecb9bf350b6bd02f8f`.
 Earlier filename-family audit and strict-style failures remain retained.
-The combined release/native and performance gates remain pending.
+The subsequent [combined checkpoint](library-lookup-panic-checkpoint.md)
+qualifies this implementation at `6bba6589`, including release/native controls
+and immutable A/B measurements. It retains all observed performance costs.
 Scoped publication, full member consumers and
 foreign macro transport remain separate required work. Do not enable scoped
 admission merely because these private controls pass.
