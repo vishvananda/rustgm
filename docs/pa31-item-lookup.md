@@ -30,6 +30,8 @@ Generic parameters, lifetimes, constant-pattern references and const-argument
 disambiguation consume the contextual lookup. Implicit Self retains its explicit
 root identity. Each self/super keyword uses its own retained context. Restricted
 visibility selects direct module bindings and still requires an actual ancestor.
+Parameter identity remains the original normalized context when ordinary item
+lookup removes opaque marks; rewinding must not capture a defining generic.
 
 Import dependencies and selected keys carry the queried context. Successful
 lookup is not an absence cache: a later exact publication can wake a missing
@@ -52,6 +54,8 @@ Before execution, the new private controls require:
   depth 8/32/128/512 by width 8/32/128 suffix work and storage bounds.
 - Actual import journal replacement and withdrawal in the mapped context,
   preserving an identically spelled direct binding in the root context.
+- A literal generic parameter cannot be captured by opaque definition-site
+  rewinding; a parameter supplied by the caller retains its original identity.
 
 These are structural controls using real parser/expansion owners with supplied
 opaque token provenance. They are not evidence of scoped macro source acceptance.
@@ -73,3 +77,21 @@ independent/native source controls and combined release qualification are pendin
 Legacy textual macro context keys, scoped publication, full member consumers and
 foreign macro transport remain separate required work. Do not enable scoped
 admission merely because these private controls pass.
+
+## Independent parameter observation
+
+The four inputs in `pa31/tests/spec/declarative-macros/generic-lookup-contract.json`
+were declared before execution. The initial literal-generic positive hypothesis
+was falsified by both metadata and object compilation: pinned rustc reported
+E0425 for the literal `T`. Captured `T`, the legacy macro literal, and a scoped
+macro referring to an ordinary defining block type alias all passed both modes.
+The original hypothesis and its competing prediction remain unchanged; the
+compiler draft now preserves parameter identity rather than accepting that
+positive. This is eight independent observations, not scoped-macro acceptance
+by RustGM or native execution evidence.
+
+The receipt is retained at worker A's
+`obj/parallel/pa29-generic-lookup-oracle-v1/evidence/receipt.json`, SHA-256
+`6aa88d05ac02f5a1f33d412093455e3581c36382114312d7af8850290998f702`.
+It binds the original contract, all input bytes, diagnostics and rustc executable
+`3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2`.

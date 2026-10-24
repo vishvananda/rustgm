@@ -129,6 +129,7 @@ impl Resolver<'_> {
                 namespace,
                 context,
                 item,
+                parameter: item,
                 privacy: c.module,
                 visible: self.facts.definitions.len(),
             };

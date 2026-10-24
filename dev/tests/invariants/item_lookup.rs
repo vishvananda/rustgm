@@ -240,7 +240,7 @@ fn a_new_exact_binding_satisfies_a_previous_missing_query_without_absence_cachin
 }
 
 #[test]
-fn definition_scope_rewinds_before_crossing_its_generic_parameter_barrier() -> TestResult {
+fn definition_scope_rewinds_items_without_capturing_generic_parameters() -> TestResult {
     let report = program("fn outer<T>() { macro_rules! mark { () => {} } mark!(); }")?;
     let mut report = crate::resolve::analyze_expanded(report)?;
     let invocation = report.invocations.first().ok_or("missing invocation")?;
@@ -266,9 +266,14 @@ fn definition_scope_rewinds_before_crossing_its_generic_parameter_barrier() -> T
     let mut state = State::default();
     state.facts = std::mem::take(&mut report.resolution);
     let resolver = state.bind(&mut report.package);
+    assert!(
+        resolver
+            .item_lexical(call, name, Namespace::Type, context, None)?
+            .is_none()
+    );
     let found = resolver
-        .item_lexical(call, name, Namespace::Type, context, None)?
-        .ok_or("definition parameter hidden")?;
+        .item_lexical(call, name, Namespace::Type, ItemContext::ROOT, None)?
+        .ok_or("captured parameter hidden")?;
     assert_eq!(
         resolver.facts.definitions[found.binding.target.0 as usize].kind,
         DefKind::Generic

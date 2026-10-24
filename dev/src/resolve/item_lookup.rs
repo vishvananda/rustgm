@@ -143,6 +143,7 @@ impl Resolver<'_> {
         if namespace == Namespace::Type && self.package.names.get(name) == "Self" {
             context = ItemContext::ROOT;
         }
+        let parameter_context = context;
         let mut privacy = c.module;
         let mut barriers = 0_u32;
         let mut remaining = self
@@ -180,6 +181,11 @@ impl Resolver<'_> {
                 }));
             }
             if let Some(binding) = self.facts.bindings.get_key(key)
+                && (context == parameter_context
+                    || !matches!(
+                        self.facts.definitions[binding.target.0 as usize].kind,
+                        DefKind::Generic | DefKind::Lifetime | DefKind::SelfType
+                    ))
                 && binding.is_lexical(&self.facts.definitions, frame.associated)
                 && (barriers == 0
                     || !self.facts.definitions[binding.target.0 as usize]
