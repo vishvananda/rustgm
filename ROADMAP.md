@@ -11,6 +11,10 @@ ordinary library APIs come from their Rust sources. The
 [library bootstrap plan](docs/library-bootstrap-roadmap.md) defines source pins,
 acceptance gates, implementation priority and the old-to-new number mapping.
 PA1–PA30 retain their current contracts and ownership.
+The [library build blocker tracker](docs/library-build-blockers.md) records the
+current crate boundary, prioritized issues, owning assignments, required tests
+and parallel worker assignments. Use it to choose implementation work and report
+crate progress separately from internal checkpoint counts.
 
 | PA | Assignment | Status |
 | --- | --- | --- |

@@ -9,6 +9,16 @@ Workers own implementation, independently qualified tests and handout drafts.
 The integrator owns shared interface decisions, integration, public pushes,
 assignment activation and final text-oracle publication.
 
+Use [the live library blocker tracker](library-build-blockers.md) for current
+issue assignments and concrete closure tests. Workers may tackle multiple
+independent blockers in their lanes while preserving a separate coherent handoff
+for each. Current priority is the unchanged-core loading/expansion blocker:
+the integrator owns scoped item/path/import/glob lookup, Worker C investigates
+hygienic field/member consumers, Worker B owns projected Copy and early-impl
+readiness, and Worker A owns complete generic source-body validation/transport.
+These implementation priorities do not change assignment release ownership or
+the shared resource limits below.
+
 ## Assignment ownership
 
 | Lane | First assignment | Next assignment after integration | Contract |

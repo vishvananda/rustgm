@@ -9,6 +9,10 @@ Every new or reordered assignment remains planned until its actual release
 contract passes. A draft checkpoint is not an assignment release.
 The [pinned source inventory](library-bootstrap-inventory.md) records the concrete
 compiler contracts and target constraints behind this order.
+The [live blocker tracker](library-build-blockers.md) maps concrete failures to
+their owning assignments, tests and workers. The next implementation priority is
+the observed unchanged-core blocker; independent later prerequisites can proceed
+in parallel. A passing internal checkpoint is not a crate-build milestone.
 
 ## What we compile and what the compiler supplies
 
