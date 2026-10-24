@@ -66,6 +66,22 @@ impl Pending {
 }
 
 impl Checker<'_> {
+    /// Drain the same exact bucket used by ordinary qualified-path lookup.
+    /// Publication remains owned by each completed implementation header.
+    pub(super) fn prepare_inherent_bucket(&mut self, nominal: ItemId, name: NameId) {
+        for owner in self
+            .inherent_headers
+            .dependencies(nominal, name)
+            .into_iter()
+            .rev()
+        {
+            self.work.push(super::Work::ImplHeader(
+                owner,
+                super::impl_headers::Phase::Begin,
+            ));
+        }
+    }
+
     pub(super) fn reserve_inherent_headers(&mut self) -> Result<(), Error> {
         let mut heads = super::heads::Heads::new(self.report, &self.facts);
         let mut pending = Pending::default();

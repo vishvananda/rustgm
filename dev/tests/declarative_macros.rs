@@ -153,3 +153,6 @@ mod retained_items;
 
 #[path = "declarative_macros/chosen_sources.rs"]
 mod chosen_sources;
+
+#[path = "declarative_macros/formatted_values.rs"]
+mod formatted_values;

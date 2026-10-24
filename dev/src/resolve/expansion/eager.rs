@@ -39,9 +39,11 @@ impl<S: Sources> Engine<'_, S> {
     pub(super) fn begin_eager(&mut self, index: usize, definition: usize) -> Result<(), Error> {
         let call = &self.calls[index];
         let (file, capture, visit, scope) = (call.file, call.capture, call.visit, call.scope);
+        self.prepare_format_input(file, capture, definition)?;
         let input = self
             .input(file, capture, false)
             .map_err(|e| self.eager_error(index, definition, e))?;
+        self.charge_format_opaque(file, definition, &input)?;
         let (before, tail) = self.loader.package.units.split_at_mut(file.0 as usize);
         let (unit, after) = tail
             .split_first_mut()
@@ -184,6 +186,9 @@ impl<S: Sources> Engine<'_, S> {
         let call = &self.calls[index];
         let (file, visit, grammar) = (call.file, call.visit, call.grammar);
         let unit = self.loader.package.unit(file);
+        if matches!(self.definitions[definition].body,Body::Builtin(role) if role.formatting()) {
+            return self.format_literal_value(index, definition, root);
+        }
         match self.definitions[definition].body {
             Body::Builtin(builtin::Builtin::Concat) => builtin::concat(
                 &unit.configured.ast,

@@ -36,6 +36,7 @@ pub(super) mod attributes;
 mod bindings;
 mod diagnostics;
 mod eager;
+mod format_values;
 mod location;
 mod panic_dispatch;
 mod permission_frames;

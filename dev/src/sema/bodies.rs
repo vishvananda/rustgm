@@ -20,6 +20,7 @@ pub use effect_facts::SourceCallUse;
 mod environment_values;
 mod field_storage;
 mod finalization;
+mod formatting_values;
 mod generics;
 mod hidden_results;
 mod inline;
@@ -912,7 +913,8 @@ impl Checker<'_> {
     }
     fn complete_body_expression(&mut self, node: NodeId) -> Result<Option<Dependency>, Error> {
         if let Some(requirement) = self
-            .comparison_readiness(node)?
+            .formatting_readiness(node)?
+            .or(self.comparison_readiness(node)?)
             .or_else(|| self.value_readiness(node))
         {
             self.state.work.push(Work::Exit(node));

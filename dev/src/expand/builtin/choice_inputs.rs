@@ -10,7 +10,7 @@ use crate::{
 };
 
 pub(crate) type Charge<'a> = dyn Fn(usize, usize) -> Result<(), LexError> + 'a;
-pub(super) struct Counted<'a> {
+pub(crate) struct Counted<'a> {
     pub inputs: &'a dyn Inputs,
     pub charge: &'a Charge<'a>,
 }

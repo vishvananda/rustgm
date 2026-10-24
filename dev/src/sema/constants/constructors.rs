@@ -54,6 +54,10 @@ impl Queries<'_> {
     pub(super) fn constructor_expression(&self, key: NodeKey) -> Result<Option<Expression>, Error> {
         let child = |node| NodeKey { node, ..key };
         Ok(match Declarations::kind(self.report, key) {
+            Kind::LibraryValue {
+                kind: crate::support::library_types::LibraryValue::FormatLiteral { .. },
+                ..
+            } => None,
             Kind::LibraryValue { value, .. } => {
                 let Some(Operation::Construct { variant }) =
                     self.typing.facts.node(key).and_then(|f| f.operation)

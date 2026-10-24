@@ -89,6 +89,7 @@ enum Work {
     ConstantMember(crate::sema::traits::implementations::ConstantRequest, bool),
     MethodPrefix(NodeKey, regions::Context),
     InherentMethod(NodeKey, associated::Path, regions::Context),
+    InherentHeaders(ItemId, crate::resolve::names::NameId),
     EvaluateConstant(evaluation::Request, bool),
     InitializerReady(DefId),
     TraitCallable(NodeKey, trait_paths::Callable),
@@ -137,6 +138,7 @@ impl Work {
         use crate::sema::bodies::Requirement;
         match requirement {
             Requirement::Nominal(item) => Self::ValueType(DefId(item.0)),
+            Requirement::Inherent(item, name) => Self::InherentHeaders(item, name),
             Requirement::Definition(definition) => Self::Definition(definition, false),
             Requirement::Constructor(definition) => Self::PrepareConstructor(definition),
             Requirement::ImplHeader(owner) => Self::ImplHeader(owner, impl_headers::Phase::Begin),
@@ -451,6 +453,9 @@ impl Checker<'_> {
                 }
                 Work::MethodPrefix(key, context) => {
                     self.complete_method_prefix(key, context, steps, limit, &mut scan)?;
+                }
+                Work::InherentHeaders(item, name) => {
+                    self.prepare_inherent_bucket(item, name);
                 }
                 Work::InherentMethod(key, path, context) => {
                     self.complete_method_path(key, &path, context, steps, limit, &mut scan)?;

@@ -17,7 +17,7 @@ fn probe()->u32{7u32}
 
 #[path = "allowance_identity.rs"]
 mod identity;
-#[path = "unsafe_allowances.rs"]
+#[path = "lint_metadata.rs"]
 mod unsafe_lint;
 #[path = "allowance_work.rs"]
 mod work;

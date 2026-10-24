@@ -1,4 +1,4 @@
-//! A recognized formatting header cannot execute or supply an allowance frame.
+//! Formatting headers and literal results retain their actual source and call identities.
 use super::*;
 fn formatting_source(name: &str) -> TestResult<String> {
     Ok(crate::test_source::fixture(&format!(
@@ -24,7 +24,7 @@ fn formatting_expanded(source: &str) -> TestResult<crate::resolve::expansion::Re
     )?)
 }
 #[test]
-fn declared_format_roles_deny_before_real_input_capture_mark_and_invocation_work() -> TestResult {
+fn literal_format_roles_retain_real_owned_results_and_invocation_frames() -> TestResult {
     for name in [
         "literal-complete-basic",
         "literal-complete-const",
@@ -32,41 +32,19 @@ fn declared_format_roles_deny_before_real_input_capture_mark_and_invocation_work
         "literal-complete-captured-expression",
     ] {
         let source = formatting_source(name)?;
-        let probe = Probe::start()?;
-        let error = formatting_expanded(&source)
-            .err()
-            .ok_or("formatting placeholder executed")?;
-        assert!(
-            error
-                .to_string()
-                .contains("formatting builtin invocation is not implemented"),
-            "{name}: {error}"
-        );
-        let trace = probe.finish()?;
-        let denied = trace
-            .events
-            .iter()
-            .filter_map(|event| {
-                if let Event::Denied(snapshot) = event {
-                    Some(snapshot)
-                } else {
-                    None
-                }
+        let report = formatting_expanded(&source)?;
+        let values = report.package.units.iter().enumerate().flat_map(|(file, unit)| {
+            unit.configured.ast.nodes.iter().enumerate().filter_map(move |(node, actual)| {
+                (unit.configured.active[node] && matches!(actual.kind,
+                    crate::syntax::ast::Kind::LibraryValue { kind: crate::support::library_types::LibraryValue::FormatLiteral { .. }, .. }
+                )).then_some(crate::resolve::unit::NodeKey {
+                    file: crate::resolve::unit::FileId(u32::try_from(file).ok()?),
+                    node: crate::syntax::ast::NodeId::new(u32::try_from(node).ok()?),
+                })
             })
-            .collect::<Vec<_>>();
-        assert_eq!(denied.len(), 1, "{name}");
-        assert_eq!(
-            denied[0].captures,
-            usize::from(name == "literal-complete-captured-expression")
-        );
-        assert_eq!(
-            denied[0].invocations,
-            usize::from(name == "literal-complete-captured-expression")
-        );
-        assert!(denied[0].owner.is_some());
-        if name != "literal-complete-captured-expression" {
-            assert_eq!(denied[0].marks, 1);
-        }
+        }).collect::<Vec<_>>();
+        assert_eq!(values.len(), 1, "{name}");
+        assert!(report.formatting_value(values[0])?.formatting());
     }
     Ok(())
 }
@@ -88,7 +66,7 @@ fn authentic_format_headers_preserve_real_roles_without_executable_frames() -> T
         })
         .collect::<Vec<_>>();
     assert_eq!(roles.len(), 3);
-    assert!(roles.iter().all(|role| role.declaration_only()));
+    assert!(roles.iter().all(|role| role.formatting()));
     for entry in &report.definitions {
         let owner = entry.node.ok_or("actual owner")?;
         let contract = crate::resolve::bindings::panic_contracts::published(
@@ -97,7 +75,7 @@ fn authentic_format_headers_preserve_real_roles_without_executable_frames() -> T
             entry.header.as_ref(),
             1,
         )?;
-        assert!(contract.builtin.is_some_and(|role| role.declaration_only()));
+        assert!(contract.builtin.is_some_and(|role| role.formatting()));
     }
     Ok(())
 }

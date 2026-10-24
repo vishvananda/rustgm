@@ -85,19 +85,6 @@ impl<S: Sources> Engine<'_, S> {
             .definitions
             .get(definition)
             .ok_or_else(|| Error::at(file, offset, "unknown selected macro definition"))?;
-        if matches!(actual.body, Body::Builtin(role) if role.declaration_only()) {
-            #[cfg(test)]
-            crate::resolve::index::unavailable_macros::observation::note(
-                crate::resolve::index::unavailable_macros::observation::Event::Denied(
-                    self.scoped_snapshot(definition),
-                ),
-            );
-            return Err(Error::at(
-                file,
-                offset,
-                "formatting builtin invocation is not implemented",
-            ));
-        }
         if matches!(actual.body, Body::ScopedDeclaration(_)) {
             #[cfg(test)]
             crate::resolve::index::unavailable_macros::observation::note(

@@ -67,15 +67,47 @@ impl Query {
             terms: HashMap::default(),
         };
         let term = Scratch::default().infer(&mut source, prefix)?;
-        let members = candidates(source.facts, &mut source.infer, term, bucket)
+        Self::inherent_prefix(
+            report,
+            source.facts,
+            key,
+            (source.infer, term),
+            bucket,
+            scope,
+            caller,
+        )
+    }
+
+    /// A compiler protocol supplies a real canonical nominal, not a fabricated syntax prefix.
+    pub fn inherent_type(
+        report: &Report,
+        facts: &mut Declarations,
+        key: NodeKey,
+        ty: crate::types::TypeId,
+        bucket: (ItemId, NameId),
+        scope: ScopeId,
+        caller: OwnedCaller,
+    ) -> Result<Self, Error> {
+        let mut prefix = Context::default();
+        let term = prefix
+            .known(&facts.types, ty)
+            .map_err(|error| Declarations::error(report, key, applicability::inference(error)))?;
+        Self::inherent_prefix(report, facts, key, (prefix, term), bucket, scope, caller)
+    }
+    fn inherent_prefix(
+        report: &Report,
+        facts: &mut Declarations,
+        key: NodeKey,
+        (mut prefix, term): (Context, TermId),
+        bucket: (ItemId, NameId),
+        scope: ScopeId,
+        caller: OwnedCaller,
+    ) -> Result<Self, Error> {
+        let members = candidates(facts, &mut prefix, term, bucket)
             .map_err(|message| Declarations::error(report, key, message))?;
-        source.facts.methods.selection_steps = source
-            .facts
-            .methods
-            .selection_steps
-            .saturating_add(source.infer.steps);
+        facts.methods.selection_steps = facts.methods.selection_steps.saturating_add(prefix.steps);
         Ok(Self {
-            prefix: source.infer,
+            prefix,
             term,
             mode: Mode::Inherent(report.resolution.scopes[scope.0 as usize].module),
             members: members.into_iter(),
