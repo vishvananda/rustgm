@@ -32,27 +32,30 @@ impl Sources for NoFiles {
     }
 }
 fn package(source: &str) -> TestResult<Package> {
+    package_with_source("install!();", source)
+}
+fn package_with_source(physical: &str, generated: &str) -> TestResult<Package> {
     let mut package = resolve::load::load(
         InputFile {
             identity: "keys.rs".into(),
             path: "keys.rs".into(),
-            source: SourceFile::new(b"install!();".to_vec())?,
+            source: SourceFile::new(physical.as_bytes().to_vec())?,
         },
         &mut NoFiles,
         &Config::default(),
     )?;
-    let (target, context) = package.units[0]
+    let (target, context, original) = package.units[0]
         .configured
         .ast
         .nodes
         .iter()
         .enumerate()
         .find_map(|(index, node)| match node.kind {
-            Kind::Macro { context, .. } => Some((index, context)),
+            Kind::Macro { context, .. } => Some((index, context, node.span)),
             _ => None,
         })
         .ok_or("missing expansion installation target")?;
-    let mut lexer = Lexer::new(source).map_err(|error| format!("{error:?}"))?;
+    let mut lexer = Lexer::new(generated).map_err(|error| format!("{error:?}"))?;
     let mut tokens = Vec::new();
     while let Some(token) = lexer.next_token().map_err(|error| format!("{error:?}"))? {
         if !matches!(
@@ -62,9 +65,9 @@ fn package(source: &str) -> TestResult<Package> {
             tokens.push(token);
         }
     }
-    let ast = fragment::parse_expansion(source, &tokens, context, &[])
+    let ast = fragment::parse_expansion(generated, &tokens, context, &[])
         .map_err(|error| format!("{error:?}"))?;
-    let configured = crate_syntax::configure(source, ast, &Config::default())
+    let configured = crate_syntax::configure(generated, ast, &Config::default())
         .map_err(|error| format!("{error:?}"))?;
     let origins = tokens
         .iter()
@@ -75,7 +78,7 @@ fn package(source: &str) -> TestResult<Package> {
             },
             original: Location {
                 file: FileId(0),
-                span: Span { start: 0, end: 7 },
+                span: original,
             },
             context: Some(SyntaxContextId::ROOT),
             introduction: ExpansionId(1),
@@ -85,12 +88,12 @@ fn package(source: &str) -> TestResult<Package> {
     package.units[0]
         .install_expansion(
             NodeId::new(u32::try_from(target)?),
-            source,
+            generated,
             configured,
             &origins,
         )
         .map_err(|error| format!("{error:?}"))?;
-    assert_eq!(package.units[0].source.original(), "install!();");
+    assert_eq!(package.units[0].source.original(), physical);
     assert_eq!(package.syntax_context(FileId(0), 0)?, SyntaxContextId::ROOT);
     Ok(package)
 }
@@ -235,7 +238,10 @@ fn const_parameters_use_item_context_but_implicit_self_keeps_root_identity() -> 
 
 #[test]
 fn an_import_alias_keeps_its_own_identifier_context_when_published() -> TestResult {
-    let mut package = package("mod a{pub fn original(){}}use a::original as same;fn same(){}")?;
+    let mut package = package_with_source(
+        "mod a{pub fn original(){}}install!();fn same(){}",
+        "use a::original as same;",
+    )?;
     let raw = mark(&mut package, 1)?;
     let rename = package.units[0]
         .configured

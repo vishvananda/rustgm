@@ -461,6 +461,21 @@ the integrated Package size assertion is 256 bytes, with no new ordinary heap
 allocation or Body/Value/Type field. These integration changes still require
 fresh focused and combined release qualification before publication.
 
+The first integrated focused gate at `450a5033` passes all static checks,
+138/138 frontend cases and 45/46 private cases. All ancestry correctness,
+depth/query bounds and layout assertions pass, including the actual eager
+invocation control. The client admission and complete-provider proof controls
+also pass. One alias fixture fails because its low-level generated-syntax
+installer does not load the generated module; ordinary expansion's module
+loading is already exercised by the passing frontend suite. The successor
+loads that module and its root-name peer through the ordinary source loader,
+then installs only the generated import and changes its retained alias context.
+It preserves the opaque/root name opposition and actual imported target check.
+CLI/text stages remain unrun; the failed evidence and scoped cleanup receipt
+`1792819411416596899` are retained. Passing test output was captured by libtest,
+so this first run establishes the bounded-work assertions without retaining
+individual printed counts; the successor enables passing-test output capture.
+
 The pinned compiler intentionally treats implicit `Self` as root-normalized
 (`rustc_resolve/src/ident.rs:316` and `late.rs:3503`). Type, const and lifetime
 generic parameters instead use item normalization (`late.rs:3158`). This
