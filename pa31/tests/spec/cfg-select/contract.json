@@ -1,0 +1,502 @@
+{
+  "schema": 1,
+  "status": "Predeclared hypotheses; no compiler observations yet.",
+  "issue": "LIB-015",
+  "owner": "PA31 source/compiler bindings; PA7/PA8 cfg and expansion machinery",
+  "rust_source": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "crate_type": "lib",
+  "bootstrap": true,
+  "original": {
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "file": "library/core/src/macros/mod.rs",
+    "file_sha256": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+    "start_byte": 8569,
+    "end_byte": 8792,
+    "slice_sha256": "078034f09a473d4239f181713e038ebc6da7f2f6be248314ae50f13dfc0ffb4f",
+    "fixture": "original-provider.rs",
+    "fixture_start": 471,
+    "fixture_end": 694,
+    "copyright": "Rust project contributors; MIT/Apache-2.0. See NOTICE and third_party/sources.json."
+  },
+  "cases": [
+    {
+      "name": "first-match",
+      "path": "first-match.rs",
+      "sha256": "b364861e9a1278eb3260ced8f03c5ce993fa8178ae322b9984e9c41c2d3f4bd8",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "First true wins; unselected unresolved name is parsed but not checked."
+    },
+    {
+      "name": "fallback",
+      "path": "fallback.rs",
+      "sha256": "94642f4b649f8e951b97417dd2dc63756862f59847439fe6fa721736dc137fb9",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Fallback selected; unchosen macro is parsed but not expanded."
+    },
+    {
+      "name": "unbraced",
+      "path": "unbraced.rs",
+      "sha256": "6fb1dc21313398bb6837dae05ddf0466e1284433459fc3f93f1082d6fe5ab650",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "braced-commas",
+      "path": "braced-commas.rs",
+      "sha256": "a85d25bdbe9dd1619f33df61f87143f956ad4334c7dcef81bbfd0fedad595678",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "nested-predicates",
+      "path": "nested-predicates.rs",
+      "sha256": "d8aeedf1ab775766b263089c0d822fcfdeee729d59bd19cc910156c200750145",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "wildcard-first",
+      "path": "wildcard-first.rs",
+      "sha256": "30508075fad2ca955ec03d2399430dcaec9c102ab8f64093d1aec26b3f3a8fcc",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "repeated-wildcard",
+      "path": "repeated-wildcard.rs",
+      "sha256": "29122b6a57c8459aa428df022333e4cfe77e4497b939a8ddfed11aa3697f42d8",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "no-match",
+      "path": "no-match.rs",
+      "sha256": "9b88613f7675df5ba46e701fcb676603f7505de6f524bdd37ed75a820efcbd6a",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "none of the predicates"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "empty-input",
+      "path": "empty-input.rs",
+      "sha256": "195f762df3ff404a63bc150b25219f48a4052e336b4e6a5e2253dbe684b893e0",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "none of the predicates"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "unselected-expression-syntax",
+      "path": "unselected-expression-syntax.rs",
+      "sha256": "b49b4844045424d5394665991a6b9ab3d3ccfb193c05b97ad4c5a91147ac1865",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "expected"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": "Balanced unselected expression still requires actual expression syntax."
+    },
+    {
+      "name": "empty-expression",
+      "path": "empty-expression.rs",
+      "sha256": "92ef9452d0e5a20df44e6c08aeeae93a4d54e318756606849d299e6764ed555d",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "expected expression"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "invalid-predicate-after-match",
+      "path": "invalid-predicate-after-match.rs",
+      "sha256": "7940183251ba73b67dabcf484712270a49cbc7ab12a2674f174e71f13696786f",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "expected 1 cfg-pattern"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "missing-arrow",
+      "path": "missing-arrow.rs",
+      "sha256": "632be6aee6db5a774653510802c2422c3730e562f873491df75129d1c6588ed3",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "=>"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "missing-comma",
+      "path": "missing-comma.rs",
+      "sha256": "2ce5d52a1f942cdf1cb506ffde631f09a9fa3483b8bcc3350ef5005a6b05524e",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        ","
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "branch-attribute",
+      "path": "branch-attribute.rs",
+      "sha256": "e17f11fd953fc3bb3e76b106410959e7e51589cb7fc2bb57b6ef09529ae8f82d",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "attributes are not allowed on `cfg_select` branches"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "branch-doc-comment",
+      "path": "branch-doc-comment.rs",
+      "sha256": "870da7769a438bbb38d418d7c68cd78c70d410526744519f5f471c2f173c13fc",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "doc comments are not allowed on `cfg_select` branches"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "item-position",
+      "path": "item-position.rs",
+      "sha256": "d799b03b8b4cb833d4d70d632bed4cc1496fc5eabdb989d7f3df4ef27f807bde",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "unselected-item-syntax",
+      "path": "unselected-item-syntax.rs",
+      "sha256": "472dbb9bc94eef001d51321dc5418ef0b8c2e39079a26acb030a430f549d6711",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "expected"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "empty-items",
+      "path": "empty-items.rs",
+      "sha256": "142b78becc4118b327582b5f6a4329607606851f7eaf57db5a7108cbfb05bc77",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "statement-position",
+      "path": "statement-position.rs",
+      "sha256": "d6429648b3d5815cbf51f2082c3cd91d28de0aa22dc4baadf838d5e248eec92e",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "type-position",
+      "path": "type-position.rs",
+      "sha256": "a5e572317cdcebe10e7f18662856b6cb33654c3c46f271e842cf9b052fa630e0",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "unselected-type-syntax",
+      "path": "unselected-type-syntax.rs",
+      "sha256": "82f4498b3d0b39d20f1d5b6ace2961b882b6735bae3dee3d5da9c9570077acec",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "expected type"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "pattern-position",
+      "path": "pattern-position.rs",
+      "sha256": "91480fe59827433c15e58ee186d39e9513e707d4be92808df8f2d9da29fe6933",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "impl-position",
+      "path": "impl-position.rs",
+      "sha256": "5104305a53011aea8f9e56178ac5ef3d63dbfed57943a92e96384aa8a0a7faa1",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "trait-position",
+      "path": "trait-position.rs",
+      "sha256": "8917c2c23be19d033e0a478e8057dedda84e806f25b88f12206da6ef2682dd54",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "trait-impl-position",
+      "path": "trait-impl-position.rs",
+      "sha256": "c050b1e10e475a77f59e0c79458748312cc51bbb1141d6766e371781c385fac7",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "foreign-position",
+      "path": "foreign-position.rs",
+      "sha256": "82596837380a93573ab28a070c66859a3c799267a20aa26a5e0ed6a96c43371d",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "captured-local",
+      "path": "captured-local.rs",
+      "sha256": "c5e306523b6968d0e13e762897e71bdee4361a02e3f6364c66506e7daae03b15",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "import-alias",
+      "path": "import-alias.rs",
+      "sha256": "9f074508d648c0801e639cce264744cb14554e931a9614a25c262aab1a2325eb",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "qualified-path",
+      "path": "qualified-path.rs",
+      "sha256": "2c33db3f4749efd54ea2289d6a89feb0cf61c1db00be0aeee691f3131049fde5",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "configured-on",
+      "path": "configured-on.rs",
+      "sha256": "de825a6fdc580d95063a2c22875ddce1ca6fd30c5f55575b2ed6de3f8943d4a0",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "9\n",
+      "cfg": [
+        "rustgm_selected"
+      ],
+      "purpose": ""
+    },
+    {
+      "name": "configured-off",
+      "path": "configured-off.rs",
+      "sha256": "de825a6fdc580d95063a2c22875ddce1ca6fd30c5f55575b2ed6de3f8943d4a0",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": ""
+    },
+    {
+      "name": "authored-same-spelling",
+      "path": "authored-same-spelling.rs",
+      "sha256": "bb25ee28f4b2cea63038e890f1a816a8bef0c8a4f952f5dc725dc7bdf224c2f0",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "9\n",
+      "cfg": [],
+      "purpose": "Spelling alone must not claim the builtin role."
+    },
+    {
+      "name": "legacy-builtin-shape",
+      "path": "legacy-builtin-shape.rs",
+      "sha256": "b276e560ee026459312fbdd1c68ea2bd0a535245ad3950c1c3743be0d7b8a93c",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Independently determine whether the builtin role also admits a legacy declaration."
+    },
+    {
+      "name": "width-8",
+      "path": "width-8.rs",
+      "sha256": "10cdad2d68de5cf1ac0e842fba537da919d814c184a218456334f14ce5deed44",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Vary complete parsed branch count; no inactive expansion."
+    },
+    {
+      "name": "width-32",
+      "path": "width-32.rs",
+      "sha256": "c240fff18ae912c16d496ea9d2b24254282012df4bee0c40efa62e577908ce68",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Vary complete parsed branch count; no inactive expansion."
+    },
+    {
+      "name": "width-128",
+      "path": "width-128.rs",
+      "sha256": "dced7a1aae96a45140ae5418872fefa5ff71486bca366942bbf19cf9f6cc40c1",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Vary complete parsed branch count; no inactive expansion."
+    },
+    {
+      "name": "depth-8",
+      "path": "depth-8.rs",
+      "sha256": "f6c9e302706600b2b10c0d5a81baf8062f6ed31f2231db8ea677bf648ac23e88",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Vary nested selected expansion depth."
+    },
+    {
+      "name": "depth-16",
+      "path": "depth-16.rs",
+      "sha256": "127494c0232d55cb51e712c7c9c689cb0e5034a7074e9414dc44f13f3e8d0b13",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Vary nested selected expansion depth."
+    },
+    {
+      "name": "depth-32",
+      "path": "depth-32.rs",
+      "sha256": "cccae04262743ef7bdc1b7fd6171f2ec00be7eb917a06472cf08e1b43ec0c227",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Vary nested selected expansion depth."
+    },
+    {
+      "name": "original-provider",
+      "path": "original-provider.rs",
+      "sha256": "787607988bf79085230ffa743e8a225873fc3788531f017dd926a5f9d1d091e0",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Byte-exact original builtin declaration inside a complete actual source provider."
+    }
+  ]
+}
