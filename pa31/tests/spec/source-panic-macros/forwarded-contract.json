@@ -1,0 +1,24 @@
+{
+  "state": "Predeclared before execution; no independent or candidate observation. This actual source retains a seed capture before forwarding another opaque expression, so delegation must relocate a nonzero registry handle without fabricating a matcher or copying its payload.",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "bootstrap": true,
+    "panic": "abort",
+    "cap_lints": "allow",
+    "overflow_checks": true
+  },
+  "rows": [
+    {
+      "name": "forwarded-expression",
+      "entry": "pa31/tests/spec/source-panic-macros/forwarded-expression.rs",
+      "sha256": "5d8d6434a7c9d82a0869f4648c6613288d8ee681348acdc913d1096234c11304",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_status": 0
+    }
+  ]
+}
