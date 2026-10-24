@@ -21,8 +21,8 @@ use crate::{
 };
 use std::sync::Arc;
 mod carrier;
-mod environment;
 pub(in crate::body) mod materialized;
+mod reproof;
 #[cfg(test)]
 #[path = "../../tests/invariants/copy_carriers.rs"]
 mod tests;
@@ -118,7 +118,7 @@ pub(in crate::body) fn prepare_scoped(
         .as_deref()
         .and_then(|requirements| requirements.environment.clone())
         .map_or_else(
-            || environment::fresh(facts, contract).map(Some),
+            || reproof::fresh(facts, contract).map(Some),
             |value| Ok(Some(value)),
         )?;
     if let Some(scope) = scope {

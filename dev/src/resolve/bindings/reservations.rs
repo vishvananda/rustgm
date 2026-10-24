@@ -422,46 +422,55 @@ fn claims(
                 )? {
                     continue;
                 }
-                let error = |message| Error::at(file, attribute.span.start, message);
-                let name = attribute.name(forest, unit.source.text());
-                let header_claim = name
-                    .map(|name| super::role_attributes::claim(name, attribute.input))
-                    .transpose()
-                    .map_err(error)?
-                    .flatten();
-                let claim = if let Some(claim) = header_claim {
-                    claim
-                } else {
-                    match name {
-                        Some("lang") => language_claim(unit, file, attribute, forest)?,
-                        Some("rustc_intrinsic") => {
-                            if attribute.input != Input::Empty {
-                                return Err(error("rustc_intrinsic requires no arguments"));
-                            }
-                            Claim::Intrinsic
-                        }
-                        Some("rustc_deny_explicit_impl") => {
-                            if attribute.input != Input::Empty {
-                                return Err(error(
-                                    "rustc_deny_explicit_impl requires no arguments",
-                                ));
-                            }
-                            Claim::DenyImplementations
-                        }
-                        Some("rustc_diagnostic_item") => Claim::DiagnosticItem(
-                            super::annotations::parse(unit, file, attribute, forest)?,
-                        ),
-                        _ => continue,
-                    }
-                };
-                result
-                    .entry(NodeKey { file, node })
-                    .or_default()
-                    .push(claim);
+                if let Some(claim) = attribute_claim(unit, file, attribute, forest)? {
+                    result
+                        .entry(NodeKey { file, node })
+                        .or_default()
+                        .push(claim);
+                }
             }
         }
     }
     Ok(result)
+}
+
+/// Decode one declaration claim after its complete macro/stability header was checked.
+fn attribute_claim(
+    unit: &Unit,
+    file: FileId,
+    attribute: Attribute,
+    forest: &Forest,
+) -> Result<Option<Claim>, Error> {
+    let error = |message| Error::at(file, attribute.span.start, message);
+    let name = attribute.name(forest, unit.source.text());
+    if let Some(claim) = name
+        .map(|name| super::role_attributes::claim(name, attribute.input))
+        .transpose()
+        .map_err(error)?
+        .flatten()
+    {
+        return Ok(Some(claim));
+    }
+    let claim = match name {
+        Some("lang") => language_claim(unit, file, attribute, forest)?,
+        Some("rustc_intrinsic") => {
+            if attribute.input != Input::Empty {
+                return Err(error("rustc_intrinsic requires no arguments"));
+            }
+            Claim::Intrinsic
+        }
+        Some("rustc_deny_explicit_impl") => {
+            if attribute.input != Input::Empty {
+                return Err(error("rustc_deny_explicit_impl requires no arguments"));
+            }
+            Claim::DenyImplementations
+        }
+        Some("rustc_diagnostic_item") => {
+            Claim::DiagnosticItem(super::annotations::parse(unit, file, attribute, forest)?)
+        }
+        _ => return Ok(None),
+    };
+    Ok(Some(claim))
 }
 
 fn language_claim(
