@@ -561,6 +561,10 @@ impl<S: Sources> Engine<'_, S> {
                 return self.define(visit, file, index, capture);
             }
             if matches!(item.kind, ItemKind::DeclarativeMacro { .. }) {
+                self.loader
+                    .package
+                    .macro_features
+                    .require_scoped(file, unit.configured.ast.node(visit.node).span.start)?;
                 return Err(Error::at(
                     file,
                     unit.configured.ast.node(visit.node).span.start,

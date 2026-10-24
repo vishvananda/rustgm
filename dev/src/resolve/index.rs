@@ -590,6 +590,16 @@ impl Resolver<'_> {
             ItemKind::TypeAlias { .. } => (Namespace::Type, DefKind::TypeAlias),
             ItemKind::MacroRules { .. } => (Namespace::Macro, DefKind::Macro),
             ItemKind::DeclarativeMacro { .. } => {
+                self.package.macro_features.require_scoped(
+                    c.file,
+                    self.package
+                        .unit(c.file)
+                        .configured
+                        .ast
+                        .node(node)
+                        .span
+                        .start,
+                )?;
                 return Err(self.error(
                     c,
                     node,

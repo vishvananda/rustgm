@@ -27,6 +27,7 @@ pub struct Package {
     pub(crate) marks: Marks,
     pub source_core: Option<Box<super::bindings::SourceCore>>,
     pub(super) library: Option<Box<super::stability::Library>>,
+    pub(super) macro_features: super::bindings::policy::MacroFeatures,
     pub no_std: bool,
     pub units: Vec<Unit>,
     pub file_paths: Vec<std::path::PathBuf>,

@@ -174,6 +174,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                 marks: crate::expand::marks::Marks::default(),
                 source_core,
                 library,
+                macro_features: prepared.macros,
                 no_std,
                 file_paths: vec![root.path.components().collect()],
                 crate_name: if root.path == Path::new("<anon>") {

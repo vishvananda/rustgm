@@ -315,3 +315,30 @@ The first attempt's semicolon lint and subsequent preparation failure remain
 recorded; v2 factors the shared alias key and reruns the audit freshly. This is
 a focused development checkpoint, with combined release qualification and
 end-to-end performance still required before publication.
+
+## Configured root language requests
+
+The next local checkpoint derives compact `decl_macro` and `rustc_attrs` request
+bits during the existing root feature parse. Both ordinary and source-provider
+loading retain them independently of library stability requests. Enabled root
+`cfg_attr` requests apply; disabled requests and nested or misplaced attributes
+grant no macro permission. Direct resolution and expansion check `decl_macro`
+before the retained unsupported scoped-hygiene boundary. Disabled declarations
+remain inert. Recognizing the request does not enable scoped expansion or the
+transparency attribute's semantic consumer.
+
+Five additional private controls pass with the existing 135 frontend and
+26 private controls. Measured Package256, SourceCore72 and Features2 layouts
+remain unchanged; MacroFeatures occupies one byte in available package padding.
+Ordinary requests leave provider and library-policy boxes absent. Fresh format,
+architecture/file audit, all-target/all-feature strict Clippy, harness/upstream
+verification and PA6 218/218, PA7 181/181, PA8 94/94 all pass. Evidence is
+`obj/parallel/pa31-declarative-macros/request-gates-v2`; its checks SHA-256 is
+`a737986610f123ac88b0a65c82fa9db78466ada45af92133c751aec8a0226ecc` and source inventory SHA-256 is
+`ade67210b646926bd083ed1648b370771f8228d1f3273f89b23cece6bea4a755`. The first attempt's filename-ownership audit failure is retained;
+no compiler build or test ran in that attempt. The successor renamed only the
+private test file and module path, then ran the full focused gate freshly.
+
+Scoped item production, per-segment lookup, definition-site/module adjustment,
+privacy and contextual metadata transport remain required. This checkpoint
+is local development evidence, not release or whole-library qualification.
