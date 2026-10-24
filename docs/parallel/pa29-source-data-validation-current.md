@@ -218,3 +218,12 @@ stamp array keyed by checked canonical index, add one ninth mutation to the same
 selected domain-opponent test, and freeze for root combined qualification. No A
 heavy recovery will run. Keep old A3 source/counters explicitly pre-correction.
 No unpinned domain executable is needed for a comparison; A9 pin remains current.
+
+Passing data slice committed251e829e1ae0b0f9ed155861b8a31e6e144af624, parentA39.
+The separate source-only correction is ready: canonical index keys the same
+checked stamp Vec; ninth actual clone_from mutation is inside the same seven-case
+selection and requires the exact canonical-index rejection. No arrays/fields or
+work scans added, no local tests/builds/probes after A3. Root combined gate owns
+qualification; keep A3 evidence explicitly pre-change. No unpinned current domain
+executable is needed for comparison, so Cargo cache can retire at root's requested
+resource boundary while A9 pin and receipts remain protected.

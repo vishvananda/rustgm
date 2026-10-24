@@ -126,7 +126,7 @@ fn corrupt(rows: &mut s::SourceRows, case: usize) -> Result {
             rows.function_applications
                 .push(rows.function_applications[target.0 as usize]);
         }
-        _ => {
+        7 => {
             let header = rows
                 .functions
                 .iter()
@@ -140,7 +140,33 @@ fn corrupt(rows: &mut s::SourceRows, case: usize) -> Result {
                 .ok_or("actual nonregional formal")?;
             rows.region_slots[index] = s::SlotRef(u32::try_from(slot)?);
         }
+        _ => repeated_region_index(rows)?,
     }
+    Ok(())
+}
+
+fn repeated_region_index(rows: &mut s::SourceRows) -> Result {
+    let header = rows
+        .functions
+        .iter()
+        .find(|header| {
+            rows.declarations[header.declaration.0 as usize]
+                .name
+                .as_deref()
+                == Some("clone_from")
+        })
+        .ok_or("actual provided Clone::clone_from header")?;
+    let [first, second, ..] = header.regions.late.slice(&rows.region_slots)? else {
+        return Err("actual clone_from must retain both late region inputs".into());
+    };
+    let first = *first;
+    let second = *second;
+    assert_ne!(first, second);
+    assert_ne!(
+        rows.slots[first.0 as usize].index,
+        rows.slots[second.0 as usize].index
+    );
+    rows.slots[second.0 as usize].index = rows.slots[first.0 as usize].index;
     Ok(())
 }
 
@@ -148,7 +174,7 @@ fn corrupt(rows: &mut s::SourceRows, case: usize) -> Result {
 fn actual_binder_type_application_and_operation_domains_reject_foreign_equal_arity_opponents()
 -> Result {
     let original = actual()?;
-    for case in 0..8 {
+    for case in 0..9 {
         let mut rows = original.clone();
         corrupt(&mut rows, case)?;
         let mut work = Work::default();
@@ -158,6 +184,12 @@ fn actual_binder_type_application_and_operation_domains_reject_foreign_equal_ari
             return Err(format!("case{case} unexpectedly returned an index").into());
         };
         assert!(work.steps > before);
+        if case == 8 {
+            assert_eq!(
+                error,
+                "source late opening repeats an actual canonical region index"
+            );
+        }
         println!(
             "domain-opponent={case} attempted={} header-retained={} header-peak={} published=false error={error}",
             work.steps - before,

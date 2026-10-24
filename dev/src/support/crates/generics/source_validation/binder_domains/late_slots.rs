@@ -36,13 +36,18 @@ pub(super) fn validate(headers: &HeaderIndex<'_>, work: &mut Work) -> Result<(),
             if slot.owner != header.declaration
                 || slot.kind != s::ParameterKind::Region
                 || slot.index >= header.regions.total
-                || std::mem::replace(
-                    &mut covered[header.regions.late.start as usize + offset],
-                    true,
-                )
-                || std::mem::replace(&mut stamps[reference.0 as usize], stamp) == stamp
             {
                 return Err("source late opening has foreign, repeated or nonregional formals");
+            }
+            let canonical = stamps
+                .get_mut(slot.index as usize)
+                .ok_or("source late canonical region index exceeds its checked slot budget")?;
+            if std::mem::replace(
+                &mut covered[header.regions.late.start as usize + offset],
+                true,
+            ) || std::mem::replace(canonical, stamp) == stamp
+            {
+                return Err("source late opening repeats an actual canonical region index");
             }
         }
     }

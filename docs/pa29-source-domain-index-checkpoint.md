@@ -166,3 +166,24 @@ will key the same checked stamp storage by canonical index and add the ninth
 actual-row mutation inside the same selected test. Its qualification belongs to
 root's combined gate; A3 counters and source manifest remain pre-correction
 evidence. This checkpoint does not describe that successor as already passing.
+
+## Separate canonical-index correction (source-only)
+
+A3 passing code/evidence is committed as251e829e1ae0b0f9ed155861b8a31e6e144af624.
+The successor now validates owner/kind/index bounds before using the existing
+stamps Vec at checked canonical slot.index. The per-function stamp remains exact,
+so duplicates reject while other functions can independently reuse slot0. No
+array, layout, ancestry scan or publication state is added. Rejection remains
+charged at the existing per-slot visit before the private index can return.
+
+The existing seven-case selection now includes a ninth mutation in its domain
+opponent case. It selects the actual unchanged Clone::clone_from header, requires
+its two distinct genuine late SlotRefs and distinct prior indices, then duplicates
+only one canonical index. The control requires the specific canonical-index gate
+to reject, retaining consumed work and no returned DomainIndex. It fabricates no
+body, proof, declaration or accepted payload.
+
+Only source formatting/manual review has run for this successor. A3's counters,
+layouts and eight prior opponent observations remain pre-correction evidence.
+Root will qualify the corrected same7 tests against combined B46/macro source.
+No A successor heavy gate, codec/profile or descriptor/client enablement exists.
