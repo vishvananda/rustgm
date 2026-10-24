@@ -82,7 +82,7 @@ impl Original {
         {
             return Err("alias materialization changed its selected public signature");
         }
-        let environment = super::environment::fresh(facts, contract)?;
+        let environment = super::reproof::fresh(facts, contract)?;
         let pending = contract
             .builtins
             .as_mut()
