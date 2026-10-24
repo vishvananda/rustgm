@@ -22,10 +22,9 @@ pub struct Qualified {
 
 #[derive(Default)]
 pub struct Methods {
-    contextual: Option<Box<names::Contextual>>,
+    names: Option<Box<names::Index>>,
     library: Option<Box<slices::Library>>,
     pointers: Option<Box<pointers::Library>>,
-    visible: Option<Box<visible::Index>>,
     comparison_borrows: Option<Box<ComparisonBorrows>>,
     pub(super) trait_names: HashSet<NameId>,
     /// Published owner members; frozen in resolver order after header preparation.

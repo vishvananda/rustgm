@@ -56,10 +56,16 @@ pub(super) fn trait_groups(
     site: (ScopeId, NameId),
     caller: Caller<'_>,
 ) -> Result<[Vec<DefId>; 2], &'static str> {
-    if facts.methods.visible.is_none() {
+    if facts
+        .methods
+        .names
+        .as_ref()
+        .and_then(|names| names.visible.as_ref())
+        .is_none()
+    {
         let index = super::visible::Index::new(report, facts)?;
         facts.methods.trait_visibility_steps = index.steps();
-        facts.methods.visible = Some(Box::new(index));
+        facts.methods.names.get_or_insert_default().visible = Some(index);
     }
     let head = source.head(&facts.types, prefix).map_err(inference)?;
     let object = if matches!(head, Some(infer::Constructor::Dynamic { .. })) {
@@ -108,8 +114,9 @@ pub(super) fn trait_groups(
     };
     let index = facts
         .methods
-        .visible
+        .names
         .as_mut()
+        .and_then(|names| names.visible.as_mut())
         .ok_or("missing trait visibility index")?;
     let before = index.steps();
     let groups = index.groups(report, site.0, site.1, bound_traits)?;
@@ -309,15 +316,16 @@ fn prepare_candidates(
     let super::Methods {
         shapes,
         inherent,
-        contextual,
+        names,
         selection_shape_steps,
         ..
     } = &mut facts.methods;
     let members = if identity == ItemContext::ROOT {
         inherent.get(&key)
     } else {
-        contextual
+        names
             .as_ref()
+            .and_then(|names| names.contextual.as_ref())
             .and_then(|names| names.inherent.get(&key))
             .and_then(|names| names.get(&identity))
     }

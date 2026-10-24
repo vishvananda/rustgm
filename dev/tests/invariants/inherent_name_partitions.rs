@@ -24,7 +24,7 @@ fn ordinary_members_keep_the_existing_storage_and_invalidate_only_their_index() 
         methods.publish_inherent(key, ItemContext::ROOT, DefId(index + 1));
         methods.retain_candidate_index(key, ItemContext::ROOT, Candidates::default())?;
     }
-    assert!(methods.contextual.is_none());
+    assert!(methods.names.is_none());
     assert_eq!(methods.inherent_groups().count(), 128);
     let key = (ItemId(0), NameId(0));
     methods.publish_inherent(key, ItemContext::ROOT, DefId(1000));
@@ -67,8 +67,7 @@ fn sibling_opaque_names_do_not_multiply_candidate_queries_by_declaration_width()
             assert_eq!(cursor.next(&mut methods, &report, key)?, None);
         }
         let work = methods
-            .contextual
-            .as_ref()
+            .contextual()
             .ok_or("missing contextual index")?
             .steps;
         assert_eq!(work, width as usize);
@@ -103,7 +102,7 @@ fn nested_use_walks_only_its_own_ancestry_and_cold_shapes_follow_exact_contexts(
     assert!(methods.candidate_index(key, child).is_none());
     assert!(methods.candidate_index(key, parent).is_some());
     assert!(methods.candidate_index(key, sibling).is_some());
-    assert_eq!(methods.contextual.as_ref().ok_or("missing index")?.steps, 2);
+    assert_eq!(methods.contextual().ok_or("missing index")?.steps, 2);
     Ok(())
 }
 
@@ -116,14 +115,14 @@ fn identity_lookup_exhaustion_counts_the_attempt_before_returning() -> TestResul
     let syntax = mark(marks, SyntaxContextId::ROOT, 1)?;
     let context = marks.item(syntax)?;
     methods.publish_inherent(key, context, DefId(1));
-    methods.contextual.as_mut().ok_or("missing index")?.steps = 1_000_000;
+    methods.contextual_mut().ok_or("missing index")?.steps = 1_000_000;
     assert!(
         Cursor::new(context)
             .next(&mut methods, &report, key)
             .is_err()
     );
     assert_eq!(
-        methods.contextual.as_ref().ok_or("missing index")?.steps,
+        methods.contextual().ok_or("missing index")?.steps,
         1_000_001
     );
     Ok(())
@@ -170,6 +169,8 @@ fn actual_source_receiver_and_path_sites_retain_their_identifier_context() -> Te
         size_of::<Use>(),
         size_of::<Methods>()
     );
+    assert_eq!(size_of::<Methods>(), 312);
+    assert_eq!(size_of::<crate::sema::model::Declarations>(), 7064);
     Ok(())
 }
 

@@ -18,6 +18,13 @@ type Key = (ItemId, NameId);
 #[path = "../../../tests/invariants/inherent_name_partitions.rs"]
 mod tests;
 
+/// One lazy lookup owner keeps new hygiene state out of ordinary crate records.
+#[derive(Default)]
+pub(super) struct Index {
+    pub(super) visible: Option<super::visible::Index>,
+    pub(super) contextual: Option<Box<Contextual>>,
+}
+
 #[derive(Default)]
 pub(super) struct Contextual {
     pub(super) inherent: HashMap<Key, HashMap<ItemContext, Vec<DefId>>>,
@@ -151,7 +158,11 @@ impl Methods {
             ordinary.push(member);
             self.indices.remove(&key);
         } else {
-            let contextual = self.contextual.get_or_insert_default();
+            let contextual = self
+                .names
+                .get_or_insert_default()
+                .contextual
+                .get_or_insert_default();
             contextual
                 .inherent
                 .entry(key)
@@ -167,7 +178,7 @@ impl Methods {
         for members in self.inherent.values_mut() {
             members.sort_unstable_by_key(|member| member.0);
         }
-        if let Some(contextual) = &mut self.contextual {
+        if let Some(contextual) = self.contextual_mut() {
             for members in contextual
                 .inherent
                 .values_mut()
@@ -179,8 +190,7 @@ impl Methods {
     }
 
     pub(in crate::sema) fn has_contextual_inherent(&self, key: Key) -> bool {
-        self.contextual
-            .as_ref()
+        self.contextual()
             .is_some_and(|index| index.inherent.contains_key(&key))
     }
 
@@ -191,8 +201,8 @@ impl Methods {
             .iter()
             .map(|(&key, members)| (key, ItemContext::ROOT, members.as_slice()))
             .chain(
-                self.contextual
-                    .iter()
+                self.contextual()
+                    .into_iter()
                     .flat_map(|index| &index.inherent)
                     .flat_map(|(&key, names)| {
                         names
@@ -206,8 +216,7 @@ impl Methods {
         if context == ItemContext::ROOT {
             self.inherent.get(&key).map(Vec::as_slice)
         } else {
-            self.contextual
-                .as_ref()?
+            self.contextual()?
                 .inherent
                 .get(&key)?
                 .get(&context)
@@ -219,10 +228,7 @@ impl Methods {
         if context == ItemContext::ROOT {
             self.indices.get(&key)
         } else {
-            self.contextual
-                .as_ref()?
-                .indices
-                .get(&(key.0, key.1, context))
+            self.contextual()?.indices.get(&(key.0, key.1, context))
         }
     }
 
@@ -236,8 +242,7 @@ impl Methods {
             self.indices.insert(key, index);
         } else {
             let contextual = self
-                .contextual
-                .as_mut()
+                .contextual_mut()
                 .ok_or("contextual method index has no declarations")?;
             if !contextual
                 .inherent
@@ -252,12 +257,20 @@ impl Methods {
     }
 
     pub(super) fn account_name_lookup(&mut self, amount: usize) -> Result<(), &'static str> {
-        if let Some(index) = &mut self.contextual {
+        if let Some(index) = self.contextual_mut() {
             index.steps = index.steps.saturating_add(amount);
             if index.steps > 1_000_000 {
                 return Err("method identity lookup work budget exceeded");
             }
         }
         Ok(())
+    }
+
+    fn contextual(&self) -> Option<&Contextual> {
+        self.names.as_deref()?.contextual.as_deref()
+    }
+
+    fn contextual_mut(&mut self) -> Option<&mut Contextual> {
+        self.names.as_deref_mut()?.contextual.as_deref_mut()
     }
 }
