@@ -37,3 +37,11 @@ programs remain unrun. The original sources/expectations/results are unchanged.
 `independent-review.json` binds this disagreement; `literal-provider-contract.json`
 predeclares distinct variants with the exact already-qualified Destruct/Freeze
 source declarations and required feature requests. Their outcomes are unobserved.
+
+The additive complete-provider run has all 48 language checks matched, genuine
+unmasked constructor negatives and 14 native successes. The raw source's actual
+newline disagreed with its initial four-byte consumer; both failures remain.
+A separate consumer-only continuation links the same two object files and
+successfully compares the actual three bytes `61 0a 62`. It repeats no language
+checks. `observations.json` records the independently observed milestone inputs
+and the corrected native-byte contract, while preserving all original hypotheses.
