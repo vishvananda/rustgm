@@ -17210,6 +17210,79 @@
       },
       "maintainer_origin": "dev/tests/self_constructors.rs",
       "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/must-use/trait-concrete-discard.rs",
+      "source_sha256": "9e0863d335711d015c1bcfadcd795bd7ac35927caaa41f1adb9904c1354f9bd3",
+      "exit_status": 0,
+      "features": [
+        "pa19.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/trait-method-discard.rs",
+      "source_sha256": "f7aa257e141b512f798ef139b1c70a5c3b8b2f056c49456448aaddb2416b8e69",
+      "exit_status": 1,
+      "features": [
+        "pa19.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/inherent-method-discard.rs",
+      "source_sha256": "26337a811c0bd777aea9a44c2bd92c6cffd1297460b72eeede3f36f3d34586e0",
+      "exit_status": 1,
+      "features": [
+        "pa19.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/inline-attributes/trait-required.rs",
+      "source_sha256": "5524433840b6f9cba5b301be5a4a2ef8f72c277f445e0d1b57791b263490665e",
+      "exit_status": 0,
+      "features": [
+        "pa19.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs",
+      "warnings": [
+        "unused_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/inline-attributes/trait-provided.rs",
+      "source_sha256": "b7e89740410f5a9edbd08949b22a108f04e6b593c27183d9571b3629b8924da0",
+      "exit_status": 0,
+      "features": [
+        "pa19.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
     }
   ]
 }

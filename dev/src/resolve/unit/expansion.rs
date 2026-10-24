@@ -424,9 +424,18 @@ impl Unit {
     }
 
     pub(crate) fn retire_arguments(&mut self, root: NodeId) {
+        self.retire_tree(root, false);
+    }
+    pub(crate) fn remove_function_owner(&mut self, root: NodeId) {
+        self.retire_tree(root, true);
+    }
+    fn retire_tree(&mut self, root: NodeId, owners: bool) {
         let mut work = vec![root];
         while let Some(node) = work.pop() {
             self.configured.active[node.get() as usize] = false;
+            if owners && let Some(index) = self.owner_indices[node.get() as usize] {
+                self.configured.owners[index.get() as usize - 1].enabled = false;
+            }
             self.configured.ast.push_children(node, &mut work);
         }
     }

@@ -11985,6 +11985,34 @@
         "outcome": "pass"
       },
       "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/must-use/trait-opaque-discard.rs",
+      "source_sha256": "b58ae68c4c186af73d1382ddf3a3ffd9e025bfeab5a68d58ef932df4bea1686d",
+      "exit_status": 1,
+      "features": [
+        "pa21.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/trait-opaque-explicit-let.rs",
+      "source_sha256": "3216fe1621bdc049b2bffdf70a253b417da25598b275cc90535dc47e1a73c249",
+      "exit_status": 0,
+      "features": [
+        "pa21.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
     }
   ]
 }

@@ -94,3 +94,9 @@ mod never_editions;
 mod availability_contracts;
 #[path = "../../return_editions.rs"]
 mod return_editions;
+
+#[path = "../../frontend_diagnostics.rs"]
+mod frontend_diagnostics;
+
+#[path = "../../attribute_contracts.rs"]
+mod attribute_contracts;

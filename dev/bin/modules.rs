@@ -267,6 +267,9 @@ fn semantic(
         mut facts,
         prepared,
     } = rustgm::pipeline::analyze_source(&report).map_err(|e| e.to_string())?;
+    if !matches!(mode, Mode::Lowir | Mode::Constants) {
+        emit_warnings(&facts)?;
+    }
     if matches!(mode, Mode::Semantics | Mode::Relationships) {
         rustgm::sema::semantic_view::check_ordinary_profile(&report, &facts)
             .map_err(|e| e.to_string())?;
@@ -366,6 +369,20 @@ fn semantic(
     .map_err(|e| e.to_string())
 }
 
+fn emit_warnings(facts: &rustgm::sema::model::Declarations) -> Result<(), String> {
+    let mut stderr = io::stderr().lock();
+    for warning in facts.warnings() {
+        writeln!(
+            stderr,
+            "warning[{}]: {}",
+            warning.code.name(),
+            warning.diagnostic
+        )
+        .map_err(|error| error.to_string())?;
+    }
+    Ok(())
+}
+
 fn emit_constants(
     report: &resolve::expansion::Report,
     facts: &mut rustgm::sema::model::Declarations,
@@ -381,6 +398,7 @@ fn emit_constants(
     )
     .map_err(|e| e.to_string())?
     .map_err(str::to_owned)?;
+    emit_warnings(facts)?;
     if count {
         inventory.count(out)
     } else {
@@ -430,6 +448,7 @@ fn emit_lowir(
         )
         .map_err(|error| error.to_string())?;
     }
+    emit_warnings(&facts)?;
     drop(facts);
     drop(report);
     if count {

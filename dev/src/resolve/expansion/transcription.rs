@@ -27,7 +27,12 @@ impl<S: Sources> Engine<'_, S> {
             .node(call)
             .span
             .start;
-        self.require_invocable(definition, file, offset)?;
+        self.require_invocable(
+            definition,
+            crate::expand::builtin::BuiltinKind::Bang,
+            file,
+            offset,
+        )?;
         let call_site =
             crate::resolve::unit::contexts::callee(&self.loader.package.units, file, call)?;
         let package = &mut self.loader.package;

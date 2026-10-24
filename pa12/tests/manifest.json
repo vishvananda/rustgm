@@ -1726,6 +1726,99 @@
       "native": {
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/must-use/struct-discard-deny.rs",
+      "source_sha256": "f8ceb52ef9eb4382e6529f4a0a6bb8573a09c9f3ac0d2e7fd5bd4453f14cfa53",
+      "exit_status": 1,
+      "features": [
+        "pa12.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/struct-explicit-let.rs",
+      "source_sha256": "b232050d80d6cdc990ee5a15a16320526526fcf06d7a3892301e935909a350bf",
+      "exit_status": 0,
+      "features": [
+        "pa12.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/must-use/enum-discard-deny.rs",
+      "source_sha256": "bbfe5f706d4c67d8ca5deda6161b93514fb9c4c86140e55b118f432dc9132c8d",
+      "exit_status": 1,
+      "features": [
+        "pa12.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/enum-explicit-let.rs",
+      "source_sha256": "2bc50aa02da3dbecfd01239de65832221b828b6c26d3f080f6ba1ed65cca4257",
+      "exit_status": 0,
+      "features": [
+        "pa12.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/must-use/nominal-tuple-discard.rs",
+      "source_sha256": "00ec92def04b61a710b0cf2160c2d8cf2de971e0a504e6fddff5974ebe175fa3",
+      "exit_status": 1,
+      "features": [
+        "pa12.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/nominal-empty-array-discard.rs",
+      "source_sha256": "7e3d1489d1194a56064ea390013f9bc646f36594953f515087d7af760ae3eb54",
+      "exit_status": 0,
+      "features": [
+        "pa12.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs",
+      "native": {
+        "outcome": "pass"
+      }
     }
   ]
 }

@@ -53,3 +53,8 @@ pub mod unreduced;
 pub(crate) mod vtable_plans;
 
 pub mod text;
+
+pub mod must_use;
+
+pub mod inlining;
+pub mod parentheses;

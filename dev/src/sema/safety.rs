@@ -8,14 +8,14 @@ use crate::resolve::{
 use crate::support::hash::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum Level {
+pub(super) enum Level {
     Allow,
     Warn,
     Deny,
     Forbid,
 }
 impl Level {
-    fn denies(self) -> bool {
+    pub(super) fn denies(self) -> bool {
         matches!(self, Self::Deny | Self::Forbid)
     }
 }
@@ -25,6 +25,9 @@ struct Policy {
     reference: Level,
     atomic_ordering: Level,
     unreachable_patterns: Level,
+    must_use: Level,
+    unused_attributes: Level,
+    duplicate_macro_attributes: Level,
 }
 impl Default for Policy {
     fn default() -> Self {
@@ -33,6 +36,9 @@ impl Default for Policy {
             reference: Level::Deny,
             atomic_ordering: Level::Deny,
             unreachable_patterns: Level::Warn,
+            must_use: Level::Warn,
+            unused_attributes: Level::Warn,
+            duplicate_macro_attributes: Level::Warn,
         }
     }
 }
@@ -42,6 +48,9 @@ enum Lint {
     Reference,
     AtomicOrdering,
     UnreachablePatterns,
+    MustUse,
+    UnusedAttributes,
+    DuplicateMacroAttributes,
 }
 struct Change {
     lint: Lint,
@@ -65,6 +74,9 @@ pub(super) struct Policies {
 }
 impl Policies {
     pub(super) fn analyze(report: &Report) -> Result<Self, Error> {
+        if let Some(removals) = report.removed_functions.as_deref() {
+            removals.validate(report)?;
+        }
         let mut policies = Self::default();
         let changes = attributes::collect(report, &mut policies.work)?;
         if changes.is_empty() {
@@ -119,7 +131,8 @@ impl Policies {
                 return Err(Error::at(key.file, 0, "safety policy work budget exceeded"));
             }
             let unit = package.unit(key.file);
-            if !unit.configured.active[key.node.get() as usize] {
+            let removed = report.removed_function_owner(key);
+            if !unit.configured.active[key.node.get() as usize] && !removed {
                 continue;
             }
             if let Some(changes) = changes.get(&key) {
@@ -128,6 +141,9 @@ impl Policies {
                 }
             }
             nodes[key.file.0 as usize][key.node.get() as usize] = policy;
+            if removed {
+                continue;
+            }
             if let Some(child) = package.children.get(&(module, key)) {
                 let child_module = &package.modules[child.0 as usize];
                 work.push((
@@ -173,6 +189,15 @@ impl Policies {
     pub(super) fn denies_unreachable_patterns(&self, key: NodeKey) -> bool {
         self.at(key).unreachable_patterns.denies()
     }
+    pub(super) fn must_use(&self, key: NodeKey) -> Level {
+        self.at(key).must_use
+    }
+    pub(super) fn unused_attributes(&self, key: NodeKey) -> Level {
+        self.at(key).unused_attributes
+    }
+    pub(super) fn duplicate_macro_attributes(&self, key: NodeKey) -> Level {
+        self.at(key).duplicate_macro_attributes
+    }
     pub(super) fn work(&self) -> Work {
         self.work
     }
@@ -184,6 +209,9 @@ impl Policy {
             Lint::Reference => &mut self.reference,
             Lint::AtomicOrdering => &mut self.atomic_ordering,
             Lint::UnreachablePatterns => &mut self.unreachable_patterns,
+            Lint::MustUse => &mut self.must_use,
+            Lint::UnusedAttributes => &mut self.unused_attributes,
+            Lint::DuplicateMacroAttributes => &mut self.duplicate_macro_attributes,
         };
         if *level == Level::Forbid {
             if matches!(change.level, Level::Allow | Level::Warn) {
@@ -195,6 +223,11 @@ impl Policy {
                         Lint::UnreachablePatterns => {
                             "forbidden unreachable pattern lint cannot be weakened"
                         }
+                        Lint::MustUse => "forbidden unused_must_use lint cannot be weakened",
+                        Lint::UnusedAttributes => {
+                            "forbidden unused_attributes lint cannot be weakened"
+                        }
+                        Lint::DuplicateMacroAttributes => "forbidden duplicate_macro_attributes lint cannot be weakened",
                         _ => "forbidden unsafe lint cannot be weakened",
                     },
                 ));

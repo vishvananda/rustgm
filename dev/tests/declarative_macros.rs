@@ -159,3 +159,6 @@ mod formatted_values;
 
 #[path = "declarative_macros/concatenated_values.rs"]
 mod concatenated_values;
+
+#[path = "declarative_macros/attributed_values.rs"]
+mod attributed_values;

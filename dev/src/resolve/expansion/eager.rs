@@ -242,7 +242,9 @@ impl<S: Sources> Engine<'_, S> {
                     .charge(steps, bytes)
                     .map_err(|message| error(call.offset, message))
             },
-            call.grammar,
+            call.grammar
+                .bang()
+                .map_err(|message| call.diagnostic(message))?,
             self.config,
         )
         .map_err(|failure| Error::at(call.file, failure.offset, failure.message))
@@ -269,8 +271,15 @@ impl<S: Sources> Engine<'_, S> {
 
     pub(super) fn finish_eager(&mut self, index: usize, definition: usize) -> Result<(), Error> {
         let call = &self.calls[index];
-        let (file, visit, grammar, scope, output) =
-            (call.file, call.visit, call.grammar, call.scope, call.output);
+        let (file, visit, grammar, scope, output) = (
+            call.file,
+            call.visit,
+            call.grammar
+                .bang()
+                .map_err(|message| call.diagnostic(message))?,
+            call.scope,
+            call.output,
+        );
         let arguments = call
             .eager
             .as_ref()
@@ -320,7 +329,13 @@ impl<S: Sources> Engine<'_, S> {
         root: NodeId,
     ) -> Result<builtin::Expansion, Error> {
         let call = &self.calls[index];
-        let (file, visit, grammar) = (call.file, call.visit, call.grammar);
+        let (file, visit, grammar) = (
+            call.file,
+            call.visit,
+            call.grammar
+                .bang()
+                .map_err(|message| call.diagnostic(message))?,
+        );
         let unit = self.loader.package.unit(file);
         if matches!(self.definitions[definition].body,Body::Builtin(role) if role.formatting()) {
             return self.format_literal_value(index, definition, root);

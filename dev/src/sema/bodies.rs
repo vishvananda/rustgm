@@ -12,6 +12,7 @@ mod conditions;
 mod declared_callees;
 mod defining_bodies;
 mod dependency_roots;
+mod discarded_results;
 mod divergence;
 mod dot_calls;
 mod effect_facts;
@@ -2596,6 +2597,10 @@ impl Checker<'_> {
         // Keep only negated literal IDs; no per-function copy of the file's AST.
         for index in 0..self.state.touched.len() {
             let node = self.state.touched[index];
+            if let Kind::Statement(value) = self.kind(node) {
+                self.validate_discarded_result(node, value)?;
+                continue;
+            }
             if let Kind::Repeat { value, .. } = self.kind(node) {
                 self.validate_repeat(node, value)?;
                 continue;

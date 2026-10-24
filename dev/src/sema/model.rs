@@ -347,6 +347,7 @@ pub struct UnionWork {
     pub unique_types: usize,
 }
 pub struct Declarations {
+    pub(super) must_use_contracts: Option<Box<super::must_use::Contracts>>,
     pub(crate) source_bindings: Option<Box<super::compiler_items::Catalog>>,
     pub(super) source_computations: Option<Box<super::constants::Computations>>,
     pub crates: Option<Box<super::crates::Linkage>>,
@@ -547,6 +548,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            must_use_contracts: None,
             source_bindings: super::compiler_items::Catalog::reserve(report)?,
             source_computations: None,
             crates: None,
@@ -642,6 +644,9 @@ impl Declarations {
         };
         value.import_resolution(report)?;
         super::crates::import(report, &mut value)?;
+        super::must_use::collect(report, &mut value)?;
+        super::inlining::collect(report, &mut value)?;
+        super::parentheses::collect(report, &mut value)?;
         Ok(value)
     }
     fn import_resolution(&mut self, report: &Report) -> Result<(), Error> {

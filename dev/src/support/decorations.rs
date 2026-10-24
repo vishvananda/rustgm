@@ -1,0 +1,84 @@
+//! Attribute recognition names an existing consumer, never a semantic permission.
+//! Consumers retain their owner, placement, input, feature and use validation.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Consumer {
+    Configuration,
+    Loading,
+    Requests,
+    Expansion,
+    SourceBindings,
+    Stability,
+    Representation,
+    Linkage,
+    TargetFeature,
+    SafetyLint,
+    Documentation,
+    MustUse,
+    Inlining,
+    TraitParentheses,
+}
+impl Consumer {
+    pub(crate) fn named(name: &str) -> Option<Self> {
+        Some(match name {
+            "cfg" | "cfg_attr" => Self::Configuration,
+            "no_core" | "no_std" | "no_implicit_prelude" | "path" => Self::Loading,
+            "feature" => Self::Requests,
+            "macro_use"
+            | "macro_export"
+            | "rustc_macro_transparency"
+            | "recursion_limit"
+            | "crate_name" => Self::Expansion,
+            "lang"
+            | "rustc_builtin_macro"
+            | "allow_internal_unstable"
+            | "allow_internal_unsafe"
+            | "rustc_intrinsic"
+            | "rustc_deny_explicit_impl"
+            | "rustc_diagnostic_item"
+            | "fundamental"
+            | "rustc_specialization_trait"
+            | "rustc_coinductive"
+            | "rustc_dyn_incompatible_trait"
+            | "rustc_trivial_field_reads" => Self::SourceBindings,
+            "stable"
+            | "unstable"
+            | "rustc_const_stable"
+            | "rustc_const_unstable"
+            | "rustc_default_body_unstable"
+            | "rustc_allow_const_fn_unstable"
+            | "rustc_const_stable_indirect" => Self::Stability,
+            "repr" | "derive" => Self::Representation,
+            "no_mangle" | "export_name" | "link_name" => Self::Linkage,
+            "target_feature" => Self::TargetFeature,
+            "allow" | "warn" | "deny" | "forbid" => Self::SafetyLint,
+            "doc" => Self::Documentation,
+            "must_use" => Self::MustUse,
+            "inline" => Self::Inlining,
+            "rustc_paren_sugar" => Self::TraitParentheses,
+            _ => return None,
+        })
+    }
+}
+
+/// Actual compiler-predefined tool registration, pinned to Rust 1.98's resolver.
+/// This classification retains tool metadata; it grants no feature/API use.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum PredefinedTool {
+    Clippy,
+    Rustfmt,
+    Diagnostic,
+    Miri,
+    RustAnalyzer,
+}
+impl PredefinedTool {
+    pub(crate) fn named(name: &str) -> Option<Self> {
+        Some(match name {
+            "clippy" => Self::Clippy,
+            "rustfmt" => Self::Rustfmt,
+            "diagnostic" => Self::Diagnostic,
+            "miri" => Self::Miri,
+            "rust_analyzer" => Self::RustAnalyzer,
+            _ => return None,
+        })
+    }
+}

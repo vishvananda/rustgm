@@ -160,6 +160,12 @@ impl std::fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 impl Package {
+    pub(crate) fn requested_internal_attributes(&self) -> bool {
+        self.macro_features.internal()
+    }
+    pub(crate) fn requested_unboxed_closures(&self) -> bool {
+        self.macro_features.unboxed()
+    }
     /// Library requests and completed policy are published only by resolution.
     #[must_use]
     pub fn library_policy(&self) -> Option<&super::stability::Library> {

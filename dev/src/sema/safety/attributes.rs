@@ -20,11 +20,17 @@ pub(super) fn collect(
                 .map_err(|_| Error::at(FileId(0), 0, "too many safety policy files"))?,
         );
         for owner in &unit.configured.owners {
-            if !owner.enabled {
+            if !owner.enabled && !report.removed_function_owner(NodeKey {file, node: owner.node}) {
                 continue;
             }
             for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
-                let level = match attribute.name(forest, unit.source.text()) {
+                let name = attribute.name(forest, unit.source.text());
+                if name.and_then(crate::support::decorations::Consumer::named)
+                    != Some(crate::support::decorations::Consumer::SafetyLint)
+                {
+                    continue;
+                }
+                let level = match name {
                     Some("allow") => Level::Allow,
                     Some("warn") => Level::Warn,
                     Some("deny") => Level::Deny,
@@ -73,6 +79,9 @@ fn lint(forest: &Forest, source: &str, index: u32) -> Option<Lint> {
         "static_mut_refs" => Some(Lint::Reference),
         "invalid_atomic_ordering" => Some(Lint::AtomicOrdering),
         "unreachable_patterns" => Some(Lint::UnreachablePatterns),
+        "unused_must_use" => Some(Lint::MustUse),
+        "unused_attributes" => Some(Lint::UnusedAttributes),
+        "duplicate_macro_attributes" => Some(Lint::DuplicateMacroAttributes),
         _ => None,
     }
 }

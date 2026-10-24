@@ -5,6 +5,9 @@ use std::{
     process::{Command, Output},
 };
 
+#[path = "frontend_diagnostics.rs"]
+pub(crate) mod frontend_diagnostics;
+
 pub const CHECK: &str = "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\n";
 fn compile(name: &str, output: Output) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     if !output.status.success() || !output.stderr.is_empty() {
@@ -17,6 +20,21 @@ fn compile(name: &str, output: Output) -> Result<Vec<u8>, Box<dyn std::error::Er
     }
     Ok(output.stdout)
 }
+/// A literal caller declaration is required; backend and runtime stderr stay strict.
+#[allow(
+    dead_code,
+    reason = "only suites with reviewed successful warnings use this helper"
+)]
+pub(crate) fn compile_with_warnings(
+    name: &str,
+    output: Output,
+    expected: &[u8],
+) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    frontend_diagnostics::accepted(&output, expected)
+        .map_err(|error| format!("{name}: {error}"))?;
+    Ok(output.stdout)
+}
+
 fn execute(
     name: &str,
     binary: &Path,
@@ -97,6 +115,40 @@ pub fn check_literal_cases(
         )
     })
 }
+/// Every source supplies its exact successful compiler stderr in the test contract.
+#[allow(
+    dead_code,
+    reason = "only source-warning suites use literal diagnostic declarations"
+)]
+pub fn check_literal_cases_with_warnings(
+    suite: &str,
+    cases: &[(&str, &str, bool, &[u8])],
+) -> Result<(), Box<dyn std::error::Error>> {
+    let sources: Vec<_> = cases
+        .iter()
+        .map(|&(name, body, panic, _)| (name, body, panic))
+        .collect();
+    check_inputs(suite, &sources, false, |_, path| {
+        let name = path
+            .file_stem()
+            .and_then(|name| name.to_str())
+            .ok_or("missing warning source name")?;
+        let expected = cases
+            .iter()
+            .find(|case| case.0 == name)
+            .ok_or("missing literal warning declaration")?
+            .3;
+        compile_with_warnings(
+            name,
+            Command::new(env!("CARGO_BIN_EXE_rustgm"))
+                .arg("--emit-lowir")
+                .arg(path)
+                .output()?,
+            expected,
+        )
+    })
+}
+
 fn check_inputs(
     suite: &str,
     cases: &[(&str, &str, bool)],

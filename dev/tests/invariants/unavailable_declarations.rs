@@ -300,3 +300,6 @@ mod authority;
 
 #[path = "format_declarations.rs"]
 mod formatting;
+
+#[path = "attribute_declarations.rs"]
+mod attributes;
