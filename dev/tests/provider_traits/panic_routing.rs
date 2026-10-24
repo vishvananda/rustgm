@@ -14,6 +14,26 @@ const POSITIVE: &[(&str, &str)] = &[
     ("permission-valid-wrapper", "21\n"),
     ("forwarded-expression", "7\n"),
 ];
+const HEADER_POSITIVE: &[&str] = &[
+    "permission-unknown-feature",
+    "permission-duplicate",
+    "permission-empty",
+    "allowance-panic-header",
+    "allowance-intrinsic-header",
+    "allowance-combined-header",
+    "allowance-reordered-header",
+    "allowance-repeated-attributes",
+    "allowance-data-duplicates-in-list",
+    "allowance-data-combined-unknown-attributes",
+    "allowance-data-arbitrary-identifiers",
+    "allowance-data-raw-feature-identifier",
+    "allowance-data-list-width-8",
+    "allowance-data-list-width-32",
+    "allowance-data-list-width-128",
+    "allowance-unicode-nfc",
+    "allowance-unicode-nfd",
+    "allowance-unicode-combined",
+];
 fn source(name: &str) -> TestResult<String> {
     Ok(std::fs::read_to_string(
         Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -62,6 +82,23 @@ fn actual_source_panic_roles_select_real_handlers_in_admitted_editions() -> Test
         }
     }
     assert!(Builtin::CorePanic.source_only());
+    Ok(())
+}
+
+#[test]
+fn complete_allowance_headers_retain_data_without_source_builtin_privilege() -> TestResult {
+    for name in HEADER_POSITIVE {
+        let report = report_in_edition(&source(name)?, Edition::Rust2024)
+            .map_err(|error| format!("{name}: {error}"))?;
+        assert!(
+            report.invocations.iter().all(|invocation| {
+                !matches!(report.definitions[invocation.definition].body,
+                Body::Builtin(role) if role.source_only())
+            }),
+            "{name}"
+        );
+        super::lower_report(&report).map_err(|error| format!("{name}: {error}"))?;
+    }
     Ok(())
 }
 
@@ -143,18 +180,6 @@ fn source_panic_rejects_actual_handler_and_permission_frontiers() -> TestResult 
             "permission-malformed-list",
             "internal macro allowance list is not implemented",
         ),
-        (
-            "permission-unknown-feature",
-            "internal macro allowance feature is not implemented",
-        ),
-        (
-            "permission-duplicate",
-            "repeated internal macro allowance is not implemented",
-        ),
-        (
-            "permission-empty",
-            "internal macro allowance feature is not implemented",
-        ),
     ] {
         let error = report_in_edition(&source(name)?, Edition::Rust2024)
             .err()
@@ -191,6 +216,10 @@ fn source_panic_native_answers_preserve_handler_identity_and_nested_inputs() -> 
                 expected,
             )?;
         }
+    }
+    for name in HEADER_POSITIVE {
+        let program = lower_in_edition(&source(name)?, Edition::Rust2024)?;
+        crate::ffi_program::check(root, &folder, name, &program, &consumer, "7\n")?;
     }
     Ok(())
 }

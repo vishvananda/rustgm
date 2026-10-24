@@ -12,6 +12,7 @@ use crate::{
     support::{names::Names, source::SourceFile},
     syntax::{
         ast::{MacroContext, NodeId},
+        attribute::Attribute,
         token_tree::{Span, error},
     },
 };
@@ -55,10 +56,18 @@ impl Unit {
             &crate::syntax::token_tree::Forest,
         ),
     > {
+        self.retained_indexed_attributes(attributes)
+            .map(|(_, attribute, forest)| (attribute, forest))
+    }
+    pub(crate) fn retained_indexed_attributes(
+        &self,
+        attributes: std::ops::Range<usize>,
+    ) -> impl Iterator<Item = (usize, Attribute, &crate::syntax::token_tree::Forest)> {
         attributes.filter_map(|index| {
             let effect = &self.configured.effects[index];
             (effect.attribute.effect == crate::expand::configured::Effect::Keep).then(|| {
                 (
+                    index,
                     effect.attribute.attribute,
                     &self.configured.ast.attributes[effect.capture as usize].forest,
                 )

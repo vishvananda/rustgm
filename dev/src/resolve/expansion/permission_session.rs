@@ -1,0 +1,202 @@
+//! A borrowed report authenticates complete headers once, never captured callers.
+use super::{Error, Location, Report, permission_frames::FrameView};
+use crate::{
+    expand::marks::ExpansionId,
+    resolve::{
+        bindings::{
+            FeatureName,
+            panic_contracts::{self, Frame, HeaderData},
+        },
+        unit::{NodeKey, contexts},
+    },
+    support::{hash::HashMap, names::NameId},
+};
+use std::rc::Rc;
+
+#[derive(Default)]
+struct Memo {
+    frames: HashMap<ExpansionId, Frame>,
+    headers: HashMap<NodeKey, Option<Rc<HeaderData>>>,
+    origin_links: usize,
+    origin_lookups: usize,
+}
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/allowance_queries.rs"]
+mod tests;
+impl Memo {
+    fn payload(&self) -> usize {
+        size_of::<Self>()
+            .saturating_add(
+                self.frames
+                    .capacity()
+                    .saturating_mul(size_of::<(ExpansionId, Frame)>()),
+            )
+            .saturating_add(
+                self.headers
+                    .capacity()
+                    .saturating_mul(size_of::<(NodeKey, Option<Rc<HeaderData>>)>()),
+            )
+    }
+}
+
+/// Read-only provenance facts over one immutable report; no API use is authorized.
+pub struct MacroAllowanceSession<'report> {
+    report: &'report Report,
+    memo: Option<Box<Memo>>,
+}
+impl Report {
+    #[must_use]
+    pub fn macro_allowances(&self) -> MacroAllowanceSession<'_> {
+        MacroAllowanceSession {
+            report: self,
+            memo: None,
+        }
+    }
+    /// Prepare a checked canonical feature symbol from this report's name arena.
+    /// # Errors
+    /// Rejects unknown IDs or names that are not valid feature identifiers.
+    pub fn feature_name(&self, id: NameId) -> Result<FeatureName<'_>, Error> {
+        if id.0 as usize >= self.package.names.len() {
+            return Err(Error::unlocated("unknown canonical feature name"));
+        }
+        FeatureName::new(self.package.names.get(id)).map_err(Error::unlocated)
+    }
+}
+impl MacroAllowanceSession<'_> {
+    fn view(&self) -> FrameView<'_> {
+        FrameView {
+            package: &self.report.package,
+            definitions: &self.report.definitions,
+            invocations: &self.report.invocations,
+            facts: &self.report.resolution,
+        }
+    }
+    /// Check only the actual use token's outer expansion allowance.
+    /// The result does not enable crate features or authorize API execution.
+    /// # Errors
+    /// Rejects changed source/owner/frame identities and exhausted work/storage.
+    pub fn allows(&mut self, site: Location, feature: &FeatureName<'_>) -> Result<bool, Error> {
+        let (context, origin_links, origin_lookups) = self.context(site)?;
+        let Some(context) = context else {
+            return Ok(false);
+        };
+        let package = &self.report.package;
+        let error = |message| Error::at(site.file, site.span.start, message);
+        let saved = self
+            .memo
+            .as_ref()
+            .and_then(|memo| memo.frames.get(&context))
+            .copied();
+        let frame = if let Some(frame) = saved {
+            if !self.view().matches(frame) {
+                return Err(error("cached macro allowance frame identity changed"));
+            }
+            frame
+        } else {
+            self.view().frame(context)?
+        };
+        let Some(owner) = frame.owner else {
+            return Ok(false);
+        };
+        let cached = self
+            .memo
+            .as_ref()
+            .and_then(|memo| memo.headers.get(&owner))
+            .cloned();
+        if saved.is_some() && cached.is_none() {
+            return Err(error("cached macro allowance header is missing"));
+        }
+        let data = if let Some(data) = cached {
+            data
+        } else {
+            self.view().authenticate_source(frame.definition)?
+        };
+        panic_contracts::published(package, owner, data.as_ref(), 1 + feature.spelling().len())?;
+        if saved.is_none() {
+            self.retain(frame, data.clone())?;
+        }
+        if let Some(memo) = &mut self.memo {
+            memo.origin_links = memo.origin_links.saturating_add(origin_links);
+            memo.origin_lookups = memo.origin_lookups.saturating_add(origin_lookups);
+        }
+        Ok(data.as_ref().is_some_and(|data| data.contains(feature)))
+    }
+    fn context(&self, site: Location) -> Result<(Option<ExpansionId>, usize, usize), Error> {
+        let package = &self.report.package;
+        let Some(source) = package.source_core() else {
+            return Ok((None, 0, 0));
+        };
+        let error = |message| Error::at(site.file, site.span.start, message);
+        source.macros.charge(1, 0).map_err(error)?;
+        if site.span.start >= site.span.end
+            || package
+                .units
+                .get(site.file.0 as usize)
+                .and_then(|unit| {
+                    unit.source
+                        .text()
+                        .get(site.span.start as usize..site.span.end as usize)
+                })
+                .is_none()
+        {
+            return Err(error("invalid macro feature use span"));
+        }
+        let mut origin_links = 0_usize;
+        let mut origin_lookups = 0_usize;
+        let raw = contexts::at_counted(
+            &package.units,
+            site.file,
+            site.span.start,
+            |steps, links, lookups| {
+                origin_links = origin_links.saturating_add(links);
+                origin_lookups = origin_lookups.saturating_add(lookups);
+                source.macros.charge(steps, 0)
+            },
+        )?;
+        let context = package.marks.outer(raw).map_err(error)?;
+        Ok((context, origin_links, origin_lookups))
+    }
+    fn retain(&mut self, frame: Frame, data: Option<Rc<HeaderData>>) -> Result<(), Error> {
+        let error = |message| Error::at(frame.call.file, frame.original.start, message);
+        let source = self
+            .report
+            .package
+            .source_core()
+            .ok_or_else(|| error("missing macro allowance memo provider"))?;
+        let owner = frame
+            .owner
+            .ok_or_else(|| error("unowned macro allowance memo"))?;
+        source
+            .macros
+            .charge(1, 4 * size_of::<(ExpansionId, Frame)>())
+            .map_err(error)?;
+        if self.memo.is_none() {
+            source
+                .macros
+                .charge(1, 4 * size_of::<Memo>())
+                .map_err(error)?;
+            self.memo = Some(Box::default());
+        }
+        let memo = self
+            .memo
+            .as_mut()
+            .ok_or_else(|| error("missing macro allowance memo"))?;
+        memo.frames
+            .try_reserve(1)
+            .map_err(|_| error("macro frame memo allocation failed"))?;
+        if !memo.headers.contains_key(&owner) {
+            source
+                .macros
+                .charge(1, 4 * size_of::<(NodeKey, Option<Rc<HeaderData>>)>())
+                .map_err(error)?;
+            memo.headers
+                .try_reserve(1)
+                .map_err(|_| error("macro header memo allocation failed"))?;
+        }
+        source.macros.memo_payload(memo.payload()).map_err(error)?;
+        memo.headers.entry(owner).or_insert(data);
+        memo.frames.insert(frame.context, frame);
+        Ok(())
+    }
+}

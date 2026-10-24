@@ -1,0 +1,95 @@
+{
+  "scope": "Additive LIB014 complete identifier-list hypotheses before oracle; earlier21 source bytes/outcomes remain immutable",
+  "rows": [
+    {
+      "name": "data-duplicates-in-list",
+      "entry": "pa31/tests/spec/source-panic-macros/allowance-data-duplicates-in-list.rs",
+      "sha256": "53c722a13b23751882420b688f9823206bde909747caf372a12497441ed7452a",
+      "edition": "2024",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "hypothesis": "Duplicate symbols are valid declaration data; complete membership combines them without changing root requests.",
+      "independent_status": "unobserved",
+      "candidate_status": "unqualified complete-list successor"
+    },
+    {
+      "name": "data-combined-unknown-attributes",
+      "entry": "pa31/tests/spec/source-panic-macros/allowance-data-combined-unknown-attributes.rs",
+      "sha256": "3ab63b259829536981947a51100e82f7695cfc8e7ebe31c1833519fc0fc5c04e",
+      "edition": "2024",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "hypothesis": "Repeated authenticated attributes combine, including unknown inert names.",
+      "independent_status": "unobserved",
+      "candidate_status": "unqualified complete-list successor"
+    },
+    {
+      "name": "data-arbitrary-identifiers",
+      "entry": "pa31/tests/spec/source-panic-macros/allowance-data-arbitrary-identifiers.rs",
+      "sha256": "f6e0c045d538bd77678abc59cde43de329fe0defa6c0d19e9ebe1d556249359a",
+      "edition": "2024",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "hypothesis": "Arbitrary identifier names are retained without requiring a compiler capability.",
+      "independent_status": "unobserved",
+      "candidate_status": "unqualified complete-list successor"
+    },
+    {
+      "name": "data-raw-feature-identifier",
+      "entry": "pa31/tests/spec/source-panic-macros/allowance-data-raw-feature-identifier.rs",
+      "sha256": "37ea1d86bea33ac9cfafb93c51221d2702af9245df58d3a2ad8eb39ee73188b3",
+      "edition": "2024",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "hypothesis": "Typed raw identifier spelling normalizes to the actual feature symbol while preserving exact source witness provenance.",
+      "independent_status": "unobserved",
+      "candidate_status": "unqualified complete-list successor"
+    },
+    {
+      "name": "data-list-width-8",
+      "entry": "pa31/tests/spec/source-panic-macros/allowance-data-list-width-8.rs",
+      "sha256": "e9d97054fd772e36b526f66b6cd4075a26af77de4dba9aa5463d2cc9bda6c2ca",
+      "edition": "2024",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "hypothesis": "Complete arbitrary list admission at frozen width; this source result does not prove per-use query work or API permissions.",
+      "independent_status": "unobserved",
+      "candidate_status": "unqualified complete-list successor"
+    },
+    {
+      "name": "data-list-width-32",
+      "entry": "pa31/tests/spec/source-panic-macros/allowance-data-list-width-32.rs",
+      "sha256": "98e6eec8a8ed318a6cf079adbcc9b23f7881e187147cb7c6e48e6bafeedecd07",
+      "edition": "2024",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "hypothesis": "Complete arbitrary list admission at frozen width; this source result does not prove per-use query work or API permissions.",
+      "independent_status": "unobserved",
+      "candidate_status": "unqualified complete-list successor"
+    },
+    {
+      "name": "data-list-width-128",
+      "entry": "pa31/tests/spec/source-panic-macros/allowance-data-list-width-128.rs",
+      "sha256": "8d7abc28624208be6b323f24e8947c6b7a93c734a6f28378fa346da51b7190ac",
+      "edition": "2024",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "hypothesis": "Complete arbitrary list admission at frozen width; this source result does not prove per-use query work or API permissions.",
+      "independent_status": "unobserved",
+      "candidate_status": "unqualified complete-list successor"
+    }
+  ],
+  "retained_positive_admission_opponents": [
+    "permission-unknown-feature.rs",
+    "permission-duplicate.rs",
+    "permission-empty.rs"
+  ],
+  "boundary": "Membership/query facts do not authorize foreign API execution, compiler capability activation, conditional trait payment or const execution."
+}

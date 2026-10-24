@@ -1,5 +1,6 @@
 //! Configured source providers own real declaration claims and explicit features.
 mod admission;
+mod allowances;
 mod annotations;
 mod claim_tokens;
 mod client;
@@ -15,6 +16,7 @@ use crate::support::{
     crates::{CrateIdentity, Dependencies},
 };
 pub(super) use admission::validate as validate_features;
+pub use allowances::{FeatureName, KnownFeature};
 pub use client::SourceClient;
 pub(super) use reservations::finish;
 pub use reservations::{Declaration, IntrinsicDeclaration, Reservations};

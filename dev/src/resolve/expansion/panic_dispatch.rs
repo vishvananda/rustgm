@@ -30,16 +30,16 @@ impl<S: Sources> Engine<'_, S> {
         &self,
         visit: Visit,
         file: FileId,
-    ) -> Result<Option<panic_contracts::Declaration>, Error> {
-        let contract = panic_contracts::declaration(
+    ) -> Result<Option<std::rc::Rc<panic_contracts::HeaderData>>, Error> {
+        let contract = panic_contracts::checked(
             &self.loader.package,
             NodeKey {
                 file,
                 node: visit.owner.unwrap_or(visit.node),
             },
         )?;
-        if contract.is_some_and(|contract| {
-            contract.node
+        if contract.as_ref().is_some_and(|contract| {
+            contract.summary().node
                 != NodeKey {
                     file,
                     node: visit.node,
@@ -51,110 +51,22 @@ impl<S: Sources> Engine<'_, S> {
                 "source macro contract names another declaration",
             ));
         }
-        Ok(contract)
+        Ok(contract.and_then(panic_contracts::CheckedHeader::into_data))
     }
 
+    fn frame_view(&self) -> super::permission_frames::FrameView<'_> {
+        super::permission_frames::FrameView {
+            package: &self.loader.package,
+            definitions: &self.definitions,
+            invocations: &self.invocations,
+            facts: &self.paths.state.facts,
+        }
+    }
     fn panic_definition(&self, index: usize) -> Result<&Definition, Error> {
-        let error = |message| Error::at(FileId(0), 0, message);
-        let definition = self
-            .definitions
-            .get(index)
-            .ok_or_else(|| error("unknown panic macro definition"))?;
-        let package = &self.loader.package;
-        let Some(node) = definition.node else {
-            if definition.edition_panic
-                || matches!(definition.body, Body::Builtin(role) if role.source_only())
-            {
-                return Err(error("source panic macro has no defining declaration"));
-            }
-            return Ok(definition);
-        };
-        let scope = self
-            .paths
-            .state
-            .facts
-            .node_scopes
-            .get(&(definition.module, node.node))
-            .and_then(|scope| self.paths.state.facts.scopes.get(scope.0 as usize))
-            .ok_or_else(|| error("panic macro has no actual definition scope"))?;
-        if scope.module != definition.module
-            || package
-                .modules
-                .get(definition.module.0 as usize)
-                .is_none_or(|module| module.file != node.file)
-        {
-            return Err(error("panic macro definition module changed"));
-        }
-        let contract = panic_contracts::existing(package, node)?
-            .ok_or_else(|| error("panic frame has no validated source macro contract"))?;
-        if contract.node != node
-            || contract.edition != definition.edition
-            || contract.allowance.is_some() != definition.edition_panic
-        {
-            return Err(error(
-                "panic macro provenance differs from its source contract",
-            ));
-        }
-        if let Body::Builtin(role) = definition.body
-            && contract.builtin != Some(role)
-        {
-            return Err(error("panic macro claimed role changed"));
-        }
-        Ok(definition)
+        self.frame_view().definition(index)
     }
-
     fn panic_frame(&self, context: ExpansionId) -> Result<Frame, Error> {
-        let error = |message| Error::at(FileId(0), 0, message);
-        let index = context
-            .0
-            .checked_sub(1)
-            .ok_or_else(|| error("physical source is not an expansion frame"))?;
-        let invocation = self
-            .invocations
-            .get(index as usize)
-            .filter(|invocation| invocation.context == context)
-            .ok_or_else(|| error("unknown panic edition frame"))?;
-        let unit = self
-            .loader
-            .package
-            .units
-            .get(invocation.node.file.0 as usize)
-            .ok_or_else(|| error("unknown panic call-site file"))?;
-        if invocation.parent.0 >= context.0
-            || !self
-                .paths
-                .state
-                .facts
-                .introductions
-                .ancestry
-                .ancestor(invocation.parent, context)
-            || unit
-                .configured
-                .ast
-                .nodes
-                .get(invocation.node.node.get() as usize)
-                .is_none()
-            || invocation.original.start >= invocation.original.end
-            || unit
-                .source
-                .text()
-                .get(invocation.original.start as usize..invocation.original.end as usize)
-                .is_none()
-        {
-            return Err(error("invalid panic expansion call site"));
-        }
-        let definition = self.panic_definition(invocation.definition)?;
-        Ok(Frame {
-            context,
-            definition: invocation.definition,
-            call: invocation.node,
-            original: invocation.original,
-            parent: invocation.parent,
-            owner: definition.node,
-            module: definition.module,
-            edition: definition.edition,
-            skip: definition.edition_panic,
-        })
+        self.frame_view().frame(context)
     }
 
     fn panic_edition(&self, call: NodeKey, original: Span) -> Result<Edition, Error> {

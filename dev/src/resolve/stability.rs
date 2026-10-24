@@ -37,6 +37,15 @@ pub struct Policy {
     pub level: Level,
     pub origin: NodeKey,
 }
+impl Policy {
+    /// The current producer accepts ASCII identifier feature names; later
+    /// metadata must preserve this canonical-symbol contract when it expands.
+    /// # Errors
+    /// Rejects invalid public-policy identifier spellings.
+    pub fn feature_name(&self) -> Result<super::bindings::FeatureName<'_>, &'static str> {
+        super::bindings::FeatureName::new(&self.feature)
+    }
+}
 type PolicyId = NonZeroUsize;
 
 /// Cold root requests and their transactionally completed local inventory.

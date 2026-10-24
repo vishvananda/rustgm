@@ -34,12 +34,19 @@ pub(crate) fn callee(
     }
 }
 
-pub(crate) fn at(
+pub(crate) fn at(units: &[Unit], file: FileId, offset: u32) -> Result<SyntaxContextId, Error> {
+    at_counted(units, file, offset, |_, _, _| Ok(()))
+}
+
+/// Query-local owners charge each retained link and binary lookup before work.
+pub(crate) fn at_counted(
     units: &[Unit],
     mut file: FileId,
     mut offset: u32,
+    mut charge: impl FnMut(usize, usize, usize) -> Result<(), &'static str>,
 ) -> Result<SyntaxContextId, Error> {
     for _ in 0..4096 {
+        charge(1, 0, 0).map_err(|message| Error::at(file, offset, message))?;
         let unit = units
             .get(file.0 as usize)
             .ok_or_else(|| Error::at(file, offset, "missing token context source"))?;
@@ -47,6 +54,12 @@ pub(crate) fn at(
             return Ok(SyntaxContextId::ROOT);
         }
         let origins = &unit.origins;
+        charge(
+            1 + origins.len().checked_ilog2().unwrap_or(0) as usize,
+            0,
+            1,
+        )
+        .map_err(|message| Error::at(file, offset, message))?;
         let index = origins.partition_point(|origin| {
             origin.generated.end <= offset && origin.generated.start != offset
         });
@@ -63,6 +76,7 @@ pub(crate) fn at(
         if let Some(context) = origin.context {
             return Ok(context);
         }
+        charge(1, 1, 0).map_err(|message| Error::at(file, offset, message))?;
         let length = origin
             .original
             .span
