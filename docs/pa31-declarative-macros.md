@@ -40,8 +40,8 @@ type. These are algorithm guidance, not code or acceptance oracles to copy.
    matcher, fragment grammar, repetition checking and transcription. Capture each
    group once; do not synthesize a string containing a legacy macro or relex it.
    Preserve legacy semicolon grammar and exact existing text outputs.
-2. Admit `decl_macro` and `rustc_macro_transparency` from actual enabled root
-   language requests. Derive compact macro gate bits during the existing single
+2. Admit scoped syntax with `decl_macro` and the `rustc_macro_transparency`
+   attribute with `rustc_attrs`, from actual enabled root language requests. Derive compact macro gate bits during the existing single
    feature-request parse; retain them in Package's available padding if verified
    by layout controls. No second attribute scan per definition, library-feature
    permission, or new ordinary heap allocation. Keep provider/client role claims
