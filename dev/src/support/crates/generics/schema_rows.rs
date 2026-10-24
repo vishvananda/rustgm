@@ -23,7 +23,10 @@ pub use bodies::*;
 pub use descriptor::{Descriptor, Profile, ValidatedRows};
 pub use inputs::*;
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};
-pub use validation::{DomainIndex, DomainWork, HeaderIndex, HeaderRef};
+pub use validation::{
+    DomainIndex, DomainWork, HeaderIndex, HeaderRef, InputWork, OperationPort, OriginalInputPlan,
+    RequiredInput, RequiredKind,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ArtifactRef(pub u32);

@@ -1,6 +1,8 @@
 //! A shared row-domain view still cannot create a descriptor or paid body.
 #[path = "domain_index/operation_domains.rs"]
 mod body_ports;
+#[path = "port_plan.rs"]
+mod input_plan;
 #[path = "domain_index/authored_inputs.rs"]
 mod input_ports;
 #[path = "domain_index/root_ports.rs"]
@@ -23,6 +25,8 @@ pub struct DomainWork {
     pub type_cache_hits: usize,
     pub operation_ports: usize,
 }
+pub use input_plan::{InputWork, OperationPort, OriginalInputPlan, RequiredInput, RequiredKind};
+
 /// This borrowed data view preserves exact ownership and coordinate domains;
 /// actual types, complete operation-derived goals and ordinary proof remain
 /// mandatory on import. It has no conversion to `ValidatedRows` or a descriptor.
@@ -84,6 +88,16 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
         index.observed.type_nodes = index.types.visits;
         index.observed.type_cache_hits = index.types.cache_hits;
         Ok(index)
+    }
+    /// Complete substituted signatures and operation-derived input requests.
+    /// This neutral result cannot publish a descriptor or authorize import.
+    /// # Errors
+    /// Rejects unsupported or incomplete originals and aggregate work/storage limits.
+    pub fn original_inputs(
+        &self,
+        work: &mut Work,
+    ) -> Result<OriginalInputPlan<'rows>, &'static str> {
+        input_plan::build(self, work)
     }
     #[must_use]
     pub const fn work(&self) -> DomainWork {

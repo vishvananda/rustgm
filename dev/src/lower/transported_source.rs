@@ -148,7 +148,28 @@ impl Source {
     }
 
     pub(super) fn complete(self) -> Result<SourceInspection, &'static str> {
-        let (rows, work) = self.stage.into_rows()?;
+        // No original can still arrive after this ownership transfer. Release
+        // collection-only opening scratch before allocating validation indexes.
+        drop(self.openings);
+        let (rows, mut work) = self.stage.into_rows()?;
+        let mut validation = g::Work {
+            steps: work.steps,
+            ..g::Work::default()
+        };
+        let headers = s::HeaderIndex::new(&rows, 0, &mut validation)?;
+        let domains = headers.domains(&mut validation)?;
+        let plan = domains.original_inputs(&mut validation)?;
+        let previous_peak = work.reserved_bytes.saturating_add(work.scratch_bytes);
+        let retained = work.reserved_bytes.max(plan.retained_bytes());
+        let peak = previous_peak.max(plan.peak_bytes());
+        work.steps = validation.steps;
+        work.reserved_bytes = retained;
+        work.scratch_bytes = peak.saturating_sub(retained);
+        // Every input is still raw unpaid data. These temporary indexes cannot
+        // produce a source Descriptor, remap, proof or executable publication.
+        drop(plan);
+        drop(domains);
+        drop(headers);
         Ok(SourceInspection { rows, work })
     }
 }

@@ -13,7 +13,10 @@ mod table_storage;
 mod type_domains;
 use super::{DefinitionKind, ScopeIndex, SourceRows};
 use crate::support::crates::{generics::Work, owner_catalog::DeclarationRef};
-pub use domains::{DomainIndex, DomainWork};
+pub use domains::{
+    DomainIndex, DomainWork, InputWork, OperationPort, OriginalInputPlan, RequiredInput,
+    RequiredKind,
+};
 #[cfg(test)]
 #[path = "../../../../tests/invariants/transport_domains.rs"]
 mod tests;

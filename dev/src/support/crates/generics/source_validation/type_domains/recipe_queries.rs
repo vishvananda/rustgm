@@ -2,7 +2,7 @@
 use super::{BinderIndex, HeaderIndex, Summary, Types, Work, g, s};
 use crate::support::crates::owner_catalog::{BodyRef, DeclarationRef};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(in super::super) struct Context {
     pub owner: DeclarationRef,
     pub frame: Option<g::BinderRef>,
@@ -54,6 +54,27 @@ impl Types {
             work,
         )
     }
+    pub(in super::super) fn closed_root(
+        &self,
+        ty: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        Ok(closed(self.summary(ty, work)?))
+    }
+    pub(in super::super) fn closed_application(
+        &self,
+        application: s::FunctionApplicationRef,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        work.charge(1)?;
+        if application.0 as usize >= self.function_count {
+            return Err("source application classification crosses its typed namespace");
+        }
+        Ok(closed(
+            self.summaries[self.type_count + application.0 as usize],
+        ))
+    }
+
     pub(in super::super) fn region(
         headers: &HeaderIndex<'_>,
         binders: &BinderIndex<'_>,
@@ -87,4 +108,8 @@ impl Types {
         }
         Ok(())
     }
+}
+
+fn closed(summary: Summary) -> bool {
+    summary.parameter.is_none() && summary.body.is_none() && summary.bound.is_none()
 }
