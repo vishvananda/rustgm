@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "status": "Additive predeclared hypotheses after reviewed original observations; not executed.",
+  "retained_contract_sha256": "1fe8428cbfdefe52b1b93d9cbcfcd5df1c834916b7ce73692d5d53fd5f69fb99",
+  "retained_results_sha256": "34c38cf8cef5688dbd83834d6027e96a0b9eb5ff7e97e537c4bff6740380f190",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "crate_type": "lib",
+  "bootstrap": true,
+  "cases": [
+    {
+      "name": "statement-complete-provider",
+      "path": "statement-complete-provider.rs",
+      "sha256": "d6c49de78d42e7213322582d3f1c7a42d28386775fd68b39cc07cef84b38a47c",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Complete genuine Clone/Copy/receiver declarations before the unchanged cfg_select body.",
+      "retained_original": "statement-position.rs"
+    },
+    {
+      "name": "pattern-complete-provider",
+      "path": "pattern-complete-provider.rs",
+      "sha256": "f1dde0ee20d3eb6b3223324d2e437454c52b10e6aa9bfe82a4d0d227f5adc70d",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Complete genuine Clone/Copy/receiver declarations before the unchanged cfg_select body.",
+      "retained_original": "pattern-position.rs"
+    },
+    {
+      "name": "captured-complete-provider",
+      "path": "captured-complete-provider.rs",
+      "sha256": "36d1aa18ac48dde4153f8be258304b3745e899cd038d3dce6b4445816e72d6a2",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Complete genuine Clone/Copy/receiver declarations before the unchanged cfg_select body.",
+      "retained_original": "captured-local.rs"
+    },
+    {
+      "name": "empty-unit-expression",
+      "path": "empty-unit-expression.rs",
+      "sha256": "684362d9210180a9405f860531b8f4ad1e6e496953e6d1845a0175dcd98f2758",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Empty selected expression produces unit; the original u32 mismatch is not a parser rejection."
+    }
+  ]
+}
