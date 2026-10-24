@@ -125,7 +125,7 @@ struct Call {
     capture: u32,
     grammar: MacroContext,
     absolute: bool,
-    path: Vec<NameId>,
+    path: super::paths::Saved,
     scope: Scope,
     output: Option<Scope>,
     state: State,
@@ -369,8 +369,13 @@ impl<S: Sources> Engine<'_, S> {
         }
         Ok(())
     }
-    fn macro_path(&mut self, file: FileId, path: NodeId) -> Result<(bool, Vec<NameId>), Error> {
-        let (absolute, mut names) = self.loader.package.path_names(file, path)?;
+    fn macro_path(
+        &mut self,
+        file: FileId,
+        path: NodeId,
+    ) -> Result<(bool, super::paths::Buffer), Error> {
+        let mut names = super::paths::Buffer::new(Vec::new());
+        let absolute = self.loader.package.append_path(file, path, &mut names)?;
         if !absolute && names.len() == 1 {
             let offset =
                 super::hygiene::name_offset(&self.loader.package, NodeKey { file, node: path });
@@ -391,7 +396,7 @@ impl<S: Sources> Engine<'_, S> {
                     .names
                     .intern("crate")
                     .map_err(|e| Error::at(file, offset, e))?;
-                names.insert(0, root);
+                names.prepend_root(root);
             }
         }
         Ok((absolute, names))
@@ -440,7 +445,7 @@ impl<S: Sources> Engine<'_, S> {
             capture,
             grammar,
             absolute,
-            path: path_names,
+            path: path_names.save(),
             scope,
             output,
             state: State::Unresolved,
@@ -657,6 +662,7 @@ impl<S: Sources> Engine<'_, S> {
                 visit.path_scope,
                 visit.module,
                 visit.node,
+                visit.introduction,
             )?;
         } else if let Kind::Generic(index) = kind {
             self.paths.generic(context, visit.node, index);
@@ -675,9 +681,12 @@ impl<S: Sources> Engine<'_, S> {
             if let Kind::If { otherwise, .. } = kind {
                 outside = otherwise.map(|node| (node, visit.path_scope));
             }
-            visit.path_scope = self
-                .paths
-                .lexical(&mut self.loader.package, context, visit.node)?;
+            visit.path_scope = self.paths.lexical(
+                &mut self.loader.package,
+                context,
+                visit.node,
+                visit.introduction,
+            )?;
         }
         self.children.clear();
         self.loader
@@ -1077,11 +1086,7 @@ impl<S: Sources> Engine<'_, S> {
         })?;
         let generated = self.install_builtin(file, visit.node, original, context, generated)?;
         self.paths
-            .state
-            .facts
-            .introductions
-            .ancestry
-            .append(context, parent)
+            .invocation(context, parent, &self.definitions[definition])
             .map_err(|message| Error::at(file, original.start, message))?;
         self.invocations.push(Invocation {
             context,
@@ -1190,11 +1195,7 @@ impl<S: Sources> Engine<'_, S> {
             .install_expansion(visit.node, &stream.source, configured, &stream.origins)
             .map_err(|e| Error::at(file, original.start, e.message))?;
         self.paths
-            .state
-            .facts
-            .introductions
-            .ancestry
-            .append(context, parent)
+            .invocation(context, parent, &self.definitions[definition])
             .map_err(|message| Error::at(file, original.start, message))?;
         self.invocations.push(Invocation {
             context,

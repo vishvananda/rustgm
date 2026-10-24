@@ -183,7 +183,7 @@ impl Resolver<'_> {
                 arguments,
             } => {
                 let (_, names) = self.pooled_path(c, method)?;
-                let &[name] = names.as_slice() else {
+                let &[name] = names.names.as_slice() else {
                     return Err(self.error(c, node, "method requires one name segment"));
                 };
                 self.recycle_path(names);
@@ -461,12 +461,12 @@ impl Resolver<'_> {
             && path.len() == 1
             && self.package.names.get(path[0]) == "Self";
         let mut builtin = false;
-        for &name in &path {
+        for &name in &path.names {
             builtin |= self.builtin_name(name);
         }
         // Builtin preparation only reacts to the spellings `builtin_name` recognizes.
         if builtin {
-            self.prepare_builtin_reference(c, node, absolute, ns, &path)?;
+            self.prepare_builtin_reference(c, node, absolute, ns, path.view())?;
         }
         // A relative ordinary single-segment type path is found exactly when its
         // lexical lookup is, so that lookup is not repeated before the full one.
@@ -475,18 +475,20 @@ impl Resolver<'_> {
             && !absolute
             && !matches!(self.package.names.get(path[0]), "crate" | "self" | "super");
         let mut found = if lexical {
-            Some(self.lookup_path(c, node, absolute, &path, LookupMode::Use(ns), None)?)
+            Some(self.lookup_path(c, node, absolute, path.view(), LookupMode::Use(ns), None)?)
         } else {
             None
         };
         if ns == Namespace::Type && path.len() == 1 {
             // Syntactically ambiguous const generic arguments are typed after lookup.
+            let offset = super::hygiene::name_offset(self.package, NodeKey { file: c.file, node });
             let missing = match &found {
                 Some(found) => matches!(found, Lookup::Missing),
-                None => matches!(self.lexical(c.scope, path[0], ns), Lookup::Missing),
+                None => self.hygienic_lexical(c, offset, path[0], ns)?.is_none(),
             };
             if missing
-                && let Lookup::Found(binding) = self.lexical(c.scope, path[0], Namespace::Value)
+                && let Some((_, binding)) =
+                    self.hygienic_lexical(c, offset, path[0], Namespace::Value)?
                 && (self.facts.definitions[binding.target.0 as usize].kind == DefKind::Generic
                     || (const_argument
                         && self.facts.definitions[binding.target.0 as usize].kind
@@ -499,7 +501,7 @@ impl Resolver<'_> {
         let found = match found {
             Some(found) => found,
             None if self_constructor => self.self_constructor(c, path[0]),
-            None => self.lookup_path(c, node, absolute, &path, LookupMode::Use(ns), None)?,
+            None => self.lookup_path(c, node, absolute, path.view(), LookupMode::Use(ns), None)?,
         };
         let target = self.target(c, node, &found, ns)?;
         if let Lookup::Associated(owner, start) | Lookup::Member(_, owner, start) = found {
@@ -530,7 +532,7 @@ impl Resolver<'_> {
         node: NodeId,
         absolute: bool,
         ns: Namespace,
-        path: &[crate::support::names::NameId],
+        path: super::paths::Identified<'_>,
     ) -> Result<(), Error> {
         if ns == Namespace::Value {
             self.prepare_clone_path(c, node, absolute, path)?;
@@ -622,12 +624,7 @@ impl Resolver<'_> {
         if matches!(self.package.names.get(name), "static" | "_") {
             return Ok(());
         }
-        let target = self.target(
-            c,
-            node,
-            &self.lexical(c.scope, name, Namespace::Lifetime),
-            Namespace::Lifetime,
-        )?;
+        let target = self.hygienic_name(c, node, span.start, name, Namespace::Lifetime)?;
         self.facts.references.push(Reference {
             scope: c.scope,
             node: NodeKey { file: c.file, node },

@@ -174,7 +174,7 @@ fn source_configuration_keeps_bootstrap_owner_absent() -> Result {
         size_of::<IntrinsicDeclaration>(),
         size_of::<crate::syntax::expression::Parser<'_, '_>>()
     );
-    // Local-history and contextual-item indexes add two cold handles; hot rows are unchanged.
-    assert_eq!(size_of::<resolve::model::Resolution>(), 2048);
+    // A lazy item-scope owner adds eight bytes; per-item and body rows are unchanged.
+    assert_eq!(size_of::<resolve::model::Resolution>(), 2056);
     Ok(())
 }

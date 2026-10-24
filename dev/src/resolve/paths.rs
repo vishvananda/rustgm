@@ -14,6 +14,77 @@ use crate::{
 };
 use std::sync::Arc;
 
+/// Borrowed canonical names paired with the identity of every actual identifier.
+/// Prefix selection keeps the same provenance; ordinary source needs no side array.
+#[derive(Clone, Copy)]
+pub(super) struct Identified<'a> {
+    pub names: &'a [NameId],
+    contexts: Option<&'a [ItemContext]>,
+}
+impl<'a> Identified<'a> {
+    pub fn new(names: &'a [NameId], contexts: &'a [ItemContext]) -> Self {
+        Self {
+            names,
+            contexts: Some(contexts),
+        }
+    }
+
+    pub fn imported(import: &'a super::model::Import) -> Self {
+        Self {
+            names: &import.path,
+            contexts: import
+                .contexts
+                .as_ref()
+                .map(|contexts| contexts.segments.as_ref()),
+        }
+    }
+
+    pub fn prefix(self, length: usize) -> Self {
+        Self {
+            names: &self.names[..length],
+            contexts: self.contexts,
+        }
+    }
+
+    pub fn context(self, index: usize) -> Result<ItemContext, &'static str> {
+        if index >= self.names.len() {
+            return Err("missing path identifier");
+        }
+        self.contexts.map_or(Ok(ItemContext::ROOT), |contexts| {
+            contexts
+                .get(index)
+                .copied()
+                .ok_or("missing path identifier context")
+        })
+    }
+}
+impl std::ops::Deref for Identified<'_> {
+    type Target = [NameId];
+    fn deref(&self) -> &Self::Target {
+        self.names
+    }
+}
+
+/// Registered calls retain only immutable slices, with no root-context allocation.
+pub(super) struct Saved {
+    names: Box<[NameId]>,
+    contexts: Option<Box<[ItemContext]>>,
+}
+impl Saved {
+    pub fn view(&self) -> Identified<'_> {
+        Identified {
+            names: &self.names,
+            contexts: self.contexts.as_deref(),
+        }
+    }
+}
+impl std::ops::Deref for Saved {
+    type Target = [NameId];
+    fn deref(&self) -> &Self::Target {
+        &self.names
+    }
+}
+
 pub(super) trait Segments {
     fn reserve(&mut self, additional: usize);
     fn append(
@@ -81,12 +152,19 @@ impl Package {
 
 /// A group traversal appends each local prefix once and restores its previous
 /// length after each child. Root identifiers allocate no context storage.
+#[derive(Default)]
 pub(super) struct Buffer {
     pub names: Vec<NameId>,
     contexts: Vec<ItemContext>,
     non_root: usize,
 }
 impl Buffer {
+    pub fn save(self) -> Saved {
+        Saved {
+            names: self.names.into_boxed_slice(),
+            contexts: (self.non_root != 0).then(|| self.contexts.into_boxed_slice()),
+        }
+    }
     pub fn new(mut names: Vec<NameId>) -> Self {
         names.clear();
         Self {
@@ -108,6 +186,20 @@ impl Buffer {
             }
         }
     }
+    pub fn view(&self) -> Identified<'_> {
+        Identified {
+            names: &self.names,
+            contexts: (self.non_root != 0).then_some(self.contexts.as_slice()),
+        }
+    }
+
+    /// `local_inner_macros` introduces an explicit defining-crate prefix.
+    pub fn prepend_root(&mut self, name: NameId) {
+        self.names.insert(0, name);
+        if self.non_root != 0 {
+            self.contexts.insert(0, ItemContext::ROOT);
+        }
+    }
     pub fn freeze_contexts(&self, glob: ItemContext) -> Option<Arc<ImportContexts>> {
         if self.non_root == 0 && glob == ItemContext::ROOT {
             return None;
@@ -118,6 +210,12 @@ impl Buffer {
             self.contexts.clone().into_boxed_slice()
         };
         Some(Arc::new(ImportContexts { segments, glob }))
+    }
+}
+impl std::ops::Deref for Buffer {
+    type Target = [NameId];
+    fn deref(&self) -> &Self::Target {
+        &self.names
     }
 }
 impl Segments for Buffer {

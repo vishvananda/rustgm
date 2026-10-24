@@ -73,7 +73,14 @@ impl Resolver<'_> {
         if !matches!(self.package.names.get(name), "core" | "std") {
             return Ok(None);
         }
-        self.prepare_builtin_path(c, node, false, Namespace::Type, &[name])?;
+        let context = self.package.item_context(c.file, span.start)?;
+        self.prepare_builtin_path(
+            c,
+            node,
+            false,
+            Namespace::Type,
+            super::paths::Identified::new(&[name], &[context]),
+        )?;
         let external = self
             .facts
             .extern_scope
@@ -140,14 +147,14 @@ impl Resolver<'_> {
         node: NodeId,
         absolute: bool,
         namespace: Namespace,
-        path: &[NameId],
+        path: crate::resolve::paths::Identified<'_>,
     ) -> Result<(), Error> {
         if self.package.uses_source_bindings() {
             return Ok(());
         }
         // Every step below keys on a spelling recognized by `builtin_spelling`.
         let mut relevant = false;
-        for &name in path {
+        for &name in path.names {
             relevant |= self.builtin_name(name);
         }
         if !relevant {
@@ -180,14 +187,25 @@ impl Resolver<'_> {
         {
             self.prepare_comparison_method(c, node, method)?;
         }
-        let library_shadowed = !absolute
-            && path.first().is_some_and(|&name| {
-                let namespace = if path.len() > 1 { Namespace::Type } else { namespace };
-                matches!(self.lexical(c.scope, name, namespace), crate::resolve::lookup::Lookup::Found(binding)
-                    if self.facts.definitions[binding.target.0 as usize].node.is_some()
-                        && !self.facts.definitions[binding.target.0 as usize].members.is_some_and(|scope|
-                            self.facts.builtin_traits.library == Some(scope)))
-            });
+        let library_shadowed = if !absolute && let Some(&name) = path.first() {
+            let namespace = if path.len() > 1 {
+                Namespace::Type
+            } else {
+                namespace
+            };
+            let context = path.context(0).map_err(|e| self.error(c, node, e))?;
+            self.item_lexical(c, name, namespace, context, None)
+                .map_err(|e| self.error(c, node, e))?
+                .is_some_and(|selected| {
+                    let definition = &self.facts.definitions[selected.binding.target.0 as usize];
+                    definition.node.is_some()
+                        && !definition
+                            .members
+                            .is_some_and(|scope| self.facts.builtin_traits.library == Some(scope))
+                })
+        } else {
+            false
+        };
         if self.facts.drop_trait.is_none()
             && path.first().is_some_and(|name| {
                 matches!(
@@ -223,7 +241,7 @@ impl Resolver<'_> {
         if !library_shadowed {
             self.prepare_primitive_module(c, node, absolute, path)?;
             self.prepare_library_metadata(c, node, absolute, path)?;
-            self.prepare_intrinsic_metadata(c, node, path)?;
+            self.prepare_intrinsic_metadata(c, node, path.names)?;
         }
         Ok(())
     }

@@ -32,6 +32,32 @@ pub(super) struct Paths {
     pending: Vec<Pending>,
 }
 impl Paths {
+    pub fn invocation(
+        &mut self,
+        expansion: ExpansionId,
+        parent: ExpansionId,
+        definition: &super::Definition,
+    ) -> Result<(), &'static str> {
+        let scope = if let Some(node) = definition.node {
+            self.state
+                .facts
+                .node_scopes
+                .get(&(definition.module, node.node))
+                .copied()
+        } else {
+            self.state
+                .facts
+                .module_scopes
+                .get(definition.module.0 as usize)
+                .copied()
+        }
+        .ok_or("missing macro definition scope")?;
+        self.state
+            .facts
+            .introductions
+            .invocation(expansion, parent, scope)
+    }
+
     pub fn new(
         package: &mut Package,
         dependencies: Option<std::sync::Arc<crate::support::crates::Dependencies>>,
@@ -102,8 +128,20 @@ impl Paths {
     ) -> Result<ScopeId, Error> {
         let mut resolver = self.state.bind(package);
         let first = resolver.facts.definitions.len();
+        let first_scope = resolver.facts.scopes.len();
         let access = resolver.visibility(context, item.visibility)?;
         let body = resolver.declare_item(context, node, item, access)?;
+        if introduction.0 != 0 {
+            for index in first_scope..resolver.facts.scopes.len() {
+                let scope = ScopeId(u32::try_from(index).map_err(|_| {
+                    resolver.error(context, node, "too many introduced item scopes")
+                })?);
+                resolver
+                    .facts
+                    .introductions
+                    .introduce_scope(scope, introduction);
+            }
+        }
         self.work.extend(resolver.facts);
         for index in first..resolver.facts.definitions.len() {
             let definition = &resolver.facts.definitions[index];
@@ -133,6 +171,7 @@ impl Paths {
         parent: ScopeId,
         module: ModuleId,
         node: NodeId,
+        introduction: ExpansionId,
     ) -> Result<ScopeId, Error> {
         let scope = self
             .state
@@ -143,6 +182,10 @@ impl Paths {
             .facts
             .node_scopes
             .insert(module, file, node, scope);
+        self.state
+            .facts
+            .introductions
+            .introduce_scope(scope, introduction);
         self.work.extend(&self.state.facts);
         Ok(scope)
     }
@@ -153,8 +196,13 @@ impl Paths {
         package: &mut Package,
         context: Context,
         node: NodeId,
+        introduction: ExpansionId,
     ) -> Result<ScopeId, Error> {
         let scope = self.state.bind(package).lexical_scope(context, node)?;
+        self.state
+            .facts
+            .introductions
+            .introduce_scope(scope, introduction);
         self.work.extend(&self.state.facts);
         Ok(scope)
     }
@@ -181,6 +229,10 @@ impl Paths {
         let mut resolver = self.state.bind(package);
         let access = resolver.visibility(context, visibility)?;
         let scope = resolver.new_scope(None, child, true)?;
+        resolver
+            .facts
+            .introductions
+            .introduce_scope(scope, expansion);
         resolver
             .facts
             .module_scopes
@@ -483,7 +535,7 @@ impl Paths {
             context,
             node,
             call.absolute,
-            &call.path,
+            call.path.view(),
             LookupMode::Use(Namespace::Macro),
             Some(&mut observed),
         );

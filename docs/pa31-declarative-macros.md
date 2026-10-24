@@ -536,3 +536,8 @@ mixed-transparency behavior, atomic failure for unknown expansions, actual
 macro-module privacy, separate caller scopes and shared-suffix depth/width
 bounds. They have not yet run. Field source/native hypotheses remain owned by
 LIB-002; this interface alone does not enable scoped macro semantics.
+
+The subsequent [item lookup source checkpoint](pa31-item-lookup.md) carries
+identifier contexts through lexical/qualified paths, import dependencies, module
+keywords, visibility and glob remapping. Its implementation and declared controls
+are unqualified; scoped source admission remains disabled.

@@ -4,7 +4,6 @@ use super::super::{
     model::{Access, Import, Namespace},
     names::NameId,
     package::Error,
-    paths::Buffer,
     unit::NodeKey,
 };
 use crate::{
@@ -23,7 +22,8 @@ enum Step {
 
 impl Resolver<'_> {
     pub fn import(&mut self, c: Context, node: NodeId, access: Access) -> Result<(), Error> {
-        let mut path = Buffer::new(self.paths.pop().unwrap_or_default());
+        let mut path = self.paths.pop().unwrap_or_default();
+        path.truncate(0);
         let mut pending = vec![Step::Tree {
             node,
             absolute: false,
@@ -60,7 +60,7 @@ impl Resolver<'_> {
                         .iter()
                         .any(|name| self.builtin_name(*name)));
             if relevant {
-                self.prepare_builtin_path(c, node, absolute, Namespace::Type, &path.names)?;
+                self.prepare_builtin_path(c, node, absolute, Namespace::Type, path.view())?;
             }
             if tree.children.start == tree.children.end {
                 let alias = tree
@@ -98,7 +98,7 @@ impl Resolver<'_> {
                 );
             }
         }
-        self.recycle_path(path.names);
+        self.recycle_path(path);
         Ok(())
     }
 

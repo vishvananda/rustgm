@@ -1,6 +1,7 @@
 //! Interned token marks keep expansion identity separate from normalized names.
 use crate::support::hash::HashMap;
 mod adjustment;
+mod glob;
 
 /// Actual invocation identity; zero denotes the physical source ancestry root.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -53,6 +54,7 @@ struct Data {
     rebased: HashMap<(SyntaxContextId, SyntaxContextId), SyntaxContextId>,
     /// Pure, arena-owned answers; caller privacy is deliberately not cached.
     adjusted: std::cell::RefCell<adjustment::Cache>,
+    reversed_globs: glob::Cache,
     #[cfg(test)]
     rebase_steps: usize,
 }
@@ -107,6 +109,9 @@ impl Marks {
     pub fn local(&self, context: SyntaxContextId) -> Result<LocalContext, &'static str> {
         self.projections(context)
             .map(|(_, local)| LocalContext(local))
+    }
+    pub(crate) fn local_item(&self, context: LocalContext) -> Result<ItemContext, &'static str> {
+        self.item(context.0)
     }
     /// # Errors
     /// Rejects a context outside the arena.

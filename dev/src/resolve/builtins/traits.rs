@@ -160,7 +160,7 @@ impl Resolver<'_> {
         c: Context,
         node: NodeId,
         absolute: bool,
-        path: &[NameId],
+        path: crate::resolve::paths::Identified<'_>,
     ) -> Result<(), Error> {
         let Some(library) = self.facts.builtin_traits.library else {
             return Ok(());
@@ -208,7 +208,7 @@ impl Resolver<'_> {
             };
         }
         if let Some(marker) = AutoTrait::ALL.into_iter().find(|m| m.name() == last)
-            && self.auto_module_alias(c, node, absolute, &path[..path.len() - 1], marker)
+            && self.auto_module_alias(c, node, absolute, path.prefix(path.len() - 1), marker)
         {
             return self.auto_trait(c, node, library, marker);
         }
@@ -248,7 +248,7 @@ impl Resolver<'_> {
             c,
             node,
             absolute,
-            &path[..index],
+            path.prefix(index),
             LookupMode::Import(Namespace::Type),
             None,
         ) && self.facts.definitions[binding.target.0 as usize].members == Some(library)
@@ -273,7 +273,7 @@ impl Resolver<'_> {
         c: Context,
         node: NodeId,
         absolute: bool,
-        prefix: &[NameId],
+        prefix: crate::resolve::paths::Identified<'_>,
         marker: AutoTrait,
     ) -> bool {
         let expected = if matches!(marker, AutoTrait::UnwindSafe | AutoTrait::RefUnwindSafe) {

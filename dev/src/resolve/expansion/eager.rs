@@ -68,11 +68,7 @@ impl<S: Sources> Engine<'_, S> {
                 .map_err(|_| Error::at(file, original.start, "too many expansion contexts"))?,
         );
         self.paths
-            .state
-            .facts
-            .introductions
-            .ancestry
-            .append(context, visit.introduction)
+            .invocation(context, visit.introduction, &self.definitions[definition])
             .map_err(|message| Error::at(file, original.start, message))?;
         self.invocations.push(Invocation {
             context,

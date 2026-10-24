@@ -500,6 +500,25 @@ the explicit alias context and the glob star context independently. Root-only
 paths need no context allocation. Do not mistake eliminating prefix copies for
 eliminating repeated semantic scans of those prefixes; measure both dimensions.
 
+Carry the same borrowed name/context view through lexical lookup, qualified
+segments and builtin-prefix preparation. Pool complete path scratch buffers;
+keeping only the name vector would recreate contextual scratch on every body
+reference. Record actual macro definition scopes beside invocation ancestry and
+actual container introductions beside generated scopes, in one cold owner rather
+than fields on every scope or definition. Container adjustment caches only pure
+identity results; caller-dependent visibility remains separate. Self/super tokens
+each retain their own context, and visibility paths must still name direct
+ancestor modules.
+
+Glob journals retain source keys while contributions and withdrawals retain the
+mapped destination keys. Reverse only the synchronized glob/use context mapping;
+an ordinary context adjustment is insufficient. Reuse a transformed suffix for
+names sharing a context and keep invalid provenance from publishing answers.
+Scope lookup results and missing names are not immutable context facts: later
+binding publication must still wake their exact dependency keys. The
+[item lookup checkpoint](docs/pa31-item-lookup.md) declares the implementation
+boundary, structural opponents and cold storage costs before qualification.
+
 Keep root bindings in the flat table and allocate a separate context index only
 for non-root item keys. Both indexes share declaration ordinals and first-binding
 order; removing a binding retains its key. Size root slots by root population,

@@ -21,6 +21,7 @@ pub(crate) struct Selection {
 pub(crate) struct Observations {
     pub dependencies: Vec<BindingKey>,
     pub selected: Option<Vec<Selection>>,
+    pub privacy: Option<ModuleId>,
 }
 pub(crate) enum Lookup {
     Found(Binding),
@@ -97,26 +98,54 @@ impl Resolver<'_> {
         name: NameId,
         namespace: Namespace,
     ) -> Result<Option<(ScopeId, Binding)>, Error> {
-        if matches!(namespace, Namespace::Value | Namespace::Label)
-            && let Some(hygiene) = self.hygiene.as_ref()
+        Ok(self
+            .hygienic_selection(c, offset, name, namespace)?
+            .map(|selected| (selected.key.0, selected.binding)))
+    }
+    fn hygienic_selection(
+        &self,
+        c: Context,
+        offset: u32,
+        name: NameId,
+        namespace: Namespace,
+    ) -> Result<Option<super::item_lookup::Selected>, Error> {
+        let raw = self.package.syntax_context(c.file, offset)?;
+        let item = self
+            .package
+            .marks
+            .item(raw)
+            .map_err(|e| Error::at(c.file, offset, e))?;
+        if let Some(hygiene) = self.hygiene.as_ref()
+            && !(namespace == Namespace::Type && self.package.names.get(name) == "Self")
         {
-            let context = self.package.local_context(c.file, offset)?;
-            let found = hygiene
-                .lookup(
-                    self.facts,
-                    &self.package.marks,
-                    super::hygiene::Query {
-                        scope: c.scope,
-                        name,
-                        namespace,
-                        context,
-                        visible: self.facts.definitions.len(),
-                    },
-                )
+            let context = self
+                .package
+                .marks
+                .local(raw)
                 .map_err(|e| Error::at(c.file, offset, e))?;
-            return Ok(found.or_else(|| self.builtin_binding(c.module, name, namespace)));
+            let mut query = super::hygiene::Query {
+                scope: c.scope,
+                name,
+                namespace,
+                context,
+                item,
+                privacy: c.module,
+                visible: self.facts.definitions.len(),
+            };
+            let found = hygiene
+                .lookup(self.facts, &self.package.marks, &mut query)
+                .map_err(|e| Error::at(c.file, offset, e))?;
+            return Ok(found.or_else(|| {
+                self.lexical_prelude(query.privacy, name, namespace)
+                    .map(|(scope, binding)| super::item_lookup::Selected {
+                        key: (scope, name, namespace, ItemContext::ROOT),
+                        binding,
+                        privacy: query.privacy,
+                    })
+            }));
         }
-        Ok(self.lexical_binding(c.scope, name, namespace))
+        self.item_lexical(c, name, namespace, item, None)
+            .map_err(|e| Error::at(c.file, offset, e))
     }
     pub fn hygienic_name(
         &self,
@@ -138,56 +167,12 @@ impl Resolver<'_> {
             Access::Within(ancestor) => self.package.is_descendant(module, ancestor),
         }
     }
-    pub fn lexical(&self, scope: ScopeId, name: NameId, namespace: Namespace) -> Lookup {
-        self.lexical_binding(scope, name, namespace)
-            .map_or(Lookup::Missing, |(_, binding)| Lookup::Found(binding))
-    }
-    fn lexical_binding(
+    pub(super) fn lexical_prelude(
         &self,
-        scope: ScopeId,
+        module: ModuleId,
         name: NameId,
         namespace: Namespace,
     ) -> Option<(ScopeId, Binding)> {
-        let mut current = Some(scope);
-        let mut barriers = 0_u32;
-        while let Some(scope) = current {
-            let frame = &self.facts.scopes[scope.0 as usize];
-            if let Some(target) = frame.nominal_self
-                && barriers == 0
-                && namespace == Namespace::Type
-                && self.package.names.get(name) == "Self"
-            {
-                return Some((
-                    scope,
-                    Binding {
-                        target,
-                        access: self.facts.definitions[target.0 as usize].access,
-                        origin: Origin::Direct,
-                        ambiguous: false,
-                    },
-                ));
-            }
-            if let Some(binding) = self.facts.bindings.get(scope, name, namespace)
-                && binding.is_lexical(&self.facts.definitions, frame.associated)
-                && (barriers == 0
-                    || !self.facts.definitions[binding.target.0 as usize]
-                        .kind
-                        .is_local()
-                    || (barriers == 1
-                        && frame.associated
-                        && matches!(
-                            self.facts.definitions[binding.target.0 as usize].kind,
-                            DefKind::Generic | DefKind::SelfType
-                        )))
-            {
-                return Some((scope, *binding));
-            }
-            if namespace == Namespace::Label && frame.label_barrier {
-                break;
-            }
-            barriers += u32::from(frame.barrier);
-            current = frame.parent;
-        }
         if namespace == Namespace::Macro
             && let Some(target) = self.facts.macro_prelude.get(&name)
         {
@@ -214,7 +199,7 @@ impl Resolver<'_> {
                 },
             ));
         }
-        self.builtin_binding(self.facts.scopes[scope.0 as usize].module, name, namespace)
+        self.builtin_binding(module, name, namespace)
     }
     #[expect(
         clippy::too_many_lines,
@@ -225,7 +210,7 @@ impl Resolver<'_> {
         c: Context,
         node: NodeId,
         absolute: bool,
-        path: &[NameId],
+        path: crate::resolve::paths::Identified<'_>,
         mode: LookupMode,
         mut observed: Option<&mut Observations>,
     ) -> Result<Lookup, Error> {
@@ -257,14 +242,27 @@ impl Resolver<'_> {
                 module = ModuleId(0);
             }
             "self" if path.len() > 1 => {
-                scope = Some(self.facts.module_scopes[c.module.0 as usize]);
+                let mut context = path.context(0).map_err(|e| self.error(c, node, e))?;
+                module = self
+                    .self_module(module, &mut context)
+                    .map_err(|e| self.error(c, node, e))?;
+                scope = Some(self.facts.module_scopes[module.0 as usize]);
                 index = 1;
             }
             "super" => {
                 while index < path.len() && self.package.names.get(path[index]) == "super" {
+                    let mut context = path.context(index).map_err(|e| self.error(c, node, e))?;
+                    if index == 0 {
+                        module = self
+                            .self_module(module, &mut context)
+                            .map_err(|e| self.error(c, node, e))?;
+                    }
                     module = self.package.modules[module.0 as usize]
                         .parent
                         .ok_or_else(|| self.error(c, node, "super escapes crate root"))?;
+                    module = self
+                        .self_module(module, &mut context)
+                        .map_err(|e| self.error(c, node, e))?;
                     index += 1;
                 }
                 scope = Some(self.facts.module_scopes[module.0 as usize]);
@@ -310,34 +308,21 @@ impl Resolver<'_> {
             } else {
                 Namespace::Type
             };
-            if let Some(observed) = observed.as_mut() {
-                let keys = &mut observed.dependencies;
-                if let Some(scope) = scope {
-                    keys.push((scope, name, ns, ItemContext::ROOT));
-                } else {
-                    let mut parent = Some(c.scope);
-                    while let Some(scope) = parent {
-                        keys.push((scope, name, ns, ItemContext::ROOT));
-                        parent = self.facts.scopes[scope.0 as usize].parent;
-                    }
-                }
-            }
+            let context = path.context(index).map_err(|e| self.error(c, node, e))?;
             let found = if let Some(scope) = scope {
-                self.facts
-                    .bindings
-                    .get(scope, name, ns)
-                    .copied()
-                    .map(|binding| (scope, binding))
-            } else if self.hygiene.is_some() && matches!(ns, Namespace::Value | Namespace::Label) {
+                self.item_in_scope(c, (scope, name, ns, context), observed.as_deref_mut())
+                    .map_err(|e| self.error(c, node, e))?
+            } else if self.hygiene.is_some() && !matches!(mode, LookupMode::Import(_)) {
                 let offset = super::hygiene::name_offset(
                     self.package,
                     super::unit::NodeKey { file: c.file, node },
                 );
-                self.hygienic_lexical(c, offset, name, ns)?
+                self.hygienic_selection(c, offset, name, ns)?
             } else {
-                self.lexical_binding(c.scope, name, ns)
+                self.item_lexical(c, name, ns, context, observed.as_deref_mut())
+                    .map_err(|e| self.error(c, node, e))?
             };
-            let (found_scope, binding) = match found {
+            let selected = match found {
                 Some(found) => found,
                 None if associated.is_some() => {
                     if let Some(target) = associated {
@@ -347,9 +332,11 @@ impl Resolver<'_> {
                 }
                 None => return Ok(Lookup::Missing),
             };
+            let found_scope = selected.key.0;
+            let binding = selected.binding;
             if let Some(trace) = observed.as_mut().and_then(|o| o.selected.as_mut()) {
                 trace.push(Selection {
-                    key: (found_scope, name, ns, ItemContext::ROOT),
+                    key: selected.key,
                     binding,
                     lexical: scope.is_none(),
                 });
@@ -365,7 +352,7 @@ impl Resolver<'_> {
                     ),
                 ));
             }
-            if !self.visible(binding.access, c.module)
+            if !self.visible(binding.access, selected.privacy)
                 && (check_final_privacy || index + 1 != path.len())
             {
                 return Err(self.error(
@@ -380,6 +367,9 @@ impl Resolver<'_> {
             }
             index += 1;
             if index == path.len() {
+                if let Some(observed) = observed.as_deref_mut() {
+                    observed.privacy = Some(selected.privacy);
+                }
                 if check_final_privacy
                     && self.facts.scopes[found_scope.0 as usize].associated
                     && let Some(owner) = associated

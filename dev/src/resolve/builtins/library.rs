@@ -56,7 +56,7 @@ impl Resolver<'_> {
         c: Context,
         node: NodeId,
         absolute: bool,
-        path: &[NameId],
+        path: crate::resolve::paths::Identified<'_>,
     ) -> Result<(), Error> {
         if self.facts.builtin_traits.library.is_none() {
             return Ok(());
@@ -127,7 +127,7 @@ impl Resolver<'_> {
         c: Context,
         node: NodeId,
         absolute: bool,
-        path: &[NameId],
+        path: crate::resolve::paths::Identified<'_>,
         kind: LibraryType,
     ) -> bool {
         use crate::resolve::lookup::{Lookup, LookupMode};
@@ -146,7 +146,7 @@ impl Resolver<'_> {
             c,
             node,
             absolute,
-            &path[..index],
+            path.prefix(index),
             LookupMode::Import(Namespace::Type),
             None,
         ) else {

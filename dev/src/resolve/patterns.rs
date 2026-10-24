@@ -1,7 +1,6 @@
 //! Pattern alternatives agree on binding identities before any are installed.
 use super::{
     index::{Context, Resolver},
-    lookup::Lookup,
     model::{Access, DefKind, Definition, Namespace, Reference, Target},
     names::NameId,
     package::Error,
@@ -311,8 +310,10 @@ impl Resolver<'_> {
                 by_ref,
                 subpattern,
             } => {
+                let offset = name.start;
                 let name = self.package.parsed_name(c.file, name, symbol)?;
-                if let Lookup::Found(binding) = self.lexical(c.scope, name, Namespace::Value)
+                if let Some((_, binding)) =
+                    self.hygienic_lexical(c, offset, name, Namespace::Value)?
                     && matches!(
                         self.facts.definitions[binding.target.0 as usize].kind,
                         DefKind::Const | DefKind::Static | DefKind::Constructor | DefKind::Variant

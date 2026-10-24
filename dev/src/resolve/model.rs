@@ -242,6 +242,7 @@ pub struct Introductions {
     pub definitions: HashMap<DefId, crate::expand::marks::ExpansionId>,
     pub imports: HashMap<usize, crate::expand::marks::ExpansionId>,
     pub ancestry: crate::expand::ancestry::Ancestry,
+    pub(crate) item_scopes: Option<Box<super::item_scopes::ItemScopes>>,
 }
 impl Introductions {
     #[must_use]

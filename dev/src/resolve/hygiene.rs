@@ -1,7 +1,7 @@
 //! Local binding histories preserve definition-site visibility across shadowing.
 use super::{
     expansion,
-    model::{Binding, DefKind, Namespace, NodeScopes, Resolution, ScopeId},
+    model::{DefKind, Namespace, NodeScopes, Resolution, ScopeId},
     package::ModuleId,
     unit::NodeKey,
 };
@@ -27,6 +27,8 @@ pub(crate) struct Query {
     pub name: NameId,
     pub namespace: Namespace,
     pub context: LocalContext,
+    pub item: ItemContext,
+    pub privacy: ModuleId,
     pub visible: usize,
 }
 /// Macro definition sites; the locals themselves live in the binding table.
@@ -83,12 +85,35 @@ impl Hygiene {
             .get(definition)
             .ok_or("invalid macro definition context")
     }
+    fn rewind(
+        &self,
+        facts: &Resolution,
+        marks: &Marks,
+        query: &mut Query,
+        parent: LocalContext,
+        expansion: ExpansionId,
+    ) -> Result<Option<ScopeId>, &'static str> {
+        let site = self.site(expansion)?;
+        let item = marks.local_item(parent)?;
+        if item != query.item {
+            let scope = facts.introductions.definition_scope(expansion)?;
+            query.privacy = facts
+                .scopes
+                .get(scope.0 as usize)
+                .ok_or("invalid macro definition privacy")?
+                .module;
+        }
+        query.context = parent;
+        query.item = item;
+        query.visible = query.visible.min(site.visible);
+        Ok(site.scope)
+    }
     pub fn lookup(
         &self,
         facts: &Resolution,
         marks: &Marks,
-        mut query: Query,
-    ) -> Result<Option<(ScopeId, Binding)>, &'static str> {
+        query: &mut Query,
+    ) -> Result<Option<super::item_lookup::Selected>, &'static str> {
         let mut current = Some(query.scope);
         let mut barriers = 0;
         let mut label_barrier = false;
@@ -99,10 +124,7 @@ impl Hygiene {
                 let Some((parent, expansion)) = marks.local_parent(query.context)? else {
                     return Ok(None);
                 };
-                let site = self.site(expansion)?;
-                query.context = parent;
-                query.visible = query.visible.min(site.visible);
-                current = site.scope;
+                current = self.rewind(facts, marks, query, parent, expansion)?;
                 continue;
             };
             let frame = facts
@@ -116,17 +138,26 @@ impl Hygiene {
                 && let Some(entry) = entry
                 && let Some(binding) = facts.bindings.local(entry, query.context, query.visible)
             {
-                return Ok(Some((scope, binding)));
+                return Ok(Some(super::item_lookup::Selected {
+                    key: (scope, query.name, query.namespace, ItemContext::ROOT),
+                    binding,
+                    privacy: query.privacy,
+                }));
             }
             if let Some((parent, expansion)) = marks.local_parent(query.context)? {
                 let site = self.site(expansion)?;
                 if site.scope == Some(scope) {
-                    query.context = parent;
-                    query.visible = query.visible.min(site.visible);
+                    self.rewind(facts, marks, query, parent, expansion)?;
                     continue;
                 }
             }
-            if let Some(binding) = entry.and_then(|entry| facts.bindings.binding(entry))
+            let key = (scope, query.name, query.namespace, query.item);
+            let binding = if query.item == ItemContext::ROOT {
+                entry.and_then(|entry| facts.bindings.binding(entry))
+            } else {
+                facts.bindings.get_key(key)
+            };
+            if let Some(binding) = binding
                 && binding.is_lexical(&facts.definitions, frame.associated)
                 && (barriers == 0
                     || !facts.definitions[binding.target.0 as usize].kind.is_local()
@@ -137,9 +168,20 @@ impl Hygiene {
                             DefKind::Generic | DefKind::SelfType
                         )))
             {
-                return Ok(Some((scope, *binding)));
+                return Ok(Some(super::item_lookup::Selected {
+                    key,
+                    binding: *binding,
+                    privacy: query.privacy,
+                }));
             }
-
+            if frame.parent.is_none()
+                && let Some((_, expansion)) = marks.item_parent(query.item)?
+                && facts
+                    .introductions
+                    .ancestor(expansion, facts.introductions.scope(scope))
+            {
+                return Ok(None);
+            }
             barriers += u32::from(frame.barrier);
             label_barrier |= query.namespace == Namespace::Label && frame.label_barrier;
             current = frame.parent;

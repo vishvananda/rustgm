@@ -148,7 +148,7 @@ pub(crate) struct State {
     scratch: Vec<NodeId>,
     pending: Vec<(Context, NodeId)>,
     visits: Vec<(Context, NodeId, Namespace)>,
-    paths: Vec<Vec<NameId>>,
+    paths: Vec<super::paths::Buffer>,
     patterns: Vec<super::patterns::PatternFrame>,
     builtin_names: Vec<u8>,
 }
@@ -175,7 +175,7 @@ pub(crate) struct Resolver<'a> {
     pub pending: &'a mut Vec<(Context, NodeId)>,
     pub visits: &'a mut Vec<(Context, NodeId, Namespace)>,
     /// Reusable path-name buffers; nested references borrow distinct entries.
-    pub paths: &'a mut Vec<Vec<NameId>>,
+    pub paths: &'a mut Vec<super::paths::Buffer>,
     /// Reusable pattern-binding frames, likewise borrowed per nesting level.
     pub patterns: &'a mut Vec<super::patterns::PatternFrame>,
     /// Per-name cache: 0 unknown, 1 ordinary, 2 may select language metadata.
@@ -775,33 +775,55 @@ impl Resolver<'_> {
                 Access::Within(c.module)
             });
         };
-        let (_, path) = self.path_names(c, node)?;
+        let (_, path) = self.pooled_path(c, node)?;
         let mut module = c.module;
-        for (index, name) in path.into_iter().enumerate() {
+        for (index, &name) in path.names.iter().enumerate() {
+            let mut context = path
+                .view()
+                .context(index)
+                .map_err(|e| self.error(c, node, e))?;
             match self.package.names.get(name) {
                 "crate" if index == 0 => module = ModuleId(0),
-                "self" if index == 0 => {}
+                "self" if index == 0 => {
+                    module = self
+                        .self_module(module, &mut context)
+                        .map_err(|e| self.error(c, node, e))?;
+                }
                 "super" => {
+                    if index == 0 {
+                        module = self
+                            .self_module(module, &mut context)
+                            .map_err(|e| self.error(c, node, e))?;
+                    }
                     module = self.package.modules[module.0 as usize]
                         .parent
                         .ok_or_else(|| self.error(c, node, "super escapes crate root"))?;
+                    module = self
+                        .self_module(module, &mut context)
+                        .map_err(|e| self.error(c, node, e))?;
                 }
                 _ => {
-                    let current = module;
+                    let scope = self.facts.module_scopes[module.0 as usize];
+                    let adjusted = self
+                        .scope_adjustment(scope, context, c.module)
+                        .map_err(|e| self.error(c, node, e))?;
                     module = self
-                        .package
-                        .modules
-                        .iter()
-                        .enumerate()
-                        .find(|(_, m)| m.parent == Some(current) && m.name == name)
-                        .and_then(|(i, _)| u32::try_from(i).ok())
-                        .map(ModuleId)
+                        .facts
+                        .bindings
+                        .get_key((scope, name, Namespace::Type, adjusted.context))
+                        .filter(|binding| binding.origin == Origin::Direct && !binding.ambiguous)
+                        .and_then(|binding| self.facts.definitions.get(binding.target.0 as usize))
+                        .filter(|definition| definition.kind == DefKind::Module)
+                        .and_then(|definition| definition.members)
+                        .and_then(|scope| self.facts.scopes.get(scope.0 as usize))
+                        .map(|scope| scope.module)
                         .ok_or_else(|| {
                             self.error(c, node, "visibility must name an ancestor module")
                         })?;
                 }
             }
         }
+        self.recycle_path(path);
         if !self.package.is_descendant(c.module, module) {
             return Err(self.error(c, node, "visibility must name an ancestor module"));
         }
@@ -811,13 +833,17 @@ impl Resolver<'_> {
         self.package.path_names(c.file, node)
     }
     /// Read a path into a pooled buffer; return it with `recycle_path`.
-    pub fn pooled_path(&mut self, c: Context, node: NodeId) -> Result<(bool, Vec<NameId>), Error> {
-        let mut names = self.paths.pop().unwrap_or_default();
-        names.clear();
-        let absolute = self.package.path_names_into(c.file, node, &mut names)?;
-        Ok((absolute, names))
+    pub fn pooled_path(
+        &mut self,
+        c: Context,
+        node: NodeId,
+    ) -> Result<(bool, super::paths::Buffer), Error> {
+        let mut path = self.paths.pop().unwrap_or_default();
+        path.truncate(0);
+        let absolute = self.package.append_path(c.file, node, &mut path)?;
+        Ok((absolute, path))
     }
-    pub fn recycle_path(&mut self, names: Vec<NameId>) {
-        self.paths.push(names);
+    pub fn recycle_path(&mut self, path: super::paths::Buffer) {
+        self.paths.push(path);
     }
 }

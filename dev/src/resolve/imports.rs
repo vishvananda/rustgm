@@ -268,7 +268,7 @@ impl Resolver<'_> {
         index: usize,
         import: &Import,
         c: super::index::Context,
-        path: &[NameId],
+        path: crate::resolve::paths::Identified<'_>,
         work: &mut Work,
     ) -> Result<(), Error> {
         let before = self.facts.definitions.len();
@@ -310,15 +310,15 @@ impl Resolver<'_> {
         &mut self,
         index: usize,
         import: &Import,
-        path: &[NameId],
+        path: crate::resolve::paths::Identified<'_>,
         ns: Namespace,
         work: &mut Work,
-    ) -> Result<Lookup, Error> {
+    ) -> Result<(Lookup, super::package::ModuleId), Error> {
         if ns == Namespace::Macro
             && path.len() == 1
             && let Some(binding) = work.textual.get(&index).copied()
         {
-            return Ok(match binding {
+            let found = match binding {
                 TextualSource::Found(binding) => {
                     let mut dependencies = Vec::new();
                     let introduction = self
@@ -345,7 +345,8 @@ impl Resolver<'_> {
                     Lookup::Found(binding)
                 }
                 TextualSource::Missing | TextualSource::Pending => Lookup::Missing,
-            });
+            };
+            return Ok((found, self.facts.scopes[import.scope.0 as usize].module));
         }
         let c = self.context(
             self.facts.scopes[import.scope.0 as usize].module,
@@ -374,6 +375,7 @@ impl Resolver<'_> {
             .copied()
             .unwrap_or(crate::expand::marks::ExpansionId(0));
         let ambiguous = work.ambiguous_early_path(self.facts, &observed, introduction);
+        let privacy = observed.privacy.unwrap_or(c.module);
         if let Some(mut selections) = observed.selected.take() {
             selections.clear();
             work.selections = selections;
@@ -392,7 +394,7 @@ impl Resolver<'_> {
         if ambiguous {
             return Err(self.import_error(import, "ambiguous import path binding"));
         }
-        result
+        result.map(|found| (found, privacy))
     }
     fn single_import(
         &mut self,
@@ -400,13 +402,13 @@ impl Resolver<'_> {
         import: &Import,
         work: &mut Work,
     ) -> Result<(), Error> {
-        let mut path = import.path.as_ref();
+        let mut path = super::paths::Identified::imported(import);
         let self_import = path.len() > 1
             && path
                 .last()
                 .is_some_and(|n| self.package.names.get(*n) == "self");
         if self_import {
-            path = &path[..path.len() - 1];
+            path = path.prefix(path.len() - 1);
         }
         let (name, context) = import
             .alias
@@ -419,15 +421,15 @@ impl Resolver<'_> {
             u32::try_from(index).map_err(|_| self.import_error(import, "too many imports"))?,
         );
         let mut inaccessible = None;
-        let module = self.facts.scopes[import.scope.0 as usize].module;
         for ns in Namespace::IMPORTABLE {
             if self_import && ns != Namespace::Type {
                 continue;
             }
             let key = (import.scope, name, ns, context);
-            match self.import_lookup(index, import, path, ns, work)? {
+            let (found, privacy) = self.import_lookup(index, import, path, ns, work)?;
+            match found {
                 Lookup::Found(binding) => {
-                    if !self.visible(binding.access, module)
+                    if !self.visible(binding.access, privacy)
                         || !self.can_reexport(binding.access, import.access)
                     {
                         inaccessible =
@@ -503,11 +505,16 @@ impl Resolver<'_> {
         Ok(())
     }
     fn glob(&mut self, index: usize, import: &Import, work: &mut Work) -> Result<(), Error> {
-        let found = self.import_lookup(index, import, &import.path, Namespace::Type, work)?;
+        let (found, privacy) = self.import_lookup(
+            index,
+            import,
+            super::paths::Identified::imported(import),
+            Namespace::Type,
+            work,
+        )?;
         let source = match found {
             Lookup::Found(binding) => {
-                let module = self.facts.scopes[import.scope.0 as usize].module;
-                if !self.visible(binding.access, module) {
+                if !self.visible(binding.access, privacy) {
                     return Err(self.import_error(import, "private glob target"));
                 }
                 let definition = &self.facts.definitions[binding.target.0 as usize];
@@ -542,12 +549,42 @@ impl Resolver<'_> {
             if !Namespace::IMPORTABLE.contains(&key.1) {
                 continue;
             }
+            let introductions = &self.facts.introductions;
+            let glob = import
+                .contexts
+                .as_ref()
+                .map_or(ItemContext::ROOT, |contexts| contexts.glob);
+            let Some(adjusted) = self
+                .package
+                .marks
+                .reverse_glob(
+                    key.2,
+                    introductions.scope(source),
+                    glob,
+                    &introductions.ancestry,
+                )
+                .map_err(|e| self.import_error(import, e))?
+            else {
+                continue;
+            };
+            let privacy = if let Some(expansion) = adjusted.definition {
+                let scope = introductions
+                    .definition_scope(expansion)
+                    .map_err(|e| self.import_error(import, e))?;
+                self.facts
+                    .scopes
+                    .get(scope.0 as usize)
+                    .ok_or_else(|| self.import_error(import, "unknown glob privacy scope"))?
+                    .module
+            } else {
+                module
+            };
             let binding = self
                 .facts
                 .bindings
                 .get_key((source, key.0, key.1, key.2))
                 .copied()
-                .filter(|b| self.visible(b.access, module));
+                .filter(|b| self.visible(b.access, privacy));
             let binding = binding.map(|binding| Binding {
                 access: if self.can_reexport(binding.access, import.access) {
                     import.access
@@ -557,7 +594,12 @@ impl Resolver<'_> {
                 origin: Origin::Glob(u32::try_from(index).unwrap_or(u32::MAX)),
                 ..binding
             });
-            self.contribute(index, (import.scope, key.0, key.1, key.2), binding, work)?;
+            self.contribute(
+                index,
+                (import.scope, key.0, key.1, adjusted.context),
+                binding,
+                work,
+            )?;
         }
         work.cursors[index] = end;
         Ok(())

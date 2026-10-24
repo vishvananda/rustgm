@@ -4,7 +4,6 @@ use crate::{
     resolve::{
         lookup::{Lookup, LookupMode},
         model::Origin,
-        names::NameId,
         package::ModuleId,
     },
     syntax::ast::NodeId,
@@ -15,7 +14,7 @@ impl Resolver<'_> {
         c: Context,
         node: NodeId,
         absolute: bool,
-        path: &[NameId],
+        path: crate::resolve::paths::Identified<'_>,
     ) -> Result<(), Error> {
         // Expansion may poll ordinary imports before the canonical primitive
         // index exists. Leave that import pending; ordinary collection retries
@@ -39,7 +38,7 @@ impl Resolver<'_> {
             c,
             node,
             absolute,
-            &path[..index],
+            path.prefix(index),
             LookupMode::Import(Namespace::Type),
             None,
         )?

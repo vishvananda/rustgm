@@ -224,8 +224,8 @@ fn iterator_clone_preserves_ordinary_record_sizes_and_lazy_owner_cost() {
     );
     // Two lazy arena identity slots add 16 bytes to the previous 7048-byte baseline.
     assert_eq!(size_of::<Declarations>(), 7064);
-    // Local-history and contextual-item indexes add two cold handles; hot rows are unchanged.
-    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2048);
+    // A lazy item-scope owner adds eight bytes; per-item and body rows are unchanged.
+    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
     assert_eq!(size_of::<Kind>(), 24);
     assert_eq!(size_of::<types::infer::Context>(), 400);
     assert_eq!(size_of::<types::Store>(), 472);

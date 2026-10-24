@@ -49,7 +49,7 @@ impl Resolver<'_> {
         c: Context,
         node: NodeId,
         absolute: bool,
-        path: &[NameId],
+        path: crate::resolve::paths::Identified<'_>,
     ) -> Result<(), Error> {
         if self.package.uses_source_bindings() {
             return Ok(());
@@ -75,7 +75,7 @@ impl Resolver<'_> {
             .builtin_traits
             .get(BuiltinTrait::Clone)
             .ok_or_else(|| self.error(c, node, "missing canonical Clone"))?;
-        if matches!(self.lookup_path(c, node, absolute, prefix, LookupMode::Import(Namespace::Type), None),
+        if matches!(self.lookup_path(c, node, absolute, path.prefix(prefix.len()), LookupMode::Import(Namespace::Type), None),
             Ok(Lookup::Found(binding)) if binding.target == canonical)
         {
             self.prepare_clone_member(c, node)?;
