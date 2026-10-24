@@ -93,6 +93,7 @@ struct ProofInput<'a> {
     parameters: &'a Arc<Environment>,
     contract: &'a Contract,
     purpose: ProofPurpose,
+    materialized: Option<&'a body::instantiate::Materialized>,
 }
 impl<'a> ProofInput<'a> {
     fn code(parameters: &'a Arc<Environment>, contract: &'a Contract) -> Self {
@@ -100,6 +101,18 @@ impl<'a> ProofInput<'a> {
             parameters,
             contract,
             purpose: ProofPurpose::Code,
+            materialized: None,
+        }
+    }
+    fn materialized(
+        parameters: &'a Arc<Environment>,
+        materialized: &'a body::instantiate::Materialized,
+    ) -> Self {
+        Self {
+            parameters,
+            contract: &materialized.contract,
+            purpose: ProofPurpose::Code,
+            materialized: Some(materialized),
         }
     }
 }
@@ -711,7 +724,8 @@ impl Engine {
         }
         let mut materialized = body::instantiate::with_contract(facts, template, instance, input)
             .map_err(|e| report.body_error(source, e))?;
-        body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)
+        materialized
+            .resolve(facts)
             .map_err(|e| report.body_error(source, e))?;
         body::promote::instance_reusing(
             report,
@@ -725,7 +739,7 @@ impl Engine {
             facts,
             &materialized.body,
             &materialized.destruction,
-            ProofInput::code(&template.environment, &materialized.contract),
+            ProofInput::materialized(&template.environment, &materialized),
         )?;
         let index = self
             .publish_code(facts, checked, Some(instance))
@@ -750,6 +764,7 @@ impl Engine {
                 parameters: &template.environment,
                 contract,
                 purpose,
+                materialized: None,
             },
         )
     }
@@ -770,15 +785,25 @@ impl Engine {
             None
         };
         if let Some(contract) = prepared.as_mut() {
-            body::copy_requirements::prepare(facts, body, contract)
-                .map_err(|e| report.body_error(body.source, e))?;
+            let result = if let Some(materialized) = input.materialized {
+                materialized.prepare_source_copy(facts, body, contract)
+            } else {
+                body::copy_requirements::prepare(facts, body, contract)
+            };
+            result.map_err(|e| report.body_error(body.source, e))?;
         }
         let contract = prepared.as_ref().unwrap_or(input.contract);
         let regions = Self::source_regions(report, facts, body, contract)?;
         self.prove_loans(report, facts, body, destruction, input.parameters, &regions)?;
         #[cfg(test)]
         if input.purpose == ProofPurpose::Code {
-            materialized_bodies::record(body).map_err(|e| report.body_error(body.source, e))?;
+            materialized_bodies::record(
+                body,
+                input
+                    .materialized
+                    .is_some_and(body::instantiate::Materialized::has_instance_copy_scope_for_test),
+            )
+            .map_err(|e| report.body_error(body.source, e))?;
         }
         let (code, uses) = self
             .finish_code(facts, body, contract, &regions, input.purpose)

@@ -1,7 +1,7 @@
 //! Query opening shares actual body aliases without identifying independent inputs.
 use super::*;
 use crate::types::{
-    GenericArgs, ItemId, Kind, Primitive, Store, TypeId,
+    ItemId, Kind, Primitive, Store, TypeId,
     arguments::Argument,
     callable::Convention,
     copy::Properties,
@@ -122,7 +122,9 @@ fn body_opening_keeps_full_trait_and_family_inputs_distinct() -> Result {
 #[test]
 fn semantic_equalities_do_not_mint_alias_metadata_and_proof_views_preserve_it() -> Result {
     let store = Store::default();
-    let semantic = RegionEqualities::default().with_aliases(&[RegionId(7)])?;
+    let semantic = RegionEqualities::default()
+        .with_aliases(&[RegionId(7)])
+        .map_err(|_| "invalid semantic alias fixture")?;
     let ordinary = Environment::new(&store, &[])?.with_region_equalities(semantic);
     assert!(ordinary.body_aliases().is_none());
     let mut fold = ordinary.open_body_scope(vec![RegionId(100)])?;
@@ -183,7 +185,7 @@ fn query_environment_opens_both_namespaces_without_rewriting_the_owner() -> Resu
     };
     let declared = application(RegionId::bound(0, 0)?)?;
     let aliased = application(RegionId(7))?;
-    let raw = [
+    let clauses = [
         Predicate {
             ty: TypeId::UNIT,
             bound: TraitBound::Trait(declared),
@@ -200,10 +202,10 @@ fn query_environment_opens_both_namespaces_without_rewriting_the_owner() -> Resu
         }
         .into(),
     ];
-    let environment = environment(&store)?.with_clauses(&store, &raw)?;
+    let environment = environment(&store)?.with_clauses(&store, &clauses)?;
     let mut fold = environment.open_body_scope(vec![RegionId(100), RegionId(101)])?;
     let query = environment.substitute_regions(&mut store, &mut fold)?;
-    assert_eq!(environment.trait_clauses().collect::<Vec<_>>(), raw);
+    assert_eq!(environment.trait_clauses().collect::<Vec<_>>(), clauses);
     let opened = query.trait_clauses().collect::<Vec<_>>();
     assert_eq!(opened.len(), 3);
     assert_eq!(opened[0], opened[1]);

@@ -388,6 +388,7 @@ fn materialize_anonymous(
         body,
         destruction,
         contract,
+        copy_scope: None,
     })
 }
 

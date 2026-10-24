@@ -119,7 +119,7 @@ fn resolve_parameters(
         regions: bound_uses::Uses::including_free(),
         universals: contract.universals,
     });
-    super::resolve_with_original(facts, body, contract, parameters)
+    super::resolve_with_original(facts, body, contract, parameters, None)
 }
 
 impl Parameters {

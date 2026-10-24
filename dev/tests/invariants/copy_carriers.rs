@@ -13,6 +13,8 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 mod frontier;
 #[path = "carrier_owners.rs"]
 mod alias_tests;
+#[path = "carrier_instances.rs"]
+mod instances;
 #[path = "copy_signatures.rs"]
 mod signatures;
 pub(super) fn record(facts: &Declarations, body: &Body, prepared: &Prepared) {

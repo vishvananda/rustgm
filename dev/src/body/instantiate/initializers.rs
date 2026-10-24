@@ -63,6 +63,7 @@ fn materialize(
         body,
         destruction,
         contract,
+        copy_scope: None,
     })
 }
 

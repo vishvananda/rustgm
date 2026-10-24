@@ -1,0 +1,44 @@
+{
+  "status": "additive correction declared before oracle/candidate execution; original two-lifetime ambiguity observations retained unchanged",
+  "issue": "LIB-003",
+  "original_contract_sha256": "d7b4766350337be810ce22fd45d7d8dc6dd25c798838e1e68f707bcb077c0a3a",
+  "original_sources": {
+    "independent-lifetimes-paid.rs": "bb65dea0d8349dfb9a528b9f69cf7885cf8b47e14d568c0a35714923b071fa96",
+    "independent-lifetimes-unpaid.rs": "90c81956591121f6b7068c19c7a3775760d68eb657a235102d596a44d5e0ccea"
+  },
+  "observed_original_diagnostic_codes": [
+    "E0283",
+    "E0284"
+  ],
+  "correction": "distinct Left and Right actual owners, both independent lifetimes used in consume parameters; omit only Right Destruct in unpaid variant; identical two read/move statements force the actual source Copy preparation path in both variants",
+  "rows": [
+    {
+      "name": "independent-lifetime-owners-unpaid",
+      "path": "independent-lifetime-owners-unpaid.rs",
+      "sha256": "aa5fccfd3a86897d8a6b8b5a511ad5f4b1fd7138f50b067b11b32df4030df492",
+      "rust_acceptance_hypothesis": false,
+      "native_if_accepted": null,
+      "diagnostic_codes_hypothesis": [
+        "E0493"
+      ],
+      "observer": null,
+      "candidate_contract": "reject missing exact Right projected Destruct demand; preserve Left paid premise",
+      "forced_work": "two actual projected parameter reads moved into fully live locals; both actual cleanup subjects, two independent alias slots"
+    },
+    {
+      "name": "independent-lifetime-owners-paid",
+      "path": "independent-lifetime-owners-paid.rs",
+      "sha256": "16ffe9ad7a9e9e39df60791071c76f42c4deb790349b67526bd226e84c61bc47",
+      "rust_acceptance_hypothesis": true,
+      "native_if_accepted": 7,
+      "diagnostic_codes_hypothesis": [],
+      "observer": {
+        "kind": "two_u8_output_pointers",
+        "left": 7,
+        "right": 7
+      },
+      "candidate_contract": "complete original/lowering and both actual destructor outputs7",
+      "forced_work": "two actual projected parameter reads moved into fully live locals; both actual cleanup subjects, two independent alias slots"
+    }
+  ]
+}

@@ -19,6 +19,8 @@ fn fixture(name: &str) -> TestResult<String> {
 fn body_opening_never_pays_other_lifetimes_constants_or_inference_alternatives() -> TestResult {
     for name in [
         "independent-lifetimes-unpaid",
+        "independent-lifetimes-paid",
+        "independent-lifetime-owners-unpaid",
         "independent-const-arguments-unpaid",
         "independent-inference-alternatives",
     ] {
@@ -28,6 +30,36 @@ fn body_opening_never_pays_other_lifetimes_constants_or_inference_alternatives()
         );
     }
     Ok(())
+}
+
+#[test]
+fn distinct_lifetime_owners_pay_both_actual_projected_cleanup_demands() -> TestResult {
+    lower(&fixture("independent-lifetime-owners-paid")?)?;
+    let error = lower(&fixture("independent-lifetime-owners-unpaid")?)
+        .err()
+        .ok_or("missing Right Destruct demand accepted")?;
+    assert!(
+        error
+            .to_string()
+            .contains("conditional Destruct obligation"),
+        "{error}"
+    );
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn distinct_lifetime_owners_execute_both_actual_destructors() -> TestResult {
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/pa31/projected-native")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    super::native::execute_observed(
+        &folder,
+        "distinct-lifetime-owners",
+        &fixture("independent-lifetime-owners-paid")?,
+        "extern void exercise(unsigned char*,unsigned char*);int main(void){unsigned char left=0,right=0;exercise(&left,&right);return left!=7||right!=7;}\n",
+    )
 }
 
 #[test]
@@ -42,7 +74,26 @@ fn actual_alias_opening_width_sites_and_noise_reach_complete_original_proofs() -
         ("sites", 128, 0),
     ] {
         let name = format!("opening-{axis}-{count}-noise-{noise}");
-        lower(&fixture(&name)?).map_err(|error| format!("{name}: {error}"))?;
+        let report = super::report(&fixture(&name)?)?;
+        let rustgm::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = rustgm::pipeline::analyze_source(&report)?;
+        let before = facts.body_work.canonical_steps;
+        rustgm::lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            rustgm::lower::Roots {
+                entry: None,
+                exports: &[],
+            },
+            prepared,
+        )
+        .map_err(|error| format!("{name}: {error}"))?;
+        println!(
+            "complete_alias_lower axis={axis} count={count} noise={noise} steps={}",
+            facts.body_work.canonical_steps - before
+        );
     }
     Ok(())
 }
@@ -162,6 +213,47 @@ fn projected_originals_and_scaling_execute_native_seven() -> TestResult {
     ] {
         let name = format!("{axis}-{count}-noise-{noise}");
         super::native::execute(&folder, &name, &fixture(&name)?, 7)?;
+    }
+    Ok(())
+}
+
+#[test]
+fn materialized_alias_instances_reach_complete_source_lowering() -> TestResult {
+    for name in [
+        "instance-engine",
+        "instance-arguments",
+        "instance-engine-scoped",
+        "instance-arguments-scoped",
+    ] {
+        let source = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../pa31/tests/spec/trait-default-effects/projections/body-opening")
+                .join(format!("{name}.rs")),
+        )?;
+        lower(&source)?;
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn materialized_alias_instances_execute_native_seven() -> TestResult {
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/pa31/projected-native")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    for name in [
+        "instance-engine",
+        "instance-arguments",
+        "instance-engine-scoped",
+        "instance-arguments-scoped",
+    ] {
+        let source = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../pa31/tests/spec/trait-default-effects/projections/body-opening")
+                .join(format!("{name}.rs")),
+        )?;
+        super::native::execute(&folder, name, &source, 7)?;
     }
     Ok(())
 }
