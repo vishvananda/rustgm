@@ -1,0 +1,24 @@
+{
+  "status": "Exact qualified A6c source/test dependency; no fixture rewrites or new oracle observation",
+  "production_commit": "98e599c7fbae923fdfb6bfb5a709620d0751dd16",
+  "final_test_snapshot": "6c481b2d",
+  "qualified_receipt": "/home/vishvananda/rustgm-pa25-work/obj/parallel/source-functions-columns-seventh/receipt.json",
+  "qualified_receipt_sha256": "09134d2241c90e5bee700c7771909f1a283bfe95054d0aea1c8200fbc6a9dec0",
+  "cases": [
+    {
+      "path": "minimal-provider.rs",
+      "sha256": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297",
+      "candidate_contract": "ordinary source role admission"
+    },
+    {
+      "path": "ordinary-clone-concrete-provider.rs",
+      "sha256": "aed3deb935be1f89e7429073cc9f209e58b56a425d65b70c34df48e7a8a408a9",
+      "candidate_contract": "complete actual ordinary Clone runtime checked roots"
+    },
+    {
+      "path": "ordinary-clone-concrete-const-use.rs",
+      "sha256": "84d53456e326c46976ab6c9b1d1fbced460652bf58aeedf3c55ac4eddc1aaeb7",
+      "candidate_contract": "actual ordinary Clone call in const body rejects at reached const-use eligibility"
+    }
+  ]
+}

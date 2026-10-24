@@ -170,15 +170,16 @@ fn header<'a>(
 ) -> Result<super::headers::Trait<'a>, Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
     let header = super::headers::Trait::source(report, facts, declaration).map_err(error)?;
-    let constant = matches!(
-        role,
-        LangItem::Clone
-            | LangItem::FnOnce
-            | LangItem::FnMut
-            | LangItem::Fn
-            | LangItem::Drop
-            | LangItem::Destruct
-    );
+    // Clone may be an ordinary or const source trait. Preserve that actual
+    // declaration fact; role admission supplies no executable const capability.
+    let constant = if role == LangItem::Clone {
+        header.flags.constant
+    } else {
+        matches!(
+            role,
+            LangItem::FnOnce | LangItem::FnMut | LangItem::Fn | LangItem::Drop | LangItem::Destruct
+        )
+    };
     let expected = usize::from(matches!(
         role,
         LangItem::FnOnce

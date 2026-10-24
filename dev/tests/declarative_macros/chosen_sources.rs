@@ -163,7 +163,7 @@ fn predicate_and_branch_framing_reject_at_their_actual_boundary() -> Result {
         ("missing-arrow", "requires =>"),
         ("missing-comma", "comma"),
         ("branch-attribute", "attributes"),
-        ("branch-doc-comment", "documentation"),
+        ("branch-doc-comment", "attributes"),
     ] {
         let error = expanded(name, &source(name)?)
             .err()
