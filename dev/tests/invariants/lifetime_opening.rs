@@ -205,8 +205,8 @@ fn query_environment_opens_both_namespaces_without_rewriting_the_owner() -> Resu
     let environment = environment(&store)?.with_clauses(&store, &clauses)?;
     let mut fold = environment.open_body_scope(vec![RegionId(100), RegionId(101)])?;
     let query = environment.substitute_regions(&mut store, &mut fold)?;
-    assert_eq!(environment.trait_clauses().collect::<Vec<_>>(), clauses);
-    let opened = query.trait_clauses().collect::<Vec<_>>();
+    assert_eq!(environment.trait_clauses()?.collect::<Vec<_>>(), clauses);
+    let opened = query.trait_clauses()?.collect::<Vec<_>>();
     assert_eq!(opened.len(), 3);
     assert_eq!(opened[0], opened[1]);
     let [

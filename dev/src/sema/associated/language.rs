@@ -82,17 +82,11 @@ impl Inventory {
         }
         Ok(())
     }
-    pub(in crate::sema) fn register_library_type_member(
-        &mut self,
-        owner: DefId,
-        member: DefId,
-        name: crate::resolve::names::NameId,
-    ) {
+    pub(in crate::sema) fn register_library_type_member(&mut self, owner: DefId, member: DefId) {
         let language = self.language.get_or_insert_default();
         if language.members.insert(member, owner).is_none() {
             language.hook_members.push((member, owner));
         }
-        self.type_names.insert(member, name);
     }
     pub(in crate::sema) fn declare_operation(
         &mut self,
@@ -177,17 +171,16 @@ impl Inventory {
         definition: DefId,
         origin: crate::resolve::unit::NodeKey,
         method: super::super::model::Function,
-        output: Option<(DefId, crate::resolve::names::NameId)>,
+        output: Option<DefId>,
     ) {
         let language = self.language.get_or_insert_with(Default::default);
         language.origins.insert(definition, origin);
         language.members.insert(method.definition, definition);
         language.hook_members.push((method.definition, definition));
         language.hooks.push(method);
-        if let Some((output, name)) = output {
+        if let Some(output) = output {
             language.members.insert(output, definition);
             language.hook_members.push((output, definition));
-            self.type_names.insert(output, name);
         }
     }
     pub(crate) fn language_functions(
@@ -196,6 +189,9 @@ impl Inventory {
         self.language
             .iter()
             .flat_map(|language| language.hooks.iter())
+    }
+    pub(crate) fn language_function(&self, index: usize) -> Option<&super::super::model::Function> {
+        self.language.as_ref()?.hooks.get(index)
     }
     pub(in crate::sema) fn member_owner(&self, definition: DefId) -> Option<DefId> {
         self.language

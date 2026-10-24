@@ -101,6 +101,28 @@ from ordinary macro lookup; resolving an authored macro with that name grants
 no compiler role. The [source macro path controls](pa31/tests/spec/source-macro-paths/README.md)
 record the original whole-core failure and independently qualified inputs.
 
+Source formatting produces typed syntax from decoded literal data and selects
+the actual `format_arguments` nominal's constructor through the shared inherent
+method query. Preserve the invocation's contextual lookup, readiness dependencies,
+visibility, full signature, lifetime and const obligations. Lower its checked
+call through ordinary body operations; a library-value tag cannot fabricate a
+layout or replace execution of the source constructor. Nonempty argument support
+must preserve evaluation order, single evaluation and source-owned formatting
+roles. `allow_internal_unsafe` is lint metadata and never authorizes an unsafe
+operation. See the [formatting contract](docs/pa31-source-format-contracts.md).
+
+Source byte concatenation reuses the eager producer's parsed argument arena and
+typed literals. Authenticate the actual source-declared builtin before preparing
+inputs, including opaque captured payloads. Validate operands and compute the
+checked output length before reserving the result; charge requested work and
+payload before allocation, including overflow and failed attempts. Fill the
+owned byte string through one further bounded typed walk, preserving byte order
+and zero-repeat element validation. Neither pass reparses source or rendered
+spelling. Keep source role permission separate from ordinary eager builtins,
+formatting constructor proof and foreign API admission. The
+[byte contracts](docs/pa31-source-concat-contracts.md) retain independent source
+and native observations, budget opponents and measured storage costs.
+
 Library feature requests come from enabled source declarations and authenticated
 dependency inventories, separately from compiler language capabilities. Complete
 their validation after configured expansion; unknown requests grant no capability.
@@ -506,6 +528,16 @@ single-local entry needs no history allocation; older shadows use an ordered
 predecessor query. Scoped item bindings and import dependencies must likewise
 carry their normalized item identity, including per-segment path contexts.
 Hygienic selection does not grant visibility or library-feature permission.
+Check semantic type visibility from the physical body module after publishing
+solved types, adjustments and selected calls. A hygienically selected private
+function still has a private function-item type; a public function pointer may
+erase that identity inside its defining module. Walk signatures, nominal and
+trait identities, associated items and generic arguments through completed typed
+facts. Opaque interfaces expose their declared bounds and captured arguments,
+not their hidden representation. Reuse visited type nodes within the immutable
+body instead of flattening shared graphs at each expression. Primitive-only
+checks allocate no graph storage; build physical module ancestry once, lazily,
+and charge attempts and edges against the work budget, including failed uses.
 Retain immutable import paths once and share them across dependency retries;
 waking an import must not copy its complete segment sequence.
 Flatten grouped import trees with one append/truncate prefix buffer and retain
@@ -523,6 +555,17 @@ than fields on every scope or definition. Container adjustment caches only pure
 identity results; caller-dependent visibility remains separate. Self/super tokens
 each retain their own context, and visibility paths must still name direct
 ancestor modules.
+
+Trait-method discovery visits actual item scopes using the method identifier's
+context, while collecting all trait bindings in each reached scope, including
+opaque trait names. Preserve item/statement-macro block boundaries before
+expansion, even when their output is empty. Value-only scopes and parenthesized
+expression tails do not create those boundaries. Partition member contexts
+before copying candidates, retain both original and walking contexts in lookup
+memoization, and check actual container identity and caller visibility separately
+from reusable candidate lists. The
+[trait discovery checkpoint](docs/pa31-trait-discovery.md) records independent
+scope opponents, linear sibling work, cold storage costs and remaining consumers.
 
 Glob journals retain source keys while contributions and withdrawals retain the
 mapped destination keys. Reverse only the synchronized glob/use context mapping;
@@ -1122,6 +1165,18 @@ keep their identities. Caller environments with captured lifetimes still use the
 same checked substitution as the request and retain its restoration equations.
 Sharing permissions never adds the requested goal to the caller's assumptions.
 
+For captured caller regions, share the canonical premise index and transform only
+the buckets consumed by a fresh query when its actual request supplies the whole
+mapping. Authenticate the source environment, type arena and exact base index.
+Keep query-local substitution, equations, restoration and proof debts separate
+from shared structure. Quantified or incompletely mapped forms retain the eager
+path. A mapped view cannot expose raw canonical clauses as current assumptions;
+consumers must use the indexed view or explicitly materialize it. Charge attempted
+inspection, mapping and retained allocation, including failed queries. Verify the
+algorithm on actual complete-source consumers as well as structural controls; the
+[projection-opening qualification](docs/pa31-projection-opening-sharing.md) records
+the unchanged scaling gate, original failures and measured cold-layout costs.
+
 Projection selection in a signature waits for its owner's immutable parameter
 environment, including requirements inherited by methods. Generic lifetime
 arguments also create this dependency. Nominal defaults demand the existing
@@ -1428,7 +1483,15 @@ foreign, repeated and reordered parameter rejection. Keep anonymous and unused
 impl lifetime slots in the source proof environment.
 
 Index inherent functions once by canonical nominal owner and resolved name after
-signature elaboration. Qualified paths retain their resolved owner and typed
+signature elaboration. Partition non-root declaration contexts before shape or
+applicability work; a use visits only its own context ancestry. Normalize direct
+declaration identities separately for coherence. At a use, adjust against the
+actual impl container and check the actual caller's visibility before selection.
+Keep contextual indexes below the existing lazy lookup owner, preserving ordinary
+record layouts and root-only allocation behavior. The
+[inherent identity checkpoint](docs/pa31-inherent-member-contexts.md) records
+structural work bounds, diagnostic compatibility and remaining trait consumers.
+Qualified paths retain their resolved owner and typed
 prefix; explicit type qualification uses the ordinary annotation worklist.
 Selected methods enter ordinary function-item inference, template demand and
 lowering. The full callable parameter order includes inherited impl arguments,
@@ -2023,12 +2086,25 @@ queries also charge the incremental transformation work. Restore the cache on
 failure. Candidate availability, active cycles and completed selection answers
 remain separate caller/query facts and cannot be cached in the type store.
 
-Method conformance checks unused implementations too. Match direct members by
-owner and name, require every nondefault method, and reject extra members. The
+Method conformance checks unused implementations too. Adjust each implementation
+identifier against the actual trait container, then match its exact namespace,
+normalized context and member kind in the resolver's retained member table.
+Reject two implementation declarations mapping to the same canonical trait
+member, even when their original identifier contexts differ. Retain every actual
+member in the inventory; a spelling-keyed overwrite must not hide a duplicate.
+Require every nondefault method and reject extra members. The
 trait method's type/const parameters are rigid proof inputs; using the impl's
 parameter identities would assume a stronger implicit Sized requirement. Prove
 the impl method's requirements under the impl owner and substituted trait method
 contract, while checking its body under its own declared assumptions.
+
+Associated types and constants consume the same identity rule before early
+declaration queries. Publish canonical type-member links before a prepared impl
+header becomes selectable; normalize through those links, not through spelling.
+Constant readiness builds one identity map per actual impl and reuses it during
+final conformance. These maps contain declaration identity only, never a signature,
+body, lifetime or execution proof. Reuse the resolver's exact member table rather
+than maintaining another parallel name/context index.
 
 Construct that conformance environment from the actual impl's bounds and the
 trait method's own predicates. The impl-header check already proves the containing
@@ -3785,6 +3861,15 @@ a quadratic path has been removed. A representation-only change preserves
 language outcomes. Separately qualify lowering rewrites such as arithmetic-width
 overflow checks at their execution boundaries before regenerating affected
 inspection references.
+
+Removing speculative opening may remove unused types from an inspection arena.
+Review the complete retained graph and its identity mapping, require identical
+lowered output and independent native behavior for the affected source, then
+regenerate only the affected oracle through a scoped course-runner receipt.
+Keep byte-exact comparisons and all source proof obligations. Do not recreate
+unused allocations merely to preserve historical arena IDs. The
+[projection-opening checkpoint](docs/pa31-projection-opening-sharing.md)
+records this review for an actual caller-premise case.
 
 Telemetry observes work already being done: bytes/tokens, retained token bytes,
 allocations or arena high water, solver goals, retries, region edges, demanded

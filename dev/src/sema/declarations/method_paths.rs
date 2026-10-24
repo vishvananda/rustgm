@@ -304,7 +304,15 @@ impl Checker<'_> {
                 .schedule_implicit_method(key, context, steps, limit, scan)
                 .map(|_| ());
         };
-        let unique = if let [method] = candidates.as_slice() {
+        let identifier =
+            crate::sema::methods::names::Use::path(self.report, path.suffix, path.scope)?;
+        let contextual = self
+            .facts
+            .methods
+            .has_contextual_inherent((path.nominal, path.name));
+        let unique = if let [method] = candidates.as_slice()
+            && !contextual
+        {
             Some(*method)
         } else {
             None
@@ -328,7 +336,7 @@ impl Checker<'_> {
                     key,
                     prefix,
                     (path.nominal, path.name),
-                    path.scope,
+                    identifier,
                     PathCaller {
                         availability:
                             crate::sema::traits::implementations::Availability::Declarations,
@@ -355,18 +363,7 @@ impl Checker<'_> {
             };
             method
         };
-        let definition = &self.report.resolution.definitions[method.0 as usize];
-        let module = self.report.resolution.scopes[path.scope.0 as usize].module;
-        if let Access::Within(ancestor) = definition.access
-            && !self.report.package.is_descendant(module, ancestor)
-        {
-            return Err(self.error(key, "inherent method is private"));
-        }
-        let implementation = self
-            .facts
-            .associated
-            .member_owner(method)
-            .ok_or_else(|| self.error(key, "missing selected method owner"))?;
+        let implementation = self.selected_inherent_owner(key, method, identifier)?;
         self.facts.methods.qualified.insert(
             key,
             Qualified {
@@ -383,5 +380,33 @@ impl Checker<'_> {
         self.work
             .push(super::Work::MethodArguments(key, path.suffix));
         self.schedule_item_arguments(path.suffix, method, context, steps, limit, scan)
+    }
+
+    fn selected_inherent_owner(
+        &self,
+        key: NodeKey,
+        method: super::DefId,
+        identifier: crate::sema::methods::names::Use,
+    ) -> Result<super::DefId, Error> {
+        let implementation = self
+            .facts
+            .associated
+            .member_owner(method)
+            .ok_or_else(|| self.error(key, "missing selected method owner"))?;
+        let Some(module) = identifier
+            .matching(self.report, implementation, method)
+            .map_err(|message| self.error(key, message))?
+        else {
+            return Err(self.error(key, "no inherent method with this identifier context"));
+        };
+        let permitted = match self.report.resolution.definitions[method.0 as usize].access {
+            Access::Public => true,
+            Access::Within(ancestor) => self.report.package.is_descendant(module, ancestor),
+            Access::ExternalPrivate => false,
+        };
+        if !permitted {
+            return Err(self.error(key, "inherent method is private"));
+        }
+        Ok(implementation)
     }
 }

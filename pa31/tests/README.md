@@ -2,6 +2,13 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/declarative-macros/trait-members/` retains seven independently checked
+scoped trait-method contracts for LIB-002, with fourteen metadata/object
+observations and five native programs. They separate opaque trait discovery,
+definition-site versus captured imports, and sibling member identities. The
+candidate consumers and scoped invocation remain required; the directory's
+review records the evidence without activating a grading manifest.
+
 `spec/library-stability/` retains 31 independently qualified local/client
 hypotheses and two providers. Its `contract.json` binds exact sources, declared
 outcomes and original evidence. Eight clients executed with pinned rustc; local
@@ -113,3 +120,17 @@ view alone does not qualify macro-call semantics. Grouped
 `provider_traits::environment_names` tests check forward/renamed actual macro
 identity and intended missing-name diagnostics without bootstrap declarations.
 See [the preserved input and view distinction](spec/source-macro-paths/README.md).
+
+`spec/declarative-macros/method-scopes/` retains eleven independent trait-lookup
+scope controls: 22 metadata/object observations and six native programs. Original
+parenthesized-tail hypothesis disagreements remain visible beside the distinct
+brace/semicolon recovery contract. The consumer implementation must retain actual
+item/statement-macro block boundaries before expansion, including empty results.
+These contracts do not activate scoped invocation or the assignment.
+
+`spec/declarative-macros/member-conformance/` retains eight independent impl-member
+contracts: sixteen metadata/object observations and four native programs. Methods,
+associated types and constants match after adjustment against the actual trait
+container; duplicate canonical mappings must be rejected. Captured names and
+unrelated opaque declarations remain distinct. Candidate conformance is separate
+from these independent observations and from complete scoped invocation support.

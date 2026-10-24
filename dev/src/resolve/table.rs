@@ -467,6 +467,13 @@ impl BindingTable {
                 ))
             })
     }
+    /// Trait discovery includes opaque trait bindings; the method identifier
+    /// supplies the independent context used to select their members.
+    pub(crate) fn all_bindings(&self) -> impl Iterator<Item = (ScopeId, Namespace, &Binding)> {
+        self.entries
+            .iter()
+            .filter_map(|entry| Some((entry.scope, entry.namespace, entry.binding.as_ref()?)))
+    }
     /// Entries created so far; later entries have larger creation ordinals.
     #[must_use]
     pub fn created(&self) -> u32 {

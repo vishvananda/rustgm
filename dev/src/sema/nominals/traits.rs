@@ -50,6 +50,16 @@ pub(crate) struct Projected {
     pub family: crate::types::GenericArgs,
 }
 impl State {
+    pub(super) fn mapped_exact_member(
+        &mut self,
+        facts: &mut Declarations,
+        predicate: Predicate,
+    ) -> Result<bool, &'static str> {
+        self.assumptions
+            .mapped_exact_member(&mut facts.types, &mut self.context, predicate)
+            .map_err(|_| "invalid or exhausted mapped caller membership")
+    }
+
     pub(super) fn append_proof(&mut self, proof: Obligations) -> Result<(), &'static str> {
         self.obligations.extend(proof)
     }
@@ -115,10 +125,12 @@ impl State {
         };
         #[cfg(test)]
         selection::copy_trace::record_checked(|| {
-            let clauses = self
-                .environment
-                .as_ref()
-                .map(|environment| environment.trait_clauses().take(65).collect::<Vec<_>>());
+            let clauses = self.environment.as_ref().and_then(|environment| {
+                environment
+                    .trait_clauses()
+                    .ok()
+                    .map(|clauses| clauses.take(65).collect::<Vec<_>>())
+            });
             if clauses.as_ref().is_some_and(|clauses| clauses.len() > 64) {
                 return None;
             }
@@ -165,11 +177,29 @@ impl State {
         Self::scoped(facts, environment, scope, Opening::Declaration)
     }
 
+    pub(super) fn new_counted(
+        facts: &mut Declarations,
+        environment: Option<Arc<Environment>>,
+        work: &mut usize,
+    ) -> Result<Self, &'static str> {
+        Self::scoped_counted(facts, environment, None, Opening::Declaration, Some(work))
+    }
+
     fn scoped(
         facts: &mut Declarations,
         environment: Option<Arc<Environment>>,
         scope: Option<(u32, u32)>,
         opening: Opening,
+    ) -> Result<Self, &'static str> {
+        Self::scoped_counted(facts, environment, scope, opening, None)
+    }
+
+    fn scoped_counted(
+        facts: &mut Declarations,
+        environment: Option<Arc<Environment>>,
+        scope: Option<(u32, u32)>,
+        opening: Opening,
+        work: Option<&mut usize>,
     ) -> Result<Self, &'static str> {
         let mut obligations = Obligations::new(scope.map_or(1, |(_, first)| first));
         let mut context = Context::default();
@@ -207,11 +237,27 @@ impl State {
                 .map_err(|_| "declaration proof work exhausted")?;
             fold = Some(substitution);
         }
-        let (assumptions, construction_work) =
-            Assumptions::from_environment(&facts.types, environment.as_deref())?;
+        let mut construction_work = 0;
+        let assumptions = if let Some(work) = work {
+            let result = Assumptions::from_environment_counted(
+                &facts.types,
+                environment.as_deref(),
+                &mut construction_work,
+            );
+            *work = work.saturating_add(construction_work);
+            result
+        } else {
+            Assumptions::from_environment(&facts.types, environment.as_deref()).map(
+                |(value, steps)| {
+                    construction_work = steps;
+                    value
+                },
+            )
+        };
         context
             .account_work(construction_work)
             .map_err(|_| "declaration assumption work exhausted")?;
+        let assumptions = assumptions?;
         Ok(Self {
             reusable: [None, None],
             normalized: crate::support::hash::HashMap::default(),

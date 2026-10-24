@@ -1,0 +1,60 @@
+function @rg.19() -> void {
+  block ^b0:
+    %t0 = call u32 @rg.17()
+    %t1 = cmp ne u32 %t0, 7
+    %t2 = convert trunc i1 i64 %t1
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t3 = call u32 @rg.18(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.17() -> u32 {
+  slot $s0 : obj<8x8>
+  slot $s1 : obj<8x8>
+  block ^b0:
+    %t0 = addr $s1
+    call void @rg.16(%t0)
+    %t1 = addr $s1
+    %t2 = addr $s0
+    copyobj 8x8 %t1, %t2
+    %t3 = load ptr $s0
+    %t4 = call u32 %t3() as () -> u32
+    return u32 %t4
+}
+function @rg.18(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = cmp eq u32 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u32 1, %t0
+    return u32 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.16(%p0 : ptr) -> void {
+  slot $s0 : obj<8x8>
+  block ^b0:
+    %t0 = addr @rg.15
+    store ptr %t0, $s0
+    %t1 = addr $s0
+    copyobj 8x8 %t1, %p0
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.15() -> u32 {
+  block ^b0:
+    return u32 7
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.19()
+    return i64 0
+}

@@ -73,7 +73,32 @@ the configured CPPGM backend; text output alone is insufficient.
   reproduce the preceding original-core declaration blocker. The
   [combined checkpoint](../docs/library-lookup-panic-checkpoint.md) qualifies
   local 2021/2024 delegation; foreign transport and Rust 2018 remain required.
-  Unchanged core now reaches the internal allowance on `assert_eq`, line 41.
+  The combined allowance successor passes `assert_eq` and reaches the scoped
+  `assert_matches` declaration, line 170. The qualified scoped-declaration
+  component reached builtin `cfg_select`, line 235. The qualified cfg_select
+  successor reaches the `format_args` builtin attribute at line 994. The functionally qualified combined
+  formatting successor reaches `concat_bytes`, line 1126. A separately qualified
+  byte component reaches `autodiff_forward`, line 1553; attribute declaration and
+  invocation-kind requirements are the next observed source blocker. Track current probe evidence in the
+  [library blocker tracker](../docs/library-build-blockers.md).
+- Formatting claims and calls must use actual source nominal and constructor
+  identities, with ordinary signature, lifetime, visibility and const checks.
+  The [formatting contracts](tests/spec/source-format-macros/README.md) cover
+  declarations and literal-only calls. Nonempty arguments, evaluation order and
+  temporary lifetimes remain required. Byte concatenation owns PA8's builtin
+  semantics and PA31's source binding; retain exact typed operands and rejection
+  rules when implementing the newly observed `concat_bytes` blocker.
+- Scoped member identity and actual lookup containers. Preserve the method
+  identifier independently of trait binding names. An item or statement macro
+  can create a block boundary even if expansion leaves it empty; parenthesized
+  expression tails retain their expression category. The independent
+  [scope contracts](tests/spec/declarative-macros/method-scopes/README.md) include
+  caller/definition imports, ambiguity and captured-name opponents.
+- Implementation members must map to their actual trait declarations after
+  identifier adjustment. Reject duplicate canonical mappings across different
+  source contexts and preserve namespace/member-kind distinctions. The
+  [conformance contracts](tests/spec/declarative-macros/member-conformance/README.md)
+  cover methods, associated types and constants, including captured identifiers.
 - Duplicate and forged bindings.
 - Panic-abort runtime boundary.
 

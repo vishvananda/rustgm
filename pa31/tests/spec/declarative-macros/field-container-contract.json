@@ -1,0 +1,23 @@
+{
+  "state": "Declared before execution; original field-foreign-opaque-denied source and expectation remain unchanged. This separate hypothesis avoids its literal associated-method name as an earlier lookup frontier. No observation or candidate acceptance claim.",
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "rows": [
+    {
+      "name": "field-unrelated-container-denied",
+      "entry": "pa31/tests/spec/declarative-macros/field-unrelated-container-denied.rs",
+      "sha256": "1afcf08a7f742952756fda083e56a5d24e3e2d19fb73933c7c08daf41c041a2d",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "hypothesis": "A separately captured public factory name makes an opaque-field record available without associated-member lookup; an unrelated literal field must still fail field identity matching."
+    }
+  ]
+}

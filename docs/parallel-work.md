@@ -9,32 +9,33 @@ Workers own implementation, independently qualified tests and handout drafts.
 The integrator owns shared interface decisions, integration, public pushes,
 assignment activation and final text-oracle publication.
 
-Use [the live library blocker tracker](library-build-blockers.md) for current
-issue assignments and concrete closure tests. Workers may tackle multiple
-independent blockers in their lanes while preserving a separate coherent handoff
-for each. Current priority is the unchanged-core loading/expansion blocker:
-the integrator owns scoped item/path/import/glob lookup, Worker C investigates
-hygienic field/member consumers, Worker B owns projected Copy and early-impl
-readiness, and Worker A owns complete generic source-body validation/transport.
-The qualified integrated lookup/input/panic compiler passes the `core_panic`
-builtin declaration. A fresh unchanged-core probe now stops at the `panic_internals`
-allowance on `assert_eq` in macros/mod.rs, line 41. Worker C takes LIB-014's
-per-token internal feature permissions while preserving its unqualified field
-checkpoint and LIB-013's remaining foreign/edition requirements. The integrator
-retains scoped publication and item/path/import/glob work. Field, method and
-associated-member requirements remain open.
-These implementation priorities do not change assignment release ownership or
-the shared resource limits below.
+Use [the live library blocker tracker](library-build-blockers.md) for concrete
+issue assignments and closure tests. The [combined prerequisite checkpoint](core-prerequisites-checkpoint.md)
+qualifies compiler `65f20e8b`: 3,766 maintainer passes, 8,382 active text cases,
+110 measured inputs, 85 native preflights and all 58 growth controls. One RSS
+increase has a completed attribution review and remains a recorded cost.
+Original core stops at concat_bytes, line 1126. C's separately qualified byte
+component reaches autodiff_forward, line 1553; integration is next. Neither
+build produces a core artifact or releases an assignment.
 
-The [combined checkpoint](library-lookup-panic-checkpoint.md) records 3,644
-release/native passes (1,721 fresh and 1,923 retained), 8,382 text cases, all
-84 comparable performance outputs and the sixteen retained RSS review triggers.
-Next gates are A's intermediate source codec/import staging, B's genuine
-nonempty instance-alias scope and C's complete-allowance independent corpus.
-After the idle schema-2 rollout below, select each absolute output cap from
-its actual existing usage plus build headroom; admit concurrent jobs only when
-the unchanged global reserve permits. Each new private binary runs its full
-nonignored inventory once, with required-name and captured-output checks.
+Current lanes:
+
+- A: complete generic original/artifact transport and fresh consumer proof.
+  Canonical sizing validation now passes; actual source-trait debt transfer into
+  the existing body proof is the next observed imported-consumer blocker.
+- B: explicit early implementation readiness, then the selected-reference
+  anonymous const_eval_select caller proof needed by the unchanged original
+  reducer. Coordinate C's existing typed Row/Code/Contract interface.
+- C: source attribute builtin declaration/import and actual application kinds
+  (LIB-019), preserving unsupported executable transformation until implemented.
+- Integrator: actual scoped macro invocation, physical type privacy, shared
+  interface review, combined qualification, integration and public main pushes.
+
+Each new private binary runs its full nonignored inventory once, with required
+names and captured outputs. Schema 2 remains active. Select each absolute cap
+from actual usage plus build headroom and admit work only when the unchanged
+150 GiB reserve permits. Keep all successful disposable outputs scoped and
+clean them between native targets; retain failure diagnostics and input hashes.
 
 ## Assignment ownership
 
@@ -156,6 +157,13 @@ python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run const
 Declare every disposable output root when selecting scoped cleanup. Existing
 maintainer harnesses may write additional `obj/` directories; include them or
 use ordinary cleanup. Cleanup is never run against another worktree.
+
+Long native batches must reclaim disposable outputs between successful test
+targets while retaining inputs, diagnostics, pins and managed Cargo caches.
+`maintainer_suites.py batch` performs this cleanup and records it in its receipt.
+Custom qualification runners must do the same under their existing lease;
+waiting until the entire batch exits can exceed a worktree cap even when no
+single target does. Failed-target outputs remain until they are diagnosed.
 
 For a complete Makefile target or an integration-only full/performance batch,
 use an outer resource lease. Nested storage wrappers inherit it, but keep their

@@ -87,7 +87,7 @@ impl Claims {
             values: HashMap::default(),
             unsupported: false,
         };
-        let mut clauses = environment.trait_clauses();
+        let mut clauses = environment.trait_clauses()?;
         loop {
             work.charge(1)?;
             let Some(clause) = clauses.next() else {

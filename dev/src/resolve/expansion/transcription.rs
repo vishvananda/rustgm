@@ -42,12 +42,16 @@ impl<S: Sources> Engine<'_, S> {
         let node = entry
             .node
             .ok_or_else(|| Error::at(file, original.start, "declarative macro has no source"))?;
-        let Body::Declarative(compiled) = &mut entry.body else {
-            return Err(Error::at(
-                file,
-                original.start,
-                "invalid declarative macro body",
-            ));
+        let (compiled, mode) = match &mut entry.body {
+            Body::Declarative(compiled) => (compiled, Transparency::SemiOpaque),
+            Body::Scoped { compiled, mode } => (compiled.as_mut(), *mode),
+            Body::Builtin(_) => {
+                return Err(Error::at(
+                    file,
+                    original.start,
+                    "invalid declarative macro body",
+                ));
+            }
         };
         let definition_source = units[node.file.0 as usize].source.text();
         let source = units[file.0 as usize].source.text();
@@ -98,7 +102,7 @@ impl<S: Sources> Engine<'_, S> {
                 }
                 package
                     .marks
-                    .apply(raw, context, Transparency::SemiOpaque, call_site)
+                    .apply(raw, context, mode, call_site)
                     .map(Some)
                     .map_err(|message| {
                         crate::syntax::token_tree::error(location.span.start, message)

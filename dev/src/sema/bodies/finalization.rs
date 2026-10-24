@@ -188,6 +188,7 @@ impl Checker<'_> {
         self.publish_index_bounds(&solved)?;
         self.publish_adjustments(&solved, body_key)?;
         self.publish_calls(&solved)?;
+        self.validate_type_privacy()?;
         for node in &self.state.annotation_checks {
             crate::types::bound_uses::check_pointer(&self.facts.types, self.ty(*node)?)
                 .map_err(|e| self.error(*node, e))?;

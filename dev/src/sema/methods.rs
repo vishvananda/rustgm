@@ -1,4 +1,5 @@
 //! Typed inherent candidate buckets and selected qualified source uses.
+pub(in crate::sema) mod names;
 pub(super) mod overlap;
 pub(crate) mod pointers;
 pub(super) mod receiver;
@@ -21,9 +22,9 @@ pub struct Qualified {
 
 #[derive(Default)]
 pub struct Methods {
+    names: Option<Box<names::Index>>,
     library: Option<Box<slices::Library>>,
     pointers: Option<Box<pointers::Library>>,
-    visible: Option<Box<visible::Index>>,
     comparison_borrows: Option<Box<ComparisonBorrows>>,
     pub(super) trait_names: HashSet<NameId>,
     /// Published owner members; frozen in resolver order after header preparation.

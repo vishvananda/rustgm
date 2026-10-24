@@ -3,7 +3,7 @@ use super::selection::{self, Caller};
 use crate::{
     resolve::{
         expansion::Report,
-        model::{Access, DefId, MethodCall},
+        model::{DefId, MethodCall},
         package::Error,
         unit::NodeKey,
     },
@@ -54,6 +54,7 @@ pub(in crate::sema) fn choose(
     caller: Caller<'_>,
 ) -> Result<Selected, Error> {
     let error = |message: &str| Declarations::error(report, key, message);
+    let identifier = super::names::Use::receiver(report, key, site)?;
     let (base, depth) = source
         .reference_target(&facts.types, term)
         .map_err(inference)
@@ -66,24 +67,39 @@ pub(in crate::sema) fn choose(
         Some(Constructor::Adt(nominal, _) | Constructor::AdtArgs(nominal, _))
             if facts.methods.inherent.contains_key(&(nominal, site.name)) =>
         {
-            selection::candidates(facts, source, base, (nominal, site.name)).map_err(error)?
+            selection::candidates(
+                report,
+                facts,
+                source,
+                base,
+                (nominal, site.name),
+                identifier,
+            )
+            .map_err(error)?
         }
-        _ => Vec::new(),
+        _ => selection::Found::default(),
     };
     let has_traits = facts.methods.trait_names.contains(&site.name);
     let library = library_method(report, head, site.name);
-    if inherent.is_empty() && !has_traits && library.is_none() {
-        return Err(error(
-            if matches!(head, Some(Constructor::Adt(..) | Constructor::AdtArgs(..))) {
-                "no inherent method with this name"
-            } else {
-                "receiver has no inherent nominal method"
-            },
-        ));
+    if inherent.members.is_empty() && !has_traits && library.is_none() {
+        return Err(error(if inherent.filtered {
+            "no applicable inherent method for this receiver"
+        } else if matches!(head, Some(Constructor::Adt(..) | Constructor::AdtArgs(..))) {
+            "no inherent method with this name"
+        } else {
+            "receiver has no inherent nominal method"
+        }));
     }
     let traits = if has_traits {
-        selection::trait_groups(report, facts, source, base, (site.scope, site.name), caller)
-            .map_err(error)?
+        selection::trait_groups(
+            report,
+            facts,
+            source,
+            base,
+            (site.scope, site.name, identifier),
+            caller,
+        )
+        .map_err(error)?
     } else {
         [Vec::new(), Vec::new()]
     };
@@ -95,7 +111,7 @@ pub(in crate::sema) fn choose(
         caller,
         base,
         depth,
-        inherent,
+        inherent: inherent.members,
         library,
         traits,
         object: matches!(head, Some(Constructor::Dynamic { .. })),
@@ -218,7 +234,6 @@ impl Search<'_> {
         borrow: Option<bool>,
         lane: Lane,
     ) -> Result<Option<DefId>, &'static str> {
-        let module = self.report.resolution.scopes[self.site.scope.0 as usize].module;
         let mut selected = None;
         for index in 0..self.candidates(lane).len() {
             let method = self.candidates(lane)[index];
@@ -234,12 +249,6 @@ impl Search<'_> {
             };
             if matches!(lane, Lane::Inherent)
                 && references != self.depth - dereferences + u32::from(borrow.is_some())
-            {
-                continue;
-            }
-            if let Access::Within(ancestor) =
-                self.report.resolution.definitions[method.0 as usize].access
-                && !self.report.package.is_descendant(module, ancestor)
             {
                 continue;
             }

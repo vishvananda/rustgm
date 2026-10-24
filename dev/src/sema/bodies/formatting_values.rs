@@ -159,7 +159,7 @@ impl Checker<'_> {
                     self.key(node),
                     pending.prefix,
                     (pending.owner, pending.constructor),
-                    scope,
+                    crate::sema::methods::names::Use::path(self.report, self.key(node), scope)?,
                     caller,
                 )?);
             }

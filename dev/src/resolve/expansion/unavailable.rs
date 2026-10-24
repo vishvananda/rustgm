@@ -1,5 +1,7 @@
-//! Declarations use item scope; an unavailable body never enters transcription.
-use super::{Body, Context, Definition, Engine, Error, FileId, ItemKind, NodeKey, Sources, Visit};
+//! Item-scoped macros retain normal matching and their actual definition site.
+use super::{
+    Body, Compiled, Context, Definition, Engine, Error, FileId, ItemKind, NodeKey, Sources, Visit,
+};
 use crate::syntax::item::Item;
 
 impl<S: Sources> Engine<'_, S> {
@@ -53,7 +55,18 @@ impl<S: Sources> Engine<'_, S> {
             // The shared producer already authenticated the sole scoped builtin role.
             Body::Builtin(role)
         } else {
-            Body::ScopedDeclaration(declared.mode)
+            // Only actual scoped declarations own this cold allocation. Keep
+            // every ordinary macro body and definition at their existing size.
+            if let Some(source) = self.loader.package.source_core() {
+                source
+                    .macros
+                    .charge(1, size_of::<Compiled>())
+                    .map_err(|message| Error::at(file, offset, message))?;
+            }
+            Body::Scoped {
+                compiled: Box::new(Compiled::new(declared.matcher)),
+                mode: declared.mode,
+            }
         };
         self.definitions.push(Definition {
             node: Some(NodeKey {
@@ -84,7 +97,7 @@ impl<S: Sources> Engine<'_, S> {
         #[cfg(test)]
         if matches!(
             self.definitions[definition].body,
-            Body::ScopedDeclaration(_)
+            Body::Scoped { .. }
         ) || matches!(self.definitions[definition].body, Body::Builtin(role) if !role.executable())
         {
             crate::resolve::index::unavailable_macros::observation::note(
@@ -135,14 +148,6 @@ impl<S: Sources> Engine<'_, S> {
                 file,
                 offset,
                 "builtin attribute execution is not implemented",
-            ));
-        }
-        if matches!(actual.body, Body::ScopedDeclaration(_)) {
-            return Err(self.unavailable_error(
-                definition,
-                file,
-                offset,
-                "scoped macro invocation is not implemented",
             ));
         }
         Ok(())

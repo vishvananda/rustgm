@@ -145,7 +145,7 @@ fn scoped_markers_have_no_legacy_textual_binding_or_external_metadata_permission
         .position(|definition| {
             matches!(
                 definition.body,
-                crate::resolve::expansion::Body::ScopedDeclaration(_)
+                crate::resolve::expansion::Body::Scoped { .. }
             )
         })
         .ok_or("actual scoped marker")?;
@@ -187,7 +187,7 @@ macro_rules!live{()=>{probe()};}fn probe()->u32{7u32}fn answer()->u32{live!()}";
     let scoped = report
         .definitions
         .iter()
-        .position(|definition| matches!(definition.body, Body::ScopedDeclaration(_)))
+        .position(|definition| matches!(definition.body, Body::Scoped { .. }))
         .ok_or("actual unavailable scoped definition")?;
     let invocation = report
         .invocations
@@ -228,7 +228,11 @@ macro_rules!live{()=>{probe()};}fn probe()->u32{7u32}fn answer()->u32{live!()}";
         .allows(site, &KnownFeature::PanicInternals.name())
         .err()
         .ok_or("unexecuted scoped marker supplied provenance")?;
-    assert!(error.message.contains("no executed expansion frame"));
+    assert!(
+        error
+            .message
+            .contains("differs from its executed expansion frame")
+    );
     let compiled = std::mem::replace(
         &mut report.definitions[live].body,
         Body::Builtin(crate::expand::builtin::Builtin::Line),
@@ -239,6 +243,10 @@ macro_rules!live{()=>{probe()};}fn probe()->u32{7u32}fn answer()->u32{live!()}";
         .allows(site, &KnownFeature::PanicInternals.name())
         .err()
         .ok_or("substituted body hid the actual scoped declaration")?;
-    assert!(error.message.contains("no executed expansion frame"));
+    assert!(
+        error
+            .message
+            .contains("differs from its executed expansion frame")
+    );
     Ok(())
 }

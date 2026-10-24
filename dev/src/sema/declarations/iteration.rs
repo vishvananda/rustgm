@@ -123,11 +123,9 @@ impl Checker<'_> {
                     },
                 ));
             }
-            self.facts.associated.register_library_type_member(
-                declaration.definition,
-                member,
-                self.report.resolution.definitions[member.0 as usize].name,
-            );
+            self.facts
+                .associated
+                .register_library_type_member(declaration.definition, member);
         }
         self.facts
             .generics

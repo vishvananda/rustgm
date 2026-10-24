@@ -128,7 +128,11 @@ impl Dispatcher {
             .account_work(result.normalize.steps)
             .map_err(|e| e.to_string())?;
         let mut assumptions = Assumptions::default();
-        for clause in environment.iter().flat_map(|env| env.trait_clauses()) {
+        let clauses = environment
+            .as_ref()
+            .map(|env| env.trait_clauses())
+            .transpose()?;
+        for clause in clauses.into_iter().flatten() {
             result.context.account_work(1).map_err(|e| e.to_string())?;
             // Only a fully global bound can use its known implementation.
             // Free lifetimes include 'static; either that input or a parameter

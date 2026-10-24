@@ -44,6 +44,41 @@ impl Evidence {
 }
 
 impl Assumptions {
+    /// Preserve exact canonical membership for consumers which already have a
+    /// fully formed requirement. This does not resolve an inference alternative.
+    pub(in crate::sema) fn mapped_exact_member(
+        &self,
+        store: &mut Store,
+        context: &mut Context,
+        predicate: Predicate,
+    ) -> Result<bool, infer::Error> {
+        context.account_work(1)?;
+        let Some(index) = &self.index else {
+            return Ok(false);
+        };
+        let Some(opening) = index.opening() else {
+            return Err(infer::Error::InvalidIdentity);
+        };
+        let Some((id, _)) = predicate.bound.trait_parts() else {
+            return Err(infer::Error::InvalidIdentity);
+        };
+        let item = store
+            .trait_application(id)
+            .ok_or(infer::Error::InvalidIdentity)?
+            .item;
+        let head = Head::canonical(
+            store
+                .kind(predicate.ty)
+                .ok_or(infer::Error::InvalidIdentity)?,
+        );
+        for &candidate in self.candidates(item, head) {
+            if opening.predicate(store, context, candidate)? == predicate {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
     pub(super) fn same_snapshot(&self, other: &Self) -> bool {
         match (&self.index, &other.index) {
             (None, None) => true,
@@ -70,6 +105,13 @@ impl Assumptions {
         store: &Store,
         predicate: Predicate,
     ) -> Result<Option<Evidence>, infer::Error> {
+        if self
+            .index
+            .as_ref()
+            .is_some_and(|index| index.opening().is_some())
+        {
+            return Ok(None);
+        }
         let Some((id, _)) = predicate.bound.trait_parts() else {
             return Err(infer::Error::InvalidIdentity);
         };
@@ -118,21 +160,33 @@ impl Assumptions {
         Ok((Self { index }, work))
     }
 
+    pub(crate) fn from_environment_counted(
+        store: &Store,
+        environment: Option<&Environment>,
+        work: &mut usize,
+    ) -> Result<Self, &'static str> {
+        let Some(environment) = environment else {
+            return Ok(Self::default());
+        };
+        let index = environment.trait_index_counted(store, work)?;
+        Ok(Self { index })
+    }
+
     fn candidates(&self, item: ItemId, head: Head) -> &[Predicate] {
         self.index
             .as_ref()
-            .and_then(|index| index.candidates.get(&(item, head)))
+            .and_then(|index| index.canonical().candidates.get(&(item, head)))
             .map_or(&[], Vec::as_slice)
     }
     fn quantified(&self) -> Option<&QuantifiedIndex> {
         self.index
             .as_ref()
-            .and_then(|index| index.quantified.as_deref())
+            .and_then(|index| index.canonical().quantified.as_deref())
     }
     fn contains(&self, predicate: Predicate) -> bool {
         self.index
             .as_ref()
-            .is_some_and(|index| index.seen.contains(&predicate))
+            .is_some_and(|index| index.opening().is_none() && index.seen.contains(&predicate))
     }
 
     /// Canonical goals keep caller parameters rigid. Any resulting region equations
@@ -166,6 +220,13 @@ impl Assumptions {
         predicate: Predicate,
     ) -> Result<bool, infer::Error> {
         context.account_work(1)?;
+        if self
+            .index
+            .as_ref()
+            .is_some_and(|index| index.opening().is_some())
+        {
+            return Err(infer::Error::InvalidIdentity);
+        }
         if self.quantified().is_some() || !self.contains(predicate) {
             return Err(infer::Error::InvalidIdentity);
         }
@@ -228,7 +289,16 @@ impl Assumptions {
                 .heads()
                 .flat_map(|head| self.candidates(item, head).iter())
                 .copied(),
-            |_, _, predicate| Ok((predicate, Evidence(predicate))),
+            |store, context, predicate| {
+                let predicate = self
+                    .index
+                    .as_ref()
+                    .and_then(|index| index.opening())
+                    .map_or(Ok(predicate), |opening| {
+                        opening.predicate(store, context, predicate)
+                    })?;
+                Ok((predicate, Evidence(predicate)))
+            },
             |_, _, left, right| Ok(alternatives::ordinary_consequence(goal, left.0, right.0)),
         )
     }

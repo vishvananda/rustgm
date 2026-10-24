@@ -63,7 +63,7 @@ impl Paths {
         self.state
             .facts
             .introductions
-            .invocation(expansion, parent, scope)
+            .invocation(expansion, parent, scope, definition.node)
     }
 
     /// Bind an executing local builtin to its actual canonical source item.
@@ -308,6 +308,9 @@ impl Paths {
             .facts
             .introductions
             .introduce_scope(scope, introduction);
+        if super::super::container_scopes::block_has_items(package, file, node) {
+            self.state.facts.introductions.introduce_block(scope);
+        }
         self.work.extend(&self.state.facts);
         Ok(scope)
     }

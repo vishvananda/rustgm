@@ -1,0 +1,277 @@
+{
+  "status": "Seven predeclared language hypotheses independently matched. RustGM scoped invocation and these trait-member consumers remain unsupported.",
+  "contract_sha256": "33ff7e2459d4d36653b3f94aaf1c884831b8976f9ed33b24200c52507e3b1a54",
+  "plan_sha256": "703323159ff8b248fbc20537cb6df59c1a21449e39e542c58982eabca29decca",
+  "results_sha256": "4866ce2f78616c206c0769db06c4ff2e1d11e9dd880e165f251d522eb55b3e3e",
+  "complete_sha256": "91ad42f1ff8402fe4490f2009366fed4ee02dcb32d4b07ce29fd5f5dec56f652",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "profile": [
+    "--edition=2024",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "-Awarnings"
+  ],
+  "environment_override": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "receipt_root": "rustgm-validation-work/obj/parallel/trait-method-oracle-v1",
+  "language_observations": 14,
+  "native_programs": 5,
+  "executed_observations": 24,
+  "observations": [
+    {
+      "case": "introduced-trait",
+      "stage": "metadata",
+      "seconds": 0.031082649948075414,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "introduced-trait",
+      "stage": "object",
+      "seconds": 0.03455023793503642,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "introduced-trait",
+      "stage": "native-build",
+      "seconds": 0.07814930099993944,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "introduced-trait",
+      "stage": "native-run",
+      "seconds": 0.0014353448059409857,
+      "returncode": 0,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "captured-member",
+      "stage": "metadata",
+      "seconds": 0.02782498998567462,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "captured-member",
+      "stage": "object",
+      "seconds": 0.0352225829847157,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "captured-member",
+      "stage": "native-build",
+      "seconds": 0.0790607649832964,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "captured-member",
+      "stage": "native-run",
+      "seconds": 0.0016453862190246582,
+      "returncode": 0,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "definition-import",
+      "stage": "metadata",
+      "seconds": 0.0300845829769969,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "definition-import",
+      "stage": "object",
+      "seconds": 0.03785937000066042,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "definition-import",
+      "stage": "native-build",
+      "seconds": 0.0814490020275116,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "definition-import",
+      "stage": "native-run",
+      "seconds": 0.0015089961234480143,
+      "returncode": 0,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "captured-import-opponent",
+      "stage": "metadata",
+      "seconds": 0.060483369044959545,
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8b3adab1092788a675ba0066cd31c986595fe82c40d324dea3b5b7bdb393840b",
+      "expected": "reject",
+      "diagnostic_codes": [
+        "E0599"
+      ],
+      "passed": true
+    },
+    {
+      "case": "captured-import-opponent",
+      "stage": "object",
+      "seconds": 0.06398894591256976,
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8b3adab1092788a675ba0066cd31c986595fe82c40d324dea3b5b7bdb393840b",
+      "expected": "reject",
+      "diagnostic_codes": [
+        "E0599"
+      ],
+      "passed": true
+    },
+    {
+      "case": "captured-caller-import",
+      "stage": "metadata",
+      "seconds": 0.03182182693853974,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "captured-caller-import",
+      "stage": "object",
+      "seconds": 0.03778483904898167,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "captured-caller-import",
+      "stage": "native-build",
+      "seconds": 0.08034275495447218,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "captured-caller-import",
+      "stage": "native-run",
+      "seconds": 0.0015413539949804544,
+      "returncode": 0,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "sibling-traits",
+      "stage": "metadata",
+      "seconds": 0.030991906998679042,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "sibling-traits",
+      "stage": "object",
+      "seconds": 0.03907207306474447,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "accept",
+      "diagnostic_codes": [],
+      "passed": true
+    },
+    {
+      "case": "sibling-traits",
+      "stage": "native-build",
+      "seconds": 0.08088067616336048,
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "sibling-traits",
+      "stage": "native-run",
+      "seconds": 0.0013529241550713778,
+      "returncode": 0,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true
+    },
+    {
+      "case": "introduced-caller-opponent",
+      "stage": "metadata",
+      "seconds": 0.0517304209060967,
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9d07f05d261e817e0ade2cbff980abf9b13dec0fa8985ac1cfb2fd8daf7f0c1e",
+      "expected": "reject",
+      "diagnostic_codes": [
+        "E0599"
+      ],
+      "passed": true
+    },
+    {
+      "case": "introduced-caller-opponent",
+      "stage": "object",
+      "seconds": 0.052704107016325,
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9d07f05d261e817e0ade2cbff980abf9b13dec0fa8985ac1cfb2fd8daf7f0c1e",
+      "expected": "reject",
+      "diagnostic_codes": [
+        "E0599"
+      ],
+      "passed": true
+    }
+  ],
+  "interpretation": "Trait discovery enumerates all traits in the visited module, including opaque trait names. The method identifier context selects lexical versus definition-site scopes; actual trait-container adjustment then selects the associated member. Do not filter the trait binding by the method identifier context or scan all same-spelling sibling members per query."
+}

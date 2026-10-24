@@ -4,7 +4,10 @@ use super::{
     Target, TermId, Type, TypeId, Work, declarations,
 };
 use crate::{
-    resolve::model::Access,
+    resolve::{
+        model::{Access, ItemAdjustment, ItemContext},
+        package::ModuleId,
+    },
     sema::members::{FieldId, Name, Selection, VariantId},
     syntax::{item::Shape, token_tree::Span},
     types::aggregate,
@@ -324,15 +327,107 @@ impl Checker<'_> {
             .map(Name::Named)
             .map_err(|e| self.error(node, e))
     }
-    pub(super) fn accessible(&self, node: NodeId, field: FieldId) -> Result<(), Error> {
+    pub(super) fn accessible_from(
+        &self,
+        node: NodeId,
+        field: FieldId,
+        privacy: ModuleId,
+    ) -> Result<(), Error> {
         let access = self.facts.members.fields[field.0 as usize].access;
         if access == Access::ExternalPrivate {
             return Err(self.error(node, "aggregate field is private"));
         }
         if let Access::Within(module) = access
-            && !self.report.package.is_descendant(self.state.module, module)
+            && !self.report.package.is_descendant(privacy, module)
         {
             return Err(self.error(node, "aggregate field is private"));
+        }
+        Ok(())
+    }
+    fn field_adjustment(
+        &self,
+        node: NodeId,
+        owner: crate::types::ItemId,
+        offset: u32,
+    ) -> Result<ItemAdjustment, Error> {
+        let context = self.report.package.item_context(self.state.file, offset)?;
+        self.report
+            .adjust_item(DefId(owner.0), context, self.state.module)
+            .map_err(|error| self.error(node, error))
+    }
+    pub(super) fn select_field(
+        &self,
+        node: NodeId,
+        variant: VariantId,
+        name: Name,
+        span: Span,
+        missing: &'static str,
+    ) -> Result<FieldId, Error> {
+        let owner = self.facts.members.variants[variant.0 as usize].owner;
+        let adjustment = self.field_adjustment(node, owner, span.start)?;
+        let context = match name {
+            Name::Named(_) => adjustment.context,
+            Name::Index(_) => ItemContext::ROOT,
+        };
+        let field = self
+            .facts
+            .members
+            .field_in(variant, name, context)
+            .ok_or_else(|| self.error(node, missing))?;
+        self.accessible_from(node, field, adjustment.privacy)?;
+        Ok(field)
+    }
+    pub(super) fn constructor_privacy(
+        &self,
+        node: NodeId,
+        variant: VariantId,
+        mut path: NodeId,
+    ) -> Result<ModuleId, Error> {
+        let owner = self.facts.members.variants[variant.0 as usize].owner;
+        let ast = &self.report.package.unit(self.state.file).configured.ast;
+        loop {
+            match self.kind(path) {
+                Kind::Path { segments, .. } => {
+                    path = *ast
+                        .list(segments)
+                        .last()
+                        .ok_or_else(|| self.error(node, "empty selected constructor path"))?;
+                }
+                Kind::Applied { base, .. } => path = base,
+                Kind::Qualified { path: suffix, .. } => path = suffix,
+                Kind::Name(span, _) => {
+                    return Ok(self.field_adjustment(node, owner, span.start)?.privacy);
+                }
+                _ => return Err(self.error(node, "selected constructor has no identifier syntax")),
+            }
+        }
+    }
+    fn check_update_fields(
+        &self,
+        node: NodeId,
+        base: NodeId,
+        variant: VariantId,
+    ) -> Result<(), Error> {
+        let variant = self.facts.members.variants[variant.0 as usize];
+        let mut omitted = (variant.start..variant.end)
+            .filter(|index| !self.state.field_seen[(index - variant.start) as usize]);
+        let Some(first) = omitted.next() else {
+            return Ok(());
+        };
+        let span = self
+            .report
+            .package
+            .unit(self.state.file)
+            .configured
+            .ast
+            .node(base)
+            .span;
+        let privacy = self
+            .field_adjustment(base, variant.owner, span.start)?
+            .privacy;
+        self.accessible_from(node, FieldId(first), privacy)?;
+        for index in omitted {
+            self.accessible_from(node, FieldId(index), privacy)?;
         }
         Ok(())
     }
@@ -379,9 +474,6 @@ impl Checker<'_> {
             if definition.kind != aggregate::Kind::Struct {
                 return Err(self.error(node, "functional update requires a struct"));
             }
-            for index in variant.start..variant.end {
-                self.accessible(node, FieldId(index))?;
-            }
             self.state.work.push(Work::Enter(base, Some(term)));
         }
         let unit = self.report.package.unit(self.state.file);
@@ -396,13 +488,14 @@ impl Checker<'_> {
             let Kind::FieldInit { name, .. } = self.kind(field_node) else {
                 return Err(self.error(field_node, "invalid field initializer"));
             };
-            let name = self.member_name(field_node, name)?;
-            let field = self
-                .facts
-                .members
-                .field(variant_id, name)
-                .ok_or_else(|| self.error(field_node, "unknown aggregate field"))?;
-            self.accessible(field_node, field)?;
+            let field_name = self.member_name(field_node, name)?;
+            let field = self.select_field(
+                field_node,
+                variant_id,
+                field_name,
+                name,
+                "unknown aggregate field",
+            )?;
             if union {
                 initialized += 1;
                 if initialized > 1 {
@@ -421,6 +514,9 @@ impl Checker<'_> {
         }
         if union && initialized != 1 {
             return Err(self.error(node, "union initializer requires exactly one field"));
+        }
+        if let Some(base) = base {
+            self.check_update_fields(node, base, variant_id)?;
         }
         if !union && base.is_none() && self.state.field_seen.contains(&false) {
             return Err(self.error(node, "missing aggregate field initializer"));
@@ -514,12 +610,11 @@ impl Checker<'_> {
                     self.check_union_access(node)?;
                 }
                 let variant = self.struct_variant(node, item)?;
-                let field = self
-                    .facts
-                    .members
-                    .field(variant, name)
-                    .ok_or_else(|| self.error(node, "unknown aggregate field"))?;
-                self.accessible(node, field)?;
+                let Kind::Field { name: span, .. } = self.kind(node) else {
+                    return Err(self.error(node, "selected field has no actual access syntax"));
+                };
+                let field =
+                    self.select_field(node, variant, name, span, "unknown aggregate field")?;
                 let ty = self.instance_field(node, receiver, field)?;
                 (Selection::Nominal(field), ty)
             }

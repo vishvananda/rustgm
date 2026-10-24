@@ -1,0 +1,365 @@
+{
+  "status": "Partial hypothesis qualification:9 case predictions matched;2 predicted positives falsified by later private fn-item type checking. Original source and contract remain unchanged. No RustGM implementation/source acceptance claim.",
+  "source_commit": "6b3c0d69",
+  "receipt_root": "obj/parallel/receiver-members-oracle-v1",
+  "contract_sha256": "1cb645339bcee978089761311ede4cd560d1088d6a64b64b4245fdd008318f88",
+  "plan_sha256": "8aad8a24957128c4bcae6949bd6a22c15c6cc3914038d821acc8b2ef802f1bfe",
+  "results_sha256": "80029d1bf9f0ac8d7080f74c7b4d3f2103d1d54ecf8da8c3f2034d206d7ea2af",
+  "complete_sha256": "764baf8cbc243698b7508cc6a4a874fc5f1614f0511c7905cac035b959e8a1d0",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "language_observations": 22,
+  "matching_language_observations": 18,
+  "native_programs": 4,
+  "executed_observations": 32,
+  "falsified": [
+    "private-dot",
+    "private-path"
+  ],
+  "interpretation": "Candidate lookup grants definition-site visibility, but the complete pinned compiler separately rejects the private function-item type at the physical use. Implementing lookup adjustment alone must not grant whole-program access. Keep final privacy/type reachability as a separate LIB002 obligation.",
+  "observations": [
+    {
+      "case": "captured-dot",
+      "stage": "metadata",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "captured-dot",
+      "stage": "object",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "captured-dot",
+      "stage": "native-build",
+      "returncode": 0,
+      "diagnostic_codes": null,
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "captured-dot",
+      "stage": "native-run",
+      "returncode": 0,
+      "diagnostic_codes": null,
+      "passed": true,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "captured-path",
+      "stage": "metadata",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "captured-path",
+      "stage": "object",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "captured-path",
+      "stage": "native-build",
+      "returncode": 0,
+      "diagnostic_codes": null,
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "captured-path",
+      "stage": "native-run",
+      "returncode": 0,
+      "diagnostic_codes": null,
+      "passed": true,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "introduced-dot-path",
+      "stage": "metadata",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "introduced-dot-path",
+      "stage": "object",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "introduced-dot-path",
+      "stage": "native-build",
+      "returncode": 0,
+      "diagnostic_codes": null,
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "introduced-dot-path",
+      "stage": "native-run",
+      "returncode": 0,
+      "diagnostic_codes": null,
+      "passed": true,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "caller-opponent",
+      "stage": "metadata",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0599"
+      ],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4470e0f3c7d2268d47bcd5f58bf2fd30bcab097a028ae87cda902a837ab92e3a"
+    },
+    {
+      "case": "caller-opponent",
+      "stage": "object",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0599"
+      ],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4470e0f3c7d2268d47bcd5f58bf2fd30bcab097a028ae87cda902a837ab92e3a"
+    },
+    {
+      "case": "captured-opponent",
+      "stage": "metadata",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0599"
+      ],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "ac1aeda219da98005864e2761e93283201711e32f7eeac2d33bdc546465355e7"
+    },
+    {
+      "case": "captured-opponent",
+      "stage": "object",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0599"
+      ],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "ac1aeda219da98005864e2761e93283201711e32f7eeac2d33bdc546465355e7"
+    },
+    {
+      "case": "sibling-introductions",
+      "stage": "metadata",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "sibling-introductions",
+      "stage": "object",
+      "returncode": 0,
+      "diagnostic_codes": [],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "sibling-introductions",
+      "stage": "native-build",
+      "returncode": 0,
+      "diagnostic_codes": null,
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "sibling-introductions",
+      "stage": "native-run",
+      "returncode": 0,
+      "diagnostic_codes": null,
+      "passed": true,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "captured-duplicate",
+      "stage": "metadata",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0592"
+      ],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5f8d5b078113921e03049f2878f9ea7ead950849762287dfc9df8754160f4743"
+    },
+    {
+      "case": "captured-duplicate",
+      "stage": "object",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0592"
+      ],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5f8d5b078113921e03049f2878f9ea7ead950849762287dfc9df8754160f4743"
+    },
+    {
+      "case": "private-dot",
+      "stage": "metadata",
+      "returncode": 1,
+      "diagnostic_codes": [],
+      "passed": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "317b93ff8164d32b18168dc39b981f36aaec0c3e5984f9e3e065729a1ab16954",
+      "observed_errors": [
+        {
+          "message": "type `for<'a> fn(&'a S) -> u8 {S::secret}` is private",
+          "code": null
+        }
+      ]
+    },
+    {
+      "case": "private-dot",
+      "stage": "object",
+      "returncode": 1,
+      "diagnostic_codes": [],
+      "passed": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "317b93ff8164d32b18168dc39b981f36aaec0c3e5984f9e3e065729a1ab16954",
+      "observed_errors": [
+        {
+          "message": "type `for<'a> fn(&'a S) -> u8 {S::secret}` is private",
+          "code": null
+        }
+      ]
+    },
+    {
+      "case": "private-dot",
+      "stage": "native-build",
+      "returncode": 1,
+      "diagnostic_codes": null,
+      "passed": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "317b93ff8164d32b18168dc39b981f36aaec0c3e5984f9e3e065729a1ab16954",
+      "observed_errors": [
+        {
+          "message": "type `for<'a> fn(&'a S) -> u8 {S::secret}` is private",
+          "code": null
+        }
+      ]
+    },
+    {
+      "case": "private-path",
+      "stage": "metadata",
+      "returncode": 1,
+      "diagnostic_codes": [],
+      "passed": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a46d692ade105d8eae2fb97c7fc774ca310e893aeea8abfece2131fd544ef709",
+      "observed_errors": [
+        {
+          "message": "type `for<'a> fn(&'a S) -> u8 {S::secret}` is private",
+          "code": null
+        }
+      ]
+    },
+    {
+      "case": "private-path",
+      "stage": "object",
+      "returncode": 1,
+      "diagnostic_codes": [],
+      "passed": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a46d692ade105d8eae2fb97c7fc774ca310e893aeea8abfece2131fd544ef709",
+      "observed_errors": [
+        {
+          "message": "type `for<'a> fn(&'a S) -> u8 {S::secret}` is private",
+          "code": null
+        }
+      ]
+    },
+    {
+      "case": "private-path",
+      "stage": "native-build",
+      "returncode": 1,
+      "diagnostic_codes": null,
+      "passed": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a46d692ade105d8eae2fb97c7fc774ca310e893aeea8abfece2131fd544ef709",
+      "observed_errors": [
+        {
+          "message": "type `for<'a> fn(&'a S) -> u8 {S::secret}` is private",
+          "code": null
+        }
+      ]
+    },
+    {
+      "case": "private-dot-opponent",
+      "stage": "metadata",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0624"
+      ],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9cd62ad98aa537ea17176f22daf8693f33fef9a6bf7ac63a3fe4b34a26c0ecfc"
+    },
+    {
+      "case": "private-dot-opponent",
+      "stage": "object",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0624"
+      ],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9cd62ad98aa537ea17176f22daf8693f33fef9a6bf7ac63a3fe4b34a26c0ecfc"
+    },
+    {
+      "case": "private-path-opponent",
+      "stage": "metadata",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0624"
+      ],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4e64af1dad6f9c4855f3059de17607fdcbb9d368d5b633b577938a124d26711d"
+    },
+    {
+      "case": "private-path-opponent",
+      "stage": "object",
+      "returncode": 1,
+      "diagnostic_codes": [
+        "E0624"
+      ],
+      "passed": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4e64af1dad6f9c4855f3059de17607fdcbb9d368d5b633b577938a124d26711d"
+    }
+  ]
+}

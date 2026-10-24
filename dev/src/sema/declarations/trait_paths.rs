@@ -112,11 +112,21 @@ impl Checker<'_> {
             let scope = self.report.resolution.definitions[owner.0 as usize]
                 .members
                 .ok_or_else(|| self.error(key, "trait declaration has no member scope"))?;
+            let suffix = NodeKey {
+                node: path.suffix[0].0,
+                ..key
+            };
+            let identifier =
+                crate::sema::methods::names::Use::path(self.report, suffix, path.scope)?;
+            let adjusted = self
+                .report
+                .adjust_item(owner, identifier.context, identifier.caller)
+                .map_err(|message| self.error(key, message))?;
             let method = self
                 .report
                 .resolution
                 .bindings
-                .get(scope, path.suffix[0].1, Namespace::Value)
+                .get_key((scope, path.suffix[0].1, Namespace::Value, adjusted.context))
                 .map(|binding| binding.target)
                 .filter(|id| {
                     matches!(
@@ -125,6 +135,12 @@ impl Checker<'_> {
                     ) && self.facts.associated.trait_owner(*id) == Some(owner)
                 })
                 .ok_or_else(|| self.error(key, "qualified trait has no such method"))?;
+            if !identifier
+                .permits(self.report, owner, method)
+                .map_err(|message| self.error(key, message))?
+            {
+                return Err(self.error(key, "qualified trait has no such method"));
+            }
             return Ok(Some(Callable {
                 owner,
                 method,

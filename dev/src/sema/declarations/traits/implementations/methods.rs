@@ -1,8 +1,8 @@
-//! Match direct methods once by owner/name, retaining overrides separately from defaults.
+//! Match direct methods by canonical trait member, retaining overrides separately from defaults.
 use super::{Checker, DefId, Error, NodeKey};
 use crate::support::hash::HashMap;
 use crate::{
-    resolve::{expansion::Report, names::NameId},
+    resolve::{expansion::Report, model::DefKind},
     sema::{
         model::{Declarations, Function},
         traits::conformance,
@@ -13,31 +13,36 @@ use crate::{
 
 #[derive(Default)]
 pub(super) struct Members {
-    owners: HashMap<DefId, Vec<Function>>,
-    names: HashMap<(DefId, NameId), Function>,
+    owners: HashMap<DefId, Vec<DefId>>,
+    libraries: HashMap<DefId, usize>,
 }
 impl Members {
     pub fn new(report: &Report, facts: &Declarations) -> Self {
         let mut result = Self::default();
-        for &function in facts
-            .functions
-            .iter()
-            .chain(facts.associated.language_functions())
-        {
-            if let Some(owner) = facts.associated.member_owner(function.definition) {
-                let name = report.resolution.definitions[function.definition.0 as usize].name;
-                result.names.insert((owner, name), function);
-            }
+        for (index, function) in facts.associated.language_functions().enumerate() {
+            result.libraries.insert(function.definition, index);
         }
         for (member, owner) in facts.associated.declaration_members() {
-            let name = report.resolution.definitions[member.0 as usize].name;
-            if let Some(&function) = result.names.get(&(owner, name))
-                && function.definition == member
-            {
-                result.owners.entry(owner).or_default().push(function);
+            if report.resolution.definitions[member.0 as usize].kind == DefKind::Function {
+                result.owners.entry(owner).or_default().push(member);
             }
         }
         result
+    }
+
+    fn function(&self, facts: &Declarations, definition: DefId) -> Result<Function, &'static str> {
+        let function = if let Some(&index) = facts.function_indices.get(&definition) {
+            facts.functions.get(index)
+        } else {
+            self.libraries
+                .get(&definition)
+                .and_then(|&index| facts.associated.language_function(index))
+        }
+        .ok_or("method inventory lost its actual function declaration")?;
+        if function.definition != definition {
+            return Err("method inventory index belongs to another actual declaration");
+        }
+        Ok(*function)
     }
 }
 impl Checker<'_> {
@@ -57,29 +62,41 @@ impl Checker<'_> {
             .types
             .trait_application(id)
             .ok_or_else(|| self.error(source, "missing impl trait application"))?;
+        let trait_item = DefId(app.item.0);
         let trait_owner = self
             .facts
             .associated
-            .declaration_owner(DefId(app.item.0))
+            .declaration_owner(trait_item)
             .ok_or_else(|| self.error(source, "missing trait owner"))?;
         let impl_owner = self
             .facts
             .associated
             .declaration_owner(owner)
             .ok_or_else(|| self.error(source, "missing impl owner"))?;
-        for function in members.owners.get(&impl_owner).into_iter().flatten() {
-            let name = self.report.resolution.definitions[function.definition.0 as usize].name;
-            if !members.names.contains_key(&(trait_owner, name)) {
-                return Err(self.error(
-                    function.node,
-                    "implementation method is not a member of the trait",
-                ));
-            }
-        }
+        let overrides = super::super::override_identity::overrides(
+            self.report,
+            &self.facts.associated,
+            trait_item,
+            members.owners.get(&impl_owner).map_or(&[], Vec::as_slice),
+            "implementation method is not a member of the trait",
+        )
+        .map_err(|(member, error)| {
+            self.error(
+                self.report.resolution.definitions[member.0 as usize]
+                    .node
+                    .unwrap_or(source),
+                error,
+            )
+        })?;
         let mut result = Vec::new();
-        for &expected in members.owners.get(&trait_owner).into_iter().flatten() {
-            let name = self.report.resolution.definitions[expected.definition.0 as usize].name;
-            if let Some(&actual) = members.names.get(&(impl_owner, name)) {
+        for &definition in members.owners.get(&trait_owner).into_iter().flatten() {
+            let expected = members
+                .function(&self.facts, definition)
+                .map_err(|e| self.error(source, e))?;
+            if let Some(&actual) = overrides.get(&definition) {
+                let actual = members
+                    .function(&self.facts, actual)
+                    .map_err(|e| self.error(source, e))?;
                 self.trait_override(actual)?;
                 if self
                     .facts

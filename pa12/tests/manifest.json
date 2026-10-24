@@ -1728,6 +1728,45 @@
       }
     },
     {
+      "path": "tests/spec/privacy/private-return.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/privacy/private-nested-signature.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/privacy/public-erased-function.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/must-use/struct-discard-deny.rs",
       "source_sha256": "f8ceb52ef9eb4382e6529f4a0a6bb8573a09c9f3ac0d2e7fd5bd4453f14cfa53",
       "exit_status": 1,

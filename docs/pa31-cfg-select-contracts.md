@@ -66,10 +66,3 @@ runs were diagnosed and explicitly pruned;
 successful additive runs clean their generated objects and executables.
 Every source, diagnostic, receipt and checksum remains. PA31 stays planned;
 no reference text or assignment activation is part of this contract handoff.
-
-The subsequent [local implementation checkpoint](pa31-cfg-select-progress.md)
-qualifies the actual builtin and records a fresh unchanged-core advance to
-`format_args` line 994. Its source, failure history, shared ordinary-Clone
-dependency, exact component checks and remaining integration requirements are
-bound separately; the original hypotheses and independent observations above
-remain unchanged.

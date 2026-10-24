@@ -146,3 +146,46 @@ class MaintainerBatchTests(unittest.TestCase):
             self.assertEqual(runner.call_count, 1)
             receipt = json.loads((root / "obj/batch/receipt.json").read_text())
             self.assertEqual(receipt["state"], "failed")
+
+    def test_completed_target_cleanup_preserves_failed_outputs_evidence_and_cache(self):
+        with tempfile.TemporaryDirectory() as directory, redirect_stdout(io.StringIO()):
+            root = Path(directory)
+            rows = "\n".join(self.artifact(root, name)
+                             for name in ("suite_memory", "suite_other"))
+            folder = root / "obj/generated"
+            folder.mkdir(parents=True)
+            older = folder / "older-failure.o"
+            older.write_bytes(b"retained earlier failure")
+            os.utime(older, (1, 1))
+            cache = root / "obj/rust/debug/cache.o"
+            cache.parent.mkdir(parents=True)
+            passed = folder / "passed.o"
+            failed = folder / "failed.o"
+            source = folder / "case.rs"
+
+            def runner(command, **_kwargs):
+                if command[0] == "cargo":
+                    return result(rows)
+                first = Path(command[0]).name == "suite_memory"
+                name = "loans::native" if first else "values::native"
+                if "--list" in command:
+                    return result(name + ": test\n")
+                if first:
+                    passed.write_bytes(b"completed native object")
+                    source.write_text("fn main() {}")
+                    cache.write_bytes(b"reusable build object")
+                    return result("test result: ok. 1 passed; 0 failed; 0 ignored;\n")
+                self.assertFalse(passed.exists())
+                self.assertTrue(older.exists() and source.exists() and cache.exists())
+                failed.write_bytes(b"preserve failed target")
+                return result("test result: FAILED. 0 passed; 1 failed; 0 ignored;\n", 101)
+
+            status = run_batch({"loans": "suite_memory", "values": "suite_other"},
+                              self.args(suites=["loans", "values"], ignored=True),
+                              root=root, runner=runner)
+            self.assertEqual(status, 1)
+            self.assertTrue(failed.exists())
+            receipt = json.loads((root / "obj/batch/receipt.json").read_text())
+            self.assertEqual(receipt["state"], "failed")
+            self.assertEqual([row["group"] for row in receipt["cleanup"]], ["suite_memory"])
+            self.assertTrue((root / "obj/batch/suite_other.stderr").exists())

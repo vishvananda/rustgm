@@ -197,6 +197,17 @@ impl Checker<'_> {
         self.validate_language_orphan(owner.source, definition, predicate)?;
         self.impl_parameters(owner.self_definition, owner.source, predicate)?;
         self.facts
+            .associated
+            .bind_type_members(self.report, definition, owner.self_definition)
+            .map_err(|(member, error)| {
+                self.error(
+                    self.report.resolution.definitions[member.0 as usize]
+                        .node
+                        .unwrap_or(owner.source),
+                    error,
+                )
+            })?;
+        self.facts
             .generics
             .implementations
             .get_or_insert_with(Default::default)

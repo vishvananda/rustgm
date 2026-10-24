@@ -55,8 +55,11 @@ mod unavailable;
 pub enum Body {
     Declarative(Compiled),
     Builtin(Builtin),
-    /// A validated local declaration; scoped matching/execution is unsupported.
-    ScopedDeclaration(Transparency),
+    /// A prepared item-scoped macro keeps its declared literal transparency.
+    Scoped {
+        compiled: Box<Compiled>,
+        mode: Transparency,
+    },
 }
 #[derive(Clone, Copy)]
 enum MacroTarget {
@@ -1162,7 +1165,14 @@ impl<'a, S: Sources> Engine<'a, S> {
                 e.message,
             )
         })?;
-        let generated = self.install_builtin(file, visit.node, original, context, generated)?;
+        let generated = self.install_builtin(
+            file,
+            visit.node,
+            original,
+            context,
+            Transparency::SemiOpaque,
+            generated,
+        )?;
         self.paths
             .invocation(context, parent, &self.definitions[definition])
             .map_err(|message| Error::at(file, original.start, message))?;
@@ -1187,6 +1197,7 @@ impl<'a, S: Sources> Engine<'a, S> {
         target: NodeId,
         original: Span,
         context: ExpansionId,
+        mode: Transparency,
         generated: builtin::Expansion,
     ) -> Result<Span, Error> {
         let span = Span {
@@ -1199,12 +1210,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             .loader
             .package
             .marks
-            .apply(
-                SyntaxContextId::ROOT,
-                context,
-                Transparency::SemiOpaque,
-                call_site,
-            )
+            .apply(SyntaxContextId::ROOT, context, mode, call_site)
             .map_err(|message| Error::at(file, original.start, message))?;
         let origins = [Origin {
             generated: span,

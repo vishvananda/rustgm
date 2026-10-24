@@ -23,6 +23,15 @@ const POSITIVE: &[&str] = &[
     "unused-opaque",
     "captured-generated-names",
 ];
+const INVOKED: &[&str] = &[
+    "invoke-direct",
+    "invoke-qualified",
+    "invoke-alias",
+    "invoke-forward",
+    "invoke-shadow-builtin",
+    "invoke-nested-legacy",
+    "invoke-eager",
+];
 struct NoFiles;
 impl Sources for NoFiles {
     fn read(&mut self, _: &Path) -> Result<Option<InputFile>, String> {
@@ -50,7 +59,7 @@ fn expanded_with_context(source: &str, context: &resolve::bindings::Context) -> 
 fn checked(source: &str) -> TestResult<Report> {
     Ok(resolve::analyze_expanded(expanded(source)?)?)
 }
-fn lower(source: &str) -> TestResult<rustgm::lowir::program::Program> {
+pub(super) fn lower(source: &str) -> TestResult<rustgm::lowir::program::Program> {
     let report = checked(source)?;
     let rustgm::pipeline::Analysis {
         mut facts,
@@ -77,21 +86,21 @@ fn unused_scoped_source_items_keep_context_visibility_and_validate_without_execu
         resolve::render::expanded(&report, &mut rendered)?;
         let rendered = String::from_utf8(rendered)?;
         assert_eq!(
-            rendered.contains(" scoped-declaration="),
+            rendered.contains(" scoped="),
             *name != "cfg-disabled-no-gate",
             "{name}"
         );
         assert!(
             rendered
                 .lines()
-                .filter(|line| line.contains(" scoped-declaration="))
-                .all(|line| line.ends_with(" execution=unsupported") && !line.contains(" rules="))
+                .filter(|line| line.contains(" scoped="))
+                .all(|line| line.contains(" rules=") && !line.contains(" execution=unsupported"))
         );
         let modes = report
             .definitions
             .iter()
             .filter_map(|definition| {
-                if let Body::ScopedDeclaration(mode) = definition.body {
+                if let Body::Scoped { mode, .. } = definition.body {
                     Some(mode)
                 } else {
                     None
@@ -189,7 +198,10 @@ fn original_assert_matches_is_a_real_declaration_with_an_explicit_stability_fron
     assert!(definition.node.is_some());
     assert!(matches!(
         definition.body,
-        Body::ScopedDeclaration(Transparency::SemiOpaque)
+        Body::Scoped {
+            mode: Transparency::SemiOpaque,
+            ..
+        }
     ));
     assert!(report.invocations.is_empty());
     let error = resolve::analyze_expanded(report)
@@ -205,26 +217,9 @@ fn original_assert_matches_is_a_real_declaration_with_an_explicit_stability_fron
 }
 
 #[test]
-fn scoped_source_invocations_and_builtin_claims_keep_their_exact_unsupported_boundary() -> TestResult
-{
-    for name in [
-        "direct",
-        "qualified",
-        "alias",
-        "forward",
-        "shadow-builtin",
-        "nested-legacy",
-        "eager",
-    ] {
-        let error = checked(&source(&format!("invoke-{name}"))?)
-            .err()
-            .ok_or("scoped invocation accepted")?;
-        assert!(
-            error
-                .to_string()
-                .contains("scoped macro invocation is not implemented"),
-            "{name}: {error}"
-        );
+fn scoped_source_invocations_execute_and_builtin_claims_keep_their_boundary() -> TestResult {
+    for name in INVOKED {
+        lower(&source(name)?).map_err(|error| format!("{name}: {error}"))?;
     }
     for name in ["claimed-cfg-select", "unknown-builtin-claim"] {
         let error = expanded(&source(name)?)
@@ -252,7 +247,12 @@ fn unused_scoped_source_items_preserve_their_independently_declared_native_answe
     std::fs::create_dir_all(&folder)?;
     let consumer =
         std::fs::read_to_string(root.join("pa31/tests/spec/source-panic-macros/consumer.c"))?;
-    for name in POSITIVE.iter().copied().chain(["unbound-variable"]) {
+    for name in POSITIVE
+        .iter()
+        .copied()
+        .chain(["unbound-variable"])
+        .chain(INVOKED.iter().copied())
+    {
         let program = lower(&source(name)?)?;
         crate::ffi_program::check(root, &folder, name, &program, &consumer, "7\n")?;
     }

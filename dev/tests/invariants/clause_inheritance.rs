@@ -156,18 +156,18 @@ fn nested_supertraits_compose_independent_slots_and_preserve_outer_captures()
     let expected = HashSet::from_iter([input, middle, last]);
     assert_eq!(
         generics.environments[&owner]
-            .trait_clauses()
+            .trait_clauses()?
             .collect::<HashSet<_>>(),
         expected
     );
     assert_eq!(generics.declared_predicates_in_scope(owner).count(), 1);
     let repeated = generics.elaborated_environment(&mut store, owner)?;
-    assert_eq!(repeated.trait_clauses().collect::<HashSet<_>>(), expected);
+    assert_eq!(repeated.trait_clauses()?.collect::<HashSet<_>>(), expected);
     assert_eq!(generics.predicates[&owner].len(), 3);
     assert_eq!(
         generics
             .parameter_environment(&store, DefId(20))?
-            .trait_clauses()
+            .trait_clauses()?
             .count(),
         0
     );
@@ -223,7 +223,7 @@ fn quantified_non_self_contracts_remain_requirements_without_granting_caller_per
         }],
     );
     let environment = generics.elaborated_environment(&mut store, DefId(10))?;
-    assert_eq!(environment.trait_clauses().collect::<Vec<_>>(), [input]);
+    assert_eq!(environment.trait_clauses()?.collect::<Vec<_>>(), [input]);
     Ok(())
 }
 
@@ -284,7 +284,7 @@ fn distinct_supertrait_applications_share_structural_work() -> Result<(), &'stat
         generics.traits = Some(Box::new(contracts));
         generics.predicates.insert(DefId(10), inputs);
         let environment = generics.elaborated_environment(&mut store, DefId(10))?;
-        assert_eq!(environment.trait_clauses().count(), 2 * count as usize);
+        assert_eq!(environment.trait_clauses()?.count(), 2 * count as usize);
         let steps = generics.traits.as_ref().ok_or("missing contracts")?.steps;
         assert!(steps <= 24 * count as usize + 16);
         assert!(previous == 0 || steps <= 2 * previous + 16);

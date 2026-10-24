@@ -146,12 +146,18 @@ impl Hygiene {
                     privacy: query.privacy,
                 }));
             }
-            if let Some((parent, expansion)) = marks.local_parent(query.context)? {
-                let site = self.site(expansion)?;
-                if site.scope == Some(scope) {
-                    self.rewind(facts, marks, query, parent, expansion)?;
-                    continue;
-                }
+            let boundary = if let Some((parent, expansion)) = marks.local_parent(query.context)? {
+                (self.site(expansion)?.scope == Some(scope)).then_some((parent, expansion))
+            } else {
+                None
+            };
+            // A legacy mark rewinds local visibility without changing item
+            // identity. Opaque items must first probe their exact binding.
+            if let Some((parent, expansion)) = boundary
+                && marks.local_item(parent)? == query.item
+            {
+                self.rewind(facts, marks, query, parent, expansion)?;
+                continue;
             }
             let key = (scope, query.name, query.namespace, query.item);
             let binding = if query.item == ItemContext::ROOT {
@@ -172,6 +178,10 @@ impl Hygiene {
                     binding: *binding,
                     privacy: query.privacy,
                 }));
+            }
+            if let Some((parent, expansion)) = boundary {
+                self.rewind(facts, marks, query, parent, expansion)?;
+                continue;
             }
             if frame.parent.is_none()
                 && let Some((_, expansion)) = marks.item_parent(query.item)?
@@ -197,20 +207,26 @@ impl super::index::Resolver<'_> {
         &self,
         definition: &super::model::Definition,
     ) -> Result<super::table::BindingKey, super::package::Error> {
-        let context = if definition.kind == DefKind::SelfType {
-            ItemContext::ROOT
-        } else if let Some(node) = definition.node {
-            self.package
-                .item_context(node.file, name_offset(self.package, node))?
-        } else {
-            ItemContext::ROOT
-        };
+        let context = definition_context(self.package, definition)?;
         Ok((
             definition.scope,
             definition.name,
             definition.namespace,
             context,
         ))
+    }
+}
+
+pub(crate) fn definition_context(
+    package: &super::package::Package,
+    definition: &super::model::Definition,
+) -> Result<ItemContext, super::package::Error> {
+    if definition.kind != DefKind::SelfType
+        && let Some(node) = definition.node
+    {
+        package.item_context(node.file, name_offset(package, node))
+    } else {
+        Ok(ItemContext::ROOT)
     }
 }
 

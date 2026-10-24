@@ -47,6 +47,7 @@ mod addresses;
 mod intrinsic_items;
 mod pointer_casts;
 mod pointers;
+mod privacy;
 mod range_values;
 mod references;
 mod safety;

@@ -5,7 +5,7 @@ use crate::support::hash::HashMap;
 use crate::{
     resolve::{
         expansion::Report,
-        model::{DefId, ScopeId},
+        model::{DefId, ItemContext, ScopeId},
         names::NameId,
         package::Error,
         unit::NodeKey,
@@ -53,13 +53,19 @@ pub(super) fn trait_groups(
     facts: &mut Declarations,
     source: &mut Context,
     prefix: TermId,
-    site: (ScopeId, NameId),
+    site: (ScopeId, NameId, super::names::Use),
     caller: Caller<'_>,
 ) -> Result<[Vec<DefId>; 2], &'static str> {
-    if facts.methods.visible.is_none() {
+    if facts
+        .methods
+        .names
+        .as_ref()
+        .and_then(|names| names.visible.as_ref())
+        .is_none()
+    {
         let index = super::visible::Index::new(report, facts)?;
         facts.methods.trait_visibility_steps = index.steps();
-        facts.methods.visible = Some(Box::new(index));
+        facts.methods.names.get_or_insert_default().visible = Some(index);
     }
     let head = source.head(&facts.types, prefix).map_err(inference)?;
     let object = if matches!(head, Some(infer::Constructor::Dynamic { .. })) {
@@ -108,15 +114,17 @@ pub(super) fn trait_groups(
     };
     let index = facts
         .methods
-        .visible
+        .names
         .as_mut()
+        .and_then(|names| names.visible.as_mut())
         .ok_or("missing trait visibility index")?;
     let before = index.steps();
-    let groups = index.groups(report, site.0, site.1, bound_traits)?;
+    let mut groups = index.groups(report, site.0, site.1, bound_traits, site.2.context)?;
     facts.methods.trait_visibility_steps = facts
         .methods
         .trait_visibility_steps
         .saturating_add(index.steps().saturating_sub(before));
+    site.2.retain_traits(report, facts, &mut groups)?;
     if let Some(canonical) = report.resolution.builtin_traits.iteration()
         && groups
             .iter()
@@ -217,23 +225,67 @@ impl Host for Prefix<'_> {
     }
 }
 
+#[derive(Default)]
+pub(super) struct Found {
+    pub members: Vec<DefId>,
+    /// Retain the existing unavailable-method diagnostic after early filtering.
+    pub filtered: bool,
+}
+
 pub(super) fn candidates(
+    report: &Report,
     facts: &mut Declarations,
     context: &mut Context,
     prefix: TermId,
     key: (ItemId, NameId),
+    site: super::names::Use,
+) -> Result<Found, &'static str> {
+    let mut result = context_candidates(facts, context, prefix, key, ItemContext::ROOT)?;
+    if facts.methods.has_contextual_inherent(key) {
+        let mut cursor = super::names::Cursor::new(site.context);
+        while let Some(identity) = cursor.next(&mut facts.methods, report, key)? {
+            result.extend(context_candidates(facts, context, prefix, key, identity)?);
+        }
+        facts.methods.account_name_lookup(result.len())?;
+        result.sort_unstable_by_key(|member| member.0);
+    }
+    let mut selected = 0;
+    for index in 0..result.len() {
+        let member = result[index];
+        let owner = facts
+            .associated
+            .member_owner(member)
+            .ok_or("missing inherent candidate owner")?;
+        if site.permits(report, owner, member)? {
+            result[selected] = member;
+            selected += 1;
+        }
+    }
+    let filtered = selected != result.len();
+    result.truncate(selected);
+    Ok(Found {
+        members: result,
+        filtered,
+    })
+}
+
+fn context_candidates(
+    facts: &mut Declarations,
+    context: &mut Context,
+    prefix: TermId,
+    key: (ItemId, NameId),
+    identity: ItemContext,
 ) -> Result<Vec<DefId>, &'static str> {
     let bucket = facts
         .methods
-        .inherent
-        .get(&key)
+        .inherent_members(key, identity)
         .ok_or("missing method bucket")?;
-    if bucket.len() == 1 {
-        return Ok(bucket.clone());
+    if bucket.len() <= 1 {
+        return Ok(bucket.to_vec());
     }
     match context.resolved(&mut facts.types, prefix) {
         Ok(ty) if facts.types.contains_parameters(ty) == Some(false) => {
-            prepare_candidates(facts, key)?;
+            prepare_candidates(facts, key, identity)?;
             let shapes = facts
                 .methods
                 .shapes
@@ -247,8 +299,7 @@ pub(super) fn candidates(
             context.account_work(steps).map_err(inference)?;
             let index = facts
                 .methods
-                .indices
-                .get(&key)
+                .candidate_index(key, identity)
                 .ok_or("missing method candidate index")?;
             let mut candidates = index.open.clone();
             candidates.extend(index.closed.get(&ty).into_iter().flatten().copied());
@@ -257,9 +308,8 @@ pub(super) fn candidates(
         }
         Ok(_) | Err(infer::Error::Unresolved) => facts
             .methods
-            .inherent
-            .get(&key)
-            .cloned()
+            .inherent_members(key, identity)
+            .map(<[DefId]>::to_vec)
             .ok_or("missing method bucket"),
         Err(_) => Err("invalid method prefix inference graph"),
     }
@@ -267,21 +317,34 @@ pub(super) fn candidates(
 
 /// Header-time lookup may precede the whole-crate overlap pass. Its complete
 /// bucket can build the same shape index without authorizing unchecked owners.
-fn prepare_candidates(facts: &mut Declarations, key: (ItemId, NameId)) -> Result<(), &'static str> {
-    if facts.methods.indices.contains_key(&key) {
+fn prepare_candidates(
+    facts: &mut Declarations,
+    key: (ItemId, NameId),
+    identity: ItemContext,
+) -> Result<(), &'static str> {
+    if facts.methods.candidate_index(key, identity).is_some() {
         return Ok(());
     }
-    let shapes = facts
-        .methods
-        .shapes
-        .get_or_insert_with(|| Box::new(crate::types::substitute::Bound::shape()));
+    let super::Methods {
+        shapes,
+        inherent,
+        names,
+        selection_shape_steps,
+        ..
+    } = &mut facts.methods;
+    let members = if identity == ItemContext::ROOT {
+        inherent.get(&key)
+    } else {
+        names
+            .as_ref()
+            .and_then(|names| names.contextual.as_ref())
+            .and_then(|names| names.inherent.get(&key))
+            .and_then(|names| names.get(&identity))
+    }
+    .ok_or("missing method bucket")?;
+    let shapes = shapes.get_or_insert_with(|| Box::new(crate::types::substitute::Bound::shape()));
     let mut index = super::Candidates::default();
-    for &member in facts
-        .methods
-        .inherent
-        .get(&key)
-        .ok_or("missing method bucket")?
-    {
+    for &member in members {
         let ty = facts
             .associated
             .schema(member)
@@ -290,15 +353,12 @@ fn prepare_candidates(facts: &mut Declarations, key: (ItemId, NameId)) -> Result
         if facts.types.contains_parameters(ty) == Some(false) {
             let before = shapes.steps;
             let shape = shapes.apply(&mut facts.types, ty)?;
-            facts.methods.selection_shape_steps = facts
-                .methods
-                .selection_shape_steps
-                .saturating_add(shapes.steps.saturating_sub(before));
+            *selection_shape_steps =
+                selection_shape_steps.saturating_add(shapes.steps.saturating_sub(before));
             index.closed.entry(shape).or_default().push(member);
         } else {
             index.open.push(member);
         }
     }
-    facts.methods.indices.insert(key, index);
-    Ok(())
+    facts.methods.retain_candidate_index(key, identity, index)
 }

@@ -1,6 +1,7 @@
 //! Namespace-resolved associated declarations; this inventory is not a type or impl proof.
 mod comparisons;
 mod language;
+mod matching;
 #[cfg(test)]
 #[path = "../../tests/invariants/owner_slots.rs"]
 mod tests;
@@ -92,8 +93,7 @@ pub struct Inventory {
     schemas: HashMap<OwnerId, Schema>,
     pub(in crate::sema) types: HashMap<DefId, TypeContract>,
     pub(in crate::sema) families: HashMap<DefId, Family>,
-    type_names: HashMap<DefId, crate::resolve::names::NameId>,
-    type_members: HashMap<(OwnerId, crate::resolve::names::NameId), DefId>,
+    type_members: HashMap<(OwnerId, DefId), DefId>,
 }
 impl Inventory {
     pub(crate) fn has_associated_types(&self) -> bool {
@@ -105,8 +105,9 @@ impl Inventory {
         owner: DefId,
         declaration: DefId,
     ) -> Option<DefId> {
-        let name = *self.type_names.get(&declaration)?;
-        self.type_members.get(&(self.owner(owner)?, name)).copied()
+        self.type_members
+            .get(&(self.owner(owner)?, declaration))
+            .copied()
     }
     #[must_use]
     pub fn type_contract(&self, declaration: DefId) -> Option<&TypeContract> {
@@ -336,8 +337,7 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
         let source = result.owners[owner.0 as usize].source;
         let id = identity(report, source, index)?;
         if definition.kind == DefKind::TypeAlias {
-            result.type_names.insert(id, definition.name);
-            result.type_members.insert((owner, definition.name), id);
+            result.type_members.insert((owner, id), id);
         }
         result.declarations.insert(id, owner);
         result.members.push(Member {

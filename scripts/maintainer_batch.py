@@ -9,7 +9,7 @@ import time
 import tomllib
 
 from maintainer_suites import selected_tests
-from storage import cleanup_roots
+from storage import cleanup_roots, prune
 
 
 def package_environment(root):
@@ -165,6 +165,7 @@ def run_batch(suites, args, *, root, runner=subprocess.run):
             if args.list:
                 print("\n".join(selected[group]))
                 continue
+            group_started = time.time()
             result = run(group, [binary, *flags, "--exact", *selected[group]],
                          root / "dev", environment)
             counts = re.findall(r"test result: (?:ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored;",
@@ -173,6 +174,14 @@ def run_batch(suites, args, *, root, runner=subprocess.run):
                     or counts[0][2] != "0"):
                 raise ValueError(f"{group}: executed inventory differs from selected tests")
             failed |= result.returncode != 0
+            if result.returncode == 0:
+                # Native targets can produce GiBs before the outer batch exits.
+                # Preserve earlier failures, source/diagnostic evidence and Cargo
+                # caches while reclaiming this completed target's outputs.
+                removed = prune(root, apply=True, since=group_started)
+                receipt.setdefault("cleanup", []).append({
+                    "group": group, "since": group_started, "removed": removed})
+                save()
         receipt["state"] = "failed" if failed else "listed" if args.list else "passed"
         return int(failed)
     except (OSError, ValueError, subprocess.SubprocessError) as error:

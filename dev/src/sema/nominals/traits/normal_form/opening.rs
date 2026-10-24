@@ -32,16 +32,44 @@ pub(super) fn prepare(
     let arguments = fold.apply_arguments(&mut facts.types, arguments)?;
     let environment = environment
         .map(|env| {
-            if env.requires_region_mapping() {
-                env.substitute_regions(&mut facts.types, &mut fold)
-                    .map(Arc::new)
+            let shared = if env.requires_region_mapping() {
+                let before = fold.steps;
+                let outcome = env.identity_region_opening(&mut facts.types, &mut fold);
+                facts.body_work.canonical_steps = facts
+                    .body_work
+                    .canonical_steps
+                    .saturating_add(fold.steps.saturating_sub(before));
+                outcome?
             } else {
-                // Opening the request does not change a closed caller environment.
+                true
+            };
+            if shared {
+                // Opening the request does not change this caller environment.
                 Ok(env)
+            } else {
+                let before = fold.steps;
+                let result = env.mapped_trait_opening(&mut facts.types, &mut fold);
+                facts.body_work.canonical_steps = facts
+                    .body_work
+                    .canonical_steps
+                    .saturating_add(fold.steps.saturating_sub(before));
+                if let Some(mapped) = result? {
+                    return Ok(mapped);
+                }
+                let before = fold.steps;
+                let result = env.substitute_regions(&mut facts.types, &mut fold);
+                facts.body_work.canonical_steps = facts
+                    .body_work
+                    .canonical_steps
+                    .saturating_add(fold.steps.saturating_sub(before));
+                result.map(Arc::new)
             }
         })
         .transpose()?;
-    let mut state = State::new(facts, environment, None)?;
+    let mut work = 0;
+    let result = State::new_counted(facts, environment, &mut work);
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
+    let mut state = result?;
     state.retain_sized = retain_sized;
     state.availability = availability;
     state

@@ -160,5 +160,11 @@ mod formatted_values;
 #[path = "declarative_macros/concatenated_values.rs"]
 mod concatenated_values;
 
+#[path = "declarative_macros/executed_items.rs"]
+mod executed_items;
+
+#[path = "declarative_macros/semantic_privacy.rs"]
+mod semantic_privacy;
+
 #[path = "declarative_macros/attributed_values.rs"]
 mod attributed_values;

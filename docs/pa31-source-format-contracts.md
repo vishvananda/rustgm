@@ -10,8 +10,12 @@ pointers; historical `new_v1` layouts are not its ABI.
 The [declaration corpus](../pa31/tests/spec/source-format-macros/declaration-contract.json)
 and [literal corpus](../pa31/tests/spec/source-format-macros/literal-contract.json)
 are separate preimplementation hypotheses: 14 declaration sources and 12 typed
-literal sources, physical editions 2021/2024. The independent oracle now has the qualified outcomes recorded below; the
-RustGM implementation remains source-only and uncompiled. Original `format_args` header, feature-list and diagnostics
+literal sources, physical editions 2021/2024. The independent oracle now has the
+qualified outcomes recorded below. The literal implementation passes all 1,458
+private tests, fourteen of fifteen frontend tests and ten native programs. A
+test-only correction binds the remaining scoped-declaration rejection to its
+actual diagnostic; its narrow qualification and combined release are pending.
+Original `format_args` header, feature-list and diagnostics
 slices retain exact upstream bytes and attribution. Unknown/malformed owners,
 role mismatches, diagnostic-only declarations, duplicate identities, feature
 absence and scoped builtin forms remain distinct.

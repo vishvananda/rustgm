@@ -4,11 +4,8 @@ use super::{
     Assumptions, Caller, Context, Declarations, DefId, Environment, Error, ItemId, NameId, NodeKey,
     Prefix, Report, ScopeId, TermId, account_probe, applicability, candidates, trait_groups,
 };
+use crate::sema::{annotations::Scratch, traits::implementations::Availability};
 use crate::support::hash::HashMap;
-use crate::{
-    resolve::{model::Access, package::ModuleId},
-    sema::{annotations::Scratch, traits::implementations::Availability},
-};
 use std::sync::Arc;
 
 pub(in crate::sema) struct OwnedCaller {
@@ -31,7 +28,7 @@ pub(in crate::sema) enum Progress {
     Pending(crate::sema::traits::selection::Dependency),
 }
 enum Mode {
-    Inherent(ModuleId),
+    Inherent(super::super::names::Use),
     Trait { bound: bool },
 }
 struct Trial {
@@ -57,7 +54,7 @@ impl Query {
         key: NodeKey,
         prefix: NodeKey,
         bucket: (ItemId, NameId),
-        scope: ScopeId,
+        site: super::super::names::Use,
         caller: OwnedCaller,
     ) -> Result<Self, Error> {
         let mut source = Prefix {
@@ -73,43 +70,45 @@ impl Query {
             key,
             (source.infer, term),
             bucket,
-            scope,
+            site,
             caller,
         )
     }
 
-    /// A compiler protocol supplies a real canonical nominal, not a fabricated syntax prefix.
+    /// A compiler protocol supplies a real canonical nominal, not fabricated syntax.
     pub fn inherent_type(
         report: &Report,
         facts: &mut Declarations,
         key: NodeKey,
         ty: crate::types::TypeId,
         bucket: (ItemId, NameId),
-        scope: ScopeId,
+        site: super::super::names::Use,
         caller: OwnedCaller,
     ) -> Result<Self, Error> {
         let mut prefix = Context::default();
         let term = prefix
             .known(&facts.types, ty)
             .map_err(|error| Declarations::error(report, key, applicability::inference(error)))?;
-        Self::inherent_prefix(report, facts, key, (prefix, term), bucket, scope, caller)
+        Self::inherent_prefix(report, facts, key, (prefix, term), bucket, site, caller)
     }
+
     fn inherent_prefix(
         report: &Report,
         facts: &mut Declarations,
         key: NodeKey,
         (mut prefix, term): (Context, TermId),
         bucket: (ItemId, NameId),
-        scope: ScopeId,
+        site: super::super::names::Use,
         caller: OwnedCaller,
     ) -> Result<Self, Error> {
-        let members = candidates(facts, &mut prefix, term, bucket)
-            .map_err(|message| Declarations::error(report, key, message))?;
+        let members = candidates(report, facts, &mut prefix, term, bucket, site)
+            .map_err(|message| Declarations::error(report, key, message))?
+            .members;
         facts.methods.selection_steps = facts.methods.selection_steps.saturating_add(prefix.steps);
         Ok(Self {
             prefix,
             term,
-            mode: Mode::Inherent(report.resolution.scopes[scope.0 as usize].module),
+            mode: Mode::Inherent(site),
             members: members.into_iter(),
             lexical: None,
             selected: None,
@@ -123,7 +122,7 @@ impl Query {
         facts: &mut Declarations,
         key: NodeKey,
         prefix: NodeKey,
-        site: (ScopeId, NameId),
+        site: (ScopeId, NameId, super::super::names::Use),
         caller: OwnedCaller,
     ) -> Result<Self, Error> {
         let mut source = Prefix {
@@ -220,17 +219,15 @@ impl Query {
         member: DefId,
     ) -> Result<(), &'static str> {
         let owner = match self.mode {
-            Mode::Inherent(module) => {
-                if let Access::Within(ancestor) =
-                    report.resolution.definitions[member.0 as usize].access
-                    && !report.package.is_descendant(module, ancestor)
-                {
-                    return Ok(());
-                }
-                facts
+            Mode::Inherent(site) => {
+                let owner = facts
                     .associated
                     .member_owner(member)
-                    .ok_or("missing method candidate owner")?
+                    .ok_or("missing method candidate owner")?;
+                if !site.permits(report, owner, member)? {
+                    return Ok(());
+                }
+                owner
             }
             Mode::Trait { .. } => facts
                 .associated

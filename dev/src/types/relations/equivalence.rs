@@ -10,6 +10,17 @@ pub(crate) struct RegionEqualities {
     body_aliases: Option<Arc<super::BodyAliases>>,
 }
 impl RegionEqualities {
+    /// Visit both sides of every stored identity; body alias metadata is not a
+    /// substitute for the proof equations and is inspected separately.
+    pub(crate) fn observe_regions(&self, fold: &mut substitute::Bound) -> Result<(), &'static str> {
+        for (&left, &right) in &self.representatives {
+            fold.account_region_summary_work(1)?;
+            fold.region(left, 0)?;
+            fold.region(right, 0)?;
+        }
+        Ok(())
+    }
+
     pub(crate) fn allocation(&self) -> crate::support::retained::Allocation {
         let mut total = crate::support::retained::Allocation::default();
         total.map(&self.representatives);

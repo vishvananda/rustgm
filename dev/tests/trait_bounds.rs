@@ -405,7 +405,7 @@ fn diamond_supertraits_retain_each_assumption_once() -> Result<(), Box<dyn std::
         .environments
         .get(&function.definition)
         .ok_or("missing bounded environment")?;
-    assert_eq!(environment.trait_clauses().count(), 73);
+    assert_eq!(environment.trait_clauses()?.count(), 73);
     prove(&source)
 }
 

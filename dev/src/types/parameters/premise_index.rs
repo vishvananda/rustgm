@@ -7,9 +7,19 @@ use super::{
 use crate::support::hash::{HashMap, HashSet};
 use crate::types::{ItemId, Store, infer, subject_head::Head};
 use std::sync::OnceLock;
+mod opening;
+pub(crate) use opening::Opening;
+use std::sync::Arc;
+
+#[derive(Clone)]
+struct View {
+    base: Arc<ClauseIndex>,
+    opening: Arc<Opening>,
+}
 
 #[derive(Clone, Default)]
 pub(crate) struct ClauseIndex {
+    view: Option<Box<View>>,
     pub candidates: HashMap<(ItemId, Head), Vec<Predicate>>,
     pub seen: HashSet<Predicate>,
     parameter_traits: OnceLock<HashMap<ParameterId, Vec<ItemId>>>,
@@ -25,12 +35,32 @@ pub(crate) struct QuantifiedIndex {
 pub(crate) struct Retained {
     base: bool,
     parameters: bool,
+    mapped: Option<Box<HashMap<usize, usize>>>,
 }
 impl ClauseIndex {
     pub(crate) fn retain_allocation(
         &self,
         observer: &mut Retained,
     ) -> crate::support::retained::Allocation {
+        if let Some(view) = &self.view {
+            let mut total = view.base.retain_allocation(observer);
+            let mut own = view.opening.allocation();
+            own.boxed(self);
+            own.boxed(view.as_ref());
+            own.add(2 * size_of::<usize>());
+            let key = std::ptr::from_ref(self) as usize;
+            let previous = observer
+                .mapped
+                .get_or_insert_with(Default::default)
+                .entry(key)
+                .or_default();
+            total.bytes = total
+                .bytes
+                .saturating_add(own.bytes.saturating_sub(*previous));
+            total.visits = total.visits.saturating_add(own.visits).saturating_add(1);
+            *previous = (*previous).max(own.bytes);
+            return total;
+        }
         let mut total = crate::support::retained::Allocation::default();
         if !observer.base {
             observer.base = true;
@@ -63,7 +93,35 @@ impl ClauseIndex {
     }
 }
 impl ClauseIndex {
+    pub(in crate::types::parameters) fn opened(
+        base: Arc<Self>,
+        opening: Arc<Opening>,
+        types: &Store,
+        work: &mut usize,
+    ) -> Result<Arc<Self>, &'static str> {
+        *work = work.saturating_add(1);
+        if base.view.is_some() || base.quantified.is_some() {
+            return Err("trait opening requires an ordinary canonical index");
+        }
+        opening.require_base(types, &base, work)?;
+        Ok(Arc::new(Self {
+            view: Some(Box::new(View { base, opening })),
+            ..Self::default()
+        }))
+    }
+
+    pub(crate) fn canonical(&self) -> &Self {
+        self.view.as_ref().map_or(self, |view| &view.base)
+    }
+
+    pub(crate) fn opening(&self) -> Option<&Arc<Opening>> {
+        self.view.as_ref().map(|view| &view.opening)
+    }
+
     pub fn parameter_traits(&self, parameter: ParameterId) -> &[ItemId] {
+        if let Some(view) = &self.view {
+            return view.base.parameter_traits(parameter);
+        }
         self.parameter_traits
             .get_or_init(|| {
                 let mut index: HashMap<ParameterId, Vec<ItemId>> = HashMap::default();
@@ -87,6 +145,9 @@ impl ClauseIndex {
             .map_or(&[], Vec::as_slice)
     }
     pub fn insert_clause(&mut self, store: &Store, clause: Clause) -> Result<(), infer::Error> {
+        if self.view.is_some() {
+            return Err(infer::Error::InvalidIdentity);
+        }
         let predicate = match clause {
             Clause::Predicate(predicate) => predicate,
             Clause::ForAll(id) => {

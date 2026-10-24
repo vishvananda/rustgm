@@ -5,6 +5,7 @@ mod equalities;
 mod owned_payload;
 pub(crate) use owned_payload::Retained;
 mod instantiation;
+mod opening_summary;
 mod permissions;
 mod premises;
 pub(crate) use permissions::Query as BuiltinQuery;
@@ -233,6 +234,9 @@ impl Environment {
         types: &Store,
         parameters: &[ParameterId],
     ) -> Result<Self, &'static str> {
+        if self.has_trait_opening() {
+            return Err("opened caller requires materialization before adding parameters");
+        }
         if parameters.len() > 1_000_000 {
             return Err("const parameter environment storage budget exceeded");
         }
@@ -279,6 +283,9 @@ impl Environment {
         types: &Store,
         clauses: impl ExactSizeIterator<Item = Clause>,
     ) -> Result<Self, &'static str> {
+        if self.has_trait_opening() {
+            return Err("opened caller requires materialization before adding clauses");
+        }
         if clauses.len() > 1_000_000 {
             return Err("parameter predicate budget exceeded");
         }
@@ -408,10 +415,35 @@ impl Environment {
             })
     }
 
+    pub(crate) fn trait_index_counted(
+        &self,
+        types: &Store,
+        work: &mut usize,
+    ) -> Result<Option<Arc<super::premise_index::ClauseIndex>>, &'static str> {
+        self.traits
+            .as_ref()
+            .filter(|traits| !traits.is_empty())
+            .map_or(Ok(None), |traits| {
+                traits.index_counted(types, work).map(Some)
+            })
+    }
+
     /// Exact retained clauses, in declaration order. No implicit binder opening
     /// or filtering can turn a quantified assumption into ordinary evidence.
-    pub fn trait_clauses(&self) -> impl Iterator<Item = Clause> {
-        self.traits.iter().flat_map(|traits| traits.clauses())
+    /// # Errors
+    /// A transient mapped query must consume its indexed view or explicitly
+    /// materialize it before requesting all clauses in the current namespace.
+    pub fn trait_clauses(&self) -> Result<impl Iterator<Item = Clause>, &'static str> {
+        if self.has_trait_opening() {
+            return Err("opened caller requires mapped clause consumption or materialization");
+        }
+        Ok(self.traits.iter().flat_map(|traits| traits.clauses()))
+    }
+
+    pub(crate) fn has_trait_opening(&self) -> bool {
+        self.traits
+            .as_ref()
+            .is_some_and(|traits| traits.mapped.is_some())
     }
     /// Coarse projected-subject buckets preserve every competing caller clause.
     /// Only complete canonical identity can establish a match without equations.
@@ -455,6 +487,11 @@ impl Environment {
     /// projection belongs to the ordinary scoped assumption selector.
     #[must_use]
     pub fn assumes_predicate(&self, predicate: Predicate) -> bool {
+        // A query-local view must commit the complete mapped equations through
+        // its ordinary assumption selector, rather than this exact shortcut.
+        if self.has_trait_opening() {
+            return false;
+        }
         self.traits
             .as_ref()
             .is_some_and(|traits| traits.unique.contains(&predicate))

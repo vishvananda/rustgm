@@ -150,7 +150,7 @@ fn parameter_replacement_still_visits_closed_partitions_and_updates_region_summa
     assert!(mapped.requires_region_mapping());
     assert!(!environment.requires_region_mapping());
     assert!(mapped.assumes_sized(reference));
-    for clause in mapped.trait_clauses().chain(mapped.projection_clauses()) {
+    for clause in mapped.trait_clauses()?.chain(mapped.projection_clauses()) {
         assert!(clause.has_free_regions(&store)?);
     }
     let original = environment
