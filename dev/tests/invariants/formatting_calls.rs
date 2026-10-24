@@ -101,7 +101,7 @@ fn canonical_format_result_does_not_authenticate_a_copied_tag_or_wrong_selector(
     let mut report = expanded("basic")?;
     let key = values(&report)?[0];
     let unit = &mut report.package.units[key.file.0 as usize];
-    let original = *unit.configured.ast.node(key.node);
+    let original = unit.configured.ast.node(key.node);
     let foreign = NodeId::new(u32::try_from(unit.configured.ast.nodes.len())?);
     unit.configured.ast.nodes.push(original);
     unit.configured.active.push(true);
@@ -168,5 +168,5 @@ fn formatting_plan_is_cold_and_reports_containing_syntax_and_dependency_layouts(
     );
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
     assert_eq!(size_of::<crate::body::ir::Value>(), 24);
-    assert_eq!(size_of::<crate::syntax::ast::Node>(), 32);
+    assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
 }

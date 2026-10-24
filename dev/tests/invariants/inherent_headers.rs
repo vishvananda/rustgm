@@ -7,6 +7,14 @@ use crate::{
 
 #[test]
 fn lookup_and_retirement_are_partitioned_by_nominal_and_name() {
+    eprintln!(
+        "inherent dependency layouts Requirement={} Dependency={} DeclarationWork={} PendingHeaders={}",
+        size_of::<crate::sema::bodies::Requirement>(),
+        size_of::<crate::sema::bodies::Dependency>(),
+        size_of::<super::super::Work>(),
+        size_of::<Pending>()
+    );
+
     let mut pending = Pending::default();
     for id in 0..4096 {
         pending.insert(DefId(id), Some(ItemId(id)), NameId(1), DefId(id + 10_000));
