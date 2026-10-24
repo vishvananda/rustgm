@@ -1,0 +1,187 @@
+{
+  "status": "Preimplementation immutable hypotheses; no oracle observations or candidate acceptance claimed",
+  "owning_assignment": "PA31 actual source builtin identity; PA26 formatting execution",
+  "editions": [
+    2021,
+    2024
+  ],
+  "profile": {
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "crate_type": "lib",
+    "cap_lints": "allow"
+  },
+  "original_headers": {
+    "format_args": {
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/macros/mod.rs",
+      "source_sha256": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+      "slice_sha256": "652ce93cc18ce9fb0af8a1ed422d3992c67f4b5c2021911c4ffdb62b69ec22f9",
+      "line": 990
+    },
+    "const_format_args": {
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/macros/mod.rs",
+      "source_sha256": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+      "slice_sha256": "17023a30034815c74796428f44171dffee41ebcb8805eb23465148d988aefa5f",
+      "line": 1006
+    },
+    "format_args_nl": {
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/macros/mod.rs",
+      "source_sha256": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+      "slice_sha256": "880a263de91c16ad95a49bcb706b7fc6c4c8fb3c7cb65f8026dfe2f837a844e0",
+      "line": 1016
+    }
+  },
+  "cases": [
+    {
+      "name": "declaration-original-format-args",
+      "path": "declaration-original-format-args.rs",
+      "sha256": "7d2b6b999aa944ca2ca67f4a2de35d7ee0532c2b72dfc9589eb6fa326f2b31e1",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual original source header retained; later staged policy remains explicit"
+    },
+    {
+      "name": "declaration-original-const-format-args",
+      "path": "declaration-original-const-format-args.rs",
+      "sha256": "7aa25b8e164a5e1cbbac78a30be9f7ba7d4c9150bc41019cd6c18db6f622d273",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual original source header retained; later staged policy remains explicit"
+    },
+    {
+      "name": "declaration-original-format-args-nl",
+      "path": "declaration-original-format-args-nl.rs",
+      "sha256": "fb711544ef3d0981f42a2b342cefb3c084d7c2315bd43d192102984cfee058ff",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual original source header retained; later staged policy remains explicit"
+    },
+    {
+      "name": "declaration-original-three",
+      "path": "declaration-original-three.rs",
+      "sha256": "15e1d0637934a0f16891b71ef1dc9ec4010aa19411f20b84f935bb45341052e8",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "all actual original source headers"
+    },
+    {
+      "name": "declaration-renamed-role",
+      "path": "declaration-renamed-role.rs",
+      "sha256": "1893be35b1ff3ddb766fc72337a22e02de80d107b57e8b9ecdf96299f9d60f04",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual role identity independent of declared spelling"
+    },
+    {
+      "name": "declaration-authored-same-spelling",
+      "path": "declaration-authored-same-spelling.rs",
+      "sha256": "5059af4f128a42108e3ad8317097c6b8cf93014d92bd77f7b07a17888a3e55a4",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "9\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "ordinary authored behavior unchanged"
+    },
+    {
+      "name": "declaration-diagnostic-only",
+      "path": "declaration-diagnostic-only.rs",
+      "sha256": "6314f3b9716da27d748d5d8abeefb50e85d762640e529f65fff661948ec57e62",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "Rust-positive; candidate must not infer builtin execution from diagnostic alone"
+    },
+    {
+      "name": "declaration-wrong-diagnostic-role",
+      "path": "declaration-wrong-diagnostic-role.rs",
+      "sha256": "75e640761ce168f174a9eb72390826fe77be209b0e266a3c93cff784d5614a05",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "Rust-positive; candidate rejects wrong actual source role for its reserved protocol"
+    },
+    {
+      "name": "declaration-scoped-format-role",
+      "path": "declaration-scoped-format-role.rs",
+      "sha256": "b0cbc26c9f223b9ac9bdced71f6300c66e68062e4f0bf87e382a0c3b149a7817",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "Rust-positive deliberately unsupported scoped builtin role"
+    },
+    {
+      "name": "declaration-unknown-role",
+      "path": "declaration-unknown-role.rs",
+      "sha256": "4eb8a1320e4a620a545021a68486eb830108ab7845be104571c9fc1062a3ad82",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "builtin"
+      ],
+      "candidate_milestone": "unknown role remains unsupported"
+    },
+    {
+      "name": "declaration-wrong-target",
+      "path": "declaration-wrong-target.rs",
+      "sha256": "a18995d3951469a33d8e13e32d242023d81b20b67292f1bcb278bf0635a50789",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "macro"
+      ],
+      "candidate_milestone": "actual macro owner required"
+    },
+    {
+      "name": "declaration-unsafe-missing-feature",
+      "path": "declaration-unsafe-missing-feature.rs",
+      "sha256": "152e7212655cf2c9b42f08de193eda05d140ad5a78c16bb7f83a91983fb81b1f",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "allow_internal_unsafe"
+      ],
+      "candidate_milestone": "actual attribute feature authorization required"
+    },
+    {
+      "name": "declaration-unsafe-malformed",
+      "path": "declaration-unsafe-malformed.rs",
+      "sha256": "0d6f124fbec8c83cb8c340e8ef17b602a8156cf0890ede7f6ad178be8b75ed8a",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "allow_internal_unsafe"
+      ],
+      "candidate_milestone": "no-arguments attribute grammar required"
+    },
+    {
+      "name": "declaration-duplicate-diagnostic",
+      "path": "declaration-duplicate-diagnostic.rs",
+      "sha256": "4d1e9dad0206cec8302f8140ea1fffd03dafa80ba7774bf048d35fc1b7160cd1",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "diagnostic"
+      ],
+      "candidate_milestone": "duplicate actual diagnostic identity"
+    }
+  ]
+}
