@@ -61,7 +61,7 @@ fn expanded(name: &str, edition: Edition) -> TestResult<Report> {
     let folder = root()?.join("pa31/tests/spec/source-concat-bytes");
     let path = folder.join(format!("{name}.rs"));
     let identity = CrateIdentity::new("minicore", "actual_concat_bytes")?;
-    let context = if name.starts_with("ordinary-") {
+    let context = if matches!(name, "ordinary-requested" | "ordinary-unrequested") {
         resolve::bindings::Context::default()
     } else {
         resolve::bindings::Context {
@@ -153,7 +153,6 @@ fn source_byte_claim_stability_and_ordinary_foreign_frontiers_remain_explicit() 
             "builtin macro binding requires its supported declaration kind",
         ),
         ("unknown-role", "builtin"),
-        ("wrong-owner", "macro"),
         ("ordinary-requested", "unresolved"),
         ("ordinary-unrequested", "unresolved"),
     ] {
@@ -162,6 +161,17 @@ fn source_byte_claim_stability_and_ordinary_foreign_frontiers_remain_explicit() 
             .ok_or_else(|| format!("{name}: unsupported owner/profile admitted"))?;
         assert!(error.to_string().contains(message), "{name}: {error}");
     }
+    // Wrong-owner attributes are checked by final source reservation, after
+    // expansion has retained the actual configured function declaration.
+    let error = resolve::analyze_expanded(expanded("wrong-owner", Edition::Rust2024)?)
+        .err()
+        .ok_or("builtin function owner admitted")?;
+    assert!(
+        error
+            .message
+            .contains("builtin macro binding requires its supported declaration kind"),
+        "{error}"
+    );
     Ok(())
 }
 fn expected(name: &str) -> TestResult<Vec<u8>> {
