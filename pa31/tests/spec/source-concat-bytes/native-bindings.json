@@ -1,0 +1,161 @@
+{
+  "status": "Pre-oracle typed C consumer bindings; unchanged immutable source/stdout hypotheses",
+  "contract_sha256": "7ede0d2c4b68947b6257f074b664b6d1de78197ec925dd3426ebdd6add7b4394",
+  "clarification": "scoped-role original nullable byte field was unspecified; actual declared pointer ABI gets explicit4142 comparison before any execution. No source or original expected stdout changed.",
+  "cases": [
+    {
+      "case": "mixed-bytes",
+      "source_sha256": "8f18be0b39404735265aaac666dd6c90ee6cedd8aa7d18b3dba80fd58be17488",
+      "abi": "bytes",
+      "expected_bytes_hex": "414200ff435c44",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "empty",
+      "source_sha256": "51caa837e0d731b65c5446b6c2d3095c3e3a6e36ea8dc7da30c414ba12d49600",
+      "abi": "bytes",
+      "expected_bytes_hex": "",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "trailing-comma",
+      "source_sha256": "86207a16c51632e5b9cc9474a5f8e2881dbc09a654f4ca8b6782f47c37f0e1d3",
+      "abi": "bytes",
+      "expected_bytes_hex": "41",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "array-literals",
+      "source_sha256": "754485a0db712cfc570662d837ced11c7a4422f1d0fe92e2e0dee666ef9a6360",
+      "abi": "bytes",
+      "expected_bytes_hex": "0041ff",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "repeat",
+      "source_sha256": "15b7bf74c69811b7dbaffad8d1380c34f8a716cb13c2f42f46720cadcaa2187b",
+      "abi": "bytes",
+      "expected_bytes_hex": "515151",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "repeat-zero",
+      "source_sha256": "e7cb0d70b5a8991c646089845cb8bba51268c879ba4ff8490aea0db4d786e880",
+      "abi": "bytes",
+      "expected_bytes_hex": "",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "count-suffix",
+      "source_sha256": "754203fbbc9254100c852e210789fd898c69d50aba366c5d1afb80a655b08f10",
+      "abi": "bytes",
+      "expected_bytes_hex": "5858",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "nested-eager",
+      "source_sha256": "ca286f3aae8042e543b7cb8994ad6959f8006239a662695c1617cda11a760a52",
+      "abi": "bytes",
+      "expected_bytes_hex": "4142",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "captured-expression",
+      "source_sha256": "e3210c2bc0b867390dde05bf79c04db110a3c5a4d9e6a8fe5d892bf94423d623",
+      "abi": "bytes",
+      "expected_bytes_hex": "4142",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "captured-array",
+      "source_sha256": "370d60b31b5f80d2cc7eaf368b01a2f60bc246d9b4123201e581a61f64186131",
+      "abi": "bytes",
+      "expected_bytes_hex": "0041",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "renamed-role",
+      "source_sha256": "5dbff6f01dd1f57e3acc3e0dd9b4c0d81a4ff134757b47bdbda304df56d2e297",
+      "abi": "bytes",
+      "expected_bytes_hex": "4142",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "authored-shadow",
+      "source_sha256": "49beb8a0518dbb3aafbe2eab8cb0bb3dc5a2ca02f7fe7fa4923dd6dad87acf6f",
+      "abi": "bytes",
+      "expected_bytes_hex": "5a",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "width-8",
+      "source_sha256": "f7795f3abd12266ba58fe09d77b4043150eecb0a4e664f50707571a2b0bf3feb",
+      "abi": "bytes",
+      "expected_bytes_hex": "0001020304050607",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "uses-8",
+      "source_sha256": "925d445ab2edec1dd9474faa860bafdde68f2fee5eeacb709bd4da1bf1ca4650",
+      "abi": "bytes",
+      "expected_bytes_hex": "4142",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "width-32",
+      "source_sha256": "356a0274e28a3becb088ef838dd897569216f694feda03c1d3562bf99ac641e5",
+      "abi": "bytes",
+      "expected_bytes_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "uses-32",
+      "source_sha256": "eb51ffc7091a5c133c0c2e186a2388731576fb616807b2105c77e6e3040c5918",
+      "abi": "bytes",
+      "expected_bytes_hex": "4142",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "width-128",
+      "source_sha256": "0b4b9883660378750f4e8848be7805c0841fbe116d247a1ea9c1d860d2f0202a",
+      "abi": "bytes",
+      "expected_bytes_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "uses-128",
+      "source_sha256": "53129b55e0dedcda2370b911306cf57808fe4609139322f631ab6318834fe4d8",
+      "abi": "bytes",
+      "expected_bytes_hex": "4142",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "original-header",
+      "source_sha256": "8bc415a96670467d00c23b663bb77bd70eb65c5e18c2082d1061ae58da6a138f",
+      "abi": "u32",
+      "expected_bytes_hex": null,
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "scoped-role",
+      "source_sha256": "3449896b96c01fad26b5eebe32c147873ccf6de528b844a808ed0fc8dd9d9192",
+      "abi": "bytes",
+      "expected_bytes_hex": "4142",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "ordinary-requested",
+      "source_sha256": "1e4324ed1661d0ca1ebe5ec49578f0a9c3d53b68a952caaa6f96d3ad78aea900",
+      "abi": "bytes",
+      "expected_bytes_hex": "4142",
+      "expected_stdout": "7\n"
+    },
+    {
+      "case": "included-bytes",
+      "source_sha256": "619f139e38b29790b09987570732c0bb51de76e4a7e0835dcefca2d1ee254eed",
+      "abi": "bytes",
+      "expected_bytes_hex": "efbbbf410d0a00ff00",
+      "expected_stdout": "7\n"
+    }
+  ]
+}
