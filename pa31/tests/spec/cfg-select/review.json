@@ -1,0 +1,215 @@
+{
+  "status": "Observed original immutable hypotheses; five source cases need the distinctions below. No original source or predicted outcome changed.",
+  "contract_sha256": "1fe8428cbfdefe52b1b93d9cbcfcd5df1c834916b7ce73692d5d53fd5f69fb99",
+  "results_sha256": "34c38cf8cef5688dbd83834d6027e96a0b9eb5ff7e97e537c4bff6740380f190",
+  "actual_observations": 140,
+  "actual_language_observations": 84,
+  "actual_native_programs": 28,
+  "infrastructure_failures": 0,
+  "compiler_qualified": false,
+  "corrections": [
+    {
+      "name": "empty-expression",
+      "classification": "Rejection prediction confirmed; diagnostic/phase prediction corrected.",
+      "observations": [
+        {
+          "stage": "metadata",
+          "status": 1,
+          "codes": [
+            "E0308"
+          ],
+          "messages": [
+            "mismatched types",
+            "aborting due to 1 previous error"
+          ],
+          "primary_spans": [
+            [
+              8,
+              365,
+              "expected `u32`, found `()`"
+            ]
+          ]
+        },
+        {
+          "stage": "object",
+          "status": 1,
+          "codes": [
+            "E0308"
+          ],
+          "messages": [
+            "mismatched types",
+            "aborting due to 1 previous error"
+          ],
+          "primary_spans": [
+            [
+              8,
+              365,
+              "expected `u32`, found `()`"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "invalid-predicate-after-match",
+      "classification": "Rejection prediction confirmed; diagnostic/phase prediction corrected.",
+      "observations": [
+        {
+          "stage": "metadata",
+          "status": 1,
+          "codes": [
+            "E0805"
+          ],
+          "messages": [
+            "malformed `cfg_select` macro input",
+            "aborting due to 1 previous error"
+          ],
+          "primary_spans": [
+            [
+              8,
+              403,
+              null
+            ]
+          ]
+        },
+        {
+          "stage": "object",
+          "status": 1,
+          "codes": [
+            "E0805"
+          ],
+          "messages": [
+            "malformed `cfg_select` macro input",
+            "aborting due to 1 previous error"
+          ],
+          "primary_spans": [
+            [
+              8,
+              403,
+              null
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "statement-position",
+      "classification": "Predicted acceptance not reached: incomplete no_core provider lacks Copy role. This does not establish rejection of cfg_select in this fragment context.",
+      "observations": [
+        {
+          "stage": "metadata",
+          "status": 1,
+          "codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "primary_spans": [
+            [
+              1,
+              0,
+              null
+            ]
+          ]
+        },
+        {
+          "stage": "object",
+          "status": 1,
+          "codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "primary_spans": [
+            [
+              1,
+              0,
+              null
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pattern-position",
+      "classification": "Predicted acceptance not reached: incomplete no_core provider lacks Copy role. This does not establish rejection of cfg_select in this fragment context.",
+      "observations": [
+        {
+          "stage": "metadata",
+          "status": 1,
+          "codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "primary_spans": [
+            [
+              8,
+              371,
+              null
+            ]
+          ]
+        },
+        {
+          "stage": "object",
+          "status": 1,
+          "codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "primary_spans": [
+            [
+              8,
+              371,
+              null
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "captured-local",
+      "classification": "Predicted acceptance not reached: incomplete no_core provider lacks Copy role. This does not establish rejection of cfg_select in this fragment context.",
+      "observations": [
+        {
+          "stage": "metadata",
+          "status": 1,
+          "codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "primary_spans": [
+            [
+              1,
+              0,
+              null
+            ]
+          ]
+        },
+        {
+          "stage": "object",
+          "status": 1,
+          "codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "primary_spans": [
+            [
+              1,
+              0,
+              null
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "additional_evidence": {
+    "declaration-source-assert-matches": "All four metadata/object/link/native7 observations passed for C's unchanged additive fixture.",
+    "legacy-builtin-shape": "Actual rustc accepts a rustc_builtin_macro macro_rules declaration and executes native7; the builtin role is not restricted to pub macro syntax.",
+    "unchosen_semantics": "Unselected unresolved names/macros remain unexpanded; balanced malformed expression/item/type syntax rejects. Wildcard may precede later branches and repeated wildcard accepts with lints capped."
+  }
+}
