@@ -24,6 +24,12 @@ field type checks. An assignment evaluates its RHS before forming its destinatio
 an index expression executes once. Wildcard field discards need no value read,
 but wildcard array indexing still forms the place and checks bounds.
 
+Check the types actually used by a body from its physical module. A public
+function returning a private aggregate does not make that aggregate accessible;
+private types nested in a callable signature remain private too. A public
+function-pointer interface may hide the private function it stores. Consume
+completed semantic types and share traversal of repeated type nodes.
+
 Array repetition evaluates its operand once, including lengths zero and one.
 Larger repeats require a Copy operand or an eligible constant operand. Keep one
 operand and a canonical length, never one body-IR entry per repeated element.
