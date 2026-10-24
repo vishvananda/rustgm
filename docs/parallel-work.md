@@ -172,6 +172,62 @@ forcibly killed, inspect its recorded systemd scope and stop any surviving job
 before restarting; inherited lease descriptors are an additional safeguard,
 not a substitute for checking the scope.
 
+### Optional absolute output caps (controller schema 2)
+
+The default remains the configured 50 GiB allowance. A small command may opt
+into a lower **absolute** cap with `resources.py run --max-output-gib N`.
+The cap includes all existing allocated output under that worktree's registered
+roots, including Cargo caches, pins and receipts; it is not additional space
+above the initial scan. `N` must be positive, finite and no greater than the
+configured worker allowance. Fractional GiB values are accepted. An unconfigured
+controller or schema 1 rejects explicit cap requests, even an explicit 50.
+
+This feature requires a deliberate rollout by the integrator:
+
+1. Qualify the updated resource/storage tooling and install it in every
+   participating worktree. Keep the live policy at schema 1 during deployment;
+   default commands remain compatible and reserve the full configured allowance.
+2. Finish every guarded command (including queued wrappers) and exclusive measurement. Check
+   `python3 scripts/resources.py status` at this idle boundary.
+3. Run `python3 scripts/resources.py set-schema 2`. Activation refuses active
+   or acquiring leases, takes the exclusive gate, rechecks the policy and slots,
+   and holds the gate through the policy rewrite. It changes no resource limits.
+   Old wrappers reject the unknown schema; old queued commands reject their
+   changed policy before launching. Do not edit the policy file directly.
+4. Only then use a lower cap for a command whose entire registered output fits:
+
+   ```sh
+   python3 scripts/resources.py run --max-output-gib 8 -- python3 scripts/storage.py run --prune-under obj/parallel/small-check -- python3 obj/parallel/check.py
+   ```
+
+Nested storage/resource wrappers inherit the exact outer cap and its supervisor.
+They may repeat the same cap explicitly (`storage.py run` accepts the same option),
+but cannot tighten it without their own supervisor or raise it. Request the
+desired cap on the outer command. Inheritance authenticates the current
+controller/policy, exact worktree and live ancestor PID plus kernel start time;
+environment strings alone do not grant a lease.
+
+Admission reserves the job's unused cap plus full peer caps. Unknown, acquiring,
+legacy or invalid peer records reserve the **configured** worker allowance,
+never the requesting job's smaller cap. Claiming a slot and publishing its first
+record are serialized with active-record snapshots by a short admission lock;
+no job waits for a slot while holding that lock. Kernel slot locks still decide
+availability, so stale records for unlocked slots do not reserve space.
+
+Initial, incremental and final scans use the same cap. Initial refusals retain
+failed receipts without launching a command. Live overshoots stop the entire
+systemd scope, and short commands still undergo final accounting. Receipts and
+lease records retain `budget_bytes` separately from configured `worker_gib`,
+the observed allocated usage and the failure, including a partial overshooting
+scan. This remains monitored accounting rather than an instantaneous filesystem
+quota. The 150 GiB reserve, three-slot maximum, exclusive benchmarks, CPU/RAM/task
+limits and two Cargo/test threads are unchanged.
+
+The implementation handoff does not activate schema 2. Its source tests use
+small temporary files or simulated usage; they cover mixed reservations, stale
+publication, nested requests, all three accounting phases and idle activation.
+The integrator must run the resource/storage tests and harness before rollout.
+
 ## Worker completion contract
 
 Read `AGENTS.md`, `spec.md`, the owning handout and `TESTING_AND_REFERENCES.md`.

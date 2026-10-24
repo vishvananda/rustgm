@@ -206,11 +206,15 @@ def main():
     parser.add_argument("--hours", type=float, default=0)
     parser.add_argument("--minimum-gib", type=float,
                         default=minimum_reserve())
+    parser.add_argument("--max-output-gib", type=float,
+                        help="absolute output cap for run; nested commands must match the outer cap")
     args, command = parser.parse_known_args()
     if command[:1] == ["--"]:
         command = command[1:]
     if args.hours < 0 or args.minimum_gib < 0 or (command and args.action != "run"):
         parser.error("invalid arguments")
+    if args.max_output_gib is not None and args.action != "run":
+        parser.error("--max-output-gib requires run")
     if args.prune_under and (args.action == "check" or args.no_prune or args.build_cache):
         parser.error("--prune-under requires pruning without --no-prune or --build-cache")
     try:
@@ -229,7 +233,7 @@ def main():
             environment = dict(os.environ)
             environment.setdefault("CARGO_INCREMENTAL", "0")
             started = time.time()
-            returncode = run_guarded(ROOT, command, environment)
+            returncode = run_guarded(ROOT, command, environment, max_output_gib=args.max_output_gib)
             # Failed runs retain their executable artifacts for diagnosis. An explicit
             # prune can remove them once the failure has been investigated.
             if returncode == 0 and not args.no_prune:

@@ -5,8 +5,9 @@ import subprocess
 import sys
 import time
 
-from resource_locks import active_records, inherited, lease
-from resource_policy import GIB, UsageScan, atomic_json, discover, free_space, output_roots, usage
+from resource_locks import active_records, inherited, inherited_budget, lease, peer_budget
+from resource_policy import (OutputLimitError, UsageScan, atomic_json, check_usage, discover, free_space,
+                             output_budget, output_roots, usage)
 
 
 def scope_command(command, unit, policy):
@@ -40,9 +41,30 @@ def scope_active(unit):
     return result.returncode == 0
 
 
+def finished(root, record, path, result, reason, *, state="finished"):
+    record.update(state=state, finished=time.time(), returncode=result, error=reason)
+    atomic_json(path, record)
+    folder = root / "obj/parallel/resources"
+    folder.mkdir(parents=True, exist_ok=True)
+    # The nonce is an inheritance token, not useful as retained evidence.
+    receipt = folder / f"{record['token']}.json"
+    atomic_json(receipt,
+                {key: value for key, value in record.items() if key != "token"})
+    return receipt
+
+
+def observed_failure(record, error):
+    # A failed scan still records the observed overshoot, not its last successful
+    # scan. All accounting includes retained caches, pins and prior receipts.
+    if isinstance(error, OutputLimitError):
+        record["used_bytes"] = error.used
+
+
 def supervise(command, root, environment, policy, entry, record, path, descriptors):
     unit = f"rustgm-job-{record['token']}.scope"
+    budget = record.setdefault("budget_bytes", output_budget(policy))
     record.update(command=command, unit=unit, state="starting",
+                  supervised_budget_bytes=budget,
                   limits={key: policy[key] for key in
                           ("jobs", "reserve_gib", "worker_gib", "cpu_percent", "memory_gib", "tasks")})
     atomic_json(path, record)
@@ -53,6 +75,7 @@ def supervise(command, root, environment, policy, entry, record, path, descripto
     handlers = {}
     result = 1
     reason = None
+    accounted = False
     try:
         for sig in (signal.SIGTERM, signal.SIGINT):
             handlers[sig] = signal.signal(sig, lambda number, _frame: stopped.append(number))
@@ -70,10 +93,9 @@ def supervise(command, root, environment, policy, entry, record, path, descripto
                 scanner = UsageScan(output_roots(root, entry))
             if scanner is not None:
                 scanner.step()
-                if scanner.total > policy["worker_gib"] * GIB:
-                    raise ValueError("worktree generated artifacts exceeded 50 GiB; command stopped")
+                record["used_bytes"] = scanner.total
+                check_usage(scanner.total, budget)
                 if scanner.done:
-                    record["used_bytes"] = scanner.total
                     atomic_json(path, record)
                     scanner.close()
                     scanner = None
@@ -83,10 +105,25 @@ def supervise(command, root, environment, policy, entry, record, path, descripto
         # A detached background build must not outlive its lease.
         if scope_active(unit):
             raise ValueError("command left descendants running; scope stopped")
-        # Short commands still need a final budget check.
-        record["used_bytes"] = usage(root, entry, policy)
+        # Count our own receipt too, including for very short commands. A final
+        # usage-number rewrite normally keeps its allocated block count. Permit
+        # one rescan if the receipt crosses a block boundary; never silently
+        # omit that growth or loop on changing bookkeeping.
+        receipt = finished(root, record, path, result, None, state="finalizing")
+        for _ in range(2):
+            blocks = receipt.stat().st_blocks
+            record["used_bytes"] = usage(root, entry, policy, budget)
+            if stopped:
+                raise ValueError(f"resource supervisor interrupted by signal {stopped[0]}")
+            finished(root, record, path, result, None)
+            if receipt.stat().st_blocks == blocks:
+                accounted = True
+                break
+        if not accounted:
+            raise ValueError("resource receipt allocation changed during final accounting")
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         reason = str(error)
+        observed_failure(record, error)
         if process is not None:
             stop(process, unit)
         result = 128 + stopped[0] if stopped else 1
@@ -95,44 +132,49 @@ def supervise(command, root, environment, policy, entry, record, path, descripto
             scanner.close()
         for sig, handler in handlers.items():
             signal.signal(sig, handler)
-        record.update(state="finished", finished=time.time(), returncode=result, error=reason)
-        atomic_json(path, record)
-        folder = root / "obj/parallel/resources"
-        folder.mkdir(parents=True, exist_ok=True)
-        receipt = folder / f"{record['token']}.json"
-        # The nonce is an inheritance token, not useful as retained evidence.
-        atomic_json(receipt, {key: value for key, value in record.items() if key != "token"})
+        if not accounted:
+            finished(root, record, path, result, reason)
     if reason:
         print(f"resources: {reason}", file=sys.stderr, flush=True)
     return result if result >= 0 else 128 - result
 
 
-def run(root, command, environment=None, *, kind="ordinary", wait=3600):
+def run(root, command, environment=None, *, kind="ordinary", wait=3600, max_output_gib=None):
     environment = dict(os.environ if environment is None else environment)
     found = discover(root)
     if found is None:
-        if kind == "exclusive":
-            raise ValueError("exclusive work requires a configured shared resource controller")
+        if kind == "exclusive" or max_output_gib is not None:
+            raise ValueError("exclusive work and output caps require a configured shared resource controller")
         return subprocess.run(command, cwd=root, env=environment, check=False).returncode
     directory, policy = found
+    budget = output_budget(policy, max_output_gib)
     root = root.resolve()
     entry = policy["worktrees"].get(str(root))
     if entry is None:
         raise ValueError("worktree is not registered with the shared resource controller")
     environment.update(CARGO_BUILD_JOBS="2", RUST_TEST_THREADS="2", CARGO_INCREMENTAL="0",
                        RUSTGM_TEST_JOBS="2", CARGO_TARGET_DIR=str(root / "obj/rust"))
-    if inherited(directory, root, environment, kind, policy["jobs"]):
+    outer = inherited(directory, root, environment, kind, policy["jobs"], policy=policy)
+    if outer:
+        inherited_budget(outer, policy, budget if max_output_gib is not None else None)
         return subprocess.run(command, cwd=root, env=environment, check=False).returncode
-    with lease(directory, root, policy, kind, wait) as (record, path, descriptors):
-        if discover(root) != (directory, policy):
-            raise ValueError("resource policy changed while waiting; retry the command")
-        used = usage(root, entry, policy)
-        # Reserve the unused allowance of this job and full allowances of peers.
-        # This is conservative when another worker already has a warm cache.
-        others = [row for row in active_records(directory, policy["jobs"])
-                  if row.get("slot") != record["slot"]]
-        reservation = max(0, record["budget_bytes"] - used)
-        reservation += sum(row.get("budget_bytes", record["budget_bytes"]) for row in others)
-        free_space(root, policy, reservation)
-        record["used_bytes"] = used
+    with lease(directory, root, policy, kind, wait, budget=budget) as (record, path, descriptors):
+        record["command"] = command
+        try:
+            if discover(root) != (directory, policy):
+                raise ValueError("resource policy changed while waiting; retry the command")
+            used = usage(root, entry, policy, budget)
+            record["used_bytes"] = used
+            # Reserve our unused absolute cap and full peer caps. An unknown or
+            # legacy peer always reserves configured worker_gib, never our cap.
+            others = [row for row in active_records(directory, policy["jobs"])
+                      if row.get("slot") != record["slot"]]
+            reservation = max(0, budget - used)
+            reservation += sum(peer_budget(row, policy) for row in others)
+            record["reservation_bytes"] = reservation
+            free_space(root, policy, reservation)
+        except (OSError, ValueError) as error:
+            observed_failure(record, error)
+            finished(root, record, path, 1, str(error))
+            raise
         return supervise(command, root, environment, policy, entry, record, path, descriptors)

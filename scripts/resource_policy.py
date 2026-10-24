@@ -1,5 +1,7 @@
 """Local shared-worktree policy and bounded artifact accounting."""
+import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import shutil
@@ -28,8 +30,8 @@ def discover(root):
 
 
 def validate(policy):
-    if policy.get("schema") != 1 or policy.get("jobs") not in (2, 3):
-        raise ValueError("resource policy requires schema 1 and two or three job slots")
+    if policy.get("schema") not in (1, 2) or policy.get("jobs") not in (2, 3):
+        raise ValueError("resource policy requires schema 1 or 2 and two or three job slots")
     for key in ("reserve_gib", "worker_gib", "cpu_percent", "memory_gib", "tasks"):
         if not isinstance(policy.get(key), int) or policy[key] <= 0:
             raise ValueError(f"invalid resource policy: {key}")
@@ -39,6 +41,38 @@ def validate(policy):
         raise ValueError("resource limits exceed the reviewed parallel policy")
     if not isinstance(policy.get("worktrees"), dict):
         raise ValueError("missing registered worktrees")
+
+
+def output_budget(policy, maximum=None):
+    """An explicit cap is absolute, not an allowance in addition to warm output."""
+    configured = policy["worker_gib"] * GIB
+    if maximum is None:
+        return configured
+    if policy["schema"] != 2:
+        raise ValueError("--max-output-gib requires controller schema 2; activate at an idle boundary")
+    if (isinstance(maximum, bool) or not isinstance(maximum, (int, float))
+            or maximum <= 0 or maximum > policy["worker_gib"] or not math.isfinite(maximum)):
+        raise ValueError("--max-output-gib must be positive, finite and no greater than worker_gib")
+    budget = int(maximum * GIB)
+    if budget < 1:
+        raise ValueError("--max-output-gib must allow at least one byte")
+    return budget
+
+
+def policy_identity(policy):
+    return hashlib.sha256(json.dumps(policy, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+class OutputLimitError(ValueError):
+    def __init__(self, used, budget):
+        self.used = used
+        super().__init__(f"worktree generated artifacts {used} bytes exceed the absolute "
+                         f"output cap {budget} bytes ({budget / GIB:g} GiB)")
+
+
+def check_usage(used, budget):
+    if used > budget:
+        raise OutputLimitError(used, budget)
 
 
 def output_roots(root, entry):
@@ -121,14 +155,14 @@ class UsageScan:
         return None
 
 
-def usage(root, entry, policy):
+def usage(root, entry, policy, budget=None):
+    budget = output_budget(policy) if budget is None else budget
     scan = UsageScan(output_roots(root, entry))
     try:
         while not scan.done:
             scan.step()
             free_space(root, policy)
-            if scan.total > policy["worker_gib"] * GIB:
-                raise ValueError("worktree generated artifacts exceed 50 GiB; clean before continuing")
+            check_usage(scan.total, budget)
         return scan.total
     finally:
         scan.close()

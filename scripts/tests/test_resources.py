@@ -246,7 +246,7 @@ class ResourceTests(unittest.TestCase):
             directory = root / 'control'
             directory.mkdir()
             record = {'pid': os.getpid(), 'token': 'test-quota', 'slot': 0,
-                      'root': str(root), 'kind': 'ordinary'}
+                      'root': str(root), 'kind': 'ordinary', 'budget_bytes': 4096}
             def terminate(process, _unit):
                 os.killpg(process.pid, signal.SIGTERM)
                 process.wait(timeout=5)
@@ -255,7 +255,8 @@ class ResourceTests(unittest.TestCase):
                  patch('resource_runner.stop', side_effect=terminate), \
                  patch('sys.stderr', io.StringIO()):
                 result = supervise([sys.executable, '-c', 'import time; time.sleep(60)'],
-                                   root, dict(os.environ), {**DEFAULTS, 'worker_gib': 4096 / GIB},
+                                   root, dict(os.environ), {**DEFAULTS, 'schema': 2},
                                    {'outputs': ['obj']}, record, directory / 'slot-0.json', ())
             self.assertEqual(result, 1)
-            self.assertIn('50 GiB', record['error'])
+            self.assertIn('output cap 4096 bytes', record['error'])
+            self.assertGreaterEqual(record['used_bytes'], 8192)
