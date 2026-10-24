@@ -31,7 +31,7 @@ impl Members {
         report: &Report,
         owner: DefId,
         declaration: DefId,
-    ) -> Result<Option<DefId>, &'static str> {
+    ) -> Result<Option<DefId>, (DefId, &'static str)> {
         self.prepare(report, facts, owner)?;
         Ok(self
             .matches
@@ -45,7 +45,7 @@ impl Members {
         report: &Report,
         facts: &Declarations,
         owner: DefId,
-    ) -> Result<(), &'static str> {
+    ) -> Result<(), (DefId, &'static str)> {
         if self.matches.contains_key(&owner) {
             return Ok(());
         }
@@ -54,29 +54,28 @@ impl Members {
             .implementations
             .as_ref()
             .and_then(|registry| registry.header(owner))
-            .ok_or("missing constant implementation header")?
+            .ok_or((owner, "missing constant implementation header"))?
             .predicate;
         let (application, _) = predicate
             .bound
             .trait_parts()
-            .ok_or("constant implementation has no trait application")?;
+            .ok_or((owner, "constant implementation has no trait application"))?;
         let trait_item = facts
             .types
             .trait_application(application)
-            .ok_or("missing constant implementation trait application")?
+            .ok_or((owner, "missing constant implementation trait application"))?
             .item;
         let impl_owner = facts
             .associated
             .declaration_owner(owner)
-            .ok_or("missing constant implementation owner")?;
+            .ok_or((owner, "missing constant implementation owner"))?;
         let matches = super::super::override_identity::overrides(
             report,
             &facts.associated,
             DefId(trait_item.0),
             self.owners.get(&impl_owner).map_or(&[], Vec::as_slice),
             "implementation constant is not a member of the trait",
-        )
-        .map_err(|(_, error)| error)?;
+        )?;
         self.matches.insert(owner, matches);
         Ok(())
     }
@@ -116,7 +115,14 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(source, "missing constant trait owner"))?;
         members
             .prepare(self.report, &self.facts, owner)
-            .map_err(|e| self.error(source, e))?;
+            .map_err(|(member, error)| {
+                self.error(
+                    self.report.resolution.definitions[member.0 as usize]
+                        .node
+                        .unwrap_or(source),
+                    error,
+                )
+            })?;
         let overrides = members
             .matches
             .get(&owner)

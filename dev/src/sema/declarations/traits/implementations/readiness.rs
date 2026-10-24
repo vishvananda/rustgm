@@ -70,7 +70,14 @@ impl Checker<'_> {
             .constant_members
             .members(self.report, &self.facts)
             .selected(&self.facts, self.report, request.owner, request.declaration)
-            .map_err(|e| self.error(key, e))?;
+            .map_err(|(member, error)| {
+                self.error(
+                    self.report.resolution.definitions[member.0 as usize]
+                        .node
+                        .unwrap_or(key),
+                    error,
+                )
+            })?;
         if !finish {
             if !self.constant_members.active.insert(request) {
                 return Err(self.error(key, "cycle in associated constant member contracts"));
