@@ -324,7 +324,7 @@ impl Paths {
         let mut resolver = self.state.bind(package);
         let first_definition = resolver.facts.definitions.len();
         let access = resolver.visibility(context, visibility)?;
-        resolver.import(context, node, &[], false, access)?;
+        resolver.import(context, node, access)?;
         self.work.extend(resolver.facts);
         for definition in &resolver.facts.definitions[first_definition..] {
             let key = resolver.binding_key(definition)?;

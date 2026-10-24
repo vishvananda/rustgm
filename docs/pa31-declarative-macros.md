@@ -392,6 +392,15 @@ classification. Relevant bootstrap paths still perform full-prefix semantic
 scans. Measure that remaining depth cost separately before claiming a general
 linear bound for collection.
 
+The first collector gate at source `8d3f4b0d` passes formatting and the
+architecture/file audit, then stops at strict compilation: expansion's import
+caller still used the former prefix/absolute arguments. No candidate tests ran.
+Its logs remain in `obj/parallel/macro-identifiers-v1` in the integrator validation
+checkout. The successor updates that caller to the same new entrypoint already
+used by ordinary collection; fresh strict and focused qualification remain
+required. The initial attempt in the macro checkout was refused by storage
+admission before any runner started, and is preserved separately.
+
 The pinned compiler intentionally treats implicit `Self` as root-normalized
 (`rustc_resolve/src/ident.rs:316` and `late.rs:3503`). Type, const and lifetime
 generic parameters instead use item normalization (`late.rs:3158`). This
