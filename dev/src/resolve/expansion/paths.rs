@@ -2,6 +2,7 @@
 use super::{
     Builtin, Call, Error, MacroTarget, ModuleId, NodeId, NodeKey, Package, bindings::Bindings,
 };
+use crate::expand::marks::ItemContext;
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     expand::{
@@ -118,7 +119,12 @@ impl Paths {
             }
             self.work.declared(
                 &resolver.facts.bindings,
-                (definition.scope, definition.name, definition.namespace),
+                (
+                    definition.scope,
+                    definition.name,
+                    definition.namespace,
+                    ItemContext::ROOT,
+                ),
             );
         }
         // Unnameable `impl Trait` parameters have no binding to publish.
@@ -299,7 +305,7 @@ impl Paths {
             return Err(resolver.error(context, node, "duplicate macro-path binding"));
         }
         resolver.publish(
-            (context.scope, name, namespace),
+            (context.scope, name, namespace, ItemContext::ROOT),
             Some(Binding {
                 target,
                 access,
@@ -326,7 +332,12 @@ impl Paths {
         for definition in &resolver.facts.definitions[first_definition..] {
             self.work.declared(
                 &resolver.facts.bindings,
-                (definition.scope, definition.name, definition.namespace),
+                (
+                    definition.scope,
+                    definition.name,
+                    definition.namespace,
+                    ItemContext::ROOT,
+                ),
             );
         }
         let library_builtin = resolver.facts.imports[first..].iter().any(|import| {
@@ -542,8 +553,10 @@ impl Paths {
         self.macro_targets
             .insert(target, MacroTarget::Builtin(Builtin::OptionEnv));
         self.work.extend(resolver.facts);
-        self.work
-            .declared(&resolver.facts.bindings, (scope, name, Namespace::Macro));
+        self.work.declared(
+            &resolver.facts.bindings,
+            (scope, name, Namespace::Macro, ItemContext::ROOT),
+        );
         Ok(())
     }
     pub fn take_error(&mut self) -> Option<Error> {

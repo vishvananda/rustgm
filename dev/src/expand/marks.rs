@@ -23,6 +23,9 @@ impl LocalContext {
 }
 impl ItemContext {
     pub const ROOT: Self = Self(SyntaxContextId::ROOT);
+    pub(crate) const fn key(self) -> u32 {
+        self.0.0.get()
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Transparency {

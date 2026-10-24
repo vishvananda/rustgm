@@ -174,7 +174,7 @@ fn source_configuration_keeps_bootstrap_owner_absent() -> Result {
         size_of::<IntrinsicDeclaration>(),
         size_of::<crate::syntax::expression::Parser<'_, '_>>()
     );
-    // One cold local-history index pointer adds eight bytes; hot binding rows are unchanged.
-    assert_eq!(size_of::<resolve::model::Resolution>(), 2040);
+    // Local-history and contextual-item indexes add two cold handles; hot rows are unchanged.
+    assert_eq!(size_of::<resolve::model::Resolution>(), 2048);
     Ok(())
 }

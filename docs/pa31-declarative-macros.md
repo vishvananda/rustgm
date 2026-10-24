@@ -263,3 +263,55 @@ Scoped declarations still reject explicitly. Root language gates, normalized ite
 and import keys, module/path adjustment, visibility and cross-crate provenance
 remain required. This development checkpoint is not a release qualification or
 an original whole-core/alloc/std build.
+
+## Context-bearing binding development checkpoint
+
+The focused-qualified successor to `3df65784` adds a lazy
+forward/reverse context index into the existing Entry arena, without fields in
+Entry or Local. Root slots count only root entries; their lookup also handles a
+table populated solely by contextual entries. Removal/redeclaration retains the
+same global entry ordinal and first-binding position. Import dependency keys,
+candidate sets, provided sets, journals, selection records and withdrawal events
+now retain ItemContext. Cold withdrawal ordering includes that context explicitly.
+Existing root-only public binding iteration remains explicitly root-only; the
+metadata seam `has_contextual_items` exposes retained contextual keys so the
+metadata producer can reject the whole provider before provenance transport is
+qualified. Wiring that rejection into the producer remains an integration task.
+
+Review exposed an existing journal boundary issue: two unrecorded entries can
+predate Work, both become ordinary bindings in one batch, then notify Work after
+the batch. Seeding by creation ordinal duplicates the second declaration and
+changes event order. The draft records each indexed scope's first-binding tail
+once at Work creation, using four bytes per existing indexed scope, and seeds
+only through that retained tail. It keeps lazy per-scope journals and adds no
+per-entry publication field or per-declaration scope scan. The regression covers
+the actual post-batch notification shape, not only one declaration at a time.
+Standalone resolution with no imports returns before constructing Work, avoiding
+the new snapshot allocation entirely. Expansion still retains its worklist when
+later macro output may introduce imports; its existing bindings need a snapshot.
+
+Ten new private controls cover root-only allocation, independent root/context
+widths, empty root slots, alias identity, exact-context duplicates, removal and
+re-declaration order, local/item separation, journal boundaries and exact-context
+waiter wakeups, plus same-origin glob withdrawal with a direct binding masking
+only one context. A scope-count by later-suffix-width control bounds journal
+visits to at most five for four retained keys, including the current one-entry
+peek, independently of the later suffix. Passing layout assertions establish
+BindingTable120, Entry44, Local32 and Resolution2048 on this x86-64 profile.
+The prior qualified source and receipts remain separate. Scoped source declaration/alias/path contexts,
+module adjustment, visibility, mixed opaque context ranges, language gates and
+cross-crate transport remain unfinished. Glob subscriptions are still scope-wide;
+this draft makes no claim of eliminating a contexts-by-globs work product or
+accepting any new scoped macro program.
+
+Evidence `obj/parallel/pa31-declarative-macros/item-bindings-v2` records fresh
+formatting, architecture/file audits, all-target strict Clippy, harness/upstream
+verification, 135 frontend tests and 26 exact private controls. The rebuilt CLI
+preserves PA6 218/218, PA7 181/181 and PA8 94/94 text outputs. Checks SHA-256 is
+`7bd785428af51a3f1c612b252b210823ca4e4a83c95f10ca5fb1597d1a9f3106`;
+the qualified source inventory SHA-256 is
+`88062dbdee0d68d5a8f56d941afa4631f3133654540cda52897f625930fd7bb4`.
+The first attempt's semicolon lint and subsequent preparation failure remain
+recorded; v2 factors the shared alias key and reruns the audit freshly. This is
+a focused development checkpoint, with combined release qualification and
+end-to-end performance still required before publication.

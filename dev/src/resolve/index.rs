@@ -8,6 +8,7 @@ use super::{
     package::{Error, ModuleId, Package},
     unit::{FileId, NodeKey},
 };
+use crate::expand::marks::ItemContext;
 use crate::syntax::{
     ast::{Kind, List, NodeId},
     item::{GenericFlavor, Item, ItemKind, Shape, Visibility},
@@ -308,7 +309,12 @@ impl Resolver<'_> {
                     let definition = &self.facts.definitions[id.0 as usize];
                     work.declared(
                         &self.facts.bindings,
-                        (definition.scope, definition.name, definition.namespace),
+                        (
+                            definition.scope,
+                            definition.name,
+                            definition.namespace,
+                            ItemContext::ROOT,
+                        ),
                     );
                 }
             }

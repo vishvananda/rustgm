@@ -403,6 +403,17 @@ predecessor query. Scoped item bindings and import dependencies must likewise
 carry their normalized item identity, including per-segment path contexts.
 Hygienic selection does not grant visibility or library-feature permission.
 
+Keep root bindings in the flat table and allocate a separate context index only
+for non-root item keys. Both indexes share declaration ordinals and first-binding
+order; removing a binding retains its key. Size root slots by root population,
+not by all contexts. Import waiters, candidates, publications and withdrawals
+retain the full key. Name-only metadata must reject retained non-root items until
+their provenance can be transported. Snapshot import journals at first-binding
+order tails, not entry creation ordinals: an old local-only entry may become an
+item later, and a declaration batch must not enter its own initial snapshot.
+Capture tails once per existing indexed scope and materialize each journal only
+on demand. Record this cold snapshot cost and context-bearing key sizes.
+
 Written lifetime quantifiers retain lexical identity, including an explicit empty
 `for<>`. A where-clause binder owns its subject and all its bounds; a trait-position
 binder owns only that bound's arguments and associated equalities. Decode each

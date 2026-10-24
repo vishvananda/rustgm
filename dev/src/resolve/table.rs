@@ -1,12 +1,14 @@
-//! One open-addressed table holds every lexical binding, keyed by scope, name
-//! and namespace after CPPGM's `NameLookup` (`sema/lookup.cpp`). Hygienic local
-//! histories share that entry; a cold context index avoids scanning other marks.
+//! Root bindings use CPPGM's flat lookup table; opaque item contexts use a cold
+//! index into the same ordered entries. Local histories retain their own marks.
+mod contextual;
 mod histories;
 use super::{
     model::{Binding, Namespace, Origin, ScopeId},
     names::NameId,
 };
-use crate::expand::marks::LocalContext;
+use crate::expand::marks::{ItemContext, LocalContext};
+
+pub(crate) type BindingKey = (ScopeId, NameId, Namespace, ItemContext);
 
 const NONE: u32 = u32::MAX;
 
@@ -67,6 +69,12 @@ const NO_ORDER: Order = Order {
 #[derive(Clone, Copy)]
 pub(crate) struct EntryId(u32);
 
+/// First-binding tails at an import worklist boundary. A previously local-only
+/// entry can be recorded later, so its creation ordinal is not that boundary.
+pub(crate) struct Snapshot {
+    tails: Vec<u32>,
+}
+
 #[derive(Default)]
 pub struct BindingTable {
     slots: Vec<u64>,
@@ -76,6 +84,7 @@ pub struct BindingTable {
     locals: Vec<Local>,
     /// Single-local entries need no secondary index or history allocation.
     histories: Option<Box<histories::Index>>,
+    contextual: Option<Box<contextual::Index>>,
     scopes: Vec<Order>,
 }
 /// A multiplicative hash of `(scope + 1) << 32 | name` beside the namespace,
@@ -128,6 +137,9 @@ impl BindingTable {
         }
     }
     fn search(&self, scope: ScopeId, name: NameId, namespace: Namespace) -> Option<u32> {
+        if self.slots.is_empty() {
+            return None;
+        }
         match self.probe_slots(scope, name, namespace) {
             Probe::Found(entry) => Some(entry),
             Probe::Vacant(_) => None,
@@ -164,7 +176,8 @@ impl BindingTable {
         namespace: Namespace,
     ) -> Result<u32, &'static str> {
         // Half full at most, like CPPGM's table.
-        if (self.entries.len() + 1) * 2 > self.slots.len() {
+        let contextual = self.contextual.as_ref().map_or(0, |index| index.len());
+        if (self.entries.len() - contextual + 1) * 2 > self.slots.len() {
             self.grow();
         }
         let (bound, local) = self.filters(scope, name);
@@ -181,11 +194,20 @@ impl BindingTable {
             }
             index
         };
+        let id = self.new_entry(scope, name, namespace)?;
+        self.slots[slot] = occupied(tag(scope, name, namespace), id);
+        Ok(id)
+    }
+    fn new_entry(
+        &mut self,
+        scope: ScopeId,
+        name: NameId,
+        namespace: Namespace,
+    ) -> Result<u32, &'static str> {
         let id = u32::try_from(self.entries.len())
             .ok()
             .filter(|id| *id < NONE - 1)
             .ok_or("too many lexical bindings")?;
-        self.slots[slot] = occupied(tag(scope, name, namespace), id);
         self.entries.push(Entry {
             scope,
             name,
@@ -225,7 +247,10 @@ impl BindingTable {
     }
     #[must_use]
     pub fn get(&self, scope: ScopeId, name: NameId, namespace: Namespace) -> Option<&Binding> {
-        let entry = self.find(scope, name, namespace)?;
+        self.get_key((scope, name, namespace, ItemContext::ROOT))
+    }
+    pub(crate) fn get_key(&self, key: BindingKey) -> Option<&Binding> {
+        let entry = self.find_key(key)?;
         self.entries[entry as usize].binding.as_ref()
     }
     #[must_use]
@@ -243,7 +268,14 @@ impl BindingTable {
         namespace: Namespace,
         binding: Binding,
     ) -> Result<Option<Binding>, &'static str> {
-        let entry = self.entry(scope, name, namespace)?;
+        self.insert_key((scope, name, namespace, ItemContext::ROOT), binding)
+    }
+    pub(crate) fn insert_key(
+        &mut self,
+        key: BindingKey,
+        binding: Binding,
+    ) -> Result<Option<Binding>, &'static str> {
+        let entry = self.entry_key(key)?;
         self.record(entry);
         Ok(self.entries[entry as usize].binding.replace(binding))
     }
@@ -259,7 +291,15 @@ impl BindingTable {
         binding: Binding,
         shadow: bool,
     ) -> Result<bool, &'static str> {
-        let entry = self.entry(key.0, key.1, key.2)?;
+        self.declare_key((key.0, key.1, key.2, ItemContext::ROOT), binding, shadow)
+    }
+    pub(crate) fn declare_key(
+        &mut self,
+        key: BindingKey,
+        binding: Binding,
+        shadow: bool,
+    ) -> Result<bool, &'static str> {
+        let entry = self.entry_key(key)?;
         let record = &mut self.entries[entry as usize];
         if let Some(existing) = record.binding
             && !shadow
@@ -272,8 +312,8 @@ impl BindingTable {
         Ok(true)
     }
     /// Remove a binding; its key keeps its recorded position.
-    pub(crate) fn remove(&mut self, scope: ScopeId, name: NameId, namespace: Namespace) {
-        if let Some(entry) = self.find(scope, name, namespace) {
+    pub(crate) fn remove_key(&mut self, key: BindingKey) {
+        if let Some(entry) = self.find_key(key) {
             self.entries[entry as usize].binding = None;
         }
     }
@@ -363,35 +403,77 @@ impl BindingTable {
     }
     /// Recorded keys of `scope` in first-binding order, including removed ones,
     /// with their creation ordinal.
-    pub(crate) fn keys(&self, scope: ScopeId) -> impl Iterator<Item = ((NameId, Namespace), u32)> {
+    pub(crate) fn keys(
+        &self,
+        scope: ScopeId,
+    ) -> impl Iterator<Item = ((NameId, Namespace, ItemContext), u32)> {
         let mut current = self
             .scopes
             .get(scope.0 as usize)
             .map_or(NONE, |order| order.first);
         std::iter::from_fn(move || {
             let entry = self.entries.get(current as usize)?;
-            let item = ((entry.name, entry.namespace), current);
+            #[cfg(test)]
+            item_tests::visit_key();
+            let item = (
+                (entry.name, entry.namespace, self.item_context(current)),
+                current,
+            );
             current = entry.next;
             Some(item)
         })
     }
-    /// Current bindings of `scope` in first-binding order.
+    pub(crate) fn snapshot(&self) -> Snapshot {
+        Snapshot {
+            tails: self.scopes.iter().map(|scope| scope.last).collect(),
+        }
+    }
+    pub(crate) fn keys_before(
+        &self,
+        scope: ScopeId,
+        snapshot: &Snapshot,
+    ) -> impl Iterator<Item = (NameId, Namespace, ItemContext)> {
+        let tail = snapshot
+            .tails
+            .get(scope.0 as usize)
+            .copied()
+            .unwrap_or(NONE);
+        let mut ended = tail == NONE;
+        self.keys(scope)
+            .take_while(move |(_, entry)| {
+                let include = !ended;
+                ended |= *entry == tail;
+                include
+            })
+            .map(|(key, _)| key)
+    }
+    /// Root-context bindings of `scope` in first-binding order.
     pub fn scope(&self, scope: ScopeId) -> impl Iterator<Item = (NameId, Namespace, &Binding)> {
-        self.keys(scope).filter_map(|(_, entry)| {
+        self.keys(scope).filter_map(|(key, entry)| {
+            if key.2 != ItemContext::ROOT {
+                return None;
+            }
             let entry = &self.entries[entry as usize];
             Some((entry.name, entry.namespace, entry.binding.as_ref()?))
         })
     }
-    /// Every current binding, in creation order of its key.
+    /// Root-context bindings, in creation order of their keys.
     pub fn iter(&self) -> impl Iterator<Item = (ScopeId, NameId, Namespace, &Binding)> {
-        self.entries.iter().filter_map(|entry| {
-            Some((
-                entry.scope,
-                entry.name,
-                entry.namespace,
-                entry.binding.as_ref()?,
-            ))
-        })
+        self.entries
+            .iter()
+            .enumerate()
+            .filter_map(|(index, entry)| {
+                let id = u32::try_from(index).ok()?;
+                if self.item_context(id) != ItemContext::ROOT {
+                    return None;
+                }
+                Some((
+                    entry.scope,
+                    entry.name,
+                    entry.namespace,
+                    entry.binding.as_ref()?,
+                ))
+            })
     }
     /// Entries created so far; later entries have larger creation ordinals.
     #[must_use]
@@ -403,3 +485,7 @@ impl BindingTable {
 #[cfg(test)]
 #[path = "../../tests/invariants/local_histories.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../tests/invariants/item_bindings.rs"]
+mod item_tests;
