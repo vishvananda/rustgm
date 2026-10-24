@@ -1,4 +1,5 @@
 //! Builtin expansion consumes classified inputs and constructs typed syntax directly.
+pub(crate) mod bytes_concat;
 pub(crate) mod choice;
 pub(crate) mod delegation;
 pub(crate) mod format_literal;
@@ -45,9 +46,10 @@ pub enum Builtin {
     CorePanic,
     StdPanic,
     Unreachable,
+    ConcatBytes,
 }
 impl Builtin {
-    pub const ALL: [Self; 20] = [
+    pub const ALL: [Self; 21] = [
         Self::Cfg,
         Self::CfgSelect,
         Self::FormatArgs,
@@ -68,6 +70,7 @@ impl Builtin {
         Self::CorePanic,
         Self::StdPanic,
         Self::Unreachable,
+        Self::ConcatBytes,
     ];
     #[must_use]
     pub const fn source_only(self) -> bool {
@@ -80,6 +83,7 @@ impl Builtin {
                 | Self::FormatArgs
                 | Self::ConstFormatArgs
                 | Self::FormatArgsNl
+                | Self::ConcatBytes
         )
     }
     #[must_use]
@@ -90,10 +94,15 @@ impl Builtin {
         )
     }
     #[must_use]
+    pub const fn source_eager(self) -> bool {
+        self.formatting() || matches!(self, Self::ConcatBytes)
+    }
+    #[must_use]
     pub const fn eager(self) -> bool {
         matches!(
             self,
-            Self::FormatArgs
+            Self::ConcatBytes
+                | Self::FormatArgs
                 | Self::ConstFormatArgs
                 | Self::FormatArgsNl
                 | Self::OptionEnv
@@ -123,6 +132,7 @@ impl Builtin {
             Self::ModulePath => "module_path",
             Self::Stringify => "stringify",
             Self::Concat => "concat",
+            Self::ConcatBytes => "concat_bytes",
             Self::CompileError => "compile_error",
             Self::Env => "env",
             Self::OptionEnv => "option_env",
@@ -158,7 +168,8 @@ pub fn expand(
     environment: &Environment<'_>,
 ) -> Result<Expansion, LexError> {
     match builtin {
-        Builtin::OptionEnv
+        Builtin::ConcatBytes
+        | Builtin::OptionEnv
         | Builtin::Concat
         | Builtin::CompileError
         | Builtin::Env

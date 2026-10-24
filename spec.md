@@ -111,6 +111,18 @@ must preserve evaluation order, single evaluation and source-owned formatting
 roles. `allow_internal_unsafe` is lint metadata and never authorizes an unsafe
 operation. See the [formatting contract](docs/pa31-source-format-contracts.md).
 
+Source byte concatenation reuses the eager producer's parsed argument arena and
+typed literals. Authenticate the actual source-declared builtin before preparing
+inputs, including opaque captured payloads. Validate operands and compute the
+checked output length before reserving the result; charge requested work and
+payload before allocation, including overflow and failed attempts. Fill the
+owned byte string through one further bounded typed walk, preserving byte order
+and zero-repeat element validation. Neither pass reparses source or rendered
+spelling. Keep source role permission separate from ordinary eager builtins,
+formatting constructor proof and foreign API admission. The
+[byte contracts](docs/pa31-source-concat-contracts.md) retain independent source
+and native observations, budget opponents and measured storage costs.
+
 Library feature requests come from enabled source declarations and authenticated
 dependency inventories, separately from compiler language capabilities. Complete
 their validation after configured expansion; unknown requests grant no capability.

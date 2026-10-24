@@ -1,0 +1,532 @@
+{
+  "status": "Immutable preimplementation hypotheses; no independent or candidate observations yet",
+  "owning_assignments": {
+    "PA8": "shared typed eager literal/array/repetition expansion; stable ordinary profile remains unchanged",
+    "PA31": "actual source role, internal attributes, complete no_core provider and native controls"
+  },
+  "editions": [
+    2021,
+    2024
+  ],
+  "profile": {
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "crate_type": "lib",
+    "cap_lints": "allow"
+  },
+  "provider_source": "pa31/tests/spec/source-format-macros/literal-complete-basic.rs before attributed builtin, plus actual ordinary u8 Clone/Copy",
+  "provider_sha256": "9796d6ea5e586f40516881d6cd4416667911e1b4ed9e1a598360ddae33492275",
+  "pinned_source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/macros/mod.rs",
+  "pinned_source_sha256": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+  "original_header_slice_sha256": "a9a79af1d513bc9ba7f11e1a75abde0c596d7f67b3d79d9539daea4aa8f4b156",
+  "primary_implementation": "compiler/rustc_builtin_macros/src/concat_bytes.rs",
+  "source_only_candidate": true,
+  "ordinary_requested_and_foreign_library_use_pending": true,
+  "growth_controls": {
+    "argument_width": [
+      8,
+      32,
+      128
+    ],
+    "invocation_uses": [
+      8,
+      32,
+      128
+    ],
+    "requested_output_bytes": "preflight before reserve/fill including count overflow; failed budgets retain attempted work; repeat0 validates element"
+  },
+  "native_contract": "For bytes cases actual Rust returns a thin pointer cast from the real typed byte-array reference; C checks every expected byte and nonnull including empty. Original header returns u32/native7. No source-library ABI is invented.",
+  "cases": [
+    {
+      "name": "mixed-bytes",
+      "path": "mixed-bytes.rs",
+      "sha256": "8f18be0b39404735265aaac666dd6c90ee6cedd8aa7d18b3dba80fd58be17488",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "414200ff435c44",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "empty",
+      "path": "empty.rs",
+      "sha256": "51caa837e0d731b65c5446b6c2d3095c3e3a6e36ea8dc7da30c414ba12d49600",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "trailing-comma",
+      "path": "trailing-comma.rs",
+      "sha256": "86207a16c51632e5b9cc9474a5f8e2881dbc09a654f4ca8b6782f47c37f0e1d3",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "41",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "array-literals",
+      "path": "array-literals.rs",
+      "sha256": "754485a0db712cfc570662d837ced11c7a4422f1d0fe92e2e0dee666ef9a6360",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "0041ff",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "repeat",
+      "path": "repeat.rs",
+      "sha256": "15b7bf74c69811b7dbaffad8d1380c34f8a716cb13c2f42f46720cadcaa2187b",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "515151",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "repeat-zero",
+      "path": "repeat-zero.rs",
+      "sha256": "e7cb0d70b5a8991c646089845cb8bba51268c879ba4ff8490aea0db4d786e880",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "count-suffix",
+      "path": "count-suffix.rs",
+      "sha256": "754203fbbc9254100c852e210789fd898c69d50aba366c5d1afb80a655b08f10",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "5858",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "nested-eager",
+      "path": "nested-eager.rs",
+      "sha256": "ca286f3aae8042e543b7cb8994ad6959f8006239a662695c1617cda11a760a52",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "4142",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "captured-expression",
+      "path": "captured-expression.rs",
+      "sha256": "e3210c2bc0b867390dde05bf79c04db110a3c5a4d9e6a8fe5d892bf94423d623",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "4142",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "captured-array",
+      "path": "captured-array.rs",
+      "sha256": "370d60b31b5f80d2cc7eaf368b01a2f60bc246d9b4123201e581a61f64186131",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "0041",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "renamed-role",
+      "path": "renamed-role.rs",
+      "sha256": "5dbff6f01dd1f57e3acc3e0dd9b4c0d81a4ff134757b47bdbda304df56d2e297",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "4142",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "authored-shadow",
+      "path": "authored-shadow.rs",
+      "sha256": "49beb8a0518dbb3aafbe2eab8cb0bb3dc5a2ca02f7fe7fa4923dd6dad87acf6f",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "5a",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "width-8",
+      "path": "width-8.rs",
+      "sha256": "f7795f3abd12266ba58fe09d77b4043150eecb0a4e664f50707571a2b0bf3feb",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "0001020304050607",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "uses-8",
+      "path": "uses-8.rs",
+      "sha256": "925d445ab2edec1dd9474faa860bafdde68f2fee5eeacb709bd4da1bf1ca4650",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "4142",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "width-32",
+      "path": "width-32.rs",
+      "sha256": "356a0274e28a3becb088ef838dd897569216f694feda03c1d3562bf99ac641e5",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "uses-32",
+      "path": "uses-32.rs",
+      "sha256": "eb51ffc7091a5c133c0c2e186a2388731576fb616807b2105c77e6e3040c5918",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "4142",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "width-128",
+      "path": "width-128.rs",
+      "sha256": "0b4b9883660378750f4e8848be7805c0841fbe116d247a1ea9c1d860d2f0202a",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "uses-128",
+      "path": "uses-128.rs",
+      "sha256": "53129b55e0dedcda2370b911306cf57808fe4609139322f631ab6318834fe4d8",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "4142",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source"
+    },
+    {
+      "name": "top-level-integer",
+      "path": "top-level-integer.rs",
+      "sha256": "d72e87e9a0312b006783c3fec70e5e5dd39bde93c9a24b610379e4af807d7e31",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "numeric"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "signed-array-element",
+      "path": "signed-array-element.rs",
+      "sha256": "2225ea058270d2cdf95d92007f3dd770d217fcd43055fb12697a2c50a15ece6b",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "not a `u8`"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "array-element-overflow",
+      "path": "array-element-overflow.rs",
+      "sha256": "3e405827706d8f696ff0d305a2f33e7dedd0bb9537556b5d99c57f1c69fa05c6",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "out of bounds"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "repeat-zero-invalid-element",
+      "path": "repeat-zero-invalid-element.rs",
+      "sha256": "db719712dc987012e7662bd52949cd0038d31f4454bde3e71440d5cf078940dd",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "out of bounds"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "nested-array",
+      "path": "nested-array.rs",
+      "sha256": "b615746b44c4048a733f831121da68f472c1b986b73173dec668efacecba4c85",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "doubly nested"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "nested-byte-string",
+      "path": "nested-byte-string.rs",
+      "sha256": "acfed9940fc35164062cdc235845e1f8d46d49fec396da5edd22c8682a84fb5f",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "doubly nested"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "repeat-expression-count",
+      "path": "repeat-expression-count.rs",
+      "sha256": "fd58bc047b96a67a12b63951a77cf95df843836cee69d31306974990a0fffd70",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "repeat count"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "repeat-const-count",
+      "path": "repeat-const-count.rs",
+      "sha256": "f65af745e6c1750f6946b12e954fb71ca63b6a4328c8b328282d6d1f32962c1f",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "repeat count"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "negative-array-element",
+      "path": "negative-array-element.rs",
+      "sha256": "c5c08665397427b9e9a7e71ae2dae71dcf3cc8201b6c2ad91658293c0b1bc1f7",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "expected a byte literal"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "ordinary-string",
+      "path": "ordinary-string.rs",
+      "sha256": "eec142099c7b48738ef309f7a9327302393d5c1c73a1fa9b33f03d4e528ae4cc",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "string"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "c-string",
+      "path": "c-string.rs",
+      "sha256": "f02e24f5efa6bf81d4391c68357cb4c2a0c485bc13f5509604dc90332ceb91df",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "C string"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "parenthesized-literal",
+      "path": "parenthesized-literal.rs",
+      "sha256": "a8e334ab200bc93244ca09b6c04360c2cbdca88d7698d3836efd15f92ac8d0d7",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "expected a byte literal"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "malformed-separator",
+      "path": "malformed-separator.rs",
+      "sha256": "a559899a67e90a5435b1d43458c4b91c19ff5ae8b501c5182b7e4269d5ccaa33",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "comma"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "nonliteral-operand",
+      "path": "nonliteral-operand.rs",
+      "sha256": "fdd0f3bb911787b62ec13494e9c474d241cd17f5f496c7ddd2d03a90f665d499",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "expected a byte literal"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary"
+    },
+    {
+      "name": "original-header",
+      "path": "original-header.rs",
+      "sha256": "8bc415a96670467d00c23b663bb77bd70eb65c5e18c2082d1061ae58da6a138f",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": null,
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "actual-header-expansion-positive; final staged macro stability explicitly pending"
+    },
+    {
+      "name": "scoped-role",
+      "path": "scoped-role.rs",
+      "sha256": "3449896b96c01fad26b5eebe32c147873ccf6de528b844a808ed0fc8dd9d9192",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": null,
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "Rust-positive deliberately unsupported scoped builtin declaration"
+    },
+    {
+      "name": "ordinary-requested",
+      "path": "ordinary-requested.rs",
+      "sha256": "1e4324ed1661d0ca1ebe5ec49578f0a9c3d53b68a952caaa6f96d3ad78aea900",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "4142",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "Rust-positive ordinary library-feature use remains unsupported; no foreign/source role fabricated"
+    },
+    {
+      "name": "ordinary-unrequested",
+      "path": "ordinary-unrequested.rs",
+      "sha256": "9122ffc68b4b6039654cf0df3b1785cb2b445d4783f2f919e5c3f1fc6851e43f",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "unstable"
+      ],
+      "candidate": "reject ordinary unstable library use; stable PA8 bootstrap admission unchanged"
+    },
+    {
+      "name": "unknown-role",
+      "path": "unknown-role.rs",
+      "sha256": "146a2acb591aa517c7c42c632ce43b08b6dc3dc932abb59b1b77b9f971746e2d",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "built-in macro"
+      ],
+      "candidate": "explicit actual claimed-role/owner rejection"
+    },
+    {
+      "name": "wrong-owner",
+      "path": "wrong-owner.rs",
+      "sha256": "beba2b8044fe279e5d35e66ad48f10c1dc1664a4b77082f570bb75dc6d6d3a0b",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "macro"
+      ],
+      "candidate": "explicit actual claimed-role/owner rejection"
+    },
+    {
+      "name": "included-bytes",
+      "path": "included-bytes.rs",
+      "sha256": "619f139e38b29790b09987570732c0bb51de76e4a7e0835dcefca2d1ee254eed",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "efbbbf410d0a00ff00",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source",
+      "resources": [
+        "bytes-input.bin"
+      ]
+    },
+    {
+      "name": "nested-included-bytes",
+      "path": "nested-included-bytes.rs",
+      "sha256": "b0b45aee0f06c9c07c415a3a9d80a59f484634e3f95e5689936abdfc443358d7",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "doubly nested"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary",
+      "resources": [
+        "bytes-input.bin"
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "path": "bytes-input.bin",
+      "sha256": "6567b85f9569986fa5605c772a10b2061b3d7214648a6cd7d1fc6f110501b9d9",
+      "bytes": 8,
+      "semantics": "actual injected raw include bytes; BOM/CRLF/NUL/non-UTF8 preserved"
+    }
+  ]
+}
