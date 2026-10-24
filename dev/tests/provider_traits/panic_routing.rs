@@ -81,7 +81,7 @@ fn panic_delegation_relocates_existing_nonzero_expression_handles_without_new_pa
                 else {
                     continue;
                 };
-                let (file, tokens) = report.captures.tokens(id)?;
+                let (file, tokens) = report.captures.tokens(id).map_err(|error| error.message)?;
                 if let [token] = tokens
                     && report
                         .package
