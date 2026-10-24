@@ -1,0 +1,54 @@
+{
+  "status": "Distinct preobserved complete-source provider after original missing-include_bytes observations. Original40 hypotheses and244actual rows remain unchanged.",
+  "original_contract_sha256": "7ede0d2c4b68947b6257f074b664b6d1de78197ec925dd3426ebdd6add7b4394",
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "name": "included-complete-provider",
+      "path": "included-complete-provider.rs",
+      "sha256": "448bdf501c8ad71e0b9e3627a06c14e4c77cbbdcba5bde7bbccefee8c39e7dac",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "expected_bytes_hex": "efbbbf410d0a00ff00",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate": "accept-local-source",
+      "resources": [
+        "bytes-input.bin"
+      ],
+      "original_hypothesis": "included-bytes",
+      "original_sha256": "619f139e38b29790b09987570732c0bb51de76e4a7e0835dcefca2d1ee254eed",
+      "added_actual_role": "Local #[rustc_builtin_macro] macro_rules!include_bytes declaration; real eager resource path, not a runtime replacement"
+    },
+    {
+      "name": "nested-included-complete-provider",
+      "path": "nested-included-complete-provider.rs",
+      "sha256": "b62a4366d46df21a247bfb7c8e400a5c71bde91cd81f4bbe6a53d3d962f14f15",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "expected_bytes_hex": null,
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "doubly nested"
+      ],
+      "candidate": "reject-at-typed-builtin-boundary",
+      "resources": [
+        "bytes-input.bin"
+      ],
+      "original_hypothesis": "nested-included-bytes",
+      "original_sha256": "b0b45aee0f06c9c07c415a3a9d80a59f484634e3f95e5689936abdfc443358d7",
+      "added_actual_role": "Local #[rustc_builtin_macro] macro_rules!include_bytes declaration; real eager resource path, not a runtime replacement"
+    }
+  ],
+  "resource": {
+    "path": "bytes-input.bin",
+    "sha256": "6567b85f9569986fa5605c772a10b2061b3d7214648a6cd7d1fc6f110501b9d9"
+  },
+  "added_declaration_sha256": "ebb90455b0b10d5125cae448ecd687f3fba81f4962a3cfa90332bd6cc911f7fc",
+  "expected_language": 8,
+  "expected_native_programs": 2,
+  "no_repetition_of_prior_rows": true
+}

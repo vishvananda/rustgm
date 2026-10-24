@@ -1,0 +1,29 @@
+{
+  "state": "Actual observations retained; additive recovery declared, unobserved",
+  "initial_sources": 40,
+  "actual_observations": 244,
+  "planned_observations": 248,
+  "language_observations": 160,
+  "native_programs": 42,
+  "planned_native_programs": 44,
+  "initial_results_sha256": "94f21c7bf9edba98dc34670549e1c2b1b0b084a0b00e46fcbc822812ba43e9f4",
+  "diagnosis_sha256": "f6072809caa1e13393cc1a7e839e6720dc4a6f77c62564d99b79e3b3f6a67538",
+  "malformed_separator": {
+    "source_unchanged": true,
+    "expected_rejection_observed": true,
+    "original_text_predicate": "comma",
+    "observed_text": "expected token: `,`",
+    "language_oracle_repetition": false
+  },
+  "missing_source_roles": {
+    "originals": [
+      "included-bytes",
+      "nested-included-bytes"
+    ],
+    "observed": "cannot find macroinclude_bytes in this scope; nested adds expectedbyte literal, not intended nested-array validation",
+    "positive_native_unrun": 2,
+    "not_valid_language_negative_or_candidate_supported_boundary": true
+  },
+  "additive_contract_sha256": "c36d074880e8414ac4659993e44ed9d1ca28306446e2550edeb09e1b788fadbc",
+  "cleanup": "obj/cleanup/1792871101793243701.jsonl"
+}
