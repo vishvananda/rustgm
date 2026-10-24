@@ -14,13 +14,13 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Blocked. Fresh original-root attempt parses the scoped declarations, then rejects `#[rustc_builtin_macro(core_panic)]` in `library/core/src/macros/mod.rs:3`. | Implement and qualify the observed builtin contract, then rerun the unchanged root and retain its next error and opened source set. |
+| Original core loading and expansion | Blocked. The fresh worker candidate passes the prior `core_panic` declaration, then rejects `#[allow_internal_unstable(panic_internals)]` on `assert_eq` at `library/core/src/macros/mod.rs:41`. | Implement and qualify the observed builtin contract, then rerun the unchanged root and retain its next error and opened source set. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
 | Original std and consumer | Not reached; depends on the preceding crate graph and platform contracts. | Build unchanged std and execute a default-std consumer. |
 
-The fresh probe uses immutable compiler `9793c30f2d29a99196687032f88960c317c28c47a3f4f6973ba681bb09698ac4`
+The preceding published probe uses immutable compiler `9793c30f2d29a99196687032f88960c317c28c47a3f4f6973ba681bb09698ac4`
 from integration `1df52349` (production `91113764`). It exits 1 with
 `ERROR: file 3: 50: source builtin macro expansion is not implemented`.
 The declaration is `core_panic`; no invocation has yet been expanded. The
@@ -36,6 +36,17 @@ frontier. Parsing that file now succeeds, but neither probe completes core.
 The published integration passes 3,605 release/native tests, 8,382 active text tests and
 all 60 functional qualification stages. These counts do not establish a new
 crate milestone or release a PA.
+
+The newest unchanged-core observation uses the development-qualified panic
+compiler `521bc9dab702cb00dac5106717f90f525a51e839be04f898626bffbfb028d772`,
+source `2c31704b`, in worker C's
+`obj/parallel/pa31/source-panic-whole-core-v1/`. It exits 1 at file 3, byte 1250,
+with `internal macro allowance feature is not implemented`. This is the
+`panic_internals` allowance on `assert_eq`, line 41. The same four original files
+were opened; all hashes and configuration remain unchanged. Its result SHA-256
+is `da05be67bdb0751ad043a0aec2e1ad70b013ee6da9c716e4b2752dc3298233cd`.
+Passing the prior declaration advances this specific crate boundary; it does not
+complete expansion, semantic checking, an artifact, or an assignment.
 
 ## Prioritized issues and assignment ownership
 
@@ -60,7 +71,9 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-010 | P2; not yet reached as a whole crate | Original alloc, allocator/runtime contracts and collection consumers | PA33; PA27/PA28 operation prerequisites / PA33 plus reduced owning-PA cases | Unassigned until core advances | Blocked on LIB-007/008/009; split observed alloc failures into concrete issues when reached. |
 | LIB-011 | P2; not yet reached as a whole crate | Original std, platform linkage and abort-profile consumers | PA36; PA30/PA34 platform/build prerequisites / PA36 plus reduced owning-PA cases | Unassigned until prerequisites advance | Blocked on the original core/alloc graph; no unsupported percentage-complete estimate. |
 | LIB-012 | P2; externally useful acceptance | Original no-default-features serde_core, then alloc/std serde_json graphs | PA35 / PA35 | Integrator | Run the core-only graph as soon as LIB-007/008/009 permit it; do not wait for std. |
-| LIB-013 | P0; fresh unchanged-core blocker | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | C + integrator | Local source delegation is implemented and passes static checks; 168 independent rustc observations and 35 native oracle programs are retained. Candidate private/frontend/native execution remains pending. Foreign macro transport and Rust 2018 remain explicit requirements. |
+| LIB-013 | P0; prior unchanged-core blocker advanced | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | C + integrator | Local source delegation passes static checks, 8 relevant private checks, 28 source contexts and 16 native programs; 168 independent rustc observations and 35 native oracle programs are retained. Original core advances to LIB-014. Foreign macro transport and Rust 2018 remain required; full LIB-013 is not closed. |
+
+| LIB-014 | P0; new unchanged-core failure at `assert_eq`, line 41 | Macro-specific internal unstable feature allowances, beginning with actual `panic_internals` | PA31 source/compiler policy; PA8 token provenance / PA31 with applicable PA8 ordinary controls | C + integrator | API and consumer review; retain declaration/attribute identity and actual literal/captured-token provenance. Never grant features globally or ignore the attribute. |
 
 
 The first LIB-007 executable transaction uses a complete smaller provider with
@@ -143,6 +156,13 @@ branch is not a passing test or a released assignment contract.
   core root as acceptance evidence; a declaration-only reducer cannot qualify
   actual panic delegation or a whole-core build.
 
+- **LIB-014:** retain the unchanged core `assert_eq` declaration and add a
+  reduced PA31 source-macro allowance family. Independently declare and qualify
+  actual `panic_internals` and `core_intrinsics` use, caller versus definition
+  literals, captured-token opponents, missing/foreign/disabled owners, repeated
+  names and bounded work. A parsed allow-list alone cannot qualify feature use;
+  real stability/feature consumers must check the authenticated expansion grant.
+
 Every completed fix includes its owning handout update, independently declared
 positive/negative outcomes, relevant maintainer tests, and manifest-discovered
 text-oracle tests when that assignment's contract is published. Generate and
@@ -155,7 +175,7 @@ roots must remain registered in the existing maintainer suite groups.
 Keep the three existing GPT-6.1-Sol/high workers. A worker can carry multiple
 independent issues, but keeps coherent commits and an explicit handoff for each.
 Agree shared APIs before concurrent edits; use separate worktrees. Current
-primary lanes are A: LIB-006/007; B: LIB-003/004; C: LIB-013 with the LIB-002
+primary lanes are A: LIB-006/007; B: LIB-003/004; C: LIB-014 with the qualified local LIB-013 slice and LIB-002
 field checkpoint and LIB-005 preserved for qualification;
 integrator: LIB-001/008/009/012 and integration.
 
