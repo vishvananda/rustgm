@@ -27,7 +27,6 @@ impl Inputs for Counted<'_> {
         let result = self.inputs.get(token)?;
         if let Some(splice) = result {
             match splice.fragment {
-                Nonterminal::Syntax { parsed, .. } => syntax(parsed, self.charge)?,
                 Nonterminal::Metadata {
                     forest, expression, ..
                 } => {
@@ -39,7 +38,8 @@ impl Inputs for Counted<'_> {
                         syntax(parsed, self.charge)?;
                     }
                 }
-                Nonterminal::Visibility {
+                Nonterminal::Syntax { parsed, .. }
+                | Nonterminal::Visibility {
                     path: Some(parsed), ..
                 } => syntax(parsed, self.charge)?,
                 Nonterminal::Visibility { path: None, .. } => {}

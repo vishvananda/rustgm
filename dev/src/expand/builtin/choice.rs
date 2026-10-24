@@ -1,4 +1,4 @@
-//! A real cfg_select parses all categories, but returns only the selected syntax.
+//! A real `cfg_select` parses all categories, but returns only the selected syntax.
 #[path = "choice_inputs.rs"]
 mod inputs;
 use crate::{

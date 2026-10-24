@@ -6,7 +6,7 @@ use crate::{
     syntax::cursor::{Cursor, TokenPosition},
 };
 
-/// Frame one unbraced cfg_select RHS using Rust's statement-expression boundary.
+/// Frame one unbraced `cfg_select` RHS using Rust's statement-expression boundary.
 /// This returns the actual expression AST for reuse in expression context.
 /// A different requested output category still needs its distinct grammar check.
 pub(crate) fn statement_expression<'s>(
