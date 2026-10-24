@@ -2,6 +2,13 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/declarative-macros/trait-members/` retains seven independently checked
+scoped trait-method contracts for LIB-002, with fourteen metadata/object
+observations and five native programs. They separate opaque trait discovery,
+definition-site versus captured imports, and sibling member identities. The
+candidate consumers and scoped invocation remain required; the directory's
+review records the evidence without activating a grading manifest.
+
 `spec/library-stability/` retains 31 independently qualified local/client
 hypotheses and two providers. Its `contract.json` binds exact sources, declared
 outcomes and original evidence. Eight clients executed with pinned rustc; local
