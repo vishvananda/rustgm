@@ -53,7 +53,7 @@ pub enum Body {
     Builtin(Builtin),
     /// A prepared item-scoped macro keeps its declared literal transparency.
     Scoped {
-        compiled: Compiled,
+        compiled: Box<Compiled>,
         mode: Transparency,
     },
 }

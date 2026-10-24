@@ -303,6 +303,8 @@ fn ordinary_macro_rules_allocate_no_scoped_descriptor_and_keep_their_real_execut
         definition.body,
         crate::resolve::expansion::Body::Scoped { .. }
     )));
+    assert_eq!(size_of::<crate::resolve::expansion::Body>(), 96);
+    assert_eq!(size_of::<crate::resolve::expansion::Definition>(), 136);
     Ok(())
 }
 

@@ -1,5 +1,7 @@
 //! Item-scoped macros retain normal matching and their actual definition site.
-use super::{Body, Context, Definition, Engine, Error, FileId, ItemKind, NodeKey, Sources, Visit};
+use super::{
+    Body, Compiled, Context, Definition, Engine, Error, FileId, ItemKind, NodeKey, Sources, Visit,
+};
 use crate::syntax::item::Item;
 
 impl<S: Sources> Engine<'_, S> {
@@ -53,8 +55,16 @@ impl<S: Sources> Engine<'_, S> {
             // The shared producer already authenticated the sole scoped builtin role.
             Body::Builtin(role)
         } else {
+            // Only actual scoped declarations own this cold allocation. Keep
+            // every ordinary macro body and definition at their existing size.
+            if let Some(source) = self.loader.package.source_core() {
+                source
+                    .macros
+                    .charge(1, size_of::<Compiled>())
+                    .map_err(|message| Error::at(file, offset, message))?;
+            }
             Body::Scoped {
-                compiled: crate::expand::macros::matcher::Compiled::new(declared.matcher),
+                compiled: Box::new(Compiled::new(declared.matcher)),
                 mode: declared.mode,
             }
         };

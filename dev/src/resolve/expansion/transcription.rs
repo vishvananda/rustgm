@@ -39,7 +39,7 @@ impl<S: Sources> Engine<'_, S> {
             .ok_or_else(|| Error::at(file, original.start, "declarative macro has no source"))?;
         let (compiled, mode) = match &mut entry.body {
             Body::Declarative(compiled) => (compiled, Transparency::SemiOpaque),
-            Body::Scoped { compiled, mode } => (compiled, *mode),
+            Body::Scoped { compiled, mode } => (compiled.as_mut(), *mode),
             Body::Builtin(_) => {
                 return Err(Error::at(
                     file,
