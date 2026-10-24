@@ -1,7 +1,14 @@
 //! Eager builtin arguments join the existing worklist and retain one parsed arena.
+#[cfg(test)]
+#[path = "../../../tests/invariants/eager_sources.rs"]
+mod tests;
 use super::{
-    Body, Engine, Error, ExpansionId, Invocation, Location, NodeId, NodeKey, Sources, State, Visit,
-    Work, builtin, diagnostics,
+    Body, Builtin, Engine, Error, ExpansionId, FileId, Input, Invocation, Location, NodeId,
+    NodeKey, Sources, State, Visit, Work, builtin, diagnostics,
+};
+use crate::{
+    resolve::bindings::panic_contracts,
+    syntax::{interpolation::Inputs, token_tree::error},
 };
 
 pub(super) struct Arguments {
@@ -11,6 +18,100 @@ pub(super) struct Arguments {
 }
 
 impl<S: Sources> Engine<'_, S> {
+    pub(super) fn source_eager_definition(&self, index: usize) -> Result<Builtin, Error> {
+        let definition = self
+            .definitions
+            .get(index)
+            .ok_or_else(|| Error::unlocated("missing actual source eager builtin definition"))?;
+        let Body::Builtin(role) = definition.body else {
+            return Err(Error::unlocated(
+                "source eager builtin changed its actual role",
+            ));
+        };
+        if !role.source_eager() {
+            return Err(Error::unlocated(
+                "source eager builtin changed its actual role",
+            ));
+        }
+        let key = self
+            .paths
+            .checked_source_macro(index, definition)
+            .map_err(Error::unlocated)?;
+        let header =
+            panic_contracts::published(&self.loader.package, key, definition.header.as_ref(), 1)?;
+        if header.builtin != Some(role) || header.edition != definition.edition {
+            return Err(Error::unlocated(
+                "source eager builtin differs from its defining header",
+            ));
+        }
+        Ok(role)
+    }
+    pub(super) fn prepare_source_eager_input(
+        &self,
+        file: FileId,
+        capture: u32,
+        definition: usize,
+    ) -> Result<(), Error> {
+        if !matches!(self.definitions[definition].body,Body::Builtin(role)if role.source_eager()) {
+            return Ok(());
+        }
+        self.source_eager_definition(definition)?;
+        let forest = &self.loader.package.unit(file).configured.ast.captures[capture as usize];
+        let source = self.loader.package.source_core().ok_or_else(|| {
+            Error::at(
+                file,
+                0,
+                "source eager builtin requires its local source provider",
+            )
+        })?;
+        // Preflight before flattening/parsing the real argument forest. Actual
+        // opaque payload copies are separately paid through their registry view.
+        source
+            .macros
+            .charge(
+                forest.nodes().len(),
+                forest.payload_bytes().saturating_mul(20),
+            )
+            .map_err(|message| Error::at(file, 0, message))
+    }
+    pub(super) fn charge_source_eager_opaque(
+        &self,
+        file: FileId,
+        definition: usize,
+        input: &Input,
+    ) -> Result<(), Error> {
+        if !matches!(self.definitions[definition].body,Body::Builtin(role)if role.source_eager()) {
+            return Ok(());
+        }
+        let source = self
+            .loader
+            .package
+            .source_core()
+            .ok_or_else(|| Error::at(file, 0, "missing source eager builtin provider"))?;
+        let view = self.captures.view(|id| {
+            self.loader
+                .package
+                .units
+                .get(id.0 as usize)
+                .map(|unit| unit.source.text())
+        });
+        let charge = |steps, bytes| {
+            source
+                .macros
+                .charge(steps, bytes)
+                .map_err(|message| error(0, message))
+        };
+        let counted = builtin::choice::Counted {
+            inputs: &view,
+            charge: &charge,
+        };
+        for &token in &input.tokens {
+            counted
+                .get(token)
+                .map_err(|error| Error::at(file, error.offset, error.message))?;
+        }
+        Ok(())
+    }
     pub(super) fn completed(&mut self, index: usize) -> Result<(), Error> {
         self.calls[index].state = State::Complete;
         if self.calls[index].notified {
@@ -39,11 +140,11 @@ impl<S: Sources> Engine<'_, S> {
     pub(super) fn begin_eager(&mut self, index: usize, definition: usize) -> Result<(), Error> {
         let call = &self.calls[index];
         let (file, capture, visit, scope) = (call.file, call.capture, call.visit, call.scope);
-        self.prepare_format_input(file, capture, definition)?;
+        self.prepare_source_eager_input(file, capture, definition)?;
         let input = self
             .input(file, capture, false)
             .map_err(|e| self.eager_error(index, definition, e))?;
-        self.charge_format_opaque(file, definition, &input)?;
+        self.charge_source_eager_opaque(file, definition, &input)?;
         let (before, tail) = self.loader.package.units.split_at_mut(file.0 as usize);
         let (unit, after) = tail
             .split_first_mut()
@@ -111,6 +212,41 @@ impl<S: Sources> Engine<'_, S> {
         Ok(())
     }
 
+    fn concat_bytes_value(
+        &self,
+        index: usize,
+        definition: usize,
+        root: NodeId,
+    ) -> Result<builtin::Expansion, Error> {
+        if self.source_eager_definition(definition)? != builtin::Builtin::ConcatBytes {
+            return Err(Error::unlocated(
+                "byte concatenation changed its actual source role",
+            ));
+        }
+        let call = &self.calls[index];
+        let unit = self.loader.package.unit(call.file);
+        let source = self.loader.package.source_core().ok_or_else(|| {
+            Error::at(
+                call.file,
+                call.offset,
+                "byte concatenation requires its actual local provider",
+            )
+        })?;
+        builtin::bytes_concat::expand(
+            &unit.configured.ast,
+            root,
+            |literal| unit.literal(literal),
+            |steps, bytes| {
+                source
+                    .macros
+                    .charge(steps, bytes)
+                    .map_err(|message| error(call.offset, message))
+            },
+            call.grammar,
+            self.config,
+        )
+        .map_err(|failure| Error::at(call.file, failure.offset, failure.message))
+    }
     fn eager_error(&self, index: usize, definition: usize, mut error: Error) -> Error {
         let call = &self.calls[index];
         error.expansions.push(diagnostics::frame(
@@ -190,6 +326,9 @@ impl<S: Sources> Engine<'_, S> {
             return self.format_literal_value(index, definition, root);
         }
         match self.definitions[definition].body {
+            Body::Builtin(builtin::Builtin::ConcatBytes) => {
+                self.concat_bytes_value(index, definition, root)
+            }
             Body::Builtin(builtin::Builtin::Concat) => builtin::concat(
                 &unit.configured.ast,
                 root,
