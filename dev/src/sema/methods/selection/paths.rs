@@ -64,7 +64,15 @@ impl Query {
             terms: HashMap::default(),
         };
         let term = Scratch::default().infer(&mut source, prefix)?;
-        Self::inherent_prefix(report, source.facts, key, (source.infer, term), bucket, site, caller)
+        Self::inherent_prefix(
+            report,
+            source.facts,
+            key,
+            (source.infer, term),
+            bucket,
+            site,
+            caller,
+        )
     }
 
     /// A compiler protocol supplies a real canonical nominal, not fabricated syntax.
@@ -78,7 +86,8 @@ impl Query {
         caller: OwnedCaller,
     ) -> Result<Self, Error> {
         let mut prefix = Context::default();
-        let term = prefix.known(&facts.types, ty)
+        let term = prefix
+            .known(&facts.types, ty)
             .map_err(|error| Declarations::error(report, key, applicability::inference(error)))?;
         Self::inherent_prefix(report, facts, key, (prefix, term), bucket, site, caller)
     }
@@ -93,7 +102,8 @@ impl Query {
         caller: OwnedCaller,
     ) -> Result<Self, Error> {
         let members = candidates(report, facts, &mut prefix, term, bucket, site)
-            .map_err(|message| Declarations::error(report, key, message))?.members;
+            .map_err(|message| Declarations::error(report, key, message))?
+            .members;
         facts.methods.selection_steps = facts.methods.selection_steps.saturating_add(prefix.steps);
         Ok(Self {
             prefix,
