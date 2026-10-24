@@ -1,5 +1,5 @@
 {
-  "status": "independently observed; RustGM implementation qualification pending",
+  "status": "independent contract observed; RustGM80f9e069 component passes, integrated release/performance pending",
   "rustc": "1.98.0 (88d9e12ae178fab0fb5cc050a94da85685d449ea)",
   "edition": "2024",
   "target": "x86_64-unknown-linux-gnu",
@@ -9,5 +9,15 @@
   "observations": 36,
   "metadata_and_object": 26,
   "native": 5,
-  "scope": "Ten PA31 scoped cases and three ordinary PA12 companions in frozen evidence inputs; no source/prediction changes."
+  "scope": "Ten PA31 scoped cases and three ordinary PA12 companions in frozen evidence inputs; no source/prediction changes.",
+  "rustgm_component": {
+    "private": 1498,
+    "frontend": 319,
+    "native_test_functions": 5,
+    "preexisting_text": 8382,
+    "ordinary_pa12_added": 3,
+    "active_text_after_addition": 8385,
+    "receipt": "obj/parallel/semantic-privacy-runtime-v2/complete.json",
+    "checks_sha256": "a41d8a86256ab8a755f2217c164aeadcdcbb8fbdbec4a044c121dd8be12b0dbb"
+  }
 }
