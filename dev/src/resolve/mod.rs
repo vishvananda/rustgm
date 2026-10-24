@@ -17,6 +17,7 @@ mod lookup;
 pub mod model;
 pub use crate::support::names;
 pub mod package;
+mod paths;
 mod patterns;
 mod table;
 pub mod unit;

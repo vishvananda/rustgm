@@ -342,3 +342,89 @@ private test file and module path, then ran the full focused gate freshly.
 Scoped item production, per-segment lookup, definition-site/module adjustment,
 privacy and contextual metadata transport remain required. This checkpoint
 is local development evidence, not release or whole-library qualification.
+
+## Source identifiers and later member consumers
+
+The next unqualified source draft derives declaration keys from each actual
+identifier span: item and extern-alias names, generic parameters and enum
+variants. Expansion publication and import notifications use that same complete
+key. A generated item's keyword cannot substitute for its captured name. The
+root-only table declaration convenience is now private-test-only; production
+declarations pass their full key. Three structural controls cover separate
+root/opaque identifiers, genuine exact-key duplicates, and const parameters
+versus implicit Self. They supply token provenance to parsed declarations and
+do not qualify end-to-end scoped expansion. Formatting has run; compiler and
+test qualification of this draft remains pending the combined worker gate.
+
+The source-only draft also shares each retained import spelling sequence through
+an immutable Arc slice. The worklist still owns the same declaration and retries
+the same dependencies, but cloning its import record no longer allocates or
+copies every segment on every retry. This representation change does not claim contextual path
+lookup. Its compilation, import regression cases and performance remain unrun.
+
+An explicit import alias now retains its actual identifier's item-normalized
+context when collected. Publication, duplicate checking and withdrawal consume
+that context with the destination spelling; they do not derive it again on each
+retry. A fourth parsed-provenance control distinguishes an opaque alias from a
+root declaration with the same spelling.
+
+The typed use-tree now retains the actual glob star span, including through
+fragment transfer. Its text view still renders the same boolean glob flag.
+Two new transfer controls cover a star distinct from its prefix/alias tokens
+and atomic rollback when mapping that star's provenance fails. This supplies
+the token identity needed by later glob adjustment; synchronized mark stripping,
+privacy adjustment and scoped lookup remain unimplemented. These source changes
+and tests are formatted but have not run a compiler or test gate.
+
+The subsequent unqualified collector draft shares the typed path visitor between
+ordinary names and contextual segments. It flattens grouped imports iteratively
+with one append/truncate buffer, publishes each leaf's spelling slice once, and
+allocates a shared context record only when a segment or the actual glob star is
+non-root. Explicit aliases remain independent. Unaliased destination publication
+uses the retained final segment, after trimming `self` when required. Two further
+parsed-provenance controls cover mixed nested groups, independent alias/star
+contexts, root siblings after opaque siblings, and a non-root star on a root path.
+These are structural controls: source lookup and glob adjustment still need the
+retained contexts. The draft has not passed a compiler/test gate or layout/perf
+measurement. Each ordinary group classifies only its newly appended spellings
+and inherits its parent's bootstrap relevance; source-provider mode skips that
+classification. Relevant bootstrap paths still perform full-prefix semantic
+scans. Measure that remaining depth cost separately before claiming a general
+linear bound for collection.
+
+The pinned compiler intentionally treats implicit `Self` as root-normalized
+(`rustc_resolve/src/ident.rs:316` and `late.rs:3503`). Type, const and lifetime
+generic parameters instead use item normalization (`late.rs:3158`). This
+distinction must survive declaration, lexical lookup and barrier checking.
+
+Completing scoped names also requires the semantic consumers after resolution:
+
+- Aggregate fields are indexed by their normalized declaration identity.
+  Record initializers, patterns and field access adjust the use against the
+  actual variant/container before matching; see `rustc_hir_typeck/src/expr.rs`
+  around 1883 and 2722, and `pat.rs` around 2079. Existing `Field.origin`
+  retains the source NodeKey needed to derive this identity.
+- Method candidate lists may retain a coarse spelling index, but selection
+  filters by container-adjusted hygienic equality before receiver equations and
+  privacy. Existing call NodeKeys and `MethodCall`/`GenericMethodCall` spans
+  retain the necessary use identity; no new Body, Value or Type field is needed.
+- Associated type/const indexes and impl-to-trait member matching must use the
+  same identity. A spelling-only single-winner map can discard distinct opaque
+  members before selection. Preserve DefId/FieldId downstream; use cold
+  contextual indexes only when non-root names exist.
+- Legacy textual macro bindings also carry item-normalized names. The pinned
+  reduced-graph macro publication uses `IdentKey::new` for both textual names
+  and exported bindings (`build_reduced_graph.rs` around 1323). Keeping only
+  NameId there would defeat the qualified mixed legacy/opaque opponents.
+
+Share an adjustment result containing the normalized item context and privacy
+definition scope. Cache only pure context/target-expansion adjustment, or include
+the complete identity and relevant readiness in a semantic cache. Pending
+headers cannot become permanent missing answers. Actual container introduction
+is independent of its captured name context. This applies to named fields,
+methods, associated suffixes, visibility paths, imports and aliases together.
+
+Whole-provider metadata rejection must include contextual semantic field/member
+indexes as well as `BindingTable::has_contextual_items()`: a root-captured type
+name can contain opaque fields. Source descriptors remain disabled until their
+full validation, remapping and fresh imported proof contract is complete.

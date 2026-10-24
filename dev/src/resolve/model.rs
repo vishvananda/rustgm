@@ -17,8 +17,8 @@ use super::{
     package::ModuleId,
     unit::{FileId, NodeKey},
 };
-use crate::support::hash::HashMap;
 use crate::syntax::ast::NodeId;
+use crate::{expand::marks::ItemContext, support::hash::HashMap};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ScopeId(pub u32);
@@ -161,14 +161,29 @@ pub struct Scope {
     pub label_barrier: bool,
 }
 #[derive(Clone, Debug)]
+pub struct ImportContexts {
+    pub segments: Box<[ItemContext]>,
+    pub glob: ItemContext,
+}
+#[derive(Clone, Debug)]
 pub struct Import {
     pub scope: ScopeId,
     pub node: NodeKey,
-    pub path: Vec<NameId>,
+    /// Import retries share the immutable spelling sequence instead of copying it.
+    pub path: std::sync::Arc<[NameId]>,
+    /// Absent for root-only paths/stars; retries share the cold contextual facts.
+    pub contexts: Option<std::sync::Arc<ImportContexts>>,
     pub absolute: bool,
-    pub alias: Option<NameId>,
+    pub alias: Option<(NameId, ItemContext)>,
     pub glob: bool,
     pub access: Access,
+}
+impl Import {
+    pub(crate) fn segment_context(&self, index: usize) -> ItemContext {
+        self.contexts
+            .as_ref()
+            .map_or(ItemContext::ROOT, |contexts| contexts.segments[index])
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Target {

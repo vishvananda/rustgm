@@ -857,7 +857,15 @@ impl Parser<'_, '_> {
         if !separator && (self.cursor.at(P::Star)? || self.cursor.at(P::OpenBrace)?) {
             return Err(self.error("use group or glob requires a path separator")?);
         }
-        let glob = self.eat(P::Star)?;
+        let glob = if self.cursor.at(P::Star)? {
+            let token = self.required()?;
+            Some(Span {
+                start: token.start,
+                end: token.end,
+            })
+        } else {
+            None
+        };
         let grouped = self.eat(P::OpenBrace)?;
         let children = if grouped {
             let mark = self.scratch.len();
@@ -874,7 +882,7 @@ impl Parser<'_, '_> {
             Self::empty_list()
         };
         let rename = if self.eat_word(Word::As)? {
-            if glob || grouped {
+            if glob.is_some() || grouped {
                 return Err(self.error("use group or glob cannot be renamed")?);
             }
             Some({

@@ -184,5 +184,6 @@ pub struct UseTree {
     pub prefix: Option<NodeId>,
     pub children: List,
     pub rename: Option<NodeId>,
-    pub glob: bool,
+    /// The star owns its hygiene context independently of the imported prefix.
+    pub glob: Option<Span>,
 }

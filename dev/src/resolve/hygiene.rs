@@ -7,7 +7,7 @@ use super::{
 };
 use crate::support::hash::HashMap;
 use crate::{
-    expand::marks::{ExpansionId, LocalContext, Marks},
+    expand::marks::{ExpansionId, ItemContext, LocalContext, Marks},
     support::names::NameId,
     syntax::ast::NodeId,
 };
@@ -148,6 +148,31 @@ impl Hygiene {
     }
 }
 
+impl super::index::Resolver<'_> {
+    /// Item identities follow the declared identifier, independently of the
+    /// expansion that introduced the surrounding item or module. Implicit Self
+    /// deliberately retains the pinned language implementation's root identity.
+    pub(crate) fn binding_key(
+        &self,
+        definition: &super::model::Definition,
+    ) -> Result<super::table::BindingKey, super::package::Error> {
+        let context = if definition.kind == DefKind::SelfType {
+            ItemContext::ROOT
+        } else if let Some(node) = definition.node {
+            self.package
+                .item_context(node.file, name_offset(self.package, node))?
+        } else {
+            ItemContext::ROOT
+        };
+        Ok((
+            definition.scope,
+            definition.name,
+            definition.namespace,
+            context,
+        ))
+    }
+}
+
 pub(crate) fn name_offset(package: &super::package::Package, key: NodeKey) -> u32 {
     use crate::syntax::ast::Kind;
     let ast = &package.unit(key.file).configured.ast;
@@ -161,6 +186,19 @@ pub(crate) fn name_offset(package: &super::package::Package, key: NodeKey) -> u3
             | Kind::Receiver { name, .. } => {
                 return name.start;
             }
+            Kind::Item(index) => {
+                let item = ast.items[index as usize];
+                let name = match item.kind {
+                    crate::syntax::item::ItemKind::ExternCrate { rename: Some(name) } => Some(name),
+                    _ => item.name,
+                };
+                return name.map_or(value.span.start, |name| name.start);
+            }
+            Kind::Generic(index) => return ast.generics[index as usize].name.start,
+            Kind::Variant(index) => return ast.variants[index as usize].name.start,
+            Kind::FieldDefinition {
+                name: Some(name), ..
+            } => return name.start,
             Kind::Path { segments, .. } => {
                 let Some(first) = ast.list(segments).first() else {
                     return value.span.start;
@@ -168,7 +206,12 @@ pub(crate) fn name_offset(package: &super::package::Package, key: NodeKey) -> u3
                 node = *first;
             }
             Kind::Applied { base, .. } => node = base,
+            Kind::Attributed { value, .. } => node = value,
             _ => return value.span.start,
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/identifier_keys.rs"]
+mod tests;

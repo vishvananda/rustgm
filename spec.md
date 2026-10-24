@@ -402,6 +402,13 @@ single-local entry needs no history allocation; older shadows use an ordered
 predecessor query. Scoped item bindings and import dependencies must likewise
 carry their normalized item identity, including per-segment path contexts.
 Hygienic selection does not grant visibility or library-feature permission.
+Retain immutable import paths once and share them across dependency retries;
+waking an import must not copy its complete segment sequence.
+Flatten grouped import trees with one append/truncate prefix buffer and retain
+each published leaf once. Preserve every segment's actual identifier context,
+the explicit alias context and the glob star context independently. Root-only
+paths need no context allocation. Do not mistake eliminating prefix copies for
+eliminating repeated semantic scans of those prefixes; measure both dimensions.
 
 Keep root bindings in the flat table and allocate a separate context index only
 for non-root item keys. Both indexes share declaration ordinals and first-binding

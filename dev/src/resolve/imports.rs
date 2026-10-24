@@ -1,4 +1,5 @@
 //! Import dependencies and glob deltas wake only the scopes and paths they affect.
+mod trees;
 use super::{
     index::{PRIMITIVES, Resolver},
     lookup::{BindingKey, Lookup, LookupMode, Observations, Selection},
@@ -399,7 +400,7 @@ impl Resolver<'_> {
         import: &Import,
         work: &mut Work,
     ) -> Result<(), Error> {
-        let mut path = import.path.as_slice();
+        let mut path = import.path.as_ref();
         let self_import = path.len() > 1
             && path
                 .last()
@@ -407,9 +408,12 @@ impl Resolver<'_> {
         if self_import {
             path = &path[..path.len() - 1];
         }
-        let name = import
+        let (name, context) = import
             .alias
-            .or_else(|| path.last().copied())
+            .or_else(|| {
+                path.last()
+                    .map(|name| (*name, import.segment_context(path.len() - 1)))
+            })
             .ok_or_else(|| self.import_error(import, "empty import"))?;
         let origin = Origin::Import(
             u32::try_from(index).map_err(|_| self.import_error(import, "too many imports"))?,
@@ -420,7 +424,7 @@ impl Resolver<'_> {
             if self_import && ns != Namespace::Type {
                 continue;
             }
-            let key = (import.scope, name, ns, ItemContext::ROOT);
+            let key = (import.scope, name, ns, context);
             match self.import_lookup(index, import, path, ns, work)? {
                 Lookup::Found(binding) => {
                     if !self.visible(binding.access, module)

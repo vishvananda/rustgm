@@ -1,14 +1,12 @@
 //! A declaration pass creates scopes and forward-visible items before resolving uses.
 use super::{
     model::{
-        Access, Binding, DefId, DefKind, Definition, Import, Namespace, Origin, Resolution, Scope,
-        ScopeId,
+        Access, Binding, DefId, DefKind, Definition, Namespace, Origin, Resolution, Scope, ScopeId,
     },
     names::NameId,
     package::{Error, ModuleId, Package},
     unit::{FileId, NodeKey},
 };
-use crate::expand::marks::ItemContext;
 use crate::syntax::{
     ast::{Kind, List, NodeId},
     item::{GenericFlavor, Item, ItemKind, Shape, Visibility},
@@ -307,15 +305,8 @@ impl Resolver<'_> {
                 Pending::Generic(c, node, index) => {
                     let id = self.generic(c, node, index)?;
                     let definition = &self.facts.definitions[id.0 as usize];
-                    work.declared(
-                        &self.facts.bindings,
-                        (
-                            definition.scope,
-                            definition.name,
-                            definition.namespace,
-                            ItemContext::ROOT,
-                        ),
-                    );
+                    let key = self.binding_key(definition)?;
+                    work.declared(&self.facts.bindings, key);
                 }
             }
         }
@@ -377,14 +368,11 @@ impl Resolver<'_> {
             origin: Origin::Direct,
             ambiguous: false,
         };
+        let key = self.binding_key(&definition)?;
         if self
             .facts
             .bindings
-            .declare(
-                (definition.scope, definition.name, definition.namespace),
-                binding,
-                shadow,
-            )
+            .declare_key(key, binding, shadow)
             .map_err(|e| Error::at(FileId(0), 0, e))?
         {
             self.facts.definitions.push(definition);
@@ -495,7 +483,7 @@ impl Resolver<'_> {
         let item = self.package.unit(c.file).configured.ast.items[index as usize];
         let access = self.visibility(c, item.visibility)?;
         if let ItemKind::Use(tree) = item.kind {
-            return self.import(c, tree, &[], false, access);
+            return self.import(c, tree, access);
         }
         if let ItemKind::Module { .. } = item.kind {
             let key = NodeKey { file: c.file, node };
@@ -831,48 +819,5 @@ impl Resolver<'_> {
     }
     pub fn recycle_path(&mut self, names: Vec<NameId>) {
         self.paths.push(names);
-    }
-    pub fn import(
-        &mut self,
-        c: Context,
-        node: NodeId,
-        prefix: &[NameId],
-        absolute: bool,
-        access: Access,
-    ) -> Result<(), Error> {
-        let Kind::UseTree(index) = self.kind(c, node) else {
-            return Err(self.error(c, node, "expected import tree"));
-        };
-        let tree = self.package.unit(c.file).configured.ast.use_trees[index as usize];
-        let (local_absolute, local) = tree
-            .prefix
-            .map(|n| self.path_names(c, n))
-            .transpose()?
-            .unwrap_or_default();
-        let mut path = prefix.to_vec();
-        path.extend(local);
-        self.prepare_builtin_path(c, node, absolute || local_absolute, Namespace::Type, &path)?;
-        if tree.children.start == tree.children.end {
-            let alias = tree
-                .rename
-                .map(|n| self.path_names(c, n))
-                .transpose()?
-                .and_then(|(_, names)| names.first().copied());
-            self.facts.imports.push(Import {
-                scope: c.scope,
-                node: NodeKey { file: c.file, node },
-                path,
-                absolute: absolute || local_absolute,
-                alias,
-                glob: tree.glob,
-                access,
-            });
-        } else {
-            for offset in tree.children.start..tree.children.end {
-                let child = self.package.unit(c.file).configured.ast.edges[offset as usize];
-                self.import(c, child, &path, absolute || local_absolute, access)?;
-            }
-        }
-        Ok(())
     }
 }

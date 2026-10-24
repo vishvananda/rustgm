@@ -117,15 +117,8 @@ impl Paths {
                     .definitions
                     .insert(id, introduction);
             }
-            self.work.declared(
-                &resolver.facts.bindings,
-                (
-                    definition.scope,
-                    definition.name,
-                    definition.namespace,
-                    ItemContext::ROOT,
-                ),
-            );
+            let key = resolver.binding_key(definition)?;
+            self.work.declared(&resolver.facts.bindings, key);
         }
         // Unnameable `impl Trait` parameters have no binding to publish.
         if matches!(item.kind, crate::syntax::item::ItemKind::Function { .. }) {
@@ -295,17 +288,21 @@ impl Paths {
         target: DefId,
     ) -> Result<(), Error> {
         let definition = &resolver.facts.definitions[target.0 as usize];
-        let (name, namespace, access) = (definition.name, definition.namespace, definition.access);
+        let access = definition.access;
+        let mut key = resolver.binding_key(definition)?;
+        // An exported legacy macro is published in the crate root while its
+        // actual definition site and identifier context remain distinct.
+        key.0 = context.scope;
         if resolver
             .facts
             .bindings
-            .get(context.scope, name, namespace)
+            .get_key(key)
             .is_some_and(|b| !matches!(b.origin, Origin::Glob(_)))
         {
             return Err(resolver.error(context, node, "duplicate macro-path binding"));
         }
         resolver.publish(
-            (context.scope, name, namespace, ItemContext::ROOT),
+            key,
             Some(Binding {
                 target,
                 access,
@@ -330,15 +327,8 @@ impl Paths {
         resolver.import(context, node, &[], false, access)?;
         self.work.extend(resolver.facts);
         for definition in &resolver.facts.definitions[first_definition..] {
-            self.work.declared(
-                &resolver.facts.bindings,
-                (
-                    definition.scope,
-                    definition.name,
-                    definition.namespace,
-                    ItemContext::ROOT,
-                ),
-            );
+            let key = resolver.binding_key(definition)?;
+            self.work.declared(&resolver.facts.bindings, key);
         }
         let library_builtin = resolver.facts.imports[first..].iter().any(|import| {
             import

@@ -183,9 +183,10 @@ pub(super) fn node<L>(
             } = ast.use_trees[index as usize];
             write!(
                 output,
-                "use-tree {} {} {glob} ",
+                "use-tree {} {} {} ",
                 Optional(prefix),
-                Children(ast, children)
+                Children(ast, children),
+                glob.is_some()
             )?;
             label(source, rename.map(|id| ast.node(id).span), output)
         }

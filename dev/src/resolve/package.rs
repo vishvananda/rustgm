@@ -4,14 +4,11 @@ use super::{
     unit::{FileId, NodeKey, Unit},
 };
 use crate::expand::{
-    marks::{ExpansionId, LocalContext, Marks, SyntaxContextId},
+    marks::{ExpansionId, ItemContext, LocalContext, Marks, SyntaxContextId},
     stream::Origin,
 };
 use crate::support::hash::HashMap;
-use crate::syntax::{
-    ast::{Kind, NodeId},
-    token_tree::Span,
-};
+use crate::syntax::{ast::NodeId, token_tree::Span};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ModuleId(pub u32);
@@ -200,6 +197,12 @@ impl Package {
             .map_err(|message| Error::at(file, offset, message))
     }
 
+    pub(crate) fn item_context(&self, file: FileId, offset: u32) -> Result<ItemContext, Error> {
+        self.marks
+            .item(self.syntax_context(file, offset)?)
+            .map_err(|message| Error::at(file, offset, message))
+    }
+
     /// Read canonical names directly from a parsed path.
     /// # Errors
     /// Rejects malformed path facts, unsupported crate identities and name overflow.
@@ -222,42 +225,7 @@ impl Package {
         node: NodeId,
         names: &mut Vec<NameId>,
     ) -> Result<bool, Error> {
-        match self.unit(file).configured.ast.node(node).kind {
-            Kind::CrateRoot(0) => {
-                let name = self.names.intern("crate").map_err(|e| {
-                    Error::at(
-                        file,
-                        self.unit(file).configured.ast.node(node).span.start,
-                        e,
-                    )
-                })?;
-                names.push(name);
-                Ok(false)
-            }
-            Kind::CrateRoot(_) => Err(Error::at(
-                file,
-                self.unit(file).configured.ast.node(node).span.start,
-                "external defining crate requires metadata",
-            )),
-            Kind::Name(span, name) => {
-                names.push(self.parsed_name(file, span, name)?);
-                Ok(false)
-            }
-            Kind::Applied { base, .. } => self.path_names_into(file, base, names),
-            Kind::Path { absolute, segments } => {
-                names.reserve((segments.end - segments.start) as usize);
-                for offset in segments.start..segments.end {
-                    let id = self.unit(file).configured.ast.edges[offset as usize];
-                    self.path_names_into(file, id, names)?;
-                }
-                Ok(absolute)
-            }
-            _ => Err(Error::at(
-                file,
-                self.unit(file).configured.ast.node(node).span.start,
-                "expected a name path",
-            )),
-        }
+        self.append_path(file, node, names)
     }
 
     #[must_use]
