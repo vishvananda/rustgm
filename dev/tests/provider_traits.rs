@@ -124,10 +124,15 @@ fn actual_source_role_headers_keep_real_definition_identity() -> TestResult {
 }
 #[test]
 fn source_roles_reject_wrong_owners_and_unsupported_header_profiles() -> TestResult {
+    // Both exact headers pass pinned rustc. Role admission preserves the
+    // ordinary trait; the private ordinary_clone_role controls check that
+    // its methods cannot acquire executable const permission.
+    let ordinary_clone = PROVIDER.replace("pub const trait Clone", "pub trait Clone");
+    assert_ne!(ordinary_clone, PROVIDER);
+    sema::declarations::analyze(&report(&ordinary_clone)?)?;
     for (from, to) in [
         ("pub trait Copy:Clone", "pub trait Copy"),
         ("fn clone(&self)->Self", "fn clone(&self)->u8"),
-        ("pub const trait Clone", "pub trait Clone"),
         (r#"#[lang="clone_fn"]"#, ""),
         (r#"#[lang="fn_once_output"]"#, ""),
         (
