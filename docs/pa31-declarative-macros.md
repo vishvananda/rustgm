@@ -412,7 +412,8 @@ Fresh strict and focused qualification is still required.
 The separate ancestry successor is source-only and unqualified. It replaces
 two linear parent-chain queries with one shared append-only index, consumed by
 both textual lookup and resolved-binding ambiguity checks. Actual declarative
-and builtin invocation producers populate it; token syntax contexts do not.
+and builtin invocation producers, including eager argument reservation, populate
+it; token syntax contexts do not.
 Each record holds a parent, depth and one skew-binary jump. The intended cost is
 amortized constant work per publication and logarithmic work per ancestry query,
 with no retained query cache. The cold record grows from a single 4-byte parent
@@ -423,7 +424,10 @@ Four private controls compare chains, stars, balanced and irregular trees to an
 independent linear parent oracle, reject malformed publication atomically, and
 cross depth 8..8192 with query width 8/32/128 plus unrelated sibling publication.
 One source integration control inspects actual builtin/declarative invocation
-parents. These tests do not qualify scoped lookup or claim an end-to-end speedup;
+parents, including nested eager arguments. A peer source review caught the third
+producer in `expansion/eager.rs` before any build of this draft; the successor
+wires it to the same index and adds that explicit source control. These tests
+do not qualify scoped lookup or claim an end-to-end speedup;
 strict/focused/text and changed-path frozen-binary measurements remain required.
 
 The pinned compiler intentionally treats implicit `Self` as root-normalized

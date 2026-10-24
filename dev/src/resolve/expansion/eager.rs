@@ -71,8 +71,9 @@ impl<S: Sources> Engine<'_, S> {
             .state
             .facts
             .introductions
-            .parents
-            .push(visit.introduction);
+            .ancestry
+            .append(context, visit.introduction)
+            .map_err(|message| Error::at(file, original.start, message))?;
         self.invocations.push(Invocation {
             context,
             node: NodeKey {

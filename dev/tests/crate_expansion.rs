@@ -62,10 +62,10 @@ fn analyze(source: &str, files: &mut Files) -> Result<expansion::Report, String>
 
 #[test]
 fn actual_builtin_and_declarative_invocations_share_one_ancestry_index() -> Result<(), String> {
-    use rustgm::expand::marks::ExpansionId;
-    let source = "macro_rules! inner {()=>{line!()}} macro_rules! outer {()=>{inner!()}} fn f()->u32{outer!()} fn g()->u32{outer!()} const X:&str=stringify!(other);";
+    use rustgm::expand::{builtin::Builtin, marks::ExpansionId};
+    let source = "macro_rules! inner {()=>{line!()}} macro_rules! outer {()=>{inner!()}} fn f()->u32{outer!()} fn g()->u32{outer!()} const X:&str=concat!(stringify!(other));";
     let report = analyze(source, &mut Files::default())?;
-    assert_eq!(report.invocations.len(), 7);
+    assert_eq!(report.invocations.len(), 8);
     assert_eq!(
         report
             .invocations
@@ -80,8 +80,25 @@ fn actual_builtin_and_declarative_invocations_share_one_ancestry_index() -> Resu
         assert!(call.parent.0 < call.context.0);
         parents.push(call.parent);
     }
-    for ancestor in 0..=7 {
-        for context in 0..=7 {
+    let eager = report
+        .invocations
+        .iter()
+        .find(|call| {
+            matches!(
+                report.definitions[call.definition].body,
+                expansion::Body::Builtin(Builtin::Concat)
+            )
+        })
+        .ok_or("missing actual eager invocation")?;
+    assert_eq!(eager.parser_calls, 1);
+    assert!(
+        report
+            .invocations
+            .iter()
+            .any(|call| call.parent == eager.context)
+    );
+    for ancestor in 0..=8 {
+        for context in 0..=8 {
             let mut current = ExpansionId(context);
             while current != ExpansionId(ancestor) && current.0 != 0 {
                 current = parents[current.0 as usize];
@@ -99,7 +116,7 @@ fn actual_builtin_and_declarative_invocations_share_one_ancestry_index() -> Resu
         !report
             .resolution
             .introductions
-            .ancestor(ExpansionId(8), ExpansionId(8))
+            .ancestor(ExpansionId(9), ExpansionId(9))
     );
     Ok(())
 }
