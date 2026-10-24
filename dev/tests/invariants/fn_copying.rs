@@ -100,6 +100,68 @@ fn actual_callable_markers_do_not_require_copy_signature_inputs_or_results() -> 
 }
 
 #[test]
+fn pending_projection_is_not_a_callable_shape_and_invalid_inputs_still_fail() -> TestResult {
+    let (report, mut facts) = declarations(
+        "trait Family<X>{type Out;}fn probe<T:Family<u8>>(value:T::Out)->T::Out{value}",
+    )?;
+    let item = facts.definitions[tests::definition(&report, "probe")?.0 as usize]
+        .ok_or("actual generic function item")?;
+    let Some(Kind::FunctionItem { signature, .. }) = facts.types.kind(item) else {
+        return Err("actual generic function item kind".into());
+    };
+    let Some(Kind::Function { result, .. }) = facts.types.kind(signature) else {
+        return Err("actual declared callable signature".into());
+    };
+    assert!(matches!(
+        facts.types.kind(result),
+        Some(Kind::Projection(_))
+    ));
+    for role in [LangItem::Copy, LangItem::Clone] {
+        let requirement = predicate(&mut facts, role, result)?;
+        let (mut context, goal) = tests::instantiate(&mut facts, requirement)?;
+        let mut frame = Frame::new(&facts, &mut context, &goal, 1)?;
+        assert_eq!(
+            frame
+                .inputs
+                .context
+                .head(&facts.types, frame.goal.subject()),
+            Err(crate::types::infer::Error::Normalization),
+        );
+        assert!(!Search::source_callable_marker_goal(&facts, &mut frame)?);
+        let assumptions = Assumptions::default();
+        let mut search = Search::new(tests::caller(&assumptions, None), Availability::Validated);
+        assert!(
+            search
+                .source_callable_marker_result(&mut facts, &mut frame)?
+                .is_none()
+        );
+        frame.inputs.context = crate::types::infer::Context::default();
+        assert_eq!(
+            Search::source_callable_marker_goal(&facts, &mut frame),
+            Err("invalid inference identity".into()),
+        );
+        let (mut context, goal) = tests::instantiate(&mut facts, requirement)?;
+        let mut exhausted = Frame::new(&facts, &mut context, &goal, 1)?;
+        let (role_item, arguments) = exhausted.goal.trait_arguments().ok_or("actual role goal")?;
+        assert!(arguments.is_empty());
+        let mut context = crate::types::infer::Context::default();
+        let subject = context.known(&facts.types, result)?;
+        exhausted.goal = crate::types::infer::predicates::Predicate::trait_application(
+            subject,
+            role_item,
+            Vec::new(),
+        );
+        exhausted.inputs.context = context;
+        exhausted.inputs.context.steps = 1_000_000;
+        assert_eq!(
+            Search::source_callable_marker_goal(&facts, &mut exhausted),
+            Err("type constraint work budget exceeded".into()),
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn callable_marker_rule_requires_actual_empty_ordinary_roles_and_keeps_precedence() -> TestResult {
     let (report, mut facts) = declarations("trait PretendCopy{}fn item(x:u8)->u8{x}")?;
     let item = facts.definitions[tests::definition(&report, "item")?.0 as usize].ok_or("item")?;

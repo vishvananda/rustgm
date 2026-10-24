@@ -39,12 +39,19 @@ impl Search<'_> {
         if !source_callable_role(facts, &frame.goal)? {
             return Ok(false);
         }
+        let head = match frame
+            .inputs
+            .context
+            .head(&facts.types, frame.goal.subject())
+        {
+            Ok(head) => head,
+            // This classifier contributes only a callable structural rule.
+            // Projection normalization and its proof remain with the caller.
+            Err(infer::Error::Normalization) => return Ok(false),
+            Err(error) => return Err(inference(error)),
+        };
         Ok(matches!(
-            frame
-                .inputs
-                .context
-                .head(&facts.types, frame.goal.subject())
-                .map_err(inference)?,
+            head,
             Some(
                 infer::Constructor::Function { .. }
                     | infer::Constructor::FunctionItem(..)
