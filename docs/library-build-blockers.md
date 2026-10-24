@@ -14,7 +14,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Combined `5602dc27` passes the line-41 allowance and stops at `pub macro assert_matches`, line 170. The qualified scoped-declaration component reaches builtin `cfg_select`, line 235; it is integrated locally as `68a30f1b`, with combined qualification pending. Both probes open the same four original files. | Fix the projection-opening growth failure and implement actual `cfg_select` expansion, then qualify the combined compiler and rerun the unchanged root. |
+| Original core loading and expansion | The qualified cfg_select compiler passes its declaration at line 235 and stops at the `format_args` builtin attribute at line 994. The same four unchanged original files are opened. It is integrated locally as `4ad4db87`; combined qualification remains pending. | Implement authentic formatting support (LIB-017), fix projection-opening growth (LIB-016), qualify the combined compiler and rerun the unchanged root. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -90,9 +90,9 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-012 | P2; externally useful acceptance | Original no-default-features serde_core, then alloc/std serde_json graphs | PA35 / PA35 | Integrator | Run the core-only graph as soon as LIB-007/008/009 permit it; do not wait for std. |
 | LIB-013 | P0; prior unchanged-core blocker advanced | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | C + integrator | Local 2021/2024 source delegation and exact warm spelling guards pass combined qualification. The qualified unchanged-core probe advances to LIB-014. Foreign macro transport and Rust 2018 remain required; full LIB-013 is not closed. |
 | LIB-014 | P0; previous unchanged-core failure at `assert_eq`, line 41 | Macro-specific internal unstable feature allowances, beginning with actual `panic_internals` | PA31 source/compiler policy; PA8 token provenance / PA31 with applicable PA8 ordinary controls | C + integrator | Complete local allowance lists and provenance pass combined functional qualification and move original core to LIB-001. The allowance growth controls pass; foreign API/const consumers remain required. |
-| LIB-015 | P0; qualified component's unchanged-core failure at `cfg_select`, line 235 | Authenticated source-declared builtin `cfg_select`, complete predicate/branch parsing and selected token forwarding | PA31 source/compiler role; PA7/PA8 shared cfg/expansion machinery / PA31 plus earlier ordinary controls where expressible | C | Scoped declarations pass component qualification and the unchanged-core probe confirms this blocker. The actual builtin implementation is an unqualified draft. Independent contracts now cover 61 cfg_select sources plus the original scoped provider; candidate acceptance and a later core result remain pending. |
+| LIB-015 | Component fixed; unchanged-core boundary advanced | Authenticated source-declared builtin `cfg_select`, complete predicate/branch parsing and selected syntax | PA31 source/compiler role; PA7/PA8 shared cfg/expansion machinery / PA31 plus earlier ordinary controls where expressible | C + integrator | Qualified source `d8ed7286` passes 1,449 private tests, twelve frontend cases and 51 native programs, with all static checks. The unchanged-core probe reaches LIB-017. Exact compiler files are integrated locally as `4ad4db87`; combined release/performance and foreign macro transport remain pending. |
 | LIB-016 | P0; measured complete-source growth failure | Repeated full caller-environment opening and premise-index construction across independent projections | PA21 projection/formation machinery; PA31 complete source regression / PA31 plus earlier ordinary controls | B | The first structural-sharing repair at `f96ec23a` reduces the 128-subject case from 550.4M to 441.0M instructions, but 32→128 growth remains 9.14× above the unchanged 6× limit. Actual fallback observations identify captured caller-region remapping and repeated indexes; further algorithmic repair is required. |
-| LIB-017 | P0; provisional unchanged-core failure at `format_args`, line 994 | Source-declared formatting builtins, diagnostic/allowance identity, argument parsing and construction using the actual source formatting roles | PA26 formatting semantics + PA31 compiler/source bindings / PA31 complete providers, with earlier ordinary controls where expressible | C after LIB-015 | The cfg_select candidate passes its declaration in unchanged core and reaches the format_args builtin attribute. This is a provisional failed-component observation. FormatArguments/FormatArgument source identities and actual constructor, formatting-trait, argument lifetime and const obligations remain required; declaration recognition alone does not close it. |
+| LIB-017 | P0; qualified component's unchanged-core failure at `format_args`, line 994 | Source-declared formatting builtins, diagnostic/allowance identity, argument parsing and construction using the actual source formatting roles | PA26 formatting semantics + PA31 compiler/source bindings / PA31 complete providers, with earlier ordinary controls where expressible | C | The qualified cfg_select compiler reaches this attribute at byte 35014. Actual FormatArguments/FormatArgument identities, source constructors, formatting-trait obligations, argument evaluation/lifetimes and const permissions remain required. Declaration recognition alone is an intermediate milestone. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):
@@ -133,38 +133,40 @@ remain preserved in the [component handoff](pa31-scoped-declarations-handoff.md)
 The exact reviewed source is integrated locally as `68a30f1b`; combined release
 and performance qualification remain pending. No core artifact has been built.
 
-The next `cfg_select` implementation draft now includes authenticated builtin
-ownership, parsing every branch in its actual fragment category, and configuring
-only the selected branch. It has not passed its first component gate. The
-independent corpus records 206 rustc/object/native observations over 62 sources,
-including 41 native executions; those establish expected behavior, not RustGM
-acceptance. The integrator's inherent-method identity partitions and actual
-container-relative privacy checks are also an unqualified draft. Scoped method
-invocation, trait/associated-member consumers and the complete source artifact
-transaction remain open. There has been no subsequent whole-core success or
-additional assignment release.
-
-The provisional cfg_select successor (`ac5aaebb`, CLI SHA-256
-`687cf42c` prefix) advances the unchanged root past cfg_select to the
-`format_args` builtin attribute at line 994, byte 35014. Compiler exit is 1,
-without infrastructure failure; the same four original source files were opened.
-The observation is in C's `obj/parallel/pa31/cfg-select-provisional-core-v1/`.
-It is explicitly bound to a failed component gate: 1,446 private cases passed,
-ten of twelve frontend cases passed, and native checks had not run. One failure
-is a diagnostic assertion; the other exposes an ordinary Clone declaration
-rejected by an overly narrow source profile. A separately qualified ordinary
-Clone fix is being integrated without changing the required fixture. This
-provisional boundary does not replace the latest fully qualified line-235 result.
-
-LIB-002's inherent-method component now passes 1,443 private cases, 28 affected
-integration cases and seven native test functions (167 programs) after preserving
-the original declaration-record layout. The text sweep found a changed private
-receiver diagnostic; the source correction and complete recovery are pending.
-Its scoped trait-method successor has seven independently qualified source cases
-in `pa31/tests/spec/declarative-macros/trait-members/` (24 observations, five native
-programs). Those establish discovery and identifier-context rules, not candidate
-support. Trait visibility, associated-member conformance and scoped invocation
+The [qualified cfg_select checkpoint](pa31-cfg-select-progress.md) includes
+canonical source ownership, complete parsing of every branch in its actual
+fragment category, and configuration/installation of the selected syntax.
+Its 61-source corpus and original scoped provider retain 206 independent
+observations, including 41 native executions. The final candidate gate passes
+1,449 private cases, twelve frontend cases and 51 native programs. Its exact
+compiler files are integrated locally as `4ad4db87`. Combined release and paired
+performance remain pending; general scoped invocation and foreign transport
 remain open.
+
+The original provisional observation (`ac5aaebb`, CLI `687cf42c` prefix) at
+`obj/parallel/pa31/cfg-select-provisional-core-v1/` is retained with its failed
+component gate: 1,446 private passes, ten of twelve frontend passes, no native
+phase. The diagnostic assertion and overly narrow ordinary-Clone profile were
+fixed without changing the required fixtures. The provisional result is now
+superseded by the successfully qualified component's unchanged-core probe:
+
+- Source `d8ed72868bb73ccd8fd481720ed0f1f5cdb64144`, CLI SHA-256
+  `0836f6af2d4ad8dfb58d88475d486bca99d223ba614e22627587ee7cbf31f33d`.
+- C worktree `obj/parallel/pa31/cfg-select-whole-core-v2/`, result SHA-256
+  `05b59bbd32e145fb92d534f21eaa705a6975fd3cceeccb87e0b30238c3e0d6b5`.
+- Compiler exit 1, no infrastructure failure, `format_args` builtin attribute
+  at line 994, byte 35014. All four opened original files still match their pin.
+
+LIB-002's [inherent-method component](pa31-inherent-member-contexts.md) now
+passes 1,443 private cases, 28 affected integration cases, seven native test
+functions and all 8,382 active text cases. The final `8e798fcd` recovery preserves
+both the declaration-record layout and the committed private-receiver diagnostic.
+It is integrated locally through `abae2094`. Seven scoped trait-method cases in
+`pa31/tests/spec/declarative-macros/trait-members/` have 24 independent observations,
+including five native programs. They establish discovery and identifier-context
+rules, not candidate support. Trait visibility, associated-member conformance,
+scoped invocation and the complete source artifact transaction remain open.
+No core artifact or additional assignment has been completed.
 
 The first LIB-007 executable transaction uses a complete smaller provider with
 ordinary sizing/Clone/Copy/receiver declarations and one generic free function.
@@ -272,9 +274,10 @@ roots must remain registered in the existing maintainer suite groups.
 Keep the three existing GPT-6.1-Sol/high workers. A worker can carry multiple
 independent issues, but keeps coherent commits and an explicit handoff for each.
 Agree shared APIs before concurrent edits; use separate worktrees. Current
-primary lanes are A: LIB-006/007; B: LIB-003/004; C: LIB-001 declaration-only scoped macros, with qualified local LIB-013/014
-components and the LIB-002 field checkpoint and LIB-005 preserved for qualification;
-integrator: LIB-001/008/009/012 and integration.
+primary lanes are A: LIB-006/007; B: LIB-016, then the preserved LIB-004
+readiness draft; C: LIB-017 formatting, with scoped invocation, the LIB-002 field
+checkpoint and LIB-005 still required; integrator: LIB-002 method/associated-member
+consumers, LIB-008/009/012 and combined qualification.
 
 Source work proceeds concurrently. Heavy jobs use the existing 150-GiB reserve,
 50-GiB/worktree ceiling and CPU/RAM limits. After the qualified schema-2 tooling

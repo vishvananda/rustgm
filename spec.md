@@ -1428,7 +1428,15 @@ foreign, repeated and reordered parameter rejection. Keep anonymous and unused
 impl lifetime slots in the source proof environment.
 
 Index inherent functions once by canonical nominal owner and resolved name after
-signature elaboration. Qualified paths retain their resolved owner and typed
+signature elaboration. Partition non-root declaration contexts before shape or
+applicability work; a use visits only its own context ancestry. Normalize direct
+declaration identities separately for coherence. At a use, adjust against the
+actual impl container and check the actual caller's visibility before selection.
+Keep contextual indexes below the existing lazy lookup owner, preserving ordinary
+record layouts and root-only allocation behavior. The
+[inherent identity checkpoint](docs/pa31-inherent-member-contexts.md) records
+structural work bounds, diagnostic compatibility and remaining trait consumers.
+Qualified paths retain their resolved owner and typed
 prefix; explicit type qualification uses the ordinary annotation worklist.
 Selected methods enter ordinary function-item inference, template demand and
 lowering. The full callable parameter order includes inherited impl arguments,

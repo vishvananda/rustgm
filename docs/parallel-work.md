@@ -13,10 +13,11 @@ Use [the live library blocker tracker](library-build-blockers.md) for current
 issue assignments and concrete closure tests. Workers may tackle multiple
 independent blockers in their lanes while preserving a separate coherent handoff
 for each. Current priority is unchanged-core loading and expansion. Worker C
-implements the actual `cfg_select` builtin after its qualified scoped declaration
-component passed `assert_matches` and reached this next blocker at line 235.
-The integrator reviewed and merged that component locally as `68a30f1b`;
-combined release qualification remains pending. Worker B fixes LIB-016's
+implements LIB-017 formatting after its qualified `cfg_select` component moved
+unchanged core from line 235 to the `format_args` attribute at line 994.
+The integrator merged cfg_select locally as `4ad4db87` and the separately
+qualified inherent-member contexts through `abae2094`; combined release and
+performance qualification remain pending. Worker B fixes LIB-016's
 measured repeated projection-environment opening and premise-index construction,
 with the early-impl readiness draft preserved separately. Worker A owns complete
 generic source-body validation, artifact transport and fresh consumer proof.
@@ -32,7 +33,7 @@ release/native passes (1,721 fresh and 1,923 retained), 8,382 text cases, all
 The [alias/allowance successor](library-alias-allowances-checkpoint.md) records
 3,693 functional passes (2,084 fresh and 1,609 retained), all 8,382 text cases,
 and one failed projection-growth control among 52. Publication waits for that
-repair and combined qualification of scoped declarations. A's actual source
+repair and combined qualification of the new components. A's actual source
 artifact/import transaction remains a separate pending checkpoint. Each new
 private binary runs its full nonignored inventory once, with required-name and
 captured-output checks. Schema 2 is active after the qualified idle rollout;
