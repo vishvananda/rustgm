@@ -39,18 +39,35 @@ record name is root-context. Wire names presently carry only spelling, and may
 not silently erase a field context. This is rejection of an unsupported metadata
 profile, not rejection of the Rust source language.
 
+The storage draft re-exports the existing mark-arena `ItemContext` through
+`resolve::model`; semantic code consumes that resolved identity without depending
+on the expansion phase. It adds no adjustment cache. Cold `Members` and its
+inline `Declarations` owner are predicted to grow by `size_of::<usize>()` for
+the optional index handle, from the qualified 7064-byte `Declarations` baseline.
+This arithmetic is a declared layout expectation, not an observed measurement.
+The existing collection, clone, mutable iterator, iterator and progression
+layout controls retain that explicit expectation alongside their hot-row checks.
+
 ## Selection and privacy seam (awaiting root's pinned contract)
 
-The shared adjustment accepts the actual use identifier span and actual nominal
-container, and returns the adjusted `ItemContext` plus the privacy definition
-scope. C will use both components in record initialization, record patterns and
+The reviewed shared signature is
+`Report::adjust_item(container: DefId, context: ItemContext, caller: ModuleId)`
+returning `ItemAdjustment { context: ItemContext, privacy: ModuleId }`.
+The use context comes from `Package::item_context` at the actual identifier span;
+functional update uses the actual expression provenance. C will use both
+components in record initialization, record patterns and
 field access. Actual container introduction and its captured name context are
 independent facts. Captured field tokens do not inherit literal-token privacy.
 The shorthand value/binding path remains local-normalized independently of its
 field-name path. Functional update needs the pinned expression-site privacy
 rule for omitted fields; no arbitrary explicit field token substitutes for it.
 
-No lookup consumer is enabled until that shared interface is reviewed. Storage
+Root's cache belongs to the existing boxed expansion-mark arena, keyed by the
+normalized context and actual container introduction. C adds no cache. Actual
+enum variant provenance remains retained even though current variant collection
+inherits the enum introduction. No spelling lookup supplies an introduction.
+
+No lookup consumer is enabled until that shared interface is available. Storage
 preparation alone grants no scoped macro expansion, field selection or access.
 
 ## Required controls and measurement

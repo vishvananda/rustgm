@@ -56,6 +56,11 @@ pub(crate) fn export_with_originals(
         &Interface,
     ) -> Result<crate::support::crates::generics::Payload, Error>,
 ) -> Result<Exports, Error> {
+    if facts.members.has_contextual_fields() {
+        return Err(error(
+            "contextual aggregate field metadata is not implemented",
+        ));
+    }
     if report.package.library_policy().is_some() {
         return Err(error(
             "library stability metadata export is not implemented",

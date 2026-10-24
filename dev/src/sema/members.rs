@@ -5,7 +5,7 @@ mod tests;
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{
-        model::{Access, DefId},
+        model::{Access, DefId, ItemContext},
         unit::NodeKey,
     },
     support::names::{NameId, Names},
@@ -98,6 +98,9 @@ pub struct Identity {
     pub variant: u32,
     pub field: u32,
 }
+type ScopedKey = (VariantId, NameId, ItemContext);
+type ScopedNames = HashMap<ScopedKey, FieldId>;
+
 #[derive(Default)]
 pub struct Members {
     pub names: Names,
@@ -110,6 +113,7 @@ pub struct Members {
     external_open: Option<HashSet<ItemId>>,
     by_owner: HashMap<ItemId, Vec<VariantId>>,
     by_name: HashMap<(VariantId, Name), FieldId>,
+    scoped_names: Option<Box<ScopedNames>>,
 }
 impl Members {
     /// Unknown external constructors are coverage facts, never storage variants.
@@ -141,7 +145,32 @@ impl Members {
         shape: Shape,
         fields: &[Field],
     ) -> Result<VariantId, &'static str> {
-        self.publish(owner, ordinal, Origin::Source(node), shape, fields)
+        self.publish(owner, ordinal, Origin::Source(node), shape, fields, None)
+    }
+    /// Publish source fields with their actual declaration identifier contexts.
+    /// This indexes identity only; use adjustment and privacy remain separate.
+    /// # Errors
+    /// Rejects misaligned contexts, contextual tuple fields and exact duplicates.
+    pub fn insert_contextual(
+        &mut self,
+        owner: ItemId,
+        ordinal: u32,
+        node: NodeKey,
+        shape: Shape,
+        fields: &[Field],
+        contexts: &[ItemContext],
+    ) -> Result<VariantId, &'static str> {
+        if contexts.len() != fields.len() {
+            return Err("aggregate field context count differs from its fields");
+        }
+        self.publish(
+            owner,
+            ordinal,
+            Origin::Source(node),
+            shape,
+            fields,
+            Some(contexts),
+        )
     }
     /// Register completed library fields without inventing source syntax identities.
     /// # Errors
@@ -154,7 +183,7 @@ impl Members {
         shape: Shape,
         fields: &[Field],
     ) -> Result<VariantId, &'static str> {
-        self.publish(owner, ordinal, Origin::Library(origin), shape, fields)
+        self.publish(owner, ordinal, Origin::Library(origin), shape, fields, None)
     }
     /// Publish a source-free closed record after external identities are remapped.
     /// # Errors
@@ -174,7 +203,7 @@ impl Members {
         {
             return Err("external record members require named fields");
         }
-        self.publish(owner, 0, origin, Shape::Record, fields)
+        self.publish(owner, 0, origin, Shape::Record, fields, None)
     }
     fn publish(
         &mut self,
@@ -183,6 +212,7 @@ impl Members {
         provenance: Origin,
         shape: Shape,
         fields: &[Field],
+        contexts: Option<&[ItemContext]>,
     ) -> Result<VariantId, &'static str> {
         if fields.iter().any(|field| match (provenance, field.origin) {
             (Origin::Source(_), Origin::Source(_)) | (Origin::Library(_), Origin::Library(_)) => {
@@ -204,7 +234,11 @@ impl Members {
         let end = start
             .checked_add(u32::try_from(fields.len()).map_err(|_| "too many fields")?)
             .ok_or("too many fields")?;
-        for (offset, field) in (start..end).zip(fields) {
+        let scoped = scoped_names(id, start, fields, contexts)?;
+        for (index, (offset, field)) in (start..end).zip(fields).enumerate() {
+            if contexts.is_some_and(|contexts| contexts[index] != ItemContext::ROOT) {
+                continue;
+            }
             if self
                 .by_name
                 .insert((id, field.name), FieldId(offset))
@@ -212,6 +246,13 @@ impl Members {
             {
                 self.by_name.retain(|(variant, _), _| *variant != id);
                 return Err("duplicate aggregate field");
+            }
+        }
+        if let Some(scoped) = scoped {
+            if let Some(names) = &mut self.scoped_names {
+                names.extend(*scoped);
+            } else {
+                self.scoped_names = Some(scoped);
             }
         }
         self.fields.extend_from_slice(fields);
@@ -261,10 +302,64 @@ impl Members {
     pub fn field(&self, variant: VariantId, name: Name) -> Option<FieldId> {
         self.by_name.get(&(variant, name)).copied()
     }
+    /// Match an already container-adjusted identity without a root fallback.
+    #[must_use]
+    pub fn field_in(
+        &self,
+        variant: VariantId,
+        name: Name,
+        context: ItemContext,
+    ) -> Option<FieldId> {
+        if context == ItemContext::ROOT {
+            return self.field(variant, name);
+        }
+        let Name::Named(name) = name else {
+            return None;
+        };
+        self.scoped_names
+            .as_ref()?
+            .get(&(variant, name, context))
+            .copied()
+    }
+    /// Wire field names currently cannot preserve item syntax contexts.
+    #[must_use]
+    pub fn has_contextual_fields(&self) -> bool {
+        self.scoped_names.is_some()
+    }
     #[must_use]
     pub fn fields(&self, variant: VariantId) -> Option<&[Field]> {
         let variant = self.variants.get(variant.0 as usize)?;
         self.fields
             .get(variant.start as usize..variant.end as usize)
     }
+}
+
+/// Prepare non-root names before touching any published lookup index. The first
+/// contextual group transfers this map directly; root-only groups allocate none.
+fn scoped_names(
+    variant: VariantId,
+    start: u32,
+    fields: &[Field],
+    contexts: Option<&[ItemContext]>,
+) -> Result<Option<Box<ScopedNames>>, &'static str> {
+    let Some(contexts) = contexts.filter(|values| values.iter().any(|c| *c != ItemContext::ROOT))
+    else {
+        return Ok(None);
+    };
+    let mut names = Box::<ScopedNames>::default();
+    for ((offset, field), &context) in (start..).zip(fields).zip(contexts) {
+        if context == ItemContext::ROOT {
+            continue;
+        }
+        let Name::Named(name) = field.name else {
+            return Err("numeric aggregate fields cannot carry an item context");
+        };
+        if names
+            .insert((variant, name, context), FieldId(offset))
+            .is_some()
+        {
+            return Err("duplicate aggregate field");
+        }
+    }
+    Ok(Some(names))
 }
