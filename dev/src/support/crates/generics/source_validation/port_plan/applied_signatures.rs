@@ -104,15 +104,9 @@ impl Arena {
                     frame: Some(actual.binder),
                     ..caller
                 };
-                for index in 0..actuals.len() {
+                for (index, &root) in actuals.iter().enumerate() {
                     let expected = self.signature_roots[template.roots.start as usize + index];
-                    let key = uses::key(
-                        domains,
-                        actuals[index],
-                        Rewrite::Original,
-                        Some(context),
-                        work,
-                    )?;
+                    let key = uses::key(domains, root, Rewrite::Original, Some(context), work)?;
                     let actual = self.root(domains, key, work)?;
                     self.same(domains, expected, actual, opening, work)?;
                 }

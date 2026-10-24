@@ -1,6 +1,6 @@
 //! Coverage records requests, not their satisfaction or a universal-alias identity.
 use super::{
-    Context, DomainIndex, Work, g,
+    Context, DomainIndex, Work,
     nodes::{Arena, NodeId, Rewrite},
     s, uses,
 };
@@ -50,10 +50,10 @@ impl Coverage {
         let mut actual_copy = None;
         for role in rows.policy.roles.slice(&rows.roles)? {
             work.charge(1)?;
-            if role.role == crate::support::bindings::LangItem::Copy {
-                if actual_copy.replace(role.declaration).is_some() {
-                    return Err("source Copy role has duplicate actual bindings");
-                }
+            if role.role == crate::support::bindings::LangItem::Copy
+                && actual_copy.replace(role.declaration).is_some()
+            {
+                return Err("source Copy role has duplicate actual bindings");
             }
         }
         for input in &rows.body_inputs {

@@ -38,7 +38,7 @@ fn complete_originals_derive_requests_without_erasing_default_or_unused_formals(
         assert!(!inputs.is_empty());
         assert!(std::ptr::eq(
             plan.inputs(original.body, &mut work)?,
-            &rows.body_inputs[original.body.0 as usize]
+            std::ptr::from_ref(&rows.body_inputs[original.body.0 as usize])
         ));
         assert_eq!(
             inputs
@@ -58,7 +58,7 @@ fn complete_originals_derive_requests_without_erasing_default_or_unused_formals(
             assert!(inputs.iter().any(|input| matches!(input.kind(), RequiredKind::DefiningCleanup { member, .. } if member == original.declaration)));
         }
     }
-    assert!(std::ptr::eq(plan.rows(), &rows));
+    assert!(std::ptr::eq(plan.rows(), std::ptr::from_ref(&rows)));
     assert!(plan.retained_bytes() <= plan.peak_bytes());
     assert!(plan.peak_bytes() <= crate::support::crates::MAX_BYTES);
     println!(
