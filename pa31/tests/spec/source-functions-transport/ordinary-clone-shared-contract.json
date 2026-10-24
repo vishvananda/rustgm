@@ -2,7 +2,7 @@
   "status": "Exact qualified A6c source/test dependency; no fixture rewrites or new oracle observation",
   "production_commit": "98e599c7fbae923fdfb6bfb5a709620d0751dd16",
   "final_test_snapshot": "6c481b2d",
-  "qualified_receipt": "/home/vishvananda/rustgm-pa25-work/obj/parallel/source-functions-columns-seventh/receipt.json",
+  "qualified_receipt": "/home/vishvananda/rustgm-pa25-work/obj/parallel/pa29-source-client-staging/lib007/columns-seventh/receipt.json",
   "qualified_receipt_sha256": "09134d2241c90e5bee700c7771909f1a283bfe95054d0aea1c8200fbc6a9dec0",
   "cases": [
     {
@@ -20,5 +20,9 @@
       "sha256": "84d53456e326c46976ab6c9b1d1fbced460652bf58aeedf3c55ac4eddc1aaeb7",
       "candidate_contract": "actual ordinary Clone call in const body rejects at reached const-use eligibility"
     }
-  ]
+  ],
+  "oracle_receipt": "/home/vishvananda/rustgm-pa25-work/obj/parallel/pa29-source-client-staging/lib007/columns-sixth/receipt.json",
+  "oracle_receipt_sha256": "decfc7e2d3b1ff9e6c94613c3ff0c63d4a3e03d470842ffd4f56956d8447f8ee",
+  "oracle_contract": "/home/vishvananda/rustgm-pa25-work/obj/parallel/pa29-source-client-staging/lib007/ordinary-clone-concrete-contract.json",
+  "oracle_contract_sha256": "a3c397853bea59c723167b2536461cf0edc3332700a2913153d29060a40666bf"
 }
