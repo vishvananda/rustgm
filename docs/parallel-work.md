@@ -9,40 +9,33 @@ Workers own implementation, independently qualified tests and handout drafts.
 The integrator owns shared interface decisions, integration, public pushes,
 assignment activation and final text-oracle publication.
 
-Use [the live library blocker tracker](library-build-blockers.md) for current
-issue assignments and concrete closure tests. Workers may tackle multiple
-independent blockers in their lanes while preserving a separate coherent handoff
-for each. Current priority is unchanged-core loading and expansion. Worker C
-implements LIB-017 formatting after its qualified `cfg_select` component moved
-unchanged core from line 235 to the `format_args` attribute at line 994.
-The integrator merged cfg_select locally as `4ad4db87`, the separately
-qualified inherent-member contexts through `abae2094`, and qualified trait-method
-scope discovery as `708ee191`. The qualified projection-opening repair is now
-integrated as `5a5e9d51`: its unchanged nine-row gate passes with no triggers and
-subject growth of 3.732× against the 6× limit. Combined release and performance
-qualification remain pending. Worker B has resumed LIB-004 early impl readiness,
-coordinating its per-owner conformance adapter with the integrator's canonical
-member work. Worker A owns complete
-generic source-body validation, artifact transport and fresh consumer proof.
-The integrator owns combined qualification, shared interface review and the
-remaining impl-to-trait member mapping and associated-member work, coordinated
-with A's imported-header changes. C's unqualified field checkpoint and
-the remaining foreign macro, edition and stability requirements stay open.
-These implementation priorities do not change assignment release ownership or
-the shared resource limits below.
+Use [the live library blocker tracker](library-build-blockers.md) for concrete
+issue assignments and closure tests. The [combined prerequisite checkpoint](core-prerequisites-checkpoint.md)
+qualifies compiler `65f20e8b`: 3,766 maintainer passes, 8,382 active text cases,
+110 measured inputs, 85 native preflights and all 58 growth controls. One RSS
+increase has a completed attribution review and remains a recorded cost.
+Original core stops at concat_bytes, line 1126. C's separately qualified byte
+component reaches autodiff_forward, line 1553; integration is next. Neither
+build produces a core artifact or releases an assignment.
 
-The preceding [combined checkpoint](library-lookup-panic-checkpoint.md) records 3,644
-release/native passes (1,721 fresh and 1,923 retained), 8,382 text cases, all
-84 comparable performance outputs and the sixteen retained RSS review triggers.
-The [alias/allowance successor](library-alias-allowances-checkpoint.md) records
-3,693 functional passes (2,084 fresh and 1,609 retained), all 8,382 text cases,
-and one failed projection-growth control among 52. Publication waits for that
-repair and combined qualification of the new components. A's actual source
-artifact/import transaction remains a separate pending checkpoint. Each new
-private binary runs its full nonignored inventory once, with required-name and
-captured-output checks. Schema 2 is active after the qualified idle rollout;
-select each absolute cap from actual existing usage plus build headroom, and
-admit concurrent jobs only when the unchanged global reserve permits.
+Current lanes:
+
+- A: complete generic original/artifact transport and fresh consumer proof.
+  Canonical sizing validation now passes; actual source-trait debt transfer into
+  the existing body proof is the next observed imported-consumer blocker.
+- B: explicit early implementation readiness, then the selected-reference
+  anonymous const_eval_select caller proof needed by the unchanged original
+  reducer. Coordinate C's existing typed Row/Code/Contract interface.
+- C: source attribute builtin declaration/import and actual application kinds
+  (LIB-019), preserving unsupported executable transformation until implemented.
+- Integrator: actual scoped macro invocation, physical type privacy, shared
+  interface review, combined qualification, integration and public main pushes.
+
+Each new private binary runs its full nonignored inventory once, with required
+names and captured outputs. Schema 2 remains active. Select each absolute cap
+from actual usage plus build headroom and admit work only when the unchanged
+150 GiB reserve permits. Keep all successful disposable outputs scoped and
+clean them between native targets; retain failure diagnostics and input hashes.
 
 ## Assignment ownership
 

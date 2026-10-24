@@ -3,8 +3,8 @@
 Compiler snapshot `65f20e8b` combines scoped declaration publication, cfg_select,
 literal source formatting, contextual member conformance and the shared
 projection-opening repair. Functional qualification is complete. The broad
-performance run is complete with one retained RSS attribution trigger; its
-follow-up review remains open. This snapshot does not enable complete scoped
+performance run and the one required RSS attribution review are complete.
+The original memory increase remains recorded as an accepted measured cost. This snapshot does not enable complete scoped
 macro invocation, nonempty formatting, foreign macro transport or a core artifact.
 PA1–PA24 remain implemented drafts; PA25–PA44 remain planned.
 
@@ -57,7 +57,22 @@ algorithmic improvement on that workload, not a whole-core compile-time claim.
 One input, `selector-ctfe-repeated-8`, crosses the RSS review threshold:
 11,096→11,716 KiB, +620 KiB (+5.59%). Instructions change by +0.169%; paired
 median time changes by −0.91%, within its 3.99% A/A spread. This trigger remains
-open for attribution; do not erase it or describe the matrix as zero-regression.
+recorded; the following bounded attribution reviews it without replacing the
+original observations or claiming zero regression.
+
+A predeclared two-observation follow-up runs one Massif heap/stack profile and
+one GDB exit mapping per unchanged binary, retaining exact original outputs.
+Peak live heap is 275,355→276,402 bytes (+1,047); total profiled heap, allocator
+overhead and stack is 366,480→370,392 bytes (+3,912). Under GDB, resident compiler
+pages increase by 128 KiB and stack by 4 KiB, while resident heap stays 300 KiB.
+Those mapping changes account for the instrumented 132 KiB process difference;
+they do not numerically reproduce the original uninstrumented 620 KiB delta.
+The evidence rules out a corresponding large live-heap increase in this input
+and supports executable-page residency/layout as a contributor. Retain both
+observations and accept this bounded cost for the qualified feature checkpoint;
+no source change or timing rerun was used to obtain a favorable comparison.
+Memory evidence: `obj/parallel/core-prerequisites-memory-v1/`, results SHA-256
+`85eb387c714268796295a2ce7178d8987a05d41d59d493118c6da31a96a07dac`.
 
 Results SHA-256: `1216f378f62b43b9e7c265204c5c313756c4e77ef6bb4908e26e5acbf39df48a`.
 Analysis SHA-256: `9ed4ea733e511521d0036ed539faa92d6b233b2c81c73480d8fe1ee416a90a50`.

@@ -76,9 +76,10 @@ the configured CPPGM backend; text output alone is insufficient.
   The combined allowance successor passes `assert_eq` and reaches the scoped
   `assert_matches` declaration, line 170. The qualified scoped-declaration
   component reached builtin `cfg_select`, line 235. The qualified cfg_select
-  successor reaches the `format_args` builtin attribute at line 994. The literal
-  formatting successor provisionally reaches `concat_bytes`, line 1126; the
-  combined release gate remains pending. Track current probe evidence in the
+  successor reaches the `format_args` builtin attribute at line 994. The functionally qualified combined
+  formatting successor reaches `concat_bytes`, line 1126. A separately qualified
+  byte component reaches `autodiff_forward`, line 1553; attribute declaration and
+  invocation-kind requirements are the next observed source blocker. Track current probe evidence in the
   [library blocker tracker](../docs/library-build-blockers.md).
 - Formatting claims and calls must use actual source nominal and constructor
   identities, with ordinary signature, lifetime, visibility and const checks.
