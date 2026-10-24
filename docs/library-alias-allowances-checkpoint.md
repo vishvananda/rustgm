@@ -97,10 +97,15 @@ Original-core result SHA-256:
 
 ## Remaining crate work
 
-The [blocker tracker](library-build-blockers.md) separates integrated behavior
-from worker experiments. Scoped macro declaration support has a provisional
-worker result reaching `cfg_select`, line 235, but is not part of this compiler
-snapshot. Its remaining candidate checks must pass before integration.
+The [blocker tracker](library-build-blockers.md) separates this qualified
+snapshot from successor work. Scoped macro declarations subsequently passed
+component qualification: twelve fresh frontend tests, 46 fresh native programs
+and 1,437 private passes retained by exact source and receipt hashes. A fresh
+unchanged-core probe confirms the next blocker at `cfg_select`, line 235.
+The reviewed component is integrated locally as `68a30f1b`; it is not part of
+the `5602dc27` measurements above. Combined qualification and publication remain
+pending. The [component handoff](pa31-scoped-declarations-handoff.md) preserves
+the preceding failures, fresh probe and precise unsupported boundaries.
 
 Scoped invocation and exported macro provenance, hygienic fields/methods and
 associated members, early implementation validation, and actual source-body

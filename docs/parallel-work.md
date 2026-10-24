@@ -12,28 +12,28 @@ assignment activation and final text-oracle publication.
 Use [the live library blocker tracker](library-build-blockers.md) for current
 issue assignments and concrete closure tests. Workers may tackle multiple
 independent blockers in their lanes while preserving a separate coherent handoff
-for each. Current priority is the unchanged-core loading/expansion blocker:
-the integrator owns scoped item/path/import/glob lookup, Worker C investigates
-hygienic field/member consumers, Worker B owns projected Copy and early-impl
-readiness, and Worker A owns complete generic source-body validation/transport.
-The public lookup/input/panic compiler stops at the line-41 allowance. C's
-qualified complete-allowance worker advances unchanged core to line 170's
-`pub macro assert_matches`; the combined candidate still needs qualification.
-C now owns declaration-only scoped macro publication, preserving explicit
-invocation/export rejection until complete hygiene is qualified. The integrator
-retains method/associated-member lookup and integration; C's older field
-checkpoint remains separate and unqualified. B's actual early-Copy trace
-identifies premature absence before implementation validation, so its next
-checkpoint separates readiness and evaluates indexed validation scheduling.
+for each. Current priority is unchanged-core loading and expansion. Worker C
+implements the actual `cfg_select` builtin after its qualified scoped declaration
+component passed `assert_matches` and reached this next blocker at line 235.
+The integrator reviewed and merged that component locally as `68a30f1b`;
+combined release qualification remains pending. Worker B fixes LIB-016's
+measured repeated projection-environment opening and premise-index construction,
+with the early-impl readiness draft preserved separately. Worker A owns complete
+generic source-body validation, artifact transport and fresh consumer proof.
+The integrator owns combined qualification, shared interface review and the
+remaining method/associated-member work. C's unqualified field checkpoint and
+the remaining foreign macro, edition and stability requirements stay open.
 These implementation priorities do not change assignment release ownership or
 the shared resource limits below.
 
-The [combined checkpoint](library-lookup-panic-checkpoint.md) records 3,644
+The preceding [combined checkpoint](library-lookup-panic-checkpoint.md) records 3,644
 release/native passes (1,721 fresh and 1,923 retained), 8,382 text cases, all
 84 comparable performance outputs and the sixteen retained RSS review triggers.
-The next combined gate covers B's actual instance-alias scope, C's complete
-allowances and the integrator's enum-alias suffix-context/privacy correction.
-A's intermediate source codec remains a separate pending checkpoint. Each new
+The [alias/allowance successor](library-alias-allowances-checkpoint.md) records
+3,693 functional passes (2,084 fresh and 1,609 retained), all 8,382 text cases,
+and one failed projection-growth control among 52. Publication waits for that
+repair and combined qualification of scoped declarations. A's actual source
+artifact/import transaction remains a separate pending checkpoint. Each new
 private binary runs its full nonignored inventory once, with required-name and
 captured-output checks. Schema 2 is active after the qualified idle rollout;
 select each absolute cap from actual existing usage plus build headroom, and
