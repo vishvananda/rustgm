@@ -1,0 +1,32 @@
+{
+  "state": "Declared before execution; no observation or candidate acceptance claim. Earlier source/contract expectations remain unchanged.",
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "rows": [
+    {
+      "name": "field-update-complete-captured-base",
+      "entry": "pa31/tests/spec/declarative-macros/field-update-complete-captured-base.rs",
+      "sha256": "2115cf9b38db59ea30fa158a393cf6f7f5efc407515fd4bb6f2ad22694551e1f",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "hypothesis": "When every field is explicit, their literal tokens authorize private fields; the captured base transfers no omitted field and needs no private-field permission.",
+      "expected_native": "29\n"
+    },
+    {
+      "name": "field-update-captured-explicit-denied",
+      "entry": "pa31/tests/spec/declarative-macros/field-update-captured-explicit-denied.rs",
+      "sha256": "9ad28bbc803d4b1cdb9632993e647bd8c4926b1773f6054dae1d443a31458663",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "hypothesis": "A literal base cannot authorize an explicit private field whose own identifier token is caller-captured."
+    }
+  ]
+}
