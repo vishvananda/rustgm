@@ -21,15 +21,47 @@ fn root() -> Result<&'static Path> {
         .parent()
         .ok_or_else(|| "missing root".into())
 }
-fn cases() -> Result<Vec<serde_json::Value>> {
-    let manifest: serde_json::Value = serde_json::from_slice(&std::fs::read(
-        root()?.join("pa31/tests/spec/cfg-select/observations.json"),
-    )?)?;
-    Ok(manifest["cases"]
-        .as_array()
-        .ok_or("missing observed cases")?
-        .clone())
-}
+const POSITIVE: &[&str] = &[
+    "first-match",
+    "fallback",
+    "unbraced",
+    "braced-commas",
+    "nested-predicates",
+    "wildcard-first",
+    "repeated-wildcard",
+    "item-position",
+    "empty-items",
+    "type-position",
+    "impl-position",
+    "trait-position",
+    "trait-impl-position",
+    "foreign-position",
+    "import-alias",
+    "qualified-path",
+    "configured-on",
+    "configured-off",
+    "authored-same-spelling",
+    "legacy-builtin-shape",
+    "width-8",
+    "width-32",
+    "width-128",
+    "depth-8",
+    "depth-16",
+    "depth-32",
+    "statement-complete-provider",
+    "pattern-complete-provider",
+    "captured-complete-provider",
+    "empty-unit-expression",
+    "opaque-selected",
+    "opaque-unselected",
+    "empty-statement-tail",
+    "empty-statement-semicolon",
+    "empty-unselected-statement-tail",
+    "item-statement-tail",
+    "selected-statement-tail-value",
+    "tokens-empty-statement-semicolon",
+    "tokens-empty-brace-statement-tail",
+];
 fn source(name: &str) -> Result<String> {
     Ok(std::fs::read_to_string(
         root()?
@@ -83,16 +115,7 @@ fn lower(name: &str, text: &str) -> Result<rustgm::lowir::program::Program> {
 #[test]
 fn genuine_selected_source_contexts_lower_with_the_independent_contracts() -> Result {
     let mut count = 0;
-    for case in cases()? {
-        let name = case["name"].as_str().ok_or("missing case name")?;
-        if case["metadata_status"] != 0
-            || matches!(
-                name,
-                "original-provider" | "declaration-source-assert-matches"
-            )
-        {
-            continue;
-        }
+    for &name in POSITIVE {
         let text = source(name)?;
         lower(name, &text).map_err(|error| format!("{name}: {error}"))?;
         count += 1;
@@ -173,16 +196,7 @@ fn genuine_chosen_source_cases_preserve_independently_observed_native_answers() 
     let consumer =
         std::fs::read_to_string(root()?.join("pa31/tests/spec/source-panic-macros/consumer.c"))?;
     let mut count = 0;
-    for case in cases()? {
-        let name = case["name"].as_str().ok_or("missing case name")?;
-        if case["native_executed"] != true
-            || matches!(
-                name,
-                "original-provider" | "declaration-source-assert-matches"
-            )
-        {
-            continue;
-        }
+    for &name in POSITIVE {
         let program = lower(name, &source(name)?)?;
         let expected = match name {
             "configured-on" | "authored-same-spelling" => "9\n",
