@@ -191,6 +191,13 @@ preflights; no instruction, RSS or scaling threshold fires. Functional cleanup
 reclaims 17.20 GiB. Documentation-only publication retains these exact qualified
 compiler/test sources and does not repeat the full functional batch.
 
+The [defining cleanup and source-producer checkpoint](docs/source-defining-producer-checkpoint.md)
+passes 3,538 fresh release/native cases and 8,382 text cases in 19.35 seconds.
+Its 55-input performance matrix retains 54 byte-equal comparisons and 31 native
+preflights with no instruction, RSS or scaling trigger. A separately reviewed
+typed-facts provenance change has no paired speedup claim. The report records
+the original preflight failure and 17.20 GiB of functional artifact cleanup.
+
 For a validation batch, pass `scripts/course.py --evidence-root obj/BATCH/course`
 and include that directory in the storage guard's `--prune-under` roots. This
 keeps the same fixture comparisons and complete receipts while avoiding a cleanup
@@ -892,6 +899,15 @@ Retire old pins after replacing the baseline. Historical binary copies may be
 pruned; their recorded hashes and observations remain, but rerunning a measurement
 requires a restored binary whose hash matches. Old path references in historical
 validation notes do not imply that disposable executables still exist.
+
+Retiring a pin also requires an explicit scoped prune:
+`python3 scripts/storage.py prune --apply --prune-under obj/old-comparison`.
+Preview without `--apply` when identifying obsolete outputs, and check the
+deletion inventory against the current frozen input and binary hashes. Automatic
+successful-run cleanup only considers files written during that run, so it will
+not reclaim an older executable merely because its pin was removed. Keep the
+reserve unchanged when reclaiming space, and discard rebuildable Cargo caches
+with `make tidy-build` when their compiled snapshot is no longer needed.
 
 PA20 introduces `--emit-trait-semantics` and `--count-trait-semantics`, preserving
 PA19's separate semantic text contract. Its 1,355 registered cases cover 546

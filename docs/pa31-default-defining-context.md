@@ -8,7 +8,10 @@ It is not whole-core or cross-crate source acceptance.
 The subsequent [defining cleanup checkpoint](pa31-defining-cleanup-preparation.md)
 closes the direct rigid-parameter cleanup obligation in focused source/native
 qualification. The earlier call-checking history below retains the boundary as
-it stood at that checkpoint. Combined integration qualification remains pending.
+it stood at that checkpoint. The subsequent
+[combined integration qualification](source-defining-producer-checkpoint.md)
+passes full release/native/text checks and performance gates with the actual
+source producer; it does not qualify imported-default execution.
 
 `sema::function_context::FunctionContext` is a transient value derived from the
 completed indexed Function/body and direct associated owner. Runtime,

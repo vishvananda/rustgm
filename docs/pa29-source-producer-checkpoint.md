@@ -5,6 +5,12 @@ rows after the actual generic Checked and ordinary Proved boundaries. It does no
 publish a source descriptor, encode source metadata, authenticate a client, or
 complete PA29. Existing legacy generic profiles remain the executable transport.
 
+The later [combined checkpoint](source-defining-producer-checkpoint.md) integrates
+the defining-cleanup successor and qualifies full release/native/text and
+performance checks. It observes the same original's required/prepared carrier
+and Environment. The exact focused dependency history below remains unchanged;
+source descriptor publication and client execution remain disabled.
+
 ## Exact development dependency
 
 The net development base is `2da35cf08362ce978955d31cbfae7c5d055e7b40`.
@@ -84,8 +90,10 @@ count independently and keeps lookup work fixed at 512 in every measured row.
 
 Earlier failures remain evidence: A6 24/25 (literal/semantic inventory mismatch),
 A7 strict101 with zero tests (observer private callback), A8 27/28 (empty completed
-promotion cache rejected). A6 and A8 executables remain separately pinned; none of
-these is described as a pass or silently replaced by A9.
+promotion cache rejected). A6 and A8 executables were separately pinned through
+A9 and combined qualification, then retired with explicit scoped cleanup.
+Their identities, diagnostics and receipts remain; none of these failures is
+described as a pass or silently replaced by A9.
 
 ## Remaining integration and execution boundary
 

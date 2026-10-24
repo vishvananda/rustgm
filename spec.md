@@ -266,6 +266,13 @@ as success; preserve the allocation-free ordinary path. The
 the focused profile and its remaining projected, composite, quantified and
 imported-owner obligations.
 
+The [combined producer/defining checkpoint](docs/source-defining-producer-checkpoint.md)
+qualifies this boundary alongside raw source-provider collection, including the
+actual original's Required-to-Prepared transition and immutable Environment.
+Its width/noise measurements distinguish indexed preparation work from the cost
+of parsing and checking unrelated source. Source rows still require validation,
+authenticated transport and fresh client proofs before execution.
+
 Callable signature equations do not establish const-callability. For actual
 source Fn/FnMut/FnOnce roles, nonordinary use validates the completed declaration,
 source constness, prepared effect and exact substituted full function item.

@@ -86,6 +86,10 @@ code, duplicated blocks, phase dependencies and misplaced environment access.
   replacement. Keep only current baselines; historical receipts and hashes do
   not require retaining every old executable. Do not treat a pruned binary as
   available evidence for a new run: rebuild or restore it and verify its hash.
+  After retiring a pin, explicitly prune its directory with
+  `python3 scripts/storage.py prune --apply --prune-under obj/path`.
+  Automatic post-run cleanup only considers files written during that run;
+  removing a pin does not make an older executable eligible for that cleanup.
 
 ## Parallel implementation
 

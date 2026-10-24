@@ -6,6 +6,11 @@ and runtime cleanup, but did not enforce the defining body's destruction
 obligations. Development-v9 qualifies the bounded source profile below; it does
 not establish whole-core or imported-default acceptance.
 
+The later [combined qualification](source-defining-producer-checkpoint.md) passes
+the full release/native/text gates and measured width/noise controls together
+with raw source-provider collection. The focused history below remains intact;
+projected, composite, quantified and imported defining obligations remain open.
+
 Pinned Rust independently rejects std and source-provider defaults that consume
 Self without a conditional Destruct bound (E0493). An actual conditional bound
 permits runtime cleanup7, and an actual ordinary Copy bound permits dropless
