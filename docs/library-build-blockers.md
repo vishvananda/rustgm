@@ -14,7 +14,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | The qualified cfg_select compiler passes its declaration at line 235 and stops at the `format_args` builtin attribute at line 994. The same four unchanged original files are opened. It is integrated locally as `4ad4db87`; combined qualification remains pending. | Implement authentic formatting support (LIB-017), qualify the integrated projection-opening repair (LIB-016) and combined compiler and rerun the unchanged root. |
+| Original core loading and expansion | The qualified cfg_select component reaches `format_args`, line 994. A newer provisional literal-formatting compiler passes it and reaches `concat_bytes`, line 1126. Both open the same four unchanged original files; combined qualification remains pending. | Qualify the merged literal-formatting compiler, implement LIB-018 and rerun the unchanged root; complete nonempty formatting and remaining source requirements. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -67,8 +67,10 @@ foreign API-use boundary.
 
 ## Work since the last whole-core probe
 
-The unchanged-core stopping point is still `format_args` at line 994; the
-following component results do not establish a newer whole-crate result.
+The last fully qualified component reached `format_args` at line 994. A newer
+provisional formatting compiler now passes those declarations and stops at
+`concat_bytes`, line 1126, byte 40135. This remains a whole-crate failure: only
+the same four original files were opened, all unchanged, and no artifact exists.
 
 - Canonical impl-member matching at `9b6665a6` passes 1,464 nonignored private
   tests, 405 affected integration cases and 109 native test functions. Its
@@ -87,11 +89,18 @@ following component results do not establish a newer whole-crate result.
   preserving the canonical conformance checks and shared constant ownership.
   Its independent corpus has 32 metadata/object and eleven native observations;
   these qualify the contract, not the unfinished RustGM implementation.
-- C's formatting implementation has reached static qualification. Its latest
-  completed attempt type-checks production but fails two test-style Clippy
-  checks. Recovery `fbef5a69` fixes those expressions and is entering a fresh
-  gate; no candidate runtime test or newer core probe has passed. Literal
-  formatting is the first slice; nonempty arguments remain required.
+- C's literal formatting implementation `fbef5a69` passes static checks, all
+  1,458 nonignored private tests, fourteen frontend cases and ten native programs.
+  One remaining test expected a different diagnostic for a correctly rejected
+  scoped builtin declaration. Test-only `fe97b885` binds that exact unsupported
+  boundary; its narrow qualification is in progress. The same production CLI
+  `6ef833e13007847ec4d6ad7d3dd5122158933cb6c729f29c5cd45001b179ea3b`
+  produced the new original-core observation in C's
+  `obj/parallel/pa31/format-provisional-core-v2/`: compiler exit 1, no
+  infrastructure failure. This observation remains tied to the partially failed
+  component gate until its correction qualifies. Nonempty formatting arguments
+  remain LIB-017; the next observed declaration blocker is LIB-018.
+
 
 The integrator's native batch exceeded its 8 GiB worktree cap because completed
 test groups retained executables until batch end. The reserve remained intact;
@@ -127,7 +136,8 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-014 | P0; previous unchanged-core failure at `assert_eq`, line 41 | Macro-specific internal unstable feature allowances, beginning with actual `panic_internals` | PA31 source/compiler policy; PA8 token provenance / PA31 with applicable PA8 ordinary controls | C + integrator | Complete local allowance lists and provenance pass combined functional qualification and move original core to LIB-001. The allowance growth controls pass; foreign API/const consumers remain required. |
 | LIB-015 | Component fixed; unchanged-core boundary advanced | Authenticated source-declared builtin `cfg_select`, complete predicate/branch parsing and selected syntax | PA31 source/compiler role; PA7/PA8 shared cfg/expansion machinery / PA31 plus earlier ordinary controls where expressible | C + integrator | Qualified source `d8ed7286` passes 1,449 private tests, twelve frontend cases and 51 native programs, with all static checks. The unchanged-core probe reaches LIB-017. Exact compiler files are integrated locally as `4ad4db87`; combined release/performance and foreign macro transport remain pending. |
 | LIB-016 | Component fixed; combined qualification pending | Repeated full caller-environment opening and premise-index construction across independent projections | PA21 projection/formation machinery; PA31 complete source regression / PA31 plus earlier ordinary controls | B + integrator | Mapped-view source `1b198324` passes static checks, 1,445 private tests, thirteen frontend cases, 31 native programs and the unchanged nine-row performance gate. All nine output pairs and sixteen native contexts pass with no triggers; subject growth is 3.732× against the 6× limit. Integrated locally as `5a5e9d51`; combined release/performance remains required. |
-| LIB-017 | P0; qualified component's unchanged-core failure at `format_args`, line 994 | Source-declared formatting builtins, diagnostic/allowance identity, argument parsing and construction using the actual source formatting roles | PA26 formatting semantics + PA31 compiler/source bindings / PA31 complete providers, with earlier ordinary controls where expressible | C | Independent declaration and complete literal-provider contracts at `cb6cc8b8` retain 224 actual observations and 34 matched native programs, including diagnosed original failures. The RustGM declaration/literal-call production type-checks; recovery `fbef5a69` addresses two test-style lints before candidate execution. No qualified formatting support or newer core frontier is claimed. Full argument construction, obligations, evaluation/lifetimes and const permissions remain required. |
+| LIB-017 | P0; earlier unchanged-core failure at `format_args`, line 994 | Source formatting builtins and actual constructor calls, including full argument parsing/evaluation | PA26 formatting + PA31 compiler/source bindings / PA31 complete providers, plus earlier ordinary controls | C | Literal production `fbef5a69` passes 1,458 private tests, fourteen frontend cases and ten native programs. Test-only diagnostic recovery `fe97b885` is qualifying. Provisional unchanged core reaches LIB-018; full argument construction, obligations, lifetimes and foreign transport remain open. |
+| LIB-018 | P0; newest provisional unchanged-core failure at `concat_bytes`, line 1126 | Source-declared byte concatenation builtin, typed byte/string/array operands and exact rejection rules | PA8 builtin expansion + PA31 source identity / PA31 complete providers, plus PA8 where independently expressible | C | Observed with the actual unchanged-core formatting compiler; implementation and independent pinned-rustc contracts are next. No unsupported declaration should silently become an executable stub. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):

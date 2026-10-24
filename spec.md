@@ -101,6 +101,16 @@ from ordinary macro lookup; resolving an authored macro with that name grants
 no compiler role. The [source macro path controls](pa31/tests/spec/source-macro-paths/README.md)
 record the original whole-core failure and independently qualified inputs.
 
+Source formatting produces typed syntax from decoded literal data and selects
+the actual `format_arguments` nominal's constructor through the shared inherent
+method query. Preserve the invocation's contextual lookup, readiness dependencies,
+visibility, full signature, lifetime and const obligations. Lower its checked
+call through ordinary body operations; a library-value tag cannot fabricate a
+layout or replace execution of the source constructor. Nonempty argument support
+must preserve evaluation order, single evaluation and source-owned formatting
+roles. `allow_internal_unsafe` is lint metadata and never authorizes an unsafe
+operation. See the [formatting contract](docs/pa31-source-format-contracts.md).
+
 Library feature requests come from enabled source declarations and authenticated
 dependency inventories, separately from compiler language capabilities. Complete
 their validation after configured expansion; unknown requests grant no capability.
