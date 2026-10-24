@@ -17,6 +17,6 @@ pub mod regions;
 pub mod storage;
 pub mod templates;
 
-pub(crate) use check::incremental;
 #[cfg(test)]
 pub(crate) use check::structure;
+pub(crate) use check::{incremental, solved_callables};

@@ -244,6 +244,35 @@ The defining effect remains distinct from the reached caller's Const payment.
 Keep ordinary calls allocation-free and preserve the common operation and node
 fact layouts. Preflight bounded descriptor storage before publishing any rows.
 
+Derive a function's defining context from its actual completed declaration and
+direct associated owner. Runtime, const function and const-trait default are
+distinct; a default's conditional defining legality never makes its body an
+executable const function. Retain an implicit conditional Self premise only in
+that actual default's body environment. Abstract member checking consumes the
+typed Call, complete target and original clause provenance; a familiar name,
+cached Code or copied effect handle grants no execution authority.
+
+Collect a required cleanup carrier for each actual const-trait default before
+proof. Prepare it after source Copy/environment completion, binding the exact
+function, source, original signature and Environment owner. Consume it only for
+the proved active cleanup Schedule; moved and proved dropless values introduce
+no destruction demand. A direct rigid parameter's explicit conditional Destruct
+premise and its ordinary Copy no-drop premise retain separate validated role
+identities. Clear defining-only claims during specialization. Missing carriers,
+unprepared roles and foreign environments reject rather than becoming empty
+proofs. Index claims once per actual environment and charge failed work as well
+as success; preserve the allocation-free ordinary path. The
+[defining cleanup checkpoint](docs/pa31-defining-cleanup-preparation.md) records
+the focused profile and its remaining projected, composite, quantified and
+imported-owner obligations.
+
+The [combined producer/defining checkpoint](docs/source-defining-producer-checkpoint.md)
+qualifies this boundary alongside raw source-provider collection, including the
+actual original's Required-to-Prepared transition and immutable Environment.
+Its width/noise measurements distinguish indexed preparation work from the cost
+of parsing and checking unrelated source. Source rows still require validation,
+authenticated transport and fresh client proofs before execution.
+
 Callable signature equations do not establish const-callability. For actual
 source Fn/FnMut/FnOnce roles, nonordinary use validates the completed declaration,
 source constness, prepared effect and exact substituted full function item.
@@ -276,6 +305,28 @@ subsequent lookup is indexed; repeated or shared-prefix coercion chains cannot
 trigger a fresh walk per selector. The
 [runtime selector checkpoint](docs/pa31-runtime-const-select.md) records the
 source/native contracts, ownership controls and remaining const profile.
+
+Constant selection authenticates the current evaluated selector, actual callback
+and owned tuple against the reached Call in its proved Code. Demand only the
+selected constant callback through ordinary function entry, preserving its full
+instance and public/opened signatures. Suspension must retain operand values,
+the original return destination and one-use caller payment; cached callback code
+does not pay another reached use. The
+[constant selector checkpoint](docs/pa31-const-select-ctfe-progress.md) distinguishes
+qualified source profiles from the remaining binder and conditional-call debts.
+
+Prepare an owned executable snapshot while its exact Body, Contract and solved
+region/loan proof are available. Reuse the solved callable mapping producer,
+moving its sparse map into the existing Code field before publication. Empty
+static solutions do not scan values or allocate a target map, and original-only
+proofs do not build Code. Charge attempted mapping work and preflight snapshot
+payload within the existing execution budget. Catalog registration consumes the
+owned proved snapshot; later matching body metadata cannot authorize a new CFG.
+Keep source witnesses and live conditional scopes as separate prerequisites,
+and validate mode/index storage before publishing any executable entry.
+The [integrated constant selector qualification](docs/source-ctfe-selector-checkpoint.md)
+records output equality, actual reached execution, bounded work controls and
+the remaining source callback profiles against this publication contract.
 
 An actual source drop-glue helper is a compiler hook, not an executable empty
 body. Its runtime adapter consumes the exact registered declaration, full proved

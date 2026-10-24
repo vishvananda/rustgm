@@ -1,0 +1,47 @@
+{
+  "scope": "Defining-drop legality under actual original context, not executor eligibility. Source bytes match predeclared independent inputs. std uses upstream headers; provider uses genuine no_core role declarations.",
+  "rows": [
+    {
+      "name": "std-missing-destruct",
+      "path": "std-missing-destruct.rs",
+      "sha256": "c969f4c5cdfe1880c1981b95abc22f7e8160bc00048f941ac471e0055633af4c",
+      "rust_object": false,
+      "diagnostic_hypothesis": "E0493: potentially nonconst destructor in unused provided body"
+    },
+    {
+      "name": "std-conditional-destruct",
+      "path": "std-conditional-destruct.rs",
+      "sha256": "9f374f9e7a148c1b717fcd661608b80d211c75eac638cb28ec9c02a29a745ec2",
+      "rust_object": true,
+      "native": 7
+    },
+    {
+      "name": "std-copy-dropless",
+      "path": "std-copy-dropless.rs",
+      "sha256": "1790c608288130f3a2ee7b759aeb5e0059f462083bacf518ca54692f399479f0",
+      "rust_object": true,
+      "native": 7
+    },
+    {
+      "name": "provider-missing-destruct",
+      "path": "provider-missing-destruct.rs",
+      "sha256": "6594cba3b799402a799f3478b2ac3de1218205076c99330c92cefc5bd1820a79",
+      "rust_object": false,
+      "diagnostic_hypothesis": "E0493: same source provider/default body without required conditional premise"
+    },
+    {
+      "name": "provider-copy-dropless",
+      "path": "provider-copy-dropless.rs",
+      "sha256": "89d34c4f98eb3a657d661f95ef48242c6d1ad2103d008437ee6ed22c09ce80c3",
+      "rust_object": true,
+      "native": 7
+    }
+  ],
+  "retained_positive": {
+    "path": "../cleanup/runtime.rs",
+    "sha256": "c29c3a75557abf1b8c7822e0f95afa284938fca9f58799f05479ae82e23ef098",
+    "rust_object": true,
+    "native": 7
+  },
+  "independent_results_sha256": "832c3afa8e050739b90b4a402a4f59cee82eba5db01adee666018db84935a5e9"
+}

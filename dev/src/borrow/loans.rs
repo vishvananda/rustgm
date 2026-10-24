@@ -2,6 +2,7 @@
 mod cleanup;
 mod expiration;
 mod inspection;
+mod legality;
 mod state;
 use state::Set;
 pub mod templates;
@@ -610,10 +611,11 @@ pub(crate) fn check_schedule(
     if body.const_context && plan.cleanups().any(|cleanup| cleanup.access) {
         return Err(error("constant evaluation cannot run destructors"));
     }
+    let defining_steps = legality::steps(types, body, contract, Some(plan)).map_err(error)?;
     let uses =
         liveness::cleanup::analyze_schedule(types, definitions, components, drops, facts, plan)
             .map_err(error)?;
-    Ok(finish::<false>(
+    let mut analysis = finish::<false>(
         types,
         body,
         contract,
@@ -622,7 +624,9 @@ pub(crate) fn check_schedule(
         uses,
         Some(plan),
     )?
-    .analysis)
+    .analysis;
+    analysis.steps = analysis.steps.saturating_add(defining_steps);
+    Ok(analysis)
 }
 pub(super) struct Report {
     pub analysis: Analysis,
@@ -646,6 +650,7 @@ pub(super) fn analyze<const RECORD: bool>(
     {
         return Err(error("loan analysis facts belong to another body"));
     }
+    let defining_steps = legality::steps(types, body, contract, None).map_err(error)?;
     if !body
         .values
         .iter()
@@ -654,7 +659,7 @@ pub(super) fn analyze<const RECORD: bool>(
         return Ok(Report {
             analysis: Analysis {
                 loans: 0,
-                steps: 0,
+                steps: defining_steps,
                 points: 0,
                 region_words: 0,
             },
@@ -665,7 +670,9 @@ pub(super) fn analyze<const RECORD: bool>(
         });
     }
     let uses = liveness::analyze(types, components, body).map_err(error)?;
-    finish::<RECORD>(types, body, contract, owned, storage, uses, None)
+    let mut report = finish::<RECORD>(types, body, contract, owned, storage, uses, None)?;
+    report.analysis.steps = report.analysis.steps.saturating_add(defining_steps);
+    Ok(report)
 }
 fn finish<const RECORD: bool>(
     types: &Store,

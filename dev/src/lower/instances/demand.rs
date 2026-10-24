@@ -1,4 +1,5 @@
 //! Iterative depth-first demand distinguishes recursion from unbounded instance growth.
+use super::staged_originals::{Collect, Context as Originals};
 use super::{dependencies::Dependencies, diagnostic, proof};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
@@ -216,11 +217,11 @@ impl Budget {
         Ok(())
     }
 }
-pub(super) fn prepare(
+pub(super) fn prepare<C: Collect>(
     report: &Report,
     facts: &mut Declarations,
     roots: crate::lower::roots::Selected<'_>,
-    templates: &Checked<'_>,
+    mut originals: Originals<'_, '_, C>,
     inputs: Vec<Contract>,
     concrete: HashMap<BodyKey, Body>,
     constants: Option<crate::pipeline::execution::Context>,
@@ -228,12 +229,13 @@ pub(super) fn prepare(
     let (program, ordinary) = prepare_ordinary(
         report,
         facts,
-        templates,
+        &mut originals,
         inputs,
         concrete,
         constants,
         roots.globals,
     )?;
+    let templates = originals.checked;
     // Discovery includes implicit constructor factories. With no templates,
     // ordinary lowering already follows calls and selected cleanup dependencies.
     // All source bodies have still been checked before taking this path.
@@ -534,15 +536,16 @@ impl Dependencies {
     }
 }
 
-fn prepare_ordinary(
+fn prepare_ordinary<C: Collect>(
     report: &Report,
     facts: &mut Declarations,
-    templates: &Checked<'_>,
+    originals: &mut Originals<'_, '_, C>,
     inputs: Vec<Contract>,
     concrete: HashMap<BodyKey, Body>,
     constants: Option<crate::pipeline::execution::Context>,
     globals: &[DefId],
 ) -> Result<(proof::Builder, Ordinary), Error> {
+    let templates = originals.checked;
     let mut program = body::concrete_prepared(
         report,
         facts,
@@ -568,7 +571,7 @@ fn prepare_ordinary(
         return paid_owners::build(
             report,
             facts,
-            templates,
+            originals,
             program,
             inputs,
             pending,
@@ -620,8 +623,10 @@ fn prepare_ordinary(
                 "missing ordinary body contract".into(),
             )
         })?;
-        let index = program
-            .push(facts, templates, body, &input, None)
+        let index = program.push_original(report, facts, originals, body, &input)?;
+        #[cfg(test)]
+        program
+            .observe_original(facts, index, &input)
             .map_err(|e| diagnostic(report, e.node, e.message))?;
         if let Some(definition) = definition {
             ordinary.functions.insert(ItemId(definition.0), index);

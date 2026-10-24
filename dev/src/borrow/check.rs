@@ -1,6 +1,7 @@
 //! The executable boundary combines owned access, storage, contracts and loans.
 pub(crate) mod incremental;
 mod static_targets;
+pub(crate) use static_targets::solved as solved_callables;
 pub(crate) mod structure;
 use super::{loans, ownership, regions};
 use crate::support::hash::HashMap;

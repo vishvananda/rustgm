@@ -1,0 +1,117 @@
+{
+  "status": "Planned PA31 Conditional function-item eligibility and reached Invoke payment; not yet independently observed",
+  "edition": 2024,
+  "rustc": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "mode": "pipeline::analyze_source + lower::instances::build_roots_prepared; no CLI/artifact claim",
+  "rows": [
+    {
+      "name": "original-paid-target",
+      "path": "../source-const-callable/conditional-target-required.rs",
+      "sha256": "295eedd224a1c8aa20ac68d4c1f36968448ca71530b84869f772ff1be2cfd992",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "status": "Exact unchanged prior Rust/native29 original; fresh callback-target payment remains required."
+    },
+    {
+      "name": "unpaid-const",
+      "path": "unpaid-const.rs",
+      "sha256": "31241c7960d8172c923ace27e0a8e34dd7dbf9bb2aed5a427b301e8024661303",
+      "rust_object": false,
+      "native": null,
+      "candidate_required": false,
+      "status": "Declared independent hypothesis before execution; mismatches/ICEs retained rather than relabeled."
+    },
+    {
+      "name": "ordinary-runtime",
+      "path": "ordinary-runtime.rs",
+      "sha256": "2999b3e106e4dcf4921426533e3b9abd458a02c2485539fc92f84081eceed2d9",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "status": "Declared independent hypothesis before execution; mismatches/ICEs retained rather than relabeled."
+    },
+    {
+      "name": "direct-paid",
+      "path": "direct-paid.rs",
+      "sha256": "70d05c45910a9505681730f259e29869964734ed21488e82e62d0f4240d8e911",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "status": "Declared independent hypothesis before execution; mismatches/ICEs retained rather than relabeled."
+    },
+    {
+      "name": "direct-unpaid",
+      "path": "direct-unpaid.rs",
+      "sha256": "3b59aac5e49c7e7e1b42b7647dcfa70a2344a7f7091f3fcdb5758f6a2adcad71",
+      "rust_object": false,
+      "native": null,
+      "candidate_required": false,
+      "status": "Declared independent hypothesis before execution; mismatches/ICEs retained rather than relabeled."
+    },
+    {
+      "name": "conditional-where-runtime",
+      "path": "conditional-where-runtime.rs",
+      "sha256": "dc24733442a53ceefc586bfa187e56cbc6e3491b797047656167c2e735ac0709",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "status": "Declared independent hypothesis before execution; mismatches/ICEs retained rather than relabeled."
+    },
+    {
+      "name": "explicit-const-where-unpaid",
+      "path": "explicit-const-where-unpaid.rs",
+      "sha256": "1d518180b7cd0dca4dde2aff3728d08ebbf2495a35ef828dbcd985239ac30673",
+      "rust_object": false,
+      "native": null,
+      "candidate_required": false,
+      "status": "Declared independent hypothesis before execution; mismatches/ICEs retained rather than relabeled."
+    },
+    {
+      "name": "warm-different-instance-unpaid",
+      "path": "warm-different-instance-unpaid.rs",
+      "sha256": "9eed2d5ac1fa791427c29212a5a512fce7d84000a2d938790529a38104ae5bd2",
+      "rust_object": false,
+      "native": null,
+      "candidate_required": false,
+      "status": "Declared independent hypothesis before execution; mismatches/ICEs retained rather than relabeled."
+    },
+    {
+      "name": "warm-then-runtime-instance",
+      "path": "warm-then-runtime-instance.rs",
+      "sha256": "959829e667be336a65133104bef8c364ab163ead46734afa12283562a2b4a950",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "status": "Declared independent hypothesis before execution; mismatches/ICEs retained rather than relabeled."
+    },
+    {
+      "name": "work-repeated-8",
+      "path": "work/repeated-8.rs",
+      "sha256": "deb33cd5ae920db21198954007bbcd2ba3350a7a83e2cca23395926a2beb805a",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "status": "Declared independent hypothesis before execution; mismatches/ICEs retained rather than relabeled."
+    },
+    {
+      "name": "work-repeated-32",
+      "path": "work/repeated-32.rs",
+      "sha256": "708b66b76d6596e47a18a60ac80710d0a3ee1faefea204366b91d852a939d9c9",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "status": "Declared independent hypothesis before execution; mismatches/ICEs retained rather than relabeled."
+    },
+    {
+      "name": "work-repeated-128",
+      "path": "work/repeated-128.rs",
+      "sha256": "7cb511ebd8579339fec438e41288b8da7f5017ad09a2fd64dbc408d7dff83eb6",
+      "rust_object": true,
+      "native": 29,
+      "candidate_required": true,
+      "status": "Declared independent hypothesis before execution; mismatches/ICEs retained rather than relabeled."
+    }
+  ]
+}

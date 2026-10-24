@@ -1,0 +1,15 @@
+{
+  "status": "Declared before execution: ordinary impl of actual const-trait default consumes a destructor-bearing value; no CTFE cleanup claim",
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "rows": [
+    {
+      "name": "runtime-cleanup",
+      "path": "runtime.rs",
+      "sha256": "c29c3a75557abf1b8c7822e0f95afa284938fca9f58799f05479ae82e23ef098",
+      "rust_object": true,
+      "native": 7
+    }
+  ]
+}

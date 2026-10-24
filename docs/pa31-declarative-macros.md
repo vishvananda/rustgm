@@ -450,6 +450,17 @@ wires it to the same index and adds that explicit source control. These tests
 do not qualify scoped lookup or claim an end-to-end speedup;
 strict/focused/text and changed-path frozen-binary measurements remain required.
 
+Integration with source-client admission preserves the same single source-mode
+pointer and its existing inventory validation. Macro request bits come from the
+client's own enabled root attributes and are retained only after its provider
+inventory is admitted. Both provider and client modes suppress bootstrap import
+preparation; only the provider can claim local language items. A negative
+admission control also requests macro features to check that they cannot replace
+the authenticated inventory. The lazy mark arena adds one crate-level pointer;
+the integrated Package size assertion is 256 bytes, with no new ordinary heap
+allocation or Body/Value/Type field. These integration changes still require
+fresh focused and combined release qualification before publication.
+
 The pinned compiler intentionally treats implicit `Self` as root-normalized
 (`rustc_resolve/src/ident.rs:316` and `late.rs:3503`). Type, const and lifetime
 generic parameters instead use item normalization (`late.rs:3158`). This

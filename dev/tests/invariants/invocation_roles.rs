@@ -30,17 +30,28 @@ fn callable_role_data_rejects_pending_missing_and_mismatched_current_registry() 
     facts.source_bindings = Catalog::reserve(&report)?;
     assert!(definition(&facts, CallTrait::FnOnce).is_err());
     let original = saved.language(LangItem::FnOnce).ok_or("FnOnce")?;
-    saved.languages[LangItem::FnOnce.index()] = saved.language(LangItem::FnMut);
+    let wrong = saved.language(LangItem::FnMut);
+    replace(&mut saved, LangItem::FnOnce, wrong)?;
     facts.source_bindings = Some(saved);
     assert!(definition(&facts, CallTrait::FnOnce).is_err());
     let current = facts.source_bindings.as_deref_mut().ok_or("catalog")?;
-    current.languages[LangItem::FnOnce.index()] = None;
+    replace(current, LangItem::FnOnce, None)?;
     assert!(definition(&facts, CallTrait::FnOnce).is_err());
-    facts
-        .source_bindings
-        .as_deref_mut()
-        .ok_or("catalog")?
-        .languages[LangItem::FnOnce.index()] = Some(original);
+    replace(
+        facts.source_bindings.as_deref_mut().ok_or("catalog")?,
+        LangItem::FnOnce,
+        Some(original),
+    )?;
     assert_eq!(definition(&facts, CallTrait::FnOnce)?, original.definition);
+    Ok(())
+}
+
+fn replace(catalog: &mut Catalog, role: LangItem, declaration: Option<Declaration>) -> TestResult {
+    let crate::sema::compiler_items::binding_views::Bindings::Provider(languages) =
+        &mut catalog.bindings
+    else {
+        return Err("callable opponent requires its actual source provider".into());
+    };
+    languages[role.index()] = declaration;
     Ok(())
 }

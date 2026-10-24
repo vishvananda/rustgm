@@ -1,6 +1,9 @@
 //! Operator receivers use the same explicit place, borrow and evaluation-order machinery.
 use super::{Builder, Error, List, NodeId, NodeKey, Operation, Rvalue, ValueId, ValueList};
 use crate::{sema::invocations::Invocation, support::call_traits::CallTrait};
+#[cfg(test)]
+#[path = "../../../tests/invariants/indirect_reads.rs"]
+mod tests;
 impl Builder<'_> {
     pub(super) fn invocation(&self, node: NodeId) -> Option<Invocation> {
         self.facts
@@ -10,6 +13,46 @@ impl Builder<'_> {
                 ..self.source
             })
             .copied()
+            .filter(|selected| !self.direct_defining_call(node, *selected))
+    }
+    fn direct_defining_call(&self, node: NodeId, selected: Invocation) -> bool {
+        if selected.kind.is_some() || selected.dereferences != 0 || selected.borrow.is_some() {
+            return false;
+        }
+        let Some(crate::types::Kind::FunctionItem { item, .. }) =
+            self.facts.types.kind(selected.receiver)
+        else {
+            return false;
+        };
+        let crate::body::ir::Owner::Function { definition, .. } = self.body.owner else {
+            return false;
+        };
+        if !matches!(
+            self.facts.function_context(definition, self.source),
+            Ok(crate::sema::function_context::FunctionContext::ConstTraitDefault { .. })
+        ) || self
+            .facts
+            .associated
+            .trait_owner(crate::resolve::model::DefId(item.0))
+            .is_none_or(|owner| self.facts.associated.constant_trait(owner) != Some(true))
+        {
+            return false;
+        }
+        let crate::syntax::ast::Kind::Call { callee, .. } = self.kind(node) else {
+            return false;
+        };
+        self.facts
+            .node(NodeKey {
+                node: callee,
+                ..self.source
+            })
+            .is_some_and(|fact| {
+                fact.ty == Some(selected.receiver)
+                    && fact.reference
+                        == Some(crate::resolve::model::Target::Definition(
+                            crate::resolve::model::DefId(item.0),
+                        ))
+            })
     }
     pub(super) fn invocation_receiver(
         &mut self,

@@ -1,0 +1,120 @@
+{
+  "status": "Declared before execution: implicit owning-trait versus ordinary and unrelated trait premises",
+  "rustc": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "rows": [
+    {
+      "name": "std-implicit-unused",
+      "path": "std-implicit-unused.rs",
+      "sha256": "dd312cc3ded88b8a89a157f43cca439e2d2e856ef7d937c99ac7b308dd66ea04",
+      "rust_object": true,
+      "native": null
+    },
+    {
+      "name": "std-implicit-runtime",
+      "path": "std-implicit-runtime.rs",
+      "sha256": "76240cfe946ea47bd5ac9489d10cc7005661bf4f71be7177c02d9bc0e369be15",
+      "rust_object": true,
+      "native": 29
+    },
+    {
+      "name": "std-implicit-const",
+      "path": "std-implicit-const.rs",
+      "sha256": "7383c38bb0ccba6c0f058560dedc1c9820b8ad2aa0a4c2bf6076881ad4d52894",
+      "rust_object": true,
+      "native": 29
+    },
+    {
+      "name": "std-ordinary-const-reject",
+      "path": "std-ordinary-const-reject.rs",
+      "sha256": "c0be7a26cc07f4994a5337d99c52cfb28935fd962ce60ef1e0d8a614d6d43649",
+      "rust_object": false,
+      "native": null
+    },
+    {
+      "name": "std-ordinary-bound-reject",
+      "path": "std-ordinary-bound-reject.rs",
+      "sha256": "8c80d84f94226e73010c2f93367414f1f2b3c61ea9bca9e8b9c44f690b8ddd03",
+      "rust_object": false,
+      "native": null
+    },
+    {
+      "name": "std-conditional-bound-required",
+      "path": "std-conditional-bound-required.rs",
+      "sha256": "261d451e7ef82caa7419303d798e5481729f393ac3a56684fbeb47339704d0ad",
+      "rust_object": true,
+      "native": 29
+    },
+    {
+      "name": "std-cross-ordinary-reject",
+      "path": "std-cross-ordinary-reject.rs",
+      "sha256": "7bde1cab3e6c670a90dd56198bd879302a0f80c0dc551ec65356b630f8b068e0",
+      "rust_object": false,
+      "native": null
+    },
+    {
+      "name": "std-cross-conditional-required",
+      "path": "std-cross-conditional-required.rs",
+      "sha256": "03043590512a335b6df94331e99cf09cf04b9657e86b276729389adaeedd9dcf",
+      "rust_object": true,
+      "native": 29
+    },
+    {
+      "name": "provider-implicit-unused",
+      "path": "provider-implicit-unused.rs",
+      "sha256": "550d318fd7aedfd2abf106422cd026242bc601285610035cc2229abb4ab65c13",
+      "rust_object": true,
+      "native": null
+    },
+    {
+      "name": "provider-implicit-runtime",
+      "path": "provider-implicit-runtime.rs",
+      "sha256": "4ed2d507823bcb4960681d131db85f707ef5371fa0092fe02f03d9b5af43cf7a",
+      "rust_object": true,
+      "native": 29
+    },
+    {
+      "name": "provider-implicit-const",
+      "path": "provider-implicit-const.rs",
+      "sha256": "7f65fc237671475fd1df923165bb24dd3c7c8c416aeb524e22fbe8fa20306d3a",
+      "rust_object": true,
+      "native": 29
+    },
+    {
+      "name": "provider-ordinary-const-reject",
+      "path": "provider-ordinary-const-reject.rs",
+      "sha256": "0377c27e0a5b0d442d691fb2912749d904589c1a0b97a3b79d0cb969828c0a23",
+      "rust_object": false,
+      "native": null
+    },
+    {
+      "name": "provider-ordinary-bound-reject",
+      "path": "provider-ordinary-bound-reject.rs",
+      "sha256": "95801826eafab9812cd2aa5ce3b7cdbe335fd0289a90ef6a47f5538ed75fc5d4",
+      "rust_object": false,
+      "native": null
+    },
+    {
+      "name": "provider-conditional-bound-required",
+      "path": "provider-conditional-bound-required.rs",
+      "sha256": "1fb3703bfb73e79b18de6785e81112490acb87d0901b4a8ace731bac487b054c",
+      "rust_object": true,
+      "native": 29
+    },
+    {
+      "name": "provider-cross-ordinary-reject",
+      "path": "provider-cross-ordinary-reject.rs",
+      "sha256": "9988649d1377e1e88b69a424cee254c2ef4ef3eeca256e9cf50bfe6e46b96de7",
+      "rust_object": false,
+      "native": null
+    },
+    {
+      "name": "provider-cross-conditional-required",
+      "path": "provider-cross-conditional-required.rs",
+      "sha256": "da2579629f1e07abb27a48772cb1ec8a2031166587cec1e7ecba7f4df21eede1",
+      "rust_object": true,
+      "native": 29
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "original_contract_preserved": "contract.json",
+  "additional_cases": [
+    {
+      "name": "same-item-instances",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/same-item-instances.rs",
+      "sha256": "5ac2ef52dbccdb21735fd6d3dc421262fc8fc56495aa88af9a265fb96eb048df",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/same-item-instances.c",
+      "client_sha256": "711f090a17da4b078eb9eafcce071249b0edf3f9ee1d60488be3ddb3f13ef916",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 1\n",
+      "native_stderr_hypothesis": "",
+      "scope": "Two genuine complete Instances of one const callback declaration in the same checked source body; wrong-request and warmed entry opponent",
+      "state": "Declared before private control implementation or probes; no observation claimed"
+    },
+    {
+      "name": "conditional-owner-two-selectors",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/conditional-owner-two-selectors.rs",
+      "sha256": "fcfe1fce8e4c2ae8fd13120ce45f64a29458d74894b42da4cb3a4d73e1de08c0",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/conditional-owner-two-selectors.c",
+      "client_sha256": "711f090a17da4b078eb9eafcce071249b0edf3f9ee1d60488be3ddb3f13ef916",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 1\n",
+      "native_stderr_hypothesis": "",
+      "scope": "Existing closed direct conditional payment for the enclosing owner; both selected callbacks themselves ordinary. Owner retention must not skip selector preparation.",
+      "state": "Declared before private control implementation or probes; no observation claimed"
+    }
+  ]
+}

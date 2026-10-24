@@ -1,5 +1,5 @@
 //! Prove actual parents before demanding independent conditional child values.
-use super::{Ordinary, diagnostic, proof};
+use super::{Collect, Ordinary, Originals, diagnostic, proof};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     body::{
@@ -50,15 +50,16 @@ pub(super) struct Demands<'a> {
     pub context: &'a Context,
     pub globals: &'a [DefId],
 }
-pub(super) fn build(
+pub(super) fn build<C: Collect>(
     report: &Report,
     facts: &mut Declarations,
-    templates: &Checked<'_>,
+    originals: &mut Originals<'_, '_, C>,
     mut program: Program,
     inputs: HashMap<BodyKey, Contract>,
     mut pending: HashMap<BodyKey, Pending>,
     demand: Demands<'_>,
 ) -> Result<(proof::Builder, Ordinary), Error> {
+    let templates = originals.checked;
     let Demands { context, globals } = demand;
     let error = |message: &str| diagnostic(report, None, message.into());
     let bytes = staging_bytes(&program, &inputs, &pending).map_err(error)?;
@@ -107,13 +108,10 @@ pub(super) fn build(
     let mut ordinary = Ordinary::default();
     for staged in staged {
         let owner = staged.body().owner;
-        let proved = match staged {
-            proof::Staged::Ordinary(proved) => (*proved).into_proved(),
-            proof::Staged::Parent(parent) => parent.into_proved().map_err(|(_, e)| error(e))?,
-        };
-        let index = builder
-            .append_proved(facts, proved)
-            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        let input = inputs
+            .get(&staged.body().key())
+            .ok_or_else(|| error("completed original lost its exact input"))?;
+        let index = builder.append_original(report, facts, originals, staged, input)?;
         match owner {
             Owner::Function { definition, .. } => {
                 ordinary.functions.insert(ItemId(definition.0), index);

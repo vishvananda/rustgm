@@ -84,11 +84,11 @@ impl Checker<'_> {
         }
     }
 
-    fn invocation_effect(&self) -> crate::support::constness::Constness {
+    fn invocation_effect(&self) -> Result<crate::support::constness::Constness, Error> {
         if self.facts.source_bindings.is_some() {
             self.callee_use_effect()
         } else {
-            crate::support::constness::Constness::Ordinary
+            Ok(crate::support::constness::Constness::Ordinary)
         }
     }
 
@@ -119,7 +119,7 @@ impl Checker<'_> {
                 subject,
                 ItemId(item.0),
                 vec![Argument::Type(tuple)],
-                self.invocation_effect(),
+                self.invocation_effect()?,
             );
             let first_region = self.trait_region_start(node)?;
             let selected = selection::select_available(
@@ -173,7 +173,7 @@ impl Checker<'_> {
             subject,
             item,
             vec![Argument::Type(tuple)],
-            self.invocation_effect(),
+            self.invocation_effect()?,
         );
         let first_region = self.trait_region_start(node)?;
         let selected = selection::select_available(
@@ -278,7 +278,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))
     }
 
-    fn retain_invocation(
+    pub(super) fn retain_invocation(
         &mut self,
         node: NodeId,
         source: NodeId,

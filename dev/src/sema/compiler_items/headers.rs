@@ -13,21 +13,21 @@ use crate::{
 pub(super) use clone_signature::{Method, clone_method};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(super) struct Flags {
+pub(in crate::sema) struct Flags {
     pub unsafe_: bool,
     pub constant: bool,
     pub auto_: bool,
 }
 
 /// Counts of written declarations, distinct from elaborated predicate counts.
-pub(super) struct Written {
+pub(in crate::sema) struct Written {
     pub parameters: usize,
     pub supertraits: usize,
 }
 
 /// Source vectors remain owned by their producer. A future imported adapter must
 /// authenticate its complete declaration remap before borrowing equivalent rows.
-pub(super) struct Trait<'a> {
+pub(in crate::sema) struct Trait<'a> {
     pub definition: DefId,
     pub parent: Option<DefId>,
     pub origin: DeclarationOrigin,
@@ -40,6 +40,33 @@ pub(super) struct Trait<'a> {
     pub members: &'a [DefId],
     pub inputs: Inputs<'a>,
     pub written: Written,
+}
+
+impl super::Catalog {
+    /// Borrow only completed role declarations. Sizing uses its existing
+    /// separate validation ledger; this supplies no implementation evidence.
+    pub(in crate::sema) fn header_role(
+        &self,
+        role: crate::support::bindings::LangItem,
+    ) -> Result<Option<crate::resolve::bindings::Declaration>, &'static str> {
+        use crate::support::bindings::LangItem;
+        let ordinal = match role {
+            LangItem::Sized => Some(0),
+            LangItem::MetaSized => Some(1),
+            LangItem::PointeeSized => Some(2),
+            _ => None,
+        };
+        let Some(ordinal) = ordinal else {
+            return self.validated_language(role);
+        };
+        let Some(declaration) = self.language(role) else {
+            return Ok(None);
+        };
+        if self.sizing.as_ref().map(|sizing| sizing[ordinal]) != Some(declaration.definition) {
+            return Err("source sizing role has no exact completed header");
+        }
+        Ok(Some(declaration))
+    }
 }
 impl Trait<'_> {
     pub(super) fn profile(

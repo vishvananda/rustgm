@@ -19,6 +19,7 @@ struct Site {
     block: crate::body::ir::BlockId,
     position: u32,
     target: Instance,
+    form: super::function_calls::Form,
 }
 pub(crate) struct Reached {
     site: Site,
@@ -39,28 +40,41 @@ fn inspect(
     facts: &Declarations,
     catalog: &Catalog,
     frame: &Frame,
-    position: u32,
+    phase: super::selector_sites::Phase,
     target: Instance,
 ) -> Result<Site, &'static str> {
+    let position = phase.position(frame)?;
     catalog.validate_entry(frame.body)?;
     let body = catalog
         .code(frame.body)
         .ok_or("source const caller code disappeared")?;
-    let (definition, _, _, primitive) = const_payments::profile(facts, target)?;
-    super::argument_witness::checked_call(
-        facts,
-        body,
-        frame,
-        position,
-        target,
-        (definition, primitive),
-    )?;
+    let form =
+        if let Some(call) = super::selector_sites::validate(facts, catalog, body, frame, phase)? {
+            if call.callback() != target {
+                return Err("selected const payment changed its evaluated callback instance");
+            }
+            super::function_calls::Form::Selected {
+                selector: call.selector(),
+            }
+        } else {
+            let (definition, _, _, primitive) = const_payments::profile(facts, target)?;
+            super::argument_witness::checked_call(
+                facts,
+                body,
+                frame,
+                position,
+                target,
+                (definition, primitive),
+            )?;
+            super::function_calls::Form::Direct
+        };
     Ok(Site {
         frame: frame.instance,
         code: frame.body,
         block: frame.block,
         position,
         target,
+        form,
     })
 }
 impl State {
@@ -78,7 +92,13 @@ impl State {
             .last()
             .ok_or("source const payment has no suspended caller")?;
         Ok(Reached {
-            site: inspect(facts, catalog, frame, frame.next, target)?,
+            site: inspect(
+                facts,
+                catalog,
+                frame,
+                super::selector_sites::Phase::Suspended,
+                target,
+            )?,
         })
     }
     pub(crate) fn pay_const_call(
@@ -96,7 +116,15 @@ impl State {
             .frames
             .last()
             .ok_or("source const payment lost its caller")?;
-        if reached.site != inspect(facts, catalog, frame, frame.next, reached.site.target)? {
+        if reached.site
+            != inspect(
+                facts,
+                catalog,
+                frame,
+                super::selector_sites::Phase::Suspended,
+                reached.site.target,
+            )?
+        {
             return Err("source const payment changed its reached statement");
         }
         let target_code = *catalog
@@ -140,7 +168,7 @@ impl Machine<'_, '_> {
             self.evaluator.facts(),
             &self.bodies,
             frame,
-            frame.next,
+            super::selector_sites::Phase::Suspended,
             continuation.site.target,
         );
         if checked.is_err() || checked.ok() != Some(continuation.site) {
@@ -154,17 +182,20 @@ impl Machine<'_, '_> {
         body: &Code,
         frame: &Frame,
         target: Instance,
+        form: super::function_calls::Form,
     ) -> Result<Option<usize>, &'static str> {
         let Some(continuation) = self.paid_call.take() else {
             return Ok(None);
         };
-        let position = frame
-            .next
-            .checked_sub(1)
-            .ok_or("source const call has no executing statement")?;
         let catalog: &Catalog = &self.bodies;
-        let site = inspect(self.evaluator.facts(), catalog, frame, position, target)?;
-        if continuation.site != site {
+        let site = inspect(
+            self.evaluator.facts(),
+            catalog,
+            frame,
+            super::selector_sites::Phase::Executing,
+            target,
+        )?;
+        if continuation.site != site || site.form != form {
             return Err("source const-call continuation belongs to another frame or statement");
         }
         continuation.caller.validate(frame.body, body)?;

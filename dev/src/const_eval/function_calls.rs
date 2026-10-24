@@ -4,10 +4,11 @@ use crate::{
     resolve::model::DefId,
     types::{Kind, instance::Instance},
 };
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Form {
     Direct,
     Invoke,
+    Selected { selector: Instance },
 }
 pub(super) enum Outcome {
     Constant(Constant),
@@ -28,16 +29,39 @@ impl Machine<'_, '_> {
             return Err("constant callable lost its item identity".into());
         };
         let definition = DefId(item.0);
+        if self
+            .evaluator
+            .facts()
+            .associated
+            .trait_owner(definition)
+            .is_some()
+        {
+            self.charge(5)?;
+            self.evaluator
+                .facts()
+                .check_const_member_execution(definition)?;
+        }
         if !self.evaluator.facts().is_const_function(definition) {
             return Err("non-const calls are not allowed during constant execution".into());
         }
         crate::sema::compiler_items::check_const_drop_glue(self.evaluator.facts(), target)?;
         if let Some(catalog) = self.evaluator.facts().source_bindings.as_deref() {
+            if matches!(form, Form::Selected { .. })
+                && catalog.intrinsic_kind(definition)?.is_some()
+            {
+                return Err(
+                    "source intrinsic selected callback execution is not implemented".into(),
+                );
+            }
             if catalog.requires_const_payment(definition)? {
                 if matches!(form, Form::Invoke) {
                     return Err("conditional Invoke target payment is not implemented".into());
                 }
-                if let Some(index) = self.consume_const_call(body, frame, target)? {
+                if let Some(index) = self.consume_const_call(body, frame, target, form)? {
+                    if matches!(form, Form::Selected { .. }) {
+                        self.validate_invoked_entry(index, target)?;
+                        self.validate_selected_entry(index, target)?;
+                    }
                     return Ok(Outcome::Enter(index));
                 }
                 self.waiting = Some(Requirement::FunctionBody(target));
@@ -69,10 +93,53 @@ impl Machine<'_, '_> {
             self.waiting = Some(Requirement::FunctionBody(target));
             return Ok(Outcome::Pending);
         };
-        if matches!(form, Form::Invoke) {
+        if !matches!(form, Form::Direct) {
             self.validate_invoked_entry(index, target)?;
         }
+        if matches!(form, Form::Selected { .. }) {
+            self.validate_selected_entry(index, target)?;
+        }
         Ok(Outcome::Enter(index))
+    }
+    fn validate_selected_entry(&self, index: usize, target: Instance) -> Result<(), &'static str> {
+        let facts = self.evaluator.facts();
+        let code = self
+            .bodies
+            .code(index)
+            .ok_or("selected const callback code disappeared")?;
+        let Some(Kind::FunctionItem {
+            item, signature, ..
+        }) = facts.types.kind(target.ty())
+        else {
+            return Err("selected const callback lost its complete function item");
+        };
+        let definition = DefId(item.0);
+        let function = facts
+            .function_indices
+            .get(&definition)
+            .and_then(|&index| facts.functions.get(index))
+            .ok_or("selected const callback has no actual declaration")?;
+        let Some((public, owned)) = code.owner.signatures() else {
+            return Err("selected const callback has no paired callable signatures");
+        };
+        let Some(Kind::Function {
+            bound_regions: 0,
+            result,
+            ..
+        }) = facts.types.kind(owned)
+        else {
+            return Err("selected const callback has no exact opened execution signature");
+        };
+        if self.bodies.functions.get(&target) != Some(&index)
+            || function.definition != definition
+            || code.source.source() != Some(function.body.unwrap_or(function.node))
+            || public != signature
+            || result != code.result
+            || code.owner.key(code.source) != crate::body::ir::BodyKey::Declaration(definition)
+        {
+            return Err("selected const callback changed source/owner/instance/signature/index");
+        }
+        Ok(())
     }
     fn validate_invoked_entry(&self, index: usize, target: Instance) -> Result<(), &'static str> {
         self.bodies.validate_entry(index)?;

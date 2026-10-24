@@ -82,8 +82,9 @@ pub(crate) fn prepare(
     body: &Body,
     contract: &mut Contract,
 ) -> Result<(), String> {
+    super::defining_cleanups::begin(facts, body, contract)?;
     let Some(catalog) = facts.source_bindings.as_deref() else {
-        return Ok(());
+        return super::defining_cleanups::prepare(facts, body, contract);
     };
     catalog.require_source_destructors_prepared()?;
     if contract.key != body.key()
@@ -161,7 +162,7 @@ pub(crate) fn prepare(
             prepared,
         )));
     }
-    Ok(())
+    super::defining_cleanups::prepare(facts, body, contract)
 }
 
 fn read_requirements(
@@ -219,29 +220,58 @@ fn read_requirements(
 }
 
 /// Original proof components and displaced source rows keep their exact bodies.
-/// The index is built only in source mode and never supplies a missing contract.
+/// Index bodies once, lazily for defining requirements outside source mode.
 pub(crate) fn originals<'a, 'b>(
     facts: &mut Declarations,
     bodies: impl IntoIterator<Item = &'a Body>,
     contracts: impl IntoIterator<Item = &'b mut Contract>,
 ) -> Result<(), String> {
-    if facts.source_bindings.is_none() {
-        return Ok(());
-    }
-    let mut index = HashMap::default();
-    for body in bodies {
-        if index.len() >= 1_000_000 || index.insert(body.key(), body).is_some() {
-            return Err("source Copy original body index is duplicate or exhausted".into());
-        }
-    }
+    let source = facts.source_bindings.is_some();
+    let mut bodies = Some(bodies.into_iter());
+    let mut index = if source {
+        Some(original_index(
+            bodies.take().ok_or("missing original bodies")?,
+            &mut facts.body_work.canonical_steps,
+        )?)
+    } else {
+        None
+    };
     for contract in contracts {
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
+        if !source && !contract.requires_defining_cleanup_preparation() {
+            continue;
+        }
+        if index.is_none() {
+            index = Some(original_index(
+                bodies
+                    .take()
+                    .ok_or("original body index was consumed twice")?,
+                &mut facts.body_work.canonical_steps,
+            )?);
+        }
         let body = index
+            .as_mut()
+            .ok_or("missing original body index")?
             .remove(&contract.key)
             .ok_or("source Copy original contract has no exact body")?;
         prepare(facts, body, contract)?;
     }
-    if !index.is_empty() {
+    if source && index.is_some_and(|index| !index.is_empty()) {
         return Err("source Copy original body has no exact contract".into());
     }
     Ok(())
+}
+
+fn original_index<'a>(
+    bodies: impl Iterator<Item = &'a Body>,
+    steps: &mut usize,
+) -> Result<HashMap<BodyKey, &'a Body>, String> {
+    let mut index = HashMap::default();
+    for body in bodies {
+        *steps = steps.saturating_add(1);
+        if index.len() >= 1_000_000 || index.insert(body.key(), body).is_some() {
+            return Err("source Copy original body index is duplicate or exhausted".into());
+        }
+    }
+    Ok(index)
 }

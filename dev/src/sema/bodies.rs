@@ -9,6 +9,7 @@ mod calls;
 mod closures;
 mod comparisons;
 mod conditions;
+mod declared_callees;
 mod defining_bodies;
 mod dependency_roots;
 mod divergence;
@@ -2207,7 +2208,8 @@ impl Checker<'_> {
         let Kind::Call { callee, arguments } = self.kind(node) else {
             return Err(self.error(node, "invalid call work"));
         };
-        let mut term = self.term(callee)?;
+        let receiver = self.term(callee)?;
+        let mut term = receiver;
         let constructor = matches!(self.head(node, term)?,
         Some(Constructor::FunctionItem(item, _) | Constructor::FunctionItemArgs(item, _))
             if self.facts.members.constructor(DefId(item.0)).is_some_and(|variant| {
@@ -2221,6 +2223,7 @@ impl Checker<'_> {
             term = self.child(node, term, 0)?;
         }
         term = if matches!(self.head(node, term)?, Some(Constructor::Function { .. })) {
+            self.retain_defining_member(node, callee, receiver)?;
             self.call_signature(node, term)?
         } else {
             self.invocation_signature(node, callee, arguments)?

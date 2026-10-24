@@ -10,14 +10,7 @@ impl Checker<'_> {
         source: NodeKey,
         negative: bool,
     ) -> Result<(), Error> {
-        if negative
-            && !self
-                .report
-                .package
-                .source_core
-                .as_deref()
-                .is_some_and(crate::resolve::bindings::SourceCore::permits_negative_impls)
-        {
+        if negative && !self.report.package.permits_source_negative_impls() {
             return Err(self.error(
                 source,
                 "negative trait implementations require trait coherence",

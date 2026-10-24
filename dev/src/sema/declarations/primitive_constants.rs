@@ -10,7 +10,7 @@ struct Path {
 }
 impl Checker<'_> {
     fn primitive_constant_path(&self, key: NodeKey) -> Option<Path> {
-        if self.report.package.source_core.is_some() {
+        if self.report.package.uses_source_bindings() {
             // Source providers own their associated declarations, including MAX.
             return None;
         }

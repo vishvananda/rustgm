@@ -61,7 +61,7 @@ pub(in crate::resolve) fn validate(package: &Package) -> Result<(), Error> {
 }
 
 fn inspect(package: &Package, work: &mut Work) -> Result<(), Error> {
-    let Some(source) = package.source_core.as_deref() else {
+    let Some(source) = package.source_features() else {
         return Ok(());
     };
     let mut pending = Vec::new();
@@ -137,13 +137,13 @@ fn const_trait_use(unit: &Unit, kind: Kind) -> bool {
 }
 
 fn require(
-    source: &super::SourceCore,
+    source: &super::policy::Features,
     usage: Use,
     unit: &Unit,
     file: FileId,
     node: NodeId,
 ) -> Result<(), Error> {
-    if source.features.has(usage.feature()) {
+    if source.has(usage.feature()) {
         return Ok(());
     }
     Err(Error::at(
@@ -154,7 +154,7 @@ fn require(
 }
 
 fn attributes(
-    source: &super::SourceCore,
+    source: &super::policy::Features,
     unit: &Unit,
     file: FileId,
     node: NodeId,

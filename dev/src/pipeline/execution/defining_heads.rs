@@ -35,7 +35,13 @@ impl Engine {
         facts
             .close_opaque_results(definition, &regions.hidden_regions)
             .map_err(|e| report.body_error(body.source, e))?;
-        Ok(CheckedInput(None))
+        let (code, needed) = self
+            .finish_code(facts, body, contract, &regions, purpose)
+            .map_err(|e| report.body_error(body.source, e))?;
+        Ok(CheckedInput {
+            retained: needed.then(|| std::sync::Arc::new(contract.clone())),
+            code,
+        })
     }
 }
 

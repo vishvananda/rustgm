@@ -42,7 +42,7 @@ fn ordinary_requests_do_not_allocate_a_provider_or_library_policy() -> Result {
     ] {
         let package = package(source, &Context::default())?;
         assert_eq!(package.macro_features.0, bits, "{source}");
-        assert!(package.source_core.is_none());
+        assert!(!package.uses_source_bindings());
         assert!(package.library.is_none());
     }
     assert_eq!(size_of::<Features>(), 2);
@@ -83,7 +83,7 @@ fn provider_ownership_and_macro_requests_are_independent() -> Result {
         &context,
     )?;
     assert_eq!(package.macro_features.0, 3);
-    assert!(package.source_core.is_some());
+    assert!(package.source_core().is_some());
     assert!(package.library.is_none());
     Ok(())
 }

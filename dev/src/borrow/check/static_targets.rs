@@ -50,19 +50,70 @@ pub(super) fn resolve(
     if body.resolved_callables.is_some() {
         return Err("callable targets already belong to a completed proof");
     }
+    let mut work = 0;
+    let targets = select(types, body, fold, usize::MAX, &mut work)?;
+    if !targets.is_empty() {
+        body.resolved_callables = Some(Box::new(crate::body::ir::ResolvedCallables::from_targets(
+            targets,
+        )));
+    }
+    Ok(())
+}
+
+/// The caller supplies the exact solved regions only after completing its loans.
+/// No solution means no replacement; structural item arguments grant no proof.
+pub(crate) fn solved(
+    types: &mut Store,
+    body: &Body,
+    proof: &regions::Body,
+    bytes: usize,
+    work: &mut usize,
+) -> Result<HashMap<Instance, Instance>, &'static str> {
+    if proof.key != body.key() || proof.source != body.source || proof.instance != body.instance {
+        return Err("solved callable regions belong to another actual body or instance");
+    }
+    let Some(mut fold) = prepare(proof)? else {
+        return Ok(HashMap::default());
+    };
+    if body.resolved_callables.is_some() {
+        return Err("callable targets already belong to a completed proof");
+    }
+    select(types, body, &mut fold, bytes, work)
+}
+
+fn select(
+    types: &mut Store,
+    body: &Body,
+    fold: &mut Bound,
+    bytes: usize,
+    work: &mut usize,
+) -> Result<HashMap<Instance, Instance>, &'static str> {
+    let mut targets = HashMap::default();
     for value in &body.values {
+        *work = work.saturating_add(1);
         if !matches!(types.kind(value.ty), Some(Kind::FunctionItem { .. })) {
             continue;
         }
-        let selected = fold.apply(types, value.ty)?;
-        if selected != value.ty {
-            body.resolved_callables
-                .get_or_insert_with(Default::default)
-                .insert(
-                    Instance::new(types, value.ty)?,
-                    Instance::new(types, selected)?,
-                );
+        let before = fold.steps;
+        let selected = fold.apply(types, value.ty);
+        *work = work.saturating_add(fold.steps.saturating_sub(before));
+        let selected = selected?;
+        if selected == value.ty {
+            continue;
         }
+        let original = Instance::new(types, value.ty)?;
+        if !targets.contains_key(&original) {
+            if crate::support::retained::new_map::<Instance, Instance>(targets.len() + 1) > bytes {
+                return Err("solved callable targets exceed snapshot storage budget");
+            }
+            targets
+                .try_reserve(1)
+                .map_err(|_| "solved callable target allocation failed")?;
+            if crate::support::retained::map(&targets) > bytes {
+                return Err("solved callable target payload exceeds snapshot storage budget");
+            }
+        }
+        targets.insert(original, Instance::new(types, selected)?);
     }
-    Ok(())
+    Ok(targets)
 }

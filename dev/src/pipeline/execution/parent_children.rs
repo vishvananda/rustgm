@@ -60,12 +60,27 @@ impl Engine {
             &environment,
             &regions,
         )?;
+        let (code, needed) = self
+            .finish_code(
+                facts,
+                &concrete.body,
+                &concrete.contract,
+                &regions,
+                super::ProofPurpose::Code,
+            )
+            .map_err(error)?;
+        let mut checked = super::CheckedInput {
+            retained: needed.then(|| std::sync::Arc::new(concrete.contract.clone())),
+            code,
+        };
         let (scope, _) = self
             .paid_interface(facts, instance, result)
             .map_err(error)?;
         let index = self
             .catalog
-            .paid_anonymous(scope, &concrete.body, result)
+            .paid_anonymous_prepared(scope, checked.take_code().map_err(error)?, result)
+            .map_err(error)?;
+        self.retain_const_inputs(facts, index, &concrete.body, checked, None)
             .map_err(error)?;
         facts.constant_work.anonymous_instances =
             facts.constant_work.anonymous_instances.saturating_add(1);

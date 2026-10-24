@@ -1,5 +1,5 @@
 //! Source-provider admission consumes retained root attributes before any fallback.
-use super::{Context, SourceCore};
+use super::{Context, Source, SourceCore};
 use crate::{
     resolve::{
         package::Error,
@@ -64,7 +64,7 @@ impl Features {
     fn insert(&mut self, feature: Feature) {
         self.0 |= 1 << feature as u8;
     }
-    fn macros(&self) -> MacroFeatures {
+    pub(super) fn macros(&self) -> MacroFeatures {
         MacroFeatures(
             u8::from(self.has(Feature::DeclarativeMacros))
                 | (u8::from(self.has(Feature::RustcAttributes)) << 1),
@@ -86,7 +86,7 @@ impl MacroFeatures {
 }
 
 pub(in crate::resolve) struct Prepared {
-    pub source: Option<Box<SourceCore>>,
+    pub source: Option<Box<Source>>,
     pub library: Option<Box<Library>>,
     pub macros: MacroFeatures,
 }
@@ -97,6 +97,9 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
         .word_attribute(Some(root), "no_core")
         .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
     let (features, library) = features(unit)?;
+    if let Mode::SourceClient { provider } = &context.mode {
+        return super::client::prepare(unit, context, provider, no_core, features, library);
+    }
     let macros = features.macros();
     let Mode::Source { provider } = &context.mode else {
         if no_core {
@@ -141,11 +144,11 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
         ));
     }
     Ok(Prepared {
-        source: Some(Box::new(SourceCore {
+        source: Some(Box::new(Source::Core(SourceCore {
             current: current.clone(),
             provider: provider.clone(),
             features,
-        })),
+        }))),
         library,
         macros,
     })

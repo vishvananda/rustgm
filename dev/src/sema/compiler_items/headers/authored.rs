@@ -8,11 +8,21 @@ use crate::{
 };
 
 impl<'a> Trait<'a> {
-    pub(in crate::sema::compiler_items) fn source(
+    pub(in crate::sema) fn source(
         report: &Report,
         facts: &'a Declarations,
         declaration: Declaration,
     ) -> Result<Self, &'static str> {
+        Self::source_with_bounds(report, facts, declaration).map(|(header, _)| header)
+    }
+
+    /// Borrow the actual literal bound nodes alongside the validated typed view.
+    /// The source and semantic borrows keep their independent owners/lifetimes.
+    pub(in crate::sema) fn source_with_bounds<'r>(
+        report: &'r Report,
+        facts: &'a Declarations,
+        declaration: Declaration,
+    ) -> Result<(Self, &'r [crate::syntax::ast::NodeId]), &'static str> {
         let definition = report
             .resolution
             .definitions
@@ -75,9 +85,9 @@ impl<'a> Trait<'a> {
                 auto_,
             },
             attributes: facts.source_bindings.as_deref().map_or(
-                crate::resolve::bindings::HeaderAttributes::EMPTY,
-                |catalog| catalog.header_attributes(actual),
-            ),
+                Ok(crate::resolve::bindings::HeaderAttributes::EMPTY),
+                |catalog| catalog.neutral_attributes(super::super::Role::from(declaration)),
+            )?,
             captures: schema.captures,
             parameters: facts
                 .generics
@@ -96,7 +106,7 @@ impl<'a> Trait<'a> {
         };
         header.validate_self(&facts.types)?;
         validate_binding(report, facts, &header)?;
-        Ok(header)
+        Ok((header, ast.list(bounds)))
     }
 }
 

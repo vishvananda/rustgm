@@ -42,6 +42,12 @@ PA31 manifest or whole-core acceptance. See the
 
 Required families: lang-item identity and signatures; intrinsic declarations and const eligibility; builtin expansion and capability answers; duplicate and forged bindings; panic-abort runtime boundary.
 
+`spec/trait-default-effects/` preserves the original const-trait provided-body
+hypotheses, their independent falsifications, and a distinct declared no_core
+provider family. Grouped `provider_traits::default_methods` controls check
+defining Conditional context separately from executable const eligibility.
+See the [default-body context review](../../docs/pa31-default-defining-context.md).
+
 `spec/source-const-callable/` retains the unchanged const function-item/u8
 callback positive, runtime pointer opposites, declared root-entry controls and
 8/32/128 repeated reached calls. Its contract records twelve independent

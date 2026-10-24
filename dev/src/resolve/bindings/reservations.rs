@@ -108,7 +108,7 @@ fn reserve_all(
     facts: &Resolution,
     claims: &HashMap<NodeKey, Vec<Claim>>,
 ) -> Result<Option<Box<Reservations>>, Error> {
-    let Some(source) = package.source_core.as_deref() else {
+    let Some(source) = package.source_core() else {
         if !claims.is_empty() {
             return Err(Error::at(
                 FileId(0),

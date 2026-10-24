@@ -40,6 +40,27 @@ pub struct Dependencies {
     edges: usize,
 }
 impl Dependencies {
+    /// Select one actual supported source provider, independently of aliases.
+    /// Initial admission searches once; clients retain the exact inventory/index.
+    /// # Errors
+    /// Rejects missing, legacy, mismatched and unsupported provider descriptors.
+    pub fn source_provider_index(&self, provider: &CrateIdentity) -> Result<u32, &'static str> {
+        let index = self
+            .artifacts
+            .binary_search_by(|artifact| artifact.identity().cmp(provider))
+            .map_err(|_| "source client provider metadata is missing")?;
+        let descriptor = self.artifacts[index]
+            .source_descriptor()
+            .ok_or("source client requires a complete supported source provider payload")?;
+        if descriptor.identity() != provider
+            || descriptor.provider() != provider
+            || descriptor.edition() != crate::support::edition::Edition::Rust2024
+            || descriptor.profile() != super::generics::source::Profile::Source2024
+        {
+            return Err("source client provider descriptor does not match the requested profile");
+        }
+        u32::try_from(index).map_err(|_| "source provider artifact index overflow")
+    }
     /// Canonicalize once and validate missing/duplicate identities and cycles.
     /// # Errors
     /// Rejects incomplete graphs, ambiguous aliases and bounded table exhaustion.

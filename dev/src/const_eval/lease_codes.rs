@@ -57,16 +57,7 @@ impl Scoped {
         index: usize,
         bytes: &mut usize,
     ) -> Result<(), &'static str> {
-        if !self.current(scope) || self.lookup.contains_key(&(scope, key)) {
-            return Err("conditional code belongs to another or completed scope");
-        }
-        let retained = bytes
-            .saturating_add(crate::support::retained::new_map::<usize, Scope>(1))
-            .saturating_add(crate::support::retained::new_map::<(Scope, Key), usize>(1))
-            .saturating_add(4 * size_of::<Key>());
-        if retained > 64 * 1024 * 1024 {
-            return Err("conditional code index exceeds storage budget");
-        }
+        let retained = self.insertion_bytes(scope, key, index, *bytes)?;
         let row = self
             .rows
             .last_mut()
@@ -76,6 +67,28 @@ impl Scoped {
         self.codes.insert(index, scope);
         *bytes = retained;
         Ok(())
+    }
+    pub(super) fn insertion_bytes(
+        &self,
+        scope: Scope,
+        key: Key,
+        index: usize,
+        bytes: usize,
+    ) -> Result<usize, &'static str> {
+        if !self.current(scope)
+            || self.lookup.contains_key(&(scope, key))
+            || self.codes.contains_key(&index)
+        {
+            return Err("conditional code belongs to another or completed scope");
+        }
+        let retained = bytes
+            .saturating_add(crate::support::retained::new_map::<usize, Scope>(1))
+            .saturating_add(crate::support::retained::new_map::<(Scope, Key), usize>(1))
+            .saturating_add(4 * size_of::<Key>());
+        if retained > 64 * 1024 * 1024 {
+            return Err("conditional code index exceeds storage budget");
+        }
+        Ok(retained)
     }
     pub(super) fn retire(&mut self, scope: Scope) -> Result<(), &'static str> {
         if !self.current(scope) {

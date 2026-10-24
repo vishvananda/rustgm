@@ -118,6 +118,14 @@ impl Checker<'_> {
                 predicates.push(predicate.value);
             }
         }
+        if signature.is_some()
+            && let Some(clause) = self
+                .facts
+                .default_self_clause(owner, self.state.body)
+                .map_err(|e| self.error(node, e))?
+        {
+            predicates.push(clause);
+        }
         if !predicates.is_empty() {
             for predicate in &mut predicates {
                 *predicate = self.alias_clause(node, *predicate)?;
@@ -422,13 +430,14 @@ impl Checker<'_> {
         // Keep declaration clauses intact and retain the first clause's own binder.
         let mut quantified = crate::support::hash::HashSet::default();
         for predicate in predicates {
-            let effect = self.callee_use_effect();
-            let clause = crate::sema::traits::effects::in_context(
-                &mut self.facts.types,
-                predicate.value,
-                effect,
-            )
-            .map_err(|e| self.error(node, e))?;
+            let effect = self.callee_use_effect()?;
+            let copied = self
+                .facts
+                .member_use_clause(owner, predicate, effect)
+                .map_err(|e| self.error(node, e))?;
+            let clause =
+                crate::sema::traits::effects::in_context(&mut self.facts.types, copied, effect)
+                    .map_err(|e| self.error(node, e))?;
             if let crate::types::parameters::clauses::Clause::ForAll(id) = clause {
                 let (key, work) = self
                     .facts
@@ -455,10 +464,10 @@ impl Checker<'_> {
         Ok(())
     }
 
-    pub(super) fn callee_use_effect(&self) -> crate::support::constness::Constness {
+    pub(super) fn callee_use_effect(&self) -> Result<crate::support::constness::Constness, Error> {
         use crate::support::constness::Constness;
-        if self.runtime_callee_context() {
-            return Constness::Ordinary;
+        if self.runtime_callee_context()? {
+            return Ok(Constness::Ordinary);
         }
         // Only this actual closed initializer has unconditional const demand.
         // Defining generic const bodies and inline children retain Conditional.
@@ -469,24 +478,28 @@ impl Checker<'_> {
             && initializer.value == self.state.body
             && !self.facts.generics.has_parameters(initializer.definition)
         {
-            return Constness::Const;
+            return Ok(Constness::Const);
         }
-        Constness::Conditional
+        Ok(Constness::Conditional)
     }
 
-    fn runtime_callee_context(&self) -> bool {
+    fn runtime_callee_context(&self) -> Result<bool, Error> {
         if !self.state.in_function {
-            return false;
+            return Ok(false);
         }
         // Closures retain the enclosing environment, but own a distinct body.
-        self.state
+        let function = self
+            .state
             .environment_owner
             .and_then(|owner| self.facts.function_indices.get(&owner))
-            .and_then(|&index| self.facts.functions.get(index))
-            .is_none_or(|function| {
-                function.body != Some(self.state.body)
-                    || !self.facts.is_const_function(function.definition)
-            })
+            .and_then(|&index| self.facts.functions.get(index));
+        let Some(function) = function.filter(|f| f.body == Some(self.state.body)) else {
+            return Ok(true);
+        };
+        self.facts
+            .function_context(function.definition, self.state.body)
+            .map(|context| !context.checks_const())
+            .map_err(|e| self.error(self.state.body.node, e))
     }
 
     pub(super) fn instantiate_bound_obligation(

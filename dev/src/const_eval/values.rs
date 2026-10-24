@@ -277,6 +277,13 @@ impl Machine<'_, '_> {
                     return Err("constant callable lost its item identity".into());
                 };
                 let definition = crate::resolve::model::DefId(item.0);
+                match self.source_selector_call(&body, frame, id)? {
+                    super::executed_calls::Selected::Unrelated => {}
+                    super::executed_calls::Selected::Pending => return Ok(None),
+                    super::executed_calls::Selected::Enter(index, arguments) => {
+                        return Ok(Some((index, arguments, id)));
+                    }
+                }
                 let arguments = self.arguments(frame, arguments)?;
                 if let Some(variant) = self.evaluator.facts().members.constructor(definition) {
                     self.evaluator.fields(&arguments, Some(variant))?

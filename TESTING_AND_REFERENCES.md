@@ -175,6 +175,29 @@ pass. Its 37-input performance matrix retains 26 equal-output comparisons and
 27 native preflights, with no instruction, RSS or scaling trigger. The record
 preserves the original layout failure and separate benchmark preflight repairs.
 
+The [local stability and callable checkpoint](docs/library-stability-callable-checkpoint.md)
+qualifies 3,477 maintainer cases: 3,180 retained unchanged-target results and 297
+fresh frontend results after a test-only feature-inventory phase correction.
+All 8,382 text cases pass in 17.68 seconds. Its 48-input matrix has 26 equal-output
+comparisons and 24 native preflights, with no instruction, RSS or growth trigger.
+Source feature/inventory edits must include the `feature_requests` suite in focused
+selection: loading may deliberately retain a request that completed expansion
+must reject. The record preserves the failed full run and benchmark preparations.
+
+The [constant selector checkpoint](docs/source-ctfe-selector-checkpoint.md)
+passes 3,488 fresh release/native cases and 8,382 text cases in 18.23 seconds.
+Its 51-input matrix has 48 byte-equal comparisons and 27 candidate native
+preflights; no instruction, RSS or scaling threshold fires. Functional cleanup
+reclaims 17.20 GiB. Documentation-only publication retains these exact qualified
+compiler/test sources and does not repeat the full functional batch.
+
+The [defining cleanup and source-producer checkpoint](docs/source-defining-producer-checkpoint.md)
+passes 3,538 fresh release/native cases and 8,382 text cases in 19.35 seconds.
+Its 55-input performance matrix retains 54 byte-equal comparisons and 31 native
+preflights with no instruction, RSS or scaling trigger. A separately reviewed
+typed-facts provenance change has no paired speedup claim. The report records
+the original preflight failure and 17.20 GiB of functional artifact cleanup.
+
 For a validation batch, pass `scripts/course.py --evidence-root obj/BATCH/course`
 and include that directory in the storage guard's `--prune-under` roots. This
 keeps the same fixture comparisons and complete receipts while avoiding a cleanup
@@ -876,6 +899,15 @@ Retire old pins after replacing the baseline. Historical binary copies may be
 pruned; their recorded hashes and observations remain, but rerunning a measurement
 requires a restored binary whose hash matches. Old path references in historical
 validation notes do not imply that disposable executables still exist.
+
+Retiring a pin also requires an explicit scoped prune:
+`python3 scripts/storage.py prune --apply --prune-under obj/old-comparison`.
+Preview without `--apply` when identifying obsolete outputs, and check the
+deletion inventory against the current frozen input and binary hashes. Automatic
+successful-run cleanup only considers files written during that run, so it will
+not reclaim an older executable merely because its pin was removed. Keep the
+reserve unchanged when reclaiming space, and discard rebuildable Cargo caches
+with `make tidy-build` when their compiled snapshot is no longer needed.
 
 PA20 introduces `--emit-trait-semantics` and `--count-trait-semantics`, preserving
 PA19's separate semantic text contract. Its 1,355 registered cases cover 546

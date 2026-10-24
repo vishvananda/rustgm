@@ -53,8 +53,8 @@ impl Resolver<'_> {
                 .unwrap_or(false);
             let absolute = absolute || local_absolute;
             // Irrelevant prefixes need no repeated spelling scan as a group
-            // deepens. Source-provider mode never prepares bootstrap metadata.
-            let relevant = self.package.source_core.is_none()
+            // deepens. Source provider/client modes never prepare bootstrap metadata.
+            let relevant = !self.package.uses_source_bindings()
                 && (relevant
                     || path.names[start..]
                         .iter()

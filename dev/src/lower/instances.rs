@@ -2,15 +2,56 @@
 mod demand;
 mod dependencies;
 mod proof;
+mod staged_originals;
 #[cfg(test)]
 #[path = "../../tests/invariants/upstream_originals.rs"]
 mod upstream_originals;
+pub use super::transported_source::SourceInspection;
+pub use crate::sema::crates::authored_export::SourceWork;
 use crate::{
     body::{self, regions::Contracts},
     borrow,
     resolve::{expansion::Report, model::DefId, package::Error},
     sema::model::Declarations,
 };
+
+/// Inspect actual source-provider transport rows after complete original,
+/// instance and assembly success. This publishes no metadata descriptor or
+/// imported role/execution permission.
+/// # Errors
+/// Preserves unsupported source forms, incomplete coverage and every ordinary
+/// proof/lowering failure before returning neutral observations.
+pub fn inspect_source_transport(
+    report: &Report,
+    facts: &mut Declarations,
+    identity: &crate::support::crates::CrateIdentity,
+    prepared: crate::pipeline::Prepared,
+) -> Result<SourceInspection, Error> {
+    inspect_staged(
+        report,
+        facts,
+        prepared,
+        |facts, checked| {
+            let source = super::transported_source::Source::begin(report, facts, checked, identity)
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            let exports = super::roots::exports(facts, &[])
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            Ok((None, exports, source))
+        },
+        |source, facts, proved, input| {
+            source
+                .collect(facts, proved, input)
+                .map_err(|e| diagnostic(report, None, e.into()))
+        },
+        |facts, assembled, roots, source| {
+            super::build_assembled(facts, assembled, roots)
+                .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
+            source
+                .complete()
+                .map_err(|e| diagnostic(report, None, e.into()))
+        },
+    )?
+}
 
 /// Compile selected instances using retained syntax/type facts and checked templates.
 /// Each demanded body has its own substituted contract; source keys are diagnostic
@@ -158,7 +199,7 @@ fn inspect_roots<R>(
 fn inspect_selected<R>(
     report: &Report,
     facts: &mut Declarations,
-    mut prepared: crate::pipeline::Prepared,
+    prepared: crate::pipeline::Prepared,
     select: impl FnOnce(
         &mut Declarations,
         &borrow::templates::Checked<'_>,
@@ -167,6 +208,37 @@ fn inspect_selected<R>(
         &mut Declarations,
         borrow::incremental::Assembled,
         super::roots::Selected<'_>,
+    ) -> R,
+) -> Result<R, Error> {
+    inspect_staged(
+        report,
+        facts,
+        prepared,
+        |facts, checked| select(facts, checked).map(|(entry, exports)| (entry, exports, ())),
+        staged_originals::ignore,
+        |facts, assembled, roots, ()| inspect(facts, assembled, roots),
+    )
+}
+
+fn inspect_staged<S, R>(
+    report: &Report,
+    facts: &mut Declarations,
+    mut prepared: crate::pipeline::Prepared,
+    select: impl FnOnce(
+        &mut Declarations,
+        &borrow::templates::Checked<'_>,
+    ) -> Result<(Option<DefId>, super::roots::Exports, S), Error>,
+    collect: impl FnMut(
+        &mut S,
+        &Declarations,
+        &borrow::incremental::Proved,
+        &body::regions::Contract,
+    ) -> Result<(), Error>,
+    inspect: impl FnOnce(
+        &mut Declarations,
+        borrow::incremental::Assembled,
+        super::roots::Selected<'_>,
+        S,
     ) -> R,
 ) -> Result<R, Error> {
     let mut templates = prepared.templates.finish(report, facts)?;
@@ -240,13 +312,20 @@ fn inspect_selected<R>(
     facts
         .prepare_opaque_storage_located()
         .map_err(|failure| opaque_storage_error(report, facts, failure))?;
-    let (entry, exports) = select(facts, &checked)?;
+    let (entry, exports, mut stage) = select(facts, &checked)?;
     let roots = exports.selected(entry);
+    let mut collect = staged_originals::Binding {
+        stage: &mut stage,
+        callback: collect,
+    };
     let program = demand::prepare(
         report,
         facts,
         roots,
-        &checked,
+        staged_originals::Context {
+            checked: &checked,
+            collector: &mut collect,
+        },
         inputs,
         prepared.concrete,
         prepared.constants,
@@ -254,7 +333,7 @@ fn inspect_selected<R>(
     let assembled = program
         .assemble()
         .map_err(|e| diagnostic(report, e.node, e.message))?;
-    Ok(inspect(facts, assembled, roots))
+    Ok(inspect(facts, assembled, roots, stage))
 }
 
 fn publish_closure_conditions(

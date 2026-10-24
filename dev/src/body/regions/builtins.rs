@@ -11,6 +11,7 @@ pub struct BuiltinRequirements {
     pub(crate) predicates: Vec<(ProofSite, Predicate)>,
     pub(crate) source_copy: Option<Arc<crate::sema::model::SourceCopyRequirements>>,
     prepared_copy: Option<Box<super::super::copy_requirements::Prepared>>,
+    defining: Option<Arc<super::super::defining_cleanups::State>>,
 }
 impl From<&crate::sema::model::BuiltinRequirements> for BuiltinRequirements {
     fn from(source: &crate::sema::model::BuiltinRequirements) -> Self {
@@ -23,6 +24,7 @@ impl From<&crate::sema::model::BuiltinRequirements> for BuiltinRequirements {
                 .collect(),
             source_copy: source.source_copy.clone(),
             prepared_copy: None,
+            defining: None,
         }
     }
 }
@@ -37,6 +39,7 @@ impl BuiltinRequirements {
             predicates,
             source_copy: None,
             prepared_copy: None,
+            defining: None,
         }
     }
 
@@ -60,6 +63,11 @@ impl BuiltinRequirements {
                     .as_ref()
                     .map_or(0, |prepared| prepared.retained_bytes()),
             )
+            .saturating_add(
+                self.defining
+                    .as_ref()
+                    .map_or(0, |state| state.retained_bytes()),
+            )
     }
 
     pub(crate) fn source(
@@ -72,6 +80,7 @@ impl BuiltinRequirements {
             predicates: Vec::new(),
             source_copy: Some(requirements),
             prepared_copy: Some(Box::new(prepared)),
+            defining: None,
         }
     }
     pub(crate) fn set_source_copy(
@@ -84,6 +93,38 @@ impl BuiltinRequirements {
     }
     pub(crate) fn clear_source_copy(&mut self) {
         self.prepared_copy = None;
+        self.defining = None;
+    }
+    pub(crate) fn empty() -> Self {
+        Self {
+            environment: None,
+            predicates: Vec::new(),
+            source_copy: None,
+            prepared_copy: None,
+            defining: None,
+        }
+    }
+    pub(crate) fn set_defining(
+        &mut self,
+        state: Option<Arc<super::super::defining_cleanups::State>>,
+    ) {
+        self.defining = state;
+    }
+    pub(crate) fn has_defining(&self) -> bool {
+        self.defining.is_some()
+    }
+    pub(crate) fn defining(&self) -> Option<&super::super::defining_cleanups::State> {
+        self.defining.as_deref()
+    }
+    pub(super) fn replace_source(
+        target: &mut Option<Arc<Self>>,
+        source: &crate::sema::model::BuiltinRequirements,
+    ) {
+        let mut updated = Self::from(source);
+        updated.defining = target
+            .as_ref()
+            .and_then(|previous| previous.defining.clone());
+        *target = Some(Arc::new(updated));
     }
     pub(crate) fn copy_decision(
         &self,

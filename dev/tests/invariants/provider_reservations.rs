@@ -162,7 +162,7 @@ fn prototype_syntax_does_not_authorize_surviving_declarations() -> Result {
 #[test]
 fn source_configuration_keeps_bootstrap_owner_absent() -> Result {
     let report = crate::test_source::resolve("fn f(){let _=1u8;}", true)?;
-    assert!(report.package.source_core.is_none());
+    assert!(report.package.source_core().is_none());
     assert!(report.resolution.source_bindings.is_none());
     eprintln!(
         "source reservation sizes package={} resolution={} source={} catalog={} declaration={} intrinsic={} parser={}",

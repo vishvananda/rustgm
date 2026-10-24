@@ -163,16 +163,16 @@ impl<'a, S: Sources> Loader<'a, S> {
             .word_attribute(Some(root_node), "no_std")
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
         let prepared = super::bindings::policy::prepare(&unit, context)?;
-        let source_core = prepared.source;
+        let source = prepared.source;
         let library = prepared.library;
         let implicit_prelude = !unit
             .word_attribute(Some(root_node), "no_implicit_prelude")
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?
-            && source_core.is_none();
+            && source.is_none();
         let mut loader = Self {
             package: Package {
                 marks: crate::expand::marks::Marks::default(),
-                source_core,
+                source,
                 library,
                 macro_features: prepared.macros,
                 no_std,
@@ -212,7 +212,7 @@ impl<'a, S: Sources> Loader<'a, S> {
             resources: HashMap::default(),
             environment: HashMap::default(),
         };
-        if loader.package.source_core.is_some() {
+        if loader.package.uses_source_bindings() {
             loader.package.crate_name = super::expansion::attributes::crate_name(
                 &loader.package,
                 context.crate_name.as_deref(),

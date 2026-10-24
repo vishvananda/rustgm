@@ -77,17 +77,10 @@ fn source_selector_keeps_callable_const_tuple_and_reference_obligations() -> Tes
 }
 
 #[test]
-fn source_selector_ctfe_remains_explicit_and_malformed_header_diagnoses_safely() -> TestResult {
-    // Rust accepts this CTFE program. Its callback remains required work, and
-    // this temporary denial checks that no body-bearing placeholder can run.
-    let error = lower(&source("ctfe-placeholder-must-not-run", "rs")?)
-        .err()
-        .ok_or("source selector placeholder executed in CTFE")?
-        .to_string();
-    assert!(
-        error.contains("source const_eval_select constant callback execution is not implemented"),
-        "{error}"
-    );
+fn source_selector_ctfe_ignores_placeholder_and_malformed_header_diagnoses_safely() -> TestResult {
+    // Retain the original independent CTFE-positive source, including its
+    // looping body-bearing selector. The reached intrinsic must enter F.
+    lower(&source("ctfe-placeholder-must-not-run", "rs")?)?;
     // Pinned rustc ICEs for this malformed declaration; this is a compiler
     // robustness opponent, without claiming it as an invalid Rust contract.
     assert!(lower(&source("malformed-unused-signature", "rs")?).is_err());

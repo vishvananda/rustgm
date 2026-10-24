@@ -213,13 +213,9 @@ impl Collector {
                 .extend(bucket.obligations.into_iter().flatten());
             contract.proofs = bucket.proofs;
         }
-        contract.builtins = facts
-            .generics
-            .builtin_requirements
-            .get(&source)
-            .map(|requirements| {
-                std::sync::Arc::new(super::BuiltinRequirements::from(requirements))
-            });
+        if let Some(requirements) = facts.generics.builtin_requirements.get(&source) {
+            super::BuiltinRequirements::replace_source(&mut contract.builtins, requirements);
+        }
         Ok(())
     }
 

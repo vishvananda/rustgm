@@ -8,6 +8,9 @@ pub enum Mode {
     Source {
         provider: CrateIdentity,
     },
+    SourceClient {
+        provider: CrateIdentity,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

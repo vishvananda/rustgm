@@ -153,7 +153,7 @@ fn requested_const_destruct_does_not_gate_or_erase_an_existing_qualified_premise
     check(&fixture("conditional-destruct-bound-only-freeze")?)?;
     let report = crate::test_source::resolve("fn ordinary(){}", true)?;
     let facts = crate::sema::declarations::analyze(&report)?;
-    assert!(report.package.source_core.is_none() && report.resolution.source_bindings.is_none());
+    assert!(report.package.source_core().is_none() && report.resolution.source_bindings.is_none());
     assert!(facts.source_bindings.is_none());
     Ok(())
 }

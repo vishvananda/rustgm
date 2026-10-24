@@ -53,7 +53,7 @@ impl Resolver<'_> {
             return Ok(None);
         };
         let name = self.package.name(c.file, span)?;
-        if self.package.source_core.is_some() && self.package.names.get(name) == "self" {
+        if self.package.uses_source_bindings() && self.package.names.get(name) == "self" {
             return self
                 .facts
                 .module_scopes
@@ -142,7 +142,7 @@ impl Resolver<'_> {
         namespace: Namespace,
         path: &[NameId],
     ) -> Result<(), Error> {
-        if self.package.source_core.is_some() {
+        if self.package.uses_source_bindings() {
             return Ok(());
         }
         // Every step below keys on a spelling recognized by `builtin_spelling`.
@@ -228,7 +228,7 @@ impl Resolver<'_> {
         Ok(())
     }
     fn prepare_external_traits(&mut self, c: Context, node: NodeId) -> Result<(), Error> {
-        if self.package.source_core.is_some() {
+        if self.package.uses_source_bindings() {
             return Err(self.error(
                 c,
                 node,
@@ -289,7 +289,7 @@ impl Resolver<'_> {
         kind: DefKind,
         members: Option<ScopeId>,
     ) -> Result<DefId, Error> {
-        if self.package.source_core.is_some() {
+        if self.package.uses_source_bindings() {
             return Err(self.error(
                 c,
                 node,

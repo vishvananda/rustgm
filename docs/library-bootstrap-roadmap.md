@@ -148,6 +148,25 @@ remove PA26's required desugaring, derives, formatting or iteration semantics.
 Those semantics must continue to work against actual upstream identities and
 implementations.
 
+## Current integrated checkpoint
+
+The [local stability and source callable checkpoint](library-stability-callable-checkpoint.md)
+qualifies local regular API inventory, closed source const callbacks, runtime
+selector lowering and source macro import resolution. The subsequent
+[constant selector checkpoint](source-ctfe-selector-checkpoint.md) executes the
+actual selected const callback and preserves proved static callable targets
+through owned Code publication. It passes 3,488 maintainer cases, 8,382 text cases
+and a 51-input performance matrix. These checkpoints preserve explicit
+boundaries for dependency stability, const/default-body APIs and imported source
+roles. No original whole core, alloc or std build passes.
+
+The last recorded original-core loading probe reached `pub macro assert_matches`
+in `core/src/macros/mod.rs`; scoped declarative macro syntax and hygiene are the
+next loading/expansion requirement. Parallel work also continues on authenticated
+source-client metadata, const-trait default defining contexts and reference-bearing
+CTFE callbacks. These are separate unpublished drafts, and each must satisfy
+its actual source/proof contract before entering the combined checkpoint.
+
 ## Acceptance ladder
 
 Each milestone records its source revision, complete transitive dependency lock,

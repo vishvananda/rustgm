@@ -1,0 +1,135 @@
+{
+  "declared_before_recovery_probes": true,
+  "unchanged_production_checkpoint": "a2a6dd1743a46b4034ce3bd670a1812453c1a6a2",
+  "prior_evidence": "obj/parallel/pa28/const-eval-select/ctfe-source-v1/independent-v1",
+  "prior_binding_sha256": "704656702c9feaa1b1490a93537a75f00bf07c212d5a88bb1ef75eb525760fbf",
+  "prior_results_sha256": "2a1c5af44b20f6eead297983c0efa45d81b85ab5ca7e1a3b7f1e7b5e62f3927e",
+  "retained_unchanged_oracle_rows": [
+    {
+      "name": "owned-tuple",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/owned-tuple.rs",
+      "source_sha256": "f29bcd0c160dc3112ebfaf50869d0b222267f15335546adb5526ce48cdfefe7d",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "row_sha256": "f085bb11ae55f765ec8da7c397511d157d29f048434c334dfe8df2b930cf4fa9"
+    },
+    {
+      "name": "mapped-through-return",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/mapped-through-return.rs",
+      "source_sha256": "f4d1693f173517a477458f67a7aa511076123bb87eeeec53554532f009a56474",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "row_sha256": "2bdd7fe8ed30c5fafa0146fc28998e10665b94e734c8eaafc1149f83bc9cce3f"
+    },
+    {
+      "name": "reference-binder",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-binder.rs",
+      "source_sha256": "873e50d001036c158a16f771ab236571d2a25a5478575fcfc441e722e6022d45",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "row_sha256": "b60e25c7f63349d183bff6f2726ca3312f57c98ee199faf4a17e22982c26533f"
+    },
+    {
+      "name": "operand-order",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/operand-order.rs",
+      "source_sha256": "e4e450df878ca11baaf7dc0905543579b9d8019f0db5d83e47a6c40feb28e4ae",
+      "client_sha256": "9924959f2fb7ba3f44ed9f70701f47624c2c2a26d7caf26229eb77a0bc4b8415",
+      "row_sha256": "e73b72d52d1bfba5f41e54c28b6bf821942effc869ed54f6dabfcf1f8386c665"
+    },
+    {
+      "name": "repeated-empty",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/repeated-empty.rs",
+      "source_sha256": "a9ec47b5a9c403ea0fd7e1c37178fc10be53bf8db633b1b2e69256bc9cc678fd",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "row_sha256": "e7ca32af39dcd5eb102b1b70637a406f431343e12e5dbbe98f2fefc2ad995fb0"
+    },
+    {
+      "name": "unreached-const-loop",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/unreached-const-loop.rs",
+      "source_sha256": "2cb2010bc5ed746ecf158c33dee1a149084d96f9e8d20a80e15a9eac439e55c0",
+      "client_sha256": "d3df3dc2729db15323a51931b0e6da0483d33c75bf9986a4156b9e179bf43011",
+      "row_sha256": "0698e623fb4a8097ca889c983ea1f2b306123e52366fb1492019eb7617649b95"
+    },
+    {
+      "name": "unselected-runtime-loop",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/unselected-runtime-loop.rs",
+      "source_sha256": "1ef9f0f2114d194c717970ca278f12068f77f4e6cafce485d10eb79b820b9973",
+      "client_sha256": "d3df3dc2729db15323a51931b0e6da0483d33c75bf9986a4156b9e179bf43011",
+      "row_sha256": "d08c291c6ea1ea473071cb39c8f134815c00792dcdf0248c2443a1bec7f10b16"
+    },
+    {
+      "name": "conditional-empty",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/conditional-empty.rs",
+      "source_sha256": "84ef7eabbb15379aa56d21741bb725c0dccbf03e1771fd8a41ee1e9e664c3a08",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "row_sha256": "4f890f7d52a1fe2730f35c6299b214941775007e7efe2a758d8a591d589a39b5"
+    },
+    {
+      "name": "conditional-nonempty",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/conditional-nonempty.rs",
+      "source_sha256": "b6292b5347eb90e01db54544d0c221ffe661d2e214002b4b7ad967ef1adf3e6f",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "row_sha256": "56a6791f78953c4acc96803095f19bb65616e8890c8aef4245d2f1b4074348b5"
+    },
+    {
+      "name": "owned-argument-reuse-reject",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/owned-argument-reuse-reject.rs",
+      "source_sha256": "189ee9305b83a1ad131db0c9505835b3e064e96786308b55d24c30c8086eb1e1",
+      "client_sha256": null,
+      "row_sha256": "efaaaf017d784fa269085777d19d3bb8f46580c84ac4838aba489dce867d38b0"
+    },
+    {
+      "name": "same-item-instances",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/same-item-instances.rs",
+      "source_sha256": "5ac2ef52dbccdb21735fd6d3dc421262fc8fc56495aa88af9a265fb96eb048df",
+      "client_sha256": "711f090a17da4b078eb9eafcce071249b0edf3f9ee1d60488be3ddb3f13ef916",
+      "row_sha256": "d30a1e4eae5a47f37ef1ecd667df4bd34fa9f1f7d3932ea9261cf9f6e5764f21"
+    },
+    {
+      "name": "conditional-owner-two-selectors",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/conditional-owner-two-selectors.rs",
+      "source_sha256": "fcfe1fce8e4c2ae8fd13120ce45f64a29458d74894b42da4cb3a4d73e1de08c0",
+      "client_sha256": "711f090a17da4b078eb9eafcce071249b0edf3f9ee1d60488be3ddb3f13ef916",
+      "row_sha256": "2fd513b1e2d8f9d172516ce0c3edc58b45231def038bddfd26dfb649730d8d83"
+    }
+  ],
+  "new_cases": [
+    {
+      "name": "selected-null-raw-read-fault",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/selected-null-raw-read-fault.rs",
+      "sha256": "d212db8026f50fa2e991bbef4f24040c3f98fddf15f4c9a97dc317691af62da6",
+      "rustc_metadata_hypothesis": 1,
+      "rustc_diagnostic_hypothesis": "E0080",
+      "candidate_diagnostic_hypothesis": "constant pointer has no allocation provenance",
+      "scope": "Actual selected constant callback dereferences the zero raw address supplied through its parameter; no Index or arithmetic trait prerequisite",
+      "state": "Declared before recovery probes; no new observation claimed"
+    },
+    {
+      "name": "null-raw-read-runtime-opposite",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/null-raw-read-runtime-opposite.rs",
+      "sha256": "5d3f9fde781e62c912a9d00770bc03358ec842c2b9b9a616fbd1d6c041703ab3",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/null-raw-read-runtime-opposite.c",
+      "client_sha256": "f8e20b16f78058c575636d9e55e964b53faed597c5beec57ab230a200e1e82b1",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "9\n",
+      "native_stderr_hypothesis": "",
+      "scope": "Same raw-read F body remains unselected at runtime; G returns nine",
+      "state": "Declared before recovery probes; no new observation claimed"
+    }
+  ],
+  "invalid_prior_hypotheses": [
+    {
+      "name": "selected-index-fault",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/selected-index-fault.rs",
+      "source_sha256": "1a30b50870aca6b744fe48222095a119b3aafff8c651bd1f5b9e1b51b10c2007",
+      "actual_rustc_diagnostic": "E0608: cannot index into [u8;1]",
+      "classification": "Original expected CTFE-fault/runtime-positive hypotheses invalid for this incomplete no_core Index provider. No RustGM Index qualification or const selection result claimed."
+    },
+    {
+      "name": "index-fault-runtime-opposite",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/index-fault-runtime-opposite.rs",
+      "source_sha256": "99c3f731815a0079dfba7a283aabd7a53a4061b42ee9e52d5f15ea0b910b204d",
+      "actual_rustc_diagnostic": "E0608: cannot index into [u8;1]",
+      "classification": "Original expected CTFE-fault/runtime-positive hypotheses invalid for this incomplete no_core Index provider. No RustGM Index qualification or const selection result claimed."
+    }
+  ]
+}

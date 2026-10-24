@@ -57,7 +57,7 @@ impl Engine {
             self.roots.insert(target, index);
             return Ok(index);
         }
-        let (templates, checked) = self.checked_expression(report, facts, source, result)?;
+        let (templates, mut checked) = self.checked_expression(report, facts, source, result)?;
         let retain = facts
             .inline_constants
             .as_deref()
@@ -80,7 +80,11 @@ impl Engine {
             })?;
         let index = self
             .catalog
-            .insert(&templates.bodies[0].body)
+            .insert_prepared(
+                checked
+                    .take_code()
+                    .map_err(|e| report.body_error(source, e))?,
+            )
             .map_err(|e| report.body_error(source, e))?;
         self.retain_const_inputs(facts, index, &templates.bodies[0].body, checked, None)
             .map_err(|e| report.body_error(source, e))?;
@@ -187,7 +191,7 @@ impl Engine {
         let environment = Arc::new(
             Environment::new(&facts.types, &[]).map_err(|e| report.body_error(source, e))?,
         );
-        let checked = self.prove_body(
+        let mut checked = self.prove_body(
             report,
             facts,
             body,
@@ -196,7 +200,11 @@ impl Engine {
         )?;
         let index = self
             .catalog
-            .insert(body)
+            .insert_prepared(
+                checked
+                    .take_code()
+                    .map_err(|e| report.body_error(source, e))?,
+            )
             .map_err(|e| report.body_error(source, e))?;
         self.retain_const_inputs(facts, index, body, checked, None)
             .map_err(|e| report.body_error(source, e))?;

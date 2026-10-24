@@ -15,6 +15,7 @@ pub mod linkage;
 mod remainder;
 mod roots;
 mod runtime_cleanup;
+mod transported_source;
 pub use roots::Roots;
 mod virtual_dispatch;
 

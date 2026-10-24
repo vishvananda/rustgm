@@ -474,12 +474,13 @@ pub struct ResolvedCallables {
     >,
 }
 impl ResolvedCallables {
-    pub(crate) fn insert(
-        &mut self,
-        original: crate::types::instance::Instance,
-        target: crate::types::instance::Instance,
-    ) {
-        self.targets.insert(original, target);
+    pub(crate) fn from_targets(
+        targets: crate::support::hash::HashMap<
+            crate::types::instance::Instance,
+            crate::types::instance::Instance,
+        >,
+    ) -> Self {
+        Self { targets }
     }
 }
 impl Body {

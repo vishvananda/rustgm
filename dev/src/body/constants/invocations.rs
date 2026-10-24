@@ -17,7 +17,7 @@ impl Work {
     pub(super) const fn new(limit: usize) -> Self {
         Self { steps: 0, limit }
     }
-    fn charge(&mut self, amount: usize) -> Result<(), &'static str> {
+    pub(super) fn charge(&mut self, amount: usize) -> Result<(), &'static str> {
         self.steps = self.steps.saturating_add(amount);
         if self.steps > self.limit {
             return Err("const invocation validation work budget exceeded");
@@ -25,14 +25,35 @@ impl Work {
         Ok(())
     }
 }
+#[cfg(test)]
 pub(super) fn check(
     facts: &Declarations,
     body: &Body,
     expected: usize,
     work: &mut Work,
 ) -> Result<(), &'static str> {
+    check_calls(facts, body, (expected, 0), work)
+}
+pub(super) fn check_calls(
+    facts: &Declarations,
+    body: &Body,
+    expected: (usize, usize),
+    work: &mut Work,
+) -> Result<(), &'static str> {
     let definition = defining_owner(facts, body, work)?;
+    if expected.0 != 0 {
+        work.charge(3)?;
+        crate::sema::compiler_items::callable_role(facts, CallTrait::FnOnce)?;
+    }
+    let member_context = if expected.1 == 0 {
+        None
+    } else {
+        Some(super::provided_calls::prepare(
+            facts, body, definition, work,
+        )?)
+    };
     let mut seen = HashSet::default();
+    let mut members = 0;
     for statement in &body.statements {
         work.charge(1)?;
         let Action::Evaluate(id) = statement.action else {
@@ -43,6 +64,29 @@ pub(super) fn check(
             .values
             .get(id.0 as usize)
             .ok_or("const invocation has invalid evaluated value")?;
+        if expected.1 != 0 && matches!(value.kind, Rvalue::Call { .. }) {
+            work.charge(7)?;
+            if matches!(
+                super::function_call(facts, body, value.kind),
+                super::CallPermission::Member
+            ) {
+                work.charge(1)?;
+                if !seen.insert(id) {
+                    return Err("const member value is evaluated at multiple source sites");
+                }
+                super::provided_calls::check(
+                    member_context
+                        .as_ref()
+                        .ok_or("missing defining member context")?,
+                    facts,
+                    body,
+                    statement,
+                    work,
+                )?;
+                members += 1;
+                continue;
+            }
+        }
         if !matches!(value.kind, Rvalue::Invoke { .. }) {
             continue;
         }
@@ -53,7 +97,7 @@ pub(super) fn check(
         }
         check_invocation(facts, body, definition, statement, work)?;
     }
-    if seen.len() != expected {
+    if members != expected.1 || seen.len() != expected.0.saturating_add(expected.1) {
         return Err("const invocation has no exact evaluated source site");
     }
     Ok(())
@@ -74,11 +118,19 @@ fn defining_owner(
         .and_then(|&index| facts.functions.get(index))
         .ok_or("const invocation has no actual source function")?;
     work.charge(1)?;
-    if function.body != body.source.source() || !facts.is_const_function(definition) {
+    let source = body
+        .source
+        .source()
+        .ok_or("imported const invocation owners are not implemented")?;
+    if function.body != Some(source) {
         return Err("const invocation belongs to another defining source body");
     }
-    work.charge(3)?;
-    crate::sema::compiler_items::callable_role(facts, CallTrait::FnOnce)?;
+    // The defining-context facade performs at most two indexed function and
+    // three indexed associated-owner accesses, including failed lookups.
+    work.charge(5)?;
+    if !facts.function_context(definition, source)?.checks_const() {
+        return Err("const invocation belongs to another defining source body");
+    }
     Ok(definition)
 }
 fn check_invocation(

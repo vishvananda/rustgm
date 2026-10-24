@@ -50,7 +50,7 @@ impl Paths {
             members: Some(scope),
         });
         let mut macro_targets = HashMap::default();
-        let bootstrap = package.source_core.is_none();
+        let bootstrap = !package.uses_source_bindings();
         for builtin in Builtin::ALL
             .into_iter()
             .filter(|builtin| bootstrap && *builtin != Builtin::OptionEnv)
@@ -517,7 +517,7 @@ impl Paths {
     ) -> Result<(), Error> {
         // Source providers resolve their actual macro declarations through the
         // import worklist. A familiar final spelling cannot create a library.
-        if package.source_core.is_some() {
+        if package.uses_source_bindings() {
             return Ok(());
         }
         let name = package

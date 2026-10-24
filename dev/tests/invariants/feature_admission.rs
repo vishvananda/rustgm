@@ -100,7 +100,7 @@ fn unique_nodes(package: &Package) -> usize {
 #[test]
 fn ordinary_admission_inspects_no_syntax_and_language_requests_stay_packed() -> Result {
     let mut package = original(HEADER)?;
-    package.source_core = None;
+    package.source = None;
     // The empty ordinary path must not even demand a valid loaded root.
     package.units.clear();
     assert_eq!(counted(&package)?, Work::default());
@@ -227,11 +227,7 @@ fn failing_uses_are_counted_and_cfg_disabled_owners_have_no_authority() -> Resul
     let work = counted(&package)?;
     assert_eq!(work.nodes, unique_nodes(&package));
     let package = original(&format!("#![feature(asm_experimental_arch)]{HEADER}"))?;
-    let features = &package
-        .source_core
-        .as_deref()
-        .ok_or("source owner")?
-        .features;
+    let features = &package.source_core().ok_or("source owner")?.features;
     assert!(!features.has(Feature::NeverType));
     assert!(!features.has(Feature::ExpressionAttributes));
     Ok(())

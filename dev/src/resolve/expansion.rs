@@ -214,7 +214,7 @@ pub fn analyze_with_context(
     context: &super::bindings::Context,
 ) -> Result<Report, Error> {
     let mut loader = Loader::with_context(root, sources, config, context)?;
-    if loader.package.source_core.is_none() {
+    if !loader.package.uses_source_bindings() {
         loader.package.crate_name =
             attributes::crate_name(&loader.package, context.crate_name.as_deref())?;
     }

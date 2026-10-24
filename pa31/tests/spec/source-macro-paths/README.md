@@ -13,7 +13,12 @@ pre-fix compiler observations remain unchanged.
 
 `contract-v2.json` corrects the candidate view: the earlier PA names view does
 not expand every macro call and therefore cannot qualify missing-call semantics.
-Candidate checks use complete expansion and resolution, as does `--emit-types`.
+Candidate checks use complete expansion and resolution through the provider
+report API. The original contract also named CLI `--emit-types`, which reaches
+later source-role validation: these minimal sources lack its sizing declarations.
+That CLI claim was inaccurate and is retained in the original contract. The
+separately declared `typed/` variants supply actual sizing traits and qualify
+that full CLI view without changing the original sources.
 Positive cases must retain actual source macros without a synthetic library,
 Drop trait or builtin macro prelude. Negative cases require the intended
 unresolved-import or unresolved-macro diagnostic.
@@ -22,5 +27,6 @@ This correction does not implement a source `option_env!` builtin's Option
 result, authenticate a compiler builtin by spelling, or establish a whole-core
 build. The original independently observed outcomes and failed whole-core
 attempt are under `obj/parallel/source-macro-paths-independent-v1` and
-`obj/parallel/library-stability-whole-core-frontier-v1`. Combined candidate
-qualification remains pending; PA31 stays planned.
+`obj/parallel/library-stability-whole-core-frontier-v1`. The [combined checkpoint](../../../../docs/library-stability-callable-checkpoint.md)
+qualifies the source lookup fix and complete-provider measurements; PA31 stays
+planned.

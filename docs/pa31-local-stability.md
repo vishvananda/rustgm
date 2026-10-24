@@ -1,9 +1,10 @@
 # Local library stability candidate
 
 This candidate follows the [stability investigation](pa31-library-stability.md).
-Focused static, semantic, ownership and native checks pass. Full checkpoint
-qualification and immutable-binary performance checks remain pending. PA31 stays
-planned; this is not a whole-core build result.
+Focused static, semantic, ownership and native checks pass. The
+[combined checkpoint](library-stability-callable-checkpoint.md) records completed
+release/native and immutable-binary performance qualification. PA31 stays planned;
+this is not a whole-core build result.
 
 ## Ownership and first supported profile
 
@@ -97,7 +98,7 @@ The actual inventory counter observations are:
 
 Successive work differences grow exactly with these input changes. They measure
 the new inventory work, not whole-frontend work, allocation or elapsed time.
-Immutable-binary comparisons remain required before publication.
+The combined checkpoint records the completed immutable-binary comparisons.
 
 `local-development-v1` stopped at a filename-stem audit. V2 passed the audit
 but strict Clippy requested a typed preparation result and a borrowed claims

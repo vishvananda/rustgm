@@ -15,7 +15,7 @@ pub(crate) struct Select {
     pub types: [TypeId; 4],
 }
 
-/// A registered selector cannot execute a body-bearing placeholder in CTFE.
+/// Unadapted/root demand cannot execute a body-bearing selector placeholder.
 pub(crate) fn check_const_select(
     facts: &Declarations,
     instance: Instance,
@@ -31,7 +31,7 @@ pub(crate) fn check_const_select(
         .flatten()
         == Some(SourceIntrinsic::ConstEvalSelect)
     {
-        return Err("source const_eval_select constant callback execution is not implemented");
+        return Err("source const_eval_select requires its actual reached callback adapter");
     }
     Ok(())
 }

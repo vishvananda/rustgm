@@ -66,7 +66,7 @@ impl Engine {
             &mut self.promotions,
         )?;
         let environment = std::sync::Arc::clone(&self.anonymous[&source].0.environment);
-        let checked = self.prove_body(
+        let mut checked = self.prove_body(
             report,
             facts,
             &concrete.body,
@@ -88,7 +88,13 @@ impl Engine {
         };
         let index = self
             .catalog
-            .anonymous_result(&concrete.body, result, &results)
+            .anonymous_result_prepared(
+                checked
+                    .take_code()
+                    .map_err(|e| report.body_error(source, e))?,
+                result,
+                &results,
+            )
             .map_err(|e| report.body_error(source, e))?;
         self.retain_const_inputs(facts, index, &concrete.body, checked, None)
             .map_err(|e| report.body_error(source, e))?;
