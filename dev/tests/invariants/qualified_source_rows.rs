@@ -15,6 +15,7 @@ fn complete_checked_provider_retains_required_and_provided_members_and_inputs() 
     let mut facts = analysis.facts;
     let observed = inspect_source_transport(&report, &mut facts, &identity, analysis.prepared)?;
     let rows = &observed.rows;
+    indexed_headers(rows)?;
     supertrait_inputs(rows)?;
     assert_eq!(rows.traits.len(), 8);
     assert_eq!(rows.functions.len(), 4);
@@ -89,6 +90,83 @@ fn complete_checked_provider_retains_required_and_provided_members_and_inputs() 
             .saturating_add(observed.work.scratch_bytes)
             <= crate::support::crates::MAX_BYTES
     );
+    Ok(())
+}
+
+fn indexed_headers(rows: &s::SourceRows) -> Result {
+    let mut work = crate::support::crates::generics::Work::default();
+    let index = s::HeaderIndex::new(rows, 0, &mut work)?;
+    for (ordinal, function) in rows.functions.iter().enumerate() {
+        assert_eq!(
+            index.header(function.declaration, &mut work)?,
+            Some(s::HeaderRef::Function(u32::try_from(ordinal)?))
+        );
+    }
+    let before = work.steps;
+    for _ in 0..128 {
+        for function in &rows.functions {
+            index.header(function.declaration, &mut work)?;
+        }
+    }
+    assert_eq!(work.steps - before, 128 * rows.functions.len());
+    assert!(index.retained_bytes() <= index.peak_bytes());
+    assert!(index.peak_bytes() <= crate::support::crates::MAX_BYTES);
+    println!(
+        "source-header-index steps={} retained={} peak={} size={}",
+        work.steps,
+        index.retained_bytes(),
+        index.peak_bytes(),
+        size_of::<s::HeaderIndex<'_>>()
+    );
+    let domains = index.domains(&mut work)?;
+    println!(
+        "source-domain-index {:?} retained={} peak={} size={}",
+        domains.work(),
+        domains.retained_bytes(),
+        domains.peak_bytes(),
+        size_of::<s::DomainIndex<'_, '_>>()
+    );
+    assert!(domains.retained_bytes() <= domains.peak_bytes());
+    assert!(domains.peak_bytes() <= crate::support::crates::MAX_BYTES);
+    Ok(())
+}
+
+#[test]
+fn source_owner_index_rejects_missing_headers_bodies_and_forged_prefix_membership() -> Result {
+    let (report, analysis, identity) = analyzed_provider()?;
+    let mut facts = analysis.facts;
+    let observed = inspect_source_transport(&report, &mut facts, &identity, analysis.prepared)?;
+    for case in 0..3 {
+        let mut rows = observed.rows.clone();
+        match case {
+            0 => {
+                rows.functions.pop();
+            }
+            1 => {
+                rows.body_inputs.pop();
+            }
+            _ => {
+                let header = rows
+                    .traits
+                    .iter()
+                    .find(|header| header.canonical_inputs > 0)
+                    .ok_or("canonical source trait input")?;
+                let original = rows.clauses[header.inputs.start as usize]
+                    .self_subject
+                    .ok_or("actual canonical Self subject")?;
+                rows.clauses[(header.inputs.start + header.canonical_inputs) as usize]
+                    .self_subject = Some(original);
+            }
+        }
+        let mut work = crate::support::crates::generics::Work::default();
+        assert!(s::HeaderIndex::new(&rows, 0, &mut work).is_err());
+        assert!(work.steps > 0);
+    }
+    let mut work = crate::support::crates::generics::Work::default();
+    assert!(
+        s::HeaderIndex::new(&observed.rows, crate::support::crates::MAX_BYTES, &mut work).is_err()
+    );
+    assert!(work.steps > 0);
     Ok(())
 }
 
