@@ -20,11 +20,19 @@ fn named(rows: &s::SourceRows, name: &str) -> Result<DeclarationRef> {
         .ok_or_else(|| "actual named source function".into())
 }
 fn body(rows: &s::SourceRows, name: &str) -> Result<usize> {
-    let owner = named(rows, name)?;
-    rows.originals
-        .iter()
-        .position(|original| original.declaration == owner)
-        .ok_or_else(|| "actual provided source body".into())
+    let mut found = None;
+    for header in &rows.functions {
+        if rows.declarations[header.declaration.0 as usize]
+            .name
+            .as_deref()
+            == Some(name)
+            && let s::FunctionBody::Original(body) = header.body
+            && found.replace(body.0 as usize).is_some()
+        {
+            return Err("ambiguous actual provided source body".into());
+        }
+    }
+    found.ok_or_else(|| "actual provided source body".into())
 }
 #[test]
 fn complete_originals_derive_requests_without_erasing_default_or_unused_formals() -> Result {
@@ -107,16 +115,7 @@ fn corrupt(rows: &mut s::SourceRows, case: usize) -> Result {
                 .ok_or("actual Constrain input")?;
             obligations.remove(index);
         }
-        3 => {
-            let id = body(rows, "identity")?;
-            rows.body_inputs[id]
-                .builtins
-                .as_mut()
-                .and_then(|input| input.source_copy.as_mut())
-                .ok_or("actual Copy query carrier")?
-                .goals
-                .clear();
-        }
+        3 => relocate_query(rows)?,
         _ => {
             let ordinary = body(rows, "clone")?;
             let ty = g::TypeRef(u32::try_from(rows.types.len())?);
@@ -129,6 +128,41 @@ fn corrupt(rows: &mut s::SourceRows, case: usize) -> Result {
                 .ok_or("actual unused ordinary Read")?;
             value.ty = ty;
         }
+    }
+    Ok(())
+}
+fn relocate_query(rows: &mut s::SourceRows) -> Result {
+    let id = body(rows, "identity")?;
+    let original = &rows.originals[id];
+    let read = original
+        .values
+        .iter()
+        .position(|value| matches!(value.kind, s::ValueKind::Read(_)))
+        .ok_or("actual identity Read")?;
+    let read = u32::try_from(read)?;
+    let site = original
+        .statements
+        .iter()
+        .find(|statement| statement.action == s::Action::Evaluate(read))
+        .ok_or("actual identity Read evaluation")?
+        .site;
+    let builtins = rows.body_inputs[id]
+        .builtins
+        .as_mut()
+        .ok_or("actual builtin inputs")?;
+    let copy = builtins
+        .source_copy
+        .as_mut()
+        .ok_or("actual Copy query carrier")?;
+    let goals = std::mem::take(&mut copy.goals);
+    assert_eq!(goals.len(), 1);
+    // Preserve the exact application's owning body through an ordinary unpaid
+    // requirement. It must not replace the distinct original Copy query port.
+    for value in goals {
+        builtins.predicates.push(s::LocatedRequirement {
+            site: s::InputSite::Body(site),
+            value,
+        });
     }
     Ok(())
 }
