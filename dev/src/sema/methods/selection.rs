@@ -224,6 +224,13 @@ impl Host for Prefix<'_> {
     }
 }
 
+#[derive(Default)]
+pub(super) struct Found {
+    pub members: Vec<DefId>,
+    /// Retain the existing unavailable-method diagnostic after early filtering.
+    pub filtered: bool,
+}
+
 pub(super) fn candidates(
     report: &Report,
     facts: &mut Declarations,
@@ -231,7 +238,7 @@ pub(super) fn candidates(
     prefix: TermId,
     key: (ItemId, NameId),
     site: super::names::Use,
-) -> Result<Vec<DefId>, &'static str> {
+) -> Result<Found, &'static str> {
     let mut result = context_candidates(facts, context, prefix, key, ItemContext::ROOT)?;
     if facts.methods.has_contextual_inherent(key) {
         let mut cursor = super::names::Cursor::new(site.context);
@@ -253,8 +260,12 @@ pub(super) fn candidates(
             selected += 1;
         }
     }
+    let filtered = selected != result.len();
     result.truncate(selected);
-    Ok(result)
+    Ok(Found {
+        members: result,
+        filtered,
+    })
 }
 
 fn context_candidates(

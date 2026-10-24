@@ -77,18 +77,18 @@ pub(in crate::sema) fn choose(
             )
             .map_err(error)?
         }
-        _ => Vec::new(),
+        _ => selection::Found::default(),
     };
     let has_traits = facts.methods.trait_names.contains(&site.name);
     let library = library_method(report, head, site.name);
-    if inherent.is_empty() && !has_traits && library.is_none() {
-        return Err(error(
-            if matches!(head, Some(Constructor::Adt(..) | Constructor::AdtArgs(..))) {
-                "no inherent method with this name"
-            } else {
-                "receiver has no inherent nominal method"
-            },
-        ));
+    if inherent.members.is_empty() && !has_traits && library.is_none() {
+        return Err(error(if inherent.filtered {
+            "no applicable inherent method for this receiver"
+        } else if matches!(head, Some(Constructor::Adt(..) | Constructor::AdtArgs(..))) {
+            "no inherent method with this name"
+        } else {
+            "receiver has no inherent nominal method"
+        }));
     }
     let traits = if has_traits {
         selection::trait_groups(report, facts, source, base, (site.scope, site.name), caller)
@@ -104,7 +104,7 @@ pub(in crate::sema) fn choose(
         caller,
         base,
         depth,
-        inherent,
+        inherent: inherent.members,
         library,
         traits,
         object: matches!(head, Some(Constructor::Dynamic { .. })),

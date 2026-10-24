@@ -65,7 +65,8 @@ impl Query {
         };
         let term = Scratch::default().infer(&mut source, prefix)?;
         let members = candidates(report, source.facts, &mut source.infer, term, bucket, site)
-            .map_err(|message| Declarations::error(report, key, message))?;
+            .map_err(|message| Declarations::error(report, key, message))?
+            .members;
         source.facts.methods.selection_steps = source
             .facts
             .methods
