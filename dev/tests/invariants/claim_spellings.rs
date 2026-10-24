@@ -81,13 +81,13 @@ fn warm_claim_witness_rejects_equal_width_source_name_changes() -> TestResult {
 
 fn role_source(role: &str) -> String {
     format!(
-        r##"#![feature(no_core,lang_items,rustc_attrs)]#![no_core]
+        r#"#![feature(no_core,lang_items,rustc_attrs)]#![no_core]
 #[lang="pointee_sized"]trait PointeeSized{{}}
 #[lang="meta_sized"]trait MetaSized:PointeeSized{{}}
 #[lang="sized"]trait Sized:MetaSized{{}}
 #[rustc_builtin_macro({role})]macro_rules! route{{()=>{{7u32}};}}
 pub fn answer()->u32{{7u32}}
-"##
+"#
     )
 }
 fn role_key(report: &crate::resolve::expansion::Report) -> TestResult<NodeKey> {
