@@ -1,0 +1,326 @@
+{
+  "state": "predeclared immutable independent hypotheses; UNRUN; no candidate acceptance or scoped execution/export/stability claim",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort",
+    "overflow_checks": true,
+    "cap_lints": "allow"
+  },
+  "expected_observations": 102,
+  "expected_native_programs": 20,
+  "candidate_scope": "ordinary scoped declarations only; exact pinned header expansion retained with final stability unsupported; every scoped invocation/export/claimed-builtin still explicitly unsupported",
+  "original_assert_matches": {
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "file": "library/core/src/macros/mod.rs",
+    "file_sha256": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+    "start_byte": 6380,
+    "end_byte": 7476,
+    "slice_sha256": "f37a75207cbae1aa2f2f8d42b58772275489ec56a6f7ea8643d8669d250585c7",
+    "start_line": 167,
+    "copyright": "Rust project contributors; original file and Rust MIT/Apache-2.0 provenance retained in third_party/sources.json and NOTICE"
+  },
+  "rows": [
+    {
+      "name": "declaration-unused-concise",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-unused-concise.rs",
+      "sha256": "9a5972d83693e8f6f966b753cbcd8dfdf5bb35031f581ba490eae5a5471d21ac",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "declaration-supported",
+      "hypothesis": "Unused concise templates validate grammar, but their identifiers are not resolved or executed."
+    },
+    {
+      "name": "declaration-unused-braced",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-unused-braced.rs",
+      "sha256": "a1b0812a92a20bb178126b913f206614eafa26df18e47146f838d74dd9b31879",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "declaration-supported",
+      "hypothesis": "Unused braced comma-separated definitions validate and retain actual source owners."
+    },
+    {
+      "name": "declaration-forward-alias",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-forward-alias.rs",
+      "sha256": "0b2841ec455a829f471e02ab082f74bda5a579dcddc2cf33a8c799368fbfa524",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "declaration-supported",
+      "hypothesis": "An unused forward alias resolves its real scoped macro item without creating textual scope."
+    },
+    {
+      "name": "declaration-restricted-scope",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-restricted-scope.rs",
+      "sha256": "96c0c8a59c4024cd7a79a9ac0160f45005c3cd551c3d929f502832061c8b68d8",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "declaration-supported",
+      "hypothesis": "Restricted scoped visibility follows its actual declaration module, including unused import aliases."
+    },
+    {
+      "name": "declaration-module-identities",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-module-identities.rs",
+      "sha256": "2e1ba4545ceebd270d7be40501d0346cf1ad43e2a95805bfbe49283c13fe5f2a",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "declaration-supported",
+      "hypothesis": "Same-spelled macros in distinct actual modules have distinct item bindings."
+    },
+    {
+      "name": "declaration-shadow-builtin-unused",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-shadow-builtin-unused.rs",
+      "sha256": "f745f0dc34893d9f008665733820b41cf5d14488b50c5ed0b922b79d6e62b1a5",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "declaration-supported",
+      "hypothesis": "A scoped name can shadow a builtin item without granting builtin execution."
+    },
+    {
+      "name": "declaration-cfg-disabled-no-gate",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-cfg-disabled-no-gate.rs",
+      "sha256": "2539118efa2a0a6b426b072549e27a6992e824590776228f09695ff2786b9f19",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "declaration-supported",
+      "hypothesis": "A disabled declaration neither requires decl_macro nor compiles its inactive matcher/template."
+    },
+    {
+      "name": "declaration-unused-transparent",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-unused-transparent.rs",
+      "sha256": "1e5d8666ec5ba84ed70e1e888d095f2eef43916d07eed15b112eced880a42497",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "declaration-supported",
+      "hypothesis": "Actual configured-owner transparency transparent is retained as declaration data, not execution authority."
+    },
+    {
+      "name": "declaration-unused-semiopaque",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-unused-semiopaque.rs",
+      "sha256": "f8c3fa33afe4514066f1c613d459ca1df632276efd81246c956412d748a77864",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "declaration-supported",
+      "hypothesis": "Actual configured-owner transparency semiopaque is retained as declaration data, not execution authority."
+    },
+    {
+      "name": "declaration-unused-opaque",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-unused-opaque.rs",
+      "sha256": "52c7a9147181ae319e289bd92216d32109fbda6a899f9691160ee3b5a6605002",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "declaration-supported",
+      "hypothesis": "Actual configured-owner transparency opaque is retained as declaration data, not execution authority."
+    },
+    {
+      "name": "declaration-captured-generated-names",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-captured-generated-names.rs",
+      "sha256": "e69108a6b34c358b12402f1d2617a29c730433c0f522c648f303eb410095a7ff",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "declaration-supported",
+      "hypothesis": "Legacy expansion can publish distinct captured scoped declaration names, without textual insertion of those scoped items."
+    },
+    {
+      "name": "declaration-original-assert-matches",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-original-assert-matches.rs",
+      "sha256": "235576a9e5038614f4c1414672107ede344a754c715950141ba579864e02bf83",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "expansion-declaration-supported; final-local-stability-explicitly-unsupported",
+      "hypothesis": "The exact original assert_matches declaration is validated/retained without invocation; local stability remains a separately diagnosed candidate frontier."
+    },
+    {
+      "name": "declaration-missing-gate",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-missing-gate.rs",
+      "sha256": "16e44b2c3983c32da7118383817ecdb957c783e087ce50937020b564312fc6f4",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_profile": "language-rejection",
+      "hypothesis": "Enabled scoped declarations require the actual root decl_macro request even when unused."
+    },
+    {
+      "name": "declaration-wrong-separator",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-wrong-separator.rs",
+      "sha256": "c15bd36ba9515a84e8c0f4722333d506c855dd0e93febef43e596b0471d0553c",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_profile": "language-rejection",
+      "hypothesis": "Scoped rules require commas; legacy semicolons do not become an accepted scoped grammar."
+    },
+    {
+      "name": "declaration-unbound-variable",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-unbound-variable.rs",
+      "sha256": "3a67fb80bc028354a65d7ecd68657496abc9f34f847c3b0ce27a7f26dd560930",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_profile": "language-rejection",
+      "hypothesis": "Unused scoped definitions still reject an unbound template metavariable."
+    },
+    {
+      "name": "declaration-duplicate",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-duplicate.rs",
+      "sha256": "c1f811ac73f15d508cc3dba63198cc579b5c35bf9a03fa30afab552b93ff9605",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_profile": "language-rejection",
+      "hypothesis": "Duplicate same-context macro items reject before replacing an existing binding."
+    },
+    {
+      "name": "declaration-private-import",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-private-import.rs",
+      "sha256": "2a51a0f02411ddd332ed8dcd6410aa76599e5e02ba40b4f71111215ebbc5479a",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_profile": "language-rejection",
+      "hypothesis": "A sibling cannot import a private scoped declaration, even without invocation."
+    },
+    {
+      "name": "declaration-nonancestor-restriction",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-nonancestor-restriction.rs",
+      "sha256": "7e88599c086482e71d53a706ed2ccce3d1378e615da30f724cb28d6d6e91898a",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_profile": "language-rejection",
+      "hypothesis": "A restricted visibility path must name an actual ancestor module."
+    },
+    {
+      "name": "declaration-unknown-transparency",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-unknown-transparency.rs",
+      "sha256": "89fadfafd656f5ffc6168f75048e6d2c158d2aa6e793c46b91cf2e1aa91e7c51",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_profile": "language-rejection",
+      "hypothesis": "An unknown transparency string is not silently ignored."
+    },
+    {
+      "name": "declaration-duplicate-transparency",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-duplicate-transparency.rs",
+      "sha256": "a90aad7ec29dc54dca5d54277755ba1d1aa60023167ec8a0b8f7d9ce032e1b2e",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_profile": "language-rejection",
+      "hypothesis": "Pinned parser rejects repeated transparency attributes instead of choosing one."
+    },
+    {
+      "name": "declaration-transparency-missing-gate",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-transparency-missing-gate.rs",
+      "sha256": "cd0d6624ac40af07dbbf7a2891d0fd13c491da22b114977442883b6752eeeb10",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_profile": "language-rejection",
+      "hypothesis": "The declaration gate does not supply rustc_attrs authorization for its internal attribute."
+    },
+    {
+      "name": "declaration-transparency-wrong-target",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-transparency-wrong-target.rs",
+      "sha256": "ecfdbf0e6b0437410174b290bc84c0cf6bc796f32b245070ce536ae48b2fde25",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_profile": "language-rejection",
+      "hypothesis": "A function owner cannot lend an internal transparency contract to a macro declaration."
+    },
+    {
+      "name": "declaration-invoke-direct",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-invoke-direct.rs",
+      "sha256": "01227a4ac7cee4e4072287173582c49557af1b74e44ed170c8e0d53a2574b1be",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "Rust-positive; scoped-invocation-explicitly-unsupported",
+      "hypothesis": "Direct selection remains explicitly unsupported before scoped matching/capture/mark/invocation work."
+    },
+    {
+      "name": "declaration-invoke-qualified",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-invoke-qualified.rs",
+      "sha256": "502fa8d725a0e0e8feab3951ed57a1b5c348936e3dd872190c2327894feee574",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "Rust-positive; scoped-invocation-explicitly-unsupported",
+      "hypothesis": "Qualified lookup selects the real item and then rejects unsupported execution."
+    },
+    {
+      "name": "declaration-invoke-alias",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-invoke-alias.rs",
+      "sha256": "9f551a23693e4609a56b1edd57d4c6b7e4aa317ee14df1129cd2404e9292637c",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "Rust-positive; scoped-invocation-explicitly-unsupported",
+      "hypothesis": "An import alias cannot hide the scoped execution boundary."
+    },
+    {
+      "name": "declaration-invoke-forward",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-invoke-forward.rs",
+      "sha256": "01cd5901ebfc28373f90b060c0f5d38497c0ebb295160aff94f5da375d34ba16",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "Rust-positive; scoped-invocation-explicitly-unsupported",
+      "hypothesis": "A forward call cannot fall back or execute an incomplete declaration."
+    },
+    {
+      "name": "declaration-invoke-shadow-builtin",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-invoke-shadow-builtin.rs",
+      "sha256": "2114d81a8552249326f8b5b855f2ba4f0235a55270c750e7908f6827ba4ce49d",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "Rust-positive; scoped-invocation-explicitly-unsupported",
+      "hypothesis": "Selecting a scoped shadow of a builtin rejects rather than executing the builtin."
+    },
+    {
+      "name": "declaration-invoke-nested-legacy",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-invoke-nested-legacy.rs",
+      "sha256": "7da901e18d0b1148bd877c56a5bd47df6d11143322dbeaae0dc43ce99106ffc8",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "Rust-positive; scoped-invocation-explicitly-unsupported",
+      "hypothesis": "A reached scoped child rejects; valid enclosing legacy work does not grant scoped capture/mark/invocation work."
+    },
+    {
+      "name": "declaration-invoke-eager",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-invoke-eager.rs",
+      "sha256": "31824d27bd0b68a6441cd30c8e2eca3656b48889367fbcab9ce927a5f89f4a53",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "Rust-positive; scoped-invocation-explicitly-unsupported",
+      "hypothesis": "A reached scoped eager argument rejects before its own matching/capture/mark/invocation work; the enclosing builtin has separate work."
+    },
+    {
+      "name": "declaration-claimed-cfg-select",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-claimed-cfg-select.rs",
+      "sha256": "cd709a8312f62fdc3a20cd57a38b2681ec0f519652f2f12d181776ddc37bcdda",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "Rust-positive; scoped-builtin-claim-explicitly-unsupported",
+      "hypothesis": "The next original-core scoped builtin declaration does not become an empty executable or fabricated role."
+    },
+    {
+      "name": "declaration-unknown-builtin-claim",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-unknown-builtin-claim.rs",
+      "sha256": "f5d2057f27bb1f3faa5daebaaa3def1fcc5e9bc2b50b48ae5a2ff4492dc8aa9e",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_profile": "claimed-builtin-profile-unsupported; no language-acceptance-claim",
+      "hypothesis": "An unknown builtin claim is retained as a separate Rust rejection hypothesis, not accepted inert role data."
+    }
+  ]
+}

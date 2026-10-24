@@ -1,0 +1,49 @@
+{
+  "state": "PREDECLARED additive actualsource-profile hypothesis; UNRUN; original31source corpus and2falsified predictions unchanged",
+  "retained_original_contract": {
+    "entry": "pa31/tests/spec/declarative-macros/declaration-contract.json",
+    "sha256": "c6e7de622655fc5a02b1c6f0d72896dd209f18da5e35684f3721a2bd1880dee9"
+  },
+  "retained_ordinary_original": {
+    "entry": "pa31/tests/spec/declarative-macros/declaration-original-assert-matches.rs",
+    "sha256": "235576a9e5038614f4c1414672107ede344a754c715950141ba579864e02bf83",
+    "Rust_status": "accepted metadata/object/native7 in original102rows",
+    "candidate_expected_frontier": "internal macro contracts require an actual source provider",
+    "not_coverage_of": "completed scoped library stability"
+  },
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort",
+    "overflow_checks": true,
+    "cap_lints": "allow"
+  },
+  "expected_observations": 4,
+  "expected_native_programs": 1,
+  "original_assert_matches": {
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "file": "library/core/src/macros/mod.rs",
+    "file_sha256": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+    "start_byte": 6380,
+    "end_byte": 7476,
+    "slice_sha256": "f37a75207cbae1aa2f2f8d42b58772275489ec56a6f7ea8643d8669d250585c7",
+    "start_line": 167,
+    "copyright": "Rust project contributors; original file and Rust MIT/Apache-2.0 provenance retained in third_party/sources.json and NOTICE",
+    "fixture_start_byte": 274,
+    "fixture_end_byte": 1370
+  },
+  "rows": [
+    {
+      "name": "declaration-source-assert-matches",
+      "entry": "pa31/tests/spec/declarative-macros/declaration-source-assert-matches.rs",
+      "sha256": "d11a0462f3cdd4a037aa0cb11183df5f3cfe47f5401e959db2fe15fdec2467e0",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "candidate_profile": "actualSourceMode requires unchangedno_core authorization; expansiondeclaration retained, finalscopedstability explicitlyunsupported",
+      "hypothesis": "The byte-exact original scoped header is valid with genuine no_core feature/three sizing roles, while actual provider configuration remains separate from ordinary source. No scoped invocation is requested."
+    }
+  ]
+}

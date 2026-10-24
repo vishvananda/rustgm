@@ -1,0 +1,27 @@
+{
+  "state": "selected4rows independently matched; enclosing mixedcfg-selectbatch remainsfailed and is not blessed",
+  "fixture": "pa31/tests/spec/declarative-macros/declaration-source-assert-matches.rs",
+  "fixture_sha256": "d11a0462f3cdd4a037aa0cb11183df5f3cfe47f5401e959db2fe15fdec2467e0",
+  "predeclared_contract": "pa31/tests/spec/declarative-macros/declaration-provider-contract.json",
+  "contract_sha256": "9c15a9a91f40b39a69f56d5bbd7c0589fd5bdb4a4dc0320fb148ba41eed08c6e",
+  "evidence_root": "/home/vishvananda/rustgm-pa29-work/obj/parallel/cfg-select-oracle-v1",
+  "results_sha256": "34c38cf8cef5688dbd83834d6027e96a0b9eb5ff7e97e537c4bff6740380f190",
+  "plan_sha256": "ccd8fde5522a41de4eb2c606f428fba77fe8f4e1a4d4df2acd494a24607f834d",
+  "observations": 4,
+  "native_programs": 1,
+  "native_stdout": "7\n",
+  "stages": [
+    "metadata",
+    "object",
+    "native-link",
+    "native-run"
+  ],
+  "candidate_scope": "actual-source-provider expansion declaration; scopedstability/invocation/export remain explicitlyunsupported; ordinaryoriginal fixture hits earlier provider authorization",
+  "root_immutable": {
+    "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "/usr/bin/x86_64-linux-gnu-gcc-15": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88",
+    "/home/vishvananda/rustgm-pa29-work/obj/parallel/cfg-select-oracle-v1/run.py": "6378df0708a3e461c0bd520fb8ff1ffa474b07c51eafabad3d0171f4db553058",
+    "/home/vishvananda/rustgm-pa29-work/obj/parallel/cfg-select-oracle-v1/consumer.c": "cb553643588b57bfb8588f756272eb818b5098c1e5cce1d0a4d38b23a30a410d",
+    "/home/vishvananda/rustgm-pa29-work/pa31/tests/spec/declarative-macros/declaration-source-assert-matches.rs": "d11a0462f3cdd4a037aa0cb11183df5f3cfe47f5401e959db2fe15fdec2467e0"
+  }
+}

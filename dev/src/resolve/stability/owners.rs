@@ -120,6 +120,13 @@ fn definition_scopes(
         let item = unit.configured.ast.items[index as usize];
         match item.kind {
             ItemKind::Module { .. } | ItemKind::MacroRules { .. } => {}
+            ItemKind::DeclarativeMacro { .. } => {
+                return Err(error(
+                    package,
+                    key,
+                    "scoped macro library stability declarations are not implemented",
+                ));
+            }
             ItemKind::Function {
                 flags,
                 body: Some(_),

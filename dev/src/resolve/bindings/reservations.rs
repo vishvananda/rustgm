@@ -392,9 +392,20 @@ fn claims(
                     .or_default()
                     .push(Claim::BuiltinMacro);
             }
+            let mut transparency = false;
             for (index, attribute, forest) in
                 unit.retained_indexed_attributes(owner.attributes.clone())
             {
+                if crate::resolve::index::unavailable_macros::collect_transparency(
+                    package,
+                    unit,
+                    NodeKey { file, node },
+                    attribute,
+                    forest,
+                    &mut transparency,
+                )? {
+                    continue;
+                }
                 let allowance = header
                     .as_ref()
                     .map(|header| header.allowance_at(index, attribute))

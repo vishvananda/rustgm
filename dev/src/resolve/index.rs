@@ -11,6 +11,8 @@ use crate::syntax::{
     ast::{Kind, List, NodeId},
     item::{GenericFlavor, Item, ItemKind, Shape, Visibility},
 };
+#[path = "unavailable_macros.rs"]
+pub(super) mod unavailable_macros;
 /// Kinds whose `push_children` arm appends nothing. Declaration walks have no
 /// effect at these nodes, so they are not queued at all.
 pub(crate) const fn is_leaf(kind: &Kind) -> bool {
@@ -422,9 +424,32 @@ impl Resolver<'_> {
             self.pending.push((c, node));
         }
     }
-    fn walk_inner(&mut self, mut c: Context, node: NodeId) -> Result<(), Error> {
+    fn walk_inner(&mut self, mut c: Context, mut node: NodeId) -> Result<(), Error> {
         if !self.active(c, node) {
             return Ok(());
+        }
+        let owner = matches!(self.kind(c, node), Kind::Attributed { .. }).then_some(node);
+        // Attributed nodes have exactly one semantic child. Consume that chain
+        // once, in the same order as the prior worklist, retaining its owner.
+        let limit = self.package.unit(c.file).configured.ast.nodes.len();
+        let mut steps = 0;
+        while let Kind::Attributed { value, .. } = self.kind(c, node) {
+            if steps >= limit {
+                return Err(self.error(c, node, "cyclic declaration attribute chain"));
+            }
+            steps += 1;
+            node = value;
+            if !self.active(c, node) {
+                return Ok(());
+            }
+        }
+        if let Kind::Item(index) = self.kind(c, node) {
+            let item = self.package.unit(c.file).configured.ast.items[index as usize];
+            if matches!(item.kind, ItemKind::DeclarativeMacro { .. }) {
+                let access = self.visibility(c, item.visibility)?;
+                self.declare_scoped(c, node, item, access, owner)?;
+                return Ok(());
+            }
         }
         if let Kind::If {
             condition,
@@ -522,6 +547,11 @@ impl Resolver<'_> {
         item: Item,
         access: Access,
     ) -> Result<Context, Error> {
+        if matches!(item.kind, ItemKind::DeclarativeMacro { .. }) {
+            return self
+                .declare_scoped(c, node, item, access, None)
+                .map(|(context, _)| context);
+        }
         if matches!(item.kind, ItemKind::Function { body: None, .. })
             && c.foreign.is_none()
             && self.facts.scopes[c.scope.0 as usize].trait_access.is_none()
@@ -578,21 +608,7 @@ impl Resolver<'_> {
             ItemKind::TypeAlias { .. } => (Namespace::Type, DefKind::TypeAlias),
             ItemKind::MacroRules { .. } => (Namespace::Macro, DefKind::Macro),
             ItemKind::DeclarativeMacro { .. } => {
-                self.package.macro_features.require_scoped(
-                    c.file,
-                    self.package
-                        .unit(c.file)
-                        .configured
-                        .ast
-                        .node(node)
-                        .span
-                        .start,
-                )?;
-                return Err(self.error(
-                    c,
-                    node,
-                    "scoped declarative macro hygiene is not implemented",
-                ));
+                return Err(self.error(c, node, "scoped declaration bypassed its actual producer"));
             }
             ItemKind::ExternCrate { .. } => (Namespace::Type, DefKind::ExternCrate),
             _ => (Namespace::Type, DefKind::SelfType),

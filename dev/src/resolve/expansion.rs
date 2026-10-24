@@ -44,10 +44,13 @@ pub use permission_session::MacroAllowanceSession;
 mod paths;
 mod resources;
 mod transcription;
+mod unavailable;
 
 pub enum Body {
     Declarative(Compiled),
     Builtin(Builtin),
+    /// A validated local declaration; scoped matching/execution is unsupported.
+    ScopedDeclaration(Transparency),
 }
 #[derive(Clone, Copy)]
 enum MacroTarget {
@@ -479,6 +482,21 @@ impl<S: Sources> Engine<'_, S> {
                 None
             }
         };
+        if let Some(definition) = found {
+            let call = &self.calls[index];
+            #[cfg(test)]
+            if matches!(
+                self.definitions[definition].body,
+                Body::ScopedDeclaration(_)
+            ) {
+                crate::resolve::index::unavailable_macros::observation::note(
+                    crate::resolve::index::unavailable_macros::observation::Event::Selected(
+                        self.scoped_snapshot(definition),
+                    ),
+                );
+            }
+            self.require_invocable(definition, call.file, call.offset)?;
+        }
         if let Some(previous) = self.calls[index].selected {
             if found == Some(previous) {
                 if let Some(arguments) = self.calls[index].eager.as_ref() {
@@ -572,15 +590,7 @@ impl<S: Sources> Engine<'_, S> {
                 return self.define(visit, file, index, capture);
             }
             if matches!(item.kind, ItemKind::DeclarativeMacro { .. }) {
-                self.loader
-                    .package
-                    .macro_features
-                    .require_scoped(file, unit.configured.ast.node(visit.node).span.start)?;
-                return Err(Error::at(
-                    file,
-                    unit.configured.ast.node(visit.node).span.start,
-                    "scoped declarative macro hygiene is not implemented",
-                ));
+                return self.define_scoped(visit, file, item);
             }
             if let ItemKind::Use(tree) = item.kind {
                 return self.paths.import(
@@ -1173,6 +1183,16 @@ impl<S: Sources> Engine<'_, S> {
         definition: usize,
         parent: ExpansionId,
     ) -> Result<ExpansionId, Error> {
+        let offset = self
+            .loader
+            .package
+            .unit(file)
+            .configured
+            .ast
+            .node(visit.node)
+            .span
+            .start;
+        self.require_invocable(definition, file, offset)?;
         let docs = matches!(
             self.definitions[definition].body,
             Body::Builtin(Builtin::Stringify)
