@@ -16,7 +16,7 @@ use crate::{
     },
 };
 pub(crate) use inputs::Charge;
-use inputs::Counted;
+pub(crate) use inputs::Counted;
 use std::ops::Range;
 
 /// Actual pending-call identity; the resolver supplies its authenticated role separately.

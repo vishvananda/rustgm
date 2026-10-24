@@ -14,6 +14,19 @@ impl Builder<'_> {
         node: NodeId,
         value: Option<NodeId>,
     ) -> Result<ValueId, Error> {
+        if matches!(
+            self.kind(node),
+            Kind::LibraryValue {
+                kind: crate::support::library_types::LibraryValue::FormatLiteral { .. },
+                ..
+            }
+        ) {
+            let value = value
+                .ok_or_else(|| self.error(node, "formatting result has no actual string input"))?;
+            return self
+                .language_call(node, &[value])?
+                .ok_or_else(|| self.error(node, "formatting result has no checked source call"));
+        }
         let Some(Operation::Construct { variant }) = self.fact(node)?.operation else {
             return Err(self.error(node, "missing library aggregate selection"));
         };

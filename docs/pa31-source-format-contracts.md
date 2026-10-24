@@ -10,8 +10,8 @@ pointers; historical `new_v1` layouts are not its ABI.
 The [declaration corpus](../pa31/tests/spec/source-format-macros/declaration-contract.json)
 and [literal corpus](../pa31/tests/spec/source-format-macros/literal-contract.json)
 are separate preimplementation hypotheses: 14 declaration sources and 12 typed
-literal sources, physical editions 2021/2024. No oracle or candidate result has
-been generated. Original `format_args` header, feature-list and diagnostics
+literal sources, physical editions 2021/2024. The independent oracle now has the qualified outcomes recorded below; the
+RustGM implementation remains source-only and uncompiled. Original `format_args` header, feature-list and diagnostics
 slices retain exact upstream bytes and attribution. Unknown/malformed owners,
 role mismatches, diagnostic-only declarations, duplicate identities, feature
 absence and scoped builtin forms remain distinct.
@@ -127,3 +127,30 @@ are 38 unique source inputs, 224 actual observations and 34 matched native
 programs. The qualified milestone set is 14 declaration plus 12 complete literal
 sources; original incomplete literal inputs and original failed comparisons
 remain explicit. No compiler implementation is qualified by these results.
+
+## Source-only literal checkpoint
+
+The current unqualified producer carries an actual constructor NameId in the
+LibraryValue tag. Its canonical result is authenticated against the real local
+builtin invocation and retained source frame before semantic use. The owner is
+the registered source FormatArguments struct; its actual single lifetime slot
+is preserved. An isolated body continuation first requests the existing
+inherent-header bucket, then retains ordinary PathQuery state across Pending,
+and finally demands the selected declaration signature. Constructor selection,
+visibility, inherited impl inputs, argument coercion, bound obligations, binder
+opening, safety and reached const execution retain their normal owners.
+
+The cold CallTypes plan adds one optional pointer (predicted eight bytes), and
+the new Inherent requirement may grow its enum and containing records. The
+focused gate must report actual sizes for those owners and syntax Kind/Node;
+these are predictions until that measurement. No Methods::Call, Body, Code or
+Frame field is added. Ordinary expressions do not allocate the formatting plan.
+Generic formatting arguments/placeholders remain explicitly unsupported while
+actual argument construction is developed; no empty executable is supplied.
+
+Root's newer member lookup uses an actual Use context rather than this isolated
+branch's older ScopeId API. A separable helper patch against956c9904 retains that
+Use through identical candidates, visibility, conditions and polling. Its
+consumer uses the actual formatting result key/caller scope, never an invented
+prefix syntax node. B's ImplementationValidated dependency is a separate enum
+variant which integration must preserve alongside Inherent.

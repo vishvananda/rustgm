@@ -13,6 +13,7 @@ impl Checker<'_> {
     ) -> Result<TermId, Error> {
         match kind {
             LibraryValue::EnvironmentOption => self.environment_option(node, value),
+            LibraryValue::FormatLiteral { .. } => self.formatting_literal(node, value),
         }
     }
     fn environment_option(&mut self, node: NodeId, value: Option<NodeId>) -> Result<TermId, Error> {

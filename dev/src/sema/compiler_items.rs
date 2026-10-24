@@ -1,6 +1,7 @@
 //! Actual source compiler declarations remain distinct from bootstrap identities.
 mod binding_views;
 mod calls;
+pub(in crate::sema) mod formatting;
 pub(in crate::sema) use binding_views::Role;
 pub(in crate::sema) use calls::Effect as CallEffect;
 pub(crate) mod const_payments;
@@ -101,6 +102,13 @@ impl Catalog {
                 0,
                 "source declaration provider identity changed",
             ));
+        }
+        for kind in [LangItem::FormatArguments, LangItem::FormatArgument] {
+            if let Some(declaration) = reserved.language(kind) {
+                formatting::require_shape(report, declaration).map_err(|message| {
+                    crate::sema::model::Declarations::error(report, declaration.origin, message)
+                })?;
+            }
         }
         for kind in [LangItem::MemSizeConst, LangItem::MemAlignConst] {
             if let Some(declaration) = reserved.language(kind)

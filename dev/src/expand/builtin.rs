@@ -1,6 +1,7 @@
 //! Builtin expansion consumes classified inputs and constructs typed syntax directly.
 pub(crate) mod choice;
 pub(crate) mod delegation;
+pub(crate) mod format_literal;
 mod library;
 use super::{
     config::{self, Config},
@@ -81,9 +82,8 @@ impl Builtin {
                 | Self::FormatArgsNl
         )
     }
-    /// Header recognition alone cannot execute formatting placeholders.
     #[must_use]
-    pub const fn declaration_only(self) -> bool {
+    pub const fn formatting(self) -> bool {
         matches!(
             self,
             Self::FormatArgs | Self::ConstFormatArgs | Self::FormatArgsNl
@@ -93,7 +93,10 @@ impl Builtin {
     pub const fn eager(self) -> bool {
         matches!(
             self,
-            Self::OptionEnv
+            Self::FormatArgs
+                | Self::ConstFormatArgs
+                | Self::FormatArgsNl
+                | Self::OptionEnv
                 | Self::Concat
                 | Self::CompileError
                 | Self::Env

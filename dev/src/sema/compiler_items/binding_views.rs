@@ -284,6 +284,7 @@ fn charge(work: &mut usize, count: usize) -> Result<(), &'static str> {
 fn role_kind(role: LangItem) -> DefKind {
     match role {
         LangItem::CloneFn | LangItem::DropGlue => DefKind::Function,
+        LangItem::FormatArguments | LangItem::FormatArgument => DefKind::Struct,
         LangItem::MemSizeConst | LangItem::MemAlignConst => DefKind::Const,
         LangItem::FnOnceOutput => DefKind::TypeAlias,
         _ => DefKind::Trait,

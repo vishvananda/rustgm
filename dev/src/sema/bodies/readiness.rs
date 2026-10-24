@@ -13,6 +13,7 @@ pub(in crate::sema) struct Dependency {
 #[derive(Clone, Copy)]
 pub(in crate::sema) enum Requirement {
     Nominal(ItemId),
+    Inherent(ItemId, crate::resolve::names::NameId),
     Definition(DefId),
     Constructor(DefId),
     ImplHeader(DefId),
@@ -174,6 +175,7 @@ impl Checker<'_> {
         if let Some(dependency) = dependency {
             let message = match dependency.requirement {
                 Requirement::Nominal(_) => "missing struct member facts",
+                Requirement::Inherent(..) => "missing prepared inherent constructor headers",
                 Requirement::Definition(_) => "missing completed associated type definition",
                 Requirement::Constructor(_) => "missing completed constructor type",
                 Requirement::ImplHeader(_) => "missing prepared implementation header",

@@ -11,6 +11,7 @@ use crate::{
 #[derive(Default)]
 pub(super) struct CallTypes {
     pub iteration: Option<Box<super::iteration::Pending>>,
+    pub formatting: Option<Box<super::formatting_values::Pending>>,
     pub closure_expectations: Hints,
     pub input_context: super::callee_inputs::Inputs,
     pub obligations: Vec<(NodeId, crate::types::infer::predicates::Predicate)>,
@@ -81,6 +82,7 @@ impl CallTypes {
     }
     pub fn clear(&mut self) {
         self.iteration = None;
+        self.formatting = None;
         self.closure_expectations = Hints::default();
         self.input_context = super::callee_inputs::Inputs::default();
         self.obligations.clear();

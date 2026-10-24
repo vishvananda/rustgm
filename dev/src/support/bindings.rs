@@ -35,9 +35,11 @@ pub enum LangItem {
     DropGlue,
     Unsize,
     CoerceUnsized,
+    FormatArguments,
+    FormatArgument,
 }
 impl LangItem {
-    pub const ALL: [Self; 20] = [
+    pub const ALL: [Self; 22] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -58,6 +60,8 @@ impl LangItem {
         Self::DropGlue,
         Self::Unsize,
         Self::CoerceUnsized,
+        Self::FormatArguments,
+        Self::FormatArgument,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -82,6 +86,8 @@ impl LangItem {
             Self::DropGlue => 17,
             Self::Unsize => 18,
             Self::CoerceUnsized => 19,
+            Self::FormatArguments => 20,
+            Self::FormatArgument => 21,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -108,6 +114,8 @@ impl LangItem {
             "drop_glue" => Some(Self::DropGlue),
             "unsize" => Some(Self::Unsize),
             "coerce_unsized" => Some(Self::CoerceUnsized),
+            "format_arguments" => Some(Self::FormatArguments),
+            "format_argument" => Some(Self::FormatArgument),
             _ => None,
         }
     }

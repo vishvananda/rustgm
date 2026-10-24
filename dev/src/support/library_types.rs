@@ -2,12 +2,17 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LibraryValue {
     EnvironmentOption,
+    /// Canonical protocol selector; actual owner and call permissions are checked later.
+    FormatLiteral {
+        constructor: crate::support::names::NameId,
+    },
 }
 impl LibraryValue {
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
             Self::EnvironmentOption => "option-environment",
+            Self::FormatLiteral { .. } => "format-literal",
         }
     }
 }

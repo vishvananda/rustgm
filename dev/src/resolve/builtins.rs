@@ -28,10 +28,22 @@ impl Resolver<'_> {
         node: NodeId,
         kind: crate::support::library_types::LibraryValue,
     ) -> Result<ScopeId, Error> {
+        if matches!(
+            kind,
+            crate::support::library_types::LibraryValue::FormatLiteral { .. }
+        ) {
+            self.facts
+                .node_scopes
+                .insert(c.module, c.file, node, c.scope);
+            return Ok(c.scope);
+        }
         if self.facts.builtin_traits.library.is_none() {
             self.prepare_external_traits(c, node)?;
         }
         match kind {
+            crate::support::library_types::LibraryValue::FormatLiteral { .. } => {
+                return Err(self.error(c, node, "formatting cannot use a bootstrap library value"));
+            }
             crate::support::library_types::LibraryValue::EnvironmentOption => self
                 .prepare_library_type(c, node, crate::support::library_types::LibraryType::Option),
         }?;

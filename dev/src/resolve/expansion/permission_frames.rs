@@ -32,7 +32,6 @@ impl<'a> FrameView<'a> {
             .get(frame.definition)
             .is_some_and(|actual| {
                 !matches!(actual.body, Body::ScopedDeclaration(_))
-                    && !matches!(actual.body, Body::Builtin(role) if role.declaration_only())
                     && actual.node == frame.owner
                     && actual.module == frame.module
                     && actual.edition == frame.edition
@@ -45,11 +44,6 @@ impl<'a> FrameView<'a> {
             .definitions
             .get(index)
             .ok_or_else(|| error("unknown panic macro definition"))?;
-        if matches!(definition.body, Body::Builtin(role) if role.declaration_only()) {
-            return Err(error(
-                "formatting declaration has no executed expansion frame",
-            ));
-        }
         if matches!(definition.body, Body::ScopedDeclaration(_)) {
             return Err(error("scoped declaration has no executed expansion frame"));
         }
