@@ -1,0 +1,681 @@
+{
+  "status": "Independent source/native observations, not RustGM implementation qualification. Original hypotheses unchanged.",
+  "source_count": 49,
+  "cfg_select_source_count": 48,
+  "observations": 166,
+  "language_observations": 98,
+  "native_programs": 34,
+  "reviewed_mismatch_record": "review.json",
+  "gates": [
+    {
+      "root": "obj/parallel/cfg-select-oracle-v1",
+      "complete_sha256": "cacf7add1668c490feb051077c74307b73ad5604da114a4cdfeed1a960d12efd",
+      "results_sha256": "34c38cf8cef5688dbd83834d6027e96a0b9eb5ff7e97e537c4bff6740380f190",
+      "plan_sha256": "ccd8fde5522a41de4eb2c606f428fba77fe8f4e1a4d4df2acd494a24607f834d",
+      "passed": false,
+      "observations": 140,
+      "language": 84,
+      "native": 28,
+      "expected_native": 31,
+      "mismatches": [
+        [
+          "empty-expression",
+          "metadata"
+        ],
+        [
+          "empty-expression",
+          "object"
+        ],
+        [
+          "invalid-predicate-after-match",
+          "metadata"
+        ],
+        [
+          "invalid-predicate-after-match",
+          "object"
+        ],
+        [
+          "statement-position",
+          "metadata"
+        ],
+        [
+          "statement-position",
+          "object"
+        ],
+        [
+          "pattern-position",
+          "metadata"
+        ],
+        [
+          "pattern-position",
+          "object"
+        ],
+        [
+          "captured-local",
+          "metadata"
+        ],
+        [
+          "captured-local",
+          "object"
+        ]
+      ],
+      "inputs_unchanged": true
+    },
+    {
+      "root": "obj/parallel/cfg-select-oracle-v2",
+      "complete_sha256": "c73c60f3c5240c7d3734701a12ec9e6fa64774669f69cf2d4d280f362c441610",
+      "results_sha256": "4a270a32e6769af72b17a85e284df77d327b66e28cb725e0db0f448f42663872",
+      "plan_sha256": "10cc693058e905eb5adb76216ba86c4a890fd179a362f1922e7bfd75e9942d54",
+      "passed": true,
+      "observations": 16,
+      "language": 8,
+      "native": 4,
+      "expected_native": 4,
+      "mismatches": [],
+      "inputs_unchanged": true
+    },
+    {
+      "root": "obj/parallel/cfg-select-oracle-v3",
+      "complete_sha256": "aeb13d9cc94ef241ae8d2b4513d8dfd0d1a9c1217e0e2362ca77deae8266eebe",
+      "results_sha256": "63e785e5d3079540e43e557771b8696a70c6c682eb9e87c45103b90aa55d2ef6",
+      "plan_sha256": "83226665a5868e8d31b937eb379b7bee97b0ed08359bf900d1b64719ff5d978d",
+      "passed": true,
+      "observations": 10,
+      "language": 6,
+      "native": 2,
+      "expected_native": 2,
+      "mismatches": [],
+      "inputs_unchanged": true
+    }
+  ],
+  "cases": [
+    {
+      "name": "first-match",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "b364861e9a1278eb3260ced8f03c5ce993fa8178ae322b9984e9c41c2d3f4bd8"
+    },
+    {
+      "name": "fallback",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "94642f4b649f8e951b97417dd2dc63756862f59847439fe6fa721736dc137fb9"
+    },
+    {
+      "name": "unbraced",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "6fb1dc21313398bb6837dae05ddf0466e1284433459fc3f93f1082d6fe5ab650"
+    },
+    {
+      "name": "braced-commas",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "a85d25bdbe9dd1619f33df61f87143f956ad4334c7dcef81bbfd0fedad595678"
+    },
+    {
+      "name": "nested-predicates",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "d8aeedf1ab775766b263089c0d822fcfdeee729d59bd19cc910156c200750145"
+    },
+    {
+      "name": "wildcard-first",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "30508075fad2ca955ec03d2399430dcaec9c102ab8f64093d1aec26b3f3a8fcc"
+    },
+    {
+      "name": "repeated-wildcard",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "29122b6a57c8459aa428df022333e4cfe77e4497b939a8ddfed11aa3697f42d8"
+    },
+    {
+      "name": "no-match",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "none of the predicates in this `cfg_select` evaluated to true",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "9b88613f7675df5ba46e701fcb676603f7505de6f524bdd37ed75a820efcbd6a"
+    },
+    {
+      "name": "empty-input",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "none of the predicates in this `cfg_select` evaluated to true",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "195f762df3ff404a63bc150b25219f48a4052e336b4e6a5e2253dbe684b893e0"
+    },
+    {
+      "name": "unselected-expression-syntax",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "expected pattern, found `=`",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "b49b4844045424d5394665991a6b9ab3d3ccfb193c05b97ad4c5a91147ac1865"
+    },
+    {
+      "name": "empty-expression",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [
+        "E0308"
+      ],
+      "error_messages": [
+        "mismatched types",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "92ef9452d0e5a20df44e6c08aeeae93a4d54e318756606849d299e6764ed555d"
+    },
+    {
+      "name": "invalid-predicate-after-match",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [
+        "E0805"
+      ],
+      "error_messages": [
+        "malformed `cfg_select` macro input",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "7940183251ba73b67dabcf484712270a49cbc7ab12a2674f174e71f13696786f"
+    },
+    {
+      "name": "missing-arrow",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "expected `=>`, found `{`",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "632be6aee6db5a774653510802c2422c3730e562f873491df75129d1c6588ed3"
+    },
+    {
+      "name": "missing-comma",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "expected one of `,`, `.`, `?`, or an operator, found `all`",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "2ce5d52a1f942cdf1cb506ffde631f09a9fa3483b8bcc3350ef5005a6b05524e"
+    },
+    {
+      "name": "branch-attribute",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "attributes are not allowed on `cfg_select` branches",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "e17f11fd953fc3bb3e76b106410959e7e51589cb7fc2bb57b6ef09529ae8f82d"
+    },
+    {
+      "name": "branch-doc-comment",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "doc comments are not allowed on `cfg_select` branches",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "870da7769a438bbb38d418d7c68cd78c70d410526744519f5f471c2f173c13fc"
+    },
+    {
+      "name": "item-position",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "d799b03b8b4cb833d4d70d632bed4cc1496fc5eabdb989d7f3df4ef27f807bde"
+    },
+    {
+      "name": "unselected-item-syntax",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "expected pattern, found `=`",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "472dbb9bc94eef001d51321dc5418ef0b8c2e39079a26acb030a430f549d6711"
+    },
+    {
+      "name": "empty-items",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "142b78becc4118b327582b5f6a4329607606851f7eaf57db5a7108cbfb05bc77"
+    },
+    {
+      "name": "statement-position",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "requires `copy` lang_item",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "d6429648b3d5815cbf51f2082c3cd91d28de0aa22dc4baadf838d5e248eec92e"
+    },
+    {
+      "name": "type-position",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "a5e572317cdcebe10e7f18662856b6cb33654c3c46f271e842cf9b052fa630e0"
+    },
+    {
+      "name": "unselected-type-syntax",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "expected type, found keyword `let`",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "82f4498b3d0b39d20f1d5b6ace2961b882b6735bae3dee3d5da9c9570077acec"
+    },
+    {
+      "name": "pattern-position",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "requires `copy` lang_item",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "91480fe59827433c15e58ee186d39e9513e707d4be92808df8f2d9da29fe6933"
+    },
+    {
+      "name": "impl-position",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "5104305a53011aea8f9e56178ac5ef3d63dbfed57943a92e96384aa8a0a7faa1"
+    },
+    {
+      "name": "trait-position",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "8917c2c23be19d033e0a478e8057dedda84e806f25b88f12206da6ef2682dd54"
+    },
+    {
+      "name": "trait-impl-position",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "c050b1e10e475a77f59e0c79458748312cc51bbb1141d6766e371781c385fac7"
+    },
+    {
+      "name": "foreign-position",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "82596837380a93573ab28a070c66859a3c799267a20aa26a5e0ed6a96c43371d"
+    },
+    {
+      "name": "captured-local",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "requires `copy` lang_item",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "c5e306523b6968d0e13e762897e71bdee4361a02e3f6364c66506e7daae03b15"
+    },
+    {
+      "name": "import-alias",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "9f074508d648c0801e639cce264744cb14554e931a9614a25c262aab1a2325eb"
+    },
+    {
+      "name": "qualified-path",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "2c33db3f4749efd54ea2289d6a89feb0cf61c1db00be0aeee691f3131049fde5"
+    },
+    {
+      "name": "configured-on",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "2e6d31a5983a91251bfae5aefa1c0a19d8ba3cf601d0e8a706b4cfa9661a6b8a",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "de825a6fdc580d95063a2c22875ddce1ca6fd30c5f55575b2ed6de3f8943d4a0"
+    },
+    {
+      "name": "configured-off",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "de825a6fdc580d95063a2c22875ddce1ca6fd30c5f55575b2ed6de3f8943d4a0"
+    },
+    {
+      "name": "authored-same-spelling",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "2e6d31a5983a91251bfae5aefa1c0a19d8ba3cf601d0e8a706b4cfa9661a6b8a",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "bb25ee28f4b2cea63038e890f1a816a8bef0c8a4f952f5dc725dc7bdf224c2f0"
+    },
+    {
+      "name": "legacy-builtin-shape",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "b276e560ee026459312fbdd1c68ea2bd0a535245ad3950c1c3743be0d7b8a93c"
+    },
+    {
+      "name": "width-8",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "10cdad2d68de5cf1ac0e842fba537da919d814c184a218456334f14ce5deed44"
+    },
+    {
+      "name": "width-32",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "c240fff18ae912c16d496ea9d2b24254282012df4bee0c40efa62e577908ce68"
+    },
+    {
+      "name": "width-128",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "dced7a1aae96a45140ae5418872fefa5ff71486bca366942bbf19cf9f6cc40c1"
+    },
+    {
+      "name": "depth-8",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "f6c9e302706600b2b10c0d5a81baf8062f6ed31f2231db8ea677bf648ac23e88"
+    },
+    {
+      "name": "depth-16",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "127494c0232d55cb51e712c7c9c689cb0e5034a7074e9414dc44f13f3e8d0b13"
+    },
+    {
+      "name": "depth-32",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "cccae04262743ef7bdc1b7fd6171f2ec00be7eb917a06472cf08e1b43ec0c227"
+    },
+    {
+      "name": "original-provider",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "787607988bf79085230ffa743e8a225873fc3788531f017dd926a5f9d1d091e0"
+    },
+    {
+      "name": "declaration-source-assert-matches",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v1",
+      "source_sha256": "d11a0462f3cdd4a037aa0cb11183df5f3cfe47f5401e959db2fe15fdec2467e0"
+    },
+    {
+      "name": "statement-complete-provider",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v2",
+      "source_sha256": "d6c49de78d42e7213322582d3f1c7a42d28386775fd68b39cc07cef84b38a47c"
+    },
+    {
+      "name": "pattern-complete-provider",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v2",
+      "source_sha256": "f1dde0ee20d3eb6b3223324d2e437454c52b10e6aa9bfe82a4d0d227f5adc70d"
+    },
+    {
+      "name": "captured-complete-provider",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v2",
+      "source_sha256": "36d1aa18ac48dde4153f8be258304b3745e899cd038d3dce6b4445816e72d6a2"
+    },
+    {
+      "name": "empty-unit-expression",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v2",
+      "source_sha256": "684362d9210180a9405f860531b8f4ad1e6e496953e6d1845a0175dcd98f2758"
+    },
+    {
+      "name": "opaque-selected",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v3",
+      "source_sha256": "ec62aee53dd4e2d96190d61a1c894a44c4dcf44011b301dad35664fa7cbc3c2b"
+    },
+    {
+      "name": "opaque-unselected",
+      "metadata_status": 0,
+      "object_status": 0,
+      "error_codes": [],
+      "error_messages": [],
+      "native_executed": true,
+      "native_stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "evidence_root": "obj/parallel/cfg-select-oracle-v3",
+      "source_sha256": "be58fcabd9873ad33a961b952d8e5b3bfd70c7ce7f8bf577c5f45272865c0fed"
+    },
+    {
+      "name": "unreachable-syntax",
+      "metadata_status": 1,
+      "object_status": 1,
+      "error_codes": [],
+      "error_messages": [
+        "expected pattern, found `=`",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": false,
+      "native_stdout_sha256": null,
+      "evidence_root": "obj/parallel/cfg-select-oracle-v3",
+      "source_sha256": "b39a4d5da0e173c0fca3ec9d9666dc036a82b5d419d634358e064df08ff58b64"
+    }
+  ]
+}
