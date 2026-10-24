@@ -428,11 +428,7 @@ impl<S: Sources> Engine<'_, S> {
             )
             .map_err(|failure| Error::at(file, original.start, failure.message))?;
         self.paths
-            .state
-            .facts
-            .introductions
-            .ancestry
-            .append(context, visit.introduction)
+            .invocation(context, visit.introduction, &self.definitions[definition])
             .map_err(error)?;
         self.invocations.push(Invocation {
             context,
