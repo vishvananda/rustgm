@@ -3840,6 +3840,15 @@ language outcomes. Separately qualify lowering rewrites such as arithmetic-width
 overflow checks at their execution boundaries before regenerating affected
 inspection references.
 
+Removing speculative opening may remove unused types from an inspection arena.
+Review the complete retained graph and its identity mapping, require identical
+lowered output and independent native behavior for the affected source, then
+regenerate only the affected oracle through a scoped course-runner receipt.
+Keep byte-exact comparisons and all source proof obligations. Do not recreate
+unused allocations merely to preserve historical arena IDs. The
+[projection-opening checkpoint](docs/pa31-projection-opening-sharing.md)
+records this review for an actual caller-premise case.
+
 Telemetry observes work already being done: bytes/tokens, retained token bytes,
 allocations or arena high water, solver goals, retries, region edges, demanded
 instances and phase time. Disabled instrumentation must not change semantics.

@@ -121,3 +121,25 @@ Evidence roots in the worker checkout:
   declaration, all raw measurements, equality/native preflights and analysis.
 - `obj/parallel/pa31/projection-opening-optimized-v2/`: preceding 9.137-times
   failure, retained separately from the successful final implementation.
+
+The combined text sweep also found one expected arena change in PA20's
+`recursion/canonical-queries/semantics/projected-caller-premise.rs`. Eager
+opening formerly interned two unused projections at free regions 2 and 3.
+Demanded opening retains neither; the free-region-1 projection still appears
+when used. The bound projections, binder counts, signatures, concrete and
+static substitutions, declaration identities and normalized relationships are
+unchanged after mapping the retained type IDs.
+
+The exact unchanged source produces byte-identical old/new/reference LowIR.
+Independent pinned rustc and both RustGM versions execute successfully. The
+integrated release compiler also matches that candidate's semantic and LowIR
+outputs. Only this semantic sidecar was regenerated through the course runner,
+with its scoped receipt; comparison remains byte-exact. No redundant opening
+work was restored to preserve unused arena entries.
+
+The integrator evidence is `obj/parallel/projection-dump-review-v1/` in the
+field worktree and `obj/parallel/projection-reference-recovery-v1/` in the
+validation worktree. Independent checks hash:
+`32bff02e601c3d46e4087e52504ddd62bebf30ae37ed5540934461b500888b33`.
+The new semantic reference hash is
+`11aa370c2d9186ba993259963f2aecd7cc204253b138a7eca43c709831a544b9`.
