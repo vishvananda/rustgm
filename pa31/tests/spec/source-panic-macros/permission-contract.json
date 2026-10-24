@@ -1,0 +1,89 @@
+{
+  "state": "Predeclared independent permission hypotheses; no observation. Preserve any disagreements, original source and the existing142 observations. Candidate expectations distinguish unsupported Rust positives from predicted Rust negatives.",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "bootstrap": true,
+    "panic": "abort",
+    "cap_lints": "allow",
+    "overflow_checks": true
+  },
+  "rows": [
+    {
+      "name": "permission-missing-feature",
+      "entry": "pa31/tests/spec/source-panic-macros/permission-missing-feature.rs",
+      "sha256": "b5c95ad1c15ec59785d79e911433413eb3aab62bbbbc2039739b9d444a6fbedc",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_status": 1,
+      "candidate_diagnostic": "internal macro allowance requires allow_internal_unstable",
+      "classification": "predicted Rust rejection; unobserved"
+    },
+    {
+      "name": "permission-nonmacro-owner",
+      "entry": "pa31/tests/spec/source-panic-macros/permission-nonmacro-owner.rs",
+      "sha256": "315f83a9295f1659468ec534eb17d25f07a00ab119ac61a5f18cdf397c12af87",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_status": 1,
+      "candidate_diagnostic": "internal macro allowance requires a macro declaration",
+      "classification": "predicted Rust rejection; unobserved"
+    },
+    {
+      "name": "permission-malformed-list",
+      "entry": "pa31/tests/spec/source-panic-macros/permission-malformed-list.rs",
+      "sha256": "08cdd6852261980912d98528e587b08de3e2cbf528978435772b7c40f1ac1afa",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "candidate_status": 1,
+      "candidate_diagnostic": "internal macro allowance list is not implemented",
+      "classification": "predicted Rust rejection; unobserved"
+    },
+    {
+      "name": "permission-unknown-feature",
+      "entry": "pa31/tests/spec/source-panic-macros/permission-unknown-feature.rs",
+      "sha256": "029a4574ed5828568b0678eeafbff0e65feacac743973b33c2cfe3b38a1ad167",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "candidate_status": 1,
+      "candidate_diagnostic": "internal macro allowance feature is not implemented",
+      "classification": "predicted valid Rust; explicitly unsupported candidate allowance profile",
+      "expected_native": "7\n"
+    },
+    {
+      "name": "permission-duplicate",
+      "entry": "pa31/tests/spec/source-panic-macros/permission-duplicate.rs",
+      "sha256": "6b5d90bfa54c39f278acf361ed5534361f432bf1d5b61733eafd067339e6d0de",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "candidate_status": 1,
+      "candidate_diagnostic": "repeated internal macro allowance is not implemented",
+      "classification": "predicted valid Rust; explicitly unsupported candidate allowance profile",
+      "expected_native": "7\n"
+    },
+    {
+      "name": "permission-empty",
+      "entry": "pa31/tests/spec/source-panic-macros/permission-empty.rs",
+      "sha256": "3476a3abff0e445bcee451aed89a227a524fbfd3cfef9110e3767c1f90e877c6",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "candidate_status": 1,
+      "candidate_diagnostic": "internal macro allowance feature is not implemented",
+      "classification": "predicted valid Rust; explicitly unsupported candidate allowance profile",
+      "expected_native": "7\n"
+    },
+    {
+      "name": "permission-valid-wrapper",
+      "entry": "pa31/tests/spec/source-panic-macros/permission-valid-wrapper.rs",
+      "sha256": "0197cb789b945b69013f259dc8d773bc97e4122fed1553aff6740ac4a17b272e",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "candidate_status": 0,
+      "candidate_diagnostic": null,
+      "classification": "candidate acceptance pending independent qualification",
+      "expected_native": "21\n"
+    }
+  ]
+}
