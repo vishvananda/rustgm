@@ -108,7 +108,7 @@ impl Resolver<'_> {
         offset: u32,
         name: NameId,
         namespace: Namespace,
-    ) -> Result<Option<super::item_lookup::Selected>, Error> {
+    ) -> Result<Option<super::contextual_lookup::Selected>, Error> {
         let raw = self.package.syntax_context(c.file, offset)?;
         let item = self
             .package
@@ -138,7 +138,7 @@ impl Resolver<'_> {
                 .map_err(|e| Error::at(c.file, offset, e))?;
             return Ok(found.or_else(|| {
                 self.lexical_prelude(query.privacy, name, namespace)
-                    .map(|(scope, binding)| super::item_lookup::Selected {
+                    .map(|(scope, binding)| super::contextual_lookup::Selected {
                         key: (scope, name, namespace, ItemContext::ROOT),
                         binding,
                         privacy: query.privacy,

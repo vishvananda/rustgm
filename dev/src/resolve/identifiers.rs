@@ -67,5 +67,5 @@ impl Report {
 }
 
 #[cfg(test)]
-#[path = "../../tests/invariants/item_privacy.rs"]
+#[path = "../../tests/invariants/hygienic_privacy.rs"]
 mod tests;

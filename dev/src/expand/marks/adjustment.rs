@@ -81,5 +81,5 @@ impl Marks {
 }
 
 #[cfg(test)]
-#[path = "../../../tests/invariants/item_adjustment.rs"]
+#[path = "../../../tests/invariants/container_adjustment.rs"]
 mod tests;

@@ -7,14 +7,14 @@ mod bodies;
 )]
 pub(crate) mod body_origin;
 mod builtins;
+mod container_scopes;
+mod contextual_lookup;
 pub mod crates;
 pub mod expansion;
 mod hygiene;
 mod identifiers;
 mod imports;
 mod index;
-mod item_lookup;
-mod item_scopes;
 pub mod load;
 mod lookup;
 pub mod model;

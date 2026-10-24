@@ -10,7 +10,7 @@ pub(crate) struct ItemScopes {
 }
 
 #[cfg(test)]
-#[path = "../../tests/invariants/invocation_scopes.rs"]
+#[path = "../../tests/invariants/container_origins.rs"]
 mod tests;
 
 impl Introductions {

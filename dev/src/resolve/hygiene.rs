@@ -115,7 +115,7 @@ impl Hygiene {
         facts: &Resolution,
         marks: &Marks,
         query: &mut Query,
-    ) -> Result<Option<super::item_lookup::Selected>, &'static str> {
+    ) -> Result<Option<super::contextual_lookup::Selected>, &'static str> {
         let mut current = Some(query.scope);
         let mut barriers = 0;
         let mut label_barrier = false;
@@ -140,7 +140,7 @@ impl Hygiene {
                 && let Some(entry) = entry
                 && let Some(binding) = facts.bindings.local(entry, query.context, query.visible)
             {
-                return Ok(Some(super::item_lookup::Selected {
+                return Ok(Some(super::contextual_lookup::Selected {
                     key: (scope, query.name, query.namespace, ItemContext::ROOT),
                     binding,
                     privacy: query.privacy,
@@ -175,7 +175,7 @@ impl Hygiene {
                             DefKind::Generic | DefKind::SelfType
                         )))
             {
-                return Ok(Some(super::item_lookup::Selected {
+                return Ok(Some(super::contextual_lookup::Selected {
                     key,
                     binding: *binding,
                     privacy: query.privacy,
