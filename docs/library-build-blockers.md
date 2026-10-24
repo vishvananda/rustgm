@@ -14,7 +14,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Blocked. The fresh worker candidate passes the prior `core_panic` declaration, then rejects `#[allow_internal_unstable(panic_internals)]` on `assert_eq` at `library/core/src/macros/mod.rs:41`. | Implement and qualify the observed builtin contract, then rerun the unchanged root and retain its next error and opened source set. |
+| Original core loading and expansion | Blocked. The fresh worker candidate passes the prior `core_panic` declaration, then rejects `#[allow_internal_unstable(panic_internals)]` on `assert_eq` at `library/core/src/macros/mod.rs:41`. | Implement and qualify the observed macro allowance contract, then rerun the unchanged root and retain its next error and opened source set. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -72,7 +72,6 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-011 | P2; not yet reached as a whole crate | Original std, platform linkage and abort-profile consumers | PA36; PA30/PA34 platform/build prerequisites / PA36 plus reduced owning-PA cases | Unassigned until prerequisites advance | Blocked on the original core/alloc graph; no unsupported percentage-complete estimate. |
 | LIB-012 | P2; externally useful acceptance | Original no-default-features serde_core, then alloc/std serde_json graphs | PA35 / PA35 | Integrator | Run the core-only graph as soon as LIB-007/008/009 permit it; do not wait for std. |
 | LIB-013 | P0; prior unchanged-core blocker advanced | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | C + integrator | Local source delegation passes static checks, 8 relevant private checks, 28 source contexts and 16 native programs; 168 independent rustc observations and 35 native oracle programs are retained. Original core advances to LIB-014. Foreign macro transport and Rust 2018 remain required; full LIB-013 is not closed. |
-
 | LIB-014 | P0; new unchanged-core failure at `assert_eq`, line 41 | Macro-specific internal unstable feature allowances, beginning with actual `panic_internals` | PA31 source/compiler policy; PA8 token provenance / PA31 with applicable PA8 ordinary controls | C + integrator | API and consumer review; retain declaration/attribute identity and actual literal/captured-token provenance. Never grant features globally or ignore the attribute. |
 
 
