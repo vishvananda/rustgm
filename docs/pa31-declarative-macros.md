@@ -512,3 +512,27 @@ Whole-provider metadata rejection must include contextual semantic field/member
 indexes as well as `BindingTable::has_contextual_items()`: a root-captured type
 name can contain opaque fields. Source descriptors remain disabled until their
 full validation, remapping and fresh imported proof contract is complete.
+
+### Container-relative adjustment interface (source checkpoint, unqualified)
+
+`Report::adjust_item(container, context, caller)` returns the normalized item
+identity and privacy module. It uses the actual declaration introduction, not
+the container's name context. The last stripped opaque mark supplies its macro
+definition's module; without a removed mark, privacy remains at the caller.
+This follows the pinned `rustc_span::hygiene::adjust` and
+`TyCtxt::adjust_ident_and_get_scope` algorithms. Unknown provenance is rejected.
+
+The existing boxed mark arena owns a cold cache keyed by normalized context and
+container expansion. Misses backfill shared suffixes only after a successful
+walk; later siblings cannot change answers for existing invocation identities.
+Privacy modules are computed outside this cache, so distinct callers never share
+an accidental access grant. Ordinary source allocates no arena or cache. The
+cache uses fallible interior borrowing and does not add a pointer to Package,
+Resolution, member records, Body, Value or Type. Its cold retained entries and
+temporary walk storage must be measured with the owning consumer checkpoint.
+
+Private controls declare ordinary allocation freedom, ancestor/sibling and
+mixed-transparency behavior, atomic failure for unknown expansions, actual
+macro-module privacy, separate caller scopes and shared-suffix depth/width
+bounds. They have not yet run. Field source/native hypotheses remain owned by
+LIB-002; this interface alone does not enable scoped macro semantics.

@@ -1,5 +1,6 @@
 //! Interned token marks keep expansion identity separate from normalized names.
 use crate::support::hash::HashMap;
+mod adjustment;
 
 /// Actual invocation identity; zero denotes the physical source ancestry root.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -50,6 +51,8 @@ struct Data {
     interned: HashMap<Key, SyntaxContextId>,
     /// A rebased definition prefix excludes the new invocation's final mark.
     rebased: HashMap<(SyntaxContextId, SyntaxContextId), SyntaxContextId>,
+    /// Pure, arena-owned answers; caller privacy is deliberately not cached.
+    adjusted: std::cell::RefCell<adjustment::Cache>,
     #[cfg(test)]
     rebase_steps: usize,
 }

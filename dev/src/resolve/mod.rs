@@ -10,6 +10,7 @@ mod builtins;
 pub mod crates;
 pub mod expansion;
 mod hygiene;
+mod identifiers;
 mod imports;
 mod index;
 pub mod load;
