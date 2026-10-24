@@ -1,8 +1,13 @@
 # Source panic builtin contracts
 
-These preimplementation hypotheses belong to LIB-013. The unchanged pinned
-core probe now parses `core/src/macros/mod.rs` but rejects its first declaration,
-`#[rustc_builtin_macro(core_panic)]`, at byte 50. No invocation has yet executed.
+These preserved preimplementation hypotheses belong to LIB-013. They were
+declared when the unchanged pinned core probe rejected its first builtin
+declaration, `#[rustc_builtin_macro(core_panic)]`, at byte 50. See
+[the local qualification](../../../../docs/pa31-source-panic-delegation.md) and
+[the live blocker tracker](../../../../docs/library-build-blockers.md) for current
+results: local delegation is development-qualified, and unchanged core now stops
+at the `panic_internals` allowance on `assert_eq`. Foreign macro transport and
+the full edition contract remain required.
 
 The pinned Rust 1.98.0 implementation in
 `compiler/rustc_builtin_macros/src/edition_panic.rs` delegates `core_panic` and
@@ -21,8 +26,9 @@ return distinguishable integers instead of aborting, so execution identifies
 the actual selected macro, defining crate and preserved nested input tokens.
 They are tests of delegation, not a substitute panic runtime.
 
-No independent or candidate result is claimed yet. Record disagreements without
-overwriting the original hypotheses. The complete compiler fix must preserve
+The original hypothesis files remain unchanged; `review.json` binds the
+subsequent independent observations. Record disagreements without overwriting
+the original hypotheses. The complete compiler fix must preserve
 source-role authorization, typed capture/token provenance and stability checks;
 source-only builtin roles must not enter the bootstrap macro prelude. Retain
 existing forged/duplicate claim controls and test missing handlers at the actual
