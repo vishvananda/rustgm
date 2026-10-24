@@ -170,7 +170,10 @@ fn actual_source_receiver_and_path_sites_retain_their_identifier_context() -> Te
         size_of::<Methods>()
     );
     assert_eq!(size_of::<Methods>(), 312);
-    assert_eq!(size_of::<crate::sema::model::Declarations>(), 7032 + size_of::<usize>());
+    assert_eq!(
+        size_of::<crate::sema::model::Declarations>(),
+        7032 + size_of::<usize>()
+    );
     Ok(())
 }
 

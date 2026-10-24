@@ -18,9 +18,10 @@ intended field boundary (E0609). No original outcome was rewritten.
 ## Ownership and publication interface
 
 Root owns item/path/import/glob/restricted-visibility lookup and the shared
-container adjustment. The integrator now owns the preserved aggregate-field slice while C advances source builtins. Method candidate
-retention, associated-member indexes and impl-to-trait matching are a distinct
-follow-up coordinated with B's conformance work.
+container adjustment. The integrator now owns the preserved aggregate-field
+slice while C advances source builtins. Method candidate retention,
+associated-member indexes and impl-to-trait matching are a distinct follow-up
+coordinated with B's conformance work.
 
 `Field`, `Variant`, `FieldId`, `Name`, downstream operations, `Body`, `Value` and
 `Type` keep their existing fields and identities. Ordinary tuple and root named
@@ -97,18 +98,18 @@ outcomes must precede candidate acceptance expectations. Six additional hypothes
 in `field-provenance-contract.json` oppose literal and captured update bases,
 constructor paths and numeric field tokens. Two more in
 `field-update-explicit-contract.json` distinguish explicit field authority from
-omitted transfer authority. The original fifteen predictions remain unchanged;
-the original `field-functional-update-definition` predicted success now looks
-suspect from the pinned base-expression privacy rule, but has not been observed.
-Keep any eventual disagreement as original hypothesis evidence.
+omitted transfer authority. The original fifteen predictions remain unchanged.
+The independent observation now rejects the predicted success of `field-functional-update-definition`,
+confirming the pinned base-expression privacy rule; its original hypothesis
+remains preserved.
 
 `field-container-contract.json` separately declares an unrelated-container
 opponent using a captured public factory function name. The earlier
 `field-foreign-opaque-denied` also calls literal `Record::new`, so associated
 method hygiene could reject it before the intended field boundary. Both inputs
-and their original predictions remain intact. The four contracts now declare
-24 hypotheses (13 predicted native positives and 11 predicted rejections),
-without an oracle invocation or an observed outcome.
+and their original predictions remain intact. The four contracts declare 24
+hypotheses: thirteen originally predicted native positives and eleven predicted rejections. Observations establish twelve native
+positives and twelve language rejections, as recorded above.
 
 Private storage controls will cover root-only no-allocation, exact contextual
 lookup, distinct complete identities, wrong variant/owner, duplicate rollback,
@@ -131,10 +132,8 @@ The independent oracle above does not enable or qualify scoped macro invocation.
 
 ## Current evidence and next acceptance
 
-Earlier paragraphs retain the original preimplementation hypotheses; the current
-observation supersedes their statements that the corpus is unobserved. Native
-outputs cover literal/captured field identity, shorthand, distinct same-spelling
-fields, provider-private reads, numeric fields, constructor provenance and
+Native outputs cover literal/captured field identity, shorthand, distinct
+same-spelling fields, provider-private reads, numeric fields, constructor provenance and
 complete versus omitted update fields. Candidate source execution still requires
 scoped macro invocation; private typed-consumer controls are an intermediate
 check, not a replacement for that final source/native qualification.

@@ -25,14 +25,14 @@ fn identifiers(report: &Report) -> TestResult<Vec<(NodeKey, Span)>> {
     let mut fields = Vec::new();
     for (file, unit) in report.package.units.iter().enumerate() {
         for (index, node) in unit.configured.ast.nodes.iter().enumerate() {
-            let span = match node.kind {
-                Kind::FieldDefinition {
-                    name: Some(span), ..
-                }
-                | Kind::FieldInit { name: span, .. }
-                | Kind::PatternField { name: span, .. }
-                | Kind::Field { name: span, .. } => span,
-                _ => continue,
+            let (Kind::FieldDefinition {
+                name: Some(span), ..
+            }
+            | Kind::FieldInit { name: span, .. }
+            | Kind::PatternField { name: span, .. }
+            | Kind::Field { name: span, .. }) = node.kind
+            else {
+                continue;
             };
             if unit.configured.active[index] {
                 fields.push((
