@@ -54,6 +54,7 @@ pub(in crate::sema) fn choose(
     caller: Caller<'_>,
 ) -> Result<Selected, Error> {
     let error = |message: &str| Declarations::error(report, key, message);
+    let identifier = super::names::Use::receiver(report, key, site)?;
     let (base, depth) = source
         .reference_target(&facts.types, term)
         .map_err(inference)
@@ -66,7 +67,15 @@ pub(in crate::sema) fn choose(
         Some(Constructor::Adt(nominal, _) | Constructor::AdtArgs(nominal, _))
             if facts.methods.inherent.contains_key(&(nominal, site.name)) =>
         {
-            selection::candidates(facts, source, base, (nominal, site.name)).map_err(error)?
+            selection::candidates(
+                report,
+                facts,
+                source,
+                base,
+                (nominal, site.name),
+                identifier,
+            )
+            .map_err(error)?
         }
         _ => Vec::new(),
     };
@@ -237,8 +246,9 @@ impl Search<'_> {
             {
                 continue;
             }
-            if let Access::Within(ancestor) =
-                self.report.resolution.definitions[method.0 as usize].access
+            if !matches!(lane, Lane::Inherent)
+                && let Access::Within(ancestor) =
+                    self.report.resolution.definitions[method.0 as usize].access
                 && !self.report.package.is_descendant(module, ancestor)
             {
                 continue;

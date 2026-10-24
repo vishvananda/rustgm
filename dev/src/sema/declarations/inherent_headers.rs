@@ -130,12 +130,10 @@ impl Checker<'_> {
             ));
         }
         for (name, member) in members.declarations {
+            let context = self.report.definition_item_context(member)?;
             self.facts
                 .methods
-                .inherent
-                .entry((nominal, name))
-                .or_default()
-                .push(member);
+                .publish_inherent((nominal, name), context, member);
         }
         Ok(())
     }
@@ -150,9 +148,7 @@ impl Checker<'_> {
         }
         // Demand order may differ from source order. Freeze ordering only after
         // every owner has published, independently of hash iteration order.
-        for bucket in self.facts.methods.inherent.values_mut() {
-            bucket.sort_unstable_by_key(|id| id.0);
-        }
+        self.facts.methods.freeze_inherent_names();
         self.inherent_headers = Pending::default();
         Ok(())
     }

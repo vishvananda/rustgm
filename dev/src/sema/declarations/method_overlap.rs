@@ -33,19 +33,18 @@ impl Checker<'_> {
         let mut buckets: Vec<_> = self
             .facts
             .methods
-            .inherent
-            .iter()
-            .filter(|(_, members)| members.len() > 1)
-            .map(|(&key, members)| (key, members.clone()))
+            .inherent_groups()
+            .filter(|(_, _, members)| members.len() > 1)
+            .map(|(key, context, members)| (key, context, members.to_vec()))
             .collect();
-        buckets.sort_unstable_by_key(|(_, members)| members[0].0);
+        buckets.sort_unstable_by_key(|(_, _, members)| members[0].0);
         if buckets.is_empty() {
             return Ok(());
         }
         let mut headers = HashMap::default();
         let mut pairs = HashMap::default();
         let mut shapes = Bound::shape();
-        for (key, members) in buckets {
+        for (key, context, members) in buckets {
             let mut bucket = Bucket::default();
             for method in members {
                 let owner = self.inherent_owner(method)?;
@@ -87,7 +86,10 @@ impl Checker<'_> {
                 }
                 bucket.insert(header, method);
             }
-            self.facts.methods.indices.insert(key, bucket.methods);
+            self.facts
+                .methods
+                .retain_candidate_index(key, context, bucket.methods)
+                .map_err(Error::unlocated)?;
         }
         self.facts.methods.shapes = Some(Box::new(shapes));
         Ok(())

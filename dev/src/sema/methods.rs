@@ -1,4 +1,5 @@
 //! Typed inherent candidate buckets and selected qualified source uses.
+pub(in crate::sema) mod names;
 pub(super) mod overlap;
 pub(crate) mod pointers;
 pub(super) mod receiver;
@@ -21,6 +22,7 @@ pub struct Qualified {
 
 #[derive(Default)]
 pub struct Methods {
+    contextual: Option<Box<names::Contextual>>,
     library: Option<Box<slices::Library>>,
     pointers: Option<Box<pointers::Library>>,
     visible: Option<Box<visible::Index>>,

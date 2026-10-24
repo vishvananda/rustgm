@@ -4,11 +4,8 @@ use super::{
     Assumptions, Caller, Context, Declarations, DefId, Environment, Error, ItemId, NameId, NodeKey,
     Prefix, Report, ScopeId, TermId, account_probe, applicability, candidates, trait_groups,
 };
+use crate::sema::{annotations::Scratch, traits::implementations::Availability};
 use crate::support::hash::HashMap;
-use crate::{
-    resolve::{model::Access, package::ModuleId},
-    sema::{annotations::Scratch, traits::implementations::Availability},
-};
 use std::sync::Arc;
 
 pub(in crate::sema) struct OwnedCaller {
@@ -31,7 +28,7 @@ pub(in crate::sema) enum Progress {
     Pending(crate::sema::traits::selection::Dependency),
 }
 enum Mode {
-    Inherent(ModuleId),
+    Inherent(super::super::names::Use),
     Trait { bound: bool },
 }
 struct Trial {
@@ -57,7 +54,7 @@ impl Query {
         key: NodeKey,
         prefix: NodeKey,
         bucket: (ItemId, NameId),
-        scope: ScopeId,
+        site: super::super::names::Use,
         caller: OwnedCaller,
     ) -> Result<Self, Error> {
         let mut source = Prefix {
@@ -67,7 +64,7 @@ impl Query {
             terms: HashMap::default(),
         };
         let term = Scratch::default().infer(&mut source, prefix)?;
-        let members = candidates(source.facts, &mut source.infer, term, bucket)
+        let members = candidates(report, source.facts, &mut source.infer, term, bucket, site)
             .map_err(|message| Declarations::error(report, key, message))?;
         source.facts.methods.selection_steps = source
             .facts
@@ -77,7 +74,7 @@ impl Query {
         Ok(Self {
             prefix: source.infer,
             term,
-            mode: Mode::Inherent(report.resolution.scopes[scope.0 as usize].module),
+            mode: Mode::Inherent(site),
             members: members.into_iter(),
             lexical: None,
             selected: None,
@@ -188,17 +185,15 @@ impl Query {
         member: DefId,
     ) -> Result<(), &'static str> {
         let owner = match self.mode {
-            Mode::Inherent(module) => {
-                if let Access::Within(ancestor) =
-                    report.resolution.definitions[member.0 as usize].access
-                    && !report.package.is_descendant(module, ancestor)
-                {
-                    return Ok(());
-                }
-                facts
+            Mode::Inherent(site) => {
+                let owner = facts
                     .associated
                     .member_owner(member)
-                    .ok_or("missing method candidate owner")?
+                    .ok_or("missing method candidate owner")?;
+                if !site.permits(report, owner, member)? {
+                    return Ok(());
+                }
+                owner
             }
             Mode::Trait { .. } => facts
                 .associated

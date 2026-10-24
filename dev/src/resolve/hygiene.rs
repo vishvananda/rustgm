@@ -197,20 +197,26 @@ impl super::index::Resolver<'_> {
         &self,
         definition: &super::model::Definition,
     ) -> Result<super::table::BindingKey, super::package::Error> {
-        let context = if definition.kind == DefKind::SelfType {
-            ItemContext::ROOT
-        } else if let Some(node) = definition.node {
-            self.package
-                .item_context(node.file, name_offset(self.package, node))?
-        } else {
-            ItemContext::ROOT
-        };
+        let context = definition_context(self.package, definition)?;
         Ok((
             definition.scope,
             definition.name,
             definition.namespace,
             context,
         ))
+    }
+}
+
+pub(crate) fn definition_context(
+    package: &super::package::Package,
+    definition: &super::model::Definition,
+) -> Result<ItemContext, super::package::Error> {
+    if definition.kind != DefKind::SelfType
+        && let Some(node) = definition.node
+    {
+        package.item_context(node.file, name_offset(package, node))
+    } else {
+        Ok(ItemContext::ROOT)
     }
 }
 

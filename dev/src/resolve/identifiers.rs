@@ -7,6 +7,32 @@ use super::{
 use crate::expand::marks::ExpansionId;
 
 impl Report {
+    /// Walk normalized item ancestry without exposing expansion storage to consumers.
+    pub(crate) fn item_context_parent(
+        &self,
+        context: ItemContext,
+    ) -> Result<Option<ItemContext>, &'static str> {
+        self.package
+            .marks
+            .item_parent(context)
+            .map(|parent| parent.map(|(context, _)| context))
+    }
+
+    /// Read the same declared-name identity used by the binding producer.
+    /// Source-free declarations retain the admitted metadata or builtin profile's
+    /// root identity; this does not authorize unsupported foreign macro contexts.
+    pub(crate) fn definition_item_context(
+        &self,
+        definition: DefId,
+    ) -> Result<ItemContext, super::package::Error> {
+        let declaration = self
+            .resolution
+            .definitions
+            .get(definition.0 as usize)
+            .ok_or_else(|| super::package::Error::unlocated("unknown item definition"))?;
+        super::hygiene::definition_context(&self.package, declaration)
+    }
+
     /// Adjust a use identity against the expansion that introduced its actual
     /// container. A captured container name does not determine that expansion.
     ///
