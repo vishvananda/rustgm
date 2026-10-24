@@ -31,6 +31,7 @@ pub(super) struct Paths {
     waiting: HashMap<BindingKey, HashSet<usize>>,
     pending: Vec<Pending>,
 }
+#[derive(Clone, Copy)]
 struct Publication {
     context: Context,
     node: NodeId,
