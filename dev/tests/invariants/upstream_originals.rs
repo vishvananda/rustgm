@@ -146,7 +146,11 @@ fn paired_original(
         .associated
         .schema(function.definition)
         .map(|schema| schema.self_type);
-    for clause in template.environment.trait_clauses() {
+    for clause in template
+        .environment
+        .trait_clauses()
+        .map_err(|message| diagnostic(report, None, message.into()))?
+    {
         println!("{name} original-environment {clause:?}");
         let predicate = match clause {
             Clause::Predicate(predicate) => predicate,

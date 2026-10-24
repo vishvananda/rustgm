@@ -53,7 +53,7 @@ fn shared_indices_preserve_distinct_callers_and_new_quantified_alternatives() ->
     )?);
     assert!(context.region_equalities.is_empty());
     assert_eq!(
-        environment.trait_clauses().collect::<Vec<_>>(),
+        environment.trait_clauses()?.collect::<Vec<_>>(),
         [ordinary.into()]
     );
     Ok(())
@@ -134,7 +134,7 @@ fn substitution_rebuilds_subject_keys_and_keeps_local_and_captured_lifetimes() -
     )?;
     let quantified = clause(&mut store, 1, body)?;
     assert_eq!(
-        mapped.trait_clauses().collect::<Vec<_>>(),
+        mapped.trait_clauses()?.collect::<Vec<_>>(),
         [quantified, expected.into()]
     );
     let (mapped, work) = Assumptions::from_environment(&store, Some(&mapped))?;
@@ -149,7 +149,7 @@ fn substitution_rebuilds_subject_keys_and_keeps_local_and_captured_lifetimes() -
     };
     assert!(mapped.contains_quantified(id));
     assert!(!initial.contains_quantified(id));
-    assert_eq!(environment.trait_clauses().collect::<Vec<_>>(), clauses);
+    assert_eq!(environment.trait_clauses()?.collect::<Vec<_>>(), clauses);
     assert_eq!(
         Assumptions::from_environment(&store, Some(&environment))?.1,
         1
@@ -210,7 +210,7 @@ fn mapped_duplicates_keep_one_premise_without_reusing_another_callers_keys() -> 
         if quantified {
             assert_eq!(context.region_equalities, [(RegionId(7), RegionId(20))]);
         }
-        assert_eq!(environment.trait_clauses().collect::<Vec<_>>(), clauses);
+        assert_eq!(environment.trait_clauses()?.collect::<Vec<_>>(), clauses);
     }
     Ok(())
 }

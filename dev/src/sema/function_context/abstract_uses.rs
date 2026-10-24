@@ -68,7 +68,7 @@ impl<'a> DefiningCalls<'a> {
             .ok_or("abstract const call has no actual defining environment")?;
         let mut found = false;
         // This one local preparation scan is shared by every call in this body.
-        let mut clauses = environment.trait_clauses();
+        let mut clauses = environment.trait_clauses()?;
         loop {
             charge(1)?;
             let Some(clause) = clauses.next() else {

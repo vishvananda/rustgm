@@ -58,7 +58,7 @@ fn mixed_clauses_keep_declaration_order_without_granting_flat_permissions()
     assert!(base.traits.is_none());
     let ordinary = base.clone().with_predicates(&store, &[a, a, b])?;
     assert_eq!(
-        ordinary.trait_clauses().collect::<Vec<_>>(),
+        ordinary.trait_clauses()?.collect::<Vec<_>>(),
         [Clause::Predicate(a), Clause::Predicate(b)]
     );
     let expected = [qa, Clause::Predicate(a), qb, qc, Clause::Predicate(b)];
@@ -66,8 +66,8 @@ fn mixed_clauses_keep_declaration_order_without_granting_flat_permissions()
         .clone()
         .with_clauses(&store, &expected)?
         .with_clauses(&store, &[qa, Clause::Predicate(a), qb])?;
-    assert_eq!(mixed.trait_clauses().collect::<Vec<_>>(), expected);
-    assert_eq!(base.trait_clauses().count(), 0);
+    assert_eq!(mixed.trait_clauses()?.collect::<Vec<_>>(), expected);
+    assert_eq!(base.trait_clauses()?.count(), 0);
     assert!(!mixed.has_only_parameters());
     assert!(!mixed.has_shape_assumptions());
     assert!(!mixed.requires_region_mapping());
@@ -78,7 +78,10 @@ fn mixed_clauses_keep_declaration_order_without_granting_flat_permissions()
     assert!(!quantified.assumes_trait(a.ty, application));
     assert!(!quantified.assumes_sized(a.ty));
     assert_eq!(quantified.assumed(a.ty), Abilities::default());
-    assert_eq!(quantified.trait_clauses().collect::<Vec<_>>(), [qa, qb, qc]);
+    assert_eq!(
+        quantified.trait_clauses()?.collect::<Vec<_>>(),
+        [qa, qb, qc]
+    );
     Ok(())
 }
 
@@ -151,10 +154,10 @@ fn mapping_preserves_empty_and_nested_binders_and_opens_captures_in_source_order
     let empty_value = trait_bound(&mut store, BYTE, &[Argument::Lifetime(RegionId(9))])?;
     let empty = quantify(&mut store, 0, empty_value)?;
     assert_eq!(
-        mapped.trait_clauses().collect::<Vec<_>>(),
+        mapped.trait_clauses()?.collect::<Vec<_>>(),
         [expected, Clause::Predicate(ordinary), empty]
     );
-    assert_eq!(environment.trait_clauses().collect::<Vec<_>>(), clauses);
+    assert_eq!(environment.trait_clauses()?.collect::<Vec<_>>(), clauses);
     assert_eq!(expected.escaping_binders(&store)?, 0);
     assert!(mapped.requires_region_mapping());
     Ok(())
@@ -224,7 +227,7 @@ fn quantified_inputs_still_require_type_and_const_membership() -> Result<(), &'s
     let complete = typed
         .with_const_parameters(&store, &[const_id])?
         .with_clauses(&store, &[clause])?;
-    assert_eq!(complete.trait_clauses().collect::<Vec<_>>(), [clause]);
+    assert_eq!(complete.trait_clauses()?.collect::<Vec<_>>(), [clause]);
     assert!(
         base.clone()
             .with_clauses(&store, &[Clause::ForAll(QuantifiedId(u32::MAX))])
@@ -292,7 +295,7 @@ fn quantified_lifetime_membership_is_checked_before_the_separate_region_consumer
         let result = environment.with_clauses(&store, &[clause]);
         assert_eq!(result.is_ok(), mask == 3);
         if let Ok(environment) = result {
-            assert_eq!(environment.trait_clauses().count(), 0);
+            assert_eq!(environment.trait_clauses()?.count(), 0);
             assert!(!environment.assumes_sized(subject));
             assert!(!environment.requires_region_mapping());
             assert_eq!(environment.assumed(subject), Abilities::default());
@@ -386,18 +389,18 @@ fn distinct_environment_clauses_share_mapping_work_on_growing_captured_tails()
         let before = store.len();
         let mut fold = substitute::Bound::new(vec![RegionId(7)]);
         let mapped = environment.substitute_regions(&mut store, &mut fold)?;
-        assert_eq!(mapped.trait_clauses().count(), width);
+        assert_eq!(mapped.trait_clauses()?.count(), width);
         assert!(store.len() - before <= width + 1);
         assert!(fold.steps <= width * 12 + 32, "{width}: {}", fold.steps);
         if let Some(old) = previous {
             assert!(fold.steps <= 2 * old + 32);
         }
         previous = Some(fold.steps);
-        for clause in mapped.trait_clauses() {
+        for clause in mapped.trait_clauses()? {
             assert_eq!(clause.escaping_binders(&store)?, 0);
             assert!(clause.has_free_regions(&store)?);
         }
-        assert_eq!(environment.trait_clauses().collect::<Vec<_>>(), clauses);
+        assert_eq!(environment.trait_clauses()?.collect::<Vec<_>>(), clauses);
     }
     Ok(())
 }

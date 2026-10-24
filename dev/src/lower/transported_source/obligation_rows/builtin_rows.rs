@@ -51,7 +51,7 @@ fn translated_environment(
             .ok_or("source const default has no actual Self schema")?
             .self_type;
         let mut found = false;
-        for clause in environment.trait_clauses() {
+        for clause in environment.trait_clauses()? {
             stage.charge(1)?;
             let predicate = clause.ordinary().map_err(
                 |_| "source const default local premise must retain its actual unquantified owner",

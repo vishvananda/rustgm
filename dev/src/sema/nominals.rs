@@ -373,6 +373,16 @@ impl Proof {
         {
             return Ok(true);
         }
+        if self
+            .environment
+            .as_ref()
+            .is_some_and(|env| env.has_trait_opening())
+            && self
+                .trait_state(facts)?
+                .mapped_exact_member(facts, requirement)?
+        {
+            return Ok(true);
+        }
         self.trait_state(facts)?.prove(facts, requirement, false)
     }
 

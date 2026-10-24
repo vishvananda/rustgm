@@ -8,6 +8,16 @@ use super::{
 use crate::support::hash::HashMap;
 
 impl Bound {
+    /// Charge structural inspection and replay even when the next access fails.
+    /// This shares the ordinary fold limit; it supplies no mapping authority.
+    pub(crate) fn account_region_summary_work(&mut self, count: usize) -> Result<(), &'static str> {
+        self.steps = self.steps.saturating_add(count);
+        if self.steps > super::WORK_LIMIT {
+            return Err("region summary work budget exceeded");
+        }
+        Ok(())
+    }
+
     pub(crate) fn observe_budgeted_regions(
         work: usize,
         bytes: usize,

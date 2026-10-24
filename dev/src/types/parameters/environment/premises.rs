@@ -5,11 +5,19 @@ use crate::support::hash::{HashMap, HashSet};
 use crate::types::{ItemId, Kind, Store, parameters::clauses::QuantifiedId, substitute};
 use std::sync::{Arc, OnceLock};
 
+#[derive(Clone)]
+pub(super) struct Mapped {
+    pub source: Arc<TraitAssumptions>,
+    pub index: Arc<ClauseIndex>,
+}
+
 type ProjectionKey = (ItemId, ItemId);
 
 #[derive(Clone, Default)]
 pub(super) struct TraitAssumptions {
     pub region_mapping: bool,
+    pub(super) opening: OnceLock<Arc<super::opening_summary::Summary>>,
+    pub(super) mapped: Option<Arc<Mapped>>,
     index: OnceLock<Result<Arc<ClauseIndex>, &'static str>>,
     predicates: Vec<Predicate>,
     pub unique: HashSet<Predicate>,
@@ -41,6 +49,24 @@ fn projection(types: &Store, predicate: Predicate) -> Result<Option<ProjectionKe
 }
 
 impl TraitAssumptions {
+    pub(super) fn mapped(
+        source: Arc<Self>,
+        index: Arc<ClauseIndex>,
+    ) -> Result<Arc<Self>, &'static str> {
+        if source.mapped.is_some() || index.opening().is_none() {
+            return Err("invalid canonical trait opening source");
+        }
+        Ok(Arc::new(Self {
+            region_mapping: true,
+            mapped: Some(Arc::new(Mapped { source, index })),
+            ..Self::default()
+        }))
+    }
+
+    pub(super) fn permits_opened_view(&self) -> bool {
+        self.mapped.is_none() && self.quantified.is_none() && self.constants.is_empty()
+    }
+
     pub(super) fn allocation(&self) -> crate::support::retained::Allocation {
         let mut total = crate::support::retained::Allocation::default();
         total.vector(&self.predicates);
@@ -59,6 +85,13 @@ impl TraitAssumptions {
                 total.vector(values);
             }
         }
+        if let Some(summary) = self.opening.get() {
+            total.include(summary.allocation());
+        }
+        if let Some(mapped) = &self.mapped {
+            total.boxed(mapped.as_ref());
+            total.add(2 * size_of::<usize>());
+        }
         total
     }
 }
@@ -67,6 +100,9 @@ impl TraitAssumptions {
         &self,
         observer: &mut super::super::premise_index::Retained,
     ) -> crate::support::retained::Allocation {
+        if let Some(mapped) = &self.mapped {
+            return mapped.index.retain_allocation(observer);
+        }
         self.index
             .get()
             .and_then(|result| result.as_ref().ok())
@@ -77,13 +113,31 @@ impl TraitAssumptions {
 }
 impl TraitAssumptions {
     pub fn index(&self, types: &Store) -> Result<(Arc<ClauseIndex>, usize), &'static str> {
-        let mut work = 1;
+        let mut work = 0;
+        self.index_counted(types, &mut work)
+            .map(|index| (index, work))
+    }
+
+    pub(super) fn index_counted(
+        &self,
+        types: &Store,
+        work: &mut usize,
+    ) -> Result<Arc<ClauseIndex>, &'static str> {
+        *work = work.saturating_add(1);
+        if let Some(mapped) = &self.mapped {
+            mapped
+                .index
+                .opening()
+                .ok_or("missing mapped trait opening")?
+                .validate(types)?;
+            return Ok(Arc::clone(&mapped.index));
+        }
         let index = self
             .index
             .get_or_init(|| {
                 let mut index = ClauseIndex::default();
                 for clause in self.clauses() {
-                    work += 1;
+                    *work = work.saturating_add(1);
                     index
                         .insert_clause(types, clause)
                         .map_err(|_| "invalid caller trait assumption index")?;
@@ -91,10 +145,13 @@ impl TraitAssumptions {
                 Ok(Arc::new(index))
             })
             .clone()?;
-        Ok((index, work))
+        Ok(index)
     }
 
     pub fn is_empty(&self) -> bool {
+        if let Some(mapped) = &self.mapped {
+            return mapped.source.is_empty();
+        }
         self.predicates.is_empty()
             && self
                 .quantified
@@ -103,6 +160,9 @@ impl TraitAssumptions {
     }
 
     pub fn insert(&mut self, types: &Store, clause: Clause) -> Result<(), &'static str> {
+        if self.mapped.is_some() {
+            return Err("opened caller clauses must be materialized before extension");
+        }
         self.region_mapping |= clause.has_free_regions(types)?;
         let count = self.unique.len() + self.quantified.as_ref().map_or(0, |q| q.unique.len());
         match clause {
@@ -112,6 +172,7 @@ impl TraitAssumptions {
                 }
                 if self.unique.insert(predicate) {
                     self.index.take();
+                    self.opening.take();
                     if let Some(key) = projection(types, predicate)? {
                         self.projected
                             .entry(key)
@@ -134,6 +195,7 @@ impl TraitAssumptions {
                 }
                 if quantified.unique.insert(id) {
                     self.index.take();
+                    self.opening.take();
                     if let Some(key) = projection(types, value.predicate)? {
                         quantified.projected.entry(key).or_default().push(id);
                     }
@@ -173,7 +235,25 @@ impl TraitAssumptions {
         types: &mut Store,
         fold: &mut substitute::Bound,
     ) -> Result<(), &'static str> {
+        if let Some(mapped) = self.mapped.take() {
+            let opening = mapped
+                .index
+                .opening()
+                .ok_or("missing composed trait opening")?;
+            let mut materialized = Self::default();
+            for clause in mapped.source.clauses() {
+                let Clause::Predicate(predicate) = clause else {
+                    return Err("quantified trait opening requires full preparation");
+                };
+                let mut work = 0;
+                let result = opening.substitute(types, predicate, &mut work);
+                fold.account_region_summary_work(work)?;
+                materialized.insert(types, result?.into())?;
+            }
+            *self = materialized;
+        }
         self.index.take();
+        self.opening.take();
         // Traverse mixed declaration order: fresh captured aliases must not depend
         // on storage kind, randomized hash order or duplicate canonical results.
         let mut position = 0;

@@ -200,10 +200,16 @@ impl Checker<'_> {
             return Ok(Some(Arc::clone(assumptions)));
         }
         let environment = self.trait_query_environment(node)?;
-        let clauses: Vec<_> = environment
-            .iter()
-            .flat_map(|environment| environment.trait_clauses())
-            .collect();
+        // This is the actual source body's environment, not a transient
+        // projection-query view. Such a view must materialize before export.
+        let clauses: Vec<_> = if let Some(environment) = &environment {
+            environment
+                .trait_clauses()
+                .map_err(|message| self.error(node, message))?
+                .collect()
+        } else {
+            Vec::new()
+        };
         if clauses.is_empty() {
             return Ok(None);
         }

@@ -25,6 +25,9 @@ pub(in crate::sema) fn normalized(
     environment: Option<&Environment>,
     request: Request,
 ) -> Result<Option<(Source, Resolution)>, String> {
+    if environment.is_some_and(Environment::has_trait_opening) {
+        return Ok(None);
+    }
     let Some(application) = request.alias.associated() else {
         return Ok(None);
     };
@@ -85,6 +88,9 @@ pub(in crate::sema) fn opaque_normalized(
     environment: Option<&Environment>,
     request: Request,
 ) -> Result<Option<Source>, String> {
+    if environment.is_some_and(Environment::has_trait_opening) {
+        return Ok(None);
+    }
     let Some(application) = request.alias.associated() else {
         return Ok(None);
     };

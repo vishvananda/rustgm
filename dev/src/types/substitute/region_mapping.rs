@@ -303,6 +303,26 @@ impl Bound {
         };
         replacements.into_iter().flatten().map(|(&a, &b)| (a, b))
     }
+
+    /// A structural consumer can borrow only a binding which this actual open
+    /// fold already produced. This neither allocates an alias nor proves it.
+    pub(crate) fn opened_region(&self, original: RegionId) -> Option<RegionId> {
+        match &self.action {
+            Action::Regions(mapping) if matches!(mapping.mode, Mode::Open { .. }) => {
+                mapping.replacements.get(&original).copied()
+            }
+            _ => None,
+        }
+    }
+
+    pub(crate) fn opened_region_count(&self) -> Option<usize> {
+        match &self.action {
+            Action::Regions(mapping) if matches!(mapping.mode, Mode::Open { .. }) => {
+                Some(mapping.replacements.len())
+            }
+            _ => None,
+        }
+    }
 }
 
 impl Mapping {

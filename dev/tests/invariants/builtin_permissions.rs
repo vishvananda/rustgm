@@ -70,7 +70,7 @@ fn builtin_parameter_permissions_reach_copy_shape_and_drop_consumers() -> Result
             let clause = clause(&mut types, ty, count, bound)?;
             let environment = environment(&types, id, &[clause])?;
             assert_eq!(environment.assumed(ty), Abilities::default());
-            assert_eq!(environment.trait_clauses().count(), 0);
+            assert_eq!(environment.trait_clauses()?.count(), 0);
             assert!(environment.has_shape_assumptions());
             assert!(!environment.has_only_parameters());
             let mut copies = Copies::in_environment(Arc::clone(&environment));

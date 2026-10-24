@@ -37,7 +37,12 @@ impl Checker<'_> {
         let Some(environment) = environment else {
             return Ok(None);
         };
-        if environment.trait_clauses().next().is_none() {
+        if environment
+            .trait_clauses()
+            .map_err(|message| self.error(key, message))?
+            .next()
+            .is_none()
+        {
             return Ok(None);
         }
         let regions::Position::Local(body) = context.position else {
@@ -52,7 +57,10 @@ impl Checker<'_> {
             return Ok(Some(Arc::clone(assumptions)));
         }
         let mut assumptions = crate::sema::traits::assumptions::Assumptions::default();
-        for clause in environment.trait_clauses() {
+        for clause in environment
+            .trait_clauses()
+            .map_err(|message| self.error(key, message))?
+        {
             assumptions
                 .insert_clause(&self.facts.types, clause)
                 .map_err(|e| self.error(key, e.to_string()))?;
