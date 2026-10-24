@@ -89,6 +89,7 @@ pub(super) fn prepare(
     let provider_index = dependencies
         .source_provider_index(provider)
         .map_err(error)?;
+    let macros = features.macros();
     Ok(Prepared {
         source: Some(Box::new(Source::Client(SourceClient {
             current: current.clone(),
@@ -98,6 +99,7 @@ pub(super) fn prepare(
             provider_index,
         }))),
         library,
+        macros,
     })
 }
 

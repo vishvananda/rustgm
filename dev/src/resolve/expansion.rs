@@ -17,8 +17,9 @@ use crate::{
             matcher::{Compiled, Workspace},
             prepare, transcribe,
         },
+        marks::{ExpansionId, SyntaxContextId, Transparency},
         registry::Registry,
-        stream::{ContextId, Environment, Location, Origin, Source, Stream},
+        stream::{Environment, Location, Origin, Source, Stream},
         textual::{Lookup, Observer, Scope, Scopes},
     },
     support::names::NameId,
@@ -38,6 +39,7 @@ mod eager;
 mod location;
 mod paths;
 mod resources;
+mod transcription;
 
 pub enum Body {
     Declarative(Compiled),
@@ -53,20 +55,20 @@ pub struct Definition {
     pub module: ModuleId,
     pub name: NameId,
     pub body: Body,
-    pub context: ContextId,
-    pub introduction: ContextId,
+    pub context: SyntaxContextId,
+    pub introduction: ExpansionId,
     pub preceding_scope: Scope,
     pub local_inner_macros: bool,
 }
 pub struct Invocation {
-    pub context: ContextId,
+    pub context: ExpansionId,
     pub node: NodeKey,
     pub original: Span,
     pub definition: usize,
     pub rule: Option<usize>,
     pub generated: Span,
     pub parser_calls: usize,
-    pub parent: ContextId,
+    pub parent: ExpansionId,
 }
 pub struct Report {
     pub package: Package,
@@ -88,7 +90,7 @@ struct Visit {
     owner: Option<NodeId>,
     in_block: bool,
     depth: usize,
-    introduction: ContextId,
+    introduction: ExpansionId,
     path_scope: ScopeId,
     eager: Option<usize>,
     include: Option<FileId>,
@@ -245,7 +247,7 @@ pub fn analyze_with_context(
             owner: None,
             in_block: false,
             depth: 0,
-            introduction: ContextId(0),
+            introduction: ExpansionId(0),
             path_scope: ScopeId(0),
             eager: None,
             include: None,
@@ -361,7 +363,6 @@ impl<S: Sources> Engine<'_, S> {
             &mut self.scopes,
             bindings::Bindings {
                 definitions: &self.definitions,
-                invocations: &self.invocations,
             },
         )? {
             self.wake(call);
@@ -374,9 +375,13 @@ impl<S: Sources> Engine<'_, S> {
             let offset =
                 super::hygiene::name_offset(&self.loader.package, NodeKey { file, node: path });
             let context = self.context(file, offset)?;
-            let local_inner = context
-                .0
-                .checked_sub(1)
+            let local_inner = self
+                .loader
+                .package
+                .marks
+                .outer(context)
+                .map_err(|message| Error::at(file, offset, message))?
+                .and_then(|expansion| expansion.0.checked_sub(1))
                 .and_then(|index| self.invocations.get(index as usize))
                 .is_some_and(|call| self.definitions[call.definition].local_inner_macros);
             if local_inner {
@@ -553,6 +558,17 @@ impl<S: Sources> Engine<'_, S> {
             let item = unit.configured.ast.items[index as usize];
             if let ItemKind::MacroRules { capture } = item.kind {
                 return self.define(visit, file, index, capture);
+            }
+            if matches!(item.kind, ItemKind::DeclarativeMacro { .. }) {
+                self.loader
+                    .package
+                    .macro_features
+                    .require_scoped(file, unit.configured.ast.node(visit.node).span.start)?;
+                return Err(Error::at(
+                    file,
+                    unit.configured.ast.node(visit.node).span.start,
+                    "scoped declarative macro hygiene is not implemented",
+                ));
             }
             if let ItemKind::Use(tree) = item.kind {
                 return self.paths.import(
@@ -864,9 +880,14 @@ impl<S: Sources> Engine<'_, S> {
             let name = call.path[0];
             match (bindings::Bindings {
                 definitions: &self.definitions,
-                invocations: &self.invocations,
             })
-            .textual(&mut self.scopes, call.scope, name, call.visit.introduction)
+            .textual(
+                &mut self.scopes,
+                &self.paths.state.facts.introductions.ancestry,
+                call.scope,
+                name,
+                call.visit.introduction,
+            )
             .map_err(|e| self.calls[index].diagnostic(e.message))?
             {
                 Lookup::Found(definition) => {
@@ -910,16 +931,16 @@ impl<S: Sources> Engine<'_, S> {
             module: ModuleId(0),
             name,
             body: Body::Builtin(builtin),
-            context: ContextId(0),
-            introduction: ContextId(0),
+            context: SyntaxContextId::ROOT,
+            introduction: ExpansionId(0),
             preceding_scope: Scope::ROOT,
             local_inner_macros: false,
         });
         self.builtin_definitions[slot] = Some(index);
         Ok(index)
     }
-    fn context(&self, file: FileId, offset: u32) -> Result<ContextId, Error> {
-        self.loader.package.expansion_context(file, offset)
+    fn context(&self, file: FileId, offset: u32) -> Result<SyntaxContextId, Error> {
+        self.loader.package.syntax_context(file, offset)
     }
     fn input(&mut self, file: FileId, capture: u32, docs: bool) -> Result<Input, Error> {
         let unit = &mut self.loader.package.units[file.0 as usize];
@@ -958,6 +979,7 @@ impl<S: Sources> Engine<'_, S> {
                         span: origin.original,
                     },
                     context: None,
+                    introduction: ExpansionId(0),
                     joint: origin.joint,
                 }));
             Some(mapped)
@@ -977,10 +999,10 @@ impl<S: Sources> Engine<'_, S> {
         visit: Visit,
         grammar: MacroContext,
         definition: usize,
-        context: ContextId,
+        context: ExpansionId,
         input: &Input,
         builtin: Builtin,
-    ) -> Result<ContextId, Error> {
+    ) -> Result<ExpansionId, Error> {
         let file = self.loader.package.modules[visit.module.0 as usize].file;
         let parent = visit.introduction;
         let original = self
@@ -1054,7 +1076,13 @@ impl<S: Sources> Engine<'_, S> {
             )
         })?;
         let generated = self.install_builtin(file, visit.node, original, context, generated)?;
-        self.paths.state.facts.introductions.parents.push(parent);
+        self.paths
+            .state
+            .facts
+            .introductions
+            .ancestry
+            .append(context, parent)
+            .map_err(|message| Error::at(file, original.start, message))?;
         self.invocations.push(Invocation {
             context,
             node: NodeKey {
@@ -1075,7 +1103,7 @@ impl<S: Sources> Engine<'_, S> {
         file: FileId,
         target: NodeId,
         original: Span,
-        context: ContextId,
+        context: ExpansionId,
         generated: builtin::Expansion,
     ) -> Result<Span, Error> {
         let span = Span {
@@ -1083,13 +1111,26 @@ impl<S: Sources> Engine<'_, S> {
             end: u32::try_from(generated.source.len())
                 .map_err(|_| Error::at(file, original.start, "builtin output too large"))?,
         };
+        let call_site = super::unit::contexts::callee(&self.loader.package.units, file, target)?;
+        let syntax = self
+            .loader
+            .package
+            .marks
+            .apply(
+                SyntaxContextId::ROOT,
+                context,
+                Transparency::SemiOpaque,
+                call_site,
+            )
+            .map_err(|message| Error::at(file, original.start, message))?;
         let origins = [Origin {
             generated: span,
             original: Location {
                 file,
                 span: original,
             },
-            context: Some(context),
+            context: Some(syntax),
+            introduction: context,
             joint: None,
         }];
         let generated = self.loader.package.units[file.0 as usize]
@@ -1104,68 +1145,28 @@ impl<S: Sources> Engine<'_, S> {
         capture: u32,
         grammar: MacroContext,
         definition: usize,
-        parent: ContextId,
-    ) -> Result<ContextId, Error> {
+        parent: ExpansionId,
+    ) -> Result<ExpansionId, Error> {
         let docs = matches!(
             self.definitions[definition].body,
             Body::Builtin(Builtin::Stringify)
         );
         let input = self.input(file, capture, docs)?;
-        let context = ContextId(
+        let context = ExpansionId(
             u32::try_from(self.invocations.len() + 1)
                 .map_err(|_| Error::at(file, 0, "too many expansion contexts"))?,
         );
         if let Body::Builtin(builtin) = self.definitions[definition].body {
             return self.invoke_builtin(visit, grammar, definition, context, &input, builtin);
         }
+        let transcription::Transcribed {
+            stream,
+            rule,
+            parser_calls,
+        } = self.transcribe(file, visit.node, definition, context, &input)?;
         let package = &mut self.loader.package;
         let units = &package.units;
         let original = units[file.0 as usize].configured.ast.node(visit.node).span;
-        let entry = &mut self.definitions[definition];
-        let node = entry
-            .node
-            .ok_or_else(|| Error::at(file, original.start, "declarative macro has no source"))?;
-        let Body::Declarative(compiled) = &mut entry.body else {
-            return Err(Error::at(
-                file,
-                original.start,
-                "invalid declarative macro body",
-            ));
-        };
-        let definition_source = units[node.file.0 as usize].source.text();
-        let source = units[file.0 as usize].source.text();
-        let view = self
-            .captures
-            .view(|id| units.get(id.0 as usize).map(|u| u.source.text()));
-        let inputs = WithEditions::new(&view, |token| {
-            editions::token(file, token, |id| units.get(id.0 as usize))
-        });
-        let mut matched = compiled
-            .invoke_with_inputs(
-                definition_source,
-                source,
-                &input,
-                &mut package.names,
-                &mut self.workspace,
-                &inputs,
-            )
-            .map_err(|e| Error::at(file, e.offset, e.message))?;
-        let transcription = transcribe::transcribe(&compiled.definition, &matched, source, &input)
-            .map_err(|e| Error::at(file, original.start, e.message))?;
-        let environment = Environment {
-            definition: Source {
-                file: node.file,
-                text: definition_source,
-            },
-            invocation: Source { file, text: source },
-            context,
-            crate_id: 0,
-        };
-        let mut stream = Stream::transcribe(&transcription, &matched, &input, &environment)
-            .map_err(|e| Error::at(file, original.start, e.message))?;
-        self.captures
-            .adopt(&mut stream, &mut matched, file, source, &input)
-            .map_err(|e| Error::at(file, original.start, e.message))?;
         let view = self
             .captures
             .view(|id| units.get(id.0 as usize).map(|u| u.source.text()));
@@ -1188,7 +1189,13 @@ impl<S: Sources> Engine<'_, S> {
         let generated = package.units[file.0 as usize]
             .install_expansion(visit.node, &stream.source, configured, &stream.origins)
             .map_err(|e| Error::at(file, original.start, e.message))?;
-        self.paths.state.facts.introductions.parents.push(parent);
+        self.paths
+            .state
+            .facts
+            .introductions
+            .ancestry
+            .append(context, parent)
+            .map_err(|message| Error::at(file, original.start, message))?;
         self.invocations.push(Invocation {
             context,
             node: NodeKey {
@@ -1197,9 +1204,9 @@ impl<S: Sources> Engine<'_, S> {
             },
             original,
             definition,
-            rule: Some(matched.rule),
+            rule: Some(rule),
             generated,
-            parser_calls: matched.captures.parser_calls,
+            parser_calls,
             parent,
         });
         Ok(context)

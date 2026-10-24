@@ -1,0 +1,556 @@
+{
+  "state": "reviewed independent observations only; no RustGM support or text-oracle claim",
+  "declared_contract_sha256": "4bd159e432a089c5340828e45b505de4f30b9d329399d66c52caa6d462b16ee0",
+  "source_commit": "1f8e7292",
+  "evidence": "/home/vishvananda/rustgm-validation-work/obj/parallel/pa31-declarative-macros/independent-v1",
+  "results_sha256": "cfa1c4e8ffefc303d2b06b8c9e4bca09d89c09be3d6b5aeeaa939ac787045c79",
+  "binding_sha256": "575dd422b568086ac8c897a92ff2278fa0b82cabfac83d9ecfc83b47212c1f48",
+  "complete_sha256": "dbada4b5f8b7df51277dd3a04739ffbd0cb946399b1eb08c9e6f95da110d2b98",
+  "cases": 19,
+  "observations": 60,
+  "native_programs": 11,
+  "hypothesis_mismatches": 2,
+  "review": "The original private-definition-helper hypothesis is falsified in both metadata and object checks. Definition-site lookup finds provider::helper, but the private function item type cannot cross this macro use. Keep the source unchanged and qualify public-definition-helper separately.",
+  "rows": [
+    {
+      "name": "concise-parameter",
+      "phase": "metadata",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "concise-parameter",
+      "phase": "object",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "concise-parameter",
+      "phase": "link",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "concise-parameter",
+      "phase": "native",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "ordered-arms",
+      "phase": "metadata",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "ordered-arms",
+      "phase": "object",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "ordered-arms",
+      "phase": "link",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "ordered-arms",
+      "phase": "native",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "2e6d31a5983a91251bfae5aefa1c0a19d8ba3cf601d0e8a706b4cfa9661a6b8a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "forward-item",
+      "phase": "metadata",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "forward-item",
+      "phase": "object",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "forward-item",
+      "phase": "link",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "forward-item",
+      "phase": "native",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "imported-alias",
+      "phase": "metadata",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "imported-alias",
+      "phase": "object",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "imported-alias",
+      "phase": "link",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "imported-alias",
+      "phase": "native",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "1a252402972f6057fa53cc172b52b9ffca698e18311facd0f3b06ecaaef79e17",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "private-definition-helper",
+      "phase": "metadata",
+      "expected_status": 0,
+      "observed_status": 1,
+      "hypothesis_matched": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a3c42743b7f98a9df250c46a4b7cbd24d7770a72a52e0ff063157a6dae07b73c"
+    },
+    {
+      "name": "private-definition-helper",
+      "phase": "object",
+      "expected_status": 0,
+      "observed_status": 1,
+      "hypothesis_matched": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a3c42743b7f98a9df250c46a4b7cbd24d7770a72a52e0ff063157a6dae07b73c"
+    },
+    {
+      "name": "captured-caller-expression",
+      "phase": "metadata",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-caller-expression",
+      "phase": "object",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-caller-expression",
+      "phase": "link",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "captured-caller-expression",
+      "phase": "native",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "opaque-local-does-not-leak",
+      "phase": "metadata",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4c0d436e0fce6afefb969eea0984df19d58a0dc2319dfba645cf1931e9ebb2ca"
+    },
+    {
+      "name": "opaque-local-does-not-leak",
+      "phase": "object",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4c0d436e0fce6afefb969eea0984df19d58a0dc2319dfba645cf1931e9ebb2ca"
+    },
+    {
+      "name": "opaque-local-no-capture",
+      "phase": "metadata",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "ea883d581bc0345431e5d33dd623e8674a1826b6c1b653c369e06871f750a12e"
+    },
+    {
+      "name": "opaque-local-no-capture",
+      "phase": "object",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "ea883d581bc0345431e5d33dd623e8674a1826b6c1b653c369e06871f750a12e"
+    },
+    {
+      "name": "semiopaque-caller-item",
+      "phase": "metadata",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "semiopaque-caller-item",
+      "phase": "object",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "semiopaque-caller-item",
+      "phase": "link",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "semiopaque-caller-item",
+      "phase": "native",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "f0b5c2c2211c8d67ed15e75e656c7862d086e9245420892a7de62cd9ec582a06",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "semiopaque-local-no-capture",
+      "phase": "metadata",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "18fd2f9b949481448939d224b514c93c31a7512d163f270c7561198313ec81f2"
+    },
+    {
+      "name": "semiopaque-local-no-capture",
+      "phase": "object",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "18fd2f9b949481448939d224b514c93c31a7512d163f270c7561198313ec81f2"
+    },
+    {
+      "name": "transparent-caller-local",
+      "phase": "metadata",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "transparent-caller-local",
+      "phase": "object",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "transparent-caller-local",
+      "phase": "link",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "transparent-caller-local",
+      "phase": "native",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "a9742eb8ee320e006666aef25ae9aeed948247f3125c9cafa7cf97b7e7467dd5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "restricted-visibility",
+      "phase": "metadata",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "restricted-visibility",
+      "phase": "object",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "restricted-visibility",
+      "phase": "link",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "restricted-visibility",
+      "phase": "native",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "076320a2a08267b4c026d06573bba408ea68841e73cdc20e62cce59de165ece3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "private-sibling-use",
+      "phase": "metadata",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a5ea9126c9bc53ad49d1fd80fd0c3e27daf6ed1c8bfdd244f078ffc08ed4e404"
+    },
+    {
+      "name": "private-sibling-use",
+      "phase": "object",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a5ea9126c9bc53ad49d1fd80fd0c3e27daf6ed1c8bfdd244f078ffc08ed4e404"
+    },
+    {
+      "name": "missing-feature",
+      "phase": "metadata",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "908e13466da21b3855f64292b1e67750e0c8ed4b1b6d56e1ec6d3c2c962dc3b7"
+    },
+    {
+      "name": "missing-feature",
+      "phase": "object",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "908e13466da21b3855f64292b1e67750e0c8ed4b1b6d56e1ec6d3c2c962dc3b7"
+    },
+    {
+      "name": "comma-required",
+      "phase": "metadata",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "647829f40a3269ab1a99c970d1db4ef31fdca84c89bff221fb9eca2c78b19a7a"
+    },
+    {
+      "name": "comma-required",
+      "phase": "object",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "647829f40a3269ab1a99c970d1db4ef31fdca84c89bff221fb9eca2c78b19a7a"
+    },
+    {
+      "name": "legacy-semicolon-control",
+      "phase": "metadata",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "legacy-semicolon-control",
+      "phase": "object",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "legacy-semicolon-control",
+      "phase": "link",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "legacy-semicolon-control",
+      "phase": "native",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "32c2643e0dc65524c9f1f6f9f00937322fd68d59986bc381d9ff2285d23e353d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "legacy-comma-rejected",
+      "phase": "metadata",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9cab16532ff357ce8b583fb17db2428cd176d344947b01d5eb0b9e190db9c69b"
+    },
+    {
+      "name": "legacy-comma-rejected",
+      "phase": "object",
+      "expected_status": 1,
+      "observed_status": 1,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9cab16532ff357ce8b583fb17db2428cd176d344947b01d5eb0b9e190db9c69b"
+    },
+    {
+      "name": "crate-marker",
+      "phase": "metadata",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "crate-marker",
+      "phase": "object",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "crate-marker",
+      "phase": "link",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "crate-marker",
+      "phase": "native",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "b58a3da5fde2680191877ec88a1aa7d06927cc3b30cdf0d0db8c39b488891576",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "introduced-items-remain-hygienic",
+      "phase": "metadata",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "introduced-items-remain-hygienic",
+      "phase": "object",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "introduced-items-remain-hygienic",
+      "phase": "link",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "introduced-items-remain-hygienic",
+      "phase": "native",
+      "expected_status": 0,
+      "observed_status": 0,
+      "hypothesis_matched": true,
+      "stdout_sha256": "6950980e3aca96f4dc400eb2e47cc5c343e0d3f483a4e70adcae1d7e6bb22d9c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

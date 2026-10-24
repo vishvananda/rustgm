@@ -1,0 +1,18 @@
+{
+  "scope": "Independent pinned-rustc public-helper correction; no RustGM macro2 acceptance claim",
+  "contract": "pa31/tests/spec/declarative-macros/followup-contract.json",
+  "contract_sha256": "a8f89dc1c25a47b68093f9f902040a31ea9bf48241e6f9fbc4a04d31033198e1",
+  "receipt": "/home/vishvananda/rustgm-validation-work/obj/parallel/pa31-declarative-macros/independent-followup-v1",
+  "binding_sha256": "c6e887c36dcf9e4ebf666003d48dc42ed30eb01414677b9399324ce4029fc9c0",
+  "results_sha256": "ac2976051009522db44b8e8dc7caf8ddb60e8e8299407ff0fa683ea0ed13e4e1",
+  "summary": {
+    "cases": 1,
+    "observations": 4,
+    "hypothesis_mismatches": 0,
+    "infrastructure_failures": 0,
+    "inputs_unchanged": true,
+    "results_sha256": "ac2976051009522db44b8e8dc7caf8ddb60e8e8299407ff0fa683ea0ed13e4e1",
+    "binding_sha256": "c6e887c36dcf9e4ebf666003d48dc42ed30eb01414677b9399324ce4029fc9c0",
+    "state": "independent evidence; inspect mismatches before candidate contract; no RustGM acceptance claim"
+  }
+}

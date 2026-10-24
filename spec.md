@@ -273,6 +273,19 @@ Its width/noise measurements distinguish indexed preparation work from the cost
 of parsing and checking unrelated source. Source rows still require validation,
 authenticated transport and fresh client proofs before execution.
 
+Validate raw source row domains through borrowed header, binder and type-recipe
+indexes. Traverse the binder forest once, resolve bound-depth queries in that
+traversal, and answer later ancestry queries from preorder intervals. Summarize
+shared recipe DAGs once and check each consuming root against its actual scope;
+do not multiply query width by binder depth or copy a body's enclosing context.
+Canonical late-region indices must be unique within their function even when
+the underlying slot references differ. Charge attempted work, actual retained
+capacity and peak scratch storage, including failures. These data indexes grant
+no descriptor or import authority: substituted signature equality, operation
+typing, complete obligations, authenticated remapping and fresh client proofs
+remain separate requirements. See the
+[source domain index checkpoint](docs/pa29-source-domain-index-checkpoint.md).
+
 Callable signature equations do not establish const-callability. For actual
 source Fn/FnMut/FnOnce roles, nonordinary use validates the completed declaration,
 source constness, prepared effect and exact substituted full function item.
@@ -314,6 +327,22 @@ the original return destination and one-use caller payment; cached callback code
 does not pay another reached use. The
 [constant selector checkpoint](docs/pa31-const-select-ctfe-progress.md) distinguishes
 qualified source profiles from the remaining binder and conditional-call debts.
+
+A shared-reference selector retains the caller's already-proved whole
+input/output relation at its exact Call. Bind that cold descriptor to the
+actual finalized Code object, full selector and callback instances, and owning
+input row. Matching signature shapes or cached code cannot substitute for this
+identity. Finalize the named or anonymous owner before preparing the row;
+preflight both owners' storage and publish Code and row together only after
+all checks pass. Keep public and owned callback signatures distinct, preserve
+the actual late binder, and use ordinary function entry and reference provenance
+checks. Named demand constructs its declaration owner before proof; anonymous
+expression demand cannot acquire that permission by relabeling a cached result.
+Keep ordinary bodies free of descriptor allocations and measure caller width,
+warm reuse, owner depth and failed publication separately. The
+[reference selector checkpoint](docs/pa31-const-select-reference-progress.md)
+records the supported profile and remaining anonymous-reference and broader
+callback requirements.
 
 Prepare an owned executable snapshot while its exact Body, Contract and solved
 region/loan proof are available. Reuse the solved callable mapping producer,
@@ -436,6 +465,51 @@ states and diagnose resource limits rather than retrying exponentially.
 Macro expansion and resolution form a worklist with explicit unresolved,
 in-progress, complete and failed states. Do not repeatedly scan the whole crate
 after each new item. Spans carry compact source and expansion context IDs.
+
+Keep actual expansion ancestry separate from a token's syntax context and its
+physical source/edition provenance. A captured name does not determine the
+contexts of the surrounding generated macro body. Mark each definition token
+from its own retained parent; preserve captured contexts. Cache item and local
+normalizations when interning a context, with distinct typed normalized keys.
+Mixed-transparency rebasing shares definition prefixes by normalized call-site
+context while final interning retains each actual invocation identity. Measure
+first-miss depth across distinct call-site contexts as well as cache hits.
+
+Share one append-only actual invocation ancestry index between textual lookup
+and resolved bindings. A nested query must not walk the complete parent chain
+again for each name or stripped mark. Keep the physical root allocation-free;
+retain one parent, depth and skew-binary jump per actual invocation. Publication
+combines adjacent equal jump lengths with amortized constant append work, while ancestry queries
+skip complete blocks and split only the block containing the requested depth.
+Compare against an independent parent-walk oracle and measure depth and query
+width separately, together, and after unrelated sibling publication. This index
+provides ancestry only; it grants neither hygienic equality nor privacy access.
+
+Index local shadow histories by binding entry and normalized context, retaining
+every declaration version needed by definition-site visibility. Unrelated
+contexts must not be scanned for duplicate checks or historical lookup. A
+single-local entry needs no history allocation; older shadows use an ordered
+predecessor query. Scoped item bindings and import dependencies must likewise
+carry their normalized item identity, including per-segment path contexts.
+Hygienic selection does not grant visibility or library-feature permission.
+Retain immutable import paths once and share them across dependency retries;
+waking an import must not copy its complete segment sequence.
+Flatten grouped import trees with one append/truncate prefix buffer and retain
+each published leaf once. Preserve every segment's actual identifier context,
+the explicit alias context and the glob star context independently. Root-only
+paths need no context allocation. Do not mistake eliminating prefix copies for
+eliminating repeated semantic scans of those prefixes; measure both dimensions.
+
+Keep root bindings in the flat table and allocate a separate context index only
+for non-root item keys. Both indexes share declaration ordinals and first-binding
+order; removing a binding retains its key. Size root slots by root population,
+not by all contexts. Import waiters, candidates, publications and withdrawals
+retain the full key. Name-only metadata must reject retained non-root items until
+their provenance can be transported. Snapshot import journals at first-binding
+order tails, not entry creation ordinals: an old local-only entry may become an
+item later, and a declaration batch must not enter its own initial snapshot.
+Capture tails once per existing indexed scope and materialize each journal only
+on demand. Record this cold snapshot cost and context-bearing key sizes.
 
 Written lifetime quantifiers retain lexical identity, including an explicit empty
 `for<>`. A where-clause binder owns its subject and all its bounds; a trait-position

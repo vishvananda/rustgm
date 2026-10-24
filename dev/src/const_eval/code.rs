@@ -12,7 +12,7 @@ use crate::{
 use std::ops::Index;
 #[path = "code_publication.rs"]
 mod publication;
-pub(crate) use publication::Prepared;
+pub(crate) use publication::{Prepared, Registration};
 
 #[derive(Clone, Copy)]
 pub(crate) enum Inline {
@@ -294,33 +294,43 @@ impl Catalog {
         Ok(())
     }
     pub(crate) fn initializer(
-        &mut self,
+        &self,
         index: usize,
         definition: DefId,
         kind: crate::sema::model::InitializerKind,
     ) -> Result<(), &'static str> {
-        let body = self
-            .bodies
-            .get_mut(index)
-            .and_then(std::rc::Rc::get_mut)
-            .ok_or("constant code is still in use during initializer registration")?;
-        body.owner = Owner::Initializer { definition, kind };
-        self.definitions.insert(definition, index);
-        Ok(())
+        if let Some(body) = self.code(index)
+            && matches!(body.owner, Owner::Initializer { definition: actual, kind: actual_kind } if actual == definition && match (actual_kind, kind) {
+                (crate::sema::model::InitializerKind::Const, crate::sema::model::InitializerKind::Const) => true,
+                (crate::sema::model::InitializerKind::Static { mutable: a }, crate::sema::model::InitializerKind::Static { mutable: b }) => a == b,
+                _ => false,
+            })
+            && self.definitions.get(&definition) == Some(&index)
+        {
+            return Ok(());
+        }
+        Err("named initializer differs from its actual declaration owner, kind or index")
     }
     pub(crate) fn insert(&mut self, body: &Body) -> Result<usize, &'static str> {
         self.insert_body(body, false, None, &[], None)
     }
+    #[cfg(test)]
     pub(crate) fn insert_prepared(&mut self, code: Prepared) -> Result<usize, &'static str> {
         self.publish(code, false, None, &[], None)
     }
-    pub(crate) fn paid_anonymous_prepared(
+    pub(crate) fn stage_ordinary(
+        &mut self,
+        code: Prepared,
+    ) -> Result<Registration<'_>, &'static str> {
+        self.stage(code, false, None, &[], None)
+    }
+    pub(crate) fn stage_paid(
         &mut self,
         scope: super::lease_codes::Scope,
         code: Prepared,
         requested: crate::types::TypeId,
-    ) -> Result<usize, &'static str> {
-        self.publish(code, false, Some(requested), &[], Some(scope))
+    ) -> Result<Registration<'_>, &'static str> {
+        self.stage(code, false, Some(requested), &[], Some(scope))
     }
     #[cfg(test)]
     pub(crate) fn source_initializer(
@@ -334,6 +344,7 @@ impl Catalog {
         let code = Prepared::plain(body, (64 * 1024 * 1024usize).saturating_sub(self.bytes))?;
         self.source_initializer_prepared(facts, code, source, witness, results)
     }
+    #[cfg(test)]
     pub(crate) fn source_initializer_prepared(
         &mut self,
         facts: &mut crate::sema::model::Declarations,
@@ -342,6 +353,17 @@ impl Catalog {
         witness: crate::sema::values::execution::SourceComputation,
         results: &[(ValueId, crate::types::TypeId)],
     ) -> Result<usize, &'static str> {
+        self.stage_source(facts, prepared, source, witness, results)?
+            .publish()
+    }
+    pub(crate) fn stage_source(
+        &mut self,
+        facts: &mut crate::sema::model::Declarations,
+        prepared: Prepared,
+        source: (crate::sema::values::Instance, NodeKey, crate::types::TypeId),
+        witness: crate::sema::values::execution::SourceComputation,
+        results: &[(ValueId, crate::types::TypeId)],
+    ) -> Result<Registration<'_>, &'static str> {
         let body = &prepared.code;
         let selected = witness.resolve(facts, source.2)?;
         if selected.selected != source.0
@@ -362,43 +384,18 @@ impl Catalog {
             {
                 return Err("source initializer code identity changed");
             }
-            return Ok(index);
+            self.validate_entry(index)?;
+            return self.existing_registration(index);
         }
-        let bytes = self
-            .bytes
-            .saturating_add(crate::support::retained::new_map::<
-                crate::sema::values::execution::SourceComputation,
-                (usize, crate::types::TypeId),
-            >(1))
-            .saturating_add(if self.sources.is_none() {
-                size_of::<SourceIndex>()
-            } else {
-                0
-            });
-        if bytes > 64 * 1024 * 1024 {
-            return Err("source code index storage budget exceeded");
-        }
-        let prior = self.bytes;
-        self.bytes = bytes;
-        let actual = body.result;
-        let index = match self.publish(prepared, true, Some(source.2), results, None) {
-            Ok(index) => index,
-            Err(error) => {
-                self.bytes = prior;
-                return Err(error);
-            }
-        };
-        self.sources
-            .get_or_insert_with(Default::default)
-            .insert(witness, (index, actual));
-        Ok(index)
+        self.stage(prepared, true, Some(source.2), results, None)?
+            .source(witness)
     }
-    pub(crate) fn anonymous_result_prepared(
+    pub(crate) fn stage_anonymous(
         &mut self,
         code: Prepared,
         requested: crate::types::TypeId,
         results: &[(ValueId, crate::types::TypeId)],
-    ) -> Result<usize, &'static str> {
+    ) -> Result<Registration<'_>, &'static str> {
         let Owner::AnonymousInstance(instance) = code.code.owner else {
             return Err("anonymous publication requires its exact instance owner");
         };
@@ -406,7 +403,7 @@ impl Catalog {
             instance.enclosing(),
             crate::sema::inline_constants::Context::SourceInitializer(_)
         );
-        self.publish(code, source_only, Some(requested), results, None)
+        self.stage(code, source_only, Some(requested), results, None)
     }
 }
 impl Index<usize> for Catalog {
@@ -418,13 +415,24 @@ impl Index<usize> for Catalog {
 pub(crate) enum CatalogRef<'a> {
     Owned(Catalog),
     Borrowed(&'a Catalog),
+    /// The exact source input owner is borrowed beside its executable catalog.
+    Source(&'a Catalog, &'a super::use_inputs::Inputs),
 }
 impl std::ops::Deref for CatalogRef<'_> {
     type Target = Catalog;
     fn deref(&self) -> &Self::Target {
         match self {
             Self::Owned(catalog) => catalog,
-            Self::Borrowed(catalog) => catalog,
+            Self::Borrowed(catalog) | Self::Source(catalog, _) => catalog,
+        }
+    }
+}
+
+impl CatalogRef<'_> {
+    pub(super) fn inputs(&self) -> Option<&super::use_inputs::Inputs> {
+        match self {
+            Self::Source(_, inputs) => Some(inputs),
+            Self::Owned(_) | Self::Borrowed(_) => None,
         }
     }
 }

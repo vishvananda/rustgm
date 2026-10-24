@@ -35,12 +35,17 @@ fn rejected(source: &str, edition: Edition, context: &Context, message: &str) ->
 #[test]
 fn client_identity_and_source_gate_precede_dependency_admission() -> Result {
     let mut request = context()?;
-    rejected(
+    for header in [
         HEADER,
-        Edition::Rust2024,
-        &request,
-        "source client requires an authenticated dependency inventory",
-    )?;
+        "#![feature(no_core,decl_macro,rustc_attrs)]#![no_core]",
+    ] {
+        rejected(
+            header,
+            Edition::Rust2024,
+            &request,
+            "source client requires an authenticated dependency inventory",
+        )?;
+    }
     request.current = None;
     rejected(
         HEADER,
@@ -130,7 +135,9 @@ fn source_modes_keep_one_pointer_and_bootstrap_keeps_no_source_policy() -> Resul
     let prepared = policy::prepare(&unit, &Context::default())?;
     assert!(prepared.source.is_none());
     assert!(prepared.library.is_none());
-    assert_eq!(size_of::<crate::resolve::package::Package>(), 248);
+    // The shared macro mark arena adds one lazy pointer; source modes still
+    // share their original single pointer and allocate no bootstrap policy.
+    assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<Option<Box<Source>>>(), size_of::<usize>());
     Ok(())
 }

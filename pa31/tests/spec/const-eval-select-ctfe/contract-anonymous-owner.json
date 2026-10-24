@@ -1,0 +1,33 @@
+{
+  "declared_before_probes": true,
+  "base": "4201ddce48d480ff629c18835acecf46aca268d4",
+  "scope": "Test-phase correction and distinct anonymous owner control; no execution permission or Copy selection changes.",
+  "cases": [
+    {
+      "name": "anonymous-empty-selector",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/anonymous-empty-selector.rs",
+      "sha256": "b0b528fe6a78abd1b4da27530ea66d0244f1b3a964f37ff5051265ec8cd0145a",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/anonymous-empty-selector.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 1\n",
+      "native_stderr_hypothesis": "",
+      "candidate_hypothesis": "explicitly unsupported",
+      "candidate_diagnostic_hypothesis": "source const_eval_select execution for this caller owner is not implemented",
+      "scope": "Additional true anonymous empty-ARG scalar call isolates the selected-owner boundary without the original reference-read prerequisite. It does not replace or qualify that reference path."
+    }
+  ],
+  "retained_reference_frontier": {
+    "source": "pa31/tests/spec/const-eval-select-ctfe/reference-anonymous-selector.rs",
+    "sha256": "ed3c2609e8941711e25eeb6d0949f418ce5f11de48758653d88b4dbfa42d57b0",
+    "independent_observation": "metadata/object/native accepted with stdout7 1; retained unchanged reference-source-v4 row",
+    "candidate_observation": "file 0: 2386: cannot move a non-Copy value out of a reference",
+    "candidate_evidence": "obj/parallel/pa28/const-eval-select/reference-source-v6/focused/suite_frontend.stderr",
+    "candidate_sha256": "0709ea7e29f09ca829cb2b314a1702146a0645aa225941ed7823f7f91ef456bd",
+    "status": "valid Rust; required unfinished source-Copy/read frontier toward full PA25/std; not owner-boundary coverage",
+    "original_diagnostic_hypothesis": "source const_eval_select execution for this caller owner is not implemented",
+    "original_hypothesis_result": "mismatch preserved; earlier ownership failure"
+  }
+}

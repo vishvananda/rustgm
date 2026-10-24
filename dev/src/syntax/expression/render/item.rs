@@ -183,9 +183,10 @@ pub(super) fn node<L>(
             } = ast.use_trees[index as usize];
             write!(
                 output,
-                "use-tree {} {} {glob} ",
+                "use-tree {} {} {} ",
                 Optional(prefix),
-                Children(ast, children)
+                Children(ast, children),
+                glob.is_some()
             )?;
             label(source, rename.map(|id| ast.node(id).span), output)
         }
@@ -327,6 +328,18 @@ pub(super) fn item<L>(
             Children(ast, items)
         ),
         ItemKind::MacroRules { capture } => write!(output, "macro-rules {capture}"),
+        ItemKind::DeclarativeMacro {
+            parameters,
+            capture,
+        } => {
+            write!(output, "declarative-macro ")?;
+            if let Some(parameters) = parameters {
+                write!(output, "{parameters}")?;
+            } else {
+                write!(output, "-")?;
+            }
+            write!(output, " {capture}")
+        }
         ItemKind::MacroInvocation(value) => write!(output, "macro-invocation {}", value.get()),
     }
 }

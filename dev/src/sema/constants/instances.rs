@@ -29,7 +29,7 @@ pub(crate) enum Dependency {
     Constant(Instance),
     Callable(TypeId),
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum ValueScope {
     Anonymous { body: NodeKey, ty: TypeId },
     Initializer { body: NodeKey, index: usize },
@@ -215,6 +215,19 @@ impl Worklist {
         let (context, work) = self.values.pop()?;
         self.context = context;
         Some(work)
+    }
+    /// Abandon orphan work while restoring only genuine saved scope contexts.
+    pub(super) fn abort_scopes(&mut self, scope: &mut Option<ValueScope>) {
+        while let Some((context, work)) = self.values.pop() {
+            if let Work::RestoreValueScope(saved) = work {
+                self.context = context;
+                *scope = saved;
+            }
+        }
+    }
+    #[cfg(test)]
+    pub(super) fn observations(&self) -> (usize, usize) {
+        (self.values.len(), self.values.capacity())
     }
 }
 #[derive(Default)]

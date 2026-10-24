@@ -1,0 +1,84 @@
+//! Token hygiene follows retained spans independently of physical call ancestry.
+use super::{FileId, Unit};
+use crate::{expand::marks::SyntaxContextId, resolve::package::Error};
+
+pub(crate) fn callee(
+    units: &[Unit],
+    file: FileId,
+    mut node: crate::syntax::ast::NodeId,
+) -> Result<SyntaxContextId, Error> {
+    use crate::syntax::ast::Kind;
+    let unit = units
+        .get(file.0 as usize)
+        .ok_or_else(|| Error::at(file, 0, "missing macro callee source"))?;
+    loop {
+        let value = unit.configured.ast.node(node);
+        match value.kind {
+            Kind::Macro { path, .. } => node = path,
+            Kind::Path { segments, .. } => {
+                node =
+                    *unit.configured.ast.list(segments).last().ok_or_else(|| {
+                        Error::at(file, value.span.start, "empty macro callee path")
+                    })?;
+            }
+            Kind::Applied { base, .. } => node = base,
+            Kind::Name(name, _) => return at(units, file, name.start),
+            _ => {
+                return Err(Error::at(
+                    file,
+                    value.span.start,
+                    "invalid typed macro callee",
+                ));
+            }
+        }
+    }
+}
+
+pub(crate) fn at(
+    units: &[Unit],
+    mut file: FileId,
+    mut offset: u32,
+) -> Result<SyntaxContextId, Error> {
+    for _ in 0..4096 {
+        let unit = units
+            .get(file.0 as usize)
+            .ok_or_else(|| Error::at(file, offset, "missing token context source"))?;
+        if (offset as usize) < unit.source.physical_len() {
+            return Ok(SyntaxContextId::ROOT);
+        }
+        let origins = &unit.origins;
+        let index = origins.partition_point(|origin| {
+            origin.generated.end <= offset && origin.generated.start != offset
+        });
+        let Some(origin) = origins
+            .get(index)
+            .filter(|origin| origin.generated.start <= offset && offset <= origin.generated.end)
+        else {
+            // Physical EOF is a legitimate location for empty captures.
+            if offset as usize == unit.source.physical_len() {
+                return Ok(SyntaxContextId::ROOT);
+            }
+            return Err(Error::at(file, offset, "missing retained token context"));
+        };
+        if let Some(context) = origin.context {
+            return Ok(context);
+        }
+        let length = origin
+            .original
+            .span
+            .end
+            .checked_sub(origin.original.span.start)
+            .ok_or_else(|| Error::at(file, offset, "reversed token context origin"))?;
+        offset = origin.original.span.start + (offset - origin.generated.start).min(length);
+        file = origin.original.file;
+    }
+    Err(Error::at(
+        file,
+        offset,
+        "token context ancestry exceeds 4096",
+    ))
+}
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/context_origins.rs"]
+mod tests;

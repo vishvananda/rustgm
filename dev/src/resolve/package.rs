@@ -3,12 +3,12 @@ use super::{
     names::{NameId, Names},
     unit::{FileId, NodeKey, Unit},
 };
-use crate::expand::stream::{ContextId, Origin};
-use crate::support::hash::HashMap;
-use crate::syntax::{
-    ast::{Kind, NodeId},
-    token_tree::Span,
+use crate::expand::{
+    marks::{ExpansionId, ItemContext, LocalContext, Marks, SyntaxContextId},
+    stream::Origin,
 };
+use crate::support::hash::HashMap;
+use crate::syntax::{ast::NodeId, token_tree::Span};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ModuleId(pub u32);
@@ -21,8 +21,10 @@ pub struct Module {
     pub root: NodeId,
 }
 pub struct Package {
+    pub(crate) marks: Marks,
     pub(super) source: Option<Box<super::bindings::Source>>,
     pub(super) library: Option<Box<super::stability::Library>>,
+    pub(super) macro_features: super::bindings::policy::MacroFeatures,
     pub no_std: bool,
     pub units: Vec<Unit>,
     pub file_paths: Vec<std::path::PathBuf>,
@@ -61,7 +63,7 @@ pub struct ErrorData {
     pub span: Span,
     pub message: String,
     pub expansions: Vec<ExpansionTrace>,
-    pub(crate) introduction: ContextId,
+    pub(crate) introduction: ExpansionId,
 }
 impl Error {
     #[must_use]
@@ -74,7 +76,7 @@ impl Error {
             },
             message: message.into(),
             expansions: Vec::new(),
-            introduction: ContextId(0),
+            introduction: ExpansionId(0),
         })
     }
     pub(crate) fn imported(
@@ -87,7 +89,7 @@ impl Error {
             span,
             message: message.into(),
             expansions: Vec::new(),
-            introduction: ContextId(0),
+            introduction: ExpansionId(0),
         })
     }
     pub(crate) fn unlocated(message: impl Into<String>) -> Self {
@@ -96,7 +98,7 @@ impl Error {
             span: Span { start: 0, end: 0 },
             message: message.into(),
             expansions: Vec::new(),
-            introduction: ContextId(0),
+            introduction: ExpansionId(0),
         })
     }
 }
@@ -184,24 +186,21 @@ impl Package {
     }
     /// # Errors
     /// Rejects malformed or excessively deep expansion provenance.
-    pub fn expansion_context(&self, mut file: FileId, mut offset: u32) -> Result<ContextId, Error> {
-        for _ in 0..4096 {
-            let Some(origin) = self.origin(file, offset) else {
-                return Ok(ContextId(0));
-            };
-            if let Some(context) = origin.context {
-                return Ok(context);
-            }
-            offset = origin.original.span.start
-                + (offset - origin.generated.start)
-                    .min(origin.original.span.end - origin.original.span.start);
-            file = origin.original.file;
-        }
-        Err(Error::at(
-            file,
-            offset,
-            "expansion provenance chain exceeds 4096",
-        ))
+    pub fn syntax_context(&self, file: FileId, offset: u32) -> Result<SyntaxContextId, Error> {
+        super::unit::contexts::at(&self.units, file, offset)
+    }
+    /// # Errors
+    /// Rejects missing source provenance or a token context outside this package.
+    pub(crate) fn local_context(&self, file: FileId, offset: u32) -> Result<LocalContext, Error> {
+        self.marks
+            .local(self.syntax_context(file, offset)?)
+            .map_err(|message| Error::at(file, offset, message))
+    }
+
+    pub(crate) fn item_context(&self, file: FileId, offset: u32) -> Result<ItemContext, Error> {
+        self.marks
+            .item(self.syntax_context(file, offset)?)
+            .map_err(|message| Error::at(file, offset, message))
     }
 
     /// Read canonical names directly from a parsed path.
@@ -226,42 +225,7 @@ impl Package {
         node: NodeId,
         names: &mut Vec<NameId>,
     ) -> Result<bool, Error> {
-        match self.unit(file).configured.ast.node(node).kind {
-            Kind::CrateRoot(0) => {
-                let name = self.names.intern("crate").map_err(|e| {
-                    Error::at(
-                        file,
-                        self.unit(file).configured.ast.node(node).span.start,
-                        e,
-                    )
-                })?;
-                names.push(name);
-                Ok(false)
-            }
-            Kind::CrateRoot(_) => Err(Error::at(
-                file,
-                self.unit(file).configured.ast.node(node).span.start,
-                "external defining crate requires metadata",
-            )),
-            Kind::Name(span, name) => {
-                names.push(self.parsed_name(file, span, name)?);
-                Ok(false)
-            }
-            Kind::Applied { base, .. } => self.path_names_into(file, base, names),
-            Kind::Path { absolute, segments } => {
-                names.reserve((segments.end - segments.start) as usize);
-                for offset in segments.start..segments.end {
-                    let id = self.unit(file).configured.ast.edges[offset as usize];
-                    self.path_names_into(file, id, names)?;
-                }
-                Ok(absolute)
-            }
-            _ => Err(Error::at(
-                file,
-                self.unit(file).configured.ast.node(node).span.start,
-                "expected a name path",
-            )),
-        }
+        self.append_path(file, node, names)
     }
 
     #[must_use]

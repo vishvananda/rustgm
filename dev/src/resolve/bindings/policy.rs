@@ -26,6 +26,7 @@ pub(in crate::resolve) enum Feature {
     NegativeImpls,
     FreezeImpls,
     Fundamental,
+    DeclarativeMacros,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -49,6 +50,7 @@ impl Request {
             "negative_impls" => Self::Capability(Feature::NegativeImpls),
             "freeze_impls" => Self::Capability(Feature::FreezeImpls),
             "fundamental" => Self::Capability(Feature::Fundamental),
+            "decl_macro" => Self::Capability(Feature::DeclarativeMacros),
             // Requests do not authorize the unsupported live const-drop operation.
             "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
             _ => return None,
@@ -62,11 +64,31 @@ impl Features {
     fn insert(&mut self, feature: Feature) {
         self.0 |= 1 << feature as u8;
     }
+    pub(super) fn macros(&self) -> MacroFeatures {
+        MacroFeatures(
+            u8::from(self.has(Feature::DeclarativeMacros))
+                | (u8::from(self.has(Feature::RustcAttributes)) << 1),
+        )
+    }
+}
+
+/// Language requests survive ordinary loading without creating a source provider.
+/// The second bit retains the internal-attribute request for macro consumers.
+#[derive(Clone, Copy, Default)]
+pub(in crate::resolve) struct MacroFeatures(u8);
+impl MacroFeatures {
+    pub(in crate::resolve) fn require_scoped(self, file: FileId, offset: u32) -> Result<(), Error> {
+        if self.0 & 1 == 0 {
+            return Err(Error::at(file, offset, "scoped macros require decl_macro"));
+        }
+        Ok(())
+    }
 }
 
 pub(in crate::resolve) struct Prepared {
     pub source: Option<Box<Source>>,
     pub library: Option<Box<Library>>,
+    pub macros: MacroFeatures,
 }
 
 pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prepared, Error> {
@@ -78,6 +100,7 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
     if let Mode::SourceClient { provider } = &context.mode {
         return super::client::prepare(unit, context, provider, no_core, features, library);
     }
+    let macros = features.macros();
     let Mode::Source { provider } = &context.mode else {
         if no_core {
             return Err(Error::at(
@@ -89,6 +112,7 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
         return Ok(Prepared {
             source: None,
             library,
+            macros,
         });
     };
     let current = context.current.as_ref().ok_or_else(|| {
@@ -126,6 +150,7 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
             features,
         }))),
         library,
+        macros,
     })
 }
 
@@ -177,3 +202,7 @@ fn features(unit: &Unit) -> Result<(Features, Option<Box<Library>>), Error> {
     }
     Ok((result, library))
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/root_gates.rs"]
+mod tests;

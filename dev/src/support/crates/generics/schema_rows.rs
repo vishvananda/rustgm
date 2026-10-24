@@ -7,6 +7,8 @@ mod descriptor;
 mod inputs;
 #[path = "slot_domains.rs"]
 mod scopes;
+#[path = "authored_domains.rs"]
+mod validation;
 use super::{BinderRef, Range, Signature, TypeRef};
 use crate::support::{
     bindings::LangItem,
@@ -21,6 +23,7 @@ pub use bodies::*;
 pub use descriptor::{Descriptor, Profile, ValidatedRows};
 pub use inputs::*;
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};
+pub use validation::{DomainIndex, DomainWork, HeaderIndex, HeaderRef};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ArtifactRef(pub u32);

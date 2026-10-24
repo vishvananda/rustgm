@@ -171,8 +171,10 @@ impl<'a, S: Sources> Loader<'a, S> {
             && source.is_none();
         let mut loader = Self {
             package: Package {
+                marks: crate::expand::marks::Marks::default(),
                 source,
                 library,
+                macro_features: prepared.macros,
                 no_std,
                 file_paths: vec![root.path.components().collect()],
                 crate_name: if root.path == Path::new("<anon>") {

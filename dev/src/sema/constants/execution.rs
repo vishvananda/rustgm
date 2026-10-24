@@ -90,18 +90,76 @@ impl Queries<'_> {
             return Ok(Target::Anonymous { instance, result });
         }
         if context.is_none()
-            && let Some(super::instances::ValueScope::Initializer { index, .. }) = self.value_scope
+            && let Some(target) = self.named_execution_target(source, result)?
         {
-            let initializer = self.typing.facts.initializers[index];
-            if initializer.value == source {
-                return Ok(Target::Initializer(initializer.definition));
-            }
+            return Ok(target);
         }
         Ok(Target::Expression {
             source,
             result,
             context,
         })
+    }
+    fn named_execution_target(
+        &self,
+        source: NodeKey,
+        result: crate::types::TypeId,
+    ) -> Result<Option<Target>, Error> {
+        let Some(super::instances::ValueScope::Initializer { body, index }) = self.value_scope
+        else {
+            return Ok(None);
+        };
+        let initializer = self
+            .typing
+            .facts
+            .initializers
+            .get(index)
+            .copied()
+            .ok_or_else(|| {
+                self.error(
+                    Query::Node(source),
+                    "named execution lost its actual initializer",
+                )
+            })?;
+        if self.typing.facts.initializer_index(initializer.definition) != Some(index)
+            || initializer.semantic_source() != body
+        {
+            return Err(self.error(
+                Query::Node(source),
+                "named execution changed its declaration or body owner",
+            ));
+        }
+        if initializer.value == source {
+            if !initializer.type_checked()
+                || self
+                    .typing
+                    .facts
+                    .definitions
+                    .get(initializer.definition.0 as usize)
+                    .copied()
+                    .flatten()
+                    != Some(initializer.ty)
+                || result != initializer.ty
+                || self
+                    .typing
+                    .facts
+                    .associated
+                    .owner(initializer.definition)
+                    .is_some()
+                || self
+                    .typing
+                    .facts
+                    .generics
+                    .has_parameters(initializer.definition)
+            {
+                return Err(self.error(
+                    Query::Node(source),
+                    "named execution requires its completed actual initializer type",
+                ));
+            }
+            return Ok(Some(Target::Initializer(initializer.definition)));
+        }
+        Ok(None)
     }
     pub(super) fn check_execution(&mut self, source: NodeKey) -> Result<(), Error> {
         let result = self

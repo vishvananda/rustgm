@@ -1,12 +1,12 @@
 //! Eager builtin arguments join the existing worklist and retain one parsed arena.
 use super::{
-    Body, ContextId, Engine, Error, Invocation, Location, NodeId, NodeKey, Sources, State, Visit,
+    Body, Engine, Error, ExpansionId, Invocation, Location, NodeId, NodeKey, Sources, State, Visit,
     Work, builtin, diagnostics,
 };
 
 pub(super) struct Arguments {
     root: NodeId,
-    context: ContextId,
+    context: ExpansionId,
     pub(super) pending: usize,
 }
 
@@ -63,7 +63,7 @@ impl<S: Sources> Engine<'_, S> {
             )
             .map_err(|e| Error::at(file, e.offset, e.message));
         let root = root.map_err(|e| self.eager_error(index, definition, e))?;
-        let context = ContextId(
+        let context = ExpansionId(
             u32::try_from(self.invocations.len() + 1)
                 .map_err(|_| Error::at(file, original.start, "too many expansion contexts"))?,
         );
@@ -71,8 +71,9 @@ impl<S: Sources> Engine<'_, S> {
             .state
             .facts
             .introductions
-            .parents
-            .push(visit.introduction);
+            .ancestry
+            .append(context, visit.introduction)
+            .map_err(|message| Error::at(file, original.start, message))?;
         self.invocations.push(Invocation {
             context,
             node: NodeKey {

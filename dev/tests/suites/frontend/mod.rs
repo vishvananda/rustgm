@@ -9,6 +9,8 @@ mod crate_expansion;
 mod crate_syntax;
 #[path = "../../ctfe_selector.rs"]
 mod ctfe_selector;
+#[path = "../../declarative_macros.rs"]
+mod declarative_macros;
 #[path = "../../edition_fragments.rs"]
 mod edition_fragments;
 #[path = "../../edition_origins.rs"]
@@ -71,6 +73,8 @@ mod provider_traits;
 pub(crate) mod qualify;
 #[path = "../../resolution.rs"]
 mod resolution;
+#[path = "../../selected_references.rs"]
+mod selected_references;
 #[path = "../../syntax_transfer.rs"]
 mod syntax_transfer;
 #[path = "../../temporary_editions.rs"]

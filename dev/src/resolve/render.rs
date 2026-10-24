@@ -145,7 +145,15 @@ pub fn expanded(report: &Report, out: &mut impl Write) -> io::Result<()> {
         write!(
             out,
             "macro {index} name={} module={} context={} introduction={} source=",
-            definition.name.0, definition.module.0, definition.context.0, definition.introduction.0
+            definition.name.0,
+            definition.module.0,
+            report
+                .package
+                .marks
+                .outer(definition.context)
+                .map_err(io::Error::other)?
+                .map_or(0, |id| id.0),
+            definition.introduction.0
         )?;
         if let Some(node) = definition.node {
             write!(out, "{}:{}", node.file.0, node.node.get())?;
@@ -210,8 +218,10 @@ pub fn expanded(report: &Report, out: &mut impl Write) -> io::Result<()> {
                 origin.original.span.start,
                 origin.original.span.end
             )?;
-            if let Some(context) = origin.context {
-                writeln!(out, "{}", context.0)?;
+            // PA8's legacy view names literal introductions; captured contexts
+            // still inherit from the retained source range in this text format.
+            if origin.introduction.0 != 0 {
+                writeln!(out, "{}", origin.introduction.0)?;
             } else {
                 writeln!(out, "inherit")?;
             }

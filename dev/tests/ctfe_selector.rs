@@ -47,15 +47,7 @@ fn source_ctfe_selector_keeps_reached_fault_and_argument_ownership() -> TestResu
     Ok(())
 }
 #[test]
-fn source_ctfe_selector_retains_valid_binder_and_conditional_payment_frontiers() -> TestResult {
-    let error = lower(&fixture("reference-binder", "rs")?)
-        .err()
-        .ok_or("callback binder support changed; review its actual opened signature")?
-        .to_string();
-    assert!(
-        error.contains("source const_eval_select callback binders are not implemented"),
-        "{error}"
-    );
+fn source_ctfe_selector_retains_generic_lifetime_and_conditional_payment_frontiers() -> TestResult {
     let error = lower(&fixture("mapped-without-static-proof", "rs")?)
         .err()
         .ok_or("unproved callback lifetime acquired a static execution identity")?

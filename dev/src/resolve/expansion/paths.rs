@@ -2,10 +2,11 @@
 use super::{
     Builtin, Call, Error, MacroTarget, ModuleId, NodeId, NodeKey, Package, bindings::Bindings,
 };
+use crate::expand::marks::ItemContext;
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     expand::{
-        stream::ContextId,
+        marks::ExpansionId,
         textual::{self, Observer, Scope as TextScope, Scopes},
     },
     resolve::{
@@ -24,7 +25,7 @@ pub(super) struct Paths {
     work: Work,
     macros: Vec<Option<DefId>>,
     macro_targets: HashMap<DefId, MacroTarget>,
-    textual: Vec<Option<(TextScope, ContextId)>>,
+    textual: Vec<Option<(TextScope, ExpansionId)>>,
     text_ready: VecDeque<usize>,
     text_queued: Vec<bool>,
     waiting: HashMap<BindingKey, HashSet<usize>>,
@@ -97,7 +98,7 @@ impl Paths {
         context: Context,
         node: NodeId,
         item: crate::syntax::item::Item,
-        introduction: ContextId,
+        introduction: ExpansionId,
     ) -> Result<ScopeId, Error> {
         let mut resolver = self.state.bind(package);
         let first = resolver.facts.definitions.len();
@@ -116,10 +117,8 @@ impl Paths {
                     .definitions
                     .insert(id, introduction);
             }
-            self.work.declared(
-                &resolver.facts.bindings,
-                (definition.scope, definition.name, definition.namespace),
-            );
+            let key = resolver.binding_key(definition)?;
+            self.work.declared(&resolver.facts.bindings, key);
         }
         // Unnameable `impl Trait` parameters have no binding to publish.
         if matches!(item.kind, crate::syntax::item::ItemKind::Function { .. }) {
@@ -177,7 +176,7 @@ impl Paths {
         child: ModuleId,
         node: NodeId,
         visibility: Visibility,
-        expansion: ContextId,
+        expansion: ExpansionId,
     ) -> Result<ScopeId, Error> {
         let mut resolver = self.state.bind(package);
         let access = resolver.visibility(context, visibility)?;
@@ -226,7 +225,7 @@ impl Paths {
         node: NodeId,
         name: NameId,
         exported: bool,
-        introduced: (usize, ContextId),
+        introduced: (usize, ExpansionId),
     ) -> Result<(), Error> {
         let (index, expansion) = introduced;
         let access = if exported {
@@ -289,17 +288,21 @@ impl Paths {
         target: DefId,
     ) -> Result<(), Error> {
         let definition = &resolver.facts.definitions[target.0 as usize];
-        let (name, namespace, access) = (definition.name, definition.namespace, definition.access);
+        let access = definition.access;
+        let mut key = resolver.binding_key(definition)?;
+        // An exported legacy macro is published in the crate root while its
+        // actual definition site and identifier context remain distinct.
+        key.0 = context.scope;
         if resolver
             .facts
             .bindings
-            .get(context.scope, name, namespace)
+            .get_key(key)
             .is_some_and(|b| !matches!(b.origin, Origin::Glob(_)))
         {
             return Err(resolver.error(context, node, "duplicate macro-path binding"));
         }
         resolver.publish(
-            (context.scope, name, namespace),
+            key,
             Some(Binding {
                 target,
                 access,
@@ -315,19 +318,17 @@ impl Paths {
         context: Context,
         node: NodeId,
         visibility: Visibility,
-        textual: (TextScope, ContextId),
+        textual: (TextScope, ExpansionId),
     ) -> Result<(), Error> {
         let first = self.state.facts.imports.len();
         let mut resolver = self.state.bind(package);
         let first_definition = resolver.facts.definitions.len();
         let access = resolver.visibility(context, visibility)?;
-        resolver.import(context, node, &[], false, access)?;
+        resolver.import(context, node, access)?;
         self.work.extend(resolver.facts);
         for definition in &resolver.facts.definitions[first_definition..] {
-            self.work.declared(
-                &resolver.facts.bindings,
-                (definition.scope, definition.name, definition.namespace),
-            );
+            let key = resolver.binding_key(definition)?;
+            self.work.declared(&resolver.facts.bindings, key);
         }
         let library_builtin = resolver.facts.imports[first..].iter().any(|import| {
             import
@@ -377,7 +378,13 @@ impl Paths {
             let import = &self.state.facts.imports[index];
             let name = import.path[0];
             let source = match bindings
-                .textual(scopes, scope, name, context)
+                .textual(
+                    scopes,
+                    &self.state.facts.introductions.ancestry,
+                    scope,
+                    name,
+                    context,
+                )
                 .map_err(|e| Error::at(import.node.file, e.offset, e.message))?
             {
                 textual::Lookup::Missing => TextualSource::Missing,
@@ -542,8 +549,10 @@ impl Paths {
         self.macro_targets
             .insert(target, MacroTarget::Builtin(Builtin::OptionEnv));
         self.work.extend(resolver.facts);
-        self.work
-            .declared(&resolver.facts.bindings, (scope, name, Namespace::Macro));
+        self.work.declared(
+            &resolver.facts.bindings,
+            (scope, name, Namespace::Macro, ItemContext::ROOT),
+        );
         Ok(())
     }
     pub fn take_error(&mut self) -> Option<Error> {

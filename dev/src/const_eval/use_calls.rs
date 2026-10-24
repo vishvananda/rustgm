@@ -11,7 +11,7 @@ use crate::{
     },
     types::instance::Instance,
 };
-use std::sync::Arc;
+use std::rc::Rc;
 #[derive(Clone, Copy, PartialEq, Eq)]
 struct Site {
     frame: usize,
@@ -26,8 +26,8 @@ pub(crate) struct Reached {
 }
 pub(super) struct Continuation {
     site: Site,
-    caller: Arc<Row>,
-    callee: Arc<Row>,
+    caller: Rc<Row>,
+    callee: Rc<Row>,
     target_code: usize,
     payment: Payment,
 }

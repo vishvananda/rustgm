@@ -5,6 +5,7 @@ use super::macros::{
     matcher::Matched,
     transcribe::{Origin as PieceOrigin, Piece, Transcription},
 };
+use super::marks::{ExpansionId, SyntaxContextId};
 use crate::{
     lex::token::{Kind, LexError, Token},
     support::source::FileId,
@@ -14,8 +15,6 @@ use crate::{
         token_tree::{Span, error},
     },
 };
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct ContextId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Location {
     pub file: FileId,
@@ -26,7 +25,9 @@ pub struct Origin {
     pub generated: Span,
     pub original: Location,
     /// None inherits hygiene from the corresponding offset in the parent image.
-    pub context: Option<ContextId>,
+    pub context: Option<SyntaxContextId>,
+    /// Immediate literal introduction, independent of captured token hygiene.
+    pub introduction: ExpansionId,
     /// Synthetic tokens can specify spacing independently of their physical origin.
     pub joint: Option<bool>,
 }
@@ -38,7 +39,8 @@ pub struct Source<'a> {
 pub struct Environment<'a> {
     pub definition: Source<'a>,
     pub invocation: Source<'a>,
-    pub context: ContextId,
+    pub context: SyntaxContextId,
+    pub introduction: ExpansionId,
     pub crate_id: u32,
 }
 pub struct Opaque {
@@ -71,47 +73,26 @@ impl Stream {
         input: &Input,
         environment: &Environment<'_>,
     ) -> Result<Self, LexError> {
+        Self::transcribe_with(transcription, matched, input, environment, |_, origin| {
+            Ok((origin == PieceOrigin::Definition).then_some(environment.context))
+        })
+    }
+    /// Crate expansion supplies the actual context of each definition token.
+    /// Captures retain their own contexts; opaque slices can contain several.
+    /// # Errors
+    /// Rejects invalid source contexts, captured ranges and arena overflow.
+    pub fn transcribe_with(
+        transcription: &Transcription,
+        matched: &Matched,
+        input: &Input,
+        environment: &Environment<'_>,
+        mut contexts: impl FnMut(Location, PieceOrigin) -> Result<Option<SyntaxContextId>, LexError>,
+    ) -> Result<Self, LexError> {
         let mut output = Self::default();
         for piece in &transcription.pieces {
             match *piece {
                 Piece::Token { token, origin } => {
-                    let (source, context) = match origin {
-                        PieceOrigin::Definition => {
-                            (environment.definition, Some(environment.context))
-                        }
-                        PieceOrigin::Invocation => (environment.invocation, None),
-                    };
-                    let span = Span {
-                        start: token.start,
-                        end: token.end,
-                    };
-                    let kind = if matches!(token.kind, Kind::Interpolated(_)) {
-                        Kind::interpolated(
-                            u32::try_from(output.opaque.len())
-                                .map_err(|_| error(span.start, "too many forwarded inputs"))?,
-                        )?
-                    } else {
-                        token.kind
-                    };
-                    let destination = output.token(
-                        kind,
-                        text(source.text, span)?,
-                        Location {
-                            file: source.file,
-                            span,
-                        },
-                        context,
-                    )?;
-                    if let Kind::Interpolated(index) = token.kind {
-                        output.opaque.push(Opaque {
-                            payload: OpaqueSource::Forwarded {
-                                index: index.get(),
-                                origin,
-                            },
-                            original: span,
-                            destination,
-                        });
-                    }
+                    output.copy_token(token, origin, environment, &mut contexts)?;
                 }
                 Piece::Opaque(capture) => {
                     let value = matched
@@ -131,6 +112,7 @@ impl Stream {
                             span: original,
                         },
                         None,
+                        ExpansionId(0),
                     )?;
                     output.opaque.push(Opaque {
                         payload: OpaqueSource::Capture(capture),
@@ -146,7 +128,14 @@ impl Stream {
                             file: environment.definition.file,
                             span,
                         },
-                        Some(environment.context),
+                        contexts(
+                            Location {
+                                file: environment.definition.file,
+                                span,
+                            },
+                            PieceOrigin::Definition,
+                        )?,
+                        environment.introduction,
                     )?;
                 }
                 Piece::Doc { inner, body, span } => {
@@ -157,19 +146,85 @@ impl Stream {
                             file: environment.definition.file,
                             span,
                         },
-                        Some(environment.context),
+                        contexts(
+                            Location {
+                                file: environment.definition.file,
+                                span,
+                            },
+                            PieceOrigin::Definition,
+                        )?,
+                        environment.introduction,
                     )?;
                 }
             }
         }
         Ok(output)
     }
+    /// One demanded lexical token keeps its capture/definition provenance.
+    fn copy_token(
+        &mut self,
+        token: Token,
+        origin: PieceOrigin,
+        environment: &Environment<'_>,
+        contexts: &mut impl FnMut(Location, PieceOrigin) -> Result<Option<SyntaxContextId>, LexError>,
+    ) -> Result<(), LexError> {
+        let source = match origin {
+            PieceOrigin::Definition => environment.definition,
+            PieceOrigin::Invocation => environment.invocation,
+        };
+        let span = Span {
+            start: token.start,
+            end: token.end,
+        };
+        let kind = if matches!(token.kind, Kind::Interpolated(_)) {
+            Kind::interpolated(
+                u32::try_from(self.opaque.len())
+                    .map_err(|_| error(span.start, "too many forwarded inputs"))?,
+            )?
+        } else {
+            token.kind
+        };
+        let location = Location {
+            file: source.file,
+            span,
+        };
+        let opaque = matches!(token.kind, Kind::Interpolated(_));
+        let context = if opaque {
+            None
+        } else {
+            contexts(location, origin)?
+        };
+        let introduction = if origin == PieceOrigin::Definition {
+            environment.introduction
+        } else {
+            ExpansionId(0)
+        };
+        let destination = self.token(
+            kind,
+            text(source.text, span)?,
+            location,
+            context,
+            introduction,
+        )?;
+        if let Kind::Interpolated(index) = token.kind {
+            self.opaque.push(Opaque {
+                payload: OpaqueSource::Forwarded {
+                    index: index.get(),
+                    origin,
+                },
+                original: span,
+                destination,
+            });
+        }
+        Ok(())
+    }
     fn token(
         &mut self,
         kind: Kind,
         spelling: &str,
         original: Location,
-        context: Option<ContextId>,
+        context: Option<SyntaxContextId>,
+        introduction: ExpansionId,
     ) -> Result<Span, LexError> {
         let start = u32::try_from(self.source.len())
             .map_err(|_| error(original.span.start, "expansion source exceeds 32 bits"))?;
@@ -182,6 +237,7 @@ impl Stream {
             generated,
             original,
             context,
+            introduction,
             joint: None,
         });
         self.source.push(' ');

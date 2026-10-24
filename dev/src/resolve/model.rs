@@ -17,8 +17,8 @@ use super::{
     package::ModuleId,
     unit::{FileId, NodeKey},
 };
-use crate::support::hash::HashMap;
 use crate::syntax::ast::NodeId;
+use crate::{expand::marks::ItemContext, support::hash::HashMap};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ScopeId(pub u32);
@@ -161,14 +161,29 @@ pub struct Scope {
     pub label_barrier: bool,
 }
 #[derive(Clone, Debug)]
+pub struct ImportContexts {
+    pub segments: Box<[ItemContext]>,
+    pub glob: ItemContext,
+}
+#[derive(Clone, Debug)]
 pub struct Import {
     pub scope: ScopeId,
     pub node: NodeKey,
-    pub path: Vec<NameId>,
+    /// Import retries share the immutable spelling sequence instead of copying it.
+    pub path: std::sync::Arc<[NameId]>,
+    /// Absent for root-only paths/stars; retries share the cold contextual facts.
+    pub contexts: Option<std::sync::Arc<ImportContexts>>,
     pub absolute: bool,
-    pub alias: Option<NameId>,
+    pub alias: Option<(NameId, ItemContext)>,
     pub glob: bool,
     pub access: Access,
+}
+impl Import {
+    pub(crate) fn segment_context(&self, index: usize) -> ItemContext {
+        self.contexts
+            .as_ref()
+            .map_or(ItemContext::ROOT, |contexts| contexts.segments[index])
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Target {
@@ -217,40 +232,28 @@ pub struct Reference {
 /// Expansion-only binding provenance; ordinary resolution leaves these tables empty.
 #[derive(Default)]
 pub struct Introductions {
-    pub definitions: HashMap<DefId, crate::expand::stream::ContextId>,
-    pub imports: HashMap<usize, crate::expand::stream::ContextId>,
-    pub parents: Vec<crate::expand::stream::ContextId>,
+    pub definitions: HashMap<DefId, crate::expand::marks::ExpansionId>,
+    pub imports: HashMap<usize, crate::expand::marks::ExpansionId>,
+    pub ancestry: crate::expand::ancestry::Ancestry,
 }
 impl Introductions {
     #[must_use]
-    pub fn binding(&self, binding: Binding) -> crate::expand::stream::ContextId {
-        use crate::expand::stream::ContextId;
+    pub fn binding(&self, binding: Binding) -> crate::expand::marks::ExpansionId {
+        use crate::expand::marks::ExpansionId;
         match binding.origin {
             Origin::Direct => self.definitions.get(&binding.target),
             Origin::Import(index) | Origin::Glob(index) => self.imports.get(&(index as usize)),
         }
         .copied()
-        .unwrap_or(ContextId(0))
+        .unwrap_or(ExpansionId(0))
     }
     #[must_use]
     pub fn ancestor(
         &self,
-        ancestor: crate::expand::stream::ContextId,
-        mut context: crate::expand::stream::ContextId,
+        ancestor: crate::expand::marks::ExpansionId,
+        context: crate::expand::marks::ExpansionId,
     ) -> bool {
-        for _ in 0..=self.parents.len() {
-            if context == ancestor {
-                return true;
-            }
-            let Some(index) = context.0.checked_sub(1) else {
-                return false;
-            };
-            let Some(parent) = self.parents.get(index as usize) else {
-                return false;
-            };
-            context = *parent;
-        }
-        false
+        self.ancestry.ancestor(ancestor, context)
     }
 }
 /// Lexical scopes introduced at syntax nodes. Each module's nodes live in its

@@ -84,7 +84,7 @@ fn diagnostic_payload_growth_stays_outside_values_bodies_and_result_abi() {
         span: crate::syntax::token_tree::Span,
         message: String,
         expansions: Vec<crate::resolve::package::ExpansionTrace>,
-        introduction: crate::expand::stream::ContextId,
+        introduction: crate::expand::marks::ExpansionId,
     }
     assert_eq!(size_of::<Error>(), size_of::<usize>());
     assert_eq!(

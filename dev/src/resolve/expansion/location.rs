@@ -26,7 +26,7 @@ impl<S: Sources> Engine<'_, S> {
                 return Ok(location);
             };
             let context = if location.span.end <= first.generated.end {
-                first.context
+                (first.introduction.0 != 0).then_some(first.introduction)
             } else {
                 let origins = &self.loader.package.unit(location.file).origins;
                 let start =
@@ -34,7 +34,7 @@ impl<S: Sources> Engine<'_, S> {
                 origins[start..]
                     .iter()
                     .take_while(|origin| origin.generated.start < location.span.end)
-                    .find_map(|origin| origin.context)
+                    .find_map(|origin| (origin.introduction.0 != 0).then_some(origin.introduction))
             };
             if let Some(context) = context.filter(|context| context.0 != 0) {
                 let call = self
@@ -121,7 +121,7 @@ impl crate::expand::stringify::Sources for TokenSources<'_> {
                         | crate::lex::token::Punctuation::CloseBracket
                 )
             );
-            if (origin.context.is_some() && !delimiter)
+            if (origin.introduction.0 != 0 && !delimiter)
                 || origin.generated.end - origin.generated.start
                     != origin.original.span.end - origin.original.span.start
             {

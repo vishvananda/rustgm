@@ -96,6 +96,79 @@ fn body(mut x:i32)->i32 {
 }
 
 #[test]
+fn glob_spans_preserve_the_star_independently_of_prefix_and_aliases() -> Result<(), String> {
+    let source = "use crate::a::{self,b as c,*};";
+    let ast = parse_crate(source).map_err(|e| format!("{e:?}"))?;
+    let stars = ast
+        .use_trees
+        .iter()
+        .filter_map(|tree| tree.glob)
+        .collect::<Vec<_>>();
+    assert_eq!(stars.len(), 1);
+    assert_eq!(&source[stars[0].start as usize..stars[0].end as usize], "*");
+    assert!(source[..stars[0].start as usize].ends_with("b as c,"));
+    let prefix = "use before::item;";
+    let mut target = parse_crate(prefix).map_err(|e| format!("{e:?}"))?;
+    let use_base = target.use_trees.len();
+    let shift = u32::try_from(prefix.len()).map_err(|e| e.to_string())?;
+    transfer::append(
+        &ast,
+        &mut target,
+        |span| {
+            Ok(Span {
+                start: span.start + shift,
+                end: span.end + shift,
+            })
+        },
+        |value| Ok(value.clone()),
+    )
+    .map_err(|e| format!("{e:?}"))?;
+    for (original, copied) in ast.use_trees.iter().zip(&target.use_trees[use_base..]) {
+        assert_eq!(
+            copied.glob,
+            original.glob.map(|span| Span {
+                start: span.start + shift,
+                end: span.end + shift,
+            })
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn failed_glob_provenance_mapping_restores_all_import_arenas() -> Result<(), String> {
+    let ast = parse_crate("use source::*;").map_err(|e| format!("{e:?}"))?;
+    let star = ast
+        .use_trees
+        .iter()
+        .find_map(|tree| tree.glob)
+        .ok_or("actual glob span")?;
+    let mut destination = parse_crate("use previous::item;").map_err(|e| format!("{e:?}"))?;
+    let nodes = destination.nodes.clone();
+    let edges = destination.edges.clone();
+    let items = destination.items.clone();
+    let trees = destination.use_trees.clone();
+    let result = transfer::append(
+        &ast,
+        &mut destination,
+        |span| {
+            if span == star {
+                Err(error(star.start, "glob provenance mapping failed"))
+            } else {
+                Ok(span)
+            }
+        },
+        |value| Ok(value.clone()),
+    );
+    assert_eq!(result.err().map(|error| error.offset), Some(star.start));
+    assert_eq!(destination.nodes, nodes);
+    assert_eq!(destination.edges, edges);
+    assert_eq!(destination.items, items);
+    assert_eq!(destination.use_trees, trees);
+    Ok(())
+}
+
+#[test]
 fn repeated_occurrences_get_independent_nodes_without_reinterpreting_literals() -> Result<(), String>
 {
     let ast = expression::parse("true + 7").map_err(|e| format!("{e:?}"))?;

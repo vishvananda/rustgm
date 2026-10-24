@@ -16,6 +16,7 @@ use crate::{
     },
 };
 
+pub(crate) mod contexts;
 pub(crate) mod editions;
 mod expansion;
 mod original;

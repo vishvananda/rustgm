@@ -12,10 +12,54 @@ use crate::{
     support::hash::HashMap,
     types::{Kind, TypeId, instance::Instance, parameters::environment::Environment},
 };
-use std::sync::Arc;
+use std::{rc::Rc, sync::Arc};
+#[path = "selector_rows.rs"]
+mod selectors;
+pub(super) use selectors::Opening;
+
+#[derive(Default)]
+pub(crate) struct Uses {
+    pub needed: bool,
+    selectors: Option<Box<selectors::Rows>>,
+    #[cfg(test)]
+    pub descriptor_work: usize,
+}
+pub(crate) struct Source {
+    contract: Arc<Contract>,
+    selectors: Option<Box<selectors::Rows>>,
+}
+impl Source {
+    /// Only the common completed Code-purpose producer calls this constructor.
+    pub(crate) fn prepare(
+        code: &Code,
+        contract: Arc<Contract>,
+        uses: Uses,
+        bytes: usize,
+    ) -> Result<Self, &'static str> {
+        if contract.key != code.owner.key(code.source)
+            || contract.source != code.source
+            || contract.signature != code.owner.signatures().map(|(_, owned)| owned)
+        {
+            return Err("selector input plan differs from its actual proved code and contract");
+        }
+        let fixed = size_of::<Row>().saturating_add(contract.retained_bytes());
+        let available = bytes
+            .checked_sub(fixed)
+            .ok_or("source const-call input storage exceeds budget")?;
+        if !uses.needed || uses.selectors.as_deref().map_or(0, selectors::Rows::bytes) > available {
+            return Err("reference selector data exceeds its retained caller owner");
+        }
+        Ok(Self {
+            contract,
+            selectors: uses.selectors,
+        })
+    }
+}
 
 pub(crate) struct Row {
     code: usize,
+    executable: Rc<Code>,
+    selectors: Option<Box<selectors::Rows>>,
     key: BodyKey,
     source: BodyOrigin,
     instance: Option<Instance>,
@@ -24,14 +68,20 @@ pub(crate) struct Row {
     contract: Arc<Contract>,
     requirements: Option<Arc<Requirements>>,
 }
+pub(crate) struct PreparedRow {
+    index: usize,
+    row: Rc<Row>,
+    bytes: usize,
+}
 #[derive(Default)]
 pub(crate) struct Inputs {
-    rows: HashMap<usize, Arc<Row>>,
+    rows: HashMap<usize, Rc<Row>>,
     bytes: usize,
 }
 impl Row {
     pub(super) fn validate(&self, code: usize, body: &Code) -> Result<(), &'static str> {
         if self.code != code
+            || !std::ptr::eq(self.executable.as_ref(), body)
             || self.key != body.owner.key(body.source)
             || self.source != body.source
             || self.instance != body.instance
@@ -70,77 +120,122 @@ impl Row {
 impl Inputs {
     /// Canonical relocation preparation is data, never callback body demand.
     /// Complete every selector even when an earlier use already needs its row.
-    pub(crate) fn prepare(facts: &mut Declarations, body: &Body) -> Result<bool, &'static str> {
+    pub(crate) fn prepare_uses(
+        facts: &mut Declarations,
+        body: &Body,
+        bytes: usize,
+    ) -> Result<Uses, &'static str> {
         let Some(catalog) = facts.source_bindings.as_deref() else {
-            return Ok(false);
+            return Ok(Uses::default());
         };
         if !body.const_context {
-            return Ok(false);
+            return Ok(Uses::default());
         }
-        let mut needed = if let Owner::Function { definition, .. } = body.owner {
-            catalog.requires_const_payment(definition)?
-        } else {
-            false
+        let mut uses = Uses {
+            needed: if let Owner::Function { definition, .. } = body.owner {
+                catalog.requires_const_payment(definition)?
+            } else {
+                false
+            },
+            ..Uses::default()
         };
-        for value in &body.values {
-            facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
-            let Rvalue::Call { callee, .. } = value.kind else {
-                continue;
-            };
-            let Some(ty) = body.values.get(callee.0 as usize).map(|v| v.ty) else {
-                continue;
-            };
-            let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(ty) else {
-                continue;
-            };
-            let definition = crate::resolve::model::DefId(item.0);
-            let catalog = facts
-                .source_bindings
-                .as_deref()
-                .ok_or("source catalog disappeared")?;
-            if catalog.intrinsic_kind(definition)?
-                == Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect)
-            {
-                let raw = Instance::new(&facts.types, ty)?;
-                crate::sema::compiler_items::prepare_select(facts, raw)?
-                    .ok_or("source selector preparation lost its actual declaration")?;
-                needed = true;
-                continue;
+        let mut descriptor_work = 0;
+        let result: Result<(), &'static str> = (|| {
+            for (index, value) in body.values.iter().enumerate() {
+                facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
+                let Rvalue::Call { callee, .. } = value.kind else {
+                    continue;
+                };
+                let Some(ty) = body.values.get(callee.0 as usize).map(|v| v.ty) else {
+                    continue;
+                };
+                let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(ty) else {
+                    continue;
+                };
+                let definition = crate::resolve::model::DefId(item.0);
+                let catalog = facts
+                    .source_bindings
+                    .as_deref()
+                    .ok_or("source catalog disappeared")?;
+                if catalog.intrinsic_kind(definition)?
+                    == Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect)
+                {
+                    let raw = Instance::new(&facts.types, ty)?;
+                    let selection = crate::sema::compiler_items::prepare_select(facts, raw)?
+                        .ok_or("source selector preparation lost its actual declaration")?;
+                    let call = crate::body::ir::ValueId(
+                        u32::try_from(index).map_err(|_| "too many source selector values")?,
+                    );
+                    selectors::push(
+                        facts,
+                        &mut uses.selectors,
+                        call,
+                        selection,
+                        bytes,
+                        &mut descriptor_work,
+                    )?;
+                    uses.needed = true;
+                    continue;
+                }
+                if facts.members.constructor(definition).is_none()
+                    && facts.is_const_function(definition)
+                    && catalog.requires_const_payment(definition)?
+                {
+                    uses.needed = true;
+                }
             }
-            if facts.members.constructor(definition).is_none()
-                && facts.is_const_function(definition)
-                && catalog.requires_const_payment(definition)?
-            {
-                needed = true;
-            }
+            Ok(())
+        })();
+        facts.body_work.canonical_steps = facts
+            .body_work
+            .canonical_steps
+            .saturating_add(descriptor_work);
+        #[cfg(test)]
+        {
+            uses.descriptor_work = descriptor_work;
         }
-        Ok(needed)
+        result?;
+        Ok(uses)
     }
-    pub(crate) fn record(
+    #[cfg(test)]
+    pub(crate) fn prepare(facts: &mut Declarations, body: &Body) -> Result<bool, &'static str> {
+        Self::prepare_uses(facts, body, 64 * 1024 * 1024).map(|uses| uses.needed)
+    }
+    pub(crate) fn plan(
         &mut self,
         facts: &mut Declarations,
-        catalog: &Catalog,
         index: usize,
-        body: &Body,
-        contract: Arc<Contract>,
+        executable: Rc<Code>,
+        source: Source,
         selected: Option<Instance>,
-    ) -> Result<(), &'static str> {
+    ) -> Result<PreparedRow, &'static str> {
+        let Source {
+            contract,
+            selectors,
+        } = source;
+        let body = executable.as_ref();
         if self.rows.contains_key(&index) {
             return Err("source const-call input owner was published twice");
         }
-        if contract.key != body.key()
+        if contract.key != body.owner.key(body.source)
             || contract.source != body.source
             || contract.signature != body.owner.signatures().map(|(_, owned)| owned)
         {
             return Err("source const-call contract belongs to another body");
         }
-        let base = contract.retained_bytes().saturating_add(size_of::<Row>());
-        let fixed = size_of::<Self>()
-            .saturating_add(self.bytes)
+        let base = contract
+            .retained_bytes()
+            .saturating_add(size_of::<Row>())
+            .saturating_add(selectors.as_deref().map_or(0, selectors::Rows::bytes));
+        let growth = if self.rows.len() < self.rows.capacity() {
+            0
+        } else {
+            crate::support::retained::new_map::<usize, Rc<Row>>(self.rows.len() + 1)
+        };
+        let fixed = self
+            .retained_bytes()
             .saturating_add(base)
-            .saturating_add(crate::support::retained::new_map::<usize, Arc<Row>>(
-                self.rows.len() + 1,
-            ));
+            .saturating_add(growth);
         let budget = (64usize * 1024 * 1024)
             .checked_sub(fixed)
             .ok_or("source const-call input storage exceeds budget")?;
@@ -165,41 +260,91 @@ impl Inputs {
             None
         };
         let retained = base.saturating_add(requirements.as_ref().map_or(0, |r| r.retained_bytes()));
-        let total = size_of::<Self>()
-            .saturating_add(self.bytes)
+        let total = self
+            .retained_bytes()
             .saturating_add(retained)
-            .saturating_add(crate::support::retained::new_map::<usize, Arc<Row>>(
-                self.rows.len() + 1,
-            ));
+            .saturating_add(growth);
         if total > 64 * 1024 * 1024 {
             return Err("source const-call input storage exceeds budget");
         }
-        let row = Arc::new(Row {
+        let row = Rc::new(Row {
             code: index,
-            key: body.key(),
+            selectors,
+            key: body.owner.key(body.source),
             source: body.source,
             instance: body.instance,
             signatures: body.owner.signatures(),
             result: body.result,
             contract,
             requirements,
+            executable,
         });
-        row.validate(
+        row.validate(index, &row.executable)?;
+        self.rows
+            .try_reserve(1)
+            .map_err(|_| "source input index allocation failed")?;
+        if self.retained_bytes().saturating_add(retained) > 64 * 1024 * 1024 {
+            return Err("source input index payload exceeds storage budget");
+        }
+        Ok(PreparedRow {
             index,
-            catalog
-                .code(index)
-                .ok_or("source code publication disappeared")?,
-        )?;
-        self.rows.insert(index, row);
-        self.bytes = self.bytes.saturating_add(retained);
-        Ok(())
+            row,
+            bytes: retained,
+        })
     }
     pub(crate) fn retained_bytes(&self) -> usize {
-        size_of::<Self>().saturating_add(self.bytes).saturating_add(
-            crate::support::retained::new_map::<usize, Arc<Row>>(self.rows.len()),
-        )
+        size_of::<Self>()
+            .saturating_add(self.bytes)
+            .saturating_add(crate::support::retained::map(&self.rows))
     }
-    pub(super) fn get(&self, code: usize, catalog: &Catalog) -> Result<Arc<Row>, &'static str> {
+    pub(crate) fn remaining_bytes(&self) -> usize {
+        (64 * 1024 * 1024usize).saturating_sub(self.retained_bytes())
+    }
+    pub(in crate::const_eval) fn check_plan(
+        &self,
+        plan: &PreparedRow,
+        index: usize,
+        code: &Rc<Code>,
+    ) -> Result<(), &'static str> {
+        if plan.index != index
+            || !Rc::ptr_eq(&plan.row.executable, code)
+            || self.rows.contains_key(&index)
+            || self.rows.len() >= self.rows.capacity()
+            || self.retained_bytes().saturating_add(plan.bytes) > 64 * 1024 * 1024
+        {
+            return Err("source input plan changed its exact code, index or storage owner");
+        }
+        plan.row.validate(index, code)
+    }
+    pub(in crate::const_eval) fn commit(&mut self, plan: PreparedRow) {
+        self.bytes = self.bytes.saturating_add(plan.bytes);
+        self.rows.insert(plan.index, plan.row);
+    }
+    pub(super) fn opening(
+        &self,
+        catalog: &Catalog,
+        code: usize,
+        body: &Code,
+        call: crate::body::ir::ValueId,
+    ) -> Result<Opening, &'static str> {
+        catalog.validate_entry(code)?;
+        if catalog
+            .code(code)
+            .is_none_or(|actual| !std::ptr::eq(actual, body))
+        {
+            return Err("reference selector descriptor belongs to another actual catalog code");
+        }
+        let row = self
+            .rows
+            .get(&code)
+            .ok_or("reference selector has no actual retained caller row")?;
+        row.validate(code, body)?;
+        row.selectors
+            .as_deref()
+            .and_then(|rows| rows.get(call))
+            .ok_or("reference selector has no proved input/output descriptor")
+    }
+    pub(super) fn get(&self, code: usize, catalog: &Catalog) -> Result<Rc<Row>, &'static str> {
         catalog.validate_entry(code)?;
         let row = self
             .rows
@@ -211,7 +356,7 @@ impl Inputs {
                 .code(code)
                 .ok_or("source conditional code disappeared")?,
         )?;
-        Ok(Arc::clone(row))
+        Ok(Rc::clone(row))
     }
 }
 

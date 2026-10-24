@@ -1,17 +1,17 @@
 //! Namespace-directed lookup returns missing binding keys for import dependencies.
+pub(crate) use super::table::BindingKey;
 use super::{
     index::{Context, Resolver},
     model::{Access, Binding, DefId, DefKind, Namespace, Origin, ScopeId, Target},
     names::NameId,
     package::{Error, ModuleId},
 };
-use crate::syntax::ast::NodeId;
+use crate::{expand::marks::ItemContext, syntax::ast::NodeId};
 #[derive(Clone, Copy)]
 pub(crate) enum LookupMode {
     Use(Namespace),
     Import(Namespace),
 }
-pub(crate) type BindingKey = (ScopeId, NameId, Namespace);
 pub(crate) struct Selection {
     pub key: BindingKey,
     pub binding: Binding,
@@ -56,7 +56,7 @@ impl Resolver<'_> {
         scope: ScopeId,
         name: NameId,
         target: DefId,
-        introduction: crate::expand::stream::ContextId,
+        introduction: crate::expand::marks::ExpansionId,
         dependencies: &mut Vec<BindingKey>,
     ) -> bool {
         let definition_scope = self.facts.definitions[target.0 as usize].scope;
@@ -65,7 +65,7 @@ impl Resolver<'_> {
             .definitions
             .get(&target)
             .copied()
-            .unwrap_or(crate::expand::stream::ContextId(0));
+            .unwrap_or(crate::expand::marks::ExpansionId(0));
         let more_expanded = !marks.ancestor(defined, introduction);
         let mut inside = true;
         let mut current = Some(scope);
@@ -76,7 +76,7 @@ impl Resolver<'_> {
             if !inside && !more_expanded {
                 break;
             }
-            dependencies.push((scope, name, Namespace::Macro));
+            dependencies.push((scope, name, Namespace::Macro, ItemContext::ROOT));
             if let Some(binding) = self.facts.bindings.get(scope, name, Namespace::Macro) {
                 return (binding.ambiguous || binding.target != target)
                     && (inside || !marks.ancestor(defined, marks.binding(*binding)));
@@ -100,10 +100,11 @@ impl Resolver<'_> {
         if matches!(namespace, Namespace::Value | Namespace::Label)
             && let Some(hygiene) = self.hygiene.as_ref()
         {
-            let context = self.package.expansion_context(c.file, offset)?;
+            let context = self.package.local_context(c.file, offset)?;
             let found = hygiene
                 .lookup(
                     self.facts,
+                    &self.package.marks,
                     super::hygiene::Query {
                         scope: c.scope,
                         name,
@@ -241,7 +242,7 @@ impl Resolver<'_> {
             if let Some(observed) = observed.as_mut() {
                 observed
                     .dependencies
-                    .push((ScopeId(0), first, Namespace::Type));
+                    .push((ScopeId(0), first, Namespace::Type, ItemContext::ROOT));
             }
             Some(self.external_root(c, node, first)?)
         } else {
@@ -312,11 +313,11 @@ impl Resolver<'_> {
             if let Some(observed) = observed.as_mut() {
                 let keys = &mut observed.dependencies;
                 if let Some(scope) = scope {
-                    keys.push((scope, name, ns));
+                    keys.push((scope, name, ns, ItemContext::ROOT));
                 } else {
                     let mut parent = Some(c.scope);
                     while let Some(scope) = parent {
-                        keys.push((scope, name, ns));
+                        keys.push((scope, name, ns, ItemContext::ROOT));
                         parent = self.facts.scopes[scope.0 as usize].parent;
                     }
                 }
@@ -348,7 +349,7 @@ impl Resolver<'_> {
             };
             if let Some(trace) = observed.as_mut().and_then(|o| o.selected.as_mut()) {
                 trace.push(Selection {
-                    key: (found_scope, name, ns),
+                    key: (found_scope, name, ns, ItemContext::ROOT),
                     binding,
                     lexical: scope.is_none(),
                 });

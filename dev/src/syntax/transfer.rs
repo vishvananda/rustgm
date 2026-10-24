@@ -229,6 +229,7 @@ impl Bases {
             self.optional(&mut tree.prefix);
             self.list(&mut tree.children);
             self.optional(&mut tree.rename);
+            optional_span(&mut tree.glob, span)?;
             destination.use_trees.push(tree);
         }
         for generic in &source.generics {
@@ -582,6 +583,15 @@ impl Bases {
                 self.list(items);
             }
             ItemKind::MacroRules { capture } => *capture += self.captures,
+            ItemKind::DeclarativeMacro {
+                parameters,
+                capture,
+            } => {
+                if let Some(parameters) = parameters {
+                    *parameters += self.captures;
+                }
+                *capture += self.captures;
+            }
         }
         Ok(())
     }

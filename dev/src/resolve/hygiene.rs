@@ -6,16 +6,19 @@ use super::{
     unit::NodeKey,
 };
 use crate::support::hash::HashMap;
-use crate::{expand::stream::ContextId, support::names::NameId, syntax::ast::NodeId};
+use crate::{
+    expand::marks::{ExpansionId, ItemContext, LocalContext, Marks},
+    support::names::NameId,
+    syntax::ast::NodeId,
+};
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct Ident(u64);
 impl Ident {
-    pub const fn new(name: NameId, context: ContextId) -> Self {
-        Self((context.0 as u64) << 32 | name.0 as u64)
+    pub const fn new(name: NameId, context: LocalContext) -> Self {
+        Self((context.key() as u64) << 32 | name.0 as u64)
     }
 }
 struct MacroSite {
-    context: ContextId,
     scope: Option<ScopeId>,
     visible: usize,
 }
@@ -23,7 +26,7 @@ pub(crate) struct Query {
     pub scope: ScopeId,
     pub name: NameId,
     pub namespace: Namespace,
-    pub context: ContextId,
+    pub context: LocalContext,
     pub visible: usize,
 }
 /// Macro definition sites; the locals themselves live in the binding table.
@@ -44,7 +47,6 @@ impl Hygiene {
             sites: definitions
                 .iter()
                 .map(|d| MacroSite {
-                    context: d.context,
                     scope: d
                         .node
                         .and_then(|node| scopes.get(&(d.module, node.node)).copied()),
@@ -68,7 +70,7 @@ impl Hygiene {
     pub const fn is_local(kind: DefKind) -> bool {
         matches!(kind, DefKind::Local | DefKind::Parameter | DefKind::Label)
     }
-    fn site(&self, context: ContextId) -> Result<&MacroSite, &'static str> {
+    fn site(&self, context: ExpansionId) -> Result<&MacroSite, &'static str> {
         let index = context
             .0
             .checked_sub(1)
@@ -84,20 +86,21 @@ impl Hygiene {
     pub fn lookup(
         &self,
         facts: &Resolution,
+        marks: &Marks,
         mut query: Query,
     ) -> Result<Option<(ScopeId, Binding)>, &'static str> {
         let mut current = Some(query.scope);
         let mut barriers = 0;
         let mut label_barrier = false;
-        let mut remaining = (self.expansions.len() + 1).saturating_mul(facts.scopes.len() + 1);
+        let mut remaining = marks.context_count().saturating_mul(facts.scopes.len() + 1);
         while remaining > 0 {
             remaining -= 1;
             let Some(scope) = current else {
-                if query.context.0 == 0 {
+                let Some((parent, expansion)) = marks.local_parent(query.context)? else {
                     return Ok(None);
-                }
-                let site = self.site(query.context)?;
-                query.context = site.context;
+                };
+                let site = self.site(expansion)?;
+                query.context = parent;
                 query.visible = query.visible.min(site.visible);
                 current = site.scope;
                 continue;
@@ -115,10 +118,10 @@ impl Hygiene {
             {
                 return Ok(Some((scope, binding)));
             }
-            if query.context.0 != 0 {
-                let site = self.site(query.context)?;
+            if let Some((parent, expansion)) = marks.local_parent(query.context)? {
+                let site = self.site(expansion)?;
                 if site.scope == Some(scope) {
-                    query.context = site.context;
+                    query.context = parent;
                     query.visible = query.visible.min(site.visible);
                     continue;
                 }
@@ -145,6 +148,31 @@ impl Hygiene {
     }
 }
 
+impl super::index::Resolver<'_> {
+    /// Item identities follow the declared identifier, independently of the
+    /// expansion that introduced the surrounding item or module. Implicit Self
+    /// deliberately retains the pinned language implementation's root identity.
+    pub(crate) fn binding_key(
+        &self,
+        definition: &super::model::Definition,
+    ) -> Result<super::table::BindingKey, super::package::Error> {
+        let context = if definition.kind == DefKind::SelfType {
+            ItemContext::ROOT
+        } else if let Some(node) = definition.node {
+            self.package
+                .item_context(node.file, name_offset(self.package, node))?
+        } else {
+            ItemContext::ROOT
+        };
+        Ok((
+            definition.scope,
+            definition.name,
+            definition.namespace,
+            context,
+        ))
+    }
+}
+
 pub(crate) fn name_offset(package: &super::package::Package, key: NodeKey) -> u32 {
     use crate::syntax::ast::Kind;
     let ast = &package.unit(key.file).configured.ast;
@@ -158,6 +186,19 @@ pub(crate) fn name_offset(package: &super::package::Package, key: NodeKey) -> u3
             | Kind::Receiver { name, .. } => {
                 return name.start;
             }
+            Kind::Item(index) => {
+                let item = ast.items[index as usize];
+                let name = match item.kind {
+                    crate::syntax::item::ItemKind::ExternCrate { rename: Some(name) } => Some(name),
+                    _ => item.name,
+                };
+                return name.map_or(value.span.start, |name| name.start);
+            }
+            Kind::Generic(index) => return ast.generics[index as usize].name.start,
+            Kind::Variant(index) => return ast.variants[index as usize].name.start,
+            Kind::FieldDefinition {
+                name: Some(name), ..
+            } => return name.start,
             Kind::Path { segments, .. } => {
                 let Some(first) = ast.list(segments).first() else {
                     return value.span.start;
@@ -165,7 +206,12 @@ pub(crate) fn name_offset(package: &super::package::Package, key: NodeKey) -> u3
                 node = *first;
             }
             Kind::Applied { base, .. } => node = base,
+            Kind::Attributed { value, .. } => node = value,
             _ => return value.span.start,
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/identifier_keys.rs"]
+mod tests;

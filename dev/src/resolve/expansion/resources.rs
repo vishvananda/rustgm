@@ -134,7 +134,8 @@ impl<S: Sources> Engine<'_, S> {
                 file: included,
                 span,
             },
-            context: None,
+            context: Some(crate::expand::marks::SyntaxContextId::ROOT),
+            introduction: crate::expand::marks::ExpansionId(0),
             joint: None,
         }];
         let generated = destination

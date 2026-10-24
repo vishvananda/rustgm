@@ -95,6 +95,17 @@ pub(super) fn validate<'code>(
     frame: &'code Frame,
     phase: Phase,
 ) -> Result<Option<Call<'code>>, &'static str> {
+    validate_source(facts, catalog, None, body, frame, phase)
+}
+
+pub(super) fn validate_source<'code>(
+    facts: &Declarations,
+    catalog: &Catalog,
+    inputs: Option<&super::use_inputs::Inputs>,
+    body: &'code Code,
+    frame: &'code Frame,
+    phase: Phase,
+) -> Result<Option<Call<'code>>, &'static str> {
     let position = phase.position(frame)?;
     let Some(block) = body.blocks.get(frame.block.0 as usize) else {
         return Err("source selector has no current checked block");
@@ -146,14 +157,23 @@ pub(super) fn validate<'code>(
     {
         return Err("source selector belongs to another actual executable caller");
     }
-    caller(facts, catalog, body, frame.body)?;
     opened(facts, body, frame, callee, signature, value.ty, selection)?;
     let operands = operands(body, frame, arguments, selection)?;
     let callback = Machine::value(frame, operands[1])
         .map_err(|_| "source selector F was not evaluated")?
         .as_function()
         .ok_or("source selector F lost its actual function item")?;
-    let width = callback_signature(facts, selection, callback)?;
+    let reference = reference_opening(
+        facts,
+        catalog,
+        inputs,
+        body,
+        (frame.body, id),
+        selection,
+        callback,
+    )?;
+    caller(facts, catalog, body, frame.body, reference.is_some())?;
+    let width = callback_signature(facts, selection, callback, reference)?;
     let tuple =
         Machine::value(frame, operands[0]).map_err(|_| "source selector ARG was not evaluated")?;
     if !matches!(Reader::new(facts).view(tuple)?, View::Product { length, variant: None } if length == width as u64)
@@ -169,11 +189,39 @@ pub(super) fn validate<'code>(
     }))
 }
 
+fn reference_opening(
+    facts: &Declarations,
+    catalog: &Catalog,
+    inputs: Option<&super::use_inputs::Inputs>,
+    body: &Code,
+    site: (usize, ValueId),
+    selection: Select,
+    callback: Instance,
+) -> Result<Option<TypeId>, &'static str> {
+    let Some(Kind::FunctionItem { signature, .. }) = facts.types.kind(callback.ty()) else {
+        return Err("source selector callback lost its actual item");
+    };
+    if matches!(
+        facts.types.kind(signature),
+        Some(Kind::Function {
+            bound_regions: 0,
+            ..
+        })
+    ) {
+        return Ok(None);
+    }
+    let inputs =
+        inputs.ok_or("source const_eval_select callback binders require proved caller inputs")?;
+    let opening = inputs.opening(catalog, site.0, body, site.1)?;
+    opening.validate(facts, selection, callback).map(Some)
+}
+
 fn caller(
     facts: &Declarations,
     catalog: &Catalog,
     code: &Code,
     index: usize,
+    reference: bool,
 ) -> Result<(), &'static str> {
     match code.owner {
         crate::body::ir::Owner::Function { definition, .. } => {
@@ -186,17 +234,18 @@ fn caller(
                 .owner
                 .signatures()
                 .ok_or("source selector caller has no signature pair")?;
-            if !matches!(
-                facts.types.kind(public),
-                Some(Kind::Function {
-                    bound_regions: 0,
-                    ..
-                })
-            ) || facts.types.needs_region_context(public) != Some(false)
+            if !reference
+                && (!matches!(
+                    facts.types.kind(public),
+                    Some(Kind::Function {
+                        bound_regions: 0,
+                        ..
+                    })
+                ) || facts.types.needs_region_context(public) != Some(false))
             {
                 return Err("source const_eval_select open caller signatures are not implemented");
             }
-            if owned != public {
+            if !reference && owned != public {
                 return Err(
                     "source selector closed caller changed its public/internal signature pair",
                 );
@@ -329,6 +378,7 @@ fn callback_signature(
     facts: &Declarations,
     selection: Select,
     actual: Instance,
+    reference: Option<TypeId>,
 ) -> Result<usize, &'static str> {
     let Some(Kind::FunctionItem { item: logical, .. }) = facts.types.kind(selection.types[1])
     else {
@@ -344,18 +394,23 @@ fn callback_signature(
         return Err("source selector F differs from its actual const declaration");
     }
     let Some(Kind::Function {
-        bound_regions: 0,
         parameters,
         result,
+        bound_regions: 0,
         unsafe_: false,
         convention: Convention::RUST,
-    }) = facts.types.kind(signature)
+    }) = facts.types.kind(reference.unwrap_or(signature))
     else {
-        return Err("source const_eval_select callback binders are not implemented");
+        return Err(if reference.is_some() {
+            "reference selector lost its proved opened signature"
+        } else {
+            "source const_eval_select callback binders are not implemented"
+        });
     };
     if facts.types.needs_region_context(actual.ty()) != Some(false)
-        || facts.types.needs_region_context(selection.types[0]) != Some(false)
-        || facts.types.needs_region_context(selection.types[3]) != Some(false)
+        || (reference.is_none()
+            && (facts.types.needs_region_context(selection.types[0]) != Some(false)
+                || facts.types.needs_region_context(selection.types[3]) != Some(false)))
     {
         return Err("source const_eval_select lifetime-bearing callback entry is not implemented");
     }
@@ -365,16 +420,21 @@ fn callback_signature(
     if header.declaration.source().is_none() {
         return Err("source const_eval_select imported callback eligibility is not implemented");
     }
-    let shifted = facts
-        .types
-        .prepared_shift(selection.types[0], 1)?
-        .ok_or("source selector callback tuple relocation was not prepared")?;
-    let Some(Kind::Tuple(expected)) = facts.types.kind(shifted) else {
-        return Err("source selector callback tuple relocation changed its shape");
-    };
-    if parameters != expected || facts.types.prepared_shift(selection.types[3], 1)? != Some(result)
-    {
-        return Err("source selector actual F signature differs from its exact tuple/result");
+    if reference.is_none() {
+        let shifted = facts
+            .types
+            .prepared_shift(selection.types[0], 1)?
+            .ok_or("source selector callback tuple relocation was not prepared")?;
+        let Some(Kind::Tuple(expected)) = facts.types.kind(shifted) else {
+            return Err("source selector callback tuple relocation changed its shape");
+        };
+        if parameters != expected
+            || facts.types.prepared_shift(selection.types[3], 1)? != Some(result)
+        {
+            return Err("source selector actual F signature differs from its exact tuple/result");
+        }
+    } else if result != selection.types[3] {
+        return Err("reference selector changed its caller-opened result");
     }
     let width = facts
         .types

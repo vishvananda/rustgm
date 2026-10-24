@@ -173,6 +173,7 @@ enum Work {
     PatternNext(pending_patterns::FrameId),
     PatternPublish(pending_patterns::FrameId, Query),
     PatternFinish(pending_patterns::FrameId),
+    RestoreValueScope(Option<instances::ValueScope>),
     PrepareNode(NodeKey),
     PrepareInstance(crate::sema::values::Instance),
     Layout(NodeKey, TypeId, bool),
@@ -381,6 +382,7 @@ impl Queries<'_> {
     }
     fn drain(&mut self) -> Result<(), Error> {
         if self.drain_until(None)?.is_some() {
+            self.abort_value_scopes();
             return Err(Error::at(
                 FileId(0),
                 0,
@@ -395,7 +397,7 @@ impl Queries<'_> {
     ) -> Result<Option<suspension::Dependency>, Error> {
         let result = self.drain_until_inner(ready);
         if result.is_err() {
-            self.abort_pattern_frames();
+            self.abort_value_scopes();
         }
         result
     }
@@ -404,6 +406,9 @@ impl Queries<'_> {
         ready: Option<&HashSet<DefId>>,
     ) -> Result<Option<suspension::Dependency>, Error> {
         while let Some(work) = self.work.pop() {
+            if self.restore_popped_value_scope(&work)? {
+                continue;
+            }
             self.resume_pattern_dispatch()?;
             self.reserve_pattern_dispatch()?;
             if let Some(ready) = ready
@@ -428,6 +433,13 @@ impl Queries<'_> {
                 Work::PatternNext(id) => self.next_pattern_request(id)?,
                 Work::PatternPublish(id, query) => self.publish_pattern_request(id, query)?,
                 Work::PatternFinish(id) => self.finish_pattern_frame(id)?,
+                Work::RestoreValueScope(_) => {
+                    return Err(Error::at(
+                        FileId(0),
+                        0,
+                        "value scope restoration escaped its owner",
+                    ));
+                }
                 Work::Source(source) => {
                     if let Some(requirement) = self.execute_source(source)? {
                         self.work.push(Work::Source(source));
@@ -451,26 +463,7 @@ impl Queries<'_> {
                 Work::Layout(key, ty, finish) => self.layout(key, ty, finish)?,
                 Work::Alignment(obligation) => self.check_alignment(obligation)?,
                 Work::Enter(query) => self.enter(query)?,
-                Work::Forward(query, dependency) => {
-                    let value = self.value(dependency)?;
-                    if let Query::Instance(instance) = query {
-                        instance
-                            .publish(self.typing.facts, None, values::Constant(value))
-                            .map_err(|e| self.error(query, e))?;
-                    }
-                    self.complete_query(query, value)?;
-                    if let Query::Contents(_, id) = query {
-                        self.typing
-                            .facts
-                            .constant_references
-                            .complete(id, value)
-                            .map_err(|e| self.error(query, e))?;
-                    }
-                    if let Query::Constant(index) | Query::Static(index) = query {
-                        let definition = self.typing.facts.initializers[index].definition;
-                        self.typing.facts.constant_values.insert(definition, value);
-                    }
-                }
+                Work::Forward(query, dependency) => self.finish_forward(query, dependency)?,
                 Work::Successor(query, dependency, tag) => {
                     self.finish_successor(query, dependency, tag)?;
                 }
@@ -494,6 +487,28 @@ impl Queries<'_> {
             }
         }
         Ok(None)
+    }
+    /// Publish the same completed dependency before its enclosing scope restores.
+    fn finish_forward(&mut self, query: Query, dependency: Query) -> Result<(), Error> {
+        let value = self.value(dependency)?;
+        if let Query::Instance(instance) = query {
+            instance
+                .publish(self.typing.facts, None, values::Constant(value))
+                .map_err(|e| self.error(query, e))?;
+        }
+        self.complete_query(query, value)?;
+        if let Query::Contents(_, id) = query {
+            self.typing
+                .facts
+                .constant_references
+                .complete(id, value)
+                .map_err(|e| self.error(query, e))?;
+        }
+        if let Query::Constant(index) | Query::Static(index) = query {
+            let definition = self.typing.facts.initializers[index].definition;
+            self.typing.facts.constant_values.insert(definition, value);
+        }
+        Ok(())
     }
     fn finish_successor(
         &mut self,
@@ -563,6 +578,7 @@ impl Queries<'_> {
                 self.enter_variant(variant)?;
             }
             Query::Constant(index) | Query::Static(index) => {
+                self.begin_named_value(index)?;
                 self.work.context = instances::Context::default();
                 if !self.typing.facts.initializers[index].type_checked() {
                     self.typing.initializer(index)?;

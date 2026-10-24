@@ -1,0 +1,22 @@
+{
+  "state": "declared independent hypothesis before execution; isolates definition lookup from private function item exposure",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "rows": [
+    {
+      "name": "public-definition-helper",
+      "entry": "pa31/tests/spec/declarative-macros/public-definition-helper.rs",
+      "sha256": "d6fbda97054fc4705b381ab0338445ec7e49e66f65bc784d22b93dce41764b71",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "3\n"
+    }
+  ]
+}

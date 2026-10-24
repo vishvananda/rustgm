@@ -312,7 +312,9 @@ impl<L> Syntax<L> {
                 output.extend(abi);
                 self.children(items, output);
             }
-            ItemKind::ExternCrate { .. } | ItemKind::MacroRules { .. } => {}
+            ItemKind::ExternCrate { .. }
+            | ItemKind::MacroRules { .. }
+            | ItemKind::DeclarativeMacro { .. } => {}
         }
     }
 }

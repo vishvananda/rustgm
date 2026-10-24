@@ -1,0 +1,59 @@
+{
+  "state": "Declared independent hypotheses before execution; no observed or RustGM acceptance claim",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "rows": [
+    {
+      "name": "legacy-inside-opaque",
+      "entry": "pa31/tests/spec/declarative-macros/legacy-inside-opaque.rs",
+      "sha256": "647460a8808a5ddb9cf335d483dec7e034285c885d3d3bad9e59cd137b63dc1a",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "7\n",
+      "hypothesis": "A semiopaque legacy expansion inherits its opaque invocation context."
+    },
+    {
+      "name": "opaque-inside-legacy",
+      "entry": "pa31/tests/spec/declarative-macros/opaque-inside-legacy.rs",
+      "sha256": "923cb040810415693067ff1e5edeb0f8f5725b36354af22fb80d88bc23cdba43",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "3\n",
+      "hypothesis": "Opaque literals retain definition context when invoked from legacy expansion."
+    },
+    {
+      "name": "captured-generated-macro-name",
+      "entry": "pa31/tests/spec/declarative-macros/captured-generated-macro-name.rs",
+      "sha256": "4602c6d114388cc1a6acecfc4ff0d985a897a019c56e23566a6ebe98a7b41269",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "17\n",
+      "hypothesis": "The captured root macro name and its literal outer-opaque body have different contexts."
+    },
+    {
+      "name": "captured-module-segment",
+      "entry": "pa31/tests/spec/declarative-macros/captured-module-segment.rs",
+      "sha256": "bd49ae3c6ca02b5403b583bf99853075dcea54919a0e8c78417d60c20281c6da",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "23\n",
+      "hypothesis": "A captured module segment must not resolve to an opaque introduced same-spelling module."
+    },
+    {
+      "name": "captured-import-path-alias",
+      "entry": "pa31/tests/spec/declarative-macros/captured-import-path-alias.rs",
+      "sha256": "bdb88a9465a7dc2c8e0c2b730ee738e99e4dead05a3f03736033cd2a20b48af4",
+      "expected_metadata": 0,
+      "expected_object": 0,
+      "expected_native": "31\n",
+      "hypothesis": "Captured import target and literal alias have separate normalized contexts."
+    }
+  ]
+}

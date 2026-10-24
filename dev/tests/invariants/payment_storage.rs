@@ -1,5 +1,6 @@
 //! Ordinary constants retain no new row owner or proved-contract Arc.
 use super::*;
+use crate::{body::ir::Body, pipeline::execution::CheckedInput};
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 #[test]

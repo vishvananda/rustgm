@@ -46,18 +46,42 @@ pub fn in_edition(
     names: &mut Names,
     edition: Edition,
 ) -> Result<Definition, LexError> {
-    let mut compiler = Compiler {
-        source,
-        forest,
-        names,
-        definition: Definition::default(),
-        variables: Vec::new(),
-        by_name: HashMap::default(),
-        repetitions: Vec::new(),
-        scratch: Vec::new(),
-        depth: 0,
-        edition,
+    rules(source, forest, names, edition, false)
+}
+
+/// Compile scoped macro grammar from retained groups, preserving their source spans.
+/// # Errors
+/// Rejects malformed concise parameters, comma-separated rules and fragment usage.
+pub fn declarative_in_edition(
+    source: &str,
+    parameters: Option<&Forest>,
+    forest: &Forest,
+    names: &mut Names,
+    edition: Edition,
+) -> Result<Definition, LexError> {
+    let Some(parameters) = parameters else {
+        return rules(source, forest, names, edition, true);
     };
+    let mut compiler = Compiler::new(source, parameters, names, edition);
+    let matcher = compiler.group_sequence(parameters.roots().start, Mode::Matcher)?;
+    compiler.forest = forest;
+    let template = compiler.group_sequence(forest.roots().start, Mode::Template)?;
+    compiler.definition.rules.push(Rule {
+        matcher,
+        template,
+        variables: std::mem::take(&mut compiler.variables),
+    });
+    compiler.finish()
+}
+
+fn rules(
+    source: &str,
+    forest: &Forest,
+    names: &mut Names,
+    edition: Edition,
+    scoped: bool,
+) -> Result<Definition, LexError> {
+    let mut compiler = Compiler::new(source, forest, names, edition);
     let body = forest
         .children(forest.roots().start)
         .ok_or_else(|| error(0, "macro definition requires a delimited body"))?;
@@ -78,10 +102,14 @@ pub fn in_edition(
             variables: std::mem::take(&mut compiler.variables),
         });
         if next < body.end {
-            if !forest.punctuation(next, P::Semicolon) {
+            if !forest.punctuation(next, if scoped { P::Comma } else { P::Semicolon }) {
                 return Err(error(
                     forest.offset(next),
-                    "macro rules require semicolon separation",
+                    if scoped {
+                        "scoped macro rules require comma separation"
+                    } else {
+                        "macro rules require semicolon separation"
+                    },
                 ));
             }
             next += 1;
@@ -90,10 +118,27 @@ pub fn in_edition(
     if compiler.definition.rules.is_empty() {
         return Err(error(0, "macro definition requires at least one rule"));
     }
-    super::follow::check(&compiler.definition, compiler.names)?;
-    Ok(compiler.definition)
+    compiler.finish()
 }
-impl Compiler<'_> {
+impl<'a> Compiler<'a> {
+    fn new(source: &'a str, forest: &'a Forest, names: &'a mut Names, edition: Edition) -> Self {
+        Self {
+            source,
+            forest,
+            names,
+            definition: Definition::default(),
+            variables: Vec::new(),
+            by_name: HashMap::default(),
+            repetitions: Vec::new(),
+            scratch: Vec::new(),
+            depth: 0,
+            edition,
+        }
+    }
+    fn finish(self) -> Result<Definition, LexError> {
+        super::follow::check(&self.definition, self.names)?;
+        Ok(self.definition)
+    }
     fn group_sequence(&mut self, index: u32, mode: Mode) -> Result<List, LexError> {
         let range = self
             .forest

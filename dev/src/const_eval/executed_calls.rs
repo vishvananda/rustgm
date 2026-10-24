@@ -49,9 +49,10 @@ impl Machine<'_, '_> {
         // the attempt before inspecting a possibly invalid current use.
         self.charge(128)?;
         self.evaluator.check_source_call_policy()?;
-        let call = super::selector_sites::validate(
+        let call = super::selector_sites::validate_source(
             self.evaluator.facts(),
             &self.bodies,
+            self.bodies.inputs(),
             body,
             frame,
             super::selector_sites::Phase::Executing,

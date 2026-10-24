@@ -1,9 +1,11 @@
 //! Expansion consumes syntax facts and never reparses rendered text.
+pub mod ancestry;
 pub mod builtin;
 pub mod config;
 pub mod configured;
 pub mod crate_syntax;
 pub mod macros;
+pub mod marks;
 pub mod registry;
 pub mod render;
 pub mod stream;

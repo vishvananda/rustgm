@@ -4,6 +4,9 @@ use crate::{
     resolve::model::DefId,
     types::{Kind, instance::Instance},
 };
+#[cfg(test)]
+#[path = "../../tests/invariants/invoked_signatures.rs"]
+mod tests;
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Form {
     Direct,
@@ -123,13 +126,24 @@ impl Machine<'_, '_> {
             return Err("selected const callback has no paired callable signatures");
         };
         let Some(Kind::Function {
-            bound_regions: 0,
+            bound_regions: owned_regions,
             result,
             ..
         }) = facts.types.kind(owned)
         else {
             return Err("selected const callback has no exact opened execution signature");
         };
+        let Some(Kind::Function {
+            bound_regions: public_regions,
+            result: public_result,
+            ..
+        }) = facts.types.kind(public)
+        else {
+            return Err("selected const callback lost its public function signature");
+        };
+        if public_regions != owned_regions || (public_regions == 0 && public_result != result) {
+            return Err("selected const callback changed its paired public/owned binders");
+        }
         if self.bodies.functions.get(&target) != Some(&index)
             || function.definition != definition
             || code.source.source() != Some(function.body.unwrap_or(function.node))
@@ -158,14 +172,25 @@ impl Machine<'_, '_> {
         let crate::body::ir::Owner::Function { definition, .. } = code.owner else {
             return Err("Invoke selected a non-function body");
         };
-        let Some(Kind::Function { result, .. }) = self.evaluator.facts().types.kind(signature)
+        let Some(Kind::Function {
+            bound_regions: public_regions,
+            result: public_result,
+            ..
+        }) = self.evaluator.facts().types.kind(signature)
         else {
             return Err("Invoke target lost its signature");
+        };
+        let Some((public, owned)) = code.owner.signatures() else {
+            return Err("Invoke target lost its paired signatures");
+        };
+        let Some(Kind::Function { result, .. }) = self.evaluator.facts().types.kind(owned) else {
+            return Err("Invoke target lost its owned signature");
         };
         if !code.const_context
             || definition != DefId(item.0)
             || code.result != result
-            || code.owner.signatures().map(|(public, _)| public) != Some(signature)
+            || public != signature
+            || (public_regions == 0 && public_result != result)
             || code.instance.is_some_and(|instance| instance != target)
             || (code.instance.is_none()
                 && self

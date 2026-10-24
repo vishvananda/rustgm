@@ -133,7 +133,7 @@ impl Engine {
                 .0
                 .environment,
         );
-        let mut checked = self.prove_body(
+        let checked = self.prove_body(
             report,
             facts,
             &concrete.body,
@@ -141,17 +141,7 @@ impl Engine {
             super::ProofInput::code(&environment, &concrete.contract),
         )?;
         let index = self
-            .publish_selected(
-                facts,
-                &concrete,
-                checked
-                    .take_code()
-                    .map_err(|e| report.body_error(source, e))?,
-                source_value,
-                result,
-            )
-            .map_err(|e| report.body_error(source, e))?;
-        self.retain_const_inputs(facts, index, &concrete.body, checked, None)
+            .publish_selected(facts, &concrete, checked, source_value, result)
             .map_err(|e| report.body_error(source, e))?;
         facts.constant_work.associated_instances += 1;
         let target = source_value.map_or(Target::Associated { instance, result }, |source| {
@@ -164,12 +154,12 @@ impl Engine {
         &mut self,
         facts: &mut Declarations,
         concrete: &body::instantiate::Materialized,
-        code: crate::const_eval::code::Prepared,
+        mut checked: super::CheckedInput,
         witness: Option<crate::sema::values::execution::SourceComputation>,
         result: TypeId,
     ) -> Result<usize, &'static str> {
         let Some(witness) = witness else {
-            return self.catalog.insert_prepared(code);
+            return self.publish_code(facts, checked, None);
         };
         let crate::body::ir::Owner::InitializerInstance { instance, .. } = concrete.body.owner
         else {
@@ -181,9 +171,9 @@ impl Engine {
             &concrete.contract,
             witness,
         )?;
-        self.catalog.source_initializer_prepared(
+        let registration = self.catalog.stage_source(
             facts,
-            code,
+            checked.take_code()?,
             (
                 instance,
                 concrete
@@ -195,7 +185,11 @@ impl Engine {
             ),
             witness,
             &results,
-        )
+        )?;
+        let index =
+            registration.publish_source(facts, &mut self.const_calls, checked.retained, None)?;
+        self.refresh_code_bytes(facts);
+        Ok(index)
     }
     pub(super) fn associated_template(
         &mut self,

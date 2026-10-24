@@ -1,4 +1,5 @@
 //! Import dependencies and glob deltas wake only the scopes and paths they affect.
+mod trees;
 use super::{
     index::{PRIMITIVES, Resolver},
     lookup::{BindingKey, Lookup, LookupMode, Observations, Selection},
@@ -6,9 +7,12 @@ use super::{
     names::NameId,
     package::Error,
 };
-use crate::support::hash::{HashMap, HashSet};
+use crate::{
+    expand::marks::ItemContext,
+    support::hash::{HashMap, HashSet},
+};
 use std::collections::VecDeque;
-type Key = (NameId, Namespace);
+type Key = (NameId, Namespace, ItemContext);
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum TextualSource {
     Missing,
@@ -26,9 +30,9 @@ pub(crate) struct Work {
     /// sized on demand, so creating a scope costs the worklist nothing.
     changes: Vec<Vec<Key>>,
     journaled: Vec<bool>,
-    /// Binding keys created before this state. A journal starts from its
-    /// scope's keys among them, so creation stays linear in scopes.
-    snapshot: u32,
+    /// The per-scope first-binding tails at creation. Capture four bytes per
+    /// existing scope once; journals still materialize only on demand.
+    snapshot: super::table::Snapshot,
     cursors: Vec<usize>,
     errors: Vec<Option<Error>>,
     candidates: HashMap<BindingKey, Vec<Binding>>,
@@ -54,7 +58,7 @@ impl Work {
             resolved: vec![false; count],
             changes: Vec::new(),
             journaled: Vec::new(),
-            snapshot: facts.bindings.created(),
+            snapshot: facts.bindings.snapshot(),
             cursors: vec![0; count],
             errors: (0..count).map(|_| None).collect(),
             candidates: HashMap::default(),
@@ -89,7 +93,7 @@ impl Work {
     /// Its scope order was recorded by `define`; only dependency journals remain.
     pub fn declared(&mut self, bindings: &BindingTable, key: BindingKey) {
         self.journal(bindings, key.0);
-        self.changes[key.0.0 as usize].push((key.1, key.2));
+        self.changes[key.0.0 as usize].push((key.1, key.2, key.3));
         self.changed(key);
     }
     /// Materialize a scope's journal from the keys it recorded before this state.
@@ -103,11 +107,7 @@ impl Work {
             return;
         }
         self.journaled[index] = true;
-        let snapshot = self.snapshot;
-        let keys = bindings
-            .keys(scope)
-            .filter(|&(_, created)| created < snapshot)
-            .map(|(key, _)| key);
+        let keys = bindings.keys_before(scope, &self.snapshot);
         self.changes[index].splice(0..0, keys);
     }
     pub fn set_textual(&mut self, index: usize, binding: TextualSource) {
@@ -139,7 +139,7 @@ impl Work {
         &self,
         facts: &super::model::Resolution,
         observations: &Observations,
-        introduction: crate::expand::stream::ContextId,
+        introduction: crate::expand::marks::ExpansionId,
     ) -> bool {
         observations.selected.iter().flatten().any(|selected| {
             let (key, binding) = (selected.key, selected.binding);
@@ -153,7 +153,7 @@ impl Work {
             if selected.lexical && (glob || more_expanded) {
                 let mut current = facts.scopes[key.0.0 as usize].parent;
                 while let Some(scope) = current {
-                    if let Some(outer) = facts.bindings.get(scope, key.1, key.2) {
+                    if let Some(outer) = facts.bindings.get_key((scope, key.1, key.2, key.3)) {
                         return (outer.ambiguous || outer.target != binding.target)
                             && (glob || !marks.ancestor(defined, marks.binding(*outer)));
                     }
@@ -200,6 +200,9 @@ impl Work {
 }
 impl Resolver<'_> {
     pub fn imports(&mut self) -> Result<(), Error> {
+        if self.facts.imports.is_empty() {
+            return Ok(());
+        }
         let mut work = Work::new(self.facts);
         self.drive_imports(&mut work)?;
         self.diagnose_imports(work)
@@ -292,7 +295,12 @@ impl Resolver<'_> {
             for definition in &self.facts.definitions[before..] {
                 work.declared(
                     &self.facts.bindings,
-                    (definition.scope, definition.name, definition.namespace),
+                    (
+                        definition.scope,
+                        definition.name,
+                        definition.namespace,
+                        ItemContext::ROOT,
+                    ),
                 );
             }
         }
@@ -319,7 +327,7 @@ impl Resolver<'_> {
                         .imports
                         .get(&index)
                         .copied()
-                        .unwrap_or(crate::expand::stream::ContextId(0));
+                        .unwrap_or(crate::expand::marks::ExpansionId(0));
                     let conflict = self.textual_conflict(
                         import.scope,
                         path[0],
@@ -364,7 +372,7 @@ impl Resolver<'_> {
             .imports
             .get(&index)
             .copied()
-            .unwrap_or(crate::expand::stream::ContextId(0));
+            .unwrap_or(crate::expand::marks::ExpansionId(0));
         let ambiguous = work.ambiguous_early_path(self.facts, &observed, introduction);
         if let Some(mut selections) = observed.selected.take() {
             selections.clear();
@@ -392,7 +400,7 @@ impl Resolver<'_> {
         import: &Import,
         work: &mut Work,
     ) -> Result<(), Error> {
-        let mut path = import.path.as_slice();
+        let mut path = import.path.as_ref();
         let self_import = path.len() > 1
             && path
                 .last()
@@ -400,9 +408,12 @@ impl Resolver<'_> {
         if self_import {
             path = &path[..path.len() - 1];
         }
-        let name = import
+        let (name, context) = import
             .alias
-            .or_else(|| path.last().copied())
+            .or_else(|| {
+                path.last()
+                    .map(|name| (*name, import.segment_context(path.len() - 1)))
+            })
             .ok_or_else(|| self.import_error(import, "empty import"))?;
         let origin = Origin::Import(
             u32::try_from(index).map_err(|_| self.import_error(import, "too many imports"))?,
@@ -413,6 +424,7 @@ impl Resolver<'_> {
             if self_import && ns != Namespace::Type {
                 continue;
             }
+            let key = (import.scope, name, ns, context);
             match self.import_lookup(index, import, path, ns, work)? {
                 Lookup::Found(binding) => {
                     if !self.visible(binding.access, module)
@@ -420,7 +432,7 @@ impl Resolver<'_> {
                     {
                         inaccessible =
                             Some(self.import_error(import, "private import or widened visibility"));
-                        self.withdraw_single((import.scope, name, ns), origin, work)?;
+                        self.withdraw_single(key, origin, work)?;
                         continue;
                     }
                     work.resolved[index] = true;
@@ -437,8 +449,7 @@ impl Resolver<'_> {
                         }
                         continue;
                     }
-                    let key = (import.scope, name, ns);
-                    if let Some(previous) = self.facts.bindings.get(import.scope, name, ns)
+                    if let Some(previous) = self.facts.bindings.get_key(key)
                         && !matches!(previous.origin, Origin::Glob(_))
                         && previous.origin != origin
                     {
@@ -461,7 +472,7 @@ impl Resolver<'_> {
                         work,
                     )?;
                 }
-                Lookup::Missing => self.withdraw_single((import.scope, name, ns), origin, work)?,
+                Lookup::Missing => self.withdraw_single(key, origin, work)?,
                 Lookup::Associated(..) | Lookup::Member(..) | Lookup::SelfConstructor(..) => {
                     return Err(self.import_error(import, "associated items cannot be imported"));
                 }
@@ -483,7 +494,7 @@ impl Resolver<'_> {
         if self
             .facts
             .bindings
-            .get(key.0, key.1, key.2)
+            .get_key(key)
             .is_some_and(|b| b.origin == origin)
         {
             let fallback = self.glob_binding(key, work);
@@ -534,7 +545,7 @@ impl Resolver<'_> {
             let binding = self
                 .facts
                 .bindings
-                .get(source, key.0, key.1)
+                .get_key((source, key.0, key.1, key.2))
                 .copied()
                 .filter(|b| self.visible(b.access, module));
             let binding = binding.map(|binding| Binding {
@@ -546,7 +557,7 @@ impl Resolver<'_> {
                 origin: Origin::Glob(u32::try_from(index).unwrap_or(u32::MAX)),
                 ..binding
             });
-            self.contribute(index, (import.scope, key.0, key.1), binding, work)?;
+            self.contribute(index, (import.scope, key.0, key.1, key.2), binding, work)?;
         }
         work.cursors[index] = end;
         Ok(())
@@ -565,9 +576,9 @@ impl Resolver<'_> {
         let provided = std::mem::take(&mut work.provided[index]);
         // Sort only cold removal events so randomized sets cannot affect observable work order.
         let mut keys: Vec<_> = provided.into_iter().collect();
-        keys.sort_by_key(|key| (key.0.0, key.1.name()));
+        keys.sort_by_key(|key| (key.0.0, key.1.name(), key.2.key()));
         for key in keys {
-            self.contribute(index, (import.scope, key.0, key.1), None, work)?;
+            self.contribute(index, (import.scope, key.0, key.1, key.2), None, work)?;
         }
         work.cursors[index] = 0;
         Ok(())
@@ -592,14 +603,14 @@ impl Resolver<'_> {
             candidates.push(binding);
         }
         if binding.is_some() {
-            work.provided[index].insert((key.1, key.2));
+            work.provided[index].insert((key.1, key.2, key.3));
         } else {
-            work.provided[index].remove(&(key.1, key.2));
+            work.provided[index].remove(&(key.1, key.2, key.3));
         }
         if self
             .facts
             .bindings
-            .get(key.0, key.1, key.2)
+            .get_key(key)
             .is_some_and(|b| !matches!(b.origin, Origin::Glob(_)))
         {
             if previous != binding {
@@ -632,20 +643,20 @@ impl Resolver<'_> {
         work: &mut Work,
     ) -> Result<(), Error> {
         work.journal(&self.facts.bindings, key.0);
-        let (scope, name, namespace) = key;
-        let previous = self.facts.bindings.get(scope, name, namespace).copied();
+        let (scope, name, namespace, context) = key;
+        let previous = self.facts.bindings.get_key(key).copied();
         if previous == binding {
             return Ok(());
         }
         if let Some(binding) = binding {
             self.facts
                 .bindings
-                .insert(scope, name, namespace, binding)
+                .insert_key(key, binding)
                 .map_err(|e| Error::at(super::unit::FileId(0), 0, e))?;
         } else {
-            self.facts.bindings.remove(scope, name, namespace);
+            self.facts.bindings.remove_key(key);
         }
-        work.changes[scope.0 as usize].push((name, namespace));
+        work.changes[scope.0 as usize].push((name, namespace, context));
         work.changed(key);
         Ok(())
     }
@@ -674,3 +685,11 @@ impl Resolver<'_> {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/item_journals.rs"]
+mod tests;
+
+#[cfg(test)]
+#[path = "../../tests/invariants/item_globs.rs"]
+mod glob_tests;

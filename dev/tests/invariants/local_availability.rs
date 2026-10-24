@@ -7,7 +7,7 @@ const ROOT: &str = "#![feature(staged_api)]#![stable(feature=\"root\",since=\"1.
 fn ordinary_sources_allocate_no_library_policy() -> Result {
     let report = crate::test_source::resolve("fn main(){}", true)?;
     assert!(report.package.library.is_none());
-    assert_eq!(size_of::<super::super::package::Package>(), 248);
+    assert_eq!(size_of::<super::super::package::Package>(), 256);
     assert_eq!(size_of::<crate::sema::associated::Owner>(), 32);
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
     Ok(())

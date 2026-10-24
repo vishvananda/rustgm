@@ -1,0 +1,137 @@
+{
+  "declared_before_implementation_and_probes": true,
+  "base_qualified_compiler": "736cb69a2c267ed8c4d9b0ac93dffc03a6363ec4",
+  "successor_branch_base": "f8e67119",
+  "scope": "First shared-reference caller/callback profile only; ordinary safe Rust source const F with EMPTY generic arguments. Const/default stability, imported/member/intrinsic/conditional/generic F and mutable-reference cleanup stay separate. No observation claimed.",
+  "retained_original": {
+    "source": "pa31/tests/spec/const-eval-select-ctfe/reference-binder.rs",
+    "sha256": "873e50d001036c158a16f771ab236571d2a25a5478575fcfc441e722e6022d45",
+    "client": "pa31/tests/spec/const-eval-select-ctfe/reference-binder.c",
+    "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+    "native_stdout": "7 1\n",
+    "independent_evidence": "ctfe-source-v1/independent-v1 reference-binder metadata/object/native accepted; original bytes retained",
+    "candidate_target": "move exact explicit binder frontier to accepted source/native only after reached Row authority is implemented and qualified"
+  },
+  "cases": [
+    {
+      "name": "reference-local-argument",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-local-argument.rs",
+      "sha256": "dcc6d62987cb465d425af762dd34764e56d268c91f7dc2ff8a91ff3d8b6a25aa",
+      "rustc_metadata_hypothesis": 0,
+      "candidate_hypothesis": "accept",
+      "scope": "References into the live caller frame survive the chosen callback frame; one shared cached F body serves distinct allocations without making them static.",
+      "state": "Declared before implementation or independent probes; no result claimed",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/reference-local-argument.c",
+      "client_sha256": "15277eb339de8ab9e196008f0cfe3a622e020880f4509a1fd2ee9f47425e54c7",
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 9 1\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "reference-nested-caller",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-nested-caller.rs",
+      "sha256": "4e5693982c8430cffe544e080d868de25ee414daaa21eefbe85a74f4638b6ed8",
+      "rustc_metadata_hypothesis": 0,
+      "candidate_hypothesis": "accept",
+      "scope": "The caller itself has a bound input/result lifetime; its complete proved Contract supplies invocation authority for both callback and returned reference.",
+      "state": "Declared before implementation or independent probes; no result claimed",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/reference-nested-caller.c",
+      "client_sha256": "15277eb339de8ab9e196008f0cfe3a622e020880f4509a1fd2ee9f47425e54c7",
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 9 1\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "reference-two-arguments",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-two-arguments.rs",
+      "sha256": "7b5b782ab17acf09a56e70c0a0ecf95ece4ac0f697852e915a351a61f7084012",
+      "rustc_metadata_hypothesis": 0,
+      "candidate_hypothesis": "accept",
+      "scope": "Two distinct public late slots remain correlated to their respective input and result; no positional or single-slot shortcut.",
+      "state": "Declared before implementation or independent probes; no result claimed",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/reference-two-arguments.c",
+      "client_sha256": "15277eb339de8ab9e196008f0cfe3a622e020880f4509a1fd2ee9f47425e54c7",
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 9 1\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "reference-slice-identity",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-slice-identity.rs",
+      "sha256": "2a9bf245f875db1ad4a499b7f043129156ee95afd2c9ef2d847192aca5e5acf9",
+      "rustc_metadata_hypothesis": 0,
+      "candidate_hypothesis": "accept",
+      "scope": "Shared wide references preserve existing symbolic length/allocation metadata through F; observer avoids slice Index/len library prerequisites.",
+      "state": "Declared before implementation or independent probes; no result claimed",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/reference-slice-identity.c",
+      "client_sha256": "7b5fb87c320d9e3f7900d826878967f34388868d660b730e8074e89e36e25c28",
+      "rustc_object_hypothesis": 0,
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 1\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "reference-return-local-reject",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-return-local-reject.rs",
+      "sha256": "318f62cbbe69b970e0f7003f4538a63ff9dc98a2d5beb1485d6ce77089746f69",
+      "rustc_metadata_hypothesis": 1,
+      "candidate_hypothesis": "reject",
+      "scope": "Caller-local allocation cannot escape through a selected borrowed-result callback; actual lifetime proof must reject before descriptor publication.",
+      "state": "Declared before implementation or independent probes; no result claimed",
+      "candidate_diagnostic_hypothesis": "does not outlive"
+    },
+    {
+      "name": "reference-crossed-result-reject",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-crossed-result-reject.rs",
+      "sha256": "eabaf8b16ccf4bf69e9e38c2b6ad46f455567099dc7e782019aa6a7f3a2c6345",
+      "rustc_metadata_hypothesis": 1,
+      "candidate_hypothesis": "reject",
+      "scope": "An invalid F definition returning the unrelated second lifetime cannot gain authority from a whole-call signature with matching pointer shape.",
+      "state": "Declared before implementation or independent probes; no result claimed",
+      "candidate_diagnostic_hypothesis": "does not outlive"
+    },
+    {
+      "name": "reference-static-result-reject",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-static-result-reject.rs",
+      "sha256": "e2f7c5eebdc1cf1db03ace025ff22963d9688da892ad69a1a4c1684486691cdf",
+      "rustc_metadata_hypothesis": 1,
+      "candidate_hypothesis": "reject",
+      "scope": "The general caller cannot promise static from its input lifetime merely because one actual root argument is static or Code was warmed.",
+      "state": "Declared before implementation or independent probes; no result claimed",
+      "candidate_diagnostic_hypothesis": "does not outlive"
+    },
+    {
+      "name": "reference-nonconst-first-reject",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-nonconst-first-reject.rs",
+      "sha256": "beb60fc1327a6b541f9b4bf9e52b02968a276497e3bb770e382f5ff103546b53",
+      "rustc_metadata_hypothesis": 1,
+      "candidate_hypothesis": "reject",
+      "scope": "Binder equations do not grant const FnOnce eligibility to an ordinary function.",
+      "state": "Declared before implementation or independent probes; no result claimed",
+      "candidate_diagnostic_hypothesis": "trait obligation requires an unambiguous matching assumption or implementation"
+    },
+    {
+      "name": "reference-function-pointer-first-reject",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/reference-function-pointer-first-reject.rs",
+      "sha256": "740ed835e4e0133ab3d1ccd6ebf76ce9e18427ad343401552f142906ac98e863",
+      "rustc_metadata_hypothesis": 1,
+      "candidate_hypothesis": "reject",
+      "scope": "The first callback remains an actual const function item; reifying a pointer does not grant const callable permission.",
+      "state": "Declared before implementation or independent probes; no result claimed",
+      "candidate_diagnostic_hypothesis": "trait obligation requires an unambiguous matching assumption or implementation"
+    }
+  ],
+  "private_opponents": [
+    "foreign Catalog/Inputs pair with coincident metadata but another actual Rc<Code>",
+    "different Code/Call ValueId/selector/full F instance or unevaluated operands",
+    "correlated input/result descriptor swapped with a second true call; no fabricated positive row",
+    "wrong public signature or owned result consistency; caller permission stays separate",
+    "Row/descriptor/Requirements/canonical-map budget failure before any publication; cold and warmed retries",
+    "fresh versus warmed borrowed F Code, same F instance with distinct caller allocations; frame liveness preserved",
+    "existing unmapped no-static generic opponent remains unsupported",
+    "hot Code/Frame/Machine/State/Body/Value sizes unchanged; cold Row/Prepared/CheckedInput and payload capacities reported"
+  ]
+}

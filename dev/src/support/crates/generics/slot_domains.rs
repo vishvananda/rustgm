@@ -201,6 +201,58 @@ impl<'a> ScopeIndex<'a> {
             .ok_or("source type parameter count has no owner scope")
     }
 
+    /// Locate an actual inherited type formal without guessing that Self is
+    /// argument zero or retaining flattened formal vectors for every owner.
+    /// # Errors
+    /// Rejects absent, regional or foreign slots and charges failed queries.
+    pub fn type_argument_position(
+        &self,
+        owner: DeclarationRef,
+        slot: SlotRef,
+        work: &mut Work,
+    ) -> Result<u32, &'static str> {
+        if !self.contains(owner, slot, work)? {
+            return Err("source application formal belongs to another parameter scope");
+        }
+        work.charge(3)?;
+        let slot = &self.rows.slots[slot.0 as usize];
+        if !matches!(slot.kind, ParameterKind::Type { .. }) {
+            return Err("source type argument maps to a regional formal");
+        }
+        let scope = self.owners[slot.owner.0 as usize]
+            .ok_or("source application formal has no original parameter scope")?;
+        let parent = self.rows.scopes[scope as usize].parent;
+        let inherited = parent.map_or(Ok(0), |parent| {
+            self.owners[parent.0 as usize]
+                .map(|index| self.totals[index as usize].types)
+                .ok_or("source application formal parent is missing")
+        })?;
+        let position = inherited
+            .checked_add(slot.index)
+            .ok_or("source type argument ordinal overflow")?;
+        if position >= self.totals[scope as usize].types {
+            return Err("source type argument index is outside the complete type formal order");
+        }
+        Ok(position)
+    }
+
+    /// # Errors
+    /// Rejects unknown owners rather than inferring inheritance from lexical scope.
+    pub fn parent(
+        &self,
+        owner: DeclarationRef,
+        work: &mut Work,
+    ) -> Result<Option<DeclarationRef>, &'static str> {
+        work.charge(1)?;
+        let index = self
+            .owners
+            .get(owner.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or("source generic parent query has no actual owner scope")?;
+        Ok(self.rows.scopes[index as usize].parent)
+    }
+
     #[must_use]
     pub fn retained_bytes(&self) -> usize {
         use crate::support::retained::vector;

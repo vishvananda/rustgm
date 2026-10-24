@@ -1,29 +1,10 @@
 //! A reached call prepares immutable code, then pays this caller's effects once.
-use super::{Body, CheckedInput, Declarations, Engine, Error, Report, const_eval};
+use super::{Declarations, Engine, Error, Report, const_eval};
 use crate::{
     resolve::unit::FileId,
     types::{Kind, instance::Instance},
 };
 impl Engine {
-    pub(super) fn retain_const_inputs(
-        &mut self,
-        facts: &mut Declarations,
-        index: usize,
-        body: &Body,
-        checked: CheckedInput,
-        selected: Option<Instance>,
-    ) -> Result<(), &'static str> {
-        if checked.code.is_some() {
-            return Err("checked executable snapshot was not consumed before retention");
-        }
-        let Some(input) = checked.retained else {
-            return Ok(());
-        };
-        let rows = self.const_calls.get_or_insert_with(Default::default);
-        rows.record(facts, &self.catalog, index, body, input, selected)?;
-        facts.constant_work.code_bytes = self.catalog.bytes.saturating_add(rows.retained_bytes());
-        Ok(())
-    }
     fn function_for_reached(
         &mut self,
         report: &Report,

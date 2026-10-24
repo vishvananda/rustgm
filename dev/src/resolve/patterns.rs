@@ -7,7 +7,7 @@ use super::{
     package::Error,
     unit::NodeKey,
 };
-use crate::expand::stream::ContextId;
+use crate::expand::marks::LocalContext;
 use crate::support::hash::HashMap;
 use crate::syntax::ast::{Kind, NodeId, PatternFlavor};
 use std::hash::Hash;
@@ -268,9 +268,9 @@ impl Resolver<'_> {
                     node: local.node,
                 },
             );
-            self.package.expansion_context(c.file, offset)?
+            self.package.local_context(c.file, offset)?
         } else {
-            ContextId(0)
+            LocalContext::ROOT
         };
         Ok(super::hygiene::Ident::new(local.name, context))
     }
