@@ -11,7 +11,7 @@ use crate::{
         index::State,
         load::{InputFile, Sources},
         lookup::{Lookup, LookupMode},
-        model::Origin,
+        model::{DefKind, Origin},
         package::ModuleId,
         paths::Identified,
     },
