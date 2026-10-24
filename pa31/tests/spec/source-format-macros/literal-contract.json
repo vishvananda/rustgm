@@ -1,0 +1,163 @@
+{
+  "status": "Preimplementation immutable hypotheses; no oracle observations or candidate acceptance claimed",
+  "owning_assignment": "PA31 actual source builtin identity; PA26 formatting execution",
+  "editions": [
+    2021,
+    2024
+  ],
+  "profile": {
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "crate_type": "lib",
+    "cap_lints": "allow"
+  },
+  "original_headers": {},
+  "cases": [
+    {
+      "name": "literal-basic",
+      "path": "literal-basic.rs",
+      "sha256": "4d0d5a3ea05b80cfd682eeb5619220256f584676377aa55956a49cf053f1cd22",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "68656c6c6f",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated"
+    },
+    {
+      "name": "literal-const",
+      "path": "literal-const.rs",
+      "sha256": "9f46ac1ad5e386d1d9cb2a8de1ef55e791d85be0f22fcee52f60222c6c248ea9",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "68656c6c6f",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated"
+    },
+    {
+      "name": "literal-newline",
+      "path": "literal-newline.rs",
+      "sha256": "4a209c527b768884e22d406237ed2be3c376be35cf00e4183f6a5fd6266ff147",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "68656c6c6f0a",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated"
+    },
+    {
+      "name": "literal-empty",
+      "path": "literal-empty.rs",
+      "sha256": "d05dd69ea71b8065370726bfb82d357645ccfe3d758a5c1cf8f21c960db472a6",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated"
+    },
+    {
+      "name": "literal-escaped-braces",
+      "path": "literal-escaped-braces.rs",
+      "sha256": "af8d97d8649233325b990d5e353e54f8ad262e97e24a509a8e88a2c05f06bc96",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "7b787d",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated"
+    },
+    {
+      "name": "literal-raw",
+      "path": "literal-raw.rs",
+      "sha256": "28a39eb80a0542ce3993be692bbe7869ac36ccd5337a37142bb02b4016f3740a",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "615c6e62",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated"
+    },
+    {
+      "name": "literal-renamed-role",
+      "path": "literal-renamed-role.rs",
+      "sha256": "f6badd8c0275b4261abb8feb8534ab52f589e5691410790a2a34bc350763c87d",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual selected role, no spelling privilege",
+      "native_bytes_hex": "68656c6c6f",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated"
+    },
+    {
+      "name": "literal-missing-language-owner",
+      "path": "literal-missing-language-owner.rs",
+      "sha256": "992f1c6c58e25d0e04a985b778b8639479258515b8f90e626a8f01ab0354dce2",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "format_arguments"
+      ],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-wrong-constructor-input",
+      "path": "literal-wrong-constructor-input.rs",
+      "sha256": "3fc698990525431af307bab0971ba8f00172a5862f5253166df99e34d87d52de",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "mismatched types"
+      ],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-nonconst-constructor",
+      "path": "literal-nonconst-constructor.rs",
+      "sha256": "113af9cd5446a7994b7fad6ab5cb788e8fe367ccd93184d5d375ab6351d09015",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "non-const"
+      ],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-private-constructor",
+      "path": "literal-private-constructor.rs",
+      "sha256": "4314c7b5461659d94f7066674fd028bef790ff4261f236d70bbc5757244a7cc9",
+      "rust_metadata": "reject",
+      "rust_object": "reject",
+      "native_stdout": null,
+      "diagnostic_substrings": [
+        "private"
+      ],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout"
+    },
+    {
+      "name": "literal-captured-expression",
+      "path": "literal-captured-expression.rs",
+      "sha256": "4c1aeed8dbc63d2afa6081b7d3fc295470f133d143047e4dda53ecdd17843e8f",
+      "rust_metadata": "accept",
+      "rust_object": "accept",
+      "native_stdout": "7\n",
+      "diagnostic_substrings": [],
+      "candidate_milestone": "actual checked language owner/constructor call; no fabricated Arguments layout",
+      "native_bytes_hex": "68656c6c6f",
+      "native_contract": "C compares actual returned thin-pointer bytes against this immutable byte sequence; empty case requires nonnull pointer; no Arguments ABI fabricated"
+    }
+  ],
+  "native_signature": "extern C answer()->*const u8; caller observes actual formatted literal bytes"
+}
