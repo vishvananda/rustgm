@@ -33,7 +33,7 @@ Its result SHA-256 is `b2f6bb683c0c6800b0dc2e89fa46d616bbdc925e66a444829c02cb7f7
 The preceding probe's `expected path segment` error at byte 6527 is retained in
 `library-stability-whole-core-frontier-v2/`; it no longer describes the fresh
 frontier. Parsing that file now succeeds, but neither probe completes core.
-The integration passes 3,605 release/native tests, 8,382 active text tests and
+The published integration passes 3,605 release/native tests, 8,382 active text tests and
 all 60 functional qualification stages. These counts do not establish a new
 crate milestone or release a PA.
 
@@ -48,19 +48,35 @@ without those later features. Do not move fixtures mechanically by subsystem.
 
 | ID | Priority and evidence | Blocking issue | Owner PA / test PA | Worker | State / dependencies |
 | --- | --- | --- | --- | --- | --- |
-| LIB-001 | P0; preceding whole-core parse blocker removed, scoped semantics still required | Scoped declarative macro publication, item/path/import/glob lookup and definition-site visibility | PA31 internal feature; PA8 shared machinery / PA31, plus applicable PA7–PA8 regressions | Integrator | In progress; syntax/context/index groundwork exists, complete semantics still disabled. |
+| LIB-001 | P0; preceding whole-core parse blocker removed, scoped semantics still required | Scoped declarative macro publication, item/path/import/glob lookup and definition-site visibility | PA31 internal feature; PA8 shared machinery / PA31, plus applicable PA7–PA8 regressions | Integrator | Contextual item/path/import/glob/textual lookup is development-qualified: 66 private checks, 138 frontend tests and 8,382 text cases. Scoped publication and complete semantics remain disabled. |
 | LIB-002 | P0; prerequisite of LIB-001 | Hygienic field, method and associated-member identity; captured names and container-relative privacy | PA31; PA12/PA19 shared consumers / PA31, with earlier ordinary controls | C + integrator | Field storage/consumers and shared adjustment API frozen at local `b937b6da`, unqualified. Methods/associated members remain required. |
-| LIB-003 | P1; actual reduced source failure | Projected Copy proof sees one lifetime premise in inconsistent declaration/body namespaces | PA21 scoped proof + PA31 source const-trait defaults / PA31; add PA21 control where expressible | B | Implementing an authenticated body query view; preserve distinct lifetimes/applications and final proof obligations. |
+| LIB-003 | P1; actual reduced source failure | Projected Copy proof sees one lifetime premise in inconsistent declaration/body namespaces | PA21 scoped proof + PA31 source const-trait defaults / PA31; add PA21 control where expressible | B | Original alias opening passes 39 private controls; three full-lowering cases expose an instance handoff mismatch. A private materialization carrier preserving the original guard and fresh instance Copy proof is frozen for qualification. |
 | LIB-004 | P1; actual reduced source failure, readiness cause not yet observed directly | Early const read treats source `u8: Copy` as absent although its impl is present | PA20 implementation readiness + PA25 early CTFE / PA31 source-binding reproduction | B, coordinated with C | Diagnosing prepared-header versus validated-impl scheduling; needs exact state/wakeup evidence. |
-| LIB-005 | P1; independently qualified reduced program | Anonymous constant-expression `const_eval_select` ownership and cache validation | PA25 execution + PA28 intrinsic semantics + PA31 source identity / PA31 | C | Source-ready at local `379006ad`, unqualified; preserve handoff while C prioritizes LIB-002. |
-| LIB-006 | P1; core-to-consumer prerequisite | Complete substituted signatures, operation types and required inputs for real exported generic originals | PA29 / PA29 data invariants; PA31 source-provider fixtures | A | Implementing one complete actual producer/consumer path; domain indexes alone do not close this issue. |
-| LIB-007 | P1; core-to-consumer prerequisite | Deterministic generic/source metadata, authenticated remapping and fresh imported body proof | PA29 + PA31 source-role admission / PA29 ordinary multi-crate tests and PA31 source-provider tests | A + integrator | Blocked on LIB-006 and imported proof interfaces; descriptor/codec dispatch remains disabled. |
+| LIB-005 | P1; independently qualified reduced program | Anonymous constant-expression `const_eval_select` ownership and cache validation | PA25 execution + PA28 intrinsic semantics + PA31 source identity / PA31 | C | Source-ready at local `379006ad`, unqualified; preserve handoff while C prioritizes LIB-013. |
+| LIB-006 | P1; core-to-consumer prerequisite | Complete substituted signatures, operation types and required inputs for real exported generic originals | PA29 / PA29 data invariants; PA31 source-provider fixtures | A | Complete operation-derived input/signature validation passes 11 focused controls, including exact late-slot, Copy-query and unused-body opponents. Executable artifact/import proof is still required. |
+| LIB-007 | P1; core-to-consumer prerequisite | Deterministic generic/source metadata, authenticated remapping and fresh imported body proof | PA29 + PA31 source-role admission / PA29 ordinary multi-crate tests and PA31 source-provider tests | A + integrator | Implementing a restricted ordinary-function source profile through actual serialization and fresh imported proof. A complete one-body provider independently passes rustc/native controls; candidate descriptor/codec dispatch remains disabled until the full transaction works. |
 | LIB-008 | P1; next whole-crate acceptance gate | Close remaining active core source requirements and emit a real core artifact | PA32, with each failure assigned back to its language owner / PA32 original crate plus reduced owning-PA cases | Integrator | Blocked on LIB-001/002; discover concrete additional issues from unchanged-root runs, not guesses. |
 | LIB-009 | P2; crate-graph prerequisite | Source dependency identity, edition/build configuration and reproducible build orchestration | PA34 / PA34 | Integrator | Partial interfaces exist; complete original graph qualification remains required. |
 | LIB-010 | P2; not yet reached as a whole crate | Original alloc, allocator/runtime contracts and collection consumers | PA33; PA27/PA28 operation prerequisites / PA33 plus reduced owning-PA cases | Unassigned until core advances | Blocked on LIB-007/008/009; split observed alloc failures into concrete issues when reached. |
 | LIB-011 | P2; not yet reached as a whole crate | Original std, platform linkage and abort-profile consumers | PA36; PA30/PA34 platform/build prerequisites / PA36 plus reduced owning-PA cases | Unassigned until prerequisites advance | Blocked on the original core/alloc graph; no unsupported percentage-complete estimate. |
 | LIB-012 | P2; externally useful acceptance | Original no-default-features serde_core, then alloc/std serde_json graphs | PA35 / PA35 | Integrator | Run the core-only graph as soon as LIB-007/008/009 permit it; do not wait for std. |
-| LIB-013 | P0; fresh unchanged-core blocker | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | C + integrator | Source contracts declared in local `af49643a`; C prepares implementation design while preserving the field checkpoint. An unsupported declaration must not be silently treated as its empty source stub or a familiar path spelling. |
+| LIB-013 | P0; fresh unchanged-core blocker | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | C + integrator | Local source delegation is implemented and passes static checks; 168 independent rustc observations and 35 native oracle programs are retained. Candidate private/frontend/native execution remains pending. Foreign macro transport and Rust 2018 remain explicit requirements. |
+
+
+The first LIB-007 executable transaction uses a complete smaller provider with
+ordinary sizing/Clone/Copy/receiver declarations and one generic free function.
+Thirteen independent rustc observations establish source acceptance, native
+consumer answer `7`, and the expected double-move errors without Copy impls.
+The source profile is defined by supported semantics, never the fixture's name,
+arity or body count. Renamed, reordered and multiple-function controls are
+required. Every actual provided body must cross the boundary and prove again.
+The larger three-body const-trait/default provider remains a required successor;
+this first transaction does not claim to build core or finish PA29.
+
+The contextual lookup and input-plan checkpoints are staged locally for combined
+qualification. Their focused results are not a public release/native/performance
+result. The whole-core boundary above remains authoritative until a fresh
+unchanged-crate observation replaces it.
 
 ## Reproductions, tests and closure criteria
 
