@@ -77,8 +77,17 @@ itself invalidate every compiler measurement or require another full native run.
   Fix wiring failures before broadening tests.
   Settle related fixture and test edits first, then run all-target strict Clippy
   as the type/lint gate instead of running both `cargo check` and Clippy. Use
-  focused debug tests for ordinary private invariants: changes to `cfg(test)`
-  still rebuild the library, but debug code generation is substantially cheaper.
+  debug tests for ordinary private invariants: changes to `cfg(test)` still
+  rebuild the library, but debug code generation is substantially cheaper.
+  Once that private test binary is rebuilt for a checkpoint, run its complete
+  nonignored inventory once, checking that every declared new control is present
+  and executed. Capture passing output needed for work/layout measurements.
+  The 1,394-case private release inventory took 4.36 seconds in the retained
+  `library-lookup-panic-release-v1` run and caught an existing builtin grammar
+  regression and three stale cold-layout assertions missed by narrower selections.
+  This does not require building every integration target: keep frontend/native
+  selections focused, and select ignored native controls explicitly. Do not
+  repeat the new private cases separately after their complete inventory passes.
   Do not rebuild release test binaries for each test-only correction. Performance
   measurements and optimization-sensitive failures still require release builds.
 - Keep all active PA text suites as a cheap candidate regression check. These

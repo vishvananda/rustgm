@@ -47,7 +47,8 @@ fn ordinary_requests_do_not_allocate_a_provider_or_library_policy() -> Result {
     }
     assert_eq!(size_of::<Features>(), 2);
     assert_eq!(size_of::<MacroFeatures>(), 1);
-    assert_eq!(size_of::<SourceCore>(), 72);
+    // The cold provider adds 104 bytes of macro-contract state to its 72-byte base.
+    assert_eq!(size_of::<SourceCore>(), 176);
     assert_eq!(size_of::<Package>(), 256);
     Ok(())
 }

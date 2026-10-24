@@ -113,7 +113,8 @@ fn ordinary_admission_inspects_no_syntax_and_language_requests_stay_packed() -> 
         240 + size_of::<Option<Box<crate::resolve::stability::Library>>>()
             + size_of::<crate::expand::marks::Marks>()
     );
-    assert_eq!(size_of::<super::super::SourceCore>(), 72);
+    // The cold provider adds 104 bytes of macro-contract state to its 72-byte base.
+    assert_eq!(size_of::<super::super::SourceCore>(), 176);
     Ok(())
 }
 

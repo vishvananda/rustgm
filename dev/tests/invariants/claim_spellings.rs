@@ -103,6 +103,36 @@ fn role_key(report: &crate::resolve::expansion::Report) -> TestResult<NodeKey> {
 }
 
 #[test]
+fn helper_attribute_word_retains_its_exact_warm_claim_identity() -> TestResult {
+    for word in ["attributes", "r#attributes"] {
+        let source = role_source(&format!("r#line,{word}()"));
+        let mut report = crate::test_source::source_provider(&source, "helper_word")?;
+        let key = role_key(&report)?;
+        assert_eq!(
+            existing(&report.package, key)?
+                .ok_or("actual claim")?
+                .builtin,
+            Some(Builtin::Line)
+        );
+        let changed = source.replacen("attributes", "attribvtes", 1);
+        assert_eq!(source.len(), changed.len());
+        assert!(crate::test_source::source_provider(&changed, "helper_word").is_err());
+        // Only source bytes change: all configured trees, spans and owner IDs remain.
+        let unit = &mut report.package.units[key.file.0 as usize];
+        let saved = std::mem::replace(&mut unit.source, SourceFile::new(changed.into_bytes())?);
+        assert!(existing(&report.package, key).is_err());
+        report.package.units[key.file.0 as usize].source = saved;
+        assert_eq!(
+            existing(&report.package, key)?
+                .ok_or("restored claim")?
+                .builtin,
+            Some(Builtin::Line)
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn same_numbered_cross_report_claim_owners_cannot_exchange_source_authority() -> TestResult {
     assert_eq!("core_panic".len(), "option_env".len());
     let mut left = crate::test_source::source_provider(&role_source("core_panic"), "claim_owners")?;
