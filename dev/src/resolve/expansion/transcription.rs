@@ -18,6 +18,16 @@ impl<S: Sources> Engine<'_, S> {
         context: ExpansionId,
         input: &Input,
     ) -> Result<Transcribed, Error> {
+        let offset = self
+            .loader
+            .package
+            .unit(file)
+            .configured
+            .ast
+            .node(call)
+            .span
+            .start;
+        self.require_invocable(definition, file, offset)?;
         let call_site =
             crate::resolve::unit::contexts::callee(&self.loader.package.units, file, call)?;
         let package = &mut self.loader.package;

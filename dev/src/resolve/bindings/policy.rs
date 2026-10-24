@@ -85,6 +85,20 @@ impl MacroFeatures {
         }
         Ok(())
     }
+    pub(in crate::resolve) fn require_internal(
+        self,
+        file: FileId,
+        offset: u32,
+    ) -> Result<(), Error> {
+        if self.0 & 2 == 0 {
+            return Err(Error::at(
+                file,
+                offset,
+                "macro transparency requires rustc_attrs",
+            ));
+        }
+        Ok(())
+    }
 }
 
 pub(in crate::resolve) struct Prepared {

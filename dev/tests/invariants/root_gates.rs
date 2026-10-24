@@ -97,10 +97,6 @@ fn scoped_declarations_require_the_gate_before_semantic_admission() -> Result {
             "#![feature(rustc_attrs)]",
             "scoped macros require decl_macro",
         ),
-        (
-            "#![feature(decl_macro)]",
-            "scoped declarative macro hygiene is not implemented",
-        ),
     ] {
         let source = format!("{request}macro m(){{}}fn ordinary(){{}}");
         let mut loaded = package(&source, &Context::default())?;
@@ -113,6 +109,24 @@ fn scoped_declarations_require_the_gate_before_semantic_admission() -> Result {
             .ok_or("expansion accepted unsupported scoped hygiene")?;
         assert!(expanded.contains(message), "{expanded}");
     }
+    let source = "#![feature(decl_macro)]macro m(){}fn ordinary(){}";
+    let mut loaded = package(source, &Context::default())?;
+    resolve::analyze(&mut loaded)?;
+    let report = crate::test_source::resolve(source, true)?;
+    assert!(report.definitions.iter().any(|definition| matches!(
+        definition.body,
+        crate::resolve::expansion::Body::ScopedDeclaration(_)
+    )));
+    let error = crate::test_source::resolve(
+        "#![feature(decl_macro)]macro m(){7u32}fn ordinary()->u32{m!()}",
+        true,
+    )
+    .err()
+    .ok_or("scoped declaration enabled execution")?;
+    assert!(
+        error.contains("scoped macro invocation is not implemented"),
+        "{error}"
+    );
     Ok(())
 }
 
