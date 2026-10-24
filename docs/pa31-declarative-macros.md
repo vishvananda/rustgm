@@ -409,6 +409,26 @@ The second failure and scoped cleanup receipt remain under
 `obj/parallel/macro-identifiers-v2` and `obj/cleanup/1792817262704647706.jsonl`.
 Fresh strict and focused qualification is still required.
 
+Collector gate v3 at `67356ab6` passes formatting, audit, strict Clippy,
+harness/upstream verification and all 137 selected frontend cases. Its private
+lane reports 32/37: five new identifier provenance controls fail because their
+fixture inserted origins on physical bytes, which correctly retain ROOT.
+The passing duplicate-name control likewise exercised a root duplicate rather
+than establishing its intended opaque-key case. CLI/text stages did not run.
+The failure is retained in `obj/parallel/macro-identifiers-v3`; scoped cleanup
+`1792818096946014054` removed no artifacts. After diagnosis, cache cleanup
+`1792818123262540177` retired the rebuildable validation Cargo cache while
+preserving current comparison pins and receipts.
+
+The successor fixture now parses a generated fragment once and installs it at
+an actual macro target through `Unit::install_expansion`. Every emitted token
+has a retained origin, and each test changes the selected installed token's
+context rather than appending overlapping origins. The helper verifies that
+the selected span is generated, its context lookup matches, and physical bytes
+remain ROOT. Compiler context lookup and test expectations are unchanged.
+These remain supplied-provenance structural controls, not end-to-end scoped
+expansion qualification. Their corrected execution is pending.
+
 The separate ancestry successor is source-only and unqualified. It replaces
 two linear parent-chain queries with one shared append-only index, consumed by
 both textual lookup and resolved-binding ambiguity checks. Actual declarative

@@ -4,9 +4,11 @@ use super::{DefKind, ExpansionId, ItemContext, Namespace};
 use crate::{
     expand::{
         config::Config,
+        crate_syntax,
         marks::{SyntaxContextId, Transparency},
         stream::{Location, Origin},
     },
+    lex::{Lexer, token::Kind as TokenKind},
     resolve::{
         self,
         load::{InputFile, Sources},
@@ -14,7 +16,11 @@ use crate::{
         unit::FileId,
     },
     support::source::SourceFile,
-    syntax::{ast::Kind, token_tree::Span},
+    syntax::{
+        ast::{Kind, NodeId},
+        expression::fragment,
+        token_tree::Span,
+    },
 };
 use std::path::Path;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
@@ -26,15 +32,67 @@ impl Sources for NoFiles {
     }
 }
 fn package(source: &str) -> TestResult<Package> {
-    Ok(resolve::load::load(
+    let mut package = resolve::load::load(
         InputFile {
             identity: "keys.rs".into(),
             path: "keys.rs".into(),
-            source: SourceFile::new(source.as_bytes().to_vec())?,
+            source: SourceFile::new(b"install!();".to_vec())?,
         },
         &mut NoFiles,
         &Config::default(),
-    )?)
+    )?;
+    let (target, context) = package.units[0]
+        .configured
+        .ast
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(index, node)| match node.kind {
+            Kind::Macro { context, .. } => Some((index, context)),
+            _ => None,
+        })
+        .ok_or("missing expansion installation target")?;
+    let mut lexer = Lexer::new(source).map_err(|error| format!("{error:?}"))?;
+    let mut tokens = Vec::new();
+    while let Some(token) = lexer.next_token().map_err(|error| format!("{error:?}"))? {
+        if !matches!(
+            token.kind,
+            TokenKind::Whitespace | TokenKind::LineComment | TokenKind::BlockComment
+        ) {
+            tokens.push(token);
+        }
+    }
+    let ast = fragment::parse_expansion(source, &tokens, context, &[])
+        .map_err(|error| format!("{error:?}"))?;
+    let configured = crate_syntax::configure(source, ast, &Config::default())
+        .map_err(|error| format!("{error:?}"))?;
+    let origins = tokens
+        .iter()
+        .map(|token| Origin {
+            generated: Span {
+                start: token.start,
+                end: token.end,
+            },
+            original: Location {
+                file: FileId(0),
+                span: Span { start: 0, end: 7 },
+            },
+            context: Some(SyntaxContextId::ROOT),
+            introduction: ExpansionId(1),
+            joint: None,
+        })
+        .collect::<Vec<_>>();
+    package.units[0]
+        .install_expansion(
+            NodeId::new(u32::try_from(target)?),
+            source,
+            configured,
+            &origins,
+        )
+        .map_err(|error| format!("{error:?}"))?;
+    assert_eq!(package.units[0].source.original(), "install!();");
+    assert_eq!(package.syntax_context(FileId(0), 0)?, SyntaxContextId::ROOT);
+    Ok(package)
 }
 fn mark(package: &mut Package, expansion: u32) -> TestResult<SyntaxContextId> {
     Ok(package.marks.apply(
@@ -44,20 +102,16 @@ fn mark(package: &mut Package, expansion: u32) -> TestResult<SyntaxContextId> {
         SyntaxContextId::ROOT,
     )?)
 }
-fn provenance(package: &mut Package, span: Span, context: SyntaxContextId) {
-    package.units[0].origins.push(Origin {
-        generated: span,
-        original: Location {
-            file: FileId(0),
-            span,
-        },
-        context: Some(context),
-        introduction: ExpansionId(1),
-        joint: None,
-    });
-    package.units[0]
+fn provenance(package: &mut Package, span: Span, context: SyntaxContextId) -> TestResult {
+    assert!(span.start as usize >= package.units[0].source.physical_len());
+    let origin = package.units[0]
         .origins
-        .sort_by_key(|origin| origin.generated.start);
+        .iter_mut()
+        .find(|origin| origin.generated == span)
+        .ok_or("missing installed token provenance")?;
+    origin.context = Some(context);
+    assert_eq!(package.syntax_context(FileId(0), span.start)?, context);
+    Ok(())
 }
 
 #[test]
@@ -81,8 +135,8 @@ fn source_identifiers_separate_root_and_opaque_items_in_the_same_scope() -> Test
             end: start + 2,
         },
         keyword,
-    );
-    provenance(&mut package, name, literal);
+    )?;
+    provenance(&mut package, name, literal)?;
     let facts = resolve::analyze(&mut package)?;
     let scope = facts.module_scopes[0];
     let name = package.name(FileId(0), name)?;
@@ -120,7 +174,7 @@ fn two_source_declarations_with_the_same_complete_key_still_conflict() -> TestRe
         .collect::<Vec<_>>();
     assert_eq!(names.len(), 2);
     for name in names {
-        provenance(&mut package, name, context);
+        provenance(&mut package, name, context)?;
     }
     let error = resolve::analyze(&mut package)
         .err()
@@ -142,8 +196,8 @@ fn const_parameters_use_item_context_but_implicit_self_keeps_root_identity() -> 
         .find(|item| matches!(item.kind, crate::syntax::item::ItemKind::Trait { .. }))
         .and_then(|item| item.name)
         .ok_or("actual trait identifier")?;
-    provenance(&mut package, item, context);
-    provenance(&mut package, generic, context);
+    provenance(&mut package, item, context)?;
+    provenance(&mut package, generic, context)?;
     let facts = resolve::analyze(&mut package)?;
     let mut seen = 0;
     for definition in &facts.definitions {
@@ -191,7 +245,7 @@ fn an_import_alias_keeps_its_own_identifier_context_when_published() -> TestResu
         .find_map(|tree| tree.rename)
         .ok_or("actual import alias")?;
     let span = package.units[0].configured.ast.node(rename).span;
-    provenance(&mut package, span, raw);
+    provenance(&mut package, span, raw)?;
     let facts = resolve::analyze(&mut package)?;
     let import = facts.imports.first().ok_or("collected import")?;
     let (name, context) = import.alias.ok_or("retained alias")?;
@@ -235,7 +289,7 @@ fn grouped_imports_keep_each_segment_alias_and_star_context_independent() -> Tes
     let alias = mark(&mut package, 4)?;
     for (name, context) in [("left", left), ("a", element), ("renamed", alias)] {
         let span = named_span(&package, name)?;
-        provenance(&mut package, span, context);
+        provenance(&mut package, span, context)?;
     }
     let span = package.units[0]
         .configured
@@ -244,7 +298,7 @@ fn grouped_imports_keep_each_segment_alias_and_star_context_independent() -> Tes
         .iter()
         .find_map(|tree| tree.glob)
         .ok_or("actual star")?;
-    provenance(&mut package, span, star);
+    provenance(&mut package, span, star)?;
     let mut state = resolve::index::State::default();
     state.bind(&mut package).collect()?;
     let imports = &state.facts.imports;
@@ -314,7 +368,7 @@ fn an_opaque_star_retains_root_segments_without_relabeling_them() -> TestResult 
         .iter()
         .find_map(|tree| tree.glob)
         .ok_or("actual star")?;
-    provenance(&mut package, span, context);
+    provenance(&mut package, span, context)?;
     let mut state = resolve::index::State::default();
     state.bind(&mut package).collect()?;
     let import = state.facts.imports.first().ok_or("collected glob")?;
