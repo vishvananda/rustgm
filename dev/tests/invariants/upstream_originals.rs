@@ -20,6 +20,8 @@ use crate::{
 use std::path::Path;
 #[path = "qualified_source_rows.rs"]
 mod captured;
+#[path = "defined_original_carrier.rs"]
+mod defining;
 #[path = "ordinary_original_probe.rs"]
 mod ordinary;
 pub(super) use ordinary::observe as observe_ordinary;
@@ -37,10 +39,12 @@ fn genuine_clone_from_and_identity_reach_paired_checked_original_inspection() ->
     let mut facts = analysis.facts;
     let concrete = source_function(&report, &facts, "clone")?;
     let ordinary = ordinary::Probe::new(concrete);
+    let mut prepared = analysis.prepared;
+    defining::required(&report, &facts, &mut prepared)?;
     inspect_selected(
         &report,
         &mut facts,
-        analysis.prepared,
+        prepared,
         |facts, checked| {
             let catalog = facts
                 .source_bindings
@@ -171,6 +175,8 @@ fn paired_original(
         }
     }
     if name == "clone_from" {
+        defining::completed(template, contract, proof, checked)
+            .map_err(|error| diagnostic(report, None, error.to_string()))?;
         assert!(
             conditional,
             "actual conditional Destruct remains an original input"
