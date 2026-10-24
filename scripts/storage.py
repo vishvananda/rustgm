@@ -17,7 +17,7 @@ from storage_archives import archive_diagnostic, fingerprint, large_diagnostic
 ROOT = Path(__file__).resolve().parents[1]
 GIB = 1024 ** 3
 CACHE_DIRS = {"rust", "audit-venv", "cleanup"}
-GENERATED_SUFFIXES = {".o", ".rlib", ".rmeta"}
+GENERATED_SUFFIXES = {".a", ".o", ".rlib", ".rmeta"}
 
 
 def minimum_reserve():

@@ -34,6 +34,8 @@ class StorageTests(unittest.TestCase):
             self.binary(output)
             metadata = output.with_suffix(".rmeta")
             metadata.write_bytes(b"metadata")
+            archive = output.parent / "libprovider.a"
+            archive.write_bytes(b"!<arch>\narchive members")
             evidence = output.with_suffix(".json")
             evidence.write_text('{"passed":true}')
             source = output.with_suffix(".rs")
@@ -41,20 +43,26 @@ class StorageTests(unittest.TestCase):
             pinned = root / "obj/baseline/candidate"
             self.binary(pinned)
             (pinned.parent / ".keep-artifacts").touch()
+            pinned_archive = pinned.parent / "libbaseline.a"
+            pinned_archive.write_bytes(archive.read_bytes())
             cache = root / "obj/rust/release/rustgm"
             self.binary(cache)
             external = root / "external/program"
             self.binary(external)
             (root / "obj/escape").symlink_to(external.parent, target_is_directory=True)
             (root / "obj/run/link.o").symlink_to(external)
+            (root / "obj/run/link.a").symlink_to(external)
             with redirect_stdout(io.StringIO()):
-                self.assertEqual(prune(root), 2)
+                self.assertEqual(prune(root), 3)
                 self.assertTrue(output.exists())
-                self.assertEqual(prune(root, apply=True), 2)
-            for path in (evidence, source, pinned, cache, external):
+                self.assertTrue(archive.exists())
+                self.assertEqual(prune(root, apply=True), 3)
+            for path in (evidence, source, pinned, pinned_archive, cache, external):
                 self.assertTrue(path.exists(), path)
             self.assertFalse(output.exists())
             self.assertFalse(metadata.exists())
+            self.assertFalse(archive.exists())
+            self.assertTrue((root / "obj/run/link.a").is_symlink())
 
     def test_age_filter_and_explicit_build_cache(self):
         with tempfile.TemporaryDirectory() as directory:
