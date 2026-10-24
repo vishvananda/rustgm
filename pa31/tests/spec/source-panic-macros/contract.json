@@ -1,0 +1,320 @@
+{
+  "state": "preimplementation hypotheses; no oracle or candidate execution yet",
+  "issue": "LIB-013",
+  "owner": "PA31 source builtin identities; PA8 expansion machinery",
+  "profile": {
+    "rustc": "1.98.0",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "bootstrap": true,
+    "cap_lints": "allow",
+    "overflow_checks": true
+  },
+  "rows": [
+    {
+      "name": "direct-core_panic",
+      "entry": "pa31/tests/spec/source-panic-macros/direct-core_panic.rs",
+      "sha256": "f22f3a3e6946ea13eee14d09e3dee40cd462ff1decbae08a209c7b7d1df99428",
+      "rule": "Actual source builtin role selects the defining crate handler; nested arguments remain unchanged.",
+      "editions": {
+        "2018": {
+          "status": 0,
+          "answer": 15
+        },
+        "2021": {
+          "status": 0,
+          "answer": 21
+        },
+        "2024": {
+          "status": 0,
+          "answer": 21
+        }
+      }
+    },
+    {
+      "name": "direct-std_panic",
+      "entry": "pa31/tests/spec/source-panic-macros/direct-std_panic.rs",
+      "sha256": "5be76c8cc01c2d2562ce6708cf3b8a7ce9ecb851767b37888240ca95ddfd5e5c",
+      "rule": "Actual source builtin role selects the defining crate handler; nested arguments remain unchanged.",
+      "editions": {
+        "2018": {
+          "status": 0,
+          "answer": 15
+        },
+        "2021": {
+          "status": 0,
+          "answer": 21
+        },
+        "2024": {
+          "status": 0,
+          "answer": 21
+        }
+      }
+    },
+    {
+      "name": "direct-unreachable",
+      "entry": "pa31/tests/spec/source-panic-macros/direct-unreachable.rs",
+      "sha256": "7aefd07180aa86d0a15016808d514f47f695dd7d71001a5ab216f28ee2398e35",
+      "rule": "Actual source builtin role selects the defining crate handler; nested arguments remain unchanged.",
+      "editions": {
+        "2018": {
+          "status": 0,
+          "answer": 15
+        },
+        "2021": {
+          "status": 0,
+          "answer": 21
+        },
+        "2024": {
+          "status": 0,
+          "answer": 21
+        }
+      }
+    },
+    {
+      "name": "imported-alias",
+      "entry": "pa31/tests/spec/source-panic-macros/imported-alias.rs",
+      "sha256": "548b7e8f8c12d252320e91d51831a69404a01e07e13dfe0ee9918a5f0a3f47a8",
+      "rule": "A source macro alias retains the builtin declaration identity.",
+      "editions": {
+        "2018": {
+          "status": 0,
+          "answer": 15
+        },
+        "2021": {
+          "status": 0,
+          "answer": 21
+        },
+        "2024": {
+          "status": 0,
+          "answer": 21
+        }
+      }
+    },
+    {
+      "name": "caller-module-shadow",
+      "entry": "pa31/tests/spec/source-panic-macros/caller-module-shadow.rs",
+      "sha256": "77ff1b91ffe597702b4c69d5b7e490378969c6e117085ad5b943bb6d8536a9e8",
+      "rule": "A caller-local panic module cannot replace the defining crate handler.",
+      "editions": {
+        "2018": {
+          "status": 0,
+          "answer": 15
+        },
+        "2021": {
+          "status": 0,
+          "answer": 21
+        },
+        "2024": {
+          "status": 0,
+          "answer": 21
+        }
+      }
+    },
+    {
+      "name": "ordinary-spelling",
+      "entry": "pa31/tests/spec/source-panic-macros/ordinary-spelling.rs",
+      "sha256": "4397d03a693c52a8c14350e541ff575e5e601d403fb5f96dc3123b15dc9fe4fe",
+      "rule": "A familiar spelling without a builtin claim remains an ordinary macro.",
+      "editions": {
+        "2018": {
+          "status": 0,
+          "answer": 9
+        },
+        "2021": {
+          "status": 0,
+          "answer": 9
+        },
+        "2024": {
+          "status": 0,
+          "answer": 9
+        }
+      }
+    },
+    {
+      "name": "missing-modern-handler",
+      "entry": "pa31/tests/spec/source-panic-macros/missing-modern-handler.rs",
+      "sha256": "1b7a6970985cedbd6d7e19bf12f8161bae02c8b55aa03db97616e5fb78004a05",
+      "rule": "The selected modern handler must exist; never use the legacy handler or source stub.",
+      "editions": {
+        "2018": {
+          "status": 0,
+          "answer": 15
+        },
+        "2021": {
+          "status": 1
+        },
+        "2024": {
+          "status": 1
+        }
+      }
+    },
+    {
+      "name": "missing-legacy-handler",
+      "entry": "pa31/tests/spec/source-panic-macros/missing-legacy-handler.rs",
+      "sha256": "d36e7e5ba7a2df57a61cc9ad81cebb64f5567627e252ae3fee9eed5617994216",
+      "rule": "The selected legacy handler must exist; never use the modern handler or source stub.",
+      "editions": {
+        "2018": {
+          "status": 1
+        },
+        "2021": {
+          "status": 0,
+          "answer": 21
+        },
+        "2024": {
+          "status": 0,
+          "answer": 21
+        }
+      }
+    },
+    {
+      "name": "rejected-argument-tokens",
+      "entry": "pa31/tests/spec/source-panic-macros/rejected-argument-tokens.rs",
+      "sha256": "1a2ecdda53c1fc8628623910d8586ce4e7e6ddffe3a5fc9d87c02a41abb67d95",
+      "rule": "Delegation preserves argument tokens and selected macro matching rejects the opposing marker.",
+      "editions": {
+        "2018": {
+          "status": 1
+        },
+        "2021": {
+          "status": 1
+        },
+        "2024": {
+          "status": 1
+        }
+      }
+    },
+    {
+      "name": "unknown-builtin-role",
+      "entry": "pa31/tests/spec/source-panic-macros/unknown-builtin-role.rs",
+      "sha256": "5e7a2f98448166cbad0151d1d26c6bd0b1bdbb61869c1ec0aef405fb45a0b87c",
+      "rule": "An unknown builtin role cannot become a path or execute its authored stub.",
+      "editions": {
+        "2018": {
+          "status": 1
+        },
+        "2021": {
+          "status": 1
+        },
+        "2024": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "cross_crate_rows": [
+    {
+      "name": "route-2018-2021",
+      "provider": "pa31/tests/spec/source-panic-macros/edition-provider.rs",
+      "provider_sha256": "791a2174d2cea3eed5409cb3537717b9e8ec840ddc2d0dbba3f02a74d932c231",
+      "provider_edition": "2018",
+      "consumer": "pa31/tests/spec/source-panic-macros/edition-consumer-route.rs",
+      "consumer_sha256": "4b6a9a2d4e0d98ebffaddc45557f06442bf28958fe1cbff23347c4c6ecb5271e",
+      "consumer_edition": "2021",
+      "expected_status": 0,
+      "answer": 21
+    },
+    {
+      "name": "route-2021-2018",
+      "provider": "pa31/tests/spec/source-panic-macros/edition-provider.rs",
+      "provider_sha256": "791a2174d2cea3eed5409cb3537717b9e8ec840ddc2d0dbba3f02a74d932c231",
+      "provider_edition": "2021",
+      "consumer": "pa31/tests/spec/source-panic-macros/edition-consumer-route.rs",
+      "consumer_sha256": "4b6a9a2d4e0d98ebffaddc45557f06442bf28958fe1cbff23347c4c6ecb5271e",
+      "consumer_edition": "2018",
+      "expected_status": 0,
+      "answer": 15
+    },
+    {
+      "name": "route-2018-2024",
+      "provider": "pa31/tests/spec/source-panic-macros/edition-provider.rs",
+      "provider_sha256": "791a2174d2cea3eed5409cb3537717b9e8ec840ddc2d0dbba3f02a74d932c231",
+      "provider_edition": "2018",
+      "consumer": "pa31/tests/spec/source-panic-macros/edition-consumer-route.rs",
+      "consumer_sha256": "4b6a9a2d4e0d98ebffaddc45557f06442bf28958fe1cbff23347c4c6ecb5271e",
+      "consumer_edition": "2024",
+      "expected_status": 0,
+      "answer": 21
+    },
+    {
+      "name": "ordinary_wrapper-2018-2021",
+      "provider": "pa31/tests/spec/source-panic-macros/edition-provider.rs",
+      "provider_sha256": "791a2174d2cea3eed5409cb3537717b9e8ec840ddc2d0dbba3f02a74d932c231",
+      "provider_edition": "2018",
+      "consumer": "pa31/tests/spec/source-panic-macros/edition-consumer-ordinary_wrapper.rs",
+      "consumer_sha256": "1f48c7f873be013fdabcf8437672e3199ed77a60bf5a8819905d9470831d258c",
+      "consumer_edition": "2021",
+      "expected_status": 0,
+      "answer": 15
+    },
+    {
+      "name": "ordinary_wrapper-2021-2018",
+      "provider": "pa31/tests/spec/source-panic-macros/edition-provider.rs",
+      "provider_sha256": "791a2174d2cea3eed5409cb3537717b9e8ec840ddc2d0dbba3f02a74d932c231",
+      "provider_edition": "2021",
+      "consumer": "pa31/tests/spec/source-panic-macros/edition-consumer-ordinary_wrapper.rs",
+      "consumer_sha256": "1f48c7f873be013fdabcf8437672e3199ed77a60bf5a8819905d9470831d258c",
+      "consumer_edition": "2018",
+      "expected_status": 0,
+      "answer": 21
+    },
+    {
+      "name": "ordinary_wrapper-2018-2024",
+      "provider": "pa31/tests/spec/source-panic-macros/edition-provider.rs",
+      "provider_sha256": "791a2174d2cea3eed5409cb3537717b9e8ec840ddc2d0dbba3f02a74d932c231",
+      "provider_edition": "2018",
+      "consumer": "pa31/tests/spec/source-panic-macros/edition-consumer-ordinary_wrapper.rs",
+      "consumer_sha256": "1f48c7f873be013fdabcf8437672e3199ed77a60bf5a8819905d9470831d258c",
+      "consumer_edition": "2024",
+      "expected_status": 0,
+      "answer": 15
+    },
+    {
+      "name": "edition_wrapper-2018-2021",
+      "provider": "pa31/tests/spec/source-panic-macros/edition-provider.rs",
+      "provider_sha256": "791a2174d2cea3eed5409cb3537717b9e8ec840ddc2d0dbba3f02a74d932c231",
+      "provider_edition": "2018",
+      "consumer": "pa31/tests/spec/source-panic-macros/edition-consumer-edition_wrapper.rs",
+      "consumer_sha256": "ad4654f8ba1684159eebe3122bb3ff5a5af5c480bc1084cf79b41980b1fbe052",
+      "consumer_edition": "2021",
+      "expected_status": 0,
+      "answer": 21
+    },
+    {
+      "name": "edition_wrapper-2021-2018",
+      "provider": "pa31/tests/spec/source-panic-macros/edition-provider.rs",
+      "provider_sha256": "791a2174d2cea3eed5409cb3537717b9e8ec840ddc2d0dbba3f02a74d932c231",
+      "provider_edition": "2021",
+      "consumer": "pa31/tests/spec/source-panic-macros/edition-consumer-edition_wrapper.rs",
+      "consumer_sha256": "ad4654f8ba1684159eebe3122bb3ff5a5af5c480bc1084cf79b41980b1fbe052",
+      "consumer_edition": "2018",
+      "expected_status": 0,
+      "answer": 15
+    },
+    {
+      "name": "edition_wrapper-2018-2024",
+      "provider": "pa31/tests/spec/source-panic-macros/edition-provider.rs",
+      "provider_sha256": "791a2174d2cea3eed5409cb3537717b9e8ec840ddc2d0dbba3f02a74d932c231",
+      "provider_edition": "2018",
+      "consumer": "pa31/tests/spec/source-panic-macros/edition-consumer-edition_wrapper.rs",
+      "consumer_sha256": "ad4654f8ba1684159eebe3122bb3ff5a5af5c480bc1084cf79b41980b1fbe052",
+      "consumer_edition": "2024",
+      "expected_status": 0,
+      "answer": 21
+    }
+  ],
+  "native_client": {
+    "path": "pa31/tests/spec/source-panic-macros/consumer.c",
+    "sha256": "a71a6a1bf2fc723e8ff03ffa03eb9940b0cca5f0479ac755626ac7ccdd9a1037"
+  },
+  "required_candidate_controls": [
+    "Unknown, missing, duplicate and nonprovider claims retain existing rejection policy.",
+    "Source-only builtin roles never enter the bootstrap macro prelude.",
+    "Arguments retain token context, edition, joints and typed captures.",
+    "Generated path is the real defining crate, including authenticated imported metadata; a spelling grants no role.",
+    "Edition selection follows the first expansion without the exact edition_panic allowance.",
+    "The unchanged original core root must be rerun after the complete fix."
+  ],
+  "release": "PA31 remains planned; these source manifests do not create empty-suite success or text references."
+}

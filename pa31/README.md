@@ -66,6 +66,11 @@ the configured CPPGM backend; text output alone is insufficient.
 - Lang-item identity and signatures.
 - Intrinsic declarations and const eligibility.
 - Builtin expansion and capability answers.
+- Source panic/unreachable builtin delegation: authentic defining-crate identity,
+  unchanged argument tokens, edition selection through internal macro allowances,
+  and opposing imported-wrapper editions. The
+  [predeclared source contracts](tests/spec/source-panic-macros/README.md)
+  reproduce the current original-core declaration blocker; they remain unqualified.
 - Duplicate and forged bindings.
 - Panic-abort runtime boundary.
 
