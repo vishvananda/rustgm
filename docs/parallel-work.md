@@ -165,6 +165,13 @@ Declare every disposable output root when selecting scoped cleanup. Existing
 maintainer harnesses may write additional `obj/` directories; include them or
 use ordinary cleanup. Cleanup is never run against another worktree.
 
+Long native batches must reclaim disposable outputs between successful test
+targets while retaining inputs, diagnostics, pins and managed Cargo caches.
+`maintainer_suites.py batch` performs this cleanup and records it in its receipt.
+Custom qualification runners must do the same under their existing lease;
+waiting until the entire batch exits can exceed a worktree cap even when no
+single target does. Failed-target outputs remain until they are diagnosed.
+
 For a complete Makefile target or an integration-only full/performance batch,
 use an outer resource lease. Nested storage wrappers inherit it, but keep their
 own cleanup and checkout lock:

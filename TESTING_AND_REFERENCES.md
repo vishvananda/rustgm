@@ -52,6 +52,13 @@ library inventory. Add `--release` for optimization-sensitive controls and
 exact inventories and terminal status. `--evidence-root obj/NEW-BATCH` chooses
 that directory explicitly. A listing receipt is never recorded as a passing run.
 
+The batch runner prunes disposable native outputs after each successfully
+completed test target, before starting the next target. Its receipt records each
+cleanup. Cargo caches, pinned binaries, source inputs and diagnostics remain;
+failed targets retain their outputs for diagnosis. Custom multi-target runners
+must use the same inter-target cleanup under their existing storage/resource
+lease, rather than accumulating every native executable until the batch ends.
+
 Object interoperability tests are always registered and retain their explicit
 `#[ignore]` markers. Select them with `--ignored`, like the other native tests;
 their pinned object backend and host C compiler remain required when executed.
