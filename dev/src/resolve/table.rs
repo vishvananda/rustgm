@@ -279,16 +279,6 @@ impl BindingTable {
         self.record(entry);
         Ok(self.entries[entry as usize].binding.replace(binding))
     }
-    /// Convenience for private tests of the allocation-free root table.
-    #[cfg(test)]
-    pub(crate) fn declare(
-        &mut self,
-        key: (ScopeId, NameId, Namespace),
-        binding: Binding,
-        shadow: bool,
-    ) -> Result<bool, &'static str> {
-        self.declare_key((key.0, key.1, key.2, ItemContext::ROOT), binding, shadow)
-    }
     /// Install a direct declaration unless the key already has a binding that
     /// it may not replace: only shadowing declarations replace direct ones.
     /// One probe decides duplication, first-binding order and the binding.

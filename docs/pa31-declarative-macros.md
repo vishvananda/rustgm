@@ -349,8 +349,8 @@ The next unqualified source draft derives declaration keys from each actual
 identifier span: item and extern-alias names, generic parameters and enum
 variants. Expansion publication and import notifications use that same complete
 key. A generated item's keyword cannot substitute for its captured name. The
-root-only table declaration convenience is now private-test-only; production
-declarations pass their full key. Three structural controls cover separate
+unused root-only table declaration convenience is removed; declarations and
+private controls pass their full key. Three structural controls cover separate
 root/opaque identifiers, genuine exact-key duplicates, and const parameters
 versus implicit Self. They supply token provenance to parsed declarations and
 do not qualify end-to-end scoped expansion. Formatting has run; compiler and
@@ -400,6 +400,14 @@ checkout. The successor updates that caller to the same new entrypoint already
 used by ordinary collection; fresh strict and focused qualification remain
 required. The initial attempt in the macro checkout was refused by storage
 admission before any runner started, and is preserved separately.
+
+The second collector gate at `2f0efe37` again passes formatting and the audit,
+then strict Clippy identifies the unused private-test root declaration wrapper.
+All callers already use complete keys. The successor removes that wrapper
+without adding a lint exception; no candidate tests ran in either failed gate.
+The second failure and scoped cleanup receipt remain under
+`obj/parallel/macro-identifiers-v2` and `obj/cleanup/1792817262704647706.jsonl`.
+Fresh strict and focused qualification is still required.
 
 The pinned compiler intentionally treats implicit `Self` as root-normalized
 (`rustc_resolve/src/ident.rs:316` and `late.rs:3503`). Type, const and lifetime
