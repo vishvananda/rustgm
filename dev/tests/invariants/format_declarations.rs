@@ -75,7 +75,11 @@ fn authentic_format_headers_preserve_real_roles_without_executable_frames() -> T
             entry.header.as_ref(),
             1,
         )?;
-        assert!(contract.builtin.is_some_and(|role| role.formatting()));
+        assert!(
+            contract
+                .builtin
+                .is_some_and(crate::expand::builtin::Builtin::formatting)
+        );
     }
     Ok(())
 }
