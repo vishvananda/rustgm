@@ -794,26 +794,7 @@ impl<S: Sources> Engine<'_, S> {
         capture: u32,
     ) -> Result<(), Error> {
         let flags = self.flags(file, visit.owner)?;
-        let contract = super::bindings::macro_contract(
-            &self.loader.package,
-            NodeKey {
-                file,
-                node: visit.owner.unwrap_or(visit.node),
-            },
-        )?;
-        if contract.is_some_and(|contract| {
-            contract.node
-                != NodeKey {
-                    file,
-                    node: visit.node,
-                }
-        }) {
-            return Err(Error::at(
-                file,
-                0,
-                "source macro contract names another declaration",
-            ));
-        }
+        let contract = self.definition_contract(visit, file)?;
         let builtin = contract.and_then(|contract| contract.builtin);
         let context = self.context(
             file,

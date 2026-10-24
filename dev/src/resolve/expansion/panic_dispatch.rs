@@ -26,6 +26,34 @@ struct Call {
 }
 
 impl<S: Sources> Engine<'_, S> {
+    pub(super) fn definition_contract(
+        &self,
+        visit: Visit,
+        file: FileId,
+    ) -> Result<Option<panic_contracts::Declaration>, Error> {
+        let contract = panic_contracts::declaration(
+            &self.loader.package,
+            NodeKey {
+                file,
+                node: visit.owner.unwrap_or(visit.node),
+            },
+        )?;
+        if contract.is_some_and(|contract| {
+            contract.node
+                != NodeKey {
+                    file,
+                    node: visit.node,
+                }
+        }) {
+            return Err(Error::at(
+                file,
+                0,
+                "source macro contract names another declaration",
+            ));
+        }
+        Ok(contract)
+    }
+
     fn panic_definition(&self, index: usize) -> Result<&Definition, Error> {
         let error = |message| Error::at(FileId(0), 0, message);
         let definition = self
