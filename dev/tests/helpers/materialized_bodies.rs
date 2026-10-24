@@ -43,7 +43,13 @@ fn during_mode<T>(
     if targets.len() > 2 || (targets.len() == 2 && targets[0] == targets[1]) {
         return Err("materialized observer requires at most two distinct actual targets".into());
     }
-    observe(targets, targets.len(), false, require_instance_scope, prepare)
+    observe(
+        targets,
+        targets.len(),
+        false,
+        require_instance_scope,
+        prepare,
+    )
 }
 /// A bounded source scaling observer retains distinct completed full instances.
 pub(crate) fn instances<T>(

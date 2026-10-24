@@ -9,10 +9,10 @@ use crate::support::{crates::CrateIdentity, source::SourceFile};
 use crate::{body, borrow, expand::config::Config, resolve, support::bindings::Mode};
 use std::path::Path;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
-#[path = "read_frontier.rs"]
-mod frontier;
 #[path = "carrier_owners.rs"]
 mod alias_tests;
+#[path = "read_frontier.rs"]
+mod frontier;
 #[path = "carrier_instances.rs"]
 mod instances;
 #[path = "copy_signatures.rs"]
