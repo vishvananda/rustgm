@@ -42,7 +42,7 @@ pub struct Reservations {
     denied_implementations: HashSet<DefId>,
     pub(super) header_attributes: [HeaderAttributes; LangItem::ALL.len()],
     pub(super) trivial_field_reads: Option<DefId>,
-    pub(super) diagnostics: [Option<Declaration>; 3],
+    pub(super) diagnostics: [Option<Declaration>; 4],
     pub steps: usize,
 }
 impl Reservations {
@@ -86,7 +86,7 @@ pub(super) enum Claim {
     Language(LangItem),
     Intrinsic,
     DenyImplementations,
-    BuiltinMacro,
+    BuiltinMacro(crate::expand::builtin::Builtin),
     Header(HeaderAttribute),
     TrivialFieldReads,
     DiagnosticItem(super::annotations::DiagnosticItem),
@@ -155,7 +155,7 @@ fn reserve_all(
         denied_implementations: HashSet::default(),
         header_attributes: [HeaderAttributes::EMPTY; LangItem::ALL.len()],
         trivial_field_reads: None,
-        diagnostics: [None; 3],
+        diagnostics: [None; 4],
         steps: 0,
     };
     let parents = parents(package, facts);
@@ -165,7 +165,7 @@ fn reserve_all(
         let Some(key) = definition.node else {
             continue;
         };
-        if !primary(package, key, definition.kind) {
+        if !super::role_attributes::primary(package, key, definition.kind, claims.get(&key).map(Vec::as_slice)) {
             continue;
         }
         let id = DefId(
@@ -222,7 +222,7 @@ fn reserve(
     match claim {
         // Builtin claims were checked by their facade; the remaining complete
         // claims are validated below independently of attribute order.
-        Claim::BuiltinMacro
+        Claim::BuiltinMacro(_)
         | Claim::Header(_)
         | Claim::TrivialFieldReads
         | Claim::DiagnosticItem(_) => {}
@@ -327,23 +327,6 @@ fn prototype(
     Ok(())
 }
 
-fn primary(package: &Package, key: NodeKey, kind: DefKind) -> bool {
-    let unit = package.unit(key.file);
-    let Kind::Item(index) = unit.configured.ast.node(key.node).kind else {
-        return false;
-    };
-    matches!(
-        (unit.configured.ast.items[index as usize].kind, kind),
-        (ItemKind::Trait { .. }, DefKind::Trait)
-            | (ItemKind::Function { .. }, DefKind::Function)
-            | (ItemKind::Const { .. }, DefKind::Const)
-            | (ItemKind::Static { .. }, DefKind::Static)
-            | (ItemKind::Struct { .. }, DefKind::Struct)
-            | (ItemKind::TypeAlias { .. }, DefKind::TypeAlias)
-            | (ItemKind::Impl { .. }, DefKind::SelfType)
-            | (ItemKind::MacroRules { .. }, DefKind::Macro)
-    )
-}
 fn parents(package: &Package, facts: &Resolution) -> HashMap<ScopeId, DefId> {
     facts
         .definitions
@@ -351,7 +334,7 @@ fn parents(package: &Package, facts: &Resolution) -> HashMap<ScopeId, DefId> {
         .enumerate()
         .filter_map(|(index, definition)| {
             let key = definition.node?;
-            if !primary(package, key, definition.kind)
+            if !super::role_attributes::primary(package, key, definition.kind, None)
                 || !matches!(definition.kind, DefKind::Trait | DefKind::SelfType)
             {
                 return None;
@@ -386,11 +369,11 @@ fn claims(
             let contract = header
                 .as_ref()
                 .map(super::panic_contracts::CheckedHeader::summary);
-            if contract.and_then(|contract| contract.builtin).is_some() {
+            if let Some(role) = contract.and_then(|contract| contract.builtin) {
                 result
                     .entry(NodeKey { file, node })
                     .or_default()
-                    .push(Claim::BuiltinMacro);
+                    .push(Claim::BuiltinMacro(role));
             }
             let mut transparency = false;
             for (index, attribute, forest) in

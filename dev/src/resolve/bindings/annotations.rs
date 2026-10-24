@@ -19,6 +19,7 @@ pub(super) enum DiagnosticItem {
     Clone,
     Copy,
     Identity,
+    CfgSelect,
 }
 impl DiagnosticItem {
     const fn index(self) -> usize {
@@ -51,6 +52,7 @@ pub(super) fn parse(
         b"Clone" => Ok(DiagnosticItem::Clone),
         b"Copy" => Ok(DiagnosticItem::Copy),
         b"convert_identity" => Ok(DiagnosticItem::Identity),
+        b"cfg_select" => Ok(DiagnosticItem::CfgSelect),
         _ => Err(error("unsupported source diagnostic identity")),
     }
 }
@@ -72,7 +74,7 @@ pub(super) fn validate(
         let expected = match item {
             DiagnosticItem::Clone => Some(LangItem::Clone),
             DiagnosticItem::Copy => Some(LangItem::Copy),
-            DiagnosticItem::Identity => None,
+            DiagnosticItem::Identity | DiagnosticItem::CfgSelect => None,
         };
         if let Some(expected) = expected {
             if !claims
@@ -82,6 +84,12 @@ pub(super) fn validate(
                 return Err(error(
                     "diagnostic identity has a different actual language owner",
                 ));
+            }
+        } else if matches!(item, DiagnosticItem::CfgSelect) {
+            if !claims.iter().any(|claim| {
+                matches!(claim, Claim::BuiltinMacro(crate::expand::builtin::Builtin::CfgSelect))
+            }) {
+                return Err(error("cfg_select diagnostic identity requires its actual builtin role"));
             }
         } else {
             let unit = package.unit(declaration.origin.file);

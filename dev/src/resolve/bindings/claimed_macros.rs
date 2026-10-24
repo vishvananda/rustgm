@@ -36,9 +36,6 @@ pub(super) fn parse(
         return Err(error("builtin macro binding requires a macro declaration"));
     };
     let item = unit.configured.ast.items[index as usize];
-    if !matches!(item.kind, ItemKind::MacroRules { .. }) {
-        return Err(error("builtin macro binding requires a macro declaration"));
-    }
     let span = item
         .name
         .ok_or_else(|| error("builtin macro declaration has no name"))?;
@@ -48,10 +45,16 @@ pub(super) fn parse(
     let name = argument(unit.source.text(), forest, attribute)
         .map_err(&error)?
         .unwrap_or_else(|| declared.strip_prefix("r#").unwrap_or(declared));
-    Builtin::ALL
+    let role = Builtin::ALL
         .into_iter()
         .find(|builtin| builtin.name() == name)
-        .ok_or_else(|| error("source builtin macro expansion is not implemented"))
+        .ok_or_else(|| error("source builtin macro expansion is not implemented"))?;
+    if !matches!(item.kind, ItemKind::MacroRules { .. })
+        && !(role == Builtin::CfgSelect && matches!(item.kind, ItemKind::DeclarativeMacro { .. }))
+    {
+        return Err(error("builtin macro binding requires its supported declaration kind"));
+    }
+    Ok(role)
 }
 
 fn argument<'a>(

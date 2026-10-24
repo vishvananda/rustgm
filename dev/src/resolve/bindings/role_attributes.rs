@@ -164,3 +164,30 @@ pub(super) fn validate(
 #[cfg(test)]
 #[path = "../../../tests/invariants/capability_markers.rs"]
 mod tests;
+
+/// Only actual indexed declaration kinds own source claims; a scoped builtin
+/// requires the role already checked on that same node, independent of spelling.
+pub(super) fn primary(
+    package: &Package,
+    key: crate::resolve::unit::NodeKey,
+    kind: crate::resolve::model::DefKind,
+    claims: Option<&[Claim]>,
+) -> bool {
+    use crate::{resolve::model::DefKind, syntax::{ast::Kind, item::ItemKind}};
+    let unit = package.unit(key.file);
+    let Kind::Item(index) = unit.configured.ast.node(key.node).kind else { return false; };
+    match (unit.configured.ast.items[index as usize].kind, kind) {
+        (ItemKind::DeclarativeMacro { .. }, DefKind::Macro) => claims.is_some_and(|claims| {
+            claims.iter().any(|claim| matches!(claim, Claim::BuiltinMacro(crate::expand::builtin::Builtin::CfgSelect)))
+        }),
+        (ItemKind::Trait { .. }, DefKind::Trait)
+        | (ItemKind::Function { .. }, DefKind::Function)
+        | (ItemKind::Const { .. }, DefKind::Const)
+        | (ItemKind::Static { .. }, DefKind::Static)
+        | (ItemKind::Struct { .. }, DefKind::Struct)
+        | (ItemKind::TypeAlias { .. }, DefKind::TypeAlias)
+        | (ItemKind::Impl { .. }, DefKind::SelfType)
+        | (ItemKind::MacroRules { .. }, DefKind::Macro) => true,
+        _ => false,
+    }
+}
