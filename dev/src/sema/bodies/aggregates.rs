@@ -402,7 +402,12 @@ impl Checker<'_> {
             }
         }
     }
-    fn check_update_fields(&self, base: NodeId, variant: VariantId) -> Result<(), Error> {
+    fn check_update_fields(
+        &self,
+        node: NodeId,
+        base: NodeId,
+        variant: VariantId,
+    ) -> Result<(), Error> {
         let variant = self.facts.members.variants[variant.0 as usize];
         let mut omitted = (variant.start..variant.end)
             .filter(|index| !self.state.field_seen[(index - variant.start) as usize]);
@@ -420,9 +425,9 @@ impl Checker<'_> {
         let privacy = self
             .field_adjustment(base, variant.owner, span.start)?
             .privacy;
-        self.accessible_from(base, FieldId(first), privacy)?;
+        self.accessible_from(node, FieldId(first), privacy)?;
         for index in omitted {
-            self.accessible_from(base, FieldId(index), privacy)?;
+            self.accessible_from(node, FieldId(index), privacy)?;
         }
         Ok(())
     }
@@ -511,7 +516,7 @@ impl Checker<'_> {
             return Err(self.error(node, "union initializer requires exactly one field"));
         }
         if let Some(base) = base {
-            self.check_update_fields(base, variant_id)?;
+            self.check_update_fields(node, base, variant_id)?;
         }
         if !union && base.is_none() && self.state.field_seen.contains(&false) {
             return Err(self.error(node, "missing aggregate field initializer"));
