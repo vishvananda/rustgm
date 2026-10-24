@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "status": "Predeclared opaque-input and unreachable-branch hypotheses; unobserved.",
+  "retained_contract_sha256": "1fe8428cbfdefe52b1b93d9cbcfcd5df1c834916b7ce73692d5d53fd5f69fb99",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "crate_type": "lib",
+  "bootstrap": true,
+  "cases": [
+    {
+      "name": "opaque-selected",
+      "path": "opaque-selected.rs",
+      "sha256": "ec62aee53dd4e2d96190d61a1c894a44c4dcf44011b301dad35664fa7cbc3c2b",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Forward genuine opaque metadata and expression fragments; retain selected syntax/provenance and do not resolve unselected expression."
+    },
+    {
+      "name": "opaque-unselected",
+      "path": "opaque-unselected.rs",
+      "sha256": "be58fcabd9873ad33a961b952d8e5b3bfd70c7ce7f8bf577c5f45272865c0fed",
+      "metadata": "accept",
+      "object": "accept",
+      "diagnostic_substrings": [],
+      "native_stdout": "7\n",
+      "cfg": [],
+      "purpose": "Forward genuine opaque metadata and expression fragments; retain selected syntax/provenance and do not resolve unselected expression."
+    },
+    {
+      "name": "unreachable-syntax",
+      "path": "unreachable-syntax.rs",
+      "sha256": "b39a4d5da0e173c0fca3ec9d9666dc036a82b5d419d634358e064df08ff58b64",
+      "metadata": "reject",
+      "object": "reject",
+      "diagnostic_substrings": [
+        "expected"
+      ],
+      "native_stdout": null,
+      "cfg": [],
+      "purpose": "Branches after wildcard still parse in expression category."
+    }
+  ]
+}
