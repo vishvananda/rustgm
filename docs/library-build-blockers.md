@@ -49,7 +49,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | ID | Priority and evidence | Blocking issue | Owner PA / test PA | Worker | State / dependencies |
 | --- | --- | --- | --- | --- | --- |
 | LIB-001 | P0; preceding whole-core parse blocker removed, scoped semantics still required | Scoped declarative macro publication, item/path/import/glob lookup and definition-site visibility | PA31 internal feature; PA8 shared machinery / PA31, plus applicable PA7–PA8 regressions | Integrator | In progress; syntax/context/index groundwork exists, complete semantics still disabled. |
-| LIB-002 | P0; prerequisite of LIB-001 | Hygienic field, method and associated-member identity; captured names and container-relative privacy | PA31; PA12/PA19 shared consumers / PA31, with earlier ordinary controls | C + integrator | Field storage and shared adjustment API are source-ready but unqualified; field consumers in progress. Methods/associated members remain required. |
+| LIB-002 | P0; prerequisite of LIB-001 | Hygienic field, method and associated-member identity; captured names and container-relative privacy | PA31; PA12/PA19 shared consumers / PA31, with earlier ordinary controls | C + integrator | Field storage/consumers and shared adjustment API frozen at local `b937b6da`, unqualified. Methods/associated members remain required. |
 | LIB-003 | P1; actual reduced source failure | Projected Copy proof sees one lifetime premise in inconsistent declaration/body namespaces | PA21 scoped proof + PA31 source const-trait defaults / PA31; add PA21 control where expressible | B | Implementing an authenticated body query view; preserve distinct lifetimes/applications and final proof obligations. |
 | LIB-004 | P1; actual reduced source failure, readiness cause not yet observed directly | Early const read treats source `u8: Copy` as absent although its impl is present | PA20 implementation readiness + PA25 early CTFE / PA31 source-binding reproduction | B, coordinated with C | Diagnosing prepared-header versus validated-impl scheduling; needs exact state/wakeup evidence. |
 | LIB-005 | P1; independently qualified reduced program | Anonymous constant-expression `const_eval_select` ownership and cache validation | PA25 execution + PA28 intrinsic semantics + PA31 source identity / PA31 | C | Source-ready at local `379006ad`, unqualified; preserve handoff while C prioritizes LIB-002. |
@@ -60,7 +60,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-010 | P2; not yet reached as a whole crate | Original alloc, allocator/runtime contracts and collection consumers | PA33; PA27/PA28 operation prerequisites / PA33 plus reduced owning-PA cases | Unassigned until core advances | Blocked on LIB-007/008/009; split observed alloc failures into concrete issues when reached. |
 | LIB-011 | P2; not yet reached as a whole crate | Original std, platform linkage and abort-profile consumers | PA36; PA30/PA34 platform/build prerequisites / PA36 plus reduced owning-PA cases | Unassigned until prerequisites advance | Blocked on the original core/alloc graph; no unsupported percentage-complete estimate. |
 | LIB-012 | P2; externally useful acceptance | Original no-default-features serde_core, then alloc/std serde_json graphs | PA35 / PA35 | Integrator | Run the core-only graph as soon as LIB-007/008/009 permit it; do not wait for std. |
-| LIB-013 | P0; fresh unchanged-core blocker | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | Integrator | Investigating exact pinned builtin behavior. An unsupported declaration must not be silently treated as its empty source stub or a familiar path spelling. |
+| LIB-013 | P0; fresh unchanged-core blocker | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | C + integrator | Source contracts declared in local `af49643a`; C prepares implementation design while preserving the field checkpoint. An unsupported declaration must not be silently treated as its empty source stub or a familiar path spelling. |
 
 ## Reproductions, tests and closure criteria
 
@@ -118,7 +118,9 @@ branch is not a passing test or a released assignment contract.
   result. Add a reduced owning-PA fixture for every newly reached failure while
   retaining the unchanged whole-crate acceptance test. An earlier parser error
   must not make a later semantic negative appear to pass.
-- **LIB-013:** add predeclared source-builtin controls under PA31 for real
+- **LIB-013:** `pa31/tests/spec/source-panic-macros/contract.json` (local source
+  checkpoint `af49643a`, unqualified) declares ten single-source cases in three
+  editions and nine imported-wrapper contexts. These source-builtin controls cover real
   declaration identity, aliases, call-site edition, unchanged argument tokens,
   definition-crate delegation, and forged/missing/duplicate claims. Independently
   qualify source and native outcomes before generating text. Keep the original
@@ -137,7 +139,8 @@ roots must remain registered in the existing maintainer suite groups.
 Keep the three existing GPT-6.1-Sol/high workers. A worker can carry multiple
 independent issues, but keeps coherent commits and an explicit handoff for each.
 Agree shared APIs before concurrent edits; use separate worktrees. Current
-primary lanes are A: LIB-006/007; B: LIB-003/004; C: LIB-002 with LIB-005 frozen;
+primary lanes are A: LIB-006/007; B: LIB-003/004; C: LIB-013 with the LIB-002
+field checkpoint and LIB-005 preserved for qualification;
 integrator: LIB-001/008/009/012 and integration.
 
 Source work proceeds concurrently. Heavy jobs remain serialized at current disk

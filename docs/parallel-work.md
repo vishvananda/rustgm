@@ -16,6 +16,11 @@ for each. Current priority is the unchanged-core loading/expansion blocker:
 the integrator owns scoped item/path/import/glob lookup, Worker C investigates
 hygienic field/member consumers, Worker B owns projected Copy and early-impl
 readiness, and Worker A owns complete generic source-body validation/transport.
+The fresh unchanged-core probe now stops at the `core_panic` builtin declaration.
+Worker C preserves its unqualified field checkpoint and takes LIB-013's builtin
+delegation design; the integrator owns its independent contracts and retains
+item/path/import/glob work. Field, method and associated-member requirements
+remain open.
 These implementation priorities do not change assignment release ownership or
 the shared resource limits below.
 
