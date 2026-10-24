@@ -107,6 +107,7 @@ fn failed_attribute_work_preserves_unpublished_state() -> Result {
                 key,
                 attribute,
                 forest,
+                None,
             )
             .err()
             .ok_or("exhausted actual attribute collection succeeded")?;

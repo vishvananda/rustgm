@@ -6,8 +6,8 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 #[test]
 fn delegation_preserves_classified_input_spacing_and_never_parses_a_source_image() -> TestResult {
     let text = "tag[nested]{tokens}";
-    let forest = Forest::parse(text)?;
-    let input = Input::from_forest(&forest, forest.roots())?;
+    let forest = Forest::parse(text).map_err(|error| error.message)?;
+    let input = Input::from_forest(&forest, forest.roots()).map_err(|error| error.message)?;
     let registry = Registry::default();
     let site = Site {
         source: Source {
@@ -33,7 +33,8 @@ fn delegation_preserves_classified_input_spacing_and_never_parses_a_source_image
         &registry,
         &Config::default(),
         |token| Ok((SyntaxContextId::ROOT, token.end as usize != text.len())),
-    )?;
+    )
+    .map_err(|error| error.message)?;
     assert!(generated.stream.registered);
     assert!(generated.stream.opaque.is_empty());
     assert_eq!(registry.len(), 0);

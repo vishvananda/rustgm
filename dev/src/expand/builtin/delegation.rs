@@ -174,7 +174,9 @@ pub(crate) fn build(
     }
     ast.captures.push(forest.finish(closing.end)?);
     invocation(&mut ast, path, call, site.grammar);
-    let syntax = crate_syntax::configure(&stream.source, ast, config)?;
+    // Typed path nodes and owned Forest captures have no deferred literal or
+    // attribute owners; configuration never borrows the diagnostic spelling.
+    let syntax = crate_syntax::configure("", ast, config)?;
     Ok(Delegated { stream, syntax })
 }
 fn invocation(ast: &mut Ast, path: NodeId, call: Span, grammar: MacroContext) {

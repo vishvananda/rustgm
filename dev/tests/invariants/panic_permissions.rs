@@ -102,7 +102,8 @@ fn macro_allowance_warm_queries_authenticate_full_attribute_and_retained_trees()
             start: span.start + 1,
             end: span.end + 1,
         })
-    })?;
+    })
+    .map_err(|error| error.message)?;
     report.package.units[key.file.0 as usize]
         .configured
         .ast
