@@ -168,6 +168,20 @@ rules, not candidate support. Trait visibility, associated-member conformance,
 scoped invocation and the complete source artifact transaction remain open.
 No core artifact or additional assignment has been completed.
 
+The integrated source `df2c48cf` passes fresh format, the 2,325-file audit,
+all-target/all-feature strict Clippy, all 183 harness tests, 377 registered
+maintainer roots and upstream provenance verification (24 fixtures and 126
+Reference files). Evidence is in
+`obj/parallel/cfg-members-integrated-static-v1/`; completion SHA-256 is
+`2ac0af9765916861d0da067926fc46605939f4875805486cab07ae7a71a090ce`.
+This validates the combined wiring and retains each component's functional
+evidence; it is not a combined release or performance pass. Guard
+`4cebb57ecc814be3ae0d3988a9ca0258` finished with status 0/error null and cleanup
+`1792863734641562721` completed without new disposable outputs. The two diagnosed
+failed inherent-method runs were separately pruned after recording all 334
+native observations: cleanup `1792863758154341210` removed 668 generated files,
+1.40 GiB of unshared blocks, while preserving sources, diagnostics and hashes.
+
 The first LIB-007 executable transaction uses a complete smaller provider with
 ordinary sizing/Clone/Copy/receiver declarations and one generic free function.
 Thirteen independent rustc observations establish source acceptance, native
