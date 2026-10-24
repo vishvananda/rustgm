@@ -31,6 +31,14 @@ pub(super) struct Paths {
     waiting: HashMap<BindingKey, HashSet<usize>>,
     pending: Vec<Pending>,
 }
+#[derive(Clone, Copy)]
+struct Publication {
+    context: Context,
+    node: NodeId,
+    introduction: ExpansionId,
+    definitions: usize,
+    scopes: usize,
+}
 impl Paths {
     pub fn invocation(
         &mut self,
@@ -127,10 +135,78 @@ impl Paths {
         introduction: ExpansionId,
     ) -> Result<ScopeId, Error> {
         let mut resolver = self.state.bind(package);
-        let first = resolver.facts.definitions.len();
-        let first_scope = resolver.facts.scopes.len();
+        let publication = Publication {
+            context,
+            node,
+            introduction,
+            definitions: resolver.facts.definitions.len(),
+            scopes: resolver.facts.scopes.len(),
+        };
         let access = resolver.visibility(context, item.visibility)?;
         let body = resolver.declare_item(context, node, item, access)?;
+        Self::publish_item(&mut resolver, &mut self.work, publication)?;
+        // Unnameable `impl Trait` parameters have no binding to publish.
+        if matches!(item.kind, crate::syntax::item::ItemKind::Function { .. }) {
+            self.pending.push(Pending::Anonymous(body, node, item));
+        }
+        Ok(body.scope)
+    }
+    pub fn scoped_item(
+        &mut self,
+        package: &mut Package,
+        context: Context,
+        node: NodeId,
+        owner: Option<NodeId>,
+        item: crate::syntax::item::Item,
+        introduced: (usize, ExpansionId),
+    ) -> Result<
+        (
+            crate::resolve::index::unavailable_macros::ScopedDeclaration,
+            NameId,
+        ),
+        Error,
+    > {
+        let (index, introduction) = introduced;
+        let mut resolver = self.state.bind(package);
+        let publication = Publication {
+            context,
+            node,
+            introduction,
+            definitions: resolver.facts.definitions.len(),
+            scopes: resolver.facts.scopes.len(),
+        };
+        let access = resolver.visibility(context, item.visibility)?;
+        let (_, mode) = resolver.declare_scoped(context, node, item, access, owner)?;
+        Self::publish_item(&mut resolver, &mut self.work, publication)?;
+        let id = *resolver
+            .facts
+            .item_definitions
+            .get(&(context.module, node, Namespace::Macro))
+            .ok_or_else(|| {
+                resolver.error(
+                    context,
+                    node,
+                    "scoped declaration has no actual item identity",
+                )
+            })?;
+        self.macro_targets
+            .insert(id, MacroTarget::Declarative(index));
+        self.macros.resize(index + 1, None);
+        self.macros[index] = Some(id);
+        Ok((mode, resolver.facts.definitions[id.0 as usize].name))
+    }
+    fn publish_item(
+        resolver: &mut crate::resolve::index::Resolver<'_>,
+        work: &mut Work,
+        publication: Publication,
+    ) -> Result<(), Error> {
+        let Publication {
+            context,
+            node,
+            introduction,
+            definitions: first,
+            scopes: first_scope,
+        } = publication;
         if introduction.0 != 0 {
             for index in first_scope..resolver.facts.scopes.len() {
                 let scope = ScopeId(u32::try_from(index).map_err(|_| {
@@ -142,7 +218,7 @@ impl Paths {
                     .introduce_scope(scope, introduction);
             }
         }
-        self.work.extend(resolver.facts);
+        work.extend(resolver.facts);
         for index in first..resolver.facts.definitions.len() {
             let definition = &resolver.facts.definitions[index];
             if introduction.0 != 0 {
@@ -156,13 +232,9 @@ impl Paths {
                     .insert(id, introduction);
             }
             let key = resolver.binding_key(definition)?;
-            self.work.declared(&resolver.facts.bindings, key);
+            work.declared(&resolver.facts.bindings, key);
         }
-        // Unnameable `impl Trait` parameters have no binding to publish.
-        if matches!(item.kind, crate::syntax::item::ItemKind::Function { .. }) {
-            self.pending.push(Pending::Anonymous(body, node, item));
-        }
-        Ok(body.scope)
+        Ok(())
     }
     /// A block's scope, which may declare items and textual macros.
     pub fn block(

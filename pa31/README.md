@@ -73,7 +73,11 @@ the configured CPPGM backend; text output alone is insufficient.
   reproduce the preceding original-core declaration blocker. The
   [combined checkpoint](../docs/library-lookup-panic-checkpoint.md) qualifies
   local 2021/2024 delegation; foreign transport and Rust 2018 remain required.
-  Unchanged core now reaches the internal allowance on `assert_eq`, line 41.
+  The combined allowance successor passes `assert_eq` and reaches the scoped
+  `assert_matches` declaration, line 170. The qualified scoped-declaration
+  component reaches builtin `cfg_select`, line 235; its combined release gate
+  remains pending. Track the current probe and remaining work in the
+  [library blocker tracker](../docs/library-build-blockers.md).
 - Duplicate and forged bindings.
 - Panic-abort runtime boundary.
 

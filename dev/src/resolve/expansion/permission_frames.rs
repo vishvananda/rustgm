@@ -7,6 +7,7 @@ use crate::resolve::{
     },
     model::{DefKind, Resolution},
 };
+use crate::syntax::{ast::Kind, item::ItemKind};
 use std::rc::Rc;
 
 pub(super) struct FrameView<'a> {
@@ -42,6 +43,9 @@ impl<'a> FrameView<'a> {
             .definitions
             .get(index)
             .ok_or_else(|| error("unknown panic macro definition"))?;
+        if matches!(definition.body, Body::ScopedDeclaration(_)) {
+            return Err(error("scoped declaration has no executed expansion frame"));
+        }
         let package = self.package;
         let root = self
             .facts
@@ -59,6 +63,24 @@ impl<'a> FrameView<'a> {
             }
             return Ok(definition);
         };
+        if self
+            .package
+            .units
+            .get(node.file.0 as usize)
+            .is_some_and(|unit| {
+                unit.configured
+                    .ast
+                    .nodes
+                    .get(node.node.get() as usize)
+                    .is_some_and(|actual| {
+                        matches!(actual.kind, Kind::Item(index)
+                    if unit.configured.ast.items.get(index as usize)
+                        .is_some_and(|item| matches!(item.kind, ItemKind::DeclarativeMacro { .. })))
+                    })
+            })
+        {
+            return Err(error("scoped declaration has no executed expansion frame"));
+        }
         let scope = self
             .facts
             .node_scopes

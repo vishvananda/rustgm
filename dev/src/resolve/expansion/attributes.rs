@@ -14,6 +14,7 @@ impl<S: Sources> Engine<'_, S> {
     pub(super) fn flags(&self, file: FileId, owner: Option<NodeId>) -> Result<Flags, Error> {
         let unit = self.loader.package.unit(file);
         let mut result = Flags::default();
+        let mut transparency = false;
         let Some(owner) = owner
             .and_then(|node| unit.owner_indices[node.get() as usize])
             .map(|index| &unit.configured.owners[index.get() as usize - 1])
@@ -89,6 +90,16 @@ impl<S: Sources> Engine<'_, S> {
                             ));
                         }
                     }
+                }
+                Some("rustc_macro_transparency") => {
+                    crate::resolve::index::unavailable_macros::transparency_on_owner(
+                        &self.loader.package,
+                        file,
+                        owner.node,
+                        attribute,
+                        forest,
+                        &mut transparency,
+                    )?;
                 }
                 _ => {}
             }
