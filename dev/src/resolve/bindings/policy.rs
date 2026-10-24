@@ -28,6 +28,7 @@ pub(in crate::resolve) enum Feature {
     Fundamental,
     DeclarativeMacros,
     InternalMacroAllowance,
+    InternalUnsafeLint,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -53,6 +54,7 @@ impl Request {
             "fundamental" => Self::Capability(Feature::Fundamental),
             "decl_macro" => Self::Capability(Feature::DeclarativeMacros),
             "allow_internal_unstable" => Self::Capability(Feature::InternalMacroAllowance),
+            "allow_internal_unsafe" => Self::Capability(Feature::InternalUnsafeLint),
             // Requests do not authorize the unsupported live const-drop operation.
             "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
             _ => return None,

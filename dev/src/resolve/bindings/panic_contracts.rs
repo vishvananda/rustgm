@@ -39,6 +39,8 @@ pub(in crate::resolve) struct Declaration {
     attributes: (usize, usize),
     pub builtin: Option<Builtin>,
     pub has_allowance: bool,
+    /// Suppresses only the unsafe-code lint; it grants no unsafe operation.
+    pub unsafe_lint: bool,
     consumers: u8,
     pub edition: Edition,
 }
@@ -289,6 +291,9 @@ fn require_features(package: &Package, entry: Declaration) -> Result<(), &'stati
         .ok_or("internal macro contracts require an actual source provider")?;
     if entry.builtin.is_some() && !source.features.has(Feature::RustcAttributes) {
         return Err("builtin macro binding requires rustc_attrs");
+    }
+    if entry.unsafe_lint && !source.features.has(Feature::InternalUnsafeLint) {
+        return Err("internal unsafe lint attribute requires allow_internal_unsafe");
     }
     if entry.has_allowance && !source.features.has(Feature::InternalMacroAllowance) {
         return Err("internal macro allowance requires allow_internal_unstable");

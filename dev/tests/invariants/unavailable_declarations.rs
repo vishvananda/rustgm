@@ -297,3 +297,6 @@ fn ordinary_macro_rules_allocate_no_scoped_descriptor_and_keep_their_real_execut
 
 #[path = "unavailable_authority.rs"]
 mod authority;
+
+#[path = "format_declarations.rs"]
+mod formatting;

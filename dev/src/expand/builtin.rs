@@ -26,6 +26,9 @@ pub use library::option_environment;
 pub enum Builtin {
     Cfg,
     CfgSelect,
+    FormatArgs,
+    ConstFormatArgs,
+    FormatArgsNl,
     Line,
     Column,
     File,
@@ -43,9 +46,12 @@ pub enum Builtin {
     Unreachable,
 }
 impl Builtin {
-    pub const ALL: [Self; 17] = [
+    pub const ALL: [Self; 20] = [
         Self::Cfg,
         Self::CfgSelect,
+        Self::FormatArgs,
+        Self::ConstFormatArgs,
+        Self::FormatArgsNl,
         Self::Line,
         Self::Column,
         Self::File,
@@ -66,7 +72,21 @@ impl Builtin {
     pub const fn source_only(self) -> bool {
         matches!(
             self,
-            Self::CorePanic | Self::StdPanic | Self::Unreachable | Self::CfgSelect
+            Self::CorePanic
+                | Self::StdPanic
+                | Self::Unreachable
+                | Self::CfgSelect
+                | Self::FormatArgs
+                | Self::ConstFormatArgs
+                | Self::FormatArgsNl
+        )
+    }
+    /// Header recognition alone cannot execute formatting placeholders.
+    #[must_use]
+    pub const fn declaration_only(self) -> bool {
+        matches!(
+            self,
+            Self::FormatArgs | Self::ConstFormatArgs | Self::FormatArgsNl
         )
     }
     #[must_use]
@@ -91,6 +111,9 @@ impl Builtin {
         match self {
             Self::Cfg => "cfg",
             Self::CfgSelect => "cfg_select",
+            Self::FormatArgs => "format_args",
+            Self::ConstFormatArgs => "const_format_args",
+            Self::FormatArgsNl => "format_args_nl",
             Self::Line => "line",
             Self::Column => "column",
             Self::File => "file",
@@ -139,6 +162,9 @@ pub fn expand(
         | Builtin::IncludeStr
         | Builtin::IncludeBytes
         | Builtin::Include => Err(error(0, "builtin requires expanded argument facts")),
+        Builtin::FormatArgs | Builtin::ConstFormatArgs | Builtin::FormatArgsNl => {
+            Err(error(0, "formatting builtin invocation is not implemented"))
+        }
         Builtin::CfgSelect => Err(error(
             0,
             "cfg selection requires its actual source declaration",

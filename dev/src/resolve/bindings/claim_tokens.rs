@@ -7,6 +7,7 @@ pub(super) enum Spelling {
     BuiltinAttribute,
     Attributes,
     AllowanceAttribute,
+    UnsafeLintAttribute,
     BuiltinRole(Builtin),
     Feature(Rc<str>),
 }
@@ -16,6 +17,7 @@ impl Spelling {
             "rustc_builtin_macro" => Ok(Self::BuiltinAttribute),
             "attributes" => Ok(Self::Attributes),
             "allow_internal_unstable" => Ok(Self::AllowanceAttribute),
+            "allow_internal_unsafe" => Ok(Self::UnsafeLintAttribute),
             _ => builtin
                 .filter(|role| role.name() == name)
                 .map(Self::BuiltinRole)
@@ -27,6 +29,7 @@ impl Spelling {
             Self::BuiltinAttribute => "rustc_builtin_macro",
             Self::Attributes => "attributes",
             Self::AllowanceAttribute => "allow_internal_unstable",
+            Self::UnsafeLintAttribute => "allow_internal_unsafe",
             Self::BuiltinRole(role) => role.name(),
             Self::Feature(lexeme) => lexeme,
         }

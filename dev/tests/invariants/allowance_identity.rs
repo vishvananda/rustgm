@@ -88,7 +88,7 @@ fn same_numbered_reports_and_foreign_memo_rows_keep_actual_owner_identity() -> T
     Ok(())
 }
 
-fn replace_source(
+pub(super) fn replace_source(
     report: &mut crate::resolve::expansion::Report,
     before: &str,
     after: &str,
