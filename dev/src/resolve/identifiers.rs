@@ -1,12 +1,39 @@
 //! Consumers share the actual container expansion and definition-site privacy.
 use super::{
     expansion::Report,
-    model::{DefId, ItemAdjustment, ItemContext},
+    model::{DefId, ItemAdjustment, ItemContext, ScopeId},
     package::ModuleId,
 };
 use crate::expand::marks::ExpansionId;
 
 impl Report {
+    /// Trait discovery visits actual item containers using the method token's
+    /// context. Ordinary value/binder scopes do not trigger a definition rewind.
+    pub(crate) fn trait_scope_parent(
+        &self,
+        scope: ScopeId,
+        context: ItemContext,
+    ) -> Result<(Option<ScopeId>, ItemContext), &'static str> {
+        let frame = self
+            .resolution
+            .scopes
+            .get(scope.0 as usize)
+            .ok_or("unknown trait lookup scope")?;
+        let introductions = &self.resolution.introductions;
+        if (frame.parent.is_none() || introductions.item_block(scope))
+            && let Some((parent, expansion)) = self.package.marks.item_parent(context)?
+            && !introductions.ancestor(expansion, introductions.scope(scope))
+        {
+            let definition = introductions.definition_scope(expansion)?;
+            self.resolution
+                .scopes
+                .get(definition.0 as usize)
+                .ok_or("unknown trait lookup definition scope")?;
+            return Ok((Some(definition), parent));
+        }
+        Ok((frame.parent, context))
+    }
+
     /// Walk normalized item ancestry without exposing expansion storage to consumers.
     pub(crate) fn item_context_parent(
         &self,

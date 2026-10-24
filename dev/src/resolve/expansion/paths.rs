@@ -299,6 +299,9 @@ impl Paths {
             .facts
             .introductions
             .introduce_scope(scope, introduction);
+        if super::super::container_scopes::block_has_items(package, file, node) {
+            self.state.facts.introductions.introduce_block(scope);
+        }
         self.work.extend(&self.state.facts);
         Ok(scope)
     }

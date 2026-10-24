@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "owner": "PA31 scoped trait-method hygiene; PA19 trait candidate discovery",
+  "status": "Frozen independent hypotheses before execution; preserve disagreements",
+  "rust_source": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "cases": [
+    {
+      "path": "literal-caller-root.rs",
+      "sha256": "49f9e5e868e097a624e7b859ae81112a229f811b5cb1c7ae3be427efd5c032c8",
+      "metadata": "accept",
+      "object": "accept",
+      "required_error_codes": [],
+      "native_stdout": "7\n"
+    },
+    {
+      "path": "literal-both-imports.rs",
+      "sha256": "ad1f275c0250c415718ea0381509d4a7c262f05c8b79f96d1d5b2d91efd69a61",
+      "metadata": "reject",
+      "object": "reject",
+      "required_error_codes": [
+        "E0034"
+      ],
+      "native_stdout": null
+    },
+    {
+      "path": "literal-local-import.rs",
+      "sha256": "5443a6932684b8694d96f627b09b741c6900c0ba31e3f097fccf2679a5a262a7",
+      "metadata": "accept",
+      "object": "accept",
+      "required_error_codes": [],
+      "native_stdout": "9\n"
+    },
+    {
+      "path": "unrelated-local-item.rs",
+      "sha256": "acec500cf7e77b3d6bd4af5d177af5cc8541e63b9f3a5a43966bdd82dee9caaf",
+      "metadata": "reject",
+      "object": "reject",
+      "required_error_codes": [
+        "E0599"
+      ],
+      "native_stdout": null
+    },
+    {
+      "path": "statement-macro-boundary.rs",
+      "sha256": "bcc9891727e1a1e093ffe6510cc4f741aa48f058096526a78ffb17ab120e589f",
+      "metadata": "reject",
+      "object": "reject",
+      "required_error_codes": [
+        "E0599"
+      ],
+      "native_stdout": null
+    },
+    {
+      "path": "initializer-not-boundary.rs",
+      "sha256": "028621b610f96914d44e2a2607b06112d8f65c09b817472bae96c94ef1d99d37",
+      "metadata": "accept",
+      "object": "accept",
+      "required_error_codes": [],
+      "native_stdout": "7\n"
+    },
+    {
+      "path": "nested-statement-boundary.rs",
+      "sha256": "2a3d4c39f0008ca3036d0d24eb7bf74875f8efb2011249d6524eebeee9ed16f5",
+      "metadata": "reject",
+      "object": "reject",
+      "required_error_codes": [
+        "E0599"
+      ],
+      "native_stdout": null
+    },
+    {
+      "path": "captured-crosses-boundary.rs",
+      "sha256": "7068a93c5b4eabb6c33444a03b1b6b5384884df1fb7ebf3d132ca97e99e996b5",
+      "metadata": "accept",
+      "object": "accept",
+      "required_error_codes": [],
+      "native_stdout": "7\n"
+    }
+  ]
+}

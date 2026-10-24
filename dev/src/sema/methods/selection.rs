@@ -53,7 +53,7 @@ pub(super) fn trait_groups(
     facts: &mut Declarations,
     source: &mut Context,
     prefix: TermId,
-    site: (ScopeId, NameId),
+    site: (ScopeId, NameId, super::names::Use),
     caller: Caller<'_>,
 ) -> Result<[Vec<DefId>; 2], &'static str> {
     if facts
@@ -119,11 +119,12 @@ pub(super) fn trait_groups(
         .and_then(|names| names.visible.as_mut())
         .ok_or("missing trait visibility index")?;
     let before = index.steps();
-    let groups = index.groups(report, site.0, site.1, bound_traits)?;
+    let mut groups = index.groups(report, site.0, site.1, bound_traits, site.2.context)?;
     facts.methods.trait_visibility_steps = facts
         .methods
         .trait_visibility_steps
         .saturating_add(index.steps().saturating_sub(before));
+    site.2.retain_traits(report, facts, &mut groups)?;
     if let Some(canonical) = report.resolution.builtin_traits.iteration()
         && groups
             .iter()

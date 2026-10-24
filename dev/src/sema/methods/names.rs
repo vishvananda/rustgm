@@ -65,6 +65,30 @@ impl Cursor {
 }
 
 impl Use {
+    pub(super) fn retain_traits(
+        self,
+        report: &Report,
+        facts: &crate::sema::model::Declarations,
+        groups: &mut [Vec<DefId>; 2],
+    ) -> Result<(), &'static str> {
+        for group in groups {
+            let mut selected = 0;
+            for index in 0..group.len() {
+                let member = group[index];
+                let owner = facts
+                    .associated
+                    .trait_owner(member)
+                    .ok_or("trait candidate has no actual owner")?;
+                if self.permits(report, owner, member)? {
+                    group[selected] = member;
+                    selected += 1;
+                }
+            }
+            group.truncate(selected);
+        }
+        Ok(())
+    }
+
     pub fn path(report: &Report, suffix: NodeKey, scope: ScopeId) -> Result<Self, Error> {
         let offset = report
             .package

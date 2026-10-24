@@ -66,7 +66,11 @@ impl Checker<'_> {
                 &mut self.facts,
                 key,
                 path.prefix,
-                (path.scope, path.name),
+                (
+                    path.scope,
+                    path.name,
+                    crate::sema::methods::names::Use::path(self.report, path.suffix, path.scope)?,
+                ),
                 PathCaller {
                     availability: crate::sema::traits::implementations::Availability::Declarations,
                     environment,

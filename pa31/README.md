@@ -75,9 +75,16 @@ the configured CPPGM backend; text output alone is insufficient.
   local 2021/2024 delegation; foreign transport and Rust 2018 remain required.
   The combined allowance successor passes `assert_eq` and reaches the scoped
   `assert_matches` declaration, line 170. The qualified scoped-declaration
-  component reaches builtin `cfg_select`, line 235; its combined release gate
-  remains pending. Track the current probe and remaining work in the
+  component reached builtin `cfg_select`, line 235. The qualified cfg_select
+  successor reaches the `format_args` builtin attribute at line 994; the combined
+  release gate remains pending. Track the current probe and remaining work in the
   [library blocker tracker](../docs/library-build-blockers.md).
+- Scoped member identity and actual lookup containers. Preserve the method
+  identifier independently of trait binding names. An item or statement macro
+  can create a block boundary even if expansion leaves it empty; parenthesized
+  expression tails retain their expression category. The independent
+  [scope contracts](tests/spec/declarative-macros/method-scopes/README.md) include
+  caller/definition imports, ambiguity and captured-name opponents.
 - Duplicate and forged bindings.
 - Panic-abort runtime boundary.
 

@@ -89,7 +89,7 @@ impl Query {
         facts: &mut Declarations,
         key: NodeKey,
         prefix: NodeKey,
-        site: (ScopeId, NameId),
+        site: (ScopeId, NameId, super::super::names::Use),
         caller: OwnedCaller,
     ) -> Result<Self, Error> {
         let mut source = Prefix {

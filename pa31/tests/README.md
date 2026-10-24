@@ -120,3 +120,10 @@ view alone does not qualify macro-call semantics. Grouped
 `provider_traits::environment_names` tests check forward/renamed actual macro
 identity and intended missing-name diagnostics without bootstrap declarations.
 See [the preserved input and view distinction](spec/source-macro-paths/README.md).
+
+`spec/declarative-macros/method-scopes/` retains eleven independent trait-lookup
+scope controls: 22 metadata/object observations and six native programs. Original
+parenthesized-tail hypothesis disagreements remain visible beside the distinct
+brace/semicolon recovery contract. The consumer implementation must retain actual
+item/statement-macro block boundaries before expansion, including empty results.
+These contracts do not activate scoped invocation or the assignment.

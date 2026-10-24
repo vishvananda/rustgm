@@ -3,7 +3,7 @@ use super::selection::{self, Caller};
 use crate::{
     resolve::{
         expansion::Report,
-        model::{Access, DefId, MethodCall},
+        model::{DefId, MethodCall},
         package::Error,
         unit::NodeKey,
     },
@@ -91,8 +91,15 @@ pub(in crate::sema) fn choose(
         }));
     }
     let traits = if has_traits {
-        selection::trait_groups(report, facts, source, base, (site.scope, site.name), caller)
-            .map_err(error)?
+        selection::trait_groups(
+            report,
+            facts,
+            source,
+            base,
+            (site.scope, site.name, identifier),
+            caller,
+        )
+        .map_err(error)?
     } else {
         [Vec::new(), Vec::new()]
     };
@@ -227,7 +234,6 @@ impl Search<'_> {
         borrow: Option<bool>,
         lane: Lane,
     ) -> Result<Option<DefId>, &'static str> {
-        let module = self.report.resolution.scopes[self.site.scope.0 as usize].module;
         let mut selected = None;
         for index in 0..self.candidates(lane).len() {
             let method = self.candidates(lane)[index];
@@ -243,13 +249,6 @@ impl Search<'_> {
             };
             if matches!(lane, Lane::Inherent)
                 && references != self.depth - dereferences + u32::from(borrow.is_some())
-            {
-                continue;
-            }
-            if !matches!(lane, Lane::Inherent)
-                && let Access::Within(ancestor) =
-                    self.report.resolution.definitions[method.0 as usize].access
-                && !self.report.package.is_descendant(module, ancestor)
             {
                 continue;
             }

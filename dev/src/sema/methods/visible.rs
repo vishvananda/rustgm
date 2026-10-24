@@ -1,9 +1,10 @@
 //! Trait lookup consumes final lexical bindings and shares inherited candidate lists.
+mod discovery;
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{
         expansion::Report,
-        model::{DefId, DefKind, Namespace, ScopeId},
+        model::{DefId, DefKind, ItemContext, Namespace, ScopeId},
         names::NameId,
     },
     sema::model::Declarations,
@@ -20,6 +21,7 @@ pub(super) struct Index {
     work: Vec<ScopeId>,
     steps: usize,
     prelude: HashMap<NameId, DefId>,
+    contextual: Option<Box<discovery::Index>>,
 }
 impl Index {
     pub(super) fn new(report: &Report, facts: &Declarations) -> Result<Self, &'static str> {
@@ -31,11 +33,24 @@ impl Index {
             };
             let definition = &report.resolution.definitions[member.0 as usize];
             if matches!(definition.kind, DefKind::Function | DefKind::Const) {
-                index
-                    .members
-                    .entry(owner)
-                    .or_default()
-                    .insert(definition.name, member);
+                let context = report
+                    .definition_item_context(member)
+                    .map_err(|_| "invalid trait member context")?;
+                if context == ItemContext::ROOT {
+                    index
+                        .members
+                        .entry(owner)
+                        .or_default()
+                        .insert(definition.name, member);
+                } else {
+                    index
+                        .contextual
+                        .get_or_insert_default()
+                        .members
+                        .entry(owner)
+                        .or_default()
+                        .insert((definition.name, context), member);
+                }
             }
         }
         for kind in crate::support::comparisons::Comparison::ALL {
@@ -52,7 +67,7 @@ impl Index {
             index.prelude_members(cloning.canonical.definition)?;
         }
         index.account(report.resolution.scopes.len())?;
-        for (scope_id, _, namespace, binding) in report.resolution.bindings.iter() {
+        for (scope_id, namespace, binding) in report.resolution.bindings.all_bindings() {
             index.account(1)?;
             // Method lookup uses the retained glob candidate even when naming
             // the trait directly would be ambiguous. Direct bindings replace it.
@@ -104,20 +119,26 @@ impl Index {
         scope: ScopeId,
         name: NameId,
         bound_traits: &[ItemId],
+        context: ItemContext,
     ) -> Result<[Vec<DefId>; 2], &'static str> {
         self.account(bound_traits.len())?;
         let mut bound: Vec<_> = bound_traits
             .iter()
             .filter_map(|owner| self.members.get(&DefId(owner.0))?.get(&name).copied())
             .collect();
+        self.contextual_bounds(report, bound_traits, name, context, &mut bound)?;
         bound.sort_unstable_by_key(|id| id.0);
         bound.dedup();
-        let inherited = self.visible(report, scope, name)?;
+        let inherited = if context == ItemContext::ROOT {
+            self.visible(report, scope, name)?
+        } else {
+            self.contextual_visible(report, scope, name, context)?
+        };
         self.account(inherited.len())?;
         // A bound method can also be a lexical candidate with a different Self,
         // such as an implementation for a reference to the bounded parameter.
         let mut lexical = inherited.to_vec();
-        if !self.prelude.is_empty() {
+        if context == ItemContext::ROOT && !self.prelude.is_empty() {
             self.account(1)?;
             if report.package.modules[report.resolution.scopes[scope.0 as usize].module.0 as usize]
                 .implicit_prelude
@@ -175,6 +196,22 @@ impl Index {
                     names.entry(name).or_default().push(method);
                 }
             }
+            let count = self
+                .contextual
+                .as_ref()
+                .and_then(|index| index.members.get(&owner))
+                .map_or(0, HashMap::len);
+            self.account(count)?;
+            if count != 0
+                && let Some(index) = self.contextual.as_mut()
+            {
+                let local = index.local.entry(scope).or_default();
+                if let Some(members) = index.members.get(&owner) {
+                    for (&key, &method) in members {
+                        local.entry(key).or_default().push(method);
+                    }
+                }
+            }
         }
         self.local.insert(scope, names);
         Ok(())
@@ -198,3 +235,7 @@ fn canonical_trait(facts: &Declarations, definition: DefId) -> bool {
             .as_deref()
             .is_some_and(|cloning| cloning.owns_trait(definition))
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/discovery_scopes.rs"]
+mod tests;
