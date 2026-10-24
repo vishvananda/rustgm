@@ -234,7 +234,7 @@ pub struct Reference {
 pub struct Introductions {
     pub definitions: HashMap<DefId, crate::expand::marks::ExpansionId>,
     pub imports: HashMap<usize, crate::expand::marks::ExpansionId>,
-    pub parents: Vec<crate::expand::marks::ExpansionId>,
+    pub ancestry: crate::expand::ancestry::Ancestry,
 }
 impl Introductions {
     #[must_use]
@@ -251,21 +251,9 @@ impl Introductions {
     pub fn ancestor(
         &self,
         ancestor: crate::expand::marks::ExpansionId,
-        mut context: crate::expand::marks::ExpansionId,
+        context: crate::expand::marks::ExpansionId,
     ) -> bool {
-        for _ in 0..=self.parents.len() {
-            if context == ancestor {
-                return true;
-            }
-            let Some(index) = context.0.checked_sub(1) else {
-                return false;
-            };
-            let Some(parent) = self.parents.get(index as usize) else {
-                return false;
-            };
-            context = *parent;
-        }
-        false
+        self.ancestry.ancestor(ancestor, context)
     }
 }
 /// Lexical scopes introduced at syntax nodes. Each module's nodes live in its

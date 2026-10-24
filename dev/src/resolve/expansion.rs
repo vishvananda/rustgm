@@ -363,7 +363,6 @@ impl<S: Sources> Engine<'_, S> {
             &mut self.scopes,
             bindings::Bindings {
                 definitions: &self.definitions,
-                invocations: &self.invocations,
             },
         )? {
             self.wake(call);
@@ -881,9 +880,14 @@ impl<S: Sources> Engine<'_, S> {
             let name = call.path[0];
             match (bindings::Bindings {
                 definitions: &self.definitions,
-                invocations: &self.invocations,
             })
-            .textual(&mut self.scopes, call.scope, name, call.visit.introduction)
+            .textual(
+                &mut self.scopes,
+                &self.paths.state.facts.introductions.ancestry,
+                call.scope,
+                name,
+                call.visit.introduction,
+            )
             .map_err(|e| self.calls[index].diagnostic(e.message))?
             {
                 Lookup::Found(definition) => {
@@ -1072,7 +1076,13 @@ impl<S: Sources> Engine<'_, S> {
             )
         })?;
         let generated = self.install_builtin(file, visit.node, original, context, generated)?;
-        self.paths.state.facts.introductions.parents.push(parent);
+        self.paths
+            .state
+            .facts
+            .introductions
+            .ancestry
+            .append(context, parent)
+            .map_err(|message| Error::at(file, original.start, message))?;
         self.invocations.push(Invocation {
             context,
             node: NodeKey {
@@ -1179,7 +1189,13 @@ impl<S: Sources> Engine<'_, S> {
         let generated = package.units[file.0 as usize]
             .install_expansion(visit.node, &stream.source, configured, &stream.origins)
             .map_err(|e| Error::at(file, original.start, e.message))?;
-        self.paths.state.facts.introductions.parents.push(parent);
+        self.paths
+            .state
+            .facts
+            .introductions
+            .ancestry
+            .append(context, parent)
+            .map_err(|message| Error::at(file, original.start, message))?;
         self.invocations.push(Invocation {
             context,
             node: NodeKey {

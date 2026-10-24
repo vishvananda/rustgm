@@ -61,6 +61,50 @@ fn analyze(source: &str, files: &mut Files) -> Result<expansion::Report, String>
 }
 
 #[test]
+fn actual_builtin_and_declarative_invocations_share_one_ancestry_index() -> Result<(), String> {
+    use rustgm::expand::marks::ExpansionId;
+    let source = "macro_rules! inner {()=>{line!()}} macro_rules! outer {()=>{inner!()}} fn f()->u32{outer!()} fn g()->u32{outer!()} const X:&str=stringify!(other);";
+    let report = analyze(source, &mut Files::default())?;
+    assert_eq!(report.invocations.len(), 7);
+    assert_eq!(
+        report
+            .invocations
+            .iter()
+            .filter(|call| call.rule.is_some())
+            .count(),
+        4
+    );
+    let mut parents = vec![ExpansionId(0)];
+    for call in &report.invocations {
+        assert_eq!(call.context.0 as usize, parents.len());
+        assert!(call.parent.0 < call.context.0);
+        parents.push(call.parent);
+    }
+    for ancestor in 0..=7 {
+        for context in 0..=7 {
+            let mut current = ExpansionId(context);
+            while current != ExpansionId(ancestor) && current.0 != 0 {
+                current = parents[current.0 as usize];
+            }
+            assert_eq!(
+                report
+                    .resolution
+                    .introductions
+                    .ancestor(ExpansionId(ancestor), ExpansionId(context)),
+                current == ExpansionId(ancestor),
+            );
+        }
+    }
+    assert!(
+        !report
+            .resolution
+            .introductions
+            .ancestor(ExpansionId(8), ExpansionId(8))
+    );
+    Ok(())
+}
+
+#[test]
 fn whole_crate_worklist_expands_generated_definitions_and_resolves_their_items()
 -> Result<(), String> {
     let source = "macro_rules! make {()=>{macro_rules! value {()=>{42}} fn answer()->i32{value!()}}} make!(); fn entry()->i32{answer()}";

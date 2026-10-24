@@ -395,6 +395,16 @@ Mixed-transparency rebasing shares definition prefixes by normalized call-site
 context while final interning retains each actual invocation identity. Measure
 first-miss depth across distinct call-site contexts as well as cache hits.
 
+Share one append-only actual invocation ancestry index between textual lookup
+and resolved bindings. A nested query must not walk the complete parent chain
+again for each name or stripped mark. Keep the physical root allocation-free;
+retain one parent, depth and skew-binary jump per actual invocation. Publication
+combines adjacent equal jump lengths with amortized constant append work, while ancestry queries
+skip complete blocks and split only the block containing the requested depth.
+Compare against an independent parent-walk oracle and measure depth and query
+width separately, together, and after unrelated sibling publication. This index
+provides ancestry only; it grants neither hygienic equality nor privacy access.
+
 Index local shadow histories by binding entry and normalized context, retaining
 every declaration version needed by definition-site visibility. Unrelated
 contexts must not be scanned for duplicate checks or historical lookup. A

@@ -378,7 +378,13 @@ impl Paths {
             let import = &self.state.facts.imports[index];
             let name = import.path[0];
             let source = match bindings
-                .textual(scopes, scope, name, context)
+                .textual(
+                    scopes,
+                    &self.state.facts.introductions.ancestry,
+                    scope,
+                    name,
+                    context,
+                )
                 .map_err(|e| Error::at(import.node.file, e.offset, e.message))?
             {
                 textual::Lookup::Missing => TextualSource::Missing,
