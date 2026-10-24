@@ -77,9 +77,27 @@ impl MacroAllowanceSession<'_> {
     /// # Errors
     /// Rejects changed source/owner/frame identities and exhausted work/storage.
     pub fn allows(&mut self, site: Location, feature: &FeatureName<'_>) -> Result<bool, Error> {
+        let data = self.header(site, feature.spelling().len())?;
+        Ok(data.as_ref().is_some_and(|data| data.contains(feature)))
+    }
+    /// Inspect only the actual token's outer unsafe-code lint metadata.
+    /// This does not authorize an unsafe operation or enable a crate feature.
+    /// # Errors
+    /// Rejects changed owners/frames/witnesses and exhausted global budgets.
+    pub fn allows_unsafe_code_lint(&mut self, site: Location) -> Result<bool, Error> {
+        let data = self.header(site, 0)?;
+        Ok(data
+            .as_ref()
+            .is_some_and(|data| data.declaration().unsafe_lint))
+    }
+    fn header(
+        &mut self,
+        site: Location,
+        extra_work: usize,
+    ) -> Result<Option<Rc<HeaderData>>, Error> {
         let (context, origin_links, origin_lookups) = self.context(site)?;
         let Some(context) = context else {
-            return Ok(false);
+            return Ok(None);
         };
         let package = &self.report.package;
         let error = |message| Error::at(site.file, site.span.start, message);
@@ -97,7 +115,7 @@ impl MacroAllowanceSession<'_> {
             self.view().frame(context)?
         };
         let Some(owner) = frame.owner else {
-            return Ok(false);
+            return Ok(None);
         };
         let cached = self
             .memo
@@ -112,7 +130,7 @@ impl MacroAllowanceSession<'_> {
         } else {
             self.view().authenticate_source(frame.definition)?
         };
-        panic_contracts::published(package, owner, data.as_ref(), 1 + feature.spelling().len())?;
+        panic_contracts::published(package, owner, data.as_ref(), 1 + extra_work)?;
         if saved.is_none() {
             self.retain(frame, data.clone())?;
         }
@@ -120,7 +138,7 @@ impl MacroAllowanceSession<'_> {
             memo.origin_links = memo.origin_links.saturating_add(origin_links);
             memo.origin_lookups = memo.origin_lookups.saturating_add(origin_lookups);
         }
-        Ok(data.as_ref().is_some_and(|data| data.contains(feature)))
+        Ok(data)
     }
     fn context(&self, site: Location) -> Result<(Option<ExpansionId>, usize, usize), Error> {
         let package = &self.report.package;

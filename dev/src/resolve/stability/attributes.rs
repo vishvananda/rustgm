@@ -30,12 +30,13 @@ pub(in crate::resolve) fn collect(
             | "rustc_default_body_unstable"
             | "rustc_allow_const_fn_unstable"
             | "allow_internal_unstable"
+            | "allow_internal_unsafe"
             | "rustc_const_stable_indirect"
     );
     if unit.include_context.is_some() {
         return Ok(extended || matches!(name, "stable" | "unstable"));
     }
-    if name == "allow_internal_unstable"
+    if matches!(name, "allow_internal_unstable" | "allow_internal_unsafe")
         && allowance.is_some_and(|allowance| allowance.matches(key, attribute))
     {
         return Ok(true);

@@ -42,7 +42,7 @@ pub struct Reservations {
     denied_implementations: HashSet<DefId>,
     pub(super) header_attributes: [HeaderAttributes; LangItem::ALL.len()],
     pub(super) trivial_field_reads: Option<DefId>,
-    pub(super) diagnostics: [Option<Declaration>; 4],
+    pub(super) diagnostics: [Option<Declaration>; 5],
     pub steps: usize,
 }
 impl Reservations {
@@ -155,7 +155,7 @@ fn reserve_all(
         denied_implementations: HashSet::default(),
         header_attributes: [HeaderAttributes::EMPTY; LangItem::ALL.len()],
         trivial_field_reads: None,
-        diagnostics: [None; 4],
+        diagnostics: [None; 5],
         steps: 0,
     };
     let parents = parents(package, facts);

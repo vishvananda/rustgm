@@ -20,6 +20,7 @@ pub(super) enum DiagnosticItem {
     Copy,
     Identity,
     CfgSelect,
+    FormatArgsMacro,
 }
 impl DiagnosticItem {
     const fn index(self) -> usize {
@@ -53,6 +54,7 @@ pub(super) fn parse(
         b"Copy" => Ok(DiagnosticItem::Copy),
         b"convert_identity" => Ok(DiagnosticItem::Identity),
         b"cfg_select" => Ok(DiagnosticItem::CfgSelect),
+        b"format_args_macro" => Ok(DiagnosticItem::FormatArgsMacro),
         _ => Err(error("unsupported source diagnostic identity")),
     }
 }
@@ -74,7 +76,9 @@ pub(super) fn validate(
         let expected = match item {
             DiagnosticItem::Clone => Some(LangItem::Clone),
             DiagnosticItem::Copy => Some(LangItem::Copy),
-            DiagnosticItem::Identity | DiagnosticItem::CfgSelect => None,
+            DiagnosticItem::Identity
+            | DiagnosticItem::CfgSelect
+            | DiagnosticItem::FormatArgsMacro => None,
         };
         if let Some(expected) = expected {
             if !claims
@@ -85,16 +89,24 @@ pub(super) fn validate(
                     "diagnostic identity has a different actual language owner",
                 ));
             }
-        } else if matches!(item, DiagnosticItem::CfgSelect) {
-            if !claims.iter().any(|claim| {
-                matches!(
-                    claim,
-                    Claim::BuiltinMacro(crate::expand::builtin::Builtin::CfgSelect)
-                )
-            }) {
-                return Err(error(
-                    "cfg_select diagnostic identity requires its actual builtin role",
-                ));
+        } else if matches!(
+            item,
+            DiagnosticItem::CfgSelect | DiagnosticItem::FormatArgsMacro
+        ) {
+            let role = if matches!(item, DiagnosticItem::CfgSelect) {
+                crate::expand::builtin::Builtin::CfgSelect
+            } else {
+                crate::expand::builtin::Builtin::FormatArgs
+            };
+            if !claims
+                .iter()
+                .any(|claim| matches!(claim,Claim::BuiltinMacro(actual) if *actual==role))
+            {
+                return Err(error(if matches!(item, DiagnosticItem::CfgSelect) {
+                    "cfg_select diagnostic identity requires its actual builtin role"
+                } else {
+                    "format_args diagnostic identity requires its actual builtin role"
+                }));
             }
         } else {
             let unit = package.unit(declaration.origin.file);

@@ -128,6 +128,7 @@ pub(super) fn collect(
     let mut declaration = read(package, owner, &mut names, work)?;
     if declaration.builtin.is_none()
         && !declaration.has_allowance
+        && !declaration.unsafe_lint
         && (package.source_core().is_none() || !is_macro(owner.unit, owner.node))
     {
         return Ok(None);
@@ -137,7 +138,7 @@ pub(super) fn collect(
         package.units.get(file.0 as usize)
     })
     .map_err(|failure| error(failure.message))?;
-    if declaration.builtin.is_none() && !declaration.has_allowance {
+    if declaration.builtin.is_none() && !declaration.has_allowance && !declaration.unsafe_lint {
         return Ok(Some(Entry::Plain(declaration)));
     }
     let witnesses = capture(owner, declaration.builtin, &mut names, work).map_err(error)?;
@@ -193,6 +194,7 @@ fn read(
         attributes: (owner.attributes.start, owner.attributes.end),
         builtin: None,
         has_allowance: false,
+        unsafe_lint: false,
         consumers: 0,
         edition: owner.unit.edition(),
     };
@@ -215,6 +217,11 @@ fn read(
                 declaration.builtin = Some(super::super::source_builtin::parse(
                     package, owner.node, attribute, forest,
                 )?);
+            }
+            Some("allow_internal_unsafe") => {
+                declaration.unsafe_lint = true;
+                require_features(package, declaration).map_err(error)?;
+                unsafe_lint_attribute(owner, attribute).map_err(error)?;
             }
             Some("allow_internal_unstable") => {
                 declaration.has_allowance = true;
@@ -248,7 +255,7 @@ fn capture(
         let name = attribute.name(forest, owner.unit.source.text());
         if !matches!(
             name,
-            Some("rustc_builtin_macro" | "allow_internal_unstable")
+            Some("rustc_builtin_macro" | "allow_internal_unstable" | "allow_internal_unsafe")
         ) {
             continue;
         }
@@ -263,7 +270,10 @@ fn capture(
                 attribute,
                 forest,
                 builtin,
-                allowance: name == Some("allow_internal_unstable"),
+                allowance: matches!(
+                    name,
+                    Some("allow_internal_unstable" | "allow_internal_unsafe")
+                ),
             },
             names,
             work,
@@ -305,4 +315,22 @@ fn allowance_range(
         .children(group)
         .map(|range| range.start..range.end)
         .ok_or("invalid internal macro allowance arguments")
+}
+
+fn unsafe_lint_attribute(owner: &Owner<'_>, attribute: Attribute) -> Result<(), &'static str> {
+    let Kind::Item(index) = owner.unit.configured.ast.node(owner.node.node).kind else {
+        return Err("internal unsafe lint metadata requires an actual macro or function");
+    };
+    if !matches!(
+        owner.unit.configured.ast.items[index as usize].kind,
+        crate::syntax::item::ItemKind::MacroRules { .. }
+            | crate::syntax::item::ItemKind::DeclarativeMacro { .. }
+            | crate::syntax::item::ItemKind::Function { .. }
+    ) {
+        return Err("internal unsafe lint metadata requires an actual macro or function");
+    }
+    if attribute.input != Input::Empty || attribute.unsafe_wrapper {
+        return Err("allow_internal_unsafe requires a plain no-arguments attribute");
+    }
+    Ok(())
 }
