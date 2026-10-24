@@ -273,6 +273,19 @@ Its width/noise measurements distinguish indexed preparation work from the cost
 of parsing and checking unrelated source. Source rows still require validation,
 authenticated transport and fresh client proofs before execution.
 
+Validate raw source row domains through borrowed header, binder and type-recipe
+indexes. Traverse the binder forest once, resolve bound-depth queries in that
+traversal, and answer later ancestry queries from preorder intervals. Summarize
+shared recipe DAGs once and check each consuming root against its actual scope;
+do not multiply query width by binder depth or copy a body's enclosing context.
+Canonical late-region indices must be unique within their function even when
+the underlying slot references differ. Charge attempted work, actual retained
+capacity and peak scratch storage, including failures. These data indexes grant
+no descriptor or import authority: substituted signature equality, operation
+typing, complete obligations, authenticated remapping and fresh client proofs
+remain separate requirements. See the
+[source domain index checkpoint](docs/pa29-source-domain-index-checkpoint.md).
+
 Callable signature equations do not establish const-callability. For actual
 source Fn/FnMut/FnOnce roles, nonordinary use validates the completed declaration,
 source constness, prepared effect and exact substituted full function item.
@@ -314,6 +327,22 @@ the original return destination and one-use caller payment; cached callback code
 does not pay another reached use. The
 [constant selector checkpoint](docs/pa31-const-select-ctfe-progress.md) distinguishes
 qualified source profiles from the remaining binder and conditional-call debts.
+
+A shared-reference selector retains the caller's already-proved whole
+input/output relation at its exact Call. Bind that cold descriptor to the
+actual finalized Code object, full selector and callback instances, and owning
+input row. Matching signature shapes or cached code cannot substitute for this
+identity. Finalize the named or anonymous owner before preparing the row;
+preflight both owners' storage and publish Code and row together only after
+all checks pass. Keep public and owned callback signatures distinct, preserve
+the actual late binder, and use ordinary function entry and reference provenance
+checks. Named demand constructs its declaration owner before proof; anonymous
+expression demand cannot acquire that permission by relabeling a cached result.
+Keep ordinary bodies free of descriptor allocations and measure caller width,
+warm reuse, owner depth and failed publication separately. The
+[reference selector checkpoint](docs/pa31-const-select-reference-progress.md)
+records the supported profile and remaining anonymous-reference and broader
+callback requirements.
 
 Prepare an owned executable snapshot while its exact Body, Contract and solved
 region/loan proof are available. Reuse the solved callable mapping producer,
