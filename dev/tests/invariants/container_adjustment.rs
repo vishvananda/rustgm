@@ -130,7 +130,7 @@ fn shared_suffix_queries_charge_depth_once_and_each_use_once() -> TestResult {
                 let leaf = mark(&mut marks, context, id)?;
                 let answer =
                     marks.adjust_observed(marks.item(leaf)?, ExpansionId(0), &ancestry, || {
-                        steps += 1
+                        steps += 1;
                     })?;
                 assert_eq!(
                     answer,
@@ -141,7 +141,7 @@ fn shared_suffix_queries_charge_depth_once_and_each_use_once() -> TestResult {
                 );
                 assert_eq!(
                     marks.adjust_observed(marks.item(leaf)?, ExpansionId(0), &ancestry, || {
-                        steps += 1
+                        steps += 1;
                     })?,
                     answer
                 );

@@ -145,6 +145,28 @@ pub struct Binding {
     pub ambiguous: bool,
 }
 impl Binding {
+    /// Item and local lookup share barriers, while parameter identity cannot rewind.
+    pub(crate) fn permits_lexical_lookup(
+        self,
+        definitions: &[Definition],
+        scope: &Scope,
+        barriers: u32,
+        parameter_matches: bool,
+    ) -> bool {
+        let kind = definitions[self.target.0 as usize].kind;
+        (parameter_matches
+            || !matches!(
+                kind,
+                DefKind::Generic | DefKind::Lifetime | DefKind::SelfType
+            ))
+            && self.is_lexical(definitions, scope.associated)
+            && (barriers == 0
+                || !kind.is_local()
+                || (barriers == 1
+                    && scope.associated
+                    && matches!(kind, DefKind::Generic | DefKind::SelfType)))
+    }
+
     /// Variants and associated type members do not shadow enclosing lexical
     /// names. Their qualified member lookup uses the scope directly.
     pub(crate) fn is_lexical(self, definitions: &[Definition], associated: bool) -> bool {

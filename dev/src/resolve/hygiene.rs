@@ -160,20 +160,12 @@ impl Hygiene {
                 facts.bindings.get_key(key)
             };
             if let Some(binding) = binding
-                && (query.item == query.parameter
-                    || !matches!(
-                        facts.definitions[binding.target.0 as usize].kind,
-                        DefKind::Generic | DefKind::Lifetime | DefKind::SelfType
-                    ))
-                && binding.is_lexical(&facts.definitions, frame.associated)
-                && (barriers == 0
-                    || !facts.definitions[binding.target.0 as usize].kind.is_local()
-                    || (barriers == 1
-                        && frame.associated
-                        && matches!(
-                            facts.definitions[binding.target.0 as usize].kind,
-                            DefKind::Generic | DefKind::SelfType
-                        )))
+                && binding.permits_lexical_lookup(
+                    &facts.definitions,
+                    frame,
+                    barriers,
+                    query.item == query.parameter,
+                )
             {
                 return Ok(Some(super::contextual_lookup::Selected {
                     key,

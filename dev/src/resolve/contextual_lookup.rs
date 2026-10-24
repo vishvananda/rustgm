@@ -2,7 +2,7 @@
 use super::{
     index::{Context, Resolver},
     lookup::{BindingKey, Observations},
-    model::{Binding, DefKind, ItemAdjustment, Namespace, ScopeId},
+    model::{Binding, ItemAdjustment, Namespace, ScopeId},
     names::NameId,
 };
 use crate::expand::marks::ItemContext;
@@ -181,22 +181,12 @@ impl Resolver<'_> {
                 }));
             }
             if let Some(binding) = self.facts.bindings.get_key(key)
-                && (context == parameter_context
-                    || !matches!(
-                        self.facts.definitions[binding.target.0 as usize].kind,
-                        DefKind::Generic | DefKind::Lifetime | DefKind::SelfType
-                    ))
-                && binding.is_lexical(&self.facts.definitions, frame.associated)
-                && (barriers == 0
-                    || !self.facts.definitions[binding.target.0 as usize]
-                        .kind
-                        .is_local()
-                    || (barriers == 1
-                        && frame.associated
-                        && matches!(
-                            self.facts.definitions[binding.target.0 as usize].kind,
-                            DefKind::Generic | DefKind::SelfType
-                        )))
+                && binding.permits_lexical_lookup(
+                    &self.facts.definitions,
+                    frame,
+                    barriers,
+                    context == parameter_context,
+                )
             {
                 return Ok(Some(Selected {
                     key,

@@ -118,7 +118,7 @@ fn shared_glob_suffixes_cost_depth_plus_names_without_per_name_storage() -> Test
             for _ in 0..width {
                 let answer = marks
                     .reverse_observed(ItemContext::ROOT, ExpansionId(0), glob, &ancestry, || {
-                        steps += 1
+                        steps += 1;
                     })?
                     .ok_or("valid glob hidden")?;
                 assert_eq!(answer.context, glob);
