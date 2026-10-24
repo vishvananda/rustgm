@@ -1,6 +1,6 @@
-# Context-sensitive item lookup: source checkpoint
+# Context-sensitive item lookup: focused checkpoint
 
-This unqualified LIB-001 checkpoint follows the published
+This development-qualified LIB-001 checkpoint follows the published
 `domains-selectors-macros` integration. It does not enable scoped macro source
 admission, complete core, or release PA31. The reference algorithms are pinned
 Rust `88d9e12ae178fab0fb5cc050a94da85685d449ea`: `rustc_resolve/src/ident.rs`
@@ -73,18 +73,26 @@ opaque token provenance. They are not evidence of scoped macro source acceptance
 The existing item-adjustment/privacy controls and PA6/PA8 semantic suites remain
 required, as do all active text oracles.
 
-The declared cold owner change is Resolution 2048 to 2056 bytes. Saved macro paths
+The measured cold owner change is Resolution 2048 to 2056 bytes. Saved macro paths
 replace a 24-byte Vec with two slice handles (32 bytes); ordinary paths have no
 context allocation. The boxed mark arena gains the glob cache. Scope, Definition,
-Package, Body, Value and Type records gain no fields. Qualification must record
-actual layouts and retain focused work counters. These are source predictions,
-not measured performance results. Shared lookup changes require immutable A/B
+Package, Body, Value and Type records gain no fields. The focused controls measured
+Scope 32, Definition 36, Package 256, the pooled path buffer 56 and saved path 32
+bytes. Textual Scopes is 128 bytes, Entry remains 24 and its optional owner is
+64 bytes. Shared lookup changes still require immutable A/B
 measurements, ordinary controls and the existing macro depth/width matrix before
 publication; all regressions must remain visible.
 
-Formatting is the only completed check at this source checkpoint. Architecture
-audit, strict all-target/all-feature Clippy, focused debug tests, text regression,
-independent/native source controls and combined release qualification are pending.
+Source `0e356020ff24cc6b1c0de4b8f9acd5cb94560821` passed formatting, architecture
+audit, strict all-target/all-feature Clippy, harness/upstream verification,
+66 exact private controls, 138 frontend tests and all 8,382 active PA text cases.
+The receipt lives in `obj/parallel/item-lookup-v5/` in the integrator's isolated
+`rustgm-pa29-work` checkout. Its focused receipt SHA-256 is
+`c8d424d2bb6fe23e8a88316451a890ca1566a8443f5309df8af16b42b30bb157`;
+the complete check inventory is
+`e787008bbdfdd8910bdb71ffa374520b289f35afd40b7eecb9bf350b6bd02f8f`.
+Earlier filename-family audit and strict-style failures remain retained.
+The combined release/native and performance gates remain pending.
 Scoped publication, full member consumers and
 foreign macro transport remain separate required work. Do not enable scoped
 admission merely because these private controls pass.

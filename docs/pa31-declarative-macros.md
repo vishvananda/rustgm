@@ -1,11 +1,15 @@
 # Scoped declarative macros: implementation boundary
 
-This is a source/design checkpoint, not implemented macro2 support. The original
-pinned whole-core root gets past `option_env` import resolution and reaches
-`core/src/macros/mod.rs:170`, where `pub macro assert_matches` fails parsing.
-The current public compiler checkpoint does not include the changes below.
+This records the staged implementation of scoped declarative macros. It is not
+complete macro2 support. The latest public unchanged-core attempt gets past the
+earlier `pub macro assert_matches` parse failure and stops at the real
+`core_panic` builtin declaration in `core/src/macros/mod.rs:3`. Parsing, typed
+token identities and invocation ancestry are published. Contextual lookup is
+development-qualified in the isolated [lookup checkpoint](pa31-item-lookup.md);
+scoped semantic admission remains disabled. The
+[blocker tracker](library-build-blockers.md) owns the current crate boundary.
 
-The isolated branch implements typed concise/braced syntax and shared matcher
+The original isolated parser checkpoint implements typed concise/braced syntax and shared matcher
 compilation, with parser/transfer/separator tests. Development snapshot
 `b270dd1266354f5b71f2f7239c1c1456d21c0e66` passes formatting, architecture/file
 audits, all-target strict Clippy, harness/upstream verification, 135 focused
