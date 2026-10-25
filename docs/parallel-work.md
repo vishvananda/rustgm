@@ -24,15 +24,20 @@ qualified primitive compiler and reaches `offload_kernel`, line 1668. It verifie
 Use this current frontier when selecting work; the scoped/byte measurements
 above remain the performance baseline.
 
+The [builtin declaration successor](builtin-declarations-checkpoint.md) now
+advances the root to `num/f128.rs:27`: nine original files opened and all 722
+inputs verified. Its seven isolated controls pass in 165.33 seconds. Use LIB-024
+as the current frontier; wider macro execution and import remain open.
+
 Current lanes:
 
 - A: continue real Provided signature/body transport. The private reservation
   session and shared signature cursor are qualified with eleven merged controls.
   Export now shares the ordinary raw place-bounds producer; real empty signature
   schemes and anonymous function/type-alias producer gaps remain explicit.
-- B: implement LIB-022's authenticated builtin declaration family from the new
-  unchanged-core frontier. Keep remaining UB/runtime-policy import contracts
-  visible and separate from local declaration support.
+- B: LIB-022's complete local declaration family is qualified. Implement
+  LIB-024's exact wide literal/feature/type slice from the real f128 frontier;
+  keep later wide operations, UB policy, macro execution and import explicit.
 - C: LIB-023's real local `non_exhaustive` consumer is qualified with four merged
   controls and 38 independent observations. Continue the actual source-attribute
   publication boundary and imported contracts. Attribute/configuration receipts
