@@ -2,7 +2,7 @@
 use super::{Body, Context, Declarations, Stage, g, ir, place, s};
 pub(super) fn emit(
     stage: &mut Stage,
-    facts: &Declarations,
+    facts: &mut Declarations,
     body: &Body,
     context: Context,
     raw: &mut s::Original,
@@ -14,6 +14,7 @@ pub(super) fn emit(
     }
     for (index, value) in body.values.iter().enumerate() {
         stage.charge(1)?;
+        stage.prepare_type_arena(facts, value.ty)?;
         let kind = match value.kind {
             ir::Rvalue::Unit => s::ValueKind::Unit,
             ir::Rvalue::Read(target) => s::ValueKind::Read(place(target)?),

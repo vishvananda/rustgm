@@ -1,0 +1,75 @@
+# Actual anonymous function recipes
+
+This source-only checkpoint follows the qualified empty-scheme/monomorphic
+import controls from CI `40190841475`. Its new controls have not run yet.
+
+The existing authored type worklist now enters actual `Kind::Function` nodes,
+allocates their real `CallableType` frames, demands their actual input/result
+TypeIds, and finishes the recipe after its children. Declaration signatures and
+anonymous types share the signature-field assembler. Parent root ranges are
+appended after nested children complete their own ranges. Old signatures without
+anonymous children keep their direct append order and allocate no temporary root
+vector. No declaration surrogate, function item, header or TypeId is invented.
+
+The existing data validator admits standalone `CallableType` frames only with
+zero slots and no parent. This checkpoint retains that boundary: Rust,
+nonvariadic function types with no escaping/free regional context and zero own
+bound slots. Actual safety is retained. Nonzero HRTB slots, captures, foreign
+conventions, TypeAlias declarations and the PA5 nesting boundary remain separate
+requirements. This does not enable indirect calls, const/default execution or
+Provided publication/import.
+
+One verified spare bit in the existing `u16` type properties summarizes anonymous
+function occurrences. Existing structural child unions propagate it. A function
+item masks its own signature before the existing actual generic-argument union,
+so a real function-pointer argument remains visible. Existing FunctionItem-only
+memo keys and ordinal production stay unchanged. Store, Body, Contract and header
+records gain no fields; their layouts stay unchanged.
+
+The cold private authored Graph gains one optional arena anchor. Real mutable
+header owners inspect cached immediate signature-field summaries in their
+existing loop. Real mutable body collectors prepare actual result, local,
+projection and value types in their existing emission loops. Only anonymous
+demand can prepare a missing Store identity, charged before allocation. The
+readonly producer borrows the existing identity and pins it once; it never mints
+one. Once anchored, type/signature/application memo hits first reject another,
+replaced or absent arena. Anonymous-bearing keys include the actual owner/frame/
+body Context; actual Original/Public frames distinguish signature purpose.
+
+The collector's facts borrow becomes mutable through its existing owned builder
+and callback chain. Original proof matching, callback order and raw Contract
+identity stay intact. No extra body/CFG traversal or unrelated-body walk prepares
+an arena. Header preparation remains the existing eager header pass, not a new
+demand-only catalog algorithm. Source publishing still runs the separately
+reviewed attribute check; unpaid inspection grants no publishing permission.
+
+The shared memo expands each distinct actual type/context once. Repeated roots
+charge their attempt and return before allocating a task vector. Cold task
+storage, frames, memo entries, root ranges and the real identity allocation are
+preflighted through existing work/retained/scratch budgets. The Graph's optional
+pointer and larger task variant have real cold storage costs; no zero-cost or
+timing nonregression claim is made.
+
+Four new controls are frozen before execution:
+
+- Genuine `carry<T>(fn(u8)->u8)` and nongeneric `plain` cross the ordinary header
+  producer, public tag10 codec and fresh source-free client analysis. A real
+  unsafe function-pointer type checks safety retention without an unsafe call.
+- Actual proved rows reject changed binder roles/counts; real source rejects a
+  nonzero HRTB function type. Actual foreign and replaced arenas fail before
+  warm hits, and the restored real arena remains usable.
+- Real function-item type arguments retain the new summary while declaration
+  signatures alone do not. A nongeneric body-only uninitialized function-pointer
+  local exercises the actual mutable owner hook. Shared roots and 1000 warm
+  demands preserve tables/capacities, with failed work attempts still charged.
+- Linear inline function chains at depths 1/4/8 and widths 1/8/32 create one
+  recipe/frame per distinct actual type/context, with bounded work and storage.
+  The unchanged ordinary provider preserves absent-anchor allocation behavior.
+
+The existing Functions codec/fresh-proof control and ordinary collector failure
+control complete the six-selector batch. Compilation, strict Clippy, architecture
+audit and execution remain pending the integrator's focused remote gate.
+
+Depth8 is a bounded shallow producer control. Deep READY128, genuine alias
+declaration transport, contextual/HRTB function types and the original parser
+depth128 failures remain open; earlier failed sources and logs are retained.

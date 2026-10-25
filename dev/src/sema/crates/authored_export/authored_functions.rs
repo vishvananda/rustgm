@@ -47,7 +47,7 @@ impl Stage {
     pub(super) fn functions(
         &mut self,
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
     ) -> Result<(), &'static str> {
         let mut count = 0usize;
         for index in 0..self.definitions.len() {
@@ -57,7 +57,7 @@ impl Stage {
             let Some(&index) = facts.function_indices.get(&definition) else {
                 continue;
             };
-            let function = facts
+            let function = *facts
                 .functions
                 .get(index)
                 .ok_or("source function header index is stale")?;
@@ -79,7 +79,8 @@ impl Stage {
                 );
             }
             let declaration = self.declaration(definition)?;
-            self.function(report, facts, function, declaration)?;
+            self.prepare_signature_arena(facts, function.signature)?;
+            self.function(report, facts, &function, declaration)?;
             count = count
                 .checked_add(1)
                 .ok_or("source function count overflow")?;

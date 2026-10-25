@@ -1,5 +1,5 @@
 import os,subprocess,sys
-selectors=['lower::transported_source::publication_tests::plain_and_configured_absent_headers_publish_with_the_existing_profile', 'lower::transported_source::publication_tests::all_selected_function_and_trait_contracts_reject_before_payload_publication', 'lower::transported_source::publication_tests::staged_identity_and_existing_query_failures_are_preserved']
+selectors=['sema::crates::authored_export::canonical_nodes::tests::anonymous_function_headers_cross_codec_without_declaration_surrogates', 'sema::crates::authored_export::canonical_nodes::tests::anonymous_function_context_and_binder_opponents_fail_before_publication', 'sema::crates::authored_export::canonical_nodes::tests::anonymous_function_shared_roots_use_one_persistent_dag', 'sema::crates::authored_export::canonical_nodes::tests::anonymous_function_work_and_storage_scale_with_actual_shallow_dag', 'support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof', 'lower::instances::staged_originals::tests::ordinary_collector_failure_discards_partial_rows_before_finalization']
 command=[sys.executable,"scripts/fastcheck.py","--seconds","200"]
 for name in selectors:command += ["--lib-case",name]
 subprocess.run(command,env={**os.environ,"RUST_TEST_NOCAPTURE":"1"},check=True)
