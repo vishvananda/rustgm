@@ -447,6 +447,208 @@ fn anonymous_function_headers_cross_codec_without_declaration_surrogates() -> Re
     Ok(())
 }
 
+fn pointer_provider() -> Result<crates::Interface> {
+    let report = test_source::source_provider(
+        &source(
+            "pub fn plain(value:fn(u8)->u8)->fn(u8)->u8{value}\
+             pub fn carry<T>(value:fn(u8)->u8)->fn(u8)->u8{value}",
+        )?,
+        "pointer_consumer",
+    )?;
+    let identity = report
+        .package
+        .source_core()
+        .ok_or("actual provider")?
+        .provider
+        .clone();
+    let mut analysis = crate::pipeline::analyze_source(&report)?;
+    let (_, interface) = crate::lower::instances::build_source_library_profile(
+        &report,
+        &mut analysis.facts,
+        identity,
+        analysis.prepared,
+        crate::lower::instances::SourcePublication::FunctionContracts,
+    )?;
+    assert_eq!(
+        interface
+            .source_descriptor()
+            .ok_or("source descriptor")?
+            .profile(),
+        crates::SourceProfile::Source2024FunctionContracts
+    );
+    let bytes = crates::encode(&interface)?;
+    let decoded = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&decoded)?, bytes);
+    Ok(decoded)
+}
+
+fn imported_pointer(
+    report: &Report,
+    facts: &Declarations,
+    name: &str,
+    formals: usize,
+) -> Result<crate::resolve::model::DefId> {
+    let definition = report
+        .resolution
+        .crates
+        .as_ref()
+        .ok_or("actual imported inventory")?
+        .definitions()
+        .find_map(|(external, definition)| {
+            matches!(external.path(), [actual] if actual == name).then_some(definition)
+        })
+        .ok_or("actual imported pointer callable")?;
+    assert!(
+        report.resolution.definitions[definition.0 as usize]
+            .node
+            .is_none()
+    );
+    let header = facts.function_header(definition)?.ok_or("actual header")?;
+    assert!(matches!(
+        header.body,
+        Some(crate::body::ir::BodyOrigin::Imported(_))
+    ));
+    let mut steps = 0;
+    let view = crate::sema::crates::source_original(facts, definition, &mut steps)?
+        .ok_or("actual imported original view")?;
+    assert_eq!(view.signature(), header.signature);
+    assert_eq!(Some(view.source()?), header.body);
+    assert!(steps > 0);
+    let parameters = facts
+        .generics
+        .parameters
+        .get(&definition)
+        .ok_or("actual complete formal scope")?;
+    assert_eq!(parameters.len(), formals);
+    let item = crate::types::ItemId(definition.0);
+    let template = facts
+        .lifetimes
+        .callables
+        .get(item)
+        .ok_or("actual template")?;
+    assert_eq!(template.signature, header.signature);
+    assert_eq!(
+        facts
+            .lifetimes
+            .callables
+            .generic_parameters(item)
+            .ok_or("complete template formals")?
+            .len(),
+        formals
+    );
+    let Some(Kind::Function {
+        parameters,
+        result,
+        bound_regions: 0,
+        ..
+    }) = facts.types.kind(header.signature)
+    else {
+        return Err("actual imported outer signature".into());
+    };
+    let inputs = facts.types.list(parameters).ok_or("actual inputs")?;
+    assert_eq!(inputs, &[result]);
+    assert!(matches!(
+        facts.types.kind(result),
+        Some(Kind::Function {
+            bound_regions: 0,
+            ..
+        })
+    ));
+    assert!(crate::types::instance::Instance::new(&facts.types, result).is_err());
+    Ok(definition)
+}
+
+#[test]
+fn anonymous_function_artifacts_reach_fresh_closed_pointer_instances() -> Result {
+    let interface = pointer_provider()?;
+    let (mut report, mut analysis, _) = source_packets::client_analysis(
+        interface,
+        "#![feature(no_core)]#![no_core]extern crate base;\
+         fn local(value:u8)->u8{value}\
+         fn main(){let callback:fn(u8)->u8=local;let returned=base::plain(callback);\
+         let generic=base::carry::<u8>(returned);let _used=generic(7u8);}",
+    )?;
+    let plain = imported_pointer(&report, &analysis.facts, "plain", 0)?;
+    let carry = imported_pointer(&report, &analysis.facts, "carry", 1)?;
+    assert_ne!(plain, carry);
+    let plain_symbol = analysis
+        .facts
+        .crates
+        .as_deref()
+        .ok_or("actual linkage")?
+        .rust_symbol(plain)
+        .ok_or("actual plain symbol")?
+        .to_owned();
+    let entry = crate::sema::entry::select(&mut report, &analysis.facts)?;
+    let program = crate::lower::instances::build_prepared(
+        &report,
+        &mut analysis.facts,
+        entry,
+        analysis.prepared,
+    )?;
+    assert!(
+        program
+            .symbols
+            .iter()
+            .any(|symbol| symbol.entry && symbol.body.is_some())
+    );
+    assert!(program.symbols.iter().any(|symbol| {
+        symbol.body.is_some()
+            && (symbol.name == plain_symbol
+                || symbol
+                    .name
+                    .strip_prefix(&plain_symbol)
+                    .is_some_and(|suffix| suffix.starts_with(".i")))
+    }));
+    let mut pointer_bodies = 0;
+    for symbol in &program.symbols {
+        if symbol.body.is_none() {
+            continue;
+        }
+        let crate::lowir::program::Signature::Scalar(signature) =
+            &program.signatures[symbol.signature.0 as usize]
+        else {
+            continue;
+        };
+        let parameters = &program.parameters
+            [signature.parameters.start as usize..signature.parameters.end as usize];
+        if parameters == [crate::lowir::vocabulary::Type::Ptr]
+            && signature.result == crate::lowir::vocabulary::Type::Ptr
+        {
+            pointer_bodies += 1;
+        }
+    }
+    assert_eq!(
+        pointer_bodies, 2,
+        "both imported originals must reach concrete bodies"
+    );
+    Ok(())
+}
+
+#[test]
+fn anonymous_function_fresh_callers_reject_safety_arity_and_result_mismatches() -> Result {
+    let bytes = crates::encode(&pointer_provider()?)?;
+    for (name, declarations, callback) in [
+        (
+            "unsafe",
+            "unsafe fn local(value:u8)->u8{value}",
+            "unsafe fn(u8)->u8",
+        ),
+        ("arity", "fn local()->u8{7u8}", "fn()->u8"),
+        ("result", "fn local(value:u8)->u16{9u16}", "fn(u8)->u16"),
+    ] {
+        let source = format!(
+            "#![feature(no_core)]#![no_core]extern crate base;{declarations}\
+             fn main(){{let callback:{callback}=local;let _used=base::plain(callback);}}"
+        );
+        assert!(
+            source_packets::client_analysis(crates::decode(&bytes)?, &source).is_err(),
+            "{name}: incompatible genuine pointer reached an imported callable"
+        );
+    }
+    Ok(())
+}
+
 #[test]
 fn anonymous_function_context_and_binder_opponents_fail_before_publication() -> Result {
     call_formations()?;
