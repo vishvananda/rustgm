@@ -596,6 +596,7 @@ impl Bases {
                 self.node(ty);
                 self.optional(value);
             }
+            ItemKind::TraitAlias { bounds } => self.list(bounds),
             ItemKind::TypeAlias { bounds, ty } => {
                 self.list(bounds);
                 self.optional(ty);

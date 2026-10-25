@@ -609,6 +609,9 @@ impl Resolver<'_> {
             ItemKind::Struct { .. } | ItemKind::Union { .. } => (Namespace::Type, DefKind::Struct),
             ItemKind::Enum { .. } => (Namespace::Type, DefKind::Enum),
             ItemKind::Trait { .. } => (Namespace::Type, DefKind::Trait),
+            ItemKind::TraitAlias { .. } => {
+                return Err(self.error(c, node, "trait alias semantics are not implemented"));
+            }
             ItemKind::Const { .. } => (Namespace::Value, DefKind::Const),
             ItemKind::Static { .. } => (Namespace::Value, DefKind::Static),
             ItemKind::TypeAlias { .. } => (Namespace::Type, DefKind::TypeAlias),

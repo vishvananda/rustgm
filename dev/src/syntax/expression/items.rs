@@ -300,28 +300,44 @@ impl Parser<'_, '_> {
                 }
                 item.name = Some(self.name()?);
                 item.generics = self.generics()?;
-                let bounds = if self.eat(P::Colon)? {
-                    self.bounds()?
+                if self.eat(P::Equal)? {
+                    if restriction.is_some() {
+                        return Err(error(
+                            start,
+                            "trait aliases cannot have implementation restrictions",
+                        ));
+                    }
+                    if unsafe_ || auto_ || constant {
+                        return Err(error(start, "invalid trait alias qualifier"));
+                    }
+                    let bounds = self.bounds()?;
+                    item.where_clause = self.where_clause()?;
+                    self.expect(P::Semicolon)?;
+                    ItemKind::TraitAlias { bounds }
                 } else {
-                    Self::empty_list()
-                };
-                item.where_clause = self.where_clause()?;
-                if restriction.is_some() && self.cursor.at(P::Equal)? {
-                    return Err(error(
-                        start,
-                        "trait aliases cannot have implementation restrictions",
-                    ));
-                }
-                self.expect(P::OpenBrace)?;
-                inner = self.attributes(true)?;
-                self.item_attributes(inner);
-                ItemKind::Trait {
-                    restriction,
-                    auto_,
-                    unsafe_,
-                    constant,
-                    bounds,
-                    items: self.item_list(true, Scope::Trait)?,
+                    let bounds = if self.eat(P::Colon)? {
+                        self.bounds()?
+                    } else {
+                        Self::empty_list()
+                    };
+                    item.where_clause = self.where_clause()?;
+                    if restriction.is_some() && self.cursor.at(P::Equal)? {
+                        return Err(error(
+                            start,
+                            "trait aliases cannot have implementation restrictions",
+                        ));
+                    }
+                    self.expect(P::OpenBrace)?;
+                    inner = self.attributes(true)?;
+                    self.item_attributes(inner);
+                    ItemKind::Trait {
+                        restriction,
+                        auto_,
+                        unsafe_,
+                        constant,
+                        bounds,
+                        items: self.item_list(true, Scope::Trait)?,
+                    }
                 }
             } else if self.eat_word(Word::Impl)? {
                 if asynchronous || safe {
