@@ -95,6 +95,8 @@ def load_cases(root, stage):
                        for key, value in environment.items())):
             raise ValueError(f"{stage}: environment must map valid names to strings or null")
         args = case.get("args", [])
+        if "cfg" in case:
+            raise ValueError(f'{stage}: per-case cfg is unsupported; use args: ["--cfg", "test"]')
         if (not isinstance(args, list) or any(not isinstance(arg, str) for arg in args)
                 or len(args) % 2 or any(args[i] not in ("--cfg", "--crate-name") for i in range(0, len(args), 2))):
             raise ValueError(f"{stage}: case args must be --cfg/value or --crate-name/value pairs")
