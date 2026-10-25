@@ -1,0 +1,466 @@
+{
+  "state": "Frozen source contracts before candidate execution. No new rustc observation; actual registry kinds/role names are primary-source facts.",
+  "primary_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "primary": {
+    "compiler/rustc_builtin_macros/src/lib.rs": "cf4abdc69294cd828ce38859d212bba1cb6b64631e131fa7a6a5d2d68275e24e",
+    "library/core/src/macros/mod.rs": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+    "compiler/rustc_resolve/src/macros.rs": "d8aaccdc8ba686ba76d9e0dc3e11f31b52fc2cf258ad1c579162665886ea1d15"
+  },
+  "role_catalog_sha256": "ee2b1eac54f0555e95de68c90ae3c567c6cf692e7496ffebe4de9cf7248f9b35",
+  "roles": [
+    {
+      "name": "asm",
+      "kind": "Bang",
+      "registry_line": 73
+    },
+    {
+      "name": "assert",
+      "kind": "Bang",
+      "registry_line": 74
+    },
+    {
+      "name": "cfg",
+      "kind": "Bang",
+      "registry_line": 75
+    },
+    {
+      "name": "cfg_select",
+      "kind": "Bang",
+      "registry_line": 76
+    },
+    {
+      "name": "column",
+      "kind": "Bang",
+      "registry_line": 77
+    },
+    {
+      "name": "compile_error",
+      "kind": "Bang",
+      "registry_line": 78
+    },
+    {
+      "name": "concat",
+      "kind": "Bang",
+      "registry_line": 79
+    },
+    {
+      "name": "concat_bytes",
+      "kind": "Bang",
+      "registry_line": 80
+    },
+    {
+      "name": "const_format_args",
+      "kind": "Bang",
+      "registry_line": 81
+    },
+    {
+      "name": "core_panic",
+      "kind": "Bang",
+      "registry_line": 82
+    },
+    {
+      "name": "env",
+      "kind": "Bang",
+      "registry_line": 83
+    },
+    {
+      "name": "file",
+      "kind": "Bang",
+      "registry_line": 84
+    },
+    {
+      "name": "format_args",
+      "kind": "Bang",
+      "registry_line": 85
+    },
+    {
+      "name": "format_args_nl",
+      "kind": "Bang",
+      "registry_line": 86
+    },
+    {
+      "name": "global_asm",
+      "kind": "Bang",
+      "registry_line": 87
+    },
+    {
+      "name": "include",
+      "kind": "Bang",
+      "registry_line": 88
+    },
+    {
+      "name": "include_bytes",
+      "kind": "Bang",
+      "registry_line": 89
+    },
+    {
+      "name": "include_str",
+      "kind": "Bang",
+      "registry_line": 90
+    },
+    {
+      "name": "iter",
+      "kind": "Bang",
+      "registry_line": 91
+    },
+    {
+      "name": "line",
+      "kind": "Bang",
+      "registry_line": 92
+    },
+    {
+      "name": "log_syntax",
+      "kind": "Bang",
+      "registry_line": 93
+    },
+    {
+      "name": "module_path",
+      "kind": "Bang",
+      "registry_line": 94
+    },
+    {
+      "name": "naked_asm",
+      "kind": "Bang",
+      "registry_line": 95
+    },
+    {
+      "name": "option_env",
+      "kind": "Bang",
+      "registry_line": 96
+    },
+    {
+      "name": "pattern_type",
+      "kind": "Bang",
+      "registry_line": 97
+    },
+    {
+      "name": "std_panic",
+      "kind": "Bang",
+      "registry_line": 98
+    },
+    {
+      "name": "stringify",
+      "kind": "Bang",
+      "registry_line": 99
+    },
+    {
+      "name": "trace_macros",
+      "kind": "Bang",
+      "registry_line": 100
+    },
+    {
+      "name": "unreachable",
+      "kind": "Bang",
+      "registry_line": 101
+    },
+    {
+      "name": "alloc_error_handler",
+      "kind": "Attribute",
+      "registry_line": 107
+    },
+    {
+      "name": "autodiff_forward",
+      "kind": "Attribute",
+      "registry_line": 108
+    },
+    {
+      "name": "autodiff_reverse",
+      "kind": "Attribute",
+      "registry_line": 109
+    },
+    {
+      "name": "bench",
+      "kind": "Attribute",
+      "registry_line": 110
+    },
+    {
+      "name": "cfg_accessible",
+      "kind": "Attribute",
+      "registry_line": 111
+    },
+    {
+      "name": "cfg_eval",
+      "kind": "Attribute",
+      "registry_line": 112
+    },
+    {
+      "name": "define_opaque",
+      "kind": "Attribute",
+      "registry_line": 113
+    },
+    {
+      "name": "derive",
+      "kind": "Attribute",
+      "registry_line": 114
+    },
+    {
+      "name": "derive_const",
+      "kind": "Attribute",
+      "registry_line": 115
+    },
+    {
+      "name": "eii",
+      "kind": "Attribute",
+      "registry_line": 116
+    },
+    {
+      "name": "eii_declaration",
+      "kind": "Attribute",
+      "registry_line": 117
+    },
+    {
+      "name": "eii_shared_macro",
+      "kind": "Attribute",
+      "registry_line": 118
+    },
+    {
+      "name": "global_allocator",
+      "kind": "Attribute",
+      "registry_line": 119
+    },
+    {
+      "name": "offload_kernel",
+      "kind": "Attribute",
+      "registry_line": 120
+    },
+    {
+      "name": "test",
+      "kind": "Attribute",
+      "registry_line": 121
+    },
+    {
+      "name": "test_case",
+      "kind": "Attribute",
+      "registry_line": 122
+    },
+    {
+      "name": "unsafe_eii",
+      "kind": "Attribute",
+      "registry_line": 123
+    },
+    {
+      "name": "Clone",
+      "kind": "Derive",
+      "registry_line": 128
+    },
+    {
+      "name": "Copy",
+      "kind": "Derive",
+      "registry_line": 129
+    },
+    {
+      "name": "ConstParamTy",
+      "kind": "Derive",
+      "registry_line": 130
+    },
+    {
+      "name": "Debug",
+      "kind": "Derive",
+      "registry_line": 131
+    },
+    {
+      "name": "Default",
+      "kind": "Derive",
+      "registry_line": 132
+    },
+    {
+      "name": "Eq",
+      "kind": "Derive",
+      "registry_line": 133
+    },
+    {
+      "name": "Hash",
+      "kind": "Derive",
+      "registry_line": 134
+    },
+    {
+      "name": "Ord",
+      "kind": "Derive",
+      "registry_line": 135
+    },
+    {
+      "name": "PartialEq",
+      "kind": "Derive",
+      "registry_line": 136
+    },
+    {
+      "name": "PartialOrd",
+      "kind": "Derive",
+      "registry_line": 137
+    },
+    {
+      "name": "CoercePointee",
+      "kind": "Derive",
+      "registry_line": 138
+    },
+    {
+      "name": "From",
+      "kind": "Derive",
+      "registry_line": 139
+    },
+    {
+      "name": "quote",
+      "kind": "Bang",
+      "registry_line": 143
+    },
+    {
+      "name": "contracts_requires",
+      "kind": "Attribute",
+      "registry_line": 145
+    },
+    {
+      "name": "contracts_ensures",
+      "kind": "Attribute",
+      "registry_line": 147
+    }
+  ],
+  "candidate_execution": null,
+  "source_args": [
+    "--edition=2024",
+    "--crate-name",
+    "minicore",
+    "--crate-disambiguator",
+    "known_roles",
+    "--source-core",
+    "minicore@known_roles"
+  ],
+  "scope": "PA31 declaration identity only; new builtin execution unavailable. Ordinary derive stays on existing consumer.",
+  "cases": [
+    {
+      "name": "all-known-roles",
+      "path": "all-known-roles.rs",
+      "sha256": "e9fd214a73902d0bbeaa0e69d3ca21be65b49d97e3ebc9d06bfaaf81ebb9c8ae",
+      "candidate_status": 0,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate expectation; runtime/native semantics not claimed.",
+      "ordinary": false
+    },
+    {
+      "name": "unknown-role",
+      "path": "unknown-role.rs",
+      "sha256": "7ad1dcab76b6a93484b980cd49f36a4d2ea5def1e41ecdda0664d30226bb07c7",
+      "candidate_status": 1,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate expectation; runtime/native semantics not claimed.",
+      "ordinary": false
+    },
+    {
+      "name": "wrong-owner",
+      "path": "wrong-owner.rs",
+      "sha256": "9d22a1796c000d2e2953fdb4275f0be9c708987f7894a614e4ad8a77bc0f4759",
+      "candidate_status": 1,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate expectation; runtime/native semantics not claimed.",
+      "ordinary": false
+    },
+    {
+      "name": "wrong-derive-form",
+      "path": "wrong-derive-form.rs",
+      "sha256": "187db42d38a1870c13df5631f3ccb13f241639def8cb6b2718d253e9c5d01fa2",
+      "candidate_status": 1,
+      "independent_rustc_status": null,
+      "note": "Supported declaration-form restriction, not an independently observed Rust rejection.",
+      "ordinary": false
+    },
+    {
+      "name": "unavailable-bang",
+      "path": "unavailable-bang.rs",
+      "sha256": "1bdbea5a0b8912180694ed5e27c051ce9f491a82cb3afcd3ba2e8b339e7ecf3c",
+      "candidate_status": 1,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate expectation; runtime/native semantics not claimed.",
+      "ordinary": false
+    },
+    {
+      "name": "unavailable-attribute-alias",
+      "path": "unavailable-attribute-alias.rs",
+      "sha256": "02ef4814e8eed7300ba4c1b77647933b4932e0b9344fcd02b6b8289e75da168a",
+      "candidate_status": 1,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate expectation; runtime/native semantics not claimed.",
+      "ordinary": false
+    },
+    {
+      "name": "derive-as-bang",
+      "path": "derive-as-bang.rs",
+      "sha256": "93e3901bb8e313c5de70ffbbb9a4907cbc3aca9bb030e7eb9cb01096f17fac33",
+      "candidate_status": 1,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate expectation; runtime/native semantics not claimed.",
+      "ordinary": false
+    },
+    {
+      "name": "derive-as-attribute",
+      "path": "derive-as-attribute.rs",
+      "sha256": "16eca7e2e5e325d13d05d7a57059478efbc3fe20517e59698fdd971719077b5f",
+      "candidate_status": 1,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate expectation; runtime/native semantics not claimed.",
+      "ordinary": false
+    },
+    {
+      "name": "source-derive-consumer",
+      "path": "source-derive-consumer.rs",
+      "sha256": "665c5cd5e822ff0add48e71870fbf564c734d4bf14517be2cfba79a09b7fbe12",
+      "candidate_status": 1,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate expectation; runtime/native semantics not claimed.",
+      "ordinary": false
+    },
+    {
+      "name": "disabled-unavailable-use",
+      "path": "disabled-unavailable-use.rs",
+      "sha256": "cc914f183eb6b5d72237cd04d4922b4cc6d48ff2658a131e4ceb73ea7cd2d03c",
+      "candidate_status": 0,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate expectation; runtime/native semantics not claimed.",
+      "ordinary": false
+    },
+    {
+      "name": "ordinary-derive",
+      "path": "ordinary-derive.rs",
+      "sha256": "bcbd1941f7f73f3c41c091570a2ac8c6f6d5ea7fa586c9927c7f28416f69ce7e",
+      "candidate_status": 0,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate expectation; runtime/native semantics not claimed.",
+      "ordinary": true
+    },
+    {
+      "name": "missing-gate",
+      "path": "missing-gate.rs",
+      "sha256": "dec2d9f3f9a1e01c4e4acd61546b8f88ea546506b3684202e4fb4f7ed6d6580b",
+      "candidate_status": 1,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate authority opponent; no runtime claim.",
+      "ordinary": false
+    },
+    {
+      "name": "malformed-claim",
+      "path": "malformed-claim.rs",
+      "sha256": "86f3dc2984ad7b369ccaa714ee37eccab3885ae60e4b1b74dce3acf184c1ba39",
+      "candidate_status": 1,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate authority opponent; no runtime claim.",
+      "ordinary": false
+    },
+    {
+      "name": "duplicate-claim",
+      "path": "duplicate-claim.rs",
+      "sha256": "372c92adf0fbf1ebfe56346ff3f813eb68ac1f1d09862713be0d009281085598",
+      "candidate_status": 1,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate authority opponent; no runtime claim.",
+      "ordinary": false
+    },
+    {
+      "name": "frame-forgery",
+      "path": "frame-forgery.rs",
+      "sha256": "0a37323238ea602dbfd04656133474824c332cd8bd2e336ad2aeb50a34cb7126",
+      "candidate_status": 0,
+      "independent_rustc_status": null,
+      "note": "Frozen candidate authority opponent; no runtime claim.",
+      "ordinary": false
+    }
+  ],
+  "role_catalog": "roles.tsv"
+}

@@ -248,7 +248,8 @@ fn actual_ordinary_engine_keeps_no_attribute_calls_and_reports_real_cold_storage
                 size_of::<super::super::removed_functions::Removal>()
             );
 
-            assert_eq!(engine.builtin_definitions.len(), Builtin::ALL.len());
+            assert_eq!(Builtin::BOOTSTRAP.len(), 24);
+            assert_eq!(engine.builtin_definitions.len(), Builtin::BOOTSTRAP.len());
             let slots = engine.builtin_definitions.capacity();
             let payload = slots * size_of::<Option<usize>>();
             eprintln!(

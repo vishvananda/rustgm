@@ -51,6 +51,9 @@ pub use permission_session::MacroAllowanceSession;
 mod choice_dispatch;
 mod paths;
 mod resources;
+#[cfg(test)]
+#[path = "../../tests/invariants/role_declarations.rs"]
+mod role_declarations;
 mod transcription;
 mod unavailable;
 
@@ -68,12 +71,14 @@ enum MacroTarget {
     Declarative(usize),
     SourceAttribute(usize),
     Builtin(Builtin),
+    SourceDerive(usize),
 }
 impl MacroTarget {
     fn kind(self) -> builtin::BuiltinKind {
         match self {
             Self::Declarative(_) => builtin::BuiltinKind::Bang,
             Self::SourceAttribute(_) => builtin::BuiltinKind::Attribute,
+            Self::SourceDerive(_) => builtin::BuiltinKind::Derive,
             Self::Builtin(role) => role.kind(),
         }
     }
@@ -316,7 +321,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             frames: Vec::new(),
             children: Vec::new(),
             recursion_limit,
-            builtin_definitions: vec![None; Builtin::ALL.len()],
+            builtin_definitions: vec![None; Builtin::BOOTSTRAP.len()],
             attribute_effects: None,
             cfg_memo: None,
         };
@@ -1039,15 +1044,23 @@ impl<'a, S: Sources> Engine<'a, S> {
         let call = &self.calls[index];
         let target = self.paths.lookup(&mut self.loader.package, call, index)?;
         match target {
-            Some(MacroTarget::Declarative(index) | MacroTarget::SourceAttribute(index)) => {
-                Ok(Some(index))
-            }
+            Some(
+                MacroTarget::Declarative(index)
+                | MacroTarget::SourceAttribute(index)
+                | MacroTarget::SourceDerive(index),
+            ) => Ok(Some(index)),
             Some(MacroTarget::Builtin(builtin)) => self.builtin_definition(builtin).map(Some),
             None => Ok(None),
         }
     }
     fn builtin_definition(&mut self, builtin: Builtin) -> Result<usize, Error> {
-        let slot = builtin as usize;
+        let slot = builtin.bootstrap_slot().ok_or_else(|| {
+            Error::at(
+                FileId(0),
+                0,
+                "source-only builtin has no synthetic bootstrap slot",
+            )
+        })?;
         if let Some(index) = self.builtin_definitions[slot] {
             return Ok(index);
         }
