@@ -2,7 +2,9 @@
 
 This source checkpoint activates the already qualified function-contract API
 at the real library driver boundary. CLI and native qualification remain
-pending. The library checkpoint is source `4311d7ed`, nine selected passes in
+pending. The source is composed over published main `b830f5dc`, including the
+authenticated local crate-root repair (five passes in CI40213866643). The
+library checkpoint is source `4311d7ed`, nine selected passes in
 CI40205079379; those controls are retained, not repeated for this driver change.
 
 `dev/bin/modules.rs::emit_lowir` selects `FunctionContracts` only inside library

@@ -1,6 +1,6 @@
 {
   "state": "source-only effect inventory, not executed text qualification",
-  "source": "4311d7ed71bcff278a063df92a693cbb1cfe848f",
+  "source": "b830f5dcca8e339be65ef1a09dfed82fd63592ce",
   "assignments_sha256": "40ac9fa0eb024c71f2b5d161c03c37bd1ef84d174b361d2e81cf979eb0761a1a",
   "course_sha256": "baf9956a33bb150344c33bdb41992ccc6b56ae5268a6c1a9f076edb75a7101f9",
   "manifests": [
@@ -235,5 +235,7 @@
     "non-SourceCore ordinary library": "unchanged scalar tag0 in the frozen spoof-name opponent",
     "explicit Legacy API": "unchanged tag10/version0 exact golden and Unknown",
     "PA31": "planned fixtures; no active manifest/sidecars added"
-  }
+  },
+  "original_inventory_source": "4311d7ed71bcff278a063df92a693cbb1cfe848f",
+  "revalidation": "All manifest, assignments.json and scripts/course.py hashes remain byte-identical at published main; no reference generation or CLI execution."
 }
