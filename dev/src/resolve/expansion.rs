@@ -1061,6 +1061,55 @@ impl<S: Sources> Engine<'_, S> {
             .ast
             .node(visit.node)
             .span;
+        let generated = self.generate_builtin(
+            visit.module,
+            Location {
+                file,
+                span: original,
+            },
+            grammar,
+            input,
+            builtin,
+        )?;
+        let generated = self.install_builtin(
+            file,
+            visit.node,
+            original,
+            context,
+            Transparency::SemiOpaque,
+            generated,
+        )?;
+        self.paths
+            .invocation(context, parent, &self.definitions[definition])
+            .map_err(|message| Error::at(file, original.start, message))?;
+        self.invocations.push(Invocation {
+            context,
+            node: NodeKey {
+                file,
+                node: visit.node,
+            },
+            original,
+            definition,
+            rule: None,
+            generated,
+            parser_calls: 0,
+            parent,
+        });
+        Ok(context)
+    }
+    fn generate_builtin(
+        &mut self,
+        module: ModuleId,
+        site: Location,
+        grammar: MacroContext,
+        input: &Input,
+        builtin: Builtin,
+    ) -> Result<builtin::Expansion, Error> {
+        if builtin == Builtin::Cfg {
+            return self.cfg_expansion(site.file, input, grammar, site.span);
+        }
+        let file = site.file;
+        let original = site.span;
         let physical =
             if (builtin.needs_position() || builtin == Builtin::File) && input.tokens.is_empty() {
                 Some(self.call_location(Location {
@@ -1090,68 +1139,39 @@ impl<S: Sources> Engine<'_, S> {
                         .to_string_lossy()
                         .into_owned()
                 }),
-                Builtin::ModulePath => Some(self.module_path(visit.module)),
+                Builtin::ModulePath => Some(self.module_path(module)),
                 _ => None,
             }
         } else {
             None
         };
-        let generated = if builtin == Builtin::Cfg {
-            self.cfg_expansion(file, input, grammar, original)?
-        } else {
-            let package = &mut self.loader.package;
-            let view = self
-                .captures
-                .view(|id| package.units.get(id.0 as usize).map(|u| u.source.text()));
-            builtin::expand(
-                builtin,
-                package.unit(file).source.text(),
-                input,
-                &view,
-                &builtin::Environment {
-                    config: self.config,
-                    grammar,
-                    position,
-                    text: text.as_deref(),
-                },
-            )
-            .map_err(|e| {
-                Error::at(
-                    file,
-                    if e.offset == 0 {
-                        original.start
-                    } else {
-                        e.offset
-                    },
-                    e.message,
-                )
-            })?
-        };
-        let generated = self.install_builtin(
-            file,
-            visit.node,
-            original,
-            context,
-            Transparency::SemiOpaque,
-            generated,
-        )?;
-        self.paths
-            .invocation(context, parent, &self.definitions[definition])
-            .map_err(|message| Error::at(file, original.start, message))?;
-        self.invocations.push(Invocation {
-            context,
-            node: NodeKey {
-                file,
-                node: visit.node,
+        let package = &mut self.loader.package;
+        let view = self
+            .captures
+            .view(|id| package.units.get(id.0 as usize).map(|u| u.source.text()));
+        builtin::expand(
+            builtin,
+            package.unit(file).source.text(),
+            input,
+            &view,
+            &builtin::Environment {
+                config: self.config,
+                grammar,
+                position,
+                text: text.as_deref(),
             },
-            original,
-            definition,
-            rule: None,
-            generated,
-            parser_calls: 0,
-            parent,
-        });
-        Ok(context)
+        )
+        .map_err(|e| {
+            Error::at(
+                file,
+                if e.offset == 0 {
+                    original.start
+                } else {
+                    e.offset
+                },
+                e.message,
+            )
+        })
     }
     fn install_builtin(
         &mut self,
