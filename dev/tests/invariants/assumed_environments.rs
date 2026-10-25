@@ -48,6 +48,7 @@ fn environments(session: &Session) -> Result<&Owner> {
 }
 #[test]
 fn private_defining_environments_use_real_zero_domain_assumptions() -> Result {
+    plain_contract()?;
     let mut work = ReservationWork::default();
     let (session, monomorphic) = start(
         "\nfn bounded(x:u8)->u8 where u8:Copy{x}\nfn unused<T>(x:u8)->u8{x}\nfn plain(x:u8)->u8{x}",
@@ -85,12 +86,7 @@ fn private_defining_environments_use_real_zero_domain_assumptions() -> Result {
     counts.sort_unstable();
     assert_eq!(counts, [0, 1]);
     let plain = named(&session.inventory, "plain")?;
-    let (next, status) = session.defining_environment(plain, &mut work)?;
-    session = next;
-    assert!(matches!(
-        status,
-        Demand::Blocked(Dependency::OwnedBodyDomain(_))
-    ));
+    session = ready(session.defining_environment(plain, &mut work)?)?;
     assert!(session.facts.definitions[old..].iter().all(Option::is_none));
     session.require(&mut work)?;
     let default = named(&session.inventory, "clone_from")?;
@@ -127,6 +123,98 @@ fn private_defining_environments_use_real_zero_domain_assumptions() -> Result {
     );
     Ok(())
 }
+fn plain_contract() -> Result {
+    let mut source_owner = None;
+    let (report, facts, inventory) =
+        crate::unpaid_cases::extended_with("\nfn plain(x:u8)->u8{x}", |report, facts, _, _| {
+            let owner = report
+                .resolution
+                .definitions
+                .iter()
+                .enumerate()
+                .find(|(_, definition)| {
+                    definition.kind == crate::resolve::model::DefKind::Function
+                        && report.package.names.get(definition.name) == "plain"
+                })
+                .map(|(index, _)| u32::try_from(index).map(crate::resolve::model::DefId))
+                .transpose()?
+                .ok_or("actual source plain owner")?;
+            assert!(!facts.generics.environments.contains_key(&owner));
+            source_owner = Some(owner);
+            Ok(())
+        })?;
+    let owner = named(&inventory, "plain")?;
+    let rows = inventory.artifacts()[0]
+        .source_descriptor()
+        .ok_or("actual rows")?
+        .rows();
+    let header = rows
+        .functions
+        .iter()
+        .find(|row| row.declaration == owner)
+        .ok_or("plain header")?;
+    let s::FunctionBody::Original(body) = header.body else {
+        return Err("actual plain original".into());
+    };
+    let original = rows.originals[body.0 as usize].clone();
+    let input = rows.body_inputs[body.0 as usize].clone();
+    let unit = rows.body_units[body.0 as usize].clone();
+    assert_eq!(input.environment, s::EnvironmentOrigin::Contract);
+    assert_eq!(
+        input
+            .builtins
+            .as_ref()
+            .ok_or("actual raw builtin debt")?
+            .environment,
+        s::EnvironmentOrigin::Contract
+    );
+    let maps = facts.generics.environments.len();
+    let mut work = ReservationWork::default();
+    let session = Session::prepare(report, facts, inventory, 0, &mut work)?.boxed(&mut work)?;
+    let session = ready(session.defining_environment(owner, &mut work)?)?;
+    assert_eq!(session.facts.generics.environments.len(), maps);
+    assert!(
+        !session
+            .facts
+            .generics
+            .environments
+            .contains_key(&source_owner.ok_or("actual source owner")?)
+    );
+    let environments = environments(&session)?;
+    let Body::Contract {
+        expected,
+        scope,
+        product,
+        ..
+    } = environments
+        .bodies
+        .iter()
+        .flatten()
+        .next()
+        .ok_or("actual Contract record")?
+        .as_ref()
+    else {
+        return Err("Contract must retain its own body product".into());
+    };
+    assert_eq!(expected.header.declaration, owner);
+    let scope = environments.scopes[*scope]
+        .as_deref()
+        .ok_or("actual scope")?;
+    scope.require_empty(*expected)?;
+    assert!(product.environment.is_neutral());
+    assert!(!Arc::ptr_eq(&product.environment, &scope.environment));
+    assert!(Arc::ptr_eq(&product.declaration, &scope.environment));
+    let rows = session.inventory.artifacts()[0]
+        .source_descriptor()
+        .ok_or("retained rows")?
+        .rows();
+    assert_eq!(rows.originals[body.0 as usize], original);
+    assert_eq!(rows.body_inputs[body.0 as usize], input);
+    assert_eq!(rows.body_units[body.0 as usize], unit);
+    session.require(&mut work)?;
+    Ok(())
+}
+
 fn change_owner(
     mut session: Box<Session>,
     owner: DeclarationRef,
@@ -170,8 +258,9 @@ fn change_owner(
                 .flatten()
                 .next()
                 .ok_or("actual defining record")?;
-            let Body::Ready { scope, .. } = record.as_mut() else {
-                return Err("actual ready record".into());
+            let scope = match record.as_mut() {
+                Body::Ready { scope, .. } | Body::Contract { scope, .. } => scope,
+                Body::Blocked { .. } => return Err("actual ready record".into()),
             };
             *scope = usize::MAX;
         }
@@ -207,6 +296,9 @@ fn change_owner(
                 .find_map(|body| match body.as_ref() {
                     Body::Ready {
                         expected, scope, ..
+                    }
+                    | Body::Contract {
+                        expected, scope, ..
                     } if expected.header.declaration == owner => Some(*scope),
                     _ => None,
                 })
@@ -230,6 +322,7 @@ fn private_defining_environments_reject_changed_owners_and_failed_budgets() -> R
         assert!(session.defining_environment(owner, &mut work).is_err());
         assert!(work.steps > before);
     }
+    contract_opponents()?;
     let mut work = ReservationWork::default();
     let (session, owner) = start("\nfn unused<T>(x:u8)->u8{x}", "unused", &mut work)?;
     let session = ready(session.callable_template(owner, &mut work)?)?;
@@ -252,15 +345,91 @@ fn private_defining_environments_reject_changed_owners_and_failed_budgets() -> R
     );
     Ok(())
 }
+fn contract_opponents() -> Result {
+    for opponent in 0..9 {
+        let mut work = ReservationWork::default();
+        let (session, owner) = start("\nfn plain(x:u8)->u8{x}", "plain", &mut work)?;
+        let mut session = ready(session.defining_environment(owner, &mut work)?)?;
+        if opponent < 6 {
+            session = change_owner(session, owner, opponent, &mut work)?;
+        } else {
+            let owner = session
+                .recipes
+                .as_mut()
+                .and_then(|state| state.callables.as_mut())
+                .and_then(|prepared| prepared.environments.as_mut())
+                .ok_or("actual Contract owner")?;
+            let record = owner
+                .bodies
+                .iter_mut()
+                .flatten()
+                .next()
+                .ok_or("actual Contract body")?;
+            let Body::Contract { product, scope, .. } = record.as_mut() else {
+                return Err("actual Contract memo".into());
+            };
+            match opponent {
+                6 => product.seal = originals::Origin::Declaration,
+                7 => product.environment = Arc::clone(&product.declaration),
+                _ => {
+                    owner.scopes[*scope] = None;
+                }
+            }
+        }
+        let before = work.steps;
+        assert!(session.defining_environment(owner, &mut work).is_err());
+        assert!(work.steps > before);
+    }
+    let mut work = ReservationWork::default();
+    let (session, owner) = start("\nfn plain(x:u8)->u8{x}", "plain", &mut work)?;
+    let session = ready(session.defining_environment(owner, &mut work)?)?;
+    let Body::Contract { product, .. } = environments(&session)?
+        .bodies
+        .iter()
+        .flatten()
+        .next()
+        .ok_or("actual paid Contract")?
+        .as_ref()
+    else {
+        return Err("actual sealed empty Contract".into());
+    };
+    let originals::Origin::Contract(seal) = product.seal else {
+        return Err("actual Contract seal".into());
+    };
+    work.retained = crate::support::crates::MAX_BYTES;
+    let mut accounting = Observed {
+        work: &mut work,
+        allocation: Allocation::default(),
+    };
+    assert!(crate::sema::crates::typed_headers::staged_headers::rebuilt_environments::ContractParts::private_empty(seal)
+        .build(&session.facts, &mut accounting).is_err());
+    assert_eq!(accounting.allocation.bytes, 0);
+    assert!(work.peak > crate::support::crates::MAX_BYTES);
+    let mut work = ReservationWork::default();
+    let (session, owner) = start("\nfn plain(x:u8)->u8{x}", "plain", &mut work)?;
+    let session = ready(session.callable_template(owner, &mut work)?)?;
+    work.retained = crate::support::crates::MAX_BYTES;
+    assert!(session.defining_environment(owner, &mut work).is_err());
+    assert!(work.peak > crate::support::crates::MAX_BYTES);
+    Ok(())
+}
+
 #[test]
 fn private_defining_environments_bound_selected_and_warm_work() -> Result {
     eprintln!(
-        "private defining layouts: owner={} scope={} body={} templates={}",
+        "private defining layouts: owner={} scope={} body={} contract_product={} templates={} state={} session={} body_slot={} scope_slot={} ready={}",
         size_of::<Owner>(),
         size_of::<Scope>(),
         size_of::<Body>(),
-        size_of::<Prepared>()
+        size_of::<ContractBody>(),
+        size_of::<Prepared>(),
+        size_of::<State>(),
+        size_of::<Session>(),
+        size_of::<Option<Box<Body>>>(),
+        size_of::<Option<Box<Scope>>>(),
+        size_of::<Ready>()
     );
+    contract_growth()?;
     let mut baseline = None;
     for unrelated in [1, 8, 32] {
         let mut source = String::from("\nfn selected<T>(x:T)->T{x}");
@@ -334,6 +503,84 @@ fn private_defining_environments_bound_selected_and_warm_work() -> Result {
     }
     Ok(())
 }
+fn contract_growth() -> Result {
+    let mut baseline = None;
+    for unrelated in [1, 8, 32] {
+        let mut source = String::from("\nfn selected(x:u8)->u8{x}");
+        for index in 0..unrelated {
+            writeln!(source, "\nfn other{index}(x:u8)->u8{{x}}")?;
+        }
+        let mut work = ReservationWork::default();
+        let (session, owner) = start(&source, "selected", &mut work)?;
+        let mut session = ready(session.defining_environment(owner, &mut work)?)?;
+        let before = work.steps;
+        let bytes = work.retained;
+        let extent = session.facts.types.interned_extent();
+        let counters = session
+            .recipes
+            .as_ref()
+            .ok_or("actual cursor")?
+            .cursor
+            .counters();
+        for _ in 0..1000 {
+            session = ready(session.defining_environment(owner, &mut work)?)?;
+        }
+        let cost = work.steps - before;
+        if let Some(previous) = baseline {
+            assert_eq!(cost, previous);
+        } else {
+            baseline = Some(cost);
+        }
+        assert_eq!(work.retained, bytes);
+        assert_eq!(session.facts.types.interned_extent(), extent);
+        assert_eq!(
+            session
+                .recipes
+                .as_ref()
+                .ok_or("actual cursor")?
+                .cursor
+                .counters(),
+            counters
+        );
+        let environments = environments(&session)?;
+        let Body::Contract { product, .. } = environments
+            .bodies
+            .iter()
+            .flatten()
+            .next()
+            .ok_or("actual selected Contract")?
+            .as_ref()
+        else {
+            return Err("actual Contract product".into());
+        };
+        let body_allocation = product
+            .environment
+            .retain_owned_from(
+                &product.declaration,
+                &mut crate::types::parameters::environment::Retained::default(),
+            )
+            .bytes
+            + 2 * size_of::<usize>();
+        eprintln!(
+            "private Contract actual_environment_payload={body_allocation} cold_product={}",
+            size_of::<ContractBody>()
+        );
+        eprintln!(
+            "private Contract unrelated={unrelated} warm1000={cost} bytes={} peak={} bodies_cap={} body_dense_bytes={} allocated_bodies={} scopes_cap={} scope_dense_bytes={} applications_cap={} applications_bytes={}",
+            environments.retained_bytes(),
+            work.peak,
+            environments.bodies.capacity(),
+            retained::vector(&environments.bodies),
+            environments.bodies.iter().flatten().count(),
+            environments.scopes.capacity(),
+            retained::vector(&environments.scopes),
+            environments.applications.capacity(),
+            retained::vector(&environments.applications)
+        );
+    }
+    Ok(())
+}
+
 #[test]
 fn private_trait_input_costs_cover_real_lazy_growth_and_capacity_hits() -> Result {
     vector_boundary::<u8>()?;

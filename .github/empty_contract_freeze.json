@@ -1,69 +1,6 @@
 {
-  "profile": "dev-fast",
-  "state": "failed",
-  "steps": [
-    {
-      "name": "assignment-metadata",
-      "command": [
-        "/home/runner/work/rustgm/rustgm/obj/audit-venv/bin/python",
-        "scripts/assignment_metadata.py"
-      ],
-      "seconds": 2.018794409999998,
-      "status": 0,
-      "environment": {}
-    },
-    {
-      "name": "format",
-      "command": [
-        "cargo",
-        "fmt",
-        "--manifest-path",
-        "dev/Cargo.toml",
-        "--all",
-        "--",
-        "--check"
-      ],
-      "seconds": 6.976227227999999,
-      "status": 0,
-      "environment": {}
-    },
-    {
-      "name": "architecture",
-      "command": [
-        "/home/runner/work/rustgm/rustgm/obj/audit-venv/bin/python",
-        "scripts/rust_audit.py",
-        "--root",
-        ".",
-        "--cache",
-        "obj/fast-audit.json"
-      ],
-      "seconds": 39.400132015999986,
-      "status": 0,
-      "environment": {}
-    },
-    {
-      "name": "clippy-private",
-      "command": [
-        "cargo",
-        "clippy",
-        "--manifest-path",
-        "dev/Cargo.toml",
-        "--locked",
-        "--profile",
-        "dev-fast",
-        "--lib",
-        "--",
-        "--test",
-        "-D",
-        "warnings"
-      ],
-      "seconds": 45.420309247999995,
-      "status": 101,
-      "environment": {
-        "CARGO_TARGET_DIR": "/home/runner/work/rustgm/rustgm/obj/rust/private-lint"
-      }
-    }
-  ],
+  "source_commit": "9c88ca027732d202b240ebdac14b2dd663f825fd",
+  "public_base": "74281adc",
   "sources": {
     "dev/bin/crates.rs": "5e73d44f2c3b8a5042018f45e6af26a87e655111456e80c5449265667e0b5de6",
     "dev/bin/modules.rs": "ba767baa56435adb63c08f464512cd59639666ca217d544f52bd8bd2a4d5c847",
@@ -414,10 +351,11 @@
     "dev/src/lower/instances/demand/paid_owners.rs": "00e1f02a24d26a472e970beaeabb56fea96dc012e4207f04006a6e584d597c6d",
     "dev/src/lower/instances/demand.rs": "0ff486453832046b950b11eb9188ac6cee0b36a3a278935c596c9ec54eae0c1f",
     "dev/src/lower/instances/dependencies.rs": "f1d2ce3a89d286e437e506c28d7922d2fcd5438d4c7634f07d7f6ab59c7463e0",
+    "dev/src/lower/instances/namespace_snapshot.rs": "496d5ffe819c4cd1c021e9747790c018a2183408f7eb0727eb551149769dcc9c",
     "dev/src/lower/instances/proof/tests.rs": "721d998b34a42fbbb023666aa84de3b0cc18a8c9b43f0eb3a4c897398985bc3e",
     "dev/src/lower/instances/proof.rs": "541334c41bc6bf82bf8c5f1d444f340859a678291f786d8c8bb71f6182a6480c",
     "dev/src/lower/instances/staged_originals.rs": "04f6fbe938271d59ee78e3aca2fdd2377f0ba8f7f9c6cdb4d484bb1217f9a3f6",
-    "dev/src/lower/instances.rs": "6f3d383ec5974685ded74ceebddec8b3aa635ff83cb03b18724d8bcffb05db3d",
+    "dev/src/lower/instances.rs": "f439613ea1e08b3acc19740ce8f887dadc163b7c3718e93e6903c94e1499ea49",
     "dev/src/lower/intrinsics/atomic/bitwise.rs": "482236b7bdf0391ed185e894faab5ee452b1375788b5a23a0c6918f7a452d1a1",
     "dev/src/lower/intrinsics/atomic/comparison.rs": "7032b5f1c88f5231645eb90232378754f65239b13f5f5c3de4a42feaaa083983",
     "dev/src/lower/intrinsics/atomic/extremum.rs": "a49e175a1b91c20255e1c4936c822a67a03b1cb3f61762da7c00e7d766fae366",
@@ -448,7 +386,7 @@
     "dev/src/lower/transported_source/obligation_rows.rs": "525c6538eb620d6245efea8e277f3c8c907528e903404b60ac29f556d8648ed9",
     "dev/src/lower/transported_source/publication.rs": "d8a361cade79fa518a8f6e73c3c285d65bcde37191513e3357780ab69b204d97",
     "dev/src/lower/transported_source/published_annotations.rs": "f8d9e489bb3a9ca7a1e8c80e04cc7f61c0f2badb50f669b34a029df178eb83b4",
-    "dev/src/lower/transported_source.rs": "b2ee3490f2012335c8aa14262b33fdaa58a3cba487992091372edabbb27b5fb4",
+    "dev/src/lower/transported_source.rs": "e54bd2e1ee7ced9e8ec95ba1de6996511e808fde049ca86b6b74639f9df25af1",
     "dev/src/lower/virtual_dispatch/forwarders.rs": "41e2ec04cd3ed9d64ac3b1b0fb8f3c7ee5831bbd3ae7e28352bfd98180877093",
     "dev/src/lower/virtual_dispatch/tables.rs": "5ed171df8d809851365394cd5ebf325513b40c6eb0a96db2ec7b95266a6032e7",
     "dev/src/lower/virtual_dispatch.rs": "2f0b0b0599997b5972afa08c7c1940ad8a3c665b664b509b255a858a7eb1fa42",
@@ -525,12 +463,14 @@
     "dev/src/resolve/crates/dormant_catalog.rs": "c31398af2aaa7fd0a70a98522da8aa6080b0c35cfb23e30d94a97c84ec3805cf",
     "dev/src/resolve/crates/original_declarations/locations.rs": "036f69a18771711b9ef08fdb265a62345f1cc00f74caf6b7fa50e1bc692535c3",
     "dev/src/resolve/crates/original_declarations/packet_declarations/installed_bindings.rs": "3fd349925d24d8c3b7e9bb1779f92eba08cb94b42c96640478d795cf20b92b87",
-    "dev/src/resolve/crates/original_declarations/packet_declarations/scope_rows.rs": "cee6c797a6b5eeab499c1e173756c0a7f3d9b000c4515c017ed7cb80a73ade74",
-    "dev/src/resolve/crates/original_declarations/packet_declarations.rs": "ea713462f1efdb6ce41aed92ddb65498c914483d27537426ff081ac738f3eda9",
+    "dev/src/resolve/crates/original_declarations/packet_declarations/module_remap.rs": "bf3a9b98c31b0b575dbafb3ffeaa70119ce1973f5bc5cd1b3e151a3b47584962",
+    "dev/src/resolve/crates/original_declarations/packet_declarations/namespace_catalog.rs": "cb6f6e873ffcdb3bde4889bd01ac4208fab5a8e437851a88f54e318209ed6d78",
+    "dev/src/resolve/crates/original_declarations/packet_declarations/scope_rows.rs": "42123bf54360fe28cfd4655267a55327f0b6a33789cda27644ada3de242a9171",
+    "dev/src/resolve/crates/original_declarations/packet_declarations.rs": "6c9446d961ba72db1e727943758642f6d3beebb2d596a9ee777d0445437d3992",
     "dev/src/resolve/crates/original_declarations/reservations.rs": "f514e1e83176d8e44f344d9da24e983bfb17cc3c5f0fca71cba86de808ba9b58",
-    "dev/src/resolve/crates/original_declarations.rs": "93d5bf7f4aae842545837b9af2a83f2338fa865061051c3eb70ccc566aeeac60",
+    "dev/src/resolve/crates/original_declarations.rs": "4a283f9fd52b317622eedf0cc0fd8db21622481a18ecf13389a3792e677f50fa",
     "dev/src/resolve/crates/public_names.rs": "a45aadd511c24219524d9e9016f2bf8e3b278b4b0221070ab4e44474fe79adcf",
-    "dev/src/resolve/crates.rs": "c4a29854a1b698920ee74bd6e98c22cab2286b06064ab811d098897b36dfe95e",
+    "dev/src/resolve/crates.rs": "a484c99b08802fd7d159f67dce8852b1b131645903de48be40fc12b08ed86b91",
     "dev/src/resolve/expansion/application_kind.rs": "5d7cd35db424a62322aab5d68862b89cb482033e6bdd1870847bea6546278ff1",
     "dev/src/resolve/expansion/attribute_effects.rs": "1b8180c2c8e059d86f68fd515c147611244251db9d074c01b9fb95b5b2b5fb4c",
     "dev/src/resolve/expansion/attributes.rs": "4dca6711924a2770da55ef1b2afd8228a0a187f791708e6c60f9ab0c204be4b2",
@@ -717,7 +657,7 @@
     "dev/src/sema/compiler_items/explicit_cleanup.rs": "41f1196ed1a6b03874cd967f70473b43292418b02b5b337f21b5683be047f50b",
     "dev/src/sema/compiler_items/formatting.rs": "5b8bfb7346a4d40a9a0810c18b8112072284345076ef4336d250dbf9f8b43156",
     "dev/src/sema/compiler_items/glue_calls.rs": "a4e63429788cdcbeaec1c9b7c1b529ab2cd316255c048449fd2fa059a35a4665",
-    "dev/src/sema/compiler_items/headers/authored.rs": "4b19cdadc82e4ec00dd568a7596261cddae7059201e5bece0579fc98d539d660",
+    "dev/src/sema/compiler_items/headers/authored.rs": "b656d38e41a27747c0580c3008b4be6613a470f5fe2536718baf64610c26021f",
     "dev/src/sema/compiler_items/headers/clone_signature.rs": "4966328254aa2c87e96e476480943912f76111521e07e668821ebb534b7cd7fc",
     "dev/src/sema/compiler_items/headers.rs": "1b63a54aab8f292827743e579ae59535bbf7686f8edc882571a380e1afcc0dab",
     "dev/src/sema/compiler_items/intrinsic_contracts.rs": "a245011ae117fef6ec9cf7d6f041938ee2e672f1aaf9a5d2513a7378b28498f9",
@@ -799,17 +739,18 @@
     "dev/src/sema/crates/authored_export/authored_functions/formals.rs": "476bfcabf83628b24541f387457cf81413384263a06ae0c7e94624d046737274",
     "dev/src/sema/crates/authored_export/authored_functions.rs": "0c83249187b8cb0a741ba2c53138b123e839c46898b39ae3910696ad2ecdc330",
     "dev/src/sema/crates/authored_export/authored_traits/supertrait_sources.rs": "bf50f75f3b1da99f9fc81899a8ae638eb9d692ef9c613bea33ee2fdcb636dd9c",
-    "dev/src/sema/crates/authored_export/authored_traits.rs": "55c7736ccfbfc16a3389a3aa4f8821c4de3b7f1ef5bf1e26d187d88a8030121c",
+    "dev/src/sema/crates/authored_export/authored_traits.rs": "dbf92530725a6187805bfde5aa24d682c2423d693c5c4d0d1a08949e14836c22",
     "dev/src/sema/crates/authored_export/canonical_nodes/memo_owner.rs": "1e4a13973701af3724ae68203b0c05b2b7661a1dfa38b64106ba9ba5e91761f1",
     "dev/src/sema/crates/authored_export/canonical_nodes/recipe_emission.rs": "f20a4f1ab466bbc9733f6c87a51bf9accd31028f992b9d7b82234b046c1b0d40",
     "dev/src/sema/crates/authored_export/canonical_nodes/regional_roots.rs": "7100a1c39d8452017c78d05dda357a783c9c05b474d903c48e5ef63569646c6b",
     "dev/src/sema/crates/authored_export/canonical_nodes/signatures.rs": "122ea2db9278144a3f771c44e315490676186121fac107e5388a31994daf7670",
     "dev/src/sema/crates/authored_export/canonical_nodes.rs": "3b95b865cb20b59b2c56827798316370f0240d2efa0dfdd9a8dc517392228661",
     "dev/src/sema/crates/authored_export/contract_rows.rs": "fafb7d12c2e638e9c51a5c61f1d2f7ae477d8e2384cbbca88e53060dab37af96",
+    "dev/src/sema/crates/authored_export/exposed_bindings.rs": "9a06ee3d057280c660a0b736e8259f170c2ffe06ced30be03c9acd824025d1df",
     "dev/src/sema/crates/authored_export/implementation_headers.rs": "95e482200bd246bd4d884d461ba3b2a53854b58ec0f3ed656b6c5faceb8dc74b",
     "dev/src/sema/crates/authored_export/scoped_parameters.rs": "b8063f073b9722978638ed2431c93a6922268c4ce2d6baa33d8eaf4a9b6753a1",
     "dev/src/sema/crates/authored_export/self_requests.rs": "6a2e5f2c3a225f985584ec61743879b154f544b51ee165c2071ad0aaec433850",
-    "dev/src/sema/crates/authored_export.rs": "981140d907a556aadd1577f92f8c6b49b59a524acca873f5703b8c44cbed32f7",
+    "dev/src/sema/crates/authored_export.rs": "9248fe5e0f73cbbcd4bac30f6ff1847ae99a874a7e2f9247f535a17cf67218b3",
     "dev/src/sema/crates/export/named_values.rs": "04e391cfe131e284c8abb97cade1f10b93c1a137c9f2ee3b8a44fdd191d9dac4",
     "dev/src/sema/crates/export/public_names.rs": "c3ad45f1c00ad017b981e183b1c9b480b7875db8d68a672f330c42d61e4ab8a5",
     "dev/src/sema/crates/export/records.rs": "5225c86eca0402ae46e5e739bcbfa4c3ea72a19f91155dea80f3f6003bb95fdd",
@@ -821,8 +762,8 @@
     "dev/src/sema/crates/imported_values.rs": "1f5b000d515e50efd2039707b71a07162b92c05284dd4114a3f041195719ad69",
     "dev/src/sema/crates/type_transport.rs": "9810dc6c0c8b391e73374d51448c3f0618e2563f4c26b8aeffee2edd3ef5474c",
     "dev/src/sema/crates/typed_headers/applications.rs": "4b03c00d62fee5ca11ba997c51983bdf00e857799cdbd7653b770a45221db83f",
-    "dev/src/sema/crates/typed_headers/assumed_originals.rs": "199535e35637d75184582c19434f0817e1e75ae80b8b5a69b519b40f2d70c33f",
-    "dev/src/sema/crates/typed_headers/assumed_scopes.rs": "45f35decaf879bf80af0046d3987bbcfff7c82c3cd9f731db956afda72671411",
+    "dev/src/sema/crates/typed_headers/assumed_originals.rs": "52553018a74c7607901c9c8a185d0fa8400894e9e01deee8f13ce23ccf834726",
+    "dev/src/sema/crates/typed_headers/assumed_scopes.rs": "2f691bab63fbe77fa566615c75f40742d54723ab28207d4f6291b72eac8ed9b9",
     "dev/src/sema/crates/typed_headers/assumption_ports.rs": "8f5b9e705a5af935aea2d4b4a85fc46ce926721a8c7fb9bd3b417eaaf7c7c9ba",
     "dev/src/sema/crates/typed_headers/demanded_headers.rs": "781b700c840214740a9933578c7d3170818d8d00d7f78021a34ca15db94f1687",
     "dev/src/sema/crates/typed_headers/demanded_ports.rs": "5dac013fba052666a17b798d9123f33efe7548444d97bbf588356e19cd8eda2b",
@@ -854,10 +795,10 @@
     "dev/src/sema/crates/typed_headers/staged_headers/formal_headers.rs": "2cd4c6f418630fa5d248f68bae6a9434bc8bc268e87145578b71816674e1665d",
     "dev/src/sema/crates/typed_headers/staged_headers/impl_headers.rs": "e03931d312770d1345ad6f687a6c01f77b1227e91580e9447217c082bef1f2ee",
     "dev/src/sema/crates/typed_headers/staged_headers/owner_packets.rs": "c8e9f9f5490715f6e266597fa82cc4754e85633f4cca83bd8bb6449cd325bdf9",
-    "dev/src/sema/crates/typed_headers/staged_headers/rebuilt_environments.rs": "23138457567afb4788c2ada36383a9a4be5ed70c65762396d7c53d9ea4234f82",
+    "dev/src/sema/crates/typed_headers/staged_headers/rebuilt_environments.rs": "416cba4cdf3a557bc49ae0c9c50df5e531a1abf81af5224cd64a6439eae97cf3",
     "dev/src/sema/crates/typed_headers/staged_headers/scheme_ports.rs": "c36bc9264e43d3c659c305ac80cc45d02910f69dc305e745db72676b56caaf82",
     "dev/src/sema/crates/typed_headers/staged_headers/template_ports.rs": "a301107b70628c3780f96343bea403d0bd5881139d045fadeb803ae8a9d8754f",
-    "dev/src/sema/crates/typed_headers/staged_headers.rs": "cfce55c772d6deac5ec7c239fa280dbadd642ed5ca2e8a04e7a96228694d06ba",
+    "dev/src/sema/crates/typed_headers/staged_headers.rs": "a6feeff85dbaa6b5086bbc0507d6938ead97fec6791a38ea600396555b7520ae",
     "dev/src/sema/crates/typed_headers/staged_ingest.rs": "22aa45acfd4a5240ae7ae4ed6b5a6ace1db12211f39e2ddede8d5da582ec8b43",
     "dev/src/sema/crates/typed_headers.rs": "1c76a69853131aba4effcf4ec15b2795d9556d5b4d9f72d6cc038f044a51b35d",
     "dev/src/sema/crates.rs": "be346d362ff3f7d9bf57a10cdbc9f327bd7fb9b63a9f893ad1ea79a3fb788605",
@@ -1268,14 +1209,15 @@
     "dev/src/support/crates/generics/graph.rs": "7dc0a31a96939bd9ff4fec23db072b5775a7364e075d6002a8029b8e1fc67aee",
     "dev/src/support/crates/generics/legacy_payload.rs": "68397827b583568b8906ac4c1312460dbee5ad682fbda3cc550846a91f7e29ed",
     "dev/src/support/crates/generics/mod.rs": "a984fd94dc03d2d64a70efb42acda167e3664ee69ac563b3e51a6efe8bab5b89",
+    "dev/src/support/crates/generics/module_exports.rs": "ffadb517e84e0141d46280fc7dcf640f43b93d455fe023b98a0fbfd9da2a8f7f",
     "dev/src/support/crates/generics/operands.rs": "399e9e10d9144216c8284ab7580c5a1f75325432ebce13bf6e131669fd0af839",
     "dev/src/support/crates/generics/operation_rows.rs": "2036b45daf7b60734ce0f3b388696fc25d2ed8a4971208d61f2f946e88f0cd42",
     "dev/src/support/crates/generics/operations.rs": "a9bac03df9cad0a69b9ab2f148301dd078f3554be5d5ee37a41f5971c7c7e84c",
-    "dev/src/support/crates/generics/ordinary_profile.rs": "b994c36920739025f4b9bb722b52b8c86e1f998f3a427d5316ff77de64e562b4",
-    "dev/src/support/crates/generics/profile_descriptor.rs": "f2a5e07feade67fcc55057265f0a76af017dfddebfb914a33293afc90d348e65",
+    "dev/src/support/crates/generics/ordinary_profile.rs": "55faf9f422aee51598362afd20656333257e7e80b7f4a26dfa0e35b927c2004c",
+    "dev/src/support/crates/generics/profile_descriptor.rs": "09d91c2ff9bf3b829a909f1620ff1e5e701887b98295945094de9fa4c1387ed5",
     "dev/src/support/crates/generics/relation_inputs.rs": "394c956390688e63c8133a175c9e50cb1d70018c9372be81a697ca3cf190f484",
     "dev/src/support/crates/generics/rows.rs": "c0c5a9a6d39ec9b5de7f185e5cdbcfe653178523fb2c54d1c597d28531187f93",
-    "dev/src/support/crates/generics/schema_rows.rs": "bdfcd6c88fbb2d9a0763b2775234a22a263bb7f01e4f3b7d8d875ee04b96b953",
+    "dev/src/support/crates/generics/schema_rows.rs": "08ee08cb8112f4210c30618b9c23221bed4a6a82754f0380eba5841e4e2f3da2",
     "dev/src/support/crates/generics/slot_domains.rs": "d9af405ae2b478d7f4e26661f48f5d69c2d4f3bf278fbf4aacc22fb051b53504",
     "dev/src/support/crates/generics/source_validation/binder_domains/frame_buckets.rs": "d34b02519f475ac8d450a3e327927f80ed201b4730714d271d523dee5f76db9d",
     "dev/src/support/crates/generics/source_validation/binder_domains/frame_owners.rs": "52ef6279ba2ef06214b7203ab06b4a644506dc6fb1e4b0edc4cac03b0e5a0d89",
@@ -1873,7 +1815,7 @@
     "dev/tests/invariants/application_debts.rs": "020ed33a8cf8383e71eb5c62dcc46c2994d012f095f0138d467e2f882414985a",
     "dev/tests/invariants/arena_queries.rs": "a80823e3fd99d3c30584c93a631a8b3c85629d9864d2d8dbd804c2d4e9384ceb",
     "dev/tests/invariants/array_fragments.rs": "2add5475d05ea0c082b8e0a0260724b07f7b7d20e7fdf89be7d2c634a2bd7e7f",
-    "dev/tests/invariants/assumed_environments.rs": "b6b228ad086893c246cd94cc39cd2a54b28cb4bb6936417d26c8c7f41f5cdf87",
+    "dev/tests/invariants/assumed_environments.rs": "b9302d2ed879de77641c0047e9ab4d6d20da7948db2c924a2c26fa0153cf7e94",
     "dev/tests/invariants/assumption_components.rs": "7229e512ec3fe035a0d6b3edd44a424b07a38a3148653fbb9f08f5b9d3ea3a14",
     "dev/tests/invariants/attribute_declarations.rs": "234e02771f6d6a060ca91b39ee1cb45c0c40faa3cfddc7fc16838004ca1a0561",
     "dev/tests/invariants/auto_cycle_work.rs": "21ca3888a77d3d5512f684614eba563c737f6f5349b7331872d154d67c9f8968",
@@ -2106,6 +2048,9 @@
     "dev/tests/invariants/member_normalization.rs": "673209033a455d16f6b5a899d2bd3ce500e4daa0dc0d8265201a49fae2a8db69",
     "dev/tests/invariants/member_templates.rs": "b19c5c1bbf1824d275a3b53db9a9564f7f7db31436e6d156a096efbe187718b8",
     "dev/tests/invariants/metadata_preparation.rs": "10c4f5d51fa28799bbb68946715bcb572600e07e56238fb9dc1e1cc191be601f",
+    "dev/tests/invariants/module_catalog_transactions.rs": "8537b2074555e0982fa59d84d30a71a49a15893822189e3a30b799938f1e5754",
+    "dev/tests/invariants/module_name_snapshots.rs": "b719b3b71802e9ff82965c6b1ee24b5783f1453b7c0eb7510b005837c7c04929",
+    "dev/tests/invariants/module_snapshot_fixture.rs": "f4c54cdd9ad2323bd910bd957a01b5d28327c22ef4e053b04b5a9da48cfedc6b",
     "dev/tests/invariants/mono_imports.rs": "f7f549e57346d41f1d644f9b39f127982c8f5fb9df169ac47811ddbe57cbcca0",
     "dev/tests/invariants/mutable_iterator_contracts.rs": "d9c7aa5336e22e7687dcf86262c3ced31c649f92530759facbcf9544b57eea78",
     "dev/tests/invariants/mutable_refs.rs": "bda6afd82f8f16d46e339e111093143a39a868b924a202afa4ed3facbb364925",
@@ -2140,7 +2085,7 @@
     "dev/tests/invariants/override_clauses.rs": "3c8a72e89a0525f969a8483420882209c7714ad4692f6d857d822d1e305f31cd",
     "dev/tests/invariants/owned_header_slots.rs": "07288c6882e5f3aade941b8809e326955feb663c6bef405b1ec3a3236c55ffdc",
     "dev/tests/invariants/owner_slots.rs": "35d883f6b64b370dcda3ef7cc67ae2e810815533b232ade693a221609693c800",
-    "dev/tests/invariants/packet_consumers.rs": "eea50953420f79744e69a8d8d741c9ff7f0621344a04a42b62eb3c85f8b65efb",
+    "dev/tests/invariants/packet_consumers.rs": "47239d712dc61709757fea5b1c5fab1e6747edbbd9045af8995133746bba3e0f",
     "dev/tests/invariants/packet_roundtrip.rs": "4f5712ae993da54b5ce44252aa59ae5b2b84fde2cb06382db387f411dced6068",
     "dev/tests/invariants/paid_callers.rs": "99dd932480d973532af256d64012868e85e6e209f466c49f54ce1a5ae480f09a",
     "dev/tests/invariants/paid_selection.rs": "2e5b044ccb31508c970bf1d43b17f4f7a4e17f701e3b9c776e28eb01570725c7",
@@ -2672,11 +2617,73 @@
     "pa8/tests/manifest.json": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
     "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
   },
-  "groups": {
-    "lib": [
-      "support::crates::codec::packet_envelope::tests::ordinary_source_profiles_capture_plain_contract_bytes_before_adapter"
-    ]
+  "source_sha256": "1357ef1c6163aded2f3caff45c273f0fed45e2b4dfee915a44fc9ca5669a0715",
+  "selected": [
+    "sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_defining_environments_use_real_zero_domain_assumptions",
+    "sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_defining_environments_reject_changed_owners_and_failed_budgets",
+    "sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_defining_environments_bound_selected_and_warm_work",
+    "sema::function_context::assumption_environment::tests::defining_environment_ordinary_path_keeps_the_actual_declaration_arc",
+    "support::crates::codec::packet_envelope::tests::ordinary_source_profiles_capture_plain_contract_bytes_before_adapter",
+    "support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof"
+  ],
+  "baseline": {
+    "status": "actual pre-adapter artifacts captured; no adapter edits at capture",
+    "run": 40229239110,
+    "source": "a121f5f1b9a73cf547f39e4a6dec97b4dfde10e7",
+    "source_fingerprints_sha256": "5261916d8fcbca75037954daf51728aaa98c5533dba76927c74d36316ad07785",
+    "binding_sha256": "aaa8dec2f32009b02600f3b4056d0995c9c9be5fdbf552c8579604c11cfbb4e7",
+    "receipt_sha256": "4c808fe5b537ed7b57f3a4fb9be41e083b6b7dd90053ceb8029d7ff235abe0b6",
+    "files": {
+      "provider.rs": {
+        "sha256": "5a121f0b6341e1f71d8a1188bbe3d460cb94a8037fa060799f53ce88537d2f80",
+        "bytes": 1924
+      },
+      "v0.binding.txt": {
+        "sha256": "4c775a6ad33f271e9d43a63a1c2d2c394a03075cc320fddcf5c3ee2407cbcea5",
+        "bytes": 300
+      },
+      "v0.rgcrate": {
+        "sha256": "d0e70e6a27bf868384efdde960bf465bf27969f1419ee165098d38e2465a5ae9",
+        "bytes": 4927
+      },
+      "v0.rows.txt": {
+        "sha256": "3ab4c12b199288ce3871471e82e8ee00fb6a8720aa43264fcb9b87aab8343b34",
+        "bytes": 86371
+      },
+      "v1.binding.txt": {
+        "sha256": "6a36b75a0e45df2bb662aedc3a24bf251b4f9aaa907dbfabff5b1a853070b30c",
+        "bytes": 310
+      },
+      "v1.rgcrate": {
+        "sha256": "da1762df6c39eb9135ffc62985c61f630a2b1f0a17526c9cabb851790cd849e9",
+        "bytes": 5035
+      },
+      "v1.rows.txt": {
+        "sha256": "0db75fd58feef57f1db8a94cfab2849ec7ac1dd681ec34784fe9c55eba9a910e",
+        "bytes": 88777
+      }
+    },
+    "transport_note": "GitHub upload omits hidden .keep-artifacts marker; local pin recreated after verification. All actual source/rows/raw v0/v1 bytes individually match authenticated producer binding."
   },
-  "candidate": "c42597186d058b94422648224fca83524410e67e",
-  "error": "clippy-private failed with status 101"
+  "unchanged_public_guards": {
+    "dev/src/support/crates/dependencies.rs": "649384a8f32e54db8a3761173ffe3aae0859353a2e5a5262dd62a0b099f66357",
+    "dev/src/resolve/bindings/client.rs": "ac0688dafbf2cae7ccde335ea587bba4a2d15ed6d044db41d8c95bb4ad1acf77",
+    "dev/src/sema/crates/typed_headers/mapped_source.rs": "af1ffddd93e8155b2c6496493fb517d4bb0b7436a16b7712f690caf622f51ef3",
+    "dev/src/sema/crates/typed_headers/mapped_source/origin_ports.rs": "a4a7bc5d5ed38196c9c77b132774e4a704cb3ed1e9826b4966c8f195ff22dbd7"
+  },
+  "required_static": [
+    "metadata",
+    "format",
+    "global architecture",
+    "production Clippy",
+    "private Clippy"
+  ],
+  "bounds": {
+    "mandatory_cli_max_seconds": 100,
+    "helper_absolute_seconds": 190,
+    "cargo_jobs": 2,
+    "test_threads": 2
+  },
+  "scope": "private actual empty Contract construction only; no public Provided, wire, producer map, origin relabeling or proof grant; raw operations/requests immutable",
+  "retained_unaffected_cost_group": "40226593089 private_trait_input_costs_cover_real_lazy_growth_and_capacity_hits (cost-only Store/Slices unchanged)"
 }

@@ -1,10 +1,27 @@
-//! Only actual zero-domain Declaration originals can acquire private readiness.
-use super::*;
+//! Zero-domain body environments retain actual Declaration or Contract construction.
+use super::{
+    Allocation, Arc, Argument, DeclarationRef, Declarations, Demand, Dependency, Environment,
+    Error, Observed, Owner, Port, Prepared, Progress, Ready, RecipeView, ReservationWork, Scope,
+    Session, State, error, ports, s,
+};
 use crate::{
+    sema::crates::typed_headers::staged_headers::rebuilt_environments::{
+        ContractParts, EmptyContract,
+    },
     sema::function_context::assumption_environment as defining,
     support::crates::{generics as g, owner_catalog::BodyRef},
     types::callable::Templates,
 };
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum Origin {
+    Declaration,
+    Contract(EmptyContract),
+}
+#[derive(Clone, Copy)]
+pub(super) struct BodyDemand {
+    pub expected: Ready,
+    pub origin: Origin,
+}
 
 pub(super) fn input_range(
     rows: s::ValidatedView<'_>,
@@ -104,7 +121,7 @@ fn zero_body(
     rows: s::ValidatedView<'_>,
     expected: Ready,
     work: &mut ReservationWork,
-) -> Result<(BodyRef, bool), Error> {
+) -> Result<(BodyRef, Option<Origin>), Error> {
     work.charge(6)?;
     let s::FunctionBody::Original(body) = expected.header.body else {
         return Err(error(
@@ -134,14 +151,54 @@ fn zero_body(
             "private defining environment changed its actual header/body/domain identity",
         ));
     }
-    Ok((
-        body,
-        unit.universals == 0
-            && expected.header.regions.total == 0
-            && input.environment == s::EnvironmentOrigin::Declaration(expected.header.declaration)
-            && input.assumptions.is_empty()
-            && input.type_assumptions.is_empty(),
-    ))
+    let origin = if unit.universals != 0
+        || expected.header.regions.total != 0
+        || !input.assumptions.is_empty()
+        || !input.type_assumptions.is_empty()
+    {
+        None
+    } else {
+        match input.environment {
+            s::EnvironmentOrigin::Declaration(owner) if owner == expected.header.declaration => {
+                Some(Origin::Declaration)
+            }
+            s::EnvironmentOrigin::Contract => EmptyContract::check(
+                rows,
+                expected.pair.function_row,
+                expected.header,
+                expected.scope,
+                work,
+            )?
+            .map(Origin::Contract),
+            _ => None,
+        }
+    };
+    Ok((body, origin))
+}
+
+fn body_environment(
+    facts: &Declarations,
+    scope: &Scope,
+    demand: BodyDemand,
+    work: &mut ReservationWork,
+) -> Result<(Arc<Environment>, usize), Error> {
+    match demand.origin {
+        Origin::Declaration => Ok((Arc::clone(&scope.environment), 0)),
+        Origin::Contract(actual) => {
+            scope.require_empty(demand.expected)?;
+            let mut accounting = Observed {
+                work,
+                allocation: Allocation::default(),
+            };
+            let environment = ContractParts::private_empty(actual).build(facts, &mut accounting)?;
+            if Arc::ptr_eq(&environment, &scope.environment) || !environment.is_neutral() {
+                return Err(error(
+                    "empty Contract substituted its declaration environment",
+                ));
+            }
+            Ok((environment, accounting.allocation.bytes))
+        }
+    }
 }
 
 pub(super) fn finish(
@@ -150,11 +207,12 @@ pub(super) fn finish(
     rows: s::ValidatedView<'_>,
     port: &mut ports::Inputs<'_, '_>,
     scope: &Scope,
-    expected: Ready,
+    demand: BodyDemand,
     work: &mut ReservationWork,
-) -> Result<Arc<Environment>, Error> {
-    let (body, zero) = zero_body(rows, expected, work)?;
-    if !zero
+) -> Result<(Arc<Environment>, usize), Error> {
+    let BodyDemand { expected, origin } = demand;
+    let (body, actual) = zero_body(rows, expected, work)?;
+    if actual != Some(origin)
         || scope.parameters.len() != expected.formals
         || scope.environment.has_region_builtins()
     {
@@ -165,6 +223,7 @@ pub(super) fn finish(
     let input = &rows.body_inputs[body.0 as usize];
     work.charge(input.parameters.len().saturating_add(1))?;
     let before = work.retained;
+    let (body_environment, bytes) = body_environment(facts, scope, demand, work)?;
     work.reserve(scope.parameters.len().saturating_mul(size_of::<Argument>()))?;
     let mut arguments = Vec::with_capacity(scope.parameters.len());
     for (&slot, (parameter, _)) in input.parameters.iter().zip(&scope.parameters) {
@@ -191,7 +250,7 @@ pub(super) fn finish(
             bounds: &[],
             clauses: scope.clauses.iter().copied(),
         },
-        Some(Arc::clone(&scope.environment)),
+        Some(Arc::clone(&body_environment)),
         &[],
     )
     .map_err(Error::unlocated)?;
@@ -204,13 +263,18 @@ pub(super) fn finish(
     let environment = completed.environment.ok_or_else(|| {
         error("private defining environment lost its actual declaration assumptions")
     })?;
-    if completed.changed || !Arc::ptr_eq(&environment, &scope.environment) {
+    if completed.changed || !Arc::ptr_eq(&environment, &body_environment) {
         return Err(error(
             "private zero-domain defining environment changed its actual declaration construction",
         ));
     }
-    work.retained = before;
-    Ok(environment)
+    if bytes > work.retained.saturating_sub(before) {
+        return Err(error(
+            "empty Contract exceeded its actual environment prepayment",
+        ));
+    }
+    work.retained = before.saturating_add(bytes);
+    Ok((environment, bytes))
 }
 impl Prepared {
     fn defining(
@@ -235,20 +299,27 @@ impl Prepared {
                 error("private defining demand lacks its actual prepared named callable")
             })?;
         self.require(&view, &facts.types, owner, expected.pair, work)?;
-        let (_, zero) = zero_body(rows, expected, work)?;
-        if !zero {
+        let (_, origin) = zero_body(rows, expected, work)?;
+        let Some(origin) = origin else {
             return Ok(Demand::Blocked(Dependency::OwnedBodyDomain(
                 expected.pair.body.ok_or_else(|| {
                     error("private defining demand lacks its actual original body identity")
                 })?,
             )));
-        }
+        };
         let mut environments = if let Some(owner) = self.environments.take() {
             owner
         } else {
             Box::new(Owner::new(rows, work)?)
         };
-        let status = environments.complete(view, state, facts, self, expected, work)?;
+        let status = environments.complete(
+            view,
+            state,
+            facts,
+            self,
+            BodyDemand { expected, origin },
+            work,
+        )?;
         self.environments = Some(environments);
         Ok(status)
     }

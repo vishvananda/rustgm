@@ -239,6 +239,31 @@ their charged work and peak, and cannot publish partial readiness. This private
 structural preparation grants no defining Environment, original body proof,
 call-instance proof or wider metadata-profile permission.
 
+Private defining-environment preparation reuses the canonical predicate
+translator and Environment producer through sealed ordinary and reservation
+ports. Authenticate actual Input sites and complete inherited/unused formals.
+Distinguish declaration trait premises from regional body assumptions. An
+unchanged zero-domain Declaration body may share its actual declaration Arc;
+Contract and conditional default origins require their own complete consumers.
+Never insert neutral declaration maps merely to make a private query succeed:
+that changes existing source origins and metadata bytes. Prepay selected work,
+real lazy collection growth and collision comparisons, including minimum vector
+capacities; warm canonical hits must not allocate or scan unrelated originals.
+See the [private environment checkpoint](docs/private-defining-environments-checkpoint.md).
+
+Source-module namespace preparation borrows genuine ordinary trait headers
+without inventing language roles. Retain canonical declaration/module targets
+and actual aliases, move the existing columns and body catalog once, and use
+fallible charged sorting rather than unfolding paths. Reserve/install/freeze
+the actual Catalog transactionally; failed attempts publish no completed owner.
+Foreign module bookkeeping cannot prove local ancestry or implementation
+permission. Private namespace readiness grants no public profile or restricted
+trait transport. A later versioned contract must carry complete implementation
+domains and advisory facts, validate legitimate provider-owned implementations,
+and reject unauthorized fresh foreign implementations separately from the
+deny-explicit-impl policy. Keep each metadata consumer's admission explicit.
+See the [private namespace checkpoint](docs/pa29-module-namespace-inspection.md).
+
 Role validators consume borrowed declaration headers rather than reconstructing
 source syntax. The source adapter validates the actual declaration, separate
 Self owner/slot, flags, parent and completed member/input inventories before

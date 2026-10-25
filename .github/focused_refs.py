@@ -1,99 +1,93 @@
-"""CI-only exact one raw pre-adapter ordinary-profile capture; one direct 190s budget."""
+"""Exact six empty-Contract controls; static audit overlaps one sequential Rust lane."""
+from concurrent.futures import ThreadPoolExecutor
 import hashlib,json,os,re,signal,subprocess,sys,time
 from pathlib import Path
 from types import SimpleNamespace
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path.cwd()
 sys.path.insert(0,str(ROOT/'scripts'))
 from fastcheck_run import Steps,fingerprint
 from maintainer_batch import artifacts,inventory
-from storage import exclusive,check_space,minimum_reserve
-SOURCE='a121f5f1b9a73cf547f39e4a6dec97b4dfde10e7'
-SOURCE_SHA='5261916d8fcbca75037954daf51728aaa98c5533dba76927c74d36316ad07785'
-COUNT=2606
-CASES=['support::crates::codec::packet_envelope::tests::ordinary_source_profiles_capture_plain_contract_bytes_before_adapter']
 
-def worker(deadline,folder):
-    with exclusive(ROOT):
-        check_space(ROOT,minimum_reserve())
-        steps=Steps(ROOT,SimpleNamespace(deadline=deadline,evidence_root=folder,prune_under=[]))
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+def worker(started):
+    freeze=json.loads((ROOT/'.github/empty_contract_freeze.json').read_text())
+    sources=fingerprint(ROOT)
+    if sources!=freeze['sources']:raise ValueError('frozen source changed')
+    out=ROOT/f'obj/qualification/fast/{time.time_ns()}-empty-contracts'
+    deadline=started+185
+    steps=Steps(ROOT,SimpleNamespace(deadline=deadline,evidence_root=out,prune_under=[]))
+    cases=freeze['selected']
+    cli=ROOT/'obj/rust/dev-fast/rustgm';cli_sha=sha(cli)
+    steps.receipt.update(sources=sources,candidate=freeze['source_commit'],groups={'lib':cases},compiler_sha256=cli_sha,baseline=freeze['baseline'])
+    steps.save()
+    def independent(name,commands):
+        branch=Steps(ROOT,SimpleNamespace(deadline=deadline,evidence_root=out/name,prune_under=[]))
+        branch.receipt.update(sources=sources)
         try:
-            sources=fingerprint(ROOT)
-            digest=hashlib.sha256(json.dumps(sources,sort_keys=True,separators=(',',':')).encode()).hexdigest()
-            if len(sources)!=COUNT or digest!=SOURCE_SHA: raise ValueError('frozen Environment source fingerprint changed')
-            steps.receipt.update(sources=sources,groups={'lib':CASES},candidate=SOURCE)
-            steps.environment['RUST_TEST_NOCAPTURE']='1';steps.save()
-            old_bytes=(ROOT/'.github/baseline_static.json').read_bytes()
-            if hashlib.sha256(old_bytes).hexdigest()!='2a2d043d4c9656e3aca4aef9b074297ff0079c501974978998ba712642459c86': raise ValueError('prior metadata receipt changed')
-            prior=json.loads(old_bytes)
-            if prior['steps'][0]['name']!='assignment-metadata' or prior['steps'][0]['status']!=0: raise ValueError('prior metadata did not pass')
-            changed={path for path in sources if sources[path]!=prior['sources'].get(path)}
-            if changed!={'dev/tests/invariants/packet_consumers.rs'} or sources.keys()!=prior['sources'].keys(): raise ValueError('metadata reuse source delta widened')
-            steps.receipt['retained_steps']={'run':40228886283,'receipt_sha256':hashlib.sha256(old_bytes).hexdigest(),'steps':['assignment-metadata'],'prior_format_architecture':'passed for c425, rerun here because actual test changed'};steps.save()
-            steps.run('format',['cargo','fmt','--manifest-path','dev/Cargo.toml','--all','--','--check'])
-            steps.run('architecture',[ROOT/'obj/audit-venv/bin/python','scripts/rust_audit.py','--root','.',
-                                      '--cache','obj/fast-audit.json'])
-            common=['--manifest-path','dev/Cargo.toml','--locked','--profile','dev-fast']
-            steps.run('clippy-private',['cargo','clippy',*common,'--lib','--','--test','-D','warnings'],
-                      overrides={'CARGO_TARGET_DIR':str(ROOT/'obj/rust/private-lint')})
-            built=steps.run('build',['cargo','test',*common,'--lib','--no-run','--message-format=json'])
-            binary=artifacts(built,{'lib':CASES})['lib']
-            listed=steps.run('lib-inventory',[binary,'--list'],cwd=ROOT/'dev')
-            ignored=set(steps.run('lib-ignored',[binary,'--ignored','--list'],cwd=ROOT/'dev').splitlines())
-            selected=inventory('\n'.join(row for row in listed.splitlines() if row not in ignored),'lib',CASES)
-            if selected!=CASES: raise ValueError('actual nonignored inventory differs from exact one')
-            steps.receipt.update(selected={'lib':selected},binaries={'lib':{'path':str(binary),'sha256':hashlib.sha256(binary.read_bytes()).hexdigest()}});steps.save()
-            output=steps.run('lib',[binary,'--exact',*selected],cwd=ROOT/'dev')
-            if re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',output)!=[('1','0','0')]:
-                raise ValueError('actual exact one count differs')
-            capture=ROOT/'obj/parallel/all-attribute-selected-output-v1/empty-contract-baseline'
-            if hashlib.sha256((capture/'provider.rs').read_bytes()).hexdigest()!='5a121f0b6341e1f71d8a1188bbe3d460cb94a8037fa060799f53ce88537d2f80': raise ValueError('actual capture source changed')
-            files={str(path.relative_to(capture)):{'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'bytes':path.stat().st_size} for path in sorted(capture.iterdir()) if path.is_file()}
-            if not all(name in files for name in ['v0.rgcrate','v1.rgcrate','v0.rows.txt','v1.rows.txt','v0.binding.txt','v1.binding.txt','provider.rs']): raise ValueError('actual first-encoding capture incomplete')
-            binding={'candidate':SOURCE,'source_fingerprints':sources,'source_sha256':SOURCE_SHA,'api':'build_source_library_profile -> crates::encode(first actual output)','binary':steps.receipt['binaries']['lib'],'capture':files,'profiles':['LegacyFunctions v0','FunctionContracts v1'],'producer_config':'test_source::source_provider(source,plain_contract_pair); Config::default; actual SourceCore identity minicore/plain_contract_pair; Rust2024; source-provider.rs'}
-            (capture/'source-binding.json').write_text(json.dumps(binding,indent=2)+'\n')
-            steps.receipt['baseline_capture']=files;steps.save()
-            if fingerprint(ROOT)!=sources: raise ValueError('source changed during execution')
-            steps.receipt['state']='passed';print('Passed actual exact1 raw ordinary-profile capture controls and required static checks.',flush=True)
-            return 0
+            for step,command,overrides in commands:branch.run(step,command,overrides=overrides)
+            branch.receipt['state']='passed'
         except BaseException as error:
-            steps.receipt.update(state='failed',error=str(error));raise
-        finally:
-            steps.save();print('Environment evidence: '+str(folder),flush=True)
+            branch.receipt.update(state='failed',error=str(error));raise
+        finally:branch.save()
+    try:
+        steps.run('metadata',[sys.executable,'scripts/assignment_metadata.py'])
+        steps.run('format',['cargo','fmt','--manifest-path','dev/Cargo.toml','--all','--','--check'])
+        common=['--manifest-path','dev/Cargo.toml','--locked','--profile','dev-fast']
+        audit=[('architecture',[ROOT/'obj/audit-venv/bin/python','scripts/rust_audit.py','--root','.','--cache','obj/fast-audit.json'],{})]
+        lint=[('clippy-production',['cargo','clippy',*common,'--lib','--bin','rustgm','--','-D','warnings'],{}),('clippy-private',['cargo','clippy',*common,'--lib','--','--test','-D','warnings'],{'CARGO_TARGET_DIR':str(ROOT/'obj/rust/private-lint')})]
+        failures=[];start=time.monotonic()
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures=[executor.submit(independent,'audit',audit),executor.submit(independent,'lint',lint)]
+            for future in futures:
+                try:future.result()
+                except BaseException as error:failures.append(str(error))
+        steps.receipt.update(parallel_static_seconds=time.monotonic()-start,independent_static_receipts={name:sha(out/name/'receipt.json') for name in ('audit','lint')});steps.save()
+        if failures:raise ValueError('; '.join(failures))
+        built=steps.run('build',['cargo','test',*common,'--lib','--no-run','--message-format=json'])
+        binary=artifacts(built,{'lib':cases})['lib']
+        listed=steps.run('lib-inventory',[binary,'--list'],cwd=ROOT/'dev')
+        ignored=set(steps.run('lib-ignored',[binary,'--ignored','--list'],cwd=ROOT/'dev').splitlines())
+        actual=inventory('\n'.join(row for row in listed.splitlines() if row not in ignored),'lib',cases)
+        if actual!=cases or len(set(actual))!=6:raise ValueError('exact six inventory changed')
+        steps.receipt.update(selected={'lib':actual},binaries={'lib':{'sha256':sha(binary)}});steps.save()
+        output=steps.run('lib',[binary,'--exact',*actual],cwd=ROOT/'dev',overrides={'RUST_TEST_NOCAPTURE':'1'})
+        if re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',output)!=[('6','0','0')]:raise ValueError('actual six count changed')
+        capture=ROOT/'obj/parallel/all-attribute-selected-output-v1/empty-contract-baseline'
+        baseline=freeze['baseline']['files']
+        for name in ('provider.rs','v0.rgcrate','v1.rgcrate','v0.binding.txt','v1.binding.txt'):
+            path=capture/name
+            if path.stat().st_size!=baseline[name]['bytes'] or sha(path)!=baseline[name]['sha256']:raise ValueError('actual first encoding differs from pre-adapter raw baseline: '+name)
+        captured={path.name:{'sha256':sha(path),'bytes':path.stat().st_size} for path in capture.iterdir() if path.is_file() and not path.name.startswith('.')}
+        binding={'candidate':freeze['source_commit'],'sources':sources,'source_sha256':freeze['source_sha256'],'binary':steps.receipt['binaries']['lib'],'compiler_sha256':cli_sha,'baseline_run':freeze['baseline']['run'],'comparison':'first actual encode v0/v1 raw artifacts and source/config bindings exactly equal authenticated pre-adapter capture; rows retained separately','captured':captured}
+        (capture/'source-binding.json').write_text(json.dumps(binding,indent=2)+'\n')
+        if fingerprint(ROOT)!=sources or sha(cli)!=cli_sha:raise ValueError('source or actual CLI changed')
+        for path,digest in freeze['unchanged_public_guards'].items():
+            if sha(ROOT/path)!=digest:raise ValueError('public guard changed')
+        steps.receipt.update(state='passed',actual_raw_byte_comparison=captured,seconds=time.monotonic()-started)
+    except BaseException as error:
+        steps.receipt.update(state='failed',error=str(error),seconds=time.monotonic()-started);raise
+    finally:
+        steps.save();print(json.dumps({key:value for key,value in steps.receipt.items() if key!='sources'},indent=2),flush=True)
 
 def main():
-    if len(sys.argv) == 4 and sys.argv[1] == "--worker":
-        return worker(float(sys.argv[2]), Path(sys.argv[3]))
-    started = time.monotonic()
-    folder = ROOT / f"obj/qualification/fast/{time.time_ns()}"
-    command = [sys.executable, "scripts/resources.py", "run", "--wait-seconds", "0", "--",
-               str(ROOT / "obj/audit-venv/bin/python"), ".github/focused_refs.py", "--worker", str(started + 187), str(folder)]
-    process = subprocess.Popen(command, cwd=ROOT, start_new_session=True)
-    status = 1
+    if len(sys.argv)==3 and sys.argv[1]=='--worker':return worker(float(sys.argv[2]))
+    start=time.monotonic()
+    process=subprocess.Popen([sys.executable,'scripts/storage.py','run','--no-prune','--',str(ROOT/'obj/audit-venv/bin/python'),__file__,'--worker',str(start)],start_new_session=True)
+    status=1
     try:
-        status = process.wait(timeout=max(0.01, started + 188 - time.monotonic()))
-        return status
+        status=process.wait(timeout=max(0.01,start+188-time.monotonic()));return status
     except subprocess.TimeoutExpired:
-        os.killpg(process.pid, signal.SIGTERM)
-        try:
-            process.wait(timeout=max(0.01, started + 189 - time.monotonic()))
+        os.killpg(process.pid,signal.SIGTERM)
+        try:process.wait(timeout=max(0.01,start+189-time.monotonic()))
         except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGKILL)
-            process.wait(timeout=max(0.01, started + 190 - time.monotonic()))
-        status = 124
-        return status
+            os.killpg(process.pid,signal.SIGKILL);process.wait(timeout=max(0.01,start+190-time.monotonic()))
+        status=124;return status
     finally:
         if status:
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-        folder.parent.mkdir(parents=True, exist_ok=True)
-        folder.with_suffix(".launcher.json").write_text(json.dumps({
-            "state": "passed" if status == 0 else "failed", "status": status,
-            "seconds": time.monotonic() - started, "absolute_budget_seconds": 190,
-            "command": command, "candidate": SOURCE}, indent=2) + "\n")
-        print(f"Environment gate total: {time.monotonic() - started:.2f}s", flush=True)
+            try:os.killpg(process.pid,signal.SIGKILL)
+            except ProcessLookupError:pass
+        print(f'Empty Contract gate total: {time.monotonic()-start:.2f}s status={status}',flush=True)
 
-
-if __name__ == "__main__":
-    sys.exit(main())
+if __name__=='__main__':sys.exit(main())

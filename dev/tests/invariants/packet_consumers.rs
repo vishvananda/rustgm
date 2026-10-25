@@ -241,6 +241,11 @@ fn ordinary_source_profiles_capture_plain_contract_bytes_before_adapter() -> Res
                 bytes.len()
             ),
         )?;
+        let program = client(
+            crates::decode(&bytes)?,
+            &fixture("runtime-client")?.replace("base::identity", "base::plain"),
+        )?;
+        assert!(program.symbols.iter().any(|symbol| symbol.body.is_some()));
     }
     Ok(())
 }

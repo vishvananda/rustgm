@@ -69,8 +69,29 @@ impl Source {
         identity: &CrateIdentity,
         numbered: bool,
     ) -> Result<Self, &'static str> {
+        let stage = Stage::begin(report, facts, identity)?;
+        Self::begin_stage(facts, checked, stage, numbered)
+    }
+
+    pub(super) fn begin_namespace(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<(Self, s::NamespaceColumns), &'static str> {
+        let mut stage = Stage::begin_with_ordinary_traits(report, facts, identity)?;
+        let names = stage.namespace_columns(report)?;
+        Ok((Self::begin_stage(facts, checked, stage, false)?, names))
+    }
+
+    fn begin_stage(
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        stage: Stage,
+        numbered: bool,
+    ) -> Result<Self, &'static str> {
         let mut source = Self {
-            stage: Stage::begin(report, facts, identity)?,
+            stage,
             openings: HashMap::default(),
             numbering: None,
         };
@@ -209,11 +230,19 @@ impl Source {
         Ok(())
     }
 
-    pub(super) fn complete(self) -> Result<SourceInspection, &'static str> {
+    fn finish_rows(
+        self,
+    ) -> Result<
+        (
+            s::SourceRows,
+            crate::sema::crates::authored_export::SourceWork,
+        ),
+        &'static str,
+    > {
         // No original can still arrive after this ownership transfer. Release
         // collection-only opening scratch before allocating validation indexes.
         drop(self.openings);
-        let (mut rows, mut work) = self.stage.into_rows()?;
+        let (mut rows, work) = self.stage.into_rows()?;
         if let Some(numbering) = self.numbering {
             let mut units = Vec::with_capacity(numbering.len());
             for unit in numbering {
@@ -221,6 +250,24 @@ impl Source {
             }
             rows.body_units = units;
         }
+        Ok((rows, work))
+    }
+
+    pub(super) fn complete_namespace(
+        self,
+        names: s::NamespaceColumns,
+        identity: &CrateIdentity,
+    ) -> Result<std::sync::Arc<s::UnpublishedNamespace>, &'static str> {
+        let (rows, observed) = self.finish_rows()?;
+        let mut work = g::Work {
+            steps: observed.steps,
+            ..g::Work::default()
+        };
+        s::UnpublishedNamespace::stage(identity, rows, names, &mut work)
+    }
+
+    pub(super) fn complete(self) -> Result<SourceInspection, &'static str> {
+        let (rows, mut work) = self.finish_rows()?;
         let mut validation = g::Work {
             steps: work.steps,
             ..g::Work::default()
