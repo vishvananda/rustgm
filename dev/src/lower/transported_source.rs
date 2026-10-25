@@ -62,6 +62,20 @@ impl Source {
         Self::begin_with_numbering(report, facts, checked, identity, true)
     }
 
+    #[expect(
+        dead_code,
+        reason = "private ordinary-trait numbering awaits its actual unpaid defining-environment consumer"
+    )]
+    pub(super) fn begin_trait_numbered(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        let stage = Stage::begin_with_ordinary_traits(report, facts, identity)?;
+        Self::begin_stage(facts, checked, stage, true)
+    }
+
     fn begin_with_numbering(
         report: &Report,
         facts: &mut Declarations,
