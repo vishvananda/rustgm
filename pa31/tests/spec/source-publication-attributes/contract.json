@@ -103,9 +103,9 @@
       "name": "negative-owner",
       "path": "pa31/tests/spec/source-publication-attributes/negative-owner.rs",
       "source_sha256": "5cd927013fedeeed36b71e65368ca0ce39299ee351b48964fcc2f0a53357a777",
-      "source_profile_publication_status": 0,
-      "boundary": null,
-      "state": "predeclared before compiler validation"
+      "source_profile_publication_status": 1,
+      "boundary": "existing nested source namespace profile rejection",
+      "state": "actual Source RustGM CI40190841475 profile denial; semantic warning/no must_use contract remains checked"
     },
     {
       "name": "nominal-marked",
@@ -122,9 +122,30 @@
       "source_profile_publication_status": 1,
       "boundary": "existing nominal profile rejection",
       "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "negative-crate-owner",
+      "path": "pa31/tests/spec/source-publication-attributes/negative-crate-owner.rs",
+      "source_sha256": "38ea8b1f64dac8e1197164b908a6c5cdf18c49a30881062763bbb848eced45ba",
+      "source_profile_publication_status": 0,
+      "boundary": null,
+      "state": "rustc metadata independently observed both editions; RustGM publication prediction pending focused qualification",
+      "rustc_observed_binding": {
+        "results_sha256": "1113b2f5312f875a1e494d140fd0c035bda29e7598c3115eb82446d25e689c28",
+        "case": "negative-crate-owner",
+        "editions": [
+          2021,
+          2024
+        ],
+        "status": 0,
+        "warning_codes": [
+          "unused_attributes"
+        ]
+      }
     }
   ],
   "nominal_limit": "Struct/Enum/Union not selected by current Stage; marked/unmarked both existing profile denial, never counted as attribute-boundary coverage",
   "old_imports": "Unknown remains error; no synthetic KnownAbsent",
-  "inspection": "original full semantic-provider-qualified.rs bytes and nonpublishing inspection retained"
+  "inspection": "original full semantic-provider-qualified.rs bytes and nonpublishing inspection retained",
+  "negative_owner_scope": "Module placement warns/no semantic must_use but retains nested namespace profile denial; crate placement is separate publishable invalid-owner opponent"
 }

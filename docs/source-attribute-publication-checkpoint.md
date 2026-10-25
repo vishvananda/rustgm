@@ -24,6 +24,11 @@ well as Hint/Always/Never. Named struct, enum and union declarations remain an
 earlier explicit source-profile boundary; their marked and unmarked controls do
 not claim an attribute-specific rejection.
 
+The invalid module-owner annotation still warns and retains no must-use
+contract, while its independent nested-module namespace profile stays closed.
+A separate invalid crate-owner annotation checks warning-only publication
+without requiring that wider namespace profile.
+
 No codec, schema, profile, node, declaration or body fields change. Old Functions
 metadata remains Unknown for imported attribute queries, including metadata
 produced after this guard. Local map misses do not mint serialized KnownAbsent.
