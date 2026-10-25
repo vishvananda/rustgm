@@ -239,71 +239,24 @@ impl NamespaceColumns {
         Ok(())
     }
     fn sort(&mut self, work: &mut Work, observed: &mut NamespaceWork) -> Result<(), &'static str> {
-        let count = self.bindings.len();
-        let mut order: Vec<_> = (0..count).collect();
-        let mut scratch = vec![0; count];
-        let mut width = 1_usize;
-        while width < count {
-            let mut start = 0_usize;
-            while start < count {
-                let middle = start.saturating_add(width).min(count);
-                let end = middle.saturating_add(width).min(count);
-                let (mut left, mut right) = (start, middle);
-                for slot in &mut scratch[start..end] {
-                    work.charge(1)?;
-                    let take_left = right == end
-                        || left < middle && {
-                            let other = &self.bindings[order[right]];
-                            compare(
-                                &self.bindings[order[left]],
-                                other.module,
-                                &other.name,
-                                other.namespace,
-                                work,
-                                observed,
-                            )? != Ordering::Greater
-                        };
-                    *slot = if take_left {
-                        let value = order[left];
-                        left += 1;
-                        value
-                    } else {
-                        let value = order[right];
-                        right += 1;
-                        value
-                    };
-                }
-                start = end;
-            }
-            std::mem::swap(&mut order, &mut scratch);
-            width = width.saturating_mul(2);
-        }
-        for (target, &original) in order.iter().enumerate() {
-            scratch[original] = target;
-        }
-        for index in 0..count {
-            while scratch[index] != index {
-                work.charge(1)?;
-                let other = scratch[index];
-                self.bindings.swap(index, other);
-                scratch.swap(index, other);
-                observed.swaps = observed.swaps.saturating_add(1);
-            }
-        }
-        for pair in self.bindings.windows(2) {
-            if compare(
-                &pair[0],
-                pair[1].module,
-                &pair[1].name,
-                pair[1].namespace,
-                work,
-                observed,
-            )? == Ordering::Equal
-            {
-                return Err("namespace has duplicate actual module/name/namespace keys");
-            }
-        }
-        Ok(())
+        let mut swaps = observed.swaps;
+        let result = super::binding_order::sort(
+            &mut self.bindings,
+            work,
+            &mut swaps,
+            |left, right, work| {
+                compare(
+                    left,
+                    right.module,
+                    &right.name,
+                    right.namespace,
+                    work,
+                    observed,
+                )
+            },
+        );
+        observed.swaps = swaps;
+        result
     }
 }
 fn compare(

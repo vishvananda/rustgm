@@ -62,10 +62,12 @@ Current lanes:
   unrestricted-profile control are qualified, with 74 independent observations.
   The private declaration-coordinate namespace and ordinary-trait producer
   prerequisite now has five qualified controls; see the
-  [namespace checkpoint](pa29-module-namespace-inspection.md). Implement the
-  reviewed explicit v2 module/domain/advisory artifact and fresh consumer.
-  Restricted policy transport remains open; keep the real trait/catalog
-  identity distinct from an external function linker identity.
+  [namespace checkpoint](pa29-module-namespace-inspection.md). The explicit
+  [v2 module/domain/advisory artifact](pa29-module-contracts-v2.md) now qualifies
+  fresh namespace/domain consumers and provider-owned implementation selection
+  through actual LowIR. Keep the default v1 bytes and real trait/catalog identity
+  distinct from function linker identity. Continue LIB-029 source assertion
+  expansion, with wider imported contracts and Provided execution still required.
 - C: SourceCore CLI contract publication and fresh native consumers are qualified.
   LIB-027 unnamed constants and the [LIB-028 modifier checkpoint](defaultness-checkpoint.md)
   pass focused controls and reviewed text qualification. Implement the actual
