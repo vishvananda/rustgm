@@ -93,8 +93,8 @@ The fresh receipt SHA is
 `2b37fd782b5ebd2f6efa9d015fc5528b32ffbe050a379ec94e22f7995da4d4c2`;
 the retained four-pass/static receipt SHA is
 `812fea39b9ef438e2ca6e527a4e124ffa3aa8cab3483cfb4134fdf97831a4aac`.
-Earlier static and test-assumption failures remain retained. No new original-core
-observer or candidate native execution is claimed for this checkpoint.
+Earlier static and test-assumption failures remain retained. Candidate native
+specialization execution is not claimed for this checkpoint.
 
 Read-only text run40237819305 checks all8,493 existing cases byte for byte in
 25.10 seconds and captures six new outputs without writing references. Integrator
@@ -115,6 +115,23 @@ publication binding SHA
 `180eb3ce8aa934d6d808011f454dcdf10178a79a7d11bc78350904ba9969b1e0`.
 The resulting active text inventory is8,499; the retained old8,493 passes and
 fresh six generated/checked cases are separate evidence, not a repeated full run.
+
+The fresh unchanged-core observer40239001850 uses that exact qualified CLI and
+verifies all722 pinned original files before and after execution. It now opens65
+files, advancing past the previous58-file `default fn spec_fill` stop. It diagnoses
+`ERROR: file 64: 3311: expected punctuation` in `core/src/ptr/metadata.rs:85`,
+at the equals sign in `pub trait Thin = Pointee<Metadata = ()> + PointeeSized;`.
+The real loader assigns a new FileId from the current Unit count before parsing;
+the traced first-open sequence and the original byte offset identify this source.
+The source SHA is
+`90be519b27b46064f0bec607170ffce37aa9afb160a1edfab9c51641c8af15e2`.
+The observer takes6.08 seconds, status1, zero infrastructure failures and no
+input changes. Harness/upstream/audit-cache checks pass on the integrated source
+and planned graph fixtures. Artifact12616150477 has ZIP SHA
+`156e430d4ce3df1e9c5391216b368d762c885d6af64b3a4e949c2c9457b4d296`.
+LIB-031 now owns actual trait-alias grammar/feature/semantic expansion; LIB-028
+still owns the graph and dispatch obligations exposed after parsing. Neither
+an original-core artifact nor a type-complete core build has been produced.
 
 The next graph/dispatch checkpoint is mandatory and high priority. Reuse existing
 coarse-head candidate pairs, canonical substitutions and charged comparisons.
