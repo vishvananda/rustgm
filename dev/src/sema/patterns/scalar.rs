@@ -150,6 +150,7 @@ impl Domain {
             Scalar::Integer(bits) => bits.to_string(),
             Scalar::Float(FloatBits::F32(bits)) => format!("{:?}", f32::from_bits(bits)),
             Scalar::Float(FloatBits::F64(bits)) => format!("{:?}", f64::from_bits(bits)),
+            Scalar::Float(_) => return Err("wide floating pattern domain is not implemented"),
         })
     }
 }

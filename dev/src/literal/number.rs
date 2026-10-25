@@ -54,6 +54,8 @@ pub(super) fn decode(spelling: &str, kind: Kind) -> Result<Value<'_>, &'static s
     let float_suffix = match suffix {
         "f32" => Some(FloatType::F32),
         "f64" => Some(FloatType::F64),
+        "f16" => Some(FloatType::F16),
+        "f128" => Some(FloatType::F128),
         _ => None,
     };
     if kind == Kind::Float || float_suffix.is_some() {

@@ -405,5 +405,7 @@ pub(super) const fn bits(scalar: Scalar) -> u128 {
         Scalar::Character(value) => value as u128,
         Scalar::Float(FloatBits::F32(bits)) => bits as u128,
         Scalar::Float(FloatBits::F64(bits)) => bits as u128,
+        Scalar::Float(FloatBits::F16(bits)) => bits as u128,
+        Scalar::Float(FloatBits::F128 { low, high }) => low as u128 | ((high as u128) << 64),
     }
 }

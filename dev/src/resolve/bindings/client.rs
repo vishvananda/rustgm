@@ -10,7 +10,7 @@ use crate::{
         unit::{FileId, Unit},
     },
     support::{
-        crates::{CrateIdentity, Dependencies, SourceProfile},
+        crates::{CrateIdentity, Dependencies},
         edition::Edition,
     },
 };
@@ -48,7 +48,7 @@ impl SourceClient {
         if descriptor.identity() != &self.provider
             || descriptor.provider() != &self.provider
             || descriptor.edition() != Edition::Rust2024
-            || descriptor.profile() != SourceProfile::Source2024Functions
+            || !descriptor.profile().ordinary_functions()
         {
             return Err("source client provider descriptor changed");
         }

@@ -1,5 +1,16 @@
 # Source attribute publication boundary
 
+The merged production source at `ceb58a36` passes eight of nine selected private
+controls in [40190841475](https://github.com/vishvananda/rustgm/actions/runs/40190841475),
+including all four real nongeneric import/proof controls, old imported Unknown
+behavior and complete provider inspection. Its only failure was a fixture that
+incorrectly expected nested modules in a closed namespace profile. The corrected
+three affected groups pass
+[40191972621](https://github.com/vishvananda/rustgm/actions/runs/40191972621)
+with strict private Clippy/audit/build in 173.56 seconds. Production source is
+byte-identical between the two gates. All 212 harness tests pass. This checkpoint
+is integrated at `4411dde4`; no assignment release or new full qualification is claimed.
+
 The closed Source2024Functions producer checks selected source function and
 trait headers before creating a payload or descriptor. Retained `must_use`
 contracts and inline hints are explicit unsupported transport errors at their
@@ -39,5 +50,7 @@ inline applicability. Other semantic attribute families remain separate work.
 The focused plan contains four new private groups plus the existing public
 Functions/fresh-client proof and unchanged full-provider inspection control.
 The source variants and publication predictions are frozen in
-`pa31/tests/spec/source-publication-attributes/contract.json`. Compiler
-qualification is pending; no broader suite or native result is claimed here.
+`pa31/tests/spec/source-publication-attributes/contract.json`. The two genuine
+crate-owner Rust observations retain their default warning in both editions.
+Raw focused evidence is under the integrator worktree's
+`obj/parallel/source-publication-qualified-v1/`; no native result is claimed.

@@ -111,7 +111,33 @@ impl std::ops::Deref for ValidatedView<'_> {
         &self.source.columns
     }
 }
-impl ValidatedView<'_> {
+impl<'a> ValidatedView<'a> {
+    #[must_use]
+    pub fn header_attributes(self) -> Option<&'a super::super::HeaderAttributeColumns> {
+        self.source.attributes.as_deref()
+    }
+    /// # Errors
+    /// Rejects a missing/mismatched row in a completed version-one column.
+    pub fn header_contract(
+        self,
+        declaration: DeclarationRef,
+    ) -> Result<Option<&'a super::super::HeaderContract>, &'static str> {
+        let Some(attributes) = self.header_attributes() else {
+            return Ok(None);
+        };
+        let contract = match self.header(declaration)? {
+            Some(super::super::HeaderRef::Function(index)) => {
+                attributes.functions.get(index as usize)
+            }
+            Some(super::super::HeaderRef::Trait(index)) => attributes.traits.get(index as usize),
+            _ => return Err("source attribute query does not name an admitted header"),
+        }
+        .ok_or("source header contract completion row is missing")?;
+        if contract.declaration != declaration {
+            return Err("source header contract changed its actual declaration");
+        }
+        Ok(Some(contract))
+    }
     #[must_use]
     pub fn body_owners(&self) -> &[BodyOwner] {
         self.source.owners.rows()
