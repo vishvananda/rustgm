@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "purpose": "ONLY two new corrected positive chain/order sources; no36-metadata or six native rerun",
+  "baseline": "64c9f507",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "metadata_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "native_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Cdebug-assertions=no",
+    "-Coverflow-checks=no",
+    "-Copt-level=2",
+    "-Ccodegen-units=1",
+    "-Clto=off",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "runtime_observer": "Actual established PA19 check/fail mechanism; native pass requires every selected value/mutation/Drop/lazy-panic check, exact exit0 and empty stdout/stderr; metadata alone does not qualify those values.",
+  "cases": [
+    {
+      "name": "chain-and-inherited-body-explicit-middle",
+      "source": "obj/parallel/pa31/specialization-graph-v1/chain-followup-sources/chain-and-inherited-body-explicit-middle.rs",
+      "sha256": "87166f9bf6e69d5b9e34dcdc253cec085e1586b3aa30d5a189d4f5562b1b0676",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "New exact positive after observed intermediate omission finalizes member: middle explicitly reopens f as default. Original two rejected sources/predictions remain immutable."
+    },
+    {
+      "name": "reverse-chain-order-explicit-middle",
+      "source": "obj/parallel/pa31/specialization-graph-v1/chain-followup-sources/reverse-chain-order-explicit-middle.rs",
+      "sha256": "f4b971dbb3f9c77c20c0096faec8534635adcb4a85f5db53ed0c5ecdb09de776",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "New exact positive after observed intermediate omission finalizes member: middle explicitly reopens f as default. Original two rejected sources/predictions remain immutable."
+    }
+  ],
+  "planned_metadata_observations": 4,
+  "planned_native_programs": 4,
+  "source_prediction_disagreements": "Retain all actual raw observations and wrong predictions; disagreements are data, not automatic infrastructure failures."
+}
