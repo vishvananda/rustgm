@@ -36,10 +36,11 @@ frontier; the earlier observations remain retained history, not current stops.
 
 Current lanes:
 
-- A: continue real anonymous Function recipes and their actual owner/argument
-  domains. Nine of ten controls pass the latest bounded gate; fix the remaining
-  genuine function lifetime/type-parameter slot mismatch without weakening wire
-  validation. Provided execution and type-alias transport remain separate work.
+- A: anonymous Function recipes and the genuine function argument-index repair
+  pass the selected private/declaration gates. All 8485 paired text cases and
+  122 reviewed stdout changes are qualified. Continue actual callback-bearing
+  executable consumers, followed by private Provided template preparation;
+  public Provided execution and type-alias transport remain separate work.
 - B: LIB-024's exact wide literal/feature/type slice is public and qualified.
   Implement LIB-026's actual syntax, feature authority and module implementation
   domains. Seventy-four independent observations pass; candidate typing, Clippy

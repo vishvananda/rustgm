@@ -170,8 +170,11 @@ controls and exposes a local crate-root compatibility regression in the new
 header adapters. Its [five-control repair](source-header-contract-transport.md)
 passes in 131.15 seconds, preserving genuine imported Unknown and missing-producer
 errors. The anonymous-function source itself and its three owning PA18 controls
-pass; its reviewed argument-index text updates and new fixture provenance are
-still pending publication.
+pass. The [argument-index checkpoint](parallel/pa29-function-argument-indices.md)
+now qualifies all 8485 paired text cases and the 122 reviewed stdout changes.
+Checked scoped generation, metadata, harness and upstream checks take 18.62
+seconds; no old status, diagnostic or LowIR output changes. Fresh callback-bearing
+executable consumers and broader Provided import remain required.
 
 - Integrator: the [structural owner checkpoint](primitive-inherent-checkpoint.md)
   qualifies local primitive policy and full-Self lookup with 66 source cases,

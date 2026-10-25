@@ -3251,7 +3251,10 @@ demanded instance with its complete arguments and proofs.
 Preserve complete callable identities through function values, constants and
 promoted data. Check every generic template, including unused bodies, before
 specializing its retained CFG. Substitute parameters by their declaration
-identities; callable argument positions need not include late lifetime slots.
+identities. Assign function type/const parameter indices from their actual
+argument vector after excluding function lifetime declarations; those lifetimes
+belong to the separate signature scheme. Aliases and other nonfunction owners
+retain their existing mixed lifetime/type/const argument positions.
 Abstract lifetimes inside actual type arguments into a fresh instance proof
 context while preserving nested binders and the template's own variables.
 Reconnect each imported early argument with its original body slot, including
