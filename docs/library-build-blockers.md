@@ -98,18 +98,19 @@ four files unchanged. Stricter attribute checking separately exposes the earlier
   followed by primitive inherent coherence (LIB-020). All 56 independent source
   cases have run, retaining three disproved hypotheses; primitive behavior
   is still unimplemented.
-- A: the shared defining-environment producer and raw numbering data are now
-  integrated at `f8cff8ba`. The separate unpaid Provided codec at `616e3caf`
-  passes five focused controls, formatting, audit and private strict Clippy in
-  223.17 seconds; it is not yet integrated. All canonical Provided import guards
-  remain closed. A charged inverse-allocation helper and a distinct nonpublishing
-  Provided staging wrapper are the next work; raw data is not an execution proof.
+- A: the shared defining-environment producer and raw numbering data are
+  integrated at `f8cff8ba`. The unpaid Provided codec and charged inverse-
+  allocation helper are integrated at source `03190e3c`; fourteen merged private
+  controls, formatting, architecture audit and private strict Clippy pass in
+  157.01 seconds in CI. All 198 harness tests also pass. All canonical Provided
+  import guards remain closed. A distinct nonpublishing reservation/typed-input
+  session is next; raw data is not an execution proof.
 - B: the bounded LIB-021 component at `ca2f0a80` passes 1,519 private tests,
   24 frontend cases, 84 native contexts, 26 layouts and seven CLI controls.
-  Its merge preserving current macro permissions and A's source data is staged
-  as `e1c15e27` with focused integration fixes. Sixteen private controls and four
-  frontend functions plus PA7/PA8 text suites pass; periodic merged native checks
-  remain separate. Imported runtime-policy
+  Its merge preserving current macro permissions and A's source data is public
+  at `66bd3750`, including focused integration fixes. Sixteen private controls
+  and four frontend functions plus PA7/PA8 text suites pass; periodic merged
+  native checks run separately in CI. Imported runtime-policy
   transport and the combined Test-body/configuration demand seam remain open.
 - C: the attribute/consumer candidate at `366ca380` passes 13 private, seven
   layout and nine selected frontend controls, including mixed warning/error

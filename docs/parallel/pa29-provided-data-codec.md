@@ -42,3 +42,14 @@ Earlier audit and Clippy failures and the separate resource refusal remain
 retained under their original fastcheck roots. The audit failure was a test
 variable parsed as a raw-reference token; the Clippy failure was one missing
 test semicolon. Neither was suppressed or treated as a compiler result.
+
+The merged codec and inverse-allocation helper are qualified together at source
+`03190e3c`. Fourteen exact private controls passed in 157.01 seconds, including
+formatting, the architecture audit and strict private-harness Clippy; all 198
+Python harness tests and the upstream/audit-cache contracts also passed in
+[focused CI](https://github.com/vishvananda/rustgm/actions/runs/40171134133).
+The inverse helper charges failed queries and allocation before mutation, joins
+actual original/alias domains and has fixed warm work with unrelated originals.
+The canonical Functions publisher and all four import boundaries remain closed
+to Provided data. The next checkpoint reserves actual declarations and typed
+inputs in a distinct unpublished session; it does not intern or execute bodies.
