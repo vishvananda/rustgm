@@ -7,6 +7,7 @@ mod declarative_forms;
 
 pub(super) use crate::syntax::item::ItemContext as Scope;
 
+#[derive(Clone, Copy)]
 struct TraitModifiers {
     restriction: Option<NodeId>,
     auto_: bool,
@@ -201,12 +202,20 @@ impl Parser<'_, '_> {
         start: u32,
         modifiers: TraitModifiers,
     ) -> Result<(ItemKind, crate::syntax::item::AttributeRange), LexError> {
-        let TraitModifiers { restriction, auto_, unsafe_, constant } = modifiers;
+        let TraitModifiers {
+            restriction,
+            auto_,
+            unsafe_,
+            constant,
+        } = modifiers;
         item.name = Some(self.name()?);
         item.generics = self.generics()?;
         if self.eat(P::Equal)? {
             if restriction.is_some() {
-                return Err(error(start, "trait aliases cannot have implementation restrictions"));
+                return Err(error(
+                    start,
+                    "trait aliases cannot have implementation restrictions",
+                ));
             }
             if unsafe_ || auto_ {
                 return Err(error(start, "invalid trait alias qualifier"));
@@ -214,7 +223,10 @@ impl Parser<'_, '_> {
             let bounds = self.bounds()?;
             item.where_clause = self.where_clause()?;
             self.expect(P::Semicolon)?;
-            return Ok((ItemKind::TraitAlias { constant, bounds }, Default::default()));
+            return Ok((
+                ItemKind::TraitAlias { constant, bounds },
+                crate::syntax::item::AttributeRange::default(),
+            ));
         }
         let bounds = if self.eat(P::Colon)? {
             self.bounds()?
@@ -223,13 +235,20 @@ impl Parser<'_, '_> {
         };
         item.where_clause = self.where_clause()?;
         if restriction.is_some() && self.cursor.at(P::Equal)? {
-            return Err(error(start, "trait aliases cannot have implementation restrictions"));
+            return Err(error(
+                start,
+                "trait aliases cannot have implementation restrictions",
+            ));
         }
         self.expect(P::OpenBrace)?;
         let inner = self.attributes(true)?;
         self.item_attributes(inner);
         let kind = ItemKind::Trait {
-            restriction, auto_, unsafe_, constant, bounds,
+            restriction,
+            auto_,
+            unsafe_,
+            constant,
+            bounds,
             items: self.item_list(true, Scope::Trait)?,
         };
         Ok((kind, inner))
@@ -348,7 +367,12 @@ impl Parser<'_, '_> {
                 let (kind, attributes) = self.trait_item(
                     &mut item,
                     start,
-                    TraitModifiers { restriction, auto_, unsafe_, constant },
+                    TraitModifiers {
+                        restriction,
+                        auto_,
+                        unsafe_,
+                        constant,
+                    },
                 )?;
                 inner = attributes;
                 kind
