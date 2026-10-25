@@ -1,4 +1,4 @@
-"""CI-only 58fa continuation: authenticated static checks plus missing exact four."""
+"""CI-only test correction: retain prior three and run only changed domain control."""
 import hashlib
 import json
 import os
@@ -17,9 +17,10 @@ from fastcheck_run import Steps, fingerprint
 from maintainer_batch import artifacts, inventory
 from storage import check_space, exclusive, minimum_reserve
 
-CANDIDATE = "58fa8509fceadba9cd7bc40788fed8f9a644f433"
+CANDIDATE = "ddd99af64c426290e642cacb501a083ab62c934a"
 PROOF_SHA = "94cbf15c1dadd98a372c302125093f59307f64fe8708d32a84a8b5859c31ed24"
-SOURCE_SHA = "a93a555612983e901ec197d63416bd94d7826312f5656df2f0e9074d8f818f8c"
+SOURCE_SHA = "894f4edccf43be499a271642fbb727cadaddf733287f7faf514f583a8b36e94e"
+FUNCTIONAL_SHA = "60ab919f465f18c915bcba71629de34778b2d17746d0e69dd25503b937d43624"
 OUTPUT = ROOT / "obj/parallel/all-attribute-selected-output-v1"
 
 
@@ -50,14 +51,30 @@ def worker(deadline, folder):
                 raise ValueError("original timeout evidence differs")
             sources = fingerprint(ROOT)
             source_bytes = json.dumps(sources, sort_keys=True, separators=(",", ":")).encode()
-            if len(sources) != 2585 or hashlib.sha256(source_bytes).hexdigest() != SOURCE_SHA or sources != proof["sources"]:
+            if len(sources) != 2585 or hashlib.sha256(source_bytes).hexdigest() != SOURCE_SHA :
                 raise ValueError("candidate differs from full authenticated source fingerprint")
+            changes = {p for p in sources if sources[p] != proof["sources"].get(p)}
+            if set(sources) != set(proof["sources"]) or changes != {"dev/tests/invariants/restriction_headers.rs"}:
+                raise ValueError("test-only correction changed production or unrelated source")
+            functional_root = ROOT / ".github/lib026-functional-proof"
+            if sha(functional_root / "manifest.json") != FUNCTIONAL_SHA:
+                raise ValueError("retained exact-three manifest changed")
+            functional = json.loads((functional_root / "manifest.json").read_bytes())
+            for path, expected in functional["files"].items():
+                if sha(functional_root / path) != expected:
+                    raise ValueError("retained exact-three output changed: " + path)
+            old_functional = json.loads((functional_root / functional["receipt"]).read_bytes())
+            if old_functional["sources"] != proof["sources"]:
+                raise ValueError("retained exact-three source differs from 58fa static proof")
             fixtures = manifest["fixtures"]
             if any(sha(ROOT / path) != expected for path, expected in fixtures.items()):
                 raise ValueError("candidate fixture differs from frozen 58fa")
             groups = proof["groups"]
             if set(groups) != {"lib"} or len(groups["lib"]) != 4 or len(set(groups["lib"])) != 4:
                 raise ValueError("continuation requires original four exact selectors")
+            if old_functional["groups"] != groups:
+                raise ValueError("retained original selector set differs")
+            groups = {"lib": ['resolve::impl_restrictions::tests::exact_trait_domains_resolve_aliases_and_charge_actual_ancestry_before_publication']}
             target = OUTPUT / "cli/candidate/rustgm"
             target.parent.mkdir(parents=True, exist_ok=True)
             (target.parent / ".keep-artifacts").touch()
@@ -73,12 +90,16 @@ def worker(deadline, folder):
                        "retained_prior_cli": manifest["prior_cli"]}
             (OUTPUT / "cli/binding.json").write_text(json.dumps(binding, indent=2) + "\n")
             steps.receipt.update(sources=sources, fixtures=fixtures, groups=groups, cli=binding,
+                retained_functional=functional,
                 retained_static={"run": 40212246155, "candidate": CANDIDATE, "receipt_sha256": PROOF_SHA,
-                                 "outputs": manifest["files"], "artifacts": manifest["artifacts"], "steps": retained,
+                                 "outputs": manifest["files"], "artifacts": manifest["artifacts"], "steps": retained, "retention_scope": "metadata retained; changed-test format, architecture and private Clippy rerun below",
                                  "attribution": "Passed previously; not rerun by this continuation.",
                                  "original_result": "Harness build timeout; no original tests executed."})
             steps.environment["RUST_TEST_NOCAPTURE"] = "1"
             steps.save()
+            steps.run("format", ["cargo", "fmt", "--manifest-path", "dev/Cargo.toml", "--all", "--", "--check"])
+            steps.run("architecture", [ROOT / "obj/audit-venv/bin/python", "scripts/rust_audit.py", "--root", ".", "--cache", "obj/fast-audit.json"])
+            steps.run("clippy-private", ["cargo", "clippy", "--manifest-path", "dev/Cargo.toml", "--locked", "--profile", "dev-fast", "--lib", "--", "--test", "-D", "warnings"], overrides={"CARGO_TARGET_DIR": str(ROOT / "obj/rust/private-lint")})
             built = steps.run("build", ["cargo", "test", "--manifest-path", "dev/Cargo.toml", "--locked",
                 "--profile", "dev-fast", "--lib", "--no-run", "--message-format=json"])
             binary = artifacts(built, groups)["lib"]
@@ -87,17 +108,17 @@ def worker(deadline, folder):
             ignored_rows = set(ignored.splitlines())
             selected = inventory("\n".join(row for row in listed.splitlines() if row not in ignored_rows), "lib", groups["lib"])
             if selected != groups["lib"]:
-                raise ValueError("nonignored inventory differs from original exact four")
+                raise ValueError("nonignored inventory differs from original changed domain selector")
             steps.receipt.update(selected={"lib": selected}, binaries={"lib": {"path": str(binary), "sha256": sha(binary)}})
             steps.save()
             output = steps.run("lib", [binary, "--exact", *selected], cwd=ROOT / "dev")
             counts = re.findall(r"test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;", output)
-            if len(counts) != 1 or tuple(map(int, counts[0])) != (4, 0, 0):
-                raise ValueError("executed count differs from original exact four")
+            if len(counts) != 1 or tuple(map(int, counts[0])) != (1, 0, 0):
+                raise ValueError("executed count differs from original changed domain selector")
             if fingerprint(ROOT) != sources or any(sha(ROOT / p) != h for p, h in fixtures.items()):
                 raise ValueError("source or fixtures changed during continuation")
             steps.receipt["state"] = "passed"
-            print("Passed missing harness build and original exact4; static checks retained from40212246155.", flush=True)
+            print("Passed changed domain selector with fresh fmt/audit/privateClippy; prior exact3 retained from40214141112.", flush=True)
             return 0
         except BaseException as error:
             steps.receipt.update(state="failed", error=str(error))

@@ -1,0 +1,16 @@
+
+running 4 tests
+restriction layouts Syntax=304 Configured=384 Unit=672 Source=184 SourceCore=176 Package=256 Report=3040 ItemKind=28 Item=64 Node=36
+test resolve::impl_restrictions::tests::parsed_restrictions_keep_feature_origins_disabled_headers_and_ordinary_layouts ... ok
+test resolve::impl_restrictions::tests::exact_trait_domains_resolve_aliases_and_charge_actual_ancestry_before_publication ... FAILED
+old/new canonical kinds=19/21 capacities=19/21 properties=19/21 capacities=19/21 indexentries=19/21 indexcapacities=28/28 Kind=24 Properties=4 Float=32 StoredValue=32 FloatBits=24 Scalar=32 Constant=32 View=48 Operation=16 NodeFacts=80 Store=472 Primitive=1
+test types::wide_float_tests::two_new_primitives_preserve_existing_ids_and_enclosing_hot_layouts ... ok
+test support::crates::codec::packet_envelope::tests::unrestricted_import_policy_keeps_real_functions_roundtrip_and_denies_restricted_export ... ok
+
+failures:
+
+failures:
+    resolve::impl_restrictions::tests::exact_trait_domains_resolve_aliases_and_charge_actual_ancestry_before_publication
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 1661 filtered out; finished in 0.02s
+

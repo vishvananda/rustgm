@@ -1,0 +1,24 @@
+{
+  "files": {
+    "1792947504270060000.launcher.json": "91271dea7ac3d3acbaa99a78c6b2606df43958328420f4bb2f5b633d14137c26",
+    "1792947504270060000/lib.stdout": "aa4e7e28b403e9f49b177fde9b382a5b14b9321d9a91990eab48b2a6ce2e301f",
+    "1792947504270060000/lib-ignored.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "1792947504270060000/build.stdout": "f53c8db3d09b7d459002f4c5aac1df1674a51d9431402a50a263dcdd14233b25",
+    "1792947504270060000/build.stderr": "645c440c13e67d21ad29e97a49b2908ac90dce2e6c0141aedb2825216c211370",
+    "1792947504270060000/lib-ignored.stdout": "3a5fb2fcb2e2de811991ebc353d4dfe09883b5e1c30cf9b4ce36d28415ed24d2",
+    "1792947504270060000/lib-inventory.stdout": "880a2fdf0a3e7cefb82b8837c2ae10dfe96da4125fa88af8e1f1d0418cda150c",
+    "1792947504270060000/receipt.json": "b5c5396994f6697acc5c202ebd95c611c133b1aa2c4e00c3dada9274d32202f7",
+    "1792947504270060000/lib-inventory.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "1792947504270060000/lib.stderr": "5de7b10b8d31486fd2effad3e4af5ef0a68275b9e909d567cf9be71e4cf746f0"
+  },
+  "receipt": "1792947504270060000/receipt.json",
+  "receipt_sha256": "b5c5396994f6697acc5c202ebd95c611c133b1aa2c4e00c3dada9274d32202f7",
+  "run": 40214141112,
+  "candidate": "58fa8509fceadba9cd7bc40788fed8f9a644f433",
+  "retained_exact3": [
+    "resolve::impl_restrictions::tests::parsed_restrictions_keep_feature_origins_disabled_headers_and_ordinary_layouts",
+    "support::crates::codec::packet_envelope::tests::unrestricted_import_policy_keeps_real_functions_roundtrip_and_denies_restricted_export",
+    "types::wide_float_tests::two_new_primitives_preserve_existing_ids_and_enclosing_hot_layouts"
+  ],
+  "original_failure": "Only relocated-owner fixture placed crate-inner attribute after first item; exact no-build CLI pair reproduces and fixes its producer without production changes."
+}

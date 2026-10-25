@@ -1,0 +1,20 @@
+{
+  "state": "failed",
+  "status": 1,
+  "seconds": 70.35984603700001,
+  "absolute_budget_seconds": 190,
+  "command": [
+    "/usr/bin/python3",
+    "scripts/resources.py",
+    "run",
+    "--wait-seconds",
+    "0",
+    "--",
+    "/usr/bin/python3",
+    ".github/focused_refs.py",
+    "--worker",
+    "386.726535179",
+    "/home/runner/work/rustgm/rustgm/obj/qualification/fast/1792947504270060000"
+  ],
+  "retained_run": 40212246155
+}
