@@ -22,9 +22,6 @@ pub mod syntax;
 pub mod types;
 
 #[cfg(test)]
-#[path = "../tests/helpers/packet_flow.rs"]
-mod source_packets;
-#[cfg(test)]
 #[path = "../tests/helpers/resolve.rs"]
 mod test_source;
 #[cfg(test)]

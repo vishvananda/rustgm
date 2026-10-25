@@ -588,9 +588,7 @@ impl Checker<'_> {
                         self.regions.begin_parameter(id);
                     }
                 }
-                Work::Signature(key, owner, phase) => {
-                    self.signature(key, owner, phase, steps, limit)?;
-                }
+                Work::Signature(key, owner, phase) => self.signature(key, owner, phase)?,
                 Work::Receiver(key, owner, binder) => {
                     self.complete_receiver(key, owner, binder)?;
                 }
@@ -1288,8 +1286,6 @@ impl Checker<'_> {
         key: NodeKey,
         owner: Option<DefId>,
         phase: SignaturePhase,
-        steps: &mut usize,
-        limit: usize,
     ) -> Result<(), Error> {
         let signature = self.signature_syntax(key, owner)?;
         match phase {
@@ -1450,7 +1446,7 @@ impl Checker<'_> {
                 }
                 if let Some(id) = owner {
                     self.finish_function_environment(key, id)?;
-                    let empty = self.function_regions(
+                    self.function_regions(
                         key,
                         id,
                         binder,
@@ -1461,9 +1457,6 @@ impl Checker<'_> {
                         },
                         bounds,
                     )?;
-                    if let Some(empty) = empty {
-                        self.retain_empty_scheme(empty, steps, limit)?;
-                    }
                     self.facts.lifetimes.named.extend(
                         self.regions
                             .bindings(binder)

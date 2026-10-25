@@ -1,11 +1,9 @@
 //! Function lifetime schemes retain source/body slots and callable binding times separately.
-mod empty_schemes;
 use super::{
     BinderId, Checker, DefId, Error, Kind, List, NodeKey, RegionId, Type, TypeId, regions,
 };
 use crate::support::hash::HashSet;
 use crate::{sema::lifetimes::FunctionRegions, types::bound_uses::Uses};
-pub(super) use empty_schemes::CompletedEmpty;
 
 #[derive(Clone, Copy)]
 pub(super) struct SignatureTypes {
@@ -142,10 +140,16 @@ impl Checker<'_> {
         declared: List,
         signatures: SignatureTypes,
         mut bounds: Vec<(RegionId, RegionId)>,
-    ) -> Result<Option<CompletedEmpty>, Error> {
+    ) -> Result<(), Error> {
         if self.facts.destructors.method(owner).is_some() {
-            self.drop_method_regions(key, owner, binder, declared, signatures.normal, &bounds)?;
-            return Ok(None);
+            return self.drop_method_regions(
+                key,
+                owner,
+                binder,
+                declared,
+                signatures.normal,
+                &bounds,
+            );
         }
         let captures = self
             .facts
@@ -168,7 +172,7 @@ impl Checker<'_> {
             && bounds.is_empty()
             && !self.facts.generics.has_parameters(owner)
         {
-            return empty_schemes::prepare(self, key, owner, binder, signatures, captures, bounds);
+            return Ok(());
         }
         self.function_binders.insert(key, binder);
         let (inputs, outputs) = self.signature_occurrences(key, signatures.original, true)?;
@@ -233,7 +237,7 @@ impl Checker<'_> {
             self.callable_template(key, owner, signatures.normal, &scheme)?;
         }
         self.facts.lifetimes.functions.insert(owner, scheme);
-        Ok(None)
+        Ok(())
     }
 
     fn bounded_lifetimes(
