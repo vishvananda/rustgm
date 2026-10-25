@@ -259,19 +259,25 @@ pub(super) fn item<L>(
         ItemKind::Enum { variants } => write!(output, "enum {}", Children(ast, variants)),
         ItemKind::Union { fields } => write!(output, "union {}", Children(ast, fields)),
         ItemKind::Trait {
+            restriction,
             auto_,
             unsafe_,
             constant,
             bounds,
             items,
-        } => write!(
-            output,
-            "trait {unsafe_} {}{}{} {}",
-            if auto_ { "auto " } else { "" },
-            if constant { "const " } else { "" },
-            Children(ast, bounds),
-            Children(ast, items)
-        ),
+        } => {
+            if let Some(clause) = restriction {
+                write!(output, "implementation-domain={} ", clause.get())?;
+            }
+            write!(
+                output,
+                "trait {unsafe_} {}{}{} {}",
+                if auto_ { "auto " } else { "" },
+                if constant { "const " } else { "" },
+                Children(ast, bounds),
+                Children(ast, items)
+            )
+        }
         ItemKind::Impl {
             unsafe_,
             constant,

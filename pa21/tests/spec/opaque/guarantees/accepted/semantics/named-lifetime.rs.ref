@@ -24,7 +24,7 @@ type 21 reference mutable=false region=bound:0:0 referent=11
 type 22 opaque id=0 arguments=[region:bound:0:0]
 type 23 function binders=1 parameters=[21] result=22 unsafe=false
 type 24 function-item def=13 signature=23
-type 25 parameter def=14 index=1
+type 25 parameter def=14 index=0
 type 26 function binders=1 parameters=[25,21] result=1 unsafe=false
 type 27 reference mutable=false region=bound:1:0 referent=11
 type 28 function binders=0 parameters=[25,27] result=1 unsafe=false

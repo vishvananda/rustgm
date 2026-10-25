@@ -28,7 +28,7 @@ type 25 reference mutable=false region=bound:0:0 referent=1
 type 26 function binders=1 parameters=[25,24] result=1 unsafe=false
 type 27 function binders=0 parameters=[] result=1 unsafe=false
 type 28 function-item def=15 signature=27
-type 29 parameter def=16 index=1
+type 29 parameter def=16 index=0
 type 30 reference mutable=false region=bound:1:0 referent=1
 type 31 function binders=1 parameters=[25,30] result=1 unsafe=false
 type 32 function binders=1 parameters=[] result=1 unsafe=false

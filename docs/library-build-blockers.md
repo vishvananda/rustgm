@@ -156,6 +156,26 @@ Six new public PA2/PA9 regressions and pinned-rustc observations pass in a
 cases are retained from the preceding pass. No assignment or core artifact is
 complete.
 
+Periodic [full CI on `fb6cc056`](https://github.com/vishvananda/rustgm/actions/runs/40204216976)
+finds five stale expectations for the new cold feature-word width and later
+source TypeIds. A test-only repair passes the three exact private controls and
+two relationship controls. Static checks pass in the initial bounded cold run;
+a source-authenticated continuation completes the missing build and execution
+without repeating them. The [wide checkpoint](wide-literals-checkpoint.md)
+records both receipts and the retained timeout. This does not turn the failed
+periodic run into full qualification; its later stages remain pending.
+
+The combined anonymous-function gate passes twelve of thirteen exact private
+controls and exposes a local crate-root compatibility regression in the new
+header adapters. Its [five-control repair](source-header-contract-transport.md)
+passes in 131.15 seconds, preserving genuine imported Unknown and missing-producer
+errors. The anonymous-function source itself and its three owning PA18 controls
+pass. The [argument-index checkpoint](parallel/pa29-function-argument-indices.md)
+now qualifies all 8485 paired text cases and the 122 reviewed stdout changes.
+Checked scoped generation, metadata, harness and upstream checks take 18.62
+seconds; no old status, diagnostic or LowIR output changes. Fresh callback-bearing
+executable consumers and broader Provided import remain required.
+
 - Integrator: the [structural owner checkpoint](primitive-inherent-checkpoint.md)
   qualifies local primitive policy and full-Self lookup with 66 source cases,
   nineteen focused private controls and eight actual native programs. Ordinary
@@ -233,7 +253,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-022 | Local declarations qualified; original-root boundary advanced | Complete authenticated builtin declaration kinds independently of invocation availability | PA31 source binding + PA8 expansion; execution stays with owning feature / PA31 source providers plus earlier applicable controls | B + integrator | All 61 primary registry roles have actual kinds/availability; seven isolated controls pass in 165.33 seconds. Original 24 slots/ordinals and hot layouts are preserved. All 37 new executions stay closed; imported macro contracts remain required. |
 | LIB-023 | Local regression repaired; imported openness still required | Actual local `non_exhaustive` attribute consumption and retained unsupported cross-crate contract | PA29 declaration/export contract / PA29 local and artifact opponents | C | Four merged controls pass with strict Clippy/audit/build in 129.31 seconds; nineteen sources bind 38 independent observations. Same-crate behavior and actual field/duplicate lint policy are implemented through the existing attribute traversal. Typed export still rejects unsupported cross-crate contracts. |
 | LIB-024 | Local literal/gate/type slice qualified; wider operations still required | Exact f16/f128 literal values, active feature authority and real primitive/type consumers | PA2 literals + PA9 types; PA25 operations and later ABI/metadata own their effects / PA2 ordinary controls plus PA31 actual source | B | Eight merged controls pass in 170.27 seconds; 40 independent language observations and 64 actual exported-static bit comparisons pass. Reviewed references and 8484 text cases are qualified, including six new public PA2/PA9 cases. The unchanged root reaches LIB-026. Wide arithmetic, casts, pattern/wire/ABI/runtime support remain explicit requirements; no native-wide or core-artifact claim. |
-| LIB-025 | Closed publication guard qualified; wider transport still required | Closed source Functions publication must not omit actual must-use/inline contracts | PA29 publication + PA31 actual headers / PA31 selected-header source variants | C | Mandatory typed guard passes merged selected-header/error/Unknown/inspection controls; three corrected fixture groups pass in 173.56 seconds with strict Clippy/audit/build. Inspection stays unpaid, and imported absence stays Unknown. Explicit wider contract transport remains required. |
+| LIB-025 | Versioned library transport qualified; CLI activation pending | Source Functions publication must retain actual must-use/inline contracts and positively checked absence | PA29 publication + PA31 actual headers / PA31 selected-header source variants | C | Nine exact controls pass metadata, formatting, architecture, private strict Clippy, build and execution in 131.84 seconds. Explicit tag10/v1 library publication supports fresh consumers and their lint policy; legacy API bytes remain exact and old imported absence remains Unknown. CLI activation and native client checks are next. See the [transport checkpoint](source-header-contract-transport.md). |
 | LIB-026 | P0; next unchanged-root failure at `num/nonzero.rs:34` in the qualified isolated wide candidate | Source trait implementation restrictions with genuine feature, module-scope and imported identity checks | PA5 grammar + PA6 paths/privacy + PA19 traits; PA31 internal feature and PA29 transport / earliest expressible controls plus complete PA31 providers | B | Source investigation next. Original root enables `impl_restriction`; ten core declarations use self/crate and const/unsafe combinations. Pinned parser and UI tests are available. No modifier skipping, scope bypass or new artifact authority is approved. |
 
 The combined functional recovery is recorded in

@@ -24,13 +24,13 @@ type 21 aggregate def=19
 type 22 parameter def=14 index=0
 type 23 parameter def=17 index=0
 type 24 parameter def=15 index=1
-type 25 parameter def=18 index=1
+type 25 parameter def=18 index=0
 type 26 reference mutable=false region=bound:0:0 referent=25
 type 27 function binders=1 parameters=[26] result=1 unsafe=false
 type 28 reference mutable=false region=bound:1:0 referent=25
 type 29 function binders=0 parameters=[28] result=1 unsafe=false
 type 30 function-item def=18 signature=27
-type 31 parameter def=22 index=1
+type 31 parameter def=22 index=0
 type 32 reference mutable=false region=bound:0:0 referent=31
 type 33 function binders=1 parameters=[32] result=1 unsafe=false
 type 34 reference mutable=false region=bound:1:0 referent=31

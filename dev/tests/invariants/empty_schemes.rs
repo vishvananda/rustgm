@@ -179,7 +179,7 @@ fn missing_or_foreign_scheme_never_becomes_checked_empty() -> Result {
         .provider
         .clone();
     let error =
-        crate::sema::crates::authored_export::Stage::begin(&report, &checker.facts, &provider)
+        crate::sema::crates::authored_export::Stage::begin(&report, &mut checker.facts, &provider)
             .err()
             .ok_or("removed scheme was inferred empty")?;
     assert_eq!(error, "source function has no completed lifetime scheme");

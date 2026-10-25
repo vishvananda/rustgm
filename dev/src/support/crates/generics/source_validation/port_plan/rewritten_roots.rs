@@ -1,6 +1,6 @@
 //! One completed template node per exact type/application/context use.
 use super::{
-    DomainIndex, Work,
+    Context, DomainIndex, Work, g,
     nodes::{Arena, Key, Node, NodeId, Rewrite},
     s, uses,
 };
@@ -14,6 +14,7 @@ enum Recipe {
         region: super::nodes::Region,
         child: Key,
     },
+    Function(g::Signature),
 }
 #[derive(Clone, Copy)]
 enum Task {
@@ -55,8 +56,14 @@ impl Arena {
                     }
                     let recipe = self.recipe(domains, key, work)?;
                     self.push(pending, Task::Finish(key, recipe), work)?;
-                    if let Recipe::Alias(child) | Recipe::Reference { child, .. } = recipe {
-                        self.push(pending, Task::Enter(child), work)?;
+                    match recipe {
+                        Recipe::Alias(child) | Recipe::Reference { child, .. } => {
+                            self.push(pending, Task::Enter(child), work)?;
+                        }
+                        Recipe::Function(signature) => {
+                            self.function_children(domains, key, signature, pending, work)?;
+                        }
+                        Recipe::Leaf(_) => {}
                     }
                 }
                 Task::Finish(key, recipe) => {
@@ -77,6 +84,9 @@ impl Arena {
                                 },
                                 work,
                             )?
+                        }
+                        Recipe::Function(signature) => {
+                            self.finish_function(domains, key, signature, work)?
                         }
                     };
                     self.remember(key, node, work)?;
@@ -122,7 +132,11 @@ impl Arena {
                         "source nested function-item substitution requires a wider profile",
                     );
                 }
-                s::Type::Function(_) | s::Type::ApplicationSignature(_) => {
+                s::Type::Function(signature) => {
+                    function_domain(domains, key, signature, work)?;
+                    Recipe::Function(signature)
+                }
+                s::Type::ApplicationSignature(_) => {
                     return Err("source higher-order type inputs require a complete wider profile");
                 }
             },
@@ -134,6 +148,62 @@ impl Arena {
             .get(&key)
             .copied()
             .ok_or("source input type child was not completed")
+    }
+    fn function_children(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        key: Key,
+        signature: g::Signature,
+        pending: &mut Vec<Task>,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let parameters = signature.parameters.slice(&domains.headers.rows().roots)?;
+        let children = parameters.len().saturating_add(1);
+        work.charge(children)?;
+        let capacity = pending.capacity().max(
+            pending
+                .len()
+                .saturating_add(children)
+                .saturating_mul(2)
+                .max(4),
+        );
+        self.reserve(
+            0,
+            size_of::<Vec<Task>>().saturating_add(capacity.saturating_mul(size_of::<Task>())),
+            work,
+        )?;
+        let result = uses::key(domains, signature.result, key.rewrite, key.caller, work)?;
+        self.push(pending, Task::Enter(result), work)?;
+        for &root in parameters.iter().rev() {
+            let child = uses::key(domains, root, key.rewrite, key.caller, work)?;
+            self.push(pending, Task::Enter(child), work)?;
+        }
+        Ok(())
+    }
+    fn finish_function(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        key: Key,
+        signature: g::Signature,
+        work: &mut Work,
+    ) -> Result<NodeId, &'static str> {
+        let parameters = signature.parameters.slice(&domains.headers.rows().roots)?;
+        work.charge(parameters.len().saturating_add(1))?;
+        let result = uses::key(domains, signature.result, key.rewrite, key.caller, work)?;
+        let result = self.child(result, work)?;
+        let mut tail = self.intern(Node::SignatureResult(result), work)?;
+        for &root in parameters.iter().rev() {
+            let child = uses::key(domains, root, key.rewrite, key.caller, work)?;
+            let ty = self.child(child, work)?;
+            tail = self.intern(Node::SignatureInput { ty, next: tail }, work)?;
+        }
+        self.intern(
+            Node::Function {
+                signature: tail,
+                unsafe_: signature.unsafe_,
+            },
+            work,
+        )
     }
     fn push(
         &mut self,
@@ -161,4 +231,64 @@ impl Arena {
         tasks.push(task);
         Ok(())
     }
+}
+
+fn function_domain(
+    domains: &DomainIndex<'_, '_>,
+    key: Key,
+    signature: g::Signature,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    work.charge(1)?;
+    let rows = domains.headers.rows();
+    let (owner, context) = match key.rewrite {
+        Rewrite::Original => {
+            let caller = key
+                .caller
+                .ok_or("source Function omitted its actual formation owner")?;
+            let header = domains.function(caller.owner, work)?;
+            (header.declaration, caller)
+        }
+        Rewrite::Public(owner) => {
+            let header = domains.function(owner, work)?;
+            (
+                header.declaration,
+                Context {
+                    owner: header.scope,
+                    frame: Some(header.original.binder),
+                    body: None,
+                },
+            )
+        }
+        Rewrite::Application(application) => {
+            let application = rows
+                .function_applications
+                .get(application.0 as usize)
+                .ok_or("source Function rewrite has no actual application")?;
+            let header = domains.function(application.declaration.declaration, work)?;
+            (
+                header.declaration,
+                Context {
+                    owner: header.scope,
+                    frame: Some(header.callable.binder),
+                    body: None,
+                },
+            )
+        }
+    };
+    let frame = rows
+        .binders
+        .get(signature.binder.0 as usize)
+        .ok_or("source Function has no actual callable frame")?;
+    if frame.kind != s::BinderKind::CallableType
+        || frame.count != 0
+        || frame.parent.is_some()
+        || frame.owner != owner
+        || signature.convention != g::Convention::Rust
+        || signature.variadic
+        || !domains.types.region_independent(key.root, work)?
+    {
+        return Err("source Function input lost its exact zero-slot Rust formation domain");
+    }
+    domains.types.root(domains.headers, context, key.root, work)
 }

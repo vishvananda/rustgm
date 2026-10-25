@@ -29,7 +29,7 @@ type 26 function binders=1 parameters=[25] result=1 unsafe=false
 type 27 aggregate def=15 arguments=[region:bound:1:0,type:24]
 type 28 function binders=0 parameters=[27] result=1 unsafe=false
 type 29 function-item def=18 signature=26
-type 30 parameter def=19 index=2
+type 30 parameter def=19 index=0
 type 31 aggregate def=15 arguments=[region:bound:0:0,type:30]
 type 32 function binders=2 parameters=[31] result=1 unsafe=false
 type 33 aggregate def=15 arguments=[region:bound:1:0,type:30]

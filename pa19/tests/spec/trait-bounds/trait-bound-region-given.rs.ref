@@ -21,7 +21,7 @@ type 18 primitive f64
 type 19 primitive f16
 type 20 primitive f128
 type 21 parameter def=14 index=0
-type 22 parameter def=15 index=2
+type 22 parameter def=15 index=0
 type 23 function binders=2 parameters=[22] result=1 unsafe=false
 type 24 function binders=0 parameters=[22] result=1 unsafe=false
 type 25 function-item def=15 signature=23
