@@ -262,7 +262,7 @@ impl Source {
         }
         self.require_plain_attributes(report, facts)?;
         self.complete_plain_payload(base)
-            .map_err(|message| report.diagnostic(report.body_optional_error(None, message.into())))
+            .map_err(|message| report.diagnostic(report.body_optional_error(None, message)))
     }
 
     fn complete_plain_payload(
