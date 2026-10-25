@@ -14,6 +14,8 @@ use crate::{
 
 mod control;
 pub mod fragment;
+#[path = "expression/restriction_clause.rs"]
+mod impl_restrictions;
 mod items;
 mod statement_modes;
 pub use items::{parse_crate, parse_crate_in_edition, parse_crate_with};

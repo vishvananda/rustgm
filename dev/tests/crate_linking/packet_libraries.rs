@@ -103,7 +103,7 @@ fn build(folder: &Path) -> Result {
             .source_descriptor()
             .ok_or("source descriptor")?
             .profile(),
-        rustgm::support::crates::SourceProfile::Source2024Functions
+        rustgm::support::crates::SourceProfile::Source2024FunctionContracts
     );
     artifacts::checked(
         "client",

@@ -50,6 +50,18 @@ pub struct SourceCore {
     pub(in crate::resolve) macros: panic_contracts::Contracts,
 }
 impl super::package::Package {
+    pub(crate) fn requested_impl_restriction(&self) -> Result<bool, &'static str> {
+        if let Some(Source::Client(client)) = self.source.as_deref() {
+            if client.current().name() != self.crate_name || client.current() == client.provider() {
+                return Err("implementation restriction client identity changed");
+            }
+            client.validate_inventory()?;
+            return Ok(client.features.has(policy::Feature::ImplRestriction));
+        }
+        Ok(self
+            .macro_context()?
+            .is_some_and(|context| context.requested(policy::Feature::ImplRestriction)))
+    }
     #[must_use]
     pub fn uses_source_bindings(&self) -> bool {
         self.source.as_deref().is_some_and(Source::owns_bindings)
