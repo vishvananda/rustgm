@@ -237,10 +237,13 @@ fn versioned_contract_profiles_authenticate_unrestricted_domains_before_fresh_im
     assert!(contract.origin.imported().is_some());
     assert!(contract.origin.source().is_none());
     let copy = imported_copy_trait(&report, &interface)?;
-    analysis
-        .facts
-        .associated
-        .require_imported_unrestricted_domain(copy)?;
+    assert_eq!(
+        analysis
+            .facts
+            .associated
+            .imported_implementation_domain(copy)?,
+        s::ImplementationDomain::Unrestricted
+    );
     let owner = analysis
         .facts
         .associated
@@ -251,14 +254,14 @@ fn versioned_contract_profiles_authenticate_unrestricted_domains_before_fresh_im
         analysis
             .facts
             .associated
-            .require_imported_unrestricted_domain(owner.self_definition)
+            .imported_implementation_domain(owner.self_definition)
             .is_err()
     );
     assert!(
         analysis
             .facts
             .associated
-            .require_imported_unrestricted_domain(identity)
+            .imported_implementation_domain(identity)
             .is_err()
     );
     assert!(

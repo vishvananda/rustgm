@@ -70,17 +70,13 @@ pub(super) fn prepare(
                         crate::types::callable::Template,
                     >(1)),
             )?;
-            if parameters.is_empty() {
-                // A completed empty scope still owns a callable registration;
-                // its absence must not stand in for a checked closed signature.
-                callables
-                    .insert_monomorphic(&facts.types, ItemId(scope.definition.0), header.callable)
-                    .map_err(error)?;
-            } else {
-                callables
-                    .insert_scoped(&facts.types, &owners, header.callable, 0, &[], &parameters)
-                    .map_err(error)?;
-            }
+            register(
+                &facts.types,
+                &mut callables,
+                &owners,
+                &parameters,
+                header.callable,
+            )?;
             let ty = facts
                 .types
                 .intern(Kind::FunctionItem {
@@ -106,6 +102,29 @@ pub(super) fn prepare(
     budget.charge(allocation.visits)?;
     budget.observed.include(allocation);
     Ok((callables, result))
+}
+
+/// Both private preparation owners supply their already authenticated complete
+/// ancestry/formals and prepay their own actual allocation envelope.
+pub(in crate::sema::crates::typed_headers) fn register(
+    types: &crate::types::Store,
+    callables: &mut Templates,
+    owners: &[ItemId],
+    parameters: &[ParameterId],
+    signature: TypeId,
+) -> Result<(), Error> {
+    if parameters.is_empty() {
+        let item = *owners
+            .last()
+            .ok_or_else(|| error("missing actual callable owner"))?;
+        callables
+            .insert_monomorphic(types, item, signature)
+            .map_err(error)
+    } else {
+        callables
+            .insert_scoped(types, owners, signature, 0, &[], parameters)
+            .map_err(error)
+    }
 }
 
 fn symbol(
