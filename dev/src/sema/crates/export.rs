@@ -368,6 +368,9 @@ pub(crate) fn scalar(facts: &Declarations, ty: TypeId) -> Result<Scalar, Error> 
             Primitive::Isize => Scalar::Isize,
             Primitive::F32 => Scalar::F32,
             Primitive::F64 => Scalar::F64,
+            Primitive::F16 | Primitive::F128 => {
+                return Err(error("wide floating metadata profile is not implemented"));
+            }
             Primitive::Str => return Err(error("str is outside the scalar metadata profile")),
         },
         _ => return Err(error("exposed type is outside the scalar metadata profile")),

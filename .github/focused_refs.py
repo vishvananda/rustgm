@@ -1,11 +1,5 @@
-import os,subprocess,sys,pathlib,hashlib,json,shutil
-if '--record' in sys.argv:
- root=pathlib.Path.cwd();app=root/'obj/rust/dev-fast/rustgm';out=root/'obj/parallel/all-attribute-selected-output-v1';(out/'candidate').mkdir(parents=True);(out/'candidate/.keep-artifacts').touch();copy=out/'candidate/rustgm';shutil.copy2(app,copy)
- sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
- (out/'binding.json').write_text(json.dumps({'candidate_sha256':sha(copy),'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'compiler_source_sha256':{str(p):sha(p) for p in sorted(pathlib.Path('dev').rglob('*.rs'))},'profile':'dev-fast','qualification':'seven exact role controls in same immutable checkout'},indent=2)+'\n')
- print('QUALIFIED_CLI_SHA256',sha(copy));sys.exit(0)
-selectors=['resolve::expansion::role_declarations::pinned_roles_keep_exact_kind_owner_and_closed_execution_availability', 'resolve::expansion::role_declarations::unavailable_alias_and_kind_opponents_stop_before_execution_work', 'resolve::expansion::role_declarations::unknown_claims_forms_and_provider_opponents_do_not_change_ordinary_derives', 'resolve::expansion::role_declarations::declaration_width_and_ordinary_synthetic_storage_keep_their_owners', 'resolve::index::unavailable_macros::observation::attributes::real_attribute_role_width_and_imports_prepare_each_actual_declaration_once', 'resolve::expansion::decorated_calls::tests::authentic_builtin_attribute_header_cannot_become_an_allowance_frame_by_body_substitution', 'resolve::expansion::decorated_calls::tests::actual_ordinary_engine_keeps_no_attribute_calls_and_reports_real_cold_storage_layouts']
+import os,subprocess,sys
+selectors=['literal::tests::wide_decimals_match_frozen_ieee_boundaries_without_double_rounding', 'literal::tests::numeric_shape_preserves_known_width_and_rejects_real_invalid_suffixes', 'literal::wide::tests::significant_prefix_scratch_stops_growing_for_long_zero_and_sticky_tails', 'resolve::wide_floats::tests::active_wide_features_and_inactive_token_opponents_use_real_authority', 'resolve::wide_floats::tests::wide_values_keep_exact_shapes_and_unsupported_later_operations_closed', 'types::wide_float_tests::two_new_primitives_preserve_existing_ids_and_enclosing_hot_layouts']
 command=[sys.executable,"scripts/fastcheck.py","--seconds","200"]
 for name in selectors:command += ["--lib-case",name]
 subprocess.run(command,env={**os.environ,"RUST_TEST_NOCAPTURE":"1"},check=True)
-subprocess.run(['timeout','30s',sys.executable,'scripts/storage.py','run','--no-prune','--',sys.executable,__file__,'--record'],check=True)

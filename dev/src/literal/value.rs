@@ -139,6 +139,8 @@ impl Integer {
 pub enum FloatType {
     F32,
     F64,
+    F16,
+    F128,
 }
 
 impl FloatType {
@@ -147,6 +149,8 @@ impl FloatType {
         match self {
             Self::F32 => "f32",
             Self::F64 => "f64",
+            Self::F16 => "f16",
+            Self::F128 => "f128",
         }
     }
 }
@@ -163,6 +167,8 @@ pub struct Float<'source> {
 pub enum FloatBits {
     F32(u32),
     F64(u64),
+    F16(u16),
+    F128 { low: u64, high: u64 },
 }
 
 impl Float<'_> {
@@ -181,7 +187,46 @@ impl Float<'_> {
                 .decimal
                 .parse::<f64>()
                 .map(|v| FloatBits::F64(v.to_bits())),
+            FloatType::F16 | FloatType::F128 => {
+                let bits = super::wide::round(&self.decimal, ty == FloatType::F16)?;
+                return Ok(if ty == FloatType::F16 {
+                    FloatBits::F16(u16::try_from(bits).map_err(|_| "invalid half float bits")?)
+                } else {
+                    FloatBits::from_quad(bits)
+                });
+            }
         }
         .map_err(|_| "invalid floating literal")
+    }
+}
+
+impl FloatBits {
+    pub(crate) const fn from_quad(bits: u128) -> Self {
+        let bytes = bits.to_le_bytes();
+        Self::F128 {
+            low: u64::from_le_bytes([
+                bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
+            ]),
+            high: u64::from_le_bytes([
+                bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14],
+                bytes[15],
+            ]),
+        }
+    }
+    pub(crate) fn bits(self) -> u128 {
+        match self {
+            Self::F16(bits) => u128::from(bits),
+            Self::F32(bits) => u128::from(bits),
+            Self::F64(bits) => u128::from(bits),
+            Self::F128 { low, high } => u128::from(low) | (u128::from(high) << 64),
+        }
+    }
+    pub(crate) const fn is_finite(self) -> bool {
+        match self {
+            Self::F16(bits) => bits & 0x7c00 != 0x7c00,
+            Self::F32(bits) => bits & 0x7f80_0000 != 0x7f80_0000,
+            Self::F64(bits) => bits & 0x7ff0_0000_0000_0000 != 0x7ff0_0000_0000_0000,
+            Self::F128 { high, .. } => high & 0x7fff_0000_0000_0000 != 0x7fff_0000_0000_0000,
+        }
     }
 }

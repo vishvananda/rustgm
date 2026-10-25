@@ -95,9 +95,11 @@ pub enum Primitive {
     Usize,
     F32,
     F64,
+    F16,
+    F128,
 }
 impl Primitive {
-    pub const ALL: [Self; 17] = [
+    pub const ALL: [Self; 19] = [
         Self::Bool,
         Self::Char,
         Self::Str,
@@ -115,6 +117,8 @@ impl Primitive {
         Self::Usize,
         Self::F32,
         Self::F64,
+        Self::F16,
+        Self::F128,
     ];
     #[must_use]
     pub const fn name(self) -> &'static str {
@@ -136,6 +140,8 @@ impl Primitive {
             Self::Usize => "usize",
             Self::F32 => "f32",
             Self::F64 => "f64",
+            Self::F16 => "f16",
+            Self::F128 => "f128",
         }
     }
     /// Signedness and width in the initial x86-64 target profile.
@@ -157,7 +163,7 @@ impl Primitive {
     }
     #[must_use]
     pub const fn is_float(self) -> bool {
-        matches!(self, Self::F32 | Self::F64)
+        matches!(self, Self::F32 | Self::F64 | Self::F16 | Self::F128)
     }
 }
 impl TypeId {
@@ -638,3 +644,7 @@ impl Store {
         Ok(result)
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/wide_float_layouts.rs"]
+mod wide_float_tests;

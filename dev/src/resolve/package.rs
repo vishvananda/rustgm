@@ -189,6 +189,9 @@ impl std::fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 impl Package {
+    pub(crate) fn requested_wide_float(&self, half: bool) -> bool {
+        self.macro_features.wide_float(half)
+    }
     pub(crate) fn coherence_is_core(&self) -> bool {
         self.macro_features.coherence()
     }

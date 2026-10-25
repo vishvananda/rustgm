@@ -25,6 +25,7 @@ mod paths;
 mod patterns;
 mod table;
 pub mod unit;
+mod wide_floats;
 
 /// Resolve configured modules into stable scope, definition and reference facts.
 ///
@@ -37,6 +38,7 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     resolver.imports()?;
     resolver.bodies()?;
     bindings::finish(package, &mut state.facts)?;
+    wide_floats::validate_plain(package, &state.facts)?;
     Ok(state.facts)
 }
 pub mod render;
@@ -76,6 +78,7 @@ pub fn analyze_expanded(
     result.map_err(|error| report.diagnostic(error))?;
     report.resolution = state.facts;
     bindings::finish(&mut report.package, &mut report.resolution)?;
+    wide_floats::validate_paths(&report).map_err(|error| report.diagnostic(error))?;
     report.names_resolved = true;
     Ok(report)
 }

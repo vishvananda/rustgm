@@ -690,10 +690,10 @@ fn scalar(size: u64, align: u32) -> Layout {
 fn primitive(primitive: Primitive) -> Result<Layout, &'static str> {
     let bytes = match primitive {
         Primitive::Bool | Primitive::I8 | Primitive::U8 => 1,
-        Primitive::I16 | Primitive::U16 => 2,
+        Primitive::I16 | Primitive::U16 | Primitive::F16 => 2,
         Primitive::Char | Primitive::I32 | Primitive::U32 | Primitive::F32 => 4,
         Primitive::I64 | Primitive::U64 | Primitive::Isize | Primitive::Usize | Primitive::F64 => 8,
-        Primitive::I128 | Primitive::U128 => 16,
+        Primitive::I128 | Primitive::U128 | Primitive::F128 => 16,
         Primitive::Str => return Err("unsized str has no fixed layout"),
     };
     Ok(scalar(u64::from(bytes), bytes))
