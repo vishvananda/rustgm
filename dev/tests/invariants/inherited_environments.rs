@@ -154,7 +154,7 @@ fn check_scope(
     for (&slot, (parameter, _)) in rows.body_inputs[body.0 as usize]
         .parameters
         .iter()
-        .zip(&scope.parameters)
+        .zip(scope.parameters.iter().rev())
     {
         let raw = rows.slots[slot.0 as usize];
         let actual = session

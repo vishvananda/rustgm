@@ -5,6 +5,7 @@ const HOLDER: &str = "\npub trait Holder<V>{fn carry<U>(value:U)->U{value}fn bor
 
 #[test]
 fn numbered_trait_inputs_retain_full_family_and_actual_contract_capacity() -> Result {
+    raw_original_parameter_order()?;
     let actual = trait_extended(HOLDER)?;
     let rows = actual.inventory.artifacts()[0]
         .source_descriptor()
@@ -197,5 +198,87 @@ fn numbered_trait_inputs_preserve_defaultness_fences_and_failed_work() -> Result
     };
     assert!(validate(&source.rows, &mut work, bytes).is_err());
     assert!(work.steps > crate::support::crates::MAX_COMPONENTS);
+    Ok(())
+}
+
+fn raw_original_parameter_order() -> Result {
+    let (source, _, _) = inspect(HOLDER)?;
+    let rows = &source.rows;
+    let header = rows
+        .functions
+        .iter()
+        .find(|header| {
+            rows.declarations[header.declaration.0 as usize]
+                .name
+                .as_deref()
+                == Some("carry")
+        })
+        .ok_or("actual provided original")?;
+    let s::FunctionBody::Original(body) = header.body else {
+        return Err("actual provided original body".into());
+    };
+    let holder = rows
+        .traits
+        .iter()
+        .find(|trait_| Some(trait_.declaration) == header.parent)
+        .ok_or("actual parent trait")?;
+    let parameters = &rows.body_inputs[body.0 as usize].parameters;
+    assert_eq!(parameters.len(), 3);
+    let headers = s::HeaderIndex::new(rows, 0, &mut g::Work::default())?;
+    for (index, (&slot, owner)) in parameters
+        .iter()
+        .zip([
+            header.declaration,
+            holder.declaration,
+            holder.self_definition,
+        ])
+        .enumerate()
+    {
+        assert_eq!(rows.slots[slot.0 as usize].owner, owner);
+        assert_eq!(
+            headers.scopes().original_type_parameter_position(
+                header.scope,
+                slot,
+                &mut g::Work::default()
+            )? as usize,
+            index
+        );
+        assert_eq!(
+            headers
+                .scopes()
+                .type_argument_position(header.scope, slot, &mut g::Work::default())?
+                as usize,
+            2 - index
+        );
+    }
+    for opponent in 0..4 {
+        let mut changed = rows.clone();
+        let parameters = &mut changed.body_inputs[body.0 as usize].parameters;
+        match opponent {
+            0 => parameters.swap(0, 1),
+            1 => parameters[0] = parameters[1],
+            2 => {
+                parameters.pop();
+            }
+            _ => {
+                let foreign = rows
+                    .slots
+                    .iter()
+                    .position(|slot| {
+                        slot.owner != header.declaration
+                            && slot.owner != holder.declaration
+                            && slot.owner != holder.self_definition
+                    })
+                    .ok_or("actual foreign formal")?;
+                parameters[0] = s::SlotRef(u32::try_from(foreign)?);
+            }
+        }
+        let mut work = source.work;
+        assert!(
+            validate(&changed, &mut work, 0).is_err(),
+            "raw formal opponent {opponent}"
+        );
+        assert!(work.steps > source.work.steps);
+    }
     Ok(())
 }
