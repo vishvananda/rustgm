@@ -1,4 +1,5 @@
 //! A demanded expansion owns a spelling image and classified tokens, never relexed text.
+#[path = "stream/image_interval.rs"]
 mod source_interval;
 use super::macros::{
     capture::CaptureId,
