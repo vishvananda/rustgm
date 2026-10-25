@@ -5,10 +5,16 @@ pub struct FileId(pub u32);
 
 /// Original bytes stay available for future physical source diagnostics.
 pub struct SourceFile {
-    original: String,
+    original: std::sync::Arc<OriginalImage>,
     normalized: Option<String>,
     physical_len: usize,
     positions: std::sync::OnceLock<Box<Positions>>,
+}
+
+/// Each source incarnation owns identity while immutable physical bytes may be shared.
+#[derive(Debug)]
+pub(crate) struct OriginalImage {
+    bytes: std::sync::Arc<String>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -41,7 +47,9 @@ impl SourceFile {
     /// Rejects semantic images exceeding the compact offset limit.
     pub fn append(&mut self, text: &str) -> Result<u32, &'static str> {
         let start = self.append_offset(text)?;
-        let view = self.normalized.get_or_insert_with(|| self.original.clone());
+        let view = self
+            .normalized
+            .get_or_insert_with(|| self.original.bytes.as_ref().clone());
         view.push('\n');
         view.push_str(text);
         Ok(start)
@@ -62,7 +70,9 @@ impl SourceFile {
             .then(|| original.replace("\r\n", "\n"));
         let physical_len = normalized.as_ref().map_or(original.len(), String::len);
         Ok(Self {
-            original,
+            original: std::sync::Arc::new(OriginalImage {
+                bytes: std::sync::Arc::new(original),
+            }),
             normalized,
             physical_len,
             positions: std::sync::OnceLock::new(),
@@ -80,8 +90,10 @@ impl SourceFile {
     #[must_use]
     pub fn physical_copy(&self) -> Self {
         Self {
-            original: self.original.clone(),
-            normalized: (self.original.len() != self.physical_len)
+            original: std::sync::Arc::new(OriginalImage {
+                bytes: std::sync::Arc::clone(&self.original_image().bytes),
+            }),
+            normalized: (self.original.bytes.len() != self.physical_len)
                 .then(|| self.text()[..self.physical_len].to_owned()),
             physical_len: self.physical_len,
             positions: self.positions.clone(),
@@ -116,11 +128,15 @@ impl SourceFile {
 
     #[must_use]
     pub fn text(&self) -> &str {
-        self.normalized.as_deref().unwrap_or(&self.original)
+        self.normalized.as_deref().unwrap_or(&self.original.bytes)
     }
 
     #[must_use]
     pub fn original(&self) -> &str {
+        &self.original.bytes
+    }
+
+    pub(crate) fn original_image(&self) -> &std::sync::Arc<OriginalImage> {
         &self.original
     }
 }
@@ -158,3 +174,7 @@ impl Positions {
         end.checked_sub(1).map_or(0, |index| self.wide[index].1)
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/physical_images.rs"]
+mod tests;

@@ -72,6 +72,12 @@ impl Unit {
         }
         let configured = ConfiguredSyntax {
             ast,
+            cfg_uses: self.configured.cfg_uses.as_ref().and_then(|uses| {
+                // Every installation appends effects and their uses together.
+                // A fresh instance copies only the original prefix, without
+                // traversing feature uses from prior expansion instances.
+                uses.original_prefix(original.effects)
+            }),
             owners: self
                 .configured
                 .owners

@@ -29,6 +29,7 @@ pub(in crate::resolve) enum Feature {
     DeclarativeMacros,
     InternalMacroAllowance,
     InternalUnsafeLint,
+    CfgUbChecks,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -55,6 +56,7 @@ impl Request {
             "decl_macro" => Self::Capability(Feature::DeclarativeMacros),
             "allow_internal_unstable" => Self::Capability(Feature::InternalMacroAllowance),
             "allow_internal_unsafe" => Self::Capability(Feature::InternalUnsafeLint),
+            "cfg_ub_checks" => Self::Capability(Feature::CfgUbChecks),
             // Requests do not authorize the unsupported live const-drop operation.
             "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
             _ => return None,
@@ -71,7 +73,9 @@ impl Features {
     pub(super) fn macros(&self) -> MacroFeatures {
         MacroFeatures(
             u8::from(self.has(Feature::DeclarativeMacros))
-                | (u8::from(self.has(Feature::RustcAttributes)) << 1),
+                | (u8::from(self.has(Feature::RustcAttributes)) << 1)
+                | (u8::from(self.has(Feature::UnboxedClosures)) << 2)
+                | (u8::from(self.has(Feature::CfgUbChecks)) << 5),
         )
     }
 }
@@ -81,6 +85,19 @@ impl Features {
 #[derive(Clone, Copy, Default)]
 pub(in crate::resolve) struct MacroFeatures(u8);
 impl MacroFeatures {
+    fn with_options(self, options: super::root_options::Options) -> Self {
+        Self(self.0 | options.bits())
+    }
+    pub(in crate::resolve) fn coherence(self) -> bool {
+        self.0 & (1 << 3) != 0
+    }
+    pub(in crate::resolve) fn preserve_ub(self) -> bool {
+        self.0 & (1 << 4) != 0
+    }
+    pub(in crate::resolve) fn cfg_ub(self) -> bool {
+        self.0 & (1 << 5) != 0
+    }
+
     pub(in crate::resolve) fn require_scoped(self, file: FileId, offset: u32) -> Result<(), Error> {
         if self.0 & 1 == 0 {
             return Err(Error::at(file, offset, "scoped macros require decl_macro"));
@@ -115,10 +132,14 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
         .word_attribute(Some(root), "no_core")
         .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
     let (features, library) = features(unit)?;
+    let options = super::root_options::prepare(unit, features.has(Feature::RustcAttributes))?;
     if let Mode::SourceClient { provider } = &context.mode {
-        return super::client::prepare(unit, context, provider, no_core, features, library);
+        let mut prepared =
+            super::client::prepare(unit, context, provider, no_core, features, library)?;
+        prepared.macros = prepared.macros.with_options(options);
+        return Ok(prepared);
     }
-    let macros = features.macros();
+    let macros = features.macros().with_options(options);
     let Mode::Source { provider } = &context.mode else {
         if no_core {
             return Err(Error::at(

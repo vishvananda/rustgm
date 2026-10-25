@@ -12,6 +12,37 @@ impl Engine {
         instance: Instance,
         state: Option<&const_eval::State>,
     ) -> Result<bool, Error> {
+        if let Some(selection) = facts
+            .source_bindings
+            .as_deref()
+            .map(|c| c.runtime_check_selection(facts, instance))
+            .transpose()
+            .map_err(|e| Error::at(FileId(0), 0, e))?
+            .flatten()
+        {
+            state
+                .ok_or_else(|| {
+                    Error::at(
+                        FileId(0),
+                        0,
+                        "source ub_checks requires a reached checked caller",
+                    )
+                })?
+                .source_runtime_check_call(facts, &self.catalog, instance)
+                .map_err(|e| Error::at(FileId(0), 0, e))?
+                .ok_or_else(|| {
+                    Error::at(
+                        FileId(0),
+                        0,
+                        "source ub_checks lost its actual checked target",
+                    )
+                })?;
+            return if selection.fallback {
+                self.function(report, facts, instance)
+            } else {
+                Ok(true)
+            };
+        }
         let selected = facts
             .source_bindings
             .as_deref()

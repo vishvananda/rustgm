@@ -9,6 +9,7 @@ pub(super) mod policy;
 mod positions;
 mod reservations;
 mod role_attributes;
+mod root_options;
 #[path = "bindings/claimed_macros.rs"]
 mod source_builtin;
 use crate::support::{
@@ -21,6 +22,7 @@ pub use client::SourceClient;
 pub(super) use reservations::finish;
 pub use reservations::{Declaration, IntrinsicDeclaration, Reservations};
 pub(crate) use role_attributes::{HeaderAttribute, HeaderAttributes};
+pub(super) use root_options::validate as validate_crate_options;
 use std::sync::Arc;
 
 pub(in crate::resolve) enum Source {

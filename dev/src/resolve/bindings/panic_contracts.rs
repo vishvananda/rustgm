@@ -255,6 +255,19 @@ pub(in crate::resolve) fn published(
         return Err(error("published macro header owner changed"));
     }
     let declaration = actual.declaration();
+    if declaration.node != key {
+        return Err(error("published macro header node changed"));
+    }
+    state.charge(2, 0).map_err(error)?;
+    let current = owner(package, declaration.source_owner())?
+        .ok_or_else(|| error("published macro owner is inactive"))?;
+    if current.key != declaration.owner
+        || current.node != declaration.node
+        || (current.attributes.start, current.attributes.end) != declaration.attributes
+        || !is_macro(current.unit, current.node)
+    {
+        return Err(error("published macro owner or attribute range changed"));
+    }
     require_features(package, declaration).map_err(error)?;
     Ok(declaration)
 }

@@ -215,3 +215,63 @@ fn exhausted_global_work_and_storage_deny_warmed_positive_and_negative_queries()
     }
     Ok(())
 }
+
+fn query_saved(
+    report: &crate::resolve::expansion::Report,
+    memo: &mut Option<Box<super::super::Memo>>,
+    site: crate::expand::stream::Location,
+) -> TestResult<bool> {
+    let view = super::super::FrameView {
+        package: &report.package,
+        definitions: &report.definitions,
+        invocations: &report.invocations,
+        facts: &report.resolution,
+    };
+    Ok(super::super::Query { view, memo }.allows(site, &KnownFeature::PanicInternals.name())?)
+}
+
+#[test]
+fn warm_queries_bind_owned_source_incarnation_current_header_and_owner_state() -> TestResult {
+    for mutation in 0..5 {
+        let mut report = allowed("panic_internals")?;
+        let site = sites(&report, "probe")?[0];
+        let mut memo = None;
+        assert!(query_saved(&report, &mut memo, site)?);
+        assert!(query_saved(&report, &mut memo, site)?);
+        let definition = report.invocations[0].definition;
+        let declaration = report.definitions[definition]
+            .header
+            .as_ref()
+            .ok_or("source header")?
+            .declaration();
+        let owner = declaration.source_owner();
+        match mutation {
+            0 => replace_source(&mut report, "panic_internals", "core_intrinsics")?,
+            1 => {
+                // Equivalent bytes still constitute a new physical incarnation.
+                replace_source(&mut report, "panic_internals", "panic_internals")?;
+            }
+            2 => report.definitions[definition].header = None,
+            3 | 4 => {
+                let unit = &mut report.package.units[owner.file.0 as usize];
+                let current = unit
+                    .configured
+                    .owners
+                    .iter_mut()
+                    .find(|candidate| candidate.node == owner.node)
+                    .ok_or("configured owner")?;
+                if mutation == 3 {
+                    current.enabled = false;
+                } else {
+                    current.attributes.end += 1;
+                }
+            }
+            _ => return Err("unknown opponent".into()),
+        }
+        assert!(
+            query_saved(&report, &mut memo, site).is_err(),
+            "mutation {mutation}"
+        );
+    }
+    Ok(())
+}

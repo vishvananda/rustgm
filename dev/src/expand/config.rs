@@ -9,6 +9,21 @@ use crate::{
     syntax::token_tree::{Delimiter, Forest, TreeKind, TreeRange, error},
 };
 use std::borrow::Cow;
+mod predicates;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CfgGate {
+    UbChecks,
+}
+#[derive(Clone, Copy, Debug)]
+pub struct CfgUse {
+    pub span: crate::syntax::token_tree::Span,
+    pub gate: CfgGate,
+}
+pub(crate) struct Evaluation {
+    pub value: bool,
+    pub uses: Vec<CfgUse>,
+}
 
 const TARGET_VALUES: &[(&str, &str)] = &[
     ("panic", "abort"),
@@ -28,6 +43,7 @@ const TARGET_VALUES: &[(&str, &str)] = &[
 #[derive(Default, Debug)]
 pub struct Config {
     edition: crate::support::edition::Edition,
+    runtime_checks: crate::support::runtime_checks::RuntimeCheckConfig,
     flags: HashSet<String>,
     values: HashMap<String, HashSet<String>>,
 }
@@ -48,9 +64,26 @@ impl Config {
     }
 
     #[must_use]
+    pub const fn runtime_checks(&self) -> crate::support::runtime_checks::RuntimeCheckConfig {
+        self.runtime_checks
+    }
+
+    /// Set an explicit compilation input before loading immutable source packages.
+    pub fn set_runtime_checks(
+        &mut self,
+        config: crate::support::runtime_checks::RuntimeCheckConfig,
+    ) {
+        self.runtime_checks = config;
+    }
+
+    #[must_use]
     pub fn contains(&self, name: &str, value: Option<&str>) -> bool {
         let Some(value) = value else {
-            return name == "unix" || self.flags.contains(name);
+            return if name == "ub_checks" {
+                self.runtime_checks.ub_checks()
+            } else {
+                name == "unix" || self.flags.contains(name)
+            };
         };
         TARGET_VALUES.contains(&(name, value))
             || (matches!(
@@ -82,7 +115,13 @@ impl Config {
         if name.starts_with("target_")
             || matches!(
                 name,
-                "unix" | "windows" | "panic" | "debug_assertions" | "test" | "proc_macro"
+                "unix"
+                    | "windows"
+                    | "panic"
+                    | "debug_assertions"
+                    | "ub_checks"
+                    | "test"
+                    | "proc_macro"
             )
         {
             return Err(error(0, "compiler-controlled cfg option"));
@@ -150,117 +189,7 @@ pub fn predicate_with_inputs(
     config: &Config,
     inputs: &dyn crate::syntax::interpolation::Inputs,
 ) -> Result<bool, LexError> {
-    evaluate(forest, source, range, config, inputs, 0)
-}
-
-fn evaluate(
-    forest: &Forest,
-    source: &str,
-    range: TreeRange,
-    config: &Config,
-    inputs: &dyn crate::syntax::interpolation::Inputs,
-    depth: u32,
-) -> Result<bool, LexError> {
-    let offset = forest.offset(range.start);
-    if depth >= 128 {
-        return Err(error(offset, "cfg predicate nesting exceeds 128"));
-    }
-    if range.start == range.end {
-        return Err(error(offset, "expected cfg predicate"));
-    }
-    if let Some(token) = forest.token(range.start)
-        && matches!(token.kind, Kind::Interpolated(_))
-    {
-        if range.end != range.start + 1 {
-            return Err(error(offset, "opaque cfg predicate has trailing tokens"));
-        }
-        let splice = inputs
-            .get(token)?
-            .ok_or_else(|| error(offset, "missing opaque cfg predicate"))?;
-        let captured = splice.metadata()?;
-        // Typed relocation preserves the caller token editions and raw origins.
-        // The retained metadata is not parsed from a rendered spelling image.
-        return evaluate(
-            &captured.forest,
-            source,
-            captured.forest.roots(),
-            config,
-            inputs,
-            depth + 1,
-        );
-    }
-    let name = forest
-        .name(source, range.start)
-        .ok_or_else(|| error(offset, "expected cfg predicate name"))?;
-    let next = range.start + 1;
-    let token = forest
-        .token(range.start)
-        .ok_or_else(|| error(offset, "expected cfg option token"))?;
-    let kind = token.kind;
-    if kind == Kind::Identifier && matches!(name, "true" | "false") {
-        if next != range.end {
-            return Err(error(offset, "boolean cfg predicate takes no arguments"));
-        }
-        return Ok(name == "true");
-    }
-    let edition = if kind == Kind::Identifier && name == "gen" {
-        inputs.edition(token)?
-    } else {
-        config.edition()
-    };
-    if !keyword::identifier_in(kind, name, edition) {
-        return Err(error(offset, "expected cfg option identifier"));
-    }
-    if next == range.end {
-        return Ok(config.contains(name, None));
-    }
-    if forest.punctuation(next, Punctuation::Equal) {
-        if next + 2 != range.end {
-            return Err(error(offset, "expected one cfg string value"));
-        }
-        return Ok(config.contains(name, Some(&string(forest, source, next + 1)?)));
-    }
-    if forest.after(next) != range.end
-        || !matches!(
-            forest.tree(next).map(|t| t.kind),
-            Some(TreeKind::Group {
-                delimiter: Delimiter::Parenthesis,
-                ..
-            })
-        )
-    {
-        return Err(error(offset, "expected cfg predicate arguments"));
-    }
-    if !matches!(name, "all" | "any" | "not") {
-        return Err(error(offset, "unknown cfg predicate operator"));
-    }
-    let children = forest
-        .children(next)
-        .ok_or_else(|| error(offset, "missing cfg predicate arguments"))?;
-    let mut index = children.start;
-    let mut count = 0;
-    let mut result = name == "all";
-    while index < children.end {
-        let (item, following) = comma_item(
-            forest,
-            TreeRange {
-                start: index,
-                end: children.end,
-            },
-        );
-        let value = evaluate(forest, source, item, config, inputs, depth + 1)?;
-        count += 1;
-        result = match name {
-            "all" => result & value,
-            "any" => result | value,
-            _ => !value,
-        };
-        index = following;
-    }
-    if name == "not" && count != 1 {
-        return Err(error(offset, "not requires exactly one cfg predicate"));
-    }
-    Ok(result)
+    predicate_checked(forest, source, range, config, inputs).map(|answer| answer.value)
 }
 
 pub(super) fn comma_item(forest: &Forest, range: TreeRange) -> (TreeRange, u32) {
@@ -275,4 +204,15 @@ pub(super) fn comma_item(forest: &Forest, range: TreeRange) -> (TreeRange, u32) 
         },
         if end < range.end { end + 1 } else { end },
     )
+}
+
+/// Keep demanded feature uses from the same typed predicate walk.
+pub(crate) fn predicate_checked(
+    forest: &Forest,
+    source: &str,
+    range: TreeRange,
+    config: &Config,
+    inputs: &dyn crate::syntax::interpolation::Inputs,
+) -> Result<Evaluation, LexError> {
+    predicates::evaluate(forest, source, range, config, inputs, 0)
 }

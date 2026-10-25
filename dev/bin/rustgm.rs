@@ -25,6 +25,37 @@ struct Options {
     crates: crates::Options,
 }
 
+fn selected_view(arg: &str) -> Option<(&str, bool)> {
+    let (name, count) = arg
+        .strip_prefix("--emit-")
+        .map(|name| (name, false))
+        .or_else(|| arg.strip_prefix("--count-").map(|name| (name, true)))?;
+    matches!(
+        name,
+        "tokens"
+            | "literals"
+            | "token-trees"
+            | "ast"
+            | "crate-ast"
+            | "names"
+            | "expanded"
+            | "expanded-crate"
+            | "types"
+            | "semantics"
+            | "trait-semantics"
+            | "generic-semantics"
+            | "patterns"
+            | "layouts"
+            | "body-ir"
+            | "ownership"
+            | "regions"
+            | "loans"
+            | "constants"
+            | "lowir"
+    )
+    .then_some((name, count))
+}
+
 fn options() -> Result<Options, String> {
     let mut options = Options {
         input: None,
@@ -36,35 +67,7 @@ fn options() -> Result<Options, String> {
     };
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
-        let view = arg
-            .strip_prefix("--emit-")
-            .map(|name| (name, false))
-            .or_else(|| arg.strip_prefix("--count-").map(|name| (name, true)));
-        if let Some((name, count)) = view
-            && matches!(
-                name,
-                "tokens"
-                    | "literals"
-                    | "token-trees"
-                    | "ast"
-                    | "crate-ast"
-                    | "names"
-                    | "expanded"
-                    | "expanded-crate"
-                    | "types"
-                    | "semantics"
-                    | "trait-semantics"
-                    | "generic-semantics"
-                    | "patterns"
-                    | "layouts"
-                    | "body-ir"
-                    | "ownership"
-                    | "regions"
-                    | "loans"
-                    | "constants"
-                    | "lowir"
-            )
-        {
+        if let Some((name, count)) = selected_view(&arg) {
             options.mode = format!("--emit-{name}");
             options.count = count;
             continue;
@@ -111,6 +114,13 @@ fn options() -> Result<Options, String> {
                     .map_err(|e| format!("--cfg: {}: {}", e.offset, e.message))?;
             }
             "--edition=2024" => {}
+            "--ub-checks=yes" | "--ub-checks=no" => {
+                options.config.set_runtime_checks(
+                    rustgm::support::runtime_checks::RuntimeCheckConfig::with_ub_checks(
+                        arg == "--ub-checks=yes",
+                    ),
+                );
+            }
             "-o" => options.output = Some(args.next().ok_or("-o requires a path")?),
             "-" => options.input = Some(arg),
             _ if arg.starts_with('-') => return Err(format!("unknown option: {arg}")),

@@ -147,6 +147,7 @@ pub(super) fn collect(
         KnownFeature::EditionPanic,
         KnownFeature::PanicInternals,
         KnownFeature::CoreIntrinsics,
+        KnownFeature::CfgUbChecks,
     ] {
         work.charge(feature.name().spelling().len(), 0)
             .map_err(error)?;

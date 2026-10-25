@@ -28,6 +28,7 @@ pub struct ConfiguredSyntax<L> {
     pub owners: Vec<Owner>,
     pub active: Vec<bool>,
     pub effects: Vec<AttributeEffect>,
+    pub(crate) cfg_uses: Option<Box<super::configured::ConfiguredUses>>,
 }
 
 pub type ConfiguredCrate<'source> = ConfiguredSyntax<crate::literal::Value<'source>>;
@@ -86,6 +87,7 @@ pub fn configure_with_inputs<'s>(
     let mut owners = Vec::with_capacity(order.len());
     let mut attributes = Attributes::default();
     let mut effects = Vec::new();
+    let mut cfg_uses = None;
     for (start, node) in order {
         // A literal before the owner's range precedes the owner in preorder.
         while let Some(literal) = literals.next_if(|literal| literal.get() < start) {
@@ -104,7 +106,7 @@ pub fn configure_with_inputs<'s>(
             ));
         };
         let first = effects.len();
-        configure_owner(
+        let uses = configure_owner(
             &ast,
             range,
             source,
@@ -113,6 +115,7 @@ pub fn configure_with_inputs<'s>(
             &mut attributes,
             &mut effects,
         )?;
+        super::configured::retain_cfg_uses(&mut cfg_uses, uses)?;
         let enabled = attributes.enabled();
         attributes.clear();
         owners.push(Owner {
@@ -137,6 +140,7 @@ pub fn configure_with_inputs<'s>(
         owners,
         active,
         effects,
+        cfg_uses,
     })
 }
 
@@ -189,7 +193,7 @@ fn configure_owner<L>(
     inputs: &dyn crate::syntax::interpolation::Inputs,
     attributes: &mut Attributes,
     effects: &mut Vec<AttributeEffect>,
-) -> Result<(), LexError> {
+) -> Result<Option<Box<super::configured::ConfiguredUses>>, LexError> {
     let first = effects.len();
     for index in range.start..range.end {
         let capture = &ast.attributes[index as usize];
@@ -217,7 +221,13 @@ fn configure_owner<L>(
             });
         }
     }
-    Ok(())
+    let mut uses = attributes.take_cfg_uses();
+    let first = u32::try_from(first)
+        .map_err(|_| crate::syntax::token_tree::error(0, "cfg effect overflow"))?;
+    if let Some(uses) = &mut uses {
+        uses.relocate(first, effects.len() - first as usize, Ok)?;
+    }
+    Ok(uses)
 }
 
 /// # Errors

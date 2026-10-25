@@ -16,6 +16,8 @@ pub(crate) use glue_calls::{DropGlueSelection, check_const_drop_glue, source_dro
 mod intrinsic_contracts;
 mod layout;
 mod needs_drop;
+mod runtime_checks;
+pub(crate) use runtime_checks::RuntimeCheckSelection;
 mod select_calls;
 mod select_contract;
 pub(crate) use copying::{copy_decisions, copy_declaration, prove_body_requirements};
@@ -51,10 +53,12 @@ pub(crate) struct Catalog {
     pub(in crate::sema) call_contexts: Option<Box<super::bodies::CallContexts>>,
     intrinsics: crate::support::hash::HashMap<DefId, intrinsic_contracts::Intrinsic>,
     attributes: [crate::resolve::bindings::HeaderAttributes; LangItem::ALL.len()],
+    runtime_checks: runtime_checks::RuntimeCheckSession,
 }
 impl Catalog {
     /// A provider catalog cannot authenticate a different source report or mode.
     pub(crate) fn require_provider_report(&self, report: &Report) -> Result<(), &'static str> {
+        self.runtime_checks.require_report(&report.package)?;
         if let binding_views::Bindings::Imported(imported) = &self.bindings {
             return imported.require_report(report, &self.provider);
         }
@@ -146,6 +150,7 @@ impl Catalog {
                 })
                 .collect(),
             attributes: LangItem::ALL.map(|role| reserved.role_attributes(role)),
+            runtime_checks: runtime_checks::RuntimeCheckSession::new(&report.package),
         })))
     }
     /// Closure formation requires the actual completed source role family.

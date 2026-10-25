@@ -180,6 +180,7 @@ pub(super) fn client_catalog(report: &Report) -> Result<Box<Catalog>, &'static s
         call_contexts: None,
         intrinsics: crate::support::hash::HashMap::default(),
         attributes,
+        runtime_checks: super::runtime_checks::RuntimeCheckSession::new(&report.package),
     }))
 }
 

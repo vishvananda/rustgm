@@ -235,13 +235,12 @@ pub fn expand(
     }
 }
 
-fn cfg(
+pub(crate) fn cfg_evaluation(
     source: &str,
     input: &Input,
     inputs: &dyn Inputs,
     config: &Config,
-    context: MacroContext,
-) -> Result<Expansion, LexError> {
+) -> Result<config::Evaluation, LexError> {
     let mut builder = ForestBuilder::default();
     for token in &input.tokens {
         if matches!(token.kind, TokenKind::Interpolated(_)) {
@@ -263,7 +262,29 @@ fn cfg(
     if range.start < range.end && forest.punctuation(range.end - 1, Punctuation::Comma) {
         range.end -= 1;
     }
-    let value = config::predicate(&forest, source, range, config)?;
+    config::predicate_checked(&forest, source, range, config, inputs)
+}
+
+fn cfg(
+    source: &str,
+    input: &Input,
+    inputs: &dyn Inputs,
+    config: &Config,
+    context: MacroContext,
+) -> Result<Expansion, LexError> {
+    let inputs =
+        crate::syntax::edition_context::WithEditions::new(inputs, |_| Ok(config.edition()));
+    cfg_value(
+        cfg_evaluation(source, input, &inputs, config)?.value,
+        context,
+        config,
+    )
+}
+pub(crate) fn cfg_value(
+    value: bool,
+    context: MacroContext,
+    config: &Config,
+) -> Result<Expansion, LexError> {
     literal(
         Value::Boolean(value),
         if value { "true" } else { "false" }.into(),
@@ -271,6 +292,7 @@ fn cfg(
         config,
     )
 }
+
 fn literal(
     value: Value<'static>,
     source: String,

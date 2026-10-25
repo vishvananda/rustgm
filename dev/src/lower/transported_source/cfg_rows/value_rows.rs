@@ -32,6 +32,18 @@ pub(super) fn emit(
                 if item.0 != definition.0 {
                     return Err("source function value changed its actual declaration");
                 }
+                if facts
+                    .source_bindings
+                    .as_deref()
+                    .map(|c| c.intrinsic_kind(definition))
+                    .transpose()?
+                    .flatten()
+                    == Some(crate::support::bindings::SourceIntrinsic::UbChecks)
+                {
+                    return Err(
+                        "source runtime-check transport requires an explicit body policy profile",
+                    );
+                }
                 s::ValueKind::Function(stage.function_application(facts, item, arguments, context)?)
             }
             ir::Rvalue::Call {

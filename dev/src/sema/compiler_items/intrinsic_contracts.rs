@@ -70,6 +70,9 @@ fn signature(
     if kind == SourceIntrinsic::ConstEvalSelect {
         return super::select_contract::validate(facts, function);
     }
+    if kind == SourceIntrinsic::UbChecks {
+        return super::runtime_checks::validate(facts, function);
+    }
     let needs_drop = kind == SourceIntrinsic::NeedsDrop;
     let Some(Kind::Function {
         bound_regions: 0,
@@ -203,8 +206,11 @@ impl Catalog {
         let original = entry
             .signature
             .ok_or("source intrinsic declaration is not validated")?;
-        if entry.kind == SourceIntrinsic::ConstEvalSelect {
-            // Callback selection has four arguments and its own typed descriptor.
+        if matches!(
+            entry.kind,
+            SourceIntrinsic::ConstEvalSelect | SourceIntrinsic::UbChecks
+        ) {
+            // These contracts have dedicated descriptors, without a layout element.
             return Ok(None);
         }
         // This profile's public signature has no parameter occurrences. Matching
@@ -225,6 +231,7 @@ impl Catalog {
                 SourceIntrinsic::ConstEvalSelect => {
                     "source callback selection requires its own descriptor"
                 }
+                SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
             });
         };
         if arguments.next().is_some()
@@ -241,6 +248,7 @@ impl Catalog {
                 SourceIntrinsic::ConstEvalSelect => {
                     "source callback selection requires its own descriptor"
                 }
+                SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
             });
         }
         let function = facts

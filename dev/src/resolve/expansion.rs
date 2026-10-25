@@ -34,6 +34,7 @@ use crate::{
 use std::collections::VecDeque;
 pub(super) mod attributes;
 mod bindings;
+mod cfg_gates;
 mod diagnostics;
 mod eager;
 mod format_values;
@@ -175,6 +176,7 @@ struct Engine<'a, S> {
     children: Vec<NodeId>,
     recursion_limit: usize,
     builtin_definitions: Vec<Option<usize>>,
+    cfg_memo: Option<Box<permission_session::Memo>>,
 }
 /// Expand textual macro invocations, including generated syntax and modules.
 /// PA8's path-resolution and hygiene integration builds on this retained state.
@@ -254,6 +256,7 @@ pub fn analyze_with_context(
         children: Vec::new(),
         recursion_limit,
         builtin_definitions: vec![None; Builtin::ALL.len()],
+        cfg_memo: None,
     };
     let result = engine
         .push_visit(Visit {
@@ -273,7 +276,7 @@ pub fn analyze_with_context(
     super::bindings::validate_features(&engine.loader.package)
         .map_err(|error| engine.diagnostic(error))?;
     let (resolution, imports, pending) = engine.paths.finish();
-    Ok(Report {
+    let report = Report {
         package: engine.loader.package,
         definitions: engine.definitions,
         invocations: engine.invocations,
@@ -283,7 +286,10 @@ pub fn analyze_with_context(
         imports: Some(imports),
         pending,
         names_resolved: false,
-    })
+    };
+    super::bindings::validate_crate_options(&report).map_err(|error| report.diagnostic(error))?;
+    cfg_gates::validate_attributes(&report)?;
+    Ok(report)
 }
 impl<S: Sources> Engine<'_, S> {
     fn run(&mut self) -> Result<(), Error> {
@@ -1055,6 +1061,55 @@ impl<S: Sources> Engine<'_, S> {
             .ast
             .node(visit.node)
             .span;
+        let generated = self.generate_builtin(
+            visit.module,
+            Location {
+                file,
+                span: original,
+            },
+            grammar,
+            input,
+            builtin,
+        )?;
+        let generated = self.install_builtin(
+            file,
+            visit.node,
+            original,
+            context,
+            Transparency::SemiOpaque,
+            generated,
+        )?;
+        self.paths
+            .invocation(context, parent, &self.definitions[definition])
+            .map_err(|message| Error::at(file, original.start, message))?;
+        self.invocations.push(Invocation {
+            context,
+            node: NodeKey {
+                file,
+                node: visit.node,
+            },
+            original,
+            definition,
+            rule: None,
+            generated,
+            parser_calls: 0,
+            parent,
+        });
+        Ok(context)
+    }
+    fn generate_builtin(
+        &mut self,
+        module: ModuleId,
+        site: Location,
+        grammar: MacroContext,
+        input: &Input,
+        builtin: Builtin,
+    ) -> Result<builtin::Expansion, Error> {
+        if builtin == Builtin::Cfg {
+            return self.cfg_expansion(site.file, input, grammar, site.span);
+        }
+        let file = site.file;
+        let original = site.span;
         let physical =
             if (builtin.needs_position() || builtin == Builtin::File) && input.tokens.is_empty() {
                 Some(self.call_location(Location {
@@ -1084,7 +1139,7 @@ impl<S: Sources> Engine<'_, S> {
                         .to_string_lossy()
                         .into_owned()
                 }),
-                Builtin::ModulePath => Some(self.module_path(visit.module)),
+                Builtin::ModulePath => Some(self.module_path(module)),
                 _ => None,
             }
         } else {
@@ -1094,7 +1149,7 @@ impl<S: Sources> Engine<'_, S> {
         let view = self
             .captures
             .view(|id| package.units.get(id.0 as usize).map(|u| u.source.text()));
-        let generated = builtin::expand(
+        builtin::expand(
             builtin,
             package.unit(file).source.text(),
             input,
@@ -1116,32 +1171,7 @@ impl<S: Sources> Engine<'_, S> {
                 },
                 e.message,
             )
-        })?;
-        let generated = self.install_builtin(
-            file,
-            visit.node,
-            original,
-            context,
-            Transparency::SemiOpaque,
-            generated,
-        )?;
-        self.paths
-            .invocation(context, parent, &self.definitions[definition])
-            .map_err(|message| Error::at(file, original.start, message))?;
-        self.invocations.push(Invocation {
-            context,
-            node: NodeKey {
-                file,
-                node: visit.node,
-            },
-            original,
-            definition,
-            rule: None,
-            generated,
-            parser_calls: 0,
-            parent,
-        });
-        Ok(context)
+        })
     }
     fn install_builtin(
         &mut self,
