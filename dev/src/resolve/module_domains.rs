@@ -278,5 +278,5 @@ impl Resolver<'_> {
 }
 
 #[cfg(test)]
-#[path = "../../tests/invariants/trait_domains.rs"]
+#[path = "../../tests/invariants/restriction_headers.rs"]
 mod tests;

@@ -14,6 +14,7 @@ pub mod crates;
 pub mod expansion;
 mod hygiene;
 mod identifiers;
+#[path = "module_domains.rs"]
 pub(crate) mod impl_restrictions;
 mod imports;
 mod index;
