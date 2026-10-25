@@ -1,4 +1,4 @@
-"""CI-only exact six private Environment controls; one direct 190s budget."""
+"""CI-only exact one raw pre-adapter ordinary-profile capture; one direct 190s budget."""
 import hashlib,json,os,re,signal,subprocess,sys,time
 from pathlib import Path
 from types import SimpleNamespace
@@ -7,10 +7,10 @@ sys.path.insert(0,str(ROOT/'scripts'))
 from fastcheck_run import Steps,fingerprint
 from maintainer_batch import artifacts,inventory
 from storage import exclusive,check_space,minimum_reserve
-SOURCE='f7ae3ba853b9794c721ce6eb5c731f96ae47b66f'
-SOURCE_SHA='a94dfff0dd494c9c0d9348abe54264c7ede7ba4d2c8c01c7ec46554eb2dfc1b0'
+SOURCE='c42597186d058b94422648224fca83524410e67e'
+SOURCE_SHA='90c24eb7940d1aada9ff7e89acc5bed13042a1aa93ebd2f02824fbcbe66fdf55'
 COUNT=2606
-CASES=['sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_defining_environments_use_real_zero_domain_assumptions', 'sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_defining_environments_reject_changed_owners_and_failed_budgets', 'sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_defining_environments_bound_selected_and_warm_work', 'sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_trait_input_costs_cover_real_lazy_growth_and_capacity_hits', 'sema::function_context::assumption_environment::tests::defining_environment_ordinary_path_keeps_the_actual_declaration_arc', 'support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof']
+CASES=['support::crates::codec::packet_envelope::tests::ordinary_source_profiles_capture_plain_contract_bytes_before_adapter']
 
 def worker(deadline,folder):
     with exclusive(ROOT):
@@ -34,13 +34,13 @@ def worker(deadline,folder):
             listed=steps.run('lib-inventory',[binary,'--list'],cwd=ROOT/'dev')
             ignored=set(steps.run('lib-ignored',[binary,'--ignored','--list'],cwd=ROOT/'dev').splitlines())
             selected=inventory('\n'.join(row for row in listed.splitlines() if row not in ignored),'lib',CASES)
-            if selected!=CASES: raise ValueError('actual nonignored inventory differs from exact six')
+            if selected!=CASES: raise ValueError('actual nonignored inventory differs from exact one')
             steps.receipt.update(selected={'lib':selected},binaries={'lib':{'path':str(binary),'sha256':hashlib.sha256(binary.read_bytes()).hexdigest()}});steps.save()
             output=steps.run('lib',[binary,'--exact',*selected],cwd=ROOT/'dev')
-            if re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',output)!=[('6','0','0')]:
-                raise ValueError('actual exact six count differs')
+            if re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',output)!=[('1','0','0')]:
+                raise ValueError('actual exact one count differs')
             if fingerprint(ROOT)!=sources: raise ValueError('source changed during execution')
-            steps.receipt['state']='passed';print('Passed actual exact6 Environment controls and required static checks.',flush=True)
+            steps.receipt['state']='passed';print('Passed actual exact1 raw ordinary-profile capture controls and required static checks.',flush=True)
             return 0
         except BaseException as error:
             steps.receipt.update(state='failed',error=str(error));raise
