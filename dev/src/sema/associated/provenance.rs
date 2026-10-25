@@ -81,6 +81,16 @@ impl Owner {
     }
 }
 impl Inventory {
+    /// The authenticated readable Functions profile cannot contain restricted traits.
+    /// Its producer rejects every such declaration before retaining header rows.
+    pub(in crate::sema) fn require_imported_unrestricted_domain(
+        &self,
+        definition: DefId,
+    ) -> Result<(), &'static str> {
+        // This authenticates the actual descriptor, trait header, Self and owner;
+        // neither a missing source node nor absence from a map grants permission.
+        self.imported_denies_implementation(definition).map(|_| ())
+    }
     pub(in crate::sema) fn imported_denies_implementation(
         &self,
         definition: DefId,

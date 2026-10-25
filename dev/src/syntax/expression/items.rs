@@ -242,6 +242,7 @@ impl Parser<'_, '_> {
         {
             self.value_item(&mut item, Safety::Default)?
         } else {
+            let restriction = self.impl_restriction()?;
             let constant = self.eat_word(Word::Const)?;
             let asynchronous = self.eat_word(Word::Async)?;
             let unsafe_ = self.eat_word(Word::Unsafe)?;
@@ -252,6 +253,9 @@ impl Parser<'_, '_> {
                     .is_some_and(|t| matches!(self.cursor.spelling(t), "fn" | "static"))
                 && self.eat_word(Word::Safe)?;
             let auto_ = self.auto_qualifier(start, (constant, asynchronous, safe))?;
+            if restriction.is_some() && !self.cursor.at_word(Word::Trait)? {
+                return Err(error(start, "implementation restriction requires a trait"));
+            }
             let safety = if unsafe_ {
                 Safety::Unsafe
             } else if safe {
@@ -276,10 +280,17 @@ impl Parser<'_, '_> {
                     Self::empty_list()
                 };
                 item.where_clause = self.where_clause()?;
+                if restriction.is_some() && self.cursor.at(P::Eq)? {
+                    return Err(error(
+                        start,
+                        "trait aliases cannot have implementation restrictions",
+                    ));
+                }
                 self.expect(P::OpenBrace)?;
                 inner = self.attributes(true)?;
                 self.item_attributes(inner);
                 ItemKind::Trait {
+                    restriction,
                     auto_,
                     unsafe_,
                     constant,

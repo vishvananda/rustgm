@@ -24,6 +24,9 @@ pub struct SourceClient {
     provider_index: u32,
 }
 impl SourceClient {
+    pub(super) fn validate_inventory(&self) -> Result<(), &'static str> {
+        self.require_inventory(&self.dependencies).map(|_| ())
+    }
     #[must_use]
     pub const fn current(&self) -> &CrateIdentity {
         &self.current

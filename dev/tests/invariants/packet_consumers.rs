@@ -364,3 +364,51 @@ fn source_function_artifact_executes_fresh_native_client_seven() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn unrestricted_import_policy_keeps_real_functions_roundtrip_and_denies_restricted_export() -> Result
+{
+    let source = fixture("minimal-provider")?;
+    let bytes = crates::encode(&exported(&source)?)?;
+    let decoded = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&decoded)?, bytes);
+    assert_eq!(
+        decoded
+            .source_descriptor()
+            .ok_or("actual descriptor")?
+            .profile(),
+        crates::SourceProfile::Source2024Functions
+    );
+    let consumer = "#![feature(no_core)] #![no_core] extern crate base; struct Local; impl base::Clone for Local {fn clone(&self)->Self{Local}} impl base::Copy for Local {}";
+    client_analysis(decoded, consumer)?;
+    for changed in [
+        source
+            .replace("no_core,lang_items", "no_core,impl_restriction,lang_items")
+            .replace("pub trait Copy:", "pub impl(crate) trait Copy:"),
+        format!(
+            "{}\nimpl(self) trait PrivateUnused {{}}",
+            source.replace("no_core,lang_items", "no_core,impl_restriction,lang_items")
+        ),
+    ] {
+        let error = exported(&changed)
+            .err()
+            .ok_or("restricted policy was erased during export")?;
+        assert!(
+            error
+                .to_string()
+                .contains("restricted trait implementation policy transport"),
+            "{error}"
+        );
+    }
+    let inactive = format!(
+        "{}\n#[cfg(any())] impl(self) trait PrivateUnused {{}}",
+        source.replace("no_core,lang_items", "no_core,impl_restriction,lang_items")
+    );
+    exported(&inactive)?;
+    for index in [12, 13, 14, 15] {
+        let mut changed = bytes.clone();
+        changed[index] = u8::MAX;
+        assert!(crates::decode(&changed).is_err());
+    }
+    Ok(())
+}
