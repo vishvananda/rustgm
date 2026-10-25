@@ -142,7 +142,7 @@ pub(super) struct Cursor {
 }
 impl Cursor {
     /// The ordinary Graph producer already charges these exact vectors and the
-    /// type-node envelope. The private owner charges scratch_bytes before entry.
+    /// type-node envelope. The private owner charges `scratch_bytes` before entry.
     pub(super) fn prepaid(
         count: usize,
         availability: Availability,

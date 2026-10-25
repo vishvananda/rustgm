@@ -229,7 +229,7 @@ impl<'a> RecipeView<'a> {
             .get(self.owner.provider_index as usize)
             .and_then(crate::support::crates::Interface::source_descriptor)
             .ok_or_else(|| error("reserved recipe view lost its immutable descriptor"))
-            .map(|descriptor| descriptor.rows())
+            .map(crate::support::crates::SourceDescriptor::rows)
     }
     pub(crate) fn definition(
         &self,
