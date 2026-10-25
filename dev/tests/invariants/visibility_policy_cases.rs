@@ -52,7 +52,8 @@ fn visibility_levels_origins_and_mixed_failures_preserve_exact_warning_contracts
             assert!(
                 warnings
                     .iter()
-                    .all(|warning| !warning.diagnostic.expansions.is_empty())
+                    .all(|warning| !warning.diagnostic.expansions.is_empty()),
+                "{name}"
             );
         }
     }

@@ -84,7 +84,7 @@ fn collect(
                     + 4 * size_of::<(NodeKey, Warning)>(),
             )
             .map_err(|error| Failure::Budget(error.into()))?;
-        let diagnostic = project(Error::at(record.key.file, record.offset(), MESSAGE));
+        let diagnostic = project(record.diagnostic(MESSAGE));
         let (steps, bytes) = diagnostic.warning_payload().ok_or_else(|| {
             Failure::Origin(Error::at(
                 record.key.file,

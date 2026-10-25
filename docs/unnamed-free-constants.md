@@ -17,6 +17,10 @@ anonymous imports preserve their existing paths. Associated unnamed constants
 are rejected from the actual associated owner. The PA5 parsed underscore span
 is unchanged; PA6 owns the new namespace controls and PA8 the generated copies.
 PA25 retains ordinary type/CTFE checks and PA31 the actual alignment reducer.
+The unchanged valid-Rust alignment reducer currently reaches the unsupported
+`assert!` macro at byte 129. Its exact unresolved-macro failure is retained as an
+explicit prerequisite; this slice does not implement assertion expansion or
+claim successful typing/evaluation of that reducer.
 
 All initializers remain in ordinary declaration/body/constant work. Invalid
 unused initializers, including in unused functions and expanded macros, must
@@ -63,6 +67,15 @@ Policy gains one byte, from 10 to 11, in the existing optional dense node-policy
 table. This adds one byte per retained policy node whenever a known lint activates
 that table, not merely per public unnamed constant. Actual capacities, aggregate
 payload, Effects/cause/ErrorData/enclosing layouts and width 1/8/32 initializer
-work will be printed by the selected controls; they are unmeasured until the
-candidate gate executes. The no-policy path retains no table. No broad packing
+work were printed by the partially failing CI40222311370. The one-lint control
+retains 7 policy nodes, capacity 7: 77 payload bytes versus the previous 70, an
+aggregate increase of 7 bytes; the outer optional table is 24 bytes. Effects is
+368 bytes, Causes 24, each Record 120, ErrorData 128 and RetentionNote 1. Report
+is 3040 bytes, Engine 4088, Node 36, NodeFacts 80, Scope 32 and resolution
+Definition 36. Macro Body/Definition remain 96/136. Widths 1/8/32 retain the same
+number of real initializers, visits and validations as their width, with 34/41/65
+definitions and one name binding. These are layout/work observations, not an
+allocation count or performance qualification. Three of six groups passed;
+follow-up repairs authenticate warning introductions and correct the three
+source-associated-owner assertion while preserving the explicit assert gap. The no-policy path retains no table. No broad packing
 rewrite, allocator hook or persistent counter is introduced.

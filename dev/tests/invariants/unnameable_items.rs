@@ -113,15 +113,27 @@ fn module_block_macro_and_inactive_items_preserve_real_namespace_identities() ->
     }
     assert!(report(&fixture(25, "unresolved-initializer")?).is_err());
     let associated = report(&fixture(6, "named-associated")?)?;
-    assert_eq!(
-        associated
-            .resolution
-            .definitions
-            .iter()
-            .filter(|definition| definition.kind == DefKind::Const)
-            .count(),
-        2
-    );
+    let mut owners = HashSet::default();
+    let mut names = Vec::new();
+    for definition in &associated.resolution.definitions {
+        if definition.kind != DefKind::Const {
+            continue;
+        }
+        let Some(key) = definition.node else { continue };
+        let unit = associated.package.unit(key.file);
+        let crate::syntax::ast::Kind::Item(index) = unit.configured.ast.node(key.node).kind else {
+            return Err("constant definition lost its actual source item".into());
+        };
+        assert!(matches!(
+            unit.configured.ast.items[index as usize].kind,
+            ItemKind::Const { .. }
+        ));
+        assert!(owners.insert(key));
+        names.push(associated.package.names.get(definition.name));
+    }
+    names.sort_unstable();
+    assert_eq!(names, ["NAMED", "NAMED", "OTHER"]);
+    assert_eq!(owners.len(), 3);
     for name in ["unexecuted-macro", "disabled-owner", "visibility-disabled"] {
         let found = report(&fixture(25, name)?)?;
         checked_rows(&found, 0)?;
