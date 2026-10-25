@@ -39,7 +39,7 @@
     "sema::header_attributes::owner_compatibility_tests::real_local_crate_owner_with_imports_is_unsupported_owner_not_unknown_header",
     "sema::header_attributes::tests::marked_and_plain_providers_roundtrip_into_fresh_used_and_discarded_consumers"
   ],
-  "current_sources_sha256": "c8b5e97ffa528cb76f79e2a00b909eda81e7e6fbdebd98cff4f979c7f8c68b66",
+  "current_sources_sha256": "74984912ae967a79b6b70b39cd2049db26e509f9ae8d3b7c109f98a157f95187",
   "fixtures": {
     "pa31/tests/spec/source-publication-attributes/must-use-reason.rs": "d647bf4d6b998a861ab6641925c41ec8657d51d78cfc6d072d99bab09feb961d"
   },

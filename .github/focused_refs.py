@@ -15,8 +15,8 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from fastcheck_run import Steps, fingerprint
 from maintainer_batch import artifacts, inventory
 from storage import check_space, exclusive, minimum_reserve
-CANDIDATE = "dd33e4849a3d4799f43c22974f9a2cc8a325248f"
-MANIFEST_SHA = "34961f2a2cc05039362a307d7ec9c85d1053241ee067ad2d47acc9740f8f2dd1"
+CANDIDATE = "22e00b6e734d10fd5135eba7216578787af13282"
+MANIFEST_SHA = "b33bdd94cceb1bd2531fb251139561d8af67961adcf2f3404126015153da8dde"
 OUTPUT = ROOT / "obj/parallel/all-attribute-selected-output-v1"
 
 
