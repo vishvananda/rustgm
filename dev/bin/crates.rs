@@ -16,14 +16,14 @@ pub struct Options {
     pub source_profile: Option<rustgm::lower::instances::SourcePublication>,
 }
 impl Options {
-    pub fn select_source_profile(&mut self, value: Option<String>) -> Result<(), String> {
+    pub fn select_source_profile(&mut self, value: Option<&str>) -> Result<(), String> {
         if self.source_profile.is_some() {
             return Err("duplicate --source-profile".into());
         }
-        match value.as_deref() {
+        match value {
             Some("module-contracts-v2") => {
                 self.source_profile =
-                    Some(rustgm::lower::instances::SourcePublication::ModuleContracts)
+                    Some(rustgm::lower::instances::SourcePublication::ModuleContracts);
             }
             _ => return Err("--source-profile requires module-contracts-v2".into()),
         }

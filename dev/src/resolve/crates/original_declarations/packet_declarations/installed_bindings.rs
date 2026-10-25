@@ -1,5 +1,5 @@
 //! Publish only exact fresh keys; an installation failure withdraws the batch.
-mod foreign_bindings;
+mod binding_publication;
 use super::{
     Access, DefId, Error, ExternalDef, ExternalKind, Imported, Input, Interface, Resolver, ScopeId,
     Work, error, kind, s,
@@ -91,7 +91,7 @@ pub(super) fn prepare(
     work: &mut Work,
 ) -> Result<Pending, Error> {
     if rows.descriptor().profile() == s::Profile::Source2024ModuleContracts {
-        return foreign_bindings::prepare(resolver, artifact, rows, definitions, imported, work);
+        return binding_publication::prepare(resolver, artifact, rows, definitions, imported, work);
     }
     let scratch = retained::new_map::<(ScopeId, NameId, Namespace), ()>(rows.declarations.len());
     if work.retained.saturating_add(scratch) > crate::support::crates::MAX_BYTES {
