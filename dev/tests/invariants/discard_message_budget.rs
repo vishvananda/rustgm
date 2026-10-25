@@ -86,6 +86,9 @@ fn source_decoding_preflight_keeps_the_original_contract_on_failed_reservation()
         facts
             .must_use_contract(&report, definition)?
             .ok_or("retained contract")?
+            .origin
+            .source()
+            .ok_or("retained local contract origin")?
             .declaration,
         key
     );
