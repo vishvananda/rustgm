@@ -1,8 +1,8 @@
 //! Only actual zero-domain Declaration originals can acquire private readiness.
 use super::{
     Arc, Argument, Budget, DeclarationRef, Declarations, Demand, Dependency, Environment, Error,
-    Owner, Port, Prepared, Progress, Ready, RecipeView, ReservationWork, Scope, Session, State, error,
-    ports, s,
+    Owner, Port, Prepared, Progress, Ready, RecipeView, ReservationWork, Scope, Session, State,
+    error, ports, s,
 };
 use crate::{
     sema::function_context::assumption_environment as defining,
