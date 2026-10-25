@@ -355,15 +355,8 @@ impl Owner {
         let scope = self.scopes[index]
             .as_deref()
             .ok_or_else(|| error("private defining declaration scope disappeared"))?;
-        let (environment, bytes) = originals::finish(
-            facts,
-            &prepared.templates,
-            rows,
-            &mut port,
-            scope,
-            demand,
-            work,
-        )?;
+        let (environment, bytes) =
+            originals::finish(facts, prepared, rows, &mut port, self, demand, work)?;
         let body = match origin {
             originals::Origin::Declaration => Body::Ready {
                 expected,
