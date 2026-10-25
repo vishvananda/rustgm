@@ -17,9 +17,6 @@ use crate::{
 };
 
 pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    for (key, warning) in report.unused_visibility_warnings()? {
-        facts.retain_source_warning(key, warning)?;
-    }
     let mut by_source = HashMap::default();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
