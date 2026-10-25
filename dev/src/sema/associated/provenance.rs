@@ -81,7 +81,7 @@ impl Owner {
     }
 }
 impl Inventory {
-    /// The authenticated readable Functions profile cannot contain restricted traits.
+    /// The authenticated ordinary function profiles cannot contain restricted traits.
     /// Its producer rejects every such declaration before retaining header rows.
     pub(in crate::sema) fn require_imported_unrestricted_domain(
         &self,

@@ -12,8 +12,8 @@ impl Graph {
         let OwnerKind::Trait { definition, .. } = owner.kind else {
             return Err("imported implementation policy requires its actual trait owner");
         };
-        // The checked descriptor admits only readable Functions: its authored
-        // producer rejects implementation-domain clauses before any headers.
+        // The checked descriptor admits the two ordinary function profiles. Their
+        // authored producer rejects implementation-domain clauses before any headers.
         // Unknown/Provided profiles cannot establish this Unrestricted invariant.
         let descriptor = self.descriptor(&self.origins)?;
         let id = self.origins.declaration(definition)?;
