@@ -1,0 +1,21 @@
+
+running 6 tests
+test resolve::expansion::default_warnings::tests::authority::default_features_and_actual_impl_owners_keep_observed_token_authority ... FAILED
+test resolve::expansion::default_warnings::tests::callables::nonoverlap_keeps_real_bodies_and_unsupported_specialization_stays_explicit ... ok
+defaultness width=8 rows=8 capacity=8 owner=56 row=24 payload=248 steps=570 bytes=824 replay-step-delta=528
+test lower::transported_source::publication_tests::plain_and_configured_absent_headers_publish_with_the_existing_profile ... ok
+test resolve::expansion::default_warnings::tests::transfers::sparse_modifiers_preserve_transfer_retry_root_and_original_identities ... ok
+defaultness width=32 rows=32 capacity=32 owner=56 row=24 payload=824 steps=2706 bytes=3128 replay-step-delta=2544
+test resolve::expansion::default_warnings::tests::warnings::unvisited_default_syntax_preserves_exact_unconditional_and_mixed_diagnostics ... FAILED
+defaultness width=128 rows=128 capacity=128 owner=56 row=24 payload=3128 steps=12738 bytes=12344 replay-step-delta=12096
+defaultness enclosing Syntax=312 Configured=392 Unit=688 Extent=104 Original-Saved=(160, 44) Report=3040 Engine=4088; authenticated prior Syntax304 Configured384 Unit672; prior Original/Extent unmeasured
+test resolve::expansion::default_warnings::tests::costs::charged_projection_retains_primary_failures_and_cold_storage_is_bounded ... ok
+
+failures:
+
+failures:
+    resolve::expansion::default_warnings::tests::authority::default_features_and_actual_impl_owners_keep_observed_token_authority
+    resolve::expansion::default_warnings::tests::warnings::unvisited_default_syntax_preserves_exact_unconditional_and_mixed_diagnostics
+
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 1689 filtered out; finished in 0.07s
+
