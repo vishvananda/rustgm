@@ -108,6 +108,20 @@ grants execution or trait permission. The
 [versioned transport checkpoint](docs/source-header-contract-transport.md)
 records exact-byte, fresh-consumer, origin, budget and layout controls.
 
+Free unnamed constants retain real declaration identities, item keys, scopes and
+all initializer typing and evaluation obligations. Omit only their lexical name
+binding and declaration-name wakeup. Associated constants require names. Retain
+actual visibility and emit the real unused-visibilities lint through existing
+lexical policy; a public placeholder creates no exported name. Unsupported
+metadata profiles reject the real constant inventory instead of dropping it.
+One cold owner retains authenticated source warning causes. Success and terminal
+errors share the same bounded collector and canonical warning carrier. Macro
+projection uses the actual introduction; physical source and syntax context
+govern duplicate warnings. Preserve the primary error and distinguish unavailable
+source authentication from exhausted warning budgets. Keep the optional dense
+policy table's aggregate per-node cost explicit. See the
+[unnamed-constant checkpoint](docs/unnamed-free-constants.md).
+
 Local structural inherent ownership consumes the actual crate policy and complete
 member inventory. Head/name/context buckets exclude unrelated work; full Self,
 const arguments, caller conditions and visibility still decide applicability.
@@ -120,6 +134,17 @@ One cold name-work counter covers ordinary and structural contexts, including
 failed queries. Ordinary local feature allowances share authenticated header
 machinery through a distinct cold owner; they do not become source providers or
 disable the prelude. See [the structural owner checkpoint](docs/primitive-inherent-checkpoint.md).
+
+Trait implementation restrictions retain parsed clause nodes and resolve their
+module path once through the existing import fixpoint. Validate the real
+declaration and implementation module ancestry; visibility grants no additional
+implementation permission. Syntax feature checks include parsed disabled
+headers and authenticate actual macro-token origin. Ordinary readable metadata
+can assert an unrestricted domain only through its checked canonical profile,
+trait header, owner and inventory. Missing source nodes or map entries are not
+policy evidence. Restricted source publication stays closed until its explicit
+metadata contract is implemented. See the
+[domain checkpoint](docs/implementation-domains-core-checkpoint.md).
 
 Source macro imports and qualified calls use actual declarations and the existing
 import dependency worklist, including forward definitions and renamed targets.
@@ -200,6 +225,47 @@ formal, including unused parameters; preserve explicit `?Sized`. Original
 assumptions do not pay substituted instance obligations. Retain a single cold
 owner for immutable imported templates/contracts, with exact owner validation
 at every borrowed view and ordinary per-instance proof on execution.
+
+Private callable preparation consumes the actual reserved declared/callable
+signature pair and complete outer-to-inner formal scope, including unused
+parameters and inherited Self. Share the ordinary callable registration kernel;
+retain the real named owner and anonymous Function types. Build the scope index
+once. A warm hit still authenticates the catalog, source arena, declaration,
+body, signature and exact scope record before reusing readiness, without
+traversing its ancestry again. Prepay actual template capacity growth, temporary
+owner validation and selected regional occurrences; unrelated declarations and
+the entire type store are not per-call allocation bounds. Failed attempts retain
+their charged work and peak, and cannot publish partial readiness. This private
+structural preparation grants no defining Environment, original body proof,
+call-instance proof or wider metadata-profile permission.
+
+Private defining-environment preparation reuses the canonical predicate
+translator and Environment producer through sealed ordinary and reservation
+ports. Authenticate actual Input sites and complete inherited/unused formals.
+Distinguish declaration trait premises from regional body assumptions. An
+unchanged zero-domain Declaration body may share its actual declaration Arc;
+an actual empty Contract body requires a separate neutral body Environment and
+positive function/scope/body/binder identity, never that declaration Arc.
+Conditional default and nonzero origins require their own complete consumers.
+Never insert neutral declaration maps merely to make a private query succeed:
+that changes existing source origins and metadata bytes. Prepay selected work,
+real lazy collection growth and collision comparisons, including minimum vector
+capacities; warm canonical hits must not allocate or scan unrelated originals.
+See the [private environment checkpoint](docs/private-defining-environments-checkpoint.md)
+and its [empty Contract successor](docs/private-empty-contracts-checkpoint.md).
+
+Source-module namespace preparation borrows genuine ordinary trait headers
+without inventing language roles. Retain canonical declaration/module targets
+and actual aliases, move the existing columns and body catalog once, and use
+fallible charged sorting rather than unfolding paths. Reserve/install/freeze
+the actual Catalog transactionally; failed attempts publish no completed owner.
+Foreign module bookkeeping cannot prove local ancestry or implementation
+permission. Private namespace readiness grants no public profile or restricted
+trait transport. A later versioned contract must carry complete implementation
+domains and advisory facts, validate legitimate provider-owned implementations,
+and reject unauthorized fresh foreign implementations separately from the
+deny-explicit-impl policy. Keep each metadata consumer's admission explicit.
+See the [private namespace checkpoint](docs/pa29-module-namespace-inspection.md).
 
 Role validators consume borrowed declaration headers rather than reconstructing
 source syntax. The source adapter validates the actual declaration, separate

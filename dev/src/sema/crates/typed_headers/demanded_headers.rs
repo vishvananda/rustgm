@@ -43,11 +43,12 @@ pub(super) struct State {
     pub cursor: Cursor,
     pub maps: Maps,
     pairs: Vec<Pair>,
+    pub(super) callables: Option<Box<super::template_demands::Prepared>>,
 }
 pub(super) type Progress = (Box<Session>, Demand<()>);
 
 impl State {
-    fn new(
+    pub(super) fn new(
         view: &RecipeView<'_>,
         store: &mut Store,
         work: &mut ReservationWork,
@@ -93,6 +94,7 @@ impl State {
                 regions: vec![None; rows.regions.len()],
             },
             pairs: vec![Pair::Empty; rows.functions.len()],
+            callables: None,
         };
         if state.retained_bytes() > growth {
             return Err(error(
@@ -101,7 +103,7 @@ impl State {
         }
         Ok(state)
     }
-    fn pair(
+    pub(super) fn pair(
         &mut self,
         view: RecipeView<'_>,
         store: &mut Store,
@@ -186,6 +188,10 @@ impl State {
             + crate::support::retained::vector(&self.maps.slots)
             + crate::support::retained::vector(&self.maps.regions)
             + crate::support::retained::vector(&self.pairs)
+            + self
+                .callables
+                .as_deref()
+                .map_or(0, super::template_demands::Prepared::retained_bytes)
     }
 }
 fn header_port(

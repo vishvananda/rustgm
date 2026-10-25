@@ -51,9 +51,16 @@ impl SourceClient {
         if descriptor.identity() != &self.provider
             || descriptor.provider() != &self.provider
             || descriptor.edition() != Edition::Rust2024
-            || !descriptor.profile().ordinary_functions()
         {
             return Err("source client provider descriptor changed");
+        }
+        if !descriptor.profile().ordinary_functions() {
+            match descriptor.profile() {
+                crate::support::crates::generics::source::Profile::Source2024ModuleContracts => {
+                    descriptor.module_contracts()?;
+                }
+                _ => return Err("source client retained provider profile is unsupported"),
+            }
         }
         Ok(self.provider_index)
     }
