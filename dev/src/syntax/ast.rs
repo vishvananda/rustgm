@@ -353,6 +353,10 @@ pub enum Kind {
     },
     InferType,
     NeverType,
+    /// A parsed implementation domain, independent of the trait's visibility.
+    ImplRestriction {
+        path: NodeId,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
