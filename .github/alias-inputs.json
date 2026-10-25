@@ -1,0 +1,24 @@
+{
+  "state": "frozen syntax-only input, no semantic/execution permission",
+  "base": "31b2f913ac2ec9c8b62cf4a35fcda271ac746e0d",
+  "input_source": "97a911609231c5307d12acdd842dd8f64a5ef26a",
+  "inputs": {
+    "dev/src/resolve/bodies.rs": "8e7bb31d9c97a36e94eb38ca65ddb0f0dd30415c2a0ac877d6ab8f60e4f507a7",
+    "dev/src/resolve/index.rs": "9a50acbd93b27095041fc6d50d3d2d961eef5a2b19ed9a098c192526e2bfec3e",
+    "dev/src/syntax/expression/items.rs": "57c01e010f4e220d5e70f57cc17ef56afba7eeaf2f169d37e09cc10f4ef872ba",
+    "dev/src/syntax/expression/render/item.rs": "0f3f6b1d83a41429880d5bcd6974d563d5a4d3831c49d49054a103dcd7ff03a4",
+    "dev/src/syntax/item.rs": "461cf8805016a3cf0a4034374b582219caaacdd75d62199325b00017a3b67d5b",
+    "dev/src/syntax/transfer.rs": "b90e29e0d34aadeb327f479c04dc40d39d43113dd1fe2568808c9634ac27af7a",
+    "dev/src/syntax/walk.rs": "82186d5861d88d107e523ee3ae00f41690ab601e172f88d60ab676306eb983c7",
+    "dev/tests/crate_syntax.rs": "ab25870c78664bf43125e3485759a30b48b42417461182ac611382e468c557e6"
+  },
+  "selected": [
+    "crate_syntax::trait_aliases_retain_real_bounds_parameters_and_post_bounds_where_clauses",
+    "crate_syntax::trait_alias_grammar_rejects_qualifiers_and_where_before_equals",
+    "crate_syntax::configured_aliases_keep_their_actual_disabled_children",
+    "crate_syntax::owner_grammar_controls_associated_and_external_definitions",
+    "crate_syntax::every_child_precedes_its_owner_in_typed_arenas"
+  ],
+  "reference_writes": false,
+  "total_budget_seconds": 300
+}
