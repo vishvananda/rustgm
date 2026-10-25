@@ -83,7 +83,7 @@ impl Context<'_> {
                 "source graph belongs to another immutable artifact descriptor",
             ));
         }
-        if actual.profile() != s::Profile::Source2024Functions
+        if !actual.profile().ordinary_functions()
             || actual.edition() != crate::support::edition::Edition::Rust2024
         {
             return Err(error(

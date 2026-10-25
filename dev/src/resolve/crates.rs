@@ -28,6 +28,11 @@ pub struct Imported {
     statics: Vec<(DefId, usize, usize)>,
 }
 impl Imported {
+    pub(crate) fn original_reservation_budget(&self) -> (usize, usize) {
+        self.generic_work
+            .as_deref()
+            .map_or((0, 0), |work| (work.steps, work.retained))
+    }
     fn new(dependencies: Arc<Dependencies>) -> Self {
         Self {
             origins: super::body_origin::CatalogSlot::default(),

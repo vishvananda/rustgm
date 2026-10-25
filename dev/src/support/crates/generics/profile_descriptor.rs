@@ -23,8 +23,19 @@ pub enum Profile {
     Source2024,
     /// Ordinary function/move bodies; no const trait/default execution profile.
     Source2024Functions,
+    /// Ordinary functions with complete version-one diagnostic/advisory facts.
+    Source2024FunctionContracts,
     /// Complete unpaid provided-body data; canonical import and proof stay gated.
     Source2024Provided,
+}
+impl Profile {
+    #[must_use]
+    pub const fn ordinary_functions(self) -> bool {
+        matches!(
+            self,
+            Self::Source2024Functions | Self::Source2024FunctionContracts
+        )
+    }
 }
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct Budget {
@@ -41,6 +52,7 @@ pub struct ValidatedRows {
     profile: Profile,
     columns: Box<Columns>,
     headers: Box<[Option<super::HeaderRef>]>,
+    attributes: Option<Box<super::HeaderAttributeColumns>>,
     budget: Budget,
 }
 impl PartialEq for ValidatedRows {
@@ -48,6 +60,7 @@ impl PartialEq for ValidatedRows {
         self.owners == other.owners
             && self.profile == other.profile
             && self.columns == other.columns
+            && self.attributes == other.attributes
     }
 }
 impl Eq for ValidatedRows {}
@@ -70,6 +83,29 @@ impl ValidatedRows {
     ) -> Result<Self, &'static str> {
         Self::stage_profile(owner, rows, base, work, Profile::Source2024Provided)
     }
+    pub(crate) fn stage_contracts(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        attributes: super::HeaderAttributeColumns,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let start = work.steps;
+        let bytes = attributes.validate(&rows, base, work)?;
+        let attribute_steps = work.steps.saturating_sub(start);
+        let mut staged = Self::stage_profile(
+            owner,
+            rows,
+            base.saturating_add(bytes),
+            work,
+            Profile::Source2024FunctionContracts,
+        )?;
+        staged.budget.bytes = staged.budget.bytes.saturating_add(bytes);
+        staged.budget.peak = staged.budget.peak.saturating_add(bytes);
+        staged.budget.atoms = staged.budget.atoms.saturating_add(attribute_steps);
+        staged.attributes = Some(Box::new(attributes));
+        Ok(staged)
+    }
     fn stage_profile(
         owner: &CrateIdentity,
         rows: SourceRows,
@@ -80,7 +116,7 @@ impl ValidatedRows {
         let start = work.steps;
         let indexed = HeaderIndex::new(&rows, base, work)?;
         let numbering_peak = match profile {
-            Profile::Source2024Functions => {
+            Profile::Source2024Functions | Profile::Source2024FunctionContracts => {
                 functions::validate(&rows, &indexed, work)?;
                 0
             }
@@ -122,6 +158,7 @@ impl ValidatedRows {
             profile,
             columns: Box::new(columns),
             headers: headers.into_boxed_slice(),
+            attributes: None,
             budget,
         })
     }

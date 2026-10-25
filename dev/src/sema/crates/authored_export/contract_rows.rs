@@ -22,7 +22,7 @@ pub(super) struct Index {
 }
 
 impl Stage {
-    pub(super) fn site(
+    pub(crate) fn site(
         &mut self,
         owner: DeclarationRef,
         source: NodeKey,

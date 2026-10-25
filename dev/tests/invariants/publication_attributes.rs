@@ -118,10 +118,12 @@ fn marked_site(report: &Report, facts: &Declarations, family: &str) -> Result<(u
         let definition = DefId(u32::try_from(index)?);
         if family == "must_use" {
             if let Some(view) = facts.must_use_contract(report, definition)? {
-                return Ok((view.owner.file.0, view.span.start));
+                let source = view.origin.source().ok_or("actual source contract")?;
+                return Ok((source.owner.file.0, source.span.start));
             }
         } else if let Some(view) = facts.inline_hint_for_definition(report, definition)? {
-            return Ok((view.owner.file.0, view.span.start));
+            let source = view.origin.source().ok_or("actual source hint")?;
+            return Ok((source.owner.file.0, source.span.start));
         }
     }
     Err("missing actual selected semantic contract".into())
