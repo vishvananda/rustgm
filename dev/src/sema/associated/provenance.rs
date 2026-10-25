@@ -81,19 +81,6 @@ impl Owner {
     }
 }
 impl Inventory {
-    /// The authenticated ordinary function profiles cannot contain restricted traits.
-    /// Its producer rejects every such declaration before retaining header rows.
-    pub(in crate::sema) fn require_imported_unrestricted_domain(
-        &self,
-        definition: DefId,
-    ) -> Result<(), &'static str> {
-        match self.imported_implementation_domain(definition)? {
-            crate::support::crates::generics::source::ImplementationDomain::Unrestricted => Ok(()),
-            crate::support::crates::generics::source::ImplementationDomain::RestrictedTo {
-                ..
-            } => Err("imported trait has a restricted implementation domain"),
-        }
-    }
     fn imported_trait_owner(&self, definition: DefId) -> Result<Owner, &'static str> {
         let owner = self
             .owner(definition)

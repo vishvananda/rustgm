@@ -59,12 +59,12 @@ fn canonical_domain() -> Result {
     )?;
     let imported = report.resolution.crates.as_ref().ok_or("imported")?;
     let definition = imported.generic_definition(interface.identity(), domain.declaration)?;
-    assert!(
+    assert_eq!(
         analysis
             .facts
             .associated
-            .require_imported_unrestricted_domain(definition)
-            .is_err()
+            .imported_implementation_domain(definition)?,
+        domain.domain
     );
     assert!(
         !analysis
