@@ -13,8 +13,22 @@ pub struct Options {
     pub dependency_metadata: Vec<String>,
     pub source_core: Option<String>,
     pub source_client: Option<String>,
+    pub source_profile: Option<rustgm::lower::instances::SourcePublication>,
 }
 impl Options {
+    pub fn select_source_profile(&mut self, value: Option<String>) -> Result<(), String> {
+        if self.source_profile.is_some() {
+            return Err("duplicate --source-profile".into());
+        }
+        match value.as_deref() {
+            Some("module-contracts-v2") => {
+                self.source_profile =
+                    Some(rustgm::lower::instances::SourcePublication::ModuleContracts)
+            }
+            _ => return Err("--source-profile requires module-contracts-v2".into()),
+        }
+        Ok(())
+    }
     pub fn source_mode(&mut self, client: bool, provider: Option<String>) -> Result<(), String> {
         let flag = if client {
             "--source-client"
@@ -30,6 +44,17 @@ impl Options {
         Ok(())
     }
     pub fn validate(&self, mode: &str, count: bool, output: Option<&str>) -> Result<(), String> {
+        if self.source_profile.is_some()
+            && (self.source_core.is_none()
+                || self.source_client.is_some()
+                || !self.library
+                || mode != "--emit-lowir"
+                || self.metadata.is_none()
+                || count
+                || self.identity()?.is_none())
+        {
+            return Err("--source-profile requires SourceCore library LowIR and metadata output with full identity".into());
+        }
         if self.source_core.is_some() && self.source_client.is_some() {
             return Err("--source-core and --source-client are mutually exclusive".into());
         }

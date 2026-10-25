@@ -84,6 +84,35 @@ impl Source {
         Ok((Self::begin_stage(facts, checked, stage, false)?, names))
     }
 
+    pub(super) fn begin_module_contracts(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+        let mut stage = Stage::begin_module_contracts(report, facts, identity)?;
+        let modules = stage.module_contract_rows(report, facts)?;
+        Ok((Self::begin_stage(facts, checked, stage, false)?, modules))
+    }
+    pub(super) fn begin_publication(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+        profile: super::instances::SourcePublication,
+    ) -> Result<(Self, Option<s::ModuleContractRows>), &'static str> {
+        match profile {
+            super::instances::SourcePublication::ModuleContracts => {
+                let (source, modules) =
+                    Self::begin_module_contracts(report, facts, checked, identity)?;
+                Ok((source, Some(modules)))
+            }
+            super::instances::SourcePublication::LegacyFunctions
+            | super::instances::SourcePublication::FunctionContracts => {
+                Ok((Self::begin(report, facts, checked, identity)?, None))
+            }
+        }
+    }
     fn begin_stage(
         facts: &mut Declarations,
         checked: &Checked<'_>,
@@ -332,6 +361,60 @@ impl Source {
         let attributes = self.collect_header_columns(report, facts)?;
         self.complete_profile_payload(base, Some(attributes))
             .map_err(|message| report.diagnostic(report.body_optional_error(None, message)))
+    }
+
+    pub(super) fn complete_module_contract_payload(
+        mut self,
+        modules: s::ModuleContractRows,
+        report: &Report,
+        facts: &Declarations,
+        base: crate::support::crates::Interface,
+    ) -> Result<crate::support::crates::Interface, crate::resolve::package::Error> {
+        if report
+            .package
+            .source_core()
+            .is_none_or(|provider| &provider.provider != base.identity())
+        {
+            return Err(crate::resolve::package::Error::unlocated(
+                "module publication changed its actual provider",
+            ));
+        }
+        // Reuse the complete selected-header producer, including its final-header
+        // fence when defaultness syntax is integrated. No absence is invented.
+        let attributes = self.collect_header_columns(report, facts)?;
+        if self.numbering.is_some() {
+            return Err(crate::resolve::package::Error::unlocated(
+                "Provided numbering has no module-contract publisher",
+            ));
+        }
+        let (rows, observed) = self
+            .finish_rows()
+            .map_err(crate::resolve::package::Error::unlocated)?;
+        let base_bytes = base.base_retained_bytes();
+        if base_bytes
+            .saturating_add(observed.reserved_bytes)
+            .saturating_add(observed.scratch_bytes)
+            > crate::support::crates::MAX_BYTES
+        {
+            return Err(crate::resolve::package::Error::unlocated(
+                "module publication exceeds combined collection storage",
+            ));
+        }
+        let mut work = g::Work {
+            steps: observed.steps,
+            ..g::Work::default()
+        };
+        let payload = g::Payload::from_source_module_contracts(
+            base.identity(),
+            rows,
+            attributes,
+            modules,
+            base_bytes,
+            &mut work,
+        )
+        .map_err(|message| report.diagnostic(report.body_optional_error(None, message)))?;
+        base.with_generic_payload(payload)
+            .map_err(crate::resolve::package::Error::unlocated)
     }
 
     fn complete_profile_payload(
