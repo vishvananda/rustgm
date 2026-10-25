@@ -6,6 +6,8 @@ pub(in crate::sema) mod predicate_remap;
 mod roots;
 mod staged_headers;
 mod staged_ingest;
+#[path = "typed_headers/dormant_session.rs"]
+mod unpaid_provided;
 use super::{Declarations, Error};
 use crate::{
     resolve::{
