@@ -498,7 +498,7 @@ fn private_defining_environments_bound_selected_and_warm_work() -> Result {
     }
     Ok(())
 }
-fn warm_environment(
+pub(super) fn warm_environment(
     mut session: Box<Session>,
     owner: DeclarationRef,
     work: &mut ReservationWork,

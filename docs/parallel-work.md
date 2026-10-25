@@ -34,9 +34,12 @@ root to `num/nonzero.rs:34`, with 42 unchanged files opened. All 722 source
 inputs are verified. The newer
 [domain checkpoint](implementation-domains-core-checkpoint.md) now reaches
 `mem/alignment.rs:26`, with 56 unchanged files opened. The
-[unnamed-constant checkpoint](unnamed-free-constants.md) now reaches
-`mem/maybe_uninit.rs:1644`, with 58 unchanged files opened. LIB-028 specialization
-defaultness is the current blocker; earlier stops remain retained history.
+[unnamed-constant checkpoint](unnamed-free-constants.md) reaches
+`mem/maybe_uninit.rs:1644`, with58 unchanged files opened. The
+[defaultness checkpoint](defaultness-checkpoint.md) advances to
+`ptr/metadata.rs:85`, with65 unchanged files opened. LIB-031 trait aliases is
+the current loading blocker; LIB-028 specialization execution remains required.
+Earlier stops remain retained history.
 
 Current lanes:
 
@@ -49,9 +52,12 @@ Current lanes:
   Declaration environments now have six qualified controls; see the
   [environment checkpoint](private-defining-environments-checkpoint.md).
   The [empty Contract adapter](private-empty-contracts-checkpoint.md) now passes
-  six focused controls and exact first-encoded old v0/v1 bytes. Continue actual
-  inherited/nonrole and nonzero regional environments. Public Provided
-  execution and type-alias transport remain required.
+  six focused controls and exact first-encoded old v0/v1 bytes. The
+  [numbered trait-input successor](private-numbered-trait-inputs.md) now qualifies
+  actual inherited Self/V/U preparation and body-owned numbering records with
+  six focused controls. Continue nonzero regional environments toward the concrete
+  [provided-method execution milestone](parallel/provided-method-execution.md).
+  Public Provided execution and type-alias transport remain required.
 - B: local LIB-026 implementation domains and their version-one imported
   unrestricted-profile control are qualified, with 74 independent observations.
   The private declaration-coordinate namespace and ordinary-trait producer
@@ -61,9 +67,11 @@ Current lanes:
   Restricted policy transport remains open; keep the real trait/catalog
   identity distinct from an external function linker identity.
 - C: SourceCore CLI contract publication and fresh native consumers are qualified.
-  LIB-027 unnamed constants now pass six focused controls and reviewed text
-  qualification. Investigate LIB-028's actual specialization defaultness,
-  feature authority and dispatch requirements; retain LIB-029 assertion expansion.
+  LIB-027 unnamed constants and the [LIB-028 modifier checkpoint](defaultness-checkpoint.md)
+  pass focused controls and reviewed text qualification. Implement the actual
+  specialization graph, effective finality, inherited dispatch and Min checks.
+  B takes LIB-029 assertion expansion after module-contract v2 qualification;
+  coordinate its source/panic authority with C.
 - Integrator: focused integration/main pushes, periodic CI follow-up and fresh
   original-source observations. Local primitive ownership is qualified. Keep
   CPPGM and upstream sources unchanged.
@@ -325,6 +333,11 @@ unchanged authenticated passes; otherwise run production and private Rust
 commands sequentially. An independent Python architecture audit may run beside
 that sequence, with separate receipts and a joined failure result. This keeps
 one Rust compiler command active and does not extend the five-minute budget.
+Collect findings from both sequential lint modes when the deadline permits,
+even if the first mode fails; test compilation changes which findings appear.
+Join those failures with the audit result before deciding whether to build or
+execute tests. No failed static mode is a pass, and no tests run after a failed
+static phase. Keep a live source-frozen job intact when changing future helpers.
 
 For hot-path changes, apply the frontend performance precedent in `spec.md`:
 identify repeated work removed, cache and ownership boundaries, and dimensions
