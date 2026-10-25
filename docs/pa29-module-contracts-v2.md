@@ -40,8 +40,10 @@ are added to SourceRows, Columns, Package, Report, Body, Context, AST nodes or h
 The one selected generic-provider fence stays closed to mixed-provider re-exports.
 Generic SourceClient republication is also required later PA29 work: the existing
 legacy original exporter rejects it even when the bound-only client analyzes
-correctly. The bound-only `--emit-types` observation is semantic evidence only;
-a separate negative asserts that republication remains closed. Provider-impl
+correctly. The actual library bound-only type analysis is semantic evidence only;
+a separate negative asserts that republication remains closed. The CLI
+`--source-client --emit-types` path is still an exact usage-status-2 denial,
+not a semantic observation; broader SourceClient driver views require review. Provider-impl
 selection and nested ordinary calls must still complete actual LowIR. Neither
 this stage correction nor v2 resolves generic/mixed-provider transport for full crates.
 Unsafe/associated-result/stability, nonempty imported impl members, Provided/default

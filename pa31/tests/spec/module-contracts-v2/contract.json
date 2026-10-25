@@ -56,5 +56,14 @@
     },
     "language_sources": "unchanged; no independent oracle repeated",
     "candidate_successor": "UNRUN"
+  },
+  "cli_stage_correction": {
+    "failed_run": 40237013683,
+    "failed_prediction": "SourceClient CLI supports --emit-types for a bound-only client",
+    "actual": "status2 USAGE: --source-client requires --emit-lowir; actual library type-analysis control separately passed40236401726",
+    "successor_prediction": "preserve exact usage2 as driver closure; all provider-selection and nested-call positive CLI cases remain actual LowIR",
+    "production_policy": "unchanged; semantic SourceClient CLI views remain a separate reviewed extension",
+    "language_sources": "unchanged; no oracle repeated",
+    "successor": "UNRUN"
   }
 }

@@ -52,7 +52,7 @@ fn client(
     name: &str,
     mode: &str,
     source: &str,
-    accepted: bool,
+    expected_status: i32,
     message: &str,
 ) -> Result {
     let input = folder.join(format!("{name}.rs"));
@@ -84,7 +84,7 @@ fn client(
     std::fs::write(folder.join(format!("{name}.stderr")), &output.stderr)?;
     assert_eq!(
         output.status.code(),
-        Some(i32::from(!accepted)),
+        Some(expected_status),
         "{name}: {}",
         String::from_utf8_lossy(&output.stderr)
     );
@@ -117,7 +117,7 @@ fn actual_v2_artifacts_resolve_nested_aliases_and_separate_foreign_impl_permissi
         "ordinary",
         "--emit-lowir",
         "#![feature(no_core)]#![no_core]extern crate base;pub fn keep()->u8{base::identity(7u8)}",
-        true,
+        0,
         "",
     )?;
     let restricted = provider(
@@ -142,7 +142,7 @@ fn actual_v2_artifacts_resolve_nested_aliases_and_separate_foreign_impl_permissi
         "alias-local-impl",
         "--emit-lowir",
         &source,
-        true,
+        0,
         "",
     )?;
     client(
@@ -151,7 +151,7 @@ fn actual_v2_artifacts_resolve_nested_aliases_and_separate_foreign_impl_permissi
         "no-const",
         "--emit-lowir",
         "#![feature(no_core)]#![no_core]extern crate base;pub const BAD:u8=base::identity(7u8);",
-        false,
+        1,
         "const",
     )?;
     let nested = provider(
@@ -166,7 +166,7 @@ fn actual_v2_artifacts_resolve_nested_aliases_and_separate_foreign_impl_permissi
         "nested-original",
         "--emit-lowir",
         "#![feature(no_core)]#![no_core]extern crate base;pub fn keep()->u8{base::api::renamed(7u8)}",
-        true,
+        0,
         "",
     )?;
     rejected_publication_and_flags(&root, &folder)?;
@@ -174,47 +174,55 @@ fn actual_v2_artifacts_resolve_nested_aliases_and_separate_foreign_impl_permissi
 }
 
 fn restricted_clients(root: &Path, folder: &Path, restricted: &Path) -> Result {
-    for (name, file, mode, accepted, message) in [
+    for (name, file, mode, expected_status, message) in [
         (
             "provider-impl",
             "select-provider-impl",
             "--emit-lowir",
-            true,
+            0,
             "",
         ),
         (
             "public-bound",
             "sealed-public-bound",
             "--emit-types",
-            true,
-            "",
+            2,
+            "--source-client requires --emit-lowir",
         ),
         (
             "foreign-impl",
             "sealed-foreign-impl",
             "--emit-lowir",
-            false,
+            1,
             "restricted module",
         ),
         (
             "foreign-feature",
             "sealed-foreign-feature-does-not-override",
             "--emit-lowir",
-            false,
+            1,
             "restricted module",
         ),
         (
             "private-path",
             "sealed-private-path-denied",
             "--emit-lowir",
-            false,
+            1,
             "private",
         ),
     ] {
         let source = std::fs::read_to_string(
             root.join(format!("pa31/tests/spec/module-contracts-v2/{file}.rs")),
         )?;
-        client(folder, restricted, name, mode, &source, accepted, message)?;
+        client(
+            folder,
+            restricted,
+            name,
+            mode,
+            &source,
+            expected_status,
+            message,
+        )?;
     }
     Ok(())
 }

@@ -19,3 +19,9 @@ export profile. The separate provider-selection client must complete LowIR
 lowering through `prove::<u8>()`; changing the bound-only observation does not
 substitute for that reached selection or its impl obligations. The first mistaken
 all-positive-LowIR prediction and its failure remain in the frozen contract.
+
+The actual library type-analysis bound control passed. The CLI's existing
+`--source-client --emit-types` guard instead returns usage status 2, and the CLI
+control retains that exact denial; no semantic success is inferred from it.
+Generic client republication and semantic SourceClient CLI views require later
+PA29/driver work. Provider selection and nested calls still require LowIR success.
