@@ -92,7 +92,7 @@ def main():
     started = time.monotonic()
     folder = ROOT / f"obj/qualification/fast/{time.time_ns()}"
     command = [sys.executable, "scripts/resources.py", "run", "--wait-seconds", "0", "--",
-               sys.executable, ".github/focused_refs.py", "--worker", str(started + 187), str(folder)]
+               str(ROOT / "obj/audit-venv/bin/python"), ".github/focused_refs.py", "--worker", str(started + 187), str(folder)]
     process = subprocess.Popen(command, cwd=ROOT, start_new_session=True)
     status = 1
     try:
