@@ -58,8 +58,12 @@ fn source_decoding_preflight_keeps_the_original_contract_on_failed_reservation()
     let contract = facts
         .must_use_contract(&report, definition)?
         .ok_or("actual contract")?;
-    let owner = contract.owner;
-    let span = contract.span;
+    let source = contract
+        .origin
+        .source()
+        .ok_or("actual source contract origin")?;
+    let owner = source.owner;
+    let span = source.span;
     facts
         .must_use_contracts
         .as_deref_mut()

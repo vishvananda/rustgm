@@ -1,4 +1,6 @@
 //! Raw source contracts retain complete requests; only validation can publish data.
+#[path = "header_contracts.rs"]
+mod attributes;
 #[path = "operation_rows.rs"]
 mod bodies;
 #[path = "profile_descriptor.rs"]
@@ -19,6 +21,7 @@ use crate::support::{
     },
     edition::Edition,
 };
+pub use attributes::*;
 pub use bodies::*;
 pub use descriptor::{Columns, Descriptor, Profile, ValidatedRows, ValidatedView};
 pub use inputs::*;

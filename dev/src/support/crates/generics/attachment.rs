@@ -89,6 +89,25 @@ impl Payload {
         )?;
         Ok(Self::from(staged))
     }
+    /// Validate complete ordinary header contracts without granting body proof.
+    /// # Errors
+    /// Rejects malformed/incomplete facts and combined storage/work limits.
+    pub fn from_source_contracts(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        attributes: source::HeaderAttributeColumns,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        Ok(Self::from(source::ValidatedRows::stage_contracts(
+            owner,
+            rows,
+            attributes,
+            base.saturating_add(overhead),
+            work,
+        )?))
+    }
     #[must_use]
     pub const fn view(&self) -> PayloadView<'_> {
         match &self.data {
