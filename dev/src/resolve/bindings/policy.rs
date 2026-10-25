@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[derive(Default)]
-pub(in crate::resolve) struct Features(u16);
+pub(in crate::resolve) struct Features(u32);
 #[derive(Clone, Copy)]
 pub(in crate::resolve) enum Feature {
     NoCore,
@@ -30,6 +30,8 @@ pub(in crate::resolve) enum Feature {
     InternalMacroAllowance,
     InternalUnsafeLint,
     CfgUbChecks,
+    F16,
+    F128,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -57,6 +59,8 @@ impl Request {
             "allow_internal_unstable" => Self::Capability(Feature::InternalMacroAllowance),
             "allow_internal_unsafe" => Self::Capability(Feature::InternalUnsafeLint),
             "cfg_ub_checks" => Self::Capability(Feature::CfgUbChecks),
+            "f16" => Self::Capability(Feature::F16),
+            "f128" => Self::Capability(Feature::F128),
             // Requests do not authorize the unsupported live const-drop operation.
             "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
             _ => return None,
@@ -65,17 +69,19 @@ impl Request {
 }
 impl Features {
     pub(in crate::resolve) fn has(&self, feature: Feature) -> bool {
-        self.0 & (1 << feature as u8) != 0
+        self.0 & (1_u32 << feature as u8) != 0
     }
     fn insert(&mut self, feature: Feature) {
-        self.0 |= 1 << feature as u8;
+        self.0 |= 1_u32 << feature as u8;
     }
     pub(super) fn macros(&self) -> MacroFeatures {
         MacroFeatures(
             u8::from(self.has(Feature::DeclarativeMacros))
                 | (u8::from(self.has(Feature::RustcAttributes)) << 1)
                 | (u8::from(self.has(Feature::UnboxedClosures)) << 2)
-                | (u8::from(self.has(Feature::CfgUbChecks)) << 5),
+                | (u8::from(self.has(Feature::CfgUbChecks)) << 5)
+                | (u8::from(self.has(Feature::F16)) << 6)
+                | (u8::from(self.has(Feature::F128)) << 7),
         )
     }
 }
@@ -85,6 +91,9 @@ impl Features {
 #[derive(Clone, Copy, Default)]
 pub(in crate::resolve) struct MacroFeatures(u8);
 impl MacroFeatures {
+    pub(in crate::resolve) fn wide_float(self, half: bool) -> bool {
+        self.0 & (1 << if half { 6 } else { 7 }) != 0
+    }
     fn with_options(self, options: super::root_options::Options) -> Self {
         Self(self.0 | options.bits())
     }

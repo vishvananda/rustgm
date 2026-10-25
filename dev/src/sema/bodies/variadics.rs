@@ -23,6 +23,9 @@ impl Checker<'_> {
             let term = self.term(argument)?;
             let ty = solved.types[term.0 as usize];
             let message = match self.facts.types.kind(ty) {
+                Some(Type::Primitive(Primitive::F16 | Primitive::F128)) => {
+                    "wide floating variadic ABI is not implemented"
+                }
                 Some(Type::Primitive(
                     Primitive::Bool
                     | Primitive::I8

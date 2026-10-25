@@ -5,6 +5,7 @@ pub mod render;
 pub mod storage;
 mod text;
 pub mod value;
+mod wide;
 
 use crate::lex::token::{Kind, LexError, Token};
 pub use value::Value;
@@ -78,3 +79,7 @@ fn reserved_period(tail: &str) -> bool {
             .next()
             .is_some_and(|ch| ch == '.' || ch == '_' || unicode_ident::is_xid_start(ch))
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/wide_float_values.rs"]
+mod tests;
