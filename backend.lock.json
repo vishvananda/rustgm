@@ -3,10 +3,6 @@
   "repository": "https://github.com/vishvananda/cppgm-extended",
   "commit": "905bd7e4412a2d77d88694fe6abc7f3e1c27bce1",
   "target": "x86_64-linux",
-  "distribution": {
-    "url": "https://github.com/vishvananda/rustgm/releases/download/backend-pins-v1/rustgm-backend-x86_64-linux-v1.tar.gz",
-    "sha256": "bc518ba79330d91ffb23f7c85fcbe9ec4c16071fd252cbf50cef98587ac0245d"
-  },
   "sha256": {
     "lowir": "2acc7cefeecc3752c4a15da4ddb1e65c9cb2b88e0032a23d1eca7ff36a005882",
     "lowir2native": "57f2c1156168eac7e653a4a193f27f124b635413e07de29940daf34a0b831fec"

@@ -22,9 +22,12 @@ def digest(path):
 
 def install(root, bundle):
     lock = json.loads((root / "backend.lock.json").read_text())
+    distribution = json.loads((root / "backend.distribution.json").read_text())
+    if distribution["backend_lock_sha256"] != digest(root / "backend.lock.json"):
+        raise ValueError("distribution describes a different backend lock")
     if lock["target"] != "x86_64-linux":
         raise ValueError("distribution requires the locked x86-64 Linux backend")
-    if bundle.stat().st_size > MAX_ARCHIVE or digest(bundle) != lock["distribution"]["sha256"]:
+    if bundle.stat().st_size > MAX_ARCHIVE or digest(bundle) != distribution["sha256"]:
         raise ValueError("backend distribution differs from the locked archive")
     expected = {**lock["sha256"], **backend.object_profile(lock)["sha256"]}
     if set(expected) != {"lowir", "lowir2native", "cppgm++"}:
@@ -70,12 +73,12 @@ def main():
     if args.bundle is not None:
         install(ROOT, args.bundle)
         return
-    lock = json.loads((ROOT / "backend.lock.json").read_text())
+    distribution = json.loads((ROOT / "backend.distribution.json").read_text())
     destination = ROOT / "obj/backend"
     destination.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="download-", dir=destination) as temporary:
         bundle = Path(temporary) / "bundle.tar.gz"
-        request = urllib.request.Request(lock["distribution"]["url"], headers={"User-Agent": "RustGM-backend-setup"})
+        request = urllib.request.Request(distribution["url"], headers={"User-Agent": "RustGM-backend-setup"})
         with urllib.request.urlopen(request, timeout=60) as source, bundle.open("xb") as output:
             size = 0
             while block := source.read(1024 * 1024):

@@ -31,8 +31,10 @@ class BackendDistribution(unittest.TestCase):
                 member = tarfile.TarInfo(name)
                 member.size = len(data)
                 archive.addfile(member, io.BytesIO(data))
-        self.lock["distribution"] = {"sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
         (self.root / "backend.lock.json").write_text(json.dumps(self.lock))
+        (self.root / "backend.distribution.json").write_text(json.dumps({
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "backend_lock_sha256": hashlib.sha256((self.root / "backend.lock.json").read_bytes()).hexdigest()}))
         return path
 
     def test_installs_verified_private_copies_and_complete_configuration(self):

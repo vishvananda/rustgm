@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "backend_lock_sha256": "6d300e6addfcd7050afef7940e8511f946f8113ad91e82901ab3f499c61757aa",
+  "url": "https://github.com/vishvananda/rustgm/releases/download/backend-pins-v1/rustgm-backend-x86_64-linux-v1.tar.gz",
+  "sha256": "bc518ba79330d91ffb23f7c85fcbe9ec4c16071fd252cbf50cef98587ac0245d"
+}
