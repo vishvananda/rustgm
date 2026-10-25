@@ -135,7 +135,12 @@ impl Producer {
     pub(crate) fn diagnostic_read(&self, key: NodeKey, bytes: usize) -> Result<(), Violation> {
         self.diagnostic_payload(key, 1, bytes)
     }
-    pub(crate) fn diagnostic_payload(&self, key: NodeKey, steps: usize, bytes: usize) -> Result<(), Violation> {
+    pub(crate) fn diagnostic_payload(
+        &self,
+        key: NodeKey,
+        steps: usize,
+        bytes: usize,
+    ) -> Result<(), Violation> {
         let mut reads = self.reads.get();
         let result = reads.charge(key, steps, bytes);
         self.reads.set(reads);
@@ -159,7 +164,10 @@ impl Producer {
             }
             let owner = self.record(current, key)?;
             owner.validate(package, &self.reads)?;
-            if owner.parent.is_some_and(|parent| parent.0.get() >= current.0.get()) {
+            if owner
+                .parent
+                .is_some_and(|parent| parent.0.get() >= current.0.get())
+            {
                 return Err(invalid(key, "source diagnostic lint ancestry changed"));
             }
             tail = owner.parent;

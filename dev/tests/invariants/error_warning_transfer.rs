@@ -63,6 +63,24 @@ fn retention_limit_keeps_the_original_failure_and_one_bounded_note() {
 }
 
 #[test]
+fn unavailable_warning_origin_note_is_bounded_and_survives_later_budget_merges() {
+    let error = Error::at(FileId(0), 31, "primary failure")
+        .retain_warnings(vec![warning(7)])
+        .warning_retention_failed(super::RetentionNote::UnavailableOrigin);
+    let error = error
+        .retain_warnings(vec![warning(9)])
+        .warning_retention_failed(super::RetentionNote::Budget);
+    assert_eq!(error.warnings().len(), 1);
+    assert_eq!(error.message, "primary failure");
+    assert_eq!(
+        error.to_string(),
+        "file 0: 31: primary failure\n  note: retained warning source could not be authenticated; further warnings unavailable"
+    );
+    assert_eq!(size_of::<super::RetentionNote>(), size_of::<bool>());
+    assert_eq!(size_of::<Error>(), size_of::<usize>());
+}
+
+#[test]
 fn repeated_source_projection_keeps_the_same_owned_warning_sink()
 -> Result<(), Box<dyn std::error::Error>> {
     let report = crate::test_source::resolve("fn ordinary(){}", true)?;

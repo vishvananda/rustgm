@@ -71,9 +71,14 @@ pub(super) struct Contracts {
     pub(in crate::sema) work: Work,
 }
 impl Declarations {
-    pub(in crate::sema) fn retain_source_warning(&mut self, key: NodeKey, warning: Warning) -> Result<(), Error> {
+    pub(in crate::sema) fn retain_source_warning(
+        &mut self,
+        key: NodeKey,
+        warning: Warning,
+    ) -> Result<(), Error> {
         let offset = warning.diagnostic.span.start;
-        self.must_use_contracts.get_or_insert_default()
+        self.must_use_contracts
+            .get_or_insert_default()
             .record_warning(key, offset, 0, warning.code, warning.diagnostic)
     }
     /// Read retained warnings without draining them or repeating semantic work.

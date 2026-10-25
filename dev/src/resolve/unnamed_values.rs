@@ -35,10 +35,17 @@ impl Resolver<'_> {
         else {
             return Err(invalid());
         };
-        let item = unit.configured.ast.items.get(index as usize).ok_or_else(invalid)?;
+        let item = unit
+            .configured
+            .ast
+            .items
+            .get(index as usize)
+            .ok_or_else(invalid)?;
         if scope.associated
             || !matches!(item.kind, ItemKind::Const { .. })
-            || item.name.is_none_or(|name| unit.spelling(name).ok() != Some("_"))
+            || item
+                .name
+                .is_none_or(|name| unit.spelling(name).ok() != Some("_"))
             || unit.configured.active.get(key.node.get() as usize) != Some(&true)
         {
             return Err(invalid());
@@ -51,11 +58,16 @@ impl Resolver<'_> {
         definition: Definition,
     ) -> Result<DefId, Error> {
         if !self.unnamed_constant(&definition)? {
-            return Err(Error::at(FileId(0), 0, "unnameable declaration is not a free constant"));
+            return Err(Error::at(
+                FileId(0),
+                0,
+                "unnameable declaration is not a free constant",
+            ));
         }
-        let id = DefId(u32::try_from(self.facts.definitions.len()).map_err(|_| {
-            Error::at(FileId(0), 0, "too many definitions")
-        })?);
+        let id = DefId(
+            u32::try_from(self.facts.definitions.len())
+                .map_err(|_| Error::at(FileId(0), 0, "too many definitions"))?,
+        );
         self.facts.definitions.push(definition);
         Ok(id)
     }

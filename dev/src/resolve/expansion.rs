@@ -287,8 +287,13 @@ pub fn analyze_with_context(
     let validation = super::bindings::validate_crate_options(&report)
         .map_err(|error| report.diagnostic(error))
         .and_then(|()| cfg_gates::validate_attributes(&report))
-        .and_then(|()| super::impl_restrictions::validate(&report).map_err(|error| report.diagnostic(error)))
-        .and_then(|()| super::float_features::validate_literals(&report).map_err(|error| report.diagnostic(error)));
+        .and_then(|()| {
+            super::impl_restrictions::validate(&report).map_err(|error| report.diagnostic(error))
+        })
+        .and_then(|()| {
+            super::float_features::validate_literals(&report)
+                .map_err(|error| report.diagnostic(error))
+        });
     validation.map_err(|error| report.retain_visibility_warnings(error))?;
     Ok(report)
 }

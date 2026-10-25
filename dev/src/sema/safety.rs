@@ -26,6 +26,15 @@ pub(super) struct Policies {
     work: Work,
 }
 impl Policies {
+    #[cfg(test)]
+    fn retained_storage(&self) -> (usize, usize, usize) {
+        self.nodes.as_ref().map_or((0, 0, 0), |files| {
+            let (len, capacity) = files.iter().fold((0, 0), |(len, capacity), nodes| {
+                (len + nodes.len(), capacity + nodes.capacity())
+            });
+            (len, capacity, files.capacity() * size_of::<Vec<Policy>>())
+        })
+    }
     pub(super) fn analyze(report: &Report) -> Result<Self, Error> {
         if let Some(removals) = report.removed_functions() {
             removals.validate(report)?;
@@ -186,6 +195,13 @@ impl Policies {
     }
     pub(super) fn work(&self) -> Work {
         self.work
+    }
+}
+
+#[cfg(test)]
+impl crate::sema::model::Declarations {
+    pub(crate) fn retained_policy_storage(&self) -> (usize, usize, usize) {
+        self.safety_policies.retained_storage()
     }
 }
 
