@@ -20,38 +20,40 @@ name 18 "u128"
 name 19 "usize"
 name 20 "f32"
 name 21 "f64"
-name 22 "B"
-name 23 "f"
-name 24 "Drop"
-name 25 "ops"
-name 26 "core"
-name 27 "std"
-name 28 "cmp"
-name 29 "PartialEq"
-name 30 "Self"
-name 31 "Rhs"
-name 32 "eq"
-name 33 "ne"
-name 34 "Ordering"
-name 35 "Less"
-name 36 "Equal"
-name 37 "Greater"
-name 38 "Eq"
-name 39 "option"
-name 40 "Option"
-name 41 "T"
-name 42 "None"
-name 43 "Some"
-name 44 "PartialOrd"
-name 45 "partial_cmp"
-name 46 "lt"
-name 47 "le"
-name 48 "gt"
-name 49 "ge"
-name 50 "Ord"
-name 51 "min"
-name 52 "max"
-name 53 "clamp"
+name 22 "f16"
+name 23 "f128"
+name 24 "B"
+name 25 "f"
+name 26 "Drop"
+name 27 "ops"
+name 28 "core"
+name 29 "std"
+name 30 "cmp"
+name 31 "PartialEq"
+name 32 "Self"
+name 33 "Rhs"
+name 34 "eq"
+name 35 "ne"
+name 36 "Ordering"
+name 37 "Less"
+name 38 "Equal"
+name 39 "Greater"
+name 40 "Eq"
+name 41 "option"
+name 42 "Option"
+name 43 "T"
+name 44 "None"
+name 45 "Some"
+name 46 "PartialOrd"
+name 47 "partial_cmp"
+name 48 "lt"
+name 49 "le"
+name 50 "gt"
+name 51 "ge"
+name 52 "Ord"
+name 53 "min"
+name 54 "max"
+name 55 "clamp"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 scope 1 module=0 barrier=true parent=0
@@ -93,106 +95,108 @@ def 13 type primitive name=18 scope=0 access=public
 def 14 type primitive name=19 scope=0 access=public
 def 15 type primitive name=20 scope=0 access=public
 def 16 type primitive name=21 scope=0 access=public
-def 17 type enum name=3 scope=0 access=module:0 source=0:4 members=1
-def 18 type variant name=4 scope=1 access=module:0 source=0:2
-def 19 value variant name=4 scope=1 access=module:0 source=0:2
-def 20 type variant name=22 scope=1 access=module:0 source=0:3
-def 21 value variant name=22 scope=1 access=module:0 source=0:3
-def 22 value function name=23 scope=0 access=module:0 source=0:24
-def 23 value parameter name=2 scope=2 access=module:0 source=0:5
-def 24 value local name=5 scope=4 access=module:0 source=0:11
-def 25 type builtin-trait name=24 scope=8 access=public
-def 26 type module name=25 scope=7 access=public members=8
-def 27 type module name=26 scope=6 access=public members=7
-def 28 type module name=27 scope=6 access=public members=7
-def 29 type module name=28 scope=7 access=public members=9
-def 30 type builtin-trait name=29 scope=9 access=public members=10
-def 31 type generic name=30 scope=11 access=public
-def 32 type generic name=31 scope=11 access=public
-def 33 value function name=32 scope=10 access=public
-def 34 value function name=33 scope=10 access=public
-def 35 type enum name=34 scope=9 access=public members=12
-def 36 value variant name=35 scope=12 access=public
-def 37 type variant name=35 scope=12 access=public
-def 38 value variant name=36 scope=12 access=public
-def 39 type variant name=36 scope=12 access=public
-def 40 value variant name=37 scope=12 access=public
-def 41 type variant name=37 scope=12 access=public
-def 42 type builtin-trait name=38 scope=9 access=public members=14
-def 43 type generic name=30 scope=15 access=public
-def 44 type module name=39 scope=7 access=public members=16
-def 45 type enum name=40 scope=16 access=public members=17
-def 46 type generic name=41 scope=18 access=public
-def 47 value variant name=42 scope=17 access=public
-def 48 type variant name=42 scope=17 access=public
-def 49 value variant name=43 scope=17 access=public
-def 50 type variant name=43 scope=17 access=public
-def 51 type builtin-trait name=44 scope=9 access=public members=19
-def 52 type generic name=30 scope=20 access=public
-def 53 type generic name=31 scope=20 access=public
-def 54 value function name=45 scope=19 access=public
-def 55 value function name=46 scope=19 access=public
+def 17 type primitive name=22 scope=0 access=public
+def 18 type primitive name=23 scope=0 access=public
+def 19 type enum name=3 scope=0 access=module:0 source=0:4 members=1
+def 20 type variant name=4 scope=1 access=module:0 source=0:2
+def 21 value variant name=4 scope=1 access=module:0 source=0:2
+def 22 type variant name=24 scope=1 access=module:0 source=0:3
+def 23 value variant name=24 scope=1 access=module:0 source=0:3
+def 24 value function name=25 scope=0 access=module:0 source=0:24
+def 25 value parameter name=2 scope=2 access=module:0 source=0:5
+def 26 value local name=5 scope=4 access=module:0 source=0:11
+def 27 type builtin-trait name=26 scope=8 access=public
+def 28 type module name=27 scope=7 access=public members=8
+def 29 type module name=28 scope=6 access=public members=7
+def 30 type module name=29 scope=6 access=public members=7
+def 31 type module name=30 scope=7 access=public members=9
+def 32 type builtin-trait name=31 scope=9 access=public members=10
+def 33 type generic name=32 scope=11 access=public
+def 34 type generic name=33 scope=11 access=public
+def 35 value function name=34 scope=10 access=public
+def 36 value function name=35 scope=10 access=public
+def 37 type enum name=36 scope=9 access=public members=12
+def 38 value variant name=37 scope=12 access=public
+def 39 type variant name=37 scope=12 access=public
+def 40 value variant name=38 scope=12 access=public
+def 41 type variant name=38 scope=12 access=public
+def 42 value variant name=39 scope=12 access=public
+def 43 type variant name=39 scope=12 access=public
+def 44 type builtin-trait name=40 scope=9 access=public members=14
+def 45 type generic name=32 scope=15 access=public
+def 46 type module name=41 scope=7 access=public members=16
+def 47 type enum name=42 scope=16 access=public members=17
+def 48 type generic name=43 scope=18 access=public
+def 49 value variant name=44 scope=17 access=public
+def 50 type variant name=44 scope=17 access=public
+def 51 value variant name=45 scope=17 access=public
+def 52 type variant name=45 scope=17 access=public
+def 53 type builtin-trait name=46 scope=9 access=public members=19
+def 54 type generic name=32 scope=20 access=public
+def 55 type generic name=33 scope=20 access=public
 def 56 value function name=47 scope=19 access=public
 def 57 value function name=48 scope=19 access=public
 def 58 value function name=49 scope=19 access=public
-def 59 type builtin-trait name=50 scope=9 access=public members=21
-def 60 type generic name=30 scope=22 access=public
-def 61 value function name=28 scope=21 access=public
-def 62 value function name=51 scope=21 access=public
-def 63 value function name=52 scope=21 access=public
+def 59 value function name=50 scope=19 access=public
+def 60 value function name=51 scope=19 access=public
+def 61 type builtin-trait name=52 scope=9 access=public members=21
+def 62 type generic name=32 scope=22 access=public
+def 63 value function name=30 scope=21 access=public
 def 64 value function name=53 scope=21 access=public
-binding scope=0 type name=3 def=17 Direct ambiguous=false access=module:0
-binding scope=0 value name=23 def=22 Direct ambiguous=false access=module:0
-binding scope=1 type name=4 def=18 Direct ambiguous=false access=module:0
-binding scope=1 value name=4 def=19 Direct ambiguous=false access=module:0
-binding scope=1 type name=22 def=20 Direct ambiguous=false access=module:0
-binding scope=1 value name=22 def=21 Direct ambiguous=false access=module:0
-binding scope=2 value name=2 def=23 Direct ambiguous=false access=module:0
-binding scope=4 value name=5 def=24 Direct ambiguous=false access=module:0
-binding scope=6 type name=26 def=27 Direct ambiguous=false access=public
-binding scope=6 type name=27 def=28 Direct ambiguous=false access=public
-binding scope=7 type name=25 def=26 Direct ambiguous=false access=public
-binding scope=7 type name=28 def=29 Direct ambiguous=false access=public
-binding scope=7 type name=39 def=44 Direct ambiguous=false access=public
-binding scope=8 type name=24 def=25 Direct ambiguous=false access=public
-binding scope=9 type name=29 def=30 Direct ambiguous=false access=public
-binding scope=9 type name=34 def=35 Direct ambiguous=false access=public
-binding scope=9 type name=38 def=42 Direct ambiguous=false access=public
-binding scope=9 type name=44 def=51 Direct ambiguous=false access=public
-binding scope=9 type name=50 def=59 Direct ambiguous=false access=public
-binding scope=10 value name=32 def=33 Direct ambiguous=false access=public
-binding scope=10 value name=33 def=34 Direct ambiguous=false access=public
-binding scope=11 type name=30 def=31 Direct ambiguous=false access=public
-binding scope=11 type name=31 def=32 Direct ambiguous=false access=public
-binding scope=12 value name=35 def=36 Direct ambiguous=false access=public
-binding scope=12 type name=35 def=37 Direct ambiguous=false access=public
-binding scope=12 value name=36 def=38 Direct ambiguous=false access=public
-binding scope=12 type name=36 def=39 Direct ambiguous=false access=public
-binding scope=12 value name=37 def=40 Direct ambiguous=false access=public
-binding scope=12 type name=37 def=41 Direct ambiguous=false access=public
-binding scope=15 type name=30 def=43 Direct ambiguous=false access=public
-binding scope=16 type name=40 def=45 Direct ambiguous=false access=public
-binding scope=17 value name=42 def=47 Direct ambiguous=false access=public
-binding scope=17 type name=42 def=48 Direct ambiguous=false access=public
-binding scope=17 value name=43 def=49 Direct ambiguous=false access=public
-binding scope=17 type name=43 def=50 Direct ambiguous=false access=public
-binding scope=18 type name=41 def=46 Direct ambiguous=false access=public
-binding scope=19 value name=45 def=54 Direct ambiguous=false access=public
-binding scope=19 value name=46 def=55 Direct ambiguous=false access=public
+def 65 value function name=54 scope=21 access=public
+def 66 value function name=55 scope=21 access=public
+binding scope=0 type name=3 def=19 Direct ambiguous=false access=module:0
+binding scope=0 value name=25 def=24 Direct ambiguous=false access=module:0
+binding scope=1 type name=4 def=20 Direct ambiguous=false access=module:0
+binding scope=1 value name=4 def=21 Direct ambiguous=false access=module:0
+binding scope=1 type name=24 def=22 Direct ambiguous=false access=module:0
+binding scope=1 value name=24 def=23 Direct ambiguous=false access=module:0
+binding scope=2 value name=2 def=25 Direct ambiguous=false access=module:0
+binding scope=4 value name=5 def=26 Direct ambiguous=false access=module:0
+binding scope=6 type name=28 def=29 Direct ambiguous=false access=public
+binding scope=6 type name=29 def=30 Direct ambiguous=false access=public
+binding scope=7 type name=27 def=28 Direct ambiguous=false access=public
+binding scope=7 type name=30 def=31 Direct ambiguous=false access=public
+binding scope=7 type name=41 def=46 Direct ambiguous=false access=public
+binding scope=8 type name=26 def=27 Direct ambiguous=false access=public
+binding scope=9 type name=31 def=32 Direct ambiguous=false access=public
+binding scope=9 type name=36 def=37 Direct ambiguous=false access=public
+binding scope=9 type name=40 def=44 Direct ambiguous=false access=public
+binding scope=9 type name=46 def=53 Direct ambiguous=false access=public
+binding scope=9 type name=52 def=61 Direct ambiguous=false access=public
+binding scope=10 value name=34 def=35 Direct ambiguous=false access=public
+binding scope=10 value name=35 def=36 Direct ambiguous=false access=public
+binding scope=11 type name=32 def=33 Direct ambiguous=false access=public
+binding scope=11 type name=33 def=34 Direct ambiguous=false access=public
+binding scope=12 value name=37 def=38 Direct ambiguous=false access=public
+binding scope=12 type name=37 def=39 Direct ambiguous=false access=public
+binding scope=12 value name=38 def=40 Direct ambiguous=false access=public
+binding scope=12 type name=38 def=41 Direct ambiguous=false access=public
+binding scope=12 value name=39 def=42 Direct ambiguous=false access=public
+binding scope=12 type name=39 def=43 Direct ambiguous=false access=public
+binding scope=15 type name=32 def=45 Direct ambiguous=false access=public
+binding scope=16 type name=42 def=47 Direct ambiguous=false access=public
+binding scope=17 value name=44 def=49 Direct ambiguous=false access=public
+binding scope=17 type name=44 def=50 Direct ambiguous=false access=public
+binding scope=17 value name=45 def=51 Direct ambiguous=false access=public
+binding scope=17 type name=45 def=52 Direct ambiguous=false access=public
+binding scope=18 type name=43 def=48 Direct ambiguous=false access=public
 binding scope=19 value name=47 def=56 Direct ambiguous=false access=public
 binding scope=19 value name=48 def=57 Direct ambiguous=false access=public
 binding scope=19 value name=49 def=58 Direct ambiguous=false access=public
-binding scope=20 type name=30 def=52 Direct ambiguous=false access=public
-binding scope=20 type name=31 def=53 Direct ambiguous=false access=public
-binding scope=21 value name=28 def=61 Direct ambiguous=false access=public
-binding scope=21 value name=51 def=62 Direct ambiguous=false access=public
-binding scope=21 value name=52 def=63 Direct ambiguous=false access=public
+binding scope=19 value name=50 def=59 Direct ambiguous=false access=public
+binding scope=19 value name=51 def=60 Direct ambiguous=false access=public
+binding scope=20 type name=32 def=54 Direct ambiguous=false access=public
+binding scope=20 type name=33 def=55 Direct ambiguous=false access=public
+binding scope=21 value name=30 def=63 Direct ambiguous=false access=public
 binding scope=21 value name=53 def=64 Direct ambiguous=false access=public
-binding scope=22 type name=30 def=60 Direct ambiguous=false access=public
+binding scope=21 value name=54 def=65 Direct ambiguous=false access=public
+binding scope=21 value name=55 def=66 Direct ambiguous=false access=public
+binding scope=22 type name=32 def=62 Direct ambiguous=false access=public
 ref 0:0 scope=1 type def=5
-ref 0:6 scope=2 type def=17
-ref 0:13 scope=4 value def=23
-ref 0:10 scope=4 value def=19
-ref 0:15 scope=4 value def=24
-ref 0:19 scope=5 value def=24
-eof files=1 modules=1 definitions=65 references=6
+ref 0:6 scope=2 type def=19
+ref 0:13 scope=4 value def=25
+ref 0:10 scope=4 value def=21
+ref 0:15 scope=4 value def=26
+ref 0:19 scope=5 value def=26
+eof files=1 modules=1 definitions=67 references=6

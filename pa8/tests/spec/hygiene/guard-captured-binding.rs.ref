@@ -100,6 +100,8 @@ name 35 "u128"
 name 36 "usize"
 name 37 "f32"
 name 38 "f64"
+name 39 "f16"
+name 40 "f128"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 scope 1 module=0 barrier=true parent=0
@@ -138,14 +140,16 @@ def 28 type primitive name=35 scope=0 access=public
 def 29 type primitive name=36 scope=0 access=public
 def 30 type primitive name=37 scope=0 access=public
 def 31 type primitive name=38 scope=0 access=public
-def 32 value local name=1 scope=2 access=module:0 source=0:1
-def 33 value local name=16 scope=3 access=module:0 source=0:17
-def 34 value local name=1 scope=3 access=module:0 source=0:18
-def 35 value local name=2 scope=2 access=module:0 source=0:4
+def 32 type primitive name=39 scope=0 access=public
+def 33 type primitive name=40 scope=0 access=public
+def 34 value local name=1 scope=2 access=module:0 source=0:1
+def 35 value local name=16 scope=3 access=module:0 source=0:17
+def 36 value local name=1 scope=3 access=module:0 source=0:18
+def 37 value local name=2 scope=2 access=module:0 source=0:4
 binding scope=0 value name=21 def=14 Direct ambiguous=false access=module:0
-ref 0:19 scope=3 value def=33
-ref 0:23 scope=3 value def=34
-ref 0:9 scope=2 value def=32
-ref 0:10 scope=2 value def=35
-eof files=1 modules=1 definitions=36 references=4
-end-expanded-crate files 1 modules 1 macros 1 invocations 1 captures 1 definitions 36 references 4
+ref 0:19 scope=3 value def=35
+ref 0:23 scope=3 value def=36
+ref 0:9 scope=2 value def=34
+ref 0:10 scope=2 value def=37
+eof files=1 modules=1 definitions=38 references=4
+end-expanded-crate files 1 modules 1 macros 1 invocations 1 captures 1 definitions 38 references 4

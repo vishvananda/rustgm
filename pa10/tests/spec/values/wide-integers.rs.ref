@@ -18,12 +18,14 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 function binders=0 parameters=[15] result=15 unsafe=false
-type 20 function-item def=13 signature=19
-type 21 function binders=0 parameters=[9] result=9 unsafe=false
-type 22 function-item def=14 signature=21
-body 0 function def=13 signature=19 result=15 source=0:7
-  local l0 type=15 parameter=0 def=32 mutable=false storage-parent=- source=0
+type 19 primitive f16
+type 20 primitive f128
+type 21 function binders=0 parameters=[15] result=15 unsafe=false
+type 22 function-item def=13 signature=21
+type 23 function binders=0 parameters=[9] result=9 unsafe=false
+type 24 function-item def=14 signature=23
+body 0 function def=13 signature=21 result=15 source=0:7
+  local l0 type=15 parameter=0 def=34 mutable=false storage-parent=- source=0
   block b0:
     live l0 source=0
     v0 type=15 = read l0 source=4
@@ -32,8 +34,8 @@ body 0 function def=13 signature=19 result=15 source=0:7
     dead l0 source=7
     return v2 source=7
 end-body
-body 1 function def=14 signature=21 result=9 source=0:15
-  local l0 type=9 parameter=0 def=33 mutable=false storage-parent=- source=9
+body 1 function def=14 signature=23 result=9 source=0:15
+  local l0 type=9 parameter=0 def=35 mutable=false storage-parent=- source=9
   block b0:
     live l0 source=9
     v0 type=9 = read l0 source=13

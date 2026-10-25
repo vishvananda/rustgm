@@ -18,13 +18,15 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 function binders=0 parameters=[14,14] result=14 unsafe=false
-type 20 function-item def=13 signature=19
-type 21 function binders=0 parameters=[] result=14 unsafe=false
-type 22 function-item def=14 signature=21
-body 0 function def=13 signature=19 result=14 source=0:12
-  local l0 type=14 parameter=0 def=32 mutable=false storage-parent=- source=0
-  local l1 type=14 parameter=1 def=33 mutable=false storage-parent=l0 source=3
+type 19 primitive f16
+type 20 primitive f128
+type 21 function binders=0 parameters=[14,14] result=14 unsafe=false
+type 22 function-item def=13 signature=21
+type 23 function binders=0 parameters=[] result=14 unsafe=false
+type 24 function-item def=14 signature=23
+body 0 function def=13 signature=21 result=14 source=0:12
+  local l0 type=14 parameter=0 def=34 mutable=false storage-parent=- source=0
+  local l1 type=14 parameter=1 def=35 mutable=false storage-parent=l0 source=3
   block b0:
     live l0 source=0
     live l1 source=3
@@ -36,21 +38,21 @@ body 0 function def=13 signature=19 result=14 source=0:12
     end-storage first=l0 last=l1 source=12
     return v4 source=12
 end-body
-body 1 function def=14 signature=21 result=14 source=0:27
-  local l0 type=14 binding def=34 mutable=true storage-parent=- source=15
+body 1 function def=14 signature=23 result=14 source=0:27
+  local l0 type=14 binding def=36 mutable=true storage-parent=- source=15
   block b0:
     v0 type=14 = integer bits=0x00000000000000000000000000000001 source=16
     live l0 source=15
     store l0 v0 source=17
     v1 type=1 = unit source=17
-    v2 type=20 = function def=13 source=18
+    v2 type=22 = function def=13 source=18
     v3 type=14 = read l0 source=19
     v4 type=14 = integer bits=0x00000000000000000000000000000009 source=21
     store l0 v4 source=22
     v5 type=1 = unit source=22
     v6 type=1 = unit source=23
     v7 type=14 = read l0 source=24
-    v8 type=14 = call signature=19 v2 [v3,v7] source=26
+    v8 type=14 = call signature=21 v2 [v3,v7] source=26
     dead l0 source=27
     return v8 source=27
 end-body

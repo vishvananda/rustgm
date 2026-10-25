@@ -18,7 +18,9 @@ name 16 "u128"
 name 17 "usize"
 name 18 "f32"
 name 19 "f64"
-name 20 "g"
+name 20 "f16"
+name 21 "f128"
+name 22 "g"
 module 0 name=0 file=0 scope=0 parent=root
 module 1 name=2 file=0 scope=1 parent=0
 scope 0 module=0 barrier=true parent=root
@@ -44,13 +46,15 @@ def 13 type primitive name=16 scope=0 access=public
 def 14 type primitive name=17 scope=0 access=public
 def 15 type primitive name=18 scope=0 access=public
 def 16 type primitive name=19 scope=0 access=public
-def 17 type module name=2 scope=0 access=module:0 source=0:4 members=1
-def 18 value function name=3 scope=1 access=public source=0:3
-def 19 value function name=20 scope=0 access=module:0 source=0:11
-binding scope=0 type name=2 def=17 Direct ambiguous=false access=module:0
-binding scope=0 value name=20 def=19 Direct ambiguous=false access=module:0
-binding scope=1 value name=3 def=18 Direct ambiguous=false access=public
+def 17 type primitive name=20 scope=0 access=public
+def 18 type primitive name=21 scope=0 access=public
+def 19 type module name=2 scope=0 access=module:0 source=0:4 members=1
+def 20 value function name=3 scope=1 access=public source=0:3
+def 21 value function name=22 scope=0 access=module:0 source=0:11
+binding scope=0 type name=2 def=19 Direct ambiguous=false access=module:0
+binding scope=0 value name=22 def=21 Direct ambiguous=false access=module:0
+binding scope=1 value name=3 def=20 Direct ambiguous=false access=public
 ref 0:5 scope=4 type def=5
-ref 0:8 scope=5 value def=18
+ref 0:8 scope=5 value def=20
 ref 0:0 scope=2 type def=5
-eof files=1 modules=2 definitions=20 references=3
+eof files=1 modules=2 definitions=22 references=3

@@ -18,20 +18,22 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=14 index=0
-type 20 parameter def=13 index=0
-type 21 projection def=15 self=19 trait=13 arguments=[type:20] family arguments=[region:bound:0:0,region:bound:0:1]
-type 22 reference mutable=false region=bound:0:0 referent=20
-type 23 function binders=2 parameters=[22] result=21 unsafe=false
-type 24 projection def=15 self=19 trait=13 arguments=[type:20] family arguments=[region:bound:0:0,region:bound:1:0]
-type 25 function binders=1 parameters=[22] result=24 unsafe=false
-type 26 function-item def=16 signature=23
-type 27 function binders=0 parameters=[] result=1 unsafe=false
-type 28 function-item def=17 signature=27
-def 14 type=19 name="Self" source=0:22
-def 15 type=21 name="Out" source=0:7
-def 16 type=26 name="f" source=0:21
-def 17 type=28 name="main" source=0:24
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=14 index=0
+type 22 parameter def=13 index=0
+type 23 projection def=15 self=21 trait=13 arguments=[type:22] family arguments=[region:bound:0:0,region:bound:0:1]
+type 24 reference mutable=false region=bound:0:0 referent=22
+type 25 function binders=2 parameters=[24] result=23 unsafe=false
+type 26 projection def=15 self=21 trait=13 arguments=[type:22] family arguments=[region:bound:0:0,region:bound:1:0]
+type 27 function binders=1 parameters=[24] result=26 unsafe=false
+type 28 function-item def=16 signature=25
+type 29 function binders=0 parameters=[] result=1 unsafe=false
+type 30 function-item def=17 signature=29
+def 14 type=21 name="Self" source=0:22
+def 15 type=23 name="Out" source=0:7
+def 16 type=28 name="f" source=0:21
+def 17 type=30 name="main" source=0:24
 def 18 type=2 name="bool"
 def 19 type=3 name="char"
 def 20 type=4 name="str"
@@ -49,20 +51,22 @@ def 31 type=15 name="u128"
 def 32 type=16 name="usize"
 def 33 type=17 name="f32"
 def 34 type=18 name="f64"
-def 35 type=20 name="T" source=0:0
-associated-owner 0 kind=trait self-def=14 self=19 source=0:22 trait=13 unsafe=false name="A"
+def 35 type=19 name="f16"
+def 36 type=20 name="f128"
+def 37 type=22 name="T" source=0:0
+associated-owner 0 kind=trait self-def=14 self=21 source=0:22 trait=13 unsafe=false name="A"
 associated-member def=15 owner=0
 associated-member def=16 owner=0
-parameter owner=13 binding=35 argument=type:20 default=-
-parameter owner=14 binding=14 argument=type:19 default=-
-parameter owner=15 binding=36 argument=region:bound:0:0 default=-
-parameter owner=15 binding=37 argument=region:bound:0:1 default=-
-predicate owner=13 source=0:22 subject=19 bound=trait:13 arguments=[type:20]
-predicate owner=15 source=0:5 subject=20 bound=outlives:bound:0:0
-associated-type def=15 type=21
-result-contract def=15 projection=21
-result-bound def=15 index=0 subject=21 bound=sized
-normalized-node source=0:20 original=21 result=21
+parameter owner=13 binding=37 argument=type:22 default=-
+parameter owner=14 binding=14 argument=type:21 default=-
+parameter owner=15 binding=38 argument=region:bound:0:0 default=-
+parameter owner=15 binding=39 argument=region:bound:0:1 default=-
+predicate owner=13 source=0:22 subject=21 bound=trait:13 arguments=[type:22]
+predicate owner=15 source=0:5 subject=22 bound=outlives:bound:0:0
+associated-type def=15 type=23
+result-contract def=15 projection=23
+result-bound def=15 index=0 subject=23 bound=sized
+normalized-node source=0:20 original=23 result=23
 family def=15 captures=0 regions=2 complete=true
-family-bound def=15 index=0 subject=20 bound=outlives:bound:0:0
+family-bound def=15 index=0 subject=22 bound=outlives:bound:0:0
 eof owners=1 members=2 parameters=4 predicates=2 impls=0 calls=0 paths=0 impl-uses=0 type-members=1 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=1 normalized-definitions=0 quantifiers=0 families=1 family-bounds=1 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

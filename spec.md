@@ -93,6 +93,21 @@ includes declaration and owning crate; familiar names are not implementation
 evidence. Transport checked generic/const bodies and their retained contracts
 through deterministic crate metadata with indexed external-to-local remapping.
 
+Header diagnostic and advisory contracts use complete versioned cold columns.
+Authenticate local declaration, configured owner and retained source incarnation;
+join imported declarations to their actual catalog coordinates once. Reuse the
+existing owner/effect and declaration passes for positive completion. Missing
+entries, unvisited owners and older metadata remain Unknown; KnownAbsent needs
+an actual completed producer witness. Borrow retained reasons on warm reads,
+charge attempted work and retained bytes, and preserve aggregate limits on
+failure. Do not grow ordinary syntax, body or declaration records for these
+columns. Provider declaration warnings occur once, while imported unused-result
+diagnostics use the consumer's lexical lint policy and use location. Select an
+explicit publication profile and preserve legacy bytes; contract presence never
+grants execution or trait permission. The
+[versioned transport checkpoint](docs/source-header-contract-transport.md)
+records exact-byte, fresh-consumer, origin, budget and layout controls.
+
 Local structural inherent ownership consumes the actual crate policy and complete
 member inventory. Head/name/context buckets exclude unrelated work; full Self,
 const arguments, caller conditions and visibility still decide applicability.
@@ -3396,6 +3411,17 @@ only the active variant's values for the latter. Derived reference cycles use
 an iterative greatest fixed point with reverse dependency edges: publish all
 positive and negative results only after propagation completes. Count actual
 nodes, dependencies and propagation work under an explicit query budget.
+
+Wide floating literals retain exact target bits through literal, typing and
+constant-image facts. F16/F128 conversion uses one bounded rational/sticky kernel
+adapted from the frozen CPPGM implementation; existing f32/f64 paths stay direct.
+Never round a wide literal through f64. Keep the quad payload in two 64-bit
+words so it cannot enlarge ordinary scalar, node, body or LowIR value alignment.
+Measure the actual canonical-table cost and preflight bounded limb storage.
+Active literals and resolved primitive uses consume genuine crate or token-origin
+feature authority. A known type grants no unsupported arithmetic, cast, pattern,
+wire or ABI operation. The [wide-literal checkpoint](docs/wide-literals-checkpoint.md)
+records exact-bit, enclosing-layout, work and text-contract qualification.
 
 Selected string and byte-string literals retain decoded bytes in one flat,
 interned byte arena, addressed by sparse syntax-node facts. Constant evaluation

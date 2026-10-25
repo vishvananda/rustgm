@@ -2424,6 +2424,51 @@
         "status": 1,
         "default_lints": true
       }
+    },
+    {
+      "path": "tests/spec/types/wide-enabled.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.types"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/types/wide-missing-feature.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.types"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/types/wide-mismatched-width.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.types"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
     }
   ]
 }

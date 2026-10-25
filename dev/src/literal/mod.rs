@@ -1,4 +1,5 @@
 //! PA2 literal interpretation. Macro tokens are interpreted only on demand.
+mod decimal_rounding;
 mod escapes;
 mod number;
 pub mod render;
@@ -78,3 +79,7 @@ fn reserved_period(tail: &str) -> bool {
             .next()
             .is_some_and(|ch| ch == '.' || ch == '_' || unicode_ident::is_xid_start(ch))
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/floating_literals.rs"]
+mod tests;

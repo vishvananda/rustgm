@@ -18,20 +18,22 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=13 index=0
-type 20 opaque id=0 arguments=[type:19]
-type 21 function binders=0 parameters=[19] result=20 unsafe=false
-type 22 function-item def=13 signature=21
-type 23 function binders=0 parameters=[] result=1 unsafe=false
-type 24 function-item def=14 signature=23
-type 25 opaque id=0 arguments=[type:11]
-type 26 function binders=0 parameters=[11] result=25 unsafe=false
-type 27 function-item def=13 signature=26 arguments=[type:11]
-type 28 opaque id=0 arguments=[type:2]
-type 29 function binders=0 parameters=[2] result=28 unsafe=false
-type 30 function-item def=13 signature=29 arguments=[type:2]
-def 13 type=22 name="f" source=0:11
-def 14 type=24 name="main" source=0:23
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=13 index=0
+type 22 opaque id=0 arguments=[type:21]
+type 23 function binders=0 parameters=[21] result=22 unsafe=false
+type 24 function-item def=13 signature=23
+type 25 function binders=0 parameters=[] result=1 unsafe=false
+type 26 function-item def=14 signature=25
+type 27 opaque id=0 arguments=[type:11]
+type 28 function binders=0 parameters=[11] result=27 unsafe=false
+type 29 function-item def=13 signature=28 arguments=[type:11]
+type 30 opaque id=0 arguments=[type:2]
+type 31 function binders=0 parameters=[2] result=30 unsafe=false
+type 32 function-item def=13 signature=31 arguments=[type:2]
+def 13 type=24 name="f" source=0:11
+def 14 type=26 name="main" source=0:23
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"
@@ -49,11 +51,13 @@ def 28 type=15 name="u128"
 def 29 type=16 name="usize"
 def 30 type=17 name="f32"
 def 31 type=18 name="f64"
-def 32 type=19 name="T" source=0:2
-def 40 type=19 name="x" source=0:3
-parameter owner=13 binding=32 argument=type:19 default=-
-predicate owner=13 source=0:1 subject=19 bound=copy
-opaque 0 owner=13 source=0:8 application=20 hidden=19 role=defining-result storage-proof=pending
-opaque-bound id=0 index=0 subject=20 bound=copy
-opaque-body-result def=13 type=19
+def 32 type=19 name="f16"
+def 33 type=20 name="f128"
+def 34 type=21 name="T" source=0:2
+def 42 type=21 name="x" source=0:3
+parameter owner=13 binding=34 argument=type:21 default=-
+predicate owner=13 source=0:1 subject=21 bound=copy
+opaque 0 owner=13 source=0:8 application=22 hidden=21 role=defining-result storage-proof=pending
+opaque-bound id=0 index=0 subject=22 bound=copy
+opaque-body-result def=13 type=21
 eof owners=0 members=0 parameters=1 predicates=1 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=1 opaque-bounds=1 hidden-types=1 opaque-body-results=1 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

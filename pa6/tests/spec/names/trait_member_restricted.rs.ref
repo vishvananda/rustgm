@@ -24,8 +24,10 @@ name 22 "u128"
 name 23 "usize"
 name 24 "f32"
 name 25 "f64"
-name 26 "Self"
-name 27 "main"
+name 26 "f16"
+name 27 "f128"
+name 28 "Self"
+name 29 "main"
 module 0 name=0 file=0 scope=0 parent=root
 module 1 name=8 file=0 scope=1 parent=0
 module 2 name=6 file=0 scope=2 parent=1
@@ -58,32 +60,34 @@ def 13 type primitive name=22 scope=0 access=public
 def 14 type primitive name=23 scope=0 access=public
 def 15 type primitive name=24 scope=0 access=public
 def 16 type primitive name=25 scope=0 access=public
-def 17 type module name=8 scope=0 access=module:0 source=0:27 members=1
-def 18 type module name=6 scope=1 access=module:1 source=0:13 members=2
-def 19 type struct name=5 scope=2 access=public source=0:0 members=3
-def 20 value constructor name=5 scope=2 access=public source=0:0
-def 21 type trait name=4 scope=2 access=module:1 source=0:9 members=4
-def 22 type self-type name=26 scope=4 access=module:2 source=0:9 members=4
-def 23 value function name=7 scope=4 access=module:1 source=0:8
-def 24 type self-type name=26 scope=7 access=module:2 source=0:12 members=7
-def 25 value function name=9 scope=1 access=public source=0:26
-def 26 value function name=27 scope=0 access=module:0 source=0:34
-def 27 value parameter name=2 scope=5 access=module:2 source=0:2
-binding scope=0 type name=8 def=17 Direct ambiguous=false access=module:0
-binding scope=0 value name=27 def=26 Direct ambiguous=false access=module:0
-binding scope=1 type name=6 def=18 Direct ambiguous=false access=module:1
-binding scope=1 value name=9 def=25 Direct ambiguous=false access=public
-binding scope=2 type name=5 def=19 Direct ambiguous=false access=public
-binding scope=2 value name=5 def=20 Direct ambiguous=false access=public
-binding scope=2 type name=4 def=21 Direct ambiguous=false access=module:1
-binding scope=4 type name=26 def=22 Direct ambiguous=false access=module:2
-binding scope=4 value name=7 def=23 Direct ambiguous=false access=module:1
-binding scope=5 value name=2 def=27 Direct ambiguous=false access=module:2
-binding scope=7 type name=26 def=24 Direct ambiguous=false access=module:2
-ref 0:30 scope=11 value def=25
-ref 0:18 scope=9 value def=23
-ref 0:21 scope=9 value def=20
+def 17 type primitive name=26 scope=0 access=public
+def 18 type primitive name=27 scope=0 access=public
+def 19 type module name=8 scope=0 access=module:0 source=0:27 members=1
+def 20 type module name=6 scope=1 access=module:1 source=0:13 members=2
+def 21 type struct name=5 scope=2 access=public source=0:0 members=3
+def 22 value constructor name=5 scope=2 access=public source=0:0
+def 23 type trait name=4 scope=2 access=module:1 source=0:9 members=4
+def 24 type self-type name=28 scope=4 access=module:2 source=0:9 members=4
+def 25 value function name=7 scope=4 access=module:1 source=0:8
+def 26 type self-type name=28 scope=7 access=module:2 source=0:12 members=7
+def 27 value function name=9 scope=1 access=public source=0:26
+def 28 value function name=29 scope=0 access=module:0 source=0:34
+def 29 value parameter name=2 scope=5 access=module:2 source=0:2
+binding scope=0 type name=8 def=19 Direct ambiguous=false access=module:0
+binding scope=0 value name=29 def=28 Direct ambiguous=false access=module:0
+binding scope=1 type name=6 def=20 Direct ambiguous=false access=module:1
+binding scope=1 value name=9 def=27 Direct ambiguous=false access=public
+binding scope=2 type name=5 def=21 Direct ambiguous=false access=public
+binding scope=2 value name=5 def=22 Direct ambiguous=false access=public
+binding scope=2 type name=4 def=23 Direct ambiguous=false access=module:1
+binding scope=4 type name=28 def=24 Direct ambiguous=false access=module:2
+binding scope=4 value name=7 def=25 Direct ambiguous=false access=module:1
+binding scope=5 value name=2 def=29 Direct ambiguous=false access=module:2
+binding scope=7 type name=28 def=26 Direct ambiguous=false access=module:2
+ref 0:30 scope=11 value def=27
+ref 0:18 scope=9 value def=25
+ref 0:21 scope=9 value def=22
 ref 0:5 scope=5 type def=9
-ref 0:10 scope=7 type def=21
-ref 0:11 scope=7 type def=19
-eof files=1 modules=3 definitions=28 references=6
+ref 0:10 scope=7 type def=23
+ref 0:11 scope=7 type def=21
+eof files=1 modules=3 definitions=30 references=6

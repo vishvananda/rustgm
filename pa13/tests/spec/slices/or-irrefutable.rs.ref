@@ -18,21 +18,23 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 slice element=2
-type 20 reference mutable=false region=bound:0:0 referent=19
-type 21 function binders=1 parameters=[20] result=1 unsafe=false
-type 22 function-item def=13 signature=21
-type 23 reference mutable=false region=region:1 referent=19
+type 19 primitive f16
+type 20 primitive f128
+type 21 slice element=2
+type 22 reference mutable=false region=bound:0:0 referent=21
+type 23 function binders=1 parameters=[22] result=1 unsafe=false
+type 24 function-item def=13 signature=23
+type 25 reference mutable=false region=region:1 referent=21
 root 0:10 pattern=0
-pattern 0 source=0:9 input=23 or alternatives=0:2
-pattern 1 source=0:5 input=23 deref mutable=false implicit=true pattern=3
-pattern 2 source=0:8 input=23 deref mutable=false implicit=true pattern=4
-pattern 3 source=0:5 input=19 slice minimum=0 exact=true fields=0:0
-pattern 4 source=0:8 input=19 slice minimum=1 exact=false fields=0:1
+pattern 0 source=0:9 input=25 or alternatives=0:2
+pattern 1 source=0:5 input=25 deref mutable=false implicit=true pattern=3
+pattern 2 source=0:8 input=25 deref mutable=false implicit=true pattern=4
+pattern 3 source=0:5 input=21 slice minimum=0 exact=true fields=0:0
+pattern 4 source=0:8 input=21 slice minimum=1 exact=false fields=0:1
 pattern 5 source=0:6 input=2 wildcard
 field 0 index=0 pattern=5
 alternative 0 pattern=1
 alternative 1 pattern=2
 region-var region:1 body=0:13 source=0:11 origin=inference pending
-region-coercion body=0:13 source=0:11 actual=20 expected=23 kind=same-shape pending
+region-coercion body=0:13 source=0:11 actual=22 expected=25 kind=same-shape pending
 eof roots=1 patterns=6 fields=1 alternatives=2 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=1 region-equalities=0 conditions=0 chains=0

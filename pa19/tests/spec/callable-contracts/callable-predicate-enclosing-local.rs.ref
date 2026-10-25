@@ -18,24 +18,26 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=15 index=0
-type 20 aggregate def=15 arguments=[type:19]
-type 21 parameter def=14 index=0
-type 22 reference mutable=false region=bound:1:0 referent=11
-type 23 function binders=0 parameters=[22] result=1 unsafe=false
-type 24 aggregate def=15 arguments=[type:23]
-type 25 function binders=1 parameters=[24] result=1 unsafe=false
-type 26 function binders=0 parameters=[25] result=1 unsafe=false
-type 27 function-item def=17 signature=26
-type 28 function binders=0 parameters=[] result=1 unsafe=false
-type 29 function-item def=18 signature=28
-type 30 function binders=0 parameters=[19] result=20 unsafe=false
-type 31 function-item def=16 signature=30
-def 14 type=21 name="Self" source=0:0
-def 15 type=20 name="W" source=0:6
-def 16 type=31 name="W" source=0:6
-def 17 type=27 name="f" source=0:21
-def 18 type=29 name="main" source=0:23
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=15 index=0
+type 22 aggregate def=15 arguments=[type:21]
+type 23 parameter def=14 index=0
+type 24 reference mutable=false region=bound:1:0 referent=11
+type 25 function binders=0 parameters=[24] result=1 unsafe=false
+type 26 aggregate def=15 arguments=[type:25]
+type 27 function binders=1 parameters=[26] result=1 unsafe=false
+type 28 function binders=0 parameters=[27] result=1 unsafe=false
+type 29 function-item def=17 signature=28
+type 30 function binders=0 parameters=[] result=1 unsafe=false
+type 31 function-item def=18 signature=30
+type 32 function binders=0 parameters=[21] result=22 unsafe=false
+type 33 function-item def=16 signature=32
+def 14 type=23 name="Self" source=0:0
+def 15 type=22 name="W" source=0:6
+def 16 type=33 name="W" source=0:6
+def 17 type=29 name="f" source=0:21
+def 18 type=31 name="main" source=0:23
 def 19 type=2 name="bool"
 def 20 type=3 name="char"
 def 21 type=4 name="str"
@@ -53,11 +55,13 @@ def 32 type=15 name="u128"
 def 33 type=16 name="usize"
 def 34 type=17 name="f32"
 def 35 type=18 name="f64"
-def 36 type=19 name="T" source=0:3
-def 38 type=25 name="x" source=0:7
-associated-owner 0 kind=trait self-def=14 self=21 source=0:0 trait=13 unsafe=false name="A"
-parameter owner=14 binding=14 argument=type:21 default=-
-parameter owner=15 binding=36 argument=type:19 default=-
-predicate owner=13 source=0:0 subject=21 bound=trait:13 arguments=[]
-predicate owner=15 source=0:2 subject=19 bound=trait:13 arguments=[]
+def 36 type=19 name="f16"
+def 37 type=20 name="f128"
+def 38 type=21 name="T" source=0:3
+def 40 type=27 name="x" source=0:7
+associated-owner 0 kind=trait self-def=14 self=23 source=0:0 trait=13 unsafe=false name="A"
+parameter owner=14 binding=14 argument=type:23 default=-
+parameter owner=15 binding=38 argument=type:21 default=-
+predicate owner=13 source=0:0 subject=23 bound=trait:13 arguments=[]
+predicate owner=15 source=0:2 subject=21 bound=trait:13 arguments=[]
 eof owners=1 members=0 parameters=2 predicates=2 impls=0 calls=0 paths=0 impl-uses=0

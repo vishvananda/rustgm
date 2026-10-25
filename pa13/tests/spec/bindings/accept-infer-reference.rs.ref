@@ -18,11 +18,13 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 function binders=0 parameters=[] result=1 unsafe=false
-type 20 function-item def=13 signature=19
-type 21 reference mutable=false region=region:1 referent=11
+type 19 primitive f16
+type 20 primitive f128
+type 21 function binders=0 parameters=[] result=1 unsafe=false
+type 22 function-item def=13 signature=21
+type 23 reference mutable=false region=region:1 referent=11
 root 0:1 pattern=0
-pattern 0 source=0:1 input=21 deref mutable=false implicit=false pattern=1
-pattern 1 source=0:0 input=11 bind def=31 local=11 mutable=false capture=value subpattern=-
+pattern 0 source=0:1 input=23 deref mutable=false implicit=false pattern=1
+pattern 1 source=0:0 input=11 bind def=33 local=11 mutable=false capture=value subpattern=-
 region-var region:1 body=0:7 source=0:1 origin=pattern-input pending
 eof roots=1 patterns=2 fields=0 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=1 region-equalities=0 conditions=0 chains=0
