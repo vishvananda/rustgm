@@ -42,13 +42,27 @@ decimal inputs retain at most 2048 scratch words in the measured series.
 Ordinary validation work still needs review; layout assertions do not establish
 wall-time nonregression.
 
+A bounded ordinary-f64 screen retains 40 observations over 256/2048-function
+inputs with immutable pre-wide/current binaries, six A/A observations and three
+paired ABBA blocks per input. All outputs are identical. The larger input's
+paired baseline means are 0.416/0.422/0.458 seconds versus candidate
+0.418/0.451/0.465 seconds; A/A observations range from 0.421 to 0.475 seconds.
+These noisy small samples do not establish a regression or a speedup. Raw
+observations, inputs, compiler hashes and timings remain under
+`obj/parallel/ordinary-wide-screen-v1`; the complete screen takes 10.84 seconds.
+
 All 139 old PA2 cases are byte-identical; PA9's 91 negatives preserve status
 and diagnostics. Its 109 positive outputs require explicit typed-field mappings
 for new types/primitive definitions, later IDs and table totals. A read-only
 effect run completes all 8478 active text cases in 51.79 seconds, reusing the
 authenticated earlier 339. Every exit status and all 4902 LowIR outputs are
-byte-identical. Other semantic/name output changes remain under review. Six
-changed stderr streams introduce actual must-use warnings and require comparison
-with the immutable pre-wide compiler; they cannot be approved as ID shifts.
-No references have been regenerated or approved. Full release/native
-qualification remains separate.
+byte-identical. Other semantic/name output changes remain under review.
+
+All six changed must-use stderr streams are byte-identical in the immutable
+pre-wide compiler; the baseline comparison takes 0.913 seconds. Another 106-case
+baseline comparison takes 21.326 seconds and proves every changed pattern-work
+counter also predates this feature: 107 match rows and their EOF totals agree
+between the binaries. These are genuine earlier attempted-inhabitation charges,
+not type IDs. Keep both classes distinct from the wide feature's new rows and
+later-ID shifts when reviewing oracles. No reference has been regenerated or
+approved. Full release/native qualification remains separate.
