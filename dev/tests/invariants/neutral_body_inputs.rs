@@ -1,5 +1,5 @@
 //! Real nonzero Declaration bodies stay separate from regional/default proof.
-use super::super::{NumberedBody, Session, inherited_tests as inherited};
+use super::super::{Demand, NumberedBody, Session, inherited_tests as inherited};
 use super::*;
 use crate::unpaid_cases::Result;
 use crate::{resolve::crates::ReservationWork, support::crates::owner_catalog::DeclarationRef};
