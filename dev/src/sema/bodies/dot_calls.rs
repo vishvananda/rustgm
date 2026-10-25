@@ -8,6 +8,14 @@ use crate::{
     types::infer::Solved,
 };
 
+/// One real receiver adjustment also owns its single unsized conversion.
+struct Adjusted {
+    dereferences: u32,
+    borrow: Option<TermId>,
+    actual: TermId,
+    converted: TermId,
+}
+
 pub(super) struct Pending {
     method: DefId,
     pub(super) callable: TermId,
@@ -61,6 +69,58 @@ impl Checker<'_> {
         if selected.from_bound {
             self.facts.methods.bound_uses.insert(key);
         }
+        let adjusted = self.bind_selected_receiver(node, site.receiver, term, selected)?;
+        self.facts.methods.demand_library_method(selected.method);
+        self.complete_method_arguments(node, selected.method)?;
+        let ty = self.facts.definitions[selected.method.0 as usize]
+            .ok_or_else(|| self.error(node, "missing selected method type"))?;
+        let callable = self.generic_function(node, selected.method, ty)?;
+        let signature = self.child(node, callable, 0)?;
+        let signature = self.call_signature(node, signature)?;
+        let expected = self.child(node, signature, 0)?;
+        let Adjusted {
+            dereferences,
+            borrow,
+            actual,
+            converted,
+        } = if let Some(adjusted) = adjusted {
+            adjusted
+        } else {
+            self.receiver_adjustment(node, site.receiver, term, selected)?
+        };
+        if let Some(borrow) = borrow
+            && matches!(
+                self.head(node, borrow)?,
+                Some(Constructor::Reference { mutable: true, .. })
+            )
+        {
+            self.mark_mutable_language_place(site.receiver)?;
+        }
+        self.shape_equation(node, converted, expected)?;
+        self.state.call_types.methods.push((
+            node,
+            Pending {
+                method: selected.method,
+                callable,
+                dereferences,
+                borrow,
+                actual,
+                expected,
+                unsize: selected.unsize,
+            },
+        ));
+        self.state.call_types.active.insert(node, signature);
+        self.schedule_call_arguments(node, signature, site.arguments, 1)
+    }
+
+    /// Bind structural Self to the exact fresh borrow before generic arguments.
+    fn bind_selected_receiver(
+        &mut self,
+        node: NodeId,
+        receiver: NodeId,
+        term: TermId,
+        selected: receiver::Selected,
+    ) -> Result<Option<Adjusted>, Error> {
         let structural = selected.self_term.is_some()
             && self
                 .facts
@@ -75,17 +135,13 @@ impl Checker<'_> {
         // A structural Self may itself be an autoref. Bind it to the real fresh
         // borrow, never the static region used only in isolated shape probes.
         let adjusted = if structural {
-            Some(self.adjust_method_receiver(node, site.receiver, term, selected)?)
+            Some(self.receiver_adjustment(node, receiver, term, selected)?)
         } else {
             None
         };
         if let Some(mut subject) = selected.self_term {
-            if let Some((_, _, actual)) = adjusted {
-                subject = if selected.unsize {
-                    self.unsize_method_receiver(node, actual)?
-                } else {
-                    actual
-                };
+            if let Some(adjusted) = &adjusted {
+                subject = adjusted.converted;
                 let references = self
                     .facts
                     .methods
@@ -107,47 +163,29 @@ impl Checker<'_> {
                 .method_owners
                 .insert(node, (implementation, subject));
         }
-        self.facts.methods.demand_library_method(selected.method);
-        self.complete_method_arguments(node, selected.method)?;
-        let ty = self.facts.definitions[selected.method.0 as usize]
-            .ok_or_else(|| self.error(node, "missing selected method type"))?;
-        let callable = self.generic_function(node, selected.method, ty)?;
-        let signature = self.child(node, callable, 0)?;
-        let signature = self.call_signature(node, signature)?;
-        let expected = self.child(node, signature, 0)?;
-        let (dereferences, borrow, actual) = if let Some(adjusted) = adjusted {
-            adjusted
-        } else {
-            self.adjust_method_receiver(node, site.receiver, term, selected)?
-        };
-        if let Some(borrow) = borrow
-            && matches!(
-                self.head(node, borrow)?,
-                Some(Constructor::Reference { mutable: true, .. })
-            )
-        {
-            self.mark_mutable_language_place(site.receiver)?;
-        }
+        Ok(adjusted)
+    }
+
+    fn receiver_adjustment(
+        &mut self,
+        node: NodeId,
+        receiver: NodeId,
+        term: TermId,
+        selected: receiver::Selected,
+    ) -> Result<Adjusted, Error> {
+        let (dereferences, borrow, actual) =
+            self.adjust_method_receiver(node, receiver, term, selected)?;
         let converted = if selected.unsize {
             self.unsize_method_receiver(node, actual)?
         } else {
             actual
         };
-        self.shape_equation(node, converted, expected)?;
-        self.state.call_types.methods.push((
-            node,
-            Pending {
-                method: selected.method,
-                callable,
-                dereferences,
-                borrow,
-                actual,
-                expected,
-                unsize: selected.unsize,
-            },
-        ));
-        self.state.call_types.active.insert(node, signature);
-        self.schedule_call_arguments(node, signature, site.arguments, 1)
+        Ok(Adjusted {
+            dereferences,
+            borrow,
+            actual,
+            converted,
+        })
     }
 
     fn unsize_method_receiver(&mut self, node: NodeId, actual: TermId) -> Result<TermId, Error> {
