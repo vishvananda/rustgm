@@ -169,13 +169,16 @@ impl Scope {
         Ok(())
     }
 }
+struct ContractBody {
+    seal: originals::Origin,
+    declaration: Arc<Environment>,
+    environment: Arc<Environment>,
+}
 enum Body {
     Contract {
         expected: Ready,
         scope: usize,
-        seal: originals::Origin,
-        declaration: Arc<Environment>,
-        environment: Arc<Environment>,
+        product: Box<ContractBody>,
     },
     Ready {
         expected: Ready,
@@ -276,11 +279,9 @@ impl Owner {
             Some(Body::Contract {
                 expected: actual,
                 scope,
-                seal,
-                declaration: snapshot,
-                environment,
+                product,
             }) if *actual == expected
-                && *seal == origin
+                && product.seal == origin
                 && matches!(origin, originals::Origin::Contract(_)) =>
             {
                 let declaration = self
@@ -290,9 +291,9 @@ impl Owner {
                     .ok_or_else(|| error("empty Contract lost its actual prepared declaration"))?;
                 declaration.require(rows)?;
                 declaration.require_empty(expected)?;
-                if !Arc::ptr_eq(snapshot, &declaration.environment)
-                    || Arc::ptr_eq(environment, &declaration.environment)
-                    || !environment.is_neutral()
+                if !Arc::ptr_eq(&product.declaration, &declaration.environment)
+                    || Arc::ptr_eq(&product.environment, &declaration.environment)
+                    || !product.environment.is_neutral()
                 {
                     return Err(error(
                         "empty Contract changed its retained body construction",
@@ -366,16 +367,29 @@ impl Owner {
                 scope: index,
                 environment,
             },
-            originals::Origin::Contract(_) => Body::Contract {
-                expected,
-                scope: index,
-                seal: origin,
-                declaration: Arc::clone(&scope.environment),
-                environment,
-            },
+            originals::Origin::Contract(_) => {
+                work.reserve(size_of::<ContractBody>())?;
+                Body::Contract {
+                    expected,
+                    scope: index,
+                    product: Box::new(ContractBody {
+                        seal: origin,
+                        declaration: Arc::clone(&scope.environment),
+                        environment,
+                    }),
+                }
+            }
+        };
+        let product_bytes = if matches!(origin, originals::Origin::Contract(_)) {
+            size_of::<ContractBody>()
+        } else {
+            0
         };
         self.publish(expected, body, work)?;
-        self.bytes = self.bytes.saturating_add(bytes);
+        self.bytes = self
+            .bytes
+            .saturating_add(bytes)
+            .saturating_add(product_bytes);
         Ok(Demand::Ready(()))
     }
     fn publish(

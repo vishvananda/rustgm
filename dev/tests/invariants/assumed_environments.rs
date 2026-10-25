@@ -184,8 +184,7 @@ fn plain_contract() -> Result {
     let Body::Contract {
         expected,
         scope,
-        declaration,
-        environment,
+        product,
         ..
     } = environments
         .bodies
@@ -202,9 +201,9 @@ fn plain_contract() -> Result {
         .as_deref()
         .ok_or("actual scope")?;
     scope.require_empty(*expected)?;
-    assert!(environment.is_neutral());
-    assert!(!Arc::ptr_eq(environment, &scope.environment));
-    assert!(Arc::ptr_eq(declaration, &scope.environment));
+    assert!(product.environment.is_neutral());
+    assert!(!Arc::ptr_eq(&product.environment, &scope.environment));
+    assert!(Arc::ptr_eq(&product.declaration, &scope.environment));
     let rows = session.inventory.artifacts()[0]
         .source_descriptor()
         .ok_or("retained rows")?
@@ -366,19 +365,12 @@ fn contract_opponents() -> Result {
                 .flatten()
                 .next()
                 .ok_or("actual Contract body")?;
-            let Body::Contract {
-                seal,
-                declaration,
-                environment,
-                scope,
-                ..
-            } = record.as_mut()
-            else {
+            let Body::Contract { product, scope, .. } = record.as_mut() else {
                 return Err("actual Contract memo".into());
             };
             match opponent {
-                6 => *seal = originals::Origin::Declaration,
-                7 => *environment = Arc::clone(declaration),
+                6 => product.seal = originals::Origin::Declaration,
+                7 => product.environment = Arc::clone(&product.declaration),
                 _ => {
                     owner.scopes[*scope] = None;
                 }
@@ -391,10 +383,7 @@ fn contract_opponents() -> Result {
     let mut work = ReservationWork::default();
     let (session, owner) = start("\nfn plain(x:u8)->u8{x}", "plain", &mut work)?;
     let session = ready(session.defining_environment(owner, &mut work)?)?;
-    let Body::Contract {
-        seal: originals::Origin::Contract(seal),
-        ..
-    } = environments(&session)?
+    let Body::Contract { product, .. } = environments(&session)?
         .bodies
         .iter()
         .flatten()
@@ -404,12 +393,15 @@ fn contract_opponents() -> Result {
     else {
         return Err("actual sealed empty Contract".into());
     };
+    let originals::Origin::Contract(seal) = product.seal else {
+        return Err("actual Contract seal".into());
+    };
     work.retained = crate::support::crates::MAX_BYTES;
     let mut accounting = Observed {
         work: &mut work,
         allocation: Allocation::default(),
     };
-    assert!(crate::sema::crates::typed_headers::staged_headers::rebuilt_environments::ContractParts::private_empty(*seal)
+    assert!(crate::sema::crates::typed_headers::staged_headers::rebuilt_environments::ContractParts::private_empty(seal)
         .build(&session.facts, &mut accounting).is_err());
     assert_eq!(accounting.allocation.bytes, 0);
     assert!(work.peak > crate::support::crates::MAX_BYTES);
@@ -425,11 +417,17 @@ fn contract_opponents() -> Result {
 #[test]
 fn private_defining_environments_bound_selected_and_warm_work() -> Result {
     eprintln!(
-        "private defining layouts: owner={} scope={} body={} templates={}",
+        "private defining layouts: owner={} scope={} body={} contract_product={} templates={} state={} session={} body_slot={} scope_slot={} ready={}",
         size_of::<Owner>(),
         size_of::<Scope>(),
         size_of::<Body>(),
-        size_of::<Prepared>()
+        size_of::<ContractBody>(),
+        size_of::<Prepared>(),
+        size_of::<State>(),
+        size_of::<Session>(),
+        size_of::<Option<Box<Body>>>(),
+        size_of::<Option<Box<Scope>>>(),
+        size_of::<Ready>()
     );
     contract_growth()?;
     let mut baseline = None;
@@ -544,10 +542,40 @@ fn contract_growth() -> Result {
                 .counters(),
             counters
         );
+        let environments = environments(&session)?;
+        let Body::Contract { product, .. } = environments
+            .bodies
+            .iter()
+            .flatten()
+            .next()
+            .ok_or("actual selected Contract")?
+            .as_ref()
+        else {
+            return Err("actual Contract product".into());
+        };
+        let body_allocation = product
+            .environment
+            .retain_owned_from(
+                &product.declaration,
+                &mut crate::types::parameters::environment::Retained::default(),
+            )
+            .bytes
+            + 2 * size_of::<usize>();
         eprintln!(
-            "private Contract unrelated={unrelated} warm1000={cost} bytes={} peak={}",
-            environments(&session)?.retained_bytes(),
-            work.peak
+            "private Contract actual_environment_payload={body_allocation} cold_product={}",
+            size_of::<ContractBody>()
+        );
+        eprintln!(
+            "private Contract unrelated={unrelated} warm1000={cost} bytes={} peak={} bodies_cap={} body_dense_bytes={} allocated_bodies={} scopes_cap={} scope_dense_bytes={} applications_cap={} applications_bytes={}",
+            environments.retained_bytes(),
+            work.peak,
+            environments.bodies.capacity(),
+            retained::vector(&environments.bodies),
+            environments.bodies.iter().flatten().count(),
+            environments.scopes.capacity(),
+            retained::vector(&environments.scopes),
+            environments.applications.capacity(),
+            retained::vector(&environments.applications)
         );
     }
     Ok(())
