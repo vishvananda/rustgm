@@ -51,7 +51,7 @@ fn actual_nonrole_traits_modules_aliases_and_ordered_names_remain_unpublished() 
             .find(outer, "hidden", Namespace::Type, &mut work)?
             .is_none()
     );
-    check_invalid_columns(&names, visible)?;
+    check_invalid_columns(&names, visible);
     let mut failed = Work {
         steps: crates::MAX_COMPONENTS,
         ..Work::default()
@@ -87,7 +87,7 @@ fn actual_nonrole_traits_modules_aliases_and_ordered_names_remain_unpublished() 
     Ok(())
 }
 
-fn check_invalid_columns(names: &UnpublishedNamespace, visible: DeclarationRef) -> Result {
+fn check_invalid_columns(names: &UnpublishedNamespace, visible: DeclarationRef) {
     let declarations = &names.columns().declarations;
     for changed in [
         {
@@ -124,7 +124,6 @@ fn check_invalid_columns(names: &UnpublishedNamespace, visible: DeclarationRef) 
             .sort(&mut Work::default(), &mut NamespaceWork::default())
             .is_err()
     );
-    Ok(())
 }
 
 fn check_growth() -> Result {
