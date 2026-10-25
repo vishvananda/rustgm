@@ -156,6 +156,100 @@ fn actual_source_functions_cross_public_codec_and_fresh_client_proof() -> Result
     Ok(())
 }
 #[test]
+fn ordinary_source_profiles_capture_plain_contract_bytes_before_adapter() -> Result {
+    use crate::lower::instances::{SourcePublication, build_source_library_profile};
+    use crates::generics::source as s;
+    let mut source = fixture("minimal-provider")?;
+    source.push_str("\npub fn plain(x:u8)->u8{x}\npub fn unused<U>(x:u8)->u8{x}\n");
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/all-attribute-selected-output-v1/empty-contract-baseline");
+    std::fs::create_dir_all(&folder)?;
+    std::fs::write(
+        folder.join(".keep-artifacts"),
+        b"Actual raw pre-adapter v0/v1 bytes and binding\n",
+    )?;
+    std::fs::write(folder.join("provider.rs"), source.as_bytes())?;
+    for (version, profile, expected) in [
+        (
+            "v0",
+            SourcePublication::LegacyFunctions,
+            crates::SourceProfile::Source2024Functions,
+        ),
+        (
+            "v1",
+            SourcePublication::FunctionContracts,
+            crates::SourceProfile::Source2024FunctionContracts,
+        ),
+    ] {
+        let report = crate::test_source::source_provider(&source, "plain_contract_pair")?;
+        let identity = report
+            .package
+            .source_core()
+            .ok_or("actual provider")?
+            .provider
+            .clone();
+        assert_eq!(identity.name(), "minicore");
+        assert_eq!(identity.disambiguator(), "plain_contract_pair");
+        let mut analysis = pipeline::analyze_source(&report)?;
+        let (_, interface) = build_source_library_profile(
+            &report,
+            &mut analysis.facts,
+            identity.clone(),
+            analysis.prepared,
+            profile,
+        )?;
+        let descriptor = interface.source_descriptor().ok_or("actual descriptor")?;
+        assert_eq!(descriptor.profile(), expected);
+        let rows = descriptor.rows();
+        assert_eq!(
+            rows.header_attributes().is_some(),
+            profile == SourcePublication::FunctionContracts
+        );
+        let plain = rows
+            .functions
+            .iter()
+            .find(|header| {
+                rows.declarations[header.declaration.0 as usize]
+                    .name
+                    .as_deref()
+                    == Some("plain")
+            })
+            .ok_or("actual nongeneric plain header")?;
+        let s::FunctionBody::Original(body) = plain.body else {
+            return Err("actual plain original".into());
+        };
+        let input = &rows.body_inputs[body.0 as usize];
+        assert_eq!(input.environment, s::EnvironmentOrigin::Contract);
+        assert!(input.parameters.is_empty());
+        assert_eq!(plain.regions.total, 0);
+        let bytes = crates::encode(&interface)?;
+        // Retain the actual first encoding. Roundtrip output is not this oracle.
+        std::fs::write(folder.join(format!("{version}.rgcrate")), &bytes)?;
+        std::fs::write(
+            folder.join(format!("{version}.rows.txt")),
+            format!("{:#?}\nattributes={:#?}\n", *rows, rows.header_attributes()),
+        )?;
+        std::fs::write(
+            folder.join(format!("{version}.binding.txt")),
+            format!(
+                "producer=build_source_library_profile\nmode=SourceCore\nconfig=Config::default\ninput=source-provider.rs\nname={}\ndisambiguator={}\npublication={profile:?}\nprofile={expected:?}\nedition={:?}\nplain_origin={:?}\nplain_builtin_origin={:?}\nencoded_bytes={}\n",
+                identity.name(),
+                identity.disambiguator(),
+                descriptor.edition(),
+                input.environment,
+                input.builtins.as_ref().map(|builtins| builtins.environment),
+                bytes.len()
+            ),
+        )?;
+        let program = client(
+            crates::decode(&bytes)?,
+            &fixture("runtime-client")?.replace("base::identity", "base::plain"),
+        )?;
+        assert!(program.symbols.iter().any(|symbol| symbol.body.is_some()));
+    }
+    Ok(())
+}
+#[test]
 fn public_source_envelope_rejects_version_edition_truncation_and_extra_bytes() -> Result {
     let bytes = crates::encode(&exported(&fixture("minimal-provider")?)?)?;
     for end in 0..bytes.len() {

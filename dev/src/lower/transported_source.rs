@@ -62,6 +62,20 @@ impl Source {
         Self::begin_with_numbering(report, facts, checked, identity, true)
     }
 
+    #[expect(
+        dead_code,
+        reason = "private ordinary-trait numbering awaits its actual unpaid defining-environment consumer"
+    )]
+    pub(super) fn begin_trait_numbered(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        let stage = Stage::begin_with_ordinary_traits(report, facts, identity)?;
+        Self::begin_stage(facts, checked, stage, true)
+    }
+
     fn begin_with_numbering(
         report: &Report,
         facts: &mut Declarations,
@@ -69,8 +83,58 @@ impl Source {
         identity: &CrateIdentity,
         numbered: bool,
     ) -> Result<Self, &'static str> {
+        let stage = Stage::begin(report, facts, identity)?;
+        Self::begin_stage(facts, checked, stage, numbered)
+    }
+
+    pub(super) fn begin_namespace(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<(Self, s::NamespaceColumns), &'static str> {
+        let mut stage = Stage::begin_with_ordinary_traits(report, facts, identity)?;
+        let names = stage.namespace_columns(report)?;
+        Ok((Self::begin_stage(facts, checked, stage, false)?, names))
+    }
+
+    pub(super) fn begin_module_contracts(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+        let mut stage = Stage::begin_module_contracts(report, facts, identity)?;
+        let modules = stage.module_contract_rows(report, facts)?;
+        Ok((Self::begin_stage(facts, checked, stage, false)?, modules))
+    }
+    pub(super) fn begin_publication(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+        profile: super::instances::SourcePublication,
+    ) -> Result<(Self, Option<s::ModuleContractRows>), &'static str> {
+        match profile {
+            super::instances::SourcePublication::ModuleContracts => {
+                let (source, modules) =
+                    Self::begin_module_contracts(report, facts, checked, identity)?;
+                Ok((source, Some(modules)))
+            }
+            super::instances::SourcePublication::LegacyFunctions
+            | super::instances::SourcePublication::FunctionContracts => {
+                Ok((Self::begin(report, facts, checked, identity)?, None))
+            }
+        }
+    }
+    fn begin_stage(
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        stage: Stage,
+        numbered: bool,
+    ) -> Result<Self, &'static str> {
         let mut source = Self {
-            stage: Stage::begin(report, facts, identity)?,
+            stage,
             openings: HashMap::default(),
             numbering: None,
         };
@@ -209,11 +273,19 @@ impl Source {
         Ok(())
     }
 
-    pub(super) fn complete(self) -> Result<SourceInspection, &'static str> {
+    fn finish_rows(
+        self,
+    ) -> Result<
+        (
+            s::SourceRows,
+            crate::sema::crates::authored_export::SourceWork,
+        ),
+        &'static str,
+    > {
         // No original can still arrive after this ownership transfer. Release
         // collection-only opening scratch before allocating validation indexes.
         drop(self.openings);
-        let (mut rows, mut work) = self.stage.into_rows()?;
+        let (mut rows, work) = self.stage.into_rows()?;
         if let Some(numbering) = self.numbering {
             let mut units = Vec::with_capacity(numbering.len());
             for unit in numbering {
@@ -221,6 +293,24 @@ impl Source {
             }
             rows.body_units = units;
         }
+        Ok((rows, work))
+    }
+
+    pub(super) fn complete_namespace(
+        self,
+        names: s::NamespaceColumns,
+        identity: &CrateIdentity,
+    ) -> Result<std::sync::Arc<s::UnpublishedNamespace>, &'static str> {
+        let (rows, observed) = self.finish_rows()?;
+        let mut work = g::Work {
+            steps: observed.steps,
+            ..g::Work::default()
+        };
+        s::UnpublishedNamespace::stage(identity, rows, names, &mut work)
+    }
+
+    pub(super) fn complete(self) -> Result<SourceInspection, &'static str> {
+        let (rows, mut work) = self.finish_rows()?;
         let mut validation = g::Work {
             steps: work.steps,
             ..g::Work::default()
@@ -285,6 +375,60 @@ impl Source {
         let attributes = self.collect_header_columns(report, facts)?;
         self.complete_profile_payload(base, Some(attributes))
             .map_err(|message| report.diagnostic(report.body_optional_error(None, message)))
+    }
+
+    pub(super) fn complete_module_contract_payload(
+        mut self,
+        modules: s::ModuleContractRows,
+        report: &Report,
+        facts: &Declarations,
+        base: crate::support::crates::Interface,
+    ) -> Result<crate::support::crates::Interface, crate::resolve::package::Error> {
+        if report
+            .package
+            .source_core()
+            .is_none_or(|provider| &provider.provider != base.identity())
+        {
+            return Err(crate::resolve::package::Error::unlocated(
+                "module publication changed its actual provider",
+            ));
+        }
+        // Reuse the complete selected-header producer, including its final-header
+        // fence when defaultness syntax is integrated. No absence is invented.
+        let attributes = self.collect_header_columns(report, facts)?;
+        if self.numbering.is_some() {
+            return Err(crate::resolve::package::Error::unlocated(
+                "Provided numbering has no module-contract publisher",
+            ));
+        }
+        let (rows, observed) = self
+            .finish_rows()
+            .map_err(crate::resolve::package::Error::unlocated)?;
+        let base_bytes = base.base_retained_bytes();
+        if base_bytes
+            .saturating_add(observed.reserved_bytes)
+            .saturating_add(observed.scratch_bytes)
+            > crate::support::crates::MAX_BYTES
+        {
+            return Err(crate::resolve::package::Error::unlocated(
+                "module publication exceeds combined collection storage",
+            ));
+        }
+        let mut work = g::Work {
+            steps: observed.steps,
+            ..g::Work::default()
+        };
+        let payload = g::Payload::from_source_module_contracts(
+            base.identity(),
+            rows,
+            attributes,
+            modules,
+            base_bytes,
+            &mut work,
+        )
+        .map_err(|message| report.diagnostic(report.body_optional_error(None, message)))?;
+        base.with_generic_payload(payload)
+            .map_err(crate::resolve::package::Error::unlocated)
     }
 
     fn complete_profile_payload(

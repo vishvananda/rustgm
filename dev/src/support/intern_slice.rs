@@ -33,6 +33,58 @@ impl<T> Default for Slices<T> {
 }
 
 impl<T: Copy + Eq + Hash> Slices<T> {
+    /// Costed cold probe for producers that must prepay collision comparisons.
+    /// It shares the same typed equality and never interns or changes storage.
+    pub(crate) fn find_charged(
+        &self,
+        values: &[T],
+        mut charge: impl FnMut(usize) -> Result<(), &'static str>,
+    ) -> Result<Option<u32>, &'static str> {
+        charge(values.len().saturating_add(1))?;
+        if values.is_empty() {
+            return Ok(Some(0));
+        }
+        let mut next = self.index.get(&fingerprint(values)).copied();
+        while let Some(id) = next {
+            charge(1)?;
+            let entry = self
+                .entries
+                .get(id as usize)
+                .ok_or("invalid canonical slice probe entry")?;
+            let existing = self
+                .values
+                .get(entry.start as usize..entry.end as usize)
+                .ok_or("invalid canonical slice probe payload")?;
+            if existing.len() == values.len() {
+                charge(values.len())?;
+                if existing == values {
+                    return Ok(Some(id));
+                }
+            }
+            next = entry.next;
+        }
+        Ok(None)
+    }
+    /// One selected nonempty list, including the lazily installed empty entry.
+    /// The charged producer establishes a real miss before requesting growth.
+    pub(crate) fn interning_growth(&self, values: usize) -> crate::support::retained::Growth {
+        use crate::support::retained::Growth;
+        if values == 0 {
+            return Growth::default();
+        }
+        let mut growth = Growth::vector::<T>(self.values.len(), self.values.capacity(), values);
+        growth.include(Growth::vector::<Entry>(
+            self.entries.len(),
+            self.entries.capacity(),
+            1 + usize::from(self.entries.is_empty()),
+        ));
+        growth.include(Growth::map::<u64, u32>(
+            self.index.len(),
+            self.index.capacity(),
+            1,
+        ));
+        growth
+    }
     pub(crate) fn allocation(&self) -> crate::support::retained::Allocation {
         let mut total = crate::support::retained::Allocation::default();
         total.vector(&self.values);
