@@ -245,7 +245,8 @@ fn observe_layouts() {
 }
 
 fn bootstrap_identity_opponents() -> TestResult {
-    checked("struct S; impl Clone for S{fn clone(&self)->Self{S}} impl Copy for S{}")?;
+    // Bootstrap Clone/Copy impls have a separate preexisting unsupported boundary.
+    checked("struct S; unsafe impl Send for S{} unsafe impl Sync for S{}")?;
     let mut counterfeit = test_source::resolve("trait Clone{}", true)?;
     let fake = counterfeit
         .resolution
