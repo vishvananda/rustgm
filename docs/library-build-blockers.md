@@ -117,6 +117,15 @@ and three further integration controls in a 129.31-second focused gate.
 Its nineteen sources have 38 actual independent observations. The genuine local
 consumer preserves the closed export contract; imported openness remains required.
 
+The next periodic run on `62757320` passes that repaired record test and all
+1,634 private release controls, then finds an older ordinary-macro assertion
+that still assumes every internal allowance requires provider mode. The revised
+test checks both ordinary and provider declarations, explicitly proves ordinary
+source retains no provider/client roles, and preserves the real unsupported
+scoped-stability boundary. Its two exact integration controls pass with strict
+Clippy/audit/build in 208.57 seconds locally. The remaining full CI stages are
+still pending; a failed periodic run is not recorded as full qualification.
+
 - Integrator: the [structural owner checkpoint](primitive-inherent-checkpoint.md)
   qualifies local primitive policy and full-Self lookup with 66 source cases,
   nineteen focused private controls and eight actual native programs. Ordinary
