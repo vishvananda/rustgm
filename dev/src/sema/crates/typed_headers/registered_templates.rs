@@ -35,6 +35,7 @@ struct Ready {
     callable: Kind,
     item: ItemId,
     formals: usize,
+    scope: (usize, s::ParameterScope),
 }
 pub(super) struct Prepared {
     templates: Templates,
@@ -89,6 +90,27 @@ impl Prepared {
             + retained::vector(&self.ready)
             + retained::vector(&self.occurrences)
     }
+    fn scope(
+        &self,
+        rows: s::ValidatedView<'_>,
+        owner: DeclarationRef,
+    ) -> Result<(usize, s::ParameterScope), Error> {
+        let index = self
+            .scopes
+            .get(owner.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or_else(|| error("private callable lost its actual formal-scope index"))?;
+        let scope = *rows.scopes.get(index).ok_or_else(|| {
+            error("private callable formal-scope index is outside its actual rows")
+        })?;
+        if scope.owner != owner {
+            return Err(error(
+                "private callable formal-scope index changed its actual owner",
+            ));
+        }
+        Ok((index, scope))
+    }
     fn require(
         &self,
         view: &RecipeView<'_>,
@@ -97,7 +119,7 @@ impl Prepared {
         pair: SignaturePair,
         work: &mut ReservationWork,
     ) -> Result<(s::FunctionHeader, ItemId, Option<Ready>), Error> {
-        work.charge(8)?;
+        work.charge(10)?;
         let rows = view.rows()?;
         let header = *rows
             .functions
@@ -121,6 +143,7 @@ impl Prepared {
             ));
         }
         let item = ItemId(view.definition(owner, work)?.0);
+        let scope = self.scope(rows, header.scope)?;
         let memo = self
             .ready
             .get(pair.function_row as usize)
@@ -129,6 +152,7 @@ impl Prepared {
         if let Some(ready) = memo
             && (ready.pair != pair
                 || ready.header != header
+                || ready.scope != scope
                 || ready.item != item
                 || store.kind(pair.original) != Some(ready.original)
                 || store.kind(pair.callable) != Some(ready.callable)
@@ -209,6 +233,8 @@ impl Prepared {
         let callable = store
             .kind(pair.callable)
             .ok_or_else(|| error("private callable public signature vanished"))?;
+        work.charge(2)?;
+        let scope = self.scope(rows, header.scope)?;
         self.ready[pair.function_row as usize] = Some(Ready {
             pair,
             header,
@@ -216,6 +242,7 @@ impl Prepared {
             callable,
             item,
             formals: formals.parameters.len(),
+            scope,
         });
         let actual = self.retained_bytes().saturating_sub(before_bytes);
         if actual > work.retained.saturating_sub(before_budget) {

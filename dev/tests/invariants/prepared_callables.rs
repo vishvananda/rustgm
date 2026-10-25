@@ -155,7 +155,7 @@ fn private_callable_templates_retain_full_family_and_unused_formals() -> Result 
 }
 #[test]
 fn private_callable_templates_reject_changed_provenance_and_incomplete_formals() -> Result {
-    for opponent in 0..7 {
+    for opponent in 0..8 {
         let mut work = ReservationWork::default();
         let (session, owner) = start("\nfn unused<T>(x:u8)->u8{x}", "unused", &mut work)?;
         let mut session = ready(session.callable_template(owner, &mut work)?)?;
@@ -209,13 +209,33 @@ fn private_callable_templates_reject_changed_provenance_and_incomplete_formals()
                     .ok_or("selected actual signature")?;
                 selected.pair = wrong.pair;
             }
-            _ => {
+            6 => {
                 let state = session.recipes.as_mut().ok_or("actual recipe state")?;
                 let table = state.callables.as_mut().ok_or("actual table")?;
-                for row in &mut table.ready {
-                    *row = None;
-                }
+                assert!(
+                    table
+                        .ready
+                        .iter()
+                        .flatten()
+                        .any(|r| r.header.declaration == owner)
+                );
                 table.scopes[owner.0 as usize] = None;
+            }
+            _ => {
+                let other = named(&session.inventory, "identity")?;
+                let table = session
+                    .recipes
+                    .as_mut()
+                    .and_then(|s| s.callables.as_mut())
+                    .ok_or("actual prepared owner")?;
+                assert!(
+                    table
+                        .ready
+                        .iter()
+                        .flatten()
+                        .any(|r| r.header.declaration == owner)
+                );
+                table.scopes[owner.0 as usize] = table.scopes[other.0 as usize];
             }
         }
         let before = work.steps;
