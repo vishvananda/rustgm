@@ -26,7 +26,20 @@ pub(crate) struct Inputs {
     definitions: Range<usize>,
     scopes: Range<usize>,
 }
+/// Borrowed reserved schema only. It exposes no semantic type, Graph or proof.
+pub(crate) struct RecipeView<'a> {
+    owner: &'a Inputs,
+}
 impl Inputs {
+    pub(crate) fn recipe_view<'a>(
+        &'a self,
+        inventory: &Dependencies,
+        provider_index: u32,
+        work: &mut ReservationWork,
+    ) -> Result<RecipeView<'a>, Error> {
+        self.require(inventory, provider_index, work)?;
+        Ok(RecipeView { owner: self })
+    }
     pub(crate) fn reserve(
         mut report: Report,
         inventory: Arc<Dependencies>,
@@ -201,5 +214,54 @@ impl Inputs {
             }
         }
         Ok(())
+    }
+}
+impl<'a> RecipeView<'a> {
+    pub(crate) fn root(&self) -> crate::resolve::body_origin::ImportedDeclarationId {
+        self.owner.root
+    }
+    pub(crate) fn rows(
+        &self,
+    ) -> Result<crate::support::crates::generics::source::ValidatedView<'a>, Error> {
+        self.owner
+            .inventory
+            .artifacts()
+            .get(self.owner.provider_index as usize)
+            .and_then(crate::support::crates::Interface::source_descriptor)
+            .ok_or_else(|| error("reserved recipe view lost its immutable descriptor"))
+            .map(|descriptor| descriptor.rows())
+    }
+    pub(crate) fn definition(
+        &self,
+        row: crate::support::crates::owner_catalog::DeclarationRef,
+        work: &mut ReservationWork,
+    ) -> Result<crate::resolve::model::DefId, Error> {
+        work.charge(4)?;
+        let artifact = &self.owner.inventory.artifacts()[self.owner.provider_index as usize];
+        self.owner
+            .catalog
+            .definition_at(artifact.identity(), row)
+            .map_err(error)
+    }
+    pub(crate) fn declaration(
+        &self,
+        row: crate::support::crates::owner_catalog::DeclarationRef,
+        work: &mut ReservationWork,
+    ) -> Result<crate::resolve::body_origin::ImportedDeclarationId, Error> {
+        let definition = self.definition(row, work)?;
+        work.charge(1)?;
+        self.owner.catalog.declaration(definition).map_err(error)
+    }
+    pub(crate) fn body(
+        &self,
+        row: crate::support::crates::owner_catalog::BodyRef,
+        work: &mut ReservationWork,
+    ) -> Result<crate::resolve::body_origin::ImportedBodyId, Error> {
+        work.charge(2)?;
+        let artifact = &self.owner.inventory.artifacts()[self.owner.provider_index as usize];
+        self.owner
+            .catalog
+            .body_at(artifact.identity(), row)
+            .map_err(error)
     }
 }
