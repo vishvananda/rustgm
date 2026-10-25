@@ -1,5 +1,5 @@
 //! Raw source contracts retain complete requests; only validation can publish data.
-#[path = "header_contracts.rs"]
+#[path = "advisory_contracts.rs"]
 mod attributes;
 #[path = "operation_rows.rs"]
 mod bodies;

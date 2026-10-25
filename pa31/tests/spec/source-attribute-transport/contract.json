@@ -52,10 +52,15 @@
         "#[inline]pub trait Copy: Clone {}"
       ],
       "source_sha256": "0c0262c3653d536814f7357c7a49692829107c1fd8299fec5255496452f5ee0c",
-      "provider_status": 0,
-      "provider_warning": "unused_attributes once",
-      "effective_inline": "KnownAbsent on every trait",
-      "independent_status": "not yet observed for this exact source"
+      "provider_status": 1,
+      "provider_warning": null,
+      "effective_inline": "rejected before producer completion/publication",
+      "independent_status": "observed both editions status1/no warnings; hard error: #[inline] attribute cannot be used on traits; no E-code",
+      "evidence": {
+        "results_sha256": "201c40fd977fa844752187d622e7d177096c3383f10f023d8b1778daed97c76d",
+        "plan_sha256": "fac0422bbcbbd5afb00673254fed0aaaf6331d8a346336765018b79dc1e9de39",
+        "initial_prediction": "status0/unused_attributes; both predictions disproved and retained in frozen plan/raw diagnostics"
+      }
     },
     "overlong-profile-reason": {
       "base": "pa31/tests/spec/source-publication-attributes/must-use-reason.rs",
@@ -102,11 +107,21 @@
     "sema::header_attributes::tests::compatibility::legacy_unknown_closed_profiles_and_warned_wrong_owners_stay_explicit",
     "sema::header_attributes::tests::compatibility::malformed_complete_columns_and_wire_tags_reject_before_publication"
   ],
-  "compatibility_boundary": "v0 branch retains old writer order/version and existing typed publication guard. Exact comparison to retained qualified CLI da5d4343 output is separately pending; do not claim a pre-v1 golden until actually produced with identical provider identity/flags.",
+  "compatibility_boundary": "Qualified pre-v1 CLI actually published identical frozen provider and minicore@attribute_transport identity, tag10/v0, 3628 bytes SHA81fd7dc86d906ef7ba5fd4abb92a0a24f6f9548c473b9b8a43a62dd7c1f234c0; candidate exact-byte comparison remains unrun.",
   "baseline_cli": {
     "path": "/home/vishvananda/rustgm-pa29-work/obj/parallel/wide-qualified-40196564678/cli/candidate/rustgm",
     "sha256": "da5d43430556c8b9dc451de3ebe179005b4b1b843246e54af100c8ab833a6f76",
     "source_binding": "cd8405bd; parent retained CI40196564678"
   },
-  "remaining": "No nominal/provided/closure execution, no optimizer honoring inline, no imported UB permission widening. Six private groups are plans, not evidence; no unchanged C9/C4/38 repeats."
+  "remaining": "No nominal/provided/closure execution, no optimizer honoring inline, no imported UB permission widening. Six private groups are plans, not evidence; no unchanged C9/C4/38 repeats.",
+  "baseline_artifact": {
+    "path": "obj/parallel/pa31/source-attribute-transport-v1/baseline-and-owner-v1/legacy.rgm",
+    "sha256": "81fd7dc86d906ef7ba5fd4abb92a0a24f6f9548c473b9b8a43a62dd7c1f234c0",
+    "bytes": 3628,
+    "tag": 10,
+    "row_version": 0,
+    "provider_sha256": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297",
+    "crate_name": "minicore",
+    "crate_disambiguator": "attribute_transport"
+  }
 }

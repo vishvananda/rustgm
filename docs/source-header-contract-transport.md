@@ -50,9 +50,23 @@ Existing library callers still select LegacyFunctions; no CLI flag activates v1.
 The six exact private selectors and all provider/client source bindings are
 predeclared in `pa31/tests/spec/source-attribute-transport/contract.json`.
 They are unrun. Source-only formatting and review do not qualify the new codec,
-fresh consumers, warnings or layout/allocation costs. A retained qualified
-pre-v1 CLI is available for a separately guarded exact-byte baseline; that
-comparison remains pending until it actually publishes the frozen provider.
+fresh consumers, warnings or layout/allocation costs. The candidate's exact-byte
+comparison to the retained qualified pre-v1 baseline below is still pending.
+
+The qualified pre-v1 CLI has now published that baseline: tag 10/version 0,
+3,628 bytes, SHA-256
+`81fd7dc86d906ef7ba5fd4abb92a0a24f6f9548c473b9b8a43a62dd7c1f234c0`,
+using the unchanged minimal provider and `minicore@attribute_transport`.
+The candidate comparison is still pending. Two new pinned-rustc observations
+(2021 and 2024) reject inline on the actual Copy trait as a hard error with no
+warning; the initial warning-only predictions were wrong. Retain their frozen
+plan and raw JSON in `obj/parallel/pa31/source-attribute-transport-v1/baseline-and-owner-v1`.
+Results SHA-256 is
+`201c40fd977fa844752187d622e7d177096c3383f10f023d8b1778daed97c76d`.
+The corrected consumer rejects this trait placement before completion and
+publication. This does not change must-use wrong-owner warnings, establish
+inline module/ADT semantics, or alter the independently observed bodyless-member
+warning and retained DiagnosedNoBody hint.
 
 The full reviewed proposal is retained at
 `obj/parallel/pa31/source-attribute-transport-v1/proposal.json`, SHA-256
