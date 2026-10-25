@@ -294,7 +294,7 @@ fn foreign_contexts() -> Result {
                     .as_mut()
                     .and_then(|state| state.callables.as_mut())
                     .ok_or("actual table")?
-                    .scopes[owner.0 as usize] = None
+                    .scopes[owner.0 as usize] = None;
             }
         }
         let before = work.steps;
