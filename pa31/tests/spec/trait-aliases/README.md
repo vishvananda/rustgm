@@ -19,4 +19,4 @@ be an implementation owner. Actual literal allowance and forwarded caller syntax
 have different authority. Disabled syntax has a soft warning. Parsing never
 supplies imported alias transport or specialization permissions.
 
-See [the implementation plan](../../../../../docs/trait-alias-design.md).
+See [the implementation plan](../../../../docs/trait-alias-design.md).
