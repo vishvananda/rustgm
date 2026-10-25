@@ -6,6 +6,7 @@ use crate::types::parameters::{
     predicates::{Bound, Predicate},
 };
 mod abstract_uses;
+pub(in crate::sema) mod assumption_environment;
 pub(crate) use abstract_uses::{Call, DefiningCalls};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

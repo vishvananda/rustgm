@@ -88,7 +88,7 @@ impl Checker<'_> {
         signature: Option<TypeId>,
     ) -> Result<(), Error> {
         self.state.environment_owner = Some(owner);
-        let mut environment = self.facts.generics.environments.get(&owner).cloned();
+        let declaration_environment = self.facts.generics.environments.get(&owner).cloned();
         self.state.trait_environment = None;
         self.state.canonical_trait_inference = None;
         self.state.canonical_trait_proofs = None;
@@ -126,41 +126,41 @@ impl Checker<'_> {
         {
             predicates.push(clause);
         }
-        if !predicates.is_empty() {
-            for predicate in &mut predicates {
-                *predicate = self.alias_clause(node, *predicate)?;
-            }
-            let original = environment
-                .as_ref()
-                .ok_or_else(|| self.error(node, "missing bounded body environment"))?;
-            environment = Some(std::sync::Arc::new(
-                original
-                    .as_ref()
-                    .clone()
-                    .with_clauses(&self.facts.types, &predicates)
-                    .map_err(|e| self.error(node, e))?,
-            ));
-            if let Some(environment) = &environment {
-                self.facts
-                    .generics
-                    .body_environments
-                    .insert(owner, std::sync::Arc::clone(environment));
-            }
+        for predicate in &mut predicates {
+            *predicate = self.alias_clause(node, *predicate)?;
         }
-        if let Some(original) = &environment
-            && original.has_region_builtins()
+        let defining =
+            crate::sema::function_context::assumption_environment::Prepared::for_declaration(
+                self.facts,
+                owner,
+                signature,
+                self.state.body_binders,
+                declaration_environment,
+                &predicates,
+            )
+            .map_err(|e| self.error(node, e))?;
+        if defining.needs_aliases() {
+            self.prepare_universals(node)?;
+        }
+        let aliases = self.state.call_types.universal_arguments();
+        if defining.has_environment() {
+            self.facts.body_work.canonical_steps = self
+                .facts
+                .body_work
+                .canonical_steps
+                .saturating_add(aliases.len());
+        }
+        let completed = defining
+            .finish(self.state.body_binders, aliases)
+            .map_err(|e| self.error(node, e))?;
+        let environment = completed.environment;
+        if completed.changed
+            && let Some(environment) = &environment
         {
-            let updated =
-                self.builtin_region_environment(node, owner, signature, original.as_ref().clone())?;
-            let updated = std::sync::Arc::new(updated);
             self.facts
                 .generics
                 .body_environments
-                .insert(owner, std::sync::Arc::clone(&updated));
-            environment = Some(updated);
-        }
-        if let Some(original) = environment.take() {
-            environment = Some(self.body_alias_environment(node, owner, original)?);
+                .insert(owner, std::sync::Arc::clone(environment));
         }
         self.state.method_environment.clone_from(&environment);
         self.state.prepare_parameter_queries();
