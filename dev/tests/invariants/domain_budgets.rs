@@ -222,7 +222,7 @@ fn callable_paths() -> Result {
             2 => bad.declarations[parent.0 as usize].name = None,
             3 => {
                 bad.declarations[parent.0 as usize].definition.kind =
-                    s::DefinitionKind::TypeParameter
+                    s::DefinitionKind::TypeParameter;
             }
             4 => bad.declarations[start.0 as usize].definition.kind = s::DefinitionKind::SelfType,
             _ => {}
