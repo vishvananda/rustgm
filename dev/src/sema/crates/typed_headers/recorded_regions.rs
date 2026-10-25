@@ -19,10 +19,15 @@ use crate::{
     },
     types::{Kind, RegionId, Store, arena::Identity},
 };
+use std::sync::Arc;
+
+#[path = "neutral_aliases.rs"]
+mod neutral_finish;
+pub(super) use neutral_finish::{Completed, Key, Request};
 
 #[cfg(test)]
 #[path = "../../../../tests/invariants/recorded_domains.rs"]
-mod tests;
+pub(super) mod tests;
 
 struct Seal {
     root: ImportedDeclarationId,
@@ -146,6 +151,7 @@ impl DomainStage {
         let slots = Growth::vector::<Option<RegionId>>(0, 0, n);
         let aliases = Growth::vector::<RegionId>(0, 0, u);
         let persistent = size_of::<RecordedDomain>()
+            .saturating_add(2 * size_of::<usize>())
             .saturating_add(records.bytes)
             .saturating_add(slots.bytes)
             .saturating_add(aliases.bytes);
@@ -252,6 +258,7 @@ fn metadata<T>(
 impl RecordedDomain {
     fn retained_bytes(&self) -> usize {
         size_of::<Self>()
+            .saturating_add(2 * size_of::<usize>())
             .saturating_add(retained::vector(&self.log.ordered))
             .saturating_add(retained::vector(&self.log.by_slot))
             .saturating_add(self.aliases.as_ref().map_or(0, retained::vector))
@@ -299,14 +306,14 @@ impl RecordedDomain {
     }
 }
 pub(super) struct Owner {
-    entries: Vec<Option<Box<RecordedDomain>>>,
+    entries: Vec<Option<Arc<RecordedDomain>>>,
     bytes: usize,
 }
 impl Owner {
     fn new(rows: s::ValidatedView<'_>, work: &mut ReservationWork) -> Result<Self, Error> {
         let before = work.retained;
         let count = rows.functions.len();
-        let growth = Growth::vector::<Option<Box<RecordedDomain>>>(0, 0, count);
+        let growth = Growth::vector::<Option<Arc<RecordedDomain>>>(0, 0, count);
         work.charge(count.saturating_add(growth.work))?;
         work.reserve(size_of::<Self>().saturating_add(growth.bytes))?;
         let mut entries = Vec::with_capacity(count);
@@ -335,7 +342,7 @@ impl Owner {
         }
         let recorded = stage.record(view, work)?;
         self.bytes = self.bytes.saturating_add(recorded.retained_bytes());
-        *cell = Some(Box::new(recorded));
+        *cell = Some(Arc::new(recorded));
         Ok(())
     }
 }
@@ -385,5 +392,23 @@ impl Session {
             .ok_or_else(|| error("recording owner disappeared"))?
             .complete(&view, &session.facts.types, &expected, work)?;
         Ok((session, Demand::Ready(())))
+    }
+}
+
+impl super::Prepared {
+    pub(super) fn record_selected(
+        &mut self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        expected: &Ready,
+        work: &mut ReservationWork,
+    ) -> Result<(), Error> {
+        if self.recordings.is_none() {
+            self.recordings = Some(Box::new(Owner::new(view.rows()?, work)?));
+        }
+        self.recordings
+            .as_mut()
+            .ok_or_else(|| error("recording owner disappeared"))?
+            .complete(view, store, expected, work)
     }
 }

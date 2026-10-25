@@ -239,6 +239,24 @@ their charged work and peak, and cannot publish partial readiness. This private
 structural preparation grants no defining Environment, original body proof,
 call-instance proof or wider metadata-profile permission.
 
+Raw original Contract parameters retain the source iterator's inner-to-outer
+scope order. Callable applications retain their separate outer-to-inner formal
+order. Validate each using the same actual scope/slot identities and complete
+inherited counts; never reorder the original body or guess a Self position.
+Imported body preparation maps each raw formal through existing prepared
+declaring/parent scope cells, verifies the exact leaf and port ParameterIds,
+and preserves missing/duplicate/reordered/foreign failures. Reuse the dense
+scope index and charged constant-time lookups instead of rebuilding flattened
+formal tables or walking ancestry per demand.
+
+Private numbering records bind actual catalog/body/raw-row/callable/arena
+identity and reuse the source allocator's checked unit-local issuance order.
+Prepay selected logs, inverse scratch and alias ledgers; preserve failed work,
+capacity costs and absent versus present-empty ledgers. Recorded readiness
+does not bind a defining regional Environment or change reservation availability.
+Separate body/availability-owned regional ports and their actual proof remain
+required before original or substituted-instance execution.
+
 Private defining-environment preparation reuses the canonical predicate
 translator and Environment producer through sealed ordinary and reservation
 ports. Authenticate actual Input sites and complete inherited/unused formals.

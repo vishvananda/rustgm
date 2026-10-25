@@ -52,8 +52,10 @@ Current lanes:
   Declaration environments now have six qualified controls; see the
   [environment checkpoint](private-defining-environments-checkpoint.md).
   The [empty Contract adapter](private-empty-contracts-checkpoint.md) now passes
-  six focused controls and exact first-encoded old v0/v1 bytes. Continue actual
-  inherited/nonrole and nonzero regional environments toward the concrete
+  six focused controls and exact first-encoded old v0/v1 bytes. The
+  [numbered trait-input successor](private-numbered-trait-inputs.md) now qualifies
+  actual inherited Self/V/U preparation and body-owned numbering records with
+  six focused controls. Continue nonzero regional environments toward the concrete
   [provided-method execution milestone](parallel/provided-method-execution.md).
   Public Provided execution and type-alias transport remain required.
 - B: local LIB-026 implementation domains and their version-one imported
