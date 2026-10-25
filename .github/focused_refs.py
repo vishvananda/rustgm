@@ -7,8 +7,8 @@ sys.path.insert(0,str(ROOT/'scripts'))
 from fastcheck_run import Steps,fingerprint
 from maintainer_batch import artifacts,inventory
 from storage import exclusive,check_space,minimum_reserve
-SOURCE='48a4b42e990cb065cb8fab44f3ae061ebc3d39c9'
-SOURCE_SHA='1aaccfc20050849dc37312605c929a9357d3dd9a4713ec453b74d63a9ee0e2ed'
+SOURCE='b380e3c35dfe8d23c125b9a694e04ebc536761b1'
+SOURCE_SHA='c2222bbf5dd2540f8e35c49d40f553fe0fe0d121a9b9d1ad3213ae5581c70dce'
 COUNT=2606
 CASES=['sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_defining_environments_use_real_zero_domain_assumptions', 'sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_defining_environments_reject_changed_owners_and_failed_budgets', 'sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_defining_environments_bound_selected_and_warm_work', 'sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_trait_input_costs_cover_real_lazy_growth_and_capacity_hits', 'sema::function_context::assumption_environment::tests::defining_environment_ordinary_path_keeps_the_actual_declaration_arc', 'support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof']
 
