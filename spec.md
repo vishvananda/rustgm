@@ -257,6 +257,18 @@ does not bind a defining regional Environment or change reservation availability
 Separate body/availability-owned regional ports and their actual proof remain
 required before original or substituted-instance execution.
 
+A nonzero signature may use the same defining-environment kernel only after
+the actual Declaration origin, empty regional inputs and supported frames are
+authenticated and both preexisting builtin and region payloads are absent.
+Absent and present-empty payloads are distinct. Prepay real alias vectors, map
+growth/coexistence and Arc storage before the shared finish kernel; reconcile
+fresh owned payload without charging shared declaration tables again. Bind the
+completed body memo to both its actual immutable recording and Environment
+allocations, retaining allocation charges while weak keys survive. Full ledger
+scans stay cold; warm checks authenticate the complete owner/signature/scope and
+both identities in constant work. This grants no body Variable or declared
+lifetime availability, original proof, instance proof or public execution.
+
 Private defining-environment preparation reuses the canonical predicate
 translator and Environment producer through sealed ordinary and reservation
 ports. Authenticate actual Input sites and complete inherited/unused formals.
