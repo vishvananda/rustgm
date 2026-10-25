@@ -9,7 +9,7 @@ const MESSAGE: usize = 64 * 1024;
 #[path = "../../../tests/invariants/discard_message_budget.rs"]
 mod tests;
 impl Declarations {
-    pub(super) fn reserve_must_use_source(
+    pub(in crate::sema) fn reserve_must_use_source(
         &mut self,
         key: NodeKey,
         span: Span,
