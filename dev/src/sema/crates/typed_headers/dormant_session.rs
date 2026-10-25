@@ -12,6 +12,8 @@ use crate::{
 use std::sync::Arc;
 #[path = "demanded_headers.rs"]
 mod header_demands;
+#[path = "registered_templates.rs"]
+mod template_demands;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/held_stores.rs"]
 mod tests;
