@@ -784,6 +784,9 @@ impl Resolver<'_> {
             members,
         };
         let id = if kind == DefKind::Const && self.package.names.get(name) == "_" {
+            if c.foreign.is_some() {
+                return Err(self.error(c, node, "unnamed constants require a free item owner"));
+            }
             if self.facts.scopes[c.scope.0 as usize].associated {
                 return Err(self.error(c, node, "associated constants require a name"));
             }
