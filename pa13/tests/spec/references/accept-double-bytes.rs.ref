@@ -18,29 +18,31 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 array element=11 length=2
-type 20 reference mutable=false region=static referent=19
-type 21 reference mutable=false region=static referent=20
-type 22 reference mutable=false region=bound:0:1 referent=19
-type 23 reference mutable=false region=bound:0:0 referent=22
-type 24 function binders=2 parameters=[23] result=1 unsafe=false
-type 25 function-item def=14 signature=24
-type 26 reference mutable=false region=region:1 referent=20
+type 19 primitive f16
+type 20 primitive f128
+type 21 array element=11 length=2
+type 22 reference mutable=false region=static referent=21
+type 23 reference mutable=false region=static referent=22
+type 24 reference mutable=false region=bound:0:1 referent=21
+type 25 reference mutable=false region=bound:0:0 referent=24
+type 26 function binders=2 parameters=[25] result=1 unsafe=false
+type 27 function-item def=14 signature=26
+type 28 reference mutable=false region=region:1 referent=22
 root 0:16 pattern=0
 root 0:19 pattern=1
-pattern 0 source=0:16 input=23 deref mutable=false implicit=false pattern=2
-pattern 1 source=0:19 input=23 wildcard
-pattern 2 source=0:16 input=22 deref mutable=false implicit=false pattern=3
-pattern 3 source=0:16 input=19 product variant=- fields=0:2
+pattern 0 source=0:16 input=25 deref mutable=false implicit=false pattern=2
+pattern 1 source=0:19 input=25 wildcard
+pattern 2 source=0:16 input=24 deref mutable=false implicit=false pattern=3
+pattern 3 source=0:16 input=21 product variant=- fields=0:2
 pattern 4 source=0:16 input=11 range=0
 pattern 5 source=0:16 input=11 range=1
 field 0 index=0 pattern=4
 field 1 index=1 pattern=5
 range 0 ranks=97:97
 range 1 ranks=98:98
-match 0 source=0:22 input=0:15 arms=0:2 exhaustive=true uninhabited=false work=194
+match 0 source=0:22 input=0:15 arms=0:2 exhaustive=true uninhabited=false work=195
 arm 0 source=0:18 pattern=0 guard=- useful=true value=0:17
 arm 1 source=0:21 pattern=1 guard=- useful=true value=0:20
 region-var region:1 body=0:6 source=0:6 origin=expression-borrow pending
-region-coercion body=0:6 source=0:6 actual=26 expected=21 kind=same-shape pending
-eof roots=2 patterns=6 fields=2 alternatives=0 ranges=2 matches=1 arms=2 coverage-work=194 region-vars=1 region-equalities=0 conditions=0 chains=0
+region-coercion body=0:6 source=0:6 actual=28 expected=23 kind=same-shape pending
+eof roots=2 patterns=6 fields=2 alternatives=0 ranges=2 matches=1 arms=2 coverage-work=195 region-vars=1 region-equalities=0 conditions=0 chains=0

@@ -18,20 +18,22 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=14 index=0
-type 20 parameter def=16 index=0
-type 21 parameter def=17 index=0
-type 22 function binders=0 parameters=[] result=1 unsafe=false
-type 23 function-item def=17 signature=22
-type 24 parameter def=19 index=0
-type 25 function-item def=19 signature=22
-type 26 function-item def=20 signature=22
-def 14 type=19 name="Self" source=0:0
-def 16 type=20 name="Self" source=0:5
-def 17 type=23 name="f" source=0:4
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=14 index=0
+type 22 parameter def=16 index=0
+type 23 parameter def=17 index=0
+type 24 function binders=0 parameters=[] result=1 unsafe=false
+type 25 function-item def=17 signature=24
+type 26 parameter def=19 index=0
+type 27 function-item def=19 signature=24
+type 28 function-item def=20 signature=24
+def 14 type=21 name="Self" source=0:0
+def 16 type=22 name="Self" source=0:5
+def 17 type=25 name="f" source=0:4
 def 18 type=11 name="Self" source=0:11
-def 19 type=25 name="f" source=0:10
-def 20 type=26 name="main" source=0:13
+def 19 type=27 name="f" source=0:10
+def 20 type=28 name="main" source=0:13
 def 21 type=2 name="bool"
 def 22 type=3 name="char"
 def 23 type=4 name="str"
@@ -49,20 +51,22 @@ def 34 type=15 name="u128"
 def 35 type=16 name="usize"
 def 36 type=17 name="f32"
 def 37 type=18 name="f64"
-def 38 type=21 name="T" source=0:3
-def 39 type=24 name="U" source=0:8
-associated-owner 0 kind=trait self-def=14 self=19 source=0:0 trait=13 unsafe=false name="B"
-associated-owner 1 kind=trait self-def=16 self=20 source=0:5 trait=15 unsafe=false name="A"
+def 38 type=19 name="f16"
+def 39 type=20 name="f128"
+def 40 type=23 name="T" source=0:3
+def 41 type=26 name="U" source=0:8
+associated-owner 0 kind=trait self-def=14 self=21 source=0:0 trait=13 unsafe=false name="B"
+associated-owner 1 kind=trait self-def=16 self=22 source=0:5 trait=15 unsafe=false name="A"
 associated-owner 2 kind=trait-impl self-def=18 self=11 source=0:11 unsafe=false
 associated-member def=17 owner=1
 associated-member def=19 owner=2
-parameter owner=14 binding=14 argument=type:19 default=-
-parameter owner=16 binding=16 argument=type:20 default=-
-parameter owner=17 binding=38 argument=type:21 default=-
-parameter owner=19 binding=39 argument=type:24 default=-
-predicate owner=13 source=0:0 subject=19 bound=trait:13 arguments=[]
-predicate owner=15 source=0:5 subject=20 bound=trait:15 arguments=[]
-predicate owner=17 source=0:2 subject=21 bound=trait:13 arguments=[]
+parameter owner=14 binding=14 argument=type:21 default=-
+parameter owner=16 binding=16 argument=type:22 default=-
+parameter owner=17 binding=40 argument=type:23 default=-
+parameter owner=19 binding=41 argument=type:26 default=-
+predicate owner=13 source=0:0 subject=21 bound=trait:13 arguments=[]
+predicate owner=15 source=0:5 subject=22 bound=trait:15 arguments=[]
+predicate owner=17 source=0:2 subject=23 bound=trait:13 arguments=[]
 impl owner=18 source=0:11 subject=11 bound=trait:15 arguments=[]
 impl-method owner=18 declaration=17 selected=19 default=false
 eof owners=3 members=2 parameters=4 predicates=3 impls=1 calls=0 paths=0 impl-uses=0

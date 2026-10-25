@@ -19,8 +19,10 @@ name 17 "u128"
 name 18 "usize"
 name 19 "f32"
 name 20 "f64"
-name 21 "Self"
-name 22 "f"
+name 21 "f16"
+name 22 "f128"
+name 23 "Self"
+name 24 "f"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 scope 1 module=0 barrier=true parent=0
@@ -44,23 +46,25 @@ def 13 type primitive name=17 scope=0 access=public
 def 14 type primitive name=18 scope=0 access=public
 def 15 type primitive name=19 scope=0 access=public
 def 16 type primitive name=20 scope=0 access=public
-def 17 type struct name=2 scope=0 access=module:0 source=0:3 members=1
-def 18 value constructor name=2 scope=0 access=module:0 source=0:3
-def 19 type generic name=1 scope=1 access=module:0 source=0:0
-def 20 type self-type name=21 scope=2 access=module:0 source=0:16 members=2
-def 21 type generic name=1 scope=2 access=module:0 source=0:4
-def 22 value function name=22 scope=2 access=module:0 source=0:15
-def 23 value parameter name=3 scope=3 access=module:0 source=0:9
-binding scope=0 type name=2 def=17 Direct ambiguous=false access=module:0
-binding scope=0 value name=2 def=18 Direct ambiguous=false access=module:0
-binding scope=1 type name=1 def=19 Direct ambiguous=false access=module:0
-binding scope=2 type name=21 def=20 Direct ambiguous=false access=module:0
-binding scope=2 type name=1 def=21 Direct ambiguous=false access=module:0
-binding scope=2 value name=22 def=22 Direct ambiguous=false access=module:0
-binding scope=3 value name=3 def=23 Direct ambiguous=false access=module:0
-ref 0:1 scope=1 type def=19
-ref 0:8 scope=2 type def=17
-ref 0:6 scope=2 type def=21
-ref 0:11 scope=3 type def=21
-ref 0:12 scope=4 value def=23
-eof files=1 modules=1 definitions=24 references=5
+def 17 type primitive name=21 scope=0 access=public
+def 18 type primitive name=22 scope=0 access=public
+def 19 type struct name=2 scope=0 access=module:0 source=0:3 members=1
+def 20 value constructor name=2 scope=0 access=module:0 source=0:3
+def 21 type generic name=1 scope=1 access=module:0 source=0:0
+def 22 type self-type name=23 scope=2 access=module:0 source=0:16 members=2
+def 23 type generic name=1 scope=2 access=module:0 source=0:4
+def 24 value function name=24 scope=2 access=module:0 source=0:15
+def 25 value parameter name=3 scope=3 access=module:0 source=0:9
+binding scope=0 type name=2 def=19 Direct ambiguous=false access=module:0
+binding scope=0 value name=2 def=20 Direct ambiguous=false access=module:0
+binding scope=1 type name=1 def=21 Direct ambiguous=false access=module:0
+binding scope=2 type name=23 def=22 Direct ambiguous=false access=module:0
+binding scope=2 type name=1 def=23 Direct ambiguous=false access=module:0
+binding scope=2 value name=24 def=24 Direct ambiguous=false access=module:0
+binding scope=3 value name=3 def=25 Direct ambiguous=false access=module:0
+ref 0:1 scope=1 type def=21
+ref 0:8 scope=2 type def=19
+ref 0:6 scope=2 type def=23
+ref 0:11 scope=3 type def=23
+ref 0:12 scope=4 value def=25
+eof files=1 modules=1 definitions=26 references=5

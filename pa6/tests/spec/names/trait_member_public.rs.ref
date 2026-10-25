@@ -21,8 +21,10 @@ name 19 "u128"
 name 20 "usize"
 name 21 "f32"
 name 22 "f64"
-name 23 "Self"
-name 24 "main"
+name 23 "f16"
+name 24 "f128"
+name 25 "Self"
+name 26 "main"
 module 0 name=0 file=0 scope=0 parent=root
 module 1 name=5 file=0 scope=1 parent=0
 scope 0 module=0 barrier=true parent=root
@@ -51,27 +53,29 @@ def 13 type primitive name=19 scope=0 access=public
 def 14 type primitive name=20 scope=0 access=public
 def 15 type primitive name=21 scope=0 access=public
 def 16 type primitive name=22 scope=0 access=public
-def 17 type module name=5 scope=0 access=module:0 source=0:12 members=1
-def 18 type struct name=4 scope=1 access=public source=0:0 members=2
-def 19 value constructor name=4 scope=1 access=public source=0:0
-def 20 type trait name=3 scope=1 access=public source=0:8 members=3
-def 21 type self-type name=23 scope=3 access=module:1 source=0:8 members=3
-def 22 value function name=6 scope=3 access=public source=0:7
-def 23 type self-type name=23 scope=6 access=module:1 source=0:11 members=6
-def 24 value function name=24 scope=0 access=module:0 source=0:25
-def 25 value parameter name=1 scope=4 access=module:1 source=0:1
-binding scope=0 type name=5 def=17 Direct ambiguous=false access=module:0
-binding scope=0 value name=24 def=24 Direct ambiguous=false access=module:0
-binding scope=1 type name=4 def=18 Direct ambiguous=false access=public
-binding scope=1 value name=4 def=19 Direct ambiguous=false access=public
-binding scope=1 type name=3 def=20 Direct ambiguous=false access=public
-binding scope=3 type name=23 def=21 Direct ambiguous=false access=module:1
-binding scope=3 value name=6 def=22 Direct ambiguous=false access=public
-binding scope=4 value name=1 def=25 Direct ambiguous=false access=module:1
-binding scope=6 type name=23 def=23 Direct ambiguous=false access=module:1
-ref 0:17 scope=8 value def=22
-ref 0:20 scope=8 value def=19
+def 17 type primitive name=23 scope=0 access=public
+def 18 type primitive name=24 scope=0 access=public
+def 19 type module name=5 scope=0 access=module:0 source=0:12 members=1
+def 20 type struct name=4 scope=1 access=public source=0:0 members=2
+def 21 value constructor name=4 scope=1 access=public source=0:0
+def 22 type trait name=3 scope=1 access=public source=0:8 members=3
+def 23 type self-type name=25 scope=3 access=module:1 source=0:8 members=3
+def 24 value function name=6 scope=3 access=public source=0:7
+def 25 type self-type name=25 scope=6 access=module:1 source=0:11 members=6
+def 26 value function name=26 scope=0 access=module:0 source=0:25
+def 27 value parameter name=1 scope=4 access=module:1 source=0:1
+binding scope=0 type name=5 def=19 Direct ambiguous=false access=module:0
+binding scope=0 value name=26 def=26 Direct ambiguous=false access=module:0
+binding scope=1 type name=4 def=20 Direct ambiguous=false access=public
+binding scope=1 value name=4 def=21 Direct ambiguous=false access=public
+binding scope=1 type name=3 def=22 Direct ambiguous=false access=public
+binding scope=3 type name=25 def=23 Direct ambiguous=false access=module:1
+binding scope=3 value name=6 def=24 Direct ambiguous=false access=public
+binding scope=4 value name=1 def=27 Direct ambiguous=false access=module:1
+binding scope=6 type name=25 def=25 Direct ambiguous=false access=module:1
+ref 0:17 scope=8 value def=24
+ref 0:20 scope=8 value def=21
 ref 0:4 scope=4 type def=9
-ref 0:9 scope=6 type def=20
-ref 0:10 scope=6 type def=18
-eof files=1 modules=2 definitions=26 references=5
+ref 0:9 scope=6 type def=22
+ref 0:10 scope=6 type def=20
+eof files=1 modules=2 definitions=28 references=5

@@ -21,7 +21,9 @@ name 19 "u128"
 name 20 "usize"
 name 21 "f32"
 name 22 "f64"
-name 23 "f"
+name 23 "f16"
+name 24 "f128"
+name 25 "f"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 scope 1 module=0 barrier=true parent=0
@@ -46,27 +48,29 @@ def 13 type primitive name=19 scope=0 access=public
 def 14 type primitive name=20 scope=0 access=public
 def 15 type primitive name=21 scope=0 access=public
 def 16 type primitive name=22 scope=0 access=public
-def 17 type enum name=3 scope=0 access=module:0 source=0:4 members=1
-def 18 type variant name=4 scope=1 access=module:0 source=0:0
-def 19 value variant name=4 scope=1 access=module:0 source=0:0
-def 20 type variant name=5 scope=1 access=module:0 source=0:3
-def 21 value variant name=5 scope=1 access=module:0 source=0:3
-def 22 value function name=23 scope=0 access=module:0 source=0:24
-def 23 value parameter name=2 scope=2 access=module:0 source=0:5
-def 24 value local name=6 scope=5 access=module:0 source=0:18
-binding scope=0 type name=3 def=17 Direct ambiguous=false access=module:0
-binding scope=0 value name=23 def=22 Direct ambiguous=false access=module:0
-binding scope=1 type name=4 def=18 Direct ambiguous=false access=module:0
-binding scope=1 value name=4 def=19 Direct ambiguous=false access=module:0
-binding scope=1 type name=5 def=20 Direct ambiguous=false access=module:0
-binding scope=1 value name=5 def=21 Direct ambiguous=false access=module:0
-binding scope=2 value name=2 def=23 Direct ambiguous=false access=module:0
-binding scope=5 value name=6 def=24 Direct ambiguous=false access=module:0
+def 17 type primitive name=23 scope=0 access=public
+def 18 type primitive name=24 scope=0 access=public
+def 19 type enum name=3 scope=0 access=module:0 source=0:4 members=1
+def 20 type variant name=4 scope=1 access=module:0 source=0:0
+def 21 value variant name=4 scope=1 access=module:0 source=0:0
+def 22 type variant name=5 scope=1 access=module:0 source=0:3
+def 23 value variant name=5 scope=1 access=module:0 source=0:3
+def 24 value function name=25 scope=0 access=module:0 source=0:24
+def 25 value parameter name=2 scope=2 access=module:0 source=0:5
+def 26 value local name=6 scope=5 access=module:0 source=0:18
+binding scope=0 type name=3 def=19 Direct ambiguous=false access=module:0
+binding scope=0 value name=25 def=24 Direct ambiguous=false access=module:0
+binding scope=1 type name=4 def=20 Direct ambiguous=false access=module:0
+binding scope=1 value name=4 def=21 Direct ambiguous=false access=module:0
+binding scope=1 type name=5 def=22 Direct ambiguous=false access=module:0
+binding scope=1 value name=5 def=23 Direct ambiguous=false access=module:0
+binding scope=2 value name=2 def=25 Direct ambiguous=false access=module:0
+binding scope=5 value name=6 def=26 Direct ambiguous=false access=module:0
 ref 0:1 scope=1 type def=5
-ref 0:6 scope=2 type def=17
+ref 0:6 scope=2 type def=19
 ref 0:8 scope=2 type def=5
-ref 0:9 scope=3 value def=23
-ref 0:12 scope=4 value def=19
-ref 0:17 scope=5 value def=21
-ref 0:20 scope=5 value def=24
-eof files=1 modules=1 definitions=25 references=7
+ref 0:9 scope=3 value def=25
+ref 0:12 scope=4 value def=21
+ref 0:17 scope=5 value def=23
+ref 0:20 scope=5 value def=26
+eof files=1 modules=1 definitions=27 references=7

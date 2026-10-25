@@ -18,12 +18,14 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 function binders=0 parameters=[] result=0 unsafe=false
-type 20 function-item def=13 signature=19
-type 21 function binders=0 parameters=[] result=1 unsafe=false
-type 22 function-item def=14 signature=21
-def 13 type=20 name="diverges" source=0:7
-def 14 type=22 name="main" source=0:9
+type 19 primitive f16
+type 20 primitive f128
+type 21 function binders=0 parameters=[] result=0 unsafe=false
+type 22 function-item def=13 signature=21
+type 23 function binders=0 parameters=[] result=1 unsafe=false
+type 24 function-item def=14 signature=23
+def 13 type=22 name="diverges" source=0:7
+def 14 type=24 name="main" source=0:9
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"
@@ -41,8 +43,10 @@ def 28 type=15 name="u128"
 def 29 type=16 name="usize"
 def 30 type=17 name="f32"
 def 31 type=18 name="f64"
-function def=13 source=0:7 signature=19 body=0:6
-function def=14 source=0:9 signature=21 body=0:8
+def 32 type=19 name="f16"
+def 33 type=20 name="f128"
+function def=13 source=0:7 signature=21 body=0:6
+function def=14 source=0:9 signature=23 body=0:8
 node 0:0 type=0 span=17:18
 node 0:1 type=1 span=29:31
 node 0:2 type=0 span=24:31
@@ -52,7 +56,7 @@ node 0:4 type=1 span=21:34
 node 0:5 type=1 span=21:36
 node 0:6 type=0 span=19:38
 adjustment 0:6 never target=0
-node 0:7 type=20 span=0:38
+node 0:7 type=22 span=0:38
 node 0:8 type=1 span=49:51
-node 0:9 type=22 span=39:51
-eof types=23 definitions=19 nodes=10 functions=2 initializers=0
+node 0:9 type=24 span=39:51
+eof types=25 definitions=21 nodes=10 functions=2 initializers=0

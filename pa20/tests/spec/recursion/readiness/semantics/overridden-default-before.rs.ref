@@ -18,31 +18,33 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 aggregate def=15 arguments=[const-parameter:15:0]
-type 20 parameter def=19 index=0
-type 21 parameter def=23 index=0
-type 22 function binders=0 parameters=[2] result=1 unsafe=false
-type 23 function-item def=13 signature=22
-type 24 function binders=0 parameters=[11] result=11 unsafe=false
-type 25 function-item def=14 signature=24
-type 26 function binders=0 parameters=[] result=1 unsafe=false
-type 27 function-item def=17 signature=26
-type 28 array element=11 length=parameter:15:0
-type 29 function binders=0 parameters=[28] result=19 unsafe=false
-type 30 function-item def=16 signature=29
-type 31 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
-type 32 array element=11 length=3
-type 33 function binders=0 parameters=[32] result=31 unsafe=false
-type 34 function-item def=16 signature=33 arguments=[const:16:0x00000000000000000000000000000003]
-def 13 type=23 name="check" source=0:13
-def 14 type=25 name="fail" source=0:22
-def 15 type=19 name="X" source=0:29
-def 16 type=30 name="X" source=0:29
-def 17 type=27 name="main" source=0:55
-def 19 type=20 name="Self" source=0:71
+type 19 primitive f16
+type 20 primitive f128
+type 21 aggregate def=15 arguments=[const-parameter:15:0]
+type 22 parameter def=19 index=0
+type 23 parameter def=23 index=0
+type 24 function binders=0 parameters=[2] result=1 unsafe=false
+type 25 function-item def=13 signature=24
+type 26 function binders=0 parameters=[11] result=11 unsafe=false
+type 27 function-item def=14 signature=26
+type 28 function binders=0 parameters=[] result=1 unsafe=false
+type 29 function-item def=17 signature=28
+type 30 array element=11 length=parameter:15:0
+type 31 function binders=0 parameters=[30] result=21 unsafe=false
+type 32 function-item def=16 signature=31
+type 33 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
+type 34 array element=11 length=3
+type 35 function binders=0 parameters=[34] result=33 unsafe=false
+type 36 function-item def=16 signature=35 arguments=[const:16:0x00000000000000000000000000000003]
+def 13 type=25 name="check" source=0:13
+def 14 type=27 name="fail" source=0:22
+def 15 type=21 name="X" source=0:29
+def 16 type=32 name="X" source=0:29
+def 17 type=29 name="main" source=0:55
+def 19 type=22 name="Self" source=0:71
 def 20 type=16 name="C" source=0:57
 def 21 type=16 name="D" source=0:70
-def 23 type=21 name="Self" source=0:77
+def 23 type=23 name="Self" source=0:77
 def 24 type=16 name="VALUE" source=0:76
 def 25 type=12 name="Self" source=0:85
 def 26 type=11 name="Self" source=0:96
@@ -65,14 +67,16 @@ def 42 type=15 name="u128"
 def 43 type=16 name="usize"
 def 44 type=17 name="f32"
 def 45 type=18 name="f64"
-def 46 type=16 name="N" source=0:24
-def 47 type=16 name="N" source=0:73
-def 48 type=16 name="N" source=0:79
-def 49 type=2 name="ok" source=0:0
-def 50 type=11 name="x" source=0:14
-def 51 type=31 name="x" source=0:30
-associated-owner 0 kind=trait self-def=19 self=20 source=0:71 trait=18 unsafe=false name="A"
-associated-owner 1 kind=trait self-def=23 self=21 source=0:77 trait=22 unsafe=false name="B"
+def 46 type=19 name="f16"
+def 47 type=20 name="f128"
+def 48 type=16 name="N" source=0:24
+def 49 type=16 name="N" source=0:73
+def 50 type=16 name="N" source=0:79
+def 51 type=2 name="ok" source=0:0
+def 52 type=11 name="x" source=0:14
+def 53 type=33 name="x" source=0:30
+associated-owner 0 kind=trait self-def=19 self=22 source=0:71 trait=18 unsafe=false name="A"
+associated-owner 1 kind=trait self-def=23 self=23 source=0:77 trait=22 unsafe=false name="B"
 associated-owner 2 kind=trait-impl self-def=25 self=12 source=0:85 unsafe=false
 associated-owner 3 kind=trait-impl self-def=26 self=11 source=0:96 unsafe=false
 associated-member def=20 owner=0
@@ -80,13 +84,13 @@ associated-member def=21 owner=0
 associated-member def=24 owner=1
 associated-member def=27 owner=3
 associated-member def=28 owner=3
-parameter owner=15 binding=46 argument=const-parameter:15:0 default=-
-parameter owner=19 binding=19 argument=type:20 default=-
-parameter owner=22 binding=47 argument=const-parameter:22:0 default=-
-parameter owner=23 binding=23 argument=type:21 default=-
-parameter owner=25 binding=48 argument=const-parameter:25:0 default=-
-predicate owner=18 source=0:71 subject=20 bound=trait:18 arguments=[]
-predicate owner=22 source=0:77 subject=21 bound=trait:22 arguments=[const-parameter:22:0]
+parameter owner=15 binding=48 argument=const-parameter:15:0 default=-
+parameter owner=19 binding=19 argument=type:22 default=-
+parameter owner=22 binding=49 argument=const-parameter:22:0 default=-
+parameter owner=23 binding=23 argument=type:23 default=-
+parameter owner=25 binding=50 argument=const-parameter:25:0 default=-
+predicate owner=18 source=0:71 subject=22 bound=trait:18 arguments=[]
+predicate owner=22 source=0:77 subject=23 bound=trait:22 arguments=[const-parameter:22:0]
 impl owner=25 source=0:85 subject=12 bound=trait:22 arguments=[const-parameter:25:0]
 impl owner=26 source=0:96 subject=11 bound=trait:18 arguments=[]
 trait-path source=0:35 method=20 trait=18 qualifier=explicit origin=ordinary subject-source=0:32

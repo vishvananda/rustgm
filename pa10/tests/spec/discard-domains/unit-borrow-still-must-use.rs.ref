@@ -18,20 +18,22 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 function binders=0 parameters=[] result=1 unsafe=false
-type 20 function-item def=13 signature=19
-type 21 function-item def=14 signature=19
-type 22 reference mutable=false region=region:1 referent=1
+type 19 primitive f16
+type 20 primitive f128
+type 21 function binders=0 parameters=[] result=1 unsafe=false
+type 22 function-item def=13 signature=21
+type 23 function-item def=14 signature=21
+type 24 reference mutable=false region=region:1 referent=1
 region-var region:1 body=0:3 source=0:1 origin=expression-borrow pending
-body 0 function def=13 signature=19 result=1 source=0:3
+body 0 function def=13 signature=21 result=1 source=0:3
   block b0:
     v0 type=1 = unit source=0
-    v1 type=22 = borrow temporary:v0 source=1
+    v1 type=24 = borrow temporary:v0 source=1
     v2 type=1 = unit source=2
     v3 type=1 = unit source=3
     return v3 source=3
 end-body
-body 1 function def=14 signature=19 result=1 source=0:5
+body 1 function def=14 signature=21 result=1 source=0:5
   block b0:
     v0 type=1 = unit source=5
     return v0 source=5

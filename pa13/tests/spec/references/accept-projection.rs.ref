@@ -18,11 +18,13 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 tuple [11,2]
-type 20 reference mutable=false region=static referent=19
-type 21 function binders=0 parameters=[11] result=1 unsafe=false
-type 22 function-item def=15 signature=21
-type 23 reference mutable=false region=region:1 referent=19
+type 19 primitive f16
+type 20 primitive f128
+type 21 tuple [11,2]
+type 22 reference mutable=false region=static referent=21
+type 23 function binders=0 parameters=[11] result=1 unsafe=false
+type 24 function-item def=15 signature=23
+type 25 reference mutable=false region=region:1 referent=21
 root 0:17 pattern=0
 root 0:20 pattern=1
 pattern 0 source=0:17 input=11 range=0
@@ -32,5 +34,5 @@ match 0 source=0:23 input=0:16 arms=0:2 exhaustive=true uninhabited=false work=7
 arm 0 source=0:19 pattern=0 guard=- useful=true value=0:18
 arm 1 source=0:22 pattern=1 guard=- useful=true value=0:21
 region-var region:1 body=0:7 source=0:7 origin=expression-borrow pending
-region-coercion body=0:7 source=0:7 actual=23 expected=20 kind=same-shape pending
+region-coercion body=0:7 source=0:7 actual=25 expected=22 kind=same-shape pending
 eof roots=2 patterns=2 fields=0 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=7 region-vars=1 region-equalities=0 conditions=0 chains=0

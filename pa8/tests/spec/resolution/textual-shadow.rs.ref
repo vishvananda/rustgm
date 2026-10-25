@@ -70,6 +70,8 @@ name 29 "u128"
 name 30 "usize"
 name 31 "f32"
 name 32 "f64"
+name 33 "f16"
+name 34 "f128"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 scope 1 module=0 barrier=true parent=0
@@ -107,9 +109,11 @@ def 29 type primitive name=29 scope=0 access=public
 def 30 type primitive name=30 scope=0 access=public
 def 31 type primitive name=31 scope=0 access=public
 def 32 type primitive name=32 scope=0 access=public
-def 33 value local name=2 scope=2 access=module:0 source=0:2
+def 33 type primitive name=33 scope=0 access=public
+def 34 type primitive name=34 scope=0 access=public
+def 35 value local name=2 scope=2 access=module:0 source=0:2
 binding scope=0 value name=16 def=14 Direct ambiguous=false access=module:0
 ref 0:1 scope=1 type def=21
-ref 0:7 scope=2 value def=33
-eof files=1 modules=1 definitions=34 references=2
-end-expanded-crate files 1 modules 1 macros 2 invocations 2 captures 0 definitions 34 references 2
+ref 0:7 scope=2 value def=35
+eof files=1 modules=1 definitions=36 references=2
+end-expanded-crate files 1 modules 1 macros 2 invocations 2 captures 0 definitions 36 references 2
