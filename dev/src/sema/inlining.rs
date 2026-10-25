@@ -112,12 +112,16 @@ impl Declarations {
                 return match self.header_attribute_contracts(report, definition)?.inline {
                     ContractKnowledge::KnownAbsent => Ok(None),
                     ContractKnowledge::KnownPresent(view) => Ok(Some(view)),
-                    ContractKnowledge::Unknown => Err(Error::unlocated(
+                    ContractKnowledge::Unknown => Err(Error::at(
+                        crate::resolve::unit::FileId(0),
+                        0,
                         "imported inline hint transport is not implemented",
                     )),
                 };
             }
-            return Err(Error::unlocated(
+            return Err(Error::at(
+                crate::resolve::unit::FileId(0),
+                0,
                 "imported inline hint transport is not implemented",
             ));
         }
@@ -168,24 +172,16 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
                     .map_err(|message| Error::at(file, attribute.span.start, message))?;
                 let applicability = target(unit, node)
                     .map_err(|message| Error::at(file, attribute.span.start, message))?;
-                if applicability != Some(InlineApplicability::FunctionBody) {
+                if applicability != InlineApplicability::FunctionBody {
                     facts.must_use_diagnostic(
                         report,
                         owner_key,
                         attribute.span.start,
                         0,
                         WarningCode::UnusedAttributes,
-                        if applicability.is_some() {
-                            "inline attribute on a function without a body has no effect"
-                        } else {
-                            "inline attribute requires a function or closure"
-                        }
-                        .into(),
+                        "inline attribute on a function without a body has no effect".into(),
                     )?;
                 }
-                let Some(applicability) = applicability else {
-                    continue;
-                };
                 let repeated = facts
                     .must_use_contracts
                     .as_deref()
@@ -239,18 +235,17 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
 fn target(
     unit: &crate::resolve::unit::Unit,
     node: crate::syntax::ast::NodeId,
-) -> Result<Option<InlineApplicability>, &'static str> {
+) -> Result<InlineApplicability, &'static str> {
     match unit.configured.ast.node(node).kind {
         Kind::Item(index) => match unit.configured.ast.items[index as usize].kind {
-            ItemKind::Function { body, .. } => Ok(Some(if body.is_some() {
+            ItemKind::Function { body, .. } => Ok(if body.is_some() {
                 InlineApplicability::FunctionBody
             } else {
                 InlineApplicability::DiagnosedNoBody
-            })),
-            ItemKind::Trait { .. } => Ok(None),
+            }),
             _ => Err("inline attribute requires a function or closure"),
         },
-        Kind::Closure { .. } => Ok(Some(InlineApplicability::FunctionBody)),
+        Kind::Closure { .. } => Ok(InlineApplicability::FunctionBody),
         _ => Err("inline attribute requires a function or closure"),
     }
 }

@@ -4,7 +4,7 @@ mod imported;
 #[path = "header_attributes/declared_origins.rs"]
 mod local;
 #[cfg(test)]
-#[path = "../../tests/invariants/header_migration.rs"]
+#[path = "../../tests/invariants/transported_annotations.rs"]
 mod tests;
 use crate::{
     resolve::{

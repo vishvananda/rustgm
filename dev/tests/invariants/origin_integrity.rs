@@ -44,18 +44,13 @@ fn inline_and_trait_contracts_retain_complete_actual_owner_applicability() -> Re
         "pub trait Copy: Clone {}",
         "#[inline]pub trait Copy: Clone {}",
     );
-    let (interface, warnings) = exported(&invalid_owner)?;
-    assert_eq!(warnings, 1);
+    let error = exported(&invalid_owner)
+        .err()
+        .ok_or("inline on a trait reached publication")?;
     assert!(
-        interface
-            .source_descriptor()
-            .ok_or("descriptor")?
-            .rows()
-            .header_attributes()
-            .ok_or("complete columns")?
-            .traits
-            .iter()
-            .all(|row| row.inline.is_none())
+        error
+            .to_string()
+            .contains("inline attribute requires a function or closure")
     );
     for name in ["trait-owner", "required-member", "unused-marked"] {
         let interface = roundtrip(&fixture(name)?)?;

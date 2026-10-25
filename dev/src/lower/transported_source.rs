@@ -1,6 +1,5 @@
 //! Source transport borrows actual successful originals; emitted rows grant no proof.
 mod cfg_rows;
-mod header_columns;
 mod locations;
 mod numbered_inputs;
 mod obligation_rows;
@@ -8,6 +7,7 @@ mod publication;
 #[cfg(test)]
 #[path = "../../tests/invariants/publication_attributes.rs"]
 mod publication_tests;
+mod published_annotations;
 use crate::{
     body::{
         ir::{self, Body, Owner},

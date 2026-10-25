@@ -2,6 +2,7 @@
 mod allocation_columns;
 mod cfg_columns;
 mod contract_columns;
+#[path = "ordinary_columns/annotation_rows.rs"]
 mod header_facts;
 mod invoked_rows;
 mod operation_columns;

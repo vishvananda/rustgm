@@ -55,6 +55,7 @@ pub(crate) mod vtable_plans;
 
 pub mod text;
 
+#[path = "annotated_headers.rs"]
 pub mod header_attributes;
 pub mod must_use;
 

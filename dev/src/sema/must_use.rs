@@ -122,12 +122,16 @@ impl Declarations {
                 {
                     ContractKnowledge::KnownAbsent => Ok(None),
                     ContractKnowledge::KnownPresent(view) => Ok(Some(view)),
-                    ContractKnowledge::Unknown => Err(Error::unlocated(
+                    ContractKnowledge::Unknown => Err(Error::at(
+                        crate::resolve::unit::FileId(0),
+                        0,
                         "imported must_use contract transport is not implemented",
                     )),
                 };
             }
-            return Err(Error::unlocated(
+            return Err(Error::at(
+                crate::resolve::unit::FileId(0),
+                0,
                 "imported must_use contract transport is not implemented",
             ));
         }

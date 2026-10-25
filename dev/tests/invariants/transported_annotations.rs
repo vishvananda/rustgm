@@ -10,9 +10,9 @@ use crate::{
         generics::{self as g, source as s},
     },
 };
-#[path = "contract_compatibility.rs"]
+#[path = "versioned_attributes.rs"]
 mod compatibility;
-#[path = "contract_origins.rs"]
+#[path = "origin_integrity.rs"]
 mod origins;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
