@@ -1,0 +1,142 @@
+{
+  "schema": 1,
+  "kind": "independent predeclared trait-alias hypotheses",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "metadata_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name=trait_alias_probe"
+  ],
+  "native_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Copt-level=0",
+    "-Cdebuginfo=0",
+    "--error-format=json",
+    "--crate-name=trait_alias_probe"
+  ],
+  "cases": [
+    {
+      "name": "thin-associated-equality",
+      "sha256": "4977cba74f230521acb0ae1d8f580afb37cad35319d9c8dc7a054bcbb62e4305",
+      "expected_metadata_status": 0,
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "7\n",
+        "stderr": ""
+      }
+    },
+    {
+      "name": "thin-wrong-associated-result",
+      "sha256": "bb95ea15636730b2d937db13c41eabd5647e8ff869ffbd6b20b9a2495b207250",
+      "expected_metadata_status": 1,
+      "native": null
+    },
+    {
+      "name": "generic-lifetime-alias",
+      "sha256": "d35ec1292367225a613b910b759bbc650070dccd37619a2cc0a24a06b5523db3",
+      "expected_metadata_status": 0,
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "7\n",
+        "stderr": ""
+      }
+    },
+    {
+      "name": "two-regular-traits-bound",
+      "sha256": "f277d1f37157ee0f143eaa4f2700084bc7d7f3c86e45dbc4976cd1431acbd9d8",
+      "expected_metadata_status": 0,
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "7\n",
+        "stderr": ""
+      }
+    },
+    {
+      "name": "where-self-alias",
+      "sha256": "082e1f67236512263c6638ba270e4c80bba4858ced587f3ad3321fbc4226e0ad",
+      "expected_metadata_status": 0,
+      "native": null
+    },
+    {
+      "name": "generic-where-before-equals",
+      "sha256": "fadf922b5ba9e758867d534b0011e5fa61abadb839a909f06f060ad2814aab64",
+      "expected_metadata_status": 0,
+      "native": null
+    },
+    {
+      "name": "generic-where-after-bounds",
+      "sha256": "1771d4fa6780cef3788048bee5b0558f68558f62f2f72b4607ee298bc43677c9",
+      "expected_metadata_status": 0,
+      "native": null
+    },
+    {
+      "name": "recursive-alias-cycle",
+      "sha256": "220ac606af265bdacaffee1b257fde40379780040f702e6d936e8dbb0527eab6",
+      "expected_metadata_status": 1,
+      "native": null
+    },
+    {
+      "name": "alias-is-not-impl-owner",
+      "sha256": "65aa71023a77791a1b242843db1c5f1ea210d13cd554ba6a62bfb42079b015a5",
+      "expected_metadata_status": 1,
+      "native": null
+    },
+    {
+      "name": "dyn-single-expanded-trait",
+      "sha256": "518a3aab9e9b56f8e17e148e3e511826414ee5ce16aa5d112ebd116aa5d83223",
+      "expected_metadata_status": 0,
+      "native": null
+    },
+    {
+      "name": "dyn-two-regular-traits",
+      "sha256": "ac4dec5f3735e221b7a4600e5876102cfe21185a87f6ff209f78b7737f8dfc3d",
+      "expected_metadata_status": 1,
+      "native": null
+    },
+    {
+      "name": "active-missing-feature",
+      "sha256": "893488740c438a4f32b5b43cb82654d1daa614555c1c7dc8287d2f8a1f0b32bd",
+      "expected_metadata_status": 1,
+      "native": null
+    },
+    {
+      "name": "inactive-missing-feature",
+      "sha256": "e3935131d35a01ca4a47dceb1ceda013212440940164a27293df0a7e1f6ca3d5",
+      "expected_metadata_status": 0,
+      "native": null
+    },
+    {
+      "name": "empty-alias",
+      "sha256": "76361dd0ed6d3c65157244d7b756cddfea9a2f0e5bacdc6090a3a99c945b6b0b",
+      "expected_metadata_status": 0,
+      "native": null
+    },
+    {
+      "name": "literal-alias-allowance",
+      "sha256": "d0eec121545caad1cb6af3e15457603dbfc9fc5b02db6f56272713d499741c24",
+      "expected_metadata_status": 0,
+      "native": null
+    },
+    {
+      "name": "forwarded-alias-allowance",
+      "sha256": "95d5a03f7cd44db9562b2667a109ca723801f7a9ec5be4c9148021a2e5df2c92",
+      "expected_metadata_status": 1,
+      "native": null
+    }
+  ],
+  "planned_metadata_observations": 32,
+  "planned_native_observations": 6
+}
