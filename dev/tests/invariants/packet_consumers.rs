@@ -243,7 +243,10 @@ fn ordinary_source_profiles_capture_plain_contract_bytes_before_adapter() -> Res
         )?;
         let program = client(
             crates::decode(&bytes)?,
-            &fixture("runtime-client")?.replace("base::identity", "base::plain"),
+            &fixture("runtime-client")?.replace(
+                "base::identity(7u8)",
+                "base::unused::<u8>(base::plain(7u8))",
+            ),
         )?;
         assert!(program.symbols.iter().any(|symbol| symbol.body.is_some()));
     }

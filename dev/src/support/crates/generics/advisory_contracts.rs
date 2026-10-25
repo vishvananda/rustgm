@@ -45,7 +45,7 @@ pub struct HeaderAttributeColumns {
     pub traits: Vec<HeaderContract>,
 }
 impl HeaderAttributeColumns {
-    pub(super) fn validate(
+    pub(crate) fn validate(
         &self,
         rows: &SourceRows,
         base: usize,
