@@ -67,77 +67,105 @@ The former empty `object-interop-tests` Cargo feature is removed. Default and
 frontend build merely to select native tests. No test body or ignore marker is
 changed, and an unavailable native dependency still fails an explicit native run.
 
-Use focused checks while implementing a coherent feature, then qualify the
-complete checkpoint before pushing compiler changes. Several related consumer
-edits can share one checkpoint. A change to tests or documentation does not by
-itself invalidate every compiler measurement or require another full native run.
+Development checks have a five-minute total wall-clock budget, including resource
+admission, build, lint, audit and execution. Use the fast workflow for ordinary
+edits and coherent development pushes:
 
-- During implementation, declare positive/negative outcomes, run the affected
-  maintainer tests and independent pinned-rustc probes, and execute affected
-  native controls when lowering or runtime behavior is involved. Run formatting,
-  file/layout audits, strict Clippy and harness checks early, before investing in
-  a complete qualification run. Run the audit after formatting and before
-  Clippy: naming/placement failures do not need a compiler build to diagnose.
-  Retain that audit result if Clippy leaves its source snapshot unchanged.
-  CI uses `make fmt-check setup-audit audit-rust lint` to preserve this order;
-  Make runs the shared formatting prerequisite only once in that invocation.
-  Fix wiring failures before broadening tests.
-  Settle related fixture and test edits first, then run all-target strict Clippy
-  as the type/lint gate instead of running both `cargo check` and Clippy. Use
-  debug tests for ordinary private invariants: changes to `cfg(test)` still
-  rebuild the library, but debug code generation is substantially cheaper.
-  Once that private test binary is rebuilt for a checkpoint, run its complete
-  nonignored inventory once, checking that every declared new control is present
-  and executed. Capture passing output needed for work/layout measurements.
-  The 1,394-case private release inventory took 4.36 seconds in the retained
-  `library-lookup-panic-release-v1` run and caught an existing builtin grammar
-  regression and three stale cold-layout assertions missed by narrower selections.
-  This does not require building every integration target: keep frontend/native
-  selections focused, and select ignored native controls explicitly. Do not
-  repeat the new private cases separately after their complete inventory passes.
-  Do not rebuild release test binaries for each test-only correction. Performance
-  measurements and optimization-sensitive failures still require release builds.
-- Keep all active PA text suites as a cheap candidate regression check. These
-  protect the supported language; planned-stage rejection is not evidence for
-  the semantic rule a new negative test is intended to exercise.
-- Before pushing a compiler checkpoint, run the full release Cargo tests, native
-  maintainer tests, lint/audits/harness, all active PA text suites and independent
-  source/native suites for affected assignments. `make test-maintainer` runs
-  regular and ignored maintainer tests together in release after qualifying the
-  backend, with one Cargo invocation and one cleanup scan. It replaces separate
-  full regular/private/native passes; do not also run `--lib` and then repeat those
-  same tests in the full suite. Run `make test-report` for the course text checks.
-  Full commands use Cargo's `--no-fail-fast`: every compiled test target runs,
-  and any failing target still fails the command. This collects independent
-  failures in one build instead of hiding later targets behind the first failure.
-  Verify upstream fixtures after
-  fixture changes and qualify the backend after contract/bridge changes. Preserve
-  the receipts for the exact candidate tested.
-- Before releasing an assignment or new grading contract, run all active earlier
-  independent source/native suites and the owning handout's release checks.
-  Independently qualify new outcomes before generating and reviewing oracles.
-  Run `make test-debug` at assignment release to retain the complete debug-profile
-  execution check, including overflow and assertion behavior.
-- For hot-path development, measure changed-path scaling inputs and a common-case
-  control with immutable binaries, A/A calibration, paired ABBA blocks and output
-  equality. Include algorithmic work/storage invariants where relevant. Run the
-  broad performance matrix at assignment release, for a shared algorithm change
-  or to investigate a regression. Choose follow-ups in advance and retain all
-  observations; never rerun until the result looks favorable.
+```sh
+make setup-audit  # once per checkout
+make fastcheck FAST_ARGS='lexer'
+make fastcheck FAST_ARGS='constant_patterns --lib-case complete::private::test_path'
+make fastcheck FAST_ARGS='lexer --pa pa1'
+```
 
-After checks pass, repeat only what subsequent changes, failures or unresolved
-concerns invalidate. Documentation-only edits after a measured snapshot do not
-require rebuilding an unchanged compiler; retain the original snapshot and
-identify those later edits separately. `make test` uses release throughout and
-lets Cargo build the CLI needed by integration tests, avoiding an extra initial
-CLI build. `make test-maintainer-native` uses the same release artifacts. CI runs
-the full release suite once, all debug library invariants, course text, strict
-lint, architecture/harness/upstream and independent source checks. It no longer
-builds and executes all 13 integration binaries in both profiles on every push.
-The debug library lane retains the compiler's assertion-only validation paths;
-the full debug integration lane remains available through `make test-debug`.
-Use the
-storage guard throughout, with scoped cleanup when all output roots are known.
+Replace the private path with a real complete test name. Select the smallest
+set covering the changed behavior, a negative control and relevant callers.
+The default is the lexer smoke suite, not a claim to cover arbitrary changes.
+Use repeated `--pa paN` options for affected text-oracle assignments. The runner
+builds/passes the debug CLI explicitly, avoiding `make test-paN`'s release build.
+Planned assignments still fail and are never reported as empty passing suites.
+`make fastcheck` itself applies resource/storage protection; do not wrap it in
+another lease. Shared-controller admission never waits for a slot. Its default
+absolute output cap is 16 GiB, including retained caches and pins; use
+`--max-output-gib N` only with justified headroom for the actual worktree.
+Admission refusal and deadline exhaustion fail the run. Do not increase the
+five-minute deadline or silently omit tests to turn a timeout into success.
+Partition unrelated target groups or investigate a slow build instead.
+
+The `dev-fast` Cargo profile keeps assertions and overflow checks, disables
+optimization and debug symbols, and enables one incremental cache under
+`obj/rust/dev-fast`. It does not rebuild release artifacts. Formatting covers
+all implementation/test modules. The architecture audit reads content hashes,
+reuses unchanged per-file syntax results, then reruns global duplicate,
+filename-stem and ownership checks over the complete current file set. Audit
+implementation, parser versions and role-table changes invalidate that cache.
+Strict Clippy covers selected test targets and their library; integration/text
+selections also check the CLI. It is not
+followed by a redundant `cargo check`. Only selected test binaries are compiled.
+Private selections additionally lint the library in test-harness mode: ordinary
+`clippy --lib` excludes `cfg(test)`, while Cargo's `--tests` would select every
+integration target. The explicit harness mode catches lints in private tests
+without compiling unrelated integration binaries.
+Harness-mode Clippy has a stable metadata cache under `obj/rust/private-lint`
+so its different compiler arguments cannot evict ordinary Clippy results.
+Bootstrap cold worktrees one target group at a time; combine related groups
+after their caches are warm. Keep each command within the same deadline.
+Private tests use complete names, integration suites retain exact outer-module
+boundaries, and every selected name/count must actually execute. A new binary
+no longer requires executing its complete private inventory.
+
+Each run saves raw output, step times, source-content fingerprints, binary
+hashes and exact inventories under `obj/qualification/fast/`. A timeout is a
+failed check with retained evidence, and owned compiler/test processes are
+stopped. Source changes during the run invalidate its result. Keep source
+unchanged until the command finishes. The launcher reserves time for process
+cleanup within the deadline; it can stop earlier than 300 seconds.
+
+Ignored/native tests remain explicit. Select them with `--ignored` and declare
+all disposable output roots using repeated `--prune-under obj/OUTPUT` options.
+Cleanup visits only those roots after successful targets, preserving diagnostics,
+inputs and pins. Failed outputs remain for diagnosis. Do not scan every historic
+`obj/` directory after each ordinary focused test. Keep the reusable dev cache
+within the worktree's shared output cap; `make tidy-build` retires obsolete
+Cargo caches. Release/performance commands continue to disable incremental builds.
+
+Periodically run `make tidy-archive` between batches. It compacts inactive
+PID-named scratch directories older than 24 hours into a lossless archive,
+verifies every regular/hardlinked file's restored SHA-256, checks that originals
+did not change, then removes the loose copies. Pins, active builds and managed
+caches are preserved. `obj/archives/*.json` records the archive hash, original
+directories and restore command. Archived evidence remains recoverable with
+`tar -xzf obj/archives/NAME.tar.gz -C .`. This reduces the number of filesystem
+entries that every mandatory disk-accounting scan visits. For a configured
+controller, use `ARCHIVE_RESOURCE_ARGS='--max-output-gib N'` with the worktree's
+justified cap; `ARCHIVE_ARGS='--older-than-hours N'` changes the retention age.
+
+Focused passing evidence is sufficient for development integration and main
+pushes. Retain pending broad checks explicitly in handoffs. Push/PR CI runs the
+bounded smoke workflow plus harness/upstream/audit-cache contracts. Nightly
+and manual CI run full release tests, all native maintainer tests, uncached
+architecture audits, all-target strict Clippy, all active text suites, debug
+library invariants and independent Rust qualification. Cancel superseded push
+jobs rather than accumulating outdated builds. The fast CI smoke is deliberately
+small; source-specific regression selections belong in the developer's receipt.
+
+At assignment release, run the owning handout's complete acceptance checks,
+all active earlier independent source/native suites and full debug tests.
+Independently qualify new outcomes before generating/reviewing text oracles.
+Fixture changes still need upstream verification; backend-contract changes
+need backend qualification. These release requirements do not apply to each
+implementation edit or ordinary development push.
+
+Measure meaningful algorithm checkpoints with immutable binaries, frozen
+inputs, A/A calibration, paired ABBA blocks and output equality. For routine
+edits, prefer bounded-work and scaling invariants. Run the broad performance
+matrix at assignment release or to investigate a regression; preserve every
+observation and avoid repeating profile/release builds for related edits.
+
+After checks pass, repeat only what later source changes or failures invalidate.
+Documentation-only changes do not require rebuilding an unchanged compiler.
+The existing `make test`, `make test-maintainer`, `make test-debug` and independent
+qualification commands remain available for periodic/milestone verification.
 
 For a failed combined run, preserve its failure and every completed target's
 source snapshot, binary hash, exact inventory and result. Review the complete

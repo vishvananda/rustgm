@@ -1,11 +1,48 @@
 name: Reference and course checks
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 3 * * *'
 permissions:
   contents: read
+concurrency:
+  group: rustgm-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
 jobs:
-  frontend:
+  fast:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - name: Pinned Rust
+        run: rustup toolchain install 1.98.0 --profile minimal --component rustfmt --component clippy
+      - uses: actions/cache@v6
+        with:
+          path: |
+            obj/rust/dev-fast
+            obj/fast-audit.json
+            ~/.cargo/registry
+          key: dev-fast-${{ runner.os }}-rust-1.98-${{ hashFiles('dev/Cargo.lock', 'dev/Cargo.toml') }}-${{ github.sha }}
+          restore-keys: |
+            dev-fast-${{ runner.os }}-rust-1.98-${{ hashFiles('dev/Cargo.lock', 'dev/Cargo.toml') }}-
+      - name: Audit setup
+        run: make setup-audit
+      - name: Five-minute development check
+        run: make fastcheck FAST_ARGS='lexer'
+      - name: Harness, audit cache and upstream contracts
+        run: make test-harness test-upstream && obj/audit-venv/bin/python -m unittest discover -s scripts/audit_tests -v
+      - name: Retain failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: fastcheck-failure
+          path: obj/qualification/fast
+  qualification:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v6
       - name: Pinned Rust
@@ -16,6 +53,8 @@ jobs:
         run: make test-host-builds
       - name: Release and course tests
         run: make test
+      - name: Native maintainer qualification
+        run: make test-maintainer-native
       - name: Debug invariants
         run: make test-debug-invariants
       - name: Independent Rust qualification
