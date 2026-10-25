@@ -174,5 +174,5 @@ fn operation(
 }
 
 #[cfg(test)]
-#[path = "../../../tests/invariants/cfg_splices.rs"]
+#[path = "../../../tests/invariants/forwarded_configuration.rs"]
 mod tests;
