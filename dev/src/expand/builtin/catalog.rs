@@ -1,5 +1,5 @@
 //! Pinned compiler role identity, invocation kind and execution availability.
-//! Source: rust88d9 compiler/rustc_builtin_macros/src/lib.rs; declarations alone grant no execution.
+//! Source: rust88d9 `compiler/rustc_builtin_macros/src/lib.rs`; declarations alone grant no execution.
 /// Invocation category belongs to the compiler role, not its declaration syntax.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BuiltinKind {
