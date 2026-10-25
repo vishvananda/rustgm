@@ -9,6 +9,21 @@ pub struct NumberingUnits<'rows> {
     peak: usize,
 }
 impl<'rows> NumberingUnits<'rows> {
+    /// Build one dense inverse of an already checked allocation permutation.
+    /// `extra_bytes` accounts for additional caller-owned retained/scratch data
+    /// beyond this checked view's existing combined peak. The result contains
+    /// only zero-based ordinals, never canonical regions or imported authority.
+    /// # Errors
+    /// Rejects unknown bodies and charges attempted work/storage before allocation.
+    pub fn allocation_ordinals(
+        &self,
+        body: BodyRef,
+        extra_bytes: usize,
+        work: &mut Work,
+    ) -> Result<super::AllocationOrdinals<'rows>, &'static str> {
+        let unit = self.unit(body, work)?;
+        super::allocation_ordinals::build(unit, self.peak, extra_bytes, work)
+    }
     /// # Errors
     /// Rejects an unknown body and charges failed queries too.
     pub fn unit(&self, body: BodyRef, work: &mut Work) -> Result<&'rows s::BodyUnit, &'static str> {

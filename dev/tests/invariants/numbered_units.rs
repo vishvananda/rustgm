@@ -7,6 +7,8 @@ use crate::{
 };
 use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+#[path = "ranked_domains.rs"]
+mod allocation_tests;
 
 fn collect(extra: u32) -> Result<(Report, Declarations, s::SourceRows)> {
     let mut source = crate::test_source::fixture(

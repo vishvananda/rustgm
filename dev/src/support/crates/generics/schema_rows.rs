@@ -24,8 +24,8 @@ pub use descriptor::{Columns, Descriptor, Profile, ValidatedRows, ValidatedView}
 pub use inputs::*;
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};
 pub use validation::{
-    DomainIndex, DomainWork, HeaderIndex, HeaderRef, InputWork, NumberingUnits, OperationPort,
-    OriginalInputPlan, RequiredInput, RequiredKind,
+    AllocationOrdinals, DomainIndex, DomainWork, HeaderIndex, HeaderRef, InputWork, NumberingUnits,
+    OperationPort, OriginalInputPlan, RequiredInput, RequiredKind,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

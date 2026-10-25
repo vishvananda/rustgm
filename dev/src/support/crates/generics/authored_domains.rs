@@ -1,4 +1,6 @@
 //! Structural owner indexes cannot mint descriptors, proof or frontend remaps.
+#[path = "source_validation/ranked_variables.rs"]
+mod allocation_ordinals;
 #[path = "source_validation/regional_frames.rs"]
 mod binder_domains;
 #[path = "source_validation/lexical_forest.rs"]
@@ -15,6 +17,7 @@ mod type_domains;
 mod unit_layout;
 use super::{DefinitionKind, ScopeIndex, SourceRows};
 use crate::support::crates::{generics::Work, owner_catalog::DeclarationRef};
+pub use allocation_ordinals::AllocationOrdinals;
 pub use domains::{
     DomainIndex, DomainWork, InputWork, OperationPort, OriginalInputPlan, RequiredInput,
     RequiredKind,
