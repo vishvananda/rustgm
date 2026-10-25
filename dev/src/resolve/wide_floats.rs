@@ -109,8 +109,7 @@ fn path(
         let ast = &report.package.unit(key.file).configured.ast;
         let node = ast
             .path_segments(key.node)
-            .and_then(|(_, nodes)| nodes.last())
-            .copied()
+            .and_then(|(_, nodes)| nodes.last().copied())
             .unwrap_or(key.node);
         require(report, session, key.file, ast.node(node).span, half)?;
     }
