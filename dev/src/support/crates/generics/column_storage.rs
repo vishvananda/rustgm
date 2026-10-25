@@ -113,6 +113,17 @@ impl std::ops::Deref for ValidatedView<'_> {
 }
 impl<'a> ValidatedView<'a> {
     #[must_use]
+    pub fn descriptor(self) -> super::Descriptor<'a> {
+        self.source.descriptor()
+    }
+    /// # Errors
+    /// Rejects an absent or different module contract profile.
+    pub fn module_contracts(
+        self,
+    ) -> Result<super::module_contracts::ModuleContractView<'a>, &'static str> {
+        self.source.descriptor().module_contracts()
+    }
+    #[must_use]
     pub fn header_attributes(self) -> Option<&'a super::super::HeaderAttributeColumns> {
         self.source.attributes.as_deref()
     }

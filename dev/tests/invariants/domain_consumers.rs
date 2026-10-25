@@ -1,0 +1,174 @@
+//! Fresh foreign impl checks differ from selection of provider-owned valid impls.
+use crate::{
+    module_packets as test, source_packets,
+    support::crates::{self, generics::source as s},
+};
+use test::Result;
+#[test]
+fn fresh_module_clients_preserve_aliases_domains_provider_selection_and_advisories() -> Result {
+    for (provider, client) in [
+        ("root-ordinary-provider", "root-fresh-impl"),
+        ("namespace-provider", "nested-fresh-impl"),
+        ("restricted-provider", "sealed-public-bound"),
+        ("restricted-provider", "select-provider-impl"),
+    ] {
+        let interface = test::roundtrip(&test::fixture(provider)?)?;
+        let source = test::fixture(client)?;
+        if client == "sealed-public-bound" {
+            source_packets::client_analysis(crates::decode(&crates::encode(&interface)?)?, &source)
+                .map_err(|e| format!("{provider}/{client} type boundary: {e}"))?;
+            let Err(error) = source_packets::client(interface, &source) else {
+                return Err("generic SourceClient republication unexpectedly opened".into());
+            };
+            assert!(
+                error
+                    .to_string()
+                    .contains("type-generic legacy-role originals"),
+                "{error}"
+            );
+        } else {
+            source_packets::client(interface, &source)
+                .map_err(|e| format!("{provider}/{client}: {e}"))?;
+        }
+    }
+    for client in [
+        "sealed-foreign-impl",
+        "sealed-foreign-feature-does-not-override",
+        "sealed-private-path-denied",
+    ] {
+        let interface = test::roundtrip(&test::fixture("restricted-provider")?)?;
+        let Err(error) = source_packets::client_analysis(interface, &test::fixture(client)?) else {
+            return Err(format!("unexpected accepted {client}").into());
+        };
+        let text = error.to_string();
+        if client == "sealed-private-path-denied" {
+            assert!(text.contains("private"), "{text}");
+        } else {
+            assert!(text.contains("restricted module"), "{text}");
+        }
+    }
+    canonical_domain()?;
+    advisory_origins()?;
+    let no_const = source_packets::client_analysis(
+        test::roundtrip(&test::fixture("namespace-provider")?)?,
+        &test::fixture("no-ctfe-permission")?,
+    );
+    assert!(no_const.is_err());
+    Ok(())
+}
+
+fn canonical_domain() -> Result {
+    let interface = test::roundtrip(&test::fixture("restricted-provider")?)?;
+    let descriptor = interface.source_descriptor().ok_or("descriptor")?;
+    let domain = descriptor
+        .module_contracts()?
+        .rows()
+        .domains
+        .iter()
+        .find(|row| matches!(row.domain, s::ImplementationDomain::RestrictedTo { .. }))
+        .ok_or("restricted trait")?;
+    let (report, mut analysis, _) = source_packets::client_analysis(
+        crates::decode(&crates::encode(&interface)?)?,
+        &test::fixture("sealed-public-bound")?,
+    )?;
+    let imported = report.resolution.crates.as_ref().ok_or("imported")?;
+    let definition = imported.generic_definition(interface.identity(), domain.declaration)?;
+    assert_eq!(
+        analysis
+            .facts
+            .associated
+            .imported_implementation_domain(definition)?,
+        domain.domain
+    );
+    assert!(
+        !analysis
+            .facts
+            .associated
+            .imported_denies_implementation(definition)?
+    );
+    assert!(
+        imported
+            .definitions()
+            .all(|(_, actual)| actual != definition)
+    );
+    let rows = descriptor.rows();
+    let associated = &mut analysis.facts.associated;
+    let owner = associated.owner(definition).ok_or("actual trait owner")?;
+    for _ in 0..8 {
+        assert!(associated.imported_empty_module_trait(definition)?);
+    }
+    let actual_self = associated.get(owner).ok_or("actual owner")?.self_definition;
+    assert!(associated.imported_empty_module_trait(actual_self).is_err());
+    for header in &rows.traits {
+        if header.flags.bits() & !s::TraitFlags::RESTRICTED_IMPL != 0
+            || header.members.start != header.members.end
+        {
+            let actual = imported.generic_definition(interface.identity(), header.declaration)?;
+            assert!(associated.imported_empty_module_trait(actual).is_err());
+        }
+    }
+    associated.owner_members[owner.0 as usize].push(actual_self);
+    assert!(associated.imported_empty_module_trait(definition).is_err());
+    associated.owner_members[owner.0 as usize].clear();
+    assert!(associated.imported_empty_module_trait(definition)?);
+    let module = rows.declarations[domain.defining_module.0 as usize]
+        .name
+        .as_deref();
+    assert_eq!(module, Some("nonzero"));
+    Ok(())
+}
+
+fn advisory_origins() -> Result {
+    let root = test::roundtrip(&test::fixture("root-ordinary-provider")?)?;
+    let row = root
+        .source_descriptor()
+        .ok_or("root descriptor")?
+        .rows()
+        .traits
+        .iter()
+        .find(|h| {
+            root.source_descriptor().is_some_and(|d| {
+                d.rows().declarations[h.declaration.0 as usize]
+                    .name
+                    .as_deref()
+                    == Some("Open")
+            })
+        })
+        .ok_or("ordinary Open header")?
+        .declaration;
+    let encoded = crates::encode(&root)?;
+    let (real, real_analysis, _) = source_packets::client_analysis(
+        crates::decode(&encoded)?,
+        &test::fixture("root-fresh-impl")?,
+    )?;
+    let id = real
+        .resolution
+        .crates
+        .as_ref()
+        .ok_or("actual inventory")?
+        .generic_definition(root.identity(), row)?;
+    let (foreign, _, _) = source_packets::client_analysis(
+        crates::decode(&encoded)?,
+        &test::fixture("root-fresh-impl")?,
+    )?;
+    for _ in 0..8 {
+        let view = real_analysis.facts.header_attribute_contracts(&real, id)?;
+        assert!(matches!(
+            view.must_use,
+            crate::sema::header_attributes::ContractKnowledge::KnownPresent(_)
+        ));
+    }
+    assert!(
+        real_analysis
+            .facts
+            .header_attribute_contracts(&foreign, id)
+            .is_err()
+    );
+    assert!(
+        real_analysis
+            .facts
+            .header_attribute_contracts(&real, id)
+            .is_ok()
+    );
+    Ok(())
+}
