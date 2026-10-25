@@ -8,6 +8,35 @@ use crate::{
 };
 
 impl<'a> Trait<'a> {
+    /// Borrow a genuine prepared source trait without assigning a language role.
+    pub(in crate::sema) fn source_owner_with_bounds<'r>(
+        report: &'r Report,
+        facts: &'a Declarations,
+        owner: &crate::sema::associated::Owner,
+    ) -> Result<(Self, &'r [crate::syntax::ast::NodeId]), &'static str> {
+        let source = owner.source_owner()?;
+        let OwnerKind::Trait { definition, .. } = source.kind else {
+            return Err("ordinary trait header requires its actual trait owner");
+        };
+        if facts
+            .associated
+            .owner(definition)
+            .and_then(|id| facts.associated.get(id))
+            != Some(owner)
+        {
+            return Err("ordinary trait header changed its retained owner");
+        }
+        Self::source_with_bounds(
+            report,
+            facts,
+            Declaration {
+                definition,
+                parent: None,
+                origin: source.source,
+            },
+        )
+    }
+
     pub(in crate::sema) fn current(
         report: &Report,
         facts: &'a Declarations,
