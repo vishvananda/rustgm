@@ -38,6 +38,11 @@ pub(super) fn cast(
     value: Value,
     ty: Type,
 ) -> Result<Value, &'static str> {
+    if matches!(source, Primitive::F16 | Primitive::F128)
+        || matches!(target, Primitive::F16 | Primitive::F128)
+    {
+        return Err("wide floating runtime casts are not implemented");
+    }
     let signed = source.integer().is_some_and(|(signed, _)| signed);
     match kind {
         Cast::IntegerToInteger | Cast::BoolToInteger | Cast::CharToInteger | Cast::U8ToChar => {

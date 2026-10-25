@@ -1,0 +1,1533 @@
+{
+  "issue": "LIB-024",
+  "primary_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "independent_results_sha256": "d4a9ae77ca7be8d0345c6aadaed507a84f81d2758b190f8c4d2043deff69427d",
+  "state": "40observed independent language outcomes; candidate implementation UNQUALIFIED; no runtime or exact-bit observations yet",
+  "cases": [
+    {
+      "path": "active-f128-pi.rs",
+      "sha256": "3ad4580018c23bd86d502d72e200e36cecdc5ab75010f7c57f0deb688d7042c0",
+      "independent_prediction": "accept",
+      "observations": [
+        {
+          "id": "active-f128-pi-ed2021-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/active-f128-pi.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/active-f128-pi-ed2021-metadata/output.rmeta"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 2316,
+            "sha256": "e6d386a511954f3533fd58bfd3af2e3ca4efdb9cdc2774d6ffc4bdc09161b440"
+          },
+          "seconds": 0.023773394990712404,
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "active-f128-pi-ed2021-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/active-f128-pi.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/active-f128-pi-ed2021-obj/output.o"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 632,
+            "sha256": "09db5ce8ecfe19d957d2a5d90bf3ae24695094211aa5fa45b0c2ff9cf5cc63d4"
+          },
+          "seconds": 0.02281150035560131,
+          "genuine_rodata_sections": [],
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "object-sections-symbols": "8abb9654f7c72c2e416d026491f3c0a4673b899590863cb752a7bb38606a89c9",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "active-f128-pi-ed2024-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/active-f128-pi.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/active-f128-pi-ed2024-metadata/output.rmeta"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 2316,
+            "sha256": "b3a2407165c1746c94efce1a94c661bc027b03b609f03c7291f35fe0c5cd4108"
+          },
+          "seconds": 0.027183731086552143,
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "active-f128-pi-ed2024-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/active-f128-pi.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/active-f128-pi-ed2024-obj/output.o"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 632,
+            "sha256": "09db5ce8ecfe19d957d2a5d90bf3ae24695094211aa5fa45b0c2ff9cf5cc63d4"
+          },
+          "seconds": 0.02749398583546281,
+          "genuine_rodata_sections": [],
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "object-sections-symbols": "8abb9654f7c72c2e416d026491f3c0a4673b899590863cb752a7bb38606a89c9",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "active-f16.rs",
+      "sha256": "6d78aea3a3963e3b18d2d57b728fe9400dd1dc4e5d4c105712e6de39fd31c4c7",
+      "independent_prediction": "accept",
+      "observations": [
+        {
+          "id": "active-f16-ed2021-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/active-f16.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/active-f16-ed2021-metadata/output.rmeta"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 2269,
+            "sha256": "4d0fe37ae67fe4847ceda82b56f3571b5152692e94ef6d9e585d6487d83f0876"
+          },
+          "seconds": 0.023369165137410164,
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "active-f16-ed2021-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/active-f16.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/active-f16-ed2021-obj/output.o"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 632,
+            "sha256": "09db5ce8ecfe19d957d2a5d90bf3ae24695094211aa5fa45b0c2ff9cf5cc63d4"
+          },
+          "seconds": 0.022972200997173786,
+          "genuine_rodata_sections": [],
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "object-sections-symbols": "8abb9654f7c72c2e416d026491f3c0a4673b899590863cb752a7bb38606a89c9",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "active-f16-ed2024-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/active-f16.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/active-f16-ed2024-metadata/output.rmeta"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 2269,
+            "sha256": "c8fa00fc352f56967af28ec2791182c2df32e487ac756916660ec84854d7d724"
+          },
+          "seconds": 0.025926448870450258,
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "active-f16-ed2024-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/active-f16.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/active-f16-ed2024-obj/output.o"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 632,
+            "sha256": "09db5ce8ecfe19d957d2a5d90bf3ae24695094211aa5fa45b0c2ff9cf5cc63d4"
+          },
+          "seconds": 0.022772163152694702,
+          "genuine_rodata_sections": [],
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "object-sections-symbols": "8abb9654f7c72c2e416d026491f3c0a4673b899590863cb752a7bb38606a89c9",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "integer-spelling.rs",
+      "sha256": "bc385b5aef30af12b76fc57eddec1bfd81c9f36c77f37dcaabbd8028cf6d6237",
+      "independent_prediction": "accept",
+      "observations": [
+        {
+          "id": "integer-spelling-ed2021-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/integer-spelling.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/integer-spelling-ed2021-metadata/output.rmeta"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 2379,
+            "sha256": "35eafbf569f7046375e11e12e309fffa6e730a9b901c2deaf02020a50823710a"
+          },
+          "seconds": 0.02361373696476221,
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "integer-spelling-ed2021-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/integer-spelling.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/integer-spelling-ed2021-obj/output.o"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 632,
+            "sha256": "09db5ce8ecfe19d957d2a5d90bf3ae24695094211aa5fa45b0c2ff9cf5cc63d4"
+          },
+          "seconds": 0.023021056782454252,
+          "genuine_rodata_sections": [],
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "object-sections-symbols": "8abb9654f7c72c2e416d026491f3c0a4673b899590863cb752a7bb38606a89c9",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "integer-spelling-ed2024-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/integer-spelling.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/integer-spelling-ed2024-metadata/output.rmeta"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 2379,
+            "sha256": "00704ee982f8549d3ea8851e51240e0ed6d263f630a62791372704b431497123"
+          },
+          "seconds": 0.0235679242759943,
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "integer-spelling-ed2024-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/integer-spelling.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/integer-spelling-ed2024-obj/output.o"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 632,
+            "sha256": "09db5ce8ecfe19d957d2a5d90bf3ae24695094211aa5fa45b0c2ff9cf5cc63d4"
+          },
+          "seconds": 0.023131396621465683,
+          "genuine_rodata_sections": [],
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "object-sections-symbols": "8abb9654f7c72c2e416d026491f3c0a4673b899590863cb752a7bb38606a89c9",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "missing-feature.rs",
+      "sha256": "dbfb71917b000737f6985ec52b0c3d09fb9eb006f836acc635b7a0211e0d3802",
+      "independent_prediction": "reject E0658",
+      "observations": [
+        {
+          "id": "missing-feature-ed2021-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/missing-feature.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/missing-feature-ed2021-metadata/output.rmeta"
+          ],
+          "status": 1,
+          "prediction": "reject E0658",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "the type `f128` is unstable",
+              "code": {
+                "code": "E0658",
+                "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+              }
+            },
+            {
+              "message": "the type `f128` is unstable",
+              "code": {
+                "code": "E0658",
+                "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+              }
+            },
+            {
+              "message": "aborting due to 2 previous errors",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.02279986720532179,
+          "raw_sha256": {
+            "stderr": "835a0b4b6d1012ebae840f932d823f01cd8227cb8b7037d28923dfdea0aec61d",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "missing-feature-ed2021-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/missing-feature.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/missing-feature-ed2021-obj/output.o"
+          ],
+          "status": 1,
+          "prediction": "reject E0658",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "the type `f128` is unstable",
+              "code": {
+                "code": "E0658",
+                "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+              }
+            },
+            {
+              "message": "the type `f128` is unstable",
+              "code": {
+                "code": "E0658",
+                "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+              }
+            },
+            {
+              "message": "aborting due to 2 previous errors",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.02253866195678711,
+          "raw_sha256": {
+            "stderr": "835a0b4b6d1012ebae840f932d823f01cd8227cb8b7037d28923dfdea0aec61d",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "missing-feature-ed2024-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/missing-feature.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/missing-feature-ed2024-metadata/output.rmeta"
+          ],
+          "status": 1,
+          "prediction": "reject E0658",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "the type `f128` is unstable",
+              "code": {
+                "code": "E0658",
+                "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+              }
+            },
+            {
+              "message": "the type `f128` is unstable",
+              "code": {
+                "code": "E0658",
+                "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+              }
+            },
+            {
+              "message": "aborting due to 2 previous errors",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.02352253207936883,
+          "raw_sha256": {
+            "stderr": "835a0b4b6d1012ebae840f932d823f01cd8227cb8b7037d28923dfdea0aec61d",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "missing-feature-ed2024-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/missing-feature.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/missing-feature-ed2024-obj/output.o"
+          ],
+          "status": 1,
+          "prediction": "reject E0658",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "the type `f128` is unstable",
+              "code": {
+                "code": "E0658",
+                "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+              }
+            },
+            {
+              "message": "the type `f128` is unstable",
+              "code": {
+                "code": "E0658",
+                "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+              }
+            },
+            {
+              "message": "aborting due to 2 previous errors",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.022942825686186552,
+          "raw_sha256": {
+            "stderr": "835a0b4b6d1012ebae840f932d823f01cd8227cb8b7037d28923dfdea0aec61d",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "disabled-owner.rs",
+      "sha256": "b606437e86c291776b7423a71d014ed8a172f88c210c5623ee0f283e0bb6ff07",
+      "independent_prediction": "accept",
+      "observations": [
+        {
+          "id": "disabled-owner-ed2021-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/disabled-owner.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/disabled-owner-ed2021-metadata/output.rmeta"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 2295,
+            "sha256": "ca91430e82733309c011df8a17a12938922b4a696df990c1006bdf916f32204f"
+          },
+          "seconds": 0.023998718708753586,
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "disabled-owner-ed2021-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/disabled-owner.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/disabled-owner-ed2021-obj/output.o"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 1008,
+            "sha256": "bcbf764dd790d3413e3fba821d9b415b2b4482e9121482c6e06c3f04b450a14e"
+          },
+          "seconds": 0.025342023000121117,
+          "genuine_rodata_sections": [],
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "object-sections-symbols": "fd6c9746ef89eae0adddb7a154a672dd5aea6563b0e01c58ad3e5e174c1e1cc0",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "disabled-owner-ed2024-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/disabled-owner.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/disabled-owner-ed2024-metadata/output.rmeta"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 2295,
+            "sha256": "fd9552b9f6d5263adce875aab19e1ecbda59289786ce366df5bfb5209c75b7f9"
+          },
+          "seconds": 0.024899704847484827,
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "disabled-owner-ed2024-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/disabled-owner.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/disabled-owner-ed2024-obj/output.o"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 1008,
+            "sha256": "bcbf764dd790d3413e3fba821d9b415b2b4482e9121482c6e06c3f04b450a14e"
+          },
+          "seconds": 0.025085818022489548,
+          "genuine_rodata_sections": [],
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "object-sections-symbols": "fd6c9746ef89eae0adddb7a154a672dd5aea6563b0e01c58ad3e5e174c1e1cc0",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "unexpanded-tokens.rs",
+      "sha256": "497574d9f268e9bfa978e297330398c545911024e6c41c56ab8fe0f2ad0bbb89",
+      "independent_prediction": "accept",
+      "observations": [
+        {
+          "id": "unexpanded-tokens-ed2021-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/unexpanded-tokens.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/unexpanded-tokens-ed2021-metadata/output.rmeta"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 2412,
+            "sha256": "4c1efe62ffa0af224ebfb04a70b10bcfa80b6638a1176f9674ae7a91d091569f"
+          },
+          "seconds": 0.024579470977187157,
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "6bc2d0ac02e86b356cfdfe051f7b16b2076569ff57980d75c4d5f2b54ef317c4",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "unexpanded-tokens-ed2021-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/unexpanded-tokens.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/unexpanded-tokens-ed2021-obj/output.o"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 1008,
+            "sha256": "bcbf764dd790d3413e3fba821d9b415b2b4482e9121482c6e06c3f04b450a14e"
+          },
+          "seconds": 0.02475388301536441,
+          "genuine_rodata_sections": [],
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "6bc2d0ac02e86b356cfdfe051f7b16b2076569ff57980d75c4d5f2b54ef317c4",
+            "object-sections-symbols": "fd6c9746ef89eae0adddb7a154a672dd5aea6563b0e01c58ad3e5e174c1e1cc0",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "unexpanded-tokens-ed2024-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/unexpanded-tokens.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/unexpanded-tokens-ed2024-metadata/output.rmeta"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 2412,
+            "sha256": "56111131044b76e081b3edfbe5916c45110bd18be12d602b19077c9028629aef"
+          },
+          "seconds": 0.024122411385178566,
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "6bc2d0ac02e86b356cfdfe051f7b16b2076569ff57980d75c4d5f2b54ef317c4",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "unexpanded-tokens-ed2024-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/unexpanded-tokens.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/unexpanded-tokens-ed2024-obj/output.o"
+          ],
+          "status": 0,
+          "prediction": "accept",
+          "matches_prediction": true,
+          "diagnostics": [],
+          "artifact": {
+            "exists": true,
+            "bytes": 1008,
+            "sha256": "bcbf764dd790d3413e3fba821d9b415b2b4482e9121482c6e06c3f04b450a14e"
+          },
+          "seconds": 0.02514034602791071,
+          "genuine_rodata_sections": [],
+          "successful_output_removed": true,
+          "raw_sha256": {
+            "stderr": "6bc2d0ac02e86b356cfdfe051f7b16b2076569ff57980d75c4d5f2b54ef317c4",
+            "object-sections-symbols": "fd6c9746ef89eae0adddb7a154a672dd5aea6563b0e01c58ad3e5e174c1e1cc0",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "expanded-ungated.rs",
+      "sha256": "5417aa9c5ec1697cf1d4d90a9272866af67a93cb7b27cc813b562b9f57b1487a",
+      "independent_prediction": "reject E0658",
+      "observations": [
+        {
+          "id": "expanded-ungated-ed2021-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/expanded-ungated.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/expanded-ungated-ed2021-metadata/output.rmeta"
+          ],
+          "status": 1,
+          "prediction": "reject E0658",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "the type `f128` is unstable",
+              "code": {
+                "code": "E0658",
+                "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+              }
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.03244432806968689,
+          "raw_sha256": {
+            "stderr": "b3c4ed685c45789500c19da4e8679d7a4cbb10e5282c4a5f0f7da152d092d272",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "expanded-ungated-ed2021-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/expanded-ungated.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/expanded-ungated-ed2021-obj/output.o"
+          ],
+          "status": 1,
+          "prediction": "reject E0658",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "the type `f128` is unstable",
+              "code": {
+                "code": "E0658",
+                "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+              }
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.024264822248369455,
+          "raw_sha256": {
+            "stderr": "b3c4ed685c45789500c19da4e8679d7a4cbb10e5282c4a5f0f7da152d092d272",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "expanded-ungated-ed2024-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/expanded-ungated.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/expanded-ungated-ed2024-metadata/output.rmeta"
+          ],
+          "status": 1,
+          "prediction": "reject E0658",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "the type `f128` is unstable",
+              "code": {
+                "code": "E0658",
+                "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+              }
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.024383712094277143,
+          "raw_sha256": {
+            "stderr": "b3c4ed685c45789500c19da4e8679d7a4cbb10e5282c4a5f0f7da152d092d272",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "expanded-ungated-ed2024-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/expanded-ungated.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/expanded-ungated-ed2024-obj/output.o"
+          ],
+          "status": 1,
+          "prediction": "reject E0658",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "the type `f128` is unstable",
+              "code": {
+                "code": "E0658",
+                "explanation": "An unstable feature was used.\n\nErroneous code example:\n\n```compile_fail,E0658\nuse std::intrinsics; // error: use of unstable library feature `core_intrinsics`\n```\n\nIf you're using a stable or a beta version of rustc, you won't be able to use\nany unstable features. In order to do so, please switch to a nightly version of\nrustc (by using [rustup]).\n\nIf you're using a nightly version of rustc, just add the corresponding feature\nto be able to use it:\n\n```\n#![feature(core_intrinsics)]\n\nuse std::intrinsics; // ok!\n```\n\n[rustup]: https://rust-lang.github.io/rustup/concepts/channels.html\n"
+              }
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.026538862846791744,
+          "raw_sha256": {
+            "stderr": "b3c4ed685c45789500c19da4e8679d7a4cbb10e5282c4a5f0f7da152d092d272",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "invalid-suffix.rs",
+      "sha256": "c7eedfaf54226bb70cfb04b4bc4b46d2ce1d4fb0318e2b4b25b7dae6323b0ae6",
+      "independent_prediction": "reject invalid floating suffix",
+      "observations": [
+        {
+          "id": "invalid-suffix-ed2021-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/invalid-suffix.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/invalid-suffix-ed2021-metadata/output.rmeta"
+          ],
+          "status": 1,
+          "prediction": "reject invalid floating suffix",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "invalid width `129` for float literal",
+              "code": null
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.023436286952346563,
+          "raw_sha256": {
+            "stderr": "300139d524b6d6257ef6f4d16c0f8828754efbb84b1d962bfd5dd820e99620ef",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "invalid-suffix-ed2021-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/invalid-suffix.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/invalid-suffix-ed2021-obj/output.o"
+          ],
+          "status": 1,
+          "prediction": "reject invalid floating suffix",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "invalid width `129` for float literal",
+              "code": null
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.02450305363163352,
+          "raw_sha256": {
+            "stderr": "300139d524b6d6257ef6f4d16c0f8828754efbb84b1d962bfd5dd820e99620ef",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "invalid-suffix-ed2024-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/invalid-suffix.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/invalid-suffix-ed2024-metadata/output.rmeta"
+          ],
+          "status": 1,
+          "prediction": "reject invalid floating suffix",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "invalid width `129` for float literal",
+              "code": null
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.025029807817190886,
+          "raw_sha256": {
+            "stderr": "300139d524b6d6257ef6f4d16c0f8828754efbb84b1d962bfd5dd820e99620ef",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "invalid-suffix-ed2024-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/invalid-suffix.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/invalid-suffix-ed2024-obj/output.o"
+          ],
+          "status": 1,
+          "prediction": "reject invalid floating suffix",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "invalid width `129` for float literal",
+              "code": null
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.02466417895630002,
+          "raw_sha256": {
+            "stderr": "300139d524b6d6257ef6f4d16c0f8828754efbb84b1d962bfd5dd820e99620ef",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "nondecimal.rs",
+      "sha256": "c3d9fe826ebb84f567078f836cec905e93013a61f4a9fe54c36f48942c900220",
+      "independent_prediction": "reject nondecimal floating literal",
+      "observations": [
+        {
+          "id": "nondecimal-ed2021-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/nondecimal.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/nondecimal-ed2021-metadata/output.rmeta"
+          ],
+          "status": 1,
+          "prediction": "reject nondecimal floating literal",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "binary float literal is not supported",
+              "code": null
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.023857919964939356,
+          "raw_sha256": {
+            "stderr": "da3bda68cbfc3dfb545dabc41bf01856c0ac25e445520f72565ea25085df9777",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "nondecimal-ed2021-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/nondecimal.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/nondecimal-ed2021-obj/output.o"
+          ],
+          "status": 1,
+          "prediction": "reject nondecimal floating literal",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "binary float literal is not supported",
+              "code": null
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.022907530888915062,
+          "raw_sha256": {
+            "stderr": "da3bda68cbfc3dfb545dabc41bf01856c0ac25e445520f72565ea25085df9777",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "nondecimal-ed2024-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/nondecimal.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/nondecimal-ed2024-metadata/output.rmeta"
+          ],
+          "status": 1,
+          "prediction": "reject nondecimal floating literal",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "binary float literal is not supported",
+              "code": null
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.024604341946542263,
+          "raw_sha256": {
+            "stderr": "da3bda68cbfc3dfb545dabc41bf01856c0ac25e445520f72565ea25085df9777",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "nondecimal-ed2024-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/nondecimal.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/nondecimal-ed2024-obj/output.o"
+          ],
+          "status": 1,
+          "prediction": "reject nondecimal floating literal",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "binary float literal is not supported",
+              "code": null
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.024875055998563766,
+          "raw_sha256": {
+            "stderr": "da3bda68cbfc3dfb545dabc41bf01856c0ac25e445520f72565ea25085df9777",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "mismatched-width.rs",
+      "sha256": "6aa0934f3bee0c6853d5685ce892178e1f4c635593ec5bab70470f34370169b4",
+      "independent_prediction": "reject E0308",
+      "observations": [
+        {
+          "id": "mismatched-width-ed2021-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/mismatched-width.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/mismatched-width-ed2021-metadata/output.rmeta"
+          ],
+          "status": 1,
+          "prediction": "reject E0308",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "mismatched types",
+              "code": {
+                "code": "E0308",
+                "explanation": "Expected type did not match the received type.\n\nErroneous code examples:\n\n```compile_fail,E0308\nfn plus_one(x: i32) -> i32 {\n    x + 1\n}\n\nplus_one(\"Not a number\");\n//       ^^^^^^^^^^^^^^ expected `i32`, found `&str`\n\nif \"Not a bool\" {\n// ^^^^^^^^^^^^ expected `bool`, found `&str`\n}\n\nlet x: f32 = \"Not a float\";\n//     ---   ^^^^^^^^^^^^^ expected `f32`, found `&str`\n//     |\n//     expected due to this\n```\n\nThis error occurs when an expression was used in a place where the compiler\nexpected an expression of a different type. It can occur in several cases, the\nmost common being when calling a function and passing an argument which has a\ndifferent type than the matching type in the function declaration.\n"
+              }
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.034452796913683414,
+          "raw_sha256": {
+            "stderr": "67e12f67d5696b2a3b921fa82c2f7437fadc69c58378ac96d6b0be18c088c140",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "mismatched-width-ed2021-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/mismatched-width.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/mismatched-width-ed2021-obj/output.o"
+          ],
+          "status": 1,
+          "prediction": "reject E0308",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "mismatched types",
+              "code": {
+                "code": "E0308",
+                "explanation": "Expected type did not match the received type.\n\nErroneous code examples:\n\n```compile_fail,E0308\nfn plus_one(x: i32) -> i32 {\n    x + 1\n}\n\nplus_one(\"Not a number\");\n//       ^^^^^^^^^^^^^^ expected `i32`, found `&str`\n\nif \"Not a bool\" {\n// ^^^^^^^^^^^^ expected `bool`, found `&str`\n}\n\nlet x: f32 = \"Not a float\";\n//     ---   ^^^^^^^^^^^^^ expected `f32`, found `&str`\n//     |\n//     expected due to this\n```\n\nThis error occurs when an expression was used in a place where the compiler\nexpected an expression of a different type. It can occur in several cases, the\nmost common being when calling a function and passing an argument which has a\ndifferent type than the matching type in the function declaration.\n"
+              }
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.03471095580607653,
+          "raw_sha256": {
+            "stderr": "67e12f67d5696b2a3b921fa82c2f7437fadc69c58378ac96d6b0be18c088c140",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "mismatched-width-ed2024-metadata",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=metadata",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/mismatched-width.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/mismatched-width-ed2024-metadata/output.rmeta"
+          ],
+          "status": 1,
+          "prediction": "reject E0308",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "mismatched types",
+              "code": {
+                "code": "E0308",
+                "explanation": "Expected type did not match the received type.\n\nErroneous code examples:\n\n```compile_fail,E0308\nfn plus_one(x: i32) -> i32 {\n    x + 1\n}\n\nplus_one(\"Not a number\");\n//       ^^^^^^^^^^^^^^ expected `i32`, found `&str`\n\nif \"Not a bool\" {\n// ^^^^^^^^^^^^ expected `bool`, found `&str`\n}\n\nlet x: f32 = \"Not a float\";\n//     ---   ^^^^^^^^^^^^^ expected `f32`, found `&str`\n//     |\n//     expected due to this\n```\n\nThis error occurs when an expression was used in a place where the compiler\nexpected an expression of a different type. It can occur in several cases, the\nmost common being when calling a function and passing an argument which has a\ndifferent type than the matching type in the function declaration.\n"
+              }
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.03456997778266668,
+          "raw_sha256": {
+            "stderr": "67e12f67d5696b2a3b921fa82c2f7437fadc69c58378ac96d6b0be18c088c140",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "id": "mismatched-width-ed2024-obj",
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--crate-name=literal_frontier",
+            "-Cpanic=abort",
+            "--error-format=json",
+            "--emit=obj",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/inputs/mismatched-width.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa26-work/obj/parallel/pa31/core-f128-frontier-v1/observed/mismatched-width-ed2024-obj/output.o"
+          ],
+          "status": 1,
+          "prediction": "reject E0308",
+          "matches_prediction": true,
+          "diagnostics": [
+            {
+              "message": "mismatched types",
+              "code": {
+                "code": "E0308",
+                "explanation": "Expected type did not match the received type.\n\nErroneous code examples:\n\n```compile_fail,E0308\nfn plus_one(x: i32) -> i32 {\n    x + 1\n}\n\nplus_one(\"Not a number\");\n//       ^^^^^^^^^^^^^^ expected `i32`, found `&str`\n\nif \"Not a bool\" {\n// ^^^^^^^^^^^^ expected `bool`, found `&str`\n}\n\nlet x: f32 = \"Not a float\";\n//     ---   ^^^^^^^^^^^^^ expected `f32`, found `&str`\n//     |\n//     expected due to this\n```\n\nThis error occurs when an expression was used in a place where the compiler\nexpected an expression of a different type. It can occur in several cases, the\nmost common being when calling a function and passing an argument which has a\ndifferent type than the matching type in the function declaration.\n"
+              }
+            },
+            {
+              "message": "aborting due to 1 previous error",
+              "code": null
+            }
+          ],
+          "artifact": {
+            "exists": false
+          },
+          "seconds": 0.03535719960927963,
+          "raw_sha256": {
+            "stderr": "67e12f67d5696b2a3b921fa82c2f7437fadc69c58378ac96d6b0be18c088c140",
+            "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "candidate_status": "UNRUN"
+    }
+  ]
+}

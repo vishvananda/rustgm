@@ -1,6 +1,14 @@
 # Completed empty source function schemes
 
-Source checkpoint on public `7a40e005`; complete qualification is pending.
+The completed producer/import checkpoint is integrated at `4411dde4`.
+The merged gate [40190841475](https://github.com/vishvananda/rustgm/actions/runs/40190841475)
+passes all four monomorphic-import/fresh-proof controls with strict private
+Clippy, architecture checks and an unoptimized build in 164.43 seconds. Its only
+failure was an unrelated publication fixture outside the namespace profile.
+That fixture correction changes no production source, and its three affected
+groups pass [40191972621](https://github.com/vishvananda/rustgm/actions/runs/40191972621)
+in 173.56 seconds. Earlier successful declaration-completion/owner/growth
+controls are retained; no full inventory rerun was needed.
 
 Declaration completion now retains an actual zero lifetime scheme for Core and
 Client sessions selected by the typed `Package::uses_source_bindings()` policy.
@@ -54,5 +62,7 @@ decoded `keep(u8)->u8`/`discard(u8)->()`/`unused<T>(u8)->u8` family, the existin
 Functions fresh-client regression, and the existing original lifetime-context
 forgery regression. The new family verifies complete unused formals and invokes
 the real instance-selection kernel against a wrong closed result signature,
-another actual item owner and an absent entry. These follow-up controls have not
-run locally; the integrator will qualify them in one focused remote gate.
+another actual item owner and an absent entry. All four follow-up controls now
+pass in the merged gate above. Raw successes and the earlier failures are
+retained under the integrator worktree's
+`obj/parallel/source-publication-qualified-v1/` and the original handoff roots.

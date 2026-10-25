@@ -20,6 +20,7 @@ pub mod load;
 mod lookup;
 pub mod model;
 pub use crate::support::names;
+mod float_features;
 pub mod package;
 mod paths;
 mod patterns;
@@ -37,6 +38,7 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     resolver.imports()?;
     resolver.bodies()?;
     bindings::finish(package, &mut state.facts)?;
+    float_features::validate_plain(package, &state.facts)?;
     Ok(state.facts)
 }
 pub mod render;
@@ -76,6 +78,7 @@ pub fn analyze_expanded(
     result.map_err(|error| report.diagnostic(error))?;
     report.resolution = state.facts;
     bindings::finish(&mut report.package, &mut report.resolution)?;
+    float_features::validate_paths(&report).map_err(|error| report.diagnostic(error))?;
     report.names_resolved = true;
     Ok(report)
 }
