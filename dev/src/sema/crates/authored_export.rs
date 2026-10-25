@@ -231,7 +231,7 @@ impl Stage {
         }
         Ok(())
     }
-    pub(super) fn scratch(&mut self, bytes: usize) -> Result<(), &'static str> {
+    pub(crate) fn scratch(&mut self, bytes: usize) -> Result<(), &'static str> {
         self.charge(1)?;
         self.scratch = self.scratch.max(bytes);
         if self.bytes.saturating_add(self.scratch) > crates::MAX_BYTES {

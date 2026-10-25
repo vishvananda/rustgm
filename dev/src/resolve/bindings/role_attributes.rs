@@ -187,7 +187,7 @@ pub(super) fn primary(
                 matches!(
                     claim,
                     Claim::BuiltinMacro(role) if *role == crate::expand::builtin::Builtin::CfgSelect
-                        || role.kind() == crate::expand::builtin::BuiltinKind::Attribute
+                        || role.kind() != crate::expand::builtin::BuiltinKind::Bang
                 )
             })
         }),

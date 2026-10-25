@@ -3,7 +3,11 @@ mod applications;
 mod ingest;
 pub(super) mod mapped_source;
 pub(in crate::sema) mod predicate_remap;
+#[path = "typed_headers/demanded_types.rs"]
+mod recipe_cursor;
 mod roots;
+#[path = "typed_headers/demanded_signatures.rs"]
+mod signature_shapes;
 mod staged_headers;
 mod staged_ingest;
 #[path = "typed_headers/dormant_session.rs"]

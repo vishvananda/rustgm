@@ -58,4 +58,5 @@ pub mod text;
 pub mod must_use;
 
 pub mod inlining;
+pub mod non_exhaustive;
 pub mod parentheses;

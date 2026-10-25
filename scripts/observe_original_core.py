@@ -28,6 +28,13 @@ def sha(path):
     return digest.hexdigest()
 
 
+def cli_sha256(value):
+    """Accept a caller-declared digest, never derive the expected value from a CLI."""
+    if re.fullmatch(r"[0-9a-fA-F]{64}", value) is None:
+        raise argparse.ArgumentTypeError("expected CLI SHA-256 must be exactly 64 hexadecimal digits")
+    return value.lower()
+
+
 def write(out, name, value):
     (out / name).write_text(json.dumps(value, indent=2) + "\n")
 
@@ -162,7 +169,11 @@ def worker(args):
         manifest = json.loads(MANIFEST.read_text())
         cli, producer = args.cli.resolve(strict=True), args.producer_binding.resolve(strict=True)
         binding = json.loads(producer.read_text())
-        if sha(cli) != manifest["expected_cli_sha256"] or binding["candidate_sha256"] != sha(cli):
+        expected_cli = args.expected_cli_sha256 or manifest["expected_cli_sha256"]
+        expectation_source = "explicit caller input" if args.expected_cli_sha256 else "pinned manifest default"
+        result.update(expected_cli_sha256=expected_cli, expected_cli_source=expectation_source)
+        actual_cli = sha(cli)
+        if actual_cli != expected_cli or binding["candidate_sha256"] != expected_cli:
             raise ValueError("current compiler or producer binding hash differs")
         if any(binding["compiler_source_sha256"].get(path) != digest
                for path, digest in manifest["config_source_sha256"].items()):
@@ -181,6 +192,7 @@ def worker(args):
                    "--source-core", "core@core_1_98_88d9", str(source / "library/core/src/lib.rs")]
         immutable = {str(path): sha(path) for path in (cli, producer, Path(strace), MANIFEST, Path(__file__))}
         write(out, "binding.json", {"command": command, "immutable": immutable, "archive": archive,
+              "expected_cli_sha256": expected_cli, "expected_cli_source": expectation_source,
               "profile": manifest["profile"], "source_files": 722, "core_files": 309,
               "producer": binding, "path_adaptation": {"source_root": str(source),
               "old_source_root": "/home/vishvananda/rustgm-sources/rust-1.98.0-" + manifest["revision"]},
@@ -214,6 +226,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cli", type=Path, required=True)
     parser.add_argument("--producer-binding", type=Path, required=True)
+    parser.add_argument("--expected-cli-sha256", type=cli_sha256,
+                        help="caller-declared qualified CLI SHA-256; defaults to the pinned manifest digest")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--worker", action="store_true", help="caller already holds storage guard and hard190s timeout")
     args = parser.parse_args()

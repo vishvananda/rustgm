@@ -20,6 +20,12 @@ builtin macros/derives, layout properties and unstable language features.
 Classify attributes by semantic effect; never silently ignore an active semantic
 requirement. In this revision, `SizedTypeProperties` supplies layout constants
 and atomic aliases use `Atomic<T: AtomicPrimitive>`; test the real protocols.
+Authenticate builtin declarations separately from invocation availability. An
+unused known declaration retains its actual macro kind without granting an
+unimplemented expansion permission. Unknown claims and wrong-kind invocations
+still fail. The [current unchanged-core observation](../docs/original-core-lib020-checkpoint.md)
+reaches the `offload_kernel` declaration at line 1668; implement the related
+declaration family together and retain its owning execution requirements.
 
 Library feature requests also depend on enabled local/dependency stability
 declarations. Implement their inventory, regular/const API checks and macro

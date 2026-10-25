@@ -18,6 +18,8 @@ mod imports;
 mod instantiable;
 #[path = "crate_linking/named_values.rs"]
 mod named_values;
+#[path = "crate_linking/non_exhaustive.rs"]
+mod non_exhaustive;
 #[path = "crate_linking/packet_libraries.rs"]
 mod packet_libraries;
 #[path = "crate_linking/records.rs"]
