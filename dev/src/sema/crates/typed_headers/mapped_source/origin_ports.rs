@@ -127,7 +127,7 @@ impl Graph {
         if descriptor.identity() != owner
             || row != self.root_row
             || descriptor.edition() != edition
-            || descriptor.profile() != s::Profile::Source2024Functions
+            || !descriptor.profile().ordinary_functions()
             || catalog.definition_at(owner, row)? != definition
         {
             return Err("source header changed its actual inventory/catalog root");

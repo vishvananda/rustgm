@@ -7,6 +7,7 @@ mod publication;
 #[cfg(test)]
 #[path = "../../tests/invariants/publication_attributes.rs"]
 mod publication_tests;
+mod published_annotations;
 use crate::{
     body::{
         ir::{self, Body, Owner},
@@ -263,13 +264,33 @@ impl Source {
             ));
         }
         self.require_plain_attributes(report, facts)?;
-        self.complete_plain_payload(base)
+        self.complete_profile_payload(base, None)
+            .map_err(|message| report.diagnostic(report.body_optional_error(None, message)))
+    }
+    pub(super) fn complete_contract_payload(
+        mut self,
+        report: &Report,
+        facts: &Declarations,
+        base: crate::support::crates::Interface,
+    ) -> Result<crate::support::crates::Interface, crate::resolve::package::Error> {
+        if report
+            .package
+            .source_core()
+            .is_none_or(|provider| &provider.provider != base.identity())
+        {
+            return Err(crate::resolve::package::Error::unlocated(
+                "source attribute publication changed its actual artifact identity",
+            ));
+        }
+        let attributes = self.collect_header_columns(report, facts)?;
+        self.complete_profile_payload(base, Some(attributes))
             .map_err(|message| report.diagnostic(report.body_optional_error(None, message)))
     }
 
-    fn complete_plain_payload(
+    fn complete_profile_payload(
         self,
         base: crate::support::crates::Interface,
+        attributes: Option<s::HeaderAttributeColumns>,
     ) -> Result<crate::support::crates::Interface, &'static str> {
         if self.numbering.is_some() {
             return Err("numbered source inspection has no provided-profile publisher");
@@ -289,7 +310,17 @@ impl Source {
             steps: work.steps,
             ..g::Work::default()
         };
-        let payload = g::Payload::from_source(base.identity(), rows, base_bytes, &mut validation)?;
+        let payload = if let Some(attributes) = attributes {
+            g::Payload::from_source_contracts(
+                base.identity(),
+                rows,
+                attributes,
+                base_bytes,
+                &mut validation,
+            )?
+        } else {
+            g::Payload::from_source(base.identity(), rows, base_bytes, &mut validation)?
+        };
         base.with_generic_payload(payload)
     }
 }

@@ -39,6 +39,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                 node = value;
             }
             let key = NodeKey { file, node };
+            crate::sema::header_attributes::observe_owner(report, facts, owner_key, key)?;
             let supported = matches!(unit.configured.ast.node(node).kind, Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
                 ItemKind::Function { .. } | ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. } | ItemKind::Trait { .. }));
             for effect in owner.attributes.clone() {
@@ -93,6 +94,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                 contracts.work.retained_contracts += 1;
                 contracts.work.retained_reasons += reason.as_ref().map_or(0, |reason| reason.len());
                 contracts.sources.push(Contract {
+                    image: std::sync::Arc::clone(unit.source.original_image()),
                     owner: owner_key,
                     declaration: key,
                     span: attribute.span,
@@ -104,6 +106,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
         }
     }
     bind_definitions(report, facts, &by_source)?;
+    crate::sema::header_attributes::prepare_imported(report, facts)?;
     if let Some(imported) = &report.resolution.crates {
         let unknown: HashSet<_> = imported
             .definitions()
@@ -120,8 +123,18 @@ fn bind_definitions(
     facts: &mut Declarations,
     by_source: &HashMap<NodeKey, usize>,
 ) -> Result<(), Error> {
-    if !by_source.is_empty() {
+    if !by_source.is_empty() || report.package.source_core().is_some() {
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
+            if let Some(key) = definition.node {
+                crate::sema::header_attributes::bind_definition(
+                    report,
+                    facts,
+                    DefId(u32::try_from(index).map_err(|_| {
+                        Error::at(key.file, 0, "too many source header definitions")
+                    })?),
+                    key,
+                )?;
+            }
             let Some(&contract) = definition.node.as_ref().and_then(|key| by_source.get(key))
             else {
                 continue;

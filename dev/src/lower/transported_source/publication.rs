@@ -15,6 +15,57 @@ impl Source {
         report: &Report,
         facts: &Declarations,
     ) -> Result<(), Error> {
+        self.require_attribute_context(report, facts)?;
+        for index in 0..self.stage.definitions.len() {
+            self.stage.charge(1).map_err(Error::unlocated)?;
+            let Some((definition, declaration)) =
+                selected_header(&self.stage, report, facts, index)?
+            else {
+                continue;
+            };
+            self.stage.charge(2).map_err(Error::unlocated)?;
+            if let Some(contract) = facts.must_use_contract(report, definition)? {
+                let source = contract.origin.source().ok_or_else(|| {
+                    Error::unlocated("source publication borrowed an imported contract")
+                })?;
+                if source.declaration != declaration || source.owner.file != declaration.file {
+                    return Err(Error::at(
+                        source.owner.file,
+                        source.span.start,
+                        "source must_use contract names another actual declaration",
+                    ));
+                }
+                return Err(report.diagnostic(Error::at(
+                    source.owner.file,
+                    source.span.start,
+                    "source must_use attribute contract transport is not implemented",
+                )));
+            }
+            if let Some(hint) = facts.inline_hint_for_definition(report, definition)? {
+                let source = hint.origin.source().ok_or_else(|| {
+                    Error::unlocated("source publication borrowed an imported hint")
+                })?;
+                if source.declaration != declaration || source.owner.file != declaration.file {
+                    return Err(Error::at(
+                        source.owner.file,
+                        source.span.start,
+                        "source inline hint names another actual declaration",
+                    ));
+                }
+                return Err(report.diagnostic(Error::at(
+                    source.owner.file,
+                    source.span.start,
+                    "source inline attribute contract transport is not implemented",
+                )));
+            }
+        }
+        Ok(())
+    }
+    pub(super) fn require_attribute_context(
+        &self,
+        report: &Report,
+        facts: &Declarations,
+    ) -> Result<(), Error> {
         let provider = report.package.source_core().ok_or_else(|| {
             Error::unlocated("source attribute publication requires its actual own-provider report")
         })?;
@@ -36,50 +87,11 @@ impl Source {
                 "source attribute stage belongs to another declaration arena",
             ));
         }
-        for index in 0..self.stage.definitions.len() {
-            self.stage.charge(1).map_err(Error::unlocated)?;
-            let Some((definition, declaration)) =
-                selected_header(&self.stage, report, facts, index)?
-            else {
-                continue;
-            };
-            self.stage.charge(2).map_err(Error::unlocated)?;
-            if let Some(contract) = facts.must_use_contract(report, definition)? {
-                if contract.declaration != declaration || contract.owner.file != declaration.file {
-                    return Err(Error::at(
-                        contract.owner.file,
-                        contract.span.start,
-                        "source must_use contract names another actual declaration",
-                    ));
-                }
-                return Err(report.diagnostic(Error::at(
-                    contract.owner.file,
-                    contract.span.start,
-                    "source must_use attribute contract transport is not implemented",
-                )));
-            }
-            if let Some(hint) = facts.inline_hint_for_definition(report, definition)? {
-                if hint.declaration != declaration || hint.owner.file != declaration.file {
-                    return Err(Error::at(
-                        hint.owner.file,
-                        hint.span.start,
-                        "source inline hint names another actual declaration",
-                    ));
-                }
-                // Bodyless declarations retain a diagnosed advisory hint too.
-                // Its applicability needs explicit transport in a wider profile.
-                return Err(report.diagnostic(Error::at(
-                    hint.owner.file,
-                    hint.span.start,
-                    "source inline attribute contract transport is not implemented",
-                )));
-            }
-        }
         Ok(())
     }
 }
 
-fn selected_header(
+pub(super) fn selected_header(
     stage: &crate::sema::crates::authored_export::Stage,
     report: &Report,
     facts: &Declarations,

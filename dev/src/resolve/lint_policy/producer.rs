@@ -370,6 +370,16 @@ impl Producer {
         self.composed = HashMap::default();
         self.sealed = true;
     }
+    /// Authenticate an already produced owner without composing ancestor policy.
+    pub(crate) fn validate_owner(&self, package: &Package, key: NodeKey) -> Result<(), Violation> {
+        self.charge_read(key, 1)?;
+        let tail = self
+            .index
+            .get(&key)
+            .copied()
+            .ok_or_else(|| invalid(key, "source header owner was not positively produced"))?;
+        self.record(tail, key)?.validate(package, &self.reads)
+    }
     pub(crate) fn changes(
         &self,
         package: &Package,
