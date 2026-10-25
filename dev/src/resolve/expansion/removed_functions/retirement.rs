@@ -5,7 +5,7 @@ use super::{
     saved_uses,
 };
 use crate::resolve::unit::{FileId, Unit, retirement::Observer};
-use std::sync::Arc;
+use std::{cmp::Ordering, sync::Arc};
 
 struct Frame {
     node: NodeId,
@@ -114,12 +114,10 @@ impl<'a> Builder<'a> {
         )?;
         let witness =
             saved_uses::Witness::capture(unit, file, effect, path, &self.removals.work, |id| {
-                if id.0 < file.0 {
-                    self.before.get(id.0 as usize)
-                } else if id.0 > file.0 {
-                    self.after.get((id.0 - file.0 - 1) as usize)
-                } else {
-                    None
+                match id.0.cmp(&file.0) {
+                    Ordering::Less => self.before.get(id.0 as usize),
+                    Ordering::Greater => self.after.get((id.0 - file.0 - 1) as usize),
+                    Ordering::Equal => None,
                 }
             })?;
         self.local
@@ -141,21 +139,17 @@ impl<'a> Builder<'a> {
                 self.definition,
                 self.scope,
                 &self.removals.work,
-                |id| {
-                    if id.0 < file.0 {
-                        self.before.get(id.0 as usize)
-                    } else if id.0 > file.0 {
-                        self.after.get((id.0 - file.0 - 1) as usize)
-                    } else {
-                        None
-                    }
+                |id| match id.0.cmp(&file.0) {
+                    Ordering::Less => self.before.get(id.0 as usize),
+                    Ordering::Greater => self.after.get((id.0 - file.0 - 1) as usize),
+                    Ordering::Equal => None,
                 },
             )?;
             self.local.bodies.push(Body {
                 removal: self.removals.entries.len(),
                 image: Arc::clone(unit.source.original_image()),
                 declaration: unit.configured.ast.node(self.removal.declaration.node),
-                body,
+                root: body,
                 snapshot: unit.configured.ast.node(body),
                 edge_extent: unit.configured.ast.edges.len(),
                 identity,

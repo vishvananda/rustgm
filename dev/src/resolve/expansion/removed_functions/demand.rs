@@ -48,7 +48,8 @@ pub(super) struct Body {
     pub removal: usize,
     pub image: Arc<OriginalImage>,
     pub declaration: Node,
-    pub body: NodeId,
+    /// Actual Function.body edge target, whose own attributes remain demanded.
+    pub root: NodeId,
     pub snapshot: Node,
     pub edge_extent: usize,
     pub identity: super::identities::Identity,
@@ -205,8 +206,8 @@ fn validate_body(
             .nodes
             .get(removal.declaration.node.get() as usize)
             != Some(&retained.declaration)
-        || retirement_body(unit, removal)? != Some(retained.body)
-        || unit.configured.ast.nodes.get(retained.body.get() as usize) != Some(&retained.snapshot)
+        || retirement_body(unit, removal)? != Some(retained.root)
+        || unit.configured.ast.nodes.get(retained.root.get() as usize) != Some(&retained.snapshot)
         || unit.configured.ast.edges.len() < retained.edge_extent
     {
         return Err(Error::at(file, 0, "removed Test body identity changed"));
