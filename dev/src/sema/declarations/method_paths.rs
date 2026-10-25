@@ -371,6 +371,21 @@ impl Checker<'_> {
             };
             method
         };
+        self.retain_selected_path(key, path, method, identifier)?;
+        self.work
+            .push(super::Work::MethodArguments(key, path.suffix));
+        self.schedule_item_arguments(path.suffix, method, context, steps, limit, scan)
+    }
+
+    /// Publish the selected owner and its typed prefix as one semantic fact.
+    fn retain_selected_path(
+        &mut self,
+        key: NodeKey,
+        path: &Path,
+        method: super::DefId,
+        identifier: crate::sema::methods::names::Use,
+    ) -> Result<(), Error> {
+        let prefix = path.prefix;
         let implementation = self.selected_inherent_owner(key, method, identifier)?;
         self.facts.methods.qualified.insert(
             key,
@@ -387,9 +402,7 @@ impl Checker<'_> {
             .node_mut(key)
             .ok_or_else(|| Error::at(key.file, 0, "missing method path fact"))?
             .reference = Some(Target::Definition(method));
-        self.work
-            .push(super::Work::MethodArguments(key, path.suffix));
-        self.schedule_item_arguments(path.suffix, method, context, steps, limit, scan)
+        Ok(())
     }
 
     fn selected_inherent_owner(

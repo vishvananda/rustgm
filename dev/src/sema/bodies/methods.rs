@@ -60,10 +60,10 @@ impl Checker<'_> {
                     .generics
                     .annotation_uses
                     .contains_key(&selected.prefix)
-                    && !self
+                    && self
                         .facts
                         .node(selected.prefix)
-                        .is_some_and(|fact| fact.ty.is_some()) =>
+                        .is_none_or(|fact| fact.ty.is_none()) =>
             {
                 self.nominal_term(node, selected.prefix.node, item, None)?
             }
