@@ -13,8 +13,23 @@ fn fresh_module_clients_preserve_aliases_domains_provider_selection_and_advisori
         ("restricted-provider", "select-provider-impl"),
     ] {
         let interface = test::roundtrip(&test::fixture(provider)?)?;
-        source_packets::client(interface, &test::fixture(client)?)
-            .map_err(|e| format!("{provider}/{client}: {e}"))?;
+        let source = test::fixture(client)?;
+        if client == "sealed-public-bound" {
+            source_packets::client_analysis(crates::decode(&crates::encode(&interface)?)?, &source)
+                .map_err(|e| format!("{provider}/{client} type boundary: {e}"))?;
+            let Err(error) = source_packets::client(interface, &source) else {
+                return Err("generic SourceClient republication unexpectedly opened".into());
+            };
+            assert!(
+                error
+                    .to_string()
+                    .contains("type-generic legacy-role originals"),
+                "{error}"
+            );
+        } else {
+            source_packets::client(interface, &source)
+                .map_err(|e| format!("{provider}/{client}: {e}"))?;
+        }
     }
     for client in [
         "sealed-foreign-impl",

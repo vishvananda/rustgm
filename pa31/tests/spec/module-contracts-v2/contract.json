@@ -45,5 +45,16 @@
     "select-provider-impl": "accept valid provider u8 impl via actual selection",
     "no-ctfe-permission": "deny const execution",
     "nested-call-provider": "publish v2, actual fresh caller uses api::renamed with original ordinary body proof; candidate UNRUN"
+  },
+  "execution_stage_correction": {
+    "failed_run": 40235770528,
+    "failed_prediction": "all four positive clients could also republish their own generic originals through legacy metadata",
+    "actual_boundary": "bound-only source reaches legacy SourceClient generic republication fence after successful analysis; no provider-domain or trait-conformance failure",
+    "successor_predictions": {
+      "sealed-public-bound": "accept actual type analysis/--emit-types; generic client republication still rejected",
+      "select-provider-impl": "unchanged: require actual LowIR selection of provider u8 impl, private prove::<u8> caller"
+    },
+    "language_sources": "unchanged; no independent oracle repeated",
+    "candidate_successor": "UNRUN"
   }
 }

@@ -12,3 +12,10 @@ The canonical private module remains independent of public aliases. Local source
 impl permission and valid provider-owned impl selection are separate checks.
 Unsupported Provided/defaultness, unsafe/results/stability, macro/nominal/value and
 mixed-provider profiles stay closed. No assignment activation is implied.
+
+The bound-only client is checked at the actual type-analysis boundary. Its generic
+SourceClient republication remains explicitly rejected by the legacy original
+export profile. The separate provider-selection client must complete LowIR
+lowering through `prove::<u8>()`; changing the bound-only observation does not
+substitute for that reached selection or its impl obligations. The first mistaken
+all-positive-LowIR prediction and its failure remain in the frozen contract.

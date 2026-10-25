@@ -1,6 +1,10 @@
 # Version-two module, implementation-domain and advisory metadata
 
-This is an unqualified implementation checkpoint. No new candidate control has run.
+This is an unqualified implementation checkpoint. The first six-control execution
+passed five controls and exposed a provider conformance gap. Its corrected
+conformance source passes strict static checks and the same five controls; the
+remaining control reached the separate legacy generic client-export boundary.
+Those failed executions remain retained; the corrected stage control is pending.
 The reviewed design is frozen in the worker's module-contracts-v2 proposal; the
 private namespace prerequisite remains separately qualified. This document will
 record actual candidate results rather than interpreting a successful inspection
@@ -34,6 +38,12 @@ remains unchanged. One cold optional box is added to ValidatedRows, with actual 
 enclosing layout and coexistence measurements required before publication. No fields
 are added to SourceRows, Columns, Package, Report, Body, Context, AST nodes or headers.
 The one selected generic-provider fence stays closed to mixed-provider re-exports.
+Generic SourceClient republication is also required later PA29 work: the existing
+legacy original exporter rejects it even when the bound-only client analyzes
+correctly. The bound-only `--emit-types` observation is semantic evidence only;
+a separate negative asserts that republication remains closed. Provider-impl
+selection and nested ordinary calls must still complete actual LowIR. Neither
+this stage correction nor v2 resolves generic/mixed-provider transport for full crates.
 Unsafe/associated-result/stability, nonempty imported impl members, Provided/default
 bodies, macros, nominal/value/type-alias profiles and imported UB policy remain
 explicit later work. Original core cannot yet be published through this slice.
