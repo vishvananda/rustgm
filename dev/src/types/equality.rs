@@ -194,7 +194,9 @@ impl Query {
                     abilities
                 }
                 Kind::Adt(item, _) => selected.get(&item).copied().unwrap_or_default(),
-                Kind::Primitive(Primitive::F32 | Primitive::F64) => Properties {
+                Kind::Primitive(
+                    Primitive::F32 | Primitive::F64 | Primitive::F16 | Primitive::F128,
+                ) => Properties {
                     partial_eq: true,
                     eq: false,
                 },

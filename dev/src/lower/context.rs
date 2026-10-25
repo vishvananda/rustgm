@@ -797,6 +797,9 @@ pub(super) fn representation(types: &Store, ty: TypeId) -> Result<Type, &'static
             Primitive::I128 | Primitive::U128 => Type::I128,
             Primitive::F32 => Type::F32,
             Primitive::F64 => Type::F64,
+            Primitive::F16 | Primitive::F128 => {
+                return Err("wide floating runtime lowering is not implemented");
+            }
             Primitive::Str => return Err("unsized values require later lowering"),
         },
         Kind::Reference { referent, .. } => {
