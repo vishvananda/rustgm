@@ -394,6 +394,13 @@ impl Store {
             .get(id.0 as usize)
             .map(|p| p.has(Property::Callables))
     }
+    /// Function-pointer occurrences exclude an item's own callable signature.
+    /// Actual type arguments still contribute their ordinary child summaries.
+    pub(crate) fn contains_anonymous_callables(&self, id: TypeId) -> Option<bool> {
+        self.properties
+            .get(id.0 as usize)
+            .map(|p| p.has(Property::AnonymousCallables))
+    }
     #[must_use]
     pub fn contains_parameters(&self, id: TypeId) -> Option<bool> {
         self.properties
@@ -619,6 +626,7 @@ impl Store {
         match kind {
             Kind::FunctionItem { arguments, .. } => {
                 // Item identity is inferred atomically; reification selects its signature.
+                result.set(Property::AnonymousCallables, false);
                 self.argument_properties(arguments, &mut result)?;
                 result.set(Property::LateCallables, false);
             }
@@ -627,6 +635,7 @@ impl Store {
             }
             Kind::Function { bound_regions, .. } => {
                 result.set(Property::Callables, true);
+                result.set(Property::AnonymousCallables, true);
                 result.escaping = result.escaping.saturating_sub(1);
                 result.set(
                     Property::LateCallables,

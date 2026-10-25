@@ -157,7 +157,7 @@ impl Stage {
     }
     pub(crate) fn begin(
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         identity: &CrateIdentity,
     ) -> Result<Self, &'static str> {
         let provider = report

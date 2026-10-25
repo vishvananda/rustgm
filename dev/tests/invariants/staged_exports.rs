@@ -7,7 +7,7 @@ use crate::{
 use std::{cell::Cell, rc::Rc};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 type Collector = fn(
-    &Declarations,
+    &mut Declarations,
     &borrow::incremental::Proved,
     &body::regions::Contract,
 ) -> std::result::Result<(), Error>;

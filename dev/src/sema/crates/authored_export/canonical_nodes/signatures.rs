@@ -15,6 +15,45 @@ pub(super) enum Purpose {
     Call { body: BodyRef, value: u32 },
 }
 
+#[derive(Clone, Copy)]
+pub(super) struct Parts {
+    pub bound_regions: u32,
+    pub parameters: crate::types::ListId,
+    pub result: TypeId,
+    unsafe_: bool,
+    convention: crate::types::callable::Convention,
+}
+impl Parts {
+    pub(super) fn actual(facts: &Declarations, ty: TypeId) -> Result<Self, &'static str> {
+        let Some(Kind::Function {
+            bound_regions,
+            parameters,
+            result,
+            unsafe_,
+            convention,
+        }) = facts.types.kind(ty)
+        else {
+            return Err("source callable header has no actual function signature");
+        };
+        Ok(Self {
+            bound_regions,
+            parameters,
+            result,
+            unsafe_,
+            convention,
+        })
+    }
+    pub(super) fn ordinary(self) -> bool {
+        self.convention.abi == crate::types::callable::Abi::Rust && !self.convention.variadic
+    }
+}
+
+#[derive(Clone, Copy)]
+pub(super) enum Roots {
+    Demand,
+    Completed,
+}
+
 impl Stage {
     pub(in super::super) fn signature(
         &mut self,
@@ -43,6 +82,7 @@ impl Stage {
         value: u32,
     ) -> Result<g::TypeRef, &'static str> {
         self.charge(2)?;
+        self.graph.require_arena(&facts.types)?;
         let closed = facts.types.needs_region_context(ty) == Some(false)
             && facts.types.contains_parameters(ty) == Some(false);
         let key = super::Key {
@@ -90,6 +130,7 @@ impl Stage {
         purpose: Purpose,
     ) -> Result<(g::Signature, Context), &'static str> {
         self.charge(1)?;
+        self.graph.require_arena(&facts.types)?;
         let key = Key {
             ty,
             context: parent,
@@ -98,16 +139,7 @@ impl Stage {
         if let Some(&completed) = self.graph.signatures.get(&key) {
             return Ok(completed);
         }
-        let Some(Kind::Function {
-            bound_regions,
-            parameters,
-            result,
-            unsafe_,
-            convention,
-        }) = facts.types.kind(ty)
-        else {
-            return Err("source callable header has no actual function signature");
-        };
+        let parts = Parts::actual(facts, ty)?;
         let kind = match purpose {
             Purpose::Public => s::BinderKind::PublicFunction,
             Purpose::Original => s::BinderKind::OriginalFunction,
@@ -116,43 +148,91 @@ impl Stage {
         };
         let context = Context {
             body: parent.body,
-            ..self.frame(parent.owner, parent.frame, kind, bound_regions)?
+            ..self.frame(parent.owner, parent.frame, kind, parts.bound_regions)?
         };
+        let signature = self.signature_roots(facts, parts, context, Roots::Demand)?;
+        self.reserve(retained::new_map::<Key, (g::Signature, Context)>(1))?;
+        self.graph.signatures.insert(key, (signature, context));
+        Ok((signature, context))
+    }
+
+    pub(super) fn signature_roots(
+        &mut self,
+        facts: &Declarations,
+        parts: Parts,
+        context: Context,
+        mode: Roots,
+    ) -> Result<g::Signature, &'static str> {
         let parameter_types = facts
             .types
-            .list(parameters)
+            .list(parts.parameters)
             .ok_or("source callable input list is unknown")?;
+        let deferred = matches!(mode, Roots::Demand)
+            && parameter_types
+                .iter()
+                .copied()
+                .chain(std::iter::once(parts.result))
+                .any(|ty| facts.types.contains_anonymous_callables(ty) == Some(true));
+        // Only new nested functions need temporary roots. Ordinary signatures
+        // keep their existing direct append and allocation behavior.
         self.reserve(
             parameter_types
                 .len()
-                .saturating_mul(4 * size_of::<g::TypeRef>()),
+                .saturating_mul((4 + usize::from(deferred)) * size_of::<g::TypeRef>()),
         )?;
-        let start =
-            u32::try_from(self.rows.roots.len()).map_err(|_| "source callable roots overflow")?;
+        let mut parameters = Vec::with_capacity(if deferred { parameter_types.len() } else { 0 });
+        let mut start = self.rows.roots.len();
         for &parameter in parameter_types {
             self.charge(1)?;
-            let ty = self.ty(facts, parameter, context)?;
-            self.rows.roots.push(ty);
+            let ty = self.signature_root(facts, parameter, context, mode)?;
+            if deferred {
+                parameters.push(ty);
+            } else {
+                self.rows.roots.push(ty);
+            }
         }
+        let result = self.signature_root(facts, parts.result, context, mode)?;
+        if deferred {
+            // Children have completed their own root ranges before this one.
+            start = self.rows.roots.len();
+            self.rows.roots.extend(parameters);
+        }
+        let start = u32::try_from(start).map_err(|_| "source callable roots overflow")?;
         let end =
             u32::try_from(self.rows.roots.len()).map_err(|_| "source callable roots overflow")?;
-        let result = self.ty(facts, result, context)?;
-        let signature = g::Signature {
+        Ok(g::Signature {
             binder: self.graph.frames
                 [context.frame.ok_or("source callable frame was lost")?.0 as usize]
                 .binder,
             parameters: g::Range { start, end },
             result,
-            unsafe_,
-            convention: match convention.abi {
+            unsafe_: parts.unsafe_,
+            convention: match parts.convention.abi {
                 crate::types::callable::Abi::Rust => g::Convention::Rust,
                 crate::types::callable::Abi::RustCall => g::Convention::RustCall,
                 crate::types::callable::Abi::C => g::Convention::C,
             },
-            variadic: convention.variadic,
-        };
-        self.reserve(retained::new_map::<Key, (g::Signature, Context)>(1))?;
-        self.graph.signatures.insert(key, (signature, context));
-        Ok((signature, context))
+            variadic: parts.convention.variadic,
+        })
+    }
+
+    fn signature_root(
+        &mut self,
+        facts: &Declarations,
+        ty: TypeId,
+        context: Context,
+        mode: Roots,
+    ) -> Result<g::TypeRef, &'static str> {
+        match mode {
+            Roots::Demand => self.ty(facts, ty, context),
+            Roots::Completed => {
+                let key = self.type_key(facts, ty, context)?;
+                self.graph
+                    .types
+                    .get(&key)
+                    .copied()
+                    .ok_or("source callable child was not completed before its parent")
+            }
+        }
     }
 }

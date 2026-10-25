@@ -6,7 +6,7 @@ use locations::Sites;
 
 pub(super) fn emit(
     stage: &mut Stage,
-    facts: &Declarations,
+    facts: &mut Declarations,
     body: &Body,
     context: Context,
     variables: Vec<s::OwnedRegion>,
@@ -40,6 +40,7 @@ pub(super) fn emit(
     locals(stage, facts, body, context, &mut raw, sites)?;
     for projection in &body.projections {
         stage.charge(1)?;
+        stage.prepare_type_arena(facts, projection.ty)?;
         let ir::ProjectionKind::Dereference { region, mutable } = projection.kind else {
             return Err(
                 "source projection transport supports retained reference dereferences only",
@@ -84,7 +85,7 @@ pub(super) fn emit(
 
 fn locals(
     stage: &mut Stage,
-    facts: &Declarations,
+    facts: &mut Declarations,
     body: &Body,
     context: Context,
     raw: &mut s::Original,
@@ -92,6 +93,7 @@ fn locals(
 ) -> Result<(), &'static str> {
     for (index, local) in body.locals.iter().enumerate() {
         stage.charge(1)?;
+        stage.prepare_type_arena(facts, local.ty)?;
         let definition = local
             .definition
             .map(|definition| stage.declaration(definition))
