@@ -19,6 +19,8 @@ use crate::{
     },
     types::{ItemId, Kind, Store, callable::Templates},
 };
+#[path = "assumed_scopes.rs"]
+mod assumption_environments;
 #[path = "formal_ancestry.rs"]
 mod formal_path;
 #[path = "regional_occurrences.rs"]
@@ -27,7 +29,7 @@ mod occurrence_work;
 #[path = "../../../../tests/invariants/prepared_callables.rs"]
 mod tests;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 struct Ready {
     pair: SignaturePair,
     header: s::FunctionHeader,
@@ -42,6 +44,7 @@ pub(super) struct Prepared {
     scopes: Vec<Option<usize>>,
     ready: Vec<Option<Ready>>,
     occurrences: Vec<Option<u32>>,
+    environments: Option<Box<assumption_environments::Owner>>,
 }
 impl Prepared {
     fn new(view: &RecipeView<'_>, work: &mut ReservationWork) -> Result<Self, Error> {
@@ -81,6 +84,7 @@ impl Prepared {
             scopes,
             ready: vec![None; rows.functions.len()],
             occurrences: vec![None; rows.types.len()],
+            environments: None,
         })
     }
     pub(super) fn retained_bytes(&self) -> usize {
@@ -89,6 +93,10 @@ impl Prepared {
             + retained::vector(&self.scopes)
             + retained::vector(&self.ready)
             + retained::vector(&self.occurrences)
+            + self
+                .environments
+                .as_deref()
+                .map_or(0, assumption_environments::Owner::retained_bytes)
     }
     fn scope(
         &self,
