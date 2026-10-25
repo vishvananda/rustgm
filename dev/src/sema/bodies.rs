@@ -1747,6 +1747,8 @@ impl Checker<'_> {
             Value::Float(value) => match value.suffix {
                 Some(FloatType::F32) => Primitive::F32,
                 Some(FloatType::F64) => Primitive::F64,
+                Some(FloatType::F16) => Primitive::F16,
+                Some(FloatType::F128) => Primitive::F128,
                 None => return self.variable(node, Domain::Float),
             },
             Value::Boolean(_) => Primitive::Bool,

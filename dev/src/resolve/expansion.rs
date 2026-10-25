@@ -285,6 +285,7 @@ pub fn analyze_with_context(
     };
     super::bindings::validate_crate_options(&report).map_err(|error| report.diagnostic(error))?;
     cfg_gates::validate_attributes(&report)?;
+    super::float_features::validate_literals(&report).map_err(|error| report.diagnostic(error))?;
     Ok(report)
 }
 impl<'a, S: Sources> Engine<'a, S> {

@@ -3,6 +3,10 @@ mod cfg_rows;
 mod locations;
 mod numbered_inputs;
 mod obligation_rows;
+mod publication;
+#[cfg(test)]
+#[path = "../../tests/invariants/publication_attributes.rs"]
+mod publication_tests;
 use crate::{
     body::{
         ir::{self, Body, Owner},
@@ -242,6 +246,26 @@ impl Source {
     /// The publishing path consumes the same completed collector directly.
     /// Inspection's indexes are not constructed and discarded before validation.
     pub(super) fn complete_payload(
+        mut self,
+        report: &Report,
+        facts: &Declarations,
+        base: crate::support::crates::Interface,
+    ) -> Result<crate::support::crates::Interface, crate::resolve::package::Error> {
+        if report
+            .package
+            .source_core()
+            .is_none_or(|provider| &provider.provider != base.identity())
+        {
+            return Err(crate::resolve::package::Error::unlocated(
+                "source attribute publication changed its actual artifact identity",
+            ));
+        }
+        self.require_plain_attributes(report, facts)?;
+        self.complete_plain_payload(base)
+            .map_err(|message| report.diagnostic(report.body_optional_error(None, message)))
+    }
+
+    fn complete_plain_payload(
         self,
         base: crate::support::crates::Interface,
     ) -> Result<crate::support::crates::Interface, &'static str> {

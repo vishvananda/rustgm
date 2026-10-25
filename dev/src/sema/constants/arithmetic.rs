@@ -64,6 +64,15 @@ pub(super) fn unary(
                 .ok_or(Failure::Fault("constant negation overflows"))?;
             Scalar::Integer(bits(value) & mask(width))
         }
+        (Unary::Negate, Scalar::Float(FloatBits::F16(value))) => {
+            Scalar::Float(FloatBits::F16(value ^ (1 << 15)))
+        }
+        (Unary::Negate, Scalar::Float(FloatBits::F128 { low, high })) => {
+            Scalar::Float(FloatBits::F128 {
+                low,
+                high: high ^ (1 << 63),
+            })
+        }
         (Unary::Negate, Scalar::Float(FloatBits::F32(value))) => {
             Scalar::Float(FloatBits::F32(value ^ (1 << 31)))
         }
@@ -116,6 +125,11 @@ pub(super) fn binary(
     right: Scalar,
     overflow: Overflow,
 ) -> Result<Scalar, Failure> {
+    if matches!(ty, Primitive::F16 | Primitive::F128) {
+        return Err(Failure::Invalid(
+            "wide floating constant arithmetic is not implemented",
+        ));
+    }
     match (left, right) {
         (Scalar::Integer(left), Scalar::Integer(right)) => integer(op, ty, left, right, overflow),
         (Scalar::Boolean(left), Scalar::Boolean(right)) => {
@@ -249,6 +263,13 @@ pub(super) fn cast(
     target: Primitive,
     value: Scalar,
 ) -> Result<Scalar, Failure> {
+    if matches!(source, Primitive::F16 | Primitive::F128)
+        || matches!(target, Primitive::F16 | Primitive::F128)
+    {
+        return Err(Failure::Invalid(
+            "wide floating constant casts are not implemented",
+        ));
+    }
     match (kind, value) {
         (Cast::IntegerToInteger, Scalar::Integer(value)) => {
             let (is_signed, width) = source.integer().ok_or("missing cast source type")?;
@@ -295,6 +316,11 @@ pub(super) fn cast(
             let value = match value {
                 FloatBits::F32(v) => f64::from(f32::from_bits(v)),
                 FloatBits::F64(v) => f64::from_bits(v),
+                _ => {
+                    return Err(Failure::Invalid(
+                        "wide floating constant casts are not implemented",
+                    ));
+                }
             };
             let (is_signed, width) = target.integer().ok_or("missing floating cast target")?;
             Ok(Scalar::Integer(if is_signed {

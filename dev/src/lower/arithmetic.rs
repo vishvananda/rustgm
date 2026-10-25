@@ -39,6 +39,9 @@ impl Arithmetic<'_> {
         value: Value,
         literal: bool,
     ) -> Result<Value, &'static str> {
+        if matches!(primitive, Primitive::F16 | Primitive::F128) {
+            return Err("wide floating runtime arithmetic is not implemented");
+        }
         let op = match operator {
             ast::Unary::Not if primitive == Primitive::Bool => Unary::Not,
             ast::Unary::Not => Unary::BitNot,
@@ -63,6 +66,9 @@ impl Arithmetic<'_> {
         left: Value,
         right: Value,
     ) -> Result<Value, &'static str> {
+        if matches!(primitive, Primitive::F16 | Primitive::F128) {
+            return Err("wide floating runtime arithmetic is not implemented");
+        }
         let signed = primitive.integer().is_some_and(|(signed, _)| signed);
         let ordered = signed || primitive.is_float();
         let predicate = match operator {

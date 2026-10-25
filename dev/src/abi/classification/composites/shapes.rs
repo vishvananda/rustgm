@@ -53,7 +53,7 @@ impl Query<'_> {
             .types
             .kind(ty)
             .ok_or("missing C aggregate field type")?;
-        let kind = if super::super::scalar(kind)
+        let kind = if super::super::scalar(kind)?
             && matches!(layout.shape, Shape::Scalar)
             && layout.size != 0
         {

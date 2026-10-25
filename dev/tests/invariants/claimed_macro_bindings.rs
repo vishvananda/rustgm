@@ -113,7 +113,6 @@ fn source_builtin_claims_fail_closed_in_both_pipelines() {
         "#[rustc_builtin_macro(line,attributes(),other)]macro_rules!line{()=>{99u32}}",
         "#[rustc_builtin_macro]#[rustc_builtin_macro]macro_rules!line{()=>{99u32}}",
         "#[rustc_builtin_macro(unknown_builtin)]macro_rules!line{()=>{99u32}}",
-        "#[rustc_builtin_macro]macro_rules!asm{()=>{99u32}}",
     ] {
         let source = format!("{HEADER}{tail}");
         assert!(names(&source).is_err(), "names: {tail}");
@@ -127,6 +126,36 @@ fn source_builtin_claims_fail_closed_in_both_pipelines() {
         crate::test_source::resolve("#[rustc_builtin_macro]macro_rules!line{()=>{99u32}}", true)
             .is_err()
     );
+}
+
+#[test]
+fn known_assembly_declarations_never_execute_their_placeholder_bodies() -> Result {
+    for role in [Builtin::Asm, Builtin::GlobalAsm] {
+        let source = format!(
+            "{HEADER}#[rustc_builtin_macro]macro_rules!{}{{()=>{{99u32}}}}",
+            role.name()
+        );
+        names(&source)?;
+        let report = expanded(&source)?;
+        let definition = report
+            .definitions
+            .iter()
+            .find(|definition| matches!(definition.body, Body::Builtin(actual) if actual == role))
+            .ok_or("known assembly declaration lost its actual role")?;
+        assert!(definition.node.is_some());
+        assert!(report.invocations.is_empty());
+        let invoked = format!("{source}{}!(\"nop\");", role.name());
+        let error = expanded(&invoked)
+            .err()
+            .ok_or("unavailable assembly executed its placeholder")?;
+        assert!(
+            error
+                .to_string()
+                .contains("builtin bang macro execution is not implemented"),
+            "{error}"
+        );
+    }
+    Ok(())
 }
 #[test]
 fn disabled_generated_and_stub_contracts_keep_their_own_admission() -> Result {

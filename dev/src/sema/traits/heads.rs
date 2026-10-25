@@ -26,14 +26,16 @@ impl Subject {
         })
     }
     pub fn heads(self) -> impl Iterator<Item = Head> {
-        use Primitive::{F32, F64, I8, I16, I32, I64, I128, Isize, U8, U16, U32, U64, U128, Usize};
+        use Primitive::{
+            F16, F32, F64, F128, I8, I16, I32, I64, I128, Isize, U8, U16, U32, U64, U128, Usize,
+        };
         const INTEGERS: &[Primitive] = &[
             I8, I16, I32, I64, I128, Isize, U8, U16, U32, U64, U128, Usize,
         ];
         let (head, primitives) = match self {
             Self::Rigid(head) => (Some(head), &[][..]),
             Self::Integer => (None, INTEGERS),
-            Self::Float => (None, &[F32, F64][..]),
+            Self::Float => (None, &[F32, F64, F16, F128][..]),
         };
         head.into_iter()
             .chain(primitives.iter().copied().map(Head::Primitive))
