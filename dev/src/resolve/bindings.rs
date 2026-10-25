@@ -4,6 +4,7 @@ mod allowances;
 mod annotations;
 mod claim_tokens;
 mod client;
+#[path = "bindings/allowance_owner.rs"]
 mod macro_context;
 pub(in crate::resolve) mod panic_contracts;
 pub(super) mod policy;
