@@ -33,9 +33,23 @@ interning. Saturating failed attempts remain visible to the caller budget.
 The five new controls retain the full original family. They check actual
 signature/body ports and const-context distinctions, foreign catalog and arena
 opponents, owner versus binder-purpose mismatches, 1000 warm uses, exact blocked
-dependencies, shared depth 8/32/128, repeated inputs 1/8/32, unrelated originals
-1/8/32, and failures after canonical interning. Existing moved-session,
+dependencies and failures after canonical interning. Existing moved-session,
 Functions codec/fresh-client and frozen-catalog controls remain selected.
+
+Scaling is explicitly narrower than completed deep-signature interning. Flat
+actual `let` reference expressions produce body-local type DAGs at depths
+8/32/128, selected through their actual body/local declarations. Their traversal
+must block at the exact imported owned-body domain, with linear expansion and
+edges, charged repeated-root requests 1/8/32, stable retained storage and no new
+canonical identities. The completed header-pair memo must survive that block.
+Unrelated originals 1/8/32 retain the 1000-use constant-work ready-pair control.
+
+The original nested function-pointer setup failed before cursor demand, with
+its input and diagnostics retained. Anonymous nested function-pointer transport,
+type-alias declaration transport, inline parser depth 128 and completed deep
+ready-signature interning remain PA29 closure requirements. The earlier
+nongeneric zero-lifetime export failure is also retained; the real unused
+generic formal invokes the actual lifetime-scheme producer and stays undemanded.
 
 All four public Functions admission guards and metadata files are unchanged.
 No semantic Header, environment, callable template, body allocation, proof,
