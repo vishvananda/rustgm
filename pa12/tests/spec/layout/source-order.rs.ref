@@ -18,10 +18,12 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 aggregate def=13
-type 20 tuple [11,14,11]
-def 13 type=19 name="S" source=0:6
-def 14 type=20 name="T" source=0:11
+type 19 primitive f16
+type 20 primitive f128
+type 21 aggregate def=13
+type 22 tuple [11,14,11]
+def 13 type=21 name="S" source=0:6
+def 14 type=22 name="T" source=0:11
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"
@@ -39,6 +41,8 @@ def 28 type=15 name="u128"
 def 29 type=16 name="usize"
 def 30 type=17 name="f32"
 def 31 type=18 name="f64"
+def 32 type=19 name="f16"
+def 33 type=20 name="f128"
 layout 0 size=0 align=1 inhabited=false references=false scalar
 layout 1 size=0 align=1 inhabited=true references=false aggregate tag=-
 variant 1:0 discriminant=0
@@ -59,14 +63,16 @@ layout 15 size=16 align=16 inhabited=true references=false scalar
 layout 16 size=8 align=8 inhabited=true references=false scalar
 layout 17 size=4 align=4 inhabited=true references=false scalar
 layout 18 size=8 align=8 inhabited=true references=false scalar
-layout 19 size=24 align=8 inhabited=true references=false aggregate tag=-
-variant 19:0 discriminant=0
-field 19:0:0 type=11 offset=0
-field 19:0:1 type=14 offset=8
-field 19:0:2 type=11 offset=16
-layout 20 size=24 align=8 inhabited=true references=false aggregate tag=-
-variant 20:0 discriminant=0
-field 20:0:0 type=11 offset=0
-field 20:0:1 type=14 offset=8
-field 20:0:2 type=11 offset=16
-eof types 21 layouts 20 variants 3 fields 6
+layout 19 size=2 align=2 inhabited=true references=false scalar
+layout 20 size=16 align=16 inhabited=true references=false scalar
+layout 21 size=24 align=8 inhabited=true references=false aggregate tag=-
+variant 21:0 discriminant=0
+field 21:0:0 type=11 offset=0
+field 21:0:1 type=14 offset=8
+field 21:0:2 type=11 offset=16
+layout 22 size=24 align=8 inhabited=true references=false aggregate tag=-
+variant 22:0 discriminant=0
+field 22:0:0 type=11 offset=0
+field 22:0:1 type=14 offset=8
+field 22:0:2 type=11 offset=16
+eof types 23 layouts 22 variants 3 fields 6

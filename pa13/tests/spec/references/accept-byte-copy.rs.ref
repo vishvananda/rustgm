@@ -18,21 +18,23 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 array element=11 length=2
-type 20 function binders=0 parameters=[19] result=1 unsafe=false
-type 21 function-item def=14 signature=20
-type 22 reference mutable=false region=static referent=19
+type 19 primitive f16
+type 20 primitive f128
+type 21 array element=11 length=2
+type 22 function binders=0 parameters=[21] result=1 unsafe=false
+type 23 function-item def=14 signature=22
+type 24 reference mutable=false region=static referent=21
 root 0:12 pattern=0
 root 0:15 pattern=1
-pattern 0 source=0:12 input=19 product variant=- fields=0:2
-pattern 1 source=0:15 input=19 wildcard
+pattern 0 source=0:12 input=21 product variant=- fields=0:2
+pattern 1 source=0:15 input=21 wildcard
 pattern 2 source=0:12 input=11 range=0
 pattern 3 source=0:12 input=11 range=1
 field 0 index=0 pattern=2
 field 1 index=1 pattern=3
 range 0 ranks=97:97
 range 1 ranks=98:98
-match 0 source=0:18 input=0:11 arms=0:2 exhaustive=true uninhabited=false work=190
+match 0 source=0:18 input=0:11 arms=0:2 exhaustive=true uninhabited=false work=191
 arm 0 source=0:14 pattern=0 guard=- useful=true value=0:13
 arm 1 source=0:17 pattern=1 guard=- useful=true value=0:16
-eof roots=2 patterns=4 fields=2 alternatives=0 ranges=2 matches=1 arms=2 coverage-work=190 region-vars=0 region-equalities=0 conditions=0 chains=0
+eof roots=2 patterns=4 fields=2 alternatives=0 ranges=2 matches=1 arms=2 coverage-work=191 region-vars=0 region-equalities=0 conditions=0 chains=0

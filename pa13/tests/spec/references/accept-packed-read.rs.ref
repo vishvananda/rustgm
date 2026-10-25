@@ -18,11 +18,13 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 aggregate def=13
-type 20 function binders=0 parameters=[14] result=1 unsafe=false
-type 21 function-item def=16 signature=20
-type 22 function binders=0 parameters=[11,14] result=19 unsafe=false
-type 23 function-item def=14 signature=22
+type 19 primitive f16
+type 20 primitive f128
+type 21 aggregate def=13
+type 22 function binders=0 parameters=[14] result=1 unsafe=false
+type 23 function-item def=16 signature=22
+type 24 function binders=0 parameters=[11,14] result=21 unsafe=false
+type 25 function-item def=14 signature=24
 root 0:17 pattern=0
 root 0:20 pattern=1
 pattern 0 source=0:17 input=14 range=0

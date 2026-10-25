@@ -21,7 +21,9 @@ name 19 "u128"
 name 20 "usize"
 name 21 "f32"
 name 22 "f64"
-name 23 "h"
+name 23 "f16"
+name 24 "f128"
+name 25 "h"
 module 0 name=0 file=0 scope=0 parent=root
 module 1 name=1 file=0 scope=1 parent=0
 scope 0 module=0 barrier=true parent=root
@@ -48,21 +50,23 @@ def 13 type primitive name=19 scope=0 access=public
 def 14 type primitive name=20 scope=0 access=public
 def 15 type primitive name=21 scope=0 access=public
 def 16 type primitive name=22 scope=0 access=public
-def 17 type module name=1 scope=0 access=module:0 source=0:3 members=1
-def 18 value function name=4 scope=1 access=public source=0:1
-def 19 type struct name=5 scope=1 access=public source=0:2 members=4
-def 20 value constructor name=5 scope=1 access=public source=0:2
-def 21 value function name=23 scope=0 access=module:0 source=0:25
-binding scope=0 type name=1 def=17 Direct ambiguous=false access=module:0
-binding scope=0 value name=23 def=21 Direct ambiguous=false access=module:0
-binding scope=0 type name=3 def=17 Import(0) ambiguous=false access=module:0
-binding scope=0 value name=4 def=18 Import(1) ambiguous=false access=module:0
-binding scope=0 type name=5 def=19 Import(2) ambiguous=false access=module:0
-binding scope=0 value name=5 def=20 Import(2) ambiguous=false access=module:0
-binding scope=1 value name=4 def=18 Direct ambiguous=false access=public
-binding scope=1 type name=5 def=19 Direct ambiguous=false access=public
-binding scope=1 value name=5 def=20 Direct ambiguous=false access=public
-ref 0:14 scope=6 value def=18
-ref 0:19 scope=6 value def=18
-ref 0:22 scope=6 value def=20
-eof files=1 modules=2 definitions=22 references=3
+def 17 type primitive name=23 scope=0 access=public
+def 18 type primitive name=24 scope=0 access=public
+def 19 type module name=1 scope=0 access=module:0 source=0:3 members=1
+def 20 value function name=4 scope=1 access=public source=0:1
+def 21 type struct name=5 scope=1 access=public source=0:2 members=4
+def 22 value constructor name=5 scope=1 access=public source=0:2
+def 23 value function name=25 scope=0 access=module:0 source=0:25
+binding scope=0 type name=1 def=19 Direct ambiguous=false access=module:0
+binding scope=0 value name=25 def=23 Direct ambiguous=false access=module:0
+binding scope=0 type name=3 def=19 Import(0) ambiguous=false access=module:0
+binding scope=0 value name=4 def=20 Import(1) ambiguous=false access=module:0
+binding scope=0 type name=5 def=21 Import(2) ambiguous=false access=module:0
+binding scope=0 value name=5 def=22 Import(2) ambiguous=false access=module:0
+binding scope=1 value name=4 def=20 Direct ambiguous=false access=public
+binding scope=1 type name=5 def=21 Direct ambiguous=false access=public
+binding scope=1 value name=5 def=22 Direct ambiguous=false access=public
+ref 0:14 scope=6 value def=20
+ref 0:19 scope=6 value def=20
+ref 0:22 scope=6 value def=22
+eof files=1 modules=2 definitions=24 references=3

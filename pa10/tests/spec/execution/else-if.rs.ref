@@ -18,9 +18,11 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 function binders=0 parameters=[] result=14 unsafe=false
-type 20 function-item def=13 signature=19
-body 0 function def=13 signature=19 result=14 source=0:11
+type 19 primitive f16
+type 20 primitive f128
+type 21 function binders=0 parameters=[] result=14 unsafe=false
+type 22 function-item def=13 signature=21
+body 0 function def=13 signature=21 result=14 source=0:11
   local l0 type=14 merge mutable=true storage-parent=- source=10
   local l1 type=14 merge mutable=true storage-parent=l0 source=9
   block b0:

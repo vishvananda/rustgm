@@ -5,7 +5,8 @@ use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const CARRY: &str = "pub fn carry<T>(value:fn(u8)->u8)->fn(u8)->u8{value}\
     pub fn plain(value:fn(u8)->u8)->fn(u8)->u8{value}\
-    pub fn unsafe_carry<T>(value:unsafe fn(u8)->u8)->unsafe fn(u8)->u8{value}";
+    pub fn unsafe_carry<T>(value:unsafe fn(u8)->u8)->unsafe fn(u8)->u8{value}\
+    pub fn generic<T>(value:fn(T)->T)->fn(T)->T{value}pub fn unit(){}";
 
 fn source(extra: &str) -> Result<String> {
     let mut source =
@@ -86,6 +87,113 @@ fn inspected(extra: &str) -> Result<(crates::CrateIdentity, s::SourceRows)> {
         analysis.prepared,
     )?;
     Ok((identity, inspected.rows))
+}
+
+fn raw_header<'a>(rows: &'a s::SourceRows, name: &str) -> Result<&'a s::FunctionHeader> {
+    rows.functions
+        .iter()
+        .find(|header| {
+            rows.declarations[header.declaration.0 as usize]
+                .name
+                .as_deref()
+                == Some(name)
+        })
+        .ok_or_else(|| "actual raw function header".into())
+}
+fn planner_opponents(identity: &crates::CrateIdentity, rows: &s::SourceRows) -> Result {
+    let header = raw_header(rows, "plain")?;
+    let root = *header
+        .callable
+        .parameters
+        .slice(&rows.roots)?
+        .first()
+        .ok_or("actual pointer input")?;
+    let other = raw_header(rows, "carry")?.declaration;
+    let unit = raw_header(rows, "unit")?.callable.result;
+    for case in 0..6 {
+        let mut changed = rows.clone();
+        let s::Type::Function(signature) = &mut changed.types[root.0 as usize] else {
+            return Err("actual pointer recipe".into());
+        };
+        match case {
+            0 => signature.unsafe_ = !signature.unsafe_,
+            1 => signature.parameters.end = signature.parameters.start,
+            2 => signature.result = unit,
+            3 => signature.convention = g::Convention::C,
+            4 => signature.variadic = true,
+            _ => changed.binders[signature.binder.0 as usize].owner = other,
+        }
+        assert!(
+            g::Payload::from_source(identity, changed, 0, &mut g::Work::default()).is_err(),
+            "function shape/domain case {case}"
+        );
+    }
+    let generic = raw_header(rows, "generic")?;
+    let s::FunctionBody::Original(body) = generic.body else {
+        return Err("actual generic body".into());
+    };
+    let mut changed = rows.clone();
+    let obligations = &mut changed.body_inputs[body.0 as usize].obligations;
+    let before = obligations.len();
+    obligations.retain(|input| {
+        !matches!(input.kind, s::InputKind::WellFormed(root)
+        if matches!(rows.types[root.0 as usize], s::Type::Function(_)))
+    });
+    assert!(
+        obligations.len() < before,
+        "opaque Function must retain actual conditional formation"
+    );
+    assert!(g::Payload::from_source(identity, changed, 0, &mut g::Work::default()).is_err());
+    Ok(())
+}
+
+fn regional_substitution() -> Result {
+    let (_, mut rows) = inspected(
+        "pub fn typed<T>(value:fn(T)->T)->fn(T)->T{value}\
+         pub fn borrower<'a,U>(borrowed:&'a u8,value:fn(U)->U)->fn(U)->U{typed::<U>(value)}",
+    )?;
+    let caller = raw_header(&rows, "borrower")?;
+    let borrowed = *caller
+        .original
+        .parameters
+        .slice(&rows.roots)?
+        .first()
+        .ok_or("actual borrowed formal")?;
+    let s::FunctionBody::Original(body) = caller.body else {
+        return Err("actual borrower body".into());
+    };
+    let target = rows.originals[body.0 as usize]
+        .calls
+        .first()
+        .ok_or("actual generic Call")?
+        .target;
+    let arguments = rows.function_applications[target.0 as usize].arguments;
+    assert_eq!(arguments.end - arguments.start, 1);
+    // Replace one real application's type argument with this actual caller's
+    // declared reference. Domain ownership still holds; the rewritten Function
+    // must reject the newly introduced caller region before it can publish.
+    rows.arguments[arguments.start as usize] = s::Argument::Type(borrowed);
+    let mut work = g::Work::default();
+    let headers = s::HeaderIndex::new(&rows, 0, &mut work)?;
+    let domains = headers.domains(&mut work)?;
+    let error = domains
+        .original_inputs(&mut work)
+        .err()
+        .ok_or("regional Function substitution was accepted")?;
+    assert_eq!(
+        error,
+        "source Function substitution captured regional or function-item inputs"
+    );
+    Ok(())
+}
+fn planner_metrics(rows: &s::SourceRows) -> Result<(s::InputWork, usize)> {
+    let mut work = g::Work::default();
+    let headers = s::HeaderIndex::new(rows, 0, &mut work)?;
+    let domains = headers.domains(&mut work)?;
+    let plan = domains.original_inputs(&mut work)?;
+    assert!(plan.retained_bytes() <= plan.peak_bytes());
+    assert!(plan.peak_bytes() <= crates::MAX_BYTES);
+    Ok((plan.work(), plan.peak_bytes()))
 }
 
 fn item_summaries() -> Result {
@@ -235,7 +343,7 @@ fn anonymous_function_headers_cross_codec_without_declaration_surrogates() -> Re
             .iter()
             .any(|row| row.name.as_deref() == Some("function_type"))
     );
-    assert_eq!(rows.functions.len(), 5);
+    assert_eq!(rows.functions.len(), 7);
     for name in ["carry", "plain", "unsafe_carry"] {
         let header = header(&rows, name)?;
         let inputs = header.callable.parameters.slice(&rows.roots)?;
@@ -272,6 +380,8 @@ fn anonymous_function_headers_cross_codec_without_declaration_surrogates() -> Re
 fn anonymous_function_context_and_binder_opponents_fail_before_publication() -> Result {
     call_formations()?;
     let (identity, rows) = inspected(CARRY)?;
+    planner_opponents(&identity, &rows)?;
+    regional_substitution()?;
     let binder = rows
         .binders
         .iter()
@@ -400,6 +510,8 @@ fn anonymous_function_work_and_storage_scale_with_actual_shallow_dag() -> Result
         was_anchored
     );
     assert!(baseline.graph.arena.is_none());
+    let (_, base_rows) = inspected("")?;
+    let (base_plan, base_peak) = planner_metrics(&base_rows)?;
     for depth in [1, 4, 8] {
         let mut ty = "u8".to_owned();
         for _ in 0..depth {
@@ -426,6 +538,13 @@ fn anonymous_function_work_and_storage_scale_with_actual_shallow_dag() -> Result
             let (ty, context) = root(&report, &facts, &mut staged, "carry0")?;
             let selected = staged.ty(&facts, ty, context)?;
             assert_eq!(staged.ty(&facts, ty, context)?, selected);
+            let (_, rows) = inspected(&extra)?;
+            let (plan, peak) = planner_metrics(&rows)?;
+            assert!(plan.expression_nodes <= base_plan.expression_nodes + 8 * (width + depth + 1));
+            assert!(plan.rewritten_uses <= base_plan.rewritten_uses + 64 * width * (depth + 1));
+            assert!(plan.steps <= base_plan.steps + 4096 * width * (depth + 1));
+            assert!(peak <= base_peak + 65536 * width * (depth + 1));
+            eprintln!("Function planner depth={depth} width={width} {plan:?} peak={peak}");
         }
     }
     Ok(())

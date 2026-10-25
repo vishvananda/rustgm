@@ -54,6 +54,8 @@ name 26 "u128"
 name 27 "usize"
 name 28 "f32"
 name 29 "f64"
+name 30 "f16"
+name 31 "f128"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 def 0 type module name=0 scope=0 access=public members=0
@@ -86,5 +88,7 @@ def 26 type primitive name=26 scope=0 access=public
 def 27 type primitive name=27 scope=0 access=public
 def 28 type primitive name=28 scope=0 access=public
 def 29 type primitive name=29 scope=0 access=public
-eof files=2 modules=1 definitions=30 references=0
-end-expanded-crate files 2 modules 1 macros 1 invocations 1 captures 0 definitions 30 references 0
+def 30 type primitive name=30 scope=0 access=public
+def 31 type primitive name=31 scope=0 access=public
+eof files=2 modules=1 definitions=32 references=0
+end-expanded-crate files 2 modules 1 macros 1 invocations 1 captures 0 definitions 32 references 0

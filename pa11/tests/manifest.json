@@ -126,7 +126,10 @@
       },
       "native": {
         "outcome": "pass"
-      }
+      },
+      "warnings": [
+        "unused_must_use"
+      ]
     },
     {
       "path": "tests/spec/control/or-skips.rs",
@@ -141,7 +144,10 @@
       },
       "native": {
         "outcome": "pass"
-      }
+      },
+      "warnings": [
+        "unused_must_use"
+      ]
     },
     {
       "path": "tests/spec/control/nested-side-effects.rs",
@@ -156,7 +162,10 @@
       },
       "native": {
         "outcome": "pass"
-      }
+      },
+      "warnings": [
+        "unused_must_use"
+      ]
     },
     {
       "path": "tests/spec/control/nested-short-circuit.rs",

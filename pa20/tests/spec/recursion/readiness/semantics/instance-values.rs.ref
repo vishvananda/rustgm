@@ -18,40 +18,42 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 aggregate def=15 arguments=[const-parameter:15:0]
-type 20 aggregate def=17 arguments=[const-parameter:17:0]
-type 21 parameter def=21 index=0
-type 22 aggregate def=17 arguments=[const-parameter:24:0]
-type 23 function binders=0 parameters=[2] result=1 unsafe=false
-type 24 function-item def=13 signature=23
-type 25 function binders=0 parameters=[11] result=11 unsafe=false
-type 26 function-item def=14 signature=25
-type 27 function binders=0 parameters=[] result=1 unsafe=false
-type 28 function-item def=19 signature=27
-type 29 array element=11 length=parameter:15:0
-type 30 function binders=0 parameters=[29] result=19 unsafe=false
-type 31 function-item def=16 signature=30
-type 32 aggregate def=17 arguments=[const:16:0x00000000000000000000000000000003]
-type 33 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
-type 34 aggregate def=17 arguments=[const:16:0x00000000000000000000000000000005]
-type 35 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000005]
-type 36 array element=11 length=3
-type 37 function binders=0 parameters=[36] result=33 unsafe=false
-type 38 function-item def=16 signature=37 arguments=[const:16:0x00000000000000000000000000000003]
-type 39 array element=11 length=5
-type 40 function binders=0 parameters=[39] result=35 unsafe=false
-type 41 function-item def=16 signature=40 arguments=[const:16:0x00000000000000000000000000000005]
-def 13 type=24 name="check" source=0:13
-def 14 type=26 name="fail" source=0:22
-def 15 type=19 name="X" source=0:29
-def 16 type=31 name="X" source=0:29
-def 17 type=20 name="S" source=0:32
-def 18 type=20 name="S" source=0:32
-def 19 type=28 name="main" source=0:88
-def 21 type=21 name="Self" source=0:93
+type 19 primitive f16
+type 20 primitive f128
+type 21 aggregate def=15 arguments=[const-parameter:15:0]
+type 22 aggregate def=17 arguments=[const-parameter:17:0]
+type 23 parameter def=21 index=0
+type 24 aggregate def=17 arguments=[const-parameter:24:0]
+type 25 function binders=0 parameters=[2] result=1 unsafe=false
+type 26 function-item def=13 signature=25
+type 27 function binders=0 parameters=[11] result=11 unsafe=false
+type 28 function-item def=14 signature=27
+type 29 function binders=0 parameters=[] result=1 unsafe=false
+type 30 function-item def=19 signature=29
+type 31 array element=11 length=parameter:15:0
+type 32 function binders=0 parameters=[31] result=21 unsafe=false
+type 33 function-item def=16 signature=32
+type 34 aggregate def=17 arguments=[const:16:0x00000000000000000000000000000003]
+type 35 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
+type 36 aggregate def=17 arguments=[const:16:0x00000000000000000000000000000005]
+type 37 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000005]
+type 38 array element=11 length=3
+type 39 function binders=0 parameters=[38] result=35 unsafe=false
+type 40 function-item def=16 signature=39 arguments=[const:16:0x00000000000000000000000000000003]
+type 41 array element=11 length=5
+type 42 function binders=0 parameters=[41] result=37 unsafe=false
+type 43 function-item def=16 signature=42 arguments=[const:16:0x00000000000000000000000000000005]
+def 13 type=26 name="check" source=0:13
+def 14 type=28 name="fail" source=0:22
+def 15 type=21 name="X" source=0:29
+def 16 type=33 name="X" source=0:29
+def 17 type=22 name="S" source=0:32
+def 18 type=22 name="S" source=0:32
+def 19 type=30 name="main" source=0:88
+def 21 type=23 name="Self" source=0:93
 def 22 type=16 name="C" source=0:90
 def 23 type=16 name="D" source=0:92
-def 24 type=22 name="Self" source=0:109
+def 24 type=24 name="Self" source=0:109
 def 25 type=16 name="C" source=0:105
 def 26 type=16 name="D" source=0:108
 def 27 type=2 name="bool"
@@ -71,25 +73,27 @@ def 40 type=15 name="u128"
 def 41 type=16 name="usize"
 def 42 type=17 name="f32"
 def 43 type=18 name="f64"
-def 44 type=16 name="N" source=0:24
-def 45 type=16 name="N" source=0:31
-def 46 type=16 name="N" source=0:95
-def 47 type=2 name="ok" source=0:0
-def 48 type=11 name="x" source=0:14
-def 49 type=33 name="x" source=0:33
-def 50 type=35 name="y" source=0:51
-associated-owner 0 kind=trait self-def=21 self=21 source=0:93 trait=20 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=24 self=22 source=0:109 unsafe=false
+def 44 type=19 name="f16"
+def 45 type=20 name="f128"
+def 46 type=16 name="N" source=0:24
+def 47 type=16 name="N" source=0:31
+def 48 type=16 name="N" source=0:95
+def 49 type=2 name="ok" source=0:0
+def 50 type=11 name="x" source=0:14
+def 51 type=35 name="x" source=0:33
+def 52 type=37 name="y" source=0:51
+associated-owner 0 kind=trait self-def=21 self=23 source=0:93 trait=20 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=24 self=24 source=0:109 unsafe=false
 associated-member def=22 owner=0
 associated-member def=23 owner=0
 associated-member def=25 owner=1
 associated-member def=26 owner=1
-parameter owner=15 binding=44 argument=const-parameter:15:0 default=-
-parameter owner=17 binding=45 argument=const-parameter:17:0 default=-
-parameter owner=21 binding=21 argument=type:21 default=-
-parameter owner=24 binding=46 argument=const-parameter:24:0 default=-
-predicate owner=20 source=0:93 subject=21 bound=trait:20 arguments=[]
-impl owner=24 source=0:109 subject=22 bound=trait:20 arguments=[]
+parameter owner=15 binding=46 argument=const-parameter:15:0 default=-
+parameter owner=17 binding=47 argument=const-parameter:17:0 default=-
+parameter owner=21 binding=21 argument=type:23 default=-
+parameter owner=24 binding=48 argument=const-parameter:24:0 default=-
+predicate owner=20 source=0:93 subject=23 bound=trait:20 arguments=[]
+impl owner=24 source=0:109 subject=24 bound=trait:20 arguments=[]
 trait-path source=0:41 method=22 trait=20 qualifier=explicit origin=ordinary subject-source=0:38
 trait-path source=0:59 method=22 trait=20 qualifier=explicit origin=ordinary subject-source=0:56
 trait-path source=0:104 method=23 trait=20 qualifier=implicit origin=ordinary subject-source=0:102
@@ -102,11 +106,11 @@ associated-constant def=25 type=16
 associated-constant def=26 type=16
 impl-constant owner=24 declaration=22 selected=25 default=false
 impl-constant owner=24 declaration=23 selected=26 default=false
-constant-use source=0:41 definition=22 arguments=[type:32]
-constant-use source=0:59 definition=22 arguments=[type:34]
-constant-use source=0:104 definition=23 arguments=[type:22]
-constant-dispatch declaration=22 arguments=[type:32] selected=25 arguments=[const:16:0x00000000000000000000000000000003]
-constant-dispatch declaration=22 arguments=[type:34] selected=25 arguments=[const:16:0x00000000000000000000000000000005]
-constant-dispatch declaration=23 arguments=[type:32] selected=26 arguments=[const:16:0x00000000000000000000000000000003]
-constant-dispatch declaration=23 arguments=[type:34] selected=26 arguments=[const:16:0x00000000000000000000000000000005]
+constant-use source=0:41 definition=22 arguments=[type:34]
+constant-use source=0:59 definition=22 arguments=[type:36]
+constant-use source=0:104 definition=23 arguments=[type:24]
+constant-dispatch declaration=22 arguments=[type:34] selected=25 arguments=[const:16:0x00000000000000000000000000000003]
+constant-dispatch declaration=22 arguments=[type:36] selected=25 arguments=[const:16:0x00000000000000000000000000000005]
+constant-dispatch declaration=23 arguments=[type:34] selected=26 arguments=[const:16:0x00000000000000000000000000000003]
+constant-dispatch declaration=23 arguments=[type:36] selected=26 arguments=[const:16:0x00000000000000000000000000000005]
 eof owners=2 members=4 parameters=4 predicates=1 impls=1 calls=0 paths=3 impl-uses=3 type-members=0 constant-members=4 result-contracts=0 result-bounds=0 impl-constants=2 constant-uses=3 constant-dispatches=4 normalized-nodes=0 normalized-definitions=0

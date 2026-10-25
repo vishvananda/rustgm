@@ -14,6 +14,13 @@ in `canonical_nodes/recipe_emission.rs`, and its contracts in
 selected Rust test identity. This naming correction changes no semantic code or
 audit rule; the old run and its evidence remain failed and retained.
 
+CI `40198294955` then passed metadata, formatting, architecture, strict private
+Clippy and the unoptimized build. Seven of ten selected controls passed, including
+the old Functions/collector controls and the header-only scaling control. Three
+new functional controls reached the existing Required-input planner's explicit
+higher-order boundary. They remain failed evidence until the next checkpoint
+actually closes their complete data and fresh-proof paths.
+
 The existing authored type worklist now enters actual `Kind::Function` nodes,
 allocates their real `CallableType` frames, demands their actual input/result
 TypeIds, and finishes the recipe after its children. Declaration signatures and
@@ -72,6 +79,31 @@ storage, frames, memo entries, root ranges and the real identity allocation are
 preflighted through existing work/retained/scratch budgets. The Graph's optional
 pointer and larger task variant have real cold storage costs; no zero-cost or
 timing nonregression claim is made.
+
+The next source-only correction extends that private planner's existing iterative
+Enter/Finish traversal. It authenticates the real `CallableType` frame against
+the actual Original/Public owner or Application target, requires zero own slots,
+no parent and region-independent Rust/nonvariadic fields, then rewrites actual
+children through the existing caller/argument rules. Genuine parameter slots
+remain in the declared scope; they are not treated as intrinsically formed
+Function inputs. A real `fn(T)->T` body must retain its conditional WF carrier.
+
+Canonical signature-result/input cons cells reuse the existing Node interner,
+so equal actual child sequences compare structurally without another list map
+or a recursive walk. A one-byte flags cache replaces the previous bool cache.
+It preserves the old non-Function formation rules and carries regional,
+function-item and opaque-parameter dependence bottom-up. Rewriting a genuine
+type parameter to an actual caller reference is rejected before publishing a
+Function node. Nested FunctionItem substitutions and ApplicationSignature remain
+outside the admitted family. Child-stack, cons-node, memo and flags growth and
+all attempted traversals are charged before allocation. No wire record changes.
+
+The same focused groups now include actual unsafe/arity/result/frame-owner/ABI
+opponents, removal of the real generic Function WF carrier, and a real named
+generic Call whose existing argument is replaced with its actual caller's
+declared reference. Complete planner node/flags/capacity/work/peak observations
+and the depth/width bounds run in those groups. Test-only observations expose
+cost numbers; they expose no internal nodes, headers or proof capabilities.
 
 Four new controls are frozen before execution:
 

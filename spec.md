@@ -3397,6 +3397,17 @@ an iterative greatest fixed point with reverse dependency edges: publish all
 positive and negative results only after propagation completes. Count actual
 nodes, dependencies and propagation work under an explicit query budget.
 
+Wide floating literals retain exact target bits through literal, typing and
+constant-image facts. F16/F128 conversion uses one bounded rational/sticky kernel
+adapted from the frozen CPPGM implementation; existing f32/f64 paths stay direct.
+Never round a wide literal through f64. Keep the quad payload in two 64-bit
+words so it cannot enlarge ordinary scalar, node, body or LowIR value alignment.
+Measure the actual canonical-table cost and preflight bounded limb storage.
+Active literals and resolved primitive uses consume genuine crate or token-origin
+feature authority. A known type grants no unsupported arithmetic, cast, pattern,
+wire or ABI operation. The [wide-literal checkpoint](docs/wide-literals-checkpoint.md)
+records exact-bit, enclosing-layout, work and text-contract qualification.
+
 Selected string and byte-string literals retain decoded bytes in one flat,
 interned byte arena, addressed by sparse syntax-node facts. Constant evaluation
 and body construction reuse those identities without decoding again.

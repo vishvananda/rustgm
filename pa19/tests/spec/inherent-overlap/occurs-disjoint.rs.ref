@@ -18,27 +18,29 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=13 index=0
-type 20 parameter def=13 index=1
-type 21 aggregate def=13 arguments=[type:19,type:20]
-type 22 parameter def=15 index=0
-type 23 aggregate def=13 arguments=[type:22,type:22]
-type 24 parameter def=17 index=0
-type 25 array element=24 length=1
-type 26 aggregate def=13 arguments=[type:24,type:25]
-type 27 function binders=0 parameters=[] result=1 unsafe=false
-type 28 function-item def=16 signature=27
-type 29 function-item def=18 signature=27
-type 30 function-item def=19 signature=27
-type 31 function binders=0 parameters=[19,20] result=21 unsafe=false
-type 32 function-item def=14 signature=31
-def 13 type=21 name="S" source=0:6
-def 14 type=32 name="S" source=0:6
-def 15 type=23 name="Self" source=0:15
-def 16 type=28 name="f" source=0:14
-def 17 type=26 name="Self" source=0:26
-def 18 type=29 name="f" source=0:25
-def 19 type=30 name="main" source=0:28
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=13 index=0
+type 22 parameter def=13 index=1
+type 23 aggregate def=13 arguments=[type:21,type:22]
+type 24 parameter def=15 index=0
+type 25 aggregate def=13 arguments=[type:24,type:24]
+type 26 parameter def=17 index=0
+type 27 array element=26 length=1
+type 28 aggregate def=13 arguments=[type:26,type:27]
+type 29 function binders=0 parameters=[] result=1 unsafe=false
+type 30 function-item def=16 signature=29
+type 31 function-item def=18 signature=29
+type 32 function-item def=19 signature=29
+type 33 function binders=0 parameters=[21,22] result=23 unsafe=false
+type 34 function-item def=14 signature=33
+def 13 type=23 name="S" source=0:6
+def 14 type=34 name="S" source=0:6
+def 15 type=25 name="Self" source=0:15
+def 16 type=30 name="f" source=0:14
+def 17 type=28 name="Self" source=0:26
+def 18 type=31 name="f" source=0:25
+def 19 type=32 name="main" source=0:28
 def 20 type=2 name="bool"
 def 21 type=3 name="char"
 def 22 type=4 name="str"
@@ -56,16 +58,18 @@ def 33 type=15 name="u128"
 def 34 type=16 name="usize"
 def 35 type=17 name="f32"
 def 36 type=18 name="f64"
-def 37 type=19 name="T" source=0:0
-def 38 type=20 name="U" source=0:1
-def 39 type=22 name="T" source=0:7
-def 40 type=24 name="U" source=0:16
-associated-owner 0 kind=inherent self-def=15 self=23 source=0:15 unsafe=false
-associated-owner 1 kind=inherent self-def=17 self=26 source=0:26 unsafe=false
+def 37 type=19 name="f16"
+def 38 type=20 name="f128"
+def 39 type=21 name="T" source=0:0
+def 40 type=22 name="U" source=0:1
+def 41 type=24 name="T" source=0:7
+def 42 type=26 name="U" source=0:16
+associated-owner 0 kind=inherent self-def=15 self=25 source=0:15 unsafe=false
+associated-owner 1 kind=inherent self-def=17 self=28 source=0:26 unsafe=false
 associated-member def=16 owner=0
 associated-member def=18 owner=1
-parameter owner=13 binding=37 argument=type:19 default=-
-parameter owner=13 binding=38 argument=type:20 default=-
-parameter owner=15 binding=39 argument=type:22 default=-
-parameter owner=17 binding=40 argument=type:24 default=-
+parameter owner=13 binding=39 argument=type:21 default=-
+parameter owner=13 binding=40 argument=type:22 default=-
+parameter owner=15 binding=41 argument=type:24 default=-
+parameter owner=17 binding=42 argument=type:26 default=-
 eof owners=2 members=2 parameters=4 predicates=0 impls=0 calls=0 paths=0 impl-uses=0

@@ -18,34 +18,36 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=13 index=1
-type 20 reference mutable=false region=bound:0:0 referent=11
-type 21 tuple [20,19]
-type 22 tuple [21,21]
-type 23 function binders=1 parameters=[21] result=22 unsafe=false
-type 24 function-item def=13 signature=23
-type 25 function binders=0 parameters=[] result=1 unsafe=false
-type 26 function-item def=14 signature=25
-type 27 reference mutable=false region=region:1 referent=11
-type 28 reference mutable=false region=region:5 referent=11
-type 29 tuple [28,11]
-type 30 reference mutable=false region=static referent=11
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=13 index=1
+type 22 reference mutable=false region=bound:0:0 referent=11
+type 23 tuple [22,21]
+type 24 tuple [23,23]
+type 25 function binders=1 parameters=[23] result=24 unsafe=false
+type 26 function-item def=13 signature=25
+type 27 function binders=0 parameters=[] result=1 unsafe=false
+type 28 function-item def=14 signature=27
+type 29 reference mutable=false region=region:1 referent=11
+type 30 reference mutable=false region=region:5 referent=11
 type 31 tuple [30,11]
-type 32 reference mutable=false region=region:3 referent=11
+type 32 reference mutable=false region=static referent=11
 type 33 tuple [32,11]
-type 34 reference mutable=false region=region:4 referent=11
+type 34 reference mutable=false region=region:3 referent=11
 type 35 tuple [34,11]
-type 36 tuple [33,35]
-type 37 tuple [20,11]
-type 38 tuple [37,37]
-type 39 function binders=1 parameters=[37] result=38 unsafe=false
-type 40 function-item def=13 signature=39 arguments=[type:11]
-type 41 tuple [27,11]
-type 42 tuple [41,41]
-type 43 function binders=0 parameters=[41] result=42 unsafe=false
-type 44 reference mutable=false region=region:2 referent=11
-def 13 type=24 name="f" source=0:33
-def 14 type=26 name="main" source=0:57
+type 36 reference mutable=false region=region:4 referent=11
+type 37 tuple [36,11]
+type 38 tuple [35,37]
+type 39 tuple [22,11]
+type 40 tuple [39,39]
+type 41 function binders=1 parameters=[39] result=40 unsafe=false
+type 42 function-item def=13 signature=41 arguments=[type:11]
+type 43 tuple [29,11]
+type 44 tuple [43,43]
+type 45 function binders=0 parameters=[43] result=44 unsafe=false
+type 46 reference mutable=false region=region:2 referent=11
+def 13 type=26 name="f" source=0:33
+def 14 type=28 name="main" source=0:57
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"
@@ -63,20 +65,22 @@ def 28 type=15 name="u128"
 def 29 type=16 name="usize"
 def 30 type=17 name="f32"
 def 31 type=18 name="f64"
-def 33 type=19 name="T" source=0:1
-def 42 type=21 name="x" source=0:2
-def 43 type=11 name="v" source=0:34
-def 44 type=36 name="p" source=0:37
-parameter owner=13 binding=33 argument=type:19 default=-
+def 32 type=19 name="f16"
+def 33 type=20 name="f128"
+def 35 type=21 name="T" source=0:1
+def 44 type=23 name="x" source=0:2
+def 45 type=11 name="v" source=0:34
+def 46 type=38 name="p" source=0:37
+parameter owner=13 binding=35 argument=type:21 default=-
 predicate owner=13 source=0:27 forall=0
 region-var region:1 body=0:56 source=0:43 origin=call-argument pending
 region-var region:2 body=0:56 source=0:40 origin=expression-borrow pending
 region-var region:3 body=0:56 source=0:43 origin=inference pending
 region-var region:4 body=0:56 source=0:43 origin=inference pending
 region-var region:5 body=0:56 source=0:38 origin=quantified-proof pending
-region-coercion body=0:56 source=0:40 actual=44 expected=27 kind=same-shape pending
-region-coercion body=0:56 source=0:43 actual=42 expected=36 kind=same-shape pending
-quantifier 0 regions=1 subject=21 bound=copy
+region-coercion body=0:56 source=0:40 actual=46 expected=29 kind=same-shape pending
+region-coercion body=0:56 source=0:43 actual=44 expected=38 kind=same-shape pending
+quantifier 0 regions=1 subject=23 bound=copy
 proof 0 body=0:56 source=0:38 pending
 proof-scope proof=0 scope=1 parent=0 regions=1 depth=1
 proof-owned proof=0 start=5 end=6

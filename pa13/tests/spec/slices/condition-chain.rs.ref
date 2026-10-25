@@ -18,22 +18,24 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 slice element=11
-type 20 reference mutable=false region=bound:0:0 referent=19
-type 21 function binders=1 parameters=[20,2] result=1 unsafe=false
-type 22 function-item def=13 signature=21
-type 23 reference mutable=false region=region:1 referent=11
-type 24 reference mutable=false region=region:2 referent=11
-type 25 reference mutable=false region=region:3 referent=11
-type 26 reference mutable=false region=region:4 referent=11
+type 19 primitive f16
+type 20 primitive f128
+type 21 slice element=11
+type 22 reference mutable=false region=bound:0:0 referent=21
+type 23 function binders=1 parameters=[22,2] result=1 unsafe=false
+type 24 function-item def=13 signature=23
+type 25 reference mutable=false region=region:1 referent=11
+type 26 reference mutable=false region=region:2 referent=11
+type 27 reference mutable=false region=region:3 referent=11
+type 28 reference mutable=false region=region:4 referent=11
 root 0:10 pattern=0
 root 0:17 pattern=3
-pattern 0 source=0:10 input=20 deref mutable=false implicit=true pattern=1
-pattern 1 source=0:10 input=19 slice minimum=1 exact=false fields=0:1
-pattern 2 source=0:8 input=11 bind def=33 local=23 mutable=false capture=ref region=region:1 loan=pending subpattern=-
-pattern 3 source=0:17 input=20 deref mutable=false implicit=true pattern=4
-pattern 4 source=0:17 input=19 slice minimum=1 exact=false fields=1:2
-pattern 5 source=0:15 input=11 bind def=34 local=24 mutable=false capture=ref region=region:2 loan=pending subpattern=-
+pattern 0 source=0:10 input=22 deref mutable=false implicit=true pattern=1
+pattern 1 source=0:10 input=21 slice minimum=1 exact=false fields=0:1
+pattern 2 source=0:8 input=11 bind def=35 local=25 mutable=false capture=ref region=region:1 loan=pending subpattern=-
+pattern 3 source=0:17 input=22 deref mutable=false implicit=true pattern=4
+pattern 4 source=0:17 input=21 slice minimum=1 exact=false fields=1:2
+pattern 5 source=0:15 input=11 bind def=36 local=26 mutable=false capture=ref region=region:2 loan=pending subpattern=-
 field 0 index=0 pattern=2
 field 1 index=0 pattern=5
 condition source=0:12 input=0:11 pattern=0 otherwise=-
@@ -42,6 +44,6 @@ region-var region:1 body=0:29 source=0:8 origin=pattern-borrow pending
 region-var region:2 body=0:29 source=0:15 origin=pattern-borrow pending
 region-var region:3 body=0:29 source=0:22 origin=inference pending
 region-var region:4 body=0:29 source=0:25 origin=inference pending
-region-coercion body=0:29 source=0:22 actual=23 expected=25 kind=same-shape pending
-region-coercion body=0:29 source=0:25 actual=24 expected=26 kind=same-shape pending
+region-coercion body=0:29 source=0:22 actual=25 expected=27 kind=same-shape pending
+region-coercion body=0:29 source=0:25 actual=26 expected=28 kind=same-shape pending
 eof roots=2 patterns=6 fields=2 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=4 region-equalities=0 conditions=2 chains=4

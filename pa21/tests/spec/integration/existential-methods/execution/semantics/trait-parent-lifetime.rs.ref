@@ -18,42 +18,44 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=16 index=0
-type 20 function binders=0 parameters=[2] result=1 unsafe=false
-type 21 function-item def=13 signature=20
-type 22 function binders=0 parameters=[11] result=11 unsafe=false
-type 23 function-item def=14 signature=22
-type 24 reference mutable=false region=bound:0:0 referent=11
-type 25 opaque id=0 arguments=[region:bound:0:0,type:19]
-type 26 function binders=1 parameters=[24] result=25 unsafe=false
-type 27 reference mutable=false region=bound:1:0 referent=11
-type 28 opaque id=0 arguments=[region:bound:1:0,type:19]
-type 29 function binders=0 parameters=[27] result=28 unsafe=false
-type 30 function-item def=17 signature=26
-type 31 function binders=1 parameters=[24] result=24 unsafe=false
-type 32 function binders=0 parameters=[27] result=27 unsafe=false
-type 33 function-item def=19 signature=31
-type 34 function binders=0 parameters=[] result=1 unsafe=false
-type 35 function-item def=20 signature=34
-type 36 opaque id=0 arguments=[region:bound:0:0,type:12]
-type 37 function binders=0 parameters=[24] result=36 unsafe=false
-type 38 function binders=0 parameters=[24] result=24 unsafe=false
-type 39 reference mutable=false region=region:1 referent=11
-type 40 opaque id=0 arguments=[region:region:1,type:19]
-type 41 function binders=0 parameters=[39] result=40 unsafe=false
-type 42 function-item def=17 signature=41 regions=[region:1]
-type 43 opaque id=0 arguments=[region:region:1,type:12]
-type 44 reference mutable=false region=region:2 referent=11
-type 45 function binders=0 parameters=[39] result=39 unsafe=false
-type 46 function-item def=17 signature=45 arguments=[region:region:1,type:12]
-type 47 reference mutable=false region=region:3 referent=11
-def 13 type=21 name="check" source=0:13
-def 14 type=23 name="fail" source=0:22
-def 16 type=19 name="Self" source=0:35
-def 17 type=30 name="make" source=0:34
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=16 index=0
+type 22 function binders=0 parameters=[2] result=1 unsafe=false
+type 23 function-item def=13 signature=22
+type 24 function binders=0 parameters=[11] result=11 unsafe=false
+type 25 function-item def=14 signature=24
+type 26 reference mutable=false region=bound:0:0 referent=11
+type 27 opaque id=0 arguments=[region:bound:0:0,type:21]
+type 28 function binders=1 parameters=[26] result=27 unsafe=false
+type 29 reference mutable=false region=bound:1:0 referent=11
+type 30 opaque id=0 arguments=[region:bound:1:0,type:21]
+type 31 function binders=0 parameters=[29] result=30 unsafe=false
+type 32 function-item def=17 signature=28
+type 33 function binders=1 parameters=[26] result=26 unsafe=false
+type 34 function binders=0 parameters=[29] result=29 unsafe=false
+type 35 function-item def=19 signature=33
+type 36 function binders=0 parameters=[] result=1 unsafe=false
+type 37 function-item def=20 signature=36
+type 38 opaque id=0 arguments=[region:bound:0:0,type:12]
+type 39 function binders=0 parameters=[26] result=38 unsafe=false
+type 40 function binders=0 parameters=[26] result=26 unsafe=false
+type 41 reference mutable=false region=region:1 referent=11
+type 42 opaque id=0 arguments=[region:region:1,type:21]
+type 43 function binders=0 parameters=[41] result=42 unsafe=false
+type 44 function-item def=17 signature=43 regions=[region:1]
+type 45 opaque id=0 arguments=[region:region:1,type:12]
+type 46 reference mutable=false region=region:2 referent=11
+type 47 function binders=0 parameters=[41] result=41 unsafe=false
+type 48 function-item def=17 signature=47 arguments=[region:region:1,type:12]
+type 49 reference mutable=false region=region:3 referent=11
+def 13 type=23 name="check" source=0:13
+def 14 type=25 name="fail" source=0:22
+def 16 type=21 name="Self" source=0:35
+def 17 type=32 name="make" source=0:34
 def 18 type=12 name="Self" source=0:53
-def 19 type=33 name="make" source=0:52
-def 20 type=35 name="main" source=0:71
+def 19 type=35 name="make" source=0:52
+def 20 type=37 name="main" source=0:71
 def 21 type=2 name="bool"
 def 22 type=3 name="char"
 def 23 type=4 name="str"
@@ -71,17 +73,19 @@ def 34 type=15 name="u128"
 def 35 type=16 name="usize"
 def 36 type=17 name="f32"
 def 37 type=18 name="f64"
-def 40 type=2 name="ok" source=0:0
-def 41 type=11 name="x" source=0:14
-def 50 type=24 name="x" source=0:42
-def 51 type=11 name="x" source=0:54
-associated-owner 0 kind=trait self-def=16 self=19 source=0:35 trait=15 unsafe=false name="Make"
+def 38 type=19 name="f16"
+def 39 type=20 name="f128"
+def 42 type=2 name="ok" source=0:0
+def 43 type=11 name="x" source=0:14
+def 52 type=26 name="x" source=0:42
+def 53 type=11 name="x" source=0:54
+associated-owner 0 kind=trait self-def=16 self=21 source=0:35 trait=15 unsafe=false name="Make"
 associated-owner 1 kind=trait-impl self-def=18 self=12 source=0:53 unsafe=false
 associated-member def=17 owner=0
 associated-member def=19 owner=1
-parameter owner=15 binding=38 argument=region:bound:0:0 default=-
-parameter owner=16 binding=16 argument=type:19 default=-
-predicate owner=15 source=0:35 subject=19 bound=trait:15 arguments=[region:bound:0:0]
+parameter owner=15 binding=40 argument=region:bound:0:0 default=-
+parameter owner=16 binding=16 argument=type:21 default=-
+predicate owner=15 source=0:35 subject=21 bound=trait:15 arguments=[region:bound:0:0]
 impl owner=18 source=0:53 subject=12 bound=trait:15 arguments=[region:bound:0:0]
 impl-method owner=18 declaration=17 selected=19 default=false
 trait-path source=0:61 method=17 trait=15 qualifier=explicit origin=ordinary subject-source=0:58
@@ -91,11 +95,11 @@ region-var region:2 body=0:70 source=0:61 origin=quantified-proof pending
 region-var region:3 body=0:70 source=0:63 origin=expression-borrow pending
 region-var region:4 body=0:70 source=0:61 origin=inference pending
 region-equal body=0:70 left=region:1 right=region:4
-region-coercion body=0:70 source=0:63 actual=47 expected=39 kind=same-shape pending
-opaque 0 owner=17 source=0:33 application=25 hidden=- role=trait-result storage-proof=pending
-opaque-bound id=0 index=0 subject=25 bound=copy
-opaque-bound id=0 index=1 subject=25 bound=outlives:bound:0:0
-opaque-implementation owner=18 id=0 type=24 parent-regions=1 regions=[bound:0:0]
+region-coercion body=0:70 source=0:63 actual=49 expected=41 kind=same-shape pending
+opaque 0 owner=17 source=0:33 application=27 hidden=- role=trait-result storage-proof=pending
+opaque-bound id=0 index=0 subject=27 bound=copy
+opaque-bound id=0 index=1 subject=27 bound=outlives:bound:0:0
+opaque-implementation owner=18 id=0 type=26 parent-regions=1 regions=[bound:0:0]
 proof 0 body=0:70 source=0:61 pending
 proof-scope proof=0 scope=1 parent=0 regions=0 depth=1
 proof-owned proof=0 start=2 end=3
