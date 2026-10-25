@@ -7,8 +7,8 @@ sys.path.insert(0,str(ROOT/'scripts'))
 from fastcheck_run import Steps,fingerprint
 from maintainer_batch import artifacts,inventory
 from storage import exclusive,check_space,minimum_reserve
-SOURCE='c42597186d058b94422648224fca83524410e67e'
-SOURCE_SHA='90c24eb7940d1aada9ff7e89acc5bed13042a1aa93ebd2f02824fbcbe66fdf55'
+SOURCE='a121f5f1b9a73cf547f39e4a6dec97b4dfde10e7'
+SOURCE_SHA='5261916d8fcbca75037954daf51728aaa98c5533dba76927c74d36316ad07785'
 COUNT=2606
 CASES=['support::crates::codec::packet_envelope::tests::ordinary_source_profiles_capture_plain_contract_bytes_before_adapter']
 
@@ -22,7 +22,13 @@ def worker(deadline,folder):
             if len(sources)!=COUNT or digest!=SOURCE_SHA: raise ValueError('frozen Environment source fingerprint changed')
             steps.receipt.update(sources=sources,groups={'lib':CASES},candidate=SOURCE)
             steps.environment['RUST_TEST_NOCAPTURE']='1';steps.save()
-            steps.run('assignment-metadata',[sys.executable,'scripts/assignment_metadata.py'])
+            old_bytes=(ROOT/'.github/baseline_static.json').read_bytes()
+            if hashlib.sha256(old_bytes).hexdigest()!='2a2d043d4c9656e3aca4aef9b074297ff0079c501974978998ba712642459c86': raise ValueError('prior metadata receipt changed')
+            prior=json.loads(old_bytes)
+            if prior['steps'][0]['name']!='assignment-metadata' or prior['steps'][0]['status']!=0: raise ValueError('prior metadata did not pass')
+            changed={path for path in sources if sources[path]!=prior['sources'].get(path)}
+            if changed!={'dev/tests/invariants/packet_consumers.rs'} or sources.keys()!=prior['sources'].keys(): raise ValueError('metadata reuse source delta widened')
+            steps.receipt['retained_steps']={'run':40228886283,'receipt_sha256':hashlib.sha256(old_bytes).hexdigest(),'steps':['assignment-metadata'],'prior_format_architecture':'passed for c425, rerun here because actual test changed'};steps.save()
             steps.run('format',['cargo','fmt','--manifest-path','dev/Cargo.toml','--all','--','--check'])
             steps.run('architecture',[ROOT/'obj/audit-venv/bin/python','scripts/rust_audit.py','--root','.',
                                       '--cache','obj/fast-audit.json'])
@@ -39,6 +45,13 @@ def worker(deadline,folder):
             output=steps.run('lib',[binary,'--exact',*selected],cwd=ROOT/'dev')
             if re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',output)!=[('1','0','0')]:
                 raise ValueError('actual exact one count differs')
+            capture=ROOT/'obj/parallel/all-attribute-selected-output-v1/empty-contract-baseline'
+            if hashlib.sha256((capture/'provider.rs').read_bytes()).hexdigest()!='5a121f0b6341e1f71d8a1188bbe3d460cb94a8037fa060799f53ce88537d2f80': raise ValueError('actual capture source changed')
+            files={str(path.relative_to(capture)):{'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'bytes':path.stat().st_size} for path in sorted(capture.iterdir()) if path.is_file()}
+            if not all(name in files for name in ['v0.rgcrate','v1.rgcrate','v0.rows.txt','v1.rows.txt','v0.binding.txt','v1.binding.txt','provider.rs']): raise ValueError('actual first-encoding capture incomplete')
+            binding={'candidate':SOURCE,'source_fingerprints':sources,'source_sha256':SOURCE_SHA,'api':'build_source_library_profile -> crates::encode(first actual output)','binary':steps.receipt['binaries']['lib'],'capture':files,'profiles':['LegacyFunctions v0','FunctionContracts v1'],'producer_config':'test_source::source_provider(source,plain_contract_pair); Config::default; actual SourceCore identity minicore/plain_contract_pair; Rust2024; source-provider.rs'}
+            (capture/'source-binding.json').write_text(json.dumps(binding,indent=2)+'\n')
+            steps.receipt['baseline_capture']=files;steps.save()
             if fingerprint(ROOT)!=sources: raise ValueError('source changed during execution')
             steps.receipt['state']='passed';print('Passed actual exact1 raw ordinary-profile capture controls and required static checks.',flush=True)
             return 0
