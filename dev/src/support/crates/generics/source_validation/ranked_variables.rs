@@ -20,8 +20,7 @@ pub(super) fn build<'rows>(
     // a second independently maintained structural validation algorithm.
     let count = unit.allocation_order.len();
     work.charge(count.saturating_add(1))?;
-    let growth =
-        size_of::<AllocationOrdinals<'_>>().saturating_add(count.saturating_mul(size_of::<u32>()));
+    let growth = AllocationOrdinals::allocation_bound(count);
     if existing_peak
         .saturating_add(extra_bytes)
         .saturating_add(growth)
@@ -39,6 +38,10 @@ pub(super) fn build<'rows>(
     Ok(AllocationOrdinals { unit, ordinals })
 }
 impl AllocationOrdinals<'_> {
+    pub(crate) const fn allocation_bound(count: usize) -> usize {
+        size_of::<Self>().saturating_add(count.saturating_mul(size_of::<u32>()))
+    }
+
     /// # Errors
     /// Rejects an unknown raw slot and charges unsuccessful queries too.
     pub fn ordinal(&self, slot: u32, work: &mut Work) -> Result<u32, &'static str> {

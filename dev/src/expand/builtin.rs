@@ -1,4 +1,5 @@
 //! Builtin expansion consumes classified inputs and constructs typed syntax directly.
+pub(crate) mod assertion;
 pub(crate) mod bytes_concat;
 pub(crate) mod choice;
 pub(crate) mod delegation;

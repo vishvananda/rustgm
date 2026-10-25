@@ -73,7 +73,12 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             continue;
         };
         if !descriptor.profile().ordinary_functions() {
-            continue;
+            match descriptor.profile() {
+                s::Profile::Source2024ModuleContracts => {
+                    descriptor.module_contracts().map_err(Error::unlocated)?;
+                }
+                _ => continue,
+            }
         }
         let rows = descriptor.rows();
         for declaration in rows
@@ -123,7 +128,10 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
         let contracts = headers.inventory.artifacts()[header.artifact]
             .source_descriptor()
             .is_some_and(|descriptor| {
-                descriptor.profile() == s::Profile::Source2024FunctionContracts
+                matches!(
+                    descriptor.profile(),
+                    s::Profile::Source2024FunctionContracts | s::Profile::Source2024ModuleContracts
+                )
             });
         if contracts {
             // ExternalDef clones only shared Arc handles. Its already retained

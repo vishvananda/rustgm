@@ -1,4 +1,5 @@
 //! A demanded expansion owns a spelling image and classified tokens, never relexed text.
+mod source_interval;
 use super::macros::{
     capture::CaptureId,
     input::Input,

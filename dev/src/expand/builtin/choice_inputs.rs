@@ -1,7 +1,6 @@
 //! Borrow actual opaque payloads and charge before their typed transfer or clone.
 use crate::{
     lex::token::{LexError, Token},
-    literal::storage::StoredValue,
     support::edition::Edition,
     syntax::{
         ast::Syntax,
@@ -59,7 +58,7 @@ fn syntax(parsed: &ParsedSyntax, charge: &Charge<'_>) -> Result<(), LexError> {
         .saturating_add(ast.literals.len());
     charge(work, bytes.saturating_mul(4))
 }
-fn syntax_payload(ast: &Syntax<StoredValue>) -> usize {
+pub(crate) fn syntax_payload<L>(ast: &Syntax<L>) -> usize {
     use std::mem::size_of_val;
     let fixed = [
         size_of_val(ast.nodes.as_slice()),
@@ -72,6 +71,9 @@ fn syntax_payload(ast: &Syntax<StoredValue>) -> usize {
         size_of_val(ast.attributes.as_slice()),
         size_of_val(ast.literals.as_slice()),
         size_of_val(ast.captures.as_slice()),
+        ast.defaultness.as_ref().map_or(0, |entries| {
+            size_of_val(entries.as_ref()) + size_of_val(entries.entries())
+        }),
     ]
     .into_iter()
     .fold(0_usize, usize::saturating_add);
