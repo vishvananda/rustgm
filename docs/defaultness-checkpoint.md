@@ -4,8 +4,9 @@ The bounded compiler source checkpoint is qualified on source `16c0476b`.
 Run40236064195 passes the two corrected groups; run40235524814 retains four
 actual passes on byte-identical production code and shared helpers. Formatting,
 metadata, global architecture, production/private Clippy and the focused build
-pass. The later harness step stops at the six pending PA5/PA19 references; no
-reference is written by these gates. Specialization graph/dispatch remains open.
+pass. Those development gates wrote no references; their later harness stop at
+six pending PA5/PA19 references is resolved by the reviewed publication below.
+Specialization graph/dispatch remains open.
 The unchanged original-core observer40224012971 verifies722 files and opens58.
 Physical57 is `core/src/mem/maybe_uninit.rs`, SHA
 `4189eaa95d41706cd506ef9dfdb81478640a53ccacc4d88f96329ad3a27e90fb`.
@@ -66,8 +67,8 @@ These are metadata observations, not runtime selection qualification.
 PA5 owns the three parsed forms; PA19 owns accepted nonoverlap methods and invalid
 unused bodies. PA20 owns the required coherence/associated-value followups; PA31
 owns actual source-feature/frame consumers and complete-provider proof. Six new
-active PA5/PA19 references are pending integrator generation only after code pass.
-No existing reference or historical receipt is changed here. Other permanent
+active PA5/PA19 references are independently reviewed and generated as described
+below. No existing reference or historical receipt changes. Other permanent
 opponents stay in the planned PA31 lane and do not activate that assignment.
 
 The actual cost control in40235524814 measures a56-byte sparse owner and24-byte
@@ -94,6 +95,26 @@ the retained four-pass/static receipt SHA is
 `812fea39b9ef438e2ca6e527a4e124ffa3aa8cab3483cfb4134fdf97831a4aac`.
 Earlier static and test-assumption failures remain retained. No new original-core
 observer or candidate native execution is claimed for this checkpoint.
+
+Read-only text run40237819305 checks all8,493 existing cases byte for byte in
+25.10 seconds and captures six new outputs without writing references. Integrator
+review checks their real item identities, exact keyword spans, nonoverlapping
+semantic owners and the unused invalid body's error at byte161. PA5's parsed
+default impl/value forms confer no semantic execution permission. The PA19
+`impl-method` provided-body flag remains distinct from a written modifier.
+
+Explicit scoped publication40238779679 then uses the official course writer for
+only those six cases, requiring the predeclared reviewed output hashes and the
+same qualified CLI/source fingerprints. Generation takes1.05 seconds; all4,257
+existing reference/provenance files in the two affected stages stay unchanged.
+It adds18 sidecars and two scoped receipts, preserving both full-stage receipts.
+The harness, upstream contracts and audit-cache tests pass. The artifact is
+12615559615, ZIP SHA
+`8ba83d600990dd0f9362485a92e495f3de5b0daaf1c424f1570201d8b92548e4`;
+publication binding SHA
+`180eb3ce8aa934d6d808011f454dcdf10178a79a7d11bc78350904ba9969b1e0`.
+The resulting active text inventory is8,499; the retained old8,493 passes and
+fresh six generated/checked cases are separate evidence, not a repeated full run.
 
 The next graph/dispatch checkpoint is mandatory and high priority. Reuse existing
 coarse-head candidate pairs, canonical substitutions and charged comparisons.

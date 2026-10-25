@@ -62,9 +62,11 @@ Current lanes:
   Restricted policy transport remains open; keep the real trait/catalog
   identity distinct from an external function linker identity.
 - C: SourceCore CLI contract publication and fresh native consumers are qualified.
-  LIB-027 unnamed constants now pass six focused controls and reviewed text
-  qualification. Investigate LIB-028's actual specialization defaultness,
-  feature authority and dispatch requirements; retain LIB-029 assertion expansion.
+  LIB-027 unnamed constants and the [LIB-028 modifier checkpoint](defaultness-checkpoint.md)
+  pass focused controls and reviewed text qualification. Implement the actual
+  specialization graph, effective finality, inherited dispatch and Min checks.
+  B takes LIB-029 assertion expansion after module-contract v2 qualification;
+  coordinate its source/panic authority with C.
 - Integrator: focused integration/main pushes, periodic CI follow-up and fresh
   original-source observations. Local primitive ownership is qualified. Keep
   CPPGM and upstream sources unchanged.
