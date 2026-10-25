@@ -7,56 +7,8 @@ use crate::resolve::{
 };
 use crate::support::hash::HashMap;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub(super) enum Level {
-    Allow,
-    Warn,
-    Deny,
-    Forbid,
-}
-impl Level {
-    pub(super) fn denies(self) -> bool {
-        matches!(self, Self::Deny | Self::Forbid)
-    }
-}
-#[derive(Clone, Copy)]
-struct Policy {
-    operation: Level,
-    reference: Level,
-    atomic_ordering: Level,
-    unreachable_patterns: Level,
-    must_use: Level,
-    unused_attributes: Level,
-    duplicate_macro_attributes: Level,
-}
-impl Default for Policy {
-    fn default() -> Self {
-        Self {
-            operation: Level::Warn,
-            reference: Level::Deny,
-            atomic_ordering: Level::Deny,
-            unreachable_patterns: Level::Warn,
-            must_use: Level::Warn,
-            unused_attributes: Level::Warn,
-            duplicate_macro_attributes: Level::Warn,
-        }
-    }
-}
-#[derive(Clone, Copy)]
-enum Lint {
-    Operation,
-    Reference,
-    AtomicOrdering,
-    UnreachablePatterns,
-    MustUse,
-    UnusedAttributes,
-    DuplicateMacroAttributes,
-}
-struct Change {
-    lint: Lint,
-    level: Level,
-    offset: u32,
-}
+pub(super) use crate::resolve::lint_policy::Level;
+use crate::resolve::lint_policy::{Change, Lint, Policy};
 /// Actual retained-policy work; absent policies allocate no node table.
 #[derive(Clone, Copy, Default)]
 pub struct Work {
@@ -198,43 +150,10 @@ impl Policies {
     pub(super) fn duplicate_macro_attributes(&self, key: NodeKey) -> Level {
         self.at(key).duplicate_macro_attributes
     }
+    pub(super) fn diagnostic_attributes(&self, key: NodeKey, index: usize) -> Level {
+        self.at(key).diagnostic_attributes[index]
+    }
     pub(super) fn work(&self) -> Work {
         self.work
-    }
-}
-impl Policy {
-    fn apply(&mut self, key: NodeKey, change: &Change) -> Result<(), Error> {
-        let level = match change.lint {
-            Lint::Operation => &mut self.operation,
-            Lint::Reference => &mut self.reference,
-            Lint::AtomicOrdering => &mut self.atomic_ordering,
-            Lint::UnreachablePatterns => &mut self.unreachable_patterns,
-            Lint::MustUse => &mut self.must_use,
-            Lint::UnusedAttributes => &mut self.unused_attributes,
-            Lint::DuplicateMacroAttributes => &mut self.duplicate_macro_attributes,
-        };
-        if *level == Level::Forbid {
-            if matches!(change.level, Level::Allow | Level::Warn) {
-                return Err(Error::at(
-                    key.file,
-                    change.offset,
-                    match change.lint {
-                        Lint::AtomicOrdering => "forbidden atomic ordering lint cannot be weakened",
-                        Lint::UnreachablePatterns => {
-                            "forbidden unreachable pattern lint cannot be weakened"
-                        }
-                        Lint::MustUse => "forbidden unused_must_use lint cannot be weakened",
-                        Lint::UnusedAttributes => {
-                            "forbidden unused_attributes lint cannot be weakened"
-                        }
-                        Lint::DuplicateMacroAttributes => "forbidden duplicate_macro_attributes lint cannot be weakened",
-                        _ => "forbidden unsafe lint cannot be weakened",
-                    },
-                ));
-            }
-            return Ok(());
-        }
-        *level = change.level;
-        Ok(())
     }
 }

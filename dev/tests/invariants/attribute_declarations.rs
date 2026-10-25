@@ -140,7 +140,11 @@ fn declaration_kind_and_macro_kind_remain_separate_for_actual_bang_calls() -> Te
             .err()
             .ok_or("wrong macro kind executed")?;
         assert!(
-            error.contains(if name == "scoped-bang-as-attribute" { "unresolved attribute macro" } else { "unresolved macro" }),
+            error.contains(if name == "scoped-bang-as-attribute" {
+                "unresolved attribute macro"
+            } else {
+                "unresolved macro"
+            }),
             "{name}: {error}"
         );
     }

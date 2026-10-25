@@ -107,6 +107,11 @@ impl Declarations {
                     .ok_or_else(|| error("must_use opaque declaration is missing"))?;
                 self.must_use_traits(report, &declaration.bounds)?
             }
+            Kind::Projection(application) => {
+                let declaration = self.associated.type_contract(DefId(application.item.0))
+                    .ok_or_else(|| error("must_use projected result contract is missing"))?;
+                self.must_use_traits(report, &declaration.bounds)?
+            }
             Kind::Dynamic { shape, .. } => {
                 let item = self
                     .types
@@ -161,7 +166,7 @@ impl Declarations {
         report: &Report,
         bounds: &[Clause],
     ) -> Result<Option<Requirement>, Error> {
-        for &clause in bounds {
+        for &clause in bounds.iter().rev() {
             let predicate = match clause {
                 Clause::Predicate(predicate) => predicate,
                 Clause::ForAll(id) => {

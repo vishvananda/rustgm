@@ -20,9 +20,9 @@ pub(super) fn collect(
                 .map_err(|_| Error::at(FileId(0), 0, "too many safety policy files"))?,
         );
         for owner in &unit.configured.owners {
-            if !owner.enabled && !report.removed_function_owner(NodeKey {file, node: owner.node}) {
-                continue;
-            }
+            // Expansion diagnoses duplicate Test before the removed function's
+            // own lint attributes take effect. Its retained policy is inherited.
+            if !owner.enabled { continue }
             for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
                 let name = attribute.name(forest, unit.source.text());
                 if name.and_then(crate::support::decorations::Consumer::named)
@@ -55,14 +55,12 @@ pub(super) fn collect(
                         index = forest.after(index);
                         work.entries += 1;
                     }
-                    if index == start + 1
-                        && let Some(lint) = lint(forest, unit.source.text(), start)
-                    {
-                        changes.entry(key).or_default().push(Change {
-                            lint,
-                            level,
-                            offset: attribute.span.start,
-                        });
+                    if index == start + 1 {
+                        let selected = lints(forest, unit.source.text(), start);
+                        work.entries += selected.len().saturating_sub(1);
+                        for &lint in selected {
+                            changes.entry(key).or_default().push(Change { lint, level, offset: attribute.span.start });
+                        }
                     }
                     if index < range.end {
                         index += 1;
@@ -73,15 +71,19 @@ pub(super) fn collect(
     }
     Ok(changes)
 }
-fn lint(forest: &Forest, source: &str, index: u32) -> Option<Lint> {
-    match forest.name(source, index)? {
-        "unsafe_op_in_unsafe_fn" => Some(Lint::Operation),
-        "static_mut_refs" => Some(Lint::Reference),
-        "invalid_atomic_ordering" => Some(Lint::AtomicOrdering),
-        "unreachable_patterns" => Some(Lint::UnreachablePatterns),
-        "unused_must_use" => Some(Lint::MustUse),
-        "unused_attributes" => Some(Lint::UnusedAttributes),
-        "duplicate_macro_attributes" => Some(Lint::DuplicateMacroAttributes),
-        _ => None,
+fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
+    match forest.name(source, index) {
+        Some("unsafe_op_in_unsafe_fn") => &[Lint::Operation],
+        Some("static_mut_refs") => &[Lint::Reference],
+        Some("invalid_atomic_ordering") => &[Lint::AtomicOrdering],
+        Some("unreachable_patterns") => &[Lint::UnreachablePatterns],
+        Some("unused_must_use") => &[Lint::MustUse],
+        Some("unused_attributes") => &[Lint::UnusedAttributes],
+        Some("duplicate_macro_attributes") => &[Lint::DuplicateMacroAttributes],
+        Some("malformed_diagnostic_attributes") => &[Lint::DiagnosticAttributes(0)],
+        Some("malformed_diagnostic_format_literals") => &[Lint::DiagnosticAttributes(1)],
+        Some("misplaced_diagnostic_attributes") => &[Lint::DiagnosticAttributes(2)],
+        Some("unknown_or_malformed_diagnostic_attributes") => &[Lint::DiagnosticAttributes(0), Lint::DiagnosticAttributes(1), Lint::DiagnosticAttributes(2)],
+        _ => &[],
     }
 }

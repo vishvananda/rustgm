@@ -214,7 +214,7 @@ fn ownership_view(
     count: bool,
     out: &mut impl Write,
 ) -> Result<(), String> {
-    let contracts = region_proofs(report, facts, program)?;
+    let contracts = region_proofs(report, facts, program).map_err(|message| failure_message(facts, message))?;
     let check = if matches!(mode, Mode::Loans) {
         rustgm::borrow::inspect
     } else {
@@ -231,12 +231,11 @@ fn ownership_view(
         &contracts,
         program,
     )
-    .map_err(|e| borrow_error(report, e))?;
+    .map_err(|error| failure_message(facts, borrow_error(report, error)))?;
     rustgm::lower::alignment::check(facts, program).map_err(|e| {
-        report
-            .diagnostic(report.body_optional_error(e.node, e.message))
-            .to_string()
+        failure_message(facts, report.diagnostic(report.body_optional_error(e.node, e.message)).to_string())
     })?;
+    emit_warnings(facts)?;
     if matches!(mode, Mode::Loans) {
         return if count {
             rustgm::borrow::loans::view::count(&checked, out)
@@ -266,15 +265,13 @@ fn semantic(
     let rustgm::pipeline::Analysis {
         mut facts,
         prepared,
-    } = rustgm::pipeline::analyze_source(&report).map_err(|e| e.to_string())?;
-    if !matches!(mode, Mode::Lowir | Mode::Constants) {
-        emit_warnings(&facts)?;
-    }
+    } = rustgm::pipeline::analyze_source(&report).map_err(semantic_error)?;
     if matches!(mode, Mode::Semantics | Mode::Relationships) {
         rustgm::sema::semantic_view::check_ordinary_profile(&report, &facts)
-            .map_err(|e| e.to_string())?;
+            .map_err(|error| semantic_error(facts.retain_error_warnings(error)))?;
     }
     if matches!(mode, Mode::Semantics) {
+        emit_warnings(&facts)?;
         return if count {
             rustgm::sema::semantic_view::count(&facts, out)
         } else {
@@ -283,6 +280,7 @@ fn semantic(
         .map_err(|e| e.to_string());
     }
     if matches!(mode, Mode::Relationships) {
+        emit_warnings(&facts)?;
         return if count {
             rustgm::sema::semantic_view::relationships::count(&report, &facts, out)
         } else {
@@ -291,6 +289,7 @@ fn semantic(
         .map_err(|e| e.to_string());
     }
     if matches!(mode, Mode::Generics) {
+        emit_warnings(&facts)?;
         return if count {
             rustgm::sema::semantic_view::generics::count(&report, &facts, out)
         } else {
@@ -299,6 +298,7 @@ fn semantic(
         .map_err(|e| e.to_string());
     }
     if matches!(mode, Mode::Patterns) {
+        emit_warnings(&facts)?;
         return if count {
             rustgm::sema::pattern_view::count(&facts, out)
         } else {
@@ -307,7 +307,8 @@ fn semantic(
         .map_err(|e| e.to_string());
     }
     if matches!(mode, Mode::Layouts) {
-        rustgm::sema::layout_view::analyze(&mut facts).map_err(|e| e.to_string())?;
+        rustgm::sema::layout_view::analyze(&mut facts).map_err(|error| failure_message(&facts, error.to_string()))?;
+        emit_warnings(&facts)?;
         return if count {
             rustgm::sema::layout_view::count(&facts, out)
         } else {
@@ -325,16 +326,30 @@ fn semantic(
         mode,
         Mode::Bodies | Mode::Ownership | Mode::Regions | Mode::Loans
     ) {
-        let mut program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
+        return emit_body_view(&report, &mut facts, mode, count, out);
+    }
+    emit_warnings(&facts)?;
+    if count {
+        rustgm::sema::type_view::count(&facts, out)
+    } else {
+        rustgm::sema::type_view::write(&report, &facts, out)
+    }
+    .map_err(|e| e.to_string())
+}
+
+fn emit_body_view(report: &resolve::expansion::Report, facts: &mut rustgm::sema::model::Declarations,
+    mode: Mode, count: bool, out: &mut impl Write) -> Result<(), String> {
+        let mut program = rustgm::body::build(report, facts).map_err(|error| semantic_error(facts.retain_error_warnings(error)))?;
         if matches!(mode, Mode::Ownership | Mode::Regions | Mode::Loans) {
-            rustgm::body::promote::analyze(&report, &mut facts, &mut program)
-                .map_err(|e| e.to_string())?;
+            rustgm::body::promote::analyze(report, facts, &mut program)
+                .map_err(|error| semantic_error(facts.retain_error_warnings(error)))?;
         }
         // Selected patterns have become explicit places and binding actions.
         // Ownership and lowering consume those actions, so release this arena.
         drop(std::mem::take(&mut facts.patterns));
         if matches!(mode, Mode::Regions) {
-            let contracts = region_proofs(&report, &mut facts, &program)?;
+            let contracts = region_proofs(report, facts, &program).map_err(|message| failure_message(facts, message))?;
+            emit_warnings(facts)?;
             return if count {
                 rustgm::borrow::regions::view::count(&contracts, out)
             } else {
@@ -347,9 +362,10 @@ fn semantic(
             .map_err(|e| e.to_string());
         }
         if matches!(mode, Mode::Ownership | Mode::Loans) {
-            return ownership_view(&report, &mut facts, &program, mode, count, out);
+            return ownership_view(report, facts, &program, mode, count, out);
         }
-        return if count {
+        emit_warnings(facts)?;
+        if count {
             rustgm::body::body_view::count(&program, out)
         } else {
             rustgm::body::body_view::write_with_origins(
@@ -359,19 +375,29 @@ fn semantic(
                 out,
             )
         }
-        .map_err(|e| e.to_string());
-    }
-    if count {
-        rustgm::sema::type_view::count(&facts, out)
-    } else {
-        rustgm::sema::type_view::write(&report, &facts, out)
-    }
-    .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())
+
 }
 
+fn semantic_error(error: resolve::package::Error) -> String {
+    let message = error.to_string();
+    match write_warnings(error.warnings()) {
+        Ok(()) => message,
+        Err(failure) => format!("{message}; warning rendering failed: {failure}"),
+    }
+}
+fn failure_message(facts: &rustgm::sema::model::Declarations, message: String) -> String {
+    match emit_warnings(facts) {
+        Ok(()) => message,
+        Err(failure) => format!("{message}; warning rendering failed: {failure}"),
+    }
+}
 fn emit_warnings(facts: &rustgm::sema::model::Declarations) -> Result<(), String> {
+    write_warnings(facts.warnings())
+}
+fn write_warnings<'a>(warnings: impl IntoIterator<Item = &'a resolve::package::Warning>) -> Result<(), String> {
     let mut stderr = io::stderr().lock();
-    for warning in facts.warnings() {
+    for warning in warnings {
         writeln!(
             stderr,
             "warning[{}]: {}",
@@ -396,8 +422,8 @@ fn emit_constants(
         prepared,
         rustgm::lower::constant_view::inspect,
     )
-    .map_err(|e| e.to_string())?
-    .map_err(str::to_owned)?;
+    .map_err(|error| semantic_error(facts.retain_error_warnings(error)))?
+    .map_err(|message| failure_message(facts, message.to_owned()))?;
     emit_warnings(facts)?;
     if count {
         inventory.count(out)
@@ -419,34 +445,35 @@ fn emit_lowir(
         let (lowir, interface) = rustgm::lower::instances::build_library_prepared(
             &report,
             &mut facts,
-            crates.identity()?.ok_or("missing library identity")?,
+            crates.identity().map_err(|message| failure_message(&facts, message))?
+                .ok_or_else(|| failure_message(&facts, "missing library identity".into()))?,
             prepared,
         )
-        .map_err(|error| error.to_string())?;
+        .map_err(|error| semantic_error(facts.retain_error_warnings(error)))?;
         (lowir, Some(interface))
     } else {
-        if let Some(identity) = crates.identity()? {
+        if let Some(identity) = crates.identity().map_err(|message| failure_message(&facts, message))? {
             facts
                 .crates
                 .get_or_insert_default()
                 .set_identity(identity)
-                .map_err(str::to_owned)?;
+                .map_err(|message| failure_message(&facts, message.to_owned()))?;
         }
         let entry = rustgm::sema::entry::select(&mut report, &facts)
-            .map_err(|e| report.diagnostic(e).to_string())?;
+            .map_err(|error| semantic_error(facts.retain_error_warnings(report.diagnostic(error))))?;
         let lowir = rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)
-            .map_err(|e| e.to_string())?;
+            .map_err(|error| semantic_error(facts.retain_error_warnings(error)))?;
         (lowir, None)
     };
     if let Some(path) = &crates.metadata {
         let interface = interface
             .as_ref()
-            .ok_or("metadata requires library exports")?;
+            .ok_or_else(|| failure_message(&facts, "metadata requires library exports".into()))?;
         fs::write(
             path,
-            rustgm::support::crates::encode(interface).map_err(str::to_owned)?,
+            rustgm::support::crates::encode(interface).map_err(|message| failure_message(&facts, message.to_owned()))?,
         )
-        .map_err(|error| error.to_string())?;
+        .map_err(|error| failure_message(&facts, error.to_string()))?;
     }
     emit_warnings(&facts)?;
     drop(facts);

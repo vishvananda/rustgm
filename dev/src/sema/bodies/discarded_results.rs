@@ -30,7 +30,9 @@ impl Checker<'_> {
             .node(self.key(value))
             .and_then(|fact| fact.ty)
             .ok_or_else(|| self.error(value, "must_use discard requires its solved source type"))?;
-        let mut issue = self.discarded_type(statement, value, ty)?;
+        let trivial = self.facts.must_use_trivial(self.report, self.state.module, ty, &mut self.state.coverage_cache)
+            .map_err(|message| self.error(value, message))?;
+        let mut issue = if trivial { 0 } else { self.discarded_type(statement, value, ty)? };
         if let Some(definition) = self.discarded_callable(value)? {
             self.discarded_requirement(
                 statement,
@@ -40,7 +42,7 @@ impl Checker<'_> {
             )?;
             issue += 1;
         }
-        if issue == 0 {
+        if issue == 0 && !trivial {
             let message = match self.kind(value) {
                 Kind::Binary { .. } => Some("unused operation that must be used"),
                 Kind::Unary {

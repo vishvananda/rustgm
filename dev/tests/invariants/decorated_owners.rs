@@ -226,6 +226,28 @@ fn actual_ordinary_engine_keeps_no_attribute_calls_and_reports_real_cold_storage
             assert_eq!(engine.calls.capacity(), 0);
             assert_eq!(counts(engine), (0, 0, 1));
             assert!(engine.loader.package.source_core().is_none());
+            assert!(engine.removed_functions.is_none());
+            assert!(
+                !engine
+                    .paths
+                    .state
+                    .facts
+                    .macro_prelude
+                    .values()
+                    .any(|definition| {
+                        let actual = &engine.paths.state.facts.definitions[definition.0 as usize];
+                        engine.loader.package.names.get(actual.name) == Builtin::Test.name()
+                    })
+            );
+            eprintln!(
+                "attribute cold layouts report={} macro_target={} lookup_mode={} removal_owner={} removal={}",
+                size_of::<super::super::Report>(),
+                size_of::<super::super::MacroTarget>(),
+                size_of::<crate::resolve::lookup::LookupMode<'_>>(),
+                size_of::<super::super::removed_functions::Removals>(),
+                size_of::<super::super::removed_functions::Removal>()
+            );
+
             assert_eq!(engine.builtin_definitions.len(), Builtin::ALL.len());
             let slots = engine.builtin_definitions.capacity();
             let payload = slots * size_of::<Option<usize>>();

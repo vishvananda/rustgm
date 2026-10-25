@@ -1,9 +1,9 @@
 //! Pinned `LowIR` objects and independent rustc executables link with the same real C provider.
+use crate::native_references::frontend_diagnostics;
 use std::{
     path::Path,
     process::{Command, Output},
 };
-use crate::native_references::frontend_diagnostics;
 
 fn successful(name: &str, output: Output) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     if !output.status.success() || !output.stderr.is_empty() {

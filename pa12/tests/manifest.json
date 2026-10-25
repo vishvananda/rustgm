@@ -1858,6 +1858,144 @@
       "native": {
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/discard-domains/unit-tuple-dereference.rs",
+      "source_sha256": "b2da358fdd5aeaa6e3df128c5a5baf5b6d45a2ae8f605af2a13640d97c128ae0",
+      "exit_status": 0,
+      "features": [
+        "pa12.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs"
+    },
+    {
+      "path": "tests/spec/discard-domains/unit-array-dereference.rs",
+      "source_sha256": "ea43514038bdc157be26a9c5c32213655f0c6ffaa3fd95c91a1a9c8f21fb7c0d",
+      "exit_status": 0,
+      "features": [
+        "pa12.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs"
+    },
+    {
+      "path": "tests/spec/discard-domains/marked-empty-enum.rs",
+      "source_sha256": "3fe08780c886870a28bfb510da50aaf4e2c5e3aee5a989ef1eeb0d401507806e",
+      "exit_status": 0,
+      "features": [
+        "pa12.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs"
+    },
+    {
+      "path": "tests/spec/discard-domains/marked-public-empty-field.rs",
+      "source_sha256": "07bf600c318b896f557762af951a630088f112e88bd046e30cc4f1620dba1d4c",
+      "exit_status": 0,
+      "features": [
+        "pa12.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs"
+    },
+    {
+      "path": "tests/spec/discard-domains/marked-private-empty-field-caller.rs",
+      "source_sha256": "5ccd9431531f73d9208c0d2f7c0e0166e08ff090a0a0f1042a367a33f0e42edf",
+      "exit_status": 0,
+      "features": [
+        "pa12.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "warnings": [
+        "unused_must_use"
+      ]
+    },
+    {
+      "path": "tests/spec/discard-domains/marked-private-empty-field-owner.rs",
+      "source_sha256": "b1c73991da29c7ebad6e3bde3d5a98fd6f36934df83bdf1a9795637895fbe553",
+      "exit_status": 0,
+      "features": [
+        "pa12.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs"
+    },
+    {
+      "path": "tests/spec/discard-domains/tuple-repeated-marked-type.rs",
+      "source_sha256": "dd0e078aa70f191898d07ce53e5e58ea6ec6f527f4f6688d1b0f942c00da389b",
+      "exit_status": 0,
+      "features": [
+        "pa12.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "warnings": [
+        "unused_must_use"
+      ]
+    },
+    {
+      "path": "tests/spec/discard-domains/function-and-result-both-marked.rs",
+      "source_sha256": "19c20993aaf7d57b632c58a4414331c0ddcc34e690d7b9e3953eaca19952e77f",
+      "exit_status": 0,
+      "features": [
+        "pa12.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "warnings": [
+        "unused_must_use"
+      ]
+    },
+    {
+      "path": "tests/spec/discard-domains/marked-array-one-warning.rs",
+      "source_sha256": "e2147a3353ff848725c05a1b8d6d9038f2ec7bf2fc748453b6199ce2a13be563",
+      "exit_status": 0,
+      "features": [
+        "pa12.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "warnings": [
+        "unused_must_use"
+      ]
     }
   ]
 }

@@ -16,8 +16,17 @@ pub(crate) enum Consumer {
     MustUse,
     Inlining,
     TraitParentheses,
+    CrateOptions,
+    TraitDiagnostics,
 }
 impl Consumer {
+    pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
+        match (tool, name) {
+            ("diagnostic", "on_unimplemented") => Some(Self::TraitDiagnostics),
+            _ => None,
+        }
+    }
+
     pub(crate) fn named(name: &str) -> Option<Self> {
         Some(match name {
             "cfg" | "cfg_attr" => Self::Configuration,
@@ -55,6 +64,8 @@ impl Consumer {
             "must_use" => Self::MustUse,
             "inline" => Self::Inlining,
             "rustc_paren_sugar" => Self::TraitParentheses,
+            "rustc_coherence_is_core" | "rustc_preserve_ub_checks" => Self::CrateOptions,
+            "rustc_on_unimplemented" => Self::TraitDiagnostics,
             _ => return None,
         })
     }

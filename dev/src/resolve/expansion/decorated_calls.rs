@@ -127,6 +127,13 @@ impl<S: Sources> Engine<'_, S> {
                 continue;
             }
             let path = attribute.path;
+            if path.end == path.start + 3
+                && forest.punctuation(path.start + 1, Punctuation::ColonColon)
+                && forest.name(unit.source.text(), path.start).zip(forest.name(unit.source.text(), path.start + 2))
+                    .and_then(|(tool, name)| Consumer::tool_member(tool, name)).is_some()
+            {
+                continue;
+            }
             if path.end.saturating_sub(path.start) >= 3
                 && forest.punctuation(path.start + 1, Punctuation::ColonColon)
                 && forest

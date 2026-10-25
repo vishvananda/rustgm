@@ -513,8 +513,11 @@ impl Paths {
                 .last()
                 .is_some_and(|name| resolver.package.names.get(*name) == Builtin::OptionEnv.name())
         });
-        let test = resolver.facts.imports[first..].iter().any(|import| {
-            import.path.last().is_some_and(|name| resolver.package.names.get(*name) == Builtin::Test.name())
+        let needs_test_prelude = resolver.facts.imports[first..].iter().any(|import| {
+            import
+                .path
+                .last()
+                .is_some_and(|name| resolver.package.names.get(*name) == Builtin::Test.name())
         });
         for index in first..resolver.facts.imports.len() {
             if textual.1.0 != 0 {
@@ -536,7 +539,7 @@ impl Paths {
         if library_builtin {
             self.library_builtin(package, context, node)?;
         }
-        if test {
+        if needs_test_prelude {
             self.test_prelude(package, context.file)?;
         }
         Ok(())
@@ -653,7 +656,12 @@ impl Paths {
             foreign: call.visit.foreign,
         };
         let node = call.visit.node;
-        if call.path.last().is_some_and(|name| package.names.get(*name) == Builtin::Test.name()) {
+        if matches!(call.grammar, super::CallGrammar::Attribute)
+            && call
+                .path
+                .last()
+                .is_some_and(|name| package.names.get(*name) == Builtin::Test.name())
+        {
             self.test_prelude(package, call.file)?;
         }
         if matches!(call.grammar, super::CallGrammar::Bang(_))
@@ -754,22 +762,35 @@ impl Paths {
         if package.uses_source_bindings() {
             return Ok(());
         }
-        let name = package.names.intern(Builtin::Test.name())
+        let name = package
+            .names
+            .intern(Builtin::Test.name())
             .map_err(|message| Error::at(file, 0, message))?;
         if self.state.facts.macro_prelude.contains_key(&name) {
             return Ok(());
         }
         let scope = self.state.facts.module_scopes[0];
-        let target = DefId(u32::try_from(self.state.facts.definitions.len())
-            .map_err(|_| Error::at(file, 0, "too many builtin macro definitions"))?);
+        let target = DefId(
+            u32::try_from(self.state.facts.definitions.len())
+                .map_err(|_| Error::at(file, 0, "too many builtin macro definitions"))?,
+        );
         self.state.facts.definitions.push(Definition {
-            name, namespace: Namespace::Macro, kind: DefKind::BuiltinMacro,
-            scope, node: None, access: Access::Public, members: None,
+            name,
+            namespace: Namespace::Macro,
+            kind: DefKind::BuiltinMacro,
+            scope,
+            node: None,
+            access: Access::Public,
+            members: None,
         });
         self.state.facts.macro_prelude.insert(name, target);
-        self.macro_targets.insert(target, MacroTarget::Builtin(Builtin::Test));
+        self.macro_targets
+            .insert(target, MacroTarget::Builtin(Builtin::Test));
         self.work.extend(&self.state.facts);
-        self.work.declared(&self.state.facts.bindings, (scope, name, Namespace::Macro, ItemContext::ROOT));
+        self.work.declared(
+            &self.state.facts.bindings,
+            (scope, name, Namespace::Macro, ItemContext::ROOT),
+        );
         Ok(())
     }
     pub fn take_error(&mut self) -> Option<Error> {

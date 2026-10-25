@@ -1,7 +1,7 @@
 //! Fn contracts enter the ordinary trait and associated-result machinery as typed metadata.
+mod direct_outputs;
 mod output_binding;
 mod syntax;
-mod direct_outputs;
 use super::{Checker, DefId, Error, ItemId, NodeKey, State, Type};
 use crate::{
     resolve::model::BuiltinCallable,

@@ -95,10 +95,8 @@ impl<S: Sources> Engine<'_, S> {
         definition: usize,
     ) -> Result<(), Error> {
         #[cfg(test)]
-        if matches!(
-            self.definitions[definition].body,
-            Body::Scoped { .. }
-        ) || matches!(self.definitions[definition].body, Body::Builtin(role) if !role.executable())
+        if matches!(self.definitions[definition].body, Body::Scoped { .. })
+            || matches!(self.definitions[definition].body, Body::Builtin(role) if !role.executable())
         {
             crate::resolve::index::unavailable_macros::observation::note(
                 crate::resolve::index::unavailable_macros::observation::Event::Selected(

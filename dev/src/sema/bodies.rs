@@ -113,17 +113,17 @@ pub fn analyze_with_hidden(
     let mut checker = Checker::new(report, &mut facts);
     checker
         .functions(&mut close)
-        .map_err(|error| report.diagnostic(error))?;
+        .map_err(|error| checker.facts.retain_error_warnings(report.diagnostic(error)))?;
     for index in 0..checker.facts.initializers.len() {
         if !checker.facts.initializers[index].type_checked() {
             checker
                 .initializer(index)
-                .map_err(|e| report.diagnostic(e))?;
+                .map_err(|error| checker.facts.retain_error_warnings(report.diagnostic(error)))?;
         }
     }
     checker
         .complete_constant_patterns()
-        .map_err(|e| report.diagnostic(e))?;
+        .map_err(|error| checker.facts.retain_error_warnings(report.diagnostic(error)))?;
     Ok(facts)
 }
 #[derive(Clone, Copy, PartialEq, Eq)]

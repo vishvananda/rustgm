@@ -16,6 +16,13 @@ from course import ROOT, case_environment, library_arguments, load_cases, run_ca
 from check_syntax import rustc_arguments
 
 
+REVIEWED_WARNING_CODES = (
+    "unused_must_use", "unused_attributes", "duplicate_macro_attributes",
+    "malformed_diagnostic_attributes", "malformed_diagnostic_format_literals",
+    "misplaced_diagnostic_attributes",
+)
+
+
 def classification(case):
     metadata = case["rustc"]
     library = metadata["kind"] == "library"
@@ -24,7 +31,7 @@ def classification(case):
     if "warnings" in case:
         warnings = case["warnings"]
         if (case["exit_status"] != 0 or not isinstance(warnings, list) or not warnings
-                or any(code not in ("unused_must_use", "unused_attributes", "duplicate_macro_attributes") for code in warnings)
+                or any(code not in REVIEWED_WARNING_CODES for code in warnings)
                 or len(set(warnings)) != len(warnings)):
             raise ValueError("successful warnings require explicit unique reviewed manifest codes")
     library_arguments(case, "--emit-lowir")
@@ -106,7 +113,7 @@ def accepted_frontend(actual, expected_stderr=b"", declared_codes=()):
         lines = expected_stderr.decode("utf-8").splitlines()
     except UnicodeError as error:
         raise ValueError("successful frontend warnings must be UTF-8 diagnostics") from error
-    header = re.compile(r"warning\[(unused_must_use|unused_attributes|duplicate_macro_attributes)\]: file [0-9]+: [0-9]+: .+")
+    header = re.compile(r"warning\[(" + "|".join(REVIEWED_WARNING_CODES) + r")\]: file [0-9]+: [0-9]+: .+")
     if not lines or header.fullmatch(lines[0]) is None:
         raise ValueError("successful frontend stderr requires a declared warning code")
     actual_codes = {match[1] for line in lines if (match := header.fullmatch(line))}

@@ -546,6 +546,12 @@ impl Declarations {
             super::stored_fields::Registry::work,
         )
     }
+    fn collect_declaration_attributes(&mut self, report: &Report) -> Result<(), Error> {
+        super::must_use::collect(report, self)?;
+        super::inlining::collect(report, self)?;
+        super::parentheses::collect(report, self)?;
+        super::diagnostic_contracts::collect(report, self)
+    }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
             must_use_contracts: None,
@@ -642,12 +648,13 @@ impl Declarations {
                 .collect(),
             functions: Vec::new(),
         };
-        value.import_resolution(report)?;
-        super::crates::import(report, &mut value)?;
-        super::must_use::collect(report, &mut value)?;
-        super::inlining::collect(report, &mut value)?;
-        super::parentheses::collect(report, &mut value)?;
+        value.prepare_resolution(report).map_err(|error| value.retain_error_warnings(error))?;
         Ok(value)
+    }
+    fn prepare_resolution(&mut self, report: &Report) -> Result<(), Error> {
+        self.import_resolution(report)?;
+        super::crates::import(report, self)?;
+        self.collect_declaration_attributes(report)
     }
     fn import_resolution(&mut self, report: &Report) -> Result<(), Error> {
         for reference in &report.resolution.references {

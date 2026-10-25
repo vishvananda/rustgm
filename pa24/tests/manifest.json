@@ -8540,6 +8540,23 @@
       "native": {
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/discard-domains/tuple-two-closures.rs",
+      "source_sha256": "57cc0f403b9e010eeb6ae234ff5a9a7c435fde1a9ef79da103d003e3c16757ff",
+      "exit_status": 0,
+      "features": [
+        "pa24.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "warnings": [
+        "unused_must_use"
+      ]
     }
   ]
 }

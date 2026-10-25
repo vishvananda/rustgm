@@ -130,7 +130,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-016 | Algorithmic repair qualified; one reviewed RSS cost | Repeated full caller-environment opening and premise-index construction across independent projections | PA21 projection/formation machinery; PA31 complete source regression / PA31 plus earlier ordinary controls | B + integrator | Shared mapped-view opening is integrated as `5a5e9d51` and passes combined functional/performance checks at `65f20e8b`. The 32→128 subject ratio is 3.732; 128 subjects use 103,395,319 instructions versus 550,412,747 previously. All 58 combined growth controls pass; one reviewed RSS cost remains. |
 | LIB-017 | P0; earlier unchanged-core failure at `format_args`, line 994 | Source formatting builtins and actual constructor calls, including full argument parsing/evaluation | PA26 formatting + PA31 compiler/source bindings / PA31 complete providers, plus earlier ordinary controls | C | Literal source formatting and its real constructor privacy boundary pass combined functional qualification at `65f20e8b`. Nonempty arguments, obligations, temporary lifetimes and foreign transport remain open. |
 | LIB-018 | P0; preceding unchanged-core failure at `concat_bytes`, line 1126 | Source-declared byte concatenation builtin, typed byte/string/array operands and exact rejection rules | PA8 builtin expansion + PA31 source identity / PA31 complete providers, plus PA8 where independently expressible | C | Separately qualified source `a3d7dc49` passes 1,464 private, eighteen frontend and 48 native cases, with 256 independent observations. The unchanged-core probe reaches LIB-019. Integration/release and foreign/scoped source builtin coverage remain pending. |
-| LIB-019 | P0; current unchanged-core failure at `autodiff_forward`, line 1553 | Source attribute macro identity, declaration/import kinds and genuine invocation semantics | PA31 source compiler bindings; PA38 actual procedural/attribute execution / PA31 declaration/import controls, PA38 execution | C | All 45 frozen source/tool language predictions match independent rustc across both editions: 268 observations and 44 native programs. Twelve diagnostic-phrase mismatches are retained. Typed bang/attribute dispatch and actual parsed-owner lookup pass fresh static checks; runtime qualification is in progress. No empty expansion is permitted. |
+| LIB-019 | P0; qualified combined core still stops at `autodiff_forward`, line 1553; new classifier draft separately exposes crate coherence first | Source attribute macro identity, actual kind namespaces and retained owner consumers (`must_use`, inline, Test removal, trait parentheses and diagnostic contracts) | PA31 source bindings; earlier owning PA10/PA12/PA19/PA21/PA24 consumers; PA38 genuine procedural/attribute execution | C | Original 45-case corpus records 268 observations/44 native programs with twelve retained diagnostic disagreements. Old attribute draft ran all 1,471 private and 322 frontend cases: 18 private and four frontend failures remain preserved. Source-only consumer WIP `bcd475e9` is merged onto qualified `ca54609a` at `2af76aec`, still unqualified; new fixtures/references and original whole-core acceptance remain pending. No empty transform or metadata exemption is permitted. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):
@@ -351,6 +351,23 @@ text-oracle tests when that assignment's contract is published. Generate and
 review oracle text; never hand-edit it or accept an empty/planned suite as a pass.
 Text fixtures belong in the earliest PA owning all features, and private test
 roots must remain registered in the existing maintainer suite groups.
+
+
+### LIB-019 diagnostic follow-up
+
+Mixed error-plus-warning transport remains incomplete. The frozen
+`diagnostic-duplicate.rs` control in
+`obj/parallel/pa31/remaining-attribute-headers-independent-v1` independently
+reports a hard duplicate internal `on_unimplemented` error together with a
+`malformed_diagnostic_attributes` warning in both editions and emissions
+(results SHA-256
+`a688e91fbe17c8ac7b9a42c4c1b62e77e7e4eb2e5ee3a47becce8ae68a422e3a`).
+The current semantic error result carries only `Error`, so declaration warnings
+cannot survive when its facts are dropped. Preserve the exact-output control;
+retain this as a separate requirement for a typed cold error carrier and driver
+rendering. Successful default warnings and primary selected-trait messages must
+still work in the current consumer slice. Neither success nor complete
+`on_unimplemented` diagnostic parity is claimed before qualification.
 
 ## Work and qualification rules
 

@@ -199,7 +199,10 @@ pub fn expand(
     environment: &Environment<'_>,
 ) -> Result<Expansion, LexError> {
     match builtin {
-        Builtin::Test => Err(error(0, "test attribute requires its actual configured function owner")),
+        Builtin::Test => Err(error(
+            0,
+            "test attribute requires its actual configured function owner",
+        )),
         Builtin::AutodiffForward | Builtin::AutodiffReverse => {
             Err(error(0, "builtin attribute execution is not implemented"))
         }

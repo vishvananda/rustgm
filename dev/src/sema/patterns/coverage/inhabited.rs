@@ -7,10 +7,14 @@ use crate::{
     types::{ItemId, Kind, TypeId},
 };
 use std::sync::Arc;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/canonical_inhabitation_work.rs"]
+mod work_tests;
 
+/// Reuse only with the same finalized declarations/report that owns this checker.
 #[derive(Default)]
 pub struct Cache {
-    values: HashMap<(ModuleId, TypeId), bool>,
+    values: HashMap<(ModuleId, TypeId), Result<bool, &'static str>>,
     tags: HashMap<(ModuleId, TypeId, bool), Arc<[VariantId]>>,
     /// Inhabitation queries that were not answered by the tables above.
     misses: u64,
@@ -73,117 +77,112 @@ impl<'a> Inhabited<'a> {
             Access::Within(owner) => self.report.package.is_descendant(self.module, owner),
         }
     }
+    fn cached(&self, ty: TypeId) -> Result<Option<bool>, &'static str> {
+        self.cache.values.get(&(self.module, ty)).copied().transpose()
+    }
     pub fn get(&mut self, ty: TypeId, graph: &mut Graph) -> Result<bool, &'static str> {
-        if let Some(&value) = self.cache.values.get(&(self.module, ty)) {
-            graph.charge()?;
-            return Ok(value);
-        }
+        graph.charge()?;
+        if let Some(&value) = self.cache.values.get(&(self.module, ty)) { return value }
+        if self.cache.values.len() >= 1_000_000 { return Err("inhabitation cache storage budget exceeded") }
         self.cache.misses += 1;
-        let mut work = vec![(ty, false)];
+        let result = self.compute(ty, graph);
+        if let Err(error) = result { self.remember(ty, Err(error))?; }
+        result
+    }
+    fn remember(&mut self, ty: TypeId, value: Result<bool, &'static str>) -> Result<(), &'static str> {
+        if self.cache.values.len() >= 1_000_000 && !self.cache.values.contains_key(&(self.module, ty)) {
+            return Err("inhabitation cache storage budget exceeded");
+        }
+        self.cache.values.insert((self.module, ty), value);
+        Ok(())
+    }
+    fn compute(&mut self, root: TypeId, graph: &mut Graph) -> Result<bool, &'static str> {
+        let mut work = vec![(root, false)];
         while let Some((ty, finish)) = work.pop() {
             graph.charge()?;
-            if self.cache.values.contains_key(&(self.module, ty)) {
-                continue;
-            }
+            if self.cached(ty)?.is_some() { continue }
             let kind = self.facts.types.kind(ty).ok_or("missing coverage type")?;
             if finish {
-                let inhabited = match kind {
-                    Kind::Tuple(fields) => self
-                        .facts
-                        .types
-                        .list(fields)
-                        .ok_or("missing tuple types")?
-                        .iter()
-                        .all(|t| self.cache.values.get(&(self.module, *t)) == Some(&true)),
-                    Kind::Array { element, length } => {
-                        length == 0 || self.cache.values.get(&(self.module, element)) == Some(&true)
-                    }
-                    Kind::Adt(item, _) => self
-                        .facts
-                        .members
-                        .variants(item)
-                        .iter()
-                        .any(|v| self.variant_ready(*v)),
-                    _ => return Err("invalid deferred inhabitation query"),
-                };
-                self.cache.values.insert((self.module, ty), inhabited);
+                let inhabited = self.completed(ty, kind)?;
+                self.remember(ty, Ok(inhabited))?;
                 continue;
             }
             match kind {
-                Kind::Never => {
-                    self.cache.values.insert((self.module, ty), false);
-                }
+                Kind::Never => { self.remember(ty, Ok(false))?; }
                 Kind::Tuple(fields) => {
                     work.push((ty, true));
-                    for &field in self.facts.types.list(fields).ok_or("missing tuple types")? {
-                        work.push((field, false));
-                    }
+                    for &field in self.facts.types.list(fields).ok_or("missing tuple types")? { work.push((field, false)); }
                 }
                 Kind::Array { element, length } if length != 0 => {
-                    work.push((ty, true));
-                    work.push((element, false));
+                    work.push((ty, true)); work.push((element, false));
                 }
                 Kind::Adt(item, _) => {
-                    if self.facts.aggregates.get(item).is_none() {
-                        return Err("missing coverage aggregate");
-                    }
+                    if self.facts.aggregates.get(item).is_none() { return Err("missing coverage aggregate") }
                     if self.union(item) || self.facts.members.external_open(item) {
-                        self.cache.values.insert((self.module, ty), true);
-                        continue;
+                        self.remember(ty, Ok(true))?; continue;
                     }
                     work.push((ty, true));
                     for &variant in self.facts.members.variants(item) {
-                        for field in self
-                            .facts
-                            .members
-                            .fields(variant)
-                            .ok_or("missing coverage fields")?
-                        {
-                            if self.visible(field.access) {
-                                work.push((field.ty, false));
-                            }
+                        let (fields, canonical) = self.fields(ty, variant)?;
+                        for (field, &ty) in fields.iter().zip(canonical) {
+                            if self.visible(field.access) { work.push((ty, false)); }
                         }
                     }
                 }
-                // A reference can point at a not-yet-valid place. In particular,
-                // &Void and slices of Void are not empty coverage domains.
-                _ => {
-                    self.cache.values.insert((self.module, ty), true);
+                // References can point at places that do not yet contain valid values.
+                _ => { self.remember(ty, Ok(true))?; }
+            }
+        }
+        self.cached(root)?.ok_or("missing inhabitation result")
+    }
+    fn completed(&self, ty: TypeId, kind: Kind) -> Result<bool, &'static str> {
+        match kind {
+            Kind::Tuple(fields) => {
+                let mut inhabited = true;
+                for &field in self.facts.types.list(fields).ok_or("missing tuple types")? {
+                    inhabited &= self.cached(field)?.ok_or("missing tuple inhabitation")?;
                 }
+                Ok(inhabited)
             }
-        }
-        self.cache
-            .values
-            .get(&(self.module, ty))
-            .copied()
-            .ok_or("missing inhabitation result")
-    }
-    fn variant_ready(&self, id: VariantId) -> bool {
-        if self.union(self.facts.members.variants[id.0 as usize].owner) {
-            return true;
-        }
-        self.facts.members.fields(id).is_some_and(|fields| {
-            fields.iter().all(|f| {
-                !self.visible(f.access)
-                    || self.cache.values.get(&(self.module, f.ty)) == Some(&true)
-            })
-        })
-    }
-    pub fn variant(&mut self, id: VariantId, graph: &mut Graph) -> Result<bool, &'static str> {
-        if self.union(self.facts.members.variants[id.0 as usize].owner) {
-            return Ok(true);
-        }
-        for field in self
-            .facts
-            .members
-            .fields(id)
-            .ok_or("missing coverage fields")?
-        {
-            if self.visible(field.access) && !self.get(field.ty, graph)? {
-                return Ok(false);
+            Kind::Array { element, length } => Ok(length == 0 || self.cached(element)?.ok_or("missing element inhabitation")?),
+            Kind::Adt(item, _) => {
+                let mut inhabited = false;
+                for &variant in self.facts.members.variants(item) { inhabited |= self.variant_ready(ty, variant)?; }
+                Ok(inhabited)
             }
+            _ => Err("invalid deferred inhabitation query"),
         }
-        Ok(true)
+    }
+    fn fields(&self, ty: TypeId, id: VariantId) -> Result<(&'a [crate::sema::members::Field], &'a [TypeId]), &'static str> {
+        let facts: &'a Declarations = self.facts;
+        let variant = facts.members.variants.get(id.0 as usize).ok_or("invalid inhabitation variant identity")?;
+        let shape = facts.aggregates.shape(&facts.types, ty)?;
+        let variants = facts.members.variants(variant.owner);
+        if shape.definition.item != variant.owner || variants.len() != shape.variants().len()
+            || variants.get(variant.ordinal as usize) != Some(&id) { return Err("inhabitation variant owner or ordinal changed") }
+        let fields = facts.members.fields(id).ok_or("missing inhabitation member fields")?;
+        let canonical = shape.variant(variant.ordinal as usize).ok_or("missing canonical inhabitation variant")?;
+        let canonical = facts.types.list(canonical.fields).ok_or("missing canonical inhabitation fields")?;
+        if fields.len() != canonical.len() { return Err("canonical inhabitation field count changed") }
+        Ok((fields, canonical))
+    }
+    fn variant_ready(&self, ty: TypeId, id: VariantId) -> Result<bool, &'static str> {
+        let (fields, canonical) = self.fields(ty, id)?;
+        let mut inhabited = true;
+        for (field, &ty) in fields.iter().zip(canonical) {
+            if self.visible(field.access) { inhabited &= self.cached(ty)?.ok_or("missing field inhabitation")?; }
+        }
+        Ok(inhabited)
+    }
+    fn variant(&mut self, ty: TypeId, id: VariantId, graph: &mut Graph) -> Result<bool, &'static str> {
+        let owner = self.facts.members.variants.get(id.0 as usize).ok_or("invalid inhabitation variant")?.owner;
+        if self.union(owner) { return Ok(true) }
+        let (fields, canonical) = self.fields(ty, id)?;
+        let mut inhabited = true;
+        for (field, &ty) in fields.iter().zip(canonical) {
+            if self.visible(field.access) { inhabited &= self.get(ty, graph)?; }
+        }
+        Ok(inhabited)
     }
     fn union(&self, item: ItemId) -> bool {
         self.facts
@@ -206,7 +205,7 @@ impl<'a> Inhabited<'a> {
         let mut tags = Vec::new();
         for &variant in self.facts.members.variants(item) {
             graph.charge()?;
-            if !valid || self.variant(variant, graph)? {
+            if !valid || self.variant(ty, variant, graph)? {
                 tags.push(variant);
             }
         }

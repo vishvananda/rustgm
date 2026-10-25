@@ -61,7 +61,9 @@ impl<'a> FrameView<'a> {
             .get(index)
             .ok_or_else(|| error("unknown panic macro definition"))?;
         if unavailable_attribute(definition) {
-            return Err(error("builtin attribute declaration has no executed expansion frame"));
+            return Err(error(
+                "builtin attribute declaration has no executed expansion frame",
+            ));
         }
         let package = self.package;
         let root = self

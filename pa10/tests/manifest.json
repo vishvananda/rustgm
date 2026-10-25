@@ -1166,6 +1166,88 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-internal-wrong-owner.rs",
+      "source_sha256": "9bdd512d478bab3d36bfa8c09e14b07e2ed97818a3b51b111933b66d06dd4516",
+      "exit_status": 0,
+      "features": [
+        "pa10.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "warnings": [
+        "unused_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-stable-wrong-owner.rs",
+      "source_sha256": "88fbf361962d89eb374cde2b0ce00a8dc155a963a249c03182760a39ecb10ed2",
+      "exit_status": 0,
+      "features": [
+        "pa10.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "warnings": [
+        "misplaced_diagnostic_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/discard-domains/unit-dereference.rs",
+      "source_sha256": "4b662a2b2b8652af3630d596e14fb067811ee4678075dbc7814989ecfc57eee8",
+      "exit_status": 0,
+      "features": [
+        "pa10.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs"
+    },
+    {
+      "path": "tests/spec/discard-domains/unit-borrow-still-must-use.rs",
+      "source_sha256": "f7326e1db50788a81b3314d5624882f0299929dfd356b357f977c2462d8f2099",
+      "exit_status": 0,
+      "features": [
+        "pa10.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "warnings": [
+        "unused_must_use"
+      ]
+    },
+    {
+      "path": "tests/spec/discard-domains/unit-marked-function-still-must-use.rs",
+      "source_sha256": "0c4f38443d5261584c8be06f242db9f0e54e8712ae4bb23cf9f39e13cf175400",
+      "exit_status": 0,
+      "features": [
+        "pa10.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "warnings": [
+        "unused_must_use"
+      ]
     }
   ]
 }

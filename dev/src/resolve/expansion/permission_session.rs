@@ -72,6 +72,17 @@ impl MacroAllowanceSession<'_> {
             facts: &self.report.resolution,
         }
     }
+    /// Authenticate an actual retained token span through the resolver boundary.
+    /// # Errors
+    /// Rejects the same source, owner, frame and budget failures as `allows`.
+    pub fn allows_at(
+        &mut self,
+        file: super::FileId,
+        span: crate::syntax::token_tree::Span,
+        feature: &FeatureName<'_>,
+    ) -> Result<bool, Error> {
+        self.allows(Location { file, span }, feature)
+    }
     /// Check only the actual use token's outer expansion allowance.
     /// The result does not enable crate features or authorize API execution.
     /// # Errors

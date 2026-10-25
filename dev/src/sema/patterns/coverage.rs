@@ -19,6 +19,21 @@ pub use inhabited::Cache;
 use inhabited::Inhabited;
 use std::sync::Arc;
 
+pub(in crate::sema) struct InhabitedQuery {
+    pub result: Result<bool, &'static str>,
+    pub work: u64,
+}
+/// Query one demanded canonical type using the coverage owner's existing storage.
+pub(in crate::sema) fn is_inhabited(facts: &Declarations, report: &Report, module: ModuleId,
+    ty: TypeId, cache: &mut Cache) -> InhabitedQuery {
+    let mut graph = std::mem::take(&mut cache.scratch.graph);
+    graph.reset(super::scalar::Coverage::LIMIT);
+    let result = Inhabited::new(facts, report, module, cache).get(ty, &mut graph);
+    let work = graph.work();
+    cache.scratch.graph = graph;
+    InhabitedQuery { result, work }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct PlaceId(u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

@@ -36,9 +36,9 @@ mod application_kind;
 pub(super) mod attributes;
 mod bindings;
 mod decorated_calls;
-pub(crate) mod removed_functions;
 mod diagnostics;
 mod eager;
+pub(crate) mod removed_functions;
 use application_kind::CallGrammar;
 mod format_values;
 mod location;
@@ -256,7 +256,7 @@ pub fn analyze_with_context(
     super::bindings::validate_features(&engine.loader.package)
         .map_err(|error| engine.diagnostic(error))?;
     let (resolution, imports, pending) = engine.paths.finish();
-    Ok(Report {
+    let report = Report {
         package: engine.loader.package,
         definitions: engine.definitions,
         invocations: engine.invocations,
@@ -267,7 +267,9 @@ pub fn analyze_with_context(
         pending,
         names_resolved: false,
         removed_functions: engine.removed_functions,
-    })
+    };
+    super::bindings::validate_crate_options(&report).map_err(|error| report.diagnostic(error))?;
+    Ok(report)
 }
 impl<'a, S: Sources> Engine<'a, S> {
     /// Shared actual creation/initial-root producer; tests borrow this same
@@ -337,11 +339,7 @@ impl<'a, S: Sources> Engine<'a, S> {
                     .iter()
                     .position(|call| !call.state.finished() && call.eager.is_none())
             })
-            .or_else(|| {
-                self.calls
-                    .iter()
-                    .position(|call| !call.state.finished())
-            })
+            .or_else(|| self.calls.iter().position(|call| !call.state.finished()))
         {
             if let Some(error) = self.calls[index].error.take() {
                 return Err(error);
@@ -556,7 +554,10 @@ impl<'a, S: Sources> Engine<'a, S> {
             self.calls[index].state = State::Waiting;
             return Ok(());
         };
-        if matches!(self.definitions[definition].body, Body::Builtin(Builtin::Test)) {
+        if matches!(
+            self.definitions[definition].body,
+            Body::Builtin(Builtin::Test)
+        ) {
             return self.remove_test_function(index, definition);
         }
         self.calls[index].state = State::InProgress;

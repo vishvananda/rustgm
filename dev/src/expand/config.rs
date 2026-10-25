@@ -82,7 +82,7 @@ impl Config {
         if name.starts_with("target_")
             || matches!(
                 name,
-                "unix" | "windows" | "panic" | "debug_assertions" | "test" | "proc_macro"
+                "unix" | "windows" | "panic" | "debug_assertions" | "proc_macro"
             )
         {
             return Err(error(0, "compiler-controlled cfg option"));

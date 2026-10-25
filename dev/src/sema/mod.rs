@@ -15,6 +15,7 @@ pub(crate) mod compiler_items;
 pub(crate) mod declaration_inputs;
 pub mod declarations;
 pub mod destructors;
+mod diagnostic_contracts;
 pub(crate) mod dispatch;
 pub mod dyn_compat;
 pub mod entry;

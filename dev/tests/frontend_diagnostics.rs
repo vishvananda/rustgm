@@ -48,3 +48,14 @@ fn declared_successful_warnings_preserve_the_strict_compiler_boundary() {
     let unknown = b"warning[unknown]: file 0: 37: unsupported code\n";
     assert!(accepted(&output(0, b"program", unknown), unknown).is_err());
 }
+
+#[test]
+fn declared_attribute_warning_codes_do_not_relax_byte_comparison() {
+    for code in ["malformed_diagnostic_attributes", "malformed_diagnostic_format_literals", "misplaced_diagnostic_attributes"] {
+        let warning = format!("warning[{code}]: file 0: 37: declared attribute diagnostic\n");
+        assert!(accepted(&output(0, b"program", warning.as_bytes()), warning.as_bytes()).is_ok());
+        assert!(accepted(&output(0, b"program", warning.as_bytes()), b"").is_err());
+        let error = format!("{warning}error: failure\n");
+        assert!(accepted(&output(0, b"program", error.as_bytes()), error.as_bytes()).is_err());
+    }
+}

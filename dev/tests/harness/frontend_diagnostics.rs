@@ -30,6 +30,9 @@ fn header(line: &str) -> bool {
         "warning[unused_must_use]: file ",
         "warning[unused_attributes]: file ",
         "warning[duplicate_macro_attributes]: file ",
+        "warning[malformed_diagnostic_attributes]: file ",
+        "warning[malformed_diagnostic_format_literals]: file ",
+        "warning[misplaced_diagnostic_attributes]: file ",
     ]
     .into_iter()
     .any(|prefix| {

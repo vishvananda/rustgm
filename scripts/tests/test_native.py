@@ -111,6 +111,17 @@ class SuccessfulFrontendDiagnostics(unittest.TestCase):
     def test_exact_declared_warning_is_accepted(self):
         accepted_frontend((b"program\n", self.warning, b"0\n"), self.warning, ("unused_must_use",))
 
+    def test_explicit_diagnostic_attribute_warnings_require_exact_code_and_bytes(self):
+        for code in ("malformed_diagnostic_attributes", "malformed_diagnostic_format_literals",
+                     "misplaced_diagnostic_attributes"):
+            warning = f"warning[{code}]: file 0: 37: declared attribute diagnostic\n".encode()
+            accepted_frontend((b"program\n", warning, b"0\n"), warning, (code,))
+            with self.assertRaises(ValueError):
+                accepted_frontend((b"program\n", warning, b"0\n"), warning)
+            with self.assertRaises(ValueError):
+                accepted_frontend((b"program\n", warning + b"error: failure\n", b"0\n"),
+                                  warning + b"error: failure\n", (code,))
+
     def test_undeclared_changed_or_additional_warnings_reject(self):
         for expected, actual in ((b"", self.warning), (self.warning, b""),
                                  (self.warning, self.warning + self.warning),

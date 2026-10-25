@@ -122,10 +122,13 @@ fn configuration_is_explicit_and_repeatable() -> Result<(), String> {
     assert!(config.contains("feature", Some("b")));
     assert!(!config.contains("feature", None));
     assert!(!config.contains("debug_assertions", None));
+    assert!(!config.contains("test", None));
+    config.add("test").map_err(|error| format!("{error:?}"))?;
+    config.add("test").map_err(|error| format!("{error:?}"))?;
+    assert!(config.contains("test", None));
     for invalid in [
         "target_os=\"windows\"",
         "unix",
-        "test",
         "foo()",
         "x=1",
         "x=\"a\"wat",

@@ -24,7 +24,10 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
             u32::try_from(file).map_err(|_| Error::at(FileId(0), 0, "too many must_use files"))?,
         );
         for owner in &unit.configured.owners {
-            let owner_key = NodeKey {file, node: owner.node};
+            let owner_key = NodeKey {
+                file,
+                node: owner.node,
+            };
             if !owner.enabled {
                 super::removed_owners::collect(report, facts, owner_key)?;
                 continue;
