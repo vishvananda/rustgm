@@ -147,11 +147,82 @@ fn planner_opponents(identity: &crates::CrateIdentity, rows: &s::SourceRows) -> 
     Ok(())
 }
 
-fn regional_substitution() -> Result {
-    let (_, mut rows) = inspected(
-        "pub fn typed<T>(value:fn(T)->T)->fn(T)->T{value}\
+fn borrower_rows() -> Result<s::SourceRows> {
+    let report = test_source::source_provider(
+        &source(
+            "pub fn typed<T>(value:fn(T)->T)->fn(T)->T{value}\
          pub fn borrower<'a,U>(borrowed:&'a u8,value:fn(U)->U)->fn(U)->U{typed::<U>(value)}",
+        )?,
+        "anonymous_types",
     )?;
+    let identity = report
+        .package
+        .source_core()
+        .ok_or("provider")?
+        .provider
+        .clone();
+    let mut analysis = crate::pipeline::analyze_source(&report)?;
+    let parameter = analysis
+        .facts
+        .generics
+        .parameters
+        .values()
+        .flatten()
+        .find(|parameter| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[parameter.binding.0 as usize].name)
+                == "U"
+        })
+        .ok_or("actual borrower parameter")?;
+    let crate::types::arguments::Argument::Type(ty) = parameter.argument else {
+        return Err("actual borrower type argument".into());
+    };
+    let Some(Kind::Parameter(id)) = analysis.facts.types.kind(ty) else {
+        return Err("actual borrower parameter identity".into());
+    };
+    let actual = analysis
+        .facts
+        .types
+        .parameter(id)
+        .ok_or("actual parameter")?;
+    assert_eq!(actual.index, 0);
+    assert_eq!(
+        report
+            .package
+            .names
+            .get(report.resolution.definitions[actual.owner.0 as usize].name),
+        "borrower"
+    );
+    let rows = crate::lower::instances::inspect_source_transport(
+        &report,
+        &mut analysis.facts,
+        &identity,
+        analysis.prepared,
+    )?
+    .rows;
+    let caller = raw_header(&rows, "borrower")?;
+    let slot = rows
+        .slots
+        .iter()
+        .position(|slot| {
+            slot.owner == caller.scope && matches!(slot.kind, s::ParameterKind::Type { .. })
+        })
+        .ok_or("actual borrower slot")?;
+    assert_eq!(rows.slots[slot].ordinal, 0);
+    assert_eq!(rows.slots[slot].index, actual.index);
+    let mut changed = rows.clone();
+    changed.slots[slot].index = 1;
+    assert_eq!(
+        s::HeaderIndex::new(&changed, 0, &mut g::Work::default()).err(),
+        Some("source type parameter changed its exact declared index")
+    );
+    Ok(rows)
+}
+
+fn regional_substitution() -> Result {
+    let mut rows = borrower_rows()?;
     let caller = raw_header(&rows, "borrower")?;
     let borrowed = *caller
         .original
