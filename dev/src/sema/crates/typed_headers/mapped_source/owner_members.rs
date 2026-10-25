@@ -4,6 +4,76 @@ use crate::resolve::model::DefId;
 use crate::sema::associated::{Owner, OwnerKind, Schema};
 
 impl Graph {
+    pub(in crate::sema) fn implementation_domain(
+        &self,
+        owner: Owner,
+    ) -> Result<s::ImplementationDomain, &'static str> {
+        self.owner(owner)?;
+        let OwnerKind::Trait { definition, .. } = owner.kind else {
+            return Err("implementation domain requires its actual trait owner");
+        };
+        let descriptor = self.descriptor(&self.origins)?;
+        let id = self.origins.declaration(definition)?;
+        let (artifact, row, _) = self.origins.declaration_coordinate(id)?;
+        let Some(s::HeaderRef::Trait(index)) = descriptor.rows().header(row)? else {
+            return Err("implementation domain lacks its actual trait header");
+        };
+        match descriptor.profile() {
+            s::Profile::Source2024Functions | s::Profile::Source2024FunctionContracts => {
+                Ok(s::ImplementationDomain::Unrestricted)
+            }
+            s::Profile::Source2024ModuleContracts => {
+                let domain = descriptor
+                    .module_contracts()?
+                    .trait_domain(index as usize, row)?;
+                if let s::ImplementationDomain::RestrictedTo {
+                    module,
+                    clause_site,
+                    path_site,
+                } = domain.domain
+                {
+                    let definition = self.origins.definition_at(artifact, module)?;
+                    let module_id = self.origins.declaration(definition)?;
+                    self.origins
+                        .validate_declaration(module_id, definition, DefKind::Module)?;
+                    self.origins.declaration_site(id, clause_site)?;
+                    self.origins.declaration_site(id, path_site)?;
+                }
+                Ok(domain.domain)
+            }
+            _ => Err("implementation domain has no complete admitted source profile"),
+        }
+    }
+    pub(in crate::sema) fn empty_module_trait(&self, owner: Owner) -> Result<bool, &'static str> {
+        self.owner(owner)?;
+        let descriptor = self.descriptor(&self.origins)?;
+        let OwnerKind::Trait { definition, .. } = owner.kind else {
+            return Err("ordinary module conformance requires its actual trait owner");
+        };
+        let id = self.origins.declaration(definition)?;
+        let (_, row, _) = self.origins.declaration_coordinate(id)?;
+        let rows = descriptor.rows();
+        let Some(s::HeaderRef::Trait(index)) = rows.header(row)? else {
+            return Err("ordinary module conformance lacks its exact trait header");
+        };
+        match descriptor.profile() {
+            s::Profile::Source2024Functions | s::Profile::Source2024FunctionContracts => {
+                return Ok(false);
+            }
+            s::Profile::Source2024ModuleContracts => {}
+            _ => return Err("imported conformance has no complete admitted source profile"),
+        }
+        descriptor
+            .module_contracts()?
+            .trait_domain(index as usize, row)?;
+        let header = &rows.traits[index as usize];
+        if header.flags.bits() & !s::TraitFlags::RESTRICTED_IMPL != 0
+            || !header.members.slice(&rows.members)?.is_empty()
+        {
+            return Err("imported impl family requires its wider complete conformance consumer");
+        }
+        Ok(true)
+    }
     pub(in crate::sema) fn denies_implementation(
         &self,
         owner: Owner,
@@ -12,9 +82,8 @@ impl Graph {
         let OwnerKind::Trait { definition, .. } = owner.kind else {
             return Err("imported implementation policy requires its actual trait owner");
         };
-        // The checked descriptor admits the two ordinary function profiles. Their
-        // authored producer rejects implementation-domain clauses before any headers.
-        // Unknown/Provided profiles cannot establish this Unrestricted invariant.
+        // Deny-explicit-impl remains independent of module implementation domains.
+        // A restricted provider-owned implementation can still be a valid candidate.
         let descriptor = self.descriptor(&self.origins)?;
         let id = self.origins.declaration(definition)?;
         let (_, row, _) = self.origins.declaration_coordinate(id)?;
