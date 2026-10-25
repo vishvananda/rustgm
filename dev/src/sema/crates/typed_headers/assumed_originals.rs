@@ -10,7 +10,7 @@ use crate::{
     },
     sema::function_context::assumption_environment as defining,
     support::crates::{generics as g, owner_catalog::BodyRef},
-    types::callable::Templates,
+    types::parameters::ParameterId,
 };
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Origin {
@@ -203,14 +203,19 @@ fn body_environment(
 
 pub(super) fn finish(
     facts: &mut Declarations,
-    templates: &Templates,
+    prepared: &Prepared,
     rows: s::ValidatedView<'_>,
     port: &mut ports::Inputs<'_, '_>,
-    scope: &Scope,
+    owner: &Owner,
     demand: &BodyDemand,
     work: &mut ReservationWork,
 ) -> Result<(Arc<Environment>, usize), Error> {
     let BodyDemand { expected, origin } = *demand;
+    let scope = owner
+        .scopes
+        .get(expected.scope.0)
+        .and_then(Option::as_deref)
+        .ok_or_else(|| error("private original lost its actual prepared scope"))?;
     let (body, actual) = zero_body(rows, expected, work)?;
     if actual != Some(origin)
         || scope.parameters.len() != expected.formals
@@ -226,9 +231,10 @@ pub(super) fn finish(
     let (body_environment, bytes) = body_environment(facts, scope, demand, work)?;
     work.reserve(scope.parameters.len().saturating_mul(size_of::<Argument>()))?;
     let mut arguments = Vec::with_capacity(scope.parameters.len());
-    for (&slot, (parameter, _)) in input.parameters.iter().zip(&scope.parameters) {
+    for &slot in &input.parameters {
+        let parameter = owner.original_parameter(rows, prepared, scope, slot, work)?;
         let argument = port.port.slot(&mut facts.types, slot, work)?;
-        if crate::sema::generics::parameter_id(&facts.types, argument).map_err(error)? != *parameter
+        if crate::sema::generics::parameter_id(&facts.types, argument).map_err(error)? != parameter
         {
             return Err(error(
                 "private defining environment changed its complete actual original parameter order",
@@ -241,7 +247,7 @@ pub(super) fn finish(
             types: &mut facts.types,
             requirements: &mut facts.lifetimes.nominal_requirements,
             variances: &facts.lifetimes.variances,
-            callables: templates,
+            callables: &prepared.templates,
         },
         defining::Scope {
             signature: Some(expected.pair.original),
@@ -356,5 +362,77 @@ impl Session {
         let status = prepared.defining(view, state, &mut session.facts, owner, work)?;
         state.callables = Some(prepared);
         Ok((session, status))
+    }
+}
+
+impl Owner {
+    fn original_parameter(
+        &self,
+        rows: s::ValidatedView<'_>,
+        prepared: &Prepared,
+        leaf: &Scope,
+        reference: s::SlotRef,
+        work: &mut ReservationWork,
+    ) -> Result<ParameterId, Error> {
+        work.charge(12)?;
+        let slot = rows
+            .slots
+            .get(reference.0 as usize)
+            .ok_or_else(|| error("private original lost its actual formal row"))?;
+        let (index, raw) = prepared.scope(rows, slot.owner)?;
+        let declaring = self
+            .scopes
+            .get(index)
+            .and_then(Option::as_deref)
+            .filter(|actual| actual.raw == raw)
+            .ok_or_else(|| error("private original lost its actual declaring scope"))?;
+        let inherited = if let Some(parent) = raw.parent {
+            let (index, parent_raw) = prepared.scope(rows, parent)?;
+            self.scopes
+                .get(index)
+                .and_then(Option::as_deref)
+                .filter(|actual| actual.raw == parent_raw)
+                .ok_or_else(|| error("private original lost its actual parent scope"))?
+                .parameters
+                .len()
+        } else {
+            0
+        };
+        let own = declaring
+            .parameters
+            .len()
+            .checked_sub(inherited)
+            .ok_or_else(|| error("private original changed its complete formal ancestry"))?;
+        if !matches!(slot.kind, s::ParameterKind::Type { .. })
+            || reference.0 < raw.declared.start
+            || reference.0 >= raw.declared.end
+            || slot.ordinal != reference.0 - raw.declared.start
+            || slot.index != slot.ordinal
+            || own != raw.declared.slice(&rows.slots).map_err(error)?.len()
+            || slot.index as usize >= own
+        {
+            return Err(error(
+                "private original requires its exact actual type formal scope",
+            ));
+        }
+        let position = inherited
+            .checked_add(slot.index as usize)
+            .ok_or_else(|| error("private original formal ordinal overflow"))?;
+        let parameter = declaring
+            .parameters
+            .get(position)
+            .map(|(parameter, _)| *parameter)
+            .ok_or_else(|| error("private original omitted its actual declared formal"))?;
+        if leaf
+            .parameters
+            .get(position)
+            .map(|(parameter, _)| *parameter)
+            != Some(parameter)
+        {
+            return Err(error(
+                "private original changed its exact inherited formal identity",
+            ));
+        }
+        Ok(parameter)
     }
 }

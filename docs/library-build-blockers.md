@@ -22,6 +22,14 @@ consumers. Its 132.99-second focused helper plus 34.79-second production CLI bui
 retain the five-minute development budget. Public Provided execution and full
 original-crate builds remain required.
 
+The [numbered trait-input checkpoint](private-numbered-trait-inputs.md) now passes
+six focused controls, the complete architecture audit and strict production and
+private Clippy in a133.06-second helper. Actual Holder::carry prepares inherited
+Self/V/U; Holder::borrow retains its nonzero boundary. Selected numbering records
+authenticate actual body ownership without granting defining-environment proof.
+Seven original v0/v1 first-encoding files remain byte-identical. Nonzero binding,
+original/instance proof and public Provided execution remain required.
+
 The [provided-method execution milestone](parallel/provided-method-execution.md)
 keeps the next acceptance target concrete: the complete source family plus a
 real non-role provided method, actual encoded artifact, fresh imported original

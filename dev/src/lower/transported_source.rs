@@ -8,6 +8,8 @@ mod publication;
 #[path = "../../tests/invariants/publication_attributes.rs"]
 mod publication_tests;
 mod published_annotations;
+#[path = "transported_source/collected_headers.rs"]
+mod trait_inputs;
 use crate::{
     body::{
         ir::{self, Body, Owner},
@@ -29,6 +31,7 @@ use crate::{
     },
     types::{ItemId, RegionId},
 };
+pub(crate) use trait_inputs::TraitInspection;
 
 pub(super) struct Source {
     stage: Stage,
@@ -62,10 +65,6 @@ impl Source {
         Self::begin_with_numbering(report, facts, checked, identity, true)
     }
 
-    #[expect(
-        dead_code,
-        reason = "private ordinary-trait numbering awaits its actual unpaid defining-environment consumer"
-    )]
     pub(super) fn begin_trait_numbered(
         report: &Report,
         facts: &mut Declarations,
@@ -310,31 +309,7 @@ impl Source {
     }
 
     pub(super) fn complete(self) -> Result<SourceInspection, &'static str> {
-        let (rows, mut work) = self.finish_rows()?;
-        let mut validation = g::Work {
-            steps: work.steps,
-            ..g::Work::default()
-        };
-        let headers = s::HeaderIndex::new(&rows, 0, &mut validation)?;
-        let numbering_peak = if rows.body_units.is_empty() {
-            0
-        } else {
-            headers.numbering(&mut validation)?.peak_bytes()
-        };
-        let domains = headers.domains(&mut validation)?;
-        let plan = domains.original_inputs(&mut validation)?;
-        let previous_peak = work.reserved_bytes.saturating_add(work.scratch_bytes);
-        let retained = work.reserved_bytes.max(plan.retained_bytes());
-        let peak = previous_peak.max(plan.peak_bytes()).max(numbering_peak);
-        work.steps = validation.steps;
-        work.reserved_bytes = retained;
-        work.scratch_bytes = peak.saturating_sub(retained);
-        // Every input is still raw unpaid data. These temporary indexes cannot
-        // produce a source Descriptor, remap, proof or executable publication.
-        drop(plan);
-        drop(domains);
-        drop(headers);
-        Ok(SourceInspection { rows, work })
+        self.complete_with_extra(0)
     }
     /// The publishing path consumes the same completed collector directly.
     /// Inspection's indexes are not constructed and discarded before validation.

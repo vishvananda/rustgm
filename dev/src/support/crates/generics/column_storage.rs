@@ -149,6 +149,40 @@ impl<'a> ValidatedView<'a> {
         }
         Ok(Some(contract))
     }
+    /// Only the actual frozen Provided seal may reuse its checked unit inverse.
+    /// The live base includes these retained rows, rather than paying them twice.
+    pub(crate) fn allocation_ordinals(
+        self,
+        body: super::super::BodyRef,
+        live_base: usize,
+        extra: usize,
+        work: &mut super::super::super::Work,
+    ) -> Result<super::super::AllocationOrdinals<'a>, &'static str> {
+        work.charge(1)?;
+        if self.source.profile != super::Profile::Source2024Provided
+            || live_base < self.source.budget.bytes
+        {
+            return Err("frozen allocation inverse requires its actual Provided live owner");
+        }
+        let unit = self
+            .source
+            .columns
+            .body_units
+            .get(body.0 as usize)
+            .filter(|unit| unit.body == body)
+            .ok_or("frozen allocation inverse lost its actual body unit")?;
+        let original = self
+            .source
+            .columns
+            .originals
+            .get(body.0 as usize)
+            .filter(|original| original.body == body)
+            .ok_or("frozen allocation inverse lost its actual original")?;
+        if unit.allocation_order.len() != original.variables.len() {
+            return Err("frozen allocation inverse changed its complete allocation domain");
+        }
+        super::super::validation::frozen_ordinals(unit, live_base, extra, work)
+    }
     #[must_use]
     pub fn body_owners(&self) -> &[BodyOwner] {
         self.source.owners.rows()

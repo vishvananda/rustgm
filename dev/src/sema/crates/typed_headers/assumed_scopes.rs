@@ -30,6 +30,9 @@ use crate::{
     },
 };
 use std::sync::Arc;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/inherited_environments.rs"]
+mod inherited_tests;
 #[path = "assumed_originals.rs"]
 mod originals;
 #[path = "assumption_ports.rs"]
@@ -352,15 +355,8 @@ impl Owner {
         let scope = self.scopes[index]
             .as_deref()
             .ok_or_else(|| error("private defining declaration scope disappeared"))?;
-        let (environment, bytes) = originals::finish(
-            facts,
-            &prepared.templates,
-            rows,
-            &mut port,
-            scope,
-            demand,
-            work,
-        )?;
+        let (environment, bytes) =
+            originals::finish(facts, prepared, rows, &mut port, self, demand, work)?;
         let body = match origin {
             originals::Origin::Declaration => Body::Ready {
                 expected,

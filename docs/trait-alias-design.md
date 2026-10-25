@@ -1,21 +1,21 @@
 # Genuine trait aliases for original core
 
-LIB-031 is the actual loading frontier after the defaultness checkpoint. Observer
-40239001850 verifies722 original inputs, opens65 and stops at `ptr/metadata.rs:85`,
+LIB-031 is the current loading frontier after the defaultness checkpoint. Observer
+40239001850 verifies 722 original inputs, opens 65 and stops at `ptr/metadata.rs:85`,
 byte3311, the equals sign in `pub trait Thin = Pointee<Metadata = ()> + PointeeSized;`.
 Source SHA is `90be519b27b46064f0bec607170ffce37aa9afb160a1edfab9c51641c8af15e2`.
 This plan does not claim a trait-alias implementation or a core artifact.
 
-Independent run40239493812 freezes16 authored sources before execution, then
-observes32 metadata compilations and six actual native executions on pinned
-rustc1.98.0 in editions2021/2024. Its44 commands take0.75 seconds, with zero
+Independent run40239493812 freezes 16 authored sources before execution, then
+observes 32 metadata compilations and six actual native executions on pinned
+rustc 1.98.0 in editions 2021/2024. Its 44 commands take 0.75 seconds, with zero
 infrastructure failures. Actual native programs exercise associated equality,
 lifetime/type arguments and nested aliases containing two ordinary traits; all
 print `7\n`. Sixteen source fixtures and the complete command/diagnostic contract
 are in `pa31/tests/spec/trait-aliases/`, outside the active manifest.
 
 Plan SHA is `d38fe6af6ab66c04552b53f40c0dec3234ed7e5413cc8e20b891eb095c5acbff`.
-Artifact12616985245 has ZIP SHA
+Artifact 12616985245 has ZIP SHA
 `bd43c957290e0db79a70f91b0e3fadd962c132eaad1a710df34834fc3e966664`.
 The original predictions remain frozen. Eight command observations disagree:
 the pre-equals where-clause is rejected in both editions, a public alias over
@@ -30,7 +30,7 @@ trait plus auto traits. Empty aliases and post-bounds where-clauses are accepted
 Cycles, using an alias as an impl owner, incorrect associated equality and
 forwarded caller syntax lacking its own feature authority are rejected.
 Primary background: [unstable book](https://doc.rust-lang.org/unstable-book/language-features/trait-alias.html),
-[RFC1733](https://rust-lang.github.io/rfcs/1733-trait-alias.html). Pinned outcomes
+[RFC 1733](https://rust-lang.github.io/rfcs/1733-trait-alias.html). Pinned outcomes
 above, rather than a broader proposed RFC profile, define these test requirements.
 
 The current parser has a single real trait branch in `syntax/expression/items.rs`.
@@ -79,7 +79,7 @@ unique dependency edges, actual substitutions, emitted clauses, warm lookups,
 failed attempts and transient coexistence before allocation. Diagnose bounded
 depth/work/retention exhaustion while retaining cumulative payment. Ordinary
 programs without aliases must allocate no alias owner. Measure any containing
-owner/layout change and widths/depths8/32/128 plus a shared diamond and an
+owner/layout change and widths/depths 8/32/128 plus a shared diamond and an
 ordinary control; do not claim a wall-time improvement from oracle timings.
 
 Implement grammar/identity, local typed expansion and genuine imported transport
