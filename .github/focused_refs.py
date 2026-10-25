@@ -5,7 +5,7 @@ STARTED=time.monotonic()
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 from fastcheck_run import fingerprint
-EXPECTED_SHA='0a88171806fead0ceb8890d8447077e8e41214ec9efdf5354021419f9b95ea17'
+EXPECTED_SHA='32fbe3c49c062295be46c363055b0a25ecaaeb3463cc0acba963b8345c3a5774'
 EXPECTED_COUNT=2594
 ARGS=['--lib-case', 'sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_retain_full_family_and_unused_formals', '--lib-case', 'sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_reject_changed_provenance_and_incomplete_formals', '--lib-case', 'sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_bound_selected_work_and_warm_storage', '--lib-case', 'sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_keep_failed_attempt_and_peak_costs', '--lib-case', 'support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof', '--lib-case', 'resolve::body_origin::catalog::freezing_tests::clone_drop_and_unique_access_never_reopen_frozen_installation']
 def authenticate():

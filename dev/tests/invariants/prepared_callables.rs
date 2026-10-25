@@ -43,6 +43,67 @@ fn prepared(session: &Session) -> Result<&Prepared> {
         .and_then(|state| state.callables.as_deref())
         .ok_or_else(|| "actual private callable owner".into())
 }
+fn inspect_header(
+    session: &Session,
+    rows: s::ValidatedView<'_>,
+    header: &s::FunctionHeader,
+    work: &mut ReservationWork,
+) -> Result {
+    let table = prepared(session)?;
+    let item = ItemId(
+        session
+            .inputs
+            .recipe_view(&session.inventory, 0, work)?
+            .definition(header.declaration, work)?
+            .0,
+    );
+    let record = table
+        .ready
+        .iter()
+        .flatten()
+        .find(|r| r.item == item)
+        .ok_or("real readiness")?;
+    assert_eq!(record.header, *header);
+    assert_eq!(
+        table.templates.get(item).ok_or("real template")?.signature,
+        record.pair.callable
+    );
+    let expected = usize::from(
+        header
+            .parent
+            .is_some_and(|parent| matches!(rows.header(parent), Ok(Some(s::HeaderRef::Trait(_)))))
+            || rows.declarations[header.declaration.0 as usize]
+                .name
+                .as_deref()
+                == Some("identity"),
+    );
+    assert_eq!(
+        table
+            .templates
+            .generic_parameters(item)
+            .ok_or("full formals")?
+            .len(),
+        expected
+    );
+    if rows.declarations[header.declaration.0 as usize]
+        .name
+        .as_deref()
+        == Some("clone_from")
+    {
+        assert_eq!(
+            header.constness,
+            crate::support::constness::Constness::Ordinary
+        );
+        let s::FunctionBody::Original(body) = header.body else {
+            return Err("real provided body".into());
+        };
+        assert_eq!(
+            rows.originals[body.0 as usize].context,
+            s::CallContext::ConstDefinition
+        );
+    }
+    Ok(())
+}
 #[test]
 fn private_callable_templates_retain_full_family_and_unused_formals() -> Result {
     let (report, facts, inventory) = actual(true)?;
@@ -61,58 +122,7 @@ fn private_callable_templates_retain_full_family_and_unused_formals() -> Result 
     let old = session.old_definitions;
     for header in &rows.functions {
         session = ready(session.callable_template(header.declaration, &mut work)?)?;
-        let table = prepared(&session)?;
-        let item = ItemId(
-            session
-                .inputs
-                .recipe_view(&inventory, 0, &mut work)?
-                .definition(header.declaration, &mut work)?
-                .0,
-        );
-        let record = table
-            .ready
-            .iter()
-            .flatten()
-            .find(|r| r.item == item)
-            .ok_or("real readiness")?;
-        assert_eq!(record.header, *header);
-        assert_eq!(
-            table.templates.get(item).ok_or("real template")?.signature,
-            record.pair.callable
-        );
-        let expected = usize::from(
-            header.parent.is_some_and(|parent| {
-                matches!(rows.header(parent), Ok(Some(s::HeaderRef::Trait(_))))
-            }) || rows.declarations[header.declaration.0 as usize]
-                .name
-                .as_deref()
-                == Some("identity"),
-        );
-        assert_eq!(
-            table
-                .templates
-                .generic_parameters(item)
-                .ok_or("full formals")?
-                .len(),
-            expected
-        );
-        if rows.declarations[header.declaration.0 as usize]
-            .name
-            .as_deref()
-            == Some("clone_from")
-        {
-            assert_eq!(
-                header.constness,
-                crate::support::constness::Constness::Ordinary
-            );
-            let s::FunctionBody::Original(body) = header.body else {
-                return Err("real provided body".into());
-            };
-            assert_eq!(
-                rows.originals[body.0 as usize].context,
-                s::CallContext::ConstDefinition
-            );
-        }
+        inspect_header(&session, rows, header, &mut work)?;
     }
     assert_eq!(session.facts.functions.len(), old_functions);
     assert!(session.facts.definitions[old..].iter().all(Option::is_none));
