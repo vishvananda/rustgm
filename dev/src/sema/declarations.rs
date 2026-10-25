@@ -41,6 +41,7 @@ mod receivers;
 mod self_constructors;
 mod slice_methods;
 mod slice_paths;
+mod structural_owners;
 mod trait_paths;
 mod trait_regions;
 mod traits;

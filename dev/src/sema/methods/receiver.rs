@@ -63,22 +63,8 @@ pub(in crate::sema) fn choose(
         .head(&facts.types, base)
         .map_err(inference)
         .map_err(error)?;
-    let inherent = match head {
-        Some(Constructor::Adt(nominal, _) | Constructor::AdtArgs(nominal, _))
-            if facts.methods.inherent.contains_key(&(nominal, site.name)) =>
-        {
-            selection::candidates(
-                report,
-                facts,
-                source,
-                base,
-                (nominal, site.name),
-                identifier,
-            )
-            .map_err(error)?
-        }
-        _ => selection::Found::default(),
-    };
+    let inherent = inherent_candidates(report, facts, source, (term, base), head, site, identifier)
+        .map_err(error)?;
     let has_traits = facts.methods.trait_names.contains(&site.name);
     let library = library_method(report, head, site.name);
     if inherent.members.is_empty() && !has_traits && library.is_none() {
@@ -149,6 +135,41 @@ pub(in crate::sema) fn choose(
         "no applicable inherent method for this receiver"
     }))
 }
+fn inherent_candidates(
+    report: &Report,
+    facts: &mut Declarations,
+    source: &mut Context,
+    (term, base): (TermId, TermId),
+    head: Option<Constructor>,
+    site: MethodCall,
+    identifier: super::names::Use,
+) -> Result<selection::Found, &'static str> {
+    let mut inherent = match head {
+        Some(Constructor::Adt(nominal, _) | Constructor::AdtArgs(nominal, _))
+            if facts.methods.inherent.contains_key(&(nominal, site.name)) =>
+        {
+            selection::candidates(
+                report,
+                facts,
+                source,
+                base,
+                (nominal, site.name),
+                identifier,
+            )?
+        }
+        _ => selection::Found::default(),
+    };
+    super::adjusted_targets::collect(
+        report,
+        facts,
+        source,
+        (term, base),
+        site.name,
+        identifier,
+        &mut inherent,
+    )?;
+    Ok(inherent)
+}
 fn library_method(
     report: &Report,
     head: Option<Constructor>,
@@ -191,6 +212,9 @@ impl Search<'_> {
         unsize: bool,
     ) -> Result<Option<Selected>, &'static str> {
         for borrow in [None, Some(false), Some(true)] {
+            if unsize && borrow.is_none() {
+                continue;
+            }
             let actual = if let Some(mutable) = borrow {
                 self.source
                     .construct(
@@ -247,7 +271,16 @@ impl Search<'_> {
             let Some(&(receiver, references)) = self.facts.methods.receivers.get(&method) else {
                 continue;
             };
+            let owner_self = self
+                .facts
+                .associated
+                .schema(method)
+                .map(|schema| schema.self_type);
+            let nominal = owner_self.is_some_and(|ty| {
+                matches!(self.facts.types.kind(ty), Some(crate::types::Kind::Adt(..)))
+            });
             if matches!(lane, Lane::Inherent)
+                && nominal
                 && references != self.depth - dereferences + u32::from(borrow.is_some())
             {
                 continue;
@@ -273,6 +306,25 @@ impl Search<'_> {
                         .import(&self.facts.types, self.source, self.base)
                         .map_err(inference)?,
                 )
+            } else if matches!(lane, Lane::Inherent) && !nominal {
+                let mut subject = actual;
+                let mut possible = true;
+                for _ in 0..references {
+                    if !matches!(
+                        probe.head(&self.facts.types, subject).map_err(inference)?,
+                        Some(Constructor::Reference { .. })
+                    ) {
+                        possible = false;
+                        break;
+                    }
+                    subject = probe
+                        .child(&self.facts.types, subject, 0)
+                        .map_err(inference)?;
+                }
+                if !possible {
+                    continue;
+                }
+                Some(subject)
             } else {
                 None
             };

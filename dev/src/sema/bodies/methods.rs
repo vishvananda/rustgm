@@ -53,20 +53,21 @@ impl Checker<'_> {
             return self.equate(node, target, prefix);
         }
         let selected = selected.ok_or_else(|| self.error(node, "missing selected method owner"))?;
-        let prefix = if selected.annotation
-            || self
-                .facts
-                .generics
-                .annotation_uses
-                .contains_key(&selected.prefix)
-            || self
-                .facts
-                .node(selected.prefix)
-                .is_some_and(|f| f.ty.is_some())
-        {
-            self.annotation(selected.prefix.node)?
-        } else {
-            self.nominal_term(node, selected.prefix.node, selected.nominal, None)?
+        let prefix = match selected.kind {
+            crate::sema::methods::PrefixKind::Nominal(item)
+                if !self
+                    .facts
+                    .generics
+                    .annotation_uses
+                    .contains_key(&selected.prefix)
+                    && self
+                        .facts
+                        .node(selected.prefix)
+                        .is_none_or(|fact| fact.ty.is_none()) =>
+            {
+                self.nominal_term(node, selected.prefix.node, item, None)?
+            }
+            _ => self.annotation(selected.prefix.node)?,
         };
         let prefix = self.alias_argument(node, prefix)?;
         self.equate(node, target, prefix)

@@ -1,5 +1,5 @@
 //! Source-owned macro claims and the one implemented internal edition permission.
-use super::{KnownFeature, policy::Feature};
+use super::KnownFeature;
 mod grants;
 mod lists;
 mod witness;
@@ -164,12 +164,9 @@ pub(in crate::resolve) fn checked(
             message,
         )
     };
-    if let Some(source) = package.source_core() {
-        if source.current != source.provider {
-            return Err(error("source macro provider identity changed"));
-        }
-        let mut state = source
-            .macros
+    if let Some(context) = package.macro_context().map_err(error)? {
+        let mut state = context
+            .contracts()
             .0
             .try_borrow_mut()
             .map_err(|_| error("reentrant source macro contract query"))?;
@@ -230,14 +227,12 @@ pub(in crate::resolve) fn published(
     steps: usize,
 ) -> Result<Declaration, Error> {
     let error = |message| Error::at(key.file, 0, message);
-    let source = package
-        .source_core()
+    let context = package
+        .macro_context()
+        .map_err(error)?
         .ok_or_else(|| error("missing source macro provider"))?;
-    if source.current != source.provider || source.current.name() != package.crate_name {
-        return Err(error("source macro provider identity changed"));
-    }
-    let mut state = source
-        .macros
+    let mut state = context
+        .contracts()
         .0
         .try_borrow_mut()
         .map_err(|_| error("reentrant published macro query"))?;
@@ -276,12 +271,13 @@ pub(in crate::resolve) fn existing(
     package: &Package,
     key: NodeKey,
 ) -> Result<Option<Declaration>, Error> {
-    let source = package
-        .source_core()
+    let context = package
+        .macro_context()
+        .map_err(|message| Error::at(key.file, 0, message))?
         .ok_or_else(|| Error::at(key.file, 0, "missing source macro provider"))?;
     let owner = {
-        let mut state = source
-            .macros
+        let mut state = context
+            .contracts()
             .0
             .try_borrow_mut()
             .map_err(|_| Error::at(key.file, 0, "reentrant source macro contract query"))?;
@@ -299,20 +295,12 @@ pub(in crate::resolve) fn existing(
         .map(Option::flatten)
 }
 fn require_features(package: &Package, entry: Declaration) -> Result<(), &'static str> {
-    let source = package
-        .source_core()
-        .ok_or("internal macro contracts require an actual source provider")?;
-    if entry.builtin.is_some() && !source.features.has(Feature::RustcAttributes) {
-        return Err("builtin macro binding requires rustc_attrs");
-    }
-    if entry.unsafe_lint && !source.features.has(Feature::InternalUnsafeLint) {
-        return Err("internal unsafe lint attribute requires allow_internal_unsafe");
-    }
-    if entry.has_allowance && !source.features.has(Feature::InternalMacroAllowance) {
-        return Err("internal macro allowance requires allow_internal_unstable");
-    }
-    Ok(())
+    package
+        .macro_context()?
+        .ok_or("internal macro contracts require an actual source provider")?
+        .require_header(entry)
 }
+
 fn is_macro(unit: &Unit, key: NodeKey) -> bool {
     let Kind::Item(index) = unit.configured.ast.node(key.node).kind else {
         return false;
