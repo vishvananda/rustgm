@@ -85,97 +85,17 @@ fn full_family() -> Result {
     let mut normalization = 0;
     let mut aliases = 0;
     for header in &rows.functions {
-        let s::FunctionBody::Original(body) = header.body else {
+        let s::FunctionBody::Original(_) = header.body else {
             continue;
         };
         session = ready(session.record_numbering(header.declaration, &mut work)?)?;
-        let (expected, actual) = record(&session, header.declaration)?;
-        let unit = &rows.body_units[body.0 as usize];
-        assert_eq!(actual.log.ordered.len(), unit.allocation_order.len());
-        let view = session
-            .inputs
-            .recipe_view(&session.inventory, 0, &mut work)?;
-        for (ordinal, (&slot, allocation)) in unit
-            .allocation_order
-            .iter()
-            .zip(&actual.log.ordered)
-            .enumerate()
-        {
-            assert_eq!(allocation.slot, slot);
-            assert_eq!(allocation.id.0 as usize, ordinal + 1);
-            assert_eq!(
-                actual.region(&view, &session.facts.types, expected, slot, &mut work)?,
-                allocation.id
-            );
-            assert_eq!(
-                allocation.site,
-                view.body_site(
-                    body,
-                    rows.originals[body.0 as usize].variables[slot as usize].site,
-                    &mut work
-                )?
-            );
-            if matches!(
-                rows.originals[body.0 as usize].variables[slot as usize].allocation,
-                s::RegionAllocation::Normalization(_)
-            ) {
-                normalization += 1;
-            }
-        }
-        assert_eq!(
-            actual.aliases.as_ref().map(Vec::len),
-            unit.aliases.as_ref().map(Vec::len)
-        );
-        if let (Some(mapped), Some(slots)) = (&actual.aliases, &unit.aliases) {
-            assert_eq!(mapped.len(), unit.universals as usize);
-            for (&alias, &slot) in mapped.iter().zip(slots) {
-                assert_eq!(Some(alias), actual.log.by_slot[slot as usize]);
-            }
-            aliases += mapped.len();
-        }
-        assert!(
-            actual
-                .region(&view, &session.facts.types, expected, u32::MAX, &mut work)
-                .is_err()
-        );
+        let (normalizations, universals) = check_unit(&session, rows, header, &mut work)?;
+        normalization += normalizations;
+        aliases += universals;
     }
     assert!(normalization > 0);
     assert!(aliases >= 2);
-    let original = rows
-        .originals
-        .iter()
-        .find(|original| {
-            original.variables.iter().any(|variable| {
-                matches!(variable.allocation, s::RegionAllocation::Normalization(_))
-            })
-        })
-        .ok_or("actual normalization domain")?;
-    let other = rows
-        .originals
-        .iter()
-        .find(|candidate| candidate.body != original.body)
-        .ok_or("actual other body")?;
-    let (_, normalized) = record(&session, original.declaration)?;
-    let (foreign, _) = record(&session, other.declaration)?;
-    let slot = original
-        .variables
-        .iter()
-        .position(|variable| matches!(variable.allocation, s::RegionAllocation::Normalization(_)))
-        .ok_or("actual normalization slot")?;
-    let view = session
-        .inputs
-        .recipe_view(&session.inventory, 0, &mut work)?;
-    assert!(
-        normalized
-            .region(
-                &view,
-                &session.facts.types,
-                foreign,
-                u32::try_from(slot)?,
-                &mut work
-            )
-            .is_err()
-    );
+    normalization_owner(&session, rows, &mut work)?;
     assert_eq!(
         session.facts.generics.environments.len(),
         source_environments
@@ -199,6 +119,110 @@ fn full_family() -> Result {
         )
     ));
     assert!(prepared(&session)?.environments.is_none());
+    ordinary_inverse_denial()?;
+    Ok(())
+}
+fn check_unit(
+    session: &Session,
+    rows: s::ValidatedView<'_>,
+    header: &s::FunctionHeader,
+    work: &mut ReservationWork,
+) -> Result<(usize, usize)> {
+    let s::FunctionBody::Original(body) = header.body else {
+        return Err("actual original unit".into());
+    };
+    let mut normalization = 0;
+    let mut aliases = 0;
+    let (expected, actual) = record(session, header.declaration)?;
+    let unit = &rows.body_units[body.0 as usize];
+    assert_eq!(actual.log.ordered.len(), unit.allocation_order.len());
+    let view = session.inputs.recipe_view(&session.inventory, 0, work)?;
+    for (ordinal, (&slot, allocation)) in unit
+        .allocation_order
+        .iter()
+        .zip(&actual.log.ordered)
+        .enumerate()
+    {
+        assert_eq!(allocation.slot, slot);
+        assert_eq!(allocation.id.0 as usize, ordinal + 1);
+        assert_eq!(
+            actual.region(&view, &session.facts.types, expected, slot, work)?,
+            allocation.id
+        );
+        assert_eq!(
+            allocation.site,
+            view.body_site(
+                body,
+                rows.originals[body.0 as usize].variables[slot as usize].site,
+                work
+            )?
+        );
+        if matches!(
+            rows.originals[body.0 as usize].variables[slot as usize].allocation,
+            s::RegionAllocation::Normalization(_)
+        ) {
+            normalization += 1;
+        }
+    }
+    assert_eq!(
+        actual.aliases.as_ref().map(Vec::len),
+        unit.aliases.as_ref().map(Vec::len)
+    );
+    if let (Some(mapped), Some(slots)) = (&actual.aliases, &unit.aliases) {
+        assert_eq!(mapped.len(), unit.universals as usize);
+        for (&alias, &slot) in mapped.iter().zip(slots) {
+            assert_eq!(Some(alias), actual.log.by_slot[slot as usize]);
+        }
+        aliases += mapped.len();
+    }
+    assert!(
+        actual
+            .region(&view, &session.facts.types, expected, u32::MAX, work)
+            .is_err()
+    );
+    Ok((normalization, aliases))
+}
+fn normalization_owner(
+    session: &Session,
+    rows: s::ValidatedView<'_>,
+    work: &mut ReservationWork,
+) -> Result {
+    let original = rows
+        .originals
+        .iter()
+        .find(|original| {
+            original.variables.iter().any(|variable| {
+                matches!(variable.allocation, s::RegionAllocation::Normalization(_))
+            })
+        })
+        .ok_or("actual normalization domain")?;
+    let other = rows
+        .originals
+        .iter()
+        .find(|candidate| candidate.body != original.body)
+        .ok_or("actual other body")?;
+    let (_, normalized) = record(session, original.declaration)?;
+    let (foreign, _) = record(session, other.declaration)?;
+    let slot = original
+        .variables
+        .iter()
+        .position(|variable| matches!(variable.allocation, s::RegionAllocation::Normalization(_)))
+        .ok_or("actual normalization slot")?;
+    let view = session.inputs.recipe_view(&session.inventory, 0, work)?;
+    assert!(
+        normalized
+            .region(
+                &view,
+                &session.facts.types,
+                foreign,
+                u32::try_from(slot)?,
+                work
+            )
+            .is_err()
+    );
+    Ok(())
+}
+fn ordinary_inverse_denial() -> Result {
     let (_, _, ordinary) = actual(false)?;
     let ordinary = ordinary.artifacts()[0]
         .source_descriptor()
@@ -218,6 +242,7 @@ fn full_family() -> Result {
     assert!(failed.steps > 0);
     Ok(())
 }
+
 const TWINS: &str = "\nfn left(value:&u8)->&u8{value}fn right(value:&u8)->&u8{value}";
 fn foreign_contexts() -> Result {
     let mut work = ReservationWork::default();
@@ -279,6 +304,15 @@ fn foreign_contexts() -> Result {
     Ok(())
 }
 fn failed_prepayment() -> Result {
+    let mut appended = false;
+    assert!(
+        record_next(usize::MAX, |_| {
+            appended = true;
+            Ok(())
+        })
+        .is_err()
+    );
+    assert!(!appended, "exhaustion must precede actual recording");
     let mut work = ReservationWork::default();
     let (session, owner) = start(TWINS, "left", &mut work)?;
     let session = ready(session.callable_template(owner, &mut work)?)?;
@@ -315,14 +349,17 @@ fn chain(depth: usize) -> Result<String> {
 }
 fn growth() -> Result {
     eprintln!(
-        "recording layouts: stage={} domain={} seal={} allocation={} log={} owner={} prepared={}",
+        "recording layouts: stage={} domain={} seal={} allocation={} log={} owner={} prepared={} state={} session={} index_slot={}",
         size_of::<DomainStage>(),
         size_of::<RecordedDomain>(),
         size_of::<Seal>(),
         size_of::<Allocation>(),
         size_of::<AllocationLog>(),
         size_of::<Owner>(),
-        size_of::<super::super::Prepared>()
+        size_of::<super::super::Prepared>(),
+        size_of::<super::super::State>(),
+        size_of::<Session>(),
+        size_of::<Option<Box<RecordedDomain>>>()
     );
     depth_growth()?;
     unrelated_growth()?;
@@ -340,6 +377,10 @@ fn depth_growth() -> Result {
         let cold = work.steps - before;
         let (_, domain) = record(&session, owner)?;
         let n = domain.log.ordered.len();
+        assert!(
+            n >= depth,
+            "real reference frontier cannot collapse its owned allocations"
+        );
         if let Some((prior_n, prior_work)) = previous {
             assert!(cold <= prior_work * n / prior_n + 128);
         }
