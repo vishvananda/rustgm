@@ -3,6 +3,8 @@
 mod columns;
 #[path = "ordinary_profile.rs"]
 mod functions;
+#[path = "module_exports.rs"]
+mod module_exports;
 #[path = "supplied_profile.rs"]
 mod provided;
 use super::{HeaderIndex, SourceRows};
@@ -16,6 +18,7 @@ use crate::support::{
     retained,
 };
 pub use columns::{Columns, ValidatedView};
+pub(crate) use module_exports::{ExportBinding, NamespaceColumns, UnpublishedNamespace};
 
 /// Existing source-mode facade; no source descriptor has been published yet.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -128,36 +131,15 @@ impl ValidatedRows {
         let previous_peak = plan.peak_bytes().max(numbering_peak);
         drop(plan);
         drop(domains);
-        let (headers, raw_bytes) = indexed.into_header_rows()?;
-        let mut budget = freeze_budget(&rows, &headers, raw_bytes, base, previous_peak, work)?;
-        let mut kinds = Vec::with_capacity(rows.declarations.len());
-        let mut names = 0_usize;
-        for declaration in &rows.declarations {
-            work.charge(1)?;
-            names = names.saturating_add(declaration.name.as_ref().map_or(0, String::len));
-            if declaration.definition.parent.is_none()
-                && declaration.name.as_deref() != Some(owner.name())
-            {
-                return Err("source module root differs from its actual artifact identity");
-            }
-            kinds.push(
-                if declaration.definition.kind == super::DefinitionKind::Function {
-                    DeclarationBody::Function
-                } else {
-                    DeclarationBody::Other
-                },
-            );
-        }
-        work.charge(rows.body_owners.len().saturating_mul(2))?;
-        let (body_owners, columns) = Columns::take(rows);
-        let owners = BodyCatalog::new(owner.clone(), &kinds, body_owners)?;
+        let indexed = indexed.into_header_rows()?;
+        let (owners, columns, headers, mut budget) =
+            freeze_columns(owner, rows, indexed, base, previous_peak, work)?;
         budget.atoms = work.steps.saturating_sub(start);
-        budget.names = names;
         Ok(Self {
             owners,
             profile,
-            columns: Box::new(columns),
-            headers: headers.into_boxed_slice(),
+            columns,
+            headers,
             attributes: None,
             budget,
         })
@@ -175,6 +157,51 @@ impl ValidatedRows {
     pub(crate) const fn view(&self) -> ValidatedView<'_> {
         ValidatedView { source: self }
     }
+}
+type FrozenColumns = (
+    BodyCatalog,
+    Box<Columns>,
+    Box<[Option<super::HeaderRef>]>,
+    Budget,
+);
+fn freeze_columns(
+    owner: &CrateIdentity,
+    rows: SourceRows,
+    indexed: (Vec<Option<super::HeaderRef>>, usize),
+    base: usize,
+    previous_peak: usize,
+    work: &mut Work,
+) -> Result<FrozenColumns, &'static str> {
+    let (headers, raw_bytes) = indexed;
+    let mut budget = freeze_budget(&rows, &headers, raw_bytes, base, previous_peak, work)?;
+    let mut kinds = Vec::with_capacity(rows.declarations.len());
+    let mut names = 0_usize;
+    for declaration in &rows.declarations {
+        work.charge(1)?;
+        names = names.saturating_add(declaration.name.as_ref().map_or(0, String::len));
+        if declaration.definition.parent.is_none()
+            && declaration.name.as_deref() != Some(owner.name())
+        {
+            return Err("source module root differs from its actual artifact identity");
+        }
+        kinds.push(
+            if declaration.definition.kind == super::DefinitionKind::Function {
+                DeclarationBody::Function
+            } else {
+                DeclarationBody::Other
+            },
+        );
+    }
+    work.charge(rows.body_owners.len().saturating_mul(2))?;
+    let (body_owners, columns) = Columns::take(rows);
+    let owners = BodyCatalog::new(owner.clone(), &kinds, body_owners)?;
+    budget.names = names;
+    Ok((
+        owners,
+        Box::new(columns),
+        headers.into_boxed_slice(),
+        budget,
+    ))
 }
 fn freeze_budget(
     rows: &SourceRows,
