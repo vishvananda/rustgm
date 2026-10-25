@@ -44,7 +44,7 @@ pub(super) fn collect(
         let definition = port.definition(scope.owner, work)?;
         result.owners.push(ItemId(definition.0));
         visit(&mut port, store, scope, definition, work, |parameter| {
-            result.parameters.push(parameter)
+            result.parameters.push(parameter);
         })?;
     }
     Ok(result)
