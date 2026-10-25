@@ -22,9 +22,8 @@ fn fresh_module_clients_preserve_aliases_domains_provider_selection_and_advisori
         "sealed-private-path-denied",
     ] {
         let interface = test::roundtrip(&test::fixture("restricted-provider")?)?;
-        let error = match source_packets::client_analysis(interface, &test::fixture(client)?) {
-            Ok(_) => return Err(format!("unexpected accepted {client}").into()),
-            Err(e) => e,
+        let Err(error) = source_packets::client_analysis(interface, &test::fixture(client)?) else {
+            return Err(format!("unexpected accepted {client}").into());
         };
         let text = error.to_string();
         if client == "sealed-private-path-denied" {

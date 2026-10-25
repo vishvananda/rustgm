@@ -109,7 +109,7 @@ fn advisory_columns() -> Result {
 }
 
 fn malformed_rows(interface: &crates::Interface) -> Result {
-    let (rows, attributes, modules) = test::raw(&interface)?;
+    let (rows, attributes, modules) = test::raw(interface)?;
     for case in 0..10 {
         let mut changed = modules.clone();
         match case {
