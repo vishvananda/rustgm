@@ -14,7 +14,7 @@ use crate::{
 
 mod control;
 pub mod fragment;
-#[path = "restriction_clause.rs"]
+#[path = "expression/restriction_clause.rs"]
 mod impl_restrictions;
 mod items;
 mod statement_modes;
