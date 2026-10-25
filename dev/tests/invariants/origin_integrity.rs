@@ -1,6 +1,7 @@
 //! Applicability and incarnation checks use real configured providers/imports.
 use super::*;
 use crate::support::crates::owner_catalog::DeclarationRef;
+use std::fmt::Write as _;
 
 #[test]
 fn inline_and_trait_contracts_retain_complete_actual_owner_applicability() -> Result {
@@ -152,8 +153,33 @@ fn completion_incarnations_and_repeated_import_queries_remain_bounded() -> Resul
             .header_attribute_contracts(&foreign, definition)
             .is_err()
     );
-    let ledger = imported
-        .facts
+    assert_borrowed_queries(&client, &imported.facts, definition)?;
+    assert_header_scaling()?;
+    Ok(())
+}
+
+fn assert_header_scaling() -> Result {
+    for count in [1, 8, 32] {
+        let mut source = fixture("plain")?;
+        for index in 0..count {
+            write!(source, "pub fn extra{index}(x:u8)->u8{{x}}")?;
+        }
+        let (interface, _) = exported(&source)?;
+        let rows = interface.source_descriptor().ok_or("descriptor")?.rows();
+        assert_eq!(
+            rows.header_attributes()
+                .ok_or("complete columns")?
+                .functions
+                .len(),
+            count + 2
+        );
+        assert!(rows.header_contract(DeclarationRef(u32::MAX)).is_err());
+    }
+    Ok(())
+}
+
+fn assert_borrowed_queries(client: &Report, facts: &Declarations, definition: DefId) -> Result {
+    let ledger = facts
         .must_use_contracts
         .as_deref()
         .and_then(|owner| owner.headers.as_deref())
@@ -162,9 +188,8 @@ fn completion_incarnations_and_repeated_import_queries_remain_bounded() -> Resul
     let before = ledger.work.get();
     let mut pointer = None;
     for _ in 0..128 {
-        let view = imported
-            .facts
-            .must_use_contract(&client, definition)?
+        let view = facts
+            .must_use_contract(client, definition)?
             .ok_or("imported reason")?;
         let actual = view.reason.ok_or("reason")?.as_ptr();
         if let Some(expected) = pointer {
@@ -179,12 +204,7 @@ fn completion_incarnations_and_repeated_import_queries_remain_bounded() -> Resul
     );
     ledger.work.set(crates::MAX_COMPONENTS);
     for _ in 0..2 {
-        assert!(
-            imported
-                .facts
-                .must_use_contract(&client, definition)
-                .is_err()
-        );
+        assert!(facts.must_use_contract(client, definition).is_err());
     }
     assert_eq!(ledger.work.get(), crates::MAX_COMPONENTS + 2);
     eprintln!(
@@ -196,26 +216,5 @@ fn completion_incarnations_and_repeated_import_queries_remain_bounded() -> Resul
         size_of::<s::HeaderAttributeColumns>(),
         size_of::<s::ValidatedRows>()
     );
-    assert_header_scaling()?;
-    Ok(())
-}
-
-fn assert_header_scaling() -> Result {
-    for count in [1, 8, 32] {
-        let mut source = fixture("plain")?;
-        for index in 0..count {
-            source.push_str(&format!("pub fn extra{index}(x:u8)->u8{{x}}"));
-        }
-        let (interface, _) = exported(&source)?;
-        let rows = interface.source_descriptor().ok_or("descriptor")?.rows();
-        assert_eq!(
-            rows.header_attributes()
-                .ok_or("complete columns")?
-                .functions
-                .len(),
-            count + 2
-        );
-        assert!(rows.header_contract(DeclarationRef(u32::MAX)).is_err());
-    }
     Ok(())
 }

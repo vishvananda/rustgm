@@ -23,8 +23,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         .source_descriptor()
         .ok_or("source envelope lacks its actual descriptor")?;
     let tag = match descriptor.profile() {
-        Profile::Source2024Functions => TAG,
-        Profile::Source2024FunctionContracts => TAG,
+        Profile::Source2024Functions | Profile::Source2024FunctionContracts => TAG,
         Profile::Source2024Provided => PROVIDED_TAG,
         Profile::Source2024 => return Err("unpublished source facade has no wire profile"),
     };
