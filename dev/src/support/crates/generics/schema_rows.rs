@@ -24,8 +24,8 @@ pub use descriptor::{Columns, Descriptor, Profile, ValidatedRows, ValidatedView}
 pub use inputs::*;
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};
 pub use validation::{
-    DomainIndex, DomainWork, HeaderIndex, HeaderRef, InputWork, OperationPort, OriginalInputPlan,
-    RequiredInput, RequiredKind,
+    DomainIndex, DomainWork, HeaderIndex, HeaderRef, InputWork, NumberingUnits, OperationPort,
+    OriginalInputPlan, RequiredInput, RequiredKind,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -294,6 +294,17 @@ pub struct FunctionHeader {
     pub constness: Constness,
     pub body: FunctionBody,
 }
+/// Complete numbering-unit data. Neither allocation order nor an optional
+/// universal alias ledger is a region proof or defining-environment permission.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct BodyUnit {
+    pub body: BodyRef,
+    pub universals: u32,
+    /// Owned-variable slot ordinals in the actual source unit allocation order.
+    pub allocation_order: Vec<u32>,
+    /// Exact owned-variable slot for every declaration universal, when present.
+    pub aliases: Option<Vec<u32>>,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RoleBinding {
     pub role: LangItem,
@@ -327,5 +338,6 @@ pub struct Rows {
     pub roles: Vec<RoleBinding>,
     pub originals: Vec<Original>,
     pub body_inputs: Vec<BodyInputs>,
+    pub body_units: Vec<BodyUnit>,
 }
 pub type SourceRows = Rows;

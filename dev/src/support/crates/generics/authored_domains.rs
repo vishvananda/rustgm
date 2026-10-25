@@ -11,12 +11,18 @@ mod header_ledger;
 mod table_storage;
 #[path = "source_validation/recipe_domains.rs"]
 mod type_domains;
+#[path = "source_validation/unit_layout.rs"]
+mod unit_layout;
 use super::{DefinitionKind, ScopeIndex, SourceRows};
 use crate::support::crates::{generics::Work, owner_catalog::DeclarationRef};
 pub use domains::{
     DomainIndex, DomainWork, InputWork, OperationPort, OriginalInputPlan, RequiredInput,
     RequiredKind,
 };
+pub use unit_layout::NumberingUnits;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/numbered_units.rs"]
+mod numbered_tests;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/transport_domains.rs"]
 mod tests;
@@ -38,6 +44,13 @@ pub struct HeaderIndex<'a> {
     peak: usize,
 }
 impl<'a> HeaderIndex<'a> {
+    /// Check complete raw numbering data without constructing frontend regions,
+    /// defining environments, imported identities or any paid proof.
+    /// # Errors
+    /// Rejects incomplete units, invalid allocation/alias relations and budgets.
+    pub fn numbering(&self, work: &mut Work) -> Result<NumberingUnits<'a>, &'static str> {
+        unit_layout::validate(self, work)
+    }
     /// Inspect actual binder/type/application/operation ownership. This is
     /// structural data validation, not a descriptor or a semantic proof.
     /// # Errors

@@ -22,6 +22,9 @@ pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(),
     if rows.policy.edition != Edition::Rust2024 {
         return Err("source function columns require defining Rust2024 edition");
     }
+    if !rows.body_units.is_empty() {
+        return Err("source function columns cannot encode numbering units");
+    }
     id(out, rows.policy.provider.0)?;
     range(out, rows.policy.roles)?;
     write(out, &rows.declarations, owner_rows::declaration_write)?;
@@ -105,6 +108,7 @@ pub(super) fn decode(reader: &mut Reader<'_>, base: usize) -> Result<s::SourceRo
         roles: read.list(crates::MAX_COMPONENTS, 9, contract_columns::role_read)?,
         originals: read.list(crates::MAX_FUNCTIONS, 70, operation_columns::original_read)?,
         body_inputs: read.list(crates::MAX_FUNCTIONS, 30, relation_columns::body_read)?,
+        body_units: Vec::new(),
     })
 }
 

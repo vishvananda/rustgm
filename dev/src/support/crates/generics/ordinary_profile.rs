@@ -14,6 +14,9 @@ pub(super) fn validate(
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(1)?;
+    if !rows.body_units.is_empty() {
+        return Err("source numbering units require their wider explicit profile");
+    }
     if rows.policy.edition != Edition::Rust2024 || rows.policy.provider.0 != 0 {
         return Err("ordinary source functions require their own Rust2024 provider profile");
     }

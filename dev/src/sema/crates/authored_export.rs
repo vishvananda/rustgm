@@ -484,5 +484,6 @@ fn rows(edition: crate::support::edition::Edition) -> s::SourceRows {
         roles: Vec::new(),
         originals: Vec::new(),
         body_inputs: Vec::new(),
+        body_units: Vec::new(),
     }
 }

@@ -27,13 +27,40 @@ pub fn inspect_source_transport(
     identity: &crate::support::crates::CrateIdentity,
     prepared: crate::pipeline::Prepared,
 ) -> Result<SourceInspection, Error> {
+    inspect_source_rows(report, facts, identity, prepared, false)
+}
+
+/// Inspect complete actual numbering rows as unpaid development data.
+/// This entry cannot publish a descriptor or activate imported defaults.
+/// # Errors
+/// Preserves original proof failures and incomplete allocation/unit transport.
+pub fn inspect_source_transport_with_numbering(
+    report: &Report,
+    facts: &mut Declarations,
+    identity: &crate::support::crates::CrateIdentity,
+    prepared: crate::pipeline::Prepared,
+) -> Result<SourceInspection, Error> {
+    inspect_source_rows(report, facts, identity, prepared, true)
+}
+
+fn inspect_source_rows(
+    report: &Report,
+    facts: &mut Declarations,
+    identity: &crate::support::crates::CrateIdentity,
+    prepared: crate::pipeline::Prepared,
+    numbered: bool,
+) -> Result<SourceInspection, Error> {
     inspect_staged(
         report,
         facts,
         prepared,
         |facts, checked| {
-            let source = super::transported_source::Source::begin(report, facts, checked, identity)
-                .map_err(|e| diagnostic(report, None, e.into()))?;
+            let source = if numbered {
+                super::transported_source::Source::begin_numbered(report, facts, checked, identity)
+            } else {
+                super::transported_source::Source::begin(report, facts, checked, identity)
+            }
+            .map_err(|e| diagnostic(report, None, e.into()))?;
             let exports = super::roots::exports(facts, &[])
                 .map_err(|e| diagnostic(report, None, e.into()))?;
             Ok((None, exports, source))

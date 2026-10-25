@@ -63,6 +63,13 @@ pub(super) fn preflight(
         work.charge(1)?;
         inputs(input, &mut count, work)?;
     }
+    for unit in &rows.body_units {
+        work.charge(1)?;
+        count.vector(&unit.allocation_order, work)?;
+        if let Some(aliases) = &unit.aliases {
+            count.vector(aliases, work)?;
+        }
+    }
     count.check()?;
     // Dense header ledger plus declaration validation's definitions/ordinals/
     // tri-colour walk and body coverage. ScopeIndex independently checks its
@@ -124,7 +131,8 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
     count.vector(&rows.member_links, work)?;
     count.vector(&rows.roles, work)?;
     count.vector(&rows.originals, work)?;
-    count.vector(&rows.body_inputs, work)
+    count.vector(&rows.body_inputs, work)?;
+    count.vector(&rows.body_units, work)
 }
 fn original(
     body: &super::super::Original,

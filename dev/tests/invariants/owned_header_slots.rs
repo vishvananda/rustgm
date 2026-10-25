@@ -34,6 +34,7 @@ fn empty_rows(slots: Vec<ParameterSlot>, scopes: Vec<ParameterScope>) -> SourceR
         roles: Vec::new(),
         originals: Vec::new(),
         body_inputs: Vec::new(),
+        body_units: Vec::new(),
     }
 }
 fn definition(kind: DefinitionKind, parent: Option<u32>) -> Definition {

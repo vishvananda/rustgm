@@ -1,6 +1,7 @@
 //! Source transport borrows actual successful originals; emitted rows grant no proof.
 mod cfg_rows;
 mod locations;
+mod numbered_inputs;
 mod obligation_rows;
 use crate::{
     body::{
@@ -28,6 +29,7 @@ pub(super) struct Source {
     stage: Stage,
     /// A single pass over actual semantic allocations, not a log scan per call.
     openings: HashMap<(NodeKey, NodeKey), Vec<RegionId>>,
+    numbering: Option<Vec<Option<s::BodyUnit>>>,
 }
 /// Neutral staged observations. Rows still require complete validation,
 /// serialization/authenticated import and fresh original/instance proof.
@@ -43,10 +45,38 @@ impl Source {
         checked: &Checked<'_>,
         identity: &CrateIdentity,
     ) -> Result<Self, &'static str> {
+        Self::begin_with_numbering(report, facts, checked, identity, false)
+    }
+
+    pub(super) fn begin_numbered(
+        report: &Report,
+        facts: &Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_with_numbering(report, facts, checked, identity, true)
+    }
+
+    fn begin_with_numbering(
+        report: &Report,
+        facts: &Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+        numbered: bool,
+    ) -> Result<Self, &'static str> {
         let mut source = Self {
             stage: Stage::begin(report, facts, identity)?,
             openings: HashMap::default(),
+            numbering: None,
         };
+        if numbered {
+            let count = source.stage.rows.body_owners.len();
+            source.stage.charge(count)?;
+            source
+                .stage
+                .reserve(count.saturating_mul(size_of::<Option<s::BodyUnit>>()))?;
+            source.numbering = Some((0..count).map(|_| None).collect());
+        }
         for row in facts.body_regions.log() {
             source.stage.charge(1)?;
             if !matches!(row.region.origin, BodyRegionOrigin::CallArgument) {
@@ -144,24 +174,60 @@ impl Source {
             &mut sites,
         )?;
         original.sites = sites.len()?;
-        self.stage.retain_original(context, original, inputs)
+        let unit = self
+            .numbering
+            .as_ref()
+            .map(|_| {
+                numbered_inputs::emit(
+                    &mut self.stage,
+                    facts,
+                    body,
+                    definition,
+                    input,
+                    context,
+                    original.variables.len(),
+                )
+            })
+            .transpose()?;
+        self.stage.retain_original(context, original, inputs)?;
+        if let (Some(numbering), Some(unit)) = (&mut self.numbering, unit) {
+            let slot = numbering
+                .get_mut(unit.body.0 as usize)
+                .ok_or("source numbering lost its exact reserved body")?;
+            if slot.replace(unit).is_some() {
+                return Err("source numbering has duplicate original coverage");
+            }
+        }
+        Ok(())
     }
 
     pub(super) fn complete(self) -> Result<SourceInspection, &'static str> {
         // No original can still arrive after this ownership transfer. Release
         // collection-only opening scratch before allocating validation indexes.
         drop(self.openings);
-        let (rows, mut work) = self.stage.into_rows()?;
+        let (mut rows, mut work) = self.stage.into_rows()?;
+        if let Some(numbering) = self.numbering {
+            let mut units = Vec::with_capacity(numbering.len());
+            for unit in numbering {
+                units.push(unit.ok_or("source numbering omitted an actual original")?);
+            }
+            rows.body_units = units;
+        }
         let mut validation = g::Work {
             steps: work.steps,
             ..g::Work::default()
         };
         let headers = s::HeaderIndex::new(&rows, 0, &mut validation)?;
+        let numbering_peak = if rows.body_units.is_empty() {
+            0
+        } else {
+            headers.numbering(&mut validation)?.peak_bytes()
+        };
         let domains = headers.domains(&mut validation)?;
         let plan = domains.original_inputs(&mut validation)?;
         let previous_peak = work.reserved_bytes.saturating_add(work.scratch_bytes);
         let retained = work.reserved_bytes.max(plan.retained_bytes());
-        let peak = previous_peak.max(plan.peak_bytes());
+        let peak = previous_peak.max(plan.peak_bytes()).max(numbering_peak);
         work.steps = validation.steps;
         work.reserved_bytes = retained;
         work.scratch_bytes = peak.saturating_sub(retained);
@@ -178,6 +244,9 @@ impl Source {
         self,
         base: crate::support::crates::Interface,
     ) -> Result<crate::support::crates::Interface, &'static str> {
+        if self.numbering.is_some() {
+            return Err("numbered source inspection has no provided-profile publisher");
+        }
         drop(self.openings);
         let (rows, work) = self.stage.into_rows()?;
         let base_bytes = base.base_retained_bytes();

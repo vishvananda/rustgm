@@ -1,8 +1,8 @@
 //! Frozen source columns own their payload once; `BodyCatalog` owns body rows.
 use super::super::{
-    Argument, Binder, BodyInputs, Clause, Declaration, Formal, FunctionApplication, FunctionHeader,
-    ImplHeader, MemberLink, Original, ParameterScope, ParameterSlot, Policy, Region, RegionBound,
-    RoleBinding, SlotRef, SourceRows, TraitApplication, TraitHeader, Type,
+    Argument, Binder, BodyInputs, BodyUnit, Clause, Declaration, Formal, FunctionApplication,
+    FunctionHeader, ImplHeader, MemberLink, Original, ParameterScope, ParameterSlot, Policy,
+    Region, RegionBound, RoleBinding, SlotRef, SourceRows, TraitApplication, TraitHeader, Type,
 };
 use crate::support::crates::generics::TypeRef;
 use crate::support::crates::owner_catalog::{BodyOwner, DeclarationRef};
@@ -35,6 +35,7 @@ pub struct Columns {
     pub roles: Vec<RoleBinding>,
     pub originals: Vec<Original>,
     pub body_inputs: Vec<BodyInputs>,
+    pub body_units: Vec<BodyUnit>,
 }
 impl Columns {
     pub(super) fn take(rows: SourceRows) -> (Vec<BodyOwner>, Self) {
@@ -64,6 +65,7 @@ impl Columns {
             roles,
             originals,
             body_inputs,
+            body_units,
         } = rows;
         (
             body_owners,
@@ -92,6 +94,7 @@ impl Columns {
                 roles,
                 originals,
                 body_inputs,
+                body_units,
             },
         )
     }
