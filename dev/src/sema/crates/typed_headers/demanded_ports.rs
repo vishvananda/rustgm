@@ -23,7 +23,10 @@ pub(in crate::sema::crates::typed_headers) struct Reserved<'rows, 'maps> {
 }
 impl<'rows, 'maps> Reserved<'rows, 'maps> {
     pub(in crate::sema::crates::typed_headers) fn input_site(
-        &self, owner: DeclarationRef, site: u32, work: &mut ReservationWork,
+        &self,
+        owner: DeclarationRef,
+        site: u32,
+        work: &mut ReservationWork,
     ) -> Result<crate::resolve::body_origin::ProofSite, Error> {
         self.view.input_site(owner, site, work)
     }
