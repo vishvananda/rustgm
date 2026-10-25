@@ -9,7 +9,7 @@ pub(super) mod policy;
 mod positions;
 mod reservations;
 mod role_attributes;
-mod root_options;
+pub(crate) mod root_options;
 #[path = "bindings/claimed_macros.rs"]
 mod source_builtin;
 use crate::support::{

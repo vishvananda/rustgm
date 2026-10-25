@@ -1,7 +1,11 @@
 //! Resolved names reserve candidate owners before their environments are elaborated.
-use super::{Checker, DefId, DefKind, Error, NodeKey, Type};
+use super::{Checker, DefId, DefKind, Error, NodeKey};
 use crate::support::hash::{HashMap, HashSet};
-use crate::{resolve::names::NameId, sema::associated::OwnerKind, types::ItemId};
+use crate::{
+    resolve::names::NameId,
+    sema::{associated::OwnerKind, methods::buckets::Bucket},
+    types::{ItemId, subject_head::Head},
+};
 #[cfg(test)]
 #[path = "../../../tests/invariants/inherent_headers.rs"]
 mod tests;
@@ -9,34 +13,51 @@ mod tests;
 #[derive(Default)]
 pub(super) struct Pending {
     owners: HashMap<DefId, Members>,
-    buckets: HashMap<(Option<ItemId>, NameId), HashSet<DefId>>,
+    buckets: HashMap<(Option<Head>, NameId), HashSet<DefId>>,
 }
 
 struct Members {
-    head: Option<ItemId>,
+    head: Option<Head>,
+    all_marked: bool,
     declarations: Vec<(NameId, DefId)>,
 }
 
 impl Pending {
-    fn insert(&mut self, owner: DefId, head: Option<ItemId>, name: NameId, member: DefId) {
-        self.owners
-            .entry(owner)
-            .or_insert_with(|| Members {
-                head,
-                declarations: Vec::new(),
-            })
-            .declarations
-            .push((name, member));
-        self.buckets.entry((head, name)).or_default().insert(owner);
+    fn insert(&mut self, owner: DefId, name: NameId, member: DefId, marked: bool) {
+        if let Some(members) = self.owners.get_mut(&owner) {
+            members.all_marked &= marked;
+            members.declarations.push((name, member));
+            self.buckets
+                .entry((members.head, name))
+                .or_default()
+                .insert(owner);
+        }
+    }
+
+    pub(super) fn permitted(&self, owner: DefId, empty_request: bool) -> bool {
+        self.owners.get(&owner).is_some_and(|members| {
+            if members.declarations.is_empty() {
+                empty_request
+            } else {
+                members.all_marked
+            }
+        })
     }
 
     pub(super) fn contains(&self, nominal: ItemId, name: NameId) -> bool {
-        self.buckets.contains_key(&(Some(nominal), name))
-            || self.buckets.contains_key(&(None, name))
+        self.contains_head(Head::Nominal(nominal), name)
+    }
+
+    pub(super) fn contains_head(&self, head: Head, name: NameId) -> bool {
+        self.buckets.contains_key(&(Some(head), name)) || self.buckets.contains_key(&(None, name))
     }
 
     pub(super) fn dependencies(&self, nominal: ItemId, name: NameId) -> Vec<DefId> {
-        let mut owners: Vec<_> = [Some(nominal), None]
+        self.head_dependencies(Head::Nominal(nominal), name)
+    }
+
+    pub(super) fn head_dependencies(&self, head: Head, name: NameId) -> Vec<DefId> {
+        let mut owners: Vec<_> = [Some(head), None]
             .into_iter()
             .flat_map(|head| {
                 self.buckets
@@ -86,6 +107,32 @@ impl Checker<'_> {
         let mut heads = super::heads::Heads::new(self.report, &self.facts);
         let mut pending = Pending::default();
         let mut trait_names = HashSet::default();
+        let marked = self.incoherent_members()?;
+        for index in 0..self.facts.associated.owners().len() {
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
+            if let OwnerKind::Impl {
+                target,
+                trait_type: None,
+                ..
+            } = owner.kind
+            {
+                pending.owners.insert(
+                    owner.self_definition,
+                    Members {
+                        head: heads.shape(target).unwrap_or_default(),
+                        all_marked: true,
+                        declarations: Vec::new(),
+                    },
+                );
+            }
+        }
         for member in self.facts.associated.members() {
             let owner = self.facts.associated.get(member.owner).ok_or_else(|| {
                 Error::at(crate::resolve::unit::FileId(0), 0, "invalid method owner")
@@ -104,15 +151,12 @@ impl Checker<'_> {
                     ..
                 } => {
                     // A raw head is only an exclusion hint, never a ready schema.
-                    let head = pending.owners.get(&owner.self_definition).map_or_else(
-                        || heads.target(target).unwrap_or_default(),
-                        |members| members.head,
-                    );
+                    let _ = target;
                     pending.insert(
                         owner.self_definition,
-                        head,
                         definition.name,
                         member.definition,
+                        marked.contains(&member.definition),
                     );
                 }
                 OwnerKind::Impl { .. } => {}
@@ -145,20 +189,23 @@ impl Checker<'_> {
             .associated
             .schema(owner)
             .ok_or_else(|| self.error(source, "missing inherent owner schema"))?;
-        let Some(Type::Adt(nominal, _)) = self.facts.types.kind(schema.self_type) else {
-            return Err(self.error(source, "missing inherent nominal target"));
-        };
-        if members.head.is_some_and(|head| head != nominal) {
-            return Err(self.error(
-                source,
-                "inherent owner disagrees with reserved nominal head",
-            ));
+        let actual = self
+            .facts
+            .types
+            .kind(schema.self_type)
+            .ok_or_else(|| self.error(source, "missing inherent target"))?;
+        let head = Head::canonical(actual);
+        if members.head.is_some_and(|reserved| reserved != head) {
+            return Err(self.error(source, "inherent owner disagrees with reserved target head"));
         }
         for (name, member) in members.declarations {
             let context = self.report.definition_item_context(member)?;
-            self.facts
-                .methods
-                .publish_inherent((nominal, name), context, member);
+            self.facts.methods.publish_inherent(
+                Bucket::declared(head, name)
+                    .ok_or_else(|| Error::unlocated("invalid inherent target head"))?,
+                context,
+                member,
+            );
         }
         Ok(())
     }

@@ -3,8 +3,9 @@ use super::associated::Path;
 use super::{Checker, DefKind, Error, Kind, NodeId, NodeKey, Target, Type, Work, regions};
 use crate::{
     resolve::model::{Access, Namespace},
-    sema::methods::Qualified,
-    types::ItemId,
+    sema::methods::buckets::Bucket,
+    sema::methods::{PrefixKind, Qualified},
+    types::subject_head::Head,
 };
 
 impl Checker<'_> {
@@ -92,14 +93,16 @@ impl Checker<'_> {
             return Ok(true);
         }
         self.method_path_segments(key, path.prefix, path.suffix)?;
-        if let Some(variant) = self.enum_variant(
-            key,
-            path.suffix,
-            path.nominal,
-            path.name,
-            path.namespace,
-            path.scope,
-        )? {
+        if let Head::Nominal(nominal) = path.head
+            && let Some(variant) = self.enum_variant(
+                key,
+                path.suffix,
+                nominal,
+                path.name,
+                path.namespace,
+                path.scope,
+            )?
+        {
             if path.owner.is_some() {
                 return Ok(false);
             }
@@ -107,12 +110,9 @@ impl Checker<'_> {
             return Ok(true);
         }
         if path.namespace == Namespace::Value
-            && (self.inherent_headers.contains(path.nominal, path.name)
-                || self
-                    .facts
-                    .methods
-                    .inherent
-                    .contains_key(&(path.nominal, path.name)))
+            && let Some(bucket) = Bucket::lookup(path.head, path.name)
+            && (self.inherent_headers.contains_head(path.head, path.name)
+                || self.facts.methods.has_inherent(bucket))
         {
             self.work
                 .push(super::Work::InherentMethod(key, *path, context));
@@ -140,13 +140,11 @@ impl Checker<'_> {
             _ => return None,
         }
         let path = self.report.resolution.associated_paths.get(&key)?;
-        let Type::Adt(nominal, _) = self
-            .facts
-            .types
-            .kind(self.facts.definitions[path.owner.0 as usize]?)?
-        else {
-            return None;
-        };
+        let head = Head::canonical(
+            self.facts
+                .types
+                .kind(self.facts.definitions[path.owner.0 as usize]?)?,
+        );
         if path.namespace != Namespace::Value || path.suffix.len() != 1 {
             return None;
         }
@@ -160,7 +158,7 @@ impl Checker<'_> {
                 ..key
             },
             owner: Some(path.owner),
-            nominal,
+            head,
             name: path.suffix[0].1,
             scope: path.scope,
             namespace: path.namespace,
@@ -182,27 +180,27 @@ impl Checker<'_> {
             ..key
         };
         let (name, scope, namespace) = (path.suffix[0].1, path.scope, path.namespace);
-        let nominal = self.nominal_prefix(prefix)?;
+        let head = self.inherent_prefix_head(prefix)?;
         Some(Path {
             prefix,
             suffix,
             owner: None,
-            nominal,
+            head,
             name,
             scope,
             namespace,
         })
     }
 
-    fn nominal_prefix(&self, mut key: NodeKey) -> Option<ItemId> {
+    fn inherent_prefix_head(&self, mut key: NodeKey) -> Option<Head> {
         loop {
             let fact = self.facts.node(key)?;
             let ty = fact.ty.or_else(|| match fact.reference {
                 Some(Target::Definition(id)) => self.facts.definitions[id.0 as usize],
                 _ => None,
             });
-            if let Some(Type::Adt(item, _)) = ty.and_then(|ty| self.facts.types.kind(ty)) {
-                return Some(item);
+            if let Some(kind) = ty.and_then(|ty| self.facts.types.kind(ty)) {
+                return Some(Head::canonical(kind));
             }
             key.node = match self.kind(key) {
                 Kind::Group(node) | Kind::Attributed { value: node, .. } => node,
@@ -290,7 +288,14 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
-        let pending = self.inherent_headers.dependencies(path.nominal, path.name);
+        let Some(bucket) = Bucket::lookup(path.head, path.name) else {
+            return self
+                .schedule_implicit_method(key, context, steps, limit, scan)
+                .map(|_| ());
+        };
+        let pending = self
+            .inherent_headers
+            .head_dependencies(path.head, path.name);
         if !pending.is_empty() {
             self.work.push(Work::InherentMethod(key, *path, context));
             for owner in pending.into_iter().rev() {
@@ -299,18 +304,19 @@ impl Checker<'_> {
             }
             return Ok(());
         }
-        let Some(candidates) = self.facts.methods.inherent.get(&(path.nominal, path.name)) else {
+        let Some(candidates) = self
+            .facts
+            .methods
+            .inherent_members(bucket, crate::resolve::model::ItemContext::ROOT)
+        else {
             return self
                 .schedule_implicit_method(key, context, steps, limit, scan)
                 .map(|_| ());
         };
         let identifier =
             crate::sema::methods::names::Use::path(self.report, path.suffix, path.scope)?;
-        let contextual = self
-            .facts
-            .methods
-            .has_contextual_inherent((path.nominal, path.name));
-        let unique = if let [method] = candidates.as_slice()
+        let contextual = self.facts.methods.has_contextual_inherent(bucket);
+        let unique = if let [method] = candidates
             && !contextual
         {
             Some(*method)
@@ -319,7 +325,9 @@ impl Checker<'_> {
         };
         let prefix = path.prefix;
         let has_traits = self.facts.methods.trait_names.contains(&path.name);
-        let method = if let Some(method) = unique.filter(|_| !has_traits) {
+        let method = if let Some(method) =
+            unique.filter(|_| !has_traits && matches!(path.head, Head::Nominal(_)))
+        {
             method
         } else {
             use crate::sema::methods::selection::{PathCaller, PathProgress, PathQuery};
@@ -335,7 +343,7 @@ impl Checker<'_> {
                     &mut self.facts,
                     key,
                     prefix,
-                    (path.nominal, path.name),
+                    bucket,
                     identifier,
                     PathCaller {
                         availability:
@@ -368,9 +376,11 @@ impl Checker<'_> {
             key,
             Qualified {
                 prefix,
-                nominal: path.nominal,
+                kind: match (path.owner, path.head) {
+                    (Some(_), Head::Nominal(item)) => PrefixKind::Nominal(item),
+                    _ => PrefixKind::Annotation,
+                },
                 implementation,
-                annotation: path.owner.is_none(),
             },
         );
         self.facts

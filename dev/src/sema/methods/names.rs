@@ -1,4 +1,5 @@
 //! Member identity is partitioned before shape and applicability work.
+use super::buckets::{Bucket, Structural};
 use super::{Candidates, Methods};
 use crate::{
     resolve::{
@@ -23,6 +24,7 @@ mod tests;
 pub(super) struct Index {
     pub(super) visible: Option<super::visible::Index>,
     pub(super) contextual: Option<Box<Contextual>>,
+    pub(super) structural: Option<Box<Structural>>,
 }
 
 #[derive(Default)]
@@ -48,8 +50,9 @@ impl Cursor {
         &mut self,
         methods: &mut Methods,
         report: &Report,
-        key: Key,
+        key: impl Into<Bucket>,
     ) -> Result<Option<ItemContext>, &'static str> {
+        let key = key.into();
         while self.0 != ItemContext::ROOT {
             methods.account_name_lookup(1)?;
             let current = self.0;
@@ -172,10 +175,21 @@ impl Use {
 impl Methods {
     pub(in crate::sema) fn publish_inherent(
         &mut self,
-        key: Key,
+        key: impl Into<Bucket>,
         context: ItemContext,
         member: DefId,
     ) {
+        let key = match key.into() {
+            Bucket::Nominal(item, name) => (item, name),
+            Bucket::Structural(head, name) => {
+                self.names
+                    .get_or_insert_default()
+                    .structural
+                    .get_or_insert_default()
+                    .publish((head, name), context, member);
+                return;
+            }
+        };
         // Keep the coarse key as a presence hint, even for a solely opaque name.
         let ordinary = self.inherent.entry(key).or_default();
         if context == ItemContext::ROOT {
@@ -211,9 +225,26 @@ impl Methods {
                 members.sort_unstable_by_key(|member| member.0);
             }
         }
+        if let Some(structural) = self
+            .names
+            .as_mut()
+            .and_then(|index| index.structural.as_mut())
+        {
+            structural.freeze();
+        }
     }
 
-    pub(in crate::sema) fn has_contextual_inherent(&self, key: Key) -> bool {
+    pub(in crate::sema) fn has_contextual_inherent(&self, key: impl Into<Bucket>) -> bool {
+        let key = match key.into() {
+            Bucket::Nominal(item, name) => (item, name),
+            Bucket::Structural(head, name) => {
+                return self
+                    .names
+                    .as_ref()
+                    .and_then(|index| index.structural.as_ref())
+                    .is_some_and(|index| index.contextual((head, name)));
+            }
+        };
         self.contextual()
             .is_some_and(|index| index.inherent.contains_key(&key))
     }
@@ -236,7 +267,22 @@ impl Methods {
             )
     }
 
-    pub(super) fn inherent_members(&self, key: Key, context: ItemContext) -> Option<&[DefId]> {
+    pub(in crate::sema) fn inherent_members(
+        &self,
+        key: impl Into<Bucket>,
+        context: ItemContext,
+    ) -> Option<&[DefId]> {
+        let key = match key.into() {
+            Bucket::Nominal(item, name) => (item, name),
+            Bucket::Structural(head, name) => {
+                return self
+                    .names
+                    .as_ref()?
+                    .structural
+                    .as_ref()?
+                    .members((head, name), context);
+            }
+        };
         if context == ItemContext::ROOT {
             self.inherent.get(&key).map(Vec::as_slice)
         } else {
@@ -248,7 +294,22 @@ impl Methods {
         }
     }
 
-    pub(super) fn candidate_index(&self, key: Key, context: ItemContext) -> Option<&Candidates> {
+    pub(super) fn candidate_index(
+        &self,
+        key: impl Into<Bucket>,
+        context: ItemContext,
+    ) -> Option<&Candidates> {
+        let key = match key.into() {
+            Bucket::Nominal(item, name) => (item, name),
+            Bucket::Structural(head, name) => {
+                return self
+                    .names
+                    .as_ref()?
+                    .structural
+                    .as_ref()?
+                    .index((head, name), context);
+            }
+        };
         if context == ItemContext::ROOT {
             self.indices.get(&key)
         } else {
@@ -258,10 +319,21 @@ impl Methods {
 
     pub(in crate::sema) fn retain_candidate_index(
         &mut self,
-        key: Key,
+        key: impl Into<Bucket>,
         context: ItemContext,
         index: Candidates,
     ) -> Result<(), &'static str> {
+        let key = match key.into() {
+            Bucket::Nominal(item, name) => (item, name),
+            Bucket::Structural(head, name) => {
+                return self
+                    .names
+                    .as_mut()
+                    .and_then(|index| index.structural.as_mut())
+                    .ok_or("structural method index has no declarations")?
+                    .retain((head, name), context, index);
+            }
+        };
         if context == ItemContext::ROOT {
             self.indices.insert(key, index);
         } else {
@@ -296,5 +368,23 @@ impl Methods {
 
     fn contextual_mut(&mut self) -> Option<&mut Contextual> {
         self.names.as_deref_mut()?.contextual.as_deref_mut()
+    }
+
+    pub(in crate::sema) fn has_inherent(&self, key: impl Into<Bucket>) -> bool {
+        match key.into() {
+            Bucket::Nominal(item, name) => self.inherent.contains_key(&(item, name)),
+            Bucket::Structural(head, name) => self
+                .names
+                .as_ref()
+                .and_then(|index| index.structural.as_ref())
+                .is_some_and(|index| index.contains((head, name))),
+        }
+    }
+
+    pub(super) fn structural_name(&self, name: NameId) -> bool {
+        self.names
+            .as_ref()
+            .and_then(|index| index.structural.as_ref())
+            .is_some_and(|index| index.named(name))
     }
 }

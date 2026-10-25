@@ -1,4 +1,6 @@
 //! Typed inherent candidate buckets and selected qualified source uses.
+mod adjusted_targets;
+pub(in crate::sema) mod buckets;
 pub(in crate::sema) mod names;
 pub(super) mod overlap;
 pub(crate) mod pointers;

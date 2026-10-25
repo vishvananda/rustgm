@@ -189,6 +189,9 @@ impl std::fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 impl Package {
+    pub(crate) fn requested_internal_attributes(&self) -> bool {
+        self.macro_features.requested_internal()
+    }
     pub(crate) fn coherence_is_core(&self) -> bool {
         self.macro_features.coherence()
     }

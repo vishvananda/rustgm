@@ -61,7 +61,42 @@ impl Checker<'_> {
         if selected.from_bound {
             self.facts.methods.bound_uses.insert(key);
         }
-        if let Some(subject) = selected.self_term {
+        let structural = selected.self_term.is_some()
+            && self
+                .facts
+                .associated
+                .schema(selected.method)
+                .is_some_and(|schema| {
+                    !matches!(
+                        self.facts.types.kind(schema.self_type),
+                        Some(crate::types::Kind::Adt(..))
+                    )
+                });
+        // A structural Self may itself be an autoref. Bind it to the real fresh
+        // borrow, never the static region used only in isolated shape probes.
+        let adjusted = if structural {
+            Some(self.adjust_method_receiver(node, site.receiver, term, selected)?)
+        } else {
+            None
+        };
+        if let Some(mut subject) = selected.self_term {
+            if let Some((_, _, actual)) = adjusted {
+                subject = if selected.unsize {
+                    self.unsize_method_receiver(node, actual)?
+                } else {
+                    actual
+                };
+                let references = self
+                    .facts
+                    .methods
+                    .receivers
+                    .get(&selected.method)
+                    .ok_or_else(|| self.error(node, "missing structural receiver shape"))?
+                    .1;
+                for _ in 0..references {
+                    subject = self.child(node, subject, 0)?;
+                }
+            }
             let implementation = self
                 .facts
                 .associated
@@ -80,8 +115,11 @@ impl Checker<'_> {
         let signature = self.child(node, callable, 0)?;
         let signature = self.call_signature(node, signature)?;
         let expected = self.child(node, signature, 0)?;
-        let (dereferences, borrow, actual) =
-            self.adjust_method_receiver(node, site.receiver, term, selected)?;
+        let (dereferences, borrow, actual) = if let Some(adjusted) = adjusted {
+            adjusted
+        } else {
+            self.adjust_method_receiver(node, site.receiver, term, selected)?
+        };
         if let Some(borrow) = borrow
             && matches!(
                 self.head(node, borrow)?,

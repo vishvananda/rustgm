@@ -7,6 +7,7 @@ mod bodies;
 )]
 pub(crate) mod body_origin;
 mod builtins;
+mod collision_retention;
 mod container_scopes;
 mod contextual_lookup;
 pub mod crates;

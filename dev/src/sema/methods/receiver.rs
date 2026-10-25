@@ -63,7 +63,7 @@ pub(in crate::sema) fn choose(
         .head(&facts.types, base)
         .map_err(inference)
         .map_err(error)?;
-    let inherent = match head {
+    let mut inherent = match head {
         Some(Constructor::Adt(nominal, _) | Constructor::AdtArgs(nominal, _))
             if facts.methods.inherent.contains_key(&(nominal, site.name)) =>
         {
@@ -79,6 +79,16 @@ pub(in crate::sema) fn choose(
         }
         _ => selection::Found::default(),
     };
+    super::adjusted_targets::collect(
+        report,
+        facts,
+        source,
+        term,
+        site.name,
+        identifier,
+        &mut inherent,
+    )
+    .map_err(error)?;
     let has_traits = facts.methods.trait_names.contains(&site.name);
     let library = library_method(report, head, site.name);
     if inherent.members.is_empty() && !has_traits && library.is_none() {
@@ -247,7 +257,16 @@ impl Search<'_> {
             let Some(&(receiver, references)) = self.facts.methods.receivers.get(&method) else {
                 continue;
             };
+            let owner_self = self
+                .facts
+                .associated
+                .schema(method)
+                .map(|schema| schema.self_type);
+            let nominal = owner_self.is_some_and(|ty| {
+                matches!(self.facts.types.kind(ty), Some(crate::types::Kind::Adt(..)))
+            });
             if matches!(lane, Lane::Inherent)
+                && nominal
                 && references != self.depth - dereferences + u32::from(borrow.is_some())
             {
                 continue;
@@ -273,6 +292,25 @@ impl Search<'_> {
                         .import(&self.facts.types, self.source, self.base)
                         .map_err(inference)?,
                 )
+            } else if matches!(lane, Lane::Inherent) && !nominal {
+                let mut subject = actual;
+                let mut possible = true;
+                for _ in 0..references {
+                    if !matches!(
+                        probe.head(&self.facts.types, subject).map_err(inference)?,
+                        Some(Constructor::Reference { .. })
+                    ) {
+                        possible = false;
+                        break;
+                    }
+                    subject = probe
+                        .child(&self.facts.types, subject, 0)
+                        .map_err(inference)?;
+                }
+                if !possible {
+                    continue;
+                }
+                Some(subject)
             } else {
                 None
             };

@@ -78,13 +78,8 @@ impl Checker<'_> {
                     .remove(&id)
                     .ok_or_else(|| self.error(owner.source, "missing pending impl target"))?;
                 let header = self.finish_impl_header(target, partial)?;
-                if trait_type.is_none()
-                    && !matches!(
-                        self.facts.types.kind(header.schema.self_type),
-                        Some(Kind::Adt(..))
-                    )
-                {
-                    return Err(self.error(target, "inherent impl requires a local nominal type"));
+                if trait_type.is_none() {
+                    self.validate_inherent_target(id, target, header.schema.self_type)?;
                 }
                 self.work.push(Work::ImplHeader(id, Phase::Arguments));
                 self.publish_impl_owner(id, owner.source, header)?;
