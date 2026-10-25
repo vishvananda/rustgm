@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "purpose": "ONE NEW member-demand opponent: Full own child method must not inherit unused parent body obligations; no prior observations repeated",
+  "baseline": "a598b799",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "metadata_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "native_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Cdebug-assertions=no",
+    "-Coverflow-checks=no",
+    "-Copt-level=2",
+    "-Ccodegen-units=1",
+    "-Clto=off",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "runtime_observer": "Exact parent-requested actual stdout2 newline checks own child selection for a nonstatic caller input; no RustGM support claim",
+  "cases": [
+    {
+      "name": "own-child-does-not-demand-unused-static-parent",
+      "source": "obj/parallel/pa31/specialization-graph-v1/member-demand-sources/own-child-does-not-demand-unused-static-parent.rs",
+      "sha256": "83b5d112caf818518d660d024c46058efe92890908002ca51a1a30abaa30a7a8",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "2\n",
+        "stderr": ""
+      },
+      "prediction_note": "Prediction frozen before execution: pinned rustc accepts Full structural specialization without proving unused parent T:static for an actually selected own child method."
+    }
+  ],
+  "planned_metadata_observations": 2,
+  "planned_native_programs": 2,
+  "source_prediction_disagreements": "Retain all actual raw observations and wrong predictions; disagreements are data, not automatic infrastructure failures."
+}
