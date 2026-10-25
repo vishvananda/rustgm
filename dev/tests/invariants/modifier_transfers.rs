@@ -10,7 +10,7 @@ use crate::syntax::{
 };
 fn rollback_and_retry() -> TestResult {
     let text = "struct S;impl S{default fn f(){} default fn g(){}}";
-    let source = expression::parse_crate(text, None).map_err(|error| error.message)?;
+    let source = expression::parse_crate(text).map_err(|error| error.message)?;
     let rows = source.defaultness.as_ref().ok_or("source default rows")?;
     assert_eq!(rows.len(), 2);
     let rejected = rows.entries()[1].keyword;
@@ -193,7 +193,7 @@ fn sparse_modifiers_preserve_transfer_retry_root_and_original_identities() -> Te
         ),
     ] {
         let text = fixture(lane, name)?;
-        let ast = expression::parse_crate(&text, None).map_err(|error| error.message)?;
+        let ast = expression::parse_crate(&text).map_err(|error| error.message)?;
         let rows = ast.defaultness.as_ref().ok_or("parsed modifier rows")?;
         assert_eq!(rows.len(), 1, "{name}");
         assert_eq!(rows.entries()[0].kind, expected);
@@ -203,7 +203,6 @@ fn sparse_modifiers_preserve_transfer_retry_root_and_original_identities() -> Te
     }
     let plain = expression::parse_crate(
         "fn default(){}macro_rules! default{()=>{}}fn main(){default();default!();}",
-        None,
     )
     .map_err(|error| error.message)?;
     assert!(plain.defaultness.is_none());
