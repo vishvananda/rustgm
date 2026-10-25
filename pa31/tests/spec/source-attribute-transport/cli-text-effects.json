@@ -1,0 +1,239 @@
+{
+  "state": "source-only effect inventory, not executed text qualification",
+  "source": "4311d7ed71bcff278a063df92a693cbb1cfe848f",
+  "assignments_sha256": "40ac9fa0eb024c71f2b5d161c03c37bd1ef84d174b361d2e81cf979eb0761a1a",
+  "course_sha256": "baf9956a33bb150344c33bdb41992ccc6b56ae5268a6c1a9f076edb75a7101f9",
+  "manifests": [
+    {
+      "stage": "pa1",
+      "status": "implemented-draft",
+      "manifest": "pa1/tests/manifest.json",
+      "manifest_sha256": "a260be01e6f4ab42ec0b953dd6804f548f8ce71a1ada2bfa4cbe9b509f1a1ef6",
+      "cases": 51,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa2",
+      "status": "implemented-draft",
+      "manifest": "pa2/tests/manifest.json",
+      "manifest_sha256": "8955bd5420ce9e0b64b2468736ca96e528f6ba78aa590dd5692d545242589ae0",
+      "cases": 142,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa3",
+      "status": "implemented-draft",
+      "manifest": "pa3/tests/manifest.json",
+      "manifest_sha256": "4fe3ecd83fdc09507df12601c4ecc952f831eb2dec0cee79c8fa7b2feb2c37f5",
+      "cases": 88,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa4",
+      "status": "implemented-draft",
+      "manifest": "pa4/tests/manifest.json",
+      "manifest_sha256": "34d751414c4e42150f19084a3098913cbe99d62147f4e87264c138a5a22b8f28",
+      "cases": 195,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa5",
+      "status": "implemented-draft",
+      "manifest": "pa5/tests/manifest.json",
+      "manifest_sha256": "677d523e1e091e27fd40b8029aaf2b10643685602dcf7aea71a94cf95858f640",
+      "cases": 227,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa6",
+      "status": "implemented-draft",
+      "manifest": "pa6/tests/manifest.json",
+      "manifest_sha256": "8b5806717927b4d617d2f020ab922e6ea6c3ff7cc75c2b0306f8d121ad0c8379",
+      "cases": 218,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa7",
+      "status": "implemented-draft",
+      "manifest": "pa7/tests/manifest.json",
+      "manifest_sha256": "a0e1243c9236775481c356b13c0a1efdb99a740aad0af765aa425ea2a746a8d2",
+      "cases": 183,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa8",
+      "status": "implemented-draft",
+      "manifest": "pa8/tests/manifest.json",
+      "manifest_sha256": "b8f8752e59f91b334e5837b0f573db629b1a2368aa0ef0766dfa504bc5023fac",
+      "cases": 94,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa9",
+      "status": "implemented-draft",
+      "manifest": "pa9/tests/manifest.json",
+      "manifest_sha256": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146",
+      "cases": 203,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa10",
+      "status": "implemented-draft",
+      "manifest": "pa10/tests/manifest.json",
+      "manifest_sha256": "f8b3df2bc49b716626dedd565368362fe2868f09c0a99844eaca9abd93a430dd",
+      "cases": 81,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa11",
+      "status": "implemented-draft",
+      "manifest": "pa11/tests/manifest.json",
+      "manifest_sha256": "77fe4e2e56955d668fb94caf0a84a2652f726face36c8ec895a1756e3315e460",
+      "cases": 191,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa12",
+      "status": "implemented-draft",
+      "manifest": "pa12/tests/manifest.json",
+      "manifest_sha256": "4f1aa1d191b4543f8896f8471bb773809b3469d34757125b716a14d60f0f5160",
+      "cases": 126,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa13",
+      "status": "implemented-draft",
+      "manifest": "pa13/tests/manifest.json",
+      "manifest_sha256": "6611b1a42ba893cda681838065fcde92f9d7f9263afe4f6328f2d76ae4dae52b",
+      "cases": 805,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa14",
+      "status": "implemented-draft",
+      "manifest": "pa14/tests/manifest.json",
+      "manifest_sha256": "ef52097914b3ca10ab1450c17c6c2d6c67ac6dbccef87ad4ac62a468741d87f1",
+      "cases": 124,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa15",
+      "status": "implemented-draft",
+      "manifest": "pa15/tests/manifest.json",
+      "manifest_sha256": "44ee0af56bb6c36fe2d955f7dc0c95b35bea720c81b371c32bb358dfd5857ce8",
+      "cases": 202,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa16",
+      "status": "implemented-draft",
+      "manifest": "pa16/tests/manifest.json",
+      "manifest_sha256": "6d2cd2f0d9afdf5be06a09137f658a9e4fbc93e79da719c1670d2e290953043f",
+      "cases": 309,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa17",
+      "status": "implemented-draft",
+      "manifest": "pa17/tests/manifest.json",
+      "manifest_sha256": "fc439f952e6ef3e6b4947fde1248b964a60cd14ab3ad0fa95cfd9853c19fe8d4",
+      "cases": 205,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa18",
+      "status": "implemented-draft",
+      "manifest": "pa18/tests/manifest.json",
+      "manifest_sha256": "d3ff8911f2ee0ae36b891f577101955d0738cc4ced69ea3c3f8b83e71cde7790",
+      "cases": 478,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa19",
+      "status": "implemented-draft",
+      "manifest": "pa19/tests/manifest.json",
+      "manifest_sha256": "1c289e4bbf1dfb4accc4b672032d1429cfee4154e9fce42a2bc8ad8b294306e5",
+      "cases": 1190,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa20",
+      "status": "implemented-draft",
+      "manifest": "pa20/tests/manifest.json",
+      "manifest_sha256": "ccbca62f3d3c95ba8902c218407bb4d62498e162d8b16be11243c08a2062e1b4",
+      "cases": 1386,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa21",
+      "status": "implemented-draft",
+      "manifest": "pa21/tests/manifest.json",
+      "manifest_sha256": "cff338f5e0f06b03a0d55bd6616a5cc5346fbfc9ec4051ddcc479c5b4dac6934",
+      "cases": 757,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa22",
+      "status": "implemented-draft",
+      "manifest": "pa22/tests/manifest.json",
+      "manifest_sha256": "327ce70e1c35b99824540551a40481ede32d4020cff75d8bab8d41e4b5dda444",
+      "cases": 356,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa23",
+      "status": "implemented-draft",
+      "manifest": "pa23/tests/manifest.json",
+      "manifest_sha256": "16e1f43acf62ed7c13156abfa38f170840a537c58330aa7f2c97ed96cd8316e0",
+      "cases": 400,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    },
+    {
+      "stage": "pa24",
+      "status": "implemented-draft",
+      "manifest": "pa24/tests/manifest.json",
+      "manifest_sha256": "3dc04f9da9e14eb869e7a62da7095846699ae5dd5aef2357ce9332dc8519f67c",
+      "cases": 473,
+      "source_core_commands": 0,
+      "reference_receipts": {}
+    }
+  ],
+  "case_count": 8484,
+  "case_contracts_digest": "4d0b99f5f9bc0df19b2caab020b345f17ecf88944d299f6664451be8e6d4c2d3",
+  "source_core_command_count": 0,
+  "expected_status_changes": [],
+  "expected_lowir_changes": [],
+  "expected_warning_stderr_changes": [],
+  "expected_sidecar_changes": [],
+  "reason": "course.load_cases permits only --cfg and --crate-name argument pairs; library_arguments adds only library/type/identity flags. No active course command can select --source-core. Actual no_core source or provider-like crate spelling does not set the authenticated Package source mode. Preserve every existing scoped/base receipt and reference byte.",
+  "maintainer_cli_effects": {
+    "SourceCore library": "new complete tag10/version1 for marked AND unmarked providers",
+    "SourceClient ordinary exports": "unchanged non-SourceCore Foreign tag4",
+    "non-SourceCore ordinary library": "unchanged scalar tag0 in the frozen spoof-name opponent",
+    "explicit Legacy API": "unchanged tag10/version0 exact golden and Unknown",
+    "PA31": "planned fixtures; no active manifest/sidecars added"
+  }
+}
