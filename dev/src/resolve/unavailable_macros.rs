@@ -78,10 +78,10 @@ impl Resolver<'_> {
             if summary.node != key {
                 return Err(self.error(context, node, "scoped header names another declaration"));
             }
-            if summary
-                .builtin
-                .is_some_and(|role| role != crate::expand::builtin::Builtin::CfgSelect)
-            {
+            if summary.builtin.is_some_and(|role| {
+                role != crate::expand::builtin::Builtin::CfgSelect
+                    && role.kind() != crate::expand::builtin::BuiltinKind::Attribute
+            }) {
                 return Err(self.error(
                     context,
                     node,

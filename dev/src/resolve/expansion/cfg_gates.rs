@@ -1,10 +1,7 @@
 //! Demanded predicate uses share the ordinary immutable macro-frame authority.
 use super::{Engine, Error, FileId, Input, Location, MacroContext, Report, Sources, builtin};
 use crate::{
-    expand::{
-        config::{CfgGate, CfgUse},
-        configured::Effect,
-    },
+    expand::config::{CfgGate, CfgUse},
     resolve::bindings::KnownFeature,
 };
 
@@ -99,27 +96,27 @@ fn missing(site: Location) -> Error {
 
 pub(super) fn validate_attributes(report: &Report) -> Result<(), Error> {
     let mut session = report.macro_allowances();
+    let mut demand: super::removed_functions::ConfiguredDemandSession<'_> =
+        report.configured_demand_session();
     for (index, unit) in report.package.units.iter().enumerate() {
         let file = FileId(u32::try_from(index).map_err(|_| Error::unlocated("cfg file overflow"))?);
-        for used in unit.configured.cfg_uses.iter().flat_map(|uses| uses.iter()) {
-            let location = site(file, used.predicate);
-            let effect = unit
-                .configured
-                .effects
-                .get(used.effect as usize)
-                .ok_or_else(|| {
-                    Error::at(file, location.span.start, "cfg use lost its actual effect")
-                })?;
-            if !matches!(effect.attribute.effect, Effect::Cfg(_) | Effect::CfgAttr(_))
-                || unit
-                    .configured
-                    .ast
-                    .attributes
-                    .get(effect.capture as usize)
-                    .is_none()
-                || location.span.start < effect.attribute.attribute.span.start
-                || location.span.end > effect.attribute.attribute.span.end
-            {
+        for (ordinal, _) in unit
+            .configured
+            .cfg_uses
+            .iter()
+            .flat_map(|uses| uses.iter())
+            .enumerate()
+        {
+            let used = demand.checked(file, ordinal)?;
+            let location = used.location();
+            match demand.classify(&used)? {
+                super::removed_functions::DemandDisposition::RemovedTestBody(receipt) => {
+                    let _ = receipt;
+                    continue;
+                }
+                super::removed_functions::DemandDisposition::Demanded => {}
+            }
+            if !used.in_attribute_span() {
                 return Err(Error::at(
                     file,
                     location.span.start,

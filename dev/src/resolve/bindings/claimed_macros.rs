@@ -50,7 +50,10 @@ pub(super) fn parse(
         .find(|builtin| builtin.name() == name)
         .ok_or_else(|| error("source builtin macro expansion is not implemented"))?;
     if !(matches!(item.kind, ItemKind::MacroRules { .. })
-        || role == Builtin::CfgSelect && matches!(item.kind, ItemKind::DeclarativeMacro { .. }))
+        && role.kind() == crate::expand::builtin::BuiltinKind::Bang
+        || matches!(item.kind, ItemKind::DeclarativeMacro { .. })
+            && (role == Builtin::CfgSelect
+                || role.kind() == crate::expand::builtin::BuiltinKind::Attribute))
     {
         return Err(error(
             "builtin macro binding requires its supported declaration kind",

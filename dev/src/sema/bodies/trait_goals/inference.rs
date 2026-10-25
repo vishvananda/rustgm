@@ -74,7 +74,7 @@ impl Checker<'_> {
                         );
                     };
                     let node = self.state.call_types.obligations[index].0;
-                    return Err(self.error(node, "trait obligation requires an unambiguous matching assumption or implementation"));
+                    return Err(self.call_trait_failure(node, index, "trait obligation requires an unambiguous matching assumption or implementation"));
                 }
             };
             if pending.evidence.contains_key(&index) {

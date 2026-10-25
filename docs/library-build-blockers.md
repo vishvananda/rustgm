@@ -152,7 +152,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-016 | Algorithmic repair qualified; one reviewed RSS cost | Repeated full caller-environment opening and premise-index construction across independent projections | PA21 projection/formation machinery; PA31 complete source regression / PA31 plus earlier ordinary controls | B + integrator | Shared mapped-view opening is integrated as `5a5e9d51` and passes combined functional/performance checks at `65f20e8b`. The 32→128 subject ratio is 3.732; 128 subjects use 103,395,319 instructions versus 550,412,747 previously. All 58 combined growth controls pass; one reviewed RSS cost remains. |
 | LIB-017 | P0; earlier unchanged-core failure at `format_args`, line 994 | Source formatting builtins and actual constructor calls, including full argument parsing/evaluation | PA26 formatting + PA31 compiler/source bindings / PA31 complete providers, plus earlier ordinary controls | C | Literal source formatting and its real constructor privacy boundary pass combined functional qualification at `65f20e8b`. Nonempty arguments, obligations, temporary lifetimes and foreign transport remain open. |
 | LIB-018 | P0; preceding unchanged-core failure at `concat_bytes`, line 1126 | Source-declared byte concatenation builtin, typed byte/string/array operands and exact rejection rules | PA8 builtin expansion + PA31 source identity / PA31 complete providers, plus PA8 where independently expressible | C | Local typed operand/source identity contracts pass combined ca54609a release/native and performance qualification. The same CLI original core reaches LIB-019. Foreign macro transport and wider source contracts remain required. |
-| LIB-019 | P0; current unchanged-core failure at `autodiff_forward`, line 1553 | Source attribute macro identity, declaration/import kinds and genuine invocation semantics | PA31 source compiler bindings; PA38 actual procedural/attribute execution / PA31 declaration/import controls, PA38 execution | C | Merged unqualified candidate `2af76aec` includes typed Bang/Attribute lookup and real consumer drafts for must_use/inline/Test and trait markers. Independent observations are preserved; fresh static/runtime and reviewed warning oracles remain required. Mixed hard-error plus warning transport is explicitly incomplete, not silently dropped from parity claims. |
+| LIB-019 | P0; current unchanged-core failure at `autodiff_forward`, line 1553 | Source attribute macro identity, declaration/import kinds and genuine invocation semantics | PA31 source compiler bindings; PA38 actual procedural/attribute execution / PA31 declaration/import controls, PA38 execution | C | C checkpoint `366ca380` has focused passing evidence for thirteen private controls, seven measured layout callers and nine frontend controls, including mixed warning/error transport. Source integration onto `60386b99` is unqualified. Original independent disagreements and historical candidate failures remain retained; native/periodic CI and original-core acceptance are still required. The approved strict Test-body demand receipt is a new unqualified source draft; body-root/header demands and actual test harness generation remain required boundaries. |
 | LIB-020 | P0; stricter original-root failure at `lib.rs:65` | Actual rustc_coherence_is_core and primitive inherent implementation policy, lookup and coherence | PA31 binding + PA19/20 language/index; PA29 transport / PA31 source reproductions plus applicable earlier controls | Integrator | All 44 source predictions and twelve clarifiers ran. Retain three disproved hypotheses: unused primitive duplicates (including same impl) are accepted; admitted function-pointer impls do not supply callable inherent members. Actual primitive implementation is still missing. Reuse typed structural heads and nominal fast path, retain complete Self/conditions; crate name or known attribute spelling grants no authority. |
 | LIB-021 | P0; active original crate policy at `lib.rs:66` | rustc_preserve_ub_checks and actual UB-check intrinsic/runtime/CTFE behavior | PA28 operations + PA25 CTFE + PA31 policy + PA29 transport / PA31 complete source providers | B, coordinated with C/A | Independent producer/consumer and MIR observations include thirteen native policy cases; cfg-demand follow-ups retain a syntax-confounded hypothesis. Typed UB/session/config/owned source-identity implementation is in progress and unqualified. Distinguish CTFE returning true, producer code and deferred consumer specialization; CPPGM remains unchanged. |
 
@@ -374,6 +374,23 @@ text-oracle tests when that assignment's contract is published. Generate and
 review oracle text; never hand-edit it or accept an empty/planned suite as a pass.
 Text fixtures belong in the earliest PA owning all features, and private test
 roots must remain registered in the existing maintainer suite groups.
+
+
+### LIB-019 diagnostic follow-up
+
+Mixed error-plus-warning transport remains incomplete. The frozen
+`diagnostic-duplicate.rs` control in
+`obj/parallel/pa31/remaining-attribute-headers-independent-v1` independently
+reports a hard duplicate internal `on_unimplemented` error together with a
+`malformed_diagnostic_attributes` warning in both editions and emissions
+(results SHA-256
+`a688e91fbe17c8ac7b9a42c4c1b62e77e7e4eb2e5ee3a47becce8ae68a422e3a`).
+The current semantic error result carries only `Error`, so declaration warnings
+cannot survive when its facts are dropped. Preserve the exact-output control;
+retain this as a separate requirement for a typed cold error carrier and driver
+rendering. Successful default warnings and primary selected-trait messages must
+still work in the current consumer slice. Neither success nor complete
+`on_unimplemented` diagnostic parity is claimed before qualification.
 
 ## Work and qualification rules
 
