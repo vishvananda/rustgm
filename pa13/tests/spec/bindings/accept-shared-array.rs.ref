@@ -18,17 +18,19 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 array element=11 length=1
-type 20 reference mutable=false region=bound:0:0 referent=19
-type 21 reference mutable=false region=bound:0:0 referent=11
-type 22 function binders=1 parameters=[20] result=21 unsafe=false
-type 23 function-item def=13 signature=22
-type 24 reference mutable=false region=region:1 referent=11
+type 19 primitive f16
+type 20 primitive f128
+type 21 array element=11 length=1
+type 22 reference mutable=false region=bound:0:0 referent=21
+type 23 reference mutable=false region=bound:0:0 referent=11
+type 24 function binders=1 parameters=[22] result=23 unsafe=false
+type 25 function-item def=13 signature=24
+type 26 reference mutable=false region=region:1 referent=11
 root 0:1 pattern=0
-pattern 0 source=0:1 input=20 deref mutable=false implicit=true pattern=1
-pattern 1 source=0:1 input=19 product variant=- fields=0:1
-pattern 2 source=0:0 input=11 bind def=31 local=24 mutable=false capture=ref region=region:1 loan=pending subpattern=-
+pattern 0 source=0:1 input=22 deref mutable=false implicit=true pattern=1
+pattern 1 source=0:1 input=21 product variant=- fields=0:1
+pattern 2 source=0:0 input=11 bind def=33 local=26 mutable=false capture=ref region=region:1 loan=pending subpattern=-
 field 0 index=0 pattern=2
 region-var region:1 body=0:10 source=0:0 origin=pattern-borrow pending
-region-coercion body=0:10 source=0:10 actual=24 expected=21 kind=same-shape pending
+region-coercion body=0:10 source=0:10 actual=26 expected=23 kind=same-shape pending
 eof roots=1 patterns=3 fields=1 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=1 region-equalities=0 conditions=0 chains=0

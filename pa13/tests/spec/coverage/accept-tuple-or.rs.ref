@@ -18,19 +18,21 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 tuple [2,11]
-type 20 function binders=0 parameters=[19] result=1 unsafe=false
-type 21 function-item def=13 signature=20
+type 19 primitive f16
+type 20 primitive f128
+type 21 tuple [2,11]
+type 22 function binders=0 parameters=[21] result=1 unsafe=false
+type 23 function-item def=13 signature=22
 root 0:14 pattern=0
 root 0:20 pattern=7
-pattern 0 source=0:14 input=19 or alternatives=0:2
-pattern 1 source=0:8 input=19 product variant=- fields=0:2
-pattern 2 source=0:13 input=19 product variant=- fields=2:4
+pattern 0 source=0:14 input=21 or alternatives=0:2
+pattern 1 source=0:8 input=21 product variant=- fields=0:2
+pattern 2 source=0:13 input=21 product variant=- fields=2:4
 pattern 3 source=0:6 input=2 range=0
 pattern 4 source=0:7 input=11 wildcard
 pattern 5 source=0:9 input=2 range=1
 pattern 6 source=0:12 input=11 range=2
-pattern 7 source=0:20 input=19 product variant=- fields=4:6
+pattern 7 source=0:20 input=21 product variant=- fields=4:6
 pattern 8 source=0:17 input=2 range=3
 pattern 9 source=0:19 input=11 range=4
 field 0 tuple=0 pattern=3
@@ -46,7 +48,7 @@ range 1 ranks=0:0
 range 2 ranks=0:127
 range 3 ranks=0:0
 range 4 ranks=128:255
-match 0 source=0:23 input=0:5 arms=0:2 exhaustive=true uninhabited=false work=113
+match 0 source=0:23 input=0:5 arms=0:2 exhaustive=true uninhabited=false work=114
 arm 0 source=0:16 pattern=0 guard=- useful=true value=0:15
 arm 1 source=0:22 pattern=7 guard=- useful=true value=0:21
-eof roots=2 patterns=10 fields=6 alternatives=2 ranges=5 matches=1 arms=2 coverage-work=113 region-vars=0 region-equalities=0 conditions=0 chains=0
+eof roots=2 patterns=10 fields=6 alternatives=2 ranges=5 matches=1 arms=2 coverage-work=114 region-vars=0 region-equalities=0 conditions=0 chains=0

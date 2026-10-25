@@ -23,6 +23,8 @@ name 21 "u128"
 name 22 "usize"
 name 23 "f32"
 name 24 "f64"
+name 25 "f16"
+name 26 "f128"
 module 0 name=0 file=0 scope=0 parent=root
 module 1 name=1 file=0 scope=1 parent=0
 module 2 name=3 file=0 scope=2 parent=0
@@ -57,36 +59,38 @@ def 13 type primitive name=21 scope=0 access=public
 def 14 type primitive name=22 scope=0 access=public
 def 15 type primitive name=23 scope=0 access=public
 def 16 type primitive name=24 scope=0 access=public
-def 17 type module name=1 scope=0 access=module:0 source=0:21 members=1
-def 18 type module name=3 scope=0 access=module:0 source=0:23 members=2
-def 19 type struct name=2 scope=2 access=public source=0:22 members=3
-def 20 value constructor name=2 scope=2 access=public source=0:22
-def 21 type module name=4 scope=0 access=module:0 source=0:25 members=4
-def 22 type struct name=2 scope=4 access=public source=0:24 members=5
-def 23 value constructor name=2 scope=4 access=public source=0:24
-def 24 type module name=5 scope=0 access=module:0 source=0:32 members=6
-def 25 type module name=7 scope=0 access=module:0 source=0:34 members=7
-def 26 type struct name=2 scope=7 access=public source=0:33 members=8
-def 27 value constructor name=2 scope=7 access=public source=0:33
-def 28 type module name=6 scope=0 access=module:0 source=0:41 members=9
-binding scope=0 type name=1 def=17 Direct ambiguous=false access=module:0
-binding scope=0 type name=3 def=18 Direct ambiguous=false access=module:0
-binding scope=0 type name=4 def=21 Direct ambiguous=false access=module:0
-binding scope=0 type name=5 def=24 Direct ambiguous=false access=module:0
-binding scope=0 type name=7 def=25 Direct ambiguous=false access=module:0
-binding scope=0 type name=6 def=28 Direct ambiguous=false access=module:0
-binding scope=0 type name=2 def=26 Import(0) ambiguous=false access=public
-binding scope=0 value name=2 def=27 Import(0) ambiguous=false access=public
-binding scope=1 type name=2 def=26 Import(3) ambiguous=false access=public
-binding scope=1 value name=2 def=27 Import(3) ambiguous=false access=public
-binding scope=2 type name=2 def=19 Direct ambiguous=false access=public
-binding scope=2 value name=2 def=20 Direct ambiguous=false access=public
-binding scope=4 type name=2 def=22 Direct ambiguous=false access=public
-binding scope=4 value name=2 def=23 Direct ambiguous=false access=public
-binding scope=6 type name=2 def=26 Import(4) ambiguous=false access=public
-binding scope=6 value name=2 def=27 Import(4) ambiguous=false access=public
-binding scope=7 type name=2 def=26 Direct ambiguous=false access=public
-binding scope=7 value name=2 def=27 Direct ambiguous=false access=public
-binding scope=9 type name=2 def=26 Import(5) ambiguous=false access=public
-binding scope=9 value name=2 def=27 Import(5) ambiguous=false access=public
-eof files=1 modules=7 definitions=29 references=0
+def 17 type primitive name=25 scope=0 access=public
+def 18 type primitive name=26 scope=0 access=public
+def 19 type module name=1 scope=0 access=module:0 source=0:21 members=1
+def 20 type module name=3 scope=0 access=module:0 source=0:23 members=2
+def 21 type struct name=2 scope=2 access=public source=0:22 members=3
+def 22 value constructor name=2 scope=2 access=public source=0:22
+def 23 type module name=4 scope=0 access=module:0 source=0:25 members=4
+def 24 type struct name=2 scope=4 access=public source=0:24 members=5
+def 25 value constructor name=2 scope=4 access=public source=0:24
+def 26 type module name=5 scope=0 access=module:0 source=0:32 members=6
+def 27 type module name=7 scope=0 access=module:0 source=0:34 members=7
+def 28 type struct name=2 scope=7 access=public source=0:33 members=8
+def 29 value constructor name=2 scope=7 access=public source=0:33
+def 30 type module name=6 scope=0 access=module:0 source=0:41 members=9
+binding scope=0 type name=1 def=19 Direct ambiguous=false access=module:0
+binding scope=0 type name=3 def=20 Direct ambiguous=false access=module:0
+binding scope=0 type name=4 def=23 Direct ambiguous=false access=module:0
+binding scope=0 type name=5 def=26 Direct ambiguous=false access=module:0
+binding scope=0 type name=7 def=27 Direct ambiguous=false access=module:0
+binding scope=0 type name=6 def=30 Direct ambiguous=false access=module:0
+binding scope=0 type name=2 def=28 Import(0) ambiguous=false access=public
+binding scope=0 value name=2 def=29 Import(0) ambiguous=false access=public
+binding scope=1 type name=2 def=28 Import(3) ambiguous=false access=public
+binding scope=1 value name=2 def=29 Import(3) ambiguous=false access=public
+binding scope=2 type name=2 def=21 Direct ambiguous=false access=public
+binding scope=2 value name=2 def=22 Direct ambiguous=false access=public
+binding scope=4 type name=2 def=24 Direct ambiguous=false access=public
+binding scope=4 value name=2 def=25 Direct ambiguous=false access=public
+binding scope=6 type name=2 def=28 Import(4) ambiguous=false access=public
+binding scope=6 value name=2 def=29 Import(4) ambiguous=false access=public
+binding scope=7 type name=2 def=28 Direct ambiguous=false access=public
+binding scope=7 value name=2 def=29 Direct ambiguous=false access=public
+binding scope=9 type name=2 def=28 Import(5) ambiguous=false access=public
+binding scope=9 value name=2 def=29 Import(5) ambiguous=false access=public
+eof files=1 modules=7 definitions=31 references=0

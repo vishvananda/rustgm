@@ -20,7 +20,9 @@ name 18 "u128"
 name 19 "usize"
 name 20 "f32"
 name 21 "f64"
-name 22 "f"
+name 22 "f16"
+name 23 "f128"
+name 24 "f"
 module 0 name=0 file=0 scope=0 parent=root
 module 1 name=2 file=1 scope=1 parent=0
 module 2 name=4 file=2 scope=2 parent=1
@@ -49,19 +51,21 @@ def 13 type primitive name=18 scope=0 access=public
 def 14 type primitive name=19 scope=0 access=public
 def 15 type primitive name=20 scope=0 access=public
 def 16 type primitive name=21 scope=0 access=public
-def 17 type module name=2 scope=0 access=module:0 source=0:0 members=1
-def 18 type module name=4 scope=1 access=module:1 source=1:0 members=2
-def 19 value const name=5 scope=2 access=public source=2:2
-def 20 value function name=3 scope=1 access=public source=1:6
-def 21 value function name=22 scope=0 access=module:0 source=0:7
-binding scope=0 type name=2 def=17 Direct ambiguous=false access=module:0
-binding scope=0 value name=22 def=21 Direct ambiguous=false access=module:0
-binding scope=1 type name=4 def=18 Direct ambiguous=false access=module:1
-binding scope=1 value name=3 def=20 Direct ambiguous=false access=public
-binding scope=2 value name=5 def=19 Direct ambiguous=false access=public
+def 17 type primitive name=22 scope=0 access=public
+def 18 type primitive name=23 scope=0 access=public
+def 19 type module name=2 scope=0 access=module:0 source=0:0 members=1
+def 20 type module name=4 scope=1 access=module:1 source=1:0 members=2
+def 21 value const name=5 scope=2 access=public source=2:2
+def 22 value function name=3 scope=1 access=public source=1:6
+def 23 value function name=24 scope=0 access=module:0 source=0:7
+binding scope=0 type name=2 def=19 Direct ambiguous=false access=module:0
+binding scope=0 value name=24 def=23 Direct ambiguous=false access=module:0
+binding scope=1 type name=4 def=20 Direct ambiguous=false access=module:1
+binding scope=1 value name=3 def=22 Direct ambiguous=false access=public
+binding scope=2 value name=5 def=21 Direct ambiguous=false access=public
 ref 0:1 scope=6 type def=5
-ref 0:4 scope=7 value def=20
+ref 0:4 scope=7 value def=22
 ref 1:1 scope=4 type def=5
-ref 1:4 scope=5 value def=19
+ref 1:4 scope=5 value def=21
 ref 2:0 scope=3 type def=5
-eof files=3 modules=3 definitions=22 references=5
+eof files=3 modules=3 definitions=24 references=5

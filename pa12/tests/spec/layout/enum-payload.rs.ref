@@ -18,24 +18,26 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 aggregate def=13
-type 20 aggregate def=18
-type 21 aggregate def=23
-type 22 function binders=0 parameters=[11] result=19 unsafe=false
-type 23 function-item def=15 signature=22
-type 24 function binders=0 parameters=[15] result=19 unsafe=false
-type 25 function-item def=17 signature=24
-type 26 function binders=0 parameters=[11] result=20 unsafe=false
-type 27 function-item def=20 signature=26
-type 28 function binders=0 parameters=[15] result=20 unsafe=false
-type 29 function-item def=22 signature=28
-type 30 function binders=0 parameters=[11] result=21 unsafe=false
-type 31 function-item def=25 signature=30
-type 32 function binders=0 parameters=[15] result=21 unsafe=false
-type 33 function-item def=27 signature=32
-def 13 type=19 name="CE" source=0:6
-def 18 type=20 name="IE" source=0:14
-def 23 type=21 name="CIE" source=0:22
+type 19 primitive f16
+type 20 primitive f128
+type 21 aggregate def=13
+type 22 aggregate def=18
+type 23 aggregate def=23
+type 24 function binders=0 parameters=[11] result=21 unsafe=false
+type 25 function-item def=15 signature=24
+type 26 function binders=0 parameters=[15] result=21 unsafe=false
+type 27 function-item def=17 signature=26
+type 28 function binders=0 parameters=[11] result=22 unsafe=false
+type 29 function-item def=20 signature=28
+type 30 function binders=0 parameters=[15] result=22 unsafe=false
+type 31 function-item def=22 signature=30
+type 32 function binders=0 parameters=[11] result=23 unsafe=false
+type 33 function-item def=25 signature=32
+type 34 function binders=0 parameters=[15] result=23 unsafe=false
+type 35 function-item def=27 signature=34
+def 13 type=21 name="CE" source=0:6
+def 18 type=22 name="IE" source=0:14
+def 23 type=23 name="CIE" source=0:22
 def 28 type=2 name="bool"
 def 29 type=3 name="char"
 def 30 type=4 name="str"
@@ -53,6 +55,8 @@ def 41 type=15 name="u128"
 def 42 type=16 name="usize"
 def 43 type=17 name="f32"
 def 44 type=18 name="f64"
+def 45 type=19 name="f16"
+def 46 type=20 name="f128"
 layout 0 size=0 align=1 inhabited=false references=false scalar
 layout 1 size=0 align=1 inhabited=true references=false aggregate tag=-
 variant 1:0 discriminant=0
@@ -73,23 +77,23 @@ layout 15 size=16 align=16 inhabited=true references=false scalar
 layout 16 size=8 align=8 inhabited=true references=false scalar
 layout 17 size=4 align=4 inhabited=true references=false scalar
 layout 18 size=8 align=8 inhabited=true references=false scalar
-layout 19 size=32 align=16 inhabited=true references=false aggregate tag=u32@0
-variant 19:0 discriminant=0
-field 19:0:0 type=11 offset=16
-variant 19:1 discriminant=1
-field 19:1:0 type=15 offset=16
-layout 20 size=32 align=16 inhabited=true references=false aggregate tag=u8@0
-variant 20:0 discriminant=0
-field 20:0:0 type=11 offset=1
-variant 20:1 discriminant=1
-field 20:1:0 type=15 offset=16
-layout 21 size=32 align=16 inhabited=true references=false aggregate tag=u8@0
+layout 19 size=2 align=2 inhabited=true references=false scalar
+layout 20 size=16 align=16 inhabited=true references=false scalar
+layout 21 size=32 align=16 inhabited=true references=false aggregate tag=u32@0
 variant 21:0 discriminant=0
 field 21:0:0 type=11 offset=16
 variant 21:1 discriminant=1
 field 21:1:0 type=15 offset=16
-layout 22 size=8 align=8 inhabited=true references=false scalar
-layout 23 size=0 align=1 inhabited=true references=false scalar
+layout 22 size=32 align=16 inhabited=true references=false aggregate tag=u8@0
+variant 22:0 discriminant=0
+field 22:0:0 type=11 offset=1
+variant 22:1 discriminant=1
+field 22:1:0 type=15 offset=16
+layout 23 size=32 align=16 inhabited=true references=false aggregate tag=u8@0
+variant 23:0 discriminant=0
+field 23:0:0 type=11 offset=16
+variant 23:1 discriminant=1
+field 23:1:0 type=15 offset=16
 layout 24 size=8 align=8 inhabited=true references=false scalar
 layout 25 size=0 align=1 inhabited=true references=false scalar
 layout 26 size=8 align=8 inhabited=true references=false scalar
@@ -100,4 +104,6 @@ layout 30 size=8 align=8 inhabited=true references=false scalar
 layout 31 size=0 align=1 inhabited=true references=false scalar
 layout 32 size=8 align=8 inhabited=true references=false scalar
 layout 33 size=0 align=1 inhabited=true references=false scalar
-eof types 34 layouts 33 variants 7 fields 6
+layout 34 size=8 align=8 inhabited=true references=false scalar
+layout 35 size=0 align=1 inhabited=true references=false scalar
+eof types 36 layouts 35 variants 7 fields 6

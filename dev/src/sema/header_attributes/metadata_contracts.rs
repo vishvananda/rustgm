@@ -28,12 +28,12 @@ struct Header {
 pub(super) struct Headers {
     catalog: Rc<Catalog>,
     inventory: Arc<Dependencies>,
-    headers: HashMap<DefId, Header>,
+    entries: HashMap<DefId, Header>,
     pub(super) work: Cell<usize>,
 }
 impl Headers {
     pub(super) fn contains(&self, definition: DefId) -> bool {
-        self.headers.contains_key(&definition)
+        self.entries.contains_key(&definition)
     }
     fn charge(&self, steps: usize) -> Result<(), Error> {
         self.work.set(self.work.get().saturating_add(steps));
@@ -65,7 +65,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
     let mut headers = Headers {
         catalog,
         inventory: imported.shared_dependencies(),
-        headers: HashMap::default(),
+        entries: HashMap::default(),
         work: Cell::new(steps),
     };
     for (artifact, interface) in headers.inventory.artifacts().iter().enumerate() {
@@ -97,7 +97,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
                 .declaration(definition)
                 .map_err(Error::unlocated)?;
             if headers
-                .headers
+                .entries
                 .insert(
                     definition,
                     Header {
@@ -117,7 +117,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
     }
     for (external, definition) in imported.definitions() {
         headers.charge(1)?;
-        let Some(header) = headers.headers.get_mut(&definition) else {
+        let Some(header) = headers.entries.get_mut(&definition) else {
             continue;
         };
         let contracts = headers.inventory.artifacts()[header.artifact]
@@ -131,7 +131,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             header.external = Some(external.clone());
         }
     }
-    if !headers.headers.is_empty() {
+    if !headers.entries.is_empty() {
         facts
             .must_use_contracts
             .get_or_insert_default()
@@ -168,7 +168,7 @@ pub(super) fn query<'a>(
         ));
     }
     let header = headers
-        .headers
+        .entries
         .get(&definition)
         .ok_or_else(|| Error::unlocated("imported header contract producer state is missing"))?;
     headers

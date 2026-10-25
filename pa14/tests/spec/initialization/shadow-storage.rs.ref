@@ -1,9 +1,9 @@
 ownership-crate 1
 body 0 source=0:15
-  path m0 type=19 root=l0 subtree=0..1
-  path m1 type=19 root=l1 subtree=1..2
-  path m2 type=19 root=l2 subtree=2..3
-  path m3 type=19 root=l3 subtree=3..4
+  path m0 type=21 root=l0 subtree=0..1
+  path m1 type=21 root=l1 subtree=1..2
+  path m2 type=21 root=l2 subtree=2..3
+  path m3 type=21 root=l3 subtree=3..4
   use v4 move
   use v8 move
   block b0 reachable=true

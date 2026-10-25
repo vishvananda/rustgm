@@ -18,42 +18,44 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=14 index=0
-type 20 reference mutable=false region=bound:0:0 referent=19
-type 21 function binders=1 parameters=[20] result=11 unsafe=false
-type 22 function-item def=15 signature=21
-type 23 reference mutable=true region=bound:0:0 referent=19
-type 24 function binders=1 parameters=[23,11] result=1 unsafe=false
-type 25 function-item def=16 signature=24
-type 26 reference mutable=false region=bound:0:0 referent=11
-type 27 function binders=1 parameters=[26] result=11 unsafe=false
-type 28 function-item def=18 signature=27
-type 29 reference mutable=true region=bound:0:0 referent=11
-type 30 function binders=1 parameters=[29,11] result=1 unsafe=false
-type 31 function-item def=19 signature=30
-type 32 function binders=0 parameters=[] result=1 unsafe=false
-type 33 function-item def=20 signature=32
-type 34 function binders=0 parameters=[26] result=11 unsafe=false
-type 35 reference mutable=false region=region:1 referent=11
-type 36 function binders=0 parameters=[35] result=11 unsafe=false
-type 37 function binders=0 parameters=[29,11] result=1 unsafe=false
-type 38 reference mutable=true region=region:1 referent=11
-type 39 function binders=0 parameters=[38,11] result=1 unsafe=false
-type 40 reference mutable=false region=static referent=11
-type 41 reference mutable=true region=static referent=11
-type 42 function-item def=16 signature=30 arguments=[type:11]
-type 43 reference mutable=true region=region:2 referent=11
-type 44 function-item def=15 signature=27 arguments=[type:11]
-type 45 reference mutable=false region=region:3 referent=11
-type 46 function binders=0 parameters=[45] result=11 unsafe=false
-type 47 reference mutable=false region=region:4 referent=11
-def 14 type=19 name="Self" source=0:12
-def 15 type=22 name="get" source=0:4
-def 16 type=25 name="set" source=0:11
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=14 index=0
+type 22 reference mutable=false region=bound:0:0 referent=21
+type 23 function binders=1 parameters=[22] result=11 unsafe=false
+type 24 function-item def=15 signature=23
+type 25 reference mutable=true region=bound:0:0 referent=21
+type 26 function binders=1 parameters=[25,11] result=1 unsafe=false
+type 27 function-item def=16 signature=26
+type 28 reference mutable=false region=bound:0:0 referent=11
+type 29 function binders=1 parameters=[28] result=11 unsafe=false
+type 30 function-item def=18 signature=29
+type 31 reference mutable=true region=bound:0:0 referent=11
+type 32 function binders=1 parameters=[31,11] result=1 unsafe=false
+type 33 function-item def=19 signature=32
+type 34 function binders=0 parameters=[] result=1 unsafe=false
+type 35 function-item def=20 signature=34
+type 36 function binders=0 parameters=[28] result=11 unsafe=false
+type 37 reference mutable=false region=region:1 referent=11
+type 38 function binders=0 parameters=[37] result=11 unsafe=false
+type 39 function binders=0 parameters=[31,11] result=1 unsafe=false
+type 40 reference mutable=true region=region:1 referent=11
+type 41 function binders=0 parameters=[40,11] result=1 unsafe=false
+type 42 reference mutable=false region=static referent=11
+type 43 reference mutable=true region=static referent=11
+type 44 function-item def=16 signature=32 arguments=[type:11]
+type 45 reference mutable=true region=region:2 referent=11
+type 46 function-item def=15 signature=29 arguments=[type:11]
+type 47 reference mutable=false region=region:3 referent=11
+type 48 function binders=0 parameters=[47] result=11 unsafe=false
+type 49 reference mutable=false region=region:4 referent=11
+def 14 type=21 name="Self" source=0:12
+def 15 type=24 name="get" source=0:4
+def 16 type=27 name="set" source=0:11
 def 17 type=11 name="Self" source=0:36
-def 18 type=28 name="get" source=0:22
-def 19 type=31 name="set" source=0:35
-def 20 type=33 name="main" source=0:48
+def 18 type=30 name="get" source=0:22
+def 19 type=33 name="set" source=0:35
+def 20 type=35 name="main" source=0:48
 def 21 type=2 name="bool"
 def 22 type=3 name="char"
 def 23 type=4 name="str"
@@ -71,29 +73,31 @@ def 34 type=15 name="u128"
 def 35 type=16 name="usize"
 def 36 type=17 name="f32"
 def 37 type=18 name="f64"
-def 41 type=26 name="self" source=0:15
-def 42 type=29 name="self" source=0:23
-def 43 type=11 name="x" source=0:26
-def 44 type=11 name="n" source=0:37
-associated-owner 0 kind=trait self-def=14 self=19 source=0:12 trait=13 unsafe=false name="A"
+def 38 type=19 name="f16"
+def 39 type=20 name="f128"
+def 43 type=28 name="self" source=0:15
+def 44 type=31 name="self" source=0:23
+def 45 type=11 name="x" source=0:26
+def 46 type=11 name="n" source=0:37
+associated-owner 0 kind=trait self-def=14 self=21 source=0:12 trait=13 unsafe=false name="A"
 associated-owner 1 kind=trait-impl self-def=17 self=11 source=0:36 unsafe=false
-associated-member def=15 owner=0 receiver=20 references=1
-associated-member def=16 owner=0 receiver=23 references=1
-associated-member def=18 owner=1 receiver=26 references=1
-associated-member def=19 owner=1 receiver=29 references=1
-parameter owner=14 binding=14 argument=type:19 default=-
-predicate owner=13 source=0:12 subject=19 bound=trait:13 arguments=[]
+associated-member def=15 owner=0 receiver=22 references=1
+associated-member def=16 owner=0 receiver=25 references=1
+associated-member def=18 owner=1 receiver=28 references=1
+associated-member def=19 owner=1 receiver=31 references=1
+parameter owner=14 binding=14 argument=type:21 default=-
+predicate owner=13 source=0:12 subject=21 bound=trait:13 arguments=[]
 impl owner=17 source=0:36 subject=11 bound=trait:13 arguments=[]
 impl-method owner=17 declaration=15 selected=18 default=false
 impl-method owner=17 declaration=16 selected=19 default=false
-method-call source=0:42 method=15 callable=44 dereferences=0 borrow=47 receiver=45 origin=lexical
-method-call source=0:45 method=16 callable=42 dereferences=0 borrow=43 receiver=38 origin=lexical
+method-call source=0:42 method=15 callable=46 dereferences=0 borrow=49 receiver=47 origin=lexical
+method-call source=0:45 method=16 callable=44 dereferences=0 borrow=45 receiver=40 origin=lexical
 implementation-use source=0:42 owner=17 arguments=[]
 implementation-use source=0:45 owner=17 arguments=[]
 region-var region:1 body=0:47 source=0:45 origin=call-argument pending
 region-var region:2 body=0:47 source=0:45 origin=expression-borrow pending
 region-var region:3 body=0:47 source=0:42 origin=call-argument pending
 region-var region:4 body=0:47 source=0:42 origin=expression-borrow pending
-region-coercion body=0:47 source=0:45 actual=43 expected=38 kind=same-shape pending
-region-coercion body=0:47 source=0:42 actual=47 expected=45 kind=same-shape pending
+region-coercion body=0:47 source=0:45 actual=45 expected=40 kind=same-shape pending
+region-coercion body=0:47 source=0:42 actual=49 expected=47 kind=same-shape pending
 eof owners=2 members=4 parameters=1 predicates=1 impls=1 calls=2 paths=0 impl-uses=2

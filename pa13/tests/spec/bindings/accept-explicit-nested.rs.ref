@@ -18,21 +18,23 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 reference mutable=false region=bound:0:1 referent=11
-type 20 array element=19 length=1
-type 21 reference mutable=false region=bound:0:0 referent=20
-type 22 function binders=2 parameters=[21] result=1 unsafe=false
-type 23 function-item def=13 signature=22
-type 24 reference mutable=false region=region:2 referent=11
-type 25 array element=24 length=1
-type 26 reference mutable=false region=region:1 referent=25
+type 19 primitive f16
+type 20 primitive f128
+type 21 reference mutable=false region=bound:0:1 referent=11
+type 22 array element=21 length=1
+type 23 reference mutable=false region=bound:0:0 referent=22
+type 24 function binders=2 parameters=[23] result=1 unsafe=false
+type 25 function-item def=13 signature=24
+type 26 reference mutable=false region=region:2 referent=11
+type 27 array element=26 length=1
+type 28 reference mutable=false region=region:1 referent=27
 root 0:10 pattern=0
-pattern 0 source=0:10 input=26 deref mutable=false implicit=false pattern=1
-pattern 1 source=0:9 input=25 product variant=- fields=0:1
-pattern 2 source=0:8 input=24 deref mutable=false implicit=false pattern=3
-pattern 3 source=0:7 input=11 bind def=32 local=11 mutable=false capture=value subpattern=-
+pattern 0 source=0:10 input=28 deref mutable=false implicit=false pattern=1
+pattern 1 source=0:9 input=27 product variant=- fields=0:1
+pattern 2 source=0:8 input=26 deref mutable=false implicit=false pattern=3
+pattern 3 source=0:7 input=11 bind def=34 local=11 mutable=false capture=value subpattern=-
 field 0 index=0 pattern=2
 region-var region:1 body=0:13 source=0:11 origin=inference pending
 region-var region:2 body=0:13 source=0:11 origin=inference pending
-region-coercion body=0:13 source=0:11 actual=21 expected=26 kind=same-shape pending
+region-coercion body=0:13 source=0:11 actual=23 expected=28 kind=same-shape pending
 eof roots=1 patterns=4 fields=1 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=2 region-equalities=0 conditions=0 chains=0

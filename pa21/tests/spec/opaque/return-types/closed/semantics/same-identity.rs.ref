@@ -18,19 +18,21 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 opaque id=0 arguments=[]
-type 20 function binders=0 parameters=[] result=19 unsafe=false
-type 21 function-item def=13 signature=20
-type 22 parameter def=14 index=0
-type 23 function binders=0 parameters=[22,22] result=1 unsafe=false
-type 24 function-item def=14 signature=23
-type 25 function binders=0 parameters=[] result=1 unsafe=false
-type 26 function-item def=15 signature=25
-type 27 function binders=0 parameters=[19,19] result=1 unsafe=false
-type 28 function-item def=14 signature=27 arguments=[type:19]
-def 13 type=21 name="make" source=0:5
-def 14 type=24 name="same" source=0:14
-def 15 type=26 name="main" source=0:23
+type 19 primitive f16
+type 20 primitive f128
+type 21 opaque id=0 arguments=[]
+type 22 function binders=0 parameters=[] result=21 unsafe=false
+type 23 function-item def=13 signature=22
+type 24 parameter def=14 index=0
+type 25 function binders=0 parameters=[24,24] result=1 unsafe=false
+type 26 function-item def=14 signature=25
+type 27 function binders=0 parameters=[] result=1 unsafe=false
+type 28 function-item def=15 signature=27
+type 29 function binders=0 parameters=[21,21] result=1 unsafe=false
+type 30 function-item def=14 signature=29 arguments=[type:21]
+def 13 type=23 name="make" source=0:5
+def 14 type=26 name="same" source=0:14
+def 15 type=28 name="main" source=0:23
 def 16 type=2 name="bool"
 def 17 type=3 name="char"
 def 18 type=4 name="str"
@@ -48,11 +50,13 @@ def 29 type=15 name="u128"
 def 30 type=16 name="usize"
 def 31 type=17 name="f32"
 def 32 type=18 name="f64"
-def 33 type=22 name="T" source=0:6
-def 41 type=22 name="x" source=0:7
-def 42 type=22 name="y" source=0:10
-parameter owner=14 binding=33 argument=type:22 default=-
-opaque 0 owner=13 source=0:2 application=19 hidden=11 role=defining-result storage-proof=pending
-opaque-bound id=0 index=0 subject=19 bound=copy
+def 33 type=19 name="f16"
+def 34 type=20 name="f128"
+def 35 type=24 name="T" source=0:6
+def 43 type=24 name="x" source=0:7
+def 44 type=24 name="y" source=0:10
+parameter owner=14 binding=35 argument=type:24 default=-
+opaque 0 owner=13 source=0:2 application=21 hidden=11 role=defining-result storage-proof=pending
+opaque-bound id=0 index=0 subject=21 bound=copy
 opaque-body-result def=13 type=11
 eof owners=0 members=0 parameters=1 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=1 opaque-bounds=1 hidden-types=1 opaque-body-results=1 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

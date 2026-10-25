@@ -18,18 +18,20 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 aggregate def=13
-type 20 aggregate def=14
-type 21 aggregate def=19
-type 22 reference mutable=false region=bound:0:0 referent=19
-type 23 function binders=1 parameters=[22] result=1 unsafe=false
-type 24 function-item def=21 signature=23
-type 25 function binders=0 parameters=[19] result=20 unsafe=false
-type 26 function-item def=16 signature=25
-type 27 function binders=0 parameters=[20] result=21 unsafe=false
-type 28 function-item def=20 signature=27
+type 19 primitive f16
+type 20 primitive f128
+type 21 aggregate def=13
+type 22 aggregate def=14
+type 23 aggregate def=19
+type 24 reference mutable=false region=bound:0:0 referent=21
+type 25 function binders=1 parameters=[24] result=1 unsafe=false
+type 26 function-item def=21 signature=25
+type 27 function binders=0 parameters=[21] result=22 unsafe=false
+type 28 function-item def=16 signature=27
+type 29 function binders=0 parameters=[22] result=23 unsafe=false
+type 30 function-item def=20 signature=29
 root 0:15 pattern=0
-pattern 0 source=0:15 input=19 wildcard
+pattern 0 source=0:15 input=21 wildcard
 match 0 source=0:18 input=0:14 arms=0:1 exhaustive=true uninhabited=true work=5
 arm 0 source=0:17 pattern=0 guard=- useful=true value=0:16
 eof roots=1 patterns=1 fields=0 alternatives=0 ranges=0 matches=1 arms=1 coverage-work=5 region-vars=0 region-equalities=0 conditions=0 chains=0

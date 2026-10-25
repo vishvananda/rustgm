@@ -19,8 +19,10 @@ name 17 "u128"
 name 18 "usize"
 name 19 "f32"
 name 20 "f64"
-name 21 "Self"
-name 22 "main"
+name 21 "f16"
+name 22 "f128"
+name 23 "Self"
+name 24 "main"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 scope 1 module=0 barrier=true parent=0
@@ -48,23 +50,25 @@ def 13 type primitive name=17 scope=0 access=public
 def 14 type primitive name=18 scope=0 access=public
 def 15 type primitive name=19 scope=0 access=public
 def 16 type primitive name=20 scope=0 access=public
-def 17 type struct name=1 scope=0 access=module:0 source=0:0 members=1
-def 18 value constructor name=1 scope=0 access=module:0 source=0:0
-def 19 type self-type name=21 scope=2 access=module:0 source=0:13 members=2
-def 20 value const name=3 scope=2 access=module:0 source=0:4
-def 21 value function name=4 scope=2 access=module:0 source=0:12
-def 22 value const name=3 scope=5 access=module:0 source=0:7
-def 23 value function name=22 scope=0 access=module:0 source=0:20
-binding scope=0 type name=1 def=17 Direct ambiguous=false access=module:0
-binding scope=0 value name=1 def=18 Direct ambiguous=false access=module:0
-binding scope=0 value name=22 def=23 Direct ambiguous=false access=module:0
-binding scope=2 type name=21 def=19 Direct ambiguous=false access=module:0
-binding scope=2 value name=3 def=20 Direct ambiguous=false access=module:0
-binding scope=2 value name=4 def=21 Direct ambiguous=false access=module:0
-binding scope=5 value name=3 def=22 Direct ambiguous=false access=module:0
-ref 0:1 scope=2 type def=17
+def 17 type primitive name=21 scope=0 access=public
+def 18 type primitive name=22 scope=0 access=public
+def 19 type struct name=1 scope=0 access=module:0 source=0:0 members=1
+def 20 value constructor name=1 scope=0 access=module:0 source=0:0
+def 21 type self-type name=23 scope=2 access=module:0 source=0:13 members=2
+def 22 value const name=3 scope=2 access=module:0 source=0:4
+def 23 value function name=4 scope=2 access=module:0 source=0:12
+def 24 value const name=3 scope=5 access=module:0 source=0:7
+def 25 value function name=24 scope=0 access=module:0 source=0:20
+binding scope=0 type name=1 def=19 Direct ambiguous=false access=module:0
+binding scope=0 value name=1 def=20 Direct ambiguous=false access=module:0
+binding scope=0 value name=24 def=25 Direct ambiguous=false access=module:0
+binding scope=2 type name=23 def=21 Direct ambiguous=false access=module:0
+binding scope=2 value name=3 def=22 Direct ambiguous=false access=module:0
+binding scope=2 value name=4 def=23 Direct ambiguous=false access=module:0
+binding scope=5 value name=3 def=24 Direct ambiguous=false access=module:0
+ref 0:1 scope=2 type def=19
 ref 0:2 scope=3 type def=9
 ref 0:5 scope=6 type def=9
-ref 0:9 scope=5 value def=22
-ref 0:16 scope=8 value associated=17
-eof files=1 modules=1 definitions=24 references=5
+ref 0:9 scope=5 value def=24
+ref 0:16 scope=8 value associated=19
+eof files=1 modules=1 definitions=26 references=5
