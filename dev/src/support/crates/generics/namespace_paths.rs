@@ -32,13 +32,13 @@ impl CallablePath<'_> {
 /// Charge the bounded scratch initialization and every emitted edge/name byte.
 /// The returned recipe allocates nothing; consumers prepay its output then clone
 /// each component once. Work is linear in emitted components and name bytes.
-pub(crate) fn callable_path<'a, E>(
-    declarations: &'a [Declaration],
+pub(crate) fn callable_path<E>(
+    declarations: &[Declaration],
     root: DeclarationRef,
     start: DeclarationRef,
     mut charge: impl FnMut(usize) -> Result<(), E>,
     error: impl Fn(&'static str) -> E,
-) -> Result<CallablePath<'a>, E> {
+) -> Result<CallablePath<'_>, E> {
     charge(1)?;
     charge(64)?;
     let mut path = CallablePath {
