@@ -131,6 +131,12 @@ accepting unknown attributes or changing the fixture's meaning.
   audit and strict Clippy in 166.66 seconds. It owns actual reservations and a
   private catalog without interning or semantic publication. Named lifetimes,
   demanded recipes and fresh body/instance proof remain required.
+  The [shared signature cursor](parallel/pa29-signature-cursor.md), merged at
+  `584cf944`, now passes eleven focused controls in 163.43 seconds including
+  strict Clippy/audit/build. Its actual flat-reference producer exposed and
+  repaired missing raw CFG borrow obligations by sharing the ordinary checker
+  kernel. Deep ready signatures, genuine empty schemes, named environments and
+  executable Provided import remain unimplemented; the public guards stay closed.
 - B: the bounded LIB-021 component at `ca2f0a80` passes 1,519 private tests,
   24 frontend cases, 84 native contexts, 26 layouts and seven CLI controls.
   Its merge preserving current macro permissions and A's source data is public

@@ -1,10 +1,18 @@
 # Private signature cursor checkpoint
 
-This source checkpoint is unqualified and builds on the qualified unpaid
-reservation checkpoint on `5f641fa0`. Remote CI 40181876733 passed formatting,
-audit, strict Clippy and eight of nine controls on `63f342f5`; the scaling setup
-exposed the provenance-input omission below. The current source fix is pending
-focused qualification, with that failure retained.
+This checkpoint builds on the qualified unpaid reservation checkpoint at
+`5f641fa0`. The [merged focused gate](https://github.com/vishvananda/rustgm/actions/runs/40183749929)
+qualifies source `fcc58aab`, integrated with current main at `584cf944`:
+all eleven selected private controls pass, together with formatting, assignment
+metadata, architecture audit and strict private Clippy, in 163.43 seconds.
+The controls execute in 0.42 seconds; all 212 harness tests also pass.
+No release build or full private inventory was required. Raw receipts and
+exact inventories are retained in the integrator worktree under
+`obj/parallel/signature-cursor-passed-40183749929/`.
+
+Earlier CI 40181876733 passed eight of nine controls on `63f342f5` and exposed
+the genuine provenance-input omission below. Its failure remains retained;
+the same flat-reference scaling setup now passes with the producer fix.
 
 The flat-reference setup exposed an actual export omission: the original region
 checker proved raw Contract inputs together with typed CFG place-provenance

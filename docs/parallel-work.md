@@ -27,9 +27,9 @@ above remain the performance baseline.
 Current lanes:
 
 - A: continue real Provided signature/body transport. The private reservation
-  session is qualified; the shared signature cursor has eight passing controls
-  and one real source-export provenance omission under repair. Export the same
-  raw borrow obligations the ordinary checker proves; do not fabricate regions.
+  session and shared signature cursor are qualified with eleven merged controls.
+  Export now shares the ordinary raw place-bounds producer; real empty signature
+  schemes and anonymous function/type-alias producer gaps remain explicit.
 - B: implement LIB-022's authenticated builtin declaration family from the new
   unchanged-core frontier. Keep remaining UB/runtime-policy import contracts
   visible and separate from local declaration support.
