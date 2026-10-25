@@ -10,7 +10,7 @@ mod role_headers;
 mod scheme_inputs;
 use scheme_inputs::SignaturePort;
 mod scope_inputs;
-mod slot_bindings;
+pub(super) mod slot_bindings;
 use super::{Declarations, Error, Headers, error};
 use crate::{
     resolve::{
@@ -49,6 +49,9 @@ pub(in crate::sema) struct Graph {
     impl_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
 }
 impl Context<'_> {
+    pub(super) fn require_functions(&self, budget: &mut Headers) -> Result<(), Error> {
+        self.authenticate(budget)
+    }
     fn authenticate(&self, budget: &mut Headers) -> Result<(), Error> {
         budget.charge(2)?;
         let catalog = self
@@ -168,7 +171,7 @@ impl Graph {
         budget.reserve(size_of::<Self>().saturating_add(bytes))?;
         let slots = slot_bindings::prepare(context, facts, budget)?;
         let regions = slot_bindings::regions(context, budget)?;
-        let nodes = dag_recipes::prepare(context, facts, &slots, &regions, budget)?;
+        let nodes = dag_recipes::prepare(context, facts, &slots, &regions, root, budget)?;
         budget.observed.vector(&slots);
         budget.observed.vector(&regions);
         budget.observed.vector(&nodes);
@@ -294,22 +297,7 @@ impl Graph {
         )?;
         let rows = context.descriptor.rows();
         budget.charge(1)?;
-        let frame = rows
-            .binders
-            .get(signature.binder.0 as usize)
-            .ok_or_else(|| error("source declaration signature lost its actual binder"))?;
-        if frame.owner != owner || frame.kind != expected {
-            return Err(error(
-                "source signature changed its exact declaration/binder kind",
-            ));
-        }
-        if signature.convention != crate::support::crates::generics::Convention::Rust
-            || signature.variadic
-        {
-            return Err(error(
-                "source signature convention requires its wider explicit profile",
-            ));
-        }
+        let count = super::signature_shapes::check(rows, Some((owner, expected)), signature)?;
         let roots = signature.parameters.slice(&rows.roots).map_err(error)?;
         budget.charge(roots.len().saturating_add(1))?;
         budget.reserve(
@@ -322,17 +310,13 @@ impl Graph {
             .iter()
             .map(|&root| self.ty(root))
             .collect::<Result<Vec<_>, _>>()?;
-        let parameters = facts.types.intern_list(&parameters).map_err(error)?;
-        facts
-            .types
-            .intern(crate::types::Kind::Function {
-                bound_regions: frame.count,
-                parameters,
-                result: self.ty(signature.result)?,
-                unsafe_: signature.unsafe_,
-                convention: crate::types::callable::Convention::RUST,
-            })
-            .map_err(error)
+        super::signature_shapes::intern(
+            &mut facts.types,
+            count,
+            signature,
+            &parameters,
+            self.ty(signature.result)?,
+        )
     }
     pub(super) fn ty(
         &self,

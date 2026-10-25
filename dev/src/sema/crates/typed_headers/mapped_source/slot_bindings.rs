@@ -23,6 +23,7 @@ pub(super) fn prepare(
     budget: &mut Headers,
 ) -> Result<Vec<Argument>, Error> {
     let rows = context.descriptor.rows();
+    budget.reserve(facts.types.parameter_allocation_bound(rows.slots.len()))?;
     let mut result = Vec::with_capacity(rows.slots.len());
     for slot in &rows.slots {
         budget.charge(1)?;
@@ -46,17 +47,7 @@ pub(super) fn prepare(
                         .validate_declaration(id, actual, DefKind::Trait)
                         .map_err(error)?;
                 }
-                let id = facts
-                    .types
-                    .intern_parameter(Parameter {
-                        owner: ItemId(owner.0),
-                        index: slot.index,
-                        kind: ParameterKind::Type {
-                            sized: sized.is_some(),
-                        },
-                    })
-                    .map_err(error)?;
-                Argument::Type(facts.types.intern(Kind::Parameter(id)).map_err(error)?)
+                intern_type(&mut facts.types, owner, slot.index, sized.is_some())?
             }
             s::ParameterKind::Region => {
                 let index = u16::try_from(slot.index).map_err(|_| {
@@ -88,10 +79,7 @@ pub(super) fn regions(context: &Context<'_>, budget: &mut Headers) -> Result<Vec
                 if slot >= frame.count {
                     return Err(error("source region exceeds its actual binder count"));
                 }
-                let slot = u16::try_from(slot).map_err(|_| {
-                    error("source bound region slot exceeds canonical lifetime identity space")
-                })?;
-                RegionId::bound(depth, slot).map_err(error)?
+                bound(depth, slot, frame.count)?
             }
             s::Region::Parameter { .. } | s::Region::Variable { .. } => {
                 return Err(error(
@@ -101,4 +89,34 @@ pub(super) fn regions(context: &Context<'_>, budget: &mut Headers) -> Result<Vec
         });
     }
     Ok(result)
+}
+pub(in crate::sema::crates::typed_headers) fn intern_type(
+    store: &mut crate::types::Store,
+    owner: crate::resolve::model::DefId,
+    index: u32,
+    sized: bool,
+) -> Result<Argument, Error> {
+    let id = store
+        .intern_parameter(Parameter {
+            owner: ItemId(owner.0),
+            index,
+            kind: ParameterKind::Type { sized },
+        })
+        .map_err(error)?;
+    store
+        .intern(Kind::Parameter(id))
+        .map(Argument::Type)
+        .map_err(error)
+}
+pub(in crate::sema::crates::typed_headers) fn bound(
+    depth: u16,
+    slot: u32,
+    count: u32,
+) -> Result<RegionId, Error> {
+    if slot >= count {
+        return Err(error("source region exceeds its actual binder count"));
+    }
+    let slot = u16::try_from(slot)
+        .map_err(|_| error("source bound region slot exceeds canonical lifetime identity space"))?;
+    RegionId::bound(depth, slot).map_err(error)
 }

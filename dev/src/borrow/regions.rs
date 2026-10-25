@@ -9,6 +9,7 @@ pub use output::Summary as OutputSummary;
 mod paired_group;
 mod places;
 pub(crate) use paired_group::{Lineage, Retained, check_retained_group};
+pub(crate) use places::{PlaceBoundsSink, visit_bounds as visit_place_bounds};
 pub mod points;
 pub mod view;
 pub use check::{

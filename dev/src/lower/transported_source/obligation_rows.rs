@@ -1,6 +1,7 @@
 //! Reproof receives complete raw allocation and relation inputs, never solutions.
 mod builtin_rows;
 mod normalized_inputs;
+mod provenance_rows;
 mod request_ports;
 use super::{
     Body, Context, Contract, Declarations, DefId, ItemId, NodeKey, RegionId, Source, Stage, g, ir,
@@ -83,6 +84,7 @@ pub(super) fn allocations(
 pub(super) fn emit(
     stage: &mut Stage,
     facts: &Declarations,
+    cfg: &Body,
     definition: DefId,
     input: &Contract,
     context: Context,
@@ -133,6 +135,7 @@ pub(super) fn emit(
         let kind = obligation_kind(stage, facts, obligation.kind, context)?;
         rows.obligations.push(s::Obligation { site, kind });
     }
+    provenance_rows::append(stage, facts, cfg, context, sites, &mut rows.obligations)?;
     for proof in &input.proofs {
         stage.reserve(4 * size_of::<s::NormalizationInput>())?;
         rows.normalizations.push(normalized_inputs::emit(
