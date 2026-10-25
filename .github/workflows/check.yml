@@ -22,6 +22,7 @@ jobs:
         with:
           path: |
             obj/rust/dev-fast
+            obj/rust/private-lint
             obj/fast-audit.json
             ~/.cargo/registry
           key: dev-fast-${{ runner.os }}-rust-1.98-${{ hashFiles('dev/Cargo.lock', 'dev/Cargo.toml') }}-${{ github.sha }}
@@ -30,7 +31,7 @@ jobs:
       - name: Audit setup
         run: make setup-audit
       - name: Five-minute development check
-        run: make fastcheck FAST_ARGS='lexer'
+        run: make fastcheck FAST_ARGS='--lib-case support::crates::codec::ordinary_columns::supplied_tests::supplied_full_family_data_round_trips_all_columns_without_import_permission --lib-case support::crates::codec::ordinary_columns::supplied_tests::supplied_data_codec_rejects_truncation_versions_extras_and_combined_budget --lib-case support::crates::codec::ordinary_columns::supplied_tests::supplied_data_staging_rejects_wrong_owner_alias_domain_environment_and_call_context --lib-case support::crates::codec::ordinary_columns::supplied_tests::functions_reader_denies_each_wider_tag_before_allocation --lib-case support::crates::codec::ordinary_columns::supplied_tests::functions_columns_keep_their_existing_layout_without_unit_suffix --lib-case support::crates::generics::source::validation::numbered_tests::allocation_tests::inverse_ordinals_join_actual_aliases_and_normalization_domain --lib-case support::crates::generics::source::validation::numbered_tests::allocation_tests::inverse_ordinals_charge_failed_queries_and_preallocation --lib-case support::crates::generics::source::validation::numbered_tests::allocation_tests::inverse_ordinals_reuse_has_fixed_work_with_unrelated_originals --lib-case support::crates::generics::source::validation::numbered_tests::numbered_family_preserves_actual_allocation_log_and_alias_membership --lib-case support::crates::generics::source::validation::numbered_tests::numbered_units_reject_incomplete_permutations_headers_and_alias_inputs --lib-case support::crates::codec::ordinary_columns::tests::ordinary_source_columns_round_trip_complete_real_headers_and_originals --lib-case support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof --lib-case support::crates::generics::source::validation::numbered_tests::numbered_inspection_cannot_publish_through_functions_profile --lib-case sema::compiler_items::runtime_checks::tests::actual_imported_body_carrier_requires_its_untransported_runtime_policy'
       - name: Harness, audit cache and upstream contracts
         run: make test-harness test-upstream && obj/audit-venv/bin/python -m unittest discover -s scripts/audit_tests -v
       - name: Retain focused evidence
