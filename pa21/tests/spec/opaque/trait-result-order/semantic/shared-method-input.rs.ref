@@ -21,14 +21,14 @@ type 18 primitive f64
 type 19 primitive f16
 type 20 primitive f128
 type 21 parameter def=14 index=0
-type 22 parameter def=15 index=1
+type 22 parameter def=15 index=0
 type 23 reference mutable=false region=bound:0:0 referent=22
 type 24 opaque id=0 arguments=[region:bound:0:0,type:22,type:21]
 type 25 opaque id=1 arguments=[region:bound:0:0,type:22,type:21]
 type 26 tuple [24,25]
 type 27 function binders=1 parameters=[23] result=26 unsafe=false
 type 28 function-item def=15 signature=27
-type 29 parameter def=17 index=1
+type 29 parameter def=17 index=0
 type 30 reference mutable=false region=bound:0:0 referent=29
 type 31 opaque id=2 arguments=[region:bound:0:0,type:29]
 type 32 opaque id=3 arguments=[region:bound:0:0,type:29]

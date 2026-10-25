@@ -13,6 +13,22 @@ pub(super) fn validate(
     headers: &HeaderIndex<'_>,
     work: &mut Work,
 ) -> Result<(), &'static str> {
+    validate_mode(rows, headers, work, false)
+}
+/// Private structural namespace inspection, never descriptor admission.
+pub(super) fn validate_namespace(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    validate_mode(rows, headers, work, true)
+}
+fn validate_mode(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+    modules: bool,
+) -> Result<(), &'static str> {
     work.charge(1)?;
     if !rows.body_units.is_empty() {
         return Err("source numbering units require their wider explicit profile");
@@ -46,7 +62,7 @@ pub(super) fn validate(
             );
         }
     }
-    functions(rows, headers, work)?;
+    functions(rows, headers, work, modules)?;
     for header in &rows.implementations {
         work.charge(1)?;
         if header.constant || header.negative || header.unsafe_ {
@@ -65,10 +81,12 @@ fn functions(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
+    modules: bool,
 ) -> Result<(), &'static str> {
     for declaration in &rows.declarations {
         work.charge(1)?;
-        if declaration.definition.kind == super::super::DefinitionKind::Module
+        if !modules
+            && declaration.definition.kind == super::super::DefinitionKind::Module
             && declaration.definition.parent.is_some()
         {
             return Err("nested source modules require a wider source namespace profile");

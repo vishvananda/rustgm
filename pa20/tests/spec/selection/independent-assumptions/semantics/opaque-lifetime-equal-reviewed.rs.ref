@@ -24,14 +24,14 @@ type 21 parameter def=14 index=0
 type 22 parameter def=17 index=0
 type 23 parameter def=16 index=1
 type 24 projection def=15 self=21 trait=13 arguments=[] family arguments=[]
-type 25 parameter def=18 index=1
+type 25 parameter def=18 index=0
 type 26 reference mutable=false region=bound:0:0 referent=11
 type 27 function binders=1 parameters=[26] result=1 unsafe=false
 type 28 reference mutable=false region=bound:1:0 referent=11
 type 29 function binders=0 parameters=[28] result=1 unsafe=false
 type 30 function-item def=18 signature=27
-type 31 parameter def=19 index=2
-type 32 parameter def=19 index=3
+type 31 parameter def=19 index=0
+type 32 parameter def=19 index=1
 type 33 reference mutable=false region=bound:0:1 referent=11
 type 34 projection def=15 self=31 trait=13 arguments=[] family arguments=[]
 type 35 function binders=2 parameters=[26,33] result=1 unsafe=false

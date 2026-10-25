@@ -93,6 +93,35 @@ includes declaration and owning crate; familiar names are not implementation
 evidence. Transport checked generic/const bodies and their retained contracts
 through deterministic crate metadata with indexed external-to-local remapping.
 
+Header diagnostic and advisory contracts use complete versioned cold columns.
+Authenticate local declaration, configured owner and retained source incarnation;
+join imported declarations to their actual catalog coordinates once. Reuse the
+existing owner/effect and declaration passes for positive completion. Missing
+entries, unvisited owners and older metadata remain Unknown; KnownAbsent needs
+an actual completed producer witness. Borrow retained reasons on warm reads,
+charge attempted work and retained bytes, and preserve aggregate limits on
+failure. Do not grow ordinary syntax, body or declaration records for these
+columns. Provider declaration warnings occur once, while imported unused-result
+diagnostics use the consumer's lexical lint policy and use location. Select an
+explicit publication profile and preserve legacy bytes; contract presence never
+grants execution or trait permission. The
+[versioned transport checkpoint](docs/source-header-contract-transport.md)
+records exact-byte, fresh-consumer, origin, budget and layout controls.
+
+Free unnamed constants retain real declaration identities, item keys, scopes and
+all initializer typing and evaluation obligations. Omit only their lexical name
+binding and declaration-name wakeup. Associated constants require names. Retain
+actual visibility and emit the real unused-visibilities lint through existing
+lexical policy; a public placeholder creates no exported name. Unsupported
+metadata profiles reject the real constant inventory instead of dropping it.
+One cold owner retains authenticated source warning causes. Success and terminal
+errors share the same bounded collector and canonical warning carrier. Macro
+projection uses the actual introduction; physical source and syntax context
+govern duplicate warnings. Preserve the primary error and distinguish unavailable
+source authentication from exhausted warning budgets. Keep the optional dense
+policy table's aggregate per-node cost explicit. See the
+[unnamed-constant checkpoint](docs/unnamed-free-constants.md).
+
 Local structural inherent ownership consumes the actual crate policy and complete
 member inventory. Head/name/context buckets exclude unrelated work; full Self,
 const arguments, caller conditions and visibility still decide applicability.
@@ -105,6 +134,17 @@ One cold name-work counter covers ordinary and structural contexts, including
 failed queries. Ordinary local feature allowances share authenticated header
 machinery through a distinct cold owner; they do not become source providers or
 disable the prelude. See [the structural owner checkpoint](docs/primitive-inherent-checkpoint.md).
+
+Trait implementation restrictions retain parsed clause nodes and resolve their
+module path once through the existing import fixpoint. Validate the real
+declaration and implementation module ancestry; visibility grants no additional
+implementation permission. Syntax feature checks include parsed disabled
+headers and authenticate actual macro-token origin. Ordinary readable metadata
+can assert an unrestricted domain only through its checked canonical profile,
+trait header, owner and inventory. Missing source nodes or map entries are not
+policy evidence. Restricted source publication stays closed until its explicit
+metadata contract is implemented. See the
+[domain checkpoint](docs/implementation-domains-core-checkpoint.md).
 
 Source macro imports and qualified calls use actual declarations and the existing
 import dependency worklist, including forward definitions and renamed targets.
@@ -185,6 +225,19 @@ formal, including unused parameters; preserve explicit `?Sized`. Original
 assumptions do not pay substituted instance obligations. Retain a single cold
 owner for immutable imported templates/contracts, with exact owner validation
 at every borrowed view and ordinary per-instance proof on execution.
+
+Private callable preparation consumes the actual reserved declared/callable
+signature pair and complete outer-to-inner formal scope, including unused
+parameters and inherited Self. Share the ordinary callable registration kernel;
+retain the real named owner and anonymous Function types. Build the scope index
+once. A warm hit still authenticates the catalog, source arena, declaration,
+body, signature and exact scope record before reusing readiness, without
+traversing its ancestry again. Prepay actual template capacity growth, temporary
+owner validation and selected regional occurrences; unrelated declarations and
+the entire type store are not per-call allocation bounds. Failed attempts retain
+their charged work and peak, and cannot publish partial readiness. This private
+structural preparation grants no defining Environment, original body proof,
+call-instance proof or wider metadata-profile permission.
 
 Role validators consume borrowed declaration headers rather than reconstructing
 source syntax. The source adapter validates the actual declaration, separate
@@ -3236,7 +3289,10 @@ demanded instance with its complete arguments and proofs.
 Preserve complete callable identities through function values, constants and
 promoted data. Check every generic template, including unused bodies, before
 specializing its retained CFG. Substitute parameters by their declaration
-identities; callable argument positions need not include late lifetime slots.
+identities. Assign function type/const parameter indices from their actual
+argument vector after excluding function lifetime declarations; those lifetimes
+belong to the separate signature scheme. Aliases and other nonfunction owners
+retain their existing mixed lifetime/type/const argument positions.
 Abstract lifetimes inside actual type arguments into a fresh instance proof
 context while preserving nested binders and the template's own variables.
 Reconnect each imported early argument with its original body slot, including

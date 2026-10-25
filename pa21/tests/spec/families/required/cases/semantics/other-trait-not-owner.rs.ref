@@ -23,7 +23,7 @@ type 20 primitive f128
 type 21 parameter def=14 index=0
 type 22 parameter def=17 index=0
 type 23 projection def=15 self=21 trait=13 arguments=[] family arguments=[region:bound:0:0]
-type 24 parameter def=18 index=1
+type 24 parameter def=18 index=0
 type 25 reference mutable=false region=bound:0:0 referent=24
 type 26 projection def=15 self=24 trait=13 arguments=[] family arguments=[region:bound:0:0]
 type 27 function binders=1 parameters=[25] result=26 unsafe=false

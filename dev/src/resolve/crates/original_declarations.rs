@@ -11,6 +11,7 @@ use crate::{
     },
     support::crates::{self, Interface, generics as g},
 };
+pub(crate) use packet_declarations::{OwnedNamespaceCatalog, PendingNamespace};
 fn error(message: &'static str) -> Error {
     Error::unlocated(message)
 }

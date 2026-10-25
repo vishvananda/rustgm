@@ -85,6 +85,8 @@ impl<'a, 'index, 'rows> Builder<'a, 'index, 'rows> {
             cache_hits: self.arena.hits,
             required_inputs: self.requests.len(),
         };
+        #[cfg(test)]
+        self.arena.observe(observed.steps);
         Ok(OriginalInputPlan {
             rows,
             ranges: self.ranges,

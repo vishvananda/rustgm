@@ -29,7 +29,7 @@ type 26 function-item def=14 signature=25
 type 27 parameter def=20 index=1
 type 28 projection def=17 self=27 trait=15 arguments=[region:bound:0:0] family arguments=[]
 type 29 projection def=17 self=28 trait=15 arguments=[region:bound:0:0] family arguments=[]
-type 30 parameter def=21 index=1
+type 30 parameter def=21 index=0
 type 31 projection def=17 self=30 trait=15 arguments=[region:bound:0:0] family arguments=[]
 type 32 projection def=17 self=31 trait=15 arguments=[region:bound:0:0] family arguments=[]
 type 33 function binders=1 parameters=[32] result=32 unsafe=false

@@ -1,8 +1,22 @@
 //! Demand concrete CFGs from checked templates before ordinary executable lowering.
 mod demand;
 mod dependencies;
+mod namespace_snapshot;
 mod proof;
 mod staged_originals;
+#[cfg_attr(
+    not(test),
+    expect(
+        unused_imports,
+        reason = "private namespace transaction awaits qualified module-contract publication; public profile guards remain closed"
+    )
+)]
+pub(crate) use namespace_snapshot::inspect_source_namespace;
+#[cfg(test)]
+#[path = "../../tests/invariants/module_snapshot_fixture.rs"]
+mod namespace_fixtures;
+#[cfg(test)]
+pub(crate) use namespace_fixtures::namespace_fixture;
 #[cfg(test)]
 #[path = "../../tests/invariants/upstream_originals.rs"]
 mod upstream_originals;
@@ -365,7 +379,7 @@ fn inspect_staged<S, R>(
     ) -> Result<(Option<DefId>, super::roots::Exports, S), Error>,
     collect: impl FnMut(
         &mut S,
-        &Declarations,
+        &mut Declarations,
         &borrow::incremental::Proved,
         &body::regions::Contract,
     ) -> Result<(), Error>,

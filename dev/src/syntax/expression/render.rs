@@ -338,6 +338,7 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
         }
         Kind::InferType => write!(output, "infer-type"),
         Kind::NeverType => write!(output, "never-type"),
+        Kind::ImplRestriction { path } => write!(output, "impl-restriction {}", path.get()),
     }
 }
 

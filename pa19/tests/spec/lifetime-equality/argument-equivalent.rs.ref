@@ -23,8 +23,8 @@ type 20 primitive f128
 type 21 parameter def=14 index=0
 type 22 parameter def=16 index=0
 type 23 parameter def=15 index=1
-type 24 parameter def=17 index=2
-type 25 parameter def=17 index=3
+type 24 parameter def=17 index=0
+type 25 parameter def=17 index=1
 type 26 function binders=2 parameters=[] result=1 unsafe=false
 type 27 function binders=0 parameters=[] result=1 unsafe=false
 type 28 function-item def=17 signature=26

@@ -29,20 +29,33 @@ advances the root to `num/f128.rs:27`: nine original files opened and all 722
 inputs verified. Its seven isolated controls pass in 165.33 seconds. Use LIB-024
 as the current frontier; wider macro execution and import remain open.
 
+The [wide-literal successor](wide-literals-checkpoint.md) advances the original
+root to `num/nonzero.rs:34`, with 42 unchanged files opened. All 722 source
+inputs are verified. The newer
+[domain checkpoint](implementation-domains-core-checkpoint.md) now reaches
+`mem/alignment.rs:26`, with 56 unchanged files opened. The
+[unnamed-constant checkpoint](unnamed-free-constants.md) now reaches
+`mem/maybe_uninit.rs:1644`, with 58 unchanged files opened. LIB-028 specialization
+defaultness is the current blocker; earlier stops remain retained history.
+
 Current lanes:
 
-- A: continue real Provided signature/body transport. The private reservation
-  session and shared signature cursor are qualified with eleven merged controls.
-  Export shares the ordinary raw place-bounds producer; genuine empty signature
-  schemes and monomorphic imported callables now pass real codec/fresh proof.
-  Continue actual anonymous Function recipes; type-alias transport stays separate.
-- B: LIB-022's complete local declaration family is qualified. Implement
-  LIB-024's exact wide literal/feature/type slice from the real f128 frontier;
-  keep later wide operations, UB policy, macro execution and import explicit.
-- C: LIB-023's real local `non_exhaustive` consumer is qualified with four merged
-  controls and 38 independent observations. LIB-025's mandatory typed publication
-  guard is now qualified; continue explicit wider attribute transport. Existing
-  source-attribute/configuration receipts and 93 new text oracles are integrated.
+- A: anonymous Function recipes and the genuine function argument-index repair
+  pass the selected private/declaration gates. All 8485 paired text cases and
+  122 reviewed stdout changes are qualified. Actual callback-bearing executable
+  consumers now pass three focused controls. Private Provided callable-template
+  preparation now passes six focused controls; see the
+  [checkpoint](private-callable-template-checkpoint.md). Continue defining-Environment
+  preparation. Public Provided execution and type-alias transport remain required.
+- B: local LIB-026 implementation domains and their version-one imported
+  unrestricted-profile control are qualified, with 74 independent observations.
+  The private declaration-coordinate namespace and ordinary-trait producer
+  prerequisite is underway. Restricted policy transport remains open; keep the
+  real trait/catalog identity distinct from an external function linker identity.
+- C: SourceCore CLI contract publication and fresh native consumers are qualified.
+  LIB-027 unnamed constants now pass six focused controls and reviewed text
+  qualification. Investigate LIB-028's actual specialization defaultness,
+  feature authority and dispatch requirements; retain LIB-029 assertion expansion.
 - Integrator: focused integration/main pushes, periodic CI follow-up and fresh
   original-source observations. Local primitive ownership is qualified. Keep
   CPPGM and upstream sources unchanged.

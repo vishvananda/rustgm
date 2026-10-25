@@ -3,6 +3,7 @@ mod authored_functions;
 mod authored_traits;
 mod canonical_nodes;
 mod contract_rows;
+mod exposed_bindings;
 mod implementation_headers;
 mod scoped_parameters;
 mod self_requests;
@@ -157,8 +158,26 @@ impl Stage {
     }
     pub(crate) fn begin(
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_mode(report, facts, identity, false)
+    }
+
+    /// Private inspection only; no profile or descriptor admission is changed.
+    pub(crate) fn begin_with_ordinary_traits(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_mode(report, facts, identity, true)
+    }
+
+    fn begin_mode(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+        ordinary_traits: bool,
     ) -> Result<Self, &'static str> {
         let provider = report
             .package
@@ -210,7 +229,7 @@ impl Stage {
         stage.definitions.resize(count, None);
         stage.declarations(report, facts)?;
         stage.scopes(report, facts)?;
-        stage.traits(report, facts)?;
+        stage.traits(report, facts, ordinary_traits)?;
         stage.functions(report, facts)?;
         stage.implementations(facts)?;
         Ok(stage)
@@ -277,6 +296,13 @@ impl Stage {
             };
             let id =
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
+            if definition.kind == DefKind::Trait
+                && crate::resolve::impl_restrictions::clause(report, id)
+                    .map_err(|_| "source trait implementation domain is invalid")?
+                    .is_some()
+            {
+                return Err("restricted trait implementation policy transport is not implemented");
+            }
             let parent = if Some(id) == report.resolution.crate_root {
                 None
             } else {
