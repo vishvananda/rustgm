@@ -128,7 +128,9 @@ impl<S: Sources> Engine<'_, S> {
                     "source tool registration is not implemented",
                 ));
             }
-            if matches!(attribute.input, Input::Doc(_)) || name.and_then(Consumer::named).is_some()
+            if matches!(attribute.input, Input::Doc(_))
+                || name.and_then(Consumer::named).is_some()
+                    && !(name == Some("derive") && self.loader.package.source_core().is_some())
             {
                 continue;
             }
