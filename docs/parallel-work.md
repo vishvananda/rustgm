@@ -48,7 +48,10 @@ Current lanes:
   [checkpoint](private-callable-template-checkpoint.md). Private zero-domain
   Declaration environments now have six qualified controls; see the
   [environment checkpoint](private-defining-environments-checkpoint.md).
-  Continue the genuine empty Contract adapter, preserving old v0/v1 bytes.
+  The [empty Contract adapter](private-empty-contracts-checkpoint.md) now passes
+  six focused controls and exact first-encoded old v0/v1 bytes. Continue actual
+  inherited/nonrole and nonzero regional environments toward the concrete
+  [provided-method execution milestone](parallel/provided-method-execution.md).
   Public Provided execution and type-alias transport remain required.
 - B: local LIB-026 implementation domains and their version-one imported
   unrestricted-profile control are qualified, with 74 independent observations.
@@ -323,6 +326,11 @@ unchanged authenticated passes; otherwise run production and private Rust
 commands sequentially. An independent Python architecture audit may run beside
 that sequence, with separate receipts and a joined failure result. This keeps
 one Rust compiler command active and does not extend the five-minute budget.
+Collect findings from both sequential lint modes when the deadline permits,
+even if the first mode fails; test compilation changes which findings appear.
+Join those failures with the audit result before deciding whether to build or
+execute tests. No failed static mode is a pass, and no tests run after a failed
+static phase. Keep a live source-frozen job intact when changing future helpers.
 
 For hot-path changes, apply the frontend performance precedent in `spec.md`:
 identify repeated work removed, cache and ownership boundaries, and dimensions

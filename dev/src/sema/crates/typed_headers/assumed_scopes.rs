@@ -30,6 +30,9 @@ use crate::{
     },
 };
 use std::sync::Arc;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/inherited_environments.rs"]
+mod inherited_tests;
 #[path = "assumed_originals.rs"]
 mod originals;
 #[path = "assumption_ports.rs"]

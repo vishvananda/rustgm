@@ -5,6 +5,10 @@ declaration assumptions and unchanged zero-domain body environments in the owned
 private Provided session. No Environment, TypeId, Header, Graph, query or proof
 escapes. Public Provided import, roles and execution remain closed.
 
+The [empty Contract successor](private-empty-contracts-checkpoint.md) now closes
+the plain-function boundary described below with actual neutral body construction
+and exact old metadata bytes. This document records the earlier Declaration slice.
+
 ## Construction and boundaries
 
 The entry consumes and returns `Box<Session>` plus `Demand<()>`. It first requires

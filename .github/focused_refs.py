@@ -1,4 +1,4 @@
-"""Exact six empty-Contract controls; static audit overlaps one sequential Rust lane."""
+"""Exact six trait collector and owned numbering controls; static audit overlaps one sequential Rust lane."""
 from concurrent.futures import ThreadPoolExecutor
 import hashlib,json,os,re,signal,subprocess,sys,time
 from pathlib import Path
@@ -12,10 +12,10 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 def worker(started):
-    freeze=json.loads((ROOT/'.github/empty_contract_freeze.json').read_text())
+    freeze=json.loads((ROOT/'.github/inherited_numbering_freeze.json').read_text())
     sources=fingerprint(ROOT)
     if sources!=freeze['sources']:raise ValueError('frozen source changed')
-    out=ROOT/f'obj/qualification/fast/{time.time_ns()}-empty-contracts'
+    out=ROOT/f'obj/qualification/fast/{time.time_ns()}-inherited-numbering'
     deadline=started+185
     steps=Steps(ROOT,SimpleNamespace(deadline=deadline,evidence_root=out,prune_under=[]))
     cases=freeze['selected']
@@ -32,14 +32,7 @@ def worker(started):
             branch.receipt.update(state='failed',error=str(error));raise
         finally:branch.save()
     try:
-        retained=freeze['retained_metadata']
-        prior_path=ROOT/'.github/empty_contract_prior.json'
-        if sha(prior_path)!=retained['receipt_sha256']:raise ValueError('retained metadata receipt changed')
-        prior=json.loads(prior_path.read_text())
-        if prior['steps'][0]['name']!='metadata' or prior['steps'][0]['status']!=0:raise ValueError('actual prior metadata did not pass')
-        changed=sorted(path for path in sources if prior['sources'].get(path)!=sources[path])
-        if sources.keys()!=prior['sources'].keys() or changed!=retained['changed_source']:raise ValueError('metadata source reuse widened')
-        steps.receipt['retained_metadata']=retained;steps.save()
+        steps.run('metadata',[sys.executable,'scripts/assignment_metadata.py'])
         steps.run('format',['cargo','fmt','--manifest-path','dev/Cargo.toml','--all','--','--check'])
         common=['--manifest-path','dev/Cargo.toml','--locked','--profile','dev-fast']
         audit=[('architecture',[ROOT/'obj/audit-venv/bin/python','scripts/rust_audit.py','--root','.','--cache','obj/fast-audit.json'],{})]
@@ -95,6 +88,6 @@ def main():
         if status:
             try:os.killpg(process.pid,signal.SIGKILL)
             except ProcessLookupError:pass
-        print(f'Empty Contract gate total: {time.monotonic()-start:.2f}s status={status}',flush=True)
+        print(f'Inherited numbering gate total: {time.monotonic()-start:.2f}s status={status}',flush=True)
 
 if __name__=='__main__':sys.exit(main())
