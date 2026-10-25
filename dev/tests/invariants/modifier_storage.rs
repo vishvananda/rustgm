@@ -1,5 +1,6 @@
 //! Existing projection and cold column limits are exercised without allocation hooks.
 use super::*;
+use std::fmt::Write;
 const GENERATED: &str = "trait T{fn f()->u8;}macro_rules! m{()=>{#[cfg(any())]impl<X>T for X{default fn f()->u8{1}}}}m!();fn main(){}";
 fn projection_identity() -> TestResult {
     let source = "macro_rules! m{()=>{fn f(){}}}m!();fn main(){}";
@@ -115,9 +116,10 @@ fn cold_storage_and_enclosing_layouts() -> TestResult {
     for width in [8, 32, 128] {
         let mut text = String::from("#![feature(min_specialization)]fn main(){}");
         for index in 0..width {
-            text.push_str(&format!(
+            write!(
+                text,
                 "struct S{index};impl S{index}{{default fn f()->u8{{1}}}}"
-            ));
+            )?;
         }
         let found = report(&text)?;
         let entries = found.package.units[0]

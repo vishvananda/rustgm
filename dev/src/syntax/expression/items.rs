@@ -424,14 +424,24 @@ impl Parser<'_, '_> {
             }
         };
         self.validate_item(&item, intrinsic)?;
+        let node = self.item_node(start, item, defaultness)?;
+        let node = self.attach(inner, node)?;
+        self.attach(attrs, node)
+    }
+
+    fn item_node(
+        &mut self,
+        start: u32,
+        item: Item,
+        defaultness: Option<Span>,
+    ) -> Result<NodeId, LexError> {
         let id = u32::try_from(self.ast.items.len()).map_err(|_| error(start, "too many items"))?;
         self.ast.items.push(item);
         let node = self.node(start, Kind::Item(id))?;
         if let Some(keyword) = defaultness {
             self.ast.record_defaultness(id, node, keyword)?;
         }
-        let node = self.attach(inner, node)?;
-        self.attach(attrs, node)
+        Ok(node)
     }
 
     fn auto_qualifier(&mut self, start: u32, flags: (bool, bool, bool)) -> Result<bool, LexError> {

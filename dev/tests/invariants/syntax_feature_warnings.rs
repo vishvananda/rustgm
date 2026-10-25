@@ -84,6 +84,9 @@ fn unvisited_default_syntax_preserves_exact_unconditional_and_mixed_diagnostics(
             .is_none(),
         "unused_macros is a separately retained coverage gap"
     );
+    mixed_failures_retain_warning()
+}
+fn mixed_failures_retain_warning() -> TestResult {
     let text = fixture("soft-authority", "inactive-root-allow")?;
     let source = format!("{text}\nfn bad(){{missing();}}\n");
     let error = report(&source)
