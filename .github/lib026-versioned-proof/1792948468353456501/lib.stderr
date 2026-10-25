@@ -1,0 +1,48 @@
+source planner node=20 flags=1 nodes=15/16 flags_cap=16 memo=30/56 steps=1263 reserved=48400 peak=48456
+source planner node=20 flags=1 nodes=15/16 flags_cap=16 memo=30/56 steps=1263 reserved=38196 peak=38252
+source planner node=20 flags=1 nodes=15/16 flags_cap=16 memo=30/56 steps=1263 reserved=47968 peak=48024
+source planner node=20 flags=1 nodes=15/16 flags_cap=16 memo=32/56 steps=1103 reserved=36427 peak=36515
+authored key TypeId(38)/Some(Context { owner: DeclarationRef(17), frame: Some(FrameRef(10)), body: Some(BodyRef(1)) }) bytes before=24 actual=32 formation=8 graph=288
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=18558 peak=18614
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=18558 peak=18614
+source planner node=20 flags=1 nodes=8/8 flags_cap=8 memo=13/14 steps=498 reserved=26093 peak=26149
+source planner node=20 flags=1 nodes=8/8 flags_cap=8 memo=13/14 steps=498 reserved=26093 peak=26149
+Function planner depth=1 width=1 InputWork { steps: 498, expression_nodes: 8, rewritten_uses: 13, application_templates: 0, comparison_pairs: 0, cache_hits: 74, required_inputs: 25 } peak=26149
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=18990 peak=19046
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=19614 peak=19670
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=14474 peak=14530
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=14474 peak=14530
+source planner node=20 flags=1 nodes=15/16 flags_cap=16 memo=48/56 steps=2381 reserved=79666 peak=79722
+source planner node=20 flags=1 nodes=15/16 flags_cap=16 memo=48/56 steps=2381 reserved=79666 peak=79722
+Function planner depth=1 width=8 InputWork { steps: 2381, expression_nodes: 15, rewritten_uses: 48, application_templates: 0, comparison_pairs: 0, cache_hits: 410, required_inputs: 123 } peak=79722
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=19625 peak=19681
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=14485 peak=14541
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=14485 peak=14541
+source planner node=20 flags=1 nodes=39/64 flags_cap=64 memo=168/224 steps=8837 reserved=275408 peak=275464
+source planner node=20 flags=1 nodes=39/64 flags_cap=64 memo=168/224 steps=8837 reserved=275408 peak=275464
+Function planner depth=1 width=32 InputWork { steps: 8837, expression_nodes: 39, rewritten_uses: 168, application_templates: 0, comparison_pairs: 0, cache_hits: 1562, required_inputs: 459 } peak=275464
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=19625 peak=19681
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=14485 peak=14541
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=14485 peak=14541
+Error: "missing actual imported Copy"
+source planner node=20 flags=1 nodes=14/16 flags_cap=16 memo=25/28 steps=913 reserved=29313 peak=29369
+source planner node=20 flags=1 nodes=14/16 flags_cap=16 memo=25/28 steps=913 reserved=29313 peak=29369
+Function planner depth=4 width=1 InputWork { steps: 913, expression_nodes: 14, rewritten_uses: 25, application_templates: 0, comparison_pairs: 0, cache_hits: 116, required_inputs: 25 } peak=29369
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=18990 peak=19046
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=14042 peak=14098
+source planner node=20 flags=1 nodes=21/32 flags_cap=32 memo=144/224 steps=5512 reserved=101026 peak=101082
+source planner node=20 flags=1 nodes=21/32 flags_cap=32 memo=144/224 steps=5512 reserved=101026 peak=101082
+Function planner depth=4 width=8 InputWork { steps: 5512, expression_nodes: 21, rewritten_uses: 144, application_templates: 0, comparison_pairs: 0, cache_hits: 788, required_inputs: 123 } peak=101082
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=18990 peak=19046
+source planner node=20 flags=1 nodes=45/64 flags_cap=64 memo=552/896 steps=21280 reserved=357536 peak=357592
+source planner node=20 flags=1 nodes=45/64 flags_cap=64 memo=552/896 steps=21280 reserved=357536 peak=357592
+Function planner depth=4 width=32 InputWork { steps: 21280, expression_nodes: 45, rewritten_uses: 552, application_templates: 0, comparison_pairs: 0, cache_hits: 3092, required_inputs: 459 } peak=357592
+source planner node=20 flags=1 nodes=22/32 flags_cap=32 memo=41/56 steps=1453 reserved=35057 peak=35585
+source planner node=20 flags=1 nodes=22/32 flags_cap=32 memo=41/56 steps=1453 reserved=35057 peak=35585
+Function planner depth=8 width=1 InputWork { steps: 1453, expression_nodes: 22, rewritten_uses: 41, application_templates: 0, comparison_pairs: 0, cache_hits: 172, required_inputs: 25 } peak=35585
+source planner node=20 flags=1 nodes=29/32 flags_cap=32 memo=272/448 steps=9580 reserved=130530 peak=131058
+source planner node=20 flags=1 nodes=29/32 flags_cap=32 memo=272/448 steps=9580 reserved=130530 peak=131058
+Function planner depth=8 width=8 InputWork { steps: 9580, expression_nodes: 29, rewritten_uses: 272, application_templates: 0, comparison_pairs: 0, cache_hits: 1292, required_inputs: 123 } peak=131058
+source planner node=20 flags=1 nodes=53/64 flags_cap=64 memo=1064/1792 steps=37444 reserved=471136 peak=471664
+source planner node=20 flags=1 nodes=53/64 flags_cap=64 memo=1064/1792 steps=37444 reserved=471136 peak=471664
+Function planner depth=8 width=32 InputWork { steps: 37444, expression_nodes: 53, rewritten_uses: 1064, application_templates: 0, comparison_pairs: 0, cache_hits: 5132, required_inputs: 459 } peak=471664
