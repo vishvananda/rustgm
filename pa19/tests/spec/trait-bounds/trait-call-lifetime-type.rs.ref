@@ -22,12 +22,12 @@ type 19 primitive f16
 type 20 primitive f128
 type 21 parameter def=14 index=0
 type 22 parameter def=13 index=0
-type 23 parameter def=15 index=1
+type 23 parameter def=15 index=0
 type 24 reference mutable=false region=bound:0:0 referent=11
 type 25 function binders=1 parameters=[23] result=1 unsafe=false
 type 26 function binders=0 parameters=[23] result=1 unsafe=false
 type 27 function-item def=15 signature=25
-type 28 parameter def=16 index=1
+type 28 parameter def=16 index=0
 type 29 function binders=1 parameters=[28] result=1 unsafe=false
 type 30 function binders=0 parameters=[28] result=1 unsafe=false
 type 31 function-item def=16 signature=29

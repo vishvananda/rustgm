@@ -23,7 +23,7 @@ type 20 primitive f128
 type 21 parameter def=15 index=1
 type 22 aggregate def=15 arguments=[region:bound:0:0,type:21]
 type 23 parameter def=14 index=0
-type 24 parameter def=17 index=1
+type 24 parameter def=17 index=0
 type 25 aggregate def=15 arguments=[region:bound:1:0,type:24]
 type 26 function binders=0 parameters=[25] result=1 unsafe=false
 type 27 function binders=1 parameters=[26] result=1 unsafe=false

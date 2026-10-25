@@ -365,7 +365,7 @@ fn inspect_staged<S, R>(
     ) -> Result<(Option<DefId>, super::roots::Exports, S), Error>,
     collect: impl FnMut(
         &mut S,
-        &Declarations,
+        &mut Declarations,
         &borrow::incremental::Proved,
         &body::regions::Contract,
     ) -> Result<(), Error>,

@@ -24,7 +24,7 @@ type 21 parameter def=16 index=0
 type 22 aggregate def=16 arguments=[type:21]
 type 23 parameter def=14 index=0
 type 24 parameter def=15 index=0
-type 25 parameter def=18 index=1
+type 25 parameter def=18 index=0
 type 26 reference mutable=false region=bound:0:0 referent=11
 type 27 tuple [25,26]
 type 28 aggregate def=16 arguments=[type:27]

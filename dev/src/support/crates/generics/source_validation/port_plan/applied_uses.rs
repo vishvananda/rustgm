@@ -56,12 +56,18 @@ pub(super) fn key(
         Rewrite::Application(application) => domains.types.closed_application(application, work)?,
         _ => domains.types.closed_root(root, work)?,
     };
-    if !closed && caller.is_none() {
+    // Actual function recipes retain formation ownership even when their
+    // lifetime domain is empty. Applications retain their exact target instead.
+    let function = matches!(
+        domains.headers.rows().types.get(root.0 as usize),
+        Some(s::Type::Function(_))
+    ) && !matches!(rewrite, Rewrite::Application(_));
+    if (!closed || function) && caller.is_none() {
         return Err("source contextual rewrite omitted its actual caller/frame owner");
     }
     Ok(Key {
         root,
-        rewrite: if closed && rewrite != Rewrite::Original {
+        rewrite: if closed && !function && rewrite != Rewrite::Original {
             match rewrite {
                 Rewrite::Public(_) => Rewrite::Original,
                 _ => rewrite,
@@ -69,7 +75,7 @@ pub(super) fn key(
         } else {
             rewrite
         },
-        caller: if closed { None } else { caller },
+        caller: if closed && !function { None } else { caller },
     })
 }
 

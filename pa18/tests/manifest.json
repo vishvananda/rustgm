@@ -4778,6 +4778,23 @@
       }
     },
     {
+      "path": "tests/spec/functions/accept-lifetime-argument-indices.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::function_lifetime_formals_keep_dense_arguments_through_actual_calls",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/functions/accept-reference.rs",
       "exit_status": 0,
       "features": [

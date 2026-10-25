@@ -31,23 +31,25 @@ as the current frontier; wider macro execution and import remain open.
 
 The [wide-literal successor](wide-literals-checkpoint.md) advances the original
 root to `num/nonzero.rs:34`, with 42 unchanged files opened. All 722 source
-inputs are verified. LIB-026 implementation restrictions are now the loading
-frontier; the earlier observations remain retained history, not current stops.
+inputs are verified. The newer
+[domain checkpoint](implementation-domains-core-checkpoint.md) now reaches
+`mem/alignment.rs:26`, with 56 unchanged files opened. LIB-027 unnamed constants
+are the current blocker; earlier stops remain retained history.
 
 Current lanes:
 
-- A: continue real anonymous Function recipes and their actual owner/argument
-  domains. Nine of ten controls pass the latest bounded gate; fix the remaining
-  genuine function lifetime/type-parameter slot mismatch without weakening wire
-  validation. Provided execution and type-alias transport remain separate work.
-- B: LIB-024's exact wide literal/feature/type slice is public and qualified.
-  Implement LIB-026's actual syntax, feature authority and module implementation
-  domains. Seventy-four independent observations pass; candidate typing, Clippy
-  and functional checks are in progress. Restricted policy transport remains open.
-- C: LIB-025's versioned library attribute transport passes nine exact controls
-  with strict Clippy/audit/build in 131.84 seconds. Implement its SourceCore CLI
-  selection and qualify fresh client warnings/native behavior; preserve explicit
-  legacy API bytes, imported Unknown and the closed Provided profile.
+- A: anonymous Function recipes and the genuine function argument-index repair
+  pass the selected private/declaration gates. All 8485 paired text cases and
+  122 reviewed stdout changes are qualified. Actual callback-bearing executable
+  consumers now pass three focused controls. Continue private Provided template preparation;
+  public Provided execution and type-alias transport remain separate work.
+- B: local LIB-026 implementation domains and their version-one imported
+  unrestricted-profile control are qualified, with 74 independent observations.
+  Restricted policy transport remains open; keep the real trait/catalog identity
+  distinct from an external function linker identity.
+- C: SourceCore CLI contract publication and fresh native consumers are qualified.
+  Implement LIB-027 unnamed constants, retaining initializer checking/evaluation
+  and real unused-visibility warnings, including terminal errors and lint policy.
 - Integrator: focused integration/main pushes, periodic CI follow-up and fresh
   original-source observations. Local primitive ownership is qualified. Keep
   CPPGM and upstream sources unchanged.

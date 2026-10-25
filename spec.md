@@ -121,6 +121,17 @@ failed queries. Ordinary local feature allowances share authenticated header
 machinery through a distinct cold owner; they do not become source providers or
 disable the prelude. See [the structural owner checkpoint](docs/primitive-inherent-checkpoint.md).
 
+Trait implementation restrictions retain parsed clause nodes and resolve their
+module path once through the existing import fixpoint. Validate the real
+declaration and implementation module ancestry; visibility grants no additional
+implementation permission. Syntax feature checks include parsed disabled
+headers and authenticate actual macro-token origin. Ordinary readable metadata
+can assert an unrestricted domain only through its checked canonical profile,
+trait header, owner and inventory. Missing source nodes or map entries are not
+policy evidence. Restricted source publication stays closed until its explicit
+metadata contract is implemented. See the
+[domain checkpoint](docs/implementation-domains-core-checkpoint.md).
+
 Source macro imports and qualified calls use actual declarations and the existing
 import dependency worklist, including forward definitions and renamed targets.
 A final `option_env` spelling cannot create bootstrap Option or builtin macro
@@ -3251,7 +3262,10 @@ demanded instance with its complete arguments and proofs.
 Preserve complete callable identities through function values, constants and
 promoted data. Check every generic template, including unused bodies, before
 specializing its retained CFG. Substitute parameters by their declaration
-identities; callable argument positions need not include late lifetime slots.
+identities. Assign function type/const parameter indices from their actual
+argument vector after excluding function lifetime declarations; those lifetimes
+belong to the separate signature scheme. Aliases and other nonfunction owners
+retain their existing mixed lifetime/type/const argument positions.
 Abstract lifetimes inside actual type arguments into a fresh instance proof
 context while preserving nested binders and the template's own variables.
 Reconnect each imported early argument with its original body slot, including

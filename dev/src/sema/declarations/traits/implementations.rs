@@ -1,6 +1,7 @@
 //! Retain complete impl applications; headers alone do not prove an implementation.
 mod constants;
 mod copying;
+mod implementation_domains;
 mod methods;
 mod negative;
 mod orphans;
@@ -86,6 +87,7 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         self.validate_impl_polarity_profile(owner.source, negative)?;
         let (path, definition) = self.resolved_impl_trait_path(path)?;
+        self.validate_implementation_domain(owner, definition)?;
         self.validate_source_impl_policy(owner.source, definition)?;
         let trait_unsafe = self.impl_trait_safety(path, definition)?;
         if if negative {

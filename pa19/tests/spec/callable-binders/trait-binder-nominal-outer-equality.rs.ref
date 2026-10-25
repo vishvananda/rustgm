@@ -24,7 +24,7 @@ type 21 parameter def=15 index=1
 type 22 aggregate def=15 arguments=[region:bound:0:0,type:21]
 type 23 parameter def=14 index=0
 type 24 parameter def=13 index=0
-type 25 parameter def=17 index=2
+type 25 parameter def=17 index=0
 type 26 reference mutable=false region=bound:1:0 referent=1
 type 27 function binders=0 parameters=[26] result=1 unsafe=false
 type 28 function binders=2 parameters=[25] result=1 unsafe=false

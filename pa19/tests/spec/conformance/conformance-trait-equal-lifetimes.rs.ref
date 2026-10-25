@@ -22,11 +22,11 @@ type 19 primitive f16
 type 20 primitive f128
 type 21 parameter def=14 index=0
 type 22 parameter def=16 index=0
-type 23 parameter def=17 index=2
+type 23 parameter def=17 index=0
 type 24 function binders=2 parameters=[] result=1 unsafe=false
 type 25 function binders=0 parameters=[] result=1 unsafe=false
 type 26 function-item def=17 signature=24
-type 27 parameter def=19 index=2
+type 27 parameter def=19 index=0
 type 28 function-item def=19 signature=24
 type 29 function-item def=20 signature=25
 def 14 type=21 name="Self" source=0:1
