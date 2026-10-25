@@ -175,7 +175,7 @@ impl OwnedNamespaceCatalog {
                 "namespace catalog changed its actual immutable owner/report",
             ));
         }
-        self.declaration(self.snapshot.root(), crate::resolve::model::DefKind::Module)?;
+        self.root()?;
         Ok(())
     }
     pub(crate) fn root(&self) -> Result<ImportedDeclarationId, Error> {

@@ -59,7 +59,7 @@ impl UnpublishedNamespace {
     ) -> Result<Arc<Self>, &'static str> {
         work.charge(1)?;
         let mut observed = NamespaceWork::default();
-        let retained = names.bytes();
+        let retained = names.storage_bytes(work)?;
         let scratch = rows
             .declarations
             .len()
@@ -157,8 +157,15 @@ impl UnpublishedNamespace {
     }
 }
 impl NamespaceColumns {
-    fn bytes(&self) -> usize {
-        size_of::<Self>()
+    fn storage_bytes(&self, work: &mut Work) -> Result<usize, &'static str> {
+        if self.modules.len() > crates::MAX_FUNCTIONS
+            || self.bindings.len() > crates::MAX_COMPONENTS
+        {
+            return Err("namespace column cardinality exceeds its bounded profile");
+        }
+        // Pay for the cold capacity walk before visiting any binding/name.
+        work.charge(self.bindings.len())?;
+        Ok(size_of::<Self>()
             .saturating_add(retained::vector(&self.modules))
             .saturating_add(retained::vector(&self.bindings))
             .saturating_add(
@@ -166,7 +173,7 @@ impl NamespaceColumns {
                     .iter()
                     .map(|b| b.name.capacity())
                     .fold(0, usize::saturating_add),
-            )
+            ))
     }
     fn validate(
         &self,

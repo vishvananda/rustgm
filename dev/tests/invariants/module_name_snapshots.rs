@@ -52,6 +52,7 @@ fn actual_nonrole_traits_modules_aliases_and_ordered_names_remain_unpublished() 
             .is_none()
     );
     check_invalid_columns(&names, visible);
+    check_storage_preflight(&names);
     let mut failed = Work {
         steps: crates::MAX_COMPONENTS,
         ..Work::default()
@@ -124,6 +125,30 @@ fn check_invalid_columns(names: &UnpublishedNamespace, visible: DeclarationRef) 
             .sort(&mut Work::default(), &mut NamespaceWork::default())
             .is_err()
     );
+}
+
+fn check_storage_preflight(names: &UnpublishedNamespace) {
+    let count = names.bindings().len();
+    let mut exhausted = Work {
+        steps: crates::MAX_COMPONENTS - count + 1,
+        ..Work::default()
+    };
+    assert!(names.names.storage_bytes(&mut exhausted).is_err());
+    assert_eq!(exhausted.steps, crates::MAX_COMPONENTS + 1);
+    let oversized = NamespaceColumns {
+        root: names.root(),
+        modules: vec![names.root(); crates::MAX_FUNCTIONS + 1],
+        bindings: Vec::new(),
+    };
+    let mut work = Work::default();
+    assert_eq!(
+        oversized.storage_bytes(&mut work),
+        Err("namespace column cardinality exceeds its bounded profile")
+    );
+    assert_eq!(work.steps, 0);
+    let mut fresh = Work::default();
+    assert!(names.names.storage_bytes(&mut fresh).is_ok());
+    assert_eq!(fresh.steps, count);
 }
 
 fn check_growth() -> Result {
