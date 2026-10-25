@@ -1,6 +1,6 @@
 ownership-crate 1
 body 0 source=0:5
-  path m0 type=21 root=l0 subtree=0..1
+  path m0 type=23 root=l0 subtree=0..1
   use v0 copy
   block b0 reachable=true
 end-body

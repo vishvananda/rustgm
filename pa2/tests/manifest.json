@@ -1432,6 +1432,57 @@
       "rustc": {
         "kind": "upstream"
       }
+    },
+    {
+      "path": "tests/spec/floats/half-tie-even.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "expression",
+        "status": 0,
+        "default_lints": true,
+        "prefix": "#![feature(f16)]\npub const VALUE: f16 = ",
+        "suffix": ";\n"
+      }
+    },
+    {
+      "path": "tests/spec/floats/quad-pi.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "expression",
+        "status": 0,
+        "default_lints": true,
+        "prefix": "#![feature(f128)]\npub const VALUE: f128 = ",
+        "suffix": ";\n"
+      }
+    },
+    {
+      "path": "tests/spec/floats/half-integer-spelling.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "expression",
+        "status": 0,
+        "default_lints": true,
+        "prefix": "#![feature(f16)]\npub const VALUE: f16 = ",
+        "suffix": ";\n"
+      }
     }
   ]
 }

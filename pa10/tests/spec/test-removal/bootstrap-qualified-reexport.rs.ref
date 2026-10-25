@@ -18,9 +18,11 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 function binders=0 parameters=[] result=1 unsafe=false
-type 20 function-item def=15 signature=19
-body 0 function def=15 signature=19 result=1 source=0:11
+type 19 primitive f16
+type 20 primitive f128
+type 21 function binders=0 parameters=[] result=1 unsafe=false
+type 22 function-item def=15 signature=21
+body 0 function def=15 signature=21 result=1 source=0:11
   block b0:
     v0 type=1 = unit source=11
     return v0 source=11

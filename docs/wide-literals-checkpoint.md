@@ -4,8 +4,9 @@ Isolated integration candidate `cd8405bd` passes eight exact private controls
 in [CI 40196564678](https://github.com/vishvananda/rustgm/actions/runs/40196564678):
 six wide-literal controls, the genuine Functions codec/client control and the
 source attribute publication guard. Metadata, formatting, architecture, strict
-private Clippy, build and execution take 170.27 seconds. Public integration
-and reference-effect review remain pending.
+private Clippy, build and execution take 170.27 seconds. Reference-effect review
+and text qualification are complete. Long release/native qualification remains
+separate; this checkpoint does not activate an unfinished assignment.
 
 The qualified dev-fast CLI has SHA-256
 `da5d43430556c8b9dc451de3ebe179005b4b1b843246e54af100c8ab833a6f76`.
@@ -42,13 +43,49 @@ decimal inputs retain at most 2048 scratch words in the measured series.
 Ordinary validation work still needs review; layout assertions do not establish
 wall-time nonregression.
 
+A bounded ordinary-f64 screen retains 40 observations over 256/2048-function
+inputs with immutable pre-wide/current binaries, six A/A observations and three
+paired ABBA blocks per input. All outputs are identical. The larger input's
+paired baseline means are 0.416/0.422/0.458 seconds versus candidate
+0.418/0.451/0.465 seconds; A/A observations range from 0.421 to 0.475 seconds.
+These noisy small samples do not establish a regression or a speedup. Raw
+observations, inputs, compiler hashes and timings remain under
+`obj/parallel/ordinary-wide-screen-v1`; the complete screen takes 10.84 seconds.
+
 All 139 old PA2 cases are byte-identical; PA9's 91 negatives preserve status
 and diagnostics. Its 109 positive outputs require explicit typed-field mappings
 for new types/primitive definitions, later IDs and table totals. A read-only
 effect run completes all 8478 active text cases in 51.79 seconds, reusing the
 authenticated earlier 339. Every exit status and all 4902 LowIR outputs are
-byte-identical. Other semantic/name output changes remain under review. Six
-changed stderr streams introduce actual must-use warnings and require comparison
-with the immutable pre-wide compiler; they cannot be approved as ID shifts.
-No references have been regenerated or approved. Full release/native
-qualification remains separate.
+byte-identical. Review accounts for every changed semantic/name output through
+the actual renderer-owned fields; it performs no blanket numeric replacement.
+
+All six changed must-use stderr streams are byte-identical in the immutable
+pre-wide compiler; the baseline comparison takes 0.913 seconds. Another 106-case
+baseline comparison takes 21.326 seconds and proves every changed pattern-work
+counter also predates this feature: 107 match rows and their EOF totals agree
+between the binaries. These are genuine earlier attempted-inhabitation charges,
+not type IDs. Keep both classes distinct from the wide feature's new rows and
+later-ID shifts when reviewing oracles.
+
+Checked generation updates 1813 stdout channels and six stderr channels in
+1816 selected cases. Every actual channel must match the frozen reviewed SHA-256
+before the standard generator writes that stage. The 106 predecessor-work cases
+are a subset of the stdout changes. Explicit unused_must_use manifest codes make
+the six previously stale successful-warning cases valid native frontend inputs;
+six actual pinned-rustc metadata observations confirm their warnings. Status
+channels and all LowIR bytes stay unchanged. The complete guarded generation,
+8478-case text pass, metadata, 212 harness tests and upstream checks pass in
+73.99 seconds; the text pass itself takes 41.96 seconds. Evidence is retained
+under `obj/parallel/wide-reference-publication-v1`.
+
+Six public PA2/PA9 fixtures then add half tie-even rounding, the original quad
+PI spelling, integer-spelled half max-finite, enabled widths, a missing gate and
+a width mismatch. All six match actual pinned-rustc metadata outcomes; the
+literal text bits also match the independently observed exported-static bytes.
+Fresh complete PA2/PA9 suites pass 142/203 cases. Their generation/check,
+metadata and harness/upstream batch takes 19.31 seconds without a compiler
+rebuild. Together with the unchanged 8139 cases retained from the preceding
+pass, this qualifies 8484 text cases. This is not another fresh all-stage run
+or native execution of wide arithmetic. Evidence is under
+`obj/parallel/wide-public-fixtures-v1`; PA2's old runtime float adapter is intact.

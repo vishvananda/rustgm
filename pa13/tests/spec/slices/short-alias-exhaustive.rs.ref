@@ -18,24 +18,26 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 slice element=2
-type 20 reference mutable=false region=bound:0:0 referent=19
-type 21 function binders=1 parameters=[20] result=1 unsafe=false
-type 22 function-item def=13 signature=21
+type 19 primitive f16
+type 20 primitive f128
+type 21 slice element=2
+type 22 reference mutable=false region=bound:0:0 referent=21
+type 23 function binders=1 parameters=[22] result=1 unsafe=false
+type 24 function-item def=13 signature=23
 root 0:6 pattern=0
 root 0:11 pattern=2
 root 0:16 pattern=5
 root 0:22 pattern=8
-pattern 0 source=0:6 input=20 deref mutable=false implicit=true pattern=1
-pattern 1 source=0:6 input=19 slice minimum=0 exact=true fields=0:0
-pattern 2 source=0:11 input=20 deref mutable=false implicit=true pattern=3
-pattern 3 source=0:11 input=19 slice minimum=1 exact=false fields=0:1
+pattern 0 source=0:6 input=22 deref mutable=false implicit=true pattern=1
+pattern 1 source=0:6 input=21 slice minimum=0 exact=true fields=0:0
+pattern 2 source=0:11 input=22 deref mutable=false implicit=true pattern=3
+pattern 3 source=0:11 input=21 slice minimum=1 exact=false fields=0:1
 pattern 4 source=0:9 input=2 range=0
-pattern 5 source=0:16 input=20 deref mutable=false implicit=true pattern=6
-pattern 6 source=0:16 input=19 slice minimum=1 exact=false fields=1:2
+pattern 5 source=0:16 input=22 deref mutable=false implicit=true pattern=6
+pattern 6 source=0:16 input=21 slice minimum=1 exact=false fields=1:2
 pattern 7 source=0:15 input=2 range=1
-pattern 8 source=0:22 input=20 deref mutable=false implicit=true pattern=9
-pattern 9 source=0:22 input=19 slice minimum=2 exact=false fields=2:4
+pattern 8 source=0:22 input=22 deref mutable=false implicit=true pattern=9
+pattern 9 source=0:22 input=21 slice minimum=2 exact=false fields=2:4
 pattern 10 source=0:19 input=2 range=2
 pattern 11 source=0:21 input=2 range=3
 field 0 index=0 pattern=4
@@ -46,9 +48,9 @@ range 0 ranks=1:1
 range 1 ranks=0:0
 range 2 ranks=0:0
 range 3 ranks=1:1
-match 0 source=0:25 input=0:5 arms=0:4 exhaustive=true uninhabited=false work=4504
+match 0 source=0:25 input=0:5 arms=0:4 exhaustive=true uninhabited=false work=4505
 arm 0 source=0:8 pattern=0 guard=- useful=true value=0:7
 arm 1 source=0:13 pattern=2 guard=- useful=true value=0:12
 arm 2 source=0:18 pattern=5 guard=- useful=true value=0:17
 arm 3 source=0:24 pattern=8 guard=- useful=true value=0:23
-eof roots=4 patterns=12 fields=4 alternatives=0 ranges=4 matches=1 arms=4 coverage-work=4504 region-vars=0 region-equalities=0 conditions=0 chains=0
+eof roots=4 patterns=12 fields=4 alternatives=0 ranges=4 matches=1 arms=4 coverage-work=4505 region-vars=0 region-equalities=0 conditions=0 chains=0

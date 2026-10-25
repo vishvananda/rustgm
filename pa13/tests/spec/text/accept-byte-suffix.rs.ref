@@ -18,22 +18,24 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 slice element=11
-type 20 reference mutable=false region=bound:0:0 referent=19
-type 21 function binders=1 parameters=[20] result=1 unsafe=false
-type 22 function-item def=13 signature=21
-type 23 array element=11 length=2
-type 24 reference mutable=false region=static referent=23
-type 25 reference mutable=false region=static referent=19
+type 19 primitive f16
+type 20 primitive f128
+type 21 slice element=11
+type 22 reference mutable=false region=bound:0:0 referent=21
+type 23 function binders=1 parameters=[22] result=1 unsafe=false
+type 24 function-item def=13 signature=23
+type 25 array element=11 length=2
+type 26 reference mutable=false region=static referent=25
+type 27 reference mutable=false region=static referent=21
 root 0:8 pattern=0
 root 0:11 pattern=3
 root 0:14 pattern=4
-pattern 0 source=0:8 input=20 deref mutable=false implicit=true pattern=1
-pattern 1 source=0:8 input=19 slice minimum=1 exact=false fields=0:1
+pattern 0 source=0:8 input=22 deref mutable=false implicit=true pattern=1
+pattern 1 source=0:8 input=21 slice minimum=1 exact=false fields=0:1
 pattern 2 source=0:7 input=11 range=0
-pattern 3 source=0:11 input=20 deref mutable=false implicit=false pattern=5
-pattern 4 source=0:14 input=20 wildcard
-pattern 5 source=0:11 input=19 slice minimum=2 exact=true fields=1:3
+pattern 3 source=0:11 input=22 deref mutable=false implicit=false pattern=5
+pattern 4 source=0:14 input=22 wildcard
+pattern 5 source=0:11 input=21 slice minimum=2 exact=true fields=1:3
 pattern 6 source=0:11 input=11 range=1
 pattern 7 source=0:11 input=11 range=2
 field 0 from-end=1 pattern=2
@@ -42,8 +44,8 @@ field 2 index=1 pattern=7
 range 0 ranks=98:98
 range 1 ranks=97:97
 range 2 ranks=98:98
-match 0 source=0:17 input=0:5 arms=0:3 exhaustive=true uninhabited=false work=4035
+match 0 source=0:17 input=0:5 arms=0:3 exhaustive=true uninhabited=false work=4036
 arm 0 source=0:10 pattern=0 guard=- useful=true value=0:9
 arm 1 source=0:13 pattern=3 guard=- useful=false value=0:12
 arm 2 source=0:16 pattern=4 guard=- useful=true value=0:15
-eof roots=3 patterns=8 fields=3 alternatives=0 ranges=3 matches=1 arms=3 coverage-work=4035 region-vars=0 region-equalities=0 conditions=0 chains=0
+eof roots=3 patterns=8 fields=3 alternatives=0 ranges=3 matches=1 arms=3 coverage-work=4036 region-vars=0 region-equalities=0 conditions=0 chains=0

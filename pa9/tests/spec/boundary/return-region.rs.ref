@@ -18,11 +18,13 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 reference mutable=false region=bound:0:0 referent=11
-type 20 reference mutable=false region=bound:0:1 referent=11
-type 21 function binders=2 parameters=[19,20] result=19 unsafe=false
-type 22 function-item def=13 signature=21
-def 13 type=22 name="f" source=0:17
+type 19 primitive f16
+type 20 primitive f128
+type 21 reference mutable=false region=bound:0:0 referent=11
+type 22 reference mutable=false region=bound:0:1 referent=11
+type 23 function binders=2 parameters=[21,22] result=21 unsafe=false
+type 24 function-item def=13 signature=23
+def 13 type=24 name="f" source=0:17
 def 14 type=2 name="bool"
 def 15 type=3 name="char"
 def 16 type=4 name="str"
@@ -40,22 +42,24 @@ def 27 type=15 name="u128"
 def 28 type=16 name="usize"
 def 29 type=17 name="f32"
 def 30 type=18 name="f64"
-def 33 type=19 name="x" source=0:2
-def 34 type=20 name="y" source=0:7
-function def=13 source=0:17 signature=21 body=0:16
-region-coercion body=0:16 source=0:16 actual=20 expected=19 kind=same-shape pending
-node 0:2 type=19 span=12:13 binding=33
+def 31 type=19 name="f16"
+def 32 type=20 name="f128"
+def 35 type=21 name="x" source=0:2
+def 36 type=22 name="y" source=0:7
+function def=13 source=0:17 signature=23 body=0:16
+region-coercion body=0:16 source=0:16 actual=22 expected=21 kind=same-shape pending
+node 0:2 type=21 span=12:13 binding=35
 node 0:4 type=11 span=18:20
-node 0:5 type=19 span=14:20
-node 0:6 type=19 span=12:20
-node 0:7 type=20 span=21:22 binding=34
+node 0:5 type=21 span=14:20
+node 0:6 type=21 span=12:20
+node 0:7 type=22 span=21:22 binding=36
 node 0:9 type=11 span=27:29
-node 0:10 type=20 span=23:29
-node 0:11 type=20 span=21:29
+node 0:10 type=22 span=23:29
+node 0:11 type=22 span=21:29
 node 0:13 type=11 span=36:38
-node 0:14 type=19 span=32:38
-node 0:15 type=20 span=39:40
-node 0:16 type=20 span=38:41
-adjustment 0:16 equality target=19
-node 0:17 type=22 span=0:41
-eof types=23 definitions=20 nodes=13 functions=1 initializers=0
+node 0:14 type=21 span=32:38
+node 0:15 type=22 span=39:40
+node 0:16 type=22 span=38:41
+adjustment 0:16 equality target=21
+node 0:17 type=24 span=0:41
+eof types=25 definitions=22 nodes=13 functions=1 initializers=0

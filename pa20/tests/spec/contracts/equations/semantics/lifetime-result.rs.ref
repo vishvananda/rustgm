@@ -18,55 +18,57 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=16 index=0
-type 20 parameter def=19 index=0
-type 21 projection def=17 self=19 trait=15 arguments=[region:bound:0:0] family arguments=[]
-type 22 projection def=20 self=20 trait=18 arguments=[region:bound:0:0] family arguments=[]
-type 23 reference mutable=false region=bound:0:0 referent=11
-type 24 projection def=20 self=21 trait=18 arguments=[region:bound:0:0] family arguments=[]
-type 25 function binders=0 parameters=[2] result=1 unsafe=false
-type 26 function-item def=13 signature=25
-type 27 function binders=0 parameters=[11] result=11 unsafe=false
-type 28 function-item def=14 signature=27
-type 29 parameter def=25 index=1
-type 30 projection def=17 self=29 trait=15 arguments=[region:bound:0:0] family arguments=[]
-type 31 projection def=20 self=30 trait=18 arguments=[region:bound:0:0] family arguments=[]
-type 32 projection def=17 self=29 trait=15 arguments=[region:region:2] family arguments=[]
-type 33 projection def=17 self=29 trait=15 arguments=[region:static] family arguments=[]
-type 34 projection def=20 self=32 trait=18 arguments=[region:region:2] family arguments=[]
-type 35 reference mutable=false region=region:2 referent=11
-type 36 function binders=1 parameters=[23] result=23 unsafe=false
-type 37 function binders=1 parameters=[31] result=23 unsafe=false
-type 38 reference mutable=false region=bound:1:0 referent=11
-type 39 function binders=0 parameters=[38] result=38 unsafe=false
-type 40 function-item def=25 signature=36
-type 41 function-item def=25 signature=37
-type 42 function binders=0 parameters=[] result=1 unsafe=false
-type 43 function-item def=26 signature=42
-type 44 projection def=17 self=19 trait=15 arguments=[region:region:1] family arguments=[]
-type 45 projection def=20 self=44 trait=18 arguments=[region:region:1] family arguments=[]
-type 46 reference mutable=false region=region:1 referent=11
-type 47 projection def=20 self=20 trait=18 arguments=[region:region:1] family arguments=[]
-type 48 projection def=17 self=11 trait=15 arguments=[region:bound:0:0] family arguments=[]
-type 49 projection def=20 self=48 trait=18 arguments=[region:bound:0:0] family arguments=[]
-type 50 projection def=17 self=11 trait=15 arguments=[region:region:1] family arguments=[]
-type 51 projection def=20 self=50 trait=18 arguments=[region:region:1] family arguments=[]
-type 52 reference mutable=false region=region:4 referent=11
-type 53 function binders=0 parameters=[46] result=46 unsafe=false
-type 54 function-item def=25 signature=53 regions=[region:1]
-type 55 function-item def=25 signature=53 arguments=[region:region:1,type:11]
-def 13 type=26 name="check" source=0:13
-def 14 type=28 name="fail" source=0:22
-def 16 type=19 name="Self" source=0:35
-def 17 type=21 name="Out" source=0:34
-def 19 type=20 name="Self" source=0:40
-def 20 type=22 name="Out" source=0:39
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=16 index=0
+type 22 parameter def=19 index=0
+type 23 projection def=17 self=21 trait=15 arguments=[region:bound:0:0] family arguments=[]
+type 24 projection def=20 self=22 trait=18 arguments=[region:bound:0:0] family arguments=[]
+type 25 reference mutable=false region=bound:0:0 referent=11
+type 26 projection def=20 self=23 trait=18 arguments=[region:bound:0:0] family arguments=[]
+type 27 function binders=0 parameters=[2] result=1 unsafe=false
+type 28 function-item def=13 signature=27
+type 29 function binders=0 parameters=[11] result=11 unsafe=false
+type 30 function-item def=14 signature=29
+type 31 parameter def=25 index=1
+type 32 projection def=17 self=31 trait=15 arguments=[region:bound:0:0] family arguments=[]
+type 33 projection def=20 self=32 trait=18 arguments=[region:bound:0:0] family arguments=[]
+type 34 projection def=17 self=31 trait=15 arguments=[region:region:2] family arguments=[]
+type 35 projection def=17 self=31 trait=15 arguments=[region:static] family arguments=[]
+type 36 projection def=20 self=34 trait=18 arguments=[region:region:2] family arguments=[]
+type 37 reference mutable=false region=region:2 referent=11
+type 38 function binders=1 parameters=[25] result=25 unsafe=false
+type 39 function binders=1 parameters=[33] result=25 unsafe=false
+type 40 reference mutable=false region=bound:1:0 referent=11
+type 41 function binders=0 parameters=[40] result=40 unsafe=false
+type 42 function-item def=25 signature=38
+type 43 function-item def=25 signature=39
+type 44 function binders=0 parameters=[] result=1 unsafe=false
+type 45 function-item def=26 signature=44
+type 46 projection def=17 self=21 trait=15 arguments=[region:region:1] family arguments=[]
+type 47 projection def=20 self=46 trait=18 arguments=[region:region:1] family arguments=[]
+type 48 reference mutable=false region=region:1 referent=11
+type 49 projection def=20 self=22 trait=18 arguments=[region:region:1] family arguments=[]
+type 50 projection def=17 self=11 trait=15 arguments=[region:bound:0:0] family arguments=[]
+type 51 projection def=20 self=50 trait=18 arguments=[region:bound:0:0] family arguments=[]
+type 52 projection def=17 self=11 trait=15 arguments=[region:region:1] family arguments=[]
+type 53 projection def=20 self=52 trait=18 arguments=[region:region:1] family arguments=[]
+type 54 reference mutable=false region=region:4 referent=11
+type 55 function binders=0 parameters=[48] result=48 unsafe=false
+type 56 function-item def=25 signature=55 regions=[region:1]
+type 57 function-item def=25 signature=55 arguments=[region:region:1,type:11]
+def 13 type=28 name="check" source=0:13
+def 14 type=30 name="fail" source=0:22
+def 16 type=21 name="Self" source=0:35
+def 17 type=23 name="Out" source=0:34
+def 19 type=22 name="Self" source=0:40
+def 20 type=24 name="Out" source=0:39
 def 21 type=11 name="Self" source=0:49
 def 22 type=12 name="Out" source=0:48
 def 23 type=12 name="Self" source=0:60
-def 24 type=23 name="Out" source=0:59
-def 25 type=40 name="value" source=0:88
-def 26 type=43 name="main" source=0:106
+def 24 type=25 name="Out" source=0:59
+def 25 type=42 name="value" source=0:88
+def 26 type=45 name="main" source=0:106
 def 27 type=2 name="bool"
 def 28 type=3 name="char"
 def 29 type=4 name="str"
@@ -84,30 +86,32 @@ def 40 type=15 name="u128"
 def 41 type=16 name="usize"
 def 42 type=17 name="f32"
 def 43 type=18 name="f64"
-def 49 type=29 name="T" source=0:67
-def 50 type=2 name="ok" source=0:0
-def 51 type=11 name="x" source=0:14
-def 52 type=23 name="x" source=0:68
-def 53 type=11 name="x" source=0:89
-associated-owner 0 kind=trait self-def=16 self=19 source=0:35 trait=15 unsafe=false name="A"
-associated-owner 1 kind=trait self-def=19 self=20 source=0:40 trait=18 unsafe=false name="B"
+def 44 type=19 name="f16"
+def 45 type=20 name="f128"
+def 51 type=31 name="T" source=0:67
+def 52 type=2 name="ok" source=0:0
+def 53 type=11 name="x" source=0:14
+def 54 type=25 name="x" source=0:68
+def 55 type=11 name="x" source=0:89
+associated-owner 0 kind=trait self-def=16 self=21 source=0:35 trait=15 unsafe=false name="A"
+associated-owner 1 kind=trait self-def=19 self=22 source=0:40 trait=18 unsafe=false name="B"
 associated-owner 2 kind=trait-impl self-def=21 self=11 source=0:49 unsafe=false
 associated-owner 3 kind=trait-impl self-def=23 self=12 source=0:60 unsafe=false
 associated-member def=17 owner=0
 associated-member def=20 owner=1
 associated-member def=22 owner=2
 associated-member def=24 owner=3
-parameter owner=15 binding=44 argument=region:bound:0:0 default=-
-parameter owner=16 binding=16 argument=type:19 default=-
-parameter owner=18 binding=45 argument=region:bound:0:0 default=-
-parameter owner=19 binding=19 argument=type:20 default=-
-parameter owner=25 binding=49 argument=type:29 default=-
-predicate owner=15 source=0:35 subject=19 bound=trait:15 arguments=[region:bound:0:0]
-predicate owner=17 source=0:33 subject=21 bound=trait:18 arguments=[region:bound:0:0]
-predicate owner=17 source=0:30 subject=24 bound=projection-equal:23
-predicate owner=18 source=0:40 subject=20 bound=trait:18 arguments=[region:bound:0:0]
-predicate owner=20 source=0:38 subject=22 bound=outlives:bound:0:0
-predicate owner=25 source=0:66 subject=29 bound=trait:15 arguments=[region:bound:0:0]
+parameter owner=15 binding=46 argument=region:bound:0:0 default=-
+parameter owner=16 binding=16 argument=type:21 default=-
+parameter owner=18 binding=47 argument=region:bound:0:0 default=-
+parameter owner=19 binding=19 argument=type:22 default=-
+parameter owner=25 binding=51 argument=type:31 default=-
+predicate owner=15 source=0:35 subject=21 bound=trait:15 arguments=[region:bound:0:0]
+predicate owner=17 source=0:33 subject=23 bound=trait:18 arguments=[region:bound:0:0]
+predicate owner=17 source=0:30 subject=26 bound=projection-equal:25
+predicate owner=18 source=0:40 subject=22 bound=trait:18 arguments=[region:bound:0:0]
+predicate owner=20 source=0:38 subject=24 bound=outlives:bound:0:0
+predicate owner=25 source=0:66 subject=31 bound=trait:15 arguments=[region:bound:0:0]
 impl owner=21 source=0:49 subject=11 bound=trait:15 arguments=[region:bound:0:0]
 impl-type owner=21 declaration=17 definition=22
 impl owner=23 source=0:60 subject=12 bound=trait:18 arguments=[region:bound:0:0]
@@ -119,19 +123,19 @@ region-var region:2 body=0:105 source=0:98 origin=expression-borrow pending
 region-var region:3 body=0:105 source=0:96 origin=inference pending
 region-equal body=0:87 left=region:1 right=bound:0:0
 region-equal body=0:105 left=region:1 right=region:3
-region-coercion body=0:105 source=0:98 actual=35 expected=46 kind=same-shape pending
-associated-type def=17 type=21
-result-contract def=17 projection=21
-result-bound def=17 index=0 subject=21 bound=sized
-result-bound def=17 index=1 subject=21 bound=trait:18 arguments=[region:bound:0:0]
-result-bound def=17 index=2 subject=24 bound=projection-equal:23
-associated-type def=20 type=22
-result-contract def=20 projection=22
-result-bound def=20 index=0 subject=22 bound=sized
-result-bound def=20 index=1 subject=22 bound=outlives:bound:0:0
+region-coercion body=0:105 source=0:98 actual=37 expected=48 kind=same-shape pending
+associated-type def=17 type=23
+result-contract def=17 projection=23
+result-bound def=17 index=0 subject=23 bound=sized
+result-bound def=17 index=1 subject=23 bound=trait:18 arguments=[region:bound:0:0]
+result-bound def=17 index=2 subject=26 bound=projection-equal:25
+associated-type def=20 type=24
+result-contract def=20 projection=24
+result-bound def=20 index=0 subject=24 bound=sized
+result-bound def=20 index=1 subject=24 bound=outlives:bound:0:0
 associated-type def=22 type=12
-associated-type def=24 type=23
-normalized-node source=0:75 original=30 result=30
-normalized-node source=0:81 original=31 result=23
-normalized-node source=0:88 original=41 result=40
+associated-type def=24 type=25
+normalized-node source=0:75 original=32 result=32
+normalized-node source=0:81 original=33 result=25
+normalized-node source=0:88 original=43 result=42
 eof owners=4 members=4 parameters=5 predicates=6 impls=2 calls=0 paths=0 impl-uses=1 type-members=4 constant-members=0 result-contracts=2 result-bounds=5 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=3 normalized-definitions=0
