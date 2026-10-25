@@ -5,6 +5,7 @@ mod contract_columns;
 #[path = "ordinary_columns/annotation_rows.rs"]
 mod header_facts;
 mod invoked_rows;
+mod namespace_rows;
 mod operation_columns;
 mod owner_rows;
 mod recipe_columns;
@@ -26,6 +27,12 @@ use crate::support::{
 };
 
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
+    if !matches!(
+        rows.descriptor().profile(),
+        s::Profile::Source2024Functions | s::Profile::Source2024FunctionContracts
+    ) {
+        return Err("legacy source encoder requires its actual v0/v1 descriptor");
+    }
     encode_profile(out, rows, false)
 }
 pub(super) fn encode_provided(
@@ -44,6 +51,19 @@ pub(super) fn encode_contracts(
         rows.header_attributes()
             .ok_or("source contract columns are missing")?,
     )
+}
+pub(super) fn encode_module_contracts(
+    out: &mut Writer,
+    rows: s::ValidatedView<'_>,
+) -> Result<(), &'static str> {
+    let modules = rows.module_contracts()?;
+    encode_profile(out, rows, false)?;
+    header_facts::encode(
+        out,
+        rows.header_attributes()
+            .ok_or("version-two advisory columns are missing")?,
+    )?;
+    namespace_rows::encode(out, modules.rows())
 }
 fn encode_profile(
     out: &mut Writer,
@@ -121,6 +141,28 @@ pub(super) fn decode_contracts(
         provided: false,
     })?;
     Ok((rows, attributes))
+}
+pub(super) fn decode_module_contracts(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<
+    (
+        s::SourceRows,
+        s::HeaderAttributeColumns,
+        s::ModuleContractRows,
+    ),
+    &'static str,
+> {
+    let (rows, bytes) = decode_profile(reader, base, false)?;
+    let mut read = Input {
+        reader,
+        bytes,
+        base,
+        provided: false,
+    };
+    let attributes = header_facts::decode(&mut read)?;
+    let modules = namespace_rows::decode(&mut read)?;
+    Ok((rows, attributes, modules))
 }
 fn decode_profile(
     reader: &mut Reader<'_>,

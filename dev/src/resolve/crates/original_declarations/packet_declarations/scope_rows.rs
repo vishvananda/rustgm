@@ -5,8 +5,27 @@ pub(super) fn owners(
     resolver: &mut Resolver<'_>,
     root: ScopeId,
     root_index: usize,
-    rows: s::ValidatedView<'_>,
+    rows: &s::Columns,
     work: &mut Work,
+) -> Result<Vec<ScopeId>, Error> {
+    owners_mode(resolver, root, root_index, rows, work, false)
+}
+pub(super) fn namespace_owners(
+    resolver: &mut Resolver<'_>,
+    root: ScopeId,
+    root_index: usize,
+    rows: &s::Columns,
+    work: &mut Work,
+) -> Result<Vec<ScopeId>, Error> {
+    owners_mode(resolver, root, root_index, rows, work, true)
+}
+fn owners_mode(
+    resolver: &mut Resolver<'_>,
+    root: ScopeId,
+    root_index: usize,
+    rows: &s::Columns,
+    work: &mut Work,
+    modules: bool,
 ) -> Result<Vec<ScopeId>, Error> {
     let mut scopes = vec![None; rows.declarations.len()];
     let mut visiting = vec![false; rows.declarations.len()];
@@ -40,12 +59,13 @@ pub(super) fn owners(
                 .ok_or_else(|| error("source owner scope lost its parent"))?;
             let parent = scopes[parent.0 as usize]
                 .ok_or_else(|| error("source owner scope is incomplete"))?;
-            let scope = if matches!(
-                row.definition.kind,
-                s::DefinitionKind::Trait
-                    | s::DefinitionKind::SelfType
-                    | s::DefinitionKind::Function
-            ) {
+            let scope = if modules && row.definition.kind == s::DefinitionKind::Module
+                || matches!(
+                    row.definition.kind,
+                    s::DefinitionKind::Trait
+                        | s::DefinitionKind::SelfType
+                        | s::DefinitionKind::Function
+                ) {
                 let scope = resolver.new_scope(Some(parent), ModuleId(0), true)?;
                 resolver.facts.scopes[scope.0 as usize].associated = matches!(
                     row.definition.kind,
@@ -66,12 +86,12 @@ pub(super) fn owners(
 }
 pub(super) fn bodies(
     resolver: &mut Resolver<'_>,
-    rows: s::ValidatedView<'_>,
+    rows: &s::Columns,
     owners: &[ScopeId],
+    body_count: usize,
     work: &mut Work,
 ) -> Result<Vec<Vec<ScopeId>>, Error> {
-    let mut result: Vec<Option<Vec<ScopeId>>> =
-        (0..rows.body_owners().len()).map(|_| None).collect();
+    let mut result: Vec<Option<Vec<ScopeId>>> = (0..body_count).map(|_| None).collect();
     for original in &rows.originals {
         work.charge(1)?;
         let owner = *owners
@@ -102,11 +122,40 @@ pub(super) fn bodies(
 }
 pub(super) fn assign(
     resolver: &mut Resolver<'_>,
-    rows: s::ValidatedView<'_>,
+    rows: &s::Columns,
     definitions: &[DefId],
     owners: &[ScopeId],
     body_scopes: &[Vec<ScopeId>],
     work: &mut Work,
+) -> Result<(), Error> {
+    assign_mode(
+        resolver,
+        rows,
+        definitions,
+        owners,
+        body_scopes,
+        work,
+        false,
+    )
+}
+pub(super) fn namespace_assign(
+    resolver: &mut Resolver<'_>,
+    rows: &s::Columns,
+    definitions: &[DefId],
+    owners: &[ScopeId],
+    body_scopes: &[Vec<ScopeId>],
+    work: &mut Work,
+) -> Result<(), Error> {
+    assign_mode(resolver, rows, definitions, owners, body_scopes, work, true)
+}
+fn assign_mode(
+    resolver: &mut Resolver<'_>,
+    rows: &s::Columns,
+    definitions: &[DefId],
+    owners: &[ScopeId],
+    body_scopes: &[Vec<ScopeId>],
+    work: &mut Work,
+    modules: bool,
 ) -> Result<(), Error> {
     let mut ordinals = vec![0_u32; rows.declarations.len()];
     for (index, row) in rows.declarations.iter().enumerate() {
@@ -143,10 +192,11 @@ pub(super) fn assign(
             ));
         }
         actual.scope = scope;
-        actual.members = if matches!(
-            row.definition.kind,
-            s::DefinitionKind::Trait | s::DefinitionKind::SelfType
-        ) {
+        actual.members = if modules && row.definition.kind == s::DefinitionKind::Module
+            || matches!(
+                row.definition.kind,
+                s::DefinitionKind::Trait | s::DefinitionKind::SelfType
+            ) {
             Some(owners[index])
         } else {
             None

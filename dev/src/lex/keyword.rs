@@ -65,6 +65,7 @@ pub enum Word {
     Safe,
     Raw,
     Auto,
+    Default,
     /// Any other spelling, and every non-identifier token.
     Other,
 }
@@ -142,6 +143,7 @@ impl Word {
                 _ => Self::Other,
             },
             7 => match name {
+                b"default" => Self::Default,
                 b"unsized" => Self::Unsized,
                 b"virtual" => Self::Virtual,
                 _ => Self::Other,
