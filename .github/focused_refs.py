@@ -32,7 +32,14 @@ def worker(started):
             branch.receipt.update(state='failed',error=str(error));raise
         finally:branch.save()
     try:
-        steps.run('metadata',[sys.executable,'scripts/assignment_metadata.py'])
+        retained=freeze['retained_metadata']
+        prior_path=ROOT/'.github/empty_contract_prior.json'
+        if sha(prior_path)!=retained['receipt_sha256']:raise ValueError('retained metadata receipt changed')
+        prior=json.loads(prior_path.read_text())
+        if prior['steps'][0]['name']!='metadata' or prior['steps'][0]['status']!=0:raise ValueError('actual prior metadata did not pass')
+        changed=sorted(path for path in sources if prior['sources'].get(path)!=sources[path])
+        if sources.keys()!=prior['sources'].keys() or changed!=retained['changed_source']:raise ValueError('metadata source reuse widened')
+        steps.receipt['retained_metadata']=retained;steps.save()
         steps.run('format',['cargo','fmt','--manifest-path','dev/Cargo.toml','--all','--','--check'])
         common=['--manifest-path','dev/Cargo.toml','--locked','--profile','dev-fast']
         audit=[('architecture',[ROOT/'obj/audit-venv/bin/python','scripts/rust_audit.py','--root','.','--cache','obj/fast-audit.json'],{})]

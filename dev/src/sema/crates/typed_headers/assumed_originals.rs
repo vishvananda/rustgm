@@ -179,7 +179,7 @@ fn zero_body(
 fn body_environment(
     facts: &Declarations,
     scope: &Scope,
-    demand: BodyDemand,
+    demand: &BodyDemand,
     work: &mut ReservationWork,
 ) -> Result<(Arc<Environment>, usize), Error> {
     match demand.origin {
@@ -207,10 +207,10 @@ pub(super) fn finish(
     rows: s::ValidatedView<'_>,
     port: &mut ports::Inputs<'_, '_>,
     scope: &Scope,
-    demand: BodyDemand,
+    demand: &BodyDemand,
     work: &mut ReservationWork,
 ) -> Result<(Arc<Environment>, usize), Error> {
-    let BodyDemand { expected, origin } = demand;
+    let BodyDemand { expected, origin } = *demand;
     let (body, actual) = zero_body(rows, expected, work)?;
     if actual != Some(origin)
         || scope.parameters.len() != expected.formals
@@ -317,7 +317,7 @@ impl Prepared {
             state,
             facts,
             self,
-            BodyDemand { expected, origin },
+            &BodyDemand { expected, origin },
             work,
         )?;
         self.environments = Some(environments);

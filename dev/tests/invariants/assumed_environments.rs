@@ -346,13 +346,24 @@ fn private_defining_environments_reject_changed_owners_and_failed_budgets() -> R
     Ok(())
 }
 fn contract_opponents() -> Result {
-    for opponent in 0..9 {
+    for opponent in 0..10 {
         let mut work = ReservationWork::default();
         let (session, owner) = start("\nfn plain(x:u8)->u8{x}", "plain", &mut work)?;
         let mut session = ready(session.defining_environment(owner, &mut work)?)?;
         if opponent < 6 {
             session = change_owner(session, owner, opponent, &mut work)?;
         } else {
+            let foreign = named(&session.inventory, "identity")?;
+            let rows = session.inventory.artifacts()[0]
+                .source_descriptor()
+                .ok_or("actual full family")?
+                .rows();
+            let foreign_body = rows
+                .functions
+                .iter()
+                .find(|header| header.declaration == foreign)
+                .ok_or("actual other original")?
+                .body;
             let owner = session
                 .recipes
                 .as_mut()
@@ -365,15 +376,21 @@ fn contract_opponents() -> Result {
                 .flatten()
                 .next()
                 .ok_or("actual Contract body")?;
-            let Body::Contract { product, scope, .. } = record.as_mut() else {
+            let Body::Contract {
+                product,
+                scope,
+                expected,
+            } = record.as_mut()
+            else {
                 return Err("actual Contract memo".into());
             };
             match opponent {
                 6 => product.seal = originals::Origin::Declaration,
                 7 => product.environment = Arc::clone(&product.declaration),
-                _ => {
+                8 => {
                     owner.scopes[*scope] = None;
                 }
+                _ => expected.header.body = foreign_body,
             }
         }
         let before = work.steps;
@@ -439,35 +456,13 @@ fn private_defining_environments_bound_selected_and_warm_work() -> Result {
         let mut work = ReservationWork::default();
         let (session, owner) = start(&source, "selected", &mut work)?;
         let mut session = ready(session.defining_environment(owner, &mut work)?)?;
-        let before = work.steps;
-        let bytes = work.retained;
-        let extent = session.facts.types.interned_extent();
-        let counters = session
-            .recipes
-            .as_ref()
-            .ok_or("actual cursor")?
-            .cursor
-            .counters();
-        for _ in 0..1000 {
-            session = ready(session.defining_environment(owner, &mut work)?)?;
-        }
-        let cost = work.steps - before;
+        let (next, cost) = warm_environment(session, owner, &mut work)?;
+        session = next;
         if let Some(previous) = baseline {
             assert_eq!(cost, previous);
         } else {
             baseline = Some(cost);
         }
-        assert_eq!(work.retained, bytes);
-        assert_eq!(session.facts.types.interned_extent(), extent);
-        assert_eq!(
-            session
-                .recipes
-                .as_ref()
-                .ok_or("actual cursor")?
-                .cursor
-                .counters(),
-            counters
-        );
         eprintln!(
             "private defining unrelated={unrelated} warm1000={cost} bytes={}",
             environments(&session)?.retained_bytes()
@@ -503,6 +498,37 @@ fn private_defining_environments_bound_selected_and_warm_work() -> Result {
     }
     Ok(())
 }
+fn warm_environment(
+    mut session: Box<Session>,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+) -> Result<(Box<Session>, usize)> {
+    let before = work.steps;
+    let bytes = work.retained;
+    let extent = session.facts.types.interned_extent();
+    let counters = session
+        .recipes
+        .as_ref()
+        .ok_or("actual cursor")?
+        .cursor
+        .counters();
+    for _ in 0..1000 {
+        session = ready(session.defining_environment(owner, work)?)?;
+    }
+    assert_eq!(work.retained, bytes);
+    assert_eq!(session.facts.types.interned_extent(), extent);
+    assert_eq!(
+        session
+            .recipes
+            .as_ref()
+            .ok_or("actual cursor")?
+            .cursor
+            .counters(),
+        counters
+    );
+    Ok((session, work.steps - before))
+}
+
 fn contract_growth() -> Result {
     let mut baseline = None;
     for unrelated in [1, 8, 32] {
@@ -513,35 +539,13 @@ fn contract_growth() -> Result {
         let mut work = ReservationWork::default();
         let (session, owner) = start(&source, "selected", &mut work)?;
         let mut session = ready(session.defining_environment(owner, &mut work)?)?;
-        let before = work.steps;
-        let bytes = work.retained;
-        let extent = session.facts.types.interned_extent();
-        let counters = session
-            .recipes
-            .as_ref()
-            .ok_or("actual cursor")?
-            .cursor
-            .counters();
-        for _ in 0..1000 {
-            session = ready(session.defining_environment(owner, &mut work)?)?;
-        }
-        let cost = work.steps - before;
+        let (next, cost) = warm_environment(session, owner, &mut work)?;
+        session = next;
         if let Some(previous) = baseline {
             assert_eq!(cost, previous);
         } else {
             baseline = Some(cost);
         }
-        assert_eq!(work.retained, bytes);
-        assert_eq!(session.facts.types.interned_extent(), extent);
-        assert_eq!(
-            session
-                .recipes
-                .as_ref()
-                .ok_or("actual cursor")?
-                .cursor
-                .counters(),
-            counters
-        );
         let environments = environments(&session)?;
         let Body::Contract { product, .. } = environments
             .bodies
