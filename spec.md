@@ -244,12 +244,15 @@ translator and Environment producer through sealed ordinary and reservation
 ports. Authenticate actual Input sites and complete inherited/unused formals.
 Distinguish declaration trait premises from regional body assumptions. An
 unchanged zero-domain Declaration body may share its actual declaration Arc;
-Contract and conditional default origins require their own complete consumers.
+an actual empty Contract body requires a separate neutral body Environment and
+positive function/scope/body/binder identity, never that declaration Arc.
+Conditional default and nonzero origins require their own complete consumers.
 Never insert neutral declaration maps merely to make a private query succeed:
 that changes existing source origins and metadata bytes. Prepay selected work,
 real lazy collection growth and collision comparisons, including minimum vector
 capacities; warm canonical hits must not allocate or scan unrelated originals.
-See the [private environment checkpoint](docs/private-defining-environments-checkpoint.md).
+See the [private environment checkpoint](docs/private-defining-environments-checkpoint.md)
+and its [empty Contract successor](docs/private-empty-contracts-checkpoint.md).
 
 Source-module namespace preparation borrows genuine ordinary trait headers
 without inventing language roles. Retain canonical declaration/module targets
