@@ -45,4 +45,19 @@ impl Implementations {
         }
         Ok(value)
     }
+    pub(in crate::sema) fn direct_method(
+        &self,
+        key: EntryKey,
+        declaration: DefId,
+    ) -> Result<Option<DefId>, &'static str> {
+        let header = self.checked_entry(key)?;
+        if !self.is_validated(key.owner()) {
+            return Err("specialization method owner is not validated");
+        }
+        let index = header
+            .methods
+            .binary_search_by_key(&declaration.0, |(id, _)| id.0)
+            .map_err(|_| "specialization method is not a member of this implementation")?;
+        Ok(header.methods[index].1)
+    }
 }

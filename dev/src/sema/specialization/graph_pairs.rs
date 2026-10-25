@@ -11,7 +11,7 @@ use crate::{
     },
     support::retained::Growth,
 };
-fn registry(facts: &Declarations) -> Result<&Implementations, &'static str> {
+pub(super) fn registry(facts: &Declarations) -> Result<&Implementations, &'static str> {
     facts
         .generics
         .implementations
@@ -25,7 +25,7 @@ fn pair(facts: &Declarations, owners: [DefId; 2]) -> Result<PairKey, &'static st
         registry.entry_key(owners[1])?,
     )
 }
-fn active_graph(facts: &mut Declarations) -> Result<&mut Graph, &'static str> {
+pub(super) fn active_graph(facts: &mut Declarations) -> Result<&mut Graph, &'static str> {
     facts
         .generics
         .implementations

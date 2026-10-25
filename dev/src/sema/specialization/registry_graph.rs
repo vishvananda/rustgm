@@ -212,8 +212,15 @@ impl Graph {
                 .map_err(|error| error.to_string())?;
             return Ok(None);
         }
-        self.budget
-            .charge(1, crate::support::retained::new_map::<EntryKey, Witness>(1))?;
+        let State::Building(builder) = &self.state else {
+            return Err("specialization witness cannot extend a closed graph".into());
+        };
+        let growth = crate::support::retained::Growth::map::<EntryKey, Witness>(
+            builder.sources.len(),
+            builder.sources.capacity(),
+            1,
+        );
+        self.budget.charge(growth.work, growth.bytes)?;
         let policy = self
             .requests
             .capture(

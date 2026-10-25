@@ -57,11 +57,24 @@ pub(in crate::sema) fn observe_owner(
         ));
     }
     let table = store::owner(facts)?;
-    table
-        .charge(1, 4 * size_of::<Owner>())
-        .map_err(|message| Error::at(owner.file, 0, message))?;
     let row = table.row(report, declaration)?;
-    if row.owners.last().is_none_or(|last| last.key != owner) {
+    let append = row.owners.last().is_none_or(|last| last.key != owner);
+    let growth = crate::support::retained::Growth::vector::<Owner>(
+        row.owners.len(),
+        row.owners.capacity(),
+        usize::from(append),
+    );
+    table
+        .charge(1 + growth.work, growth.bytes)
+        .map_err(|message| Error::at(owner.file, 0, message))?;
+    if append {
+        let row = table.sources.get_mut(&declaration).ok_or_else(|| {
+            Error::at(
+                owner.file,
+                0,
+                "specialization trait row disappeared after payment",
+            )
+        })?;
         row.owners.push(Owner {
             key: owner,
             syntax: unit.configured.ast.node(owner.node).kind,
@@ -165,8 +178,13 @@ pub(in crate::sema) fn bind_trait(
             "specialization trait binding changed",
         ));
     }
+    let growth = crate::support::retained::Growth::map::<DefId, NodeKey>(
+        table.definitions.len(),
+        table.definitions.capacity(),
+        usize::from(!table.definitions.contains_key(&definition)),
+    );
     table
-        .charge(1, crate::support::retained::new_map::<DefId, NodeKey>(1))
+        .charge(1 + growth.work, growth.bytes)
         .map_err(|message| Error::at(declaration.file, 0, message))?;
     table.row(report, declaration)?;
     if table.definitions.insert(definition, declaration).is_some() {

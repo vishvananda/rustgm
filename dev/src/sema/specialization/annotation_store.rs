@@ -70,7 +70,12 @@ impl LocalMarkers {
             .map_err(|message| Error::at(key.file, 0, message))?;
         let syntax = trait_syntax(report, key)?;
         if !self.sources.contains_key(&key) {
-            self.charge(1, crate::support::retained::new_map::<NodeKey, Row>(1))
+            let growth = crate::support::retained::Growth::map::<NodeKey, Row>(
+                self.sources.len(),
+                self.sources.capacity(),
+                1,
+            );
+            self.charge(growth.work, growth.bytes)
                 .map_err(|message| Error::at(key.file, 0, message))?;
             self.sources.insert(
                 key,

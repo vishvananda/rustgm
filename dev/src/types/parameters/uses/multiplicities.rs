@@ -6,6 +6,16 @@ use crate::{
 };
 use std::ops::Range;
 
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+struct Scoped {
+    node: Node,
+    depth: u16,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum Parameter {
+    Declared(ParameterId),
+    Capture(u16),
+}
 #[derive(Default)]
 struct Record {
     edges: Range<usize>,
@@ -14,17 +24,18 @@ struct Record {
 }
 enum Edge {
     Child(usize),
-    Parameter(ParameterId),
+    Parameter(Parameter),
 }
 #[derive(Default)]
 pub(crate) struct Multiplicities {
-    indices: HashMap<Node, usize>,
-    nodes: Vec<(Node, Record)>,
+    indices: HashMap<Scoped, usize>,
+    nodes: Vec<(Scoped, Record)>,
     edges: Vec<Edge>,
-    parameters: HashMap<ParameterId, u8>,
+    parameters: HashMap<Parameter, u8>,
 }
 impl Multiplicities {
-    /// O(V + E + R + P) demanded-node, edge, root and parameter work. Repeated
+    /// O(V + E + R + P) work for demanded (node,binder-depth) keys,
+    /// edges, roots and actual declared/capture parameters under ordinary hashing. Repeated
     /// edges stay distinct; no per-parameter DAG walk or per-node parameter map.
     pub(crate) fn arguments(
         store: &Store,
@@ -32,7 +43,13 @@ impl Multiplicities {
         charge: impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Self, &'static str> {
         let mut result = Self::default();
-        let root = result.node(Node::Arguments(roots), &charge)?;
+        let root = result.node(
+            Scoped {
+                node: Node::Arguments(roots),
+                depth: 0,
+            },
+            &charge,
+        )?;
         result.nodes[root].1.paths = 1;
         let mut cursor = 0;
         while cursor < result.nodes.len() {
@@ -51,15 +68,16 @@ impl Multiplicities {
     }
     fn node(
         &mut self,
-        node: Node,
+        node: Scoped,
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<usize, &'static str> {
         charge(1, 0)?;
         if let Some(&index) = self.indices.get(&node) {
             return Ok(index);
         }
-        let mut growth = Growth::map::<Node, usize>(self.indices.len(), self.indices.capacity(), 1);
-        growth.include(Growth::vector::<(Node, Record)>(
+        let mut growth =
+            Growth::map::<Scoped, usize>(self.indices.len(), self.indices.capacity(), 1);
+        growth.include(Growth::vector::<(Scoped, Record)>(
             self.nodes.len(),
             self.nodes.capacity(),
             1,
@@ -78,13 +96,24 @@ impl Multiplicities {
     ) -> Result<(), &'static str> {
         let mut children = Vec::new();
         let mut parameters = Vec::new();
+        let mut captures = Vec::new();
         let mut visits = 0;
-        let result = parts(
+        let result = parts::<false, _>(
             store,
-            self.nodes[index].0,
+            self.nodes[index].0.node,
+            self.nodes[index].0.depth,
             &mut visits,
-            |parameter| push(&mut parameters, parameter, charge),
-            |child| push(&mut children, child, charge),
+            |parameter| push(&mut parameters, Parameter::Declared(parameter), charge),
+            |region, depth| {
+                charge(1, 0)?;
+                if let Some((binder, slot)) = region.bound_parts()
+                    && binder == depth
+                {
+                    push(&mut captures, Parameter::Capture(slot), charge)?;
+                }
+                Ok(())
+            },
+            |node, depth| push(&mut children, Scoped { node, depth }, charge),
         );
         // Failed canonical identity and scratch-growth work remains charged.
         charge(1 + visits, 0)?;
@@ -92,7 +121,10 @@ impl Multiplicities {
         let growth = Growth::vector::<Edge>(
             self.edges.len(),
             self.edges.capacity(),
-            children.len().saturating_add(parameters.len()),
+            children
+                .len()
+                .saturating_add(parameters.len())
+                .saturating_add(captures.len()),
         );
         charge(growth.work, growth.bytes)?;
         let start = self.edges.len();
@@ -106,7 +138,7 @@ impl Multiplicities {
             self.edges.push(Edge::Child(child));
         }
         self.edges
-            .extend(parameters.into_iter().map(Edge::Parameter));
+            .extend(parameters.into_iter().chain(captures).map(Edge::Parameter));
         self.nodes[index].1.edges = start..self.edges.len();
         Ok(())
     }
@@ -146,7 +178,7 @@ impl Multiplicities {
                         }
                     }
                     Edge::Parameter(parameter) => {
-                        let growth = Growth::map::<ParameterId, u8>(
+                        let growth = Growth::map::<Parameter, u8>(
                             self.parameters.len(),
                             self.parameters.capacity(),
                             usize::from(!self.parameters.contains_key(&parameter)),

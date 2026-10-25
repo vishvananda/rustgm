@@ -239,3 +239,63 @@ Vertex/marker row, actual pair and selected-parent capacities. Preserve all hot
 layouts and never-default/no-marker no-owner allocations. Scaling includes
 ordinary8/32/128 nonoverlap buckets and real chain/fanout with cold/warm/failed
 queries; no performance or allocation-count claim is inferred from oracle time.
+
+## Member-specific proof and source progress
+
+The successor remains uncompiled and unqualified. Source-only save `a10e9c73`
+retains the graph/proof/marker draft; `e7ce67ce` cleanly merges published B v2
+`a598b799`. Both its module-contract publisher and v1 still use the shared
+selected-header/defaultness/marker presence boundary. No new public profile,
+executable graph or imported marker/defaultness authority is inferred.
+
+The new [member-demand contract](../pa31/tests/spec/specialization-graph/member-demand/contract.json)
+freezes the exact Full own-child/static-parent opponent. Hosted run 40245869391
+uses the unchanged pinned workflow and qualified public compiler baseline;
+its two metadata and two actual native observations pass in 0.151553 seconds,
+with `2\n` and no warnings. The 6 command statuses and every output hash are
+retained in that contract. No candidate graph ran. The 4343-byte artifact
+12617824460 has SHA-256
+`a0bf4c60e859eb355b203b33596173058c3365a668d139bbdbc97ad8d2956d67`;
+binding SHA-256 is
+`4bfd4f102843928062ac1948a3afc25f092b6e4b12adce4f3d0b71048d39014d`.
+The raw ZIP is authenticated in memory; guarded local hydration awaits recovery
+above the unchanged 150 GiB reserve.
+
+This result rules out blanket ancestor requirements during implementation
+selection. Only an actually requested inherited member/result may demand its
+actual defining header. Both public normal-form Query and the selection engine's
+already-boxed Normalization need their own optional cold continuation (+8 bytes
+each, still awaiting actual layout measurement). They share one typed
+`Conditions { clauses, outlives }` producer, including implicit Sized, full
+ordinary/quantified clauses and schema region pairs. A selected own child body
+never demands the unused parent's header. No synthetic parent Self:Trait query
+may authorize an inherited body. Existing pending scopes/proofs must reach the
+ordinary final lifetime/body proof before result publication.
+
+The source draft now has retained pair attempts, immediate-parent reduction,
+ranked ancestry, parent-first conformance slots and member finality at each
+immediate boundary. It also factors charged/no-op adapters over the existing
+nominal, trait-application, capture and substitution producers. Growth callbacks
+prepay typed collection/copy work and logical bytes before mutation; existing
+shift/fold counters retain failed work. These changes add no fields to Store,
+Bound, Requirements or Proof. Exact layouts, capacities and allocation-path
+invariants remain unmeasured until the focused gate.
+
+Capped multiplicities use one canonical demanded DAG with Kahn propagation,
+including real child capture slots under their actual binder depths. Duplicate
+edges remain distinct; function-item signatures are metadata rather than a
+second set of generic inputs. Sole keeps its existing fields, set summary and
+ordinary edge behavior. The bound is O(V+E+R+P) logical work/storage for demanded
+(node,binder-depth) keys, edges, roots and parameters with ordinary hashing;
+it is not an adversarial hash bound. Shared diamonds, many parameters, nested
+capture slots, function-item inputs and failed payment controls are authored
+and unrun. All prior 74/40 independent observations and 8 wrong chain predictions
+remain unchanged; the new opponent adds only 2 metadata and 2 actual natives.
+
+Graph execution is still closed in this draft. Required work before its focused
+candidate gate includes requested-member resolution/substitution, both RPIT
+continuations, dispatcher proof joins, coherent conformance/selection wiring
+and actual mode/marker/finality/storage controls. Wider quantified implication,
+projection-constrained Min parent arguments, associated-value/default-impl
+specialization and imported graph/marker transport remain explicit required
+followups rather than inferred absence or discarded goals.

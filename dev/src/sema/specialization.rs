@@ -5,8 +5,12 @@ mod annotation_store;
 mod argument_closure;
 mod forest_edges;
 mod forest_order;
+mod graph_closure;
 mod graph_pairs;
 mod header_conditions;
+mod member_paths;
+mod minimal_admission;
+mod predicate_basis;
 mod proof_attempt;
 mod proof_inputs;
 mod registry_graph;
@@ -17,3 +21,7 @@ pub(in crate::sema) use annotation_store::LocalMarkers;
 pub(in crate::sema) use registry_graph::Graph;
 
 pub(in crate::sema) use graph_pairs::{compare, drain, remembered};
+
+pub(in crate::sema) use graph_closure::{prepare as prepare_graph, seal};
+
+pub(in crate::sema) use member_paths::{conformance_order, inherited_body, prefer};

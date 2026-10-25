@@ -100,12 +100,14 @@ impl Sole {
             }
             let mut ready = true;
             let mut edges = 0;
-            let value = parts(
+            let value = parts::<true, _>(
                 store,
                 node,
+                0,
                 &mut edges,
                 |id| Ok(Value::One(id)),
-                |child| {
+                |_, _| Ok(Value::Empty),
+                |child, _| {
                     if let Some(value) = self.completed.get(&child) {
                         return Ok(*value);
                     }

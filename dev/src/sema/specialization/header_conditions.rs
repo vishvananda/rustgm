@@ -44,7 +44,7 @@ pub(super) fn defining(
             .saturating_add(
                 parameters.saturating_mul(4 * size_of::<crate::types::parameters::ParameterId>()),
             )
-            .saturating_add(schema.bounds.len().saturating_mul(size_of::<Pair>())),
+            .saturating_add(schema.bounds.len().saturating_mul(2 * size_of::<Pair>())),
     )?;
     let values: Vec<_> = facts
         .types
@@ -68,12 +68,17 @@ pub(super) fn defining(
         .zip(values[captures..].iter().copied())
         .collect();
     let mut fold = Counted::new(
-        substitute::Bound::parameters_captured(&facts.types, &bindings, regions)?,
+        substitute::Bound::parameters_captured_charged(
+            &facts.types,
+            &bindings,
+            regions,
+            &|steps, bytes| budget.charge(steps, bytes),
+        )?,
         budget,
     )?;
     let mut result = Conditions {
         clauses: Vec::new(),
-        outlives: Vec::new(),
+        outlives: Vec::with_capacity(schema.bounds.len()),
     };
     // Copy only actual schema pairs before mutating the canonical store.
     let pairs = schema.bounds.clone();
@@ -111,7 +116,9 @@ pub(super) fn defining(
         push(&mut result.clauses, located.value, budget)?;
     }
     for clause in &mut result.clauses {
-        *clause = fold.clause(&mut facts.types, *clause)?;
+        *clause = fold.clause_charged(&mut facts.types, *clause, &|steps, bytes| {
+            budget.charge(steps, bytes)
+        })?;
     }
     fold.pay()?;
     Ok(result)
