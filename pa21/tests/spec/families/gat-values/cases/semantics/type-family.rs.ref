@@ -18,46 +18,48 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 aggregate def=19
-type 20 parameter def=16 index=0
-type 21 parameter def=17 index=0
-type 22 parameter def=22 index=0
-type 23 projection def=17 self=20 trait=15 arguments=[] family arguments=[type:21]
-type 24 function binders=0 parameters=[2] result=1 unsafe=false
-type 25 function-item def=13 signature=24
-type 26 function binders=0 parameters=[11] result=11 unsafe=false
-type 27 function-item def=14 signature=26
-type 28 parameter def=18 index=0
-type 29 projection def=17 self=20 trait=15 arguments=[] family arguments=[type:28]
-type 30 function binders=0 parameters=[28] result=29 unsafe=false
-type 31 function-item def=18 signature=30
-type 32 parameter def=23 index=0
-type 33 projection def=17 self=19 trait=15 arguments=[] family arguments=[type:32]
-type 34 function binders=0 parameters=[32] result=32 unsafe=false
-type 35 function binders=0 parameters=[32] result=33 unsafe=false
-type 36 function-item def=23 signature=34
-type 37 function-item def=23 signature=35
-type 38 function binders=0 parameters=[] result=1 unsafe=false
-type 39 function-item def=24 signature=38
-type 40 projection def=17 self=19 trait=15 arguments=[] family arguments=[type:28]
-type 41 function binders=0 parameters=[28] result=40 unsafe=false
-type 42 function binders=0 parameters=[28] result=28 unsafe=false
-type 43 projection def=17 self=19 trait=15 arguments=[] family arguments=[type:11]
-type 44 projection def=17 self=19 trait=15 arguments=[] family arguments=[type:12]
-type 45 function-item def=18 signature=26 arguments=[type:19,type:11]
-type 46 function binders=0 parameters=[12] result=12 unsafe=false
-type 47 function-item def=18 signature=46 arguments=[type:19,type:12]
-def 13 type=25 name="check" source=0:13
-def 14 type=27 name="fail" source=0:22
-def 16 type=20 name="Self" source=0:35
-def 17 type=23 name="Out" source=0:24
-def 18 type=31 name="make" source=0:34
-def 19 type=19 name="S" source=0:36
-def 20 type=19 name="S" source=0:36
-def 21 type=19 name="Self" source=0:54
-def 22 type=22 name="Out" source=0:41
-def 23 type=36 name="make" source=0:53
-def 24 type=39 name="main" source=0:76
+type 19 primitive f16
+type 20 primitive f128
+type 21 aggregate def=19
+type 22 parameter def=16 index=0
+type 23 parameter def=17 index=0
+type 24 parameter def=22 index=0
+type 25 projection def=17 self=22 trait=15 arguments=[] family arguments=[type:23]
+type 26 function binders=0 parameters=[2] result=1 unsafe=false
+type 27 function-item def=13 signature=26
+type 28 function binders=0 parameters=[11] result=11 unsafe=false
+type 29 function-item def=14 signature=28
+type 30 parameter def=18 index=0
+type 31 projection def=17 self=22 trait=15 arguments=[] family arguments=[type:30]
+type 32 function binders=0 parameters=[30] result=31 unsafe=false
+type 33 function-item def=18 signature=32
+type 34 parameter def=23 index=0
+type 35 projection def=17 self=21 trait=15 arguments=[] family arguments=[type:34]
+type 36 function binders=0 parameters=[34] result=34 unsafe=false
+type 37 function binders=0 parameters=[34] result=35 unsafe=false
+type 38 function-item def=23 signature=36
+type 39 function-item def=23 signature=37
+type 40 function binders=0 parameters=[] result=1 unsafe=false
+type 41 function-item def=24 signature=40
+type 42 projection def=17 self=21 trait=15 arguments=[] family arguments=[type:30]
+type 43 function binders=0 parameters=[30] result=42 unsafe=false
+type 44 function binders=0 parameters=[30] result=30 unsafe=false
+type 45 projection def=17 self=21 trait=15 arguments=[] family arguments=[type:11]
+type 46 projection def=17 self=21 trait=15 arguments=[] family arguments=[type:12]
+type 47 function-item def=18 signature=28 arguments=[type:21,type:11]
+type 48 function binders=0 parameters=[12] result=12 unsafe=false
+type 49 function-item def=18 signature=48 arguments=[type:21,type:12]
+def 13 type=27 name="check" source=0:13
+def 14 type=29 name="fail" source=0:22
+def 16 type=22 name="Self" source=0:35
+def 17 type=25 name="Out" source=0:24
+def 18 type=33 name="make" source=0:34
+def 19 type=21 name="S" source=0:36
+def 20 type=21 name="S" source=0:36
+def 21 type=21 name="Self" source=0:54
+def 22 type=24 name="Out" source=0:41
+def 23 type=38 name="make" source=0:53
+def 24 type=41 name="main" source=0:76
 def 25 type=2 name="bool"
 def 26 type=3 name="char"
 def 27 type=4 name="str"
@@ -75,39 +77,41 @@ def 38 type=15 name="u128"
 def 39 type=16 name="usize"
 def 40 type=17 name="f32"
 def 41 type=18 name="f64"
-def 42 type=21 name="T" source=0:23
-def 43 type=28 name="T" source=0:25
-def 44 type=22 name="T" source=0:39
-def 45 type=32 name="T" source=0:42
-def 46 type=2 name="ok" source=0:0
-def 47 type=11 name="x" source=0:14
-def 49 type=32 name="x" source=0:43
-associated-owner 0 kind=trait self-def=16 self=20 source=0:35 trait=15 unsafe=false name="F"
-associated-owner 1 kind=trait-impl self-def=21 self=19 source=0:54 unsafe=false
+def 42 type=19 name="f16"
+def 43 type=20 name="f128"
+def 44 type=23 name="T" source=0:23
+def 45 type=30 name="T" source=0:25
+def 46 type=24 name="T" source=0:39
+def 47 type=34 name="T" source=0:42
+def 48 type=2 name="ok" source=0:0
+def 49 type=11 name="x" source=0:14
+def 51 type=34 name="x" source=0:43
+associated-owner 0 kind=trait self-def=16 self=22 source=0:35 trait=15 unsafe=false name="F"
+associated-owner 1 kind=trait-impl self-def=21 self=21 source=0:54 unsafe=false
 associated-member def=17 owner=0
 associated-member def=18 owner=0
 associated-member def=22 owner=1
 associated-member def=23 owner=1
-parameter owner=16 binding=16 argument=type:20 default=-
-parameter owner=17 binding=42 argument=type:21 default=-
-parameter owner=18 binding=43 argument=type:28 default=-
-parameter owner=22 binding=44 argument=type:22 default=-
-parameter owner=23 binding=45 argument=type:32 default=-
-predicate owner=15 source=0:35 subject=20 bound=trait:15 arguments=[]
-impl owner=21 source=0:54 subject=19 bound=trait:15 arguments=[]
+parameter owner=16 binding=16 argument=type:22 default=-
+parameter owner=17 binding=44 argument=type:23 default=-
+parameter owner=18 binding=45 argument=type:30 default=-
+parameter owner=22 binding=46 argument=type:24 default=-
+parameter owner=23 binding=47 argument=type:34 default=-
+predicate owner=15 source=0:35 subject=22 bound=trait:15 arguments=[]
+impl owner=21 source=0:54 subject=21 bound=trait:15 arguments=[]
 impl-method owner=21 declaration=18 selected=23 default=false
 impl-type owner=21 declaration=17 definition=22
 trait-path source=0:58 method=18 trait=15 qualifier=implicit origin=ordinary subject-source=0:56
 trait-path source=0:68 method=18 trait=15 qualifier=implicit origin=ordinary subject-source=0:66
 implementation-use source=0:58 owner=21 arguments=[]
 implementation-use source=0:68 owner=21 arguments=[]
-associated-type def=17 type=23
-result-contract def=17 projection=23
-result-bound def=17 index=0 subject=23 bound=sized
-associated-type def=22 type=22
-normalized-node source=0:33 original=29 result=29
-normalized-node source=0:50 original=33 result=32
-normalized-node source=0:53 original=37 result=36
+associated-type def=17 type=25
+result-contract def=17 projection=25
+result-bound def=17 index=0 subject=25 bound=sized
+associated-type def=22 type=24
+normalized-node source=0:33 original=31 result=31
+normalized-node source=0:50 original=35 result=34
+normalized-node source=0:53 original=39 result=38
 family def=17 captures=0 regions=0 complete=true
 family def=22 captures=0 regions=0 complete=true
 proof 0 body=0:75 source=0:58 pending

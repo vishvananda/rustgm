@@ -19,7 +19,9 @@ name 17 "u128"
 name 18 "usize"
 name 19 "f32"
 name 20 "f64"
-name 21 "f"
+name 21 "f16"
+name 22 "f128"
+name 23 "f"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 scope 1 module=0 barrier=true parent=0
@@ -42,18 +44,20 @@ def 13 type primitive name=17 scope=0 access=public
 def 14 type primitive name=18 scope=0 access=public
 def 15 type primitive name=19 scope=0 access=public
 def 16 type primitive name=20 scope=0 access=public
-def 17 type struct name=3 scope=0 access=module:0 source=0:2 members=1
-def 18 value function name=21 scope=0 access=module:0 source=0:15
-def 19 value parameter name=2 scope=2 access=module:0 source=0:3
-def 20 value local name=4 scope=3 access=module:0 source=0:8
-binding scope=0 type name=3 def=17 Direct ambiguous=false access=module:0
-binding scope=0 value name=21 def=18 Direct ambiguous=false access=module:0
-binding scope=2 value name=2 def=19 Direct ambiguous=false access=module:0
-binding scope=3 value name=4 def=20 Direct ambiguous=false access=module:0
+def 17 type primitive name=21 scope=0 access=public
+def 18 type primitive name=22 scope=0 access=public
+def 19 type struct name=3 scope=0 access=module:0 source=0:2 members=1
+def 20 value function name=23 scope=0 access=module:0 source=0:15
+def 21 value parameter name=2 scope=2 access=module:0 source=0:3
+def 22 value local name=4 scope=3 access=module:0 source=0:8
+binding scope=0 type name=3 def=19 Direct ambiguous=false access=module:0
+binding scope=0 value name=23 def=20 Direct ambiguous=false access=module:0
+binding scope=2 value name=2 def=21 Direct ambiguous=false access=module:0
+binding scope=3 value name=4 def=22 Direct ambiguous=false access=module:0
 ref 0:0 scope=1 type def=5
-ref 0:4 scope=2 type def=17
+ref 0:4 scope=2 type def=19
 ref 0:6 scope=2 type def=5
-ref 0:11 scope=3 value def=19
-ref 0:7 scope=3 type def=17
-ref 0:13 scope=3 value def=20
-eof files=1 modules=1 definitions=21 references=6
+ref 0:11 scope=3 value def=21
+ref 0:7 scope=3 type def=19
+ref 0:13 scope=3 value def=22
+eof files=1 modules=1 definitions=23 references=6

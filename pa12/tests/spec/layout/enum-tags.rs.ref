@@ -18,12 +18,14 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 aggregate def=13
-type 20 aggregate def=18
-type 21 aggregate def=23
-def 13 type=19 name="Byte" source=0:3
-def 18 type=20 name="Wide" source=0:8
-def 23 type=21 name="Large" source=0:14
+type 19 primitive f16
+type 20 primitive f128
+type 21 aggregate def=13
+type 22 aggregate def=18
+type 23 aggregate def=23
+def 13 type=21 name="Byte" source=0:3
+def 18 type=22 name="Wide" source=0:8
+def 23 type=23 name="Large" source=0:14
 def 26 type=2 name="bool"
 def 27 type=3 name="char"
 def 28 type=4 name="str"
@@ -41,6 +43,8 @@ def 39 type=15 name="u128"
 def 40 type=16 name="usize"
 def 41 type=17 name="f32"
 def 42 type=18 name="f64"
+def 43 type=19 name="f16"
+def 44 type=20 name="f128"
 layout 0 size=0 align=1 inhabited=false references=false scalar
 layout 1 size=0 align=1 inhabited=true references=false aggregate tag=-
 variant 1:0 discriminant=0
@@ -61,12 +65,14 @@ layout 15 size=16 align=16 inhabited=true references=false scalar
 layout 16 size=8 align=8 inhabited=true references=false scalar
 layout 17 size=4 align=4 inhabited=true references=false scalar
 layout 18 size=8 align=8 inhabited=true references=false scalar
-layout 19 size=1 align=1 inhabited=true references=false aggregate tag=u8@0
-variant 19:0 discriminant=3
-variant 19:1 discriminant=4
-layout 20 size=16 align=16 inhabited=true references=false aggregate tag=u128@0
-variant 20:0 discriminant=1
-variant 20:1 discriminant=2
-layout 21 size=8 align=8 inhabited=true references=false aggregate tag=u64@0
-variant 21:0 discriminant=1099511627776
-eof types 22 layouts 21 variants 6 fields 0
+layout 19 size=2 align=2 inhabited=true references=false scalar
+layout 20 size=16 align=16 inhabited=true references=false scalar
+layout 21 size=1 align=1 inhabited=true references=false aggregate tag=u8@0
+variant 21:0 discriminant=3
+variant 21:1 discriminant=4
+layout 22 size=16 align=16 inhabited=true references=false aggregate tag=u128@0
+variant 22:0 discriminant=1
+variant 22:1 discriminant=2
+layout 23 size=8 align=8 inhabited=true references=false aggregate tag=u64@0
+variant 23:0 discriminant=1099511627776
+eof types 24 layouts 23 variants 6 fields 0

@@ -18,14 +18,16 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 opaque id=0 arguments=[]
-type 20 function binders=0 parameters=[] result=19 unsafe=false
-type 21 function-item def=13 signature=20
-type 22 function binders=0 parameters=[] result=1 unsafe=false
-type 23 function-item def=14 signature=22
-type 24 tuple [19,19]
-def 13 type=21 name="f" source=0:5
-def 14 type=23 name="main" source=0:16
+type 19 primitive f16
+type 20 primitive f128
+type 21 opaque id=0 arguments=[]
+type 22 function binders=0 parameters=[] result=21 unsafe=false
+type 23 function-item def=13 signature=22
+type 24 function binders=0 parameters=[] result=1 unsafe=false
+type 25 function-item def=14 signature=24
+type 26 tuple [21,21]
+def 13 type=23 name="f" source=0:5
+def 14 type=25 name="main" source=0:16
 def 15 type=2 name="bool"
 def 16 type=3 name="char"
 def 17 type=4 name="str"
@@ -43,10 +45,12 @@ def 28 type=15 name="u128"
 def 29 type=16 name="usize"
 def 30 type=17 name="f32"
 def 31 type=18 name="f64"
-def 39 type=19 name="x" source=0:6
-quantifier 0 regions=0 subject=19 bound=copy
+def 32 type=19 name="f16"
+def 33 type=20 name="f128"
+def 41 type=21 name="x" source=0:6
+quantifier 0 regions=0 subject=21 bound=copy
 quantifier 1 regions=0 subject=11 bound=copy
-opaque 0 owner=13 source=0:2 application=19 hidden=11 role=defining-result storage-proof=pending
+opaque 0 owner=13 source=0:2 application=21 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 forall=0
 opaque-body-result def=13 type=11
 proof 0 body=0:4 source=0:4 pending

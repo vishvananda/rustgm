@@ -18,23 +18,25 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 function binders=0 parameters=[] result=14 unsafe=false
-type 20 function-item def=13 signature=19
-type 21 function-item def=14 signature=19
-type 22 function-item def=15 signature=19
-body 0 function def=13 signature=19 result=14 source=0:2
+type 19 primitive f16
+type 20 primitive f128
+type 21 function binders=0 parameters=[] result=14 unsafe=false
+type 22 function-item def=13 signature=21
+type 23 function-item def=14 signature=21
+type 24 function-item def=15 signature=21
+body 0 function def=13 signature=21 result=14 source=0:2
   block b0:
     v0 type=14 = integer bits=0x00000000000000000000000000000007 source=1
     return v0 source=2
 end-body
-body 1 function def=14 signature=19 result=14 source=0:6
+body 1 function def=14 signature=21 result=14 source=0:6
   block b0:
     v0 type=14 = integer bits=0x00000000000000000000000000000008 source=5
     return v0 source=6
 end-body
-body 2 function def=15 signature=19 result=14 source=0:27
-  local l0 type=19 merge mutable=true storage-parent=- source=23
-  local l1 type=19 binding def=33 mutable=false storage-parent=l0 source=9
+body 2 function def=15 signature=21 result=14 source=0:27
+  local l0 type=21 merge mutable=true storage-parent=- source=23
+  local l1 type=21 binding def=35 mutable=false storage-parent=l0 source=9
   block b0:
     live l0 source=23
     jump b1 source=23
@@ -42,17 +44,17 @@ body 2 function def=15 signature=19 result=14 source=0:27
     v0 type=2 = bool true source=12
     branch v0 b3 b4 source=17
   block b2:
-    v7 type=19 = read l0 source=23
+    v7 type=21 = read l0 source=23
     live l1 source=9
     store l1 v7 source=24
     v8 type=1 = unit source=24
-    v9 type=19 = read l1 source=25
-    v10 type=14 = call signature=19 v9 [] source=26
+    v9 type=21 = read l1 source=25
+    v10 type=14 = call signature=21 v9 [] source=26
     end-storage first=l0 last=l1 source=27
     return v10 source=27
   block b3:
-    v1 type=20 = function def=13 source=13
-    v2 type=19 = reify v1 source=13
+    v1 type=22 = function def=13 source=13
+    v2 type=21 = reify v1 source=13
     store l0 v2 source=14
     jump b2 source=14
   block b4:
@@ -60,8 +62,8 @@ body 2 function def=15 signature=19 result=14 source=0:27
   block b5:
     v3 type=1 = unit source=17
     v4 type=1 = unit source=18
-    v5 type=21 = function def=14 source=19
-    v6 type=19 = reify v5 source=19
+    v5 type=23 = function def=14 source=19
+    v6 type=21 = reify v5 source=19
     store l0 v6 source=20
     jump b2 source=20
 end-body

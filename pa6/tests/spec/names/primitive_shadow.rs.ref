@@ -17,7 +17,9 @@ name 15 "u128"
 name 16 "usize"
 name 17 "f32"
 name 18 "f64"
-name 19 "f"
+name 19 "f16"
+name 20 "f128"
+name 21 "f"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 scope 1 module=0 barrier=true parent=0
@@ -40,13 +42,15 @@ def 13 type primitive name=15 scope=0 access=public
 def 14 type primitive name=16 scope=0 access=public
 def 15 type primitive name=17 scope=0 access=public
 def 16 type primitive name=18 scope=0 access=public
-def 17 type struct name=2 scope=0 access=module:0 source=0:0 members=1
-def 18 value constructor name=2 scope=0 access=module:0 source=0:0
-def 19 value function name=19 scope=0 access=module:0 source=0:5
-def 20 value parameter name=1 scope=2 access=module:0 source=0:1
-binding scope=0 type name=2 def=17 Direct ambiguous=false access=module:0
-binding scope=0 value name=2 def=18 Direct ambiguous=false access=module:0
-binding scope=0 value name=19 def=19 Direct ambiguous=false access=module:0
-binding scope=2 value name=1 def=20 Direct ambiguous=false access=module:0
-ref 0:2 scope=2 type def=17
-eof files=1 modules=1 definitions=21 references=1
+def 17 type primitive name=19 scope=0 access=public
+def 18 type primitive name=20 scope=0 access=public
+def 19 type struct name=2 scope=0 access=module:0 source=0:0 members=1
+def 20 value constructor name=2 scope=0 access=module:0 source=0:0
+def 21 value function name=21 scope=0 access=module:0 source=0:5
+def 22 value parameter name=1 scope=2 access=module:0 source=0:1
+binding scope=0 type name=2 def=19 Direct ambiguous=false access=module:0
+binding scope=0 value name=2 def=20 Direct ambiguous=false access=module:0
+binding scope=0 value name=21 def=21 Direct ambiguous=false access=module:0
+binding scope=2 value name=1 def=22 Direct ambiguous=false access=module:0
+ref 0:2 scope=2 type def=19
+eof files=1 modules=1 definitions=23 references=1

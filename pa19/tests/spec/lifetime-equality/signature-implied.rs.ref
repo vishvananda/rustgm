@@ -18,31 +18,33 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=15 index=1
-type 20 aggregate def=15 arguments=[region:bound:0:0,type:19]
-type 21 parameter def=14 index=0
-type 22 parameter def=17 index=2
-type 23 reference mutable=false region=bound:0:1 referent=1
-type 24 reference mutable=false region=bound:0:0 referent=23
-type 25 aggregate def=15 arguments=[region:bound:0:0,type:22]
-type 26 function binders=2 parameters=[24,25] result=1 unsafe=false
-type 27 reference mutable=false region=bound:1:0 referent=1
-type 28 reference mutable=false region=bound:1:1 referent=27
-type 29 aggregate def=15 arguments=[region:bound:1:1,type:22]
-type 30 function binders=0 parameters=[28,29] result=1 unsafe=false
-type 31 function-item def=17 signature=26
-type 32 function binders=0 parameters=[] result=1 unsafe=false
-type 33 function-item def=18 signature=32
-type 34 reference mutable=false region=bound:0:0 referent=1
-type 35 function binders=1 parameters=[34,19] result=20 unsafe=false
-type 36 aggregate def=15 arguments=[region:bound:1:0,type:19]
-type 37 function binders=0 parameters=[27,19] result=36 unsafe=false
-type 38 function-item def=16 signature=35
-def 14 type=21 name="Self" source=0:1
-def 15 type=20 name="Wrap" source=0:15
-def 16 type=38 name="Wrap" source=0:15
-def 17 type=31 name="f" source=0:41
-def 18 type=33 name="main" source=0:43
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=15 index=1
+type 22 aggregate def=15 arguments=[region:bound:0:0,type:21]
+type 23 parameter def=14 index=0
+type 24 parameter def=17 index=2
+type 25 reference mutable=false region=bound:0:1 referent=1
+type 26 reference mutable=false region=bound:0:0 referent=25
+type 27 aggregate def=15 arguments=[region:bound:0:0,type:24]
+type 28 function binders=2 parameters=[26,27] result=1 unsafe=false
+type 29 reference mutable=false region=bound:1:0 referent=1
+type 30 reference mutable=false region=bound:1:1 referent=29
+type 31 aggregate def=15 arguments=[region:bound:1:1,type:24]
+type 32 function binders=0 parameters=[30,31] result=1 unsafe=false
+type 33 function-item def=17 signature=28
+type 34 function binders=0 parameters=[] result=1 unsafe=false
+type 35 function-item def=18 signature=34
+type 36 reference mutable=false region=bound:0:0 referent=1
+type 37 function binders=1 parameters=[36,21] result=22 unsafe=false
+type 38 aggregate def=15 arguments=[region:bound:1:0,type:21]
+type 39 function binders=0 parameters=[29,21] result=38 unsafe=false
+type 40 function-item def=16 signature=37
+def 14 type=23 name="Self" source=0:1
+def 15 type=22 name="Wrap" source=0:15
+def 16 type=40 name="Wrap" source=0:15
+def 17 type=33 name="f" source=0:41
+def 18 type=35 name="main" source=0:43
 def 19 type=2 name="bool"
 def 20 type=3 name="char"
 def 21 type=4 name="str"
@@ -60,19 +62,21 @@ def 32 type=15 name="u128"
 def 33 type=16 name="usize"
 def 34 type=17 name="f32"
 def 35 type=18 name="f64"
-def 38 type=19 name="T" source=0:8
-def 41 type=22 name="T" source=0:25
-def 42 type=24 name="proof" source=0:26
-def 43 type=25 name="x" source=0:33
-associated-owner 0 kind=trait self-def=14 self=21 source=0:1 trait=13 unsafe=false name="Tr"
-parameter owner=13 binding=36 argument=region:bound:0:0 default=-
-parameter owner=14 binding=14 argument=type:21 default=-
-parameter owner=15 binding=37 argument=region:bound:0:0 default=-
-parameter owner=15 binding=38 argument=type:19 default=-
-parameter owner=17 binding=41 argument=type:22 default=-
-predicate owner=13 source=0:1 subject=21 bound=trait:13 arguments=[region:bound:0:0]
-predicate owner=15 source=0:7 subject=19 bound=trait:13 arguments=[region:bound:0:0]
-predicate owner=17 source=0:24 subject=22 bound=trait:13 arguments=[region:bound:0:1]
+def 36 type=19 name="f16"
+def 37 type=20 name="f128"
+def 40 type=21 name="T" source=0:8
+def 43 type=24 name="T" source=0:25
+def 44 type=26 name="proof" source=0:26
+def 45 type=27 name="x" source=0:33
+associated-owner 0 kind=trait self-def=14 self=23 source=0:1 trait=13 unsafe=false name="Tr"
+parameter owner=13 binding=38 argument=region:bound:0:0 default=-
+parameter owner=14 binding=14 argument=type:23 default=-
+parameter owner=15 binding=39 argument=region:bound:0:0 default=-
+parameter owner=15 binding=40 argument=type:21 default=-
+parameter owner=17 binding=43 argument=type:24 default=-
+predicate owner=13 source=0:1 subject=23 bound=trait:13 arguments=[region:bound:0:0]
+predicate owner=15 source=0:7 subject=21 bound=trait:13 arguments=[region:bound:0:0]
+predicate owner=17 source=0:24 subject=24 bound=trait:13 arguments=[region:bound:0:1]
 region-var region:1 body=0:40 source=0:40 origin=universal-alias pending
 region-var region:2 body=0:40 source=0:40 origin=universal-alias pending
 region-equal body=0:40 left=region:1 right=bound:0:0

@@ -18,17 +18,19 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=14 index=0
-type 20 parameter def=13 index=0
-type 21 parameter def=15 index=0
-type 22 parameter def=15 index=1
-type 23 function binders=0 parameters=[22] result=1 unsafe=false
-type 24 function-item def=15 signature=23
-type 25 function binders=0 parameters=[] result=1 unsafe=false
-type 26 function-item def=16 signature=25
-def 14 type=19 name="Self" source=0:1
-def 15 type=24 name="f" source=0:18
-def 16 type=26 name="main" source=0:20
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=14 index=0
+type 22 parameter def=13 index=0
+type 23 parameter def=15 index=0
+type 24 parameter def=15 index=1
+type 25 function binders=0 parameters=[24] result=1 unsafe=false
+type 26 function-item def=15 signature=25
+type 27 function binders=0 parameters=[] result=1 unsafe=false
+type 28 function-item def=16 signature=27
+def 14 type=21 name="Self" source=0:1
+def 15 type=26 name="f" source=0:18
+def 16 type=28 name="main" source=0:20
 def 17 type=2 name="bool"
 def 18 type=3 name="char"
 def 19 type=4 name="str"
@@ -46,16 +48,18 @@ def 30 type=15 name="u128"
 def 31 type=16 name="usize"
 def 32 type=17 name="f32"
 def 33 type=18 name="f64"
-def 34 type=20 name="U" source=0:0
-def 35 type=21 name="T" source=0:2
-def 36 type=22 name="S" source=0:13
-def 37 type=22 name="x" source=0:14
-associated-owner 0 kind=trait self-def=14 self=19 source=0:1 trait=13 unsafe=false name="A"
-parameter owner=13 binding=34 argument=type:20 default=-
-parameter owner=14 binding=14 argument=type:19 default=-
-parameter owner=15 binding=35 argument=type:21 default=-
-parameter owner=15 binding=36 argument=type:22 default=-
-predicate owner=13 source=0:1 subject=19 bound=trait:13 arguments=[type:20]
-predicate owner=15 source=0:7 subject=22 bound=trait:13 arguments=[type:21]
-predicate owner=15 source=0:12 subject=22 bound=trait:13 arguments=[type:11]
+def 34 type=19 name="f16"
+def 35 type=20 name="f128"
+def 36 type=22 name="U" source=0:0
+def 37 type=23 name="T" source=0:2
+def 38 type=24 name="S" source=0:13
+def 39 type=24 name="x" source=0:14
+associated-owner 0 kind=trait self-def=14 self=21 source=0:1 trait=13 unsafe=false name="A"
+parameter owner=13 binding=36 argument=type:22 default=-
+parameter owner=14 binding=14 argument=type:21 default=-
+parameter owner=15 binding=37 argument=type:23 default=-
+parameter owner=15 binding=38 argument=type:24 default=-
+predicate owner=13 source=0:1 subject=21 bound=trait:13 arguments=[type:22]
+predicate owner=15 source=0:7 subject=24 bound=trait:13 arguments=[type:23]
+predicate owner=15 source=0:12 subject=24 bound=trait:13 arguments=[type:11]
 eof owners=1 members=0 parameters=4 predicates=3 impls=0 calls=0 paths=0 impl-uses=0

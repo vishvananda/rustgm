@@ -10,7 +10,7 @@ use crate::{
         unit::{FileId, Unit},
     },
     support::{
-        crates::{CrateIdentity, Dependencies, SourceProfile},
+        crates::{CrateIdentity, Dependencies},
         edition::Edition,
     },
 };
@@ -24,6 +24,9 @@ pub struct SourceClient {
     provider_index: u32,
 }
 impl SourceClient {
+    pub(super) fn validate_inventory(&self) -> Result<(), &'static str> {
+        self.require_inventory(&self.dependencies).map(|_| ())
+    }
     #[must_use]
     pub const fn current(&self) -> &CrateIdentity {
         &self.current
@@ -48,7 +51,7 @@ impl SourceClient {
         if descriptor.identity() != &self.provider
             || descriptor.provider() != &self.provider
             || descriptor.edition() != Edition::Rust2024
-            || descriptor.profile() != SourceProfile::Source2024Functions
+            || !descriptor.profile().ordinary_functions()
         {
             return Err("source client provider descriptor changed");
         }

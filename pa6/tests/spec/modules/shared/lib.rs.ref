@@ -19,6 +19,8 @@ name 17 "u128"
 name 18 "usize"
 name 19 "f32"
 name 20 "f64"
+name 21 "f16"
+name 22 "f128"
 module 0 name=0 file=0 scope=0 parent=root
 module 1 name=1 file=1 scope=1 parent=0
 module 2 name=3 file=1 scope=4 parent=0
@@ -48,16 +50,18 @@ def 13 type primitive name=17 scope=0 access=public
 def 14 type primitive name=18 scope=0 access=public
 def 15 type primitive name=19 scope=0 access=public
 def 16 type primitive name=20 scope=0 access=public
-def 17 type module name=1 scope=0 access=module:0 source=0:0 members=1
-def 18 value function name=2 scope=1 access=public source=1:1
-def 19 type module name=3 scope=0 access=module:0 source=0:2 members=4
-def 20 value function name=2 scope=4 access=public source=1:1
-def 21 value function name=2 scope=0 access=module:0 source=0:15
-binding scope=0 type name=1 def=17 Direct ambiguous=false access=module:0
-binding scope=0 type name=3 def=19 Direct ambiguous=false access=module:0
-binding scope=0 value name=2 def=21 Direct ambiguous=false access=module:0
-binding scope=1 value name=2 def=18 Direct ambiguous=false access=public
-binding scope=4 value name=2 def=20 Direct ambiguous=false access=public
-ref 0:6 scope=8 value def=18
-ref 0:11 scope=8 value def=20
-eof files=2 modules=3 definitions=22 references=2
+def 17 type primitive name=21 scope=0 access=public
+def 18 type primitive name=22 scope=0 access=public
+def 19 type module name=1 scope=0 access=module:0 source=0:0 members=1
+def 20 value function name=2 scope=1 access=public source=1:1
+def 21 type module name=3 scope=0 access=module:0 source=0:2 members=4
+def 22 value function name=2 scope=4 access=public source=1:1
+def 23 value function name=2 scope=0 access=module:0 source=0:15
+binding scope=0 type name=1 def=19 Direct ambiguous=false access=module:0
+binding scope=0 type name=3 def=21 Direct ambiguous=false access=module:0
+binding scope=0 value name=2 def=23 Direct ambiguous=false access=module:0
+binding scope=1 value name=2 def=20 Direct ambiguous=false access=public
+binding scope=4 value name=2 def=22 Direct ambiguous=false access=public
+ref 0:6 scope=8 value def=20
+ref 0:11 scope=8 value def=22
+eof files=2 modules=3 definitions=24 references=2

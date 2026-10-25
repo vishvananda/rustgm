@@ -125,7 +125,10 @@
         "entry": "entry",
         "result": 3,
         "type": "u64"
-      }
+      },
+      "warnings": [
+        "unused_must_use"
+      ]
     },
     {
       "path": "tests/spec/execution/or-skips.rs",
@@ -142,7 +145,10 @@
         "entry": "entry",
         "result": 3,
         "type": "u64"
-      }
+      },
+      "warnings": [
+        "unused_must_use"
+      ]
     },
     {
       "path": "tests/spec/execution/nested-side-effects.rs",
@@ -159,7 +165,10 @@
         "entry": "entry",
         "result": 3,
         "type": "u64"
-      }
+      },
+      "warnings": [
+        "unused_must_use"
+      ]
     },
     {
       "path": "tests/spec/execution/nested-short-circuit.rs",

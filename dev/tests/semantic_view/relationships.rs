@@ -47,19 +47,20 @@ fn inspect(source: &str) -> TestResult<String> {
 fn associated_contracts_and_default_overrides_have_hand_checked_rows() -> TestResult {
     rustc::qualify("relationship-members", MEMBERS, true)?;
     let text = inspect(MEMBERS)?;
-    // Definition order follows the fixed source. The default selects the trait
+    // Wide primitives occupy type slots 19/20; source definition order stays fixed.
+    // The default selects the trait
     // constant itself, whereas U's override selects its distinct impl member.
     for row in [
-        "associated-type def=17 type=22",
-        "result-contract def=17 projection=22",
-        "result-bound def=17 index=0 subject=22 bound=copy",
-        "result-bound def=17 index=1 subject=22 bound=sized",
+        "associated-type def=17 type=24",
+        "result-contract def=17 projection=24",
+        "result-bound def=17 index=0 subject=24 bound=copy",
+        "result-bound def=17 index=1 subject=24 bound=sized",
         "associated-type def=24 type=11",
         "associated-type def=26 type=12",
         "impl-constant owner=23 declaration=18 selected=18 default=true",
         "impl-constant owner=25 declaration=18 selected=27 default=false",
-        "constant-dispatch declaration=18 arguments=[type:19] selected=18 arguments=[type:19]",
-        "constant-dispatch declaration=18 arguments=[type:20] selected=27 arguments=[]",
+        "constant-dispatch declaration=18 arguments=[type:21] selected=18 arguments=[type:21]",
+        "constant-dispatch declaration=18 arguments=[type:22] selected=27 arguments=[]",
     ] {
         assert!(text.lines().any(|line| line == row), "{row}: {text}");
     }
@@ -76,10 +77,10 @@ fn mixed_arguments_and_early_dispatch_keep_complete_selected_identities() -> Tes
         rustc::qualify(name, source, true)?;
         let text = inspect(source)?;
         if source == MIXED {
-            assert!(text.lines().any(|line|line=="constant-use source=0:72 definition=18 arguments=[region:static,type:19,type:11,const:16:0x00000000000000000000000000000003]"));
+            assert!(text.lines().any(|line|line=="constant-use source=0:72 definition=18 arguments=[region:static,type:21,type:11,const:16:0x00000000000000000000000000000003]"));
             assert!(
                 text.lines()
-                    .any(|line| line == "normalized-definition def=23 original=29 result=31")
+                    .any(|line| line == "normalized-definition def=23 original=31 result=33")
             );
         } else {
             assert!(text.lines().any(|line|line=="constant-dispatch declaration=23 arguments=[type:11] selected=28 arguments=[]"));

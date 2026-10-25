@@ -64,6 +64,12 @@ pub(in crate::resolve) enum MacroContext<'a> {
     Local(&'a LocalMacros),
 }
 impl<'a> MacroContext<'a> {
+    pub(in crate::resolve) fn requested(self, feature: policy::Feature) -> bool {
+        match self {
+            Self::Provider(source) => source.features.has(feature),
+            Self::Local(local) => local.features.has(feature),
+        }
+    }
     pub(in crate::resolve) const fn contracts(self) -> &'a panic_contracts::Contracts {
         match self {
             Self::Provider(source) => &source.macros,

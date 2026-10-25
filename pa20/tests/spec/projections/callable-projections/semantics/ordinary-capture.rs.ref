@@ -18,28 +18,30 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 function binders=0 parameters=[2] result=1 unsafe=false
-type 20 function-item def=13 signature=19
-type 21 function binders=0 parameters=[11] result=11 unsafe=false
-type 22 function-item def=14 signature=21
-type 23 reference mutable=false region=bound:1:0 referent=11
-type 24 function binders=0 parameters=[23] result=23 unsafe=false
-type 25 reference mutable=false region=bound:0:0 referent=11
-type 26 function binders=1 parameters=[24,25] result=25 unsafe=false
-type 27 function-item def=15 signature=26
-type 28 function binders=1 parameters=[25] result=25 unsafe=false
-type 29 function-item def=16 signature=28
-type 30 function binders=0 parameters=[] result=1 unsafe=false
-type 31 function-item def=17 signature=30
-type 32 reference mutable=false region=region:1 referent=11
-type 33 function binders=0 parameters=[32] result=32 unsafe=false
-type 34 function binders=0 parameters=[33,32] result=32 unsafe=false
-type 35 reference mutable=false region=region:2 referent=11
-def 13 type=20 name="check" source=0:13
-def 14 type=22 name="fail" source=0:22
-def 15 type=27 name="apply" source=0:46
-def 16 type=29 name="keep" source=0:58
-def 17 type=31 name="main" source=0:74
+type 19 primitive f16
+type 20 primitive f128
+type 21 function binders=0 parameters=[2] result=1 unsafe=false
+type 22 function-item def=13 signature=21
+type 23 function binders=0 parameters=[11] result=11 unsafe=false
+type 24 function-item def=14 signature=23
+type 25 reference mutable=false region=bound:1:0 referent=11
+type 26 function binders=0 parameters=[25] result=25 unsafe=false
+type 27 reference mutable=false region=bound:0:0 referent=11
+type 28 function binders=1 parameters=[26,27] result=27 unsafe=false
+type 29 function-item def=15 signature=28
+type 30 function binders=1 parameters=[27] result=27 unsafe=false
+type 31 function-item def=16 signature=30
+type 32 function binders=0 parameters=[] result=1 unsafe=false
+type 33 function-item def=17 signature=32
+type 34 reference mutable=false region=region:1 referent=11
+type 35 function binders=0 parameters=[34] result=34 unsafe=false
+type 36 function binders=0 parameters=[35,34] result=34 unsafe=false
+type 37 reference mutable=false region=region:2 referent=11
+def 13 type=22 name="check" source=0:13
+def 14 type=24 name="fail" source=0:22
+def 15 type=29 name="apply" source=0:46
+def 16 type=31 name="keep" source=0:58
+def 17 type=33 name="main" source=0:74
 def 18 type=2 name="bool"
 def 19 type=3 name="char"
 def 20 type=4 name="str"
@@ -57,18 +59,20 @@ def 31 type=15 name="u128"
 def 32 type=16 name="usize"
 def 33 type=17 name="f32"
 def 34 type=18 name="f64"
-def 37 type=2 name="ok" source=0:0
-def 38 type=11 name="x" source=0:14
-def 39 type=24 name="f" source=0:24
-def 40 type=25 name="x" source=0:34
-def 41 type=25 name="x" source=0:48
-def 42 type=11 name="x" source=0:59
+def 35 type=19 name="f16"
+def 36 type=20 name="f128"
+def 39 type=2 name="ok" source=0:0
+def 40 type=11 name="x" source=0:14
+def 41 type=26 name="f" source=0:24
+def 42 type=27 name="x" source=0:34
+def 43 type=27 name="x" source=0:48
+def 44 type=11 name="x" source=0:59
 region-var region:1 body=0:45 source=0:44 origin=universal-alias pending
 region-var region:1 body=0:73 source=0:67 origin=call-argument pending
 region-var region:2 body=0:73 source=0:66 origin=expression-borrow pending
 region-equal body=0:45 left=region:1 right=bound:0:0
-region-coercion body=0:45 source=0:43 actual=25 expected=32 kind=same-shape pending
-region-coercion body=0:45 source=0:45 actual=32 expected=25 kind=same-shape pending
-region-coercion body=0:73 source=0:64 actual=29 expected=33 kind=function-pointer pending
-region-coercion body=0:73 source=0:66 actual=35 expected=32 kind=same-shape pending
+region-coercion body=0:45 source=0:43 actual=27 expected=34 kind=same-shape pending
+region-coercion body=0:45 source=0:45 actual=34 expected=27 kind=same-shape pending
+region-coercion body=0:73 source=0:64 actual=31 expected=35 kind=function-pointer pending
+region-coercion body=0:73 source=0:66 actual=37 expected=34 kind=same-shape pending
 eof owners=0 members=0 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0

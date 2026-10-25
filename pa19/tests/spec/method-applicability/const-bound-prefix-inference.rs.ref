@@ -18,29 +18,31 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=15 index=0
-type 20 aggregate def=15 arguments=[type:19,const-parameter:15:1]
-type 21 parameter def=14 index=0
-type 22 parameter def=17 index=0
-type 23 aggregate def=15 arguments=[type:22,const-parameter:17:1]
-type 24 function binders=0 parameters=[23] result=1 unsafe=false
-type 25 function-item def=18 signature=24
-type 26 parameter def=19 index=0
-type 27 function binders=0 parameters=[] result=1 unsafe=false
-type 28 function-item def=19 signature=27
-type 29 function-item def=20 signature=27
-type 30 function binders=0 parameters=[19] result=20 unsafe=false
-type 31 function-item def=16 signature=30
-type 32 aggregate def=15 arguments=[type:26,const:16:0x00000000000000000000000000000002]
-type 33 function binders=0 parameters=[32] result=1 unsafe=false
-type 34 function-item def=18 signature=33 arguments=[type:26,const:16:0x00000000000000000000000000000002]
-def 14 type=21 name="Self" source=0:2
-def 15 type=20 name="S" source=0:8
-def 16 type=31 name="S" source=0:8
-def 17 type=23 name="Self" source=0:26
-def 18 type=25 name="run" source=0:25
-def 19 type=28 name="f" source=0:45
-def 20 type=29 name="main" source=0:47
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=15 index=0
+type 22 aggregate def=15 arguments=[type:21,const-parameter:15:1]
+type 23 parameter def=14 index=0
+type 24 parameter def=17 index=0
+type 25 aggregate def=15 arguments=[type:24,const-parameter:17:1]
+type 26 function binders=0 parameters=[25] result=1 unsafe=false
+type 27 function-item def=18 signature=26
+type 28 parameter def=19 index=0
+type 29 function binders=0 parameters=[] result=1 unsafe=false
+type 30 function-item def=19 signature=29
+type 31 function-item def=20 signature=29
+type 32 function binders=0 parameters=[21] result=22 unsafe=false
+type 33 function-item def=16 signature=32
+type 34 aggregate def=15 arguments=[type:28,const:16:0x00000000000000000000000000000002]
+type 35 function binders=0 parameters=[34] result=1 unsafe=false
+type 36 function-item def=18 signature=35 arguments=[type:28,const:16:0x00000000000000000000000000000002]
+def 14 type=23 name="Self" source=0:2
+def 15 type=22 name="S" source=0:8
+def 16 type=33 name="S" source=0:8
+def 17 type=25 name="Self" source=0:26
+def 18 type=27 name="run" source=0:25
+def 19 type=30 name="f" source=0:45
+def 20 type=31 name="main" source=0:47
 def 21 type=2 name="bool"
 def 22 type=3 name="char"
 def 23 type=4 name="str"
@@ -58,26 +60,28 @@ def 34 type=15 name="u128"
 def 35 type=16 name="usize"
 def 36 type=17 name="f32"
 def 37 type=18 name="f64"
-def 38 type=16 name="N" source=0:1
-def 39 type=19 name="T" source=0:3
-def 40 type=16 name="N" source=0:5
-def 41 type=22 name="T" source=0:14
-def 42 type=16 name="N" source=0:16
-def 43 type=26 name="T" source=0:32
-def 44 type=23 name="self" source=0:22
-def 45 type=32 name="s" source=0:33
-associated-owner 0 kind=trait self-def=14 self=21 source=0:2 trait=13 unsafe=false name="A"
-associated-owner 1 kind=inherent self-def=17 self=23 source=0:26 unsafe=false
-associated-member def=18 owner=1 receiver=23 references=0
-parameter owner=13 binding=38 argument=const-parameter:13:0 default=-
-parameter owner=14 binding=14 argument=type:21 default=-
-parameter owner=15 binding=39 argument=type:19 default=-
-parameter owner=15 binding=40 argument=const-parameter:15:1 default=-
-parameter owner=17 binding=41 argument=type:22 default=-
-parameter owner=17 binding=42 argument=const-parameter:17:1 default=-
-parameter owner=19 binding=43 argument=type:26 default=-
-predicate owner=13 source=0:2 subject=21 bound=trait:13 arguments=[const-parameter:13:0]
-predicate owner=17 source=0:13 subject=22 bound=trait:13 arguments=[const-parameter:17:1]
-predicate owner=19 source=0:31 subject=26 bound=trait:13 arguments=[const:16:0x00000000000000000000000000000002]
-method-call source=0:43 method=18 callable=34 dereferences=0 borrow=- receiver=32 origin=inherent
+def 38 type=19 name="f16"
+def 39 type=20 name="f128"
+def 40 type=16 name="N" source=0:1
+def 41 type=21 name="T" source=0:3
+def 42 type=16 name="N" source=0:5
+def 43 type=24 name="T" source=0:14
+def 44 type=16 name="N" source=0:16
+def 45 type=28 name="T" source=0:32
+def 46 type=25 name="self" source=0:22
+def 47 type=34 name="s" source=0:33
+associated-owner 0 kind=trait self-def=14 self=23 source=0:2 trait=13 unsafe=false name="A"
+associated-owner 1 kind=inherent self-def=17 self=25 source=0:26 unsafe=false
+associated-member def=18 owner=1 receiver=25 references=0
+parameter owner=13 binding=40 argument=const-parameter:13:0 default=-
+parameter owner=14 binding=14 argument=type:23 default=-
+parameter owner=15 binding=41 argument=type:21 default=-
+parameter owner=15 binding=42 argument=const-parameter:15:1 default=-
+parameter owner=17 binding=43 argument=type:24 default=-
+parameter owner=17 binding=44 argument=const-parameter:17:1 default=-
+parameter owner=19 binding=45 argument=type:28 default=-
+predicate owner=13 source=0:2 subject=23 bound=trait:13 arguments=[const-parameter:13:0]
+predicate owner=17 source=0:13 subject=24 bound=trait:13 arguments=[const-parameter:17:1]
+predicate owner=19 source=0:31 subject=28 bound=trait:13 arguments=[const:16:0x00000000000000000000000000000002]
+method-call source=0:43 method=18 callable=36 dereferences=0 borrow=- receiver=34 origin=inherent
 eof owners=2 members=1 parameters=7 predicates=3 impls=0 calls=1 paths=0 impl-uses=0

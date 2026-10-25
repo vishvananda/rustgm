@@ -18,10 +18,12 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 reference mutable=false region=static referent=4
-type 20 slice element=11
-type 21 reference mutable=false region=static referent=20
-type 22 array element=11 length=2
+type 19 primitive f16
+type 20 primitive f128
+type 21 reference mutable=false region=static referent=4
+type 22 slice element=11
 type 23 reference mutable=false region=static referent=22
-region-coercion body=0:7 source=0:7 actual=23 expected=21 kind=array-to-slice pending
+type 24 array element=11 length=2
+type 25 reference mutable=false region=static referent=24
+region-coercion body=0:7 source=0:7 actual=25 expected=23 kind=array-to-slice pending
 eof roots=0 patterns=0 fields=0 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=0 region-equalities=0 conditions=0 chains=0
