@@ -45,7 +45,7 @@ pub struct SourceInspection {
 impl Source {
     pub(super) fn begin(
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
     ) -> Result<Self, &'static str> {
@@ -54,7 +54,7 @@ impl Source {
 
     pub(super) fn begin_numbered(
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
     ) -> Result<Self, &'static str> {
@@ -63,7 +63,7 @@ impl Source {
 
     fn begin_with_numbering(
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
         numbered: bool,
@@ -96,8 +96,9 @@ impl Source {
                 .or_default()
                 .push(row.id);
         }
-        for function in &facts.functions {
+        for index in 0..facts.functions.len() {
             source.stage.charge(1)?;
+            let function = facts.functions[index];
             let Some((template, input, proof)) =
                 checked.function_proof(ItemId(function.definition.0))
             else {
@@ -124,7 +125,7 @@ impl Source {
 
     pub(super) fn collect(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         proved: &Proved,
         input: &Contract,
     ) -> Result<(), &'static str> {
@@ -133,7 +134,7 @@ impl Source {
 
     fn collect_body(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         body: &Body,
         input: &Contract,
     ) -> Result<(), &'static str> {
@@ -164,6 +165,7 @@ impl Source {
         {
             return Err("source original changed its exact body, signature or paired input");
         }
+        self.stage.prepare_type_arena(facts, body.result)?;
         let mut sites = locations::Sites::new(&mut self.stage, body)?;
         let variables = obligation_rows::allocations(&mut self.stage, input, context, &mut sites)?;
         let mut original =
