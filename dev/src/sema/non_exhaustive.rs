@@ -226,24 +226,25 @@ fn retain(
 }
 
 fn capture_matches(unit: &crate::resolve::unit::Unit, contract: &Contract) -> bool {
-    unit.configured
-        .effects
-        .get(contract.effect)
-        .is_some_and(|effect| {
-            effect.attribute.effect == crate::expand::configured::Effect::Keep
-                && unit
-                    .configured
-                    .ast
-                    .attributes
-                    .get(effect.capture as usize)
-                    .is_some_and(|capture| {
-                        let attribute = effect.attribute.attribute;
-                        attribute.span == contract.view.span
-                            && attribute.input == Input::Empty
-                            && !attribute.unsafe_wrapper
-                            && attribute.name(&capture.forest, unit.source.text())
-                                == Some("non_exhaustive")
-                    })
+    let Some(effect) = unit.configured.effects.get(contract.effect) else {
+        return false;
+    };
+    if unit
+        .configured
+        .ast
+        .attributes
+        .get(effect.capture as usize)
+        .is_none()
+    {
+        return false;
+    }
+    unit.retained_attributes(contract.effect..contract.effect + 1)
+        .next()
+        .is_some_and(|(attribute, forest)| {
+            attribute.span == contract.view.span
+                && attribute.input == Input::Empty
+                && !attribute.unsafe_wrapper
+                && attribute.name(forest, unit.source.text()) == Some("non_exhaustive")
         })
 }
 
