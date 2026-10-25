@@ -74,6 +74,12 @@ pub(super) fn prepare(
                 callables
                     .insert_scoped(&facts.types, &owners, header.callable, 0, &[], &parameters)
                     .map_err(error)?;
+            } else {
+                // A completed empty scope still owns a callable registration;
+                // its absence must not stand in for a checked closed signature.
+                callables
+                    .insert_monomorphic(&facts.types, ItemId(scope.definition.0), header.callable)
+                    .map_err(error)?;
             }
             let ty = facts
                 .types
