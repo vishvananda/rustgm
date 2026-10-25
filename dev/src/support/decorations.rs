@@ -19,6 +19,7 @@ pub(crate) enum Consumer {
     CrateOptions,
     TraitDiagnostics,
     InherentPolicy,
+    NonExhaustive,
 }
 impl Consumer {
     pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
@@ -64,6 +65,7 @@ impl Consumer {
             "doc" => Self::Documentation,
             "must_use" => Self::MustUse,
             "inline" => Self::Inlining,
+            "non_exhaustive" => Self::NonExhaustive,
             "rustc_paren_sugar" => Self::TraitParentheses,
             "rustc_coherence_is_core" | "rustc_preserve_ub_checks" => Self::CrateOptions,
             "rustc_on_unimplemented" => Self::TraitDiagnostics,

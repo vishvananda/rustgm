@@ -31,6 +31,12 @@ Only the filesystem root changes for hosted CI. Compiler identity, configuration
 source hashes, actual open trace, opened-file hashes and before/after input
 hashes are bound in the uploaded receipts. Unknown source dependencies and
 missing tracing tools fail as infrastructure errors.
+The downloaded raw evidence is retained under the integrator worktree's
+`obj/parallel/original-core-lib020-40183027468/`, including the pinned compiler.
+All raw stream/trace hashes match the result receipt. Its SHA-256 is
+`c07dfe015478a8cf441728552f021a35f9d07ae3a8e930e4ccde38adee64d29b`;
+the observer binding is
+`3cb7b97d46747c6c10e2ce3803febc74eaaeaa2a9bf97c57c13cc4fdee50db9a`.
 
 The complete observation took 5.729 seconds including download, extraction,
 hashing and tracing. This is a development frontier check, not a compiler

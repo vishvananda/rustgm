@@ -47,6 +47,7 @@ pub struct Work {
 }
 #[derive(Default)]
 pub(super) struct Contracts {
+    pub(in crate::sema) non_exhaustive: Option<Box<super::non_exhaustive::Contracts>>,
     pub(in crate::sema) inline: Option<Box<super::inlining::Contracts>>,
     pub(in crate::sema) parentheses: Option<Box<super::parentheses::Contracts>>,
     pub(in crate::sema) diagnostics: Option<Box<super::diagnostic_contracts::Contracts>>,

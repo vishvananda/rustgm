@@ -136,6 +136,12 @@ fn standalone_records_export_and_unsupported_semantic_contracts_stay_explicit()
             return Err(format!("dropped unsupported contract: {text}").into());
         };
         assert!(error.to_string().contains("profile"), "{text}: {error}");
+        if name == "non-exhaustive" {
+            assert_eq!(
+                error.to_string(),
+                "file 0: 0: nominal trait, member or non-exhaustive contract is outside the metadata profile"
+            );
+        }
     }
     Ok(())
 }

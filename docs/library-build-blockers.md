@@ -111,9 +111,11 @@ without producing a crate artifact. The next related family is LIB-022.
 
 Periodic full CI on `e081f8ab` found one regular integration regression:
 the stricter classifier rejects the known `non_exhaustive` attribute before
-its existing unsupported artifact-profile boundary. LIB-023 adds its real local
-consumer and retains the closed export contract; it must not be repaired by
-accepting unknown attributes or changing the fixture's meaning.
+its existing unsupported artifact-profile boundary. The
+[LIB-023 repair](non-exhaustive-checkpoint.md) now passes that exact regression
+and three further integration controls in a 129.31-second focused gate.
+Its nineteen sources have 38 actual independent observations. The genuine local
+consumer preserves the closed export contract; imported openness remains required.
 
 - Integrator: the [structural owner checkpoint](primitive-inherent-checkpoint.md)
   qualifies local primitive policy and full-Self lookup with 66 source cases,
@@ -131,6 +133,12 @@ accepting unknown attributes or changing the fixture's meaning.
   audit and strict Clippy in 166.66 seconds. It owns actual reservations and a
   private catalog without interning or semantic publication. Named lifetimes,
   demanded recipes and fresh body/instance proof remain required.
+  The [shared signature cursor](parallel/pa29-signature-cursor.md), merged at
+  `584cf944`, now passes eleven focused controls in 163.43 seconds including
+  strict Clippy/audit/build. Its actual flat-reference producer exposed and
+  repaired missing raw CFG borrow obligations by sharing the ordinary checker
+  kernel. Deep ready signatures, genuine empty schemes, named environments and
+  executable Provided import remain unimplemented; the public guards stay closed.
 - B: the bounded LIB-021 component at `ca2f0a80` passes 1,519 private tests,
   24 frontend cases, 84 native contexts, 26 layouts and seven CLI controls.
   Its merge preserving current macro permissions and A's source data is public
@@ -184,7 +192,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-020 | P0; stricter original-root failure at `lib.rs:65` | Actual rustc_coherence_is_core and primitive inherent implementation policy, lookup and coherence | PA31 binding + PA19/20 language/index; PA29 transport / PA31 source reproductions plus applicable earlier controls | Integrator | Local structural ownership, contextual full-Self lookup, genuine receiver-step assembly and ordinary local feature-header authority pass nineteen focused private controls and eight native programs. All 66 independently observed source outcomes pass the candidate. No hot package/report fields were added. Imported policy and wider duplicate/unsizing profiles remain required; no original core artifact. |
 | LIB-021 | P0; active original crate policy at `lib.rs:66` | rustc_preserve_ub_checks and actual UB-check intrinsic/runtime/CTFE behavior | PA28 operations + PA25 CTFE + PA31 policy + PA29 transport / PA31 complete source providers | B, coordinated with C/A | Typed UB/session/config/owned source identity is integrated at `66bd3750` and passes focused and periodic full CI qualification. Actual CTFE, producer code and deferred consumer specialization remain distinct. Imported policy transport and the combined Test-body/configuration receipt are still required; CPPGM remains unchanged. |
 | LIB-022 | P0; current unchanged-core failure at `offload_kernel`, line 1668 | Complete authenticated builtin declaration kinds independently of invocation availability | PA31 source binding + PA8 expansion; execution stays with owning feature / PA31 source providers plus earlier applicable controls | B + integrator | Current CLI `50dac790` rejects the unused real declaration. Inventory related pinned declarations together; retain exact owner/kind/feature/duplicate checks and deny unavailable execution. |
-| LIB-023 | P1; periodic full CI integration regression | Actual local `non_exhaustive` attribute consumption and retained unsupported cross-crate contract | PA29 declaration/export contract / PA29 local and artifact opponents | C | Real local owner/form checks and retained typed facts are under implementation. Same-crate construction/exhaustiveness must remain ordinary Rust behavior; exporting the unsupported contract must still fail explicitly. |
+| LIB-023 | Local regression repaired; imported openness still required | Actual local `non_exhaustive` attribute consumption and retained unsupported cross-crate contract | PA29 declaration/export contract / PA29 local and artifact opponents | C | Four merged controls pass with strict Clippy/audit/build in 129.31 seconds; nineteen sources bind 38 independent observations. Same-crate behavior and actual field/duplicate lint policy are implemented through the existing attribute traversal. Typed export still rejects unsupported cross-crate contracts. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):
