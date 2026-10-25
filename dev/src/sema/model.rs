@@ -550,6 +550,9 @@ impl Declarations {
         for (key, warning) in report.unused_visibility_warnings()? {
             self.retain_source_warning(key, warning)?;
         }
+        for (key, warning) in report.pre_expansion_warnings()? {
+            self.retain_source_warning(key, warning)?;
+        }
         super::must_use::collect(report, self)?;
         super::inlining::collect(report, self)?;
         super::parentheses::collect(report, self)?;

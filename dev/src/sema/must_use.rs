@@ -212,6 +212,7 @@ impl Declarations {
             WarningCode::UnusedMustUse => self.safety_policies.must_use(key),
             WarningCode::UnusedAttributes => self.safety_policies.unused_attributes(key),
             WarningCode::UnusedVisibilities => self.safety_policies.unused_visibilities(key),
+            WarningCode::UnstableSyntaxPreExpansion => Level::Warn,
             WarningCode::DuplicateMacroAttributes => {
                 self.safety_policies.duplicate_macro_attributes(key)
             }
