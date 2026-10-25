@@ -1,0 +1,3 @@
+use std::mem::size_of;
+use rustgm::{resolve::{bindings::{Reservations, SourceCore, Declaration, IntrinsicDeclaration}, model::Resolution, package::Package}, support::{bindings::{LangItem,SourceIntrinsic},intrinsics::Intrinsic}};
+fn main(){println!("{{\"pointer_bytes\":{},\"Reservations\":{},\"SourceCore\":{},\"Resolution\":{},\"Package\":{},\"Declaration\":{},\"IntrinsicDeclaration\":{},\"LangItem\":{},\"SourceIntrinsic\":{},\"Intrinsic\":{}}}",size_of::<usize>(),size_of::<Reservations>(),size_of::<SourceCore>(),size_of::<Resolution>(),size_of::<Package>(),size_of::<Declaration>(),size_of::<IntrinsicDeclaration>(),size_of::<LangItem>(),size_of::<SourceIntrinsic>(),size_of::<Intrinsic>());}
