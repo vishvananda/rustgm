@@ -137,7 +137,13 @@ pub fn build_library_prepared(
     Error,
 > {
     if report.package.source_core().is_some() {
-        return build_source_library(report, facts, identity, prepared);
+        return build_source_library_profile(
+            report,
+            facts,
+            identity,
+            prepared,
+            SourcePublication::LegacyFunctions,
+        );
     }
     let mut interface = None;
     let program = inspect_selected(
@@ -166,11 +172,21 @@ pub fn build_library_prepared(
     Ok((program, interface))
 }
 
-fn build_source_library(
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SourcePublication {
+    LegacyFunctions,
+    FunctionContracts,
+}
+
+/// Publish only an explicitly selected ordinary source row profile.
+/// # Errors
+/// Retains actual source proof, contract and artifact eligibility failures.
+pub fn build_source_library_profile(
     report: &Report,
     facts: &mut Declarations,
     identity: crate::support::crates::CrateIdentity,
     prepared: crate::pipeline::Prepared,
+    profile: SourcePublication,
 ) -> Result<
     (
         crate::lowir::program::Program,
@@ -178,6 +194,13 @@ fn build_source_library(
     ),
     Error,
 > {
+    if report.package.source_core().is_none() {
+        return Err(diagnostic(
+            report,
+            None,
+            "source publication profile requires its actual SourceCore provider".into(),
+        ));
+    }
     inspect_staged(
         report,
         facts,
@@ -221,9 +244,13 @@ fn build_source_library(
         |facts, assembled, roots, (source, base)| {
             let program = super::build_assembled(facts, assembled, roots)
                 .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
-            let interface = source
-                .complete_payload(report, facts, base)
-                .map_err(|error| facts.retain_error_warnings(error))?;
+            let interface = match profile {
+                SourcePublication::LegacyFunctions => source.complete_payload(report, facts, base),
+                SourcePublication::FunctionContracts => {
+                    source.complete_contract_payload(report, facts, base)
+                }
+            }
+            .map_err(|error| facts.retain_error_warnings(error))?;
             Ok((program, interface))
         },
     )?

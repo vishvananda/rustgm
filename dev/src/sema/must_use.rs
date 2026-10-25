@@ -15,6 +15,7 @@ use crate::{
 
 pub use crate::{resolve::package::Warning, support::diagnostics::WarningCode};
 struct Contract {
+    image: std::sync::Arc<crate::support::source::OriginalImage>,
     owner: NodeKey,
     declaration: NodeKey,
     span: Span,
@@ -23,9 +24,7 @@ struct Contract {
 }
 /// Borrowed local facts; an imported unknown is an error, never an empty view.
 pub struct ContractView<'a> {
-    pub owner: NodeKey,
-    pub declaration: NodeKey,
-    pub span: Span,
+    pub origin: super::header_attributes::ContractOrigin<'a>,
     pub reason: Option<&'a str>,
 }
 #[derive(Clone, Copy, Default)]
@@ -47,6 +46,7 @@ pub struct Work {
 }
 #[derive(Default)]
 pub(super) struct Contracts {
+    pub(in crate::sema) headers: Option<Box<super::header_attributes::Ledger>>,
     pub(in crate::sema) non_exhaustive: Option<Box<super::non_exhaustive::Contracts>>,
     pub(in crate::sema) inline: Option<Box<super::inlining::Contracts>>,
     pub(in crate::sema) parentheses: Option<Box<super::parentheses::Contracts>>,
@@ -113,6 +113,28 @@ impl Declarations {
                     "unknown must_use declaration",
                 )
             })?;
+        if actual.node.is_none() {
+            use super::header_attributes::ContractKnowledge;
+            if super::header_attributes::has_imported(self, definition) {
+                return match self
+                    .header_attribute_contracts(report, definition)?
+                    .must_use
+                {
+                    ContractKnowledge::KnownAbsent => Ok(None),
+                    ContractKnowledge::KnownPresent(view) => Ok(Some(view)),
+                    ContractKnowledge::Unknown => Err(Error::at(
+                        crate::resolve::unit::FileId(0),
+                        0,
+                        "imported must_use contract transport is not implemented",
+                    )),
+                };
+            }
+            return Err(Error::at(
+                crate::resolve::unit::FileId(0),
+                0,
+                "imported must_use contract transport is not implemented",
+            ));
+        }
         let Some(contracts) = self.must_use_contracts.as_deref() else {
             return Ok(None);
         };
@@ -134,7 +156,8 @@ impl Declarations {
             .copied()
             .flatten()
             .and_then(|index| unit.configured.owners.get(index.get() as usize - 1));
-        if actual.node != Some(contract.declaration)
+        if !std::sync::Arc::ptr_eq(&contract.image, unit.source.original_image())
+            || actual.node != Some(contract.declaration)
             || owner.is_none_or(|owner| {
                 !owner.enabled
                     || owner.node != contract.owner.node
@@ -155,9 +178,11 @@ impl Declarations {
             ));
         }
         Ok(Some(ContractView {
-            owner: contract.owner,
-            declaration: contract.declaration,
-            span: contract.span,
+            origin: super::header_attributes::ContractOrigin::source_site(
+                contract.owner,
+                contract.declaration,
+                contract.span,
+            ),
             reason: contract.reason.as_deref(),
         }))
     }

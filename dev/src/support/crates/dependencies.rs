@@ -55,7 +55,7 @@ impl Dependencies {
         if descriptor.identity() != provider
             || descriptor.provider() != provider
             || descriptor.edition() != crate::support::edition::Edition::Rust2024
-            || descriptor.profile() != super::generics::source::Profile::Source2024Functions
+            || !descriptor.profile().ordinary_functions()
         {
             return Err("source client provider descriptor does not match the requested profile");
         }

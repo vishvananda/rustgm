@@ -29,20 +29,25 @@ advances the root to `num/f128.rs:27`: nine original files opened and all 722
 inputs verified. Its seven isolated controls pass in 165.33 seconds. Use LIB-024
 as the current frontier; wider macro execution and import remain open.
 
+The [wide-literal successor](wide-literals-checkpoint.md) advances the original
+root to `num/nonzero.rs:34`, with 42 unchanged files opened. All 722 source
+inputs are verified. LIB-026 implementation restrictions are now the loading
+frontier; the earlier observations remain retained history, not current stops.
+
 Current lanes:
 
-- A: continue real Provided signature/body transport. The private reservation
-  session and shared signature cursor are qualified with eleven merged controls.
-  Export shares the ordinary raw place-bounds producer; genuine empty signature
-  schemes and monomorphic imported callables now pass real codec/fresh proof.
-  Continue actual anonymous Function recipes; type-alias transport stays separate.
-- B: LIB-022's complete local declaration family is qualified. Implement
-  LIB-024's exact wide literal/feature/type slice from the real f128 frontier;
-  keep later wide operations, UB policy, macro execution and import explicit.
-- C: LIB-023's real local `non_exhaustive` consumer is qualified with four merged
-  controls and 38 independent observations. LIB-025's mandatory typed publication
-  guard is now qualified; continue explicit wider attribute transport. Existing
-  source-attribute/configuration receipts and 93 new text oracles are integrated.
+- A: continue real anonymous Function recipes and their actual owner/argument
+  domains. Nine of ten controls pass the latest bounded gate; fix the remaining
+  genuine function lifetime/type-parameter slot mismatch without weakening wire
+  validation. Provided execution and type-alias transport remain separate work.
+- B: LIB-024's exact wide literal/feature/type slice is public and qualified.
+  Implement LIB-026's actual syntax, feature authority and module implementation
+  domains. Seventy-four independent observations pass; candidate typing, Clippy
+  and functional checks are in progress. Restricted policy transport remains open.
+- C: LIB-025's versioned library attribute transport passes nine exact controls
+  with strict Clippy/audit/build in 131.84 seconds. Implement its SourceCore CLI
+  selection and qualify fresh client warnings/native behavior; preserve explicit
+  legacy API bytes, imported Unknown and the closed Provided profile.
 - Integrator: focused integration/main pushes, periodic CI follow-up and fresh
   original-source observations. Local primitive ownership is qualified. Keep
   CPPGM and upstream sources unchanged.

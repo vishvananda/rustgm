@@ -1,0 +1,159 @@
+{
+  "status": "predeclared source checkpoint; all new controls UNRUN; no driver v1 activation",
+  "profile": {
+    "tag": 10,
+    "row_version": 1,
+    "name": "Source2024FunctionContracts",
+    "legacy_version": 0,
+    "legacy_knowledge": "Unknown",
+    "provided_tag": 11,
+    "provided_contract_version": "rejected"
+  },
+  "providers": {
+    "pa31/tests/spec/source-functions-transport/minimal-provider.rs": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297",
+    "pa31/tests/spec/source-publication-attributes/must-use-reason.rs": "d647bf4d6b998a861ab6641925c41ec8657d51d78cfc6d072d99bab09feb961d",
+    "pa31/tests/spec/source-publication-attributes/inline.rs": "9732712885f7e7dbbc89cd912afd5eff6eadeb817b404c9f76422de0cef51ef6",
+    "pa31/tests/spec/source-publication-attributes/inline-always.rs": "011a2d6dc21e06876619b3851f36ebc4cecc74700a6d9d689fcdbbe681212aa4",
+    "pa31/tests/spec/source-publication-attributes/inline-never.rs": "24ee3df7bba70f490758397ff6676f1171d604a86c3990db169cb74837b3e61f",
+    "pa31/tests/spec/source-publication-attributes/required-inline.rs": "81e929cfed4f57d086e71954e072432267bcae64aa99d222af4a2b715ac8b03a",
+    "pa31/tests/spec/source-publication-attributes/required-member.rs": "7bd788a9fd309c845ff479635f20ac9dcad6f68a006f3f8debbf0f7b2f29e8f5",
+    "pa31/tests/spec/source-publication-attributes/trait-owner.rs": "022bd11bb6844fa867e5b98a484fc3ccad0c0a620af0512cdc696fc12fb0fd6f",
+    "pa31/tests/spec/source-publication-attributes/unused-marked.rs": "f99f31dd41a2d53b5117bade7bf1a5b448d424e592934955aec71baf20b2f997",
+    "pa31/tests/spec/source-publication-attributes/negative-owner.rs": "5cd927013fedeeed36b71e65368ca0ce39299ee351b48964fcc2f0a53357a777",
+    "pa31/tests/spec/source-publication-attributes/negative-crate-owner.rs": "38ea8b1f64dac8e1197164b908a6c5cdf18c49a30881062763bbb848eced45ba",
+    "pa31/tests/spec/source-publication-attributes/nominal-plain.rs": "881a3f3d30b6b6f19d1e7e724fa08da68f2bede06d970d23544ed037644eeee7",
+    "pa31/tests/spec/source-publication-attributes/nominal-marked.rs": "5c73d4946c3fee35e55dd653335b634ad443a1a011db4b5b6ad3c94329a88af7",
+    "pa31/tests/spec/source-publication-attributes/cfg-on.rs": "165eab0971584deb147b1db78d830ccd64af3eb5a49e60ad2d409db9be63a405",
+    "pa31/tests/spec/source-publication-attributes/cfg-off.rs": "ee3b19521fec7a3c821aef52c5e521c16e85cce3d5eb6eb7bf44ac73b17bc08f"
+  },
+  "clients": {
+    "used": {
+      "source": "#![feature(no_core)]\n#![no_core]\nextern crate base;\n#[unsafe(no_mangle)]pub extern \"C\" fn answer()->u8 {base::identity(7u8)}\n",
+      "sha256": "99553f08b7b79367da7410943e228c55e4005a69c8848dd8c90a3138df0aadbb"
+    },
+    "discarded": {
+      "source": "#![feature(no_core)]#![no_core]extern crate base;pub fn idle(){base::identity(7u8);}",
+      "sha256": "2ff5c5e10aac6a48c64a707d8b54cbbc9ba041eae974f40df74e2dc2fd9ebbfb"
+    },
+    "explicit_discard": {
+      "source": "#![feature(no_core)]#![no_core]extern crate base;pub fn idle(){let _ = base::identity(7u8);}",
+      "sha256": "075841c958002bb23f0272749d93468870e4e95bcd1e7a5c1c9712618c46be39"
+    },
+    "idle": {
+      "source": "#![feature(no_core)]#![no_core]extern crate base;pub fn idle(){}",
+      "sha256": "abb19427f5c276bcd526b279b4e8bbf3b8b2375acd0c53e2bee5f9a6941f04ed"
+    }
+  },
+  "derived_sources": {
+    "inline-trait-owner": {
+      "base": "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+      "replace": [
+        "pub trait Copy: Clone {}",
+        "#[inline]pub trait Copy: Clone {}"
+      ],
+      "source_sha256": "0c0262c3653d536814f7357c7a49692829107c1fd8299fec5255496452f5ee0c",
+      "provider_status": 1,
+      "provider_warning": null,
+      "effective_inline": "rejected before producer completion/publication",
+      "independent_status": "observed both editions status1/no warnings; hard error: #[inline] attribute cannot be used on traits; no E-code",
+      "evidence": {
+        "results_sha256": "201c40fd977fa844752187d622e7d177096c3383f10f023d8b1778daed97c76d",
+        "plan_sha256": "fac0422bbcbbd5afb00673254fed0aaaf6331d8a346336765018b79dc1e9de39",
+        "initial_prediction": "status0/unused_attributes; both predictions disproved and retained in frozen plan/raw diagnostics"
+      }
+    },
+    "overlong-profile-reason": {
+      "base": "pa31/tests/spec/source-publication-attributes/must-use-reason.rs",
+      "replace_reason_with_ascii_x_count": 65537,
+      "source_sha256": "16b90abcbda308bd475bf78db08e084a3d6aa25b010833b057d4853c478fc319",
+      "language_analysis_status": 0,
+      "v1_publication_status": 1,
+      "diagnostic": "source must_use reason exceeds transport profile limit"
+    },
+    "scaled-unused-headers": {
+      "base": "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+      "counts": [
+        1,
+        8,
+        32
+      ],
+      "append_recipe": "pub fn extra{index}(x:u8)->u8{x}",
+      "expected_function_header_count": "count + 2; every row complete"
+    }
+  },
+  "consumer_contract": {
+    "used": "success; existing ordinary fresh-proof/lowering gates retained; no must-use warning",
+    "plain_discarded": "success/no unused_must_use warning; KnownAbsent",
+    "marked_discarded": "success/one unused_must_use warning: unused must_use result: keep result, at actual client call",
+    "let_": "success/no unused_must_use warning",
+    "allow": "success/no warning",
+    "warn": "success/one warning",
+    "deny": "error exact unused must_use result message",
+    "forbid": "error exact unused must_use result message",
+    "deny_inner_allow": "success/no warning",
+    "forbid_inner_allow": "error; forbid cannot weaken"
+  },
+  "inline_contract": {
+    "Hint": "roundtrip Hint+FunctionBody",
+    "Always": "roundtrip Always+FunctionBody",
+    "Never": "roundtrip Never+FunctionBody",
+    "required": "provider success/one warning; imported DiagnosedNoBody; client no replay"
+  },
+  "selectors": [
+    "sema::header_attributes::tests::marked_and_plain_providers_roundtrip_into_fresh_used_and_discarded_consumers",
+    "sema::header_attributes::tests::imported_contract_warnings_follow_consumer_lint_levels_and_explicit_discard",
+    "sema::header_attributes::tests::origins::inline_and_trait_contracts_retain_complete_actual_owner_applicability",
+    "sema::header_attributes::tests::origins::completion_incarnations_and_repeated_import_queries_remain_bounded",
+    "sema::header_attributes::tests::compatibility::legacy_unknown_closed_profiles_and_warned_wrong_owners_stay_explicit",
+    "sema::header_attributes::tests::compatibility::malformed_complete_columns_and_wire_tags_reject_before_publication"
+  ],
+  "compatibility_boundary": "The permanent text hex golden decodes to the qualified pre-v1 3628-byte tag10/v0 artifact SHA81fd7dc86d906ef7ba5fd4abb92a0a24f6f9548c473b9b8a43a62dd7c1f234c0. The existing legacy/Unknown private control now exports the same exact provider source and minicore@attribute_transport identity and compares all bytes; this changed candidate test is still unrun.",
+  "baseline_cli": {
+    "path": "/home/vishvananda/rustgm-pa29-work/obj/parallel/wide-qualified-40196564678/cli/candidate/rustgm",
+    "sha256": "da5d43430556c8b9dc451de3ebe179005b4b1b843246e54af100c8ab833a6f76",
+    "source_binding": "cd8405bd; parent retained CI40196564678"
+  },
+  "remaining": "No nominal/provided/closure execution, no optimizer honoring inline, no imported UB permission widening. Six private groups are plans, not evidence; no unchanged C9/C4/38 repeats.",
+  "baseline_artifact": {
+    "path": "obj/parallel/pa31/source-attribute-transport-v1/baseline-and-owner-v1/legacy.rgm",
+    "sha256": "81fd7dc86d906ef7ba5fd4abb92a0a24f6f9548c473b9b8a43a62dd7c1f234c0",
+    "bytes": 3628,
+    "tag": 10,
+    "row_version": 0,
+    "provider_sha256": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297",
+    "crate_name": "minicore",
+    "crate_disambiguator": "attribute_transport",
+    "text_fixture": {
+      "path": "pa31/tests/spec/source-attribute-transport/legacy-functions-v0.hex",
+      "sha256": "a5c56e9db572933e7705b55475a2bad7678b7cb4969748caf84d02db6ed9e5d0",
+      "encoding": "ASCII lowercase hex bytes, 32 bytes per line, attributed # comment preamble",
+      "decoded_bytes": 3628,
+      "decoded_sha256": "81fd7dc86d906ef7ba5fd4abb92a0a24f6f9548c473b9b8a43a62dd7c1f234c0",
+      "producer_source": "cd8405bd",
+      "producer_qualification": "CI40196564678",
+      "producer_cli_sha256": "da5d43430556c8b9dc451de3ebe179005b4b1b843246e54af100c8ab833a6f76",
+      "provider_path": "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+      "provider_sha256": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297",
+      "identity": "minicore@attribute_transport",
+      "edition": "2024",
+      "command": [
+        "/home/vishvananda/rustgm-pa29-work/obj/parallel/wide-qualified-40196564678/cli/candidate/rustgm",
+        "--emit-lowir",
+        "--edition=2024",
+        "--source-core",
+        "minicore@attribute_transport",
+        "--crate-type=lib",
+        "--crate-name",
+        "minicore",
+        "--crate-disambiguator",
+        "attribute_transport",
+        "--metadata-output",
+        "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-attribute-transport-v1/baseline-and-owner-v1/legacy.rgm",
+        "-o",
+        "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-attribute-transport-v1/baseline-and-owner-v1/legacy.lowir",
+        "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-functions-transport/minimal-provider.rs"
+      ],
+      "receipt_sha256": "201c40fd977fa844752187d622e7d177096c3383f10f023d8b1778daed97c76d"
+    }
+  }
+}

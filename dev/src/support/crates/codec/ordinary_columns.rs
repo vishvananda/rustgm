@@ -2,6 +2,8 @@
 mod allocation_columns;
 mod cfg_columns;
 mod contract_columns;
+#[path = "ordinary_columns/annotation_rows.rs"]
+mod header_facts;
 mod invoked_rows;
 mod operation_columns;
 mod owner_rows;
@@ -31,6 +33,17 @@ pub(super) fn encode_provided(
     rows: s::ValidatedView<'_>,
 ) -> Result<(), &'static str> {
     encode_profile(out, rows, true)
+}
+pub(super) fn encode_contracts(
+    out: &mut Writer,
+    rows: s::ValidatedView<'_>,
+) -> Result<(), &'static str> {
+    encode(out, rows)?;
+    header_facts::encode(
+        out,
+        rows.header_attributes()
+            .ok_or("source contract columns are missing")?,
+    )
 }
 fn encode_profile(
     out: &mut Writer,
@@ -88,26 +101,39 @@ fn encode_profile(
 }
 
 pub(super) fn decode(reader: &mut Reader<'_>, base: usize) -> Result<s::SourceRows, &'static str> {
-    decode_profile(reader, base, false)
+    decode_profile(reader, base, false).map(|(rows, _)| rows)
 }
 pub(super) fn decode_provided(
     reader: &mut Reader<'_>,
     base: usize,
 ) -> Result<s::SourceRows, &'static str> {
-    decode_profile(reader, base, true)
+    decode_profile(reader, base, true).map(|(rows, _)| rows)
+}
+pub(super) fn decode_contracts(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<(s::SourceRows, s::HeaderAttributeColumns), &'static str> {
+    let (rows, bytes) = decode_profile(reader, base, false)?;
+    let attributes = header_facts::decode(&mut Input {
+        reader,
+        bytes,
+        base,
+        provided: false,
+    })?;
+    Ok((rows, attributes))
 }
 fn decode_profile(
     reader: &mut Reader<'_>,
     base: usize,
     provided: bool,
-) -> Result<s::SourceRows, &'static str> {
+) -> Result<(s::SourceRows, usize), &'static str> {
     let mut read = Input {
         reader,
         bytes: size_of::<s::SourceRows>(),
         base,
         provided,
     };
-    Ok(s::SourceRows {
+    let rows = s::SourceRows {
         policy: s::Policy {
             edition: Edition::Rust2024,
             provider: s::ArtifactRef(read.id()?),
@@ -154,7 +180,8 @@ fn decode_profile(
         } else {
             Vec::new()
         },
-    })
+    };
+    Ok((rows, read.bytes))
 }
 
 struct Input<'a, 'b> {
