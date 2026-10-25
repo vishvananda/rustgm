@@ -3,10 +3,7 @@ use super::{Checker, DefId, Error, Partial, Work, regions};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::associated::{OwnerId, OwnerKind, SourceOwner as Owner},
-    types::{
-        Kind,
-        parameters::predicates::{Bound, Predicate},
-    },
+    types::parameters::predicates::{Bound, Predicate},
 };
 
 #[derive(Clone, Copy)]

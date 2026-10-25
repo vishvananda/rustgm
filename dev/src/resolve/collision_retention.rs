@@ -63,7 +63,7 @@ impl Resolver<'_> {
         Ok(matches!(
             ast.node(node.node).kind,
             Kind::Item(index)
-                if matches!(ast.items[index as usize].kind, ItemKind::Impl { trait_type: None, .. })
+                if matches!(ast.items[index as usize].kind, ItemKind::Impl { trait_path: None, .. })
         ))
     }
 }

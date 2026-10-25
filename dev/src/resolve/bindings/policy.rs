@@ -85,9 +85,6 @@ impl Features {
 #[derive(Clone, Copy, Default)]
 pub(in crate::resolve) struct MacroFeatures(u8);
 impl MacroFeatures {
-    pub(in crate::resolve) const fn requested_internal(self) -> bool {
-        self.0 & 2 != 0
-    }
     fn with_options(self, options: super::root_options::Options) -> Self {
         Self(self.0 | options.bits())
     }

@@ -1,6 +1,6 @@
 //! Qualified inherent paths consume typed owner buckets before body inference.
 use super::associated::Path;
-use super::{Checker, DefKind, Error, Kind, NodeId, NodeKey, Target, Type, Work, regions};
+use super::{Checker, DefKind, Error, Kind, NodeId, NodeKey, Target, Work, regions};
 use crate::{
     resolve::model::{Access, Namespace},
     sema::methods::buckets::Bucket,
