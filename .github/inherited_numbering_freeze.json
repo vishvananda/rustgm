@@ -57,7 +57,7 @@
     "production Clippy",
     "private Clippy"
   ],
-  "source_commit": "c25dc0f644ccc98c549c3dd77f1ddd84f4970a53",
+  "source_commit": "4ee62265da8edcf81ea50776d322d4337ca120c1",
   "public_base": "6824f6cf5a9a457093242cd41fc2e37c3ec88888",
   "sources": {
     "dev/bin/crates.rs": "5e73d44f2c3b8a5042018f45e6af26a87e655111456e80c5449265667e0b5de6",
@@ -823,7 +823,7 @@
     "dev/src/sema/crates/imported_values.rs": "1f5b000d515e50efd2039707b71a07162b92c05284dd4114a3f041195719ad69",
     "dev/src/sema/crates/type_transport.rs": "9810dc6c0c8b391e73374d51448c3f0618e2563f4c26b8aeffee2edd3ef5474c",
     "dev/src/sema/crates/typed_headers/applications.rs": "4b03c00d62fee5ca11ba997c51983bdf00e857799cdbd7653b770a45221db83f",
-    "dev/src/sema/crates/typed_headers/assumed_originals.rs": "a6d98d17a839aad2597ab7689ce2cce74637bfa82703d67056dc95d383734b4e",
+    "dev/src/sema/crates/typed_headers/assumed_originals.rs": "c7399cad1af42b6095dbc891c98ae0daa8d8f466167ffcaf61afcb396066ef93",
     "dev/src/sema/crates/typed_headers/assumed_scopes.rs": "6e8f39be413e700f2f6943581339a3d3674048ce0188453e225f73aef57d1141",
     "dev/src/sema/crates/typed_headers/assumption_ports.rs": "8f5b9e705a5af935aea2d4b4a85fc46ce926721a8c7fb9bd3b417eaaf7c7c9ba",
     "dev/src/sema/crates/typed_headers/demanded_headers.rs": "781b700c840214740a9933578c7d3170818d8d00d7f78021a34ca15db94f1687",
@@ -2692,7 +2692,7 @@
     "pa8/tests/manifest.json": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
     "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
   },
-  "source_sha256": "cedfa53d6b4bbdcf2d952bf23bade508ce02c9c696ca5ee0f2b4fe034aaeaa2a",
+  "source_sha256": "67c705392c1337207a5319051681914199554735d4861693fab8e7bdd1354ff1",
   "selected": [
     "lower::transported_source::trait_inputs::tests::numbered_trait_inputs_retain_full_family_and_actual_contract_capacity",
     "lower::transported_source::trait_inputs::tests::numbered_trait_inputs_preserve_defaultness_fences_and_failed_work",

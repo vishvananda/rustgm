@@ -10,6 +10,7 @@ use crate::{
     },
     sema::function_context::assumption_environment as defining,
     support::crates::{generics as g, owner_catalog::BodyRef},
+    types::parameters::ParameterId,
 };
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Origin {
