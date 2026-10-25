@@ -5,6 +5,7 @@ mod canonical_nodes;
 mod contract_rows;
 mod exposed_bindings;
 mod implementation_headers;
+mod namespace_emission;
 mod scoped_parameters;
 mod self_requests;
 use crate::{
@@ -36,6 +37,13 @@ pub struct SourceWork {
 
 /// Private draft only. Header/body validation and complete proof consumption must
 /// finish before this stage can create a payload or expose a client descriptor.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ExportMode {
+    Legacy,
+    Namespace,
+    ModuleContracts,
+}
+
 pub(crate) struct Stage {
     pub(crate) rows: s::SourceRows,
     pub(crate) definitions: Vec<Option<DeclarationRef>>,
@@ -161,7 +169,7 @@ impl Stage {
         facts: &mut Declarations,
         identity: &CrateIdentity,
     ) -> Result<Self, &'static str> {
-        Self::begin_mode(report, facts, identity, false)
+        Self::begin_mode(report, facts, identity, ExportMode::Legacy)
     }
 
     /// Private inspection only; no profile or descriptor admission is changed.
@@ -170,14 +178,21 @@ impl Stage {
         facts: &mut Declarations,
         identity: &CrateIdentity,
     ) -> Result<Self, &'static str> {
-        Self::begin_mode(report, facts, identity, true)
+        Self::begin_mode(report, facts, identity, ExportMode::Namespace)
     }
 
+    pub(crate) fn begin_module_contracts(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_mode(report, facts, identity, ExportMode::ModuleContracts)
+    }
     fn begin_mode(
         report: &Report,
         facts: &mut Declarations,
         identity: &CrateIdentity,
-        ordinary_traits: bool,
+        mode: ExportMode,
     ) -> Result<Self, &'static str> {
         let provider = report
             .package
@@ -227,9 +242,9 @@ impl Stage {
         };
         stage.reserve(count.saturating_mul(size_of::<Option<DeclarationRef>>()))?;
         stage.definitions.resize(count, None);
-        stage.declarations(report, facts)?;
+        stage.declarations(report, facts, mode)?;
         stage.scopes(report, facts)?;
-        stage.traits(report, facts, ordinary_traits)?;
+        stage.traits(report, facts, mode != ExportMode::Legacy)?;
         stage.functions(report, facts)?;
         stage.implementations(facts)?;
         Ok(stage)
@@ -270,7 +285,12 @@ impl Stage {
             .ok_or("source header names an unreserved actual declaration")
     }
 
-    fn declarations(&mut self, report: &Report, facts: &Declarations) -> Result<(), &'static str> {
+    fn declarations(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        mode: ExportMode,
+    ) -> Result<(), &'static str> {
         let mut owners = scope_owners(report, facts, self)?;
         let root = report
             .resolution
@@ -296,7 +316,8 @@ impl Stage {
             };
             let id =
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
-            if definition.kind == DefKind::Trait
+            if mode != ExportMode::ModuleContracts
+                && definition.kind == DefKind::Trait
                 && crate::resolve::impl_restrictions::clause(report, id)
                     .map_err(|_| "source trait implementation domain is invalid")?
                     .is_some()

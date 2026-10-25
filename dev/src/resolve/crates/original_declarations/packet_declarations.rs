@@ -108,7 +108,11 @@ fn reserve_definitions(
 ) -> Result<Vec<DefId>, Error> {
     let (definitions, owners) = declarations(resolver, scope, artifact, rows, imported, work)?;
     let body_scopes = scope_rows::bodies(resolver, &rows, &owners, rows.body_owners().len(), work)?;
-    scope_rows::assign(resolver, &rows, &definitions, &owners, &body_scopes, work)?;
+    if rows.descriptor().profile() == s::Profile::Source2024ModuleContracts {
+        scope_rows::namespace_assign(resolver, &rows, &definitions, &owners, &body_scopes, work)?;
+    } else {
+        scope_rows::assign(resolver, &rows, &definitions, &owners, &body_scopes, work)?;
+    }
     Ok(definitions)
 }
 pub(super) fn unpaid_input(
@@ -181,7 +185,9 @@ fn declarations(
             definitions.push(root);
             continue;
         }
-        if row.definition.kind == s::DefinitionKind::Module {
+        if row.definition.kind == s::DefinitionKind::Module
+            && rows.descriptor().profile() != s::Profile::Source2024ModuleContracts
+        {
             return Err(error(
                 "nested source modules require a wider source namespace profile",
             ));
@@ -211,7 +217,12 @@ fn declarations(
         });
         definitions.push(definition);
     }
-    let owners = scope_rows::owners(resolver, scope, root_index, &rows, work)?;
+    let owners = if rows.descriptor().profile() == s::Profile::Source2024ModuleContracts {
+        rows.module_contracts().map_err(error)?;
+        scope_rows::namespace_owners(resolver, scope, root_index, &rows, work)?
+    } else {
+        scope_rows::owners(resolver, scope, root_index, &rows, work)?
+    };
     Ok((definitions, owners))
 }
 pub(super) fn kind(kind: s::DefinitionKind) -> (DefKind, Namespace) {
