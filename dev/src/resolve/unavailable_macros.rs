@@ -80,7 +80,7 @@ impl Resolver<'_> {
             }
             if summary.builtin.is_some_and(|role| {
                 role != crate::expand::builtin::Builtin::CfgSelect
-                    && role.kind() != crate::expand::builtin::BuiltinKind::Attribute
+                    && role.kind() == crate::expand::builtin::BuiltinKind::Bang
             }) {
                 return Err(self.error(
                     context,

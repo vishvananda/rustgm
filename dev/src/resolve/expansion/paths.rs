@@ -126,7 +126,7 @@ impl Paths {
         });
         let mut macro_targets = HashMap::default();
         let bootstrap = !package.uses_source_bindings();
-        for builtin in Builtin::ALL
+        for builtin in Builtin::BOOTSTRAP
             .into_iter()
             .filter(|builtin| bootstrap && *builtin != Builtin::OptionEnv && !builtin.source_only())
         {
@@ -230,15 +230,18 @@ impl Paths {
                     "scoped declaration has no actual item identity",
                 )
             })?;
-        let target = if mode.header.as_ref().is_some_and(|header| {
-            header
-                .declaration()
-                .builtin
-                .is_some_and(|role| role.kind() == crate::expand::builtin::BuiltinKind::Attribute)
-        }) {
-            MacroTarget::SourceAttribute(index)
-        } else {
-            MacroTarget::Declarative(index)
+        let role = mode
+            .header
+            .as_ref()
+            .and_then(|header| header.declaration().builtin);
+        let target = match role.map(Builtin::kind) {
+            Some(crate::expand::builtin::BuiltinKind::Attribute) => {
+                MacroTarget::SourceAttribute(index)
+            }
+            Some(crate::expand::builtin::BuiltinKind::Derive) => MacroTarget::SourceDerive(index),
+            Some(crate::expand::builtin::BuiltinKind::Bang) | None => {
+                MacroTarget::Declarative(index)
+            }
         };
         self.macro_targets.insert(id, target);
         self.macros.resize(index + 1, None);
