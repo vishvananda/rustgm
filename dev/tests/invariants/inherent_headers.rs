@@ -95,7 +95,8 @@ fn structural_pending_names_preserve_mutability_and_empty_permission() {
     assert!(pending.permitted(DefId(1), true));
     pending.insert(DefId(1), NameId(7), DefId(10), true);
     pending.insert(DefId(2), NameId(7), DefId(11), false);
-    assert!(pending.permitted(DefId(1), false));
+    assert!(!pending.permitted(DefId(1), false));
+    assert!(pending.permitted(DefId(1), true));
     assert!(!pending.permitted(DefId(2), true));
     assert_eq!(
         pending.head_dependencies(Head::Pointer(false), NameId(7)),

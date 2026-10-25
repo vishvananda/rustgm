@@ -15,10 +15,15 @@ use crate::{
 };
 
 #[derive(Clone, Copy)]
+pub enum PrefixKind {
+    Nominal(ItemId),
+    Annotation,
+}
+
+#[derive(Clone, Copy)]
 pub struct Qualified {
     pub prefix: NodeKey,
-    pub annotation: bool,
-    pub nominal: ItemId,
+    pub kind: PrefixKind,
     pub implementation: DefId,
 }
 

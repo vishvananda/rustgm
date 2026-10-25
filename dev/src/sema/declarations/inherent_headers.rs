@@ -34,17 +34,16 @@ impl Pending {
         }
     }
 
-    pub(super) fn permitted(&self, owner: DefId, empty_request: bool) -> bool {
-        self.owners.get(&owner).is_some_and(|members| {
-            if members.declarations.is_empty() {
-                empty_request
-            } else {
-                members.all_marked
-            }
-        })
+    pub(super) fn permitted(&self, owner: DefId, requested_internal: bool) -> bool {
+        requested_internal
+            && self
+                .owners
+                .get(&owner)
+                .is_some_and(|members| members.all_marked)
     }
 
-    pub(super) fn contains(&self, nominal: ItemId, name: NameId) -> bool {
+    #[cfg(test)]
+    fn contains(&self, nominal: ItemId, name: NameId) -> bool {
         self.contains_head(Head::Nominal(nominal), name)
     }
 
