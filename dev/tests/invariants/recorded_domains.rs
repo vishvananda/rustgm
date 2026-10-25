@@ -359,7 +359,7 @@ fn growth() -> Result {
         size_of::<super::super::Prepared>(),
         size_of::<super::super::State>(),
         size_of::<Session>(),
-        size_of::<Option<Box<RecordedDomain>>>()
+        size_of::<Option<Arc<RecordedDomain>>>()
     );
     depth_growth()?;
     unrelated_growth()?;
@@ -481,4 +481,38 @@ fn warm(
         counters
     );
     Ok((session, work.steps - before))
+}
+
+// Adversarial reset leaves the old allocation paid while a body memo Weak lives.
+pub(in super::super) fn remove_selected_record(
+    session: &mut Session,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+) -> Result {
+    work.charge(1)?;
+    let table = session
+        .recipes
+        .as_mut()
+        .and_then(|state| state.callables.as_mut())
+        .ok_or("actual prepared table")?;
+    let row = table
+        .ready
+        .iter()
+        .flatten()
+        .find(|ready| ready.header.declaration == owner)
+        .ok_or("actual recorded owner")?
+        .pair
+        .function_row;
+    let record = table
+        .recordings
+        .as_mut()
+        .ok_or("actual recorded owner")?
+        .entries[row as usize]
+        .take()
+        .ok_or("actual selected recording")?;
+    assert!(Arc::weak_count(&record) > 0);
+    let retained = work.retained;
+    drop(record);
+    assert_eq!(work.retained, retained);
+    Ok(())
 }
