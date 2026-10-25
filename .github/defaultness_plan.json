@@ -1,0 +1,106 @@
+{
+  "baseline": "0817a3c38e9691cad3dbbf2620b2cfd20415445f",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name",
+    "defaultness_probe"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": [
+    {
+      "name": "literal-specialization-allowance",
+      "source": "obj/parallel/pa31/defaultness-v1/followup-sources/literal-specialization-allowance.rs",
+      "sha256": "15f667f28ba9e30b96253090cbdeee33d9c6f2f4f300658633801b47a564f504",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "new frozen hypothesis; root-only pre-expansion lint context is a hypothesis, not authority"
+    },
+    {
+      "name": "forwarded-specialization-allowance",
+      "source": "obj/parallel/pa31/defaultness-v1/followup-sources/forwarded-specialization-allowance.rs",
+      "sha256": "2452d40fcf01e76b6979bfdcd672392c839c8e834a2f1589985a1789f5cfa195",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "new frozen hypothesis; root-only pre-expansion lint context is a hypothesis, not authority"
+    },
+    {
+      "name": "ancestor-specialization-allowance",
+      "source": "obj/parallel/pa31/defaultness-v1/followup-sources/ancestor-specialization-allowance.rs",
+      "sha256": "5e94e363da8a10028359121e00fdd3543acc17d4d34a877c59d08a87ea93753a",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "new frozen hypothesis; root-only pre-expansion lint context is a hypothesis, not authority"
+    },
+    {
+      "name": "inactive-root-allow",
+      "source": "obj/parallel/pa31/defaultness-v1/followup-sources/inactive-root-allow.rs",
+      "sha256": "c7c9efba6c229ae44a9c1301f6ab9579237b82f8e6d2988fa5219fbb063c65bd",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "new frozen hypothesis; root-only pre-expansion lint context is a hypothesis, not authority"
+    },
+    {
+      "name": "inactive-root-warn",
+      "source": "obj/parallel/pa31/defaultness-v1/followup-sources/inactive-root-warn.rs",
+      "sha256": "4dab93fea4fdfda8e0cf8462792550aa3e46983908624dbdfd9ec54244b69fd6",
+      "expected_status": 0,
+      "expected_warning_codes": [
+        "unstable_syntax_pre_expansion",
+        null
+      ],
+      "state": "new frozen hypothesis; root-only pre-expansion lint context is a hypothesis, not authority"
+    },
+    {
+      "name": "inactive-root-deny",
+      "source": "obj/parallel/pa31/defaultness-v1/followup-sources/inactive-root-deny.rs",
+      "sha256": "6014f54828c6c94314ed5ffbc5a9661f91ee5f612cf46908882874900913bc58",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "new frozen hypothesis; root-only pre-expansion lint context is a hypothesis, not authority"
+    },
+    {
+      "name": "inactive-root-forbid",
+      "source": "obj/parallel/pa31/defaultness-v1/followup-sources/inactive-root-forbid.rs",
+      "sha256": "8b5ad0a9a65557665db7af0ed2d73d90d191e31c76b9ec139bd27696ff695e51",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "new frozen hypothesis; root-only pre-expansion lint context is a hypothesis, not authority"
+    },
+    {
+      "name": "inactive-root-deny-local-allow",
+      "source": "obj/parallel/pa31/defaultness-v1/followup-sources/inactive-root-deny-local-allow.rs",
+      "sha256": "32667f56591545e0c8d773ca7229aad46fdadb4d8a6159bb46223d6099e64f86",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "new frozen hypothesis; root-only pre-expansion lint context is a hypothesis, not authority"
+    },
+    {
+      "name": "inactive-root-allow-local-warn",
+      "source": "obj/parallel/pa31/defaultness-v1/followup-sources/inactive-root-allow-local-warn.rs",
+      "sha256": "9dff1460241ad4ad7ece897df41ec6f15184f88bcc30429b894115eb963d7856",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "new frozen hypothesis; root-only pre-expansion lint context is a hypothesis, not authority"
+    },
+    {
+      "name": "inactive-root-forbid-local-allow",
+      "source": "obj/parallel/pa31/defaultness-v1/followup-sources/inactive-root-forbid-local-allow.rs",
+      "sha256": "6fc8818c3ba367881b7fccaf2291783a2c2286851d39e5f4a3efd12b9c137360",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "new frozen hypothesis; root-only pre-expansion lint context is a hypothesis, not authority"
+    }
+  ],
+  "native_not_executed": {},
+  "scope": "20 new followup metadata observations; no48repeat; preserve all root/local lint and token allowance disagreements"
+}
