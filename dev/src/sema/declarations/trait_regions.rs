@@ -234,7 +234,7 @@ impl Checker<'_> {
         Ok(constraints)
     }
 
-    fn trait_region_count(&self, owner: DefId) -> u32 {
+    pub(in crate::sema::declarations) fn trait_region_count(&self, owner: DefId) -> u32 {
         self.facts
             .lifetimes
             .functions

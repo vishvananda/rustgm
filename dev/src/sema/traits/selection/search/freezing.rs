@@ -89,6 +89,7 @@ impl Search<'_> {
             if matches!(
                 self.query.availability,
                 crate::sema::traits::implementations::Availability::Validated
+                    | crate::sema::traits::implementations::Availability::Executable
             ) && facts
                 .generics
                 .implementations

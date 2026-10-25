@@ -1,0 +1,206 @@
+{
+  "issue": "LIB-004",
+  "declared_before_oracle_and_candidate_execution": true,
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "rustc_commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_flags": [
+    "--edition=2024",
+    "--target=x86_64-unknown-linux-gnu",
+    "--crate-type=lib",
+    "-C",
+    "panic=abort"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "candidate_source_profile": "SourceCore provider/current minicore@source_traits_v1 for all except ordinary-no-source-policy, complete analyze/lowering; ordinary control has no provider policy",
+  "original_unchanged": {
+    "source": "pa31/tests/spec/const-eval-select-ctfe/reference-anonymous-selector.rs",
+    "sha256": "ed3c2609e8941711e25eeb6d0949f418ce5f11de48758653d88b4dbfa42d57b0",
+    "contract": "pa31/tests/spec/const-eval-select-ctfe/contract-anonymous-owner.json",
+    "rustc_metadata_hypothesis": 0,
+    "rustc_object_hypothesis": 0,
+    "native_stdout_hypothesis": "7 1\n",
+    "client": "pa31/tests/spec/const-eval-select-ctfe/reference-anonymous-selector.c"
+  },
+  "cases": [
+    {
+      "name": "reference-array",
+      "source": "pa31/tests/spec/early-copy-readiness/reference-array.rs",
+      "sha256": "4e83c63a593585b50a7392d50120dfe16701d0282e8971607813b0d5b8619874",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "reversed-implementations",
+      "source": "pa31/tests/spec/early-copy-readiness/reversed-implementations.rs",
+      "sha256": "861ed053e9f1376c77013b20c2bd7afe90a72020d4b3a49f3d47d62b9b87ac09",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "runtime-read",
+      "source": "pa31/tests/spec/early-copy-readiness/runtime-read.rs",
+      "sha256": "c19a0280a921d9720f2ba6f35a5c68b3bb1daedf306bb651747e290d08c3310a",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "unused-clone-loop",
+      "source": "pa31/tests/spec/early-copy-readiness/unused-clone-loop.rs",
+      "sha256": "1a9693df9002bbba7e9d03c9e222a1d8e3de78d7c505c0800f880cca8ec25053",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "missing-clone",
+      "source": "pa31/tests/spec/early-copy-readiness/missing-clone.rs",
+      "sha256": "98ecc786a611dbc93957e1798bfa2185a28fd5a62fc262b9c4d49cea53a8a5c7",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 1,
+      "rustc_object_hypothesis": 1
+    },
+    {
+      "name": "wrong-clone-signature",
+      "source": "pa31/tests/spec/early-copy-readiness/wrong-clone-signature.rs",
+      "sha256": "2cbcdefe02c08e2833e49a5dc80901dad6c5f6ec5d709fad053f215ad46d0e33",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 1,
+      "rustc_object_hypothesis": 1
+    },
+    {
+      "name": "unused-invalid-clone-body",
+      "source": "pa31/tests/spec/early-copy-readiness/unused-invalid-clone-body.rs",
+      "sha256": "34a325a93ce9e4fee29bbb94ffc34a1cd5477803db92b7b793afcd699c56b157",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 1,
+      "rustc_object_hypothesis": 1
+    },
+    {
+      "name": "duplicate-copy",
+      "source": "pa31/tests/spec/early-copy-readiness/duplicate-copy.rs",
+      "sha256": "f1a83b4392c576f4100b07d386391ce63db507d1ff49ae394ef4387e64960778",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 1,
+      "rustc_object_hypothesis": 1
+    },
+    {
+      "name": "value-signature-cycle",
+      "source": "pa31/tests/spec/early-copy-readiness/value-signature-cycle.rs",
+      "sha256": "4fb8637c322ee762d91083122976c31e04037f96298443c916614836515c95bf",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 1,
+      "rustc_object_hypothesis": 1
+    },
+    {
+      "name": "generic-clone-prerequisite",
+      "source": "pa31/tests/spec/early-copy-readiness/generic-clone-prerequisite.rs",
+      "sha256": "782506ea1093ee73120bcd92aa59a6b06595b07a4355d339aa832312b72622b1",
+      "profile": "Rust-positive; explicit unsupported generic early validation prerequisite retained",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "repeated-8-noise-0",
+      "source": "pa31/tests/spec/early-copy-readiness/repeated-8-noise-0.rs",
+      "sha256": "ed942753025c484651bbed0d6ed82b4e0054b88be818871bc3f6d05523295b18",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "repeated-32-noise-0",
+      "source": "pa31/tests/spec/early-copy-readiness/repeated-32-noise-0.rs",
+      "sha256": "359a263629bc62caf50b4e2b5628cc68b383cc6441464de2f3051c93ff45c734",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "repeated-128-noise-0",
+      "source": "pa31/tests/spec/early-copy-readiness/repeated-128-noise-0.rs",
+      "sha256": "b45b22f949a54c2d37bc8a8a9a998c4e83b2f1b44c1112acc17ef97bce09d49c",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "repeated-8-noise-128",
+      "source": "pa31/tests/spec/early-copy-readiness/repeated-8-noise-128.rs",
+      "sha256": "b372c0c9b03d3cbe1b32e28db735782121cbf06740771cb9af8782d9de152e79",
+      "profile": "closed scalar early source conformance",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "ordinary-no-source-policy",
+      "source": "pa31/tests/spec/early-copy-readiness/ordinary-no-source-policy.rs",
+      "sha256": "5465546ffbfec41f2158a9d5820a7ad6b866bcb2c5d9fc0b7acc78dee3889227",
+      "profile": "ordinary non-provider; no early source carrier/allocation",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    }
+  ],
+  "candidate_boundaries": [
+    "No source-header promotion or imported early conformance.",
+    "Generic prerequisite remains explicit unsupported in this bounded early phase; language-positive status is retained.",
+    "Unused invalid Clone body must reject despite early conformance completion.",
+    "Actual signature/value dependency cycle must reject with bounded work.",
+    "Existing raw Validated visibility unchanged; Executable pending state is not absent."
+  ]
+}

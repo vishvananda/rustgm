@@ -30,6 +30,49 @@ impl Members {
         result
     }
 
+    pub(super) fn prepare_source_owner(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        owner: DefId,
+    ) -> Result<(), &'static str> {
+        if self.owners.contains_key(&owner) {
+            return Ok(());
+        }
+        let id = facts
+            .associated
+            .owner(owner)
+            .ok_or("source method owner is missing")?;
+        let actual = facts
+            .associated
+            .get(id)
+            .ok_or("source method owner disappeared")?;
+        if actual.self_definition != owner
+            || !matches!(
+                actual.kind,
+                crate::sema::associated::OwnerKind::Impl { .. }
+                    | crate::sema::associated::OwnerKind::Trait { .. }
+            )
+        {
+            return Err("early method inventory requires an actual source owner");
+        }
+        let members = facts
+            .associated
+            .owner_members(id)
+            .ok_or("source method membership is missing")?;
+        let mut functions = Vec::new();
+        for &member in members {
+            if facts.associated.owner(member) != Some(id) {
+                return Err("source method membership belongs to another owner");
+            }
+            if report.resolution.definitions[member.0 as usize].kind == DefKind::Function {
+                functions.push(member);
+            }
+        }
+        self.owners.insert(owner, functions);
+        Ok(())
+    }
+
     fn function(&self, facts: &Declarations, definition: DefId) -> Result<Function, &'static str> {
         let function = if let Some(&index) = facts.function_indices.get(&definition) {
             facts.functions.get(index)

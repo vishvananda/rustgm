@@ -70,13 +70,27 @@ fn pending_marker_aliases_resume_the_correct_nominal_rule() -> Result<(), Box<dy
             Progress::Pending(Dependency::Header(owner))
         );
         let steps = search.query.steps;
+        let stable = (
+            search.query.nodes.len(),
+            search.query.active.len(),
+            facts.types.len(),
+        );
         assert_eq!(
             search.poll(&mut facts)?,
             Progress::Pending(Dependency::Header(owner))
         );
         assert_eq!(
-            search.query.steps, steps,
-            "waiting must not repeat field or header work"
+            search.query.steps,
+            steps + 1,
+            "one actual readiness lookup, without replayed field or header work"
+        );
+        assert_eq!(
+            stable,
+            (
+                search.query.nodes.len(),
+                search.query.active.len(),
+                facts.types.len()
+            )
         );
         let registry = facts
             .generics
@@ -135,11 +149,24 @@ fn hidden_marker_queries_wait_without_replaying_and_keep_private_traits_private(
             Progress::Pending(Dependency::Opaque(id))
         );
         let steps = search.query.steps;
+        let stable = (
+            search.query.nodes.len(),
+            search.query.active.len(),
+            facts.types.len(),
+        );
         assert_eq!(
             search.poll(&mut facts)?,
             Progress::Pending(Dependency::Opaque(id))
         );
-        assert_eq!(steps, search.query.steps);
+        assert_eq!(steps + 1, search.query.steps);
+        assert_eq!(
+            stable,
+            (
+                search.query.nodes.len(),
+                search.query.active.len(),
+                facts.types.len()
+            )
+        );
         facts = crate::sema::bodies::analyze(&report, facts)?;
         let Progress::Ready(result) = search.poll(&mut facts)? else {
             return Err("completed defining body did not release auto query".into());

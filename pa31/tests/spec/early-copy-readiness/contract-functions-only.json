@@ -1,0 +1,43 @@
+{
+  "issue": "LIB-004",
+  "declared_before_probes": true,
+  "scope": "Functions-only early eligibility rejects genuine associated types/constants; generic runtime-only baseline still uses final conformance. Original17 sources remain unchanged.",
+  "cases": [
+    {
+      "name": "associated-type-profile",
+      "source": "pa31/tests/spec/early-copy-readiness/associated-type-profile.rs",
+      "sha256": "ae1ba0e4c513e339e0f174d421b4a0ee46318fd602f7e566a299d4a969fd17f8",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "associated-constant-profile",
+      "source": "pa31/tests/spec/early-copy-readiness/associated-constant-profile.rs",
+      "sha256": "6b96d91274b273119560671da211e2a205c7b8994d2f3c6d585f4edfd31872b2",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    },
+    {
+      "name": "generic-runtime-read",
+      "source": "pa31/tests/spec/early-copy-readiness/generic-runtime-read.rs",
+      "sha256": "b8db28f40f07327f1817616ea0024afbcbf6909e982fbf45b1e062f565c6c2d0",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    }
+  ]
+}

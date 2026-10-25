@@ -19,8 +19,8 @@ use std::ops::Range;
 pub(in crate::sema) struct Queries {
     /// Every entry's pending lifetime evidence is retained by the caller's proof.
     /// Caller environment and outer substitution are immutable for its lifetime.
-    completed: HashSet<(QuantifiedId, bool, bool)>,
-    universes: HashMap<(u32, bool, bool), Universe>,
+    completed: HashSet<(QuantifiedId, bool, Availability)>,
+    universes: HashMap<(u32, bool, Availability), Universe>,
 }
 
 impl State {
@@ -97,7 +97,7 @@ impl Queries {
         total
             .account_work(1)
             .map_err(|_| "quantified premise work exhausted")?;
-        let key = (id, closed, matches!(availability, Availability::Validated));
+        let key = (id, closed, availability);
         if self.completed.contains(&key) {
             return Ok(true);
         }
@@ -163,7 +163,7 @@ impl Queries {
         &mut self,
         facts: &mut Declarations,
         context: &mut Context,
-        key: (u32, bool, bool),
+        key: (u32, bool, Availability),
         value: Quantified,
         first: u32,
     ) -> Result<Prepared, &'static str> {
@@ -206,7 +206,7 @@ impl Queries {
     fn commit(
         &mut self,
         proof: &mut Obligations,
-        key: (u32, bool, bool),
+        key: (u32, bool, Availability),
         destination: Destination,
     ) -> Result<ScopeId, &'static str> {
         let (regions, opening) = match destination {

@@ -14,8 +14,10 @@ pub(in crate::sema) enum Polarity {
 #[derive(Clone, Copy)]
 pub(super) enum Status {
     PositiveHeader,
+    PositiveEarlyUnavailable,
     PositiveValidated,
     NegativeHeader,
+    NegativeEarlyUnavailable,
     NegativeValidated,
 }
 impl Status {
@@ -23,7 +25,16 @@ impl Status {
         matches!(self, Self::PositiveValidated | Self::NegativeValidated)
     }
     pub(super) fn negative(self) -> bool {
-        matches!(self, Self::NegativeHeader | Self::NegativeValidated)
+        matches!(
+            self,
+            Self::NegativeHeader | Self::NegativeEarlyUnavailable | Self::NegativeValidated
+        )
+    }
+    pub(super) fn early_unavailable(self) -> bool {
+        matches!(
+            self,
+            Self::PositiveEarlyUnavailable | Self::NegativeEarlyUnavailable
+        )
     }
     pub(super) fn complete(self) -> Self {
         if self.negative() {
@@ -34,6 +45,63 @@ impl Status {
     }
 }
 impl Implementations {
+    /// This records the source scheduler's profile result, never conformance.
+    /// Normal completion remains the only route to validated availability.
+    pub(in crate::sema) fn mark_early_unavailable(
+        &mut self,
+        store: &Store,
+        arena: &crate::types::arena::Identity,
+        owner: DefId,
+        source: crate::resolve::unit::NodeKey,
+        predicate: crate::types::parameters::predicates::Predicate,
+    ) -> Result<(), &'static str> {
+        if !store.has_identity(arena)
+            || self
+                .profile_arena
+                .as_ref()
+                .is_some_and(|actual| !store.has_identity(actual))
+        {
+            return Err("early implementation profile belongs to another actual arena");
+        }
+        let entry = self
+            .owners
+            .get(&owner)
+            .and_then(|&i| self.entries.get_mut(i))
+            .ok_or("early implementation profile lost its actual header")?;
+        if entry.value.owner != owner
+            || entry.value.source != source
+            || entry.value.predicate != predicate
+            || entry.status.validated()
+        {
+            return Err("early implementation profile changed its source, predicate or validation");
+        }
+        entry.status = if entry.status.negative() {
+            Status::NegativeEarlyUnavailable
+        } else {
+            Status::PositiveEarlyUnavailable
+        };
+        self.profile_arena.get_or_insert_with(|| arena.clone());
+        Ok(())
+    }
+    pub(in crate::sema) fn early_unavailable(
+        &self,
+        store: &Store,
+        owner: DefId,
+    ) -> Result<bool, &'static str> {
+        let marked = self
+            .owners
+            .get(&owner)
+            .is_some_and(|&i| self.entries[i].status.early_unavailable());
+        if marked
+            && self
+                .profile_arena
+                .as_ref()
+                .is_none_or(|arena| !store.has_identity(arena))
+        {
+            return Err("early implementation profile belongs to another actual arena");
+        }
+        Ok(marked)
+    }
     /// Source publication must carry the actual retained impl owner. The other
     /// publication entry is reserved for explicitly registered positive factories.
     pub(in crate::sema) fn prepare_source(

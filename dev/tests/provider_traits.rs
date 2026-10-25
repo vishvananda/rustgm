@@ -43,6 +43,8 @@ mod panic_routing;
 mod provided_methods;
 #[path = "provider_traits/signature_views.rs"]
 mod signature_views;
+#[path = "provider_traits/validated_reads.rs"]
+mod validated_reads;
 pub(super) type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 pub(super) fn fixture(name: &str) -> std::io::Result<String> {
     std::fs::read_to_string(

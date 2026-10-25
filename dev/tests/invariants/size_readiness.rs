@@ -52,14 +52,14 @@ fn size_waits_retain_search_and_resume_with_the_completed_field_condition() -> R
             Progress::Pending(Dependency::Fields(item))
         );
         let before = (search.query.steps, steps(&search), facts.types.len());
-        for _ in 0..8 {
+        for poll in 1..=8 {
             assert_eq!(
                 search.poll(&mut facts)?,
                 Progress::Pending(Dependency::Fields(item))
             );
             assert_eq!(
                 (search.query.steps, steps(&search), facts.types.len()),
-                before
+                (before.0 + poll, before.1, before.2)
             );
         }
         define(&mut facts, item, tail)?;

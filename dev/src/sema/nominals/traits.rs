@@ -96,7 +96,7 @@ impl State {
         first: u32,
     ) -> Result<Self, &'static str> {
         let mut state = Self::scoped(facts, environment, Some((universals, first)), Opening::Body)?;
-        state.availability = Availability::Validated;
+        state.availability = Availability::Executable;
         Ok(state)
     }
 
@@ -137,7 +137,7 @@ impl State {
             Some(format!(
                 "copy-owner original={original:?} folded={predicate:?} environment={:?} validated={} frontier={} regions={:?} steps={} clauses={clauses:?}",
                 self.environment.as_ref().map(Arc::as_ptr),
-                self.availability == Availability::Validated,
+                self.availability != Availability::Declarations,
                 caller.first_region,
                 self.obligations.regions,
                 self.context.steps
@@ -148,7 +148,7 @@ impl State {
             &mut self.context,
             predicate,
             caller,
-            Availability::Validated,
+            self.availability,
             false,
             None,
         )?;
@@ -472,6 +472,35 @@ fn select_requirement(
                 selection::select_declaration(facts, context, &goal, caller)
             }
             (false, Availability::Validated) => selection::select(facts, context, &goal, caller),
+            (false, Availability::Executable) => {
+                return selection::select_available_checked(
+                    facts,
+                    context,
+                    &goal,
+                    caller,
+                    availability,
+                )
+                .map_err(|failure| match failure {
+                    selection::Failure::Pending(
+                        selection::Dependency::ImplementationValidated(owner),
+                    ) => match facts
+                        .generics
+                        .implementations
+                        .as_ref()
+                        .map_or(Ok(false), |r| r.early_unavailable(&facts.types, owner))
+                    {
+                        Ok(true) => "implementation validation is outside the early scalar profile",
+                        Ok(false) => "canonical trait selection requires pending declarations",
+                        Err(error) => error,
+                    },
+                    selection::Failure::Pending(_) => {
+                        "canonical trait selection requires pending declarations"
+                    }
+                    selection::Failure::Invalid(_) => {
+                        "invalid or exhausted canonical trait selection"
+                    }
+                });
+            }
         }
     };
     selected.map_err(|_| "invalid or exhausted canonical trait selection")

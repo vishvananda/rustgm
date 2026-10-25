@@ -2,8 +2,10 @@
 mod associated_types;
 mod implementations;
 mod override_identity;
-pub(super) use implementations::Readiness as ConstantReadiness;
 pub(super) use implementations::impl_contract_obligations;
+pub(super) use implementations::{
+    EarlyImplementations, ImplementationPhase, Readiness as ConstantReadiness,
+};
 mod promises;
 use super::{Checker, Error, ItemId, Kind, NodeKey, Type, regions};
 use crate::{

@@ -12,6 +12,18 @@ use crate::{
     },
 };
 
+pub(super) enum Conformance<'a> {
+    Complete {
+        methods: &'a Members,
+        types: &'a super::super::associated_types::Members,
+        constants: &'a mut super::constants::Members,
+    },
+    FunctionsOnly {
+        methods: &'a Members,
+        plan: &'a super::eligibility_profile::Plan,
+    },
+}
+
 impl Checker<'_> {
     pub(in crate::sema::declarations) fn validate_trait_implementations(
         &mut self,
@@ -25,81 +37,43 @@ impl Checker<'_> {
             .map(|header| (header.owner, header.source, header.predicate))
             .collect::<Vec<_>>();
         let mut steps = 0_usize;
-        for (a, owner_a, b, owner_b) in pairs {
-            let key = self
-                .facts
-                .generics
-                .implementations
-                .as_ref()
-                .and_then(|r| r.header(owner_b))
-                .ok_or_else(|| {
-                    Error::at(
-                        crate::resolve::unit::FileId(0),
-                        0,
-                        "missing trait impl owner",
-                    )
-                })?
-                .source;
-            let (possible, work) = overlap::possible(&mut self.facts, (a, owner_a), (b, owner_b))
-                .map_err(|e| self.error(key, e))?;
-            steps = steps.saturating_add(work);
-            let possible = if possible {
-                let (possible, work) =
-                    overlap::iteration(&mut self.facts, (a, owner_a), (b, owner_b))
-                        .map_err(|e| self.error(key, e))?;
-                steps = steps.saturating_add(work);
-                possible
-            } else {
-                false
-            };
-            if steps > 1_000_000 {
-                return Err(self.error(key, "trait implementation overlap work budget exceeded"));
-            }
-            if possible {
-                return Err(self.error(
-                    key,
-                    "overlapping trait implementation headers require coherence proof",
-                ));
+        if let Some(mut pending) = self.early_implementations.take() {
+            pending
+                .charge(&mut self.facts, pairs.len())
+                .map_err(Error::unlocated)?;
+            pending.pairs.append(pairs);
+            let result = self.check_implementation_pairs(None, &mut pending);
+            steps = pending.overlap_steps;
+            self.early_implementations = Some(pending);
+            result?;
+        } else {
+            for (a, owner_a, b, owner_b) in pairs {
+                let key = self
+                    .facts
+                    .generics
+                    .implementations
+                    .as_ref()
+                    .and_then(|r| r.header(owner_b))
+                    .map(|h| h.source)
+                    .ok_or_else(|| Error::unlocated("missing trait impl owner"))?;
+                self.validate_impl_pair(key, (a, owner_a), (b, owner_b), &mut steps)?;
             }
         }
         let members = Members::new(self.report, &self.facts);
         let types = super::super::associated_types::Members::new(self.report, &self.facts);
         let mut constants = self.constant_members.take_members(self.report, &self.facts);
         for (owner, source, predicate) in headers {
-            if self.validate_iteration_blanket(owner)?
-                || self.validate_collection_impl(owner)?
-                || self.validate_range_impl(owner)?
-                || self.validate_iterator_clone(owner)?
-            {
-                continue;
-            }
-            self.validate_reference_coherence(owner, source, predicate, &mut steps)?;
-            let negative = self.negative_impl_contract(owner, source, predicate)?;
-            if negative || matches!(predicate.bound, Bound::Auto(_)) {
-                self.facts
-                    .generics
-                    .implementations
-                    .as_mut()
-                    .ok_or_else(|| Error::at(source.file, 0, "missing auto impl registry"))?
-                    .complete(owner, Vec::new(), Vec::new(), Vec::new())
-                    .map_err(|e| self.error(source, e))?;
-                continue;
-            }
-            let types = self.trait_impl_types(owner, source, predicate, &types)?;
-            let definitions =
-                crate::sema::traits::conformance::Definitions::new(&self.facts, predicate, &types)
-                    .map_err(|e| self.error(source, e))?;
-            let methods =
-                self.trait_impl_methods(owner, source, predicate, &members, &definitions)?;
-            let constants =
-                self.trait_impl_constants(owner, source, predicate, &mut constants, &definitions)?;
-            self.facts
-                .generics
-                .implementations
-                .as_mut()
-                .ok_or_else(|| Error::at(source.file, 0, "missing trait impl registry"))?
-                .complete(owner, methods, types, constants)
-                .map_err(|e| self.error(source, e))?;
+            self.validate_impl_owner(
+                owner,
+                source,
+                predicate,
+                Conformance::Complete {
+                    methods: &members,
+                    types: &types,
+                    constants: &mut constants,
+                },
+                &mut steps,
+            )?;
         }
         self.finish_constant_contracts()?;
         self.finish_iteration_contracts()?;
@@ -116,6 +90,112 @@ impl Checker<'_> {
             })?
             .finish_validation()
             .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))
+    }
+
+    pub(super) fn validate_impl_owner(
+        &mut self,
+        owner: DefId,
+        source: NodeKey,
+        predicate: Predicate,
+        inputs: Conformance<'_>,
+        steps: &mut usize,
+    ) -> Result<(), Error> {
+        if self.validate_iteration_blanket(owner)?
+            || self.validate_collection_impl(owner)?
+            || self.validate_range_impl(owner)?
+            || self.validate_iterator_clone(owner)?
+        {
+            return Ok(());
+        }
+        if self
+            .facts
+            .generics
+            .implementations
+            .as_ref()
+            .is_some_and(|r| r.is_validated(owner))
+        {
+            return Ok(());
+        }
+        self.validate_reference_coherence(owner, source, predicate, steps)?;
+        let negative = self.negative_impl_contract(owner, source, predicate)?;
+        if negative || matches!(predicate.bound, Bound::Auto(_)) {
+            self.facts
+                .generics
+                .implementations
+                .as_mut()
+                .ok_or_else(|| Error::at(source.file, 0, "missing auto impl registry"))?
+                .complete(owner, Vec::new(), Vec::new(), Vec::new())
+                .map_err(|e| self.error(source, e))?;
+            return Ok(());
+        }
+        let (members, types, constants) = match inputs {
+            Conformance::Complete {
+                methods,
+                types,
+                constants,
+            } => {
+                let types = self.trait_impl_types(owner, source, predicate, types)?;
+                let definitions = crate::sema::traits::conformance::Definitions::new(
+                    &self.facts,
+                    predicate,
+                    &types,
+                )
+                .map_err(|e| self.error(source, e))?;
+                let methods =
+                    self.trait_impl_methods(owner, source, predicate, methods, &definitions)?;
+                let constants =
+                    self.trait_impl_constants(owner, source, predicate, constants, &definitions)?;
+                (methods, types, constants)
+            }
+            Conformance::FunctionsOnly { methods, plan } => {
+                plan.require_no_associated(&self.facts, owner)
+                    .map_err(|e| self.error(source, e))?;
+                let definitions =
+                    crate::sema::traits::conformance::Definitions::new(&self.facts, predicate, &[])
+                        .map_err(|e| self.error(source, e))?;
+                let methods =
+                    self.trait_impl_methods(owner, source, predicate, methods, &definitions)?;
+                (methods, Vec::new(), Vec::new())
+            }
+        };
+        self.facts
+            .generics
+            .implementations
+            .as_mut()
+            .ok_or_else(|| Error::at(source.file, 0, "missing trait impl registry"))?
+            .complete(owner, members, types, constants)
+            .map_err(|e| self.error(source, e))?;
+        Ok(())
+    }
+
+    pub(super) fn validate_impl_pair(
+        &mut self,
+        key: NodeKey,
+        first: (Predicate, DefId),
+        second: (Predicate, DefId),
+        steps: &mut usize,
+    ) -> Result<(), Error> {
+        let (possible, work) =
+            overlap::possible(&mut self.facts, first, second).map_err(|e| self.error(key, e))?;
+        *steps = steps.saturating_add(work);
+        let possible = if possible {
+            let (possible, work) = overlap::iteration(&mut self.facts, first, second)
+                .map_err(|e| self.error(key, e))?;
+            *steps = steps.saturating_add(work);
+            possible
+        } else {
+            false
+        };
+        if *steps > 1_000_000 {
+            return Err(self.error(key, "trait implementation overlap work budget exceeded"));
+        }
+        if possible {
+            return Err(self.error(
+                key,
+                "overlapping trait implementation headers require coherence proof",
+            ));
+        }
+        Ok(())
     }
 
     fn negative_impl_contract(

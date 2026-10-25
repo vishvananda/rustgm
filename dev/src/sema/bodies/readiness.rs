@@ -17,6 +17,7 @@ pub(in crate::sema) enum Requirement {
     Definition(DefId),
     Constructor(DefId),
     ImplHeader(DefId),
+    ImplementationValidated(DefId),
     Fields(ItemId),
     Opaque(crate::types::opaque::OpaqueId),
 }
@@ -25,6 +26,7 @@ impl From<crate::sema::traits::selection::Dependency> for Requirement {
         use crate::sema::traits::selection::Dependency;
         match dependency {
             Dependency::Header(owner) => Self::ImplHeader(owner),
+            Dependency::ImplementationValidated(owner) => Self::ImplementationValidated(owner),
             Dependency::Fields(item) => Self::Fields(item),
             Dependency::Opaque(id) => Self::Opaque(id),
         }
@@ -179,6 +181,7 @@ impl Checker<'_> {
                 Requirement::Definition(_) => "missing completed associated type definition",
                 Requirement::Constructor(_) => "missing completed constructor type",
                 Requirement::ImplHeader(_) => "missing prepared implementation header",
+                Requirement::ImplementationValidated(_) => "missing validated implementation",
                 Requirement::Fields(_) => "missing nominal field declarations",
                 Requirement::Opaque(_) => "missing completed opaque hidden type",
             };

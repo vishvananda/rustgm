@@ -134,3 +134,10 @@ associated types and constants match after adjustment against the actual trait
 container; duplicate canonical mappings must be rejected. Captured names and
 unrelated opaque declarations remain distinct. Candidate conformance is separate
 from these independent observations and from complete scoped invocation support.
+
+`spec/early-copy-readiness/` declares LIB-004's unchanged early selector source,
+fifteen additive source cases and native observers. Its contract distinguishes
+pending implementation validation from absent Copy, and retains valid generic
+prerequisites outside the bounded early scalar profile. See the
+[readiness review](../../docs/pa31-early-copy-readiness.md). Independent outcomes
+are separate from the pending compiler qualification; PA31 remains planned.

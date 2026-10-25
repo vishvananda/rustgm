@@ -24,6 +24,7 @@ impl Dependencies {
         match availability {
             Availability::Declarations => self.declaration_proofs.get(&predicate),
             Availability::Validated => self.validated_proofs.get(&predicate),
+            Availability::Executable => None,
         }
         .copied()
     }
@@ -36,6 +37,7 @@ impl Dependencies {
         match availability {
             Availability::Declarations => &mut self.declaration_proofs,
             Availability::Validated => &mut self.validated_proofs,
+            Availability::Executable => return,
         }
         .insert(predicate, target);
     }
@@ -49,12 +51,14 @@ impl Dependencies {
         match availability {
             Availability::Declarations => self.declarations.contains(&instance),
             Availability::Validated => self.validated.contains(&instance),
+            Availability::Executable => false,
         }
     }
     pub(super) fn insert(&mut self, availability: Availability, instance: Instance) {
         match availability {
             Availability::Declarations => self.declarations.insert(instance),
             Availability::Validated => self.validated.insert(instance),
+            Availability::Executable => return,
         };
     }
 }

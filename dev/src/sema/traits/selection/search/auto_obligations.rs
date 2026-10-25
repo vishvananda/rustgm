@@ -102,7 +102,8 @@ impl Search<'_> {
                         )
                         .map_err(inference)?;
                     match candidates {
-                        crate::sema::traits::implementations::Candidates::Pending(owners) => {
+                        crate::sema::traits::implementations::Candidates::Pending(owners)
+                        | crate::sema::traits::implementations::Candidates::Unvalidated(owners) => {
                             frame.pending_headers = Some(owners.into_iter());
                             return Ok(ControlFlow::Break(self.await_header(facts, frame)?));
                         }

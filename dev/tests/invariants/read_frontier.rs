@@ -1,4 +1,4 @@
-//! Observe the unfinished anonymous reference-read lane before ordinary loans.
+//! Observe actual source Copy completion separately from the anonymous selector frontier.
 use super::*;
 use crate::{
     body::ir::{Action, Place, ProjectionKind, ValueId},
@@ -20,6 +20,7 @@ struct Read {
     goal: Option<Predicate>,
     application: Option<Application>,
     copied: Option<bool>,
+    validated_owner: Option<crate::resolve::model::DefId>,
 }
 struct Capture {
     source: NodeKey,
@@ -117,6 +118,13 @@ pub(super) fn record(facts: &Declarations, body: &Body, prepared: &Prepared) {
                 goal,
                 application,
                 copied: prepared.decisions.get(&value.ty).copied(),
+                validated_owner: goal.and_then(|goal| {
+                    facts
+                        .generics
+                        .implementations()
+                        .find(|header| header.predicate == goal)
+                        .map(|header| header.owner)
+                }),
             });
         }
     });
@@ -174,10 +182,10 @@ fn anonymous_reference_read_frontier_keeps_actual_copy_selection_observable() ->
     assert!(Scope::begin(root).is_err());
     let error = crate::pipeline::analyze_source(&report)
         .err()
-        .ok_or("reference-read frontier changed")?;
+        .ok_or("selected-reference anonymous caller frontier unexpectedly closed")?;
     assert_eq!(
         error.to_string(),
-        "file 0: 2386: cannot move a non-Copy value out of a reference"
+        "file 0: 2386: source const_eval_select execution for this caller owner is not implemented"
     );
     let capture = scope.finish()?;
     assert!(CAPTURE.with(|slot| slot.borrow().is_none()));
@@ -195,7 +203,7 @@ fn anonymous_reference_read_frontier_keeps_actual_copy_selection_observable() ->
     );
     for read in &capture.reads {
         println!(
-            "statement={} Read={:?} source={:?} canonical-type={:?} kind={:?} place={:?} projection={:?} goal={:?} application={:?} selected-copy={:?}",
+            "statement={} Read={:?} source={:?} canonical-type={:?} kind={:?} place={:?} projection={:?} goal={:?} application={:?} selected-copy={:?} validated-owner={:?}",
             read.statement,
             read.id,
             read.source,
@@ -205,7 +213,8 @@ fn anonymous_reference_read_frontier_keeps_actual_copy_selection_observable() ->
             read.projection,
             read.goal,
             read.application,
-            read.copied
+            read.copied,
+            read.validated_owner
         );
     }
     assert!(
@@ -215,6 +224,13 @@ fn anonymous_reference_read_frontier_keeps_actual_copy_selection_observable() ->
             .any(|read| read.source == Some(dereference))
     );
     for read in capture.reads {
+        if read.source == Some(dereference) {
+            assert_eq!(read.copied, Some(true));
+            assert!(
+                read.validated_owner.is_some(),
+                "actual source read lost semantic impl completion"
+            );
+        }
         assert!(
             read.source.is_some()
                 && read.kind.is_some()

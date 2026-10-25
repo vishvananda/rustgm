@@ -349,3 +349,104 @@ fn source_auto_override_incomplete_bucket_is_not_cached_absence()
     }
     Ok(())
 }
+
+#[test]
+fn unavailable_negative_header_preserves_polarity_and_normal_completion()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source = crate::test_source::fixture("pa31/tests/spec/source-freeze/shared-default.rs")?;
+    let report = crate::test_source::source_provider(&source, "negative_early_profile")?;
+    let mut facts = crate::sema::declarations::analyze(&report)?;
+    let original = facts
+        .generics
+        .implementations
+        .as_ref()
+        .ok_or("registry")?
+        .headers()
+        .find(|header| {
+            facts
+                .associated
+                .owner(header.owner)
+                .and_then(|id| facts.associated.get(id))
+                .is_some_and(|owner| {
+                    matches!(
+                        owner.kind,
+                        crate::sema::associated::OwnerKind::Impl { negative: true, .. }
+                    )
+                })
+        })
+        .ok_or("actual negative header")?;
+    let (definition, source, predicate) = (original.owner, original.source, original.predicate);
+    let owner = *facts
+        .associated
+        .owner(definition)
+        .and_then(|id| facts.associated.get(id))
+        .ok_or("actual owner")?;
+    let (application, _) = predicate.bound.trait_parts().ok_or("actual trait")?;
+    let identity = super::Identity::User(
+        facts
+            .types
+            .trait_application(application)
+            .ok_or("application")?
+            .item,
+    );
+    let mut registry = Implementations::default();
+    registry.prepare_source(
+        &mut facts.types,
+        &facts.associated,
+        identity,
+        owner,
+        Implementation {
+            owner: definition,
+            source,
+            predicate,
+            methods: Vec::new(),
+            types: Vec::new(),
+            constants: Vec::new(),
+        },
+    )?;
+    let arena = facts.types.arena_identity();
+    registry.mark_early_unavailable(&facts.types, &arena, definition, source, predicate)?;
+    assert!(registry.early_unavailable(&facts.types, definition)?);
+    assert!(!registry.is_validated(definition));
+    assert!(matches!(
+        registry.polarity(&facts.associated, definition)?,
+        super::Polarity::Negative
+    ));
+    registry.complete(definition, Vec::new(), Vec::new(), Vec::new())?;
+    assert!(!registry.early_unavailable(&facts.types, definition)?);
+    assert!(registry.is_validated(definition));
+    assert!(matches!(
+        registry.polarity(&facts.associated, definition)?,
+        super::Polarity::Negative
+    ));
+    println!(
+        "unavailable header layout Entry={} Status={}",
+        size_of::<super::Entry>(),
+        size_of::<super::polarity::Status>()
+    );
+    assert_eq!(size_of::<super::Entry>(), 136);
+    assert_eq!(size_of::<super::polarity::Status>(), 1);
+    Ok(())
+}
+
+#[test]
+fn ordinary_completed_source_allocates_no_unavailable_arena_anchor()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source =
+        crate::test_source::fixture("pa31/tests/spec/early-copy-readiness/runtime-read.rs")?;
+    let report = crate::test_source::source_provider(&source, "ordinary_profile_anchor")?;
+    let facts = crate::sema::declarations::analyze(&report)?;
+    let registry = facts.generics.implementations.as_ref().ok_or("registry")?;
+    assert!(registry.profile_arena.is_none());
+    assert!(
+        registry
+            .entries
+            .iter()
+            .all(|entry| !entry.status.early_unavailable())
+    );
+    println!(
+        "ordinary completed registry={} optional unavailable anchor absent",
+        size_of::<Implementations>()
+    );
+    Ok(())
+}

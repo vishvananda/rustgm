@@ -22,6 +22,8 @@ mod tests;
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(in crate::sema) enum Availability {
     Validated,
+    /// Executable preparation waits for compatible headers to finish validation.
+    Executable,
     /// The declaration pipeline must validate every header before returning facts.
     Declarations,
 }
@@ -51,6 +53,7 @@ enum Headers {
 #[derive(Default)]
 pub(in crate::sema) struct Implementations {
     headers: Headers,
+    profile_arena: Option<crate::types::arena::Identity>,
     pending: Option<Box<pending::Pending>>,
     entries: Vec<Entry>,
     owners: HashMap<DefId, usize>,
@@ -172,12 +175,14 @@ impl Implementations {
             Err(error) => return Err(error),
         };
         let mut result = Vec::new();
+        let mut unvalidated = Vec::new();
         if let Some(shape) = shape {
             self.append_candidates(
                 context,
                 self.closed.get(&(item, shape)),
                 availability,
                 &mut result,
+                &mut unvalidated,
             )?;
         }
         for head in subject.heads() {
@@ -186,14 +191,19 @@ impl Implementations {
             } else {
                 self.heads.get(&(item, Some(head)))
             };
-            self.append_candidates(context, bucket, availability, &mut result)?;
+            self.append_candidates(context, bucket, availability, &mut result, &mut unvalidated)?;
         }
         self.append_candidates(
             context,
             self.heads.get(&(item, None)),
             availability,
             &mut result,
+            &mut unvalidated,
         )?;
+        if !unvalidated.is_empty() {
+            unvalidated.sort_unstable_by_key(|id| id.0);
+            return Ok(Candidates::Unvalidated(unvalidated));
+        }
         result.sort_unstable_by_key(|id| id.0);
         Ok(Candidates::Ready(result))
     }
@@ -279,12 +289,15 @@ impl Implementations {
         bucket: Option<&Vec<usize>>,
         availability: Availability,
         output: &mut Vec<DefId>,
+        unvalidated: &mut Vec<DefId>,
     ) -> Result<(), crate::types::infer::Error> {
         context.account_work(bucket.map_or(0, Vec::len))?;
         for &index in bucket.into_iter().flatten() {
             let entry = &self.entries[index];
             if entry.status.validated() || matches!(availability, Availability::Declarations) {
                 output.push(entry.value.owner);
+            } else if matches!(availability, Availability::Executable) {
+                unvalidated.push(entry.value.owner);
             }
         }
         Ok(())
@@ -390,6 +403,9 @@ impl Implementations {
     }
     pub fn headers(&self) -> impl Iterator<Item = &Implementation> {
         self.entries.iter().map(|entry| &entry.value)
+    }
+    pub(in crate::sema) fn header_count(&self) -> usize {
+        self.entries.len()
     }
     pub fn header(&self, owner: DefId) -> Option<&Implementation> {
         self.owners

@@ -64,7 +64,7 @@ impl<'a> Search<'a> {
                     caller.environment.cloned(),
                 )
             }
-            Availability::Validated => {
+            Availability::Validated | Availability::Executable => {
                 crate::sema::nominals::Proof::new(caller.environment.cloned())
             }
         };
@@ -100,17 +100,27 @@ impl<'a> Search<'a> {
         }
     }
 
+    #[cfg(test)]
     pub(super) fn run(
         &mut self,
         facts: &mut Declarations,
         first: Frame,
     ) -> Result<Decision, String> {
+        self.run_checked(facts, first)
+            .map_err(super::super::Failure::message)
+    }
+
+    pub(super) fn run_checked(
+        &mut self,
+        facts: &mut Declarations,
+        first: Frame,
+    ) -> Result<Decision, super::super::Failure> {
         match self.begin(facts, first)? {
             Progress::Ready(decision) => Ok(decision),
-            Progress::Pending(_) => {
-                Err("trait selection requires pending implementation headers".into())
-            }
-            Progress::Inferred => Err("non-refining selection returned partial inputs".into()),
+            Progress::Pending(dependency) => Err(super::super::Failure::Pending(dependency)),
+            Progress::Inferred => Err(super::super::Failure::Invalid(
+                "non-refining selection returned partial inputs".into(),
+            )),
         }
     }
 
@@ -128,6 +138,7 @@ impl<'a> Search<'a> {
 
     pub(super) fn poll(&mut self, facts: &mut Declarations) -> Result<Progress, String> {
         if let Some(owner) = self.query.waiting {
+            self.account_query_work(1)?;
             if !owner.ready(facts) {
                 return Ok(Progress::Pending(owner));
             }
@@ -138,11 +149,16 @@ impl<'a> Search<'a> {
         }
         let mut stack = std::mem::take(&mut self.query.stack);
         while let Some(frame) = stack.last_mut() {
-            let action = self.advance(facts, frame)?;
-            self.charge(&mut frame.inputs.context)?;
-            if let Some(trial) = &mut frame.trial {
-                self.charge(&mut trial.inputs.context)?;
-            }
+            let action = self.advance(facts, frame);
+            let charged = self.charge(&mut frame.inputs.context);
+            let trial_charged = frame
+                .trial
+                .as_mut()
+                .map_or(Ok(()), |trial| self.charge(&mut trial.inputs.context));
+            // Preserve the semantic error while retaining every attempted charge.
+            let action = action?;
+            charged?;
+            trial_charged?;
             match action {
                 Action::Continue => {}
                 Action::Wait(owner) => {
@@ -289,7 +305,7 @@ impl<'a> Search<'a> {
             .pending_headers
             .as_mut()
             .ok_or("missing pending trait candidates")?;
-        for owner in pending.by_ref() {
+        while let Some(&owner) = pending.as_slice().first() {
             if registry.header(owner).is_none() {
                 #[cfg(test)]
                 super::copy_trace::record(|| {
@@ -300,6 +316,11 @@ impl<'a> Search<'a> {
                 });
                 return Ok(Action::Wait(Dependency::Header(owner)));
             }
+            if self.query.availability == Availability::Executable && !registry.is_validated(owner)
+            {
+                return Ok(Action::Wait(Dependency::ImplementationValidated(owner)));
+            }
+            let _ = pending.next();
         }
         frame.pending_headers = None;
         if matches!(

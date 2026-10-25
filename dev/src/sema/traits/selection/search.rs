@@ -102,8 +102,8 @@ mod wf_graph_work;
 #[path = "../../../../tests/invariants/wf_scope_cache.rs"]
 mod wf_scope_cache;
 pub(in crate::sema) use suspension::{
-    Pending, Progress, begin, begin_canonical, begin_normalized, begin_projection, begin_refining,
-    begin_refining_untouched, begin_scoped_refining,
+    Pending, Progress, begin, begin_canonical, begin_executable_counted, begin_normalized,
+    begin_projection, begin_refining, begin_refining_untouched, begin_scoped_refining,
 };
 #[cfg(test)]
 #[path = "../../../../tests/invariants/universal_premises.rs"]
@@ -159,7 +159,7 @@ struct Search<'a> {
     query: Query,
 }
 
-pub(super) fn prove(
+pub(super) fn prove_checked(
     facts: &mut Declarations,
     context: &mut Context,
     goal: &Goal,
@@ -167,7 +167,7 @@ pub(super) fn prove(
     availability: super::Availability,
     normalized_inputs: bool,
     reuse: Option<&mut Reuse>,
-) -> Result<Selection, String> {
+) -> Result<Selection, super::Failure> {
     let mut first = Frame::new(facts, context, goal, caller.first_region)?;
     if normalized_inputs {
         // The enclosing normalizer owns these input proofs and retains them
@@ -177,13 +177,15 @@ pub(super) fn prove(
     let mut search = Search::new(caller, availability);
     // Only completed declaration schemas may support reusable physical conditions.
     if reuse.is_some() && !facts.types.nominal_sizes_sealed() {
-        return Err("proof reuse requires sealed nominal sizes".into());
+        return Err(super::Failure::Invalid(
+            "proof reuse requires sealed nominal sizes".into(),
+        ));
     }
     let mut reuse = reuse;
     if let Some(reuse) = reuse.as_deref_mut() {
         search.query.reuse = Some(completed_proofs::Active::new(std::mem::take(reuse)));
     }
-    let decision = search.run(facts, first);
+    let decision = search.run_checked(facts, first);
     if !normalized_inputs && let Ok(decision) = &decision {
         search.query.export_completed(facts, *decision)?;
     }
@@ -193,22 +195,37 @@ pub(super) fn prove(
         *reuse = active.reuse;
     }
     let decision = decision?;
-    search.result(facts, context, goal, decision)
+    search
+        .result(facts, context, goal, decision)
+        .map_err(Into::into)
 }
 
 impl Search<'_> {
     fn result(
-        mut self,
+        self,
         facts: &mut Declarations,
         context: &mut Context,
         goal: &Goal,
         decision: Decision,
     ) -> Result<Selection, String> {
+        self.result_observed(facts, context, goal, decision, None)
+    }
+    fn result_observed(
+        mut self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        goal: &Goal,
+        decision: Decision,
+        mut attempted: Option<&mut usize>,
+    ) -> Result<Selection, String> {
         if let Decision::Proven(root) = decision
             && self.query.universal.is_some()
         {
-            self.complete_universal(facts, context, root)?;
+            let result = self.complete_universal(facts, context, root);
+            suspension::observe_work(&mut attempted, self.query.steps);
+            result?;
         }
+        suspension::observe_work(&mut attempted, self.query.steps);
         context.account_work(self.query.steps).map_err(inference)?;
         match decision {
             Decision::Absent => Ok(Selection::Absent),
@@ -241,10 +258,10 @@ impl Search<'_> {
         }
     }
     fn charge(&mut self, context: &mut Context) -> Result<(), String> {
-        self.query.steps = self
-            .query
-            .steps
-            .saturating_add(1 + std::mem::take(&mut context.steps));
+        self.account_query_work(1 + std::mem::take(&mut context.steps))
+    }
+    fn account_query_work(&mut self, work: usize) -> Result<(), String> {
+        self.query.steps = self.query.steps.saturating_add(work);
         if self.query.steps > 1_000_000 {
             return Err("trait selection work budget exceeded".into());
         }
@@ -492,7 +509,8 @@ impl Search<'_> {
                 frame.candidates = owners;
                 Ok(Action::Continue)
             }
-            crate::sema::traits::implementations::Candidates::Pending(owners) => {
+            crate::sema::traits::implementations::Candidates::Pending(owners)
+            | crate::sema::traits::implementations::Candidates::Unvalidated(owners) => {
                 frame.pending_headers = Some(owners.into_iter());
                 self.await_header(facts, frame)
             }

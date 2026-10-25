@@ -182,7 +182,7 @@ pub(super) fn stable_poll(
         search.query.nodes.len(),
         search.query.active.len(),
     );
-    for _ in 0..8 {
+    for poll in 1..=8 {
         assert_eq!(
             search.poll(facts)?,
             Progress::Pending(crate::sema::traits::selection::Dependency::Header(owner))
@@ -193,7 +193,7 @@ pub(super) fn stable_poll(
                 search.query.nodes.len(),
                 search.query.active.len()
             ),
-            before
+            (before.0 + poll, before.1, before.2)
         );
     }
     Ok(())

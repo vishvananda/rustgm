@@ -18,6 +18,8 @@ struct Hooks<'a> {
     reuse: Option<&'a mut super::Reuse>,
     /// Receives whether no caller region identity was allocated.
     untouched: Option<&'a mut bool>,
+    /// Cumulative query work, including a failed or still-pending prefix.
+    attempted: Option<&'a mut usize>,
 }
 #[derive(Clone, Copy)]
 enum Mode<'a> {
@@ -96,6 +98,7 @@ pub(in crate::sema) fn begin_refining_untouched(
         Hooks {
             reuse: None,
             untouched: Some(untouched),
+            attempted: None,
         },
     )
 }
@@ -178,8 +181,36 @@ pub(in crate::sema) fn begin_canonical(
         Hooks {
             reuse,
             untouched: None,
+            attempted: None,
         },
     )
+}
+
+pub(in crate::sema) fn begin_executable_counted(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: OwnedCaller,
+    attempted_query_steps: &mut usize,
+) -> Result<Progress, String> {
+    begin_with_inputs(
+        facts,
+        context,
+        goal,
+        caller,
+        Availability::Executable,
+        Mode::Canonical(None),
+        Hooks {
+            attempted: Some(attempted_query_steps),
+            ..Hooks::default()
+        },
+    )
+}
+
+pub(super) fn observe_work(observer: &mut Option<&mut usize>, work: usize) {
+    if let Some(observer) = observer.as_deref_mut() {
+        *observer = (*observer).max(work);
+    }
 }
 
 fn begin_with_inputs(
@@ -194,7 +225,9 @@ fn begin_with_inputs(
     let Hooks {
         mut reuse,
         untouched,
+        mut attempted,
     } = hooks;
+    observe_work(&mut attempted, 0);
     if goal.trait_arguments().is_some()
         && !matches!(
             mode,
@@ -234,12 +267,18 @@ fn begin_with_inputs(
         super::frames::Inference::Disabled
     };
     if let Mode::Refining(Some(counts)) = mode {
-        search.open_universals(facts, &mut first, counts)?;
+        let result = search.open_universals(facts, &mut first, counts);
+        observe_work(&mut attempted, search.query.steps);
+        result?;
     }
     if let Mode::Canonical(Some(count)) = mode {
-        search.open_universals(facts, &mut first, &[count])?;
+        let result = search.open_universals(facts, &mut first, &[count]);
+        observe_work(&mut attempted, search.query.steps);
+        result?;
     }
-    let progress = search.begin(facts, first)?;
+    let progress = search.begin(facts, first);
+    observe_work(&mut attempted, search.query.steps);
+    let progress = progress?;
     match progress {
         continuation::Progress::Ready(decision) => {
             if let Some(untouched) = untouched {
@@ -247,7 +286,7 @@ fn begin_with_inputs(
             }
             search.return_reuse(facts, decision, reuse)?;
             search
-                .result(facts, context, goal, decision)
+                .result_observed(facts, context, goal, decision, attempted)
                 .map(Progress::Ready)
         }
         continuation::Progress::Pending(owner) => {
@@ -280,6 +319,23 @@ impl Pending {
     ) -> Result<Progress, String> {
         self.resume_reusing(facts, context, goal, first, None)
     }
+    pub fn resume_counted(
+        self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        goal: &Goal,
+        first: u32,
+        attempted_query_steps: &mut usize,
+    ) -> Result<Progress, String> {
+        self.resume_observed(
+            facts,
+            context,
+            goal,
+            first,
+            None,
+            Some(attempted_query_steps),
+        )
+    }
     pub fn resume_reusing(
         self,
         facts: &mut Declarations,
@@ -288,19 +344,37 @@ impl Pending {
         first: u32,
         reuse: Option<&mut super::Reuse>,
     ) -> Result<Progress, String> {
+        self.resume_observed(facts, context, goal, first, reuse, None)
+    }
+    fn resume_observed(
+        self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        goal: &Goal,
+        first: u32,
+        reuse: Option<&mut super::Reuse>,
+        mut attempted: Option<&mut usize>,
+    ) -> Result<Progress, String> {
         let Self { caller, query } = self;
         let mut search = Search {
             caller: caller.borrowed(),
             query,
         };
-        search.resume_at(first)?;
-        search.refresh_inputs(facts, context)?;
-        let progress = search.poll(facts)?;
+        observe_work(&mut attempted, search.query.steps);
+        let result = search.resume_at(first);
+        observe_work(&mut attempted, search.query.steps);
+        result?;
+        let result = search.refresh_inputs(facts, context);
+        observe_work(&mut attempted, search.query.steps);
+        result?;
+        let progress = search.poll(facts);
+        observe_work(&mut attempted, search.query.steps);
+        let progress = progress?;
         match progress {
             continuation::Progress::Ready(decision) => {
                 search.return_reuse(facts, decision, reuse)?;
                 search
-                    .result(facts, context, goal, decision)
+                    .result_observed(facts, context, goal, decision, attempted)
                     .map(Progress::Ready)
             }
             continuation::Progress::Pending(owner) => {
@@ -334,3 +408,7 @@ impl Search<'_> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/waited_queries.rs"]
+mod tests;

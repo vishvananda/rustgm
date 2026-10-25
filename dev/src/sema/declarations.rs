@@ -87,6 +87,7 @@ enum Work {
     CallTraitOutput(NodeKey, regions::Context),
     ImplHeader(DefId, impl_headers::Phase),
     ConstantMember(crate::sema::traits::implementations::ConstantRequest, bool),
+    ValidateImpl(DefId, traits::ImplementationPhase),
     MethodPrefix(NodeKey, regions::Context),
     InherentMethod(NodeKey, associated::Path, regions::Context),
     InherentHeaders(ItemId, crate::resolve::names::NameId),
@@ -142,6 +143,9 @@ impl Work {
             Requirement::Definition(definition) => Self::Definition(definition, false),
             Requirement::Constructor(definition) => Self::PrepareConstructor(definition),
             Requirement::ImplHeader(owner) => Self::ImplHeader(owner, impl_headers::Phase::Begin),
+            Requirement::ImplementationValidated(owner) => {
+                Self::ValidateImpl(owner, traits::ImplementationPhase::Begin)
+            }
             Requirement::Fields(item) => Self::Fields(item, false),
             Requirement::Opaque(id) => Self::OpaqueHidden(id),
         }
@@ -150,6 +154,9 @@ impl Work {
         match dependency {
             super::traits::selection::Dependency::Header(owner) => {
                 Self::ImplHeader(owner, impl_headers::Phase::Begin)
+            }
+            super::traits::selection::Dependency::ImplementationValidated(owner) => {
+                Self::ValidateImpl(owner, traits::ImplementationPhase::Begin)
             }
             super::traits::selection::Dependency::Fields(item) => Self::Fields(item, false),
             super::traits::selection::Dependency::Opaque(id) => Self::OpaqueHidden(id),
@@ -173,6 +180,7 @@ struct Checker<'a> {
     inherent_headers: inherent_headers::Pending,
     impl_headers: impl_headers::Pending,
     constant_members: traits::ConstantReadiness,
+    early_implementations: Option<Box<traits::EarlyImplementations>>,
     associated_type_bounds: crate::support::hash::HashMap<DefId, traits::AssociatedBounds>,
     opaque_syntax: crate::support::hash::HashMap<NodeKey, abstract_types::Pending>,
     object_syntax: objects::Syntax,
@@ -252,6 +260,7 @@ impl<'a> Checker<'a> {
             inherent_headers: inherent_headers::Pending::default(),
             impl_headers: impl_headers::Pending::default(),
             constant_members: traits::ConstantReadiness::default(),
+            early_implementations: None,
             associated_type_bounds: crate::support::hash::HashMap::default(),
             opaque_syntax: crate::support::hash::HashMap::default(),
             object_syntax: objects::Syntax::default(),
@@ -349,6 +358,7 @@ impl Checker<'_> {
         self.prepare_source_call_contracts(&mut steps, work_limit)?;
         self.prepare_destructors(destructors, &mut steps, work_limit)?;
         self.prepare_trait_implementations(&mut steps, work_limit)?;
+        self.prepare_early_implementations(&mut steps, work_limit)?;
         self.prepare_inherent_owners(&mut steps, work_limit)?;
         self.index_inherent_methods()?;
         self.prepare_associated_types(&mut steps, work_limit)?;
@@ -448,6 +458,7 @@ impl Checker<'_> {
                 Work::CallTraitInputs(binder) => self.regions.begin_callable(binder),
                 Work::CallTraitOutput(key, context) => self.call_trait_output(key, context)?,
                 Work::ImplHeader(owner, phase) => self.advance_impl_header(owner, phase)?,
+                Work::ValidateImpl(owner, phase) => self.advance_impl_validation(owner, phase)?,
                 Work::ConstantMember(request, finish) => {
                     self.constant_member(request, finish)?;
                 }

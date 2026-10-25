@@ -12,7 +12,7 @@ use crate::{
 pub(super) struct Terms {
     owner: (u32, u32),
     close: Bound,
-    cursors: HashMap<(u32, bool), Cursor>,
+    cursors: HashMap<(u32, Availability), Cursor>,
 }
 impl Terms {
     fn new(owner: (u32, u32)) -> Result<Self, &'static str> {
@@ -65,7 +65,7 @@ impl State {
         if terms.owner != owner {
             return Err("clause normalization changed its declaration scope");
         }
-        let key = (count, matches!(self.availability, Availability::Validated));
+        let key = (count, self.availability);
         if let std::collections::hash_map::Entry::Vacant(entry) = terms.cursors.entry(key) {
             self.context
                 .account_work(count as usize + 1)

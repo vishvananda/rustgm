@@ -38,16 +38,34 @@ pub(in crate::sema) use search::callable_layouts;
 pub(crate) use search::copy_trace;
 pub(in crate::sema) use search::may_overlap;
 pub(in crate::sema) use search::{
-    Pending, Progress, Reuse, begin, begin_canonical, begin_normalized, begin_projection,
-    begin_refining, begin_refining_untouched, begin_scoped_refining,
+    Pending, Progress, Reuse, begin, begin_canonical, begin_executable_counted, begin_normalized,
+    begin_projection, begin_refining, begin_refining_untouched, begin_scoped_refining,
 };
 use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(in crate::sema) enum Dependency {
     Header(DefId),
+    ImplementationValidated(DefId),
     Fields(crate::types::ItemId),
     Opaque(crate::types::opaque::OpaqueId),
+}
+pub(in crate::sema) enum Failure {
+    Pending(Dependency),
+    Invalid(String),
+}
+impl From<String> for Failure {
+    fn from(message: String) -> Self {
+        Self::Invalid(message)
+    }
+}
+impl Failure {
+    fn message(self) -> String {
+        match self {
+            Self::Pending(_) => "trait selection requires pending implementation headers".into(),
+            Self::Invalid(message) => message,
+        }
+    }
 }
 impl Dependency {
     fn ready(self, facts: &Declarations) -> bool {
@@ -57,6 +75,11 @@ impl Dependency {
                 .implementations
                 .as_ref()
                 .is_some_and(|registry| registry.header(owner).is_some()),
+            Self::ImplementationValidated(owner) => facts
+                .generics
+                .implementations
+                .as_ref()
+                .is_some_and(|registry| registry.is_validated(owner)),
             Self::Fields(item) => facts.aggregates.get(item).is_some(),
             Self::Opaque(id) => facts
                 .opaques
@@ -302,6 +325,16 @@ pub(in crate::sema) fn select_available(
     select_from(facts, context, goal, caller, availability, false, None)
 }
 
+pub(in crate::sema) fn select_available_checked(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: Caller<'_>,
+    availability: Availability,
+) -> Result<Selection, Failure> {
+    select_from_checked(facts, context, goal, caller, availability, false, None)
+}
+
 /// The requesting normalizer retains every input's formation and lifetime proof.
 /// Only this root uses that authority; newly discovered impl conditions still
 /// normalize independently within the search's immutable caller scope.
@@ -337,10 +370,31 @@ fn select_from(
     normalized_inputs: bool,
     reuse: Option<&mut Reuse>,
 ) -> Result<Selection, String> {
+    select_from_checked(
+        facts,
+        context,
+        goal,
+        caller,
+        availability,
+        normalized_inputs,
+        reuse,
+    )
+    .map_err(Failure::message)
+}
+
+fn select_from_checked(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: Caller<'_>,
+    availability: Availability,
+    normalized_inputs: bool,
+    reuse: Option<&mut Reuse>,
+) -> Result<Selection, Failure> {
     if goal.projection_result().is_some() || goal.builtin_bound().is_some() {
         // Builtin permissions use the caller's ordinary ability environment;
         // they cannot enter the user-trait assumption index.
-        return search::prove(
+        return search::prove_checked(
             facts,
             context,
             goal,
@@ -354,7 +408,7 @@ fn select_from(
         Ok(Selection::Absent) => {}
         Ok(proof) => return Ok(proof),
         Err(infer::Error::Normalization) => {
-            return search::prove(
+            return search::prove_checked(
                 facts,
                 context,
                 goal,
@@ -364,9 +418,9 @@ fn select_from(
                 reuse,
             );
         }
-        Err(error) => return Err(inference(error)),
+        Err(error) => return Err(Failure::Invalid(inference(error))),
     }
-    search::prove(
+    search::prove_checked(
         facts,
         context,
         goal,

@@ -7,6 +7,10 @@ mod orphans;
 mod readiness;
 pub(in crate::sema::declarations) use readiness::Readiness;
 mod coercions;
+mod eligibility_profile;
+mod implementation_pairs;
+mod prerequisite_queries;
+mod scalar_readiness;
 mod validation;
 use super::super::{Checker, DefId, Error, ItemId, NodeKey, Work};
 use crate::{
@@ -16,6 +20,9 @@ use crate::{
         traits::implementations::{Identity, Implementation},
     },
     types::parameters::predicates::{Bound, Predicate},
+};
+pub(in crate::sema::declarations) use scalar_readiness::{
+    Pending as EarlyImplementations, Phase as ImplementationPhase,
 };
 pub(in crate::sema::declarations) use validation::impl_contract_obligations;
 

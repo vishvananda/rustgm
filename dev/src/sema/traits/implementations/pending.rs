@@ -20,6 +20,8 @@ pub(in crate::sema) struct Header {
 pub(in crate::sema) enum Candidates {
     Ready(Vec<DefId>),
     Pending(Vec<DefId>),
+    /// Header construction is complete; semantic conformance is a separate duty.
+    Unvalidated(Vec<DefId>),
 }
 
 #[derive(Default)]

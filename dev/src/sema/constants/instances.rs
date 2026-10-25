@@ -416,6 +416,12 @@ impl Queries<'_> {
             crate::sema::traits::implementations::Availability::Validated => {
                 crate::sema::dispatch::Dispatcher::new(0, first)
             }
+            crate::sema::traits::implementations::Availability::Executable => {
+                return Err(self.error(
+                    Query::Node(key),
+                    "executable constant dispatch requires completed implementation validation",
+                ));
+            }
         }
         .map_err(|e| self.error(Query::Node(key), e))?;
         let result = dispatch

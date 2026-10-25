@@ -105,6 +105,60 @@ fn selection_waits_for_all_compatible_headers_without_unrelated_owners()
 }
 
 #[test]
+fn executable_candidates_distinguish_header_validation_and_completed_absence()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut query_work = None;
+    for noise in [0, 128] {
+        let mut store = Store::default();
+        let mut registry = Implementations::default();
+        let mut headers = vec![header(10, 1, Some(Head::Primitive(Primitive::U8)))];
+        headers.extend(
+            (0..noise).map(|index| header(index + 20, 2, Some(Head::Nominal(ItemId(index + 20))))),
+        );
+        registry.reserve(headers)?;
+        let value = implementation(&mut store, 10, 1, TypeId::primitive(Primitive::U8))?;
+        let mut context = Context::default();
+        let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+        let goal = context.instantiate_predicate(&mut store, value.predicate, &mut substitution)?;
+        assert_eq!(
+            registry.candidates(&mut store, &mut context, &goal, Availability::Executable)?,
+            Candidates::Pending(vec![DefId(10)]),
+        );
+        registry.prepare(&mut store, ItemId(1), value)?;
+        let before = context.steps;
+        assert_eq!(
+            registry.candidates(&mut store, &mut context, &goal, Availability::Executable)?,
+            Candidates::Unvalidated(vec![DefId(10)]),
+        );
+        let work = context.steps - before;
+        if let Some(expected) = query_work {
+            assert_eq!(work, expected);
+        } else {
+            query_work = Some(work);
+        }
+        assert_eq!(
+            registry.candidates(&mut store, &mut context, &goal, Availability::Validated)?,
+            Candidates::Ready(Vec::new()),
+        );
+        assert!(!registry.is_validated(DefId(10)));
+        registry.complete(DefId(10), Vec::new(), Vec::new(), Vec::new())?;
+        assert_eq!(
+            registry.candidates(&mut store, &mut context, &goal, Availability::Executable)?,
+            Candidates::Ready(vec![DefId(10)]),
+        );
+        let unrelated = implementation(&mut store, 11, 3, TypeId::primitive(Primitive::U8))?;
+        let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+        let goal =
+            context.instantiate_predicate(&mut store, unrelated.predicate, &mut substitution)?;
+        assert_eq!(
+            registry.candidates(&mut store, &mut context, &goal, Availability::Executable)?,
+            Candidates::Ready(Vec::new()),
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn pending_queries_and_retirement_do_not_walk_unrelated_headers()
 -> Result<(), Box<dyn std::error::Error>> {
     let mut headers: Vec<_> = (0..4096)

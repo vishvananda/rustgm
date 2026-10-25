@@ -1,0 +1,20 @@
+{
+  "issue": "LIB-004",
+  "declared_before_probes": true,
+  "scope": "Additive private-control fixture; previous16 rows/evidence unchanged",
+  "cases": [
+    {
+      "name": "indexed-requirements",
+      "source": "pa31/tests/spec/early-copy-readiness/indexed-requirements.rs",
+      "sha256": "e5cca92b81bfc28e5588fd7b7df5d7781b791c8e3754908345cc1993f71e1650",
+      "profile": "Two actual prerequisite traits plus two complete applications of one source trait; no new language role or algorithm",
+      "rustc_metadata_hypothesis": 0,
+      "rustc_object_hypothesis": 0,
+      "client": "pa31/tests/spec/early-copy-readiness/observe.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "native_status_hypothesis": 0,
+      "native_stdout_hypothesis": "7 7\n",
+      "native_stderr_hypothesis": ""
+    }
+  ]
+}
