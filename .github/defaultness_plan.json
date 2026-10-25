@@ -1,0 +1,50 @@
+{
+  "baseline": "0817a3c38e9691cad3dbbf2620b2cfd20415445f",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name",
+    "defaultness_probe"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": [
+    {
+      "name": "inactive-min-literal-allowance",
+      "source": "obj/parallel/pa31/defaultness-v1/edge-sources/inactive-min-literal-allowance.rs",
+      "sha256": "9187ed371c278b6bd7937bf6d2576c4517a68c92767c4ef06518f083ec2de918",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "new frozen code-inspection edge hypothesis; no prior cases repeated"
+    },
+    {
+      "name": "inactive-min-forwarded-allowance",
+      "source": "obj/parallel/pa31/defaultness-v1/edge-sources/inactive-min-forwarded-allowance.rs",
+      "sha256": "a5b2a806bd597d1151281690b410bd1bb3021519b3eacdf0742d7b99cc08dd59",
+      "expected_status": 0,
+      "expected_warning_codes": [
+        "unstable_syntax_pre_expansion",
+        null
+      ],
+      "state": "new frozen code-inspection edge hypothesis; no prior cases repeated"
+    },
+    {
+      "name": "full-default-associated-type",
+      "source": "obj/parallel/pa31/defaultness-v1/edge-sources/full-default-associated-type.rs",
+      "sha256": "b02b4ae312be68277c2d79c743c0da60da172b23cf1ac3ecd6221c69f86a1da0",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "new frozen code-inspection edge hypothesis; no prior cases repeated"
+    }
+  ],
+  "native_not_executed": {},
+  "scope": "6 new metadata edge observations; active-vs-soft min allowance and typed associated-type syntax; no68repeat/native"
+}
