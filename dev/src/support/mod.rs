@@ -4,6 +4,7 @@ pub mod call_traits;
 pub mod comparisons;
 pub mod constness;
 pub mod crates;
+pub(crate) mod decorations;
 pub mod edition;
 pub mod hash;
 pub(crate) mod intern_slice;
@@ -19,3 +20,5 @@ pub(crate) mod radix_map;
 pub(crate) mod retained;
 pub mod runtime_checks;
 pub mod source;
+
+pub mod diagnostics;

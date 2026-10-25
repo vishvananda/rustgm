@@ -1,8 +1,10 @@
 //! Pinned `LowIR` objects and independent rustc executables link with the same real C provider.
+use crate::native_references::frontend_diagnostics;
 use std::{
     path::Path,
     process::{Command, Output},
 };
+
 fn successful(name: &str, output: Output) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     if !output.status.success() || !output.stderr.is_empty() {
         return Err(format!(
@@ -19,6 +21,22 @@ pub fn check_cases(
     provider: &str,
     cases: &[(&str, &str)],
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let declared: Vec<_> = cases
+        .iter()
+        .map(|&(name, path)| (name, path, b"".as_slice()))
+        .collect();
+    check_cases_with_warnings(suite, provider, &declared)
+}
+/// Literal reviewed diagnostics apply only to the frontend; all other tools remain strict.
+#[allow(
+    dead_code,
+    reason = "only suites with reviewed compiler warnings call this entrypoint"
+)]
+pub fn check_cases_with_warnings(
+    suite: &str,
+    provider: &str,
+    cases: &[(&str, &str, &[u8])],
+) -> Result<(), Box<dyn std::error::Error>> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("root")?;
@@ -34,7 +52,7 @@ pub fn check_cases(
             .arg(&object)
             .output()?,
     )?;
-    for &(name, path) in cases {
+    for &(name, path, expected_diagnostics) in cases {
         let input = folder.join(format!("{name}.native.rs"));
         std::fs::copy(root.join(path), &input)?;
         let independent = folder.join(format!("{name}.rustc"));
@@ -59,13 +77,13 @@ pub fn check_cases(
                 .output()?,
         )?;
         let expected = successful(name, Command::new(&independent).output()?)?;
-        let lowir = successful(
-            name,
-            Command::new(env!("CARGO_BIN_EXE_rustgm"))
-                .args(["--emit-lowir", "--crate-name", "object_native"])
-                .arg(&input)
-                .output()?,
-        )?;
+        let compiler = Command::new(env!("CARGO_BIN_EXE_rustgm"))
+            .args(["--emit-lowir", "--crate-name", "object_native"])
+            .arg(&input)
+            .output()?;
+        frontend_diagnostics::accepted(&compiler, expected_diagnostics)
+            .map_err(|error| format!("{name}: {error}"))?;
+        let lowir = compiler.stdout;
         let lowir_path = folder.join(format!("{name}.lowir"));
         std::fs::write(&lowir_path, &lowir)?;
         let native = folder.join(format!("{name}.rustgm.o"));

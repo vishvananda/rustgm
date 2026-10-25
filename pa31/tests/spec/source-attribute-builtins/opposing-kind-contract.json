@@ -1,0 +1,50 @@
+{
+  "status": "source-only candidate controls; exact input already independently observed",
+  "editions": [
+    2021,
+    2024
+  ],
+  "independent_results_sha256": "99be6889ce22a8d00bb62863d85f8c90c40390aa895528d53f369b6085517b2e",
+  "cases": [
+    {
+      "path": "pa31/tests/spec/source-attribute-builtins/block-outer-bang-control.rs",
+      "source_sha256": "659d16e920ee2f926bfdbb2cb677dfb825f9a001e12499cf5be6f54a1d31a262",
+      "origin": "obj/parallel/pa31/macro-kinds-block-independent-v1/block-outer-bang-control.rs",
+      "independent_results_sha256": "99be6889ce22a8d00bb62863d85f8c90c40390aa895528d53f369b6085517b2e",
+      "candidate": "accept actual expected-kind outer binding",
+      "bang_invocations": 1,
+      "native_stdout_observed": "7\n",
+      "exact_source_previously_observed": true
+    },
+    {
+      "path": "pa31/tests/spec/source-attribute-builtins/block-inner-attribute-outer-bang.rs",
+      "source_sha256": "e627b4d160a085b02c0e2a1c686354863fac76d63f10c75d03509d70b0f875cf",
+      "origin": "obj/parallel/pa31/macro-kinds-block-independent-v1/block-inner-attribute-outer-bang.rs",
+      "independent_results_sha256": "99be6889ce22a8d00bb62863d85f8c90c40390aa895528d53f369b6085517b2e",
+      "candidate": "accept actual expected-kind outer binding",
+      "bang_invocations": 1,
+      "native_stdout_observed": "7\n",
+      "exact_source_previously_observed": true
+    },
+    {
+      "path": "pa31/tests/spec/source-attribute-builtins/block-outer-attribute-control.rs",
+      "source_sha256": "178ebafb81f1e9460b4a27a6b7bb3e935f211dad85db255f290e12c457b37b5f",
+      "origin": "obj/parallel/pa31/macro-kinds-block-independent-v1/block-outer-attribute-control.rs",
+      "independent_results_sha256": "99be6889ce22a8d00bb62863d85f8c90c40390aa895528d53f369b6085517b2e",
+      "candidate": "accept actual expected-kind outer binding",
+      "bang_invocations": 0,
+      "native_stdout_observed": "7\n",
+      "exact_source_previously_observed": true
+    },
+    {
+      "path": "pa31/tests/spec/source-attribute-builtins/block-inner-bang-outer-attribute.rs",
+      "source_sha256": "340b02f6532fab32533e56e13a218036ee1bee37b8560881908d30b2e09b6ce8",
+      "origin": "obj/parallel/pa31/macro-kinds-block-independent-v1/block-inner-bang-outer-attribute.rs",
+      "independent_results_sha256": "99be6889ce22a8d00bb62863d85f8c90c40390aa895528d53f369b6085517b2e",
+      "candidate": "accept actual expected-kind outer binding",
+      "bang_invocations": 0,
+      "native_stdout_observed": "7\n",
+      "exact_source_previously_observed": true
+    }
+  ]
+}

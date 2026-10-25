@@ -74,6 +74,19 @@ impl Checker<'_> {
             .types
             .trait_application(id)
             .ok_or_else(|| self.error(source, "missing call input application"))?;
+        if !self.declared_callable(crate::resolve::model::DefId(parent.item.0)) {
+            let member = self
+                .direct_parenthesis_output(source, crate::resolve::model::DefId(parent.item.0))?;
+            return self.intern(
+                source,
+                Type::Projection(projection::Application {
+                    item: ItemId(member.0),
+                    subject: predicate.ty,
+                    trait_application: id,
+                    arguments: GenericArgs::EMPTY,
+                }),
+            );
+        }
         let (definition, member) =
             if let Some(reserved) = self.report.resolution.source_bindings.as_deref() {
                 let definition = reserved

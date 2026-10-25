@@ -1,4 +1,5 @@
 //! Fn contracts enter the ordinary trait and associated-result machinery as typed metadata.
+mod direct_outputs;
 mod output_binding;
 mod syntax;
 use super::{Checker, DefId, Error, ItemId, NodeKey, State, Type};
@@ -369,7 +370,11 @@ pub(super) fn target_feature_sources(
                 continue;
             }
             for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
-                if attribute.name(forest, unit.source.text()) == Some("target_feature") {
+                if attribute
+                    .name(forest, unit.source.text())
+                    .and_then(crate::support::decorations::Consumer::named)
+                    == Some(crate::support::decorations::Consumer::TargetFeature)
+                {
                     result.insert(NodeKey { file, node });
                     break;
                 }

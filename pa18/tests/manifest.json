@@ -7317,6 +7317,123 @@
       },
       "maintainer_origin": "dev/tests/call_inference/returned.rs",
       "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/discard-domains/array-unknown-length.rs",
+      "source_sha256": "7620af9681727b1f57cd96eb4291708b5a16870718eeb57e88c3d0fa8956092e",
+      "exit_status": 0,
+      "features": [
+        "pa18.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs"
+    },
+    {
+      "path": "tests/spec/discard-domains/array-template-is-not-relinted.rs",
+      "source_sha256": "745c2dde8c2a9feb8db6a4716d5ab5cd8fb8d692f0d79e126a503a8a36c45b66",
+      "exit_status": 0,
+      "features": [
+        "pa18.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs"
+    },
+    {
+      "path": "tests/spec/discard-domains/marked-generic-empty-field.rs",
+      "source_sha256": "92678dc262a94e483163d2716453910dc4f0477a2d66935f0185c9ce1485d110",
+      "exit_status": 0,
+      "features": [
+        "pa18.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs"
+    },
+    {
+      "path": "tests/spec/canonical-inhabitation/generic-visible-empty.rs",
+      "source_sha256": "30f827d3ead04130ef9b2bc59c5f79e35d04c564eaa12d3f39d781a9bb8f46b9",
+      "exit_status": 0,
+      "features": [
+        "pa18.canonical-inhabitation"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-patterns",
+      "maintainer_origin": "dev/tests/canonical_inhabitation.rs"
+    },
+    {
+      "path": "tests/spec/canonical-inhabitation/generic-private-owner.rs",
+      "source_sha256": "8a52caa2dd8f15abed7f5b98ab937bd07b1a796a047ae2acc0c7c74e217c45d8",
+      "exit_status": 0,
+      "features": [
+        "pa18.canonical-inhabitation"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-patterns",
+      "maintainer_origin": "dev/tests/canonical_inhabitation.rs"
+    },
+    {
+      "path": "tests/spec/canonical-inhabitation/generic-private-caller.rs",
+      "source_sha256": "7f8f6f0bf22dbb21bccb17a885839bb168a68b9d1dba6ba146fddd64d7476fde",
+      "exit_status": 1,
+      "features": [
+        "pa18.canonical-inhabitation"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-patterns",
+      "maintainer_origin": "dev/tests/canonical_inhabitation.rs"
+    },
+    {
+      "path": "tests/spec/canonical-inhabitation/generic-public-caller.rs",
+      "source_sha256": "317c07ec36a07dddea93cab8201279bdf72cd9e2a11604f6b04ee32acdf7a22d",
+      "exit_status": 0,
+      "features": [
+        "pa18.canonical-inhabitation"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-patterns",
+      "maintainer_origin": "dev/tests/canonical_inhabitation.rs"
+    },
+    {
+      "path": "tests/spec/canonical-inhabitation/generic-visibility-query.rs",
+      "source_sha256": "e53be89e75eba56af62ac5a174f6548671e1b81749d70d5c4f47600470c12737",
+      "exit_status": 0,
+      "features": [
+        "pa18.canonical-inhabitation"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-patterns",
+      "maintainer_origin": "dev/tests/canonical_inhabitation.rs"
     }
   ]
 }

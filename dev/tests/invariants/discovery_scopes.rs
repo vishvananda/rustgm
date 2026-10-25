@@ -184,7 +184,7 @@ fn scope_walk_rejects_unknown_definition_sites_and_counts_failed_work() -> TestR
     );
     assert!(index.steps > 1_000_000);
     assert_eq!(size_of::<crate::sema::methods::Methods>(), 312);
-    assert_eq!(size_of::<Declarations>(), 7032 + size_of::<usize>());
+    assert_eq!(size_of::<Declarations>(), 7032 + 2 * size_of::<usize>());
     assert_eq!(size_of::<crate::resolve::model::Scope>(), 32);
     Ok(())
 }

@@ -81,7 +81,7 @@ impl Features {
 }
 
 /// Language requests survive ordinary loading without creating a source provider.
-/// The second bit retains the internal-attribute request for macro consumers.
+/// Internal attributes and trait-parenthesis requests retain distinct checked bits.
 #[derive(Clone, Copy, Default)]
 pub(in crate::resolve) struct MacroFeatures(u8);
 impl MacroFeatures {
@@ -97,7 +97,12 @@ impl MacroFeatures {
     pub(in crate::resolve) fn cfg_ub(self) -> bool {
         self.0 & (1 << 5) != 0
     }
-
+    pub(in crate::resolve) fn internal(self) -> bool {
+        self.0 & 2 != 0
+    }
+    pub(in crate::resolve) fn unboxed(self) -> bool {
+        self.0 & 4 != 0
+    }
     pub(in crate::resolve) fn require_scoped(self, file: FileId, offset: u32) -> Result<(), Error> {
         if self.0 & 1 == 0 {
             return Err(Error::at(file, offset, "scoped macros require decl_macro"));

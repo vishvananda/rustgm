@@ -165,3 +165,6 @@ mod executed_items;
 
 #[path = "declarative_macros/semantic_privacy.rs"]
 mod semantic_privacy;
+
+#[path = "declarative_macros/attributed_values.rs"]
+mod attributed_values;

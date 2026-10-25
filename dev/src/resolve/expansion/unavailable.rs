@@ -88,16 +88,91 @@ impl<S: Sources> Engine<'_, S> {
         Ok(())
     }
 
+    /// A selected call is denied before any capture, mark or invocation work.
+    pub(super) fn require_call_definition(
+        &self,
+        call: &super::Call,
+        definition: usize,
+    ) -> Result<(), Error> {
+        #[cfg(test)]
+        if matches!(self.definitions[definition].body, Body::Scoped { .. })
+            || matches!(self.definitions[definition].body, Body::Builtin(role) if !role.executable())
+        {
+            crate::resolve::index::unavailable_macros::observation::note(
+                crate::resolve::index::unavailable_macros::observation::Event::Selected(
+                    self.scoped_snapshot(definition),
+                ),
+            );
+        }
+        self.require_invocable(definition, call.grammar.kind(), call.file, call.offset)?;
+        Ok(())
+    }
+
     pub(super) fn require_invocable(
+        &self,
+        definition: usize,
+        kind: crate::expand::builtin::BuiltinKind,
+        file: FileId,
+        offset: u32,
+    ) -> Result<(), Error> {
+        let actual = self
+            .definitions
+            .get(definition)
+            .ok_or_else(|| Error::at(file, offset, "unknown selected macro definition"))?;
+        let declared_role = actual
+            .header
+            .as_ref()
+            .and_then(|header| header.declaration().builtin);
+        let actual_kind = declared_role.map_or_else(
+            || match actual.body {
+                Body::Builtin(role) => role.kind(),
+                _ => crate::expand::builtin::BuiltinKind::Bang,
+            },
+            crate::expand::builtin::Builtin::kind,
+        );
+        if kind != actual_kind {
+            return Err(self.unavailable_error(
+                definition,
+                file,
+                offset,
+                "macro invocation has a different actual macro kind",
+            ));
+        }
+        if declared_role.is_some_and(|role| !role.executable())
+            || matches!(actual.body, Body::Builtin(role) if !role.executable())
+        {
+            return Err(self.unavailable_error(
+                definition,
+                file,
+                offset,
+                "builtin attribute execution is not implemented",
+            ));
+        }
+        Ok(())
+    }
+
+    fn unavailable_error(
         &self,
         definition: usize,
         file: FileId,
         offset: u32,
-    ) -> Result<(), Error> {
-        self.definitions
-            .get(definition)
-            .ok_or_else(|| Error::at(file, offset, "unknown selected macro definition"))?;
-        Ok(())
+        message: &'static str,
+    ) -> Error {
+        #[cfg(test)]
+        crate::resolve::index::unavailable_macros::observation::note(
+            crate::resolve::index::unavailable_macros::observation::Event::Denied(
+                self.scoped_snapshot(definition),
+            ),
+        );
+        // The ordinary diagnostic frame names the actual selected declaration.
+        let mut error = Error::at(file, offset, message);
+        let span = error.span;
+        error.expansions.push(super::diagnostics::frame(
+            &self.loader.package,
+            &self.definitions[definition],
+            super::Location { file, span },
+        ));
+        error
     }
 
     #[cfg(test)]
