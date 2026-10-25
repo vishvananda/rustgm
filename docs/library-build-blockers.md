@@ -165,6 +165,14 @@ without repeating them. The [wide checkpoint](wide-literals-checkpoint.md)
 records both receipts and the retained timeout. This does not turn the failed
 periodic run into full qualification; its later stages remain pending.
 
+The combined anonymous-function gate passes twelve of thirteen exact private
+controls and exposes a local crate-root compatibility regression in the new
+header adapters. Its [five-control repair](source-header-contract-transport.md)
+passes in 131.15 seconds, preserving genuine imported Unknown and missing-producer
+errors. The anonymous-function source itself and its three owning PA18 controls
+pass; its reviewed argument-index text updates and new fixture provenance are
+still pending publication.
+
 - Integrator: the [structural owner checkpoint](primitive-inherent-checkpoint.md)
   qualifies local primitive policy and full-Self lookup with 66 source cases,
   nineteen focused private controls and eight actual native programs. Ordinary

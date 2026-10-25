@@ -81,6 +81,22 @@ and two failed limit reads; source scaling controls cover 3/10/34 function rows.
 Collection capacities and allocation counts were not measured. These controls
 establish bounded work and layout, without claiming wall-time nonregression.
 
+The combined anonymous-function gate subsequently exposed a genuine compatibility
+regression: a local crate-root definition has no AST declaration node, so using
+node absence alone to select imported contracts misclassified that owner. The
+repair authenticates the resolver's exact local root, canonical module/scope,
+package source and absence from the imported catalog before preserving its
+legacy optional query result. All other missing imported producers still fail;
+this compatibility path does not manufacture complete header absence.
+
+[CI 40213866643](https://github.com/vishvananda/rustgm/actions/runs/40213866643)
+passes the old plain/configured-publication control, two root/import/forgery
+regressions, legacy imported Unknown and fresh version-one consumers. All five
+execute with metadata, formatting, architecture, strict private Clippy and build
+in 131.15 seconds. Harness, upstream and audit-cache checks also pass. Source
+`2b3dff02` is integrated at `b670e3f0`; the earlier 12/13 failure remains retained.
+CLI activation remains a separate pending checkpoint.
+
 The full reviewed proposal is retained at
 `obj/parallel/pa31/source-attribute-transport-v1/proposal.json`, SHA-256
 `c68249bae319ca10e2405696ad932e5ef40939afc0a5a9c7bc44c1f180c1fb2f`.
