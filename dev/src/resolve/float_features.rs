@@ -185,5 +185,5 @@ pub(super) fn validate_plain(
 }
 
 #[cfg(test)]
-#[path = "../../tests/invariants/wide_float_gates.rs"]
+#[path = "../../tests/invariants/float_features.rs"]
 mod tests;
