@@ -153,11 +153,13 @@ impl Inputs {
         Ok(())
     }
     fn check_cells(&self, work: &mut ReservationWork) -> Result<(), Error> {
-        let rows = self
+        let artifact = self
             .inventory
             .artifacts()
             .get(self.provider_index as usize)
-            .and_then(crate::support::crates::Interface::source_descriptor)
+            .ok_or_else(|| error("unpaid input cell inspection lost its selected artifact"))?;
+        let rows = artifact
+            .source_descriptor()
             .ok_or_else(|| error("unpaid input cell inspection lost its actual descriptor"))?
             .rows();
         for (ordinal, row) in rows.declarations.iter().enumerate() {

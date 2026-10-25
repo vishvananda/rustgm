@@ -1,5 +1,5 @@
 //! The private moved-report reservation charges actual existing growth dimensions.
-use super::{Dependencies, Error, Report, ReservationWork, error};
+use super::{Dependencies, Error, Report, ReservationWork};
 use crate::support::crates::{Interface, generics::source::ValidatedView};
 
 pub(super) fn reserve(
