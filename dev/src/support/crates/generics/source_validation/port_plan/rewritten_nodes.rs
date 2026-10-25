@@ -36,6 +36,32 @@ pub(super) enum Node {
         referent: NodeId,
     },
     FunctionItem(s::FunctionApplicationRef),
+    SignatureResult(NodeId),
+    SignatureInput {
+        ty: NodeId,
+        next: NodeId,
+    },
+    /// Only zero-own-slot, region-independent Rust/nonvariadic frames enter.
+    Function {
+        signature: NodeId,
+        unsafe_: bool,
+    },
+}
+
+#[derive(Clone, Copy)]
+struct NodeFacts(u8);
+const _: [(); size_of::<bool>()] = [(); size_of::<NodeFacts>()];
+impl NodeFacts {
+    const FORMED: u8 = 1;
+    const REGIONAL: u8 = 2;
+    const ITEM: u8 = 4;
+    const PARAMETER: u8 = 8;
+    const fn formed(self) -> bool {
+        self.0 & Self::FORMED != 0
+    }
+    const fn combine(self, other: Self) -> Self {
+        Self(((self.0 | other.0) & !Self::FORMED) | ((self.0 & other.0) & Self::FORMED))
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) enum Rewrite {
@@ -53,7 +79,7 @@ pub(super) struct Key {
 
 pub(super) struct Arena {
     pub nodes: Vec<Node>,
-    trivial_formation: Vec<bool>,
+    facts: Vec<NodeFacts>,
     pub relocations: Vec<u32>,
     interned: HashMap<Node, NodeId>,
     pub completed: HashMap<Key, NodeId>,
@@ -83,7 +109,7 @@ impl Arena {
         work.charge(1)?;
         let mut arena = Self {
             nodes: Vec::new(),
-            trivial_formation: Vec::new(),
+            facts: Vec::new(),
             relocations: Vec::new(),
             interned: HashMap::default(),
             completed: HashMap::default(),
@@ -152,9 +178,10 @@ impl Arena {
         work: &mut Work,
     ) -> Result<bool, &'static str> {
         work.charge(1)?;
-        self.trivial_formation
+        self.facts
             .get(node.0 as usize)
             .copied()
+            .map(NodeFacts::formed)
             .ok_or("source formation node is unknown")
     }
     pub(super) fn intern(&mut self, node: Node, work: &mut Work) -> Result<NodeId, &'static str> {
@@ -164,24 +191,18 @@ impl Arena {
             return Ok(id);
         }
         self.reserve(
-            4 * size_of::<Node>() + 8 * size_of::<bool>() + retained::new_map::<Node, NodeId>(1),
+            4 * size_of::<Node>()
+                + 8 * size_of::<NodeFacts>()
+                + retained::new_map::<Node, NodeId>(1),
             0,
             work,
         )?;
         let id = NodeId(
             u32::try_from(self.nodes.len()).map_err(|_| "source input type-node index overflow")?,
         );
-        let formed = match node {
-            Node::Scalar(_) | Node::Parameter(_) => true,
-            Node::FunctionItem(_) => false,
-            Node::Reference { referent, .. } => {
-                let child = referent.0 as usize;
-                !matches!(self.nodes.get(child), Some(Node::Parameter(_)))
-                    && self.trivial_formation.get(child) == Some(&true)
-            }
-        };
+        let facts = self.node_facts(node, work)?;
         self.nodes.push(node);
-        self.trivial_formation.push(formed);
+        self.facts.push(facts);
         self.interned.insert(node, id);
         self.visits = self.visits.saturating_add(1);
         Ok(id)
@@ -198,13 +219,89 @@ impl Arena {
         }
         Ok(())
     }
+    fn facts_of(&self, node: NodeId, work: &mut Work) -> Result<NodeFacts, &'static str> {
+        work.charge(1)?;
+        self.facts
+            .get(node.0 as usize)
+            .copied()
+            .ok_or("source input type child facts are absent")
+    }
+    fn node_facts(&self, node: Node, work: &mut Work) -> Result<NodeFacts, &'static str> {
+        work.charge(1)?;
+        Ok(match node {
+            Node::Scalar(_) => NodeFacts(NodeFacts::FORMED),
+            // Preserve the old parameter formation rule outside Functions.
+            // A Function explicitly retains opaque parameter conditionality.
+            Node::Parameter(_) => NodeFacts(NodeFacts::FORMED | NodeFacts::PARAMETER),
+            Node::FunctionItem(_) => NodeFacts(NodeFacts::ITEM),
+            Node::Reference {
+                region, referent, ..
+            } => {
+                let mut facts = self.facts_of(referent, work)?;
+                if matches!(
+                    self.nodes.get(referent.0 as usize),
+                    Some(Node::Parameter(_))
+                ) {
+                    facts.0 &= !NodeFacts::FORMED;
+                }
+                if region != Region::Static {
+                    facts.0 |= NodeFacts::REGIONAL;
+                }
+                facts
+            }
+            Node::SignatureResult(result) => self.facts_of(result, work)?,
+            Node::SignatureInput { ty, next } => {
+                self.signature_tail(next, work)?;
+                self.facts_of(ty, work)?.combine(self.facts_of(next, work)?)
+            }
+            Node::Function { signature, .. } => {
+                self.signature_tail(signature, work)?;
+                let mut facts = self.facts_of(signature, work)?;
+                if facts.0 & (NodeFacts::REGIONAL | NodeFacts::ITEM) != 0 {
+                    return Err(
+                        "source Function substitution captured regional or function-item inputs",
+                    );
+                }
+                if facts.0 & NodeFacts::PARAMETER != 0 {
+                    facts.0 &= !NodeFacts::FORMED;
+                }
+                facts
+            }
+        })
+    }
+    fn signature_tail(&self, node: NodeId, work: &mut Work) -> Result<(), &'static str> {
+        work.charge(1)?;
+        if !matches!(
+            self.nodes.get(node.0 as usize),
+            Some(Node::SignatureResult(_) | Node::SignatureInput { .. })
+        ) {
+            return Err("source Function lost its canonical signature-cell tail");
+        }
+        Ok(())
+    }
+    #[cfg(test)]
+    pub(super) fn observe(&self, steps: usize) {
+        eprintln!(
+            "source planner node={} flags={} nodes={}/{} flags_cap={} memo={}/{} steps={} reserved={} peak={}",
+            size_of::<Node>(),
+            size_of::<NodeFacts>(),
+            self.nodes.len(),
+            self.nodes.capacity(),
+            self.facts.capacity(),
+            self.completed.len(),
+            self.completed.capacity(),
+            steps,
+            self.reserved,
+            self.peak,
+        );
+    }
     pub(super) fn retained_bytes(&self, domains: &DomainIndex<'_, '_>, base: usize) -> usize {
         retained::sum([
             domains.retained_bytes(),
             base,
             size_of::<Self>(),
             retained::vector(&self.nodes),
-            retained::vector(&self.trivial_formation),
+            retained::vector(&self.facts),
             retained::vector(&self.relocations),
             retained::map(&self.interned),
             retained::map(&self.completed),

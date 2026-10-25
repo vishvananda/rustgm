@@ -1,6 +1,11 @@
 //! Canonical summaries select actual ownership keys; graph traversal is memoized.
+mod memo_owner;
+mod recipe_emission;
 mod regional_roots;
 mod signatures;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/signature_recipes.rs"]
+mod tests;
 use super::{DeclarationRef, Declarations, DefId, Stage, g, s};
 use crate::support::crates::owner_catalog::BodyRef;
 use crate::{
@@ -25,9 +30,16 @@ impl Context {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum Formation {
+    Recipe,
+    SharedCall,
+    Call { value: u32 },
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Key {
     ty: TypeId,
     context: Option<Context>,
+    formation: Formation,
 }
 struct Frame {
     binder: g::BinderRef,
@@ -36,6 +48,7 @@ struct Frame {
 }
 #[derive(Default)]
 pub(super) struct Graph {
+    arena: Option<crate::types::arena::Identity>,
     pub(super) parameters: HashMap<ParameterId, s::SlotRef>,
     types: HashMap<Key, g::TypeRef>,
     regions: HashMap<(RegionId, Option<Context>), s::RegionRef>,
@@ -148,124 +161,19 @@ impl Stage {
         context: Context,
     ) -> Result<Key, &'static str> {
         self.charge(1)?;
+        self.graph.require_arena(&facts.types)?;
         let contextual = facts
             .types
             .needs_region_context(ty)
             .ok_or("source type root is unknown")?;
+        let anonymous = facts
+            .types
+            .contains_anonymous_callables(ty)
+            .ok_or("source type root has no actual callable summary")?;
         Ok(Key {
             ty,
-            context: contextual.then_some(context),
-        })
-    }
-
-    pub(crate) fn ty(
-        &mut self,
-        facts: &Declarations,
-        ty: TypeId,
-        context: Context,
-    ) -> Result<g::TypeRef, &'static str> {
-        self.graph.roots = self.graph.roots.saturating_add(1);
-        let root = self.type_key(facts, ty, context)?;
-        let mut pending = Vec::new();
-        self.type_work(&mut pending, (root, false))?;
-        while let Some((key, finish)) = pending.pop() {
-            self.charge(1)?;
-            if self.graph.types.contains_key(&key) {
-                self.graph.hits = self.graph.hits.saturating_add(1);
-                continue;
-            }
-            let kind = facts
-                .types
-                .kind(key.ty)
-                .ok_or("source type graph has an unknown child")?;
-            if !finish && let Kind::Reference { referent, .. } = kind {
-                self.type_work(&mut pending, (key, true))?;
-                let child = self.type_key(facts, referent, context)?;
-                self.type_work(&mut pending, (child, false))?;
-                continue;
-            }
-            let row = self.type_row(facts, key, kind, context)?;
-            self.reserve(4 * size_of::<s::Type>() + retained::new_map::<Key, g::TypeRef>(1))?;
-            let id = g::TypeRef(
-                u32::try_from(self.rows.types.len()).map_err(|_| "source type table overflow")?,
-            );
-            self.rows.types.push(row);
-            self.graph.types.insert(key, id);
-            if key.context.is_some() {
-                self.graph.contextual_nodes = self.graph.contextual_nodes.saturating_add(1);
-            }
-        }
-        self.graph
-            .types
-            .get(&root)
-            .copied()
-            .ok_or("source type root did not complete")
-    }
-
-    fn type_work(
-        &mut self,
-        pending: &mut Vec<(Key, bool)>,
-        value: (Key, bool),
-    ) -> Result<(), &'static str> {
-        self.charge(1)?;
-        if pending.len() == pending.capacity() {
-            self.scratch(
-                pending
-                    .len()
-                    .saturating_add(1)
-                    .saturating_mul(4)
-                    .saturating_mul(size_of::<(Key, bool)>()),
-            )?;
-        }
-        pending.push(value);
-        Ok(())
-    }
-
-    fn type_row(
-        &mut self,
-        facts: &Declarations,
-        key: Key,
-        kind: Kind,
-        context: Context,
-    ) -> Result<s::Type, &'static str> {
-        Ok(match kind {
-            Kind::Parameter(parameter) => s::Type::Parameter(
-                *self
-                    .graph
-                    .parameters
-                    .get(&parameter)
-                    .ok_or("source type uses an unreserved actual parameter slot")?,
-            ),
-            Kind::Reference {
-                mutable,
-                region,
-                referent,
-            } => {
-                let child = self.type_key(facts, referent, context)?;
-                let referent = self
-                    .graph
-                    .types
-                    .get(&child)
-                    .copied()
-                    .ok_or("source referent was not completed before its parent")?;
-                s::Type::Reference {
-                    mutable,
-                    region: self.region(region, context)?,
-                    referent,
-                }
-            }
-            Kind::FunctionItem {
-                item, arguments, ..
-            } => s::Type::FunctionItem(self.function_application(facts, item, arguments, context)?),
-            Kind::Primitive(_) | Kind::Tuple(_)
-                if key.ty == TypeId::UNIT || matches!(kind, Kind::Primitive(_)) =>
-            {
-                s::Type::Scalar(
-                    super::super::export_scalar(facts, key.ty)
-                        .map_err(|_| "source scalar type is outside the supported profile")?,
-                )
-            }
-            _ => return Err("source type form requires an explicitly supported transport row"),
+            context: (contextual || anonymous).then_some(context),
+            formation: Formation::Recipe,
         })
     }
 
@@ -277,6 +185,7 @@ impl Stage {
         context: Context,
     ) -> Result<s::FunctionApplicationRef, &'static str> {
         self.charge(1)?;
+        self.graph.require_arena(&facts.types)?;
         let key = (item, arguments, context);
         if let Some(&application) = self.graph.applications.get(&key) {
             return Ok(application);

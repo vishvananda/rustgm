@@ -20,7 +20,7 @@ type 17 primitive f32
 type 18 primitive f64
 type 19 primitive f16
 type 20 primitive f128
-type 21 parameter def=13 index=1
+type 21 parameter def=13 index=0
 type 22 reference mutable=false region=bound:0:0 referent=11
 type 23 opaque id=0 arguments=[type:21]
 type 24 function binders=1 parameters=[21,22] result=23 unsafe=false

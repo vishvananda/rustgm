@@ -75,6 +75,7 @@ impl<L> Syntax<L> {
             | Kind::Label { value, .. }
             | Kind::ReferencePattern { pattern: value, .. }
             | Kind::PatternField { pattern: value, .. }
+            | Kind::ImplRestriction { path: value }
             | Kind::Macro { path: value, .. } => visit(value)?,
             Kind::Binary { left, right, .. }
             | Kind::Repeat {
@@ -301,7 +302,13 @@ impl<L> Syntax<L> {
                 self.children(item.where_clause, visit)?;
                 self.children(variants, visit)?;
             }
-            ItemKind::Trait { bounds, items, .. } => {
+            ItemKind::Trait {
+                restriction,
+                bounds,
+                items,
+                ..
+            } => {
+                visit_all(restriction, visit)?;
                 self.children(bounds, visit)?;
                 self.children(item.where_clause, visit)?;
                 self.children(items, visit)?;

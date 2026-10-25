@@ -46,7 +46,7 @@ pub struct SourceInspection {
 impl Source {
     pub(super) fn begin(
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
     ) -> Result<Self, &'static str> {
@@ -55,7 +55,7 @@ impl Source {
 
     pub(super) fn begin_numbered(
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
     ) -> Result<Self, &'static str> {
@@ -64,13 +64,34 @@ impl Source {
 
     fn begin_with_numbering(
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
         numbered: bool,
     ) -> Result<Self, &'static str> {
+        let stage = Stage::begin(report, facts, identity)?;
+        Self::begin_stage(facts, checked, stage, numbered)
+    }
+
+    pub(super) fn begin_namespace(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<(Self, s::NamespaceColumns), &'static str> {
+        let mut stage = Stage::begin_with_ordinary_traits(report, facts, identity)?;
+        let names = stage.namespace_columns(report)?;
+        Ok((Self::begin_stage(facts, checked, stage, false)?, names))
+    }
+
+    fn begin_stage(
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        stage: Stage,
+        numbered: bool,
+    ) -> Result<Self, &'static str> {
         let mut source = Self {
-            stage: Stage::begin(report, facts, identity)?,
+            stage,
             openings: HashMap::default(),
             numbering: None,
         };
@@ -97,8 +118,9 @@ impl Source {
                 .or_default()
                 .push(row.id);
         }
-        for function in &facts.functions {
+        for index in 0..facts.functions.len() {
             source.stage.charge(1)?;
+            let function = facts.functions[index];
             let Some((template, input, proof)) =
                 checked.function_proof(ItemId(function.definition.0))
             else {
@@ -125,7 +147,7 @@ impl Source {
 
     pub(super) fn collect(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         proved: &Proved,
         input: &Contract,
     ) -> Result<(), &'static str> {
@@ -134,7 +156,7 @@ impl Source {
 
     fn collect_body(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         body: &Body,
         input: &Contract,
     ) -> Result<(), &'static str> {
@@ -165,6 +187,7 @@ impl Source {
         {
             return Err("source original changed its exact body, signature or paired input");
         }
+        self.stage.prepare_type_arena(facts, body.result)?;
         let mut sites = locations::Sites::new(&mut self.stage, body)?;
         let variables = obligation_rows::allocations(&mut self.stage, input, context, &mut sites)?;
         let mut original =
@@ -207,11 +230,19 @@ impl Source {
         Ok(())
     }
 
-    pub(super) fn complete(self) -> Result<SourceInspection, &'static str> {
+    fn finish_rows(
+        self,
+    ) -> Result<
+        (
+            s::SourceRows,
+            crate::sema::crates::authored_export::SourceWork,
+        ),
+        &'static str,
+    > {
         // No original can still arrive after this ownership transfer. Release
         // collection-only opening scratch before allocating validation indexes.
         drop(self.openings);
-        let (mut rows, mut work) = self.stage.into_rows()?;
+        let (mut rows, work) = self.stage.into_rows()?;
         if let Some(numbering) = self.numbering {
             let mut units = Vec::with_capacity(numbering.len());
             for unit in numbering {
@@ -219,6 +250,24 @@ impl Source {
             }
             rows.body_units = units;
         }
+        Ok((rows, work))
+    }
+
+    pub(super) fn complete_namespace(
+        self,
+        names: s::NamespaceColumns,
+        identity: &CrateIdentity,
+    ) -> Result<std::sync::Arc<s::UnpublishedNamespace>, &'static str> {
+        let (rows, observed) = self.finish_rows()?;
+        let mut work = g::Work {
+            steps: observed.steps,
+            ..g::Work::default()
+        };
+        s::UnpublishedNamespace::stage(identity, rows, names, &mut work)
+    }
+
+    pub(super) fn complete(self) -> Result<SourceInspection, &'static str> {
+        let (rows, mut work) = self.finish_rows()?;
         let mut validation = g::Work {
             steps: work.steps,
             ..g::Work::default()

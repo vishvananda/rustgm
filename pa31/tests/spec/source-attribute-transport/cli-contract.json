@@ -1,0 +1,291 @@
+{
+  "state": "predeclared before new CLI/integration/native execution",
+  "provider_identity": {
+    "name": "minicore",
+    "disambiguator": "attribute_transport"
+  },
+  "providers": {
+    "plain": {
+      "path": "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+      "sha256": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297",
+      "stderr": "",
+      "status": 0,
+      "tag": 10,
+      "version": 1
+    },
+    "marked": {
+      "path": "pa31/tests/spec/source-publication-attributes/must-use-reason.rs",
+      "sha256": "d647bf4d6b998a861ab6641925c41ec8657d51d78cfc6d072d99bab09feb961d",
+      "stderr": "",
+      "status": 0,
+      "tag": 10,
+      "version": 1
+    },
+    "wrong_owner": {
+      "path": "pa31/tests/spec/source-publication-attributes/negative-crate-owner.rs",
+      "sha256": "38ea8b1f64dac8e1197164b908a6c5cdf18c49a30881062763bbb848eced45ba",
+      "stderr": "warning[unused_attributes]: file 0: 124: must_use attribute requires a function, nominal type or trait\n",
+      "status": 0,
+      "tag": 10,
+      "version": 1
+    },
+    "bodyless_inline": {
+      "path": "pa31/tests/spec/source-publication-attributes/required-inline.rs",
+      "sha256": "81e929cfed4f57d086e71954e072432267bcae64aa99d222af4a2b715ac8b03a",
+      "stderr": "warning[unused_attributes]: file 0: 1741: inline attribute on a function without a body has no effect\n",
+      "status": 0,
+      "tag": 10,
+      "version": 1
+    },
+    "unused_marked": {
+      "path": "pa31/tests/spec/source-publication-attributes/unused-marked.rs",
+      "sha256": "f99f31dd41a2d53b5117bade7bf1a5b448d424e592934955aec71baf20b2f997",
+      "stderr": "",
+      "status": 0,
+      "tag": 10,
+      "version": 1
+    }
+  },
+  "clients": {
+    "used": {
+      "path": "pa31/tests/spec/source-attribute-transport/cli-clients/used.rs",
+      "sha256": "99553f08b7b79367da7410943e228c55e4005a69c8848dd8c90a3138df0aadbb"
+    },
+    "discarded": {
+      "path": "pa31/tests/spec/source-attribute-transport/cli-clients/discarded.rs",
+      "sha256": "63ff0b8cafc80c37ba8c3adb9bc6b1abfd5a8dc4b0fd40366124fca1780a0307"
+    },
+    "let_discard": {
+      "path": "pa31/tests/spec/source-attribute-transport/cli-clients/let_discard.rs",
+      "sha256": "015860ca997447301cde2924f938668c9e4e68ca91b86982cb1a71c0de02d0b1"
+    },
+    "allowed": {
+      "path": "pa31/tests/spec/source-attribute-transport/cli-clients/allowed.rs",
+      "sha256": "d6c3b336065a45331af91138c3e7a5c73197bc12e0b63c1962c36ec5bd0dd656"
+    },
+    "warned": {
+      "path": "pa31/tests/spec/source-attribute-transport/cli-clients/warned.rs",
+      "sha256": "95a369b4ca18469ba0a3c0143177da2f63ef5833c6506585795870f593be7f1f"
+    },
+    "inherited_allow": {
+      "path": "pa31/tests/spec/source-attribute-transport/cli-clients/inherited_allow.rs",
+      "sha256": "82812db6fe392a1130451672afd0b2921057ccfa4d64b0d23efb34d924fa738f"
+    },
+    "denied": {
+      "path": "pa31/tests/spec/source-attribute-transport/cli-clients/denied.rs",
+      "sha256": "f3adfb11555c281927a03eb2e8fef57d14b1ae0a7311a1600ac443000de72833"
+    },
+    "forbidden": {
+      "path": "pa31/tests/spec/source-attribute-transport/cli-clients/forbidden.rs",
+      "sha256": "79f7dfb9a9d7ff3276cca93d881a722c64b11828a87ac32835b2e55199648194"
+    },
+    "forbid_weaken": {
+      "path": "pa31/tests/spec/source-attribute-transport/cli-clients/forbid_weaken.rs",
+      "sha256": "a90bd16ef7d7fff19234145982668a6dae6f86a1f002a76a9b3c40cd1543ae3d"
+    }
+  },
+  "accepted": [
+    {
+      "name": "plain_used",
+      "provider": "plain",
+      "client": "used",
+      "status": 0,
+      "stderr": "",
+      "native": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "rustc_warning_codes": []
+    },
+    {
+      "name": "plain_discarded",
+      "provider": "plain",
+      "client": "discarded",
+      "status": 0,
+      "stderr": "",
+      "native": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "rustc_warning_codes": []
+    },
+    {
+      "name": "marked_used",
+      "provider": "marked",
+      "client": "used",
+      "status": 0,
+      "stderr": "",
+      "native": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "rustc_warning_codes": []
+    },
+    {
+      "name": "marked_discarded",
+      "provider": "marked",
+      "client": "discarded",
+      "status": 0,
+      "stderr": "warning[unused_must_use]: file 0: 104: unused must_use result: keep result\n",
+      "native": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "rustc_warning_codes": [
+        "unused_must_use"
+      ]
+    },
+    {
+      "name": "marked_let",
+      "provider": "marked",
+      "client": "let_discard",
+      "status": 0,
+      "stderr": "",
+      "native": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "rustc_warning_codes": []
+    },
+    {
+      "name": "marked_allowed",
+      "provider": "marked",
+      "client": "allowed",
+      "status": 0,
+      "stderr": "",
+      "native": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "rustc_warning_codes": []
+    },
+    {
+      "name": "marked_warned",
+      "provider": "marked",
+      "client": "warned",
+      "status": 0,
+      "stderr": "warning[unused_must_use]: file 0: 130: unused must_use result: keep result\n",
+      "native": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "rustc_warning_codes": [
+        "unused_must_use"
+      ]
+    },
+    {
+      "name": "marked_inherited_allow",
+      "provider": "marked",
+      "client": "inherited_allow",
+      "status": 0,
+      "stderr": "",
+      "native": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "rustc_warning_codes": []
+    }
+  ],
+  "rejected": [
+    {
+      "name": "marked_denied",
+      "provider": "marked",
+      "client": "denied",
+      "status": 1,
+      "stderr": "ERROR: file 0: 130: unused must_use result: keep result\n",
+      "lowir_bytes": 0,
+      "rustc_required_error": "unused_must_use"
+    },
+    {
+      "name": "marked_forbidden",
+      "provider": "marked",
+      "client": "forbidden",
+      "status": 1,
+      "stderr": "ERROR: file 0: 132: unused must_use result: keep result\n",
+      "lowir_bytes": 0,
+      "rustc_required_error": "unused_must_use"
+    },
+    {
+      "name": "marked_forbid_weaken",
+      "provider": "marked",
+      "client": "forbid_weaken",
+      "status": 1,
+      "stderr": "ERROR: file 0: 132: forbidden unused_must_use lint cannot be weakened\n",
+      "lowir_bytes": 0,
+      "rustc_required_error": "E0453"
+    }
+  ],
+  "frontend_only_consumers": {
+    "providers": [
+      "wrong_owner",
+      "bodyless_inline",
+      "unused_marked"
+    ],
+    "client": "used",
+    "status": 0,
+    "stderr": ""
+  },
+  "ordinary": {
+    "path": "pa31/tests/spec/source-attribute-transport/cli-clients/ordinary.rs",
+    "sha256": "081b3a5443bc4e67fc16b3aa4e3d54bb4c77b248de6b08e9a537701ace69f72e",
+    "tag": 0
+  },
+  "legacy": {
+    "path": "pa31/tests/spec/source-attribute-transport/legacy-functions-v0.hex",
+    "sha256": "a5c56e9db572933e7705b55475a2bad7678b7cb4969748caf84d02db6ed9e5d0",
+    "decoded_sha256": "81fd7dc86d906ef7ba5fd4abb92a0a24f6f9548c473b9b8a43a62dd7c1f234c0",
+    "client": "discarded",
+    "status": 1,
+    "stderr": "ERROR: file 0: 0: imported must_use contract transport is not implemented\n"
+  },
+  "corruption": {
+    "source": "actual marked v1 CLI artifact",
+    "mutation": "set row version u16 at13..15 to65535",
+    "status": 1,
+    "diagnostic": "unsupported source row version or defining edition",
+    "metadata_must_not_exist": true
+  },
+  "unsupported": {
+    "path": "pa31/tests/spec/source-publication-attributes/nominal-marked.rs",
+    "sha256": "5c73d4946c3fee35e55dd653335b634ad443a1a011db4b5b6ad3c94329a88af7",
+    "status": 1,
+    "diagnostic": "source declaration kind is outside the initial source profile"
+  },
+  "backend": {
+    "lock_sha256": "6d300e6addfcd7050afef7940e8511f946f8113ad91e82901ab3f499c61757aa",
+    "object_sha256": "ded1b6800ce1bdaeaad45cd28c2903d7c96de7cdc29261f6834869a6eaf525fc",
+    "prebuilt_only": true
+  },
+  "native_driver": {
+    "path": "pa31/tests/spec/source-functions-transport/native-driver.c",
+    "sha256": "ef2747a597a1edafbf706092983f268dc9f653d0f277177fd58b3eaef2e4fbcd"
+  },
+  "independent": {
+    "toolchain": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "environment": {
+      "RUSTC_BOOTSTRAP": "1"
+    },
+    "panic": "abort",
+    "provider_kind": "rlib",
+    "client_emit": "obj",
+    "warning_reason": "keep result",
+    "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "bounds": {
+    "seconds": 240,
+    "command_timeout": 10,
+    "successful_disposable_cleanup": "after each native case; retain raw logs/provenance and shared two small rlibs until done"
+  },
+  "compatibility": "CLI always v1 only for actual SourceCore library; no user version flag or attribute-presence fallback. Legacy API/codec golden and non-SourceCore code path stay unchanged. No execution/nominal/Provided/UB policy expansion.",
+  "client_metadata_tag": 4
+}

@@ -120,12 +120,20 @@ impl Checker<'_> {
         if !function && self.bound_syntax.contains_key(&owner) {
             self.deferred_bounds.push((owner, context));
         }
+        if function {
+            // Syntax was validated above. Function lifetimes belong to the
+            // signature's early/late scheme, not its type/const argument vector.
+            nodes.retain(|key| {
+                !matches!(
+                    self.generic_syntax(*key),
+                    Ok(GenericParameter {
+                        flavor: GenericFlavor::Lifetime,
+                        ..
+                    })
+                )
+            });
+        }
         for (index, key) in nodes.into_iter().enumerate().rev() {
-            // Function lifetime slots are assigned by signature first use, then
-            // classified as early/late. Do not preassign them in source order.
-            if function && self.generic_syntax(key)?.flavor == GenericFlavor::Lifetime {
-                continue;
-            }
             self.work.push(Work::Generic(Declaration {
                 owner,
                 key,

@@ -353,6 +353,10 @@ pub enum Kind {
     },
     InferType,
     NeverType,
+    /// A parsed implementation domain, independent of the trait's visibility.
+    ImplRestriction {
+        path: NodeId,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -376,6 +380,7 @@ pub struct Pending {
 pub struct Syntax<L> {
     pub nodes: Vec<Node>,
     pub items: Vec<Item>,
+    pub(crate) defaultness: Option<Box<super::defaultness::Declarations>>,
     pub variants: Vec<Variant>,
     pub use_trees: Vec<UseTree>,
     pub generics: Vec<GenericParameter>,
@@ -396,6 +401,7 @@ impl<L> Default for Syntax<L> {
         Self {
             nodes: Vec::new(),
             items: Vec::new(),
+            defaultness: None,
             variants: Vec::new(),
             use_trees: Vec::new(),
             generics: Vec::new(),
@@ -464,6 +470,7 @@ impl<L> Syntax<L> {
         Ok(Syntax {
             nodes: self.nodes,
             items: self.items,
+            defaultness: self.defaultness,
             variants: self.variants,
             use_trees: self.use_trees,
             generics: self.generics,

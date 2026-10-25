@@ -23,8 +23,8 @@ type 20 primitive f128
 type 21 parameter def=14 index=0
 type 22 parameter def=15 index=1
 type 23 projection def=15 self=21 trait=13 arguments=[] family arguments=[region:bound:0:0,type:22]
-type 24 parameter def=16 index=2
-type 25 parameter def=16 index=3
+type 24 parameter def=16 index=0
+type 25 parameter def=16 index=1
 type 26 reference mutable=false region=bound:0:0 referent=24
 type 27 projection def=15 self=21 trait=13 arguments=[] family arguments=[region:bound:0:1,type:25]
 type 28 projection def=15 self=21 trait=13 arguments=[] family arguments=[region:bound:0:0,type:24]

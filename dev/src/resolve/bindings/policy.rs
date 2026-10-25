@@ -32,6 +32,9 @@ pub(in crate::resolve) enum Feature {
     CfgUbChecks,
     F16,
     F128,
+    ImplRestriction,
+    MinSpecialization,
+    Specialization,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -61,6 +64,9 @@ impl Request {
             "cfg_ub_checks" => Self::Capability(Feature::CfgUbChecks),
             "f16" => Self::Capability(Feature::F16),
             "f128" => Self::Capability(Feature::F128),
+            "impl_restriction" => Self::Capability(Feature::ImplRestriction),
+            "min_specialization" => Self::Capability(Feature::MinSpecialization),
+            "specialization" => Self::Capability(Feature::Specialization),
             // Requests do not authorize the unsupported live const-drop operation.
             "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
             _ => return None,
@@ -163,7 +169,11 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
             ));
         }
         return Ok(Prepared {
-            source: if features.has(Feature::InternalMacroAllowance) {
+            source: if features.has(Feature::InternalMacroAllowance)
+                || features.has(Feature::ImplRestriction)
+                || features.has(Feature::MinSpecialization)
+                || features.has(Feature::Specialization)
+            {
                 Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
                     unit, features,
                 )?)))

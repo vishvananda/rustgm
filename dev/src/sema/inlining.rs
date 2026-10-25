@@ -108,6 +108,9 @@ impl Declarations {
             .ok_or_else(|| Error::at(FileId(0), 0, "unknown inline declaration"))?;
         if actual.node.is_none() {
             use super::header_attributes::ContractKnowledge;
+            if super::header_attributes::local_crate_owner(report, definition)? {
+                return Ok(None);
+            }
             if super::header_attributes::has_imported(self, definition) {
                 return match self.header_attribute_contracts(report, definition)?.inline {
                     ContractKnowledge::KnownAbsent => Ok(None),

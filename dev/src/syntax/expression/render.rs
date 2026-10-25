@@ -338,6 +338,7 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
         }
         Kind::InferType => write!(output, "infer-type"),
         Kind::NeverType => write!(output, "never-type"),
+        Kind::ImplRestriction { path } => write!(output, "impl-restriction {}", path.get()),
     }
 }
 
@@ -378,6 +379,13 @@ pub fn write_syntax<L, W: Write>(
         }
         if let Kind::Item(index) = node.kind {
             write!(output, "item {index} ")?;
+            if let Some(defaultness) = ast.defaultness(index) {
+                write!(
+                    output,
+                    "default {} {} ",
+                    defaultness.keyword.start, defaultness.keyword.end
+                )?;
+            }
             item::item(source, ast, &ast.items[index as usize], output)?;
             writeln!(output)?;
         }

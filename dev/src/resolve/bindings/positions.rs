@@ -195,7 +195,8 @@ pub(super) fn child<L>(
         | Kind::ReferencePattern { .. }
         | Kind::Type { .. }
         | Kind::InferType
-        | Kind::NeverType => Position::Other,
+        | Kind::NeverType
+        | Kind::ImplRestriction { .. } => Position::Other,
     }
 }
 

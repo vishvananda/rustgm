@@ -17497,6 +17497,51 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+    },
+    {
+      "path": "tests/spec/default-methods/trait-blanket.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.traits"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/default-methods/inherent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.traits"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/default-methods/unused-body-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.traits"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
     }
   ]
 }
