@@ -1,5 +1,5 @@
 {
-  "state": "UNQUALIFIED compiler checkpoint; independent metadata observed",
+  "state": "Focused compiler source checkpoint qualified; specialization graph/dispatch and scoped text references remain pending",
   "baseline": "0817a3c38e9691cad3dbbf2620b2cfd20415445f",
   "source_frontier": {
     "run": 40224012971,
@@ -1025,5 +1025,81 @@
       "tests/spec/default-methods/unused-body-type.rs"
     ]
   },
-  "layout": "After sizes/capacities/work unmeasured until actual focused gate; prior Syntax304 Configured384 Unit672 bound to receipt317acf8277717f6d5aecee5173cfa184757cc0541a8ffecdd7c476868639e790. No allocation count or runtime nonregression claim."
+  "layout": {
+    "measurement_run": 40235524814,
+    "measurement_group": "resolve::expansion::default_warnings::tests::costs::charged_projection_retains_primary_failures_and_cold_storage_is_bounded",
+    "prior_authenticated": {
+      "Syntax": 304,
+      "Configured": 384,
+      "Unit": 672,
+      "receipt_sha256": "317acf8277717f6d5aecee5173cfa184757cc0541a8ffecdd7c476868639e790"
+    },
+    "current": {
+      "Syntax": 312,
+      "Configured": 392,
+      "Unit": 688,
+      "Extent": 104,
+      "Original": 160,
+      "Saved": 44,
+      "Policy": 11,
+      "Report": 3040,
+      "Engine": 4088,
+      "Node": 36,
+      "Item": 64,
+      "ItemKind": 28,
+      "Scope": 32,
+      "Definition": 36,
+      "NodeFacts": 80,
+      "MacroBody": 96,
+      "MacroDefinition": 136,
+      "ErrorData": 128,
+      "column_owner": 56,
+      "row": 24
+    },
+    "scaling": [
+      {
+        "rows": 8,
+        "capacity": 8,
+        "payload_bytes": 248,
+        "charged_steps": 570,
+        "charged_bytes": 824,
+        "two_view_step_delta": 528
+      },
+      {
+        "rows": 32,
+        "capacity": 32,
+        "payload_bytes": 824,
+        "charged_steps": 2706,
+        "charged_bytes": 3128,
+        "two_view_step_delta": 2544
+      },
+      {
+        "rows": 128,
+        "capacity": 128,
+        "payload_bytes": 3128,
+        "charged_steps": 12738,
+        "charged_bytes": 12344,
+        "two_view_step_delta": 12096
+      }
+    ],
+    "ordinary_no_default": "No sparse owner allocation; Syntax and embedded Original Extent each add8B, Unit totals+16B. No hot Node/Item/Scope/Definition growth.",
+    "limits": "No measured prior Extent/Original; no allocation count, runtime-selection or performance nonregression claim."
+  },
+  "qualification": {
+    "product_source": "16c0476bd9c535ac9e2e312cc3671a77765115aa",
+    "production_source": "fca6bc95b8afaa2ebac85652f1059f03b50b75ca",
+    "fresh_run": 40236064195,
+    "fresh_changed_groups": 2,
+    "retained_run": 40235524814,
+    "retained_passing_groups": 4,
+    "unchanged_production_and_shared_helpers": true,
+    "fresh_receipt_sha256": "2b37fd782b5ebd2f6efa9d015fc5528b32ffbe050a379ec94e22f7995da4d4c2",
+    "retained_receipt_sha256": "812fea39b9ef438e2ca6e527a4e124ffa3aa8cab3483cfb4134fdf97831a4aac",
+    "cli_sha256": "321dec585789ce1b64c905ab233343c19ab52805f02d7779dfa9dad78a6721aa",
+    "cli_artifact": 12615505560,
+    "cli_artifact_sha256": "715acd6a8d5ad3128a256ea0a189cdb9f05fe0a4537758688a9f694f399aa82f",
+    "native": 0,
+    "whole_core": null,
+    "downstream_harness": "Expected failure at pending PA5 references; no references written"
+  }
 }

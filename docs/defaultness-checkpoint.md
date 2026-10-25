@@ -1,7 +1,11 @@
 # Default modifiers and the required specialization graph
 
-This compiler checkpoint is UNQUALIFIED. Its independent metadata observations
-are complete; its six focused compiler groups and actual cold costs are pending.
+The bounded compiler source checkpoint is qualified on source `16c0476b`.
+Run40236064195 passes the two corrected groups; run40235524814 retains four
+actual passes on byte-identical production code and shared helpers. Formatting,
+metadata, global architecture, production/private Clippy and the focused build
+pass. The later harness step stops at the six pending PA5/PA19 references; no
+reference is written by these gates. Specialization graph/dispatch remains open.
 The unchanged original-core observer40224012971 verifies722 files and opens58.
 Physical57 is `core/src/mem/maybe_uninit.rs`, SHA
 `4189eaa95d41706cd506ef9dfdb81478640a53ccacc4d88f96329ad3a27e90fb`.
@@ -65,6 +69,31 @@ owns actual source-feature/frame consumers and complete-provider proof. Six new
 active PA5/PA19 references are pending integrator generation only after code pass.
 No existing reference or historical receipt is changed here. Other permanent
 opponents stay in the planned PA31 lane and do not activate that assignment.
+
+The actual cost control in40235524814 measures a56-byte sparse owner and24-byte
+rows. Widths8/32/128 retain capacities8/32/128 and total owner/vector payloads
+248/824/3128 bytes. Charged steps are570/2706/12738; two semantic views add
+528/2544/12096 steps without growing capacities. Charged payload counters are
+824/3128/12344 bytes; they account attempted/worst-case retention and are not
+allocation counts. Never-default syntax allocates no sparse owner. Syntax grows
+304 to312 bytes and Configured384 to392. Unit grows672 to688: it embeds the
+8-byte Syntax option and another8 bytes in Original's Extent. Current Extent is
+104, Original160 and Saved44 bytes; prior Extent/Original were not measured.
+Policy11, Report3040, Engine4088, Node36, Item64, ItemKind28, Scope32,
+Definition36, NodeFacts80, macro Body96/Definition136 and ErrorData128 remain
+unchanged. No wall-time/native-selection nonregression is inferred from these
+bounded storage/work controls.
+
+The qualified CLI hash is
+`321dec585789ce1b64c905ab233343c19ab52805f02d7779dfa9dad78a6721aa`.
+Artifact12615505560 has ZIP SHA
+`715acd6a8d5ad3128a256ea0a189cdb9f05fe0a4537758688a9f694f399aa82f`.
+The fresh receipt SHA is
+`2b37fd782b5ebd2f6efa9d015fc5528b32ffbe050a379ec94e22f7995da4d4c2`;
+the retained four-pass/static receipt SHA is
+`812fea39b9ef438e2ca6e527a4e124ffa3aa8cab3483cfb4134fdf97831a4aac`.
+Earlier static and test-assumption failures remain retained. No new original-core
+observer or candidate native execution is claimed for this checkpoint.
 
 The next graph/dispatch checkpoint is mandatory and high priority. Reuse existing
 coarse-head candidate pairs, canonical substitutions and charged comparisons.
