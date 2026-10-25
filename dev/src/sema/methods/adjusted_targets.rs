@@ -8,7 +8,6 @@ use crate::{
     resolve::{expansion::Report, names::NameId},
     sema::model::Declarations,
     types::{
-        RegionId,
         infer::{Constructor, Context, TermId},
         subject_head::Head,
     },
@@ -18,7 +17,7 @@ pub(super) fn collect(
     report: &Report,
     facts: &mut Declarations,
     context: &mut Context,
-    mut term: TermId,
+    (mut term, base): (TermId, TermId),
     name: NameId,
     site: Use,
     found: &mut Found,
@@ -26,13 +25,29 @@ pub(super) fn collect(
     if !facts.methods.structural_name(name) {
         return Ok(());
     }
+    let array_base = matches!(
+        context
+            .head(&facts.types, base)
+            .map_err(selection::inference)?,
+        Some(Constructor::Array(_) | Constructor::ArrayTerm(_) | Constructor::ArrayInfer(_))
+    );
+    let retain_references = array_base
+        && [false, true].into_iter().any(|mutable| {
+            facts
+                .methods
+                .has_inherent(Bucket::Structural(Head::Reference(mutable), name))
+        });
     let mut depth = 0;
+    let mut reference_steps = Vec::new();
     loop {
-        variants(report, facts, context, term, name, site, found)?;
+        extend(report, facts, context, term, name, site, found)?;
         let head = context
             .head(&facts.types, term)
             .map_err(selection::inference)?;
-        if matches!(head, Some(Constructor::Reference { .. })) {
+        if let Some(reference @ Constructor::Reference { .. }) = head {
+            if retain_references {
+                reference_steps.push(reference);
+            }
             term = context
                 .child(&facts.types, term, 0)
                 .map_err(selection::inference)?;
@@ -53,7 +68,15 @@ pub(super) fn collect(
                 let slice = context
                     .construct(Constructor::Slice, &[element])
                     .map_err(selection::inference)?;
-                variants(report, facts, context, slice, name, site, found)?;
+                unsized_candidates(
+                    report,
+                    facts,
+                    context,
+                    (slice, &reference_steps),
+                    name,
+                    site,
+                    found,
+                )?;
             }
             break;
         }
@@ -63,34 +86,38 @@ pub(super) fn collect(
     Ok(())
 }
 
-/// Build borrow shapes only when an actual reference-owner bucket can use them.
-fn variants(
+/// Autoref adjusts a receiver; it does not introduce an inherent Self owner.
+/// Rebuild actual reference prefixes once, retaining their order and regions.
+/// These are full-Self exclusion probes, not permission for a nested unsize.
+fn unsized_candidates(
     report: &Report,
     facts: &mut Declarations,
     context: &mut Context,
-    term: TermId,
+    (term, reference_steps): (TermId, &[Constructor]),
     name: NameId,
     site: Use,
     found: &mut Found,
 ) -> Result<(), &'static str> {
     extend(report, facts, context, term, name, site, found)?;
-    for mutable in [false, true] {
-        if !facts
+    let present = [false, true].map(|mutable| {
+        facts
             .methods
             .has_inherent(Bucket::Structural(Head::Reference(mutable), name))
-        {
-            continue;
-        }
-        let reference = context
-            .construct(
-                Constructor::Reference {
-                    mutable,
-                    region: RegionId::STATIC,
-                },
-                &[term],
-            )
+    });
+    if !present.into_iter().any(|present| present) {
+        return Ok(());
+    }
+    let mut prefix = term;
+    for &reference in reference_steps.iter().rev() {
+        let Constructor::Reference { mutable, .. } = reference else {
+            return Err("invalid source receiver reference prefix");
+        };
+        prefix = context
+            .construct(reference, &[prefix])
             .map_err(selection::inference)?;
-        extend(report, facts, context, reference, name, site, found)?;
+        if present[usize::from(mutable)] {
+            extend(report, facts, context, prefix, name, site, found)?;
+        }
     }
     Ok(())
 }

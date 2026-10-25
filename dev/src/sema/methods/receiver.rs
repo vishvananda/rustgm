@@ -163,7 +163,7 @@ fn inherent_candidates(
         report,
         facts,
         source,
-        term,
+        (term, base),
         site.name,
         identifier,
         &mut inherent,
@@ -212,6 +212,9 @@ impl Search<'_> {
         unsize: bool,
     ) -> Result<Option<Selected>, &'static str> {
         for borrow in [None, Some(false), Some(true)] {
+            if unsize && borrow.is_none() {
+                continue;
+            }
             let actual = if let Some(mutable) = borrow {
                 self.source
                     .construct(
