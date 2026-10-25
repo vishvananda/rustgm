@@ -77,6 +77,37 @@ fn imported_definition(report: &Report, name: &str) -> Result<DefId> {
         })
         .ok_or_else(|| format!("missing actual imported {name}").into())
 }
+fn imported_copy_trait(report: &Report, interface: &crates::Interface) -> Result<DefId> {
+    let descriptor = interface
+        .source_descriptor()
+        .ok_or("actual provider descriptor")?;
+    let rows = descriptor.rows();
+    let copy = rows
+        .roles
+        .iter()
+        .find(|row| row.role == crate::support::bindings::LangItem::Copy)
+        .ok_or("actual checked Copy role")?
+        .declaration;
+    assert!(rows.traits.iter().any(|header| header.declaration == copy));
+    let imported = report
+        .resolution
+        .crates
+        .as_ref()
+        .ok_or("actual imported inventory")?;
+    let definition = imported.generic_definition(descriptor.identity(), copy)?;
+    let catalog = imported
+        .origin_catalog()?
+        .ok_or("actual completed import catalog")?;
+    let declaration = catalog.declaration(definition)?;
+    catalog.validate_declaration(declaration, definition, DefKind::Trait)?;
+    assert!(
+        imported
+            .definitions()
+            .all(|(_, actual)| actual != definition),
+        "trait acquired a fake function/linker identity"
+    );
+    Ok(definition)
+}
 fn idle(policy: &str, statement: &str) -> String {
     format!("#![feature(no_core)]#![no_core]{policy}extern crate base;pub fn idle(){{{statement}}}")
 }
@@ -203,7 +234,7 @@ fn versioned_contract_profiles_authenticate_unrestricted_domains_before_fresh_im
     ));
     assert!(contract.origin.imported().is_some());
     assert!(contract.origin.source().is_none());
-    let copy = imported_definition(&report, "Copy")?;
+    let copy = imported_copy_trait(&report, &interface)?;
     analysis
         .facts
         .associated
