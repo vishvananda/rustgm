@@ -188,7 +188,7 @@ impl Float<'_> {
                 .parse::<f64>()
                 .map(|v| FloatBits::F64(v.to_bits())),
             FloatType::F16 | FloatType::F128 => {
-                let bits = super::wide::round(&self.decimal, ty == FloatType::F16)?;
+                let bits = super::decimal_rounding::round(&self.decimal, ty == FloatType::F16)?;
                 return Ok(if ty == FloatType::F16 {
                     FloatBits::F16(u16::try_from(bits).map_err(|_| "invalid half float bits")?)
                 } else {

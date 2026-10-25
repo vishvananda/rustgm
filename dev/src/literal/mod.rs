@@ -1,11 +1,11 @@
 //! PA2 literal interpretation. Macro tokens are interpreted only on demand.
+mod decimal_rounding;
 mod escapes;
 mod number;
 pub mod render;
 pub mod storage;
 mod text;
 pub mod value;
-mod wide;
 
 use crate::lex::token::{Kind, LexError, Token};
 pub use value::Value;
