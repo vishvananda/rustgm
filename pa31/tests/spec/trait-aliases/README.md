@@ -6,8 +6,8 @@ course cases or passing RustGM tests. Their feature request is unstable; the
 shared parsing and bound machinery belongs to PA5/PA21 respectively.
 
 `contract.json` binds the exact source hashes, initial predictions, actual pinned
-rustc commands and diagnostic/output hashes. Run40239493812 observes32 metadata
-compilations and six actual native executions across Rust2021/2024. All native
+rustc commands and diagnostic/output hashes. Run40239493812 observes 32 metadata
+compilations and six actual native executions across Rust 2021/2024. All native
 executions print `7\n`. There are zero infrastructure failures and eight retained
 prediction disagreements: grammar before `=`, private-bound warnings and the
 inactive unstable-syntax warning. Do not rewrite those predictions or sources.
