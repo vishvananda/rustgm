@@ -22,6 +22,7 @@ jobs:
         with:
           path: |
             obj/rust/dev-fast
+            obj/rust/private-lint
             obj/fast-audit.json
             ~/.cargo/registry
           key: dev-fast-${{ runner.os }}-rust-1.98-${{ hashFiles('dev/Cargo.lock', 'dev/Cargo.toml') }}-${{ github.sha }}
@@ -30,7 +31,7 @@ jobs:
       - name: Audit setup
         run: make setup-audit
       - name: Five-minute development check
-        run: make fastcheck FAST_ARGS='lexer'
+        run: RUST_TEST_NOCAPTURE=1 make fastcheck FAST_ARGS='--lib-case resolve::expansion::removed_functions::demand::tests::strict_body_receipts_keep_own_root_header_and_live_sibling_demands --lib-case resolve::expansion::removed_functions::demand::tests::ordinary_and_cfg_free_test_removal_allocate_no_demand_index --lib-case resolve::expansion::removed_functions::demand::tests::saved_use_and_retirement_identity_changes_reject_before_skip --lib-case resolve::expansion::removed_functions::demand::tests::shared_parent_prefixes_and_warm_uses_have_bounded_linear_work --lib-case resolve::expansion::removed_functions::demand::tests::failed_retirement_preflight_publishes_neither_flags_nor_receipts --lib-case resolve::expansion::removed_functions::demand::tests::fallible_child_edges_stop_before_later_siblings --lib-case resolve::expansion::removed_functions::demand::tests::later_module_instance_retires_its_own_original_test_and_cfg_use --lib-case resolve::unit::original::tests::original_test_flags_keep_disabled_owners_and_first_generated_overwrite --lib-case resolve::expansion::cfg_gates::tests::demanded_false_self_predicates_survive_disabled_owners_and_fresh_prefix_cloning --lib-case resolve::expansion::decorated_calls::tests::authentic_builtin_attribute_header_cannot_become_an_allowance_frame_by_body_substitution'
       - name: Harness, audit cache and upstream contracts
         run: make test-harness test-upstream && obj/audit-venv/bin/python -m unittest discover -s scripts/audit_tests -v
       - name: Retain focused evidence
