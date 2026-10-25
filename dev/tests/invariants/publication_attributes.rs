@@ -61,11 +61,41 @@ fn plain_and_configured_absent_headers_publish_with_the_existing_profile() -> Re
             .profile(),
         crates::SourceProfile::Source2024Functions
     );
-    let (report, analysis, identity) = prepared(&fixture("negative-owner")?, "negative_owner")?;
+    let (report, analysis, _) = prepared(&fixture("negative-owner")?, "negative_owner")?;
     assert_eq!(analysis.facts.warnings().count(), 1);
+    let module = report
+        .resolution
+        .definitions
+        .iter()
+        .position(|definition| {
+            definition.kind == DefKind::Module
+                && report.package.names.get(definition.name) == "ignored"
+        })
+        .ok_or("actual ignored module")?;
+    assert!(
+        analysis
+            .facts
+            .must_use_contract(&report, DefId(u32::try_from(module)?))?
+            .is_none()
+    );
+    let error = publish(&fixture("negative-owner")?)
+        .err()
+        .ok_or("nested namespace profile expanded")?;
+    assert!(
+        error
+            .to_string()
+            .contains("nested source modules require a wider source namespace profile")
+    );
+    let (report, analysis, identity) =
+        prepared(&fixture("negative-crate-owner")?, "negative_crate_owner")?;
+    let warnings: Vec<_> = analysis.facts.warnings().collect();
+    assert_eq!(warnings.len(), 1);
+    assert_eq!(warnings[0].code.name(), "unused_attributes");
+    let root = report.resolution.crate_root.ok_or("actual crate owner")?;
+    assert!(analysis.facts.must_use_contract(&report, root)?.is_none());
     staged(&report, &analysis.facts, &identity)?
         .require_plain_attributes(&report, &analysis.facts)?;
-    publish(&fixture("negative-owner")?)?;
+    publish(&fixture("negative-crate-owner")?)?;
     for name in ["nominal-plain", "nominal-marked"] {
         let error = publish(&fixture(name)?)
             .err()
