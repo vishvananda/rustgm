@@ -1,0 +1,30 @@
+{
+  "state": "failed",
+  "status": 1,
+  "seconds": 160.03267872499998,
+  "command": [
+    "/usr/bin/python3",
+    "scripts/resources.py",
+    "run",
+    "--wait-seconds",
+    "0",
+    "--",
+    "/usr/bin/python3",
+    "scripts/fastcheck.py",
+    "--seconds",
+    "185",
+    "--lib-case",
+    "resolve::impl_restrictions::tests::parsed_restrictions_keep_feature_origins_disabled_headers_and_ordinary_layouts",
+    "--lib-case",
+    "resolve::impl_restrictions::tests::exact_trait_domains_resolve_aliases_and_charge_actual_ancestry_before_publication",
+    "--lib-case",
+    "support::crates::codec::packet_envelope::tests::unrestricted_import_policy_keeps_real_functions_roundtrip_and_denies_restricted_export",
+    "--lib-case",
+    "types::wide_float_tests::two_new_primitives_preserve_existing_ids_and_enclosing_hot_layouts",
+    "--worker",
+    "--deadline",
+    "249.452604765",
+    "--evidence-root",
+    "/home/runner/work/rustgm/rustgm/obj/qualification/fast/1792946066731745070"
+  ]
+}
