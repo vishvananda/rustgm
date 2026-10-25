@@ -102,9 +102,28 @@ impl Declarations {
             .as_deref()
             .and_then(|traits| traits.header(item))
         {
-            for located in &header.predicates {
+            if matches!(
+                &header.inputs,
+                super::super::traits::inherited_inputs::HeaderInputs::Imported(_)
+            ) {
+                let catalog = self
+                    .crates
+                    .as_deref()
+                    .and_then(super::super::crates::Linkage::origin_catalog)
+                    .ok_or_else(|| {
+                        error("must_use inherited trait header lacks its actual imported catalog")
+                    })?;
+                header
+                    .inputs
+                    .require_catalog(catalog, DefId(item.0))
+                    .map_err(error)?;
+            }
+            for (index, located) in header.inputs.view().iter().enumerate() {
                 trait_charge(table, 1, 0)?;
-                if !header.self_bounds.contains(&located.source) {
+                if !header
+                    .implies_input(&self.types, index, located)
+                    .map_err(error)?
+                {
                     continue;
                 }
                 let predicate = match located.value {

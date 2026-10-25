@@ -177,12 +177,14 @@ fn corrupt(report: &mut Report, file: FileId, ordinal: usize, opponent: usize) -
         2 => {
             let capture = unit.configured.effects[effect].capture as usize;
             let forest = &unit.configured.ast.attributes[capture].forest;
-            unit.configured.ast.attributes[capture].forest = forest.map_spans(|span| {
-                Ok(Span {
-                    start: span.start + 1,
-                    end: span.end + 1,
+            unit.configured.ast.attributes[capture].forest = forest
+                .map_spans(&mut |span: Span| {
+                    Ok(Span {
+                        start: span.start + 1,
+                        end: span.end + 1,
+                    })
                 })
-            })?;
+                .map_err(|error| error.message)?;
         }
         3 => {
             let saved = unit
@@ -229,7 +231,7 @@ fn corrupt(report: &mut Report, file: FileId, ordinal: usize, opponent: usize) -
             unit.configured.ast.attributes[capture].forest = unit.configured.ast.attributes
                 [capture]
                 .forest
-                .map_spans(|span| {
+                .map_spans(&mut |span: Span| {
                     if span.start == span.end {
                         Ok(Span {
                             start: span.start + 1,
@@ -238,7 +240,8 @@ fn corrupt(report: &mut Report, file: FileId, ordinal: usize, opponent: usize) -
                     } else {
                         Ok(span)
                     }
-                })?;
+                })
+                .map_err(|error| error.message)?;
         }
         _ => return Err("unknown opponent".into()),
     }
@@ -253,7 +256,11 @@ fn retained_block_edge(report: &Report) -> TestResult<usize> {
         .paths
         .iter()
         .find_map(|path| {
-            if let Kind::Block { children, .. } = path.snapshot.kind {
+            if let Kind::Block {
+                statements: children,
+                ..
+            } = path.snapshot.kind
+            {
                 path.children.first().and_then(|(ordinal, _)| {
                     (children.start as usize + *ordinal < children.end as usize)
                         .then_some(children.start as usize + *ordinal)
