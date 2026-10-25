@@ -24,158 +24,8 @@ use crate::{
 };
 pub use library::option_environment;
 
-/// Invocation category belongs to the compiler role, not its declaration syntax.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum BuiltinKind {
-    Bang,
-    Attribute,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Builtin {
-    Cfg,
-    CfgSelect,
-    FormatArgs,
-    ConstFormatArgs,
-    FormatArgsNl,
-    Line,
-    Column,
-    File,
-    ModulePath,
-    Stringify,
-    Concat,
-    CompileError,
-    Env,
-    IncludeStr,
-    IncludeBytes,
-    Include,
-    OptionEnv,
-    CorePanic,
-    StdPanic,
-    Unreachable,
-    ConcatBytes,
-    AutodiffForward,
-    AutodiffReverse,
-    Test,
-}
-impl Builtin {
-    pub const ALL: [Self; 24] = [
-        Self::Cfg,
-        Self::CfgSelect,
-        Self::FormatArgs,
-        Self::ConstFormatArgs,
-        Self::FormatArgsNl,
-        Self::Line,
-        Self::Column,
-        Self::File,
-        Self::ModulePath,
-        Self::Stringify,
-        Self::Concat,
-        Self::CompileError,
-        Self::Env,
-        Self::IncludeStr,
-        Self::IncludeBytes,
-        Self::Include,
-        Self::OptionEnv,
-        Self::CorePanic,
-        Self::StdPanic,
-        Self::Unreachable,
-        Self::ConcatBytes,
-        Self::AutodiffForward,
-        Self::AutodiffReverse,
-        Self::Test,
-    ];
-    #[must_use]
-    pub const fn kind(self) -> BuiltinKind {
-        match self {
-            Self::AutodiffForward | Self::AutodiffReverse | Self::Test => BuiltinKind::Attribute,
-            _ => BuiltinKind::Bang,
-        }
-    }
-    /// Only roles with a real expansion or owner-removal consumer are available.
-    #[must_use]
-    pub const fn executable(self) -> bool {
-        matches!(self.kind(), BuiltinKind::Bang) || matches!(self, Self::Test)
-    }
-    #[must_use]
-    pub const fn source_only(self) -> bool {
-        matches!(
-            self,
-            Self::CorePanic
-                | Self::StdPanic
-                | Self::Unreachable
-                | Self::CfgSelect
-                | Self::FormatArgs
-                | Self::ConstFormatArgs
-                | Self::FormatArgsNl
-                | Self::ConcatBytes
-                | Self::AutodiffForward
-                | Self::AutodiffReverse
-                | Self::Test
-        )
-    }
-    #[must_use]
-    pub const fn formatting(self) -> bool {
-        matches!(
-            self,
-            Self::FormatArgs | Self::ConstFormatArgs | Self::FormatArgsNl
-        )
-    }
-    #[must_use]
-    pub const fn source_eager(self) -> bool {
-        self.formatting() || matches!(self, Self::ConcatBytes)
-    }
-    #[must_use]
-    pub const fn eager(self) -> bool {
-        matches!(
-            self,
-            Self::ConcatBytes
-                | Self::FormatArgs
-                | Self::ConstFormatArgs
-                | Self::FormatArgsNl
-                | Self::OptionEnv
-                | Self::Concat
-                | Self::CompileError
-                | Self::Env
-                | Self::IncludeStr
-                | Self::IncludeBytes
-                | Self::Include
-        )
-    }
-    #[must_use]
-    pub const fn needs_position(self) -> bool {
-        matches!(self, Self::Line | Self::Column)
-    }
-    #[must_use]
-    pub const fn name(self) -> &'static str {
-        match self {
-            Self::Cfg => "cfg",
-            Self::CfgSelect => "cfg_select",
-            Self::FormatArgs => "format_args",
-            Self::ConstFormatArgs => "const_format_args",
-            Self::FormatArgsNl => "format_args_nl",
-            Self::Line => "line",
-            Self::Column => "column",
-            Self::File => "file",
-            Self::ModulePath => "module_path",
-            Self::Stringify => "stringify",
-            Self::Concat => "concat",
-            Self::ConcatBytes => "concat_bytes",
-            Self::AutodiffForward => "autodiff_forward",
-            Self::AutodiffReverse => "autodiff_reverse",
-            Self::Test => "test",
-            Self::CompileError => "compile_error",
-            Self::Env => "env",
-            Self::OptionEnv => "option_env",
-            Self::IncludeStr => "include_str",
-            Self::IncludeBytes => "include_bytes",
-            Self::Include => "include",
-            Self::CorePanic => "core_panic",
-            Self::StdPanic => "std_panic",
-            Self::Unreachable => "unreachable",
-        }
-    }
-}
+mod catalog;
+pub use catalog::{Builtin, BuiltinKind};
 
 pub struct Environment<'a> {
     pub config: &'a Config,
@@ -198,14 +48,14 @@ pub fn expand(
     inputs: &dyn Inputs,
     environment: &Environment<'_>,
 ) -> Result<Expansion, LexError> {
+    if !builtin.executable() {
+        return Err(error(0, builtin.unavailable_message()));
+    }
     match builtin {
         Builtin::Test => Err(error(
             0,
             "test attribute requires its actual configured function owner",
         )),
-        Builtin::AutodiffForward | Builtin::AutodiffReverse => {
-            Err(error(0, "builtin attribute execution is not implemented"))
-        }
         Builtin::ConcatBytes
         | Builtin::OptionEnv
         | Builtin::Concat
@@ -270,6 +120,7 @@ pub fn expand(
                 environment.config,
             )
         }
+        _ => Err(error(0, builtin.unavailable_message())),
     }
 }
 

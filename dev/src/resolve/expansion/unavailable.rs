@@ -138,14 +138,19 @@ impl<S: Sources> Engine<'_, S> {
                 "macro invocation has a different actual macro kind",
             ));
         }
-        if declared_role.is_some_and(|role| !role.executable())
-            || matches!(actual.body, Body::Builtin(role) if !role.executable())
-        {
+        let unavailable = declared_role.filter(|role| !role.executable()).or_else(|| {
+            if let Body::Builtin(role) = actual.body {
+                (!role.executable()).then_some(role)
+            } else {
+                None
+            }
+        });
+        if let Some(role) = unavailable {
             return Err(self.unavailable_error(
                 definition,
                 file,
                 offset,
-                "builtin attribute execution is not implemented",
+                role.unavailable_message(),
             ));
         }
         Ok(())

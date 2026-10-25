@@ -53,7 +53,7 @@ pub(super) fn parse(
         && role.kind() == crate::expand::builtin::BuiltinKind::Bang
         || matches!(item.kind, ItemKind::DeclarativeMacro { .. })
             && (role == Builtin::CfgSelect
-                || role.kind() == crate::expand::builtin::BuiltinKind::Attribute))
+                || role.kind() != crate::expand::builtin::BuiltinKind::Bang))
     {
         return Err(error(
             "builtin macro binding requires its supported declaration kind",
