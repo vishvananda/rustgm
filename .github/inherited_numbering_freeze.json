@@ -57,7 +57,7 @@
     "production Clippy",
     "private Clippy"
   ],
-  "source_commit": "fd14f299e0147d4db691d3a32ad6203bfad6a991",
+  "source_commit": "6d04c20041b368bd0c925a8f1298dce82b927d3b",
   "public_base": "31b2f913ac2ec9c8b62cf4a35fcda271ac746e0d",
   "sources": {
     "dev/bin/crates.rs": "5e73d44f2c3b8a5042018f45e6af26a87e655111456e80c5449265667e0b5de6",
@@ -843,8 +843,8 @@
     "dev/src/sema/crates/typed_headers/mapped_source/scope_inputs.rs": "c0847232ae5b944515dea1dc775ad62876b043f0fa82dbfc0e3f05386b7df807",
     "dev/src/sema/crates/typed_headers/mapped_source/slot_bindings.rs": "55e85b6a65ab4adc246502a0434164c43c15b4ee41540ec1e4808439dfdb7be1",
     "dev/src/sema/crates/typed_headers/mapped_source.rs": "af1ffddd93e8155b2c6496493fb517d4bb0b7436a16b7712f690caf622f51ef3",
-    "dev/src/sema/crates/typed_headers/neutral_aliases.rs": "a85f07fc0b1ee6b0db4ebdbfc0e94f1c3d393b4ea890a8939d7907ae7ecde699",
-    "dev/src/sema/crates/typed_headers/neutral_definitions.rs": "772577ac58a8c4d89a667b2da24eac8b3341551a8305ace0f38b430945d7fe4c",
+    "dev/src/sema/crates/typed_headers/neutral_aliases.rs": "0b25b27375b79d8b64c121ae928e9d696ab40616fcf51a6e113e14cde3c997fd",
+    "dev/src/sema/crates/typed_headers/neutral_definitions.rs": "29e7406056c1f98e34b4c8359e2838e61dd4f5a29ef47b79f4e13d1ca675089a",
     "dev/src/sema/crates/typed_headers/predicate_remap/application_rows.rs": "6b6cf21c56968770e1c7918081bafe3101bbbe44842b6850cd0e6b2a507f4efe",
     "dev/src/sema/crates/typed_headers/predicate_remap/translated_inputs.rs": "9b1cbc20e47341622c4f7f1c0d31c403fd9b9fc93059ab663ee4ecdb6e650916",
     "dev/src/sema/crates/typed_headers/predicate_remap.rs": "f79c331362b3a32b388b884019efac5d3c339277fb1714fb8e8a7255bfd9e083",
@@ -2696,7 +2696,7 @@
     "pa8/tests/manifest.json": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
     "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
   },
-  "source_sha256": "2ede65ded48ffe6be3d25060de8aab5e97d3980f314199cf8e2eb21abafdfaab",
+  "source_sha256": "2340c17feed5183fd882e58b3e5bb9cfb31e7418c1e4342ebe380b0d4d661822",
   "selected": [
     "lower::transported_source::trait_inputs::tests::numbered_trait_inputs_retain_full_family_and_actual_contract_capacity",
     "lower::transported_source::trait_inputs::tests::numbered_trait_inputs_preserve_defaultness_fences_and_failed_work",

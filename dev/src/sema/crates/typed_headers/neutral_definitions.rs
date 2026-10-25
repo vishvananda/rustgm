@@ -111,7 +111,7 @@ impl Owner {
             .as_deref()
             .ok_or_else(|| error("neutral numbered body lost its actual recorded domain"))?
             .finish_neutral(
-                numbering_records::Request {
+                &numbering_records::Request {
                     view: port.port.recipe_view(),
                     store: &facts.types,
                     expected: &demand.expected,
@@ -161,7 +161,7 @@ impl Owner {
             .as_deref()
             .ok_or_else(|| error("neutral numbered body lost its actual recording owner"))?
             .require_neutral(
-                numbering_records::Request {
+                &numbering_records::Request {
                     view,
                     store: &facts.types,
                     expected,

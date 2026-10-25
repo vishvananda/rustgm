@@ -47,11 +47,11 @@ impl Owner {
     }
     pub(in super::super) fn finish_neutral(
         &self,
-        request: Request<'_, '_>,
+        request: &Request<'_, '_>,
         prepared: defining::Prepared,
         work: &mut ReservationWork,
     ) -> Result<Completed, Error> {
-        let record = self.selected(&request, work)?;
+        let record = self.selected(request, work)?;
         let count = record.aliases.as_ref().map_or(0, Vec::len);
         work.charge(3)?;
         let growth = request
@@ -123,12 +123,12 @@ impl Owner {
     }
     pub(in super::super) fn require_neutral(
         &self,
-        request: Request<'_, '_>,
+        request: &Request<'_, '_>,
         key: &Key,
         environment: &Arc<Environment>,
         work: &mut ReservationWork,
     ) -> Result<(), Error> {
-        let record = self.selected(&request, work)?;
+        let record = self.selected(request, work)?;
         work.charge(9)?;
         request
             .declaration
