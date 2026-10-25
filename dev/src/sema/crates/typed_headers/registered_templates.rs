@@ -23,6 +23,8 @@ use crate::{
 mod assumption_environments;
 #[path = "formal_ancestry.rs"]
 mod formal_path;
+#[path = "recorded_regions.rs"]
+mod numbering_records;
 #[path = "regional_occurrences.rs"]
 mod occurrence_work;
 #[cfg(test)]
@@ -45,6 +47,7 @@ pub(super) struct Prepared {
     ready: Vec<Option<Ready>>,
     occurrences: Vec<Option<u32>>,
     environments: Option<Box<assumption_environments::Owner>>,
+    recordings: Option<Box<numbering_records::Owner>>,
 }
 impl Prepared {
     fn new(view: &RecipeView<'_>, work: &mut ReservationWork) -> Result<Self, Error> {
@@ -85,6 +88,7 @@ impl Prepared {
             ready: vec![None; rows.functions.len()],
             occurrences: vec![None; rows.types.len()],
             environments: None,
+            recordings: None,
         })
     }
     pub(super) fn retained_bytes(&self) -> usize {
@@ -97,6 +101,10 @@ impl Prepared {
                 .environments
                 .as_deref()
                 .map_or(0, assumption_environments::Owner::retained_bytes)
+            + self
+                .recordings
+                .as_deref()
+                .map_or(0, numbering_records::Owner::retained_bytes)
     }
     fn scope(
         &self,
