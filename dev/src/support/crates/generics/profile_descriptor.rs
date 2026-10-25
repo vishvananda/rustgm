@@ -1,5 +1,7 @@
 //! A descriptor borrows completed source data; it is never callable permission.
 mod binding_order;
+#[path = "namespace_paths.rs"]
+mod callable_paths;
 #[path = "column_storage.rs"]
 mod columns;
 #[path = "ordinary_profile.rs"]
@@ -20,6 +22,7 @@ use crate::support::{
     edition::Edition,
     retained,
 };
+pub(crate) use callable_paths::callable_path;
 pub use columns::{Columns, ValidatedView};
 pub use module_contracts::{
     BindingSource, ImplementationDomain, ModuleBindingRow, ModuleContractRows, ModuleContractView,

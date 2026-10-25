@@ -10,6 +10,7 @@ fn complete_module_costs_prepay_sort_forest_transactions_and_enclosing_layouts()
     sorting_attempts()?;
     growth()?;
     shared_parents()?;
+    callable_paths()?;
     let interface = test::exported(&test::fixture("restricted-provider")?)?;
     let (rows, attrs, modules) = test::raw(&interface)?;
     let mut exhausted = Work {
@@ -154,6 +155,134 @@ fn shared_parents() -> Result {
             rows.declarations.len(),
             work.steps,
             module_index::scratch_bytes(rows.declarations.len())
+        );
+    }
+    Ok(())
+}
+
+fn callable_paths() -> Result {
+    let interface = test::roundtrip(&test::fixture("nested-call-provider")?)?;
+    let (rows, _, modules) = test::raw(&interface)?;
+    let start = rows
+        .functions
+        .iter()
+        .find(|h| rows.declarations[h.declaration.0 as usize].name.as_deref() == Some("nested"))
+        .ok_or("actual nested callable")?
+        .declaration;
+    let root = modules.namespace.root;
+    let alias = modules
+        .namespace
+        .bindings
+        .iter()
+        .find(|b| b.name == "renamed")
+        .ok_or("actual alias")?;
+    assert_eq!(alias.target.declaration, start);
+    for target in [start, alias.target.declaration] {
+        let mut work = Work::default();
+        let path = s::callable_path(&rows.declarations, root, target, |n| work.charge(n), |e| e)?;
+        let bound = path.storage_bound();
+        let scratch = std::mem::size_of_val(&path);
+        let names = path.materialize()?;
+        assert_eq!(names, ["api", "nested"]);
+        assert!(
+            names.capacity() * size_of::<String>()
+                + names.iter().map(String::capacity).sum::<usize>()
+                <= bound
+        );
+        assert_eq!(work.steps, 65 + 3 + 2 * (3 + 6));
+        println!(
+            "canonical callable path scratch={scratch} steps={} outputBound={bound}",
+            work.steps
+        );
+    }
+    let mut exhausted = Work {
+        steps: crates::MAX_COMPONENTS,
+        ..Work::default()
+    };
+    assert!(
+        s::callable_path(
+            &rows.declarations,
+            root,
+            start,
+            |n| exhausted.charge(n),
+            |e| e
+        )
+        .is_err()
+    );
+    assert_eq!(exhausted.steps, crates::MAX_COMPONENTS + 1);
+    let parent = rows.declarations[start.0 as usize]
+        .definition
+        .parent
+        .ok_or("actual module")?;
+    for case in 0..5 {
+        let mut bad = rows.clone();
+        let selected_root = if case == 0 { parent } else { root };
+        match case {
+            1 => bad.declarations[parent.0 as usize].definition.parent = Some(parent),
+            2 => bad.declarations[parent.0 as usize].name = None,
+            3 => {
+                bad.declarations[parent.0 as usize].definition.kind =
+                    s::DefinitionKind::TypeParameter
+            }
+            4 => bad.declarations[start.0 as usize].definition.kind = s::DefinitionKind::SelfType,
+            _ => {}
+        }
+        assert!(
+            s::callable_path(
+                &bad.declarations,
+                selected_root,
+                start,
+                |_| Ok::<_, &'static str>(()),
+                |e| e
+            )
+            .is_err(),
+            "path opponent {case}"
+        );
+    }
+    callable_depths()?;
+    Ok(())
+}
+fn callable_depths() -> Result {
+    for depth in [63, 64] {
+        let mut source = crate::test_source::fixture(
+            "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+        )?;
+        for i in 0..depth {
+            writeln!(&mut source, "pub mod depth_{i} {{")?;
+        }
+        source.push_str("pub fn end<T>(x:T)->T{x}");
+        source.push_str(&"}".repeat(depth));
+        let produced = test::exported(&source);
+        if depth == 64 {
+            let Err(error) = produced else {
+                return Err("over-depth actual source unexpectedly published".into());
+            };
+            assert!(error.to_string().contains("depth"), "{error}");
+            continue;
+        }
+        let (rows, _, modules) = test::raw(&produced?)?;
+        let start = rows
+            .functions
+            .iter()
+            .find(|h| rows.declarations[h.declaration.0 as usize].name.as_deref() == Some("end"))
+            .ok_or("actual depth function")?
+            .declaration;
+        let mut work = Work::default();
+        let path = s::callable_path(
+            &rows.declarations,
+            modules.namespace.root,
+            start,
+            |n| work.charge(n),
+            |e| e,
+        )?
+        .materialize()?;
+        assert_eq!(path.len(), 64);
+        assert_eq!(path.first().map(String::as_str), Some("depth_0"));
+        assert_eq!(path.last().map(String::as_str), Some("end"));
+        println!(
+            "canonical actual depth={depth} path={} steps={}",
+            path.len(),
+            work.steps
         );
     }
     Ok(())

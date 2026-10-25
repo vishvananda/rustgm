@@ -79,7 +79,15 @@ pub(super) fn prepare(
         });
     }
     for header in &rows.functions {
-        let path = canonical_path(&rows, header.declaration, work)?;
+        let path = s::callable_path(
+            &rows.declarations,
+            names.root,
+            header.declaration,
+            |count| work.charge(count),
+            error,
+        )?;
+        work.reserve(path.storage_bound())?;
+        let path = path.materialize().map_err(error)?;
         let identity = ExternalDef::new(artifact.identity().clone(), path, ExternalKind::Function)
             .map_err(error)?;
         if imported.definition(&identity).is_some() {
@@ -89,54 +97,6 @@ pub(super) fn prepare(
     }
     Ok(Pending { bindings, external })
 }
-fn canonical_path(
-    rows: &s::Columns,
-    start: crate::support::crates::owner_catalog::DeclarationRef,
-    work: &mut Work,
-) -> Result<Vec<String>, Error> {
-    let mut trail = [start; 64];
-    let mut count = 0;
-    let mut next = Some(start);
-    let mut bytes = 0_usize;
-    while let Some(row) = next {
-        work.charge(1)?;
-        let row_data = &rows.declarations[row.0 as usize];
-        next = row_data.definition.parent;
-        if next.is_none() {
-            break;
-        }
-        if count == trail.len() {
-            return Err(error(
-                "source canonical function path exceeds profile depth",
-            ));
-        }
-        let name = row_data
-            .name
-            .as_ref()
-            .ok_or_else(|| error("source canonical function owner has no name"))?;
-        work.charge(name.len())?;
-        bytes = bytes.saturating_add(name.len());
-        trail[count] = row;
-        count += 1;
-    }
-    work.reserve(
-        count
-            .saturating_mul(4 * size_of::<String>())
-            .saturating_add(4 * bytes),
-    )?;
-    let mut result = Vec::with_capacity(count);
-    for row in trail[..count].iter().rev() {
-        result.push(
-            rows.declarations[row.0 as usize]
-                .name
-                .as_ref()
-                .ok_or_else(|| error("source canonical name disappeared"))?
-                .clone(),
-        );
-    }
-    Ok(result)
-}
-
 fn actual_cells(
     resolver: &Resolver<'_>,
     rows: s::ValidatedView<'_>,

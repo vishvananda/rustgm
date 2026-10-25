@@ -59,3 +59,13 @@ exhausted sorting, alias and shared deep-parent growth, current/foreign owners,
 complete/corrupt rows, exact immutable legacy bytes and real fresh CLI consumers.
 No local Cargo, reference regeneration, new Rust oracle matrix or backend change is
 part of this implementation work.
+
+The first fresh CLI group reached the mandatory nested ordinary call and exposed
+a root-only callable-symbol reconstruction. The shared v2 canonical callable
+recipe now walks Function → optional Trait → Modules → the exact authenticated
+root, independent of public aliases. Both installation and symbol preparation
+prepay their actual output strings/vector and preserve the exact ExternalDef/DefId
+join. Its work is linear in emitted path components and name bytes, including
+bounded scratch initialization; it is not a whole-graph traversal. Legacy symbol
+paths stay unchanged. This correction and its actual alias/depth/budget controls
+are not yet qualified.
