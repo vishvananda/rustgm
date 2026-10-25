@@ -1,0 +1,224 @@
+{
+  "schema": 1,
+  "purpose": "NEW specialization graph/selection/Full-min/marker hypotheses; no repetition of prior74; RustGM graph unimplemented",
+  "baseline": "64c9f507",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "metadata_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "native_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Cdebug-assertions=no",
+    "-Coverflow-checks=no",
+    "-Copt-level=2",
+    "-Ccodegen-units=1",
+    "-Clto=off",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "runtime_observer": "Actual established PA19 check/fail mechanism; native pass requires every selected value/mutation/Drop/lazy-panic check, exact exit0 and empty stdout/stderr; metadata alone does not qualify those values.",
+  "cases": [
+    {
+      "name": "chain-and-inherited-body",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/chain-and-inherited-body.rs",
+      "sha256": "9a5c1c783c2e7846570bcd569917c4d19f72ddb27fc4cc17421b75f2842a339b",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": ""
+    },
+    {
+      "name": "reverse-chain-order",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/reverse-chain-order.rs",
+      "sha256": "7785baa1bb554f4aee3acf60ce6ba75916538f6fd318c684ef1be5aad5887a28",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": ""
+    },
+    {
+      "name": "parent-substitution-generic-private",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/parent-substitution-generic-private.rs",
+      "sha256": "e3ace28917919748b302d70ab196023c9b7ab69253d227e10c85ef63762d12d5",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": ""
+    },
+    {
+      "name": "actual-unsafe-marker-selection",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/actual-unsafe-marker-selection.rs",
+      "sha256": "f31945c1f11832c98cb5e125069364d6525fb0987e5b84eee632970474d052fa",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": ""
+    },
+    {
+      "name": "selected-clone-drop-and-lazy-panic",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/selected-clone-drop-and-lazy-panic.rs",
+      "sha256": "c0ef0b3304fa6208501d30c6725f1f7dd6475ef02996fba56e76fdeec1b73dc5",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": ""
+    },
+    {
+      "name": "full-static-structured-self",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/full-static-structured-self.rs",
+      "sha256": "3ae05e2c8993a5836a81c43aea3bf597b547f6932ec404129fb2fb6ea8c4f044",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Predict full-only accepts this strict structural Self specialization; all ordinary region/implication rules still apply."
+    },
+    {
+      "name": "full-plus-min-static",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/full-plus-min-static.rs",
+      "sha256": "9d6e0df4878aab9704a6b56ed6558530f84610eafe3359b37e93380ab03218ac",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Both feature flags retain min always-applicability checks (pinned impl_wf_check.rs71)."
+    },
+    {
+      "name": "min-literal-full-static",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/min-literal-full-static.rs",
+      "sha256": "5cd7738bd0175f2f8a56c2f2500f1138b0f4a8d8e5ab164202324c730b5ce91c",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Literal Full allowance does not disable crate-requested min checks."
+    },
+    {
+      "name": "full-lifetime-only-order",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/full-lifetime-only-order.rs",
+      "sha256": "8864c21f3854c1684fbca7309c7d6ed22ce6a7ba01b0d2fb836f1d695951a031",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Conservative hypothesis: lifetime-only order may be equivalent under graph relation; actual observation decides, never assume all Full lifetime cases pass."
+    },
+    {
+      "name": "literal-impl-graph-allowance",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/literal-impl-graph-allowance.rs",
+      "sha256": "7176f15b097967daef443e66608e4369dac7b7812e735553c8cd0a7eca2ec6b2",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": ""
+    },
+    {
+      "name": "forwarded-impl-graph-allowance",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/forwarded-impl-graph-allowance.rs",
+      "sha256": "2a006841e932d77450c849c09baf669fed0a3a60906152591216c622b5f10085",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": ""
+    },
+    {
+      "name": "unmarked-name-has-no-authority",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/unmarked-name-has-no-authority.rs",
+      "sha256": "500d503bd4af97de3ba1d459244d1f6f5a43644e661d43a98214f67014db4aad",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": ""
+    },
+    {
+      "name": "distinct-marker-identity",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/distinct-marker-identity.rs",
+      "sha256": "e7292219959b4039d3078a7de834636cefd87fa61738b5b632aa71ba82c58eaf",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": ""
+    },
+    {
+      "name": "marker-invalid-owner",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/marker-invalid-owner.rs",
+      "sha256": "fa2a8b332a68759f1f1fa24da8d09a8477ac98268db476a1e35d985cc66650c1",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Owner severity is an independent hypothesis; retain actual warnings/errors."
+    },
+    {
+      "name": "marker-malformed-form",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/marker-malformed-form.rs",
+      "sha256": "5664036d01f061eaeab15483b3ef92dde6d07ff24315bb44c9275f4d98fbee06",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": ""
+    },
+    {
+      "name": "marker-missing-feature",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/marker-missing-feature.rs",
+      "sha256": "a7016f7e2cde2a2dbe07fc4758776fc139b3a57e65fb8029722c73207e19bcf0",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": ""
+    },
+    {
+      "name": "marker-literal-allowance",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/marker-literal-allowance.rs",
+      "sha256": "f9b4fed650e976a69ee30270669f247d0346b9a37bdc7c546cf90d829b49cbe0",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": ""
+    },
+    {
+      "name": "marker-forwarded-allowance",
+      "source": "obj/parallel/pa31/specialization-graph-v1/oracle-sources/marker-forwarded-allowance.rs",
+      "sha256": "574155eb59ce4239d44b549570ff8041aecca2396229b1713dd8fbeada308df5",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": ""
+    }
+  ],
+  "planned_metadata_observations": 36,
+  "planned_native_programs": 10,
+  "source_prediction_disagreements": "Retain all actual raw observations and wrong predictions; disagreements are data, not automatic infrastructure failures."
+}
