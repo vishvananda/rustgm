@@ -32,3 +32,8 @@ publication-authority guard in 40241172788. Full source/tool/input fingerprints
 and raw observations are retained. See `docs/pa29-module-contracts-v2.md` for
 actual layouts, work bounds, command/profile scope and remaining requirements.
 This is not an original-core artifact or a full crate-profile closure.
+
+Final A+B source `0fa3cf5b` renews the real CLI group in 40242609767 and strict
+library test-mode lint in 40243165301. The actual executed compiler is recorded
+separately from every mandatory prebuild. Earlier component/runtime scope is
+retained honestly; no full private or independent matrix is repeated.

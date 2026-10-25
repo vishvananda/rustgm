@@ -1,9 +1,13 @@
 # Version-two module, implementation-domain and advisory metadata
 
-The bounded module profile is qualified on compiler `6e510e9b`. The six focused
-component controls pass on `75050432`; after the normal merge of public C, the
-actual CLI group and C's publication-authority control pass on the combined source.
-This does not publish original core, activate an assignment or admit Provided.
+The bounded module profile is qualified on final A+B compiler `0fa3cf5b` over
+public `31b2f913`. Six focused component controls pass on `75050432`; actual CLI
+and C publication-authority controls pass on C-combined `6e510e9b`. The final
+A+B source renews actual CLI, global/production/integration checks and strict
+library test-mode lint. C's unchanged authority control is retained by reviewed
+dependencies; the six component cases are not represented as newly executed on
+each later merge. This does not publish original core, activate an assignment
+or admit Provided.
 
 The explicit `Source2024ModuleContracts` profile uses source envelope tag 10, row
 version 2. Select it with `--source-profile module-contracts-v2`, a real SourceCore
@@ -75,7 +79,17 @@ Qualification is intentionally scoped:
 - CI 40241172788: combined private lint/build and exact publication control, including
   real defaultness rejection and physical-copy incarnation forgery.
 
-Both hosted target groups retain full source/tool/fixture fingerprints and raw
+The final A+B CI 40242609767 renews metadata, formatting, audit, production and
+integration lint/build plus the actual CLI group. It records executed production
+CLI `a4053b2324552e5fe912ad7690e672d476e7f74e09fa58d47fd64bd0a875d13f`,
+with its real rlib/profile and immutable pin checked before/after execution.
+Mandatory-prebuild variants remain separate. CI 40243165301 passes only the
+missing library `cfg(test)` strict lint; it builds or executes no test binary.
+The A merge preserves its actual collector and removes the now-obsolete staged
+`begin_trait_numbered` dead-code expectation. Its source-original formal-order
+change is exercised by the genuine nested-original LowIR consumer.
+
+The hosted target groups retain full source/tool/fixture fingerprints and raw
 observations. The earlier failed predictions and checks remain in the owning spec
 contract and worker evidence. The historical component-summary digest correction is
 explicit; it does not replace any actual current-source checks. No full private,

@@ -1,5 +1,5 @@
 {
-  "state": "frozen before candidate execution; all new candidate groups UNRUN",
+  "state": "qualified bounded v2 profile; initial frozen predictions and failed hypotheses preserved",
   "language_oracle": {
     "run": 40221183139,
     "results_sha256": "868870c88d4ce9438d9a098ecc37d94c75fc6f0cf04606f8e02e5b61ecd92dac",
@@ -86,6 +86,20 @@
       "unsafe/associated-result/stability",
       "Provided/default graph/body policy",
       "wider declaration and operation profiles"
-    ]
-  }
+    ],
+    "final_AB": {
+      "source": "0fa3cf5b4369a0e8a850d5b770078b03de84c364",
+      "base": "31b2f913",
+      "actual_cli_run": 40242609767,
+      "actual_cli_sha256": "a4053b2324552e5fe912ad7690e672d476e7f74e09fa58d47fd64bd0a875d13f",
+      "actual_rlib_sha256": "14b2955db6f15f170799aaec079f768915860507e7a4a1ff895db2805cf8cc5f",
+      "receipt_sha256": "50c4c30271f5b2036d47b3366ae713fbd2806afb522da2bd9049347395fd8c79",
+      "library_cfg_test_lint_run": 40243165301,
+      "lint_receipt_sha256": "8e9bdd04ad8101aa059d3d324261365f84582d987a40cd4ab41d6d59bd2988fe",
+      "retained_scope": "C runtime dependencies unchanged by A; old component6 are not fresh executions on final source",
+      "tests": "actual CLI group renewed; no library test build or runtime in final lint-only continuation",
+      "source_inputs": "all Rust and hex fixture bytes unchanged"
+    }
+  },
+  "initial_state": "frozen before candidate execution; all new candidate groups UNRUN"
 }
