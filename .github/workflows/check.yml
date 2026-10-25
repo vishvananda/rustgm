@@ -30,7 +30,7 @@ jobs:
       - name: Audit setup
         run: make setup-audit
       - name: Five-minute development check
-        run: make fastcheck FAST_ARGS='lexer'
+        run: make fastcheck FAST_ARGS='provider_traits::ub_checks::actual_ub_declarations_const_roots_and_generic_runtime_calls_lower_in_both_profiles provider_traits::ub_checks::source_ub_signatures_and_feature_requests_are_not_name_permissions provider_traits::ub_checks::source_ub_reification_and_indirect_calls_keep_the_unadapted_target_denial provider_traits::ub_checks::demanded_cfg_uses_preserve_false_owner_payload_and_token_origin_boundaries --pa pa7 --pa pa8'
       - name: Harness, audit cache and upstream contracts
         run: make test-harness test-upstream && obj/audit-venv/bin/python -m unittest discover -s scripts/audit_tests -v
       - name: Retain failure evidence
