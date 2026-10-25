@@ -265,7 +265,7 @@ fn nested(depth: usize) -> String {
 fn private_callable_templates_bound_selected_work_and_warm_storage() -> Result {
     let mut deep_warm = None;
     for depth in [1, 4, 8] {
-        let source = format!("\nfn nested<T>(x:{})->u8{{0u8}}", nested(depth));
+        let source = format!("\nfn nested<T>(x:{},y:u8)->u8{{y}}", nested(depth));
         let mut work = ReservationWork::default();
         let (session, owner) = start(&source, "nested", &mut work)?;
         let mut session = ready(session.callable_template(owner, &mut work)?)?;
@@ -385,26 +385,19 @@ fn private_callable_templates_keep_failed_attempt_and_peak_costs() -> Result {
         size_of::<SignaturePair>()
     );
     let mut work = ReservationWork::default();
-    let (session, owner) = start(
+    let error = start(
         "\nfn declared<'a>(x:&'a u8)->&'a u8{x}",
         "declared",
         &mut work,
-    )?;
-    let (mut session, status) = session.callable_template(owner, &mut work)?;
-    assert!(matches!(status, Demand::Blocked(_)));
+    )
+    .err()
+    .ok_or("named lifetime unexpectedly passed its earlier catalog boundary")?;
     assert!(
-        session
-            .recipes
-            .as_ref()
-            .is_some_and(|s| s.callables.is_none())
+        error
+            .to_string()
+            .contains("imported body declaration is not a source-free declaration")
     );
-    let bytes = work.retained;
-    for _ in 0..1000 {
-        let (next, repeated) = session.callable_template(owner, &mut work)?;
-        assert_eq!(repeated, status);
-        session = next;
-    }
-    assert_eq!(work.retained, bytes);
+    blocked_body_dependency()?;
     Ok(())
 }
 
@@ -454,5 +447,85 @@ fn registration_boundary() -> Result {
     assert!(session.callable_template(owner, &mut work).is_err());
     assert_eq!(work.retained, crate::support::crates::MAX_BYTES + 1);
     assert_eq!(work.peak, work.retained);
+    Ok(())
+}
+
+fn blocked_body_dependency() -> Result {
+    use crate::sema::crates::typed_headers::recipe_cursor::{Dependency, Reserved};
+    use crate::support::crates::generics::TypeRef;
+    let (report, facts, inventory) = actual(true)?;
+    let target = named(&inventory, "clone_from")?;
+    let seed = named(&inventory, "identity")?;
+    let rows = inventory.artifacts()[0]
+        .source_descriptor()
+        .ok_or("actual descriptor")?
+        .rows();
+    let (index, application) = rows
+        .types
+        .iter()
+        .enumerate()
+        .find_map(|(index, row)| {
+            if let s::Type::FunctionItem(application) = *row {
+                Some((index, application))
+            } else {
+                None
+            }
+        })
+        .ok_or("actual full-family body function-item dependency")?;
+    let probe = TypeRef(u32::try_from(index)?);
+    let required = rows.function_applications[application.0 as usize]
+        .declaration
+        .declaration;
+    let mut work = ReservationWork::default();
+    let session =
+        Session::prepare(report, facts, Arc::clone(&inventory), 0, &mut work)?.boxed(&mut work)?;
+    let mut session = ready(session.signature_pair(seed, &mut work)?)?;
+    let view = session.inputs.recipe_view(&inventory, 0, &mut work)?;
+    let expected = Dependency::CallableTemplate(view.declaration(required, &mut work)?);
+    let state = session.recipes.as_mut().ok_or("actual recipe state")?;
+    let before = state.cursor.counters();
+    let mut port = Reserved::new(view, &mut state.maps)?;
+    assert_eq!(
+        state
+            .cursor
+            .demand(&mut port, &mut session.facts.types, probe, &mut work)?,
+        Demand::Blocked(expected)
+    );
+    let stopped = state.cursor.counters();
+    assert_eq!(stopped.expanded, before.expanded + 1);
+    let (mut session, status) = session.callable_template(target, &mut work)?;
+    assert_eq!(status, Demand::Blocked(expected));
+    assert!(
+        session
+            .recipes
+            .as_ref()
+            .is_some_and(|state| state.callables.is_none())
+    );
+    let bytes = work.retained;
+    let before = work.steps;
+    for _ in 0..1000 {
+        let (next, repeated) = session.callable_template(target, &mut work)?;
+        assert_eq!(repeated, status);
+        session = next;
+    }
+    assert_eq!(work.retained, bytes);
+    let state = session.recipes.as_ref().ok_or("actual recipe state")?;
+    assert_eq!(state.cursor.counters(), stopped);
+    assert!(state.callables.is_none());
+    // The target pair must still require its later dependency: template demand
+    // must not fabricate a pair while the persistent cursor is blocked.
+    let (session, pair_status) = session.signature_pair(target, &mut work)?;
+    assert_eq!(pair_status, status);
+    assert!(
+        session
+            .recipes
+            .as_ref()
+            .is_some_and(|state| state.callables.is_none())
+    );
+    eprintln!(
+        "private callable blocked warm1000={} expanded={} retained={bytes}",
+        work.steps - before,
+        stopped.expanded
+    );
     Ok(())
 }
