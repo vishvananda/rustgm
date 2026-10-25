@@ -18,13 +18,15 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 function binders=0 parameters=[] result=11 unsafe=false
-type 20 function-item def=13 signature=19
-type 21 function-item def=14 signature=19
-type 22 function-item def=15 signature=19
-def 13 type=20 name="f" source=0:18
-def 14 type=21 name="a" source=0:22
-def 15 type=22 name="b" source=0:26
+type 19 primitive f16
+type 20 primitive f128
+type 21 function binders=0 parameters=[] result=11 unsafe=false
+type 22 function-item def=13 signature=21
+type 23 function-item def=14 signature=21
+type 24 function-item def=15 signature=21
+def 13 type=22 name="f" source=0:18
+def 14 type=23 name="a" source=0:22
+def 15 type=24 name="b" source=0:26
 def 16 type=2 name="bool"
 def 17 type=3 name="char"
 def 18 type=4 name="str"
@@ -42,42 +44,44 @@ def 29 type=15 name="u128"
 def 30 type=16 name="usize"
 def 31 type=17 name="f32"
 def 32 type=18 name="f64"
-def 34 type=19 name="f" source=0:1
-function def=13 source=0:18 signature=19 body=0:17
-function def=14 source=0:22 signature=19 body=0:21
-function def=15 source=0:26 signature=19 body=0:25
+def 33 type=19 name="f16"
+def 34 type=20 name="f128"
+def 36 type=21 name="f" source=0:1
+function def=13 source=0:18 signature=21 body=0:17
+function def=14 source=0:22 signature=21 body=0:21
+function def=15 source=0:26 signature=21 body=0:25
 node 0:0 type=11 span=8:10
-node 0:1 type=19 span=15:16 binding=34
+node 0:1 type=21 span=15:16 binding=36
 node 0:2 type=11 span=23:25
-node 0:3 type=19 span=17:25
+node 0:3 type=21 span=17:25
 node 0:4 type=2 span=33:37
 scalar 0:4 bool true
-node 0:5 type=21 span=47:48
-adjustment 0:5 function-pointer target=19
+node 0:5 type=23 span=47:48
+adjustment 0:5 function-pointer target=21
 node 0:6 type=0 span=38:48 control=0:12
 node 0:7 type=0 span=38:49
 node 0:8 type=0 span=37:50
 adjustment 0:8 never target=1
 node 0:9 type=1 span=30:50
 node 0:10 type=1 span=30:50
-node 0:11 type=22 span=50:51
-node 0:12 type=19 span=29:52
-adjustment 0:12 function-pointer target=19
-node 0:13 type=19 span=26:52 binding=33
+node 0:11 type=24 span=50:51
+node 0:12 type=21 span=29:52
+adjustment 0:12 function-pointer target=21
+node 0:13 type=21 span=26:52 binding=35
 node 0:14 type=1 span=11:53
-node 0:15 type=19 span=53:54
+node 0:15 type=21 span=53:54
 node 0:16 type=11 span=53:56
-operation 0:16 call signature=19
+operation 0:16 call signature=21
 node 0:17 type=11 span=10:57
-node 0:18 type=20 span=0:57
+node 0:18 type=22 span=0:57
 node 0:19 type=11 span=66:68
 node 0:20 type=11 span=69:70
 scalar 0:20 integer bits=0x00000000000000000000000000000001
 node 0:21 type=11 span=68:71
-node 0:22 type=21 span=58:71
+node 0:22 type=23 span=58:71
 node 0:23 type=11 span=80:82
 node 0:24 type=11 span=83:84
 scalar 0:24 integer bits=0x00000000000000000000000000000002
 node 0:25 type=11 span=82:85
-node 0:26 type=22 span=72:85
-eof types=23 definitions=21 nodes=27 functions=3 initializers=0
+node 0:26 type=24 span=72:85
+eof types=25 definitions=23 nodes=27 functions=3 initializers=0

@@ -18,26 +18,28 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 reference mutable=true region=bound:0:0 referent=11
-type 20 array element=11 length=1
-type 21 reference mutable=true region=bound:0:1 referent=20
-type 22 tuple [19,21]
-type 23 function binders=2 parameters=[22] result=1 unsafe=false
-type 24 function-item def=13 signature=23
-type 25 reference mutable=true region=region:1 referent=11
-type 26 reference mutable=true region=region:2 referent=20
-type 27 tuple [25,26]
-type 28 reference mutable=true region=region:3 referent=11
+type 19 primitive f16
+type 20 primitive f128
+type 21 reference mutable=true region=bound:0:0 referent=11
+type 22 array element=11 length=1
+type 23 reference mutable=true region=bound:0:1 referent=22
+type 24 tuple [21,23]
+type 25 function binders=2 parameters=[24] result=1 unsafe=false
+type 26 function-item def=13 signature=25
+type 27 reference mutable=true region=region:1 referent=11
+type 28 reference mutable=true region=region:2 referent=22
+type 29 tuple [27,28]
+type 30 reference mutable=true region=region:3 referent=11
 root 0:17 pattern=0
-pattern 0 source=0:16 input=27 or alternatives=0:2
-pattern 1 source=0:11 input=27 product variant=- fields=0:2
-pattern 2 source=0:15 input=27 product variant=- fields=2:4
-pattern 3 source=0:9 input=25 bind def=32 local=25 mutable=false capture=value subpattern=-
-pattern 4 source=0:10 input=26 wildcard
-pattern 5 source=0:12 input=25 wildcard
-pattern 6 source=0:14 input=26 deref mutable=true implicit=true pattern=7
-pattern 7 source=0:14 input=20 product variant=- fields=4:5
-pattern 8 source=0:13 input=11 bind def=32 local=25 mutable=false capture=ref-mut region=region:3 loan=pending subpattern=-
+pattern 0 source=0:16 input=29 or alternatives=0:2
+pattern 1 source=0:11 input=29 product variant=- fields=0:2
+pattern 2 source=0:15 input=29 product variant=- fields=2:4
+pattern 3 source=0:9 input=27 bind def=34 local=27 mutable=false capture=value subpattern=-
+pattern 4 source=0:10 input=28 wildcard
+pattern 5 source=0:12 input=27 wildcard
+pattern 6 source=0:14 input=28 deref mutable=true implicit=true pattern=7
+pattern 7 source=0:14 input=22 product variant=- fields=4:5
+pattern 8 source=0:13 input=11 bind def=34 local=27 mutable=false capture=ref-mut region=region:3 loan=pending subpattern=-
 field 0 tuple=0 pattern=3
 field 1 tuple=1 pattern=4
 field 2 tuple=0 pattern=5
@@ -49,5 +51,5 @@ region-var region:1 body=0:20 source=0:18 origin=inference pending
 region-var region:2 body=0:20 source=0:18 origin=inference pending
 region-var region:3 body=0:20 source=0:13 origin=pattern-borrow pending
 region-equal body=0:20 left=region:1 right=region:3
-region-coercion body=0:20 source=0:18 actual=22 expected=27 kind=same-shape pending
+region-coercion body=0:20 source=0:18 actual=24 expected=29 kind=same-shape pending
 eof roots=1 patterns=9 fields=5 alternatives=2 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=3 region-equalities=1 conditions=0 chains=0

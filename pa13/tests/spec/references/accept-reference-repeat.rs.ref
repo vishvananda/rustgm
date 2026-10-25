@@ -18,18 +18,20 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 reference mutable=false region=static referent=11
-type 20 array element=19 length=64
-type 21 reference mutable=false region=bound:0:0 referent=11
+type 19 primitive f16
+type 20 primitive f128
+type 21 reference mutable=false region=static referent=11
 type 22 array element=21 length=64
-type 23 function binders=1 parameters=[22] result=1 unsafe=false
-type 24 function-item def=14 signature=23
-type 25 reference mutable=false region=region:1 referent=11
+type 23 reference mutable=false region=bound:0:0 referent=11
+type 24 array element=23 length=64
+type 25 function binders=1 parameters=[24] result=1 unsafe=false
+type 26 function-item def=14 signature=25
+type 27 reference mutable=false region=region:1 referent=11
 root 0:16 pattern=0
 root 0:19 pattern=1
-pattern 0 source=0:16 input=22 product variant=- fields=0:64
-pattern 1 source=0:19 input=22 wildcard
-pattern 2 source=0:16 input=21 deref mutable=false implicit=false pattern=3
+pattern 0 source=0:16 input=24 product variant=- fields=0:64
+pattern 1 source=0:19 input=24 wildcard
+pattern 2 source=0:16 input=23 deref mutable=false implicit=false pattern=3
 pattern 3 source=0:16 input=11 range=0
 field 0 index=0 pattern=2
 field 1 index=1 pattern=2
@@ -96,9 +98,9 @@ field 61 index=61 pattern=2
 field 62 index=62 pattern=2
 field 63 index=63 pattern=2
 range 0 ranks=7:7
-match 0 source=0:22 input=0:15 arms=0:2 exhaustive=true uninhabited=false work=69390
+match 0 source=0:22 input=0:15 arms=0:2 exhaustive=true uninhabited=false work=69391
 arm 0 source=0:18 pattern=0 guard=- useful=true value=0:17
 arm 1 source=0:21 pattern=1 guard=- useful=true value=0:20
 region-var region:1 body=0:7 source=0:5 origin=expression-borrow pending
-region-coercion body=0:7 source=0:5 actual=25 expected=19 kind=same-shape pending
-eof roots=2 patterns=4 fields=64 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=69390 region-vars=1 region-equalities=0 conditions=0 chains=0
+region-coercion body=0:7 source=0:5 actual=27 expected=21 kind=same-shape pending
+eof roots=2 patterns=4 fields=64 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=69391 region-vars=1 region-equalities=0 conditions=0 chains=0

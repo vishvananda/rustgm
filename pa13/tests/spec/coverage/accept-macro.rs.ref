@@ -18,11 +18,13 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 tuple [2,2]
-type 20 function binders=0 parameters=[19] result=1 unsafe=false
-type 21 function-item def=14 signature=20
+type 19 primitive f16
+type 20 primitive f128
+type 21 tuple [2,2]
+type 22 function binders=0 parameters=[21] result=1 unsafe=false
+type 23 function-item def=14 signature=22
 root 0:19 pattern=0
-pattern 0 source=0:19 input=19 product variant=- fields=0:2
+pattern 0 source=0:19 input=21 product variant=- fields=0:2
 pattern 1 source=0:15 input=2 or alternatives=0:2
 pattern 2 source=0:18 input=2 or alternatives=2:4
 pattern 3 source=0:13 input=2 range=0
@@ -39,6 +41,6 @@ range 0 ranks=1:1
 range 1 ranks=0:0
 range 2 ranks=1:1
 range 3 ranks=0:0
-match 0 source=0:22 input=0:12 arms=0:1 exhaustive=true uninhabited=false work=68
+match 0 source=0:22 input=0:12 arms=0:1 exhaustive=true uninhabited=false work=69
 arm 0 source=0:21 pattern=0 guard=- useful=true value=0:20
-eof roots=1 patterns=7 fields=2 alternatives=4 ranges=4 matches=1 arms=1 coverage-work=68 region-vars=0 region-equalities=0 conditions=0 chains=0
+eof roots=1 patterns=7 fields=2 alternatives=4 ranges=4 matches=1 arms=1 coverage-work=69 region-vars=0 region-equalities=0 conditions=0 chains=0

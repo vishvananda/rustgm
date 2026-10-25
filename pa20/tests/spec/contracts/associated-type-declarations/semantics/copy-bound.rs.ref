@@ -18,16 +18,18 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=14 index=0
-type 20 parameter def=16 index=0
-type 21 projection def=15 self=19 trait=13 arguments=[] family arguments=[]
-type 22 function binders=0 parameters=[] result=1 unsafe=false
-type 23 function-item def=18 signature=22
-def 14 type=19 name="Self" source=0:3
-def 15 type=21 name="Out" source=0:2
-def 16 type=20 name="Self" source=0:11
-def 17 type=20 name="Out" source=0:10
-def 18 type=23 name="main" source=0:13
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=14 index=0
+type 22 parameter def=16 index=0
+type 23 projection def=15 self=21 trait=13 arguments=[] family arguments=[]
+type 24 function binders=0 parameters=[] result=1 unsafe=false
+type 25 function-item def=18 signature=24
+def 14 type=21 name="Self" source=0:3
+def 15 type=23 name="Out" source=0:2
+def 16 type=22 name="Self" source=0:11
+def 17 type=22 name="Out" source=0:10
+def 18 type=25 name="main" source=0:13
 def 19 type=2 name="bool"
 def 20 type=3 name="char"
 def 21 type=4 name="str"
@@ -45,20 +47,22 @@ def 32 type=15 name="u128"
 def 33 type=16 name="usize"
 def 34 type=17 name="f32"
 def 35 type=18 name="f64"
-def 36 type=20 name="T" source=0:6
-associated-owner 0 kind=trait self-def=14 self=19 source=0:3 trait=13 unsafe=false name="A"
-associated-owner 1 kind=trait-impl self-def=16 self=20 source=0:11 unsafe=false
+def 36 type=19 name="f16"
+def 37 type=20 name="f128"
+def 38 type=22 name="T" source=0:6
+associated-owner 0 kind=trait self-def=14 self=21 source=0:3 trait=13 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=16 self=22 source=0:11 unsafe=false
 associated-member def=15 owner=0
 associated-member def=17 owner=1
-parameter owner=14 binding=14 argument=type:19 default=-
-parameter owner=16 binding=36 argument=type:20 default=-
-predicate owner=13 source=0:3 subject=19 bound=trait:13 arguments=[]
-predicate owner=16 source=0:5 subject=20 bound=copy
-impl owner=16 source=0:11 subject=20 bound=trait:13 arguments=[]
+parameter owner=14 binding=14 argument=type:21 default=-
+parameter owner=16 binding=38 argument=type:22 default=-
+predicate owner=13 source=0:3 subject=21 bound=trait:13 arguments=[]
+predicate owner=16 source=0:5 subject=22 bound=copy
+impl owner=16 source=0:11 subject=22 bound=trait:13 arguments=[]
 impl-type owner=16 declaration=15 definition=17
-associated-type def=15 type=21
-result-contract def=15 projection=21
-result-bound def=15 index=0 subject=21 bound=copy
-result-bound def=15 index=1 subject=21 bound=sized
-associated-type def=17 type=20
+associated-type def=15 type=23
+result-contract def=15 projection=23
+result-bound def=15 index=0 subject=23 bound=copy
+result-bound def=15 index=1 subject=23 bound=sized
+associated-type def=17 type=22
 eof owners=2 members=2 parameters=2 predicates=2 impls=1 calls=0 paths=0 impl-uses=0 type-members=2 constant-members=0 result-contracts=1 result-bounds=2 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0

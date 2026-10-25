@@ -16,7 +16,9 @@ name 14 "u128"
 name 15 "usize"
 name 16 "f32"
 name 17 "f64"
-name 18 "f"
+name 18 "f16"
+name 19 "f128"
+name 20 "f"
 module 0 name=0 file=0 scope=0 parent=root
 scope 0 module=0 barrier=true parent=root
 scope 1 module=0 barrier=true parent=0
@@ -38,6 +40,8 @@ def 13 type primitive name=14 scope=0 access=public
 def 14 type primitive name=15 scope=0 access=public
 def 15 type primitive name=16 scope=0 access=public
 def 16 type primitive name=17 scope=0 access=public
-def 17 value function name=18 scope=0 access=module:0 source=0:4
-binding scope=0 value name=18 def=17 Direct ambiguous=false access=module:0
-eof files=1 modules=1 definitions=18 references=0
+def 17 type primitive name=18 scope=0 access=public
+def 18 type primitive name=19 scope=0 access=public
+def 19 value function name=20 scope=0 access=module:0 source=0:4
+binding scope=0 value name=20 def=19 Direct ambiguous=false access=module:0
+eof files=1 modules=1 definitions=20 references=0

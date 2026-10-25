@@ -18,19 +18,21 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 parameter def=14 index=0
-type 20 function binders=0 parameters=[19] result=11 unsafe=false
-type 21 function-item def=15 signature=20
-type 22 function binders=0 parameters=[17] result=11 unsafe=false
-type 23 function-item def=17 signature=22
-type 24 function binders=0 parameters=[] result=1 unsafe=false
-type 25 function-item def=18 signature=24
-type 26 function-item def=15 signature=22 arguments=[type:17]
-def 14 type=19 name="Self" source=0:4
-def 15 type=21 name="f" source=0:3
+type 19 primitive f16
+type 20 primitive f128
+type 21 parameter def=14 index=0
+type 22 function binders=0 parameters=[21] result=11 unsafe=false
+type 23 function-item def=15 signature=22
+type 24 function binders=0 parameters=[17] result=11 unsafe=false
+type 25 function-item def=17 signature=24
+type 26 function binders=0 parameters=[] result=1 unsafe=false
+type 27 function-item def=18 signature=26
+type 28 function-item def=15 signature=24 arguments=[type:17]
+def 14 type=21 name="Self" source=0:4
+def 15 type=23 name="f" source=0:3
 def 16 type=17 name="Self" source=0:13
-def 17 type=23 name="f" source=0:12
-def 18 type=25 name="main" source=0:19
+def 17 type=25 name="f" source=0:12
+def 18 type=27 name="main" source=0:19
 def 19 type=2 name="bool"
 def 20 type=3 name="char"
 def 21 type=4 name="str"
@@ -48,16 +50,18 @@ def 32 type=15 name="u128"
 def 33 type=16 name="usize"
 def 34 type=17 name="f32"
 def 35 type=18 name="f64"
-def 37 type=17 name="self" source=0:7
-def 38 type=11 name="x" source=0:14
-associated-owner 0 kind=trait self-def=14 self=19 source=0:4 trait=13 unsafe=false name="A"
+def 36 type=19 name="f16"
+def 37 type=20 name="f128"
+def 39 type=17 name="self" source=0:7
+def 40 type=11 name="x" source=0:14
+associated-owner 0 kind=trait self-def=14 self=21 source=0:4 trait=13 unsafe=false name="A"
 associated-owner 1 kind=trait-impl self-def=16 self=17 source=0:13 unsafe=false
-associated-member def=15 owner=0 receiver=19 references=0
+associated-member def=15 owner=0 receiver=21 references=0
 associated-member def=17 owner=1 receiver=17 references=0
-parameter owner=14 binding=14 argument=type:19 default=-
-predicate owner=13 source=0:4 subject=19 bound=trait:13 arguments=[]
+parameter owner=14 binding=14 argument=type:21 default=-
+predicate owner=13 source=0:4 subject=21 bound=trait:13 arguments=[]
 impl owner=16 source=0:13 subject=17 bound=trait:13 arguments=[]
 impl-method owner=16 declaration=15 selected=17 default=false
-method-call source=0:16 method=15 callable=26 dereferences=0 borrow=- receiver=17 origin=lexical
+method-call source=0:16 method=15 callable=28 dereferences=0 borrow=- receiver=17 origin=lexical
 implementation-use source=0:16 owner=16 arguments=[]
 eof owners=2 members=2 parameters=1 predicates=1 impls=1 calls=1 paths=0 impl-uses=1

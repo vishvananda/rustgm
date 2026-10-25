@@ -18,13 +18,15 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 aggregate def=13
-type 20 parameter def=14 index=0
-type 21 aggregate def=14 arguments=[type:20]
-type 22 aggregate def=14 arguments=[type:19]
-type 23 function binders=0 parameters=[22] result=11 unsafe=false
-type 24 function-item def=15 signature=23
-type 25 function binders=0 parameters=[] result=1 unsafe=false
-type 26 function-item def=16 signature=25
+type 19 primitive f16
+type 20 primitive f128
+type 21 aggregate def=13
+type 22 parameter def=14 index=0
+type 23 aggregate def=14 arguments=[type:22]
+type 24 aggregate def=14 arguments=[type:21]
+type 25 function binders=0 parameters=[24] result=11 unsafe=false
+type 26 function-item def=15 signature=25
+type 27 function binders=0 parameters=[] result=1 unsafe=false
+type 28 function-item def=16 signature=27
 match 0 source=0:13 input=0:12 arms=0:0 exhaustive=true uninhabited=true work=6
 eof roots=0 patterns=0 fields=0 alternatives=0 ranges=0 matches=1 arms=0 coverage-work=6 region-vars=0 region-equalities=0 conditions=0 chains=0

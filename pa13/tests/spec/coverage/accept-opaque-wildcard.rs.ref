@@ -18,8 +18,10 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 function binders=0 parameters=[17] result=1 unsafe=false
-type 20 function-item def=13 signature=19
+type 19 primitive f16
+type 20 primitive f128
+type 21 function binders=0 parameters=[17] result=1 unsafe=false
+type 22 function-item def=13 signature=21
 root 0:4 pattern=0
 pattern 0 source=0:4 input=17 wildcard
 match 0 source=0:7 input=0:3 arms=0:1 exhaustive=true uninhabited=false work=3
