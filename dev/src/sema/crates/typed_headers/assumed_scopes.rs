@@ -312,10 +312,10 @@ impl Owner {
         state: &mut State,
         facts: &mut Declarations,
         prepared: &Prepared,
-        demand: originals::BodyDemand,
+        demand: &originals::BodyDemand,
         work: &mut ReservationWork,
     ) -> Result<Demand<()>, Error> {
-        let originals::BodyDemand { expected, origin } = demand;
+        let originals::BodyDemand { expected, origin } = *demand;
         let rows = view.rows()?;
         if let Some(status) = self.cached(rows, expected, origin, work)? {
             return Ok(status);
