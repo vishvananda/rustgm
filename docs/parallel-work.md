@@ -33,9 +33,10 @@ Current lanes:
 - B: implement LIB-022's authenticated builtin declaration family from the new
   unchanged-core frontier. Keep remaining UB/runtime-policy import contracts
   visible and separate from local declaration support.
-- C: repair LIB-023 with a real local `non_exhaustive` consumer and the existing
-  closed artifact profile. Attribute/configuration receipts and 93 new text
-  oracles are integrated; imported contracts remain required.
+- C: LIB-023's real local `non_exhaustive` consumer is qualified with four merged
+  controls and 38 independent observations. Continue the actual source-attribute
+  publication boundary and imported contracts. Attribute/configuration receipts
+  and 93 new text oracles are integrated.
 - Integrator: focused integration/main pushes, periodic CI follow-up and fresh
   original-source observations. Local primitive ownership is qualified. Keep
   CPPGM and upstream sources unchanged.

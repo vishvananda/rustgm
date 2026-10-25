@@ -515,6 +515,12 @@ Macro expansion and resolution form a worklist with explicit unresolved,
 in-progress, complete and failed states. Do not repeatedly scan the whole crate
 after each new item. Spans carry compact source and expansion context IDs.
 
+Authenticate source-declared builtin identity and macro kind independently of
+execution availability. Retain known unused declarations without manufacturing
+an implementation. Wrong-kind or unavailable invocations fail before matcher,
+capture and expansion work. New declaration-only roles must not grow ordinary
+bootstrap tables or grant permission through an alternate attribute consumer.
+
 Keep actual expansion ancestry separate from a token's syntax context and its
 physical source/edition provenance. A captured name does not determine the
 contexts of the surrounding generated macro body. Mark each definition token
@@ -3737,6 +3743,15 @@ Destruction consumes initialization/move facts to elaborate conditional drops.
 Async transformation accounts for borrows, pinning and cancellation cleanup.
 
 ## Crate calling-convention transport
+
+Source body transport must retain every raw input consumed by its original
+proof, including CFG-derived local-borrow upper bounds and reborrow ancestry.
+Share the existing typed place-bounds producer between the ordinary proof
+adapter and export; do not duplicate its algorithm or serialize solved regions.
+Run it once per authenticated collected original, charging traversal, emitted
+rows and transient capacity growth before allocation. Repeated signature
+requests use the retained recipe frontier rather than walking the CFG again.
+Missing or substituted genuine inputs remain structural validation failures.
 
 Crate metadata retains a fixed callable's ABI independently of its safety,
 linkage and lifetime slots. Import into the existing typed callable convention;
