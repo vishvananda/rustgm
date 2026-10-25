@@ -277,6 +277,13 @@ impl Stage {
             };
             let id =
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
+            if definition.kind == DefKind::Trait
+                && crate::resolve::impl_restrictions::clause(report, id)
+                    .map_err(|_| "source trait implementation domain is invalid")?
+                    .is_some()
+            {
+                return Err("restricted trait implementation policy transport is not implemented");
+            }
             let parent = if Some(id) == report.resolution.crate_root {
                 None
             } else {

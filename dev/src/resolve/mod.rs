@@ -14,6 +14,8 @@ pub mod crates;
 pub mod expansion;
 mod hygiene;
 mod identifiers;
+#[path = "module_domains.rs"]
+pub(crate) mod impl_restrictions;
 mod imports;
 mod index;
 pub mod load;
@@ -38,6 +40,7 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     resolver.imports()?;
     resolver.bodies()?;
     bindings::finish(package, &mut state.facts)?;
+    impl_restrictions::validate_plain(package)?;
     float_features::validate_plain(package, &state.facts)?;
     Ok(state.facts)
 }
