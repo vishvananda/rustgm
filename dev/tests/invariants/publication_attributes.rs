@@ -205,6 +205,9 @@ fn staged_identity_and_existing_query_failures_are_preserved() -> Result {
         .facts
         .must_use_contract(&report, DefId(u32::try_from(definition)?))?
         .ok_or("actual must_use source")?
+        .origin
+        .source()
+        .ok_or("actual local must_use source origin")?
         .owner;
     let unit = &mut report.package.units[owner.file.0 as usize];
     let index = unit.owner_indices[owner.node.get() as usize].ok_or("actual configured owner")?;
