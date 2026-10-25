@@ -53,6 +53,13 @@ completed facts and avoid speculative or repeated whole-graph work. The compiler
 implementation remains idiomatic safe Rust; strict Clippy all/pedantic and the
 syntax-aware file/architecture audit are required.
 
+The [source-artifact/readiness checkpoint](../docs/source-artifact-readiness-checkpoint.md)
+adds actual imported-body/full-instance proof, early source implementation
+readiness and the original reference-valued anonymous selector's native `7 1`.
+This is a bounded implementation checkpoint. Provided/default body environments,
+generic/imported early callers, actual UB policy and attribute consumers remain
+required before the original library and assignment can complete.
+
 ## Tool surface
 
 Extend the existing `dev/rustgm --emit-lowir` view and explicit crate-build interfaces.

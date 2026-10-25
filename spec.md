@@ -3847,6 +3847,13 @@ work and reducing retained representation before tuning individual instructions:
   structure. Keep ownership, initialization, destruction, region and loan checks
   under each complete instance's own inputs and proof scope. Debug revalidation
   checks the structural sharing premise; public validation remains available.
+- Borrow an already prepared source/import environment for repeated queries;
+  do not clone its complete universal table or rebuild premise indexes per use.
+  Bind each view to its actual graph and complete instance, retaining fresh proof
+  for each distinct instance. Measure repeated uses, distinct instances and
+  original-input width separately. The
+  [source-artifact/readiness checkpoint](docs/source-artifact-readiness-checkpoint.md)
+  records that scope boundary and its measured costs.
 - Reuse per-body recording and traversal buffers without retaining previous
   bodies' semantic authority. Answer empty work queues before allocating their
   continuation machinery. Box rare large diagnostics rather than inflating every

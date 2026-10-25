@@ -20,15 +20,17 @@ artifact and no assignment release.
 
 Current lanes:
 
-- A: qualify full-instance artifact/import Scope, then provided/default body and
-  actual environment transport. Earlier API/CLI native result 7 passed at A14;
-  stronger A15 controls remain unqualified.
-- B: integrate separately qualified early readiness; qualify selected-reference
-  anonymous const callers, then actual UB-check preservation/intrinsic semantics.
+- A: A15 full-instance artifact/import Scope is integrated and functionally
+  qualified. Continue the shared environment producer and provided/default body
+  transport. The next shared environment producer has static/focused/native
+  qualification and 1,561 nonignored private passes in a separate frozen handoff.
+- B: early readiness and selected-reference anonymous callers are integrated and
+  functionally qualified. Continue actual UB-check policy/intrinsics, cfg-demand
+  and owned source cache identity.
 - C: qualify actual attribute kinds and consumers, including Test removal,
   must_use/inline and trait markers/messages; keep incomplete diagnostics explicit.
-- Integrator: combined qualification/main pushes, LIB-004 handoff integration and
-  real primitive inherent coherence. Keep CPPGM and upstream sources unchanged.
+- Integrator: combined qualification/main pushes and real primitive inherent
+  coherence. Keep CPPGM and upstream sources unchanged.
 
 Each new private binary runs its full nonignored inventory once, with required
 names and captured outputs. Schema 2 remains active. Select each absolute cap
