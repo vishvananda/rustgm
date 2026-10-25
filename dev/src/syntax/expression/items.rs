@@ -101,6 +101,16 @@ impl Parser<'_, '_> {
         }
         Ok(match word {
             Word::Auto => self.cursor.peek_word(1)? == Word::Trait,
+            Word::Default => matches!(
+                self.cursor.peek_word(1)?,
+                Word::Fn
+                    | Word::Impl
+                    | Word::Const
+                    | Word::Type
+                    | Word::Unsafe
+                    | Word::Async
+                    | Word::Extern
+            ),
             Word::Union => self.cursor.peek(1)?.is_some_and(|t| {
                 t.kind == TokenKind::Identifier || t.kind == TokenKind::RawIdentifier
             }),
@@ -176,6 +186,25 @@ impl Parser<'_, '_> {
         }
         let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
         let visibility = self.visibility()?;
+        let defaultness = if self.cursor.at_word(Word::Default)?
+            && matches!(
+                self.cursor.peek_word(1)?,
+                Word::Fn
+                    | Word::Impl
+                    | Word::Const
+                    | Word::Type
+                    | Word::Unsafe
+                    | Word::Async
+                    | Word::Extern
+            ) {
+            let token = self.required()?;
+            Some(Span {
+                start: token.start,
+                end: token.end,
+            })
+        } else {
+            None
+        };
         let mut item = Item {
             name: None,
             visibility,
@@ -401,6 +430,9 @@ impl Parser<'_, '_> {
         let id = u32::try_from(self.ast.items.len()).map_err(|_| error(start, "too many items"))?;
         self.ast.items.push(item);
         let node = self.node(start, Kind::Item(id))?;
+        if let Some(keyword) = defaultness {
+            self.ast.record_defaultness(id, node, keyword)?;
+        }
         let node = self.attach(inner, node)?;
         self.attach(attrs, node)
     }

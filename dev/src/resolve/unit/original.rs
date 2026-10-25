@@ -86,6 +86,10 @@ impl Original {
     }
 }
 impl Unit {
+    #[cfg(test)]
+    pub(crate) fn original_layout_bytes() -> (usize, usize) {
+        (size_of::<Original>(), size_of::<Saved>())
+    }
     /// Construct another module instance from original typed facts. Files are
     /// parsed once; expansion changes in a prior instance cannot escape into it.
     /// Only a requested additional instance copies syntax and literal storage.
@@ -132,6 +136,8 @@ impl Unit {
                 .ok_or_else(|| error(0, "saved original owner index is outside its prefix"))? =
                 saved.owner;
         }
+        let source = self.source.physical_copy();
+        ast.fresh_defaultness_source(self.source.original_image(), source.original_image())?;
         let configured = ConfiguredSyntax {
             ast,
             cfg_uses: self.configured.cfg_uses.as_ref().and_then(|uses| {
@@ -155,7 +161,7 @@ impl Unit {
             .map_err(|e| error(0, e))?;
         let original = Original::new(&configured, &literals);
         Ok(Self {
-            source: self.source.physical_copy(),
+            source,
             include_context: self.include_context,
             configured,
             literals,
