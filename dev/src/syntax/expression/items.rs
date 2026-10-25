@@ -280,7 +280,7 @@ impl Parser<'_, '_> {
                     Self::empty_list()
                 };
                 item.where_clause = self.where_clause()?;
-                if restriction.is_some() && self.cursor.at(P::Eq)? {
+                if restriction.is_some() && self.cursor.at(P::Equal)? {
                     return Err(error(
                         start,
                         "trait aliases cannot have implementation restrictions",
