@@ -77,7 +77,8 @@ fn canonical_domain() -> Result {
             .definitions()
             .all(|(_, actual)| actual != definition)
     );
-    let module = descriptor.rows().declarations[domain.defining_module.0 as usize]
+    let rows = descriptor.rows();
+    let module = rows.declarations[domain.defining_module.0 as usize]
         .name
         .as_deref();
     assert_eq!(module, Some("nonzero"));
