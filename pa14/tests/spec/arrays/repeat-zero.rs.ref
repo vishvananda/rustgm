@@ -1,7 +1,7 @@
 ownership-crate 1
 body 0 source=0:9
-  path m0 type=19 root=l0 subtree=0..1
-  path m1 type=22 root=l1 subtree=1..2
+  path m0 type=21 root=l0 subtree=0..1
+  path m1 type=24 root=l1 subtree=1..2
   use v0 move
   block b0 reachable=true
 end-body

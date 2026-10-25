@@ -18,22 +18,24 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 array element=11 length=1
-type 20 reference mutable=false region=bound:0:1 referent=19
-type 21 reference mutable=false region=bound:0:0 referent=20
-type 22 function binders=2 parameters=[21] result=1 unsafe=false
-type 23 function-item def=13 signature=22
-type 24 reference mutable=false region=region:2 referent=19
-type 25 reference mutable=false region=region:1 referent=24
-type 26 reference mutable=false region=region:3 referent=11
+type 19 primitive f16
+type 20 primitive f128
+type 21 array element=11 length=1
+type 22 reference mutable=false region=bound:0:1 referent=21
+type 23 reference mutable=false region=bound:0:0 referent=22
+type 24 function binders=2 parameters=[23] result=1 unsafe=false
+type 25 function-item def=13 signature=24
+type 26 reference mutable=false region=region:2 referent=21
+type 27 reference mutable=false region=region:1 referent=26
+type 28 reference mutable=false region=region:3 referent=11
 root 0:9 pattern=0
-pattern 0 source=0:9 input=25 deref mutable=false implicit=false pattern=1
-pattern 1 source=0:8 input=24 deref mutable=false implicit=true pattern=2
-pattern 2 source=0:8 input=19 product variant=- fields=0:1
-pattern 3 source=0:7 input=11 bind def=32 local=26 mutable=false capture=ref region=region:3 loan=pending subpattern=-
+pattern 0 source=0:9 input=27 deref mutable=false implicit=false pattern=1
+pattern 1 source=0:8 input=26 deref mutable=false implicit=true pattern=2
+pattern 2 source=0:8 input=21 product variant=- fields=0:1
+pattern 3 source=0:7 input=11 bind def=34 local=28 mutable=false capture=ref region=region:3 loan=pending subpattern=-
 field 0 index=0 pattern=3
 region-var region:1 body=0:12 source=0:10 origin=inference pending
 region-var region:2 body=0:12 source=0:10 origin=inference pending
 region-var region:3 body=0:12 source=0:7 origin=pattern-borrow pending
-region-coercion body=0:12 source=0:10 actual=21 expected=25 kind=same-shape pending
+region-coercion body=0:12 source=0:10 actual=23 expected=27 kind=same-shape pending
 eof roots=1 patterns=4 fields=1 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=3 region-equalities=0 conditions=0 chains=0

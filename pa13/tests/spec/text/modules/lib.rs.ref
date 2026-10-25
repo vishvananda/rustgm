@@ -18,28 +18,30 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 reference mutable=false region=static referent=4
-type 20 array element=11 length=1
-type 21 reference mutable=false region=static referent=20
-type 22 reference mutable=false region=bound:0:0 referent=4
-type 23 reference mutable=false region=bound:0:1 referent=20
-type 24 tuple [22,23]
-type 25 function binders=2 parameters=[24] result=1 unsafe=false
-type 26 function-item def=16 signature=25
+type 19 primitive f16
+type 20 primitive f128
+type 21 reference mutable=false region=static referent=4
+type 22 array element=11 length=1
+type 23 reference mutable=false region=static referent=22
+type 24 reference mutable=false region=bound:0:0 referent=4
+type 25 reference mutable=false region=bound:0:1 referent=22
+type 26 tuple [24,25]
+type 27 function binders=2 parameters=[26] result=1 unsafe=false
+type 28 function-item def=16 signature=27
 root 0:20 pattern=0
 root 0:23 pattern=3
-pattern 0 source=0:20 input=24 product variant=- fields=0:2
-pattern 1 source=0:18 input=22 deref mutable=false implicit=false pattern=4
-pattern 2 source=0:19 input=23 deref mutable=false implicit=false pattern=5
-pattern 3 source=0:23 input=24 wildcard
+pattern 0 source=0:20 input=26 product variant=- fields=0:2
+pattern 1 source=0:18 input=24 deref mutable=false implicit=false pattern=4
+pattern 2 source=0:19 input=25 deref mutable=false implicit=false pattern=5
+pattern 3 source=0:23 input=26 wildcard
 pattern 4 source=0:18 input=4 text="a"
-pattern 5 source=0:19 input=20 product variant=- fields=2:3
+pattern 5 source=0:19 input=22 product variant=- fields=2:3
 pattern 6 source=0:19 input=11 range=0
 field 0 tuple=0 pattern=1
 field 1 tuple=1 pattern=2
 field 2 index=0 pattern=6
 range 0 ranks=97:97
-match 0 source=0:26 input=0:17 arms=0:2 exhaustive=true uninhabited=false work=129
+match 0 source=0:26 input=0:17 arms=0:2 exhaustive=true uninhabited=false work=130
 arm 0 source=0:22 pattern=0 guard=- useful=true value=0:21
 arm 1 source=0:25 pattern=3 guard=- useful=true value=0:24
-eof roots=2 patterns=7 fields=3 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=129 region-vars=0 region-equalities=0 conditions=0 chains=0
+eof roots=2 patterns=7 fields=3 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=130 region-vars=0 region-equalities=0 conditions=0 chains=0

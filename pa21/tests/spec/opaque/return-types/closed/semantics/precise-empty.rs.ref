@@ -18,23 +18,25 @@ type 15 primitive u128
 type 16 primitive usize
 type 17 primitive f32
 type 18 primitive f64
-type 19 reference mutable=false region=bound:0:0 referent=11
-type 20 opaque id=0 arguments=[]
-type 21 function binders=1 parameters=[19] result=20 unsafe=false
-type 22 function-item def=13 signature=21
-type 23 parameter def=14 index=0
-type 24 function binders=0 parameters=[23] result=1 unsafe=false
-type 25 function-item def=14 signature=24
-type 26 function binders=0 parameters=[] result=1 unsafe=false
-type 27 function-item def=15 signature=26
-type 28 reference mutable=false region=region:1 referent=11
-type 29 function binders=0 parameters=[28] result=20 unsafe=false
-type 30 reference mutable=false region=region:2 referent=11
-type 31 function binders=0 parameters=[20] result=1 unsafe=false
-type 32 function-item def=14 signature=31 arguments=[type:20]
-def 13 type=22 name="make" source=0:12
-def 14 type=25 name="take" source=0:19
-def 15 type=27 name="main" source=0:39
+type 19 primitive f16
+type 20 primitive f128
+type 21 reference mutable=false region=bound:0:0 referent=11
+type 22 opaque id=0 arguments=[]
+type 23 function binders=1 parameters=[21] result=22 unsafe=false
+type 24 function-item def=13 signature=23
+type 25 parameter def=14 index=0
+type 26 function binders=0 parameters=[25] result=1 unsafe=false
+type 27 function-item def=14 signature=26
+type 28 function binders=0 parameters=[] result=1 unsafe=false
+type 29 function-item def=15 signature=28
+type 30 reference mutable=false region=region:1 referent=11
+type 31 function binders=0 parameters=[30] result=22 unsafe=false
+type 32 reference mutable=false region=region:2 referent=11
+type 33 function binders=0 parameters=[22] result=1 unsafe=false
+type 34 function-item def=14 signature=33 arguments=[type:22]
+def 13 type=24 name="make" source=0:12
+def 14 type=27 name="take" source=0:19
+def 15 type=29 name="main" source=0:39
 def 16 type=2 name="bool"
 def 17 type=3 name="char"
 def 18 type=4 name="str"
@@ -52,17 +54,19 @@ def 29 type=15 name="u128"
 def 30 type=16 name="usize"
 def 31 type=17 name="f32"
 def 32 type=18 name="f64"
-def 34 type=23 name="#impl-trait-0-16" source=0:16
-def 35 type=19 name="x" source=0:1
-def 43 type=23 name="x" source=0:13
-def 44 type=20 name="x" source=0:20
-def 45 type=11 name="v" source=0:22
-parameter owner=14 binding=34 argument=type:23 default=-
-predicate owner=14 source=0:15 subject=23 bound=copy
+def 33 type=19 name="f16"
+def 34 type=20 name="f128"
+def 36 type=25 name="#impl-trait-0-16" source=0:16
+def 37 type=21 name="x" source=0:1
+def 45 type=25 name="x" source=0:13
+def 46 type=22 name="x" source=0:20
+def 47 type=11 name="v" source=0:22
+parameter owner=14 binding=36 argument=type:25 default=-
+predicate owner=14 source=0:15 subject=25 bound=copy
 region-var region:1 body=0:38 source=0:29 origin=call-argument pending
 region-var region:2 body=0:38 source=0:28 origin=expression-borrow pending
-region-coercion body=0:38 source=0:28 actual=30 expected=28 kind=same-shape pending
-opaque 0 owner=13 source=0:9 application=20 hidden=11 role=defining-result storage-proof=pending
-opaque-bound id=0 index=0 subject=20 bound=copy
+region-coercion body=0:38 source=0:28 actual=32 expected=30 kind=same-shape pending
+opaque 0 owner=13 source=0:9 application=22 hidden=11 role=defining-result storage-proof=pending
+opaque-bound id=0 index=0 subject=22 bound=copy
 opaque-body-result def=13 type=11
 eof owners=0 members=0 parameters=1 predicates=1 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=1 opaque-bounds=1 hidden-types=1 opaque-body-results=1 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0
