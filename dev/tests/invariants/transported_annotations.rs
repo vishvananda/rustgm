@@ -88,6 +88,8 @@ fn imported_copy_trait(report: &Report, interface: &crates::Interface) -> Result
         .find(|row| row.role == crate::support::bindings::LangItem::Copy)
         .ok_or("actual checked Copy role")?
         .declaration;
+    assert_eq!(copy.artifact, s::ArtifactRef(0));
+    let copy = copy.declaration;
     assert!(rows.traits.iter().any(|header| header.declaration == copy));
     let imported = report
         .resolution
