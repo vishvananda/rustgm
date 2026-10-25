@@ -24,6 +24,7 @@ use crate::support::{
 pub use attributes::*;
 pub use bodies::*;
 pub use descriptor::{Columns, Descriptor, Profile, ValidatedRows, ValidatedView};
+pub(crate) use descriptor::{ExportBinding, NamespaceColumns, UnpublishedNamespace};
 pub use inputs::*;
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};
 pub use validation::{

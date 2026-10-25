@@ -89,3 +89,20 @@ rebuild. Together with the unchanged 8139 cases retained from the preceding
 pass, this qualifies 8484 text cases. This is not another fresh all-stage run
 or native execution of wide arithmetic. Evidence is under
 `obj/parallel/wide-public-fixtures-v1`; PA2's old runtime float adapter is intact.
+
+Periodic [full CI on `fb6cc056`](https://github.com/vishvananda/rustgm/actions/runs/40204216976)
+finds five stale private/integration expectations: the cold feature word is now
+four bytes and source types allocated after the two new primitives have later
+IDs. The repair changes assertions only. Exact reruns pass all three private
+layout controls and both semantic relationship controls, preserving their
+owner, lifetime, member-selection and ordinary-allocation checks.
+
+The initial combined cold gate reaches its build cutoff after 275.88 seconds;
+metadata, formatting, architecture and both strict Clippy modes pass, but no
+tests execute. A source-identical continuation retains those five checks using
+all 2572 recorded content fingerprints, completes the missing build in 131.69
+seconds and executes the five exact tests in 0.44 seconds. Both receipts remain
+under `obj/qualification/fast/1792943923078260997` and
+`obj/qualification/fast/1792944422675923364`. The failed periodic result remains
+failed; later release/native/debug qualification is pending. Compiler behavior
+and committed text oracles are unchanged by this repair.

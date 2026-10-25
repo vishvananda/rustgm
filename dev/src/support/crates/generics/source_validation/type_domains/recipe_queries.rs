@@ -61,6 +61,14 @@ impl Types {
     ) -> Result<bool, &'static str> {
         Ok(closed(self.summary(ty, work)?))
     }
+    pub(in super::super) fn region_independent(
+        &self,
+        ty: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        let summary = self.summary(ty, work)?;
+        Ok(summary.body.is_none() && summary.bound.is_none())
+    }
     pub(in super::super) fn closed_application(
         &self,
         application: s::FunctionApplicationRef,

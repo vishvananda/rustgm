@@ -29,7 +29,7 @@ type 26 parameter def=17 index=2
 type 27 aggregate def=15 arguments=[type:25,type:26]
 type 28 reference mutable=false region=bound:0:0 referent=11
 type 29 reference mutable=false region=static referent=11
-type 30 parameter def=19 index=1
+type 30 parameter def=19 index=0
 type 31 reference mutable=false region=bound:0:0 referent=1
 type 32 function binders=1 parameters=[30,31] result=1 unsafe=false
 type 33 reference mutable=false region=bound:1:0 referent=1

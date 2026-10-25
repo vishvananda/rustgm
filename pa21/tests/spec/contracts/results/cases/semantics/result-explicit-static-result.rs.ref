@@ -23,7 +23,7 @@ type 20 primitive f128
 type 21 parameter def=14 index=0
 type 22 parameter def=17 index=0
 type 23 projection def=18 self=22 trait=16 arguments=[] family arguments=[]
-type 24 parameter def=21 index=1
+type 24 parameter def=21 index=0
 type 25 function binders=1 parameters=[] result=1 unsafe=false
 type 26 function binders=0 parameters=[] result=1 unsafe=false
 type 27 function-item def=21 signature=25

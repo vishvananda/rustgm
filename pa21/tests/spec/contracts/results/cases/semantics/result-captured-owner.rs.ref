@@ -32,7 +32,7 @@ type 29 tuple [25,28]
 type 30 projection def=20 self=22 trait=18 arguments=[region:bound:1:0] family arguments=[]
 type 31 projection def=15 self=30 trait=13 arguments=[region:bound:0:0] family arguments=[]
 type 32 tuple [25,23]
-type 33 parameter def=23 index=2
+type 33 parameter def=23 index=0
 type 34 projection def=20 self=33 trait=18 arguments=[region:bound:0:0] family arguments=[]
 type 35 projection def=15 self=34 trait=13 arguments=[region:bound:0:1] family arguments=[]
 type 36 projection def=20 self=33 trait=18 arguments=[region:region:2] family arguments=[]

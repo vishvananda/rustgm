@@ -9,7 +9,7 @@ use crate::{
 pub(super) trait Collect {
     fn original(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         proved: &Proved,
         input: &Contract,
     ) -> Result<(), Error>;
@@ -21,11 +21,11 @@ pub(super) struct Binding<'a, S, F> {
 }
 impl<S, F> Collect for Binding<'_, S, F>
 where
-    F: FnMut(&mut S, &Declarations, &Proved, &Contract) -> Result<(), Error>,
+    F: FnMut(&mut S, &mut Declarations, &Proved, &Contract) -> Result<(), Error>,
 {
     fn original(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         proved: &Proved,
         input: &Contract,
     ) -> Result<(), Error> {
@@ -37,7 +37,12 @@ where
     clippy::unnecessary_wraps,
     reason = "the shared legacy no-op implements the same fallible collector callback contract"
 )]
-pub(super) fn ignore((): &mut (), _: &Declarations, _: &Proved, _: &Contract) -> Result<(), Error> {
+pub(super) fn ignore(
+    (): &mut (),
+    _: &mut Declarations,
+    _: &Proved,
+    _: &Contract,
+) -> Result<(), Error> {
     Ok(())
 }
 

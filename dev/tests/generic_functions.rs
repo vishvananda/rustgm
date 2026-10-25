@@ -96,8 +96,19 @@ fn lifetime_binding_does_not_renumber_rigid_parameter_declarations() -> Result<(
         return Err("type parameter is not rigid".into());
     };
     let declaration = facts.types.parameter(id).ok_or("missing declaration")?;
-    assert_eq!(declaration.index, 2);
+    assert_eq!(declaration.index, 0);
     assert_eq!(declaration.owner.0, function.definition.0);
+    let Argument::Const(term) = parameters[1].argument else {
+        return Err("missing const parameter".into());
+    };
+    let Some(rustgm::types::arguments::ConstKind::Parameter(constant)) =
+        facts.types.const_kind(term)
+    else {
+        return Err("const parameter is not rigid".into());
+    };
+    let constant = facts.types.parameter(constant).ok_or("missing constant")?;
+    assert_eq!(constant.index, 1);
+    assert_eq!(constant.owner.0, function.definition.0);
     let environment = &facts.generics.environments[&function.definition];
     assert!(!environment.abilities(id).ok_or("missing assumptions")?.copy);
     let lifetimes = &facts.lifetimes.functions[&function.definition];
@@ -115,6 +126,57 @@ fn lifetime_binding_does_not_renumber_rigid_parameter_declarations() -> Result<(
             return Err("missing reference parameter".into());
         };
         assert_eq!(region.bound_parts(), Some((0, index)));
+    }
+    Ok(())
+}
+
+#[test]
+fn function_lifetime_formals_keep_dense_arguments_through_actual_calls() -> Result<(), String> {
+    let source =
+        crate::resolve::fixture("pa18/tests/spec/functions/accept-lifetime-argument-indices.rs")
+            .map_err(|error| error.to_string())?;
+    rustc::qualify("function-lifetime-argument-indices", &source, true)
+        .map_err(|error| error.to_string())?;
+    let (report, facts) = semantic::analyze(&source)?;
+    for name in ["borrower", "mixed", "const_first", "Borrowed"] {
+        let (owner, parameters) = facts
+            .generics
+            .parameters
+            .iter()
+            .find(|(owner, _)| {
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[owner.0 as usize].name)
+                    == name
+            })
+            .ok_or("missing actual generic owner")?;
+        for (index, parameter) in parameters.iter().enumerate() {
+            let id = match parameter.argument {
+                Argument::Type(ty) => {
+                    let Some(Kind::Parameter(id)) = facts.types.kind(ty) else {
+                        return Err("missing actual type parameter".into());
+                    };
+                    id
+                }
+                Argument::Const(term) => {
+                    let Some(rustgm::types::arguments::ConstKind::Parameter(id)) =
+                        facts.types.const_kind(term)
+                    else {
+                        return Err("missing actual const parameter".into());
+                    };
+                    id
+                }
+                Argument::Lifetime(_) => {
+                    assert_eq!(name, "Borrowed");
+                    assert_eq!(index, 0);
+                    continue;
+                }
+            };
+            let actual = facts.types.parameter(id).ok_or("missing actual argument")?;
+            assert_eq!(actual.owner.0, owner.0);
+            assert_eq!(actual.index as usize, index, "{name}");
+        }
     }
     Ok(())
 }

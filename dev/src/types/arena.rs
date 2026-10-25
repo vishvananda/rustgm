@@ -18,6 +18,9 @@ impl Identity {
     }
 }
 impl Store {
+    pub(crate) fn existing_arena_identity(&self) -> Option<&Identity> {
+        self.identity.as_ref()
+    }
     pub(crate) fn arena_identity(&mut self) -> Identity {
         self.identity.get_or_insert_with(Identity::new).clone()
     }

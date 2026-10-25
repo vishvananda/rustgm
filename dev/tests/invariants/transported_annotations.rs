@@ -77,6 +77,39 @@ fn imported_definition(report: &Report, name: &str) -> Result<DefId> {
         })
         .ok_or_else(|| format!("missing actual imported {name}").into())
 }
+fn imported_copy_trait(report: &Report, interface: &crates::Interface) -> Result<DefId> {
+    let descriptor = interface
+        .source_descriptor()
+        .ok_or("actual provider descriptor")?;
+    let rows = descriptor.rows();
+    let copy = rows
+        .roles
+        .iter()
+        .find(|row| row.role == crate::support::bindings::LangItem::Copy)
+        .ok_or("actual checked Copy role")?
+        .declaration;
+    assert_eq!(copy.artifact, s::ArtifactRef(0));
+    let copy = copy.declaration;
+    assert!(rows.traits.iter().any(|header| header.declaration == copy));
+    let imported = report
+        .resolution
+        .crates
+        .as_ref()
+        .ok_or("actual imported inventory")?;
+    let definition = imported.generic_definition(descriptor.identity(), copy)?;
+    let catalog = imported
+        .origin_catalog()?
+        .ok_or("actual completed import catalog")?;
+    let declaration = catalog.declaration(definition)?;
+    catalog.validate_declaration(declaration, definition, DefKind::Trait)?;
+    assert!(
+        imported
+            .definitions()
+            .all(|(_, actual)| actual != definition),
+        "trait acquired a fake function/linker identity"
+    );
+    Ok(definition)
+}
 fn idle(policy: &str, statement: &str) -> String {
     format!("#![feature(no_core)]#![no_core]{policy}extern crate base;pub fn idle(){{{statement}}}")
 }
@@ -176,5 +209,92 @@ fn imported_contract_warnings_follow_consumer_lint_levels_and_explicit_discard()
     .err()
     .ok_or("forbid was weakened")?;
     assert!(error.to_string().contains("forbid"));
+    Ok(())
+}
+
+#[test]
+fn versioned_contract_profiles_authenticate_unrestricted_domains_before_fresh_impls() -> Result {
+    let source = fixture("must-use-reason")?;
+    let interface = roundtrip(&source)?;
+    assert_eq!(
+        interface
+            .source_descriptor()
+            .ok_or("actual versioned descriptor")?
+            .profile(),
+        s::Profile::Source2024FunctionContracts
+    );
+    let bytes = crates::encode(&interface)?;
+    let consumer = "#![feature(no_core)]#![no_core]extern crate base;struct Local;impl base::Clone for Local{fn clone(&self)->Self{Local}}impl base::Copy for Local{}pub fn keep()->u8{base::identity(7u8)}";
+    let (report, analysis, _) = source_packets::client_analysis(crates::decode(&bytes)?, consumer)?;
+    let identity = imported_definition(&report, "identity")?;
+    let contract = analysis
+        .facts
+        .header_attribute_contracts(&report, identity)?;
+    assert!(matches!(
+        contract.must_use,
+        ContractKnowledge::KnownPresent(_)
+    ));
+    assert!(contract.origin.imported().is_some());
+    assert!(contract.origin.source().is_none());
+    let copy = imported_copy_trait(&report, &interface)?;
+    analysis
+        .facts
+        .associated
+        .require_imported_unrestricted_domain(copy)?;
+    let owner = analysis
+        .facts
+        .associated
+        .owner(copy)
+        .and_then(|owner| analysis.facts.associated.get(owner))
+        .ok_or("actual imported trait owner")?;
+    assert!(
+        analysis
+            .facts
+            .associated
+            .require_imported_unrestricted_domain(owner.self_definition)
+            .is_err()
+    );
+    assert!(
+        analysis
+            .facts
+            .associated
+            .require_imported_unrestricted_domain(identity)
+            .is_err()
+    );
+    assert!(
+        report.resolution.definitions[copy.0 as usize]
+            .node
+            .is_none()
+    );
+    for changed in [
+        source
+            .replace("no_core,lang_items", "no_core,impl_restriction,lang_items")
+            .replace("pub trait Copy:", "pub impl(crate) trait Copy:"),
+        format!(
+            "{}\nimpl(self) trait PrivateUnused {{}}",
+            source.replace("no_core,lang_items", "no_core,impl_restriction,lang_items")
+        ),
+    ] {
+        let error = exported(&changed)
+            .err()
+            .ok_or("versioned producer erased a restricted trait domain")?;
+        assert!(
+            error
+                .to_string()
+                .contains("restricted trait implementation policy transport"),
+            "{error}"
+        );
+    }
+    let inactive = format!(
+        "{}\n#[cfg(any())] impl(self) trait PrivateUnused {{}}",
+        source.replace("no_core,lang_items", "no_core,impl_restriction,lang_items")
+    );
+    roundtrip(&inactive)?;
+    let mut provided = bytes.clone();
+    provided[12] = 11;
+    assert!(crates::decode(&provided).is_err());
+    let mut unknown = bytes;
+    unknown[13..15].copy_from_slice(&u16::MAX.to_le_bytes());
+    assert!(crates::decode(&unknown).is_err());
     Ok(())
 }

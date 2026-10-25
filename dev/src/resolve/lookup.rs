@@ -10,6 +10,8 @@ use crate::{expand::marks::ItemContext, syntax::ast::NodeId};
 #[derive(Clone, Copy)]
 pub(crate) enum LookupMode<'a> {
     Use(Namespace),
+    /// A grammar-owned module path admits a bare hygienic `self` module root.
+    Module,
     Import(Namespace),
     Macro(MacroFilter<'a>),
 }
@@ -229,6 +231,7 @@ impl Resolver<'_> {
     ) -> Result<Lookup, Error> {
         let (namespace, check_final_privacy) = match mode {
             LookupMode::Use(ns) => (ns, true),
+            LookupMode::Module => (Namespace::Type, true),
             LookupMode::Import(ns) => (ns, false),
             LookupMode::Macro(_) => (Namespace::Macro, true),
         };
@@ -255,7 +258,7 @@ impl Resolver<'_> {
                 index = 1;
                 module = ModuleId(0);
             }
-            "self" if path.len() > 1 => {
+            "self" if path.len() > 1 || matches!(mode, LookupMode::Module) => {
                 let mut context = path.context(0).map_err(|e| self.error(c, node, e))?;
                 module = self
                     .self_module(module, &mut context)

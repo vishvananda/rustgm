@@ -83,6 +83,7 @@ pub enum ItemKind {
         fields: List,
     },
     Trait {
+        restriction: Option<NodeId>,
         auto_: bool,
         unsafe_: bool,
         constant: bool,

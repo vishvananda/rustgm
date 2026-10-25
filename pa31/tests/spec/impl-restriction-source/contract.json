@@ -1,0 +1,280 @@
+{
+  "issue": "impl_restriction original-core frontier",
+  "source_compiler": "SOURCE-ONLY UNQUALIFIED implementation after74independent observations",
+  "independent_tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "independent_results_sha256": "3e4d466d3bd60a6a780e0c7131ff3f994191e5a9ac63ad2989ba0bd9843c9b94",
+  "profile": {
+    "editions": [
+      "2021",
+      "2024"
+    ],
+    "target": "x86_64-unknown-linux-gnu",
+    "crate_type": "lib",
+    "panic": "abort",
+    "RUSTC_BOOTSTRAP": "1",
+    "cap_lints": null,
+    "explicit_overflow_checks": null,
+    "explicit_debug_assertions": null,
+    "emits": [
+      "metadata",
+      "obj"
+    ]
+  },
+  "observed74": {
+    "passed": true,
+    "infrastructure": 0,
+    "disagreements": 0,
+    "runtime_execution": false
+  },
+  "cases": [
+    {
+      "path": "self-and-descendant.rs",
+      "sha256": "3138c6da9c95282db1136c5fe1bb05d5fc82c4db85a967bd4e171fd41c9faf70",
+      "independent_prediction_exit": 0,
+      "basis": "Pinned impl-restriction-check.rs: declaring module and descendants may implement; public trait use outside remains available.",
+      "independent_observations": [
+        "self-and-descendant-ed2021-metadata",
+        "self-and-descendant-ed2021-obj",
+        "self-and-descendant-ed2024-metadata",
+        "self-and-descendant-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "self-outside-denied.rs",
+      "sha256": "afee353038ac0dec095207fb3c45d678bd45f62715e037bf2c30ecc42294b5fe",
+      "independent_prediction_exit": 1,
+      "basis": "Pinned impl-restriction-check.rs: public visibility is not implementation permission.",
+      "independent_observations": [
+        "self-outside-denied-ed2021-metadata",
+        "self-outside-denied-ed2021-obj",
+        "self-outside-denied-ed2024-metadata",
+        "self-outside-denied-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "super-domain.rs",
+      "sha256": "564176c7e6a0b00e3434e520322b132ac302786fa188904134c2655178368251",
+      "independent_prediction_exit": 0,
+      "basis": "Pinned impl-restriction-check.rs: super includes its descendants.",
+      "independent_observations": [
+        "super-domain-ed2021-metadata",
+        "super-domain-ed2021-obj",
+        "super-domain-ed2024-metadata",
+        "super-domain-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "crate-domain.rs",
+      "sha256": "135d254a4d0b26e9fd2650df295a0a18afd77e82d4fa9fbfbf7d84295b2e2a4f",
+      "independent_prediction_exit": 0,
+      "basis": "Pinned impl-restriction-check.rs: all local modules within crate domain.",
+      "independent_observations": [
+        "crate-domain-ed2021-metadata",
+        "crate-domain-ed2021-obj",
+        "crate-domain-ed2024-metadata",
+        "crate-domain-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "forward-ancestor-alias.rs",
+      "sha256": "b857a84bb59a99c7f87a9ba61a43542a3a2347a971d946e1a4c76dace0be4fa5",
+      "independent_prediction_exit": 0,
+      "basis": "Pinned restriction_resolution_errors.rs U1/U3: imported actual ancestor alias accepted, including forward declaration.",
+      "independent_observations": [
+        "forward-ancestor-alias-ed2021-metadata",
+        "forward-ancestor-alias-ed2021-obj",
+        "forward-ancestor-alias-ed2024-metadata",
+        "forward-ancestor-alias-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "child-domain-denied.rs",
+      "sha256": "ad64a4875db858e960993e4e3f726e53fae6736dfba0ff25993e5ceb6f4bf503",
+      "independent_prediction_exit": 1,
+      "basis": "Pinned restriction_resolution_errors.rs T3: target must be ancestor of declaring module.",
+      "independent_observations": [
+        "child-domain-denied-ed2021-metadata",
+        "child-domain-denied-ed2021-obj",
+        "child-domain-denied-ed2024-metadata",
+        "child-domain-denied-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "nonmodule-denied.rs",
+      "sha256": "6f50f06b44f074bcb47bbb3d1ab3afd76ce3bc51e95c7547def8737fdc6f347d",
+      "independent_prediction_exit": 1,
+      "basis": "Pinned restriction_resolution_errors.rs T14: actual module kind required.",
+      "independent_observations": [
+        "nonmodule-denied-ed2021-metadata",
+        "nonmodule-denied-ed2021-obj",
+        "nonmodule-denied-ed2024-metadata",
+        "nonmodule-denied-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "missing-feature-active.rs",
+      "sha256": "7a529a998fdf215ed690237d8d74e86862c69bd89c176c30c1f5c5de8d839a87",
+      "independent_prediction_exit": 1,
+      "basis": "Pinned feature-gate-impl-restriction.rs: E0658 for explicit syntax.",
+      "independent_observations": [
+        "missing-feature-active-ed2021-metadata",
+        "missing-feature-active-ed2021-obj",
+        "missing-feature-active-ed2024-metadata",
+        "missing-feature-active-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "missing-feature-disabled-owner.rs",
+      "sha256": "a41acc9d248d10107598fbbca9007145c544a11a45a12b32b2c98c81046c64c1",
+      "independent_prediction_exit": 1,
+      "basis": "Pinned feature-gate-impl-restriction.rs explicitly expects E0658 below cfg(false).",
+      "independent_observations": [
+        "missing-feature-disabled-owner-ed2021-metadata",
+        "missing-feature-disabled-owner-ed2021-obj",
+        "missing-feature-disabled-owner-ed2024-metadata",
+        "missing-feature-disabled-owner-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "missing-feature-disabled-ancestor.rs",
+      "sha256": "b5d46eef4f5a20227fd4239e35decd1f9e1426ac07d40f8cccdc85632780f2aa",
+      "independent_prediction_exit": 1,
+      "basis": "Pinned feature-gate-impl-restriction.rs explicitly expects E0658 inside cfg(false) module.",
+      "independent_observations": [
+        "missing-feature-disabled-ancestor-ed2021-metadata",
+        "missing-feature-disabled-ancestor-ed2021-obj",
+        "missing-feature-disabled-ancestor-ed2024-metadata",
+        "missing-feature-disabled-ancestor-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "unexpanded-macro-opaque.rs",
+      "sha256": "856f26c2df40615d28c0b672dbe2afd250370f660ddc946d9905d40462e5b7c8",
+      "independent_prediction_exit": 0,
+      "basis": "Hypothesis: unexpanded macro capture is not parsed restriction syntax.",
+      "independent_observations": [
+        "unexpanded-macro-opaque-ed2021-metadata",
+        "unexpanded-macro-opaque-ed2021-obj",
+        "unexpanded-macro-opaque-ed2024-metadata",
+        "unexpanded-macro-opaque-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "disabled-call-opaque.rs",
+      "sha256": "e4f5c7bb9c8a24ed49fec2e029ec93a8f3d4c13cade7bf86298bd5d984cd37fa",
+      "independent_prediction_exit": 0,
+      "basis": "Hypothesis: cfg-disabled macro call never produces parsed output clauses.",
+      "independent_observations": [
+        "disabled-call-opaque-ed2021-metadata",
+        "disabled-call-opaque-ed2021-obj",
+        "disabled-call-opaque-ed2024-metadata",
+        "disabled-call-opaque-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "literal-origin-allowance.rs",
+      "sha256": "3d7164cfec91b9358b28382184314b7578e7e521921dadb17d71f5643e10d784",
+      "independent_prediction_exit": 0,
+      "basis": "Hypothesis: real literal origin allowance gates restriction without enabling global feature.",
+      "independent_observations": [
+        "literal-origin-allowance-ed2021-metadata",
+        "literal-origin-allowance-ed2021-obj",
+        "literal-origin-allowance-ed2024-metadata",
+        "literal-origin-allowance-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "captured-origin-denied.rs",
+      "sha256": "0a19e437005a7218bb2d0b24bf1badaa4f8d1dd61f842136f6d5fd4919b4bbc9",
+      "independent_prediction_exit": 1,
+      "basis": "Hypothesis: captured caller item cannot inherit literal definition allowance.",
+      "independent_observations": [
+        "captured-origin-denied-ed2021-metadata",
+        "captured-origin-denied-ed2021-obj",
+        "captured-origin-denied-ed2024-metadata",
+        "captured-origin-denied-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "const-unsafe-auto-grammar.rs",
+      "sha256": "8723f29c8b74d7ff52922352d76b0572b273ac7e9d247bbeb9d6fa7ab5b9f32f",
+      "independent_prediction_exit": 0,
+      "basis": "Pinned feature-gate-impl-restriction.rs covers these modifier families independently.",
+      "independent_observations": [
+        "const-unsafe-auto-grammar-ed2021-metadata",
+        "const-unsafe-auto-grammar-ed2021-obj",
+        "const-unsafe-auto-grammar-ed2024-metadata",
+        "const-unsafe-auto-grammar-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "trait-alias-denied.rs",
+      "sha256": "9fe0f876a4594e066127a3c517235c8fb3bd42abf1a897e943e1166783c0cd71",
+      "independent_prediction_exit": 1,
+      "basis": "Pinned trait-alias-cannot-be-impl-restricted.rs: alias does not accept restriction.",
+      "independent_observations": [
+        "trait-alias-denied-ed2021-metadata",
+        "trait-alias-denied-ed2021-obj",
+        "trait-alias-denied-ed2024-metadata",
+        "trait-alias-denied-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "provider.rs",
+      "sha256": "0841a124936f110910a4de78e3cc6fcc1c3f0ca2232aed72d4119e043f38c184",
+      "independent_prediction_exit": 0,
+      "basis": "Pinned impl-restriction-check.rs and auxiliary/external-impl-restriction.rs. Consumer local Self eliminates orphan-rule confusion; public bounds remain legal.",
+      "independent_observations": [
+        "provider-ed2021-metadata",
+        "provider-ed2024-metadata"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "consumer-local-self-denied.rs",
+      "sha256": "ac80b9a336331112da4f858d5604cff2da6aed58f57797b57493ca0a5b0d5760",
+      "independent_prediction_exit": 1,
+      "basis": "Pinned impl-restriction-check.rs and auxiliary/external-impl-restriction.rs. Consumer local Self eliminates orphan-rule confusion; public bounds remain legal.",
+      "independent_observations": [
+        "consumer-local-self-denied-ed2021-metadata",
+        "consumer-local-self-denied-ed2021-obj",
+        "consumer-local-self-denied-ed2024-metadata",
+        "consumer-local-self-denied-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    },
+    {
+      "path": "consumer-public-use.rs",
+      "sha256": "ecf32433318d68ea0d12358e210fe0a127f23e5002b0a1f91e77c7b5e1130d9a",
+      "independent_prediction_exit": 0,
+      "basis": "Pinned impl-restriction-check.rs and auxiliary/external-impl-restriction.rs. Consumer local Self eliminates orphan-rule confusion; public bounds remain legal.",
+      "independent_observations": [
+        "consumer-public-use-ed2021-metadata",
+        "consumer-public-use-ed2021-obj",
+        "consumer-public-use-ed2024-metadata",
+        "consumer-public-use-ed2024-obj"
+      ],
+      "candidate_status": "UNRUN"
+    }
+  ],
+  "metadata_boundary": "Existing actual Functions profile attests Unrestricted only through authenticated descriptor+canonical trait/header/owner; any actual restricted source trait export is denied before header publication. Restricted-policy transport remains required."
+}

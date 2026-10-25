@@ -34,6 +34,8 @@ mod static_transport;
 mod transitive;
 #[path = "crate_linking/variadic_transport.rs"]
 mod variadic_transport;
+#[path = "crate_linking/versioned_clients.rs"]
+mod versioned_clients;
 use rustgm::support::crates;
 use std::process::Command;
 

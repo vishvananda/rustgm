@@ -457,10 +457,21 @@ fn emit_lowir(
             .identity()
             .map_err(|message| failure_message(&facts, message))?
             .ok_or_else(|| failure_message(&facts, "missing library identity".into()))?;
-        let (lowir, interface) = rustgm::lower::instances::build_library_prepared(
-            &report, &mut facts, identity, prepared,
-        )
-        .map_err(|error| semantic_error(&facts.retain_error_warnings(error)))?;
+        let built = if report.package.source_core().is_some() {
+            rustgm::lower::instances::build_source_library_profile(
+                &report,
+                &mut facts,
+                identity,
+                prepared,
+                rustgm::lower::instances::SourcePublication::FunctionContracts,
+            )
+        } else {
+            rustgm::lower::instances::build_library_prepared(
+                &report, &mut facts, identity, prepared,
+            )
+        };
+        let (lowir, interface) =
+            built.map_err(|error| semantic_error(&facts.retain_error_warnings(error)))?;
         (lowir, Some(interface))
     } else {
         if let Some(identity) = crates

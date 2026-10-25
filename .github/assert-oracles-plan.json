@@ -1,0 +1,192 @@
+{
+  "state": "frozen independent hypotheses; not observed",
+  "baseline": "74281adc6bedf52f1c825f36a33777f39f07e9c4",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "target": "x86_64-unknown-linux-gnu",
+  "edition": "2024",
+  "cases": [
+    {
+      "name": "constant-true",
+      "sha256": "20f5e0933ab2e04ebca638664399a10ee5d2f7756606de92391e83c5ef46d99a",
+      "mode": "metadata",
+      "panic": "abort",
+      "expected_compile_status": 0,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": null,
+      "expected_stdout": null
+    },
+    {
+      "name": "constant-false",
+      "sha256": "e06800edd43c4eab19dd3f5fb37afab1a4607ae5c32f5b16da3707c8efd2346f",
+      "mode": "metadata",
+      "panic": "abort",
+      "expected_compile_status": 1,
+      "expected_error_codes": [
+        "E0080"
+      ],
+      "expected_warning_codes": [],
+      "expected_run_status": null,
+      "expected_stdout": null
+    },
+    {
+      "name": "constant-trailing-comma",
+      "sha256": "da812eef906095efe165125236b7fad361e8126a77bd619c86798d8ff97e42af",
+      "mode": "metadata",
+      "panic": "abort",
+      "expected_compile_status": 0,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": null,
+      "expected_stdout": null
+    },
+    {
+      "name": "condition-once",
+      "sha256": "3e5014caa504143adbcaa3f1df909fde2bab8ec93b79f2b5645ce72d008f886b",
+      "mode": "native",
+      "panic": "abort",
+      "expected_compile_status": 0,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": 0,
+      "expected_stdout": "1\n"
+    },
+    {
+      "name": "message-lazy",
+      "sha256": "9e36dd554106acf13661f69e0eaba7cb32de14d6a12be5a6ab1780f45bb967f0",
+      "mode": "native",
+      "panic": "abort",
+      "expected_compile_status": 0,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": 0,
+      "expected_stdout": "0\n"
+    },
+    {
+      "name": "default-message",
+      "sha256": "e5ded2beb26ae44f9ffb39d503b323a8e14b162a1f7c85395570ac5b77b40600",
+      "mode": "native",
+      "panic": "unwind",
+      "expected_compile_status": 0,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": 0,
+      "expected_stdout": "assertion failed: 2usize == 3usize\n"
+    },
+    {
+      "name": "custom-message",
+      "sha256": "b8bd0e8497134f6a13047f1f494dc154c5d874ba295fe17eb288127764bd626c",
+      "mode": "native",
+      "panic": "unwind",
+      "expected_compile_status": 0,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": 0,
+      "expected_stdout": "1 custom 7\n"
+    },
+    {
+      "name": "not-operator",
+      "sha256": "50deb11096f53e4a42a1c3495f2de2918bba7554155d8bcb585124026fcd9e60",
+      "mode": "native",
+      "panic": "abort",
+      "expected_compile_status": 0,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": 0,
+      "expected_stdout": "ok\n"
+    },
+    {
+      "name": "non-bool-not-result",
+      "sha256": "07bf60310a25bcfc3eb44bc5ec96a574a949f922bb019f0fa83baa9e649c0dea",
+      "mode": "metadata",
+      "panic": "abort",
+      "expected_compile_status": 1,
+      "expected_error_codes": [
+        "E0308"
+      ],
+      "expected_warning_codes": [],
+      "expected_run_status": null,
+      "expected_stdout": null
+    },
+    {
+      "name": "default-block-message",
+      "sha256": "55449d52638db37cc3bdfc653dd04c87edb908fdd5e9ef81980860544cb59194",
+      "mode": "native",
+      "panic": "unwind",
+      "expected_compile_status": 0,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": 0,
+      "expected_stdout": "assertion failed: { false }\n"
+    },
+    {
+      "name": "opaque-message",
+      "sha256": "c714d1a8a7452a79a3d1eb3d9686b432e2adf42e4518906505fdba44415d182a",
+      "mode": "native",
+      "panic": "unwind",
+      "expected_compile_status": 0,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": 0,
+      "expected_stdout": "assertion failed: 1 + 2 == 4\n"
+    },
+    {
+      "name": "empty-input",
+      "sha256": "f4acfdbd8b0b29aa59d578d6f9e1044191a5d1585603cd2362b7bee432871fce",
+      "mode": "metadata",
+      "panic": "abort",
+      "expected_compile_status": 1,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": null,
+      "expected_stdout": null
+    },
+    {
+      "name": "semicolon",
+      "sha256": "ca8abc5127ca9a3bba450f0c43ca4ea4c3ce7a9ae83f41da87c18596a8cde0d1",
+      "mode": "metadata",
+      "panic": "abort",
+      "expected_compile_status": 1,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": null,
+      "expected_stdout": null
+    },
+    {
+      "name": "missing-message-comma",
+      "sha256": "efd9d8a71ce2de8c7f60b961a71529b58daee5b79d5219f98dcc10fe3ddb0f38",
+      "mode": "metadata",
+      "panic": "abort",
+      "expected_compile_status": 1,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": null,
+      "expected_stdout": null
+    },
+    {
+      "name": "extra-condition-tokens",
+      "sha256": "a4990e3346bb2a0b86affa391b1abf609e4d24223b356f22bdca28ffd88a7aee",
+      "mode": "metadata",
+      "panic": "abort",
+      "expected_compile_status": 1,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": null,
+      "expected_stdout": null
+    },
+    {
+      "name": "message-still-typechecked",
+      "sha256": "5351ee9912827ad3280c71700512d595e8886e576dcf7c86f5f7539b63389e2d",
+      "mode": "metadata",
+      "panic": "abort",
+      "expected_compile_status": 1,
+      "expected_error_codes": [],
+      "expected_warning_codes": [],
+      "expected_run_status": null,
+      "expected_stdout": null
+    }
+  ],
+  "scope": "16 new Assert observations, not a repeat of panic/defaultness/unnamed-constant matrices; no RustGM candidate execution",
+  "runtime_observer": "std catch_unwind only inspects default/custom panic payloads in explicitly unwind cases; no RustGM unwinding or panic-abort implementation claim",
+  "primary": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/assert.rs"
+}

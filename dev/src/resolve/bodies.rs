@@ -377,6 +377,13 @@ impl Resolver<'_> {
     }
     fn item_body(&mut self, c: Context, node: NodeId, index: u32) -> Result<(), Error> {
         let item = self.package.unit(c.file).configured.ast.items[index as usize];
+        if let ItemKind::Trait {
+            restriction: Some(clause),
+            ..
+        } = item.kind
+        {
+            self.resolve_impl_restriction(c, node, clause)?;
+        }
         if matches!(item.kind, ItemKind::MacroRules { .. })
             && let Some(hygiene) = self.hygiene
         {

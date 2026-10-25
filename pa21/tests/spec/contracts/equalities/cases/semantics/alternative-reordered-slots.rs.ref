@@ -25,7 +25,7 @@ type 22 projection def=15 self=21 trait=13 arguments=[region:bound:0:0,region:bo
 type 23 reference mutable=false region=bound:0:0 referent=11
 type 24 reference mutable=false region=bound:0:1 referent=11
 type 25 tuple [23,24]
-type 26 parameter def=18 index=2
+type 26 parameter def=18 index=0
 type 27 projection def=15 self=26 trait=13 arguments=[region:bound:0:0,region:bound:0:1] family arguments=[]
 type 28 tuple [24,23]
 type 29 projection def=15 self=26 trait=13 arguments=[region:bound:0:1,region:bound:0:0] family arguments=[]
