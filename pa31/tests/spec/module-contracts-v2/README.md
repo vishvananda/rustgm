@@ -25,3 +25,10 @@ The actual library type-analysis bound control passed. The CLI's existing
 control retains that exact denial; no semantic success is inferred from it.
 Generic client republication and semantic SourceClient CLI views require later
 PA29/driver work. Provider selection and nested calls still require LowIR success.
+
+The bounded v2 profile is now qualified: six component controls in 40239273862,
+combined actual CLI provider/consumer group in 40240493023, and combined private
+publication-authority guard in 40241172788. Full source/tool/input fingerprints
+and raw observations are retained. See `docs/pa29-module-contracts-v2.md` for
+actual layouts, work bounds, command/profile scope and remaining requirements.
+This is not an original-core artifact or a full crate-profile closure.

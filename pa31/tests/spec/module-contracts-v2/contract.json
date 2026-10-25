@@ -65,5 +65,27 @@
     "production_policy": "unchanged; semantic SourceClient CLI views remain a separate reviewed extension",
     "language_sources": "unchanged; no oracle repeated",
     "successor": "UNRUN"
+  },
+  "qualification": {
+    "state": "bounded profile qualified, initial predictions/failures preserved above",
+    "component_source": "7505043262943983b2d19cfe405e027ed3c7d214",
+    "component_run": 40239273862,
+    "component_receipt_sha256": "e8a5cd7b918b3792f3f8f34999d55a291890c2e2626e45d16cbcd7d1474d500f",
+    "combined_source": "6e510e9bf97eaf723205c5a069a7928d19897f76",
+    "actual_cli_run": 40240493023,
+    "actual_cli_receipt_sha256": "90c97e74af3519bb5869be1a3c10bda30e103494cc8e63281ee8643258eedd18",
+    "actual_cli_sha256": "03d97628fc5e884a1efd59169eeebfa917d4e1a6401556d666094ec22d53c21c",
+    "c_publication_run": 40241172788,
+    "c_publication_receipt_sha256": "ebafb1a2f5c58da643b2ca96bc642e81dd5251dff497299d864ffb6242c1aa7e",
+    "counts": "six component controls; current combined actual CLI group plus C publication guard; not a full inventory or original-core artifact",
+    "language_sources": "all original .rs/.hex inputs unchanged; 40 independent observations reused without repetition",
+    "remaining": [
+      "generic SourceClient republication",
+      "SourceClient semantic CLI views",
+      "mixed-provider generic transport",
+      "unsafe/associated-result/stability",
+      "Provided/default graph/body policy",
+      "wider declaration and operation profiles"
+    ]
   }
 }
