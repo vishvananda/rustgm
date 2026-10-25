@@ -156,6 +156,15 @@ Six new public PA2/PA9 regressions and pinned-rustc observations pass in a
 cases are retained from the preceding pass. No assignment or core artifact is
 complete.
 
+Periodic [full CI on `fb6cc056`](https://github.com/vishvananda/rustgm/actions/runs/40204216976)
+finds five stale expectations for the new cold feature-word width and later
+source TypeIds. A test-only repair passes the three exact private controls and
+two relationship controls. Static checks pass in the initial bounded cold run;
+a source-authenticated continuation completes the missing build and execution
+without repeating them. The [wide checkpoint](wide-literals-checkpoint.md)
+records both receipts and the retained timeout. This does not turn the failed
+periodic run into full qualification; its later stages remain pending.
+
 - Integrator: the [structural owner checkpoint](primitive-inherent-checkpoint.md)
   qualifies local primitive policy and full-Self lookup with 66 source cases,
   nineteen focused private controls and eight actual native programs. Ordinary
