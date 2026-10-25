@@ -475,6 +475,7 @@ impl Bases {
                 self.node(body);
             }
             Kind::Return(node) => self.optional(node),
+            Kind::ImplRestriction { path } => self.node(path),
             Kind::Break { label, value } => {
                 optional_span(label, span)?;
                 self.optional(value);
@@ -549,7 +550,13 @@ impl Bases {
             }
             ItemKind::Struct { fields, .. } | ItemKind::Union { fields } => self.list(fields),
             ItemKind::Enum { variants } => self.list(variants),
-            ItemKind::Trait { bounds, items, .. } => {
+            ItemKind::Trait {
+                restriction,
+                bounds,
+                items,
+                ..
+            } => {
+                self.optional(restriction);
                 self.list(bounds);
                 self.list(items);
             }
