@@ -22,7 +22,7 @@ type 19 primitive f16
 type 20 primitive f128
 type 21 parameter def=14 index=0
 type 22 parameter def=16 index=0
-type 23 parameter def=19 index=1
+type 23 parameter def=19 index=0
 type 24 function binders=1 parameters=[] result=1 unsafe=false
 type 25 function binders=0 parameters=[] result=1 unsafe=false
 type 26 function-item def=19 signature=24

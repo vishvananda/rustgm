@@ -1,0 +1,80 @@
+function @rg.18() -> void {
+  slot $s0 : u8
+  slot $s1 : obj<2x1>
+  slot $s2 : obj<2x1>
+  slot $s3 : obj<2x1>
+  slot $s4 : obj<16x8>
+  slot $s5 : obj<16x8>
+  block ^b0:
+    store u8 3, $s0
+    store u8 4, $s2
+    %t0 = addr $s2
+    %t1 = index u8 %t0, 1
+    store u8 5, %t1
+    %t2 = addr $s2
+    %t3 = addr $s1
+    copyobj 2x1 %t2, %t3
+    %t4 = addr $s0
+    %t5 = call u16 @rg.14.i2(%t4, 9)
+    %t6 = addr $s0
+    %t7 = addr $s1
+    %t8 = call ptr @rg.15.i3(%t6, %t7)
+    %t9 = addr $s1
+    %t10 = call ptr @rg.16.i4(%t9)
+    %t11 = addr $s0
+    %t12 = addr $s1
+    %t13 = addr $s3
+    copyobj 2x1 %t12, %t13
+    store ptr %t11, $s4
+    %t14 = addr $s4
+    %t15 = index u8 %t14, 8
+    %t16 = addr $s3
+    copyobj 2x1 %t16, %t15
+    %t17 = addr $s5
+    %t18 = addr $s4
+    call void @rg.17(%t17, %t18)
+    return void
+}
+function @rg.14.i2(%p0 : ptr, %p1 : u16) -> u16 {
+  slot $s0 : ptr
+  slot $s1 : u16
+  block ^b0:
+    store ptr %p0, $s0
+    store u16 %p1, $s1
+    %t0 = load u16 $s1
+    return u16 %t0
+}
+function @rg.15.i3(%p0 : ptr, %p1 : ptr) -> ptr {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    store ptr %p1, $s1
+    %t0 = load ptr $s0
+    return ptr %t0
+}
+function @rg.16.i4(%p0 : ptr) -> ptr {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    return ptr %t0
+}
+function @rg.17(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x8 %p1, %t0
+    %t1 = addr $s0
+    %t2 = addr $s1
+    copyobj 16x8 %t1, %t2
+    %t3 = addr $s1
+    copyobj 16x8 %t3, %p0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.18()
+    return i64 0
+}
