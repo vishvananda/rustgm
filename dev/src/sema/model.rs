@@ -549,7 +549,6 @@ impl Declarations {
     fn collect_declaration_attributes(&mut self, report: &Report) -> Result<(), Error> {
         super::must_use::collect(report, self)?;
         super::inlining::collect(report, self)?;
-        super::non_exhaustive::collect(report, self)?;
         super::parentheses::collect(report, self)?;
         super::diagnostic_contracts::collect(report, self)
     }

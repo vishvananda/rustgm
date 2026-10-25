@@ -89,6 +89,9 @@ fn non_exhaustive_owners_forms_duplicates_and_unknown_attributes_stay_checked() 
             .to_string()
             .contains("non_exhaustive attribute cannot be used on struct fields")
     );
+    let report = crate::resolve::resolve(&source("wrong-field-allow")?, true)?;
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    assert_eq!(analysis.facts.warnings().count(), 0);
     for name in [
         "empty-list",
         "argument-list",

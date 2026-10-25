@@ -139,77 +139,48 @@ impl Declarations {
     }
 }
 
-pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    for (file, unit) in report.package.units.iter().enumerate() {
-        if unit.include_context.is_some() {
-            continue;
-        }
-        let file = crate::resolve::unit::FileId(u32::try_from(file).map_err(|_| {
-            Error::at(
-                crate::resolve::unit::FileId(0),
-                0,
-                "too many non_exhaustive source files",
-            )
-        })?);
-        for owner in &unit.configured.owners {
-            if !owner.enabled {
-                continue;
-            }
-            let owner_key = NodeKey {
-                file,
-                node: owner.node,
-            };
-            let mut node = owner.node;
-            while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
-                node = value;
-            }
-            let declaration = NodeKey { file, node };
-            for effect in owner.attributes.clone() {
-                let Some((attribute, forest)) = unit.retained_attributes(effect..effect + 1).next()
-                else {
-                    continue;
-                };
-                if attribute.name(forest, unit.source.text()) != Some("non_exhaustive") {
-                    continue;
-                }
-                facts.reserve_must_use_source(owner_key, attribute.span)?;
-                let error = |message| Error::at(file, attribute.span.start, message);
-                if attribute.unsafe_wrapper || attribute.input != Input::Empty {
-                    return Err(error(
-                        "non_exhaustive attribute requires word form without arguments or an unsafe wrapper",
-                    ));
-                }
-                if matches!(
-                    unit.configured.ast.node(node).kind,
-                    Kind::FieldDefinition { .. }
-                ) {
-                    facts.must_use_diagnostic(
-                        report,
-                        owner_key,
-                        attribute.span.start,
-                        0,
-                        WarningCode::UnusedAttributes,
-                        "non_exhaustive attribute cannot be used on struct fields".into(),
-                    )?;
-                    continue;
-                }
-                let role = target(unit, node).map_err(error)?;
-                retain(
-                    report,
-                    facts,
-                    unit,
-                    View {
-                        owner: owner_key,
-                        declaration,
-                        span: attribute.span,
-                        target: role,
-                    },
-                    effect,
-                )?;
-            }
-        }
+pub(in crate::sema) fn consume(
+    report: &Report,
+    facts: &mut Declarations,
+    owner: NodeKey,
+    declaration: NodeKey,
+    attribute: crate::syntax::attribute::Attribute,
+    effect: usize,
+) -> Result<(), Error> {
+    let unit = report.package.unit(owner.file);
+    facts.reserve_must_use_source(owner, attribute.span)?;
+    let error = |message| Error::at(owner.file, attribute.span.start, message);
+    if attribute.unsafe_wrapper || attribute.input != Input::Empty {
+        return Err(error(
+            "non_exhaustive attribute requires word form without arguments or an unsafe wrapper",
+        ));
     }
-    Ok(())
+    if matches!(
+        unit.configured.ast.node(declaration.node).kind,
+        Kind::FieldDefinition { .. }
+    ) {
+        return facts.must_use_diagnostic(
+            report,
+            owner,
+            attribute.span.start,
+            0,
+            WarningCode::UnusedAttributes,
+            "non_exhaustive attribute cannot be used on struct fields".into(),
+        );
+    }
+    let role = target(unit, declaration.node).map_err(error)?;
+    retain(
+        report,
+        facts,
+        unit,
+        View {
+            owner,
+            declaration,
+            span: attribute.span,
+            target: role,
+        },
+        effect,
+    )
 }
 
 fn retain(

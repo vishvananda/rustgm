@@ -12,7 +12,7 @@
     "--error-format=json"
   ],
   "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
-  "expected_observations": 36,
+  "expected_observations": 38,
   "cases": [
     {
       "name": "same-crate-structs",
@@ -305,6 +305,22 @@
           2024
         ]
       }
+    },
+    {
+      "name": "wrong-field-allow",
+      "path": "pa29/tests/spec/non-exhaustive-local/wrong-field-allow.rs",
+      "source_sha256": "5130d5a50cd3b7b60c612d7076d257b483bb5b175282b8232a54608063d1d103",
+      "exit_status": 0,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "52d236d7089d418c7becef8457dcd5ef64976c82a8ae1ce17bd73d4cdb2c0c2e",
+        "case": "wrong-field-allow",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
     }
   ],
   "spec": "doc/rust-reference/src/attributes/type_system.md, non_exhaustive allowed-positions/syntax/same-crate",
@@ -318,6 +334,9 @@
     "field_deny_observations": 2,
     "field_deny_prediction_disagreements": 0,
     "infrastructure_failures": 0,
-    "repeat": "none;34original+2newopponent"
+    "repeat": "none;34original+2deny+2allow",
+    "field_allow_results_sha256": "52d236d7089d418c7becef8457dcd5ef64976c82a8ae1ce17bd73d4cdb2c0c2e",
+    "field_allow_observations": 2,
+    "field_allow_prediction_disagreements": 0
   }
 }
