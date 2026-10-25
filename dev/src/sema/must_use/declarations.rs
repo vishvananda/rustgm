@@ -6,6 +6,8 @@ use crate::{
         model::{DefId, Namespace},
         unit::FileId,
     },
+    sema::non_exhaustive,
+    support::decorations::Consumer,
     syntax::{
         ast::Kind,
         attribute::{Attribute, Input},
@@ -44,8 +46,14 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                 else {
                     continue;
                 };
-                if attribute.name(forest, unit.source.text()) != Some("must_use") {
-                    continue;
+                let name = attribute.name(forest, unit.source.text());
+                match name.and_then(Consumer::named) {
+                    Some(Consumer::NonExhaustive) => {
+                        non_exhaustive::consume(report, facts, owner_key, key, attribute, effect)?;
+                        continue;
+                    }
+                    Some(Consumer::MustUse) => {}
+                    _ => continue,
                 }
                 facts.reserve_must_use_source(owner_key, attribute.span)?;
                 let reason = reason(unit.source.text(), forest, attribute)

@@ -120,9 +120,10 @@ impl<'a> FrameView<'a> {
             .checked_sub(1)
             .ok_or_else(|| error("physical source is not an expansion frame"))?;
         self.package
-            .source_core()
+            .macro_context()
+            .map_err(error)?
             .ok_or_else(|| error("missing macro allowance provider"))?
-            .macros
+            .contracts()
             .charge(1 + context.0.checked_ilog2().unwrap_or(0) as usize, 0)
             .map_err(error)?;
         let invocation = self

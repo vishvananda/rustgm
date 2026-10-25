@@ -84,6 +84,9 @@ The default is the lexer smoke suite, not a claim to cover arbitrary changes.
 Use repeated `--pa paN` options for affected text-oracle assignments. The runner
 builds/passes the debug CLI explicitly, avoiding `make test-paN`'s release build.
 Planned assignments still fail and are never reported as empty passing suites.
+Before compiler steps, the runner checks every active assignment's metadata with
+the same validators as the full layout check. Pending generated references are
+allowed here; the full layout check still requires their complete provenance.
 `make fastcheck` itself applies resource/storage protection; do not wrap it in
 another lease. Shared-controller admission never waits for a slot. Its default
 absolute output cap is 16 GiB, including retained caches and pins; use

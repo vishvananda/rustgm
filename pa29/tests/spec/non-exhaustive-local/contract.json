@@ -1,0 +1,342 @@
+{
+  "scope": "local source validation and no-op inside defining crate; non-exhaustive artifact transport remains denied",
+  "editions": [
+    2021,
+    2024
+  ],
+  "profile": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "expected_observations": 38,
+  "cases": [
+    {
+      "name": "same-crate-structs",
+      "path": "pa29/tests/spec/non-exhaustive-local/same-crate-structs.rs",
+      "source_sha256": "42a251bd73c1f7a1abfabbedf8468b6248ba7847e504fe43ce467e623988ec35",
+      "exit_status": 0,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "same-crate-structs",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "same-crate-enum",
+      "path": "pa29/tests/spec/non-exhaustive-local/same-crate-enum.rs",
+      "source_sha256": "fa9cdd5a8114fb69cfe3fc571afec7d3104c5b546ddc8a17fcdeafc421bda29d",
+      "exit_status": 0,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "same-crate-enum",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "same-crate-variants",
+      "path": "pa29/tests/spec/non-exhaustive-local/same-crate-variants.rs",
+      "source_sha256": "5341b68f24d291cf3a8f2c65c67cbadd584f74b9bfedff4a402c316ae96b9c65",
+      "exit_status": 0,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "same-crate-variants",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "same-crate-empty-enum",
+      "path": "pa29/tests/spec/non-exhaustive-local/same-crate-empty-enum.rs",
+      "source_sha256": "dfcba58c614817c0b735858a0d4c4572e0a47af60fae8df004ed7320d2bf206a",
+      "exit_status": 0,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "same-crate-empty-enum",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "duplicate-default",
+      "path": "pa29/tests/spec/non-exhaustive-local/duplicate-default.rs",
+      "source_sha256": "be16f2727e7d075a4cfb5e05888f184ba9462334012f6b90e9c9f3571705fb37",
+      "exit_status": 0,
+      "warnings": [
+        "unused_attributes"
+      ],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "duplicate-default",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "duplicate-deny",
+      "path": "pa29/tests/spec/non-exhaustive-local/duplicate-deny.rs",
+      "source_sha256": "311849cb22d36d29f0a4578e998c2686347a9855a2d6792404c8a1f5e2979f2d",
+      "exit_status": 1,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "duplicate-deny",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "wrong-function",
+      "path": "pa29/tests/spec/non-exhaustive-local/wrong-function.rs",
+      "source_sha256": "b19c835cd97dd7009ea3ad1deeb68454ee085113fc4fde81b1d5d62461301927",
+      "exit_status": 1,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "wrong-function",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "wrong-union",
+      "path": "pa29/tests/spec/non-exhaustive-local/wrong-union.rs",
+      "source_sha256": "fda065dd85503a35e1709c63388acbf686d8dddf843f73ca9c1c05d00af0fad1",
+      "exit_status": 1,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "wrong-union",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "wrong-trait",
+      "path": "pa29/tests/spec/non-exhaustive-local/wrong-trait.rs",
+      "source_sha256": "ee4c2c8d6f4f3d9d74a43a89353d0d1ba6217fd2d614512bb6b07fff71b0c4a4",
+      "exit_status": 1,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "wrong-trait",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "wrong-field",
+      "path": "pa29/tests/spec/non-exhaustive-local/wrong-field.rs",
+      "source_sha256": "50302098040d87ef175a9397385ec98e82ceafb212b60404a0f5fe03d6ff35ea",
+      "exit_status": 0,
+      "warnings": [
+        "unused_attributes"
+      ],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "wrong-field",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "wrong-crate",
+      "path": "pa29/tests/spec/non-exhaustive-local/wrong-crate.rs",
+      "source_sha256": "0684121f502ac44f5a422f3690d80430e888288b9ac1fcc0cc94eede36c160a0",
+      "exit_status": 1,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "wrong-crate",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "empty-list",
+      "path": "pa29/tests/spec/non-exhaustive-local/empty-list.rs",
+      "source_sha256": "1d0d2c794761fc5166f197c0875b6c4eb9ac3ce6627373cc2108b2af62cca041",
+      "exit_status": 1,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "empty-list",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "argument-list",
+      "path": "pa29/tests/spec/non-exhaustive-local/argument-list.rs",
+      "source_sha256": "eedbdbdd76124939d75940d2cb7d80019b06186330ee4f93cfec47e590f40060",
+      "exit_status": 1,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "argument-list",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "name-value",
+      "path": "pa29/tests/spec/non-exhaustive-local/name-value.rs",
+      "source_sha256": "2e0b599ee86e1bbd8774d38801c960a2984aeec6c61f39f53481de4f3e9d52ae",
+      "exit_status": 1,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "name-value",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "unsafe-wrapper",
+      "path": "pa29/tests/spec/non-exhaustive-local/unsafe-wrapper.rs",
+      "source_sha256": "f6cec9f975375d70770bbed21a08d93d9e8cea0e51ff5189f8d242279dd8c1ed",
+      "exit_status": 1,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "unsafe-wrapper",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "disabled-invalid",
+      "path": "pa29/tests/spec/non-exhaustive-local/disabled-invalid.rs",
+      "source_sha256": "0458bec540d4b8bcfa39f9da5188a1d6d7cae0dee8583faf095aae7e5aced1e1",
+      "exit_status": 0,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "disabled-invalid",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "unknown-attribute",
+      "path": "pa29/tests/spec/non-exhaustive-local/unknown-attribute.rs",
+      "source_sha256": "166c6da4110a34adbc0c2cc59f049be9de8bf967773d9c823e0274648b764d45",
+      "exit_status": 1,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+        "case": "unknown-attribute",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "wrong-field-deny",
+      "path": "pa29/tests/spec/non-exhaustive-local/wrong-field-deny.rs",
+      "source_sha256": "d779039333b9e846cc4b75e7bdff0bae742e56a7710d5d66f782beaedb64487e",
+      "exit_status": 1,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "7b36feff23854b0de118d99739c1dce017decf818e5614ea8ff9cc0fbe64a9c9",
+        "case": "wrong-field-deny",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    },
+    {
+      "name": "wrong-field-allow",
+      "path": "pa29/tests/spec/non-exhaustive-local/wrong-field-allow.rs",
+      "source_sha256": "5130d5a50cd3b7b60c612d7076d257b483bb5b175282b8232a54608063d1d103",
+      "exit_status": 0,
+      "warnings": [],
+      "state": "independently observed exact source in both editions",
+      "observed_binding": {
+        "results_sha256": "52d236d7089d418c7becef8457dcd5ef64976c82a8ae1ce17bd73d4cdb2c0c2e",
+        "case": "wrong-field-allow",
+        "editions": [
+          2021,
+          2024
+        ]
+      }
+    }
+  ],
+  "spec": "doc/rust-reference/src/attributes/type_system.md, non_exhaustive allowed-positions/syntax/same-crate",
+  "runtime": "none; native/source sweeps not requested",
+  "initial_contract_sha256": "77ab8918381c9393f237c4df7b451928ba1a2ab42c23f7c71b2be56b6770f387",
+  "observations": {
+    "initial_results_sha256": "b0a83c853c4e1d91c32f9bc5f72e4e2f58f38d58ea52c8f74ae91b550938c243",
+    "initial_observations": 34,
+    "initial_prediction_disagreements": 2,
+    "field_deny_results_sha256": "7b36feff23854b0de118d99739c1dce017decf818e5614ea8ff9cc0fbe64a9c9",
+    "field_deny_observations": 2,
+    "field_deny_prediction_disagreements": 0,
+    "infrastructure_failures": 0,
+    "repeat": "none;34original+2deny+2allow",
+    "field_allow_results_sha256": "52d236d7089d418c7becef8457dcd5ef64976c82a8ae1ce17bd73d4cdb2c0c2e",
+    "field_allow_observations": 2,
+    "field_allow_prediction_disagreements": 0
+  }
+}

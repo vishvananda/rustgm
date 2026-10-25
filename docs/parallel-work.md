@@ -18,19 +18,27 @@ CLI reaches original `autodiff_forward` at line 1553; stricter attribute checkin
 separately exposes the earlier coherence policy at `lib.rs:65`. There is no core
 artifact and no assignment release.
 
+The newer [unchanged-core observer](original-core-lib020-checkpoint.md) uses the
+qualified primitive compiler and reaches `offload_kernel`, line 1668. It verifies
+722 original files and completes download/hash/trace work in 5.729 seconds.
+Use this current frontier when selecting work; the scoped/byte measurements
+above remain the performance baseline.
+
 Current lanes:
 
-- A: A15 full-instance artifact/import Scope is integrated and functionally
-  qualified. Continue the shared environment producer and provided/default body
-  transport. The next shared environment producer has static/focused/native
-  qualification and 1,561 nonignored private passes in a separate frozen handoff.
-- B: early readiness and selected-reference anonymous callers are integrated and
-  functionally qualified. Continue actual UB-check policy/intrinsics, cfg-demand
-  and owned source cache identity.
-- C: qualify actual attribute kinds and consumers, including Test removal,
-  must_use/inline and trait markers/messages; keep incomplete diagnostics explicit.
-- Integrator: combined qualification/main pushes and real primitive inherent
-  coherence. Keep CPPGM and upstream sources unchanged.
+- A: continue real Provided signature/body transport. The private reservation
+  session and shared signature cursor are qualified with eleven merged controls.
+  Export now shares the ordinary raw place-bounds producer; real empty signature
+  schemes and anonymous function/type-alias producer gaps remain explicit.
+- B: implement LIB-022's authenticated builtin declaration family from the new
+  unchanged-core frontier. Keep remaining UB/runtime-policy import contracts
+  visible and separate from local declaration support.
+- C: repair LIB-023 with a real local `non_exhaustive` consumer and the existing
+  closed artifact profile. Attribute/configuration receipts and 93 new text
+  oracles are integrated; imported contracts remain required.
+- Integrator: focused integration/main pushes, periodic CI follow-up and fresh
+  original-source observations. Local primitive ownership is qualified. Keep
+  CPPGM and upstream sources unchanged.
 
 Development validation uses `make fastcheck` with exact affected controls and
 captured outputs within five minutes. A new private binary does not require a

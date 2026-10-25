@@ -31,6 +31,14 @@ non-exhaustive contracts and mutable-reference fields are also explicit
 boundaries. Their retained Rust-positive fixtures must eventually be supported
 with their real contracts; they are not classified as invalid Rust.
 
+The local `non_exhaustive` consumer validates word form and the actual struct,
+enum or enum-variant owner, retaining source-bound facts for export checks.
+Its defining-crate construction and matching behavior is ordinary Rust. The
+record exporter consumes those facts and keeps the same explicit profile
+rejection; it does not publish an artifact lacking the foreign contract.
+The pinned compiler diagnoses a field annotation through `unused_attributes`
+at its default warning level. That annotation does not mark its enclosing type.
+
 The source inventory declares two providers, nine accepted clients and six
 language rejections, plus ten Rust-positive profile boundaries. The two
 providers use the same crate and item spellings with different crate identities.

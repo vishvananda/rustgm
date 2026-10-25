@@ -332,30 +332,11 @@ impl Contracts {
             }
         }
         let mut open = HashSet::default();
-        for (file, unit) in report.package.units.iter().enumerate() {
-            let file = u32::try_from(file).map_err(|_| error("too many export source files"))?;
-            for owner in &unit.configured.owners {
-                if !owner.enabled {
-                    continue;
-                }
-                if owner.attributes.clone().any(|index| {
-                    let effect = &unit.configured.effects[index];
-                    let forest = &unit.configured.ast.attributes[effect.capture as usize].forest;
-                    effect.attribute.attribute.name(forest, unit.source.text())
-                        == Some("non_exhaustive")
-                }) {
-                    let mut node = owner.node;
-                    while let crate::syntax::ast::Kind::Attributed { value, .. } =
-                        unit.configured.ast.node(node).kind
-                    {
-                        node = value;
-                    }
-                    open.insert(crate::resolve::unit::NodeKey {
-                        file: crate::resolve::unit::FileId(file),
-                        node,
-                    });
-                }
-            }
+        for declaration in facts.non_exhaustive_declarations() {
+            let contract = facts
+                .non_exhaustive_contract(report, declaration)?
+                .ok_or_else(|| error("non_exhaustive export lost its checked local contract"))?;
+            open.insert(contract.declaration);
         }
         Ok(Self {
             owners,

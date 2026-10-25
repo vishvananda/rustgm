@@ -93,6 +93,19 @@ includes declaration and owning crate; familiar names are not implementation
 evidence. Transport checked generic/const bodies and their retained contracts
 through deterministic crate metadata with indexed external-to-local remapping.
 
+Local structural inherent ownership consumes the actual crate policy and complete
+member inventory. Head/name/context buckets exclude unrelated work; full Self,
+const arguments, caller conditions and visibility still decide applicability.
+Retain every declaration for validation, while publishing the real lexical
+representative once per structural owner and exact contextual name. Nominal
+overlap validation remains separate. Assemble owners from genuine autoderef
+steps; autoref is a later receiver adjustment. Rebuild real reference prefixes
+once for final unsizing, without inventing reference owners for a bare array.
+One cold name-work counter covers ordinary and structural contexts, including
+failed queries. Ordinary local feature allowances share authenticated header
+machinery through a distinct cold owner; they do not become source providers or
+disable the prelude. See [the structural owner checkpoint](docs/primitive-inherent-checkpoint.md).
+
 Source macro imports and qualified calls use actual declarations and the existing
 import dependency worklist, including forward definitions and renamed targets.
 A final `option_env` spelling cannot create bootstrap Option or builtin macro

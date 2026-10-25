@@ -34,6 +34,33 @@ pub(super) struct Storage {
     index: HashMap<(ItemId, u32), ParameterId>,
 }
 impl Store {
+    /// Reserve the actual parameter-table growth independently of type nodes.
+    pub(crate) fn parameter_allocation_bound(&self, count: usize) -> usize {
+        let Some(arguments) = &self.arguments else {
+            return size_of::<super::arguments::Storage>()
+                .saturating_add(count.saturating_mul(4 * size_of::<Parameter>()))
+                .saturating_add(crate::support::retained::new_map::<
+                    (ItemId, u32),
+                    ParameterId,
+                >(count));
+        };
+        let storage = &arguments.parameters;
+        let needed = storage.values.len().saturating_add(count);
+        (if needed > storage.values.capacity() {
+            needed.saturating_mul(4 * size_of::<Parameter>())
+        } else {
+            0
+        })
+        .saturating_add(
+            if storage.index.len().saturating_add(count) > storage.index.capacity() {
+                crate::support::retained::new_map::<(ItemId, u32), ParameterId>(
+                    storage.index.len().saturating_add(count),
+                )
+            } else {
+                0
+            },
+        )
+    }
     #[must_use]
     pub fn parameter(&self, id: ParameterId) -> Option<Parameter> {
         self.arguments

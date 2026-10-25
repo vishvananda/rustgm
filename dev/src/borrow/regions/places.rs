@@ -8,6 +8,25 @@ use crate::{
 };
 const LIMIT: usize = 1_000_000;
 
+/// Raw typed provenance requests, with allocation/work charged by their owner.
+/// Visiting these requests grants no region solution or execution permission.
+pub(crate) trait PlaceBoundsSink {
+    fn charge(&mut self, count: usize) -> Result<(), &'static str>;
+    fn scratch(&mut self, growth: usize) -> Result<(), &'static str>;
+    fn obligation(&mut self, value: Obligation) -> Result<(), &'static str>;
+}
+fn capacity<T>(values: &Vec<T>, sink: &mut impl PlaceBoundsSink) -> Result<(), &'static str> {
+    if values.len() == values.capacity() {
+        sink.scratch(
+            values
+                .len()
+                .saturating_add(1)
+                .saturating_mul(4 * size_of::<T>()),
+        )?;
+    }
+    Ok(())
+}
+
 #[derive(Clone, Copy)]
 enum Origin {
     Local,
@@ -28,7 +47,7 @@ struct Places<'a> {
     work: usize,
 }
 impl<'a> Places<'a> {
-    fn new(body: &'a Body) -> Result<Self, &'static str> {
+    fn new(body: &'a Body, sink: &mut impl PlaceBoundsSink) -> Result<Self, &'static str> {
         let mut this = Self {
             promotions: body.promotions.as_ref(),
             extended: crate::support::hash::HashSet::default(),
@@ -37,13 +56,20 @@ impl<'a> Places<'a> {
             work: 0,
         };
         for temporary in &body.temporaries {
-            this.step()?;
+            this.step(sink)?;
             if temporary.lifetime == crate::body::scopes::Lifetime::Static {
+                if this.extended.len() == this.extended.capacity()
+                    && !this.extended.contains(&temporary.value)
+                {
+                    sink.scratch(crate::support::retained::new_map::<ValueId, ()>(
+                        this.extended.len().saturating_add(1),
+                    ))?;
+                }
                 this.extended.insert(temporary.value);
             }
         }
         for projection in &body.projections {
-            this.step()?;
+            this.step(sink)?;
             let base = this.origin(projection.base)?;
             let origin = if let ProjectionKind::Dereference { region, mutable } = projection.kind {
                 let parent = match base {
@@ -51,6 +77,7 @@ impl<'a> Places<'a> {
                     _ => None,
                 };
                 let id = this.links.len();
+                capacity(&this.links, sink)?;
                 this.links.push(Link { region, parent });
                 Origin::Reference(id)
             } else if matches!(projection.kind, ProjectionKind::RawDereference { .. }) {
@@ -58,6 +85,7 @@ impl<'a> Places<'a> {
             } else {
                 base
             };
+            capacity(&this.projections, sink)?;
             this.projections.push(origin);
         }
         Ok(this)
@@ -74,7 +102,8 @@ impl<'a> Places<'a> {
                 .ok_or("borrow projection has no earlier base")?,
         })
     }
-    fn step(&mut self) -> Result<(), &'static str> {
+    fn step(&mut self, sink: &mut impl PlaceBoundsSink) -> Result<(), &'static str> {
+        sink.charge(1)?;
         self.work += 1;
         if self.work > LIMIT {
             return Err("borrow provenance work budget exceeded");
@@ -86,17 +115,17 @@ impl<'a> Places<'a> {
         place: Place,
         region: RegionId,
         source: ProofSite,
-        output: &mut Vec<Obligation>,
+        sink: &mut impl PlaceBoundsSink,
     ) -> Result<(), &'static str> {
-        self.step()?;
+        self.step(sink)?;
         let mut link = match self.origin(place)? {
             Origin::Reference(id) => Some(id),
             Origin::Static | Origin::Raw => None,
             Origin::Local => {
-                output.push(Obligation {
+                sink.obligation(Obligation {
                     source,
                     kind: Bound::LocalBorrow(region),
-                });
+                })?;
                 None
             }
             Origin::Temporary(id) => {
@@ -106,38 +135,63 @@ impl<'a> Places<'a> {
                 if !facts.contains(id) {
                     // This is only the body-extent upper bound. Precise storage
                     // liveness remains a separate mandatory execution proof.
-                    output.push(Obligation {
+                    sink.obligation(Obligation {
                         source,
                         kind: Bound::LocalBorrow(region),
-                    });
+                    })?;
                 }
                 None
             }
         };
         while let Some(id) = link {
-            self.step()?;
+            self.step(sink)?;
             let ancestor = &self.links[id];
-            output.push(Obligation {
+            sink.obligation(Obligation {
                 source,
                 kind: Bound::Outlives((ancestor.region, region)),
-            });
+            })?;
             link = ancestor.parent;
         }
         Ok(())
     }
 }
 pub(super) fn bounds(types: &Store, body: &Body) -> Result<Vec<Obligation>, &'static str> {
-    if !body
-        .values
-        .iter()
-        .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
-    {
-        return Ok(Vec::new());
+    let mut output = Collected(Vec::new());
+    visit_bounds(types, body, &mut output)?;
+    Ok(output.0)
+}
+struct Collected(Vec<Obligation>);
+impl PlaceBoundsSink for Collected {
+    fn charge(&mut self, _: usize) -> Result<(), &'static str> {
+        Ok(())
     }
-    let mut places = Places::new(body)?;
-    let mut output = Vec::new();
+    fn scratch(&mut self, _: usize) -> Result<(), &'static str> {
+        Ok(())
+    }
+    fn obligation(&mut self, value: Obligation) -> Result<(), &'static str> {
+        self.0.push(value);
+        Ok(())
+    }
+}
+pub(crate) fn visit_bounds(
+    types: &Store,
+    body: &Body,
+    sink: &mut impl PlaceBoundsSink,
+) -> Result<(), &'static str> {
+    let mut borrowed = false;
+    for value in &body.values {
+        sink.charge(1)?;
+        if matches!(value.kind, Rvalue::Borrow { .. }) {
+            borrowed = true;
+            break;
+        }
+    }
+    if !borrowed {
+        return Ok(());
+    }
+    let mut places = Places::new(body, sink)?;
     for statement in &body.statements {
-        places.step()?;
+        places.step(sink)?;
         let Action::Evaluate(id) = statement.action else {
             continue;
         };
@@ -155,8 +209,8 @@ pub(super) fn bounds(types: &Store, body: &Body) -> Result<Vec<Obligation>, &'st
             place,
             region,
             body.source.proof_site(statement.source)?,
-            &mut output,
+            sink,
         )?;
     }
-    Ok(output)
+    Ok(())
 }

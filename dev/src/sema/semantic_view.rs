@@ -384,7 +384,7 @@ fn paths(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             path.implementation.0,
             path.prefix.file.0,
             path.prefix.node.get(),
-            path.annotation
+            matches!(path.kind, super::methods::PrefixKind::Annotation)
         )?;
     }
     let mut traits: Vec<_> = facts.generics.trait_uses.iter().collect();

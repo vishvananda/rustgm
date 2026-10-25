@@ -177,7 +177,7 @@ fn form(attribute: Attribute, file: FileId) -> Result<(), Error> {
     }
     Ok(())
 }
-fn require_internal(
+pub(crate) fn require_internal(
     report: &Report,
     allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
     file: FileId,

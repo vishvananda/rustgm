@@ -73,6 +73,11 @@ method and destruction contracts remain explicit profile errors. See
 `docs/pa29-closed-records.md` for the independent source/native qualification
 and remaining assignment work.
 
+Local `#[non_exhaustive]` contracts accept word form on structs, enums and enum
+variants. Construction and complete matching within the defining crate retain
+their ordinary rules. Closed record artifacts still reject these validated
+contracts; foreign construction and exhaustiveness transport remain required.
+
 Profile four additionally retains fixed C callable conventions using the same
 signature-local or shared nominal type graphs. Safety, late-bound lifetime slots
 and exact linkage stay independent. Rust-only artifacts retain profiles zero
