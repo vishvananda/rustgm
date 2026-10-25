@@ -4,8 +4,19 @@ use super::*;
 #[test]
 fn legacy_unknown_closed_profiles_and_warned_wrong_owners_stay_explicit() -> Result {
     let plain = fixture("plain")?;
-    let legacy = source_packets::exported(&plain)?;
+    let (legacy, warnings) = exported_profile(&plain, SourcePublication::LegacyFunctions)?;
+    assert_eq!(warnings, 0);
+    assert_eq!(
+        legacy.identity(),
+        &crates::CrateIdentity::new("minicore", "attribute_transport")?
+    );
     let bytes = crates::encode(&legacy)?;
+    let golden = legacy_golden()?;
+    assert_eq!(golden.len(), 3628);
+    assert_eq!(
+        bytes, golden,
+        "legacy Functions bytes changed from the qualified pre-v1 producer"
+    );
     assert_eq!(bytes.get(13..15), Some([0, 0].as_slice()));
     assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
     let (report, analysis, _) =
@@ -74,6 +85,24 @@ fn legacy_unknown_closed_profiles_and_warned_wrong_owners_stay_explicit() -> Res
         "Provided accepted ordinary contract rows"
     );
     Ok(())
+}
+
+fn legacy_golden() -> Result<Vec<u8>> {
+    let text = crate::test_source::fixture(
+        "pa31/tests/spec/source-attribute-transport/legacy-functions-v0.hex",
+    )?;
+    let mut bytes = Vec::new();
+    for token in text
+        .lines()
+        .filter(|line| !line.starts_with('#'))
+        .flat_map(str::split_ascii_whitespace)
+    {
+        if token.len() != 2 {
+            return Err("legacy Functions golden contains a non-byte hex token".into());
+        }
+        bytes.push(u8::from_str_radix(token, 16)?);
+    }
+    Ok(bytes)
 }
 
 fn raw(source: &str, interface: &crates::Interface) -> Result<s::SourceRows> {
