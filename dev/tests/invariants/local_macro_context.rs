@@ -2,7 +2,11 @@
 use super::*;
 use crate::{
     expand::stream::Location,
-    resolve::{bindings::FeatureName, expansion::Report},
+    resolve::{
+        bindings::FeatureName,
+        expansion::Report,
+        model::{BuiltinTrait, DefKind},
+    },
     support::source::SourceFile,
     syntax::ast::Kind,
 };
@@ -42,6 +46,32 @@ fn sites(report: &Report) -> TestResult<Vec<Location>> {
     Ok(sites)
 }
 
+fn demanded_prelude_lookup() -> TestResult {
+    let body = "fn copied<T:Copy>(value:T)->T{value}\
+                pub fn demanded()->u32{copied(7u32)}";
+    for requested in [false, true] {
+        let source = if requested {
+            format!("#![feature(allow_internal_unstable)]{body}")
+        } else {
+            body.to_owned()
+        };
+        let report = crate::test_source::resolve(&source, true)?;
+        assert_eq!(report.package.macro_context()?.is_some(), requested);
+        assert!(report.package.modules[0].implicit_prelude);
+        let copy = report
+            .resolution
+            .builtin_traits
+            .get(BuiltinTrait::Copy)
+            .ok_or("ordinary prelude Copy was not resolved")?;
+        let declaration = &report.resolution.definitions[copy.0 as usize];
+        assert_eq!(declaration.kind, DefKind::BuiltinTrait);
+        assert_eq!(report.package.names.get(declaration.name), "Copy");
+        assert!(declaration.node.is_none());
+        crate::pipeline::analyze_source(&report)?;
+    }
+    Ok(())
+}
+
 #[test]
 fn local_owner_keeps_ordinary_prelude_and_no_source_roles_or_features() -> TestResult {
     let ordinary = crate::test_source::resolve("fn f()->u32{7}", true)?;
@@ -65,7 +95,13 @@ fn local_owner_keeps_ordinary_prelude_and_no_source_roles_or_features() -> TestR
     ));
     assert!(!report.package.uses_source_bindings());
     assert!(report.package.modules[0].implicit_prelude);
-    assert!(!report.resolution.builtin_traits.bootstrap_absent());
+    // Bootstrap metadata is lazy: neither input has demanded a trait name yet.
+    assert!(ordinary.resolution.builtin_traits.bootstrap_absent());
+    assert_eq!(
+        report.resolution.builtin_traits.bootstrap_absent(),
+        ordinary.resolution.builtin_traits.bootstrap_absent()
+    );
+    demanded_prelude_lookup()?;
     assert!(report.package.source_core().is_none());
     assert!(report.package.source_client().is_none());
     assert!(report.package.source_features().is_none());
