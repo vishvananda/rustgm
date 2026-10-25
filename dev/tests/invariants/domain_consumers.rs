@@ -47,6 +47,10 @@ fn fresh_module_clients_preserve_aliases_domains_provider_selection_and_advisori
             assert!(text.contains("restricted module"), "{text}");
         }
     }
+    source_packets::client(
+        test::roundtrip(&test::fixture("nested-call-provider")?)?,
+        "#![feature(no_core)]#![no_core]extern crate base;pub fn keep()->u8{base::api::renamed(7u8)}",
+    )?;
     canonical_domain()?;
     advisory_origins()?;
     let no_const = source_packets::client_analysis(
