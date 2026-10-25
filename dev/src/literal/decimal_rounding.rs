@@ -1,4 +1,4 @@
-//! Exact wide IEEE conversion, adapted from CPPGM's interchange_float.cpp.
+//! Exact wide IEEE conversion, adapted from CPPGM's `interchange_float.cpp`.
 //! See `shared/CPPGM-NOTICE` and the repository NOTICE for inherited attribution.
 //! One format kernel implements nearest/ties-to-even from bounded rational limbs.
 mod decimal;

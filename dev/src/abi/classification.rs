@@ -130,19 +130,13 @@ impl Plans {
             .map_err(|e| e.message)?;
         let layout = *layouts.at(id).ok_or("missing C ABI layout")?;
         let kind = types.kind(head).ok_or("missing C ABI type")?;
-        if matches!(
-            kind,
-            Kind::Primitive(types::Primitive::F16 | types::Primitive::F128)
-        ) {
-            return Err("wide floating C ABI is not implemented");
-        }
         if head == TypeId::UNIT
             || head == TypeId::NEVER
             || matches!(kind, Kind::FunctionItem { .. })
         {
             return Ok(Passing::Scalar(ty));
         }
-        if matches!(layout.shape, Shape::Scalar) && scalar(kind) {
+        if matches!(layout.shape, Shape::Scalar) && scalar(kind)? {
             return Ok(Passing::Scalar(ty));
         }
         let Kind::Adt(item, _) = kind else {
@@ -183,7 +177,7 @@ impl Plans {
             let field = types.storage_head(field)?;
             let kind = types.kind(field).ok_or("missing C field type")?;
             let child = layouts.get(field).ok_or("missing C field layout")?;
-            if !scalar(kind) || !matches!(child.shape, Shape::Scalar) || child.size == 0 {
+            if !scalar(kind)? || !matches!(child.shape, Shape::Scalar) || child.size == 0 {
                 return self.composite(types, definitions, layouts, head, layout);
             }
             let offset = *offsets.get(index).ok_or("missing C field offset")?;
@@ -254,12 +248,20 @@ impl Plans {
         }))
     }
 }
-fn scalar(kind: Kind) -> bool {
-    matches!(kind,Kind::Primitive(p) if p!=types::Primitive::Str)
-        || matches!(
-            kind,
-            Kind::Reference { .. } | Kind::Pointer { .. } | Kind::Function { .. }
-        )
+fn scalar(kind: Kind) -> Result<bool, &'static str> {
+    if matches!(
+        kind,
+        Kind::Primitive(types::Primitive::F16 | types::Primitive::F128)
+    ) {
+        return Err("wide floating C ABI is not implemented");
+    }
+    Ok(
+        matches!(kind,Kind::Primitive(p) if p!=types::Primitive::Str)
+            || matches!(
+                kind,
+                Kind::Reference { .. } | Kind::Pointer { .. } | Kind::Function { .. }
+            ),
+    )
 }
 
 fn account_work(steps: &mut usize, work: usize) -> Result<(), &'static str> {
