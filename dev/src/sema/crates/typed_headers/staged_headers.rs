@@ -6,7 +6,7 @@ pub(super) mod environments;
 mod formal_headers;
 mod impl_headers;
 mod owner_packets;
-mod rebuilt_environments;
+pub(super) mod rebuilt_environments;
 mod scheme_ports;
 mod template_ports;
 use super::{Declarations, Error, Header, Headers, error, mapped_source, predicate_remap};

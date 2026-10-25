@@ -143,6 +143,20 @@ impl Scope {
             .saturating_add(2 * size_of::<usize>())
             .saturating_add(environment)
     }
+    fn require_empty(&self, expected: Ready) -> Result<(), Error> {
+        if self.raw != expected.scope.1
+            || self.raw.parent.is_some()
+            || !self.parameters.is_empty()
+            || !self.clauses.is_empty()
+            || !self.inputs.is_empty()
+            || !self.subjects.is_empty()
+        {
+            return Err(error(
+                "empty Contract changed its complete prepared declaration inputs",
+            ));
+        }
+        Ok(())
+    }
     fn require(&self, rows: s::ValidatedView<'_>) -> Result<(), Error> {
         let (range, canonical) = originals::input_range(rows, self.raw)?;
         if self.inputs.len() != range.slice(&rows.clauses).map_err(error)?.len()
@@ -155,7 +169,17 @@ impl Scope {
         Ok(())
     }
 }
+struct ContractBody {
+    seal: originals::Origin,
+    declaration: Arc<Environment>,
+    environment: Arc<Environment>,
+}
 enum Body {
+    Contract {
+        expected: Ready,
+        scope: usize,
+        product: Box<ContractBody>,
+    },
     Ready {
         expected: Ready,
         scope: usize,
@@ -215,6 +239,7 @@ impl Owner {
         &self,
         rows: s::ValidatedView<'_>,
         expected: Ready,
+        origin: originals::Origin,
         work: &mut ReservationWork,
     ) -> Result<Option<Demand<()>>, Error> {
         work.charge(2)?;
@@ -232,7 +257,7 @@ impl Owner {
                 expected: actual,
                 scope,
                 environment,
-            }) if *actual == expected => {
+            }) if *actual == expected && origin == originals::Origin::Declaration => {
                 let declaration = self
                     .scopes
                     .get(*scope)
@@ -251,6 +276,31 @@ impl Owner {
                 }
                 Ok(Some(Demand::Ready(())))
             }
+            Some(Body::Contract {
+                expected: actual,
+                scope,
+                product,
+            }) if *actual == expected
+                && product.seal == origin
+                && matches!(origin, originals::Origin::Contract(_)) =>
+            {
+                let declaration = self
+                    .scopes
+                    .get(*scope)
+                    .and_then(Option::as_deref)
+                    .ok_or_else(|| error("empty Contract lost its actual prepared declaration"))?;
+                declaration.require(rows)?;
+                declaration.require_empty(expected)?;
+                if !Arc::ptr_eq(&product.declaration, &declaration.environment)
+                    || Arc::ptr_eq(&product.environment, &declaration.environment)
+                    || !product.environment.is_neutral()
+                {
+                    return Err(error(
+                        "empty Contract changed its retained body construction",
+                    ));
+                }
+                Ok(Some(Demand::Ready(())))
+            }
             _ => Err(error(
                 "private defining environment changed its sealed header or body",
             )),
@@ -262,11 +312,12 @@ impl Owner {
         state: &mut State,
         facts: &mut Declarations,
         prepared: &Prepared,
-        expected: Ready,
+        demand: &originals::BodyDemand,
         work: &mut ReservationWork,
     ) -> Result<Demand<()>, Error> {
+        let originals::BodyDemand { expected, origin } = *demand;
         let rows = view.rows()?;
-        if let Some(status) = self.cached(rows, expected, work)? {
+        if let Some(status) = self.cached(rows, expected, origin, work)? {
             return Ok(status);
         }
         let path = formal_path::path(rows, &prepared.scopes, expected.header.scope, work)?;
@@ -301,24 +352,44 @@ impl Owner {
         let scope = self.scopes[index]
             .as_deref()
             .ok_or_else(|| error("private defining declaration scope disappeared"))?;
-        let environment = originals::finish(
+        let (environment, bytes) = originals::finish(
             facts,
             &prepared.templates,
             rows,
             &mut port,
             scope,
-            expected,
+            demand,
             work,
         )?;
-        self.publish(
-            expected,
-            Body::Ready {
+        let body = match origin {
+            originals::Origin::Declaration => Body::Ready {
                 expected,
                 scope: index,
                 environment,
             },
-            work,
-        )?;
+            originals::Origin::Contract(_) => {
+                work.reserve(size_of::<ContractBody>())?;
+                Body::Contract {
+                    expected,
+                    scope: index,
+                    product: Box::new(ContractBody {
+                        seal: origin,
+                        declaration: Arc::clone(&scope.environment),
+                        environment,
+                    }),
+                }
+            }
+        };
+        let product_bytes = if matches!(origin, originals::Origin::Contract(_)) {
+            size_of::<ContractBody>()
+        } else {
+            0
+        };
+        self.publish(expected, body, work)?;
+        self.bytes = self
+            .bytes
+            .saturating_add(bytes)
+            .saturating_add(product_bytes);
         Ok(Demand::Ready(()))
     }
     fn publish(
