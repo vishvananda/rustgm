@@ -13,6 +13,8 @@ use crate::syntax::{
 };
 #[path = "unavailable_macros.rs"]
 pub(super) mod unavailable_macros;
+#[path = "unnamed_values.rs"]
+mod unnamed_values;
 /// Kinds whose `push_children` arm appends nothing. Declaration walks have no
 /// effect at these nodes, so they are not queued at all.
 pub(crate) const fn is_leaf(kind: &Kind) -> bool {
@@ -772,18 +774,26 @@ impl Resolver<'_> {
                 .ok_or_else(|| self.error(c, node, "missing item name"))?
         };
         let name = self.package.name(c.file, span)?;
-        let id = self.define(
-            Definition {
-                name,
-                namespace: ns,
-                kind,
-                scope: c.scope,
-                node: Some(NodeKey { file: c.file, node }),
-                access,
-                members,
-            },
-            false,
-        )?;
+        let definition = Definition {
+            name,
+            namespace: ns,
+            kind,
+            scope: c.scope,
+            node: Some(NodeKey { file: c.file, node }),
+            access,
+            members,
+        };
+        let id = if kind == DefKind::Const && self.package.names.get(name) == "_" {
+            if c.foreign.is_some() {
+                return Err(self.error(c, node, "unnamed constants require a free item owner"));
+            }
+            if self.facts.scopes[c.scope.0 as usize].associated {
+                return Err(self.error(c, node, "associated constants require a name"));
+            }
+            self.retain_unnamed_constant(definition)?
+        } else {
+            self.define(definition, false)?
+        };
         self.facts.item_definitions.insert((c.module, node, ns), id);
         Ok(id)
     }
