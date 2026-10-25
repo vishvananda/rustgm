@@ -108,6 +108,20 @@ grants execution or trait permission. The
 [versioned transport checkpoint](docs/source-header-contract-transport.md)
 records exact-byte, fresh-consumer, origin, budget and layout controls.
 
+Free unnamed constants retain real declaration identities, item keys, scopes and
+all initializer typing and evaluation obligations. Omit only their lexical name
+binding and declaration-name wakeup. Associated constants require names. Retain
+actual visibility and emit the real unused-visibilities lint through existing
+lexical policy; a public placeholder creates no exported name. Unsupported
+metadata profiles reject the real constant inventory instead of dropping it.
+One cold owner retains authenticated source warning causes. Success and terminal
+errors share the same bounded collector and canonical warning carrier. Macro
+projection uses the actual introduction; physical source and syntax context
+govern duplicate warnings. Preserve the primary error and distinguish unavailable
+source authentication from exhausted warning budgets. Keep the optional dense
+policy table's aggregate per-node cost explicit. See the
+[unnamed-constant checkpoint](docs/unnamed-free-constants.md).
+
 Local structural inherent ownership consumes the actual crate policy and complete
 member inventory. Head/name/context buckets exclude unrelated work; full Self,
 const arguments, caller conditions and visibility still decide applicability.
@@ -211,6 +225,19 @@ formal, including unused parameters; preserve explicit `?Sized`. Original
 assumptions do not pay substituted instance obligations. Retain a single cold
 owner for immutable imported templates/contracts, with exact owner validation
 at every borrowed view and ordinary per-instance proof on execution.
+
+Private callable preparation consumes the actual reserved declared/callable
+signature pair and complete outer-to-inner formal scope, including unused
+parameters and inherited Self. Share the ordinary callable registration kernel;
+retain the real named owner and anonymous Function types. Build the scope index
+once. A warm hit still authenticates the catalog, source arena, declaration,
+body, signature and exact scope record before reusing readiness, without
+traversing its ancestry again. Prepay actual template capacity growth, temporary
+owner validation and selected regional occurrences; unrelated declarations and
+the entire type store are not per-call allocation bounds. Failed attempts retain
+their charged work and peak, and cannot publish partial readiness. This private
+structural preparation grants no defining Environment, original body proof,
+call-instance proof or wider metadata-profile permission.
 
 Role validators consume borrowed declaration headers rather than reconstructing
 source syntax. The source adapter validates the actual declaration, separate
