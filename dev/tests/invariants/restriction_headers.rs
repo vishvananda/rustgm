@@ -21,7 +21,7 @@ fn parsed_restrictions_keep_feature_origins_disabled_headers_and_ordinary_layout
         "disabled-call-opaque",
         "literal-origin-allowance",
     ] {
-        checked(&fixture(name)?)?;
+        checked(&fixture(name)?).map_err(|error| format!("{name}: {error}"))?;
     }
     for name in [
         "missing-feature-active",
@@ -117,7 +117,7 @@ fn exact_trait_domains_resolve_aliases_and_charge_actual_ancestry_before_publica
         "crate-domain",
         "forward-ancestor-alias",
     ] {
-        checked(&fixture(name)?)?;
+        checked(&fixture(name)?).map_err(|error| format!("{name}: {error}"))?;
     }
     for (name, text) in [
         ("self-outside-denied", "trait cannot be implemented outside"),
@@ -200,7 +200,12 @@ fn exact_trait_domains_resolve_aliases_and_charge_actual_ancestry_before_publica
         .and_then(|facts| facts.reference)
         .ok_or("retained module")?;
     assert!(matches!(target, Target::Definition(_)));
-    let copied = test_source::resolve(&format!("mod Other {{}} {source}"), true)?;
+    // Keep crate-inner attributes before all items while relocating the owner graph.
+    let copied = test_source::resolve(
+        &source.replacen("mod outer", "mod Other {} mod outer", 1),
+        true,
+    )
+    .map_err(|error| format!("relocated owner graph: {error}"))?;
     crate::pipeline::analyze_source(&copied)?;
     // Reaching the same valid graph after a failed independent query remains valid.
     crate::pipeline::analyze_source(&report)?;
@@ -246,8 +251,10 @@ fn observe_layouts() {
 
 fn bootstrap_identity_opponents() -> TestResult {
     // Bootstrap Clone/Copy impls have a separate preexisting unsupported boundary.
-    checked("struct S; unsafe impl Send for S{} unsafe impl Sync for S{}")?;
-    let mut counterfeit = test_source::resolve("trait Clone{}", true)?;
+    checked("struct S; unsafe impl Send for S{} unsafe impl Sync for S{}")
+        .map_err(|error| format!("actual bootstrap Send/Sync owner: {error}"))?;
+    let mut counterfeit = test_source::resolve("trait Clone{}", true)
+        .map_err(|error| format!("authored shadow trait owner: {error}"))?;
     let fake = counterfeit
         .resolution
         .definitions
