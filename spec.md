@@ -93,6 +93,21 @@ includes declaration and owning crate; familiar names are not implementation
 evidence. Transport checked generic/const bodies and their retained contracts
 through deterministic crate metadata with indexed external-to-local remapping.
 
+Header diagnostic and advisory contracts use complete versioned cold columns.
+Authenticate local declaration, configured owner and retained source incarnation;
+join imported declarations to their actual catalog coordinates once. Reuse the
+existing owner/effect and declaration passes for positive completion. Missing
+entries, unvisited owners and older metadata remain Unknown; KnownAbsent needs
+an actual completed producer witness. Borrow retained reasons on warm reads,
+charge attempted work and retained bytes, and preserve aggregate limits on
+failure. Do not grow ordinary syntax, body or declaration records for these
+columns. Provider declaration warnings occur once, while imported unused-result
+diagnostics use the consumer's lexical lint policy and use location. Select an
+explicit publication profile and preserve legacy bytes; contract presence never
+grants execution or trait permission. The
+[versioned transport checkpoint](docs/source-header-contract-transport.md)
+records exact-byte, fresh-consumer, origin, budget and layout controls.
+
 Local structural inherent ownership consumes the actual crate policy and complete
 member inventory. Head/name/context buckets exclude unrelated work; full Self,
 const arguments, caller conditions and visibility still decide applicability.
