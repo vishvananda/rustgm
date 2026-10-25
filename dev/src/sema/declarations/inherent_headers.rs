@@ -2,7 +2,10 @@
 use super::{Checker, DefId, DefKind, Error, NodeKey};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
-    resolve::names::NameId,
+    resolve::{
+        model::{ItemContext, Namespace, Origin},
+        names::NameId,
+    },
     sema::{associated::OwnerKind, methods::buckets::Bucket},
     types::{ItemId, subject_head::Head},
 };
@@ -199,14 +202,76 @@ impl Checker<'_> {
         }
         for (name, member) in members.declarations {
             let context = self.report.definition_item_context(member)?;
-            self.facts.methods.publish_inherent(
-                Bucket::declared(head, name)
-                    .ok_or_else(|| Error::unlocated("invalid inherent target head"))?,
-                context,
-                member,
-            );
+            let bucket = Bucket::declared(head, name)
+                .ok_or_else(|| Error::unlocated("invalid inherent target head"))?;
+            if matches!(bucket, Bucket::Structural(..))
+                && !self.structural_representative(owner, name, member, context)?
+            {
+                continue;
+            }
+            self.facts.methods.publish_inherent(bucket, context, member);
         }
         Ok(())
+    }
+
+    /// The resolver retains every declaration, but an impl's exact name binding
+    /// supplies one lookup representative. Other impl owners remain candidates.
+    fn structural_representative(
+        &self,
+        owner: DefId,
+        name: NameId,
+        member: DefId,
+        context: ItemContext,
+    ) -> Result<bool, Error> {
+        let error = || Error::unlocated("invalid structural member binding identity");
+        let associated = &self.facts.associated;
+        let actual_owner = associated.owner(owner).ok_or_else(error)?;
+        let implementation = associated.get(actual_owner).ok_or_else(error)?;
+        if implementation.self_definition != owner
+            || !matches!(
+                implementation.kind,
+                OwnerKind::Impl {
+                    trait_type: None,
+                    ..
+                }
+            )
+            || associated.owner(member) != Some(actual_owner)
+        {
+            return Err(error());
+        }
+        let definitions = &self.report.resolution.definitions;
+        let declaration = definitions.get(member.0 as usize).ok_or_else(error)?;
+        if declaration.namespace != Namespace::Value
+            || declaration.name != name
+            || !matches!(declaration.kind, DefKind::Function | DefKind::Const)
+            || definitions
+                .get(owner.0 as usize)
+                .and_then(|owner| owner.members)
+                != Some(declaration.scope)
+        {
+            return Err(error());
+        }
+        let binding = self
+            .report
+            .resolution
+            .bindings
+            .get_key((declaration.scope, name, Namespace::Value, context))
+            .ok_or_else(error)?;
+        let target = definitions
+            .get(binding.target.0 as usize)
+            .ok_or_else(error)?;
+        if binding.origin != Origin::Direct
+            || binding.ambiguous
+            || target.scope != declaration.scope
+            || target.namespace != Namespace::Value
+            || target.name != name
+            || !matches!(target.kind, DefKind::Function | DefKind::Const)
+            || associated.owner(binding.target) != Some(actual_owner)
+            || self.report.definition_item_context(binding.target)? != context
+        {
+            return Err(error());
+        }
+        Ok(binding.target == member)
     }
 
     pub(super) fn index_inherent_methods(&mut self) -> Result<(), Error> {

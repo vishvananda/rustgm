@@ -21,12 +21,98 @@
       "directory": "coherence-primitive-clarifiers-v1",
       "plan_sha256": "49a3c4066e44799bc3cc8d4e77ce8e6cbbc5ade8616c79e202e42ce300f1a079",
       "results_sha256": "8ef276eea776e0943e23ae72c0d7a3aec159d0e51564f096c5574456f2481c6c"
+    },
+    {
+      "directory": "lib020-focused-opponents-v1",
+      "plan_sha256": "6b4af31553fff91fc5595fc7e00e57e81c845293fb4baa7bea7445e2cd6188e6",
+      "results_sha256": "312f3702fcf8c9fbe72f70ffbb8554b6ee210b4652605a3d32bfbfa4458b58e7",
+      "tool": {
+        "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1",
+        "LC_ALL": "C"
+      },
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "editions": [
+        2021,
+        2024
+      ],
+      "qualification": "Metadata/object only; no native execution or body-result choice."
+    },
+    {
+      "directory": "lib020-focused-opponents-v2",
+      "plan_sha256": "f3e006db35eba4b4dfdebe025d3b12b1f47240eb09e4af2d878d2a09c6a70aa8",
+      "results_sha256": "eb96c6462d33c88895ef689ea25c042592447d2541e430672d61a46676530978",
+      "tool": {
+        "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1",
+        "LC_ALL": "C"
+      },
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "editions": [
+        2021,
+        2024
+      ],
+      "qualification": "Metadata/object only; no native execution or body-result choice."
+    },
+    {
+      "directory": "lib020-focused-opponents-v3",
+      "plan_sha256": "0356f9e0281eb830f7e637326c6d7d78a4b20cccdda070962c895123b670c6b1",
+      "results_sha256": "d45381a370f32fa1b9024c92421a93112a33a287649f0147503af9c5b9da06aa",
+      "tool": {
+        "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1",
+        "LC_ALL": "C"
+      },
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "editions": [
+        2021,
+        2024
+      ],
+      "qualification": "Metadata/object only; no native execution or body-result choice."
     }
   ],
   "known_profile_restriction": "Duplicate compiler crate options remain explicitly unsupported; core-flag-duplicate is independently accepted but candidate-rejected.",
   "disproved_hypotheses": [
     "Unused primitive duplicate methods are accepted, including within one implementation.",
-    "A function-pointer inherent implementation is admitted but does not supply callable inherent members."
+    "A function-pointer inherent implementation is admitted but does not supply callable inherent members.",
+    "The predicted same-impl Self::duplicate ambiguity was disproved: the call is accepted, including an outside caller reaching the third method.",
+    "The predicted bare-array-to-reference-Self lookup was disproved: bare arrays reject, while borrowed reference-to-array and direct slice callers accept with two closed reference owners."
   ],
   "cases": [
     {
@@ -2774,6 +2860,863 @@
           "stderr_sha256": "21746f96aff8ba95cae1e6ec36547930def9d6e554d0e24f0c4d6b82d745a5b2"
         }
       ]
+    },
+    {
+      "name": "macro-marker-without-global-request",
+      "path": "macro-marker-without-global-request.rs",
+      "source_sha256": "3a72c9aaed92f8e7a0ff7d8979cf0714725abada74981642a8aab1caf6c971a1",
+      "declared_rustc_status": 1,
+      "declared_required_error_codes": [
+        "E0390"
+      ],
+      "declared_forbidden_error_codes": [
+        "E0658"
+      ],
+      "declared_hypothesis": "Literal marker token gate is allowed, but primitive owner lacks the required crate-level rustc_attrs request.",
+      "observed_rustc_status": 1,
+      "candidate_status": 1,
+      "candidate_execution": null,
+      "candidate_requirement": "Required observed behavior; candidate execution pending. Borrowed-array positive is not waived for an unsupported receiver adjustment.",
+      "extra_arguments": [],
+      "origin": "lib020-focused-opponents-v1",
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "observations": [
+        {
+          "edition": 2021,
+          "stage": "metadata",
+          "status": 1,
+          "matches_declared_prediction": true,
+          "error_codes": [
+            "E0390",
+            "E0599"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7ced203380e7f326c3ffb2f9445b5a2fb4f9abc13fd0a58b2ed5263e87b9b56d",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        },
+        {
+          "edition": 2021,
+          "stage": "object",
+          "status": 1,
+          "matches_declared_prediction": true,
+          "error_codes": [
+            "E0390",
+            "E0599"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7ced203380e7f326c3ffb2f9445b5a2fb4f9abc13fd0a58b2ed5263e87b9b56d",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "metadata",
+          "status": 1,
+          "matches_declared_prediction": true,
+          "error_codes": [
+            "E0390",
+            "E0599"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7ced203380e7f326c3ffb2f9445b5a2fb4f9abc13fd0a58b2ed5263e87b9b56d",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "object",
+          "status": 1,
+          "matches_declared_prediction": true,
+          "error_codes": [
+            "E0390",
+            "E0599"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7ced203380e7f326c3ffb2f9445b5a2fb4f9abc13fd0a58b2ed5263e87b9b56d",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "macro-marker-with-global-request",
+      "path": "macro-marker-with-global-request.rs",
+      "source_sha256": "858288afffbd9fe641bd0467ef9663ebc08ef9d2c0e6b15bed73e41d5ec20fde",
+      "declared_rustc_status": 0,
+      "declared_required_error_codes": [],
+      "declared_forbidden_error_codes": [],
+      "declared_hypothesis": "The same literal marker with the actual global feature admits the primitive owner and call.",
+      "observed_rustc_status": 0,
+      "candidate_status": 0,
+      "candidate_execution": null,
+      "candidate_requirement": "Required observed behavior; candidate execution pending. Borrowed-array positive is not waived for an unsupported receiver adjustment.",
+      "extra_arguments": [],
+      "origin": "lib020-focused-opponents-v1",
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "observations": [
+        {
+          "edition": 2021,
+          "stage": "metadata",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b6f764a29e953b3fc34c1369e7966bafdf01b07a891e54daec0caee19887d203",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "18c0760a4fc7ee3606d437059a240486b1ce080178e64a7cb681afdde46ecfad",
+            "bytes": 2944
+          }
+        },
+        {
+          "edition": 2021,
+          "stage": "object",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b6f764a29e953b3fc34c1369e7966bafdf01b07a891e54daec0caee19887d203",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "cf6712afc0231bd2e0da048a2467a8d959570382f73758b8ed38d88dd565cfcd",
+            "bytes": 1352
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "metadata",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b6f764a29e953b3fc34c1369e7966bafdf01b07a891e54daec0caee19887d203",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "7b66e7b362621f124a1b0b5f0414cee025a07a22f1c0dbd55499e0a0b364f223",
+            "bytes": 2944
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "object",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b6f764a29e953b3fc34c1369e7966bafdf01b07a891e54daec0caee19887d203",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "cf6712afc0231bd2e0da048a2467a8d959570382f73758b8ed38d88dd565cfcd",
+            "bytes": 1352
+          }
+        }
+      ]
+    },
+    {
+      "name": "duplicate-within-impl-self-call",
+      "path": "duplicate-within-impl-self-call.rs",
+      "source_sha256": "4215d1f632513f571a0fafcfe6195240a6718b227e30a200377d988c4be106c2",
+      "declared_rustc_status": 1,
+      "declared_required_error_codes": [
+        "E0034"
+      ],
+      "declared_forbidden_error_codes": [],
+      "declared_hypothesis": "The third method demands duplicate lookup through Self; retaining only the first declaration must not resolve it.",
+      "observed_rustc_status": 0,
+      "candidate_status": 0,
+      "candidate_execution": null,
+      "candidate_requirement": "Required observed behavior; candidate execution pending. Borrowed-array positive is not waived for an unsupported receiver adjustment.",
+      "extra_arguments": [],
+      "origin": "lib020-focused-opponents-v1",
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "observations": [
+        {
+          "edition": 2021,
+          "stage": "metadata",
+          "status": 0,
+          "matches_declared_prediction": false,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1c11caf0762c82ef859a20a72b6dba5a2f80c80d48b4c8fe0e5050d87fc2f82b",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "48fddccc082db93bc6b7152737b40a0eb58cd3f6b4c9acf7c5ee1bb0ed883499",
+            "bytes": 2689
+          }
+        },
+        {
+          "edition": 2021,
+          "stage": "object",
+          "status": 0,
+          "matches_declared_prediction": false,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1c11caf0762c82ef859a20a72b6dba5a2f80c80d48b4c8fe0e5050d87fc2f82b",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "14758142f17319bab8659826bd9283d76bc135c96c89d1e16cfed72b0d0c0735",
+            "bytes": 1360
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "metadata",
+          "status": 0,
+          "matches_declared_prediction": false,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1c11caf0762c82ef859a20a72b6dba5a2f80c80d48b4c8fe0e5050d87fc2f82b",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "428106f1f71777851d293a871c44db81985822a5537a033d355c34791cc2f8f0",
+            "bytes": 2689
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "object",
+          "status": 0,
+          "matches_declared_prediction": false,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1c11caf0762c82ef859a20a72b6dba5a2f80c80d48b4c8fe0e5050d87fc2f82b",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "14758142f17319bab8659826bd9283d76bc135c96c89d1e16cfed72b0d0c0735",
+            "bytes": 1360
+          }
+        }
+      ]
+    },
+    {
+      "name": "nominal-duplicate-within-impl-unused",
+      "path": "nominal-duplicate-within-impl-unused.rs",
+      "source_sha256": "d3f900616e79894fa7555f61f2b3980d0604dec5bb7c999dcddf22bbea44bff1",
+      "declared_rustc_status": 1,
+      "declared_required_error_codes": [
+        "E0592"
+      ],
+      "declared_forbidden_error_codes": [],
+      "declared_hypothesis": "Unused duplicate nominal members remain invalid even with actual core coherence policy.",
+      "observed_rustc_status": 1,
+      "candidate_status": 1,
+      "candidate_execution": null,
+      "candidate_requirement": "Required observed behavior; candidate execution pending. Borrowed-array positive is not waived for an unsupported receiver adjustment.",
+      "extra_arguments": [],
+      "origin": "lib020-focused-opponents-v1",
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "observations": [
+        {
+          "edition": 2021,
+          "stage": "metadata",
+          "status": 1,
+          "matches_declared_prediction": true,
+          "error_codes": [
+            "E0592"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4985018310cfcf34fd31fa4967bad0d2f3c8c43b98e7200b3331b7e410e014b2",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        },
+        {
+          "edition": 2021,
+          "stage": "object",
+          "status": 1,
+          "matches_declared_prediction": true,
+          "error_codes": [
+            "E0592"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4985018310cfcf34fd31fa4967bad0d2f3c8c43b98e7200b3331b7e410e014b2",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "metadata",
+          "status": 1,
+          "matches_declared_prediction": true,
+          "error_codes": [
+            "E0592"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4985018310cfcf34fd31fa4967bad0d2f3c8c43b98e7200b3331b7e410e014b2",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "object",
+          "status": 1,
+          "matches_declared_prediction": true,
+          "error_codes": [
+            "E0592"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "4985018310cfcf34fd31fa4967bad0d2f3c8c43b98e7200b3331b7e410e014b2",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "reference-slice-two-self-buckets",
+      "path": "reference-slice-two-self-buckets.rs",
+      "source_sha256": "c539dda192205b1d5ca522d89ba38c20793f6abcae5e121b007c22d68d47c7c3",
+      "declared_rustc_status": 0,
+      "declared_required_error_codes": [],
+      "declared_forbidden_error_codes": [],
+      "declared_hypothesis": "Array unsizing plus borrow must select the exact u8/u16 reference Self, with two same-name owners defeating singleton shortcuts.",
+      "observed_rustc_status": 1,
+      "candidate_status": 1,
+      "candidate_execution": null,
+      "candidate_requirement": "Required observed behavior; candidate execution pending. Borrowed-array positive is not waived for an unsupported receiver adjustment.",
+      "extra_arguments": [],
+      "origin": "lib020-focused-opponents-v1",
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "observations": [
+        {
+          "edition": 2021,
+          "stage": "metadata",
+          "status": 1,
+          "matches_declared_prediction": false,
+          "error_codes": [
+            "E0599",
+            "E0599"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "51d045c2749433fdd28da48ab7789717a6eb77744ec69a50998ec45758e2af25",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        },
+        {
+          "edition": 2021,
+          "stage": "object",
+          "status": 1,
+          "matches_declared_prediction": false,
+          "error_codes": [
+            "E0599",
+            "E0599"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "51d045c2749433fdd28da48ab7789717a6eb77744ec69a50998ec45758e2af25",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "metadata",
+          "status": 1,
+          "matches_declared_prediction": false,
+          "error_codes": [
+            "E0599",
+            "E0599"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "51d045c2749433fdd28da48ab7789717a6eb77744ec69a50998ec45758e2af25",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "object",
+          "status": 1,
+          "matches_declared_prediction": false,
+          "error_codes": [
+            "E0599",
+            "E0599"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "51d045c2749433fdd28da48ab7789717a6eb77744ec69a50998ec45758e2af25",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "reference-array-and-slice-two-self-buckets",
+      "path": "reference-array-and-slice-two-self-buckets.rs",
+      "source_sha256": "5bd988d8aed8eca83721b4140e43b75d4bf99541400a2a88a0d508b5215edfb5",
+      "declared_rustc_status": 0,
+      "declared_required_error_codes": [],
+      "declared_forbidden_error_codes": [],
+      "declared_hypothesis": "Both borrowed reference-to-array callers and direct slice callers select the precise reference Self among u8/u16 same-name owners.",
+      "observed_rustc_status": 0,
+      "candidate_status": 0,
+      "candidate_execution": null,
+      "candidate_requirement": "Required observed behavior; candidate execution pending. Borrowed-array positive is not waived for an unsupported receiver adjustment.",
+      "extra_arguments": [],
+      "origin": "lib020-focused-opponents-v2",
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "observations": [
+        {
+          "edition": 2021,
+          "stage": "metadata",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "92e824906d7fdf0fe67418e97f227367eb3e64723b69b25dd989f79f80859ecb",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "f4a72bcbc529e8d2f113a158e689a0bf9907b5e69af56c35894a22a35d0855e9",
+            "bytes": 3888
+          }
+        },
+        {
+          "edition": 2021,
+          "stage": "object",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "92e824906d7fdf0fe67418e97f227367eb3e64723b69b25dd989f79f80859ecb",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "d8a3db0bffb8fee9b10b15827c7047612b5bf68676da2e8041e28272c26a73f5",
+            "bytes": 2576
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "metadata",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "92e824906d7fdf0fe67418e97f227367eb3e64723b69b25dd989f79f80859ecb",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "44a676b19078bb3839e6908a6cb01e505361d4fa38096807397c1f2e654a2c04",
+            "bytes": 3888
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "object",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "92e824906d7fdf0fe67418e97f227367eb3e64723b69b25dd989f79f80859ecb",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "d8a3db0bffb8fee9b10b15827c7047612b5bf68676da2e8041e28272c26a73f5",
+            "bytes": 2576
+          }
+        }
+      ]
+    },
+    {
+      "name": "bare-array-two-reference-self-buckets",
+      "path": "bare-array-two-reference-self-buckets.rs",
+      "source_sha256": "672b864d7fc601cb4bfbe0914bafa514e9f16fbf5d4d5d9c196edbb3c92b57b3",
+      "declared_rustc_status": 1,
+      "declared_required_error_codes": [
+        "E0599"
+      ],
+      "declared_forbidden_error_codes": [],
+      "declared_hypothesis": "A bare array value does not acquire a reference-owner inherent method solely through array unsizing and borrowing.",
+      "observed_rustc_status": 1,
+      "candidate_status": 1,
+      "candidate_execution": null,
+      "candidate_requirement": "Required observed behavior; candidate execution pending. Borrowed-array positive is not waived for an unsupported receiver adjustment.",
+      "extra_arguments": [],
+      "origin": "lib020-focused-opponents-v2",
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "observations": [
+        {
+          "edition": 2021,
+          "stage": "metadata",
+          "status": 1,
+          "matches_declared_prediction": true,
+          "error_codes": [
+            "E0599",
+            "E0599"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "428cd0a5707cfac0d5a550318a765f5eaf411edaa5f8f629b61efa3d3872bd6b",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        },
+        {
+          "edition": 2021,
+          "stage": "object",
+          "status": 1,
+          "matches_declared_prediction": true,
+          "error_codes": [
+            "E0599",
+            "E0599"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "428cd0a5707cfac0d5a550318a765f5eaf411edaa5f8f629b61efa3d3872bd6b",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "metadata",
+          "status": 1,
+          "matches_declared_prediction": true,
+          "error_codes": [
+            "E0599",
+            "E0599"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "428cd0a5707cfac0d5a550318a765f5eaf411edaa5f8f629b61efa3d3872bd6b",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "object",
+          "status": 1,
+          "matches_declared_prediction": true,
+          "error_codes": [
+            "E0599",
+            "E0599"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "428cd0a5707cfac0d5a550318a765f5eaf411edaa5f8f629b61efa3d3872bd6b",
+          "artifact_before_cleanup": {
+            "exists": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "duplicate-self-call-reached-from-outside",
+      "path": "duplicate-self-call-reached-from-outside.rs",
+      "source_sha256": "cab3f01f3d09ec35ac4eb355a35efcd6bb9d4ae866e11f767375617b57740377",
+      "declared_rustc_status": 0,
+      "declared_required_error_codes": [],
+      "declared_forbidden_error_codes": [],
+      "declared_hypothesis": "The observed accepted Self::duplicate path remains accepted when an outside function reaches the thirdmethod, including object emission.",
+      "observed_rustc_status": 0,
+      "candidate_status": 0,
+      "candidate_execution": null,
+      "candidate_requirement": "Required observed behavior; candidate execution pending. Borrowed-array positive is not waived for an unsupported receiver adjustment.",
+      "extra_arguments": [],
+      "origin": "lib020-focused-opponents-v2",
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "observations": [
+        {
+          "edition": 2021,
+          "stage": "metadata",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "dc32249781b0d2f6fbdba00718df26a2cce960fe5434987ec1a3494b512543c5",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "15d6e8319d5018dbd192a685a3a3fff6e9e361ca83a6b2387675f0c879d4aae5",
+            "bytes": 2828
+          }
+        },
+        {
+          "edition": 2021,
+          "stage": "object",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "dc32249781b0d2f6fbdba00718df26a2cce960fe5434987ec1a3494b512543c5",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "41a7b577733e28377603d4c698f770aaf8a40becc5ad963af81e33dc0696e541",
+            "bytes": 1688
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "metadata",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "dc32249781b0d2f6fbdba00718df26a2cce960fe5434987ec1a3494b512543c5",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "128dcd74f7cd7b35bc59daecee2df0e447f2080e62059d73029f31155dfbb7c3",
+            "bytes": 2828
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "object",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "dc32249781b0d2f6fbdba00718df26a2cce960fe5434987ec1a3494b512543c5",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "41a7b577733e28377603d4c698f770aaf8a40becc5ad963af81e33dc0696e541",
+            "bytes": 1688
+          }
+        }
+      ]
+    },
+    {
+      "name": "duplicate-same-impl-external-qualified",
+      "path": "duplicate-same-impl-external-qualified.rs",
+      "source_sha256": "dee952162c104e13705d84de33ef977f5277f21819a50250f86dee7c62228303",
+      "declared_rustc_status": 0,
+      "declared_required_error_codes": [],
+      "declared_forbidden_error_codes": [],
+      "declared_hypothesis": "External query of duplicate members within one primitive impl may select first actual member rather than create an ambiguity; this is a hypothesis, not a changed contract.",
+      "observed_rustc_status": 0,
+      "candidate_status": 0,
+      "candidate_execution": null,
+      "candidate_requirement": "Required observed behavior; candidate execution pending. Borrowed-array positive is not waived for an unsupported receiver adjustment.",
+      "extra_arguments": [],
+      "origin": "lib020-focused-opponents-v3",
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "observations": [
+        {
+          "edition": 2021,
+          "stage": "metadata",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7657b1f9d271f62715441355cd5879667bca28ecf8e0c43b7703f54ae629b4b1",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "fcedad0db2e674ba77f793e7dbf3d2f3036f3f340b72cb6b031d485d3609b9ad",
+            "bytes": 2700
+          }
+        },
+        {
+          "edition": 2021,
+          "stage": "object",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7657b1f9d271f62715441355cd5879667bca28ecf8e0c43b7703f54ae629b4b1",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "375123d7b7eda8a54c88ae6b2e35edbf16347af5c758ef2a4fd5c4a9cd0d9d61",
+            "bytes": 1352
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "metadata",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7657b1f9d271f62715441355cd5879667bca28ecf8e0c43b7703f54ae629b4b1",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "0d2e2dc30611ba2433e5b8983a15e03c869e1b531b3a552068454a3eadc6fda9",
+            "bytes": 2700
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "object",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "7657b1f9d271f62715441355cd5879667bca28ecf8e0c43b7703f54ae629b4b1",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "375123d7b7eda8a54c88ae6b2e35edbf16347af5c758ef2a4fd5c4a9cd0d9d61",
+            "bytes": 1352
+          }
+        }
+      ]
+    },
+    {
+      "name": "duplicate-same-impl-external-dot",
+      "path": "duplicate-same-impl-external-dot.rs",
+      "source_sha256": "0c4f62e0700fe67780fb251f6cab8420c43d50ab0a92378005cabe1c119dd3e9",
+      "declared_rustc_status": 0,
+      "declared_required_error_codes": [],
+      "declared_forbidden_error_codes": [],
+      "declared_hypothesis": "External query of duplicate members within one primitive impl may select first actual member rather than create an ambiguity; this is a hypothesis, not a changed contract.",
+      "observed_rustc_status": 0,
+      "candidate_status": 0,
+      "candidate_execution": null,
+      "candidate_requirement": "Required observed behavior; candidate execution pending. Borrowed-array positive is not waived for an unsupported receiver adjustment.",
+      "extra_arguments": [],
+      "origin": "lib020-focused-opponents-v3",
+      "profile": [
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--crate-name=lib020_opponent",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "-Copt-level=0",
+        "-Cdebug-assertions=no",
+        "-Coverflow-checks=no"
+      ],
+      "observations": [
+        {
+          "edition": 2021,
+          "stage": "metadata",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "29e630b904c52f24353cd3a216df2e5bdaf08818577efaa4397f9addfdf902ff",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "cb8e30b6388232e7171d903c8172768cada8461a5346e8970718d047e1c18a33",
+            "bytes": 2686
+          }
+        },
+        {
+          "edition": 2021,
+          "stage": "object",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "29e630b904c52f24353cd3a216df2e5bdaf08818577efaa4397f9addfdf902ff",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "375123d7b7eda8a54c88ae6b2e35edbf16347af5c758ef2a4fd5c4a9cd0d9d61",
+            "bytes": 1352
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "metadata",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "29e630b904c52f24353cd3a216df2e5bdaf08818577efaa4397f9addfdf902ff",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "f352eeb52a23f173c2ba7ce23ef6d845befba0f33ee9894635a04547d3dafaf7",
+            "bytes": 2686
+          }
+        },
+        {
+          "edition": 2024,
+          "stage": "object",
+          "status": 0,
+          "matches_declared_prediction": true,
+          "error_codes": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "29e630b904c52f24353cd3a216df2e5bdaf08818577efaa4397f9addfdf902ff",
+          "artifact_before_cleanup": {
+            "exists": true,
+            "sha256": "375123d7b7eda8a54c88ae6b2e35edbf16347af5c758ef2a4fd5c4a9cd0d9d61",
+            "bytes": 1352
+          }
+        }
+      ]
     }
+  ],
+  "open_requirements": [
+    "Which duplicate body executes is unobserved; metadata/object acceptance does not prove the first or second result.",
+    "Mixed member kinds, different duplicate receiver/signature shapes and nonroot duplicate hygiene selection remain unqualified.",
+    "All newly retained candidate contracts are unexecuted; borrowed-array unsizing remains a required positive control."
   ]
 }

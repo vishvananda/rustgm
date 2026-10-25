@@ -44,6 +44,8 @@ fn primitive_owner_permission_uses_actual_attributes_and_nominal_ownership() -> 
         ("core-flag-disabled-cfg", false),
         ("disabled-primitive-owner", true),
         ("raw-mutability-exclusion", false),
+        ("macro-marker-without-global-request", false),
+        ("macro-marker-with-global-request", true),
     ])
 }
 
@@ -73,6 +75,9 @@ fn structural_members_use_full_self_and_real_receiver_adjustments() -> TestResul
         ("never-associated-function", true),
         ("generic-primitive-bound-success", true),
         ("generic-primitive-bound-failure", false),
+        ("reference-slice-two-self-buckets", false),
+        ("reference-array-and-slice-two-self-buckets", true),
+        ("bare-array-two-reference-self-buckets", false),
     ])
 }
 
@@ -92,5 +97,10 @@ fn structural_duplicates_remain_demanded_without_weakening_nominal_coherence() -
         ("fn-pointer-alias-qualified-call", false),
         ("fn-pointer-trait-method-control", true),
         ("fn-pointer-member-alternative", false),
+        ("duplicate-within-impl-self-call", true),
+        ("nominal-duplicate-within-impl-unused", false),
+        ("duplicate-self-call-reached-from-outside", true),
+        ("duplicate-same-impl-external-qualified", true),
+        ("duplicate-same-impl-external-dot", true),
     ])
 }
