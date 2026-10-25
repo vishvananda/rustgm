@@ -3,7 +3,7 @@ use super::{Format, Unsigned};
 
 pub(super) fn scan(text: &str, format: Format) -> Result<(Unsigned, i64, i64), &'static str> {
     let precision = i64::from(format.precision);
-    let kept = (precision * 30103 + (format.maximum - 1 + precision) * 69897) / 100000 + 3;
+    let kept = (precision * 30_103 + (format.maximum - 1 + precision) * 69_897) / 100_000 + 3;
     let mut digits = Unsigned::default();
     let mut exponent = 0_i64;
     let mut significant = 0_i64;

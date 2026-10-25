@@ -29,7 +29,7 @@ pub(super) fn round(text: &str, half: bool) -> Result<u128, &'static str> {
     } else {
         Format {
             precision: 113,
-            maximum: 16383,
+            maximum: 16_383,
         }
     };
     let (digits, exponent, significant) = decimal::scan(text, format)?;
@@ -37,10 +37,10 @@ pub(super) fn round(text: &str, half: bool) -> Result<u128, &'static str> {
         return Ok(0);
     }
     let order = significant + exponent;
-    if (order - 1) * 33219 >= (format.maximum + 1) * 10000 {
+    if (order - 1) * 33_219 >= (format.maximum + 1) * 10_000 {
         return format.infinity();
     }
-    if order * 33220 < (1 - format.maximum - i64::from(format.precision)) * 10000 {
+    if order * 33_220 < (1 - format.maximum - i64::from(format.precision)) * 10_000 {
         return Ok(0);
     }
     let mut numerator = digits;
@@ -104,7 +104,7 @@ fn rational(num: &Unsigned, den: &Unsigned, format: Format) -> Result<u128, &'st
     } else {
         0
     };
-    if biased >= 2 * format.maximum + 1 {
+    if biased > 2 * format.maximum {
         return format.infinity();
     }
     let biased = u128::try_from(biased).map_err(|_| "invalid wide literal exponent")?;

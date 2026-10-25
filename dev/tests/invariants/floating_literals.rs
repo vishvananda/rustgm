@@ -47,18 +47,24 @@ fn numeric_shape_preserves_known_width_and_rejects_real_invalid_suffixes() -> Te
             FloatType::F128,
         ),
     ] {
-        let token = crate::lex::Lexer::new(source)?
-            .next_token()?
+        let token = crate::lex::Lexer::new(source)
+            .map_err(|error| error.message)?
+            .next_token()
+            .map_err(|error| error.message)?
             .ok_or("literal token")?;
-        let Some(Value::Float(value)) = super::interpret(source, token)? else {
+        let Some(Value::Float(value)) =
+            super::interpret(source, token).map_err(|error| error.message)?
+        else {
             return Err("known suffix was not float".into());
         };
         assert_eq!(value.suffix, Some(expected));
         assert!(matches!(value.decimal, Cow::Borrowed(_)));
     }
     for source in ["1.0f129", "0b1f128", "1.0f16suffix", "1e_f128"] {
-        let token = crate::lex::Lexer::new(source)?
-            .next_token()?
+        let token = crate::lex::Lexer::new(source)
+            .map_err(|error| error.message)?
+            .next_token()
+            .map_err(|error| error.message)?
             .ok_or("negative token")?;
         assert!(super::interpret(source, token).is_err(), "{source}");
     }
