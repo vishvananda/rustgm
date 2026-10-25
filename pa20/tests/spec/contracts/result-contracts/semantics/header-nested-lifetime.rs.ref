@@ -30,11 +30,11 @@ type 27 function-item def=13 signature=26
 type 28 function binders=0 parameters=[11] result=11 unsafe=false
 type 29 function-item def=14 signature=28
 type 30 reference mutable=false region=bound:0:0 referent=11
-type 31 parameter def=25 index=1
+type 31 parameter def=25 index=0
 type 32 function binders=1 parameters=[31] result=1 unsafe=false
 type 33 function binders=0 parameters=[31] result=1 unsafe=false
 type 34 function-item def=25 signature=32
-type 35 parameter def=26 index=1
+type 35 parameter def=26 index=0
 type 36 projection def=17 self=35 trait=15 arguments=[region:bound:0:0] family arguments=[]
 type 37 projection def=20 self=36 trait=18 arguments=[region:bound:0:0] family arguments=[]
 type 38 function binders=1 parameters=[37] result=1 unsafe=false

@@ -4,6 +4,9 @@ mod imported;
 #[path = "header_attributes/declared_origins.rs"]
 mod local;
 #[cfg(test)]
+#[path = "../../tests/invariants/nodeless_owners.rs"]
+mod owner_compatibility_tests;
+#[cfg(test)]
 #[path = "../../tests/invariants/transported_annotations.rs"]
 mod tests;
 use crate::{
@@ -136,4 +139,77 @@ pub(super) fn has_imported(facts: &Declarations, definition: DefId) -> bool {
         .and_then(|owner| owner.headers.as_deref())
         .and_then(|ledger| ledger.imported.as_deref())
         .is_some_and(|headers| headers.contains(definition))
+}
+
+/// The resolver's local crate owner has no declaration node. That unsupported
+/// attribute owner is distinct from an imported or missing header contract.
+pub(super) fn local_crate_owner(report: &Report, definition: DefId) -> Result<bool, Error> {
+    use crate::resolve::{
+        model::{Access, DefKind, Namespace},
+        package::ModuleId,
+        unit::FileId,
+    };
+    if report.resolution.crate_root != Some(definition) {
+        return Ok(false);
+    }
+    let invalid =
+        || Error::unlocated("local crate attribute owner changed its canonical root identity");
+    let actual = report
+        .resolution
+        .definitions
+        .get(definition.0 as usize)
+        .ok_or_else(invalid)?;
+    let scope = report
+        .resolution
+        .module_scopes
+        .first()
+        .copied()
+        .ok_or_else(invalid)?;
+    let module = report.package.modules.first().ok_or_else(invalid)?;
+    let lexical = report
+        .resolution
+        .scopes
+        .get(scope.0 as usize)
+        .ok_or_else(invalid)?;
+    if actual.node.is_some()
+        || actual.kind != DefKind::Module
+        || actual.namespace != Namespace::Type
+        || actual.access != Access::Public
+        || actual.name != module.name
+        || actual.scope != scope
+        || actual.members != Some(scope)
+        || lexical.parent.is_some()
+        || lexical.module != ModuleId(0)
+        || !lexical.barrier
+        || !lexical.label_barrier
+        || lexical.associated
+        || lexical.trait_access.is_some()
+        || lexical.nominal_self.is_some()
+        || module.parent.is_some()
+        || module.declaration.is_some()
+        || module.file != FileId(0)
+    {
+        return Err(invalid());
+    }
+    let unit = report
+        .package
+        .units
+        .get(module.file.0 as usize)
+        .ok_or_else(invalid)?;
+    if unit.include_context.is_some()
+        || module.root != unit.configured.ast.root
+        || unit.configured.active.get(module.root.get() as usize) != Some(&true)
+    {
+        return Err(invalid());
+    }
+    if let Some(imported) = &report.resolution.crates
+        && let Some(catalog) = imported.origin_catalog().map_err(Error::unlocated)?
+        && catalog
+            .declaration_if_imported(definition)
+            .map_err(Error::unlocated)?
+            .is_some()
+    {
+        return Err(invalid());
+    }
+    Ok(true)
 }

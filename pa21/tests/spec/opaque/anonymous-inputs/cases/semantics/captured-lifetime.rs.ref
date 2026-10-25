@@ -31,7 +31,7 @@ type 28 function-item def=17 signature=27
 type 29 reference mutable=false region=bound:0:0 referent=11
 type 30 function binders=1 parameters=[29] result=11 unsafe=false
 type 31 function-item def=19 signature=30
-type 32 parameter def=20 index=1
+type 32 parameter def=20 index=0
 type 33 function binders=1 parameters=[32,29] result=11 unsafe=false
 type 34 reference mutable=false region=bound:1:0 referent=11
 type 35 function binders=0 parameters=[32,34] result=11 unsafe=false
