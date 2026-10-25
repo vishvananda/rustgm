@@ -111,8 +111,11 @@ four files unchanged. Stricter attribute checking separately exposes the earlier
   allocation helper are integrated at source `03190e3c`; fourteen merged private
   controls, formatting, architecture audit and private strict Clippy pass in
   157.01 seconds in CI. All 198 harness tests also pass. All canonical Provided
-  import guards remain closed. A distinct nonpublishing reservation/typed-input
-  session is next; raw data is not an execution proof.
+  import guards remain closed. The distinct nonpublishing reservation/typed-input
+  session at source `3229ee3e` also passes nine focused controls with formatting,
+  audit and strict Clippy in 166.66 seconds. It owns actual reservations and a
+  private catalog without interning or semantic publication. Named lifetimes,
+  demanded recipes and fresh body/instance proof remain required.
 - B: the bounded LIB-021 component at `ca2f0a80` passes 1,519 private tests,
   24 frontend cases, 84 native contexts, 26 layouts and seven CLI controls.
   Its merge preserving current macro permissions and A's source data is public
