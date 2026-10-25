@@ -56,6 +56,7 @@ mod resources;
 mod role_declarations;
 mod transcription;
 mod unavailable;
+mod unnamed_visibility;
 
 pub enum Body {
     Declarative(Compiled),
@@ -260,9 +261,9 @@ pub fn analyze_with_context(
 ) -> Result<Report, Error> {
     let mut engine = Engine::create(root, sources, config, context)?;
     let result = engine.run();
-    result.map_err(|error| engine.diagnostic(error))?;
+    result.map_err(|error| engine.retain_visibility_warnings(engine.diagnostic(error)))?;
     super::bindings::validate_features(&engine.loader.package)
-        .map_err(|error| engine.diagnostic(error))?;
+        .map_err(|error| engine.retain_visibility_warnings(engine.diagnostic(error)))?;
     if let Some(producer) = engine
         .attribute_effects
         .as_deref_mut()
@@ -283,9 +284,10 @@ pub fn analyze_with_context(
         names_resolved: false,
         attribute_effects: engine.attribute_effects,
     };
-    super::bindings::validate_crate_options(&report).map_err(|error| report.diagnostic(error))?;
-    cfg_gates::validate_attributes(&report)?;
-    super::float_features::validate_literals(&report).map_err(|error| report.diagnostic(error))?;
+    let validation = super::bindings::validate_crate_options(&report)
+        .and_then(|()| cfg_gates::validate_attributes(&report))
+        .and_then(|()| super::float_features::validate_literals(&report));
+    validation.map_err(|error| report.retain_visibility_warnings(report.diagnostic(error)))?;
     Ok(report)
 }
 impl<'a, S: Sources> Engine<'a, S> {
@@ -701,6 +703,7 @@ impl<'a, S: Sources> Engine<'a, S> {
                     item,
                     visit.introduction,
                 )?);
+                self.unnamed_visibility(visit, item, tail)?;
             }
         }
         if let Kind::Item(index) = kind {

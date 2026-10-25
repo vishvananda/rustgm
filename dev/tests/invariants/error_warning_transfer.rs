@@ -44,7 +44,7 @@ fn repeated_single_warning_merges_visit_only_new_records() {
             .enumerate()
             .all(|(index, warning)| warning.diagnostic.span.start as usize == index)
     );
-    assert!(!error.warning_limit_note);
+    assert_eq!(error.warning_limit_note, super::RetentionNote::Complete);
 }
 #[test]
 fn retention_limit_keeps_the_original_failure_and_one_bounded_note() {

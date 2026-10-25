@@ -1,0 +1,54 @@
+{
+  "state": "independent outcomes observed; compiler candidate unrun",
+  "original_frozen_plan_sha256": "d82346485dc83998ae7d723eee351031b4d49b33bcae6b33950b4db832f9ab61",
+  "original_visibility_plan_sha256": "e2646be271402b440e1b95408c86b25786d5860d998399ddedf56edff4d12a4e",
+  "observations": [
+    {
+      "run": 40216397961,
+      "observations": 38,
+      "infra": 0,
+      "disagreements": 4,
+      "artifact_sha256": "cc5bae8a2e719eaa534b7612cbb9879fe4fdf987219caa2c7ec6cb6452dc5ede"
+    },
+    {
+      "run": 40218068532,
+      "observations": 28,
+      "infra": 0,
+      "disagreements": 2,
+      "artifact_sha256": "38cdcb8254009d2f162f0f13f8f302b2b976fd5ad8e9696099ca11992002afb3"
+    }
+  ],
+  "amended_warning_contract": {
+    "pub-repeat": [
+      "unused_visibilities",
+      "unused_visibilities"
+    ],
+    "named-privacy": [
+      "unused_visibilities"
+    ],
+    "visibility-macro-forwarded": [
+      "unused_visibilities"
+    ]
+  },
+  "frozen_sources": {
+    "module-repeat": "pa6/tests/spec/unnamed-constants/module-repeat.rs",
+    "block-repeat": "pa6/tests/spec/unnamed-constants/block-repeat.rs",
+    "nested-distinct-scopes": "pa6/tests/spec/unnamed-constants/nested-distinct-scopes.rs",
+    "named-duplicate": "pa6/tests/spec/unnamed-constants/named-duplicate.rs",
+    "trait-unnamed": "pa6/tests/spec/unnamed-constants/trait-unnamed.rs",
+    "inherent-unnamed": "pa6/tests/spec/unnamed-constants/inherent-unnamed.rs",
+    "named-associated": "pa6/tests/spec/unnamed-constants/named-associated.rs",
+    "macro-repeat": "pa8/tests/spec/expansion/unnamed-constants.rs",
+    "unused-wrong-type": "pa25/tests/spec/unnamed-constants/unused-wrong-type.rs",
+    "unused-divzero": "pa25/tests/spec/unnamed-constants/unused-divzero.rs",
+    "unused-function-divzero": "pa25/tests/spec/unnamed-constants/unused-function-divzero.rs",
+    "macro-wrong-type": "pa25/tests/spec/unnamed-constants/macro-wrong-type.rs",
+    "macro-divzero": "pa25/tests/spec/unnamed-constants/macro-divzero.rs",
+    "named-privacy": "pa25/tests/spec/unnamed-constants/named-privacy.rs",
+    "pub-repeat": "pa25/tests/spec/unnamed-constants/pub-repeat.rs",
+    "repeated-anonymous-import": "pa25/tests/spec/unnamed-constants/repeated-anonymous-import.rs",
+    "alignment-reducer": "pa31/tests/spec/unnamed-constants/alignment-reducer.rs"
+  },
+  "scope": "PA5 parsed names/spans preserved; PA6 real unnameable declarations; PA8 generated identity; PA25 typing/CTFE and semantic lint warnings; PA31 real unchanged alignment frontier reducer",
+  "pending": "literal macro multiple-invocation dedup opponent and unexecuted macro opacity to be observed independently before candidate claims; active PA6/PA8 selected generated references not yet written"
+}

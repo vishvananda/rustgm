@@ -175,6 +175,9 @@ impl Policies {
     pub(super) fn unused_attributes(&self, key: NodeKey) -> Level {
         self.at(key).unused_attributes
     }
+    pub(super) fn unused_visibilities(&self, key: NodeKey) -> Level {
+        self.at(key).unused_visibilities
+    }
     pub(super) fn duplicate_macro_attributes(&self, key: NodeKey) -> Level {
         self.at(key).duplicate_macro_attributes
     }
