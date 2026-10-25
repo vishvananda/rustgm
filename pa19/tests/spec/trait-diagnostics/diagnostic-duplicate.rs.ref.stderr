@@ -1,0 +1,2 @@
+warning[malformed_diagnostic_attributes]: file 0: 123: duplicate on_unimplemented option
+ERROR: file 0: 123: multiple rustc_on_unimplemented contracts are not supported

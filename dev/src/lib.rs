@@ -24,6 +24,9 @@ pub mod types;
 #[cfg(test)]
 #[path = "../tests/helpers/resolve.rs"]
 mod test_source;
+#[cfg(test)]
+#[path = "../tests/helpers/held_sessions.rs"]
+mod unpaid_cases;
 
 #[cfg(test)]
 #[path = "../tests/helpers/locations.rs"]

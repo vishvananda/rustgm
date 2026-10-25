@@ -87,6 +87,14 @@ producer and raw original numbering are public at `f8cff8ba`, with 11 exact
 merged controls passing in 54.15 seconds. These smaller checkpoints do not
 replace assignment-release acceptance or claim a new core artifact.
 
+Periodic [full qualification of `66bd3750`](https://github.com/vishvananda/rustgm/actions/runs/40170960696)
+passed in 20 minutes 49 seconds in hosted CI: 3,538 regular release tests,
+343 native tests, all 8,385 active text cases, 1,581 separate debug invariants,
+strict lint/audits, harness, host-build and independent Rust checks. This is the
+public UB-policy integration before the newer Provided codec/ordinal changes;
+the latter have their separate fourteen-control focused gate. Full qualification
+does not block each development edit or replace the five-minute iteration budget.
+
 The preceding [scoped/byte checkpoint](scoped-bytes-checkpoint.md) is the
 performance baseline: 125 inputs, 116 equal-output pairs, 100 native
 preflights and 68 growth controls. Seven measured RSS costs remain recorded.
@@ -103,8 +111,11 @@ four files unchanged. Stricter attribute checking separately exposes the earlier
   allocation helper are integrated at source `03190e3c`; fourteen merged private
   controls, formatting, architecture audit and private strict Clippy pass in
   157.01 seconds in CI. All 198 harness tests also pass. All canonical Provided
-  import guards remain closed. A distinct nonpublishing reservation/typed-input
-  session is next; raw data is not an execution proof.
+  import guards remain closed. The distinct nonpublishing reservation/typed-input
+  session at source `3229ee3e` also passes nine focused controls with formatting,
+  audit and strict Clippy in 166.66 seconds. It owns actual reservations and a
+  private catalog without interning or semantic publication. Named lifetimes,
+  demanded recipes and fresh body/instance proof remain required.
 - B: the bounded LIB-021 component at `ca2f0a80` passes 1,519 private tests,
   24 frontend cases, 84 native contexts, 26 layouts and seven CLI controls.
   Its merge preserving current macro permissions and A's source data is public
@@ -154,7 +165,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-018 | P0; preceding unchanged-core failure at `concat_bytes`, line 1126 | Source-declared byte concatenation builtin, typed byte/string/array operands and exact rejection rules | PA8 builtin expansion + PA31 source identity / PA31 complete providers, plus PA8 where independently expressible | C | Local typed operand/source identity contracts pass combined ca54609a release/native and performance qualification. The same CLI original core reaches LIB-019. Foreign macro transport and wider source contracts remain required. |
 | LIB-019 | P0; current unchanged-core failure at `autodiff_forward`, line 1553 | Source attribute macro identity, declaration/import kinds and genuine invocation semantics | PA31 source compiler bindings; PA38 actual procedural/attribute execution / PA31 declaration/import controls, PA38 execution | C | C checkpoint `366ca380` has focused passing evidence for thirteen private controls, seven measured layout callers and nine frontend controls, including mixed warning/error transport. Source integration onto `60386b99` is unqualified. Original independent disagreements and historical candidate failures remain retained; native/periodic CI and original-core acceptance are still required. The approved strict Test-body demand receipt is a new unqualified source draft; body-root/header demands and actual test harness generation remain required boundaries. |
 | LIB-020 | P0; stricter original-root failure at `lib.rs:65` | Actual rustc_coherence_is_core and primitive inherent implementation policy, lookup and coherence | PA31 binding + PA19/20 language/index; PA29 transport / PA31 source reproductions plus applicable earlier controls | Integrator | All 44 source predictions and twelve clarifiers ran. Retain three disproved hypotheses: unused primitive duplicates (including same impl) are accepted; admitted function-pointer impls do not supply callable inherent members. Actual primitive implementation is still missing. Reuse typed structural heads and nominal fast path, retain complete Self/conditions; crate name or known attribute spelling grants no authority. |
-| LIB-021 | P0; active original crate policy at `lib.rs:66` | rustc_preserve_ub_checks and actual UB-check intrinsic/runtime/CTFE behavior | PA28 operations + PA25 CTFE + PA31 policy + PA29 transport / PA31 complete source providers | B, coordinated with C/A | Independent producer/consumer and MIR observations include thirteen native policy cases; cfg-demand follow-ups retain a syntax-confounded hypothesis. Typed UB/session/config/owned source-identity implementation is in progress and unqualified. Distinguish CTFE returning true, producer code and deferred consumer specialization; CPPGM remains unchanged. |
+| LIB-021 | P0; active original crate policy at `lib.rs:66` | rustc_preserve_ub_checks and actual UB-check intrinsic/runtime/CTFE behavior | PA28 operations + PA25 CTFE + PA31 policy + PA29 transport / PA31 complete source providers | B, coordinated with C/A | Typed UB/session/config/owned source identity is integrated at `66bd3750` and passes focused and periodic full CI qualification. Actual CTFE, producer code and deferred consumer specialization remain distinct. Imported policy transport and the combined Test-body/configuration receipt are still required; CPPGM remains unchanged. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):

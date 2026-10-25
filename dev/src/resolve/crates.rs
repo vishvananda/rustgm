@@ -1,6 +1,8 @@
 //! External metadata keeps its origin while local scopes receive canonical IDs.
 mod original_declarations;
 mod public_names;
+#[path = "crates/dormant_catalog.rs"]
+pub(crate) mod unpaid_provided;
 use super::{
     index::Resolver,
     model::{Access, Binding, DefId, DefKind, Definition, Namespace, Origin, ScopeId},
@@ -12,6 +14,7 @@ use crate::support::crates::{
     Namespace as WireNamespace, Record, Static,
 };
 use crate::support::hash::HashMap;
+pub(crate) use original_declarations::Work as ReservationWork;
 use std::sync::Arc;
 
 pub struct Imported {
@@ -163,34 +166,7 @@ impl Resolver<'_> {
         let artifacts = Arc::clone(&dependencies);
         let mut imported = Imported::new(dependencies);
         for (artifact_index, artifact) in artifacts.artifacts().iter().enumerate() {
-            let scope = self.new_scope(None, ModuleId(0), true)?;
-            let name = self
-                .package
-                .names
-                .intern(artifact.identity().name())
-                .map_err(error)?;
-            let root = DefId(
-                u32::try_from(self.facts.definitions.len())
-                    .map_err(|_| error("too many imported definitions"))?,
-            );
-            self.facts.definitions.push(Definition {
-                name,
-                namespace: Namespace::Type,
-                kind: DefKind::Module,
-                scope,
-                node: None,
-                access: Access::Public,
-                members: Some(scope),
-            });
-            imported.definitions.insert(
-                ExternalDef::new(
-                    artifact.identity().clone(),
-                    Vec::new(),
-                    ExternalKind::Module,
-                )
-                .map_err(error)?,
-                root,
-            );
+            let scope = self.reserve_artifact_root(artifact, &mut imported)?;
             if artifact.public_names().is_some() {
                 self.reserve_public_modules(scope, artifact, &mut imported)?;
             }
@@ -254,6 +230,41 @@ impl Resolver<'_> {
         imported.origins.freeze().map_err(error)?;
         self.facts.crates = Some(Box::new(imported));
         Ok(())
+    }
+    fn reserve_artifact_root(
+        &mut self,
+        artifact: &Interface,
+        imported: &mut Imported,
+    ) -> Result<ScopeId, Error> {
+        let scope = self.new_scope(None, ModuleId(0), true)?;
+        let name = self
+            .package
+            .names
+            .intern(artifact.identity().name())
+            .map_err(error)?;
+        let root = DefId(
+            u32::try_from(self.facts.definitions.len())
+                .map_err(|_| error("too many imported definitions"))?,
+        );
+        self.facts.definitions.push(Definition {
+            name,
+            namespace: Namespace::Type,
+            kind: DefKind::Module,
+            scope,
+            node: None,
+            access: Access::Public,
+            members: Some(scope),
+        });
+        imported.definitions.insert(
+            ExternalDef::new(
+                artifact.identity().clone(),
+                Vec::new(),
+                ExternalKind::Module,
+            )
+            .map_err(error)?,
+            root,
+        );
+        Ok(scope)
     }
     fn import_nominal_items(
         &mut self,

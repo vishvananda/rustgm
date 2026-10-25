@@ -20,6 +20,9 @@ def fingerprint(root):
               "scripts/rust-module-roles.json", "scripts/maintainer_batch.py",
               "scripts/maintainer_suites.py", "scripts/storage.py", "scripts/resource_runner.py",
               "scripts/resource_policy.py", "scripts/resource_locks.py")]
+    paths += [root / path for path in ("assignments.json", "Makefile", "scripts/assignment_metadata.py",
+              "scripts/course.py", "scripts/check_native.py", "scripts/check_layouts.py", "scripts/check_syntax.py")]
+    paths += sorted(root.glob("pa*/tests/manifest.json"))
     return {str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest() for path in paths}
 
 
@@ -77,6 +80,7 @@ def execute(root, args, steps):
     # Fingerprint content rather than just HEAD: dirty worker snapshots are normal.
     steps.receipt["sources"] = fingerprint(root)
     steps.save()
+    steps.run("assignment-metadata", [sys.executable, "scripts/assignment_metadata.py"])
     steps.run("format", ["cargo", "fmt", "--manifest-path", "dev/Cargo.toml", "--all", "--", "--check"])
     python = root / "obj/audit-venv/bin/python"
     if not python.is_file():

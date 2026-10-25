@@ -2027,7 +2027,8 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/token_trees.rs",
-      "cfg": [
+      "args": [
+        "--cfg",
         "test"
       ]
     }

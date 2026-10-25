@@ -1,0 +1,1 @@
+ERROR: file 0: 74: must_use attribute cannot use an unsafe wrapper

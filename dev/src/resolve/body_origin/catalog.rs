@@ -157,6 +157,13 @@ impl CatalogSlot {
     }
 }
 impl Catalog {
+    /// A private transaction can finish its uniquely owned catalog without
+    /// installing it into a resolver inventory or sharing a mutable owner.
+    pub(crate) fn freeze_owned(&mut self) -> Result<(), &'static str> {
+        self.charge(1)?;
+        self.frozen = true;
+        Ok(())
+    }
     pub(crate) fn new(limits: Limits) -> Result<Self, &'static str> {
         if size_of::<Self>() > limits.bytes {
             return Err("imported body catalog exceeds storage budget");
@@ -338,7 +345,15 @@ impl Catalog {
         definitions: &[Definition],
         input: Input,
     ) -> Result<Installed, &'static str> {
-        super::publication::install(self, definitions, input)
+        super::publication::install(self, definitions, input, |_| Ok(()))
+    }
+    pub(crate) fn install_charged(
+        &mut self,
+        definitions: &[Definition],
+        input: Input,
+        before_allocation: impl FnOnce(usize) -> Result<(), &'static str>,
+    ) -> Result<Installed, &'static str> {
+        super::publication::install(self, definitions, input, before_allocation)
     }
 }
 impl Installed {
