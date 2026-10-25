@@ -1,6 +1,7 @@
 # Private source-module namespace prerequisite
 
-This checkpoint is under development. It adds no source descriptor/profile, wire tag,
+This private checkpoint is qualified on compiler `b09bf823`; public admission remains
+closed. It adds no source descriptor/profile, wire tag,
 Interface, public SourceClient namespace mode, body execution or CTFE permission.
 The original core artifact remains unavailable. PA29 owns the declaration/namespace
 and catalog contract; PA31 owns the original-source and source-provider fixtures.
@@ -59,3 +60,45 @@ legitimate provider-owned impls. Merely widening ordinary_functions() would eras
 current Unrestricted-only invariant and is prohibited. Original ZeroablePrimitive also
 still needs its actual unsafe/associated-result/stability contracts. Broader schema,
 consumer and publication work requires a separate review and qualification.
+
+
+## Focused qualification
+
+[Hosted continuation 40226921430](https://github.com/vishvananda/rustgm/actions/runs/40226921430)
+passes the two new groups and three existing import-domain, codec and hot-layout
+sentinels. Its missing-only library build takes 76.216 seconds and exact five-test
+execution takes 0.064 seconds. It authenticates all 2,609 source fingerprints,
+fixtures, the pinned toolchain and the unchanged mandatory CLI. The retained CLI
+SHA-256 is `656a10dc4769edf1c9e5c255fe64eabf4cc91b71f4d395322e7df7e2abf4f7b6`.
+The same workflow also passes 215 harness tests, upstream contracts and seven audit
+cache controls. No local Cargo command or new oracle/native/text matrix was run.
+
+The continuation retains the successful production/private strict Clippy, metadata,
+formatting and architecture checks from run 40226367780 using its raw hashes and
+complete before/after source equality. That run's timed-out library build remains
+failed; no test pass is attributed to it. Earlier run 40225831933 passes all five
+predecessor controls, but predates the final prepayment opponent. The earlier two
+Clippy failures remain retained too. Fixture contracts record pre-execution predictions;
+these linked receipts record the resulting candidate qualification.
+
+The final controls measure these cold record sizes in bytes: raw namespace 56,
+binding 40, snapshot 168, work observations 40, pending catalog 3,352 and owned
+catalog 3,296. Existing Columns 592, SourceRows 616, Package 256 and Report 3,040
+remain unchanged. No fields are added to the existing hot compiler records.
+The source and remap storage counters are conservative accounted envelopes, not
+process RSS or allocator-observation claims.
+
+| Alias width | Comparisons | Compared bytes | Retained bytes | Peak bytes |
+| --- | ---: | ---: | ---: | ---: |
+| 8 | 67 | 332 | 13,987 | 21,179 |
+| 32 | 199 | 2,180 | 15,457 | 23,033 |
+| 128 | 863 | 10,882 | 23,933 | 33,045 |
+
+The moved-report transaction records 626 charged steps and 75,276 accounted retained
+bytes; its combined warm/foreign/mutated-cell query opponents record 567 steps.
+Both namespace cardinalities are fenced and all per-binding capacity-walk work is
+charged before that walk begins. The exhausted prepayment opponent charges exactly
+one step beyond the maximum and leaves a later valid observation usable. Module
+binding collection uses the resolver's existing per-scope key index, not repeated
+whole-table scans. Public restricted-policy and body permissions remain separate
+required work despite these structural observations.
