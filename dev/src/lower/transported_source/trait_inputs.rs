@@ -5,6 +5,10 @@ use crate::{
 };
 
 /// Complete source observations, never an imported contract or execution token.
+#[cfg(test)]
+#[path = "../../../tests/invariants/trait_inspections.rs"]
+mod tests;
+
 pub(crate) struct TraitInspection {
     source: SourceInspection,
     contracts: s::HeaderAttributeColumns,
