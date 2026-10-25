@@ -112,8 +112,22 @@ pub(crate) fn clause(report: &Report, definition: DefId) -> Result<Option<NodeKe
         .resolution
         .definitions
         .get(definition.0 as usize)
-        .filter(|d| d.kind == DefKind::Trait)
         .ok_or_else(|| Error::unlocated("restriction policy requires its actual trait"))?;
+    if declaration.kind == DefKind::BuiltinTrait
+        && declaration.node.is_none()
+        && report
+            .resolution
+            .builtin_traits
+            .identify(definition)
+            .is_some()
+    {
+        return Ok(None);
+    }
+    if declaration.kind != DefKind::Trait {
+        return Err(Error::unlocated(
+            "restriction policy requires its actual trait",
+        ));
+    }
     let Some(key) = declaration.node else {
         return Ok(None);
     };

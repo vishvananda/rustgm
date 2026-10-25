@@ -110,6 +110,7 @@ fn parsed_restrictions_keep_feature_origins_disabled_headers_and_ordinary_layout
 #[test]
 fn exact_trait_domains_resolve_aliases_and_charge_actual_ancestry_before_publication() -> TestResult
 {
+    bootstrap_identity_opponents()?;
     for name in [
         "self-and-descendant",
         "super-domain",
@@ -241,4 +242,29 @@ fn observe_layouts() {
         size_of::<crate::syntax::item::Item>(),
         size_of::<crate::syntax::ast::Node>()
     );
+}
+
+fn bootstrap_identity_opponents() -> TestResult {
+    checked("struct S; impl Clone for S{fn clone(&self)->Self{S}} impl Copy for S{}")?;
+    let mut counterfeit = test_source::resolve("trait Clone{}", true)?;
+    let fake = counterfeit
+        .resolution
+        .definitions
+        .iter()
+        .position(|definition| {
+            definition.kind == DefKind::Trait
+                && counterfeit.package.names.get(definition.name) == "Clone"
+        })
+        .ok_or("actual shadow trait")?;
+    counterfeit.resolution.definitions[fake].kind = DefKind::BuiltinTrait;
+    counterfeit.resolution.definitions[fake].node = None;
+    assert!(
+        counterfeit
+            .resolution
+            .builtin_traits
+            .identify(DefId(u32::try_from(fake)?))
+            .is_none()
+    );
+    assert!(clause(&counterfeit, DefId(u32::try_from(fake)?)).is_err());
+    Ok(())
 }
