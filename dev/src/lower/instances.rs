@@ -222,8 +222,8 @@ fn build_source_library(
             let program = super::build_assembled(facts, assembled, roots)
                 .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
             let interface = source
-                .complete_payload(base)
-                .map_err(|e| diagnostic(report, None, e.into()))?;
+                .complete_payload(report, facts, base)
+                .map_err(|error| facts.retain_error_warnings(error))?;
             Ok((program, interface))
         },
     )?
