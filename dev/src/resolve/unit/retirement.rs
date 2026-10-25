@@ -60,7 +60,7 @@ impl Unit {
                 observer.charge(1, 4 * size_of::<Step>())?;
                 work.push(Step::Enter(child, Some((node, ordinal))));
                 ordinal += 1;
-                Ok(())
+                Ok::<(), Error>(())
             })?;
             work[mark..].reverse();
         }
