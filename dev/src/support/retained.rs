@@ -35,12 +35,19 @@ impl Growth {
         self.work = self.work.saturating_add(other.work);
     }
     pub fn vector<T>(length: usize, capacity: usize, additional: usize) -> Self {
+        let element = size_of::<T>();
         let needed = length.saturating_add(additional);
-        if needed <= capacity {
+        if element == 0 || needed <= capacity {
             return Self::default();
         }
+        // Byte vectors can start with eight slots; other nonzero elements have
+        // a minimum no greater than four in the pinned standard library.
+        let minimum = if element == 1 { 8 } else { 4 };
         Self {
-            bytes: needed.saturating_mul(4 * size_of::<T>()),
+            bytes: needed
+                .saturating_mul(4)
+                .max(minimum)
+                .saturating_mul(element),
             work: capacity,
         }
     }

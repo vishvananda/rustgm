@@ -336,6 +336,11 @@ fn private_defining_environments_bound_selected_and_warm_work() -> Result {
 }
 #[test]
 fn private_trait_input_costs_cover_real_lazy_growth_and_capacity_hits() -> Result {
+    vector_boundary::<u8>()?;
+    vector_boundary::<u16>()?;
+    vector_boundary::<u32>()?;
+    vector_boundary::<u64>()?;
+    vector_boundary::<()>()?;
     let (report, _, _) = actual(true)?;
     let definition = report
         .resolution
@@ -381,6 +386,25 @@ fn private_trait_input_costs_cover_real_lazy_growth_and_capacity_hits() -> Resul
             assert_eq!(store.find_trait_application(app), Some(actual));
         }
         assert_eq!(store.trait_input_bytes(), bytes);
+    }
+    Ok(())
+}
+
+fn vector_boundary<T: Default>() -> Result {
+    let mut values = Vec::<T>::new();
+    let mut work = ReservationWork::default();
+    for _ in 0..33 {
+        let before = crate::support::retained::vector(&values);
+        let growth =
+            crate::support::retained::Growth::vector::<T>(values.len(), values.capacity(), 1);
+        work.charge(growth.work.saturating_add(1))?;
+        work.reserve(growth.bytes)?;
+        values.push(T::default());
+        let actual = crate::support::retained::vector(&values).saturating_sub(before);
+        assert!(actual <= growth.bytes);
+        if size_of::<T>() == 0 {
+            assert_eq!((actual, growth.bytes, growth.work), (0, 0, 0));
+        }
     }
     Ok(())
 }
