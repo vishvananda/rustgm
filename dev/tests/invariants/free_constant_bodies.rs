@@ -62,14 +62,18 @@ fn unused_initializers_are_checked_and_public_placeholders_do_not_export() -> Te
     );
     let alignment =
         crate::test_source::fixture("pa31/tests/spec/unnamed-constants/alignment-reducer.rs")?;
-    let found = report(&alignment)?;
-    checked_rows(&found, 2)?;
+    let error = report(&alignment)
+        .err()
+        .ok_or("alignment assert prerequisite unexpectedly implemented")?;
     assert_eq!(
-        pipeline::analyze_source(&found)?
-            .facts
-            .constant_work
-            .initializer_validations,
-        2
+        error.message,
+        "unresolved macro is not in textual scope or path scope"
+    );
+    assert_eq!(
+        error.span.start as usize,
+        alignment
+            .find("assert!")
+            .ok_or("actual alignment assertion")?
     );
     Ok(())
 }

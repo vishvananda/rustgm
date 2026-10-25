@@ -70,6 +70,11 @@ impl Record {
             image: Arc::clone(unit.source.original_image()),
         })
     }
+    pub(super) fn diagnostic(&self, message: &str) -> Error {
+        let mut error = Error::at(self.key.file, self.offset(), message);
+        error.introduction = self.introduction;
+        error
+    }
     pub(super) fn offset(&self) -> u32 {
         self.span.start
     }
