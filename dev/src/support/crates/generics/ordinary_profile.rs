@@ -13,7 +13,7 @@ pub(super) fn validate(
     headers: &HeaderIndex<'_>,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    validate_mode(rows, headers, work, false)
+    validate_mode(rows, headers, work, NamespaceProfile::Root)
 }
 /// Private structural namespace inspection, never descriptor admission.
 pub(super) fn validate_namespace(
@@ -21,13 +21,26 @@ pub(super) fn validate_namespace(
     headers: &HeaderIndex<'_>,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    validate_mode(rows, headers, work, true)
+    validate_mode(rows, headers, work, NamespaceProfile::Inspection)
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum NamespaceProfile {
+    Root,
+    Inspection,
+    Contracts,
+}
+pub(super) fn validate_module_contracts(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    validate_mode(rows, headers, work, NamespaceProfile::Contracts)
 }
 fn validate_mode(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
-    modules: bool,
+    profile: NamespaceProfile,
 ) -> Result<(), &'static str> {
     work.charge(1)?;
     if !rows.body_units.is_empty() {
@@ -41,6 +54,11 @@ fn validate_mode(
     for header in &rows.traits {
         work.charge(1)?;
         let flags = header.flags.bits();
+        if flags & TraitFlags::RESTRICTED_IMPL != 0 && profile != NamespaceProfile::Contracts {
+            return Err(
+                "restricted trait requires version-two complete implementation-domain columns",
+            );
+        }
         if flags & (TraitFlags::CONST | TraitFlags::AUTO | TraitFlags::UNSAFE) != 0 {
             return Err("source const/auto/unsafe traits require a wider explicit profile");
         }
@@ -62,7 +80,7 @@ fn validate_mode(
             );
         }
     }
-    functions(rows, headers, work, modules)?;
+    functions(rows, headers, work, profile != NamespaceProfile::Root)?;
     for header in &rows.implementations {
         work.charge(1)?;
         if header.constant || header.negative || header.unsafe_ {

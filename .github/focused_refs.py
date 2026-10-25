@@ -26,7 +26,11 @@ def worker(started):
         branch=Steps(ROOT,SimpleNamespace(deadline=deadline,evidence_root=out/name,prune_under=[]))
         branch.receipt.update(sources=sources)
         try:
-            for step,command,overrides in commands:branch.run(step,command,overrides=overrides)
+            findings=[]
+            for step,command,overrides in commands:
+                try:branch.run(step,command,overrides=overrides)
+                except Exception as error:findings.append(str(error))
+            if findings:raise ValueError('; '.join(findings))
             branch.receipt['state']='passed'
         except BaseException as error:
             branch.receipt.update(state='failed',error=str(error));raise

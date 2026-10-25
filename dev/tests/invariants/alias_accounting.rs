@@ -30,7 +30,7 @@ pub(crate) fn check(declaration: &Environment, aliases: &[RegionId]) -> Result {
     let total = declaration.neutral_alias_finish_bound(aliases.len())?;
     let actual = ledger.neutral_alias_owned_from(declaration)?;
     assert!(actual.bytes <= total.bytes);
-    // A nonempty preexisting equation graph is covered by the same presence gate.
+    // Empty regional storage remains present even after replacing an alias ledger.
     ledger.regions = empty.regions;
     assert!(ledger.neutral_alias_finish_bound(aliases.len()).is_err());
     eprintln!(

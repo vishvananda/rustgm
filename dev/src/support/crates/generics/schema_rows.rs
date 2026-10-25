@@ -23,8 +23,12 @@ use crate::support::{
 };
 pub use attributes::*;
 pub use bodies::*;
-pub use descriptor::{Columns, Descriptor, Profile, ValidatedRows, ValidatedView};
-pub(crate) use descriptor::{ExportBinding, NamespaceColumns, UnpublishedNamespace};
+pub use descriptor::{
+    BindingSource, Columns, Descriptor, ImplementationDomain, ModuleBindingRow, ModuleContractRows,
+    ModuleContractView, ModuleNamespace, ModuleRow, ModuleVisibility, Profile, TraitDomainRow,
+    ValidatedRows, ValidatedView,
+};
+pub(crate) use descriptor::{ExportBinding, NamespaceColumns, UnpublishedNamespace, callable_path};
 pub use inputs::*;
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};
 pub use validation::{
@@ -202,10 +206,12 @@ impl TraitFlags {
     pub const SPECIALIZATION: u16 = 32;
     pub const COINDUCTIVE: u16 = 64;
     pub const DYN_INCOMPATIBLE: u16 = 128;
+    /// Structural claim requiring the complete version-two domain row.
+    pub const RESTRICTED_IMPL: u16 = 256;
     /// # Errors
     /// Rejects claims outside this exact supported structural vocabulary.
     pub fn from_bits(bits: u16) -> Result<Self, &'static str> {
-        if bits & !255 != 0 {
+        if bits & !511 != 0 {
             return Err("unknown source trait attribute claim");
         }
         Ok(Self(bits))
