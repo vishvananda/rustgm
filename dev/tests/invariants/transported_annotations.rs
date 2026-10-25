@@ -24,6 +24,12 @@ fn fixture(name: &str) -> Result<String> {
     })?)
 }
 fn exported(source: &str) -> Result<(crates::Interface, usize)> {
+    exported_profile(source, SourcePublication::FunctionContracts)
+}
+fn exported_profile(
+    source: &str,
+    profile: SourcePublication,
+) -> Result<(crates::Interface, usize)> {
     let report = crate::test_source::source_provider(source, "attribute_transport")?;
     let identity = report
         .package
@@ -35,13 +41,8 @@ fn exported(source: &str) -> Result<(crates::Interface, usize)> {
         mut facts,
         prepared,
     } = pipeline::analyze_source(&report)?;
-    let (_, interface) = build_source_library_profile(
-        &report,
-        &mut facts,
-        identity,
-        prepared,
-        SourcePublication::FunctionContracts,
-    )?;
+    let (_, interface) =
+        build_source_library_profile(&report, &mut facts, identity, prepared, profile)?;
     Ok((interface, facts.warnings().count()))
 }
 fn roundtrip(source: &str) -> Result<crates::Interface> {

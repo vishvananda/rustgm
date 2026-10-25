@@ -107,7 +107,7 @@
     "sema::header_attributes::tests::compatibility::legacy_unknown_closed_profiles_and_warned_wrong_owners_stay_explicit",
     "sema::header_attributes::tests::compatibility::malformed_complete_columns_and_wire_tags_reject_before_publication"
   ],
-  "compatibility_boundary": "Qualified pre-v1 CLI actually published identical frozen provider and minicore@attribute_transport identity, tag10/v0, 3628 bytes SHA81fd7dc86d906ef7ba5fd4abb92a0a24f6f9548c473b9b8a43a62dd7c1f234c0; candidate exact-byte comparison remains unrun.",
+  "compatibility_boundary": "The permanent text hex golden decodes to the qualified pre-v1 3628-byte tag10/v0 artifact SHA81fd7dc86d906ef7ba5fd4abb92a0a24f6f9548c473b9b8a43a62dd7c1f234c0. The existing legacy/Unknown private control now exports the same exact provider source and minicore@attribute_transport identity and compares all bytes; this changed candidate test is still unrun.",
   "baseline_cli": {
     "path": "/home/vishvananda/rustgm-pa29-work/obj/parallel/wide-qualified-40196564678/cli/candidate/rustgm",
     "sha256": "da5d43430556c8b9dc451de3ebe179005b4b1b843246e54af100c8ab833a6f76",
@@ -122,6 +122,38 @@
     "row_version": 0,
     "provider_sha256": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297",
     "crate_name": "minicore",
-    "crate_disambiguator": "attribute_transport"
+    "crate_disambiguator": "attribute_transport",
+    "text_fixture": {
+      "path": "pa31/tests/spec/source-attribute-transport/legacy-functions-v0.hex",
+      "sha256": "a5c56e9db572933e7705b55475a2bad7678b7cb4969748caf84d02db6ed9e5d0",
+      "encoding": "ASCII lowercase hex bytes, 32 bytes per line, attributed # comment preamble",
+      "decoded_bytes": 3628,
+      "decoded_sha256": "81fd7dc86d906ef7ba5fd4abb92a0a24f6f9548c473b9b8a43a62dd7c1f234c0",
+      "producer_source": "cd8405bd",
+      "producer_qualification": "CI40196564678",
+      "producer_cli_sha256": "da5d43430556c8b9dc451de3ebe179005b4b1b843246e54af100c8ab833a6f76",
+      "provider_path": "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+      "provider_sha256": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297",
+      "identity": "minicore@attribute_transport",
+      "edition": "2024",
+      "command": [
+        "/home/vishvananda/rustgm-pa29-work/obj/parallel/wide-qualified-40196564678/cli/candidate/rustgm",
+        "--emit-lowir",
+        "--edition=2024",
+        "--source-core",
+        "minicore@attribute_transport",
+        "--crate-type=lib",
+        "--crate-name",
+        "minicore",
+        "--crate-disambiguator",
+        "attribute_transport",
+        "--metadata-output",
+        "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-attribute-transport-v1/baseline-and-owner-v1/legacy.rgm",
+        "-o",
+        "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-attribute-transport-v1/baseline-and-owner-v1/legacy.lowir",
+        "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-functions-transport/minimal-provider.rs"
+      ],
+      "receipt_sha256": "201c40fd977fa844752187d622e7d177096c3383f10f023d8b1778daed97c76d"
+    }
   }
 }
