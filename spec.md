@@ -121,6 +121,17 @@ failed queries. Ordinary local feature allowances share authenticated header
 machinery through a distinct cold owner; they do not become source providers or
 disable the prelude. See [the structural owner checkpoint](docs/primitive-inherent-checkpoint.md).
 
+Trait implementation restrictions retain parsed clause nodes and resolve their
+module path once through the existing import fixpoint. Validate the real
+declaration and implementation module ancestry; visibility grants no additional
+implementation permission. Syntax feature checks include parsed disabled
+headers and authenticate actual macro-token origin. Ordinary readable metadata
+can assert an unrestricted domain only through its checked canonical profile,
+trait header, owner and inventory. Missing source nodes or map entries are not
+policy evidence. Restricted source publication stays closed until its explicit
+metadata contract is implemented. See the
+[domain checkpoint](docs/implementation-domains-core-checkpoint.md).
+
 Source macro imports and qualified calls use actual declarations and the existing
 import dependency worklist, including forward definitions and renamed targets.
 A final `option_env` spelling cannot create bootstrap Option or builtin macro
