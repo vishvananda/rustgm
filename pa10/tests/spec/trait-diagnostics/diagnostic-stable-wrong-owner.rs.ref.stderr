@@ -1,0 +1,1 @@
+warning[misplaced_diagnostic_attributes]: file 0: 56: diagnostic::on_unimplemented requires a trait owner
