@@ -281,42 +281,109 @@ fn header_signature_cursor_reuses_memo_and_leaves_undemanded_body_nodes() -> Res
     assert_eq!(state.cursor.counters(), stopped);
     Ok(())
 }
-fn chain(depth: usize, repeats: usize) -> Result<String> {
-    let mut ty = "u8".to_owned();
-    for _ in 0..depth {
-        ty = format!("fn({ty},u8)->u8");
+fn reference_chain(depth: usize) -> Result<String> {
+    // Flat actual expressions keep parser depth bounded while semantic reference
+    // types reach the declared depth. Unused T invokes the real scheme producer.
+    let mut source = "\npub fn cursor_chain<T>(input:u8){".to_owned();
+    let mut previous = "input".to_owned();
+    for index in 0..depth {
+        writeln!(source, "let cursor_ref{index}=&{previous};")?;
+        previous = format!("cursor_ref{index}");
     }
-    // A real generic declaration retains its completed lifetime scheme. The
-    // closed exporter currently rejects nongeneric zero-lifetime functions.
-    let mut source = format!("\npub fn cursor_chain<T>(value:{ty}");
-    for index in 0..repeats {
-        write!(source, ",other{index}:{ty}")?;
-    }
-    write!(source, ")->{ty}{{value}}")?;
+    source.push('}');
     Ok(source)
+}
+fn reference_frontier(depth: usize, repeats: usize) -> Result {
+    let (report, facts, inventory) = extended(&reference_chain(depth)?)?;
+    let owner = named(&inventory, "cursor_chain")?;
+    let rows = inventory.artifacts()[0]
+        .source_descriptor()
+        .ok_or("actual descriptor")?
+        .rows();
+    let Some(s::HeaderRef::Function(index)) = rows.header(owner)? else {
+        return Err("actual reference-chain function".into());
+    };
+    let s::FunctionBody::Original(body) = rows.functions[index as usize].body else {
+        return Err("actual reference-chain body".into());
+    };
+    let original = &rows.originals[body.0 as usize];
+    assert_eq!(original.declaration, owner);
+    let name = format!("cursor_ref{}", depth - 1);
+    let local = original
+        .locals
+        .iter()
+        .find(|local| {
+            local.definition.is_some_and(|declaration| {
+                rows.declarations[declaration.0 as usize].name.as_deref() == Some(name.as_str())
+            })
+        })
+        .ok_or("actual deepest reference local")?;
+    let declaration = local.definition.ok_or("actual local declaration")?;
+    let declared = &rows.declarations[declaration.0 as usize];
+    assert_eq!(declared.definition.parent, Some(owner));
+    assert_eq!(
+        declared.local.ok_or("actual local body association")?.body,
+        body
+    );
+    let probe = local.ty;
+    let mut work = ReservationWork::default();
+    let mut session = prepared(Arc::clone(&inventory), report, facts, owner, &mut work)?;
+    let extent = session.facts.types.interned_extent();
+    let view = session
+        .inputs
+        .recipe_view(&session.inventory, 0, &mut work)?;
+    view.declaration(declaration, &mut work)?;
+    let expected = Demand::Blocked(Dependency::OwnedBodyDomain(view.body(body, &mut work)?));
+    let state = session.recipes.as_mut().ok_or("actual memo")?;
+    let Pair::Ready(pair) = state.pairs[index as usize] else {
+        return Err("actual completed reference-chain signature pair".into());
+    };
+    let before = state.cursor.counters();
+    let bytes = state.retained_bytes();
+    let mut port = Reserved::new(view, &mut state.maps)?;
+    assert_eq!(
+        state
+            .cursor
+            .demand(&mut port, &mut session.facts.types, probe, &mut work)?,
+        expected
+    );
+    let stopped = state.cursor.counters();
+    assert_eq!(stopped.expanded - before.expanded, depth);
+    assert_eq!(stopped.edges - before.edges, depth);
+    let attempted = work.steps;
+    for _ in 0..repeats {
+        assert_eq!(
+            state
+                .cursor
+                .demand(&mut port, &mut session.facts.types, probe, &mut work)?,
+            expected
+        );
+    }
+    assert_eq!(work.steps - attempted, repeats);
+    assert_eq!(state.cursor.counters(), stopped);
+    assert_eq!(state.retained_bytes(), bytes);
+    assert_eq!(session.facts.types.interned_extent(), extent);
+    let unused = rows
+        .slots
+        .iter()
+        .position(|slot| slot.owner == owner && matches!(slot.kind, s::ParameterKind::Type { .. }))
+        .ok_or("actual unused declared type formal")?;
+    assert!(state.maps.slots[unused].is_none());
+    session = ready(session.signature_pair(owner, &mut work)?)?;
+    let state = session.recipes.as_ref().ok_or("actual retained memo")?;
+    assert!(matches!(state.pairs[index as usize], Pair::Ready(actual) if actual == pair));
+    assert_eq!(state.cursor.counters(), stopped);
+    assert_eq!(state.retained_bytes(), bytes);
+    assert_eq!(session.facts.types.interned_extent(), extent);
+    Ok(())
 }
 #[test]
 fn header_signature_cursor_bounds_shared_depth_and_unrelated_originals() -> Result {
+    // Anonymous nested fn-pointer/alias transport remains unsupported. These
+    // genuine body roots test the same declared depths without granting a body
+    // region mapping or claiming deep ready signature support.
     for (depth, repeats) in [(8, 1), (32, 1), (128, 1), (32, 8), (32, 32)] {
-        let (report, facts, inventory) = extended(&chain(depth, repeats)?)?;
-        let owner = named(&inventory, "cursor_chain")?;
-        let mut work = ReservationWork::default();
-        let session = prepared(Arc::clone(&inventory), report, facts, owner, &mut work)?;
-        let state = session.recipes.as_ref().ok_or("actual memo")?;
-        let counters = state.cursor.counters();
-        assert_eq!(counters.expanded, depth + 1);
-        assert_eq!(counters.edges, depth * 3);
-        let unused = inventory.artifacts()[0]
-            .source_descriptor()
-            .ok_or("actual descriptor")?
-            .rows()
-            .slots
-            .iter()
-            .position(|slot| {
-                slot.owner == owner && matches!(slot.kind, s::ParameterKind::Type { .. })
-            })
-            .ok_or("actual unused declared type formal")?;
-        assert!(state.maps.slots[unused].is_none());
+        reference_frontier(depth, repeats)?;
     }
     let mut warm = None;
     for unrelated in [1, 8, 32] {
