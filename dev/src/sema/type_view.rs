@@ -564,6 +564,10 @@ pub fn scalar(value: Scalar, out: &mut impl Write) -> io::Result<()> {
         Scalar::Integer(bits) => write!(out, "integer bits=0x{bits:032x}"),
         Scalar::Float(FloatBits::F32(bits)) => write!(out, "f32 bits=0x{bits:08x}"),
         Scalar::Float(FloatBits::F64(bits)) => write!(out, "f64 bits=0x{bits:016x}"),
+        Scalar::Float(FloatBits::F16(bits)) => write!(out, "f16 bits=0x{bits:04x}"),
+        Scalar::Float(bits @ FloatBits::F128 { .. }) => {
+            write!(out, "f128 bits=0x{:032x}", bits.bits())
+        }
         Scalar::Boolean(value) => write!(out, "bool {value}"),
         Scalar::Character(value) => write!(out, "char U+{:06X}", u32::from(value)),
     }

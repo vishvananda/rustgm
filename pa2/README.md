@@ -137,3 +137,16 @@ earlier suites, `make lint audit-rust test-harness test-upstream`, and scaling
 measurements before updating the accepted report. `--count-literals` exercises
 the same interpretation and explicit float conversions without rendering.
 The reference implementation is in `dev/src/literal/`, with no frontend fallback.
+
+## Pending wide floating extension
+
+The LIB-024 maintainer slice adds exact `f16`/`f128` suffix facts alongside the
+existing widths. Its local candidate is unqualified. The private
+`tests/spec/floats/wide-bits.tsv` vectors retain 32 explicit IEEE hypotheses for
+independent exported-static observation; they are not generated text references.
+Wide output uses four or32 hexadecimal digits respectively. The existing f32/f64
+host conversion remains unchanged; wide conversion uses bounded integer rational
+rounding directly from the retained decimal, with nearest/ties-to-even.
+Actual crate feature and macro-origin gates belong to configured source consumers,
+not this context-free diagnostic literal decoder. Later wide CTFE operations, wire
+profiles, ABI and native lowering remain explicit unsupported requirements.

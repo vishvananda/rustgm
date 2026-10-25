@@ -266,6 +266,8 @@ fn scalar_row(scalar: Scalar) -> String {
         Scalar::Integer(bits) => format!("integer bits={bits:032x}"),
         Scalar::Float(FloatBits::F32(bits)) => format!("f32 bits={bits:08x}"),
         Scalar::Float(FloatBits::F64(bits)) => format!("f64 bits={bits:016x}"),
+        Scalar::Float(FloatBits::F16(bits)) => format!("f16 bits={bits:04x}"),
+        Scalar::Float(bits @ FloatBits::F128 { .. }) => format!("f128 bits={:032x}", bits.bits()),
         Scalar::Boolean(value) => format!("bool bits={}", u8::from(value)),
         Scalar::Character(value) => format!("char bits={:08x}", u32::from(value)),
     }

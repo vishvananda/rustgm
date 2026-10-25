@@ -507,6 +507,7 @@ impl Lower<'_, '_, '_> {
             Scalar::Character(value) => self.builder.integer(ty, u128::from(u32::from(value))),
             Scalar::Float(FloatBits::F32(bits)) => self.builder.literal(ty, Literal::F32(bits)),
             Scalar::Float(FloatBits::F64(bits)) => self.builder.literal(ty, Literal::F64(bits)),
+            Scalar::Float(_) => Err("wide floating runtime lowering is not implemented"),
         }
     }
     fn constant(

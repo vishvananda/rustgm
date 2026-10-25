@@ -21,20 +21,27 @@ impl Stage {
         signature: TypeId,
     ) -> Result<(), &'static str> {
         let parts = super::signatures::Parts::actual(facts, signature)?;
+        if let Some(ty) = self.anonymous_signature_field(facts, parts)? {
+            self.prepare_type_arena(facts, ty)?;
+        }
+        Ok(())
+    }
+
+    pub(super) fn anonymous_signature_field(
+        &mut self,
+        facts: &Declarations,
+        parts: super::signatures::Parts,
+    ) -> Result<Option<TypeId>, &'static str> {
         let parameters = facts
             .types
             .list(parts.parameters)
             .ok_or("source callable input list is unknown")?;
         self.charge(parameters.len().saturating_add(1))?;
-        let demanded = parameters
+        Ok(parameters
             .iter()
             .copied()
             .chain(std::iter::once(parts.result))
-            .find(|&ty| facts.types.contains_anonymous_callables(ty) == Some(true));
-        if let Some(ty) = demanded {
-            self.prepare_type_arena(facts, ty)?;
-        }
-        Ok(())
+            .find(|&ty| facts.types.contains_anonymous_callables(ty) == Some(true)))
     }
 
     pub(crate) fn prepare_type_arena(

@@ -126,6 +126,17 @@ scoped-stability boundary. Its two exact integration controls pass with strict
 Clippy/audit/build in 208.57 seconds locally. The remaining full CI stages are
 still pending; a failed periodic run is not recorded as full qualification.
 
+Periodic [full CI on `ebc918c9`](https://github.com/vishvananda/rustgm/actions/runs/40194216972)
+finds two stale assertions that unused known assembly declarations must fail.
+Its regular lane records 1,646 private and 343 frontend passes, with one failure
+in each target; later native/text/debug stages did not run. The corrected tests
+accept genuine unused declarations in both pipelines and explicitly reject
+their invocation, including placeholder-body execution. Three exact controls
+pass metadata, formatting, architecture, strict Clippy and execution locally in
+223.57 seconds, receipt `obj/qualification/fast/1792933285445625938`.
+This is a test-only repair; compiler behavior and references are unchanged.
+The failed periodic receipt remains evidence, with broader qualification pending.
+
 The [complete builtin declaration checkpoint](builtin-declarations-checkpoint.md)
 passes seven isolated controls in 165.33 seconds. Its exact CLI advances the
 unchanged root to `num/f128.rs:27`, with nine opened original files and no input
@@ -209,7 +220,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-021 | P0; active original crate policy at `lib.rs:66` | rustc_preserve_ub_checks and actual UB-check intrinsic/runtime/CTFE behavior | PA28 operations + PA25 CTFE + PA31 policy + PA29 transport / PA31 complete source providers | B, coordinated with C/A | Typed UB/session/config/owned source identity is integrated at `66bd3750` and passes focused and periodic full CI qualification. Actual CTFE, producer code and deferred consumer specialization remain distinct. Imported policy transport and the combined Test-body/configuration receipt are still required; CPPGM remains unchanged. |
 | LIB-022 | Local declarations qualified; original-root boundary advanced | Complete authenticated builtin declaration kinds independently of invocation availability | PA31 source binding + PA8 expansion; execution stays with owning feature / PA31 source providers plus earlier applicable controls | B + integrator | All 61 primary registry roles have actual kinds/availability; seven isolated controls pass in 165.33 seconds. Original 24 slots/ordinals and hot layouts are preserved. All 37 new executions stay closed; imported macro contracts remain required. |
 | LIB-023 | Local regression repaired; imported openness still required | Actual local `non_exhaustive` attribute consumption and retained unsupported cross-crate contract | PA29 declaration/export contract / PA29 local and artifact opponents | C | Four merged controls pass with strict Clippy/audit/build in 129.31 seconds; nineteen sources bind 38 independent observations. Same-crate behavior and actual field/duplicate lint policy are implemented through the existing attribute traversal. Typed export still rejects unsupported cross-crate contracts. |
-| LIB-024 | P0; current unchanged-root failure at `num/f128.rs:27` | Exact f16/f128 literal values, active feature authority and real primitive/type consumers | PA2 literals + PA9 types; PA25 operations and later ABI/metadata own their effects / PA2 ordinary controls plus PA31 actual source | B | Forty independent metadata/object observations pass; no literal-bit or runtime claim because the pub constants produced no data sections. Exact conversion, feature/type/layout implementation is approved; f64 substitution, cfg bypass and implicit wider wire/native support are forbidden. |
+| LIB-024 | P0; current unchanged-root failure at `num/f128.rs:27` | Exact f16/f128 literal values, active feature authority and real primitive/type consumers | PA2 literals + PA9 types; PA25 operations and later ABI/metadata own their effects / PA2 ordinary controls plus PA31 actual source | B | Candidate `f97c675f` passes six exact conversion/authority/layout/scratch controls with strict Clippy and audit in 232.10 seconds. Forty independent language observations and 64 actual exported-static bit comparisons pass; no runtime claim. Old PA2/PA9 compatibility and integration remain pending. f64 substitution, cfg bypass and implicit wider wire/native support are forbidden. |
 | LIB-025 | Closed publication guard qualified; wider transport still required | Closed source Functions publication must not omit actual must-use/inline contracts | PA29 publication + PA31 actual headers / PA31 selected-header source variants | C | Mandatory typed guard passes merged selected-header/error/Unknown/inspection controls; three corrected fixture groups pass in 173.56 seconds with strict Clippy/audit/build. Inspection stays unpaid, and imported absence stays Unknown. Explicit wider contract transport remains required. |
 
 The combined functional recovery is recorded in
