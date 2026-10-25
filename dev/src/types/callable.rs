@@ -64,6 +64,33 @@ impl Templates {
         result.vector(&self.generics);
         result
     }
+    /// Bound a new entry's real buffer growth and temporary owner validation.
+    /// This is storage accounting, not a declaration or callable permission.
+    pub(crate) fn registration_allocation_bound(
+        &self,
+        additional_formals: usize,
+        owner_count: usize,
+    ) -> usize {
+        let entries = self.entries.len().saturating_add(1);
+        let formals = self.generics.len().saturating_add(additional_formals);
+        let table = if entries > self.entries.capacity() {
+            crate::support::retained::new_map::<ItemId, Template>(entries)
+        } else {
+            0
+        };
+        let vector = if formals > self.generics.capacity() {
+            formals.saturating_mul(4 * size_of::<ParameterId>())
+        } else {
+            0
+        };
+        table
+            .saturating_add(vector)
+            .saturating_add(if owner_count > 1 {
+                crate::support::retained::new_map::<ItemId, ()>(owner_count)
+            } else {
+                0
+            })
+    }
     /// Publish a completed callable with no early/type/const slots.
     /// Late-bound signature lifetimes remain part of the function type.
     /// # Errors

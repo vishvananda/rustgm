@@ -81,35 +81,40 @@ impl Owner {
     }
 }
 impl Inventory {
-    /// The authenticated ordinary function profiles cannot contain restricted traits.
-    /// Its producer rejects every such declaration before retaining header rows.
-    pub(in crate::sema) fn require_imported_unrestricted_domain(
-        &self,
-        definition: DefId,
-    ) -> Result<(), &'static str> {
-        // This authenticates the actual descriptor, trait header, Self and owner;
-        // neither a missing source node nor absence from a map grants permission.
-        self.imported_denies_implementation(definition).map(|_| ())
-    }
-    pub(in crate::sema) fn imported_denies_implementation(
-        &self,
-        definition: DefId,
-    ) -> Result<bool, &'static str> {
+    fn imported_trait_owner(&self, definition: DefId) -> Result<Owner, &'static str> {
         let owner = self
             .owner(definition)
             .and_then(|id| self.get(id))
             .copied()
             .ok_or("imported implementation policy lacks its actual trait owner")?;
-        if !matches!(owner.kind, OwnerKind::Trait {definition: actual, ..} if actual == definition)
-        {
+        if !matches!(owner.kind,OwnerKind::Trait{definition:actual,..} if actual==definition) {
             return Err("imported implementation policy changed its actual trait declaration");
         }
+        Ok(owner)
+    }
+    pub(in crate::sema) fn imported_denies_implementation(
+        &self,
+        definition: DefId,
+    ) -> Result<bool, &'static str> {
+        let owner = self.imported_trait_owner(definition)?;
         self.language
             .as_ref()
             .and_then(|l| l.imported.as_deref())
             .ok_or("imported implementation policy lacks its canonical source graph")?
             .denies_implementation(owner)
     }
+    pub(in crate::sema) fn imported_implementation_domain(
+        &self,
+        definition: DefId,
+    ) -> Result<crate::support::crates::generics::source::ImplementationDomain, &'static str> {
+        let owner = self.imported_trait_owner(definition)?;
+        self.language
+            .as_ref()
+            .and_then(|l| l.imported.as_deref())
+            .ok_or("imported implementation domain lacks its canonical source graph")?
+            .implementation_domain(owner)
+    }
+
     pub(in crate::sema) fn imported_impl_request(
         &self,
         owner: Owner,
@@ -184,3 +189,7 @@ impl Inventory {
             .implementation(owner, predicate)
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/domain_consumers.rs"]
+mod module_tests;
