@@ -212,6 +212,19 @@ assumptions do not pay substituted instance obligations. Retain a single cold
 owner for immutable imported templates/contracts, with exact owner validation
 at every borrowed view and ordinary per-instance proof on execution.
 
+Private callable preparation consumes the actual reserved declared/callable
+signature pair and complete outer-to-inner formal scope, including unused
+parameters and inherited Self. Share the ordinary callable registration kernel;
+retain the real named owner and anonymous Function types. Build the scope index
+once. A warm hit still authenticates the catalog, source arena, declaration,
+body, signature and exact scope record before reusing readiness, without
+traversing its ancestry again. Prepay actual template capacity growth, temporary
+owner validation and selected regional occurrences; unrelated declarations and
+the entire type store are not per-call allocation bounds. Failed attempts retain
+their charged work and peak, and cannot publish partial readiness. This private
+structural preparation grants no defining Environment, original body proof,
+call-instance proof or wider metadata-profile permission.
+
 Role validators consume borrowed declaration headers rather than reconstructing
 source syntax. The source adapter validates the actual declaration, separate
 Self owner/slot, flags, parent and completed member/input inventories before
