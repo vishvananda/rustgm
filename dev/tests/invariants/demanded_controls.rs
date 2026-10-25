@@ -286,7 +286,9 @@ fn chain(depth: usize, repeats: usize) -> Result<String> {
     for _ in 0..depth {
         ty = format!("fn({ty},u8)->u8");
     }
-    let mut source = format!("\npub fn cursor_chain(value:{ty}");
+    // A real generic declaration retains its completed lifetime scheme. The
+    // closed exporter currently rejects nongeneric zero-lifetime functions.
+    let mut source = format!("\npub fn cursor_chain<T>(value:{ty}");
     for index in 0..repeats {
         write!(source, ",other{index}:{ty}")?;
     }
@@ -299,15 +301,22 @@ fn header_signature_cursor_bounds_shared_depth_and_unrelated_originals() -> Resu
         let (report, facts, inventory) = extended(&chain(depth, repeats)?)?;
         let owner = named(&inventory, "cursor_chain")?;
         let mut work = ReservationWork::default();
-        let session = prepared(inventory, report, facts, owner, &mut work)?;
-        let counters = session
-            .recipes
-            .as_ref()
-            .ok_or("actual memo")?
-            .cursor
-            .counters();
+        let session = prepared(Arc::clone(&inventory), report, facts, owner, &mut work)?;
+        let state = session.recipes.as_ref().ok_or("actual memo")?;
+        let counters = state.cursor.counters();
         assert_eq!(counters.expanded, depth + 1);
         assert_eq!(counters.edges, depth * 3);
+        let unused = inventory.artifacts()[0]
+            .source_descriptor()
+            .ok_or("actual descriptor")?
+            .rows()
+            .slots
+            .iter()
+            .position(|slot| {
+                slot.owner == owner && matches!(slot.kind, s::ParameterKind::Type { .. })
+            })
+            .ok_or("actual unused declared type formal")?;
+        assert!(state.maps.slots[unused].is_none());
     }
     let mut warm = None;
     for unrelated in [1, 8, 32] {
