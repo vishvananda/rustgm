@@ -1,5 +1,5 @@
 {
-  "state": "independently observed contract; compiler CI40222311370 3/6; focused repairs pending",
+  "state": "qualified source72cf; CI40223575234 six focused controls pass; root reviews and generates eight scoped text oracles",
   "original_frozen_plan_sha256": "d82346485dc83998ae7d723eee351031b4d49b33bcae6b33950b4db832f9ab61",
   "original_visibility_plan_sha256": "e2646be271402b440e1b95408c86b25786d5860d998399ddedf56edff4d12a4e",
   "observations": [
@@ -61,7 +61,7 @@
     "alignment-reducer": "pa31/tests/spec/unnamed-constants/alignment-reducer.rs"
   },
   "scope": "PA5 parsed names/spans preserved; PA6 real unnameable declarations; PA8 generated identity; PA25 typing/CTFE and semantic lint warnings; PA31 real unchanged alignment frontier reducer",
-  "pending": "Six focused groups after source repairs; root owns eight active selected references after code pass. No independent metadata repeats.",
+  "pending": "Real assertion expansion/runtime/const semantics remains required; original core now stops at specialization defaultness in mem/maybe_uninit.rs:1644. No original crate artifact.",
   "final_opponents_plan_sha256": "5afc9c7add84f84c3a1791f1515050903a6772c544fd16cee873966fe7129761",
   "all_fixture_sha256": {
     "pa6/tests/spec/unnamed-constants/block-repeat.rs": "7d964f0dfe0aac9e690a0e08cc1e0cf986c9a94759cda0ffde91869507672b3f",
@@ -107,5 +107,17 @@
     "candidate": "unresolved macro is not in textual scope or path scope",
     "offset": 129,
     "requirement": "real assert! expansion plus runtime/const semantics; no fake assertion or initializer suppression"
+  },
+  "qualification": {
+    "source": "72cf23043a3ad5af0c9e159ce257af00f4ea368b",
+    "run": 40223575234,
+    "focused_passes": 6,
+    "cli_sha256": "123138617b80b8bdf39ad7c9bce4ec0df48618e6e649efbadf3755e983ac817c",
+    "receipt_sha256": "e5522a088e26d036c2d53337649c15bb186551a84931ed544353ee93400ff7a4",
+    "text_cases": 8493,
+    "new_scoped_references": 8,
+    "whole_core_observer": 40224012971,
+    "unchanged_inputs": 722,
+    "opened_files": 58
   }
 }
