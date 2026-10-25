@@ -5,7 +5,7 @@ use crate::{
         builtin::{Builtin, BuiltinKind},
         config::Config,
     },
-    resolve::{bindings::Context, load::InputFile},
+    resolve::{bindings::Context, load::InputFile, unit::NodeKey},
     support::{bindings::Mode, crates::CrateIdentity, source::SourceFile},
     syntax::ast::MacroContext,
 };
@@ -226,7 +226,7 @@ fn actual_ordinary_engine_keeps_no_attribute_calls_and_reports_real_cold_storage
             assert_eq!(engine.calls.capacity(), 0);
             assert_eq!(counts(engine), (0, 0, 1));
             assert!(engine.loader.package.source_core().is_none());
-            assert!(engine.removed_functions.is_none());
+            assert_eq!(engine.attribute_effects.is_none(), !source.contains("#["));
             assert!(
                 !engine
                     .paths
@@ -271,4 +271,84 @@ fn actual_ordinary_engine_keeps_no_attribute_calls_and_reports_real_cold_storage
         })?;
     }
     Ok(())
+}
+
+#[test]
+fn real_call_tail_checks_capture_and_released_frame_and_charges_failed_warm_reads() -> TestResult {
+    with_engine(
+        "#![allow(unused_must_use)] macro_rules! m {()=>{7u32}} fn f(){m!();}",
+        false,
+        |engine| {
+            engine.run()?;
+            let index = engine
+                .calls
+                .iter()
+                .position(|call| matches!(call.grammar, CallGrammar::Bang(_)))
+                .ok_or("actual bang call")?;
+            let key = NodeKey {
+                file: engine.calls[index].file,
+                node: engine.calls[index].visit.node,
+            };
+            assert!(engine.lint_call_tail(index)?.is_some());
+            let capture = engine.calls[index].capture;
+            engine.calls[index].capture = capture + 1;
+            assert!(engine.lint_call_tail(index).is_err());
+            engine.calls[index].capture = capture;
+            assert!(engine.lint_call_tail(index)?.is_some());
+            let producer = engine
+                .attribute_effects
+                .as_deref_mut()
+                .and_then(|effects| effects.policy.as_mut())
+                .ok_or("actual producer")?;
+            let before = producer.work().steps;
+            assert!(producer.frame(0, key).is_err());
+            assert!(producer.work().steps > before);
+            Ok(())
+        },
+    )
+}
+#[test]
+fn repeated_failed_ancestor_composition_keeps_the_original_forbid_owner_and_cached_result()
+-> TestResult {
+    with_engine(
+        "#![forbid(duplicate_macro_attributes)] #[allow(duplicate_macro_attributes)] fn f(){macro_rules! m{()=>{7u32}} m!();}",
+        false,
+        |engine| {
+            engine.run()?;
+            let index = engine
+                .calls
+                .iter()
+                .position(|call| matches!(call.grammar, CallGrammar::Bang(_)))
+                .ok_or("actual bang call")?;
+            let first = engine
+                .lint_call_policy(index)
+                .err()
+                .ok_or("forbid weakened")?;
+            assert!(
+                first
+                    .message
+                    .contains("forbidden duplicate_macro_attributes")
+            );
+            let before = engine
+                .attribute_effects
+                .as_deref()
+                .and_then(|effects| effects.policy.as_ref())
+                .ok_or("producer")?
+                .work();
+            let second = engine
+                .lint_call_policy(index)
+                .err()
+                .ok_or("warm forbid weakened")?;
+            let after = engine
+                .attribute_effects
+                .as_deref()
+                .and_then(|effects| effects.policy.as_ref())
+                .ok_or("producer")?
+                .work();
+            assert_eq!(first.to_string(), second.to_string());
+            assert_eq!(after.compositions, before.compositions);
+            assert!(after.steps > before.steps);
+            Ok(())
+        },
+    )
 }

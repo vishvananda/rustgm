@@ -57,9 +57,15 @@ pub(crate) struct Change {
 }
 
 #[derive(Clone, Copy)]
-pub(crate) struct Violation { pub key: NodeKey, pub offset: u32, pub message: &'static str }
+pub(crate) struct Violation {
+    pub key: NodeKey,
+    pub offset: u32,
+    pub message: &'static str,
+}
 impl From<Violation> for Error {
-    fn from(error: Violation) -> Self { Self::at(error.key.file, error.offset, error.message) }
+    fn from(error: Violation) -> Self {
+        Self::at(error.key.file, error.offset, error.message)
+    }
 }
 impl Policy {
     pub(crate) fn apply(&mut self, key: NodeKey, change: &Change) -> Result<(), Violation> {
@@ -71,7 +77,9 @@ impl Policy {
             Lint::MustUse => &mut self.must_use,
             Lint::UnusedAttributes => &mut self.unused_attributes,
             Lint::DuplicateMacroAttributes => &mut self.duplicate_macro_attributes,
-            Lint::DiagnosticAttributes(index) => &mut self.diagnostic_attributes[usize::from(index)],
+            Lint::DiagnosticAttributes(index) => {
+                &mut self.diagnostic_attributes[usize::from(index)]
+            }
         };
         if *level == Level::Forbid {
             if matches!(change.level, Level::Allow | Level::Warn) {
@@ -90,7 +98,9 @@ impl Policy {
                         Lint::DuplicateMacroAttributes => {
                             "forbidden duplicate_macro_attributes lint cannot be weakened"
                         }
-                        Lint::DiagnosticAttributes(_) => "forbidden diagnostic attribute lint cannot be weakened",
+                        Lint::DiagnosticAttributes(_) => {
+                            "forbidden diagnostic attribute lint cannot be weakened"
+                        }
                         _ => "forbidden unsafe lint cannot be weakened",
                     },
                 });

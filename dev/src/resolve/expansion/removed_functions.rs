@@ -144,8 +144,7 @@ impl Removal {
 }
 impl Report {
     pub(crate) fn removed_function_owner(&self, key: NodeKey) -> bool {
-        self.removed_functions
-            .as_deref()
+        self.removed_functions()
             .is_some_and(|removals| removals.owner(key))
     }
 }
@@ -155,9 +154,12 @@ impl<S: Sources> Engine<'_, S> {
         index: usize,
         definition: usize,
     ) -> Result<(), Error> {
+        if let Some(error) = self.test_form_error(index)? {
+            return Err(error);
+        }
         let removal = self.checked_test_removal(index, definition)?;
         let owner = removal.owner;
-        let removals = self.removed_functions.get_or_insert_default();
+        let removals = &mut self.attribute_effects.get_or_insert_default().removals;
         if removals.entries.len() >= 1_000_000 || removals.owners.contains_key(&owner) {
             return Err(Error::at(
                 owner.file,
@@ -172,6 +174,48 @@ impl<S: Sources> Engine<'_, S> {
         self.completed(index)?;
         self.calls[index].state = State::Removed;
         Ok(())
+    }
+    fn test_form_error(&mut self, index: usize) -> Result<Option<Error>, Error> {
+        let call = &self.calls[index];
+        if !matches!(call.grammar, CallGrammar::Attribute) {
+            return Err(call.diagnostic("Test removal requires an actual attribute call"));
+        }
+        super::decorated_calls::validate(&self.loader.package, &self.paths.state.facts, call)?;
+        let unit = self.loader.package.unit(call.file);
+        let effect = call.capture as usize;
+        let attribute = unit.configured.effects[effect].attribute.attribute;
+        if attribute.input == Input::Empty
+            && !attribute.unsafe_wrapper
+            && attribute.style == Style::Outer
+        {
+            return Ok(None);
+        }
+        let primary = call.diagnostic("test attribute requires an outer word attribute");
+        let owner = unit.owner_indices[call.visit.node.get() as usize]
+            .and_then(|owner| unit.configured.owners.get(owner.get() as usize - 1))
+            .ok_or_else(|| call.diagnostic("test form lost its actual owner"))?;
+        let duplicate = unit
+            .retained_indexed_attributes(owner.attributes.clone())
+            .find(|(other, attribute, forest)| {
+                *other > effect && attribute.name(forest, unit.source.text()) == Some("test")
+            })
+            .map(|(_, attribute, _)| attribute.span.start);
+        let Some(offset) = duplicate else {
+            return Ok(Some(primary));
+        };
+        let file = call.file;
+        let level = self.lint_call_policy(index)?.duplicate_macro_attributes;
+        let result = match level {
+            crate::resolve::lint_policy::Level::Allow => primary,
+            crate::resolve::lint_policy::Level::Warn => {
+                primary.retain_warnings(vec![self.lint_warning(index, offset)?])
+            }
+            crate::resolve::lint_policy::Level::Deny
+            | crate::resolve::lint_policy::Level::Forbid => {
+                Error::at(file, offset, "duplicated test attribute")
+            }
+        };
+        Ok(Some(result))
     }
     fn checked_test_removal(&self, index: usize, definition: usize) -> Result<Removal, Error> {
         let call = &self.calls[index];

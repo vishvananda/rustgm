@@ -107,8 +107,8 @@ mod diagnostic_contracts;
 #[path = "../../discarded_domains.rs"]
 mod discarded_domains;
 
-#[path = "../../canonical_inhabitation.rs"]
-mod canonical_inhabitation;
+#[path = "../../inhabited_aggregates.rs"]
+mod inhabited_aggregates;
 
 #[path = "../../test_removal_lints.rs"]
 mod test_removal_lints;

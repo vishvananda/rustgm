@@ -217,7 +217,11 @@ struct Checker<'a> {
 /// Rejects recursive aliases, invalid signatures and unsupported annotation semantics.
 pub fn analyze(report: &Report) -> Result<Declarations, Error> {
     let mut checker = Checker::new(report)?;
-    checker.run().map_err(|error| checker.facts.retain_error_warnings(report.diagnostic(error)))?;
+    checker.run().map_err(|error| {
+        checker
+            .facts
+            .retain_error_warnings(report.diagnostic(error))
+    })?;
     Ok(checker.facts)
 }
 /// Resolve declarations with the executable pipeline's checked constant service.
@@ -229,7 +233,11 @@ pub fn analyze_with_executor(
 ) -> Result<Declarations, Error> {
     let mut checker = Checker::new(report)?;
     checker.facts.set_constant_executor(executor);
-    checker.run().map_err(|error| checker.facts.retain_error_warnings(report.diagnostic(error)))?;
+    checker.run().map_err(|error| {
+        checker
+            .facts
+            .retain_error_warnings(report.diagnostic(error))
+    })?;
     Ok(checker.facts)
 }
 impl<'a> Checker<'a> {
@@ -242,8 +250,10 @@ impl<'a> Checker<'a> {
             ));
         }
         let mut facts = Declarations::new(report)?;
-        let linkage_sources = foreign::collect(report, &mut facts.foreign).map_err(|error| facts.retain_error_warnings(error))?;
-        let target_feature_sources = call_traits::target_feature_sources(report).map_err(|error| facts.retain_error_warnings(error))?;
+        let linkage_sources = foreign::collect(report, &mut facts.foreign)
+            .map_err(|error| facts.retain_error_warnings(error))?;
+        let target_feature_sources = call_traits::target_feature_sources(report)
+            .map_err(|error| facts.retain_error_warnings(error))?;
         let mut checker = Self {
             annotation_inputs: annotations::Inputs::default(),
             linkage_sources,
@@ -285,7 +295,9 @@ impl<'a> Checker<'a> {
             constant_binders: crate::support::hash::HashMap::default(),
             owner_binders: crate::support::hash::HashMap::default(),
         };
-        checker.import_states().map_err(|error| checker.facts.retain_error_warnings(error))?;
+        checker
+            .import_states()
+            .map_err(|error| checker.facts.retain_error_warnings(error))?;
         Ok(checker)
     }
 }

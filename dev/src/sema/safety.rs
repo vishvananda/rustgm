@@ -1,14 +1,15 @@
 //! Lexical lint policy is independent of unsafe permission and item boundaries.
-mod attributes;
 use crate::resolve::{
     expansion::Report,
     package::{Error, ModuleId},
     unit::NodeKey,
 };
-use crate::support::hash::HashMap;
 
 pub(super) use crate::resolve::lint_policy::Level;
-use crate::resolve::lint_policy::{Change, Lint, Policy};
+use crate::resolve::lint_policy::{
+    Policy,
+    producer::{Producer, Tail},
+};
 /// Actual retained-policy work; absent policies allocate no node table.
 #[derive(Clone, Copy, Default)]
 pub struct Work {
@@ -26,17 +27,39 @@ pub(super) struct Policies {
 }
 impl Policies {
     pub(super) fn analyze(report: &Report) -> Result<Self, Error> {
-        if let Some(removals) = report.removed_functions.as_deref() {
+        if let Some(removals) = report.removed_functions() {
             removals.validate(report)?;
         }
         let mut policies = Self::default();
-        let changes = attributes::collect(report, &mut policies.work)?;
-        if changes.is_empty() {
+        let producer = report.lint_producer();
+        let (attributes, entries, has_changes) = if let Some(producer) = producer {
+            producer.validate(&report.package)?
+        } else {
+            for (file, unit) in report.package.units.iter().enumerate() {
+                if unit.include_context.is_some() {
+                    continue;
+                }
+                if let Some(owner) = unit.configured.owners.iter().find(|owner| {
+                    owner.enabled
+                        && unit.configured.active.get(owner.node.get() as usize) == Some(&true)
+                        && !owner.attributes.is_empty()
+                }) {
+                    return Err(Error::at(
+                        crate::resolve::unit::FileId(u32::try_from(file).map_err(|_| {
+                            Error::at(root_file(report), 0, "lint source file index overflow")
+                        })?),
+                        unit.configured.ast.node(owner.node).span.start,
+                        "active lint source owner has no producer",
+                    ));
+                }
+            }
+            (0, 0, false)
+        };
+        policies.work.attributes = attributes;
+        policies.work.entries = entries;
+        if !has_changes {
             return Ok(policies);
         }
-        policies.unreachable_denials = changes.values().flatten().any(|change| {
-            matches!(change.lint, Lint::UnreachablePatterns) && change.level.denies()
-        });
         let mut nodes: Vec<_> = report
             .package
             .units
@@ -50,14 +73,14 @@ impl Policies {
             })
             .collect();
         policies.work.retained_nodes = nodes.iter().map(Vec::len).sum();
-        policies.walk(report, &changes, &mut nodes)?;
+        policies.walk(report, producer, &mut nodes)?;
         policies.nodes = Some(nodes);
         Ok(policies)
     }
     fn walk(
         &mut self,
         report: &Report,
-        changes: &HashMap<NodeKey, Vec<Change>>,
+        producer: Option<&Producer>,
         nodes: &mut [Vec<Policy>],
     ) -> Result<(), Error> {
         let package = &report.package;
@@ -69,6 +92,7 @@ impl Policies {
                 node: root.root,
             },
             Policy::default(),
+            None::<Tail>,
         )];
         let mut children = Vec::new();
         let budget = self
@@ -77,7 +101,7 @@ impl Policies {
             .checked_mul(2)
             .and_then(|n| n.checked_add(package.modules.len()))
             .ok_or_else(|| Error::at(root.file, 0, "safety policy work budget overflow"))?;
-        while let Some((module, key, mut policy)) = work.pop() {
+        while let Some((module, key, mut policy, mut tail)) = work.pop() {
             self.work.nodes += 1;
             if self.work.nodes > budget {
                 return Err(Error::at(key.file, 0, "safety policy work budget exceeded"));
@@ -87,11 +111,14 @@ impl Policies {
             if !unit.configured.active[key.node.get() as usize] && !removed {
                 continue;
             }
-            if let Some(changes) = changes.get(&key) {
+            if !removed && let Some(producer) = producer {
+                let (changes, next) = producer.changes(package, key, tail)?;
                 for change in changes {
                     policy.apply(key, change)?;
                 }
+                tail = next;
             }
+            self.unreachable_denials |= policy.unreachable_patterns.denies();
             nodes[key.file.0 as usize][key.node.get() as usize] = policy;
             if removed {
                 continue;
@@ -105,6 +132,7 @@ impl Policies {
                         node: child_module.root,
                     },
                     policy,
+                    tail,
                 ));
                 self.work.edges += 1;
                 continue;
@@ -116,7 +144,7 @@ impl Policies {
                 children
                     .iter()
                     .rev()
-                    .map(|&node| (module, NodeKey { node, ..key }, policy)),
+                    .map(|&node| (module, NodeKey { node, ..key }, policy, tail)),
             );
         }
         Ok(())
@@ -156,4 +184,8 @@ impl Policies {
     pub(super) fn work(&self) -> Work {
         self.work
     }
+}
+
+fn root_file(report: &Report) -> crate::resolve::unit::FileId {
+    report.package.modules[0].file
 }

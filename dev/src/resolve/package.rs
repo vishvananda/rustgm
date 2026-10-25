@@ -162,7 +162,10 @@ impl std::fmt::Display for Error {
             DiagnosticFile::Unlocated => write!(output, "input: {}", self.message)?,
         }
         if self.warning_limit_note {
-            write!(output, "\n  note: retained warning work or storage budget exceeded; further warnings unavailable")?;
+            write!(
+                output,
+                "\n  note: retained warning work or storage budget exceeded; further warnings unavailable"
+            )?;
         }
         for trace in &self.expansions {
             write!(

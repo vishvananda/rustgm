@@ -47,6 +47,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                 if attribute.name(forest, unit.source.text()) != Some("must_use") {
                     continue;
                 }
+                facts.reserve_must_use_source(owner_key, attribute.span)?;
                 let reason = reason(unit.source.text(), forest, attribute)
                     .map_err(|message| Error::at(file, attribute.span.start, message))?;
                 if !supported {

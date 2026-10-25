@@ -111,19 +111,25 @@ pub fn analyze_with_hidden(
     ) -> Result<(), Error>,
 ) -> Result<Declarations, Error> {
     let mut checker = Checker::new(report, &mut facts);
-    checker
-        .functions(&mut close)
-        .map_err(|error| checker.facts.retain_error_warnings(report.diagnostic(error)))?;
+    checker.functions(&mut close).map_err(|error| {
+        checker
+            .facts
+            .retain_error_warnings(report.diagnostic(error))
+    })?;
     for index in 0..checker.facts.initializers.len() {
         if !checker.facts.initializers[index].type_checked() {
-            checker
-                .initializer(index)
-                .map_err(|error| checker.facts.retain_error_warnings(report.diagnostic(error)))?;
+            checker.initializer(index).map_err(|error| {
+                checker
+                    .facts
+                    .retain_error_warnings(report.diagnostic(error))
+            })?;
         }
     }
-    checker
-        .complete_constant_patterns()
-        .map_err(|error| checker.facts.retain_error_warnings(report.diagnostic(error)))?;
+    checker.complete_constant_patterns().map_err(|error| {
+        checker
+            .facts
+            .retain_error_warnings(report.diagnostic(error))
+    })?;
     Ok(facts)
 }
 #[derive(Clone, Copy, PartialEq, Eq)]

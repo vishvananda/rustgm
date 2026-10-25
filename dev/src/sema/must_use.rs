@@ -1,5 +1,6 @@
 //! Source-owned diagnostic contracts do not grant execution or trait permission.
 mod declarations;
+mod messages;
 pub(super) use declarations::collect;
 pub(in crate::sema) mod discarded_types;
 mod removed_owners;
@@ -39,6 +40,10 @@ pub struct Work {
     pub warnings: usize,
     pub inhabitation_steps: usize,
     pub inhabitation_queries: usize,
+    pub contract_input_steps: usize,
+    pub contract_input_bytes: usize,
+    pub message_steps: usize,
+    pub message_bytes: usize,
 }
 #[derive(Default)]
 pub(super) struct Contracts {
@@ -50,7 +55,10 @@ pub(super) struct Contracts {
     trait_steps: std::cell::Cell<usize>,
     pub(super) trait_bytes: std::cell::Cell<usize>,
     type_requirements: HashMap<crate::types::TypeId, discarded_types::TypeResult>,
-    trivial: HashMap<(crate::resolve::package::ModuleId, crate::types::TypeId), Result<bool, &'static str>>,
+    trivial: HashMap<
+        (crate::resolve::package::ModuleId, crate::types::TypeId),
+        Result<bool, &'static str>,
+    >,
     trivial_bytes: usize,
     sources: Vec<Contract>,
     definitions: HashMap<DefId, usize>,
@@ -71,7 +79,9 @@ impl Declarations {
     /// Move the existing sink at a terminal failure; borrowed success views stay persistent.
     #[must_use]
     pub fn retain_error_warnings(&mut self, error: Error) -> Error {
-        let Some(contracts) = self.must_use_contracts.as_deref_mut() else { return error };
+        let Some(contracts) = self.must_use_contracts.as_deref_mut() else {
+            return error;
+        };
         error.retain_warnings(std::mem::take(&mut contracts.warnings))
     }
     #[must_use]
@@ -165,9 +175,15 @@ impl Declarations {
             WarningCode::DuplicateMacroAttributes => {
                 self.safety_policies.duplicate_macro_attributes(key)
             }
-            WarningCode::MalformedDiagnosticAttributes => self.safety_policies.diagnostic_attributes(key, 0),
-            WarningCode::MalformedDiagnosticFormatLiterals => self.safety_policies.diagnostic_attributes(key, 1),
-            WarningCode::MisplacedDiagnosticAttributes => self.safety_policies.diagnostic_attributes(key, 2),
+            WarningCode::MalformedDiagnosticAttributes => {
+                self.safety_policies.diagnostic_attributes(key, 0)
+            }
+            WarningCode::MalformedDiagnosticFormatLiterals => {
+                self.safety_policies.diagnostic_attributes(key, 1)
+            }
+            WarningCode::MisplacedDiagnosticAttributes => {
+                self.safety_policies.diagnostic_attributes(key, 2)
+            }
         };
         if level == Level::Allow {
             return Ok(());
@@ -176,22 +192,52 @@ impl Declarations {
         if level.denies() {
             return Err(diagnostic);
         }
-        self.must_use_contracts.get_or_insert_default().record_warning(key, offset, issue, code, diagnostic)
+        self.must_use_contracts
+            .get_or_insert_default()
+            .record_warning(key, offset, issue, code, diagnostic)
     }
 }
 impl Contracts {
-    fn record_warning(&mut self, key: NodeKey, offset: u32, issue: u32, code: WarningCode, diagnostic: Error) -> Result<(), Error> {
+    fn record_warning(
+        &mut self,
+        key: NodeKey,
+        offset: u32,
+        issue: u32,
+        code: WarningCode,
+        diagnostic: Error,
+    ) -> Result<(), Error> {
         self.warning_steps = self.warning_steps.saturating_add(1);
         if self.warning_steps > 10_000_000 {
-            return Err(Error::at(key.file, offset, "semantic warning work budget exceeded"));
+            return Err(Error::at(
+                key.file,
+                offset,
+                "semantic warning work budget exceeded",
+            ));
         }
         if !self.diagnosed.contains(&(code, key, offset, issue)) {
-            let (steps, payload) = diagnostic.warning_payload().ok_or_else(|| Error::at(key.file, offset, "semantic warning has an invalid nested carrier"))?;
-            let slots = 8 * size_of::<Warning>() + 4 * size_of::<(WarningCode, NodeKey, u32, u32)>();
-            self.warning_bytes = self.warning_bytes.saturating_add(payload).saturating_add(slots);
+            let (steps, payload) = diagnostic.warning_payload().ok_or_else(|| {
+                Error::at(
+                    key.file,
+                    offset,
+                    "semantic warning has an invalid nested carrier",
+                )
+            })?;
+            let slots =
+                8 * size_of::<Warning>() + 4 * size_of::<(WarningCode, NodeKey, u32, u32)>();
+            self.warning_bytes = self
+                .warning_bytes
+                .saturating_add(payload)
+                .saturating_add(slots);
             self.warning_steps = self.warning_steps.saturating_add(steps);
-            if self.warnings.len() >= 1_000_000 || self.warning_bytes > 64 * 1024 * 1024 || self.warning_steps > 10_000_000 {
-                return Err(Error::at(key.file, offset, "semantic warning work or storage budget exceeded"));
+            if self.warnings.len() >= 1_000_000
+                || self.warning_bytes > 64 * 1024 * 1024
+                || self.warning_steps > 10_000_000
+            {
+                return Err(Error::at(
+                    key.file,
+                    offset,
+                    "semantic warning work or storage budget exceeded",
+                ));
             }
             self.diagnosed.insert((code, key, offset, issue));
             self.warnings.push(Warning { code, diagnostic });

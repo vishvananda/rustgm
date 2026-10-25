@@ -648,7 +648,9 @@ impl Declarations {
                 .collect(),
             functions: Vec::new(),
         };
-        value.prepare_resolution(report).map_err(|error| value.retain_error_warnings(error))?;
+        value
+            .prepare_resolution(report)
+            .map_err(|error| value.retain_error_warnings(error))?;
         Ok(value)
     }
     fn prepare_resolution(&mut self, report: &Report) -> Result<(), Error> {

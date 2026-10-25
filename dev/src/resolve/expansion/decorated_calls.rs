@@ -14,7 +14,12 @@ use crate::{
 impl<S: Sources> Engine<'_, S> {
     /// Compiler attributes retain their owning validators. The first real macro
     /// attribute blocks its owner until lookup completes; no child is evaluated.
-    pub(super) fn attribute_call(&mut self, visit: Visit, file: FileId) -> Result<bool, Error> {
+    pub(super) fn attribute_call(
+        &mut self,
+        visit: Visit,
+        file: FileId,
+        frame: u32,
+    ) -> Result<bool, Error> {
         let selected = self.macro_attribute(visit, file)?;
         let Some((effect, offset)) = selected else {
             return Ok(false);
@@ -84,6 +89,7 @@ impl<S: Sources> Engine<'_, S> {
             eager: None,
             notified: false,
         });
+        self.lint_save_call(index, frame)?;
         self.ready.push_back(index);
         Ok(true)
     }
@@ -129,8 +135,11 @@ impl<S: Sources> Engine<'_, S> {
             let path = attribute.path;
             if path.end == path.start + 3
                 && forest.punctuation(path.start + 1, Punctuation::ColonColon)
-                && forest.name(unit.source.text(), path.start).zip(forest.name(unit.source.text(), path.start + 2))
-                    .and_then(|(tool, name)| Consumer::tool_member(tool, name)).is_some()
+                && forest
+                    .name(unit.source.text(), path.start)
+                    .zip(forest.name(unit.source.text(), path.start + 2))
+                    .and_then(|(tool, name)| Consumer::tool_member(tool, name))
+                    .is_some()
             {
                 continue;
             }

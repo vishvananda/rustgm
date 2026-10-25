@@ -30,9 +30,20 @@ impl Checker<'_> {
             .node(self.key(value))
             .and_then(|fact| fact.ty)
             .ok_or_else(|| self.error(value, "must_use discard requires its solved source type"))?;
-        let trivial = self.facts.must_use_trivial(self.report, self.state.module, ty, &mut self.state.coverage_cache)
+        let trivial = self
+            .facts
+            .must_use_trivial(
+                self.report,
+                self.state.module,
+                ty,
+                &mut self.state.coverage_cache,
+            )
             .map_err(|message| self.error(value, message))?;
-        let mut issue = if trivial { 0 } else { self.discarded_type(statement, value, ty)? };
+        let mut issue = if trivial {
+            0
+        } else {
+            self.discarded_type(statement, value, ty)?
+        };
         if let Some(definition) = self.discarded_callable(value)? {
             self.discarded_requirement(
                 statement,
@@ -114,19 +125,22 @@ impl Checker<'_> {
         requirement: Requirement,
         issue: u32,
     ) -> Result<(), Error> {
-        let message = match requirement {
-            Requirement::Declaration(definition) => {
-                let contract = self
-                    .facts
-                    .must_use_contract(self.report, definition)?
-                    .ok_or_else(|| self.error(value, "must_use result lost its actual contract"))?;
-                contract.reason.map_or_else(
-                    || "unused must_use result".to_owned(),
-                    |reason| format!("unused must_use result: {reason}"),
-                )
-            }
-            Requirement::Closure => "unused closure that must be used".to_owned(),
-        };
+        let key = self.key(statement);
+        let offset = self
+            .report
+            .package
+            .unit(key.file)
+            .configured
+            .ast
+            .node(value)
+            .span
+            .start;
+        if self.facts.must_use_warning_recorded(key, offset, issue) {
+            return Ok(());
+        }
+        let message = self
+            .facts
+            .must_use_message(self.report, self.key(value), requirement)?;
         self.discarded_warning(statement, value, issue, message)
     }
     fn discarded_warning(

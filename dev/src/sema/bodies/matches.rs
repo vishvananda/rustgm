@@ -501,7 +501,10 @@ impl Checker<'_> {
         let (report, source) = (self.report, self.key(node));
         let error =
             |message: &str| crate::sema::model::Declarations::error(report, source, message);
-        self.facts.aggregates.prepare(&mut self.facts.types, ty).map_err(error)?;
+        self.facts
+            .aggregates
+            .prepare(&mut self.facts.types, ty)
+            .map_err(error)?;
         let mut coverage = patterns::coverage::Coverage::new(
             self.facts,
             report,

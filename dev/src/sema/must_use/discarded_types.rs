@@ -108,7 +108,9 @@ impl Declarations {
                 self.must_use_traits(report, &declaration.bounds)?
             }
             Kind::Projection(application) => {
-                let declaration = self.associated.type_contract(DefId(application.item.0))
+                let declaration = self
+                    .associated
+                    .type_contract(DefId(application.item.0))
                     .ok_or_else(|| error("must_use projected result contract is missing"))?;
                 self.must_use_traits(report, &declaration.bounds)?
             }

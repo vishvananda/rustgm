@@ -7,8 +7,7 @@ pub(super) fn collect(
     owner: NodeKey,
 ) -> Result<(), Error> {
     let Some(removal) = report
-        .removed_functions
-        .as_deref()
+        .removed_functions()
         .and_then(|removals| removals.get(owner))
     else {
         return Ok(());

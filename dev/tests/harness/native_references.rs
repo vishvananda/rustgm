@@ -204,6 +204,26 @@ fn check_inputs(
                 .output()?,
         )?;
         execute(name, &native, panic, false)?;
+        retire_passed_native_outputs(&folder, name, panic)?;
     }
+    Ok(())
+}
+
+fn retire_passed_native_outputs(
+    folder: &Path,
+    name: &str,
+    panic: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // Preserve source, LowIR and a hash receipt before retiring the two known
+    // executables. This point is reached only after both exact output checks.
+    const CLEANUP: &str = "from pathlib import Path\nimport hashlib,json,sys\np=Path(sys.argv[1]);n=sys.argv[2]\nfiles={k:p/(n+'.'+v) for k,v in [('source','rs'),('lowir','lowir'),('independent','rustc'),('native','native')]}\nrow={'sha256':{k:hashlib.sha256(v.read_bytes()).hexdigest() for k,v in files.items()},'both_exact_runtime_checks_passed':True,'expected_panic':sys.argv[3]=='true'}\n(p/(n+'.native-receipt.json')).write_text(json.dumps(row,sort_keys=True)+'\\n')\nfor k in ['independent','native']:files[k].unlink()\n";
+    let output = Command::new("python3")
+        .arg("-c")
+        .arg(CLEANUP)
+        .arg(folder)
+        .arg(name)
+        .arg(panic.to_string())
+        .output()?;
+    compile(name, output)?;
     Ok(())
 }

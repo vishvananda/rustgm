@@ -194,13 +194,17 @@ impl<S: Sources> Engine<'_, S> {
         });
         self.work.push(Work::Restore(self.head));
         self.head = scope;
-        self.push_visit(Visit {
-            node: root,
-            depth: visit.depth + 1,
-            introduction: context,
-            eager: Some(index),
-            ..visit
-        })?;
+        let tail = self.lint_call_tail(index)?;
+        self.push_visit_with_tail(
+            Visit {
+                node: root,
+                depth: visit.depth + 1,
+                introduction: context,
+                eager: Some(index),
+                ..visit
+            },
+            tail,
+        )?;
         self.scan()?;
         if self.calls[index]
             .eager
@@ -322,12 +326,16 @@ impl<S: Sources> Engine<'_, S> {
             restore: self.head,
         });
         self.head = scope;
-        self.push_visit(Visit {
-            depth: visit.depth + 1,
-            introduction: context,
-            include,
-            ..visit
-        })?;
+        let tail = self.lint_call_tail(index)?;
+        self.push_visit_with_tail(
+            Visit {
+                depth: visit.depth + 1,
+                introduction: context,
+                include,
+                ..visit
+            },
+            tail,
+        )?;
         self.scan()?;
         self.completed(index)
     }
