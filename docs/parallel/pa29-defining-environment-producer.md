@@ -31,13 +31,17 @@ default Self assumptions versus declaration input, full aliases, rejected
 incomplete alias scope, the unchanged ordinary Arc, and mutual-versus-one-way
 builtin lifetime equivalence.
 
-These 22 tests are focused development evidence. The new private binary
+The 22 tests remain focused development evidence. The same private binary
 SHA-256 `d7c83e07e92018cd1f6112d875dcda76f7c474b17925940892bb513a10fd72ca`
-still requires its once-only complete nonignored inventory before this
-checkpoint can be called fully qualified. Reuse that exact built binary; do
-not repeat its static/native checks or rebuild merely to run the inventory.
-The planned full pass follows the coordinated performance window. No new
-performance result is claimed for this source extraction.
+then executed its complete captured nonignored inventory exactly once:
+**1,561 passed, zero failed**, with two ignored cases enumerated separately and
+all 22 required names checked. This used the existing binary without rebuilding
+or repeating static/native checks. The full inventory receipt is
+`lib008/env-producer-full-v1`, SHA-256
+`585b36c8c8c8baa9d931cf7f1bc2d735100c125526822e48bd106f6e7236899d`.
+Source, tools, fixtures and executable hashes remained unchanged. This closes
+functional qualification of the extraction; no new performance result is
+claimed for this source change.
 
 No source profile, codec, numbering domain or imported default is activated by
 this change. Approved review-only Provided/numbering designs remain separate;
