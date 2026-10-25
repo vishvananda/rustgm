@@ -174,6 +174,16 @@ impl<'a> FrameView<'a> {
         })
     }
 
+    pub(super) fn matches_header(&self, index: usize, data: Option<&Rc<HeaderData>>) -> bool {
+        self.definitions.get(index).is_some_and(|definition| {
+            match (definition.header.as_ref(), data) {
+                (None, None) => true,
+                (Some(expected), Some(actual)) => Rc::ptr_eq(expected, actual),
+                _ => false,
+            }
+        })
+    }
+
     pub(super) fn authenticate_source(
         &self,
         index: usize,
@@ -194,12 +204,7 @@ impl<'a> FrameView<'a> {
             ));
         }
         let data = header.into_data();
-        let matches = match (&definition.header, &data) {
-            (None, None) => true,
-            (Some(expected), Some(actual)) => Rc::ptr_eq(expected, actual),
-            _ => false,
-        };
-        if !matches {
+        if !self.matches_header(index, data.as_ref()) {
             return Err(Error::at(
                 node.file,
                 0,

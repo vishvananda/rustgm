@@ -149,6 +149,7 @@ impl Unit {
             owners: report.owners,
             active: report.active,
             effects: report.effects,
+            cfg_uses: report.cfg_uses,
         };
         let mut owner_indices = vec![None; configured.ast.nodes.len()];
         for (index, owner) in configured.owners.iter().enumerate() {

@@ -39,6 +39,13 @@ pub fn resolve(source: &str, expanded: bool) -> Result<Report, String> {
     reason = "shared helper is compiled by suites without source providers"
 )]
 pub fn source_provider(source: &str, tag: &str) -> Result<Report, String> {
+    source_provider_config(source, tag, &Config::default())
+}
+#[allow(
+    dead_code,
+    reason = "shared helper is compiled by suites without explicit source profiles"
+)]
+pub fn source_provider_config(source: &str, tag: &str, config: &Config) -> Result<Report, String> {
     use rustgm::{
         resolve::bindings::Context,
         support::{bindings::Mode, crates::CrateIdentity},
@@ -55,9 +62,8 @@ pub fn source_provider(source: &str, tag: &str) -> Result<Report, String> {
         path: "source-provider.rs".into(),
         source: SourceFile::new(source.as_bytes().to_vec())?,
     };
-    let expanded =
-        resolve::expansion::analyze_with_context(input, &mut NoFiles, &Config::default(), &options)
-            .map_err(|e| e.to_string())?;
+    let expanded = resolve::expansion::analyze_with_context(input, &mut NoFiles, config, &options)
+        .map_err(|e| e.to_string())?;
     resolve::analyze_expanded(expanded).map_err(|e| e.to_string())
 }
 

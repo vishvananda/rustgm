@@ -68,7 +68,7 @@ fn repeated_empty_attributes_keep_authenticated_negative_rows() -> TestResult {
             let after = owner_usage(&report)?.0;
             let memo = session.memo.as_ref().ok_or("negative memo")?;
             assert_eq!(memo.headers.len(), 1);
-            assert!(memo.headers.values().next().ok_or("header")?.is_some());
+            assert!(memo.headers.values().next().ok_or("header")?.data.is_some());
             assert!(
                 after - warm <= 128 * uses,
                 "{length}/{uses}: {}",
@@ -104,6 +104,7 @@ fn unannotated_macro_frames_retain_authenticated_plain_headers() -> TestResult {
             .values()
             .next()
             .ok_or("plain header")?
+            .data
             .is_none()
     );
     assert!(after - warm <= 128 * 128);

@@ -3,6 +3,27 @@ use super::{Constant, Evaluator, Failure, Reader, Type, TypeId, View};
 use crate::types::instance::Instance;
 
 impl Reader<'_> {
+    pub(crate) fn source_runtime_check(
+        self,
+        instance: Instance,
+        origin: crate::resolve::body_origin::BodyOrigin,
+    ) -> Result<
+        Option<(
+            crate::sema::compiler_items::RuntimeCheckSelection,
+            crate::support::runtime_checks::RuntimeCheckBinding,
+            crate::support::runtime_checks::RuntimeCheckConfig,
+        )>,
+        &'static str,
+    > {
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Ok(None);
+        };
+        let Some(selection) = catalog.runtime_check_selection(self.facts, instance)? else {
+            return Ok(None);
+        };
+        let (binding, config) = catalog.runtime_check_binding(origin)?;
+        Ok(Some((selection, binding, config)))
+    }
     pub(crate) fn source_select(
         self,
         instance: Instance,

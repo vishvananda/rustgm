@@ -134,3 +134,83 @@ fn disabled_scoped_declarations_do_not_require_a_request() -> Result {
     crate::test_source::resolve(source, true)?;
     Ok(())
 }
+
+#[test]
+fn compiler_root_options_preserve_independent_requests_in_both_source_modes() -> Result {
+    for (name, coherence, preserve, cfg_request) in [
+        ("ordinary-none", false, false, false),
+        ("coherence", true, false, false),
+        ("preserve-ub", false, true, false),
+        ("all-bits", true, true, true),
+        ("cfg-disabled", false, false, false),
+        ("cfg-enabled", true, true, false),
+        ("cfg-request-alone", false, false, true),
+        ("disabled-module", false, false, false),
+    ] {
+        let source =
+            crate::test_source::fixture(&format!("pa31/tests/spec/crate-options/{name}.rs"))?;
+        let ordinary = crate::test_source::resolve(&source, true)?;
+        assert_eq!(ordinary.package.coherence_is_core(), coherence, "{name}");
+        assert_eq!(ordinary.package.preserves_ub_checks(), preserve, "{name}");
+        assert_eq!(
+            ordinary.package.requested_cfg_ub_checks(),
+            cfg_request,
+            "{name}"
+        );
+        let provider = crate::test_source::source_provider(
+            &format!("#![no_core]#![feature(no_core)]{source}"),
+            "root_options",
+        )?;
+        assert_eq!(
+            provider.package.coherence_is_core(),
+            coherence,
+            "{name}/provider"
+        );
+        assert_eq!(
+            provider.package.preserves_ub_checks(),
+            preserve,
+            "{name}/provider"
+        );
+        assert_eq!(
+            provider.package.requested_cfg_ub_checks(),
+            cfg_request,
+            "{name}/provider"
+        );
+        if name == "all-bits" {
+            assert_eq!(ordinary.package.macro_features.0, 63);
+        }
+    }
+    assert_eq!(size_of::<MacroFeatures>(), 1);
+    assert_eq!(size_of::<Features>(), 2);
+    assert_eq!(size_of::<Package>(), 256);
+    Ok(())
+}
+#[test]
+fn compiler_root_options_reject_malformed_misplaced_and_duplicate_active_sources() -> Result {
+    for (name, expected) in [
+        ("coherence-missing-gate", "requires rustc_attrs"),
+        ("coherence-arguments", "inner word attribute"),
+        ("coherence-name-value", "inner word attribute"),
+        ("coherence-function", "inner word attribute"),
+        ("coherence-module", "actual crate root owner"),
+        ("coherence-duplicate", "duplicate compiler crate option"),
+        ("coherence-unsafe", "inner word attribute"),
+        ("coherence-generated-misplaced", "inner word attribute"),
+        ("preserve-missing-gate", "requires rustc_attrs"),
+        ("preserve-arguments", "inner word attribute"),
+        ("preserve-name-value", "inner word attribute"),
+        ("preserve-function", "inner word attribute"),
+        ("preserve-module", "actual crate root owner"),
+        ("preserve-duplicate", "duplicate compiler crate option"),
+        ("preserve-unsafe", "inner word attribute"),
+        ("preserve-generated-misplaced", "inner word attribute"),
+    ] {
+        let source =
+            crate::test_source::fixture(&format!("pa31/tests/spec/crate-options/{name}.rs"))?;
+        let error = crate::test_source::resolve(&source, true)
+            .err()
+            .ok_or("invalid crate option accepted")?;
+        assert!(error.contains(expected), "{name}: {error}");
+    }
+    Ok(())
+}

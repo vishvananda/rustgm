@@ -20,6 +20,7 @@ struct Configuration {
     active: Vec<bool>,
     owners: Vec<Owner>,
     effects: Vec<AttributeEffect>,
+    cfg_uses: Option<Box<crate::expand::configured::ConfiguredUses>>,
 }
 impl Configuration {
     fn take<L>(generated: ConfiguredSyntax<L>) -> (Syntax<L>, Self) {
@@ -29,6 +30,7 @@ impl Configuration {
                 active: generated.active,
                 owners: generated.owners,
                 effects: generated.effects,
+                cfg_uses: generated.cfg_uses,
             },
         )
     }
@@ -37,8 +39,42 @@ impl Configuration {
             active: generated.active.clone(),
             owners: generated.owners.clone(),
             effects: generated.effects.clone(),
+            cfg_uses: generated.cfg_uses.clone(),
         }
     }
+}
+
+/// Owned syntax data awaiting the actual Engine feature-use checkpoint.
+/// The retained source incarnation supplements the actual call and arena prefixes.
+pub(crate) struct PreparedChoice {
+    unit: *const Unit,
+    source: std::sync::Arc<crate::support::source::OriginalImage>,
+    source_len: usize,
+    node_count: usize,
+    effect_count: usize,
+    site: crate::expand::builtin::choice::Site,
+    ast: Syntax<StoredValue>,
+    configuration: Configuration,
+    literals: Storage,
+    span: Span,
+    parser_calls: usize,
+    cfg_uses: Vec<crate::expand::config::CfgUse>,
+}
+impl PreparedChoice {
+    pub(crate) fn cfg_uses(&self) -> &[crate::expand::config::CfgUse] {
+        &self.cfg_uses
+    }
+}
+
+fn reserve_cfg_uses(
+    existing: &mut Option<Box<crate::expand::configured::ConfiguredUses>>,
+    incoming: Option<&crate::expand::configured::ConfiguredUses>,
+) -> Result<(), LexError> {
+    if let Some(uses) = existing {
+        let count = incoming.map_or(0, crate::expand::configured::ConfiguredUses::len);
+        uses.reserve(count)?;
+    }
+    Ok(())
 }
 
 fn add(base: usize, count: usize) -> Result<u32, LexError> {
@@ -146,6 +182,10 @@ impl Unit {
         let base = self.source.append_offset(source).map_err(|e| error(0, e))?;
         let indices =
             self.expansion_metadata(target, ast, &mut configuration, base, source.len())?;
+        reserve_cfg_uses(
+            &mut self.configured.cfg_uses,
+            configuration.cfg_uses.as_deref(),
+        )?;
         let mut previous_end = 0;
         for origin in origins {
             shift(origin.generated, base, source.len())?;
@@ -249,6 +289,9 @@ impl Unit {
             owner.attributes.end += effect_base as usize;
         }
         let effect_count = generated.effects.len();
+        if let Some(uses) = &mut generated.cfg_uses {
+            uses.relocate(effect_base, effect_count, |span| shift(span, base, length))?;
+        }
         for effect in &mut generated.effects {
             if effect.capture as usize >= ast.attributes.len()
                 || effect
@@ -336,23 +379,24 @@ impl Unit {
         let root =
             NodeId::new(add(self.configured.ast.nodes.len(), ast.nodes.len())? + ast.root.get());
         let indices = self.expansion_metadata(root, &ast, &mut configuration, 0, source.len())?;
+        reserve_cfg_uses(
+            &mut self.configured.cfg_uses,
+            configuration.cfg_uses.as_deref(),
+        )?;
         let root = append_syntax(source, 0, ast, &mut self.configured.ast, &mut self.literals)?;
         self.retain_configuration(configuration, indices);
         Ok(root)
     }
 
-    /// Select over this unit's real source/opaque registry, without a spelling replay.
-    /// Every inactive RHS is parsed and discarded before only selected configuration
-    /// and syntax are committed. Existing token origins and payload IDs stay intact.
-    pub(crate) fn install_choice<'a>(
-        &mut self,
+    pub(crate) fn prepare_choice<'a>(
+        &self,
         site: crate::expand::builtin::choice::Site,
         input: &crate::expand::macros::input::Input,
         registry: &crate::expand::registry::Registry,
         other: impl Fn(super::FileId) -> Option<&'a Unit>,
         config: &crate::expand::config::Config,
         charge: &crate::expand::builtin::choice::Charge<'_>,
-    ) -> Result<crate::expand::builtin::choice::Installed, LexError> {
+    ) -> Result<PreparedChoice, LexError> {
         let actual = self
             .configured
             .ast
@@ -384,6 +428,7 @@ impl Unit {
             ast,
             span,
             parser_calls,
+            cfg_uses,
         } = crate::expand::builtin::choice::select(
             source,
             input,
@@ -392,7 +437,7 @@ impl Unit {
             &inputs,
             charge,
         )?;
-        let (ast, mut configuration) = Configuration::take(
+        let (ast, configuration) = Configuration::take(
             crate::expand::crate_syntax::configure_with_inputs(source, ast, config, &inputs)?,
         );
         charge(
@@ -402,17 +447,137 @@ impl Unit {
                 .saturating_mul(size_of::<crate::syntax::ast::Node>())
                 .saturating_mul(4),
         )?;
-        let indices =
-            self.expansion_metadata(site.target, &ast, &mut configuration, 0, source.len())?;
-        let new_root = append_syntax(source, 0, ast, &mut self.configured.ast, &mut self.literals)?;
-        self.replace_syntax(site.target, new_root, configuration, indices);
-        Ok(crate::expand::builtin::choice::Installed {
-            generated: span,
+        let literal_bytes = ast
+            .literals
+            .iter()
+            .map(|value| match value {
+                crate::literal::Value::String(bytes)
+                | crate::literal::Value::ByteString(bytes)
+                | crate::literal::Value::CString(bytes) => bytes.len(),
+                crate::literal::Value::Float(value) => value.decimal.len(),
+                _ => 0,
+            })
+            .fold(0_usize, usize::saturating_add);
+        charge(
+            ast.literals.len(),
+            literal_bytes
+                .saturating_mul(4)
+                .saturating_add(size_of::<PreparedChoice>()),
+        )?;
+        let mut literals = Storage::default();
+        let ast =
+            ast.map_literals(|value| literals.store(source, &value).map_err(|e| error(0, e)))?;
+        Ok(PreparedChoice {
+            unit: std::ptr::from_ref(self),
+            source: std::sync::Arc::clone(self.source.original_image()),
+            source_len: source.len(),
+            node_count: self.configured.ast.nodes.len(),
+            effect_count: self.configured.effects.len(),
+            site,
+            ast,
+            configuration,
+            literals,
+            span,
             parser_calls,
+            cfg_uses,
         })
     }
 
+    pub(crate) fn install_prepared_choice(
+        &mut self,
+        mut prepared: PreparedChoice,
+    ) -> Result<crate::expand::builtin::choice::Installed, LexError> {
+        let site = prepared.site;
+        let actual = self
+            .configured
+            .ast
+            .nodes
+            .get(site.target.get() as usize)
+            .ok_or_else(|| {
+                error(
+                    site.original.start,
+                    "prepared cfg_select lost its actual call",
+                )
+            })?;
+        if !std::ptr::eq(self, prepared.unit)
+            || !std::sync::Arc::ptr_eq(self.source.original_image(), &prepared.source)
+            || self.source.text().len() != prepared.source_len
+            || self.configured.ast.nodes.len() != prepared.node_count
+            || self.configured.effects.len() != prepared.effect_count
+            || actual.span != site.original
+            || self.configured.active.get(site.target.get() as usize) != Some(&true)
+            || !matches!(actual.kind, Kind::Macro { context, .. } if context == site.grammar)
+        {
+            return Err(error(
+                site.original.start,
+                "prepared cfg_select belongs to another unit/source/call",
+            ));
+        }
+        let indices = self.expansion_metadata(
+            site.target,
+            &prepared.ast,
+            &mut prepared.configuration,
+            0,
+            prepared.source_len,
+        )?;
+        reserve_cfg_uses(
+            &mut self.configured.cfg_uses,
+            prepared.configuration.cfg_uses.as_deref(),
+        )?;
+        let source = self.source.text();
+        let mark = self.literals.decoded_bytes();
+        let result = transfer::append(
+            &prepared.ast,
+            &mut self.configured.ast,
+            |span| shift(span, 0, source.len()),
+            |value| {
+                self.literals
+                    .import(source, &prepared.literals, *value, 0)
+                    .map_err(|e| error(0, e))
+            },
+        );
+        let new_root = match result {
+            Ok(root) => root,
+            Err(error) => {
+                self.literals.truncate(mark);
+                return Err(error);
+            }
+        };
+        self.replace_syntax(site.target, new_root, prepared.configuration, indices);
+        Ok(crate::expand::builtin::choice::Installed {
+            generated: prepared.span,
+            parser_calls: prepared.parser_calls,
+        })
+    }
+
+    #[cfg(test)]
+    pub(crate) fn install_choice<'a>(
+        &mut self,
+        site: crate::expand::builtin::choice::Site,
+        input: &crate::expand::macros::input::Input,
+        registry: &crate::expand::registry::Registry,
+        other: impl Fn(super::FileId) -> Option<&'a Unit>,
+        config: &crate::expand::config::Config,
+        charge: &crate::expand::builtin::choice::Charge<'_>,
+    ) -> Result<crate::expand::builtin::choice::Installed, LexError> {
+        let prepared = self.prepare_choice(site, input, registry, other, config, charge)?;
+        if !prepared.cfg_uses.is_empty() {
+            return Err(error(
+                site.original.start,
+                "cfg_select requires its actual feature-use checkpoint",
+            ));
+        }
+        self.install_prepared_choice(prepared)
+    }
     fn retain_configuration(&mut self, configuration: Configuration, indices: Vec<NonZeroU32>) {
+        // Capacity and provenance were checked before committing either syntax arena.
+        if let Some(mut incoming) = configuration.cfg_uses {
+            if let Some(uses) = &mut self.configured.cfg_uses {
+                uses.append_reserved(&mut incoming);
+            } else {
+                self.configured.cfg_uses = Some(incoming);
+            }
+        }
         self.configured.active.extend(configuration.active);
         self.owner_indices
             .resize(self.configured.ast.nodes.len(), None);

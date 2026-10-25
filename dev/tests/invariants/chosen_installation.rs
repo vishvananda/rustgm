@@ -151,3 +151,127 @@ fn only_selected_configuration_is_committed_with_original_source_and_origins() -
     assert_eq!(state(&unit), before);
     Ok(())
 }
+
+#[test]
+fn prepared_choice_keeps_owned_source_call_identity_and_publishes_nothing_before_gate() -> Result {
+    let source = "choice!{all()=>{fn selected(){let _=\"retained\";}} _=>{fn hidden(){}}}";
+    let (mut unit, site, input) = pending(source)?;
+    let before = state(&unit);
+    let prepared = unit
+        .prepare_choice(
+            site,
+            &input,
+            &Registry::default(),
+            |_| None,
+            &Config::default(),
+            &|_, _| Ok(()),
+        )
+        .map_err(|e| e.message)?;
+    assert_eq!(state(&unit), before);
+    assert_eq!(unit.source.text(), source);
+    let retained = std::sync::Arc::clone(unit.source.original_image());
+    unit.source = SourceFile::new(source.as_bytes().to_vec())?;
+    assert!(!std::sync::Arc::ptr_eq(
+        &retained,
+        unit.source.original_image()
+    ));
+    assert!(unit.install_prepared_choice(prepared).is_err());
+    assert_eq!(state(&unit), before);
+    let prepared = unit
+        .prepare_choice(
+            site,
+            &input,
+            &Registry::default(),
+            |_| None,
+            &Config::default(),
+            &|_, _| Ok(()),
+        )
+        .map_err(|e| e.message)?;
+    let (mut foreign, _, _) = pending(source)?;
+    let foreign_before = state(&foreign);
+    assert!(foreign.install_prepared_choice(prepared).is_err());
+    assert_eq!(state(&foreign), foreign_before);
+    let (mut gated, site, input) =
+        pending("choice!{ub_checks=>{fn enabled(){}} _=>{fn disabled(){}}}")?;
+    let before = state(&gated);
+    let prepared = gated
+        .prepare_choice(
+            site,
+            &input,
+            &Registry::default(),
+            |_| None,
+            &Config::default(),
+            &|_, _| Ok(()),
+        )
+        .map_err(|e| e.message)?;
+    assert_eq!(prepared.cfg_uses().len(), 1);
+    drop(prepared); // A failed Engine gate consumes no Unit publication.
+    assert_eq!(state(&gated), before);
+    assert!(
+        gated
+            .install_choice(
+                site,
+                &input,
+                &Registry::default(),
+                |_| None,
+                &Config::default(),
+                &|_, _| Ok(())
+            )
+            .is_err()
+    );
+    assert_eq!(state(&gated), before);
+    Ok(())
+}
+
+#[test]
+fn selected_false_owner_uses_graft_to_actual_effects_and_fresh_instances_keep_only_originals()
+-> Result {
+    let source = "#[cfg(ub_checks)]fn original_hidden(){}choice!{all()=>{#[cfg(ub_checks)]fn selected_hidden(){}}}";
+    let (mut unit, site, input) = pending(source)?;
+    let original = unit
+        .configured
+        .cfg_uses
+        .as_ref()
+        .ok_or("original false-owner demand")?
+        .as_slice()[0];
+    let before_effects = unit.configured.effects.len();
+    unit.install_choice(
+        site,
+        &input,
+        &Registry::default(),
+        |_| None,
+        &Config::default(),
+        &|_, _| Ok(()),
+    )
+    .map_err(|e| e.message)?;
+    let uses = unit.configured.cfg_uses.as_ref().ok_or("grafted demands")?;
+    assert_eq!(uses.len(), 2);
+    assert_eq!(uses.as_slice()[0].effect, original.effect);
+    assert!((uses.as_slice()[1].effect as usize) >= before_effects);
+    let effect = &unit.configured.effects[uses.as_slice()[1].effect as usize];
+    assert!(matches!(
+        effect.attribute.effect,
+        crate::expand::configured::Effect::Cfg(false)
+    ));
+    assert_eq!(
+        unit.source.text().get(
+            uses.as_slice()[1].predicate.span.start as usize
+                ..uses.as_slice()[1].predicate.span.end as usize
+        ),
+        Some("ub_checks")
+    );
+    let fresh = unit.fresh_instance().map_err(|e| e.message)?;
+    let copied = fresh
+        .configured
+        .cfg_uses
+        .as_ref()
+        .ok_or("retained original demand")?;
+    assert_eq!(copied.len(), 1);
+    assert_eq!(copied.as_slice()[0].effect, original.effect);
+    assert_eq!(copied.as_slice()[0].predicate.span, original.predicate.span);
+    assert!(matches!(
+        fresh.configured.ast.node(site.target).kind,
+        Kind::Macro { .. }
+    ));
+    Ok(())
+}

@@ -43,6 +43,8 @@ mod panic_routing;
 mod provided_methods;
 #[path = "provider_traits/signature_views.rs"]
 mod signature_views;
+#[path = "provider_traits/ub_checks.rs"]
+mod ub_checks;
 #[path = "provider_traits/validated_reads.rs"]
 mod validated_reads;
 pub(super) type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
@@ -85,6 +87,12 @@ pub(super) fn report_in_edition(
     source: &str,
     edition: rustgm::support::edition::Edition,
 ) -> TestResult<resolve::expansion::Report> {
+    report_with_config(source, &Config::in_edition(edition))
+}
+pub(super) fn report_with_config(
+    source: &str,
+    config: &Config,
+) -> TestResult<resolve::expansion::Report> {
     let identity = CrateIdentity::new("minicore", "source_traits_v1")?;
     let context = Context {
         crate_name: Some("minicore".into()),
@@ -100,7 +108,7 @@ pub(super) fn report_in_edition(
                 source: SourceFile::new(source.as_bytes().to_vec())?,
             },
             &mut NoFiles,
-            &Config::in_edition(edition),
+            config,
             &context,
         )?,
     )?)

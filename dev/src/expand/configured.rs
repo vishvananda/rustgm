@@ -27,6 +27,99 @@ pub struct ConfiguredAttribute {
 pub struct Attributes {
     pub entries: Vec<ConfiguredAttribute>,
     disabled: bool,
+    cfg_uses: Option<Box<ConfiguredUses>>,
+}
+
+/// An existing effect index binds a demanded predicate use to its real owner/capture.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct ConfiguredUse {
+    pub effect: u32,
+    pub predicate: config::CfgUse,
+}
+
+/// One cold owner keeps demanded uses ordered by their existing effect identities.
+#[derive(Clone, Debug, Default)]
+pub(crate) struct ConfiguredUses {
+    entries: Vec<ConfiguredUse>,
+}
+impl ConfiguredUses {
+    pub(crate) fn len(&self) -> usize {
+        self.entries.len()
+    }
+    pub(crate) fn iter(&self) -> std::slice::Iter<'_, ConfiguredUse> {
+        self.entries.iter()
+    }
+    #[cfg(test)]
+    pub(crate) fn as_slice(&self) -> &[ConfiguredUse] {
+        &self.entries
+    }
+    pub(crate) fn relocate(
+        &mut self,
+        base: u32,
+        effects: usize,
+        mut span: impl FnMut(
+            crate::syntax::token_tree::Span,
+        ) -> Result<crate::syntax::token_tree::Span, LexError>,
+    ) -> Result<(), LexError> {
+        for used in &mut self.entries {
+            if used.effect as usize >= effects {
+                return Err(error(0, "generated cfg use has no actual effect"));
+            }
+            used.effect = used
+                .effect
+                .checked_add(base)
+                .ok_or_else(|| error(0, "cfg effect overflow"))?;
+            used.predicate.span = span(used.predicate.span)?;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn reserve(&mut self, count: usize) -> Result<(), LexError> {
+        if self.entries.len().saturating_add(count) > 1_000_000 {
+            return Err(error(0, "configured feature uses exceed one million"));
+        }
+        self.entries
+            .try_reserve(count)
+            .map_err(|_| error(0, "cfg use allocation failed"))
+    }
+    /// Commit after checked reserve, without an allocation or failure after publication.
+    pub(crate) fn append_reserved(&mut self, incoming: &mut Self) {
+        self.entries.append(&mut incoming.entries);
+    }
+    fn record(&mut self, effect: u32, uses: Vec<config::CfgUse>) -> Result<(), LexError> {
+        self.reserve(uses.len())?;
+        self.entries.extend(
+            uses.into_iter()
+                .map(|predicate| ConfiguredUse { effect, predicate }),
+        );
+        Ok(())
+    }
+    pub(crate) fn original_prefix(&self, effects: usize) -> Option<Box<Self>> {
+        let end = self
+            .entries
+            .partition_point(|used| (used.effect as usize) < effects);
+        (end != 0).then(|| {
+            Box::new(Self {
+                entries: self.entries[..end].to_vec(),
+            })
+        })
+    }
+}
+
+pub(crate) fn retain_cfg_uses(
+    target: &mut Option<Box<ConfiguredUses>>,
+    incoming: Option<Box<ConfiguredUses>>,
+) -> Result<(), LexError> {
+    let Some(mut incoming) = incoming else {
+        return Ok(());
+    };
+    let Some(target) = target else {
+        *target = Some(incoming);
+        return Ok(());
+    };
+    target.reserve(incoming.len())?;
+    target.append_reserved(&mut incoming);
+    Ok(())
 }
 
 #[derive(Clone, Copy)]
@@ -111,6 +204,30 @@ impl Attributes {
     pub fn clear(&mut self) {
         self.entries.clear();
         self.disabled = false;
+        self.cfg_uses = None;
+    }
+
+    pub(crate) fn take_cfg_uses(&mut self) -> Option<Box<ConfiguredUses>> {
+        self.cfg_uses.take()
+    }
+
+    fn predicate(
+        &mut self,
+        forest: &Forest,
+        source: &str,
+        range: TreeRange,
+        config: &Config,
+        inputs: &dyn crate::syntax::interpolation::Inputs,
+    ) -> Result<bool, LexError> {
+        let answer = config::predicate_checked(forest, source, range, config, inputs)?;
+        if !answer.uses.is_empty() {
+            let effect =
+                u32::try_from(self.entries.len()).map_err(|_| error(0, "cfg effect overflow"))?;
+            self.cfg_uses
+                .get_or_insert_with(Box::default)
+                .record(effect, answer.uses)?;
+        }
+        Ok(answer.value)
     }
 
     #[must_use]
@@ -140,13 +257,7 @@ impl Attributes {
                         "cfg requires exactly one predicate",
                     ));
                 }
-                Effect::Cfg(config::predicate_with_inputs(
-                    forest,
-                    source,
-                    predicate,
-                    config,
-                    expansion.inputs,
-                )?)
+                Effect::Cfg(self.predicate(forest, source, predicate, config, expansion.inputs)?)
             }
             Some("cfg_attr") => {
                 let arguments = arguments(forest, attribute)?;
@@ -157,7 +268,7 @@ impl Attributes {
                         "cfg_attr requires a comma after its predicate",
                     ));
                 }
-                Effect::CfgAttr(config::predicate_with_inputs(
+                Effect::CfgAttr(self.predicate(
                     forest,
                     source,
                     predicate,

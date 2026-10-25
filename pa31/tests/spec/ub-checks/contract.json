@@ -1,0 +1,236 @@
+{
+  "issue": "LIB021 bounded local UB intrinsic/runtime policy and cfg gates",
+  "declared_before_candidate_or_same-source_oracle_execution": true,
+  "upstream_commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "profile": "panicabort/debugassertionsoff/overflowoff; UB explicit no/yes. Candidate SourceCore actual minicore identity, no bootstrap API binding. CPPGM unchanged.",
+  "oracle_flags": [
+    "--edition=2024",
+    "--target=x86_64-unknown-linux-gnu",
+    "--crate-type=lib",
+    "-Cpanic=abort",
+    "-Cdebug-assertions=no",
+    "-Coverflow-checks=no",
+    "-Copt-level=2",
+    "-Zub-checks={no,yes}"
+  ],
+  "native_hypotheses": [
+    {
+      "name": "local-fold",
+      "ub": false,
+      "stdout": "1 0 0 0\n"
+    },
+    {
+      "name": "local-fold",
+      "ub": true,
+      "stdout": "1 1 1 1\n"
+    },
+    {
+      "name": "local-preserve",
+      "ub": false,
+      "stdout": "1 0 0 0\n"
+    },
+    {
+      "name": "local-preserve",
+      "ub": true,
+      "stdout": "1 1 1 1\n"
+    },
+    {
+      "name": "ordinary-same-name",
+      "ub": false,
+      "stdout": "0 0 0 0\n"
+    },
+    {
+      "name": "ordinary-same-name",
+      "ub": true,
+      "stdout": "0 0 1 0\n"
+    }
+  ],
+  "cfg_hypotheses": [
+    {
+      "source": "cfg-cfg-macro-truth-irrelevant.rs",
+      "metadata_status_hypothesis": 1
+    },
+    {
+      "source": "cfg-cfg-attribute-truth-irrelevant.rs",
+      "metadata_status_hypothesis": 1
+    },
+    {
+      "source": "cfg-cfg-attr-predicate-truth-irrelevant.rs",
+      "metadata_status_hypothesis": 1
+    },
+    {
+      "source": "cfg-false-payload.rs",
+      "metadata_status_hypothesis": 0
+    },
+    {
+      "source": "cfg-true-payload.rs",
+      "metadata_status_hypothesis": 1
+    },
+    {
+      "source": "cfg-false-owner-later-cfg.rs",
+      "metadata_status_hypothesis": 0
+    },
+    {
+      "source": "cfg-false-owner-body-macro.rs",
+      "metadata_status_hypothesis": 0
+    },
+    {
+      "source": "cfg-inactive-feature-request.rs",
+      "metadata_status_hypothesis": 1
+    },
+    {
+      "source": "cfg-active-feature-request.rs",
+      "metadata_status_hypothesis": 0
+    },
+    {
+      "source": "cfg-allowed-definition-token.rs",
+      "metadata_status_hypothesis": 0
+    },
+    {
+      "source": "cfg-forwarded-caller-token.rs",
+      "metadata_status_hypothesis": 1
+    },
+    {
+      "source": "cfg-allowed-generated-attribute.rs",
+      "metadata_status_hypothesis": 0
+    },
+    {
+      "source": "cfg-forwarded-attribute-token.rs",
+      "metadata_status_hypothesis": 1
+    },
+    {
+      "source": "cfg-ancestor-is-not-use-owner.rs",
+      "metadata_status_hypothesis": 1
+    },
+    {
+      "source": "choice-false-self-owner.rs",
+      "metadata_status_hypothesis": 1
+    },
+    {
+      "source": "choice-first-predicate.rs",
+      "metadata_status_hypothesis": 1
+    },
+    {
+      "source": "choice-later-predicate.rs",
+      "metadata_status_hypothesis": 1
+    },
+    {
+      "source": "choice-after-wildcard-predicate.rs",
+      "metadata_status_hypothesis": 1
+    },
+    {
+      "source": "choice-inactive-body.rs",
+      "metadata_status_hypothesis": 0
+    },
+    {
+      "source": "choice-allowed-definition.rs",
+      "metadata_status_hypothesis": 0
+    },
+    {
+      "source": "choice-forwarded-caller.rs",
+      "metadata_status_hypothesis": 1
+    }
+  ],
+  "source_files": {
+    "cfg-active-feature-request.rs": "2dd06db041782e9c1606895ab6969e6b7a6cabe8cfd89a17da90a37b28bf7f4c",
+    "cfg-allowed-definition-token.rs": "d1ce854f7b0f190ad19443ac374799b09637fc08e84abf88390c845168786fb1",
+    "cfg-allowed-generated-attribute.rs": "a80fcc0c3bf6a4f1f14def1e2968233655688b2e871bc0e89b6001ae79ce7a33",
+    "cfg-ancestor-is-not-use-owner.rs": "a10db33a5f1bd5a12b256c957a246680c5219b633c67457349f5e8cc4c10f99a",
+    "cfg-cfg-attr-predicate-truth-irrelevant.rs": "f822ed0b0d4a3b7812a2af2c45e6ef6bb2f8e4deb76bf551447ea9e74ccea24a",
+    "cfg-cfg-attribute-truth-irrelevant.rs": "3973ed350bcb9dd31706ab77efb3248778f80815004b1ec91002c54afee1c049",
+    "cfg-cfg-macro-truth-irrelevant.rs": "aaca18da3bb79252a9ee3214fdf135b1fde3e3b89adb4801ea872f0b9fc21fa6",
+    "cfg-false-owner-body-macro.rs": "8a44872e94b564ced538451909878fe01747768b5dcc740276aa1f96deda4f60",
+    "cfg-false-owner-later-cfg.rs": "0274f97e1b79e147e557832b19631d6cc34c1200dc1b5928cd2f193ae1ae5acd",
+    "cfg-false-payload.rs": "ecdd8bb574710dfb7eabe5833333cc38c3c5defd996f87a228c637807626f008",
+    "cfg-forwarded-attribute-token.rs": "5cb3c1a89d7a5a267d222a7f6a5d2b0f2e0ce1fa260422028a0c852e41e2e0b6",
+    "cfg-forwarded-caller-token.rs": "a04285fee5cca77f52db71ffaaecb51b347a95ee4efc1fb71cf61a9ae9eae829",
+    "cfg-inactive-feature-request.rs": "10aec1aa6043c22f9d0ab4c0d1baa9c84a20efe573005cf616634e3e6366124b",
+    "cfg-true-payload.rs": "c68a261dec469c452c3c462ebe521dd51faa8ae106dcf5fb91dcfb6f3dc88b97",
+    "choice-after-wildcard-predicate.rs": "abf5ad65b46bc1d2cc399eea92a5eb757ca7f69491dc466a28c39a37278d8f3c",
+    "choice-allowed-definition.rs": "544c5605ab3fa31945b3a87797c41ce47c77a6e26cd91c47758937dde9cebfe2",
+    "choice-false-self-owner.rs": "b632fb57f0bab8a0ede0f79206a71842f536dacf5b6acfa5ce6819077d30532c",
+    "choice-first-predicate.rs": "dee33bc0d7e886e0a3378349c51e8d6a096512f7c2ed5bb81965ecbb4786a81c",
+    "choice-forwarded-caller.rs": "85cbd61a5a6f669754b554728bf1cec654046adeda5b5606c3db085c1fefa5c8",
+    "choice-inactive-body.rs": "62626b478f8bc2a8cd22806c5dd14ecd0cf736534457fcf507eb8ff1eccda820",
+    "choice-later-predicate.rs": "bdfdb43d133d496a2986ba604c64e7b33d807ca7d2360c6b7925f7909ef2b519",
+    "indirect-ub.rs": "e49da53e2d7ebccb267c73846383dad4fc51b5845708205bb9824bd56ba3841a",
+    "local-fold.rs": "30ec8fc70a1a84e4417481716c84317dbb14e4bc78f2b50c4daebefdaacf5af0",
+    "local-preserve.rs": "5d46f255560434b18bfaa961b3190876a789863e2a05612081e8298794ceaf0d",
+    "observe.c": "2827f7cdda1c05608dc41191d48403d97b4854306918ffd1dfe8cb7696878fd8",
+    "ordinary-same-name.rs": "dc61cf3b76e552c327aa4b83e46f48d12584dddab2ca2b2e0271b45f6546c223",
+    "reify-ordinary.rs": "ec08fe10cbe13bef3c82b6e7d1bc5f237d51a2a416ae7e0b8f7b7b73666cc2e8",
+    "reify-ub.rs": "8964300021c595e050e2747ab96dc5628fb156bfcff2a0c24fbf10784c3bd0e5"
+  },
+  "source_adaptations": "Cfg counterparts prepend explicit no_core/lang_items + exact sizing declarations while retaining original inner attributes/body. cfg_select counterparts additionally declare actual rustc_builtin_macro cfg_select and use its local name, not a bootstrap core namespace. Ordinary original14/7 predictions and raw observations remain unchanged under obj. Successorv4 explicitly declares rustc_builtin_macro cfg and requests rustc_attrs in every cfg!-using no_core fixture after v1 observed unresolved macro. No cfg_ub_checks feature is added by that repair; all outcomes remain declared unchanged.",
+  "negative_mutations": [
+    {
+      "from": "pub const fn ub_checks()->bool",
+      "to": "pub const fn ub_checks()->u8",
+      "must_reject": true
+    },
+    {
+      "from": "pub const fn ub_checks()->bool",
+      "to": "pub fn ub_checks()->bool",
+      "must_reject": true
+    },
+    {
+      "from": "pub const fn ub_checks()->bool",
+      "to": "pub const unsafe fn ub_checks()->bool",
+      "must_reject": true
+    },
+    {
+      "from": "pub const fn ub_checks()->bool",
+      "to": "pub const fn ub_checks<T>()->bool",
+      "must_reject": true
+    },
+    {
+      "from": "pub const fn ub_checks()->bool",
+      "to": "pub const fn ub_checks<'a>()->bool",
+      "must_reject": true
+    },
+    {
+      "from": "pub const fn ub_checks()->bool",
+      "to": "pub const fn ub_checks(_:u8)->bool",
+      "must_reject": true
+    }
+  ],
+  "private_controls": [
+    "exact declaration/signature/instance/source identity",
+    "actual CTFE caller code/frame/callee/noargs/const/library checks on cold and warm calls",
+    "no result cache or retained Body/Context/Declarations fields",
+    "same-source profile/preserve mismatch rejects old Catalog",
+    "imported/migrated origins and missing policy transport deny",
+    "truth-irrelevant operand, false-self owner, false ancestor/payload and captured macro-origin distinctions",
+    "Engine lazy memo amortizes growing allowance headers and rejects warm stale source/frame/header origins",
+    "PreparedChoice single-parse gate-failure publication/foreign-unit/wrong-call opponents"
+  ],
+  "remaining": [
+    "PA29 generic/inline UB policy transport",
+    "foreign/imported/migrated UB operations",
+    "core check_language_ub/overflow_checks/contract_checks/Miri and full libraries",
+    "merged release/performance qualification"
+  ],
+  "version": 4,
+  "predecessor_unexecuted_contract_sha256": "06e68a01ebd52b5a4d4489e50468d09bd6a62c5efef128fd10e1d7796fe60c58",
+  "cfg_followup": "Original7case cfg-select oracle retained6matches/1ordinary syntax confound. Expression-valid inactive payload successor is declared before candidate and followup oracle; pending independent plan4f921075ddf23408cd3c3847858204ddd8657c24f3dca3f645d28df57c5b41ca. Original hypothesis and observations remain unchanged.",
+  "callable_metadata_hypotheses": [
+    {
+      "source": "reify-ub.rs",
+      "rustc_metadata_status_hypothesis": 1,
+      "candidate": "reject unadapted intrinsic callable target"
+    },
+    {
+      "source": "indirect-ub.rs",
+      "rustc_metadata_status_hypothesis": 1,
+      "candidate": "reject unadapted intrinsic callable target"
+    },
+    {
+      "source": "reify-ordinary.rs",
+      "rustc_metadata_status_hypothesis": 0,
+      "candidate": "accept ordinary same-name callable reification"
+    }
+  ],
+  "adapted_v1_review_sha256": "393dad4323c3f22516e1c007d8aba26f32e6651623337017caeee83b60722ea7"
+}

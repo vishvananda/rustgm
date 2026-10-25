@@ -7,6 +7,7 @@ pub enum KnownFeature {
     EditionPanic,
     PanicInternals,
     CoreIntrinsics,
+    CfgUbChecks,
 }
 impl KnownFeature {
     #[must_use]
@@ -15,6 +16,7 @@ impl KnownFeature {
             Self::EditionPanic => "edition_panic",
             Self::PanicInternals => "panic_internals",
             Self::CoreIntrinsics => "core_intrinsics",
+            Self::CfgUbChecks => "cfg_ub_checks",
         }))
     }
     pub(super) const fn mask(self) -> u8 {

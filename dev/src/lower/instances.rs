@@ -313,6 +313,21 @@ fn inspect_selected<R>(
     )
 }
 
+fn require_source_session(report: &Report, facts: &Declarations) -> Result<(), Error> {
+    if let Some(catalog) = facts.source_bindings.as_deref() {
+        catalog
+            .require_provider_report(report)
+            .map_err(|e| diagnostic(report, None, e.into()))?;
+    } else if report.package.uses_source_bindings() {
+        return Err(diagnostic(
+            report,
+            None,
+            "source lowering requires its actual prepared catalog".into(),
+        ));
+    }
+    Ok(())
+}
+
 fn inspect_staged<S, R>(
     report: &Report,
     facts: &mut Declarations,
@@ -334,6 +349,7 @@ fn inspect_staged<S, R>(
         S,
     ) -> R,
 ) -> Result<R, Error> {
+    require_source_session(report, facts)?;
     let mut templates = prepared.templates.finish(report, facts)?;
     templates
         .attach(prepared.imported.take())

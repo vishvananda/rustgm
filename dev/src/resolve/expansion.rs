@@ -34,6 +34,7 @@ use crate::{
 use std::collections::VecDeque;
 pub(super) mod attributes;
 mod bindings;
+mod cfg_gates;
 mod diagnostics;
 mod eager;
 mod format_values;
@@ -175,6 +176,7 @@ struct Engine<'a, S> {
     children: Vec<NodeId>,
     recursion_limit: usize,
     builtin_definitions: Vec<Option<usize>>,
+    cfg_memo: Option<Box<permission_session::Memo>>,
 }
 /// Expand textual macro invocations, including generated syntax and modules.
 /// PA8's path-resolution and hygiene integration builds on this retained state.
@@ -254,6 +256,7 @@ pub fn analyze_with_context(
         children: Vec::new(),
         recursion_limit,
         builtin_definitions: vec![None; Builtin::ALL.len()],
+        cfg_memo: None,
     };
     let result = engine
         .push_visit(Visit {
@@ -273,7 +276,7 @@ pub fn analyze_with_context(
     super::bindings::validate_features(&engine.loader.package)
         .map_err(|error| engine.diagnostic(error))?;
     let (resolution, imports, pending) = engine.paths.finish();
-    Ok(Report {
+    let report = Report {
         package: engine.loader.package,
         definitions: engine.definitions,
         invocations: engine.invocations,
@@ -283,7 +286,10 @@ pub fn analyze_with_context(
         imports: Some(imports),
         pending,
         names_resolved: false,
-    })
+    };
+    super::bindings::validate_crate_options(&report).map_err(|error| report.diagnostic(error))?;
+    cfg_gates::validate_attributes(&report)?;
+    Ok(report)
 }
 impl<S: Sources> Engine<'_, S> {
     fn run(&mut self) -> Result<(), Error> {
@@ -1090,33 +1096,37 @@ impl<S: Sources> Engine<'_, S> {
         } else {
             None
         };
-        let package = &mut self.loader.package;
-        let view = self
-            .captures
-            .view(|id| package.units.get(id.0 as usize).map(|u| u.source.text()));
-        let generated = builtin::expand(
-            builtin,
-            package.unit(file).source.text(),
-            input,
-            &view,
-            &builtin::Environment {
-                config: self.config,
-                grammar,
-                position,
-                text: text.as_deref(),
-            },
-        )
-        .map_err(|e| {
-            Error::at(
-                file,
-                if e.offset == 0 {
-                    original.start
-                } else {
-                    e.offset
+        let generated = if builtin == Builtin::Cfg {
+            self.cfg_expansion(file, input, grammar, original)?
+        } else {
+            let package = &mut self.loader.package;
+            let view = self
+                .captures
+                .view(|id| package.units.get(id.0 as usize).map(|u| u.source.text()));
+            builtin::expand(
+                builtin,
+                package.unit(file).source.text(),
+                input,
+                &view,
+                &builtin::Environment {
+                    config: self.config,
+                    grammar,
+                    position,
+                    text: text.as_deref(),
                 },
-                e.message,
             )
-        })?;
+            .map_err(|e| {
+                Error::at(
+                    file,
+                    if e.offset == 0 {
+                        original.start
+                    } else {
+                        e.offset
+                    },
+                    e.message,
+                )
+            })?
+        };
         let generated = self.install_builtin(
             file,
             visit.node,

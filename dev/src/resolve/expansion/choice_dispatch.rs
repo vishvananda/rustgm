@@ -69,8 +69,8 @@ impl<S: Sources> Engine<'_, S> {
         let (unit, after) = tail
             .split_first_mut()
             .ok_or_else(|| failure("missing cfg_select unit"))?;
-        let installed = unit
-            .install_choice(
+        let prepared = unit
+            .prepare_choice(
                 choice::Site {
                     file,
                     target: visit.node,
@@ -89,6 +89,10 @@ impl<S: Sources> Engine<'_, S> {
                 self.config,
                 &charge,
             )
+            .map_err(|error| Error::at(file, error.offset, error.message))?;
+        self.check_cfg_uses(file, prepared.cfg_uses())?;
+        let installed = self.loader.package.units[file.0 as usize]
+            .install_prepared_choice(prepared)
             .map_err(|error| Error::at(file, error.offset, error.message))?;
         self.paths
             .invocation(context, visit.introduction, &self.definitions[definition])

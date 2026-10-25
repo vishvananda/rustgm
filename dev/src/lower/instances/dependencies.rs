@@ -41,18 +41,49 @@ struct Discovered {
     operators: Vec<(TypeId, crate::support::call_traits::CallTrait, TypeId)>,
 }
 
-/// Registry identity only; execution selection still requires an actual Call.
-fn source_selector(facts: &Declarations, ty: TypeId) -> Result<bool, &'static str> {
-    let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(ty) else {
-        return Ok(false);
+/// Classify only an actual direct operation, never a reified/Invoke target.
+/// Registry identity and signature data do not supply its later execution proof.
+fn source_call(
+    facts: &Declarations,
+    body: &Body,
+    value: &crate::body::ir::Value,
+    ty: TypeId,
+) -> Result<Option<crate::support::bindings::SourceIntrinsic>, &'static str> {
+    use crate::support::bindings::SourceIntrinsic;
+    let Rvalue::Call {
+        signature,
+        arguments,
+        ..
+    } = value.kind
+    else {
+        return Ok(None);
     };
-    Ok(facts
-        .source_bindings
-        .as_deref()
-        .map(|catalog| catalog.intrinsic_kind(crate::resolve::model::DefId(item.0)))
-        .transpose()?
-        .flatten()
-        == Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect))
+    let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(ty) else {
+        return Ok(None);
+    };
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(None);
+    };
+    match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
+        Some(SourceIntrinsic::ConstEvalSelect) => Ok(Some(SourceIntrinsic::ConstEvalSelect)),
+        Some(SourceIntrinsic::UbChecks) => {
+            let instance = Instance::new(&facts.types, ty)?;
+            let (selection, _, _) = Reader::new(facts)
+                .source_runtime_check(instance, body.source)?
+                .ok_or("source ub_checks lost its dependency descriptor")?;
+            if signature != selection.signature
+                || value.ty != TypeId::primitive(crate::types::Primitive::Bool)
+                || !body
+                    .arguments
+                    .get(arguments.start as usize..arguments.end as usize)
+                    .is_some_and(<[crate::body::ir::ValueId]>::is_empty)
+            {
+                return Err("source ub_checks dependency differs from its exact direct Call");
+            }
+            Ok(Some(SourceIntrinsic::UbChecks))
+        }
+        _ => Ok(None),
+    }
 }
 
 impl Discovered {
@@ -300,12 +331,17 @@ impl Dependencies {
                     .get(id.0 as usize)
                     .ok_or("invalid callable operand")?
                     .ty;
-                if matches!(value.kind, Rvalue::Call { .. }) && source_selector(facts, ty)? {
-                    result.selectors.push(crate::body::ir::ValueId(
-                        u32::try_from(index).map_err(|_| "too many source selector values")?,
-                    ));
-                } else {
-                    result.callable(&facts.types, ty)?;
+                match source_call(facts, body, value, ty)? {
+                    Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect) => {
+                        result.selectors.push(crate::body::ir::ValueId(
+                            u32::try_from(index).map_err(|_| "too many source selector values")?,
+                        ));
+                    }
+                    Some(crate::support::bindings::SourceIntrinsic::UbChecks) => {
+                        // Lowering still proves the actual body/call and its
+                        // evaluated callee before emitting an existing bool.
+                    }
+                    _ => result.callable(&facts.types, ty)?,
                 }
             }
         }
@@ -552,3 +588,7 @@ fn field(
         _ => Err("constant product has no field types"),
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/ub_dependencies.rs"]
+mod ub_tests;

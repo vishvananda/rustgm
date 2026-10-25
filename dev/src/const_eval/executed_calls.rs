@@ -125,6 +125,9 @@ impl Machine<'_, '_> {
             .next
             .checked_sub(1)
             .ok_or("source intrinsic call has no current statement")?;
+        if let Some(answer) = self.source_runtime_check(body, frame, position, target)? {
+            return Ok(answer);
+        }
         let value = if let Some(call) =
             super::reached_layout::validate(self.evaluator.facts(), body, frame, position, target)?
         {

@@ -11,12 +11,17 @@ use crate::{
     },
     support::{hash::HashMap, names::NameId},
 };
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
+#[derive(Clone)]
+struct CachedHeader {
+    data: Option<Rc<HeaderData>>,
+    image: Arc<crate::support::source::OriginalImage>,
+}
 
 #[derive(Default)]
-struct Memo {
+pub(super) struct Memo {
     frames: HashMap<ExpansionId, Frame>,
-    headers: HashMap<NodeKey, Option<Rc<HeaderData>>>,
+    headers: HashMap<NodeKey, CachedHeader>,
     origin_links: usize,
     origin_lookups: usize,
 }
@@ -35,7 +40,7 @@ impl Memo {
             .saturating_add(
                 self.headers
                     .capacity()
-                    .saturating_mul(size_of::<(NodeKey, Option<Rc<HeaderData>>)>()),
+                    .saturating_mul(size_of::<(NodeKey, CachedHeader)>()),
             )
     }
 }
@@ -64,12 +69,43 @@ impl Report {
     }
 }
 impl MacroAllowanceSession<'_> {
+    fn query(&mut self) -> Query<'_, '_> {
+        Query {
+            view: FrameView {
+                package: &self.report.package,
+                definitions: &self.report.definitions,
+                invocations: &self.report.invocations,
+                facts: &self.report.resolution,
+            },
+            memo: &mut self.memo,
+        }
+    }
+    /// Use the same borrowed checker as expansion, retaining this report's memo.
+    /// # Errors
+    /// Rejects changed identities, invalid provenance and exhausted work/storage.
+    pub fn allows(&mut self, site: Location, feature: &FeatureName<'_>) -> Result<bool, Error> {
+        self.query().allows(site, feature)
+    }
+    /// Inspect only the actual token's outer unsafe-code lint metadata.
+    /// This does not authorize an unsafe operation or enable a crate feature.
+    /// # Errors
+    /// Rejects changed owners/frames/witnesses and exhausted global budgets.
+    pub fn allows_unsafe_code_lint(&mut self, site: Location) -> Result<bool, Error> {
+        self.query().allows_unsafe_code_lint(site)
+    }
+}
+
+pub(super) struct Query<'view, 'memo> {
+    pub view: FrameView<'view>,
+    pub memo: &'memo mut Option<Box<Memo>>,
+}
+impl Query<'_, '_> {
     fn view(&self) -> FrameView<'_> {
         FrameView {
-            package: &self.report.package,
-            definitions: &self.report.definitions,
-            invocations: &self.report.invocations,
-            facts: &self.report.resolution,
+            package: self.view.package,
+            definitions: self.view.definitions,
+            invocations: self.view.invocations,
+            facts: self.view.facts,
         }
     }
     /// Check only the actual use token's outer expansion allowance.
@@ -99,7 +135,7 @@ impl MacroAllowanceSession<'_> {
         let Some(context) = context else {
             return Ok(None);
         };
-        let package = &self.report.package;
+        let package = self.view.package;
         let error = |message| Error::at(site.file, site.span.start, message);
         let saved = self
             .memo
@@ -125,11 +161,21 @@ impl MacroAllowanceSession<'_> {
         if saved.is_some() && cached.is_none() {
             return Err(error("cached macro allowance header is missing"));
         }
-        let data = if let Some(data) = cached {
-            data
+        let data = if let Some(cached) = cached {
+            let unit = package
+                .units
+                .get(owner.file.0 as usize)
+                .ok_or_else(|| error("cached macro source image is missing"))?;
+            if !Arc::ptr_eq(unit.source.original_image(), &cached.image) {
+                return Err(error("cached macro source incarnation changed"));
+            }
+            cached.data
         } else {
             self.view().authenticate_source(frame.definition)?
         };
+        if !self.view().matches_header(frame.definition, data.as_ref()) {
+            return Err(error("cached macro allowance header identity changed"));
+        }
         panic_contracts::published(package, owner, data.as_ref(), 1 + extra_work)?;
         if saved.is_none() {
             self.retain(frame, data.clone())?;
@@ -141,7 +187,7 @@ impl MacroAllowanceSession<'_> {
         Ok(data)
     }
     fn context(&self, site: Location) -> Result<(Option<ExpansionId>, usize, usize), Error> {
-        let package = &self.report.package;
+        let package = self.view.package;
         let Some(source) = package.source_core() else {
             return Ok((None, 0, 0));
         };
@@ -178,7 +224,7 @@ impl MacroAllowanceSession<'_> {
     fn retain(&mut self, frame: Frame, data: Option<Rc<HeaderData>>) -> Result<(), Error> {
         let error = |message| Error::at(frame.call.file, frame.original.start, message);
         let source = self
-            .report
+            .view
             .package
             .source_core()
             .ok_or_else(|| error("missing macro allowance memo provider"))?;
@@ -194,7 +240,7 @@ impl MacroAllowanceSession<'_> {
                 .macros
                 .charge(1, 4 * size_of::<Memo>())
                 .map_err(error)?;
-            self.memo = Some(Box::default());
+            *self.memo = Some(Box::default());
         }
         let memo = self
             .memo
@@ -206,14 +252,25 @@ impl MacroAllowanceSession<'_> {
         if !memo.headers.contains_key(&owner) {
             source
                 .macros
-                .charge(1, 4 * size_of::<(NodeKey, Option<Rc<HeaderData>>)>())
+                .charge(1, 4 * size_of::<(NodeKey, CachedHeader)>())
                 .map_err(error)?;
             memo.headers
                 .try_reserve(1)
                 .map_err(|_| error("macro header memo allocation failed"))?;
         }
         source.macros.memo_payload(memo.payload()).map_err(error)?;
-        memo.headers.entry(owner).or_insert(data);
+        let image = Arc::clone(
+            self.view
+                .package
+                .units
+                .get(owner.file.0 as usize)
+                .ok_or_else(|| error("macro source image disappeared"))?
+                .source
+                .original_image(),
+        );
+        memo.headers
+            .entry(owner)
+            .or_insert(CachedHeader { data, image });
         memo.frames.insert(frame.context, frame);
         Ok(())
     }

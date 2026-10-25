@@ -155,7 +155,11 @@ impl Machine<'_, '_> {
         }
         Ok(())
     }
-    fn validate_invoked_entry(&self, index: usize, target: Instance) -> Result<(), &'static str> {
+    pub(super) fn validate_invoked_entry(
+        &self,
+        index: usize,
+        target: Instance,
+    ) -> Result<(), &'static str> {
         self.bodies.validate_entry(index)?;
         let code = self
             .bodies

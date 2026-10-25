@@ -25,6 +25,7 @@ pub struct Package {
     pub(super) source: Option<Box<super::bindings::Source>>,
     pub(super) library: Option<Box<super::stability::Library>>,
     pub(super) macro_features: super::bindings::policy::MacroFeatures,
+    pub(super) runtime_checks: crate::support::runtime_checks::RuntimeCheckConfig,
     pub no_std: bool,
     pub units: Vec<Unit>,
     pub file_paths: Vec<std::path::PathBuf>,
@@ -160,6 +161,22 @@ impl std::fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 impl Package {
+    pub(crate) fn coherence_is_core(&self) -> bool {
+        self.macro_features.coherence()
+    }
+    pub(crate) fn preserves_ub_checks(&self) -> bool {
+        self.macro_features.preserve_ub()
+    }
+    pub(crate) fn requested_cfg_ub_checks(&self) -> bool {
+        self.macro_features.cfg_ub()
+    }
+
+    /// The source loader copies this immutable compilation input once.
+    #[must_use]
+    pub const fn runtime_checks(&self) -> crate::support::runtime_checks::RuntimeCheckConfig {
+        self.runtime_checks
+    }
+
     /// Library requests and completed policy are published only by resolution.
     #[must_use]
     pub fn library_policy(&self) -> Option<&super::stability::Library> {

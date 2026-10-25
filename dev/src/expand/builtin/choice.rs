@@ -44,11 +44,13 @@ struct Gathered<'s> {
     first: Option<usize>,
     wildcard: Option<usize>,
     framing_calls: usize,
+    cfg_uses: Vec<config::CfgUse>,
 }
 pub(crate) struct Selected<'s> {
     pub ast: Ast<'s>,
     pub span: Span,
     pub parser_calls: usize,
+    pub cfg_uses: Vec<config::CfgUse>,
 }
 /// The caller owns the real source, token registry, edition view and work budget.
 /// No inactive AST is published, configured or expanded by this function.
@@ -123,6 +125,7 @@ pub(crate) fn select<'s>(
         ast,
         span: parsed.branches[chosen].span,
         parser_calls: calls,
+        cfg_uses: parsed.cfg_uses,
     })
 }
 fn gather<'s>(
@@ -137,11 +140,24 @@ fn gather<'s>(
     let mut cursor = 0;
     while cursor < input.tokens.len() {
         let arrow = arrow(input, cursor)?;
-        let (wildcard, matched) = predicate(source, input, cursor..arrow, config, inputs, charge)?;
+        let (wildcard, answer) = predicate(source, input, cursor..arrow, config, inputs, charge)?;
+        charge(
+            answer.uses.len(),
+            answer
+                .uses
+                .len()
+                .saturating_mul(size_of::<config::CfgUse>())
+                .saturating_mul(4),
+        )?;
+        result
+            .cfg_uses
+            .try_reserve(answer.uses.len())
+            .map_err(|_| error(0, "cfg_select gate allocation failed"))?;
+        result.cfg_uses.extend(answer.uses);
         if wildcard && result.wildcard.is_none() {
             result.wildcard = Some(result.branches.len());
         }
-        if matched && result.first.is_none() && result.wildcard.is_none() {
+        if answer.value && result.first.is_none() && result.wildcard.is_none() {
             result.first = Some(result.branches.len());
         }
         let (row, next) = branch(
@@ -204,7 +220,7 @@ fn predicate(
     config: &Config,
     inputs: &dyn Inputs,
     charge: &Charge<'_>,
-) -> Result<(bool, bool), LexError> {
+) -> Result<(bool, config::Evaluation), LexError> {
     let offset = input.tokens.get(range.start).map_or(0, |token| token.start);
     if range.is_empty() {
         return Err(error(offset, "cfg_select branch requires a predicate"));
@@ -225,10 +241,16 @@ fn predicate(
         && input.tokens[range.start].kind == TokenKind::Identifier
         && forest.name(source, forest.roots().start) == Some("_")
     {
-        return Ok((true, false));
+        return Ok((
+            true,
+            config::Evaluation {
+                value: false,
+                uses: Vec::new(),
+            },
+        ));
     }
-    config::predicate_with_inputs(&forest, source, forest.roots(), config, inputs)
-        .map(|value| (false, value))
+    config::predicate_checked(&forest, source, forest.roots(), config, inputs)
+        .map(|answer| (false, answer))
 }
 fn branch<'s>(
     source: &'s str,

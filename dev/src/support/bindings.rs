@@ -145,6 +145,7 @@ pub enum SourceIntrinsic {
     Layout(LayoutIntrinsic),
     NeedsDrop,
     ConstEvalSelect,
+    UbChecks,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
@@ -154,6 +155,8 @@ impl SourceIntrinsic {
             Some(Self::ConstEvalSelect)
         } else if name == "needs_drop" {
             Some(Self::NeedsDrop)
+        } else if name == "ub_checks" {
+            Some(Self::UbChecks)
         } else {
             LayoutIntrinsic::from_name(name).map(Self::Layout)
         }
