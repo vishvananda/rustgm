@@ -33,15 +33,16 @@ Current lanes:
 
 - A: continue real Provided signature/body transport. The private reservation
   session and shared signature cursor are qualified with eleven merged controls.
-  Export now shares the ordinary raw place-bounds producer; real empty signature
-  schemes and anonymous function/type-alias producer gaps remain explicit.
+  Export shares the ordinary raw place-bounds producer; genuine empty signature
+  schemes and monomorphic imported callables now pass real codec/fresh proof.
+  Continue actual anonymous Function recipes; type-alias transport stays separate.
 - B: LIB-022's complete local declaration family is qualified. Implement
   LIB-024's exact wide literal/feature/type slice from the real f128 frontier;
   keep later wide operations, UB policy, macro execution and import explicit.
 - C: LIB-023's real local `non_exhaustive` consumer is qualified with four merged
-  controls and 38 independent observations. Continue the actual source-attribute
-  publication boundary and imported contracts. Attribute/configuration receipts
-  and 93 new text oracles are integrated.
+  controls and 38 independent observations. LIB-025's mandatory typed publication
+  guard is now qualified; continue explicit wider attribute transport. Existing
+  source-attribute/configuration receipts and 93 new text oracles are integrated.
 - Integrator: focused integration/main pushes, periodic CI follow-up and fresh
   original-source observations. Local primitive ownership is qualified. Keep
   CPPGM and upstream sources unchanged.
