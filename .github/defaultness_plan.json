@@ -1,0 +1,219 @@
+{
+  "baseline": "0817a3c38e9691cad3dbbf2620b2cfd20415445f",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name",
+    "defaultness_probe"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": [
+    {
+      "name": "ordinary-trait-default",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/ordinary-trait-default.rs",
+      "sha256": "1581009b995d6f7772e778be24e86c37b2104903282502700174ff43d409de71",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "single-default-method",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/single-default-method.rs",
+      "sha256": "3204ca687b7df585fac224461444641c8f579098eafe4973cd15c1ad59b710c9",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "missing-feature",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/missing-feature.rs",
+      "sha256": "0c79c21411fb20e315e7bdeb6bda2d423c791263706dc9431e650bad05a66c76",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "wrong-free-owner",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/wrong-free-owner.rs",
+      "sha256": "bb925dcfd239b1658cdacf84b06436148c1100ec02f0e20a6fff06ea9be62061",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "wrong-trait-owner",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/wrong-trait-owner.rs",
+      "sha256": "a85f0469bf0df3781e10060e1ab0d95b044bfa654bcca95f4a49c4c9c5a8c263",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "wrong-inherent-owner",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/wrong-inherent-owner.rs",
+      "sha256": "ee4e9bb4f4c03e65153f596d455248705ddac361be27eefce2a9ec3d7b9bfe62",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "min-default-impl",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/min-default-impl.rs",
+      "sha256": "221d9fa5b9e53c580c77e93eab6797addec0cb0fe83750b2984538f70e7f146b",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "min-default-constant",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/min-default-constant.rs",
+      "sha256": "03750bea1a10ec41b8541e93588cf5f6930c6f5c6a3f43c418afbe9d1a03c1ff",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "full-default-constant",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/full-default-constant.rs",
+      "sha256": "a3e33d441a0e5dfe4fd6e8c68cc35494061926977f3637c865159666217af1a4",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "partial-impl-not-obligation",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/partial-impl-not-obligation.rs",
+      "sha256": "9e782ce1e42134850bda40b52d189c54fe81c0f9d2582c2884c55feca4aff8da",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "partial-impl-child-inherits",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/partial-impl-child-inherits.rs",
+      "sha256": "c0a054af9695f13d5a99b9974c99bfbb5b57cd0fbb1732cd077f45f058748631",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "child-overrides",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/child-overrides.rs",
+      "sha256": "7be97589b08f5bb69a7f5a60d6aa87c90687daf2be5236fd2352ff2cc6a8cb8f",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "inherited-impl-not-trait-body",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/inherited-impl-not-trait-body.rs",
+      "sha256": "d15d1088d010c937d5ebd79a0c8d2232bb8a94350f3585292d9ee38a495ca8ac",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "final-sibling-cannot-override",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/final-sibling-cannot-override.rs",
+      "sha256": "9babe032e65d3e7422d9f3bc501bf610ad2411b73d986022035363bf9366bfa0",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "new-copy-predicate",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/new-copy-predicate.rs",
+      "sha256": "4d29cc82716be4557c80bcb03f79fadeb6abf80bbd3baf3d2d5dbe991c81f576",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "repeated-child-input",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/repeated-child-input.rs",
+      "sha256": "ca0c5b31072e4af0c5405dfd6ebce28019440a191678b125b94ba174c484728b",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "static-specialization",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/static-specialization.rs",
+      "sha256": "598c5e6d18306269d05d319af3eb80196fe6478766fb424543be8200e207992a",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "literal-allowed-keyword",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/literal-allowed-keyword.rs",
+      "sha256": "f5ed2593a5bb2746161584e115a35ebfa808d3cd3c9b954017574fb28f101f96",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "forwarded-caller-keyword",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/forwarded-caller-keyword.rs",
+      "sha256": "39e726ded7b2e3049097d2707e7f4d07dbb87383950a3e2396d0a906f62b0d8f",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "ancestor-only-allowance",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/ancestor-only-allowance.rs",
+      "sha256": "8f4ac42dc9337cf1ec25a7f2730fa761f4eb513d005506fd78c7674f1722d641",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "inactive-no-feature-demand",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/inactive-no-feature-demand.rs",
+      "sha256": "36f0bdfc58de7da3d176b07681537f571cbaa4b6e826877cd176ed90d2e7525a",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "unexecuted-no-feature-demand",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/unexecuted-no-feature-demand.rs",
+      "sha256": "d0e1cb07d2ce5af18c6dade920d1be215a00f8925237b7411111616228724261",
+      "expected_status": 0,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "unused-invalid-default-body",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/unused-invalid-default-body.rs",
+      "sha256": "1dba865a2efab62084f4793b7f2700fb8b620f9c47a54fffc4df419003771544",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    },
+    {
+      "name": "ordinary-overlap-still-rejected",
+      "source": "obj/parallel/pa31/defaultness-v1/oracle-sources/ordinary-overlap-still-rejected.rs",
+      "sha256": "d69f387ba9f5e66544cb27a1094a22da0a0da4f4ee048b645c37ab10444ae552",
+      "expected_status": 1,
+      "expected_warning_codes": [],
+      "state": "frozen independent hypothesis; not observed"
+    }
+  ],
+  "native_not_executed": {
+    "single-default-method": "1",
+    "child-overrides": "2 1",
+    "inherited-impl-not-trait-body": "1 2"
+  },
+  "scope": "48 new metadata observations only; no old matrices/natives/references/RustGM compiler execution; preserve all mismatches"
+}
