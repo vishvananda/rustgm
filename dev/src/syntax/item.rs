@@ -91,6 +91,7 @@ pub enum ItemKind {
         items: List,
     },
     TraitAlias {
+        constant: bool,
         bounds: List,
     },
     Impl {

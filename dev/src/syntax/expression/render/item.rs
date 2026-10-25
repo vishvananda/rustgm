@@ -304,7 +304,12 @@ pub(super) fn item<L>(
             static_safety(safety, output)?;
             write!(output, "{mutable} {} {}", ty.get(), Optional(value))
         }
-        ItemKind::TraitAlias { bounds } => write!(output, "trait-alias {}", Children(ast, bounds)),
+        ItemKind::TraitAlias { constant, bounds } => write!(
+            output,
+            "trait-alias {}{}",
+            if constant { "const " } else { "" },
+            Children(ast, bounds)
+        ),
         ItemKind::TypeAlias { bounds, ty } => write!(
             output,
             "type-alias {} {}",
