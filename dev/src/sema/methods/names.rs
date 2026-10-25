@@ -25,13 +25,13 @@ pub(super) struct Index {
     pub(super) visible: Option<super::visible::Index>,
     pub(super) contextual: Option<Box<Contextual>>,
     pub(super) structural: Option<Box<Structural>>,
+    steps: usize,
 }
 
 #[derive(Default)]
 pub(super) struct Contextual {
     pub(super) inherent: HashMap<Key, HashMap<ItemContext, Vec<DefId>>>,
     indices: HashMap<(ItemId, NameId, ItemContext), Candidates>,
-    steps: usize,
 }
 
 #[derive(Clone, Copy)]
@@ -353,7 +353,7 @@ impl Methods {
     }
 
     pub(super) fn account_name_lookup(&mut self, amount: usize) -> Result<(), &'static str> {
-        if let Some(index) = self.contextual_mut() {
+        if let Some(index) = self.names.as_deref_mut() {
             index.steps = index.steps.saturating_add(amount);
             if index.steps > 1_000_000 {
                 return Err("method identity lookup work budget exceeded");
