@@ -1,0 +1,3 @@
+#![feature(f16, f128)]
+pub const HALF: f16 = 1f16;
+pub const QUAD: f128 = 340282366920938463463374607431768211456f128;

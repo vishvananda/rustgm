@@ -34,6 +34,8 @@ pub(crate) fn value(
                 match float.round(ty).map_err(io::Error::other)? {
                     FloatBits::F32(bits) => write!(output, "0x{bits:08x}")?,
                     FloatBits::F64(bits) => write!(output, "0x{bits:016x}")?,
+                    FloatBits::F16(bits) => write!(output, "0x{bits:04x}")?,
+                    bits @ FloatBits::F128 { .. } => write!(output, "0x{:032x}", bits.bits())?,
                 }
             } else {
                 quoted::bytes(output, float.decimal.as_bytes(), false)?;

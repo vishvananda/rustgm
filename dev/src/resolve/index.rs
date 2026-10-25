@@ -129,9 +129,9 @@ impl Context {
     }
 }
 /// Spellings of the language primitive types, in definition order.
-pub(crate) const PRIMITIVES: [&str; 17] = [
+pub(crate) const PRIMITIVES: [&str; 19] = [
     "bool", "char", "str", "i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64",
-    "u128", "usize", "f32", "f64",
+    "u128", "usize", "f32", "f64", "f16", "f128",
 ];
 /// Declarations the expansion scan leaves to resolution, in scan order: they
 /// keep the identities the second declaration walk used to give them.

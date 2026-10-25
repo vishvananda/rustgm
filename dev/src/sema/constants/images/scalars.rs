@@ -5,6 +5,8 @@ pub(in crate::sema::constants) fn width(ty: Primitive) -> Result<usize, &'static
         Primitive::Bool => 1,
         Primitive::Char | Primitive::F32 => 4,
         Primitive::F64 => 8,
+        Primitive::F16 => 2,
+        Primitive::F128 => 16,
         _ => usize::from(
             ty.integer()
                 .ok_or("union image field is not a primitive scalar")?
@@ -23,6 +25,8 @@ pub(in crate::sema::constants) fn encode(
         (Primitive::Char, Scalar::Character(value)) => u128::from(u32::from(value)),
         (Primitive::F32, Scalar::Float(FloatBits::F32(bits))) => u128::from(bits),
         (Primitive::F64, Scalar::Float(FloatBits::F64(bits))) => u128::from(bits),
+        (Primitive::F16, Scalar::Float(FloatBits::F16(bits))) => u128::from(bits),
+        (Primitive::F128, Scalar::Float(bits @ FloatBits::F128 { .. })) => bits.bits(),
         (ty, Scalar::Integer(bits)) if ty.integer().is_some() => bits,
         _ => return Err("union scalar differs from its checked field type"),
     };
@@ -68,6 +72,10 @@ pub(in crate::sema::constants) fn decode(
         Primitive::F64 => Scalar::Float(FloatBits::F64(
             u64::try_from(bits).map_err(|_| "invalid f64 image width")?,
         )),
+        Primitive::F16 => Scalar::Float(FloatBits::F16(
+            u16::try_from(bits).map_err(|_| "invalid f16 image width")?,
+        )),
+        Primitive::F128 => Scalar::Float(FloatBits::from_quad(bits)),
         ty if ty.integer().is_some() => Scalar::Integer(bits),
         _ => return Err("union image field is not a primitive scalar"),
     })

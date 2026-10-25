@@ -53,6 +53,12 @@ impl Query<'_> {
             .types
             .kind(ty)
             .ok_or("missing C aggregate field type")?;
+        if matches!(
+            kind,
+            Type::Primitive(crate::types::Primitive::F16 | crate::types::Primitive::F128)
+        ) {
+            return Err("wide floating C field ABI is not implemented");
+        }
         let kind = if super::super::scalar(kind)
             && matches!(layout.shape, Shape::Scalar)
             && layout.size != 0

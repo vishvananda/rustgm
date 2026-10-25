@@ -130,6 +130,12 @@ impl Plans {
             .map_err(|e| e.message)?;
         let layout = *layouts.at(id).ok_or("missing C ABI layout")?;
         let kind = types.kind(head).ok_or("missing C ABI type")?;
+        if matches!(
+            kind,
+            Kind::Primitive(types::Primitive::F16 | types::Primitive::F128)
+        ) {
+            return Err("wide floating C ABI is not implemented");
+        }
         if head == TypeId::UNIT
             || head == TypeId::NEVER
             || matches!(kind, Kind::FunctionItem { .. })

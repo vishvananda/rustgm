@@ -4,7 +4,7 @@ use crate::{
     lex::token::Punctuation as Op,
     literal::{
         Value,
-        value::{FloatBits, FloatType, IntegerType},
+        value::{FloatType, IntegerType},
     },
     syntax::ast::Unary,
     types::Primitive,
@@ -88,13 +88,12 @@ pub(super) fn literal(
             let ty = match ty {
                 Primitive::F32 => FloatType::F32,
                 Primitive::F64 => FloatType::F64,
+                Primitive::F16 => FloatType::F16,
+                Primitive::F128 => FloatType::F128,
                 _ => return Err("floating literal requires a floating type"),
             };
             let bits = float.round(ty)?;
-            let finite = match bits {
-                FloatBits::F32(bits) => f32::from_bits(bits).is_finite(),
-                FloatBits::F64(bits) => f64::from_bits(bits).is_finite(),
-            };
+            let finite = bits.is_finite();
             if !finite {
                 return Err("floating literal is out of range for its type");
             }
