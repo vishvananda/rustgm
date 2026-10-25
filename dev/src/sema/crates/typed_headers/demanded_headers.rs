@@ -49,7 +49,7 @@ pub(super) type Progress = (Box<Session>, Demand<()>);
 impl State {
     fn new(
         view: &RecipeView<'_>,
-        store: &Store,
+        store: &mut Store,
         work: &mut ReservationWork,
     ) -> Result<Self, Error> {
         let rows = view.rows()?;
@@ -308,7 +308,7 @@ impl Session {
             ));
         }
         if self.recipes.is_none() {
-            self.recipes = Some(Box::new(State::new(&view, &self.facts.types, work)?));
+            self.recipes = Some(Box::new(State::new(&view, &mut self.facts.types, work)?));
         }
         let state = self
             .recipes
