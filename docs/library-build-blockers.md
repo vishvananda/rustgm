@@ -102,10 +102,12 @@ Its unchanged-core observer reaches `autodiff_forward` at `macros/mod.rs:1553`,
 four files unchanged. Stricter attribute checking separately exposes the earlier
 `rustc_coherence_is_core` requirement at `lib.rs:65`; implement its real semantics.
 
-- Integrator: combined source-artifact/readiness qualification and publication,
-  followed by primitive inherent coherence (LIB-020). All 56 independent source
-  cases have run, retaining three disproved hypotheses; primitive behavior
-  is still unimplemented.
+- Integrator: the [structural owner checkpoint](primitive-inherent-checkpoint.md)
+  qualifies local primitive policy and full-Self lookup with 66 source cases,
+  nineteen focused private controls and eight actual native programs. Ordinary
+  local allowance headers retain prelude behavior without provider roles. Next
+  priorities are a fresh unchanged-core attempt and imported/default transport;
+  original crate artifacts remain absent.
 - A: the shared defining-environment producer and raw numbering data are
   integrated at `f8cff8ba`. The unpaid Provided codec and charged inverse-
   allocation helper are integrated at source `03190e3c`; fourteen merged private
@@ -166,7 +168,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-017 | P0; earlier unchanged-core failure at `format_args`, line 994 | Source formatting builtins and actual constructor calls, including full argument parsing/evaluation | PA26 formatting + PA31 compiler/source bindings / PA31 complete providers, plus earlier ordinary controls | C | Literal source formatting and its real constructor privacy boundary pass combined functional qualification at `65f20e8b`. Nonempty arguments, obligations, temporary lifetimes and foreign transport remain open. |
 | LIB-018 | P0; preceding unchanged-core failure at `concat_bytes`, line 1126 | Source-declared byte concatenation builtin, typed byte/string/array operands and exact rejection rules | PA8 builtin expansion + PA31 source identity / PA31 complete providers, plus PA8 where independently expressible | C | Local typed operand/source identity contracts pass combined ca54609a release/native and performance qualification. The same CLI original core reaches LIB-019. Foreign macro transport and wider source contracts remain required. |
 | LIB-019 | P0; current unchanged-core failure at `autodiff_forward`, line 1553 | Source attribute macro identity, declaration/import kinds and genuine invocation semantics | PA31 source compiler bindings; PA38 actual procedural/attribute execution / PA31 declaration/import controls, PA38 execution | C | Typed Bang/Attribute lookup, must_use/inline/Test, trait messages, persistent mixed warning/error transport and authenticated removed-body cfg receipts pass the focused attribute checkpoint. All 93 added active source oracles and fifteen native comparisons are qualified. Procedural execution, test-harness generation and imported macro/attribute contracts remain open; no original crate artifact. |
-| LIB-020 | P0; stricter original-root failure at `lib.rs:65` | Actual rustc_coherence_is_core and primitive inherent implementation policy, lookup and coherence | PA31 binding + PA19/20 language/index; PA29 transport / PA31 source reproductions plus applicable earlier controls | Integrator | All 44 source predictions and twelve clarifiers ran. Retain three disproved hypotheses: unused primitive duplicates (including same impl) are accepted; admitted function-pointer impls do not supply callable inherent members. Actual primitive implementation is still missing. Reuse typed structural heads and nominal fast path, retain complete Self/conditions; crate name or known attribute spelling grants no authority. |
+| LIB-020 | P0; stricter original-root failure at `lib.rs:65` | Actual rustc_coherence_is_core and primitive inherent implementation policy, lookup and coherence | PA31 binding + PA19/20 language/index; PA29 transport / PA31 source reproductions plus applicable earlier controls | Integrator | Local structural ownership, contextual full-Self lookup, genuine receiver-step assembly and ordinary local feature-header authority pass nineteen focused private controls and eight native programs. All 66 independently observed source outcomes pass the candidate. No hot package/report fields were added. Imported policy and wider duplicate/unsizing profiles remain required; no original core artifact. |
 | LIB-021 | P0; active original crate policy at `lib.rs:66` | rustc_preserve_ub_checks and actual UB-check intrinsic/runtime/CTFE behavior | PA28 operations + PA25 CTFE + PA31 policy + PA29 transport / PA31 complete source providers | B, coordinated with C/A | Typed UB/session/config/owned source identity is integrated at `66bd3750` and passes focused and periodic full CI qualification. Actual CTFE, producer code and deferred consumer specialization remain distinct. Imported policy transport and the combined Test-body/configuration receipt are still required; CPPGM remains unchanged. |
 
 The combined functional recovery is recorded in
