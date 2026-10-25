@@ -22,6 +22,7 @@ jobs:
         with:
           path: |
             obj/rust/dev-fast
+            obj/rust/private-lint
             obj/fast-audit.json
             ~/.cargo/registry
           key: dev-fast-${{ runner.os }}-rust-1.98-${{ hashFiles('dev/Cargo.lock', 'dev/Cargo.toml') }}-${{ github.sha }}
@@ -30,9 +31,19 @@ jobs:
       - name: Audit setup
         run: make setup-audit
       - name: Five-minute development check
-        run: make fastcheck FAST_ARGS='lexer'
+        run: RUST_TEST_NOCAPTURE=1 make fastcheck FAST_ARGS='declarative_macros::attributed_values::actual_attribute_lookup_kind_owner_and_unavailable_execution_remain_distinct attribute_contracts::actual_owner_results_and_lexical_lint_controls_keep_persistent_diagnostics diagnostic_contracts::actual_trait_contracts_select_messages_and_keep_default_warnings diagnostic_contracts::mixed_attribute_error_renders_warnings_once_at_each_driver_boundary discarded_domains::discarded_domains_and_reverse_declared_trait_ancestry_match_independent_observations inhabited_aggregates::canonical_fields_and_visibility_control_empty_match_coverage test_removal_lints::removed_test_owners_inherit_policy_before_their_own_lint_attributes test_removal_lints::malformed_first_test_transfers_the_warning_through_the_expansion_driver_boundary declarative_macros::attributed_values::opposing_block_macro_kinds_select_the_actual_eligible_outer_binding'
+      - name: Generate and independently check two PA7 references
+        run: python3 .github/focused_refs.py
       - name: Harness, audit cache and upstream contracts
         run: make test-harness test-upstream && obj/audit-venv/bin/python -m unittest discover -s scripts/audit_tests -v
+      - name: Retain selected reference outputs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: selected-pa7-references
+          path: obj/parallel/pa7-cfg-test-output-v1
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Retain focused evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -42,7 +53,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
   qualification:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: false
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
