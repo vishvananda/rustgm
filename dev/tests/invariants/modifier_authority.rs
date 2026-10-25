@@ -53,10 +53,27 @@ fn default_features_and_actual_impl_owners_keep_observed_token_authority() -> Te
         "an impl ancestor is not the nested function's owner"
     );
     let ordinary = report("fn main(){}")?;
-    assert_eq!(
-        ordinary.definitions.len(),
-        24,
-        "new modifiers must not install a bootstrap macro"
-    );
+    assert!(ordinary.definitions.is_empty(), "unused macros stay lazy");
+    assert_eq!(crate::expand::builtin::Builtin::BOOTSTRAP.len(), 24);
+    for (slot, builtin) in crate::expand::builtin::Builtin::BOOTSTRAP
+        .iter()
+        .enumerate()
+    {
+        assert_eq!(builtin.bootstrap_slot(), Some(slot));
+    }
+    let mut sources = NoFiles;
+    let config = Config::default();
+    let engine = Engine::create(
+        InputFile {
+            identity: "ordinary.rs".into(),
+            path: "ordinary.rs".into(),
+            source: SourceFile::new(b"fn main(){}".to_vec())?,
+        },
+        &mut sources,
+        &config,
+        &crate::resolve::bindings::Context::default(),
+    )?;
+    assert_eq!(engine.builtin_definitions.len(), 24);
+    assert!(engine.builtin_definitions.iter().all(Option::is_none));
     Ok(())
 }

@@ -92,7 +92,12 @@ fn mixed_failures_retain_warning() -> TestResult {
     let error = report(&source)
         .err()
         .ok_or("unresolved body name accepted")?;
-    assert!(error.message.contains("missing"));
+    assert_eq!(error.message, "unresolved value name");
+    assert_eq!(error.file.source(), Some(FileId(0)));
+    assert_eq!(
+        error.span.start as usize,
+        source.find("missing").ok_or("actual unresolved token")?
+    );
     assert_eq!(error.warnings().len(), 1);
     assert_eq!(
         error.warnings()[0].code,
