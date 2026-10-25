@@ -187,6 +187,7 @@ impl<S: Sources> Engine<'_, S> {
             self.attribute_effects = Some(Box::new(super::attribute_effects::Effects {
                 removals,
                 policy: None,
+                visibilities: None,
             }));
         }
         let removal = self.checked_test_removal(index, definition)?;
