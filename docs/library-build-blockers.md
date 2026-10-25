@@ -14,7 +14,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Qualified combined `ca54609a` reaches `autodiff_forward`, line 1553, opening four unchanged original files. The stricter attribute candidate separately exposes the earlier coherence policy at `lib.rs:65`. No artifact. | Implement LIB-019/020/021 and rerun the unchanged root; complete scoped semantics, nonempty formatting and remaining source requirements. |
+| Original core loading and expansion | Qualified CLI `50dac790` passes the former autodiff/coherence boundary and reaches `offload_kernel`, line 1668, opening four unchanged original files. No artifact. | Implement LIB-022's actual builtin declaration contracts; complete imported/scoped semantics, nonempty formatting and remaining source requirements. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -102,6 +102,19 @@ Its unchanged-core observer reaches `autodiff_forward` at `macros/mod.rs:1553`,
 four files unchanged. Stricter attribute checking separately exposes the earlier
 `rustc_coherence_is_core` requirement at `lib.rs:65`; implement its real semantics.
 
+The [new original-core observation](original-core-lib020-checkpoint.md) uses
+the qualified primitive compiler `50dac790` and reaches `offload_kernel`,
+line 1668, byte 62644. All 722 selected source files and the four actually
+opened files match the original pinned inventory. Download, verification and
+the traced attempt take 5.729 seconds. This advances the declaration boundary
+without producing a crate artifact. The next related family is LIB-022.
+
+Periodic full CI on `e081f8ab` found one regular integration regression:
+the stricter classifier rejects the known `non_exhaustive` attribute before
+its existing unsupported artifact-profile boundary. LIB-023 adds its real local
+consumer and retains the closed export contract; it must not be repaired by
+accepting unknown attributes or changing the fixture's meaning.
+
 - Integrator: the [structural owner checkpoint](primitive-inherent-checkpoint.md)
   qualifies local primitive policy and full-Self lookup with 66 source cases,
   nineteen focused private controls and eight actual native programs. Ordinary
@@ -170,6 +183,8 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-019 | P0; current unchanged-core failure at `autodiff_forward`, line 1553 | Source attribute macro identity, declaration/import kinds and genuine invocation semantics | PA31 source compiler bindings; PA38 actual procedural/attribute execution / PA31 declaration/import controls, PA38 execution | C | Typed Bang/Attribute lookup, must_use/inline/Test, trait messages, persistent mixed warning/error transport and authenticated removed-body cfg receipts pass the focused attribute checkpoint. All 93 added active source oracles and fifteen native comparisons are qualified. Procedural execution, test-harness generation and imported macro/attribute contracts remain open; no original crate artifact. |
 | LIB-020 | P0; stricter original-root failure at `lib.rs:65` | Actual rustc_coherence_is_core and primitive inherent implementation policy, lookup and coherence | PA31 binding + PA19/20 language/index; PA29 transport / PA31 source reproductions plus applicable earlier controls | Integrator | Local structural ownership, contextual full-Self lookup, genuine receiver-step assembly and ordinary local feature-header authority pass nineteen focused private controls and eight native programs. All 66 independently observed source outcomes pass the candidate. No hot package/report fields were added. Imported policy and wider duplicate/unsizing profiles remain required; no original core artifact. |
 | LIB-021 | P0; active original crate policy at `lib.rs:66` | rustc_preserve_ub_checks and actual UB-check intrinsic/runtime/CTFE behavior | PA28 operations + PA25 CTFE + PA31 policy + PA29 transport / PA31 complete source providers | B, coordinated with C/A | Typed UB/session/config/owned source identity is integrated at `66bd3750` and passes focused and periodic full CI qualification. Actual CTFE, producer code and deferred consumer specialization remain distinct. Imported policy transport and the combined Test-body/configuration receipt are still required; CPPGM remains unchanged. |
+| LIB-022 | P0; current unchanged-core failure at `offload_kernel`, line 1668 | Complete authenticated builtin declaration kinds independently of invocation availability | PA31 source binding + PA8 expansion; execution stays with owning feature / PA31 source providers plus earlier applicable controls | B + integrator | Current CLI `50dac790` rejects the unused real declaration. Inventory related pinned declarations together; retain exact owner/kind/feature/duplicate checks and deny unavailable execution. |
+| LIB-023 | P1; periodic full CI integration regression | Actual local `non_exhaustive` attribute consumption and retained unsupported cross-crate contract | PA29 declaration/export contract / PA29 local and artifact opponents | C | Real local owner/form checks and retained typed facts are under implementation. Same-crate construction/exhaustiveness must remain ordinary Rust behavior; exporting the unsupported contract must still fail explicitly. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):
