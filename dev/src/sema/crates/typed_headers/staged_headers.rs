@@ -2,7 +2,7 @@
 mod commit_ports;
 mod contract_ports;
 mod definition_cells;
-mod environments;
+pub(super) mod environments;
 mod formal_headers;
 mod impl_headers;
 mod owner_packets;

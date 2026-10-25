@@ -1,4 +1,4 @@
-"""CI-only exact2 continuation, with authenticated retained source/function proofs."""
+"""CI-only exact six private Environment controls; one direct 190s budget."""
 import hashlib,json,os,re,signal,subprocess,sys,time
 from pathlib import Path
 from types import SimpleNamespace
@@ -7,62 +7,23 @@ sys.path.insert(0,str(ROOT/'scripts'))
 from fastcheck_run import Steps,fingerprint
 from maintainer_batch import artifacts,inventory
 from storage import exclusive,check_space,minimum_reserve
-SOURCE_SHA='0edad093a1b376c8eafd0589f52eef7cf0985a4c1e963111a0d8a8544759ef19'
-CANDIDATE='7a258d6c1d22e5a221887765f31f5ac5579bd2ac'
-PROOF_SHA='2595968e5ba3d69c778c332934934ee454b16e4e63a01045173f8ab5bb706802'
-OLD_SOURCE_SHA='08734eadbd645347834a3bb5bb378fadea5259d94e36ad769e4ecd989a3cfa32'
-OUTPUT_SHA='8182dfb6b3b15fccba77ec3ada6148985c06c15118e0a1368d2206a1f0dee568'
-CASES=['sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_bound_selected_work_and_warm_storage', 'sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_keep_failed_attempt_and_peak_costs']
-RETAINED=['sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_retain_full_family_and_unused_formals', 'sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_reject_changed_provenance_and_incomplete_formals', 'support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof', 'resolve::body_origin::catalog::freezing_tests::clone_drop_and_unique_access_never_reopen_frozen_installation']
-TEST='dev/tests/invariants/prepared_callables.rs'
+SOURCE='48a4b42e990cb065cb8fab44f3ae061ebc3d39c9'
+SOURCE_SHA='1aaccfc20050849dc37312605c929a9357d3dd9a4713ec453b74d63a9ee0e2ed'
+COUNT=2606
+CASES=['sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_defining_environments_use_real_zero_domain_assumptions', 'sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_defining_environments_reject_changed_owners_and_failed_budgets', 'sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_defining_environments_bound_selected_and_warm_work', 'sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::tests::private_trait_input_costs_cover_real_lazy_growth_and_capacity_hits', 'sema::function_context::assumption_environment::tests::defining_environment_ordinary_path_keeps_the_actual_declaration_arc', 'support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof']
 
-def hashed(data): return hashlib.sha256(data).hexdigest()
 def worker(deadline,folder):
     with exclusive(ROOT):
         check_space(ROOT,minimum_reserve())
         steps=Steps(ROOT,SimpleNamespace(deadline=deadline,evidence_root=folder,prune_under=[]))
         try:
-            proof_raw=(ROOT/'.github/template-retained-receipt.json').read_bytes()
-            if hashed(proof_raw)!=PROOF_SHA: raise ValueError('prior receipt identity changed')
-            proof=json.loads(proof_raw)
             sources=fingerprint(ROOT)
-            if hashed(json.dumps(sources,sort_keys=True,separators=(',',':')).encode())!=SOURCE_SHA:
-                raise ValueError('current frozen source changed')
-            if set(sources)!=set(proof['sources']) or [p for p in sources if sources[p]!=proof['sources'][p]]!=[TEST]:
-                raise ValueError('change exceeds the single corrected test owner')
-            if any(row['status']!=0 for row in proof['steps'][:7]) or proof['steps'][7]['name']!='lib' or proof['steps'][7]['status']!=101:
-                raise ValueError('prior static/build/test evidence differs')
-            old=(ROOT/'.github/template-retained-source.rs').read_bytes()
-            if hashed(old)!=OLD_SOURCE_SHA or OLD_SOURCE_SHA!=proof['sources'][TEST]:
-                raise ValueError('prior test source does not bind static proof')
-            output=(ROOT/'.github/template-retained-lib.stdout').read_bytes()
-            if hashed(output)!=OUTPUT_SHA or any(('test '+case+' ... ok') not in output.decode() for case in RETAINED):
-                raise ValueError('four retained test results differ')
-            # Actual Rust syntax nodes, not line edits or rendered diagnostics,
-            # identify every unchanged helper and test in the one changed owner.
-            from rust_audit import PARSER
-            def functions(data):
-                tree=PARSER.parse(data).root_node
-                if tree.has_error: raise ValueError('test source syntax cannot be authenticated')
-                return {node.child_by_field_name('name').text.decode():data[node.start_byte:node.end_byte]
-                        for node in tree.named_children if node.type=='function_item'}
-            new=(ROOT/TEST).read_bytes()
-            def declarations(data):
-                return [(node.type,data[node.start_byte:node.end_byte]) for node in PARSER.parse(data).root_node.named_children
-                        if node.type not in {'function_item','line_comment','block_comment'}]
-            if declarations(old)!=declarations(new): raise ValueError('nonfunction test owner declarations changed')
-            previous,current=functions(old),functions(new)
-            changed={name for name in current if previous.get(name)!=current[name]}
-            allowed={case.rsplit('::',1)[1] for case in CASES}|{'blocked_body_dependency'}
-            if changed!=allowed or set(previous)-set(current):
-                raise ValueError('test/helper edits exceed the exact two corrected controls')
-            steps.receipt.update(sources=sources,groups={'lib':CASES},candidate=CANDIDATE,
-                retained={'run':40219671209,'receipt_sha256':PROOF_SHA,'passed':RETAINED,
-                          'steps':proof['steps'][:4],'old_test_source_sha256':OLD_SOURCE_SHA,
-                          'function_changes':sorted(changed),
-                          'attribution':'Prior four passes and unchanged metadata retained. Changed source file formatting/global duplicate audit/private Clippy invalidated and rerun.'})
+            digest=hashlib.sha256(json.dumps(sources,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+            if len(sources)!=COUNT or digest!=SOURCE_SHA: raise ValueError('frozen Environment source fingerprint changed')
+            steps.receipt.update(sources=sources,groups={'lib':CASES},candidate=SOURCE)
             steps.environment['RUST_TEST_NOCAPTURE']='1';steps.save()
-            steps.run('format-changed',['rustfmt','--edition','2024','--check',TEST])
+            steps.run('assignment-metadata',[sys.executable,'scripts/assignment_metadata.py'])
+            steps.run('format',['cargo','fmt','--manifest-path','dev/Cargo.toml','--all','--','--check'])
             steps.run('architecture',[ROOT/'obj/audit-venv/bin/python','scripts/rust_audit.py','--root','.',
                                       '--cache','obj/fast-audit.json'])
             common=['--manifest-path','dev/Cargo.toml','--locked','--profile','dev-fast']
@@ -73,18 +34,18 @@ def worker(deadline,folder):
             listed=steps.run('lib-inventory',[binary,'--list'],cwd=ROOT/'dev')
             ignored=set(steps.run('lib-ignored',[binary,'--ignored','--list'],cwd=ROOT/'dev').splitlines())
             selected=inventory('\n'.join(row for row in listed.splitlines() if row not in ignored),'lib',CASES)
-            if selected!=CASES: raise ValueError('actual nonignored inventory differs')
-            steps.receipt.update(selected={'lib':selected},binaries={'lib':{'path':str(binary),'sha256':hashed(binary.read_bytes())}});steps.save()
+            if selected!=CASES: raise ValueError('actual nonignored inventory differs from exact six')
+            steps.receipt.update(selected={'lib':selected},binaries={'lib':{'path':str(binary),'sha256':hashlib.sha256(binary.read_bytes()).hexdigest()}});steps.save()
             output=steps.run('lib',[binary,'--exact',*selected],cwd=ROOT/'dev')
-            if re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',output)!=[('2','0','0')]:
-                raise ValueError('actual exact two count differs')
+            if re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',output)!=[('6','0','0')]:
+                raise ValueError('actual exact six count differs')
             if fingerprint(ROOT)!=sources: raise ValueError('source changed during execution')
-            steps.receipt['state']='passed';print('Passed exact2; prior four actual passes retained by source/AST proof.',flush=True)
+            steps.receipt['state']='passed';print('Passed actual exact6 Environment controls and required static checks.',flush=True)
             return 0
         except BaseException as error:
             steps.receipt.update(state='failed',error=str(error));raise
         finally:
-            steps.save();print('Continuation evidence: '+str(folder),flush=True)
+            steps.save();print('Environment evidence: '+str(folder),flush=True)
 
 def main():
     if len(sys.argv) == 4 and sys.argv[1] == "--worker":
@@ -117,8 +78,8 @@ def main():
         folder.with_suffix(".launcher.json").write_text(json.dumps({
             "state": "passed" if status == 0 else "failed", "status": status,
             "seconds": time.monotonic() - started, "absolute_budget_seconds": 190,
-            "command": command, "retained_run": 40219671209}, indent=2) + "\n")
-        print(f"Missing-only total: {time.monotonic() - started:.2f}s", flush=True)
+            "command": command, "candidate": SOURCE}, indent=2) + "\n")
+        print(f"Environment gate total: {time.monotonic() - started:.2f}s", flush=True)
 
 
 if __name__ == "__main__":

@@ -1,135 +1,11 @@
 {
-  "profile": "dev-fast",
-  "state": "failed",
-  "steps": [
-    {
-      "name": "assignment-metadata",
-      "command": [
-        "/usr/bin/python3",
-        "scripts/assignment_metadata.py"
-      ],
-      "seconds": 1.2663425949999976,
-      "status": 0,
-      "environment": {}
-    },
-    {
-      "name": "format",
-      "command": [
-        "cargo",
-        "fmt",
-        "--manifest-path",
-        "dev/Cargo.toml",
-        "--all",
-        "--",
-        "--check"
-      ],
-      "seconds": 5.526939194000008,
-      "status": 0,
-      "environment": {}
-    },
-    {
-      "name": "architecture",
-      "command": [
-        "/home/runner/work/rustgm/rustgm/obj/audit-venv/bin/python",
-        "scripts/rust_audit.py",
-        "--root",
-        ".",
-        "--cache",
-        "obj/fast-audit.json"
-      ],
-      "seconds": 28.124981015000003,
-      "status": 0,
-      "environment": {}
-    },
-    {
-      "name": "clippy-private",
-      "command": [
-        "cargo",
-        "clippy",
-        "--manifest-path",
-        "dev/Cargo.toml",
-        "--locked",
-        "--profile",
-        "dev-fast",
-        "--lib",
-        "--",
-        "--test",
-        "-D",
-        "warnings"
-      ],
-      "seconds": 42.31546611400002,
-      "status": 0,
-      "environment": {
-        "CARGO_TARGET_DIR": "/home/runner/work/rustgm/rustgm/obj/rust/private-lint"
-      }
-    },
-    {
-      "name": "build",
-      "command": [
-        "cargo",
-        "test",
-        "--manifest-path",
-        "dev/Cargo.toml",
-        "--locked",
-        "--profile",
-        "dev-fast",
-        "--lib",
-        "--no-run",
-        "--message-format=json"
-      ],
-      "seconds": 71.42588393199998,
-      "status": 0,
-      "environment": {}
-    },
-    {
-      "name": "lib-inventory",
-      "command": [
-        "/home/runner/work/rustgm/rustgm/obj/rust/dev-fast/deps/rustgm-bf276c380d3725dd",
-        "--list"
-      ],
-      "seconds": 0.007830122999990863,
-      "status": 0,
-      "environment": {}
-    },
-    {
-      "name": "lib-ignored",
-      "command": [
-        "/home/runner/work/rustgm/rustgm/obj/rust/dev-fast/deps/rustgm-bf276c380d3725dd",
-        "--ignored",
-        "--list"
-      ],
-      "seconds": 0.003593122999973275,
-      "status": 0,
-      "environment": {}
-    },
-    {
-      "name": "lib",
-      "command": [
-        "/home/runner/work/rustgm/rustgm/obj/rust/dev-fast/deps/rustgm-bf276c380d3725dd",
-        "--exact",
-        "sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_retain_full_family_and_unused_formals",
-        "sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_reject_changed_provenance_and_incomplete_formals",
-        "sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_bound_selected_work_and_warm_storage",
-        "sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_keep_failed_attempt_and_peak_costs",
-        "support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof",
-        "resolve::body_origin::catalog::freezing_tests::clone_drop_and_unique_access_never_reopen_frozen_installation"
-      ],
-      "seconds": 0.11429534399999852,
-      "status": 101,
-      "environment": {}
-    }
-  ],
-  "groups": {
-    "lib": [
-      "sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_retain_full_family_and_unused_formals",
-      "sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_reject_changed_provenance_and_incomplete_formals",
-      "sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_bound_selected_work_and_warm_storage",
-      "sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_keep_failed_attempt_and_peak_costs",
-      "support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof",
-      "resolve::body_origin::catalog::freezing_tests::clone_drop_and_unique_access_never_reopen_frozen_installation"
-    ]
-  },
-  "sources": {
+  "schema": 1,
+  "kind": "partial-reference",
+  "stage": "pa8",
+  "mode": "--emit-expanded-crate",
+  "base_reference_sha256": "fea869141ee33840325e53a05cd598795cd265aff39459be8fd6723e18e1cdac",
+  "manifest_sha256": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
+  "compiler_source_sha256": {
     "dev/bin/crates.rs": "5e73d44f2c3b8a5042018f45e6af26a87e655111456e80c5449265667e0b5de6",
     "dev/bin/modules.rs": "ba767baa56435adb63c08f464512cd59639666ca217d544f52bd8bd2a4d5c847",
     "dev/bin/rustgm.rs": "5c25a89d65f9c7a46f3e73c393e5fedc957e47fefd3d60229f59c55553f3f541",
@@ -597,7 +473,7 @@
     "dev/src/resolve/crates/public_names.rs": "a45aadd511c24219524d9e9016f2bf8e3b278b4b0221070ab4e44474fe79adcf",
     "dev/src/resolve/crates.rs": "c4a29854a1b698920ee74bd6e98c22cab2286b06064ab811d098897b36dfe95e",
     "dev/src/resolve/expansion/application_kind.rs": "5d7cd35db424a62322aab5d68862b89cb482033e6bdd1870847bea6546278ff1",
-    "dev/src/resolve/expansion/attribute_effects.rs": "8357ab1c709f4afe0a054971503ba934c8925d1cef4417b3e290d1cc4de52096",
+    "dev/src/resolve/expansion/attribute_effects.rs": "1b8180c2c8e059d86f68fd515c147611244251db9d074c01b9fb95b5b2b5fb4c",
     "dev/src/resolve/expansion/attributes.rs": "4dca6711924a2770da55ef1b2afd8228a0a187f791708e6c60f9ab0c204be4b2",
     "dev/src/resolve/expansion/bindings.rs": "4482bb62359ffc520e77199e30c8cb04d91aa20c4df51ff59866f12902cc4623",
     "dev/src/resolve/expansion/cfg_gates.rs": "d63209441635eac67540c0f94d6c2381dcf84073eb0c3ca54a61762922655d0b",
@@ -608,7 +484,7 @@
     "dev/src/resolve/expansion/format_values.rs": "7dc52cfc6abc7b29912a5563120a5eaa4943d1efe2406062fa16dccd2b1bc7a6",
     "dev/src/resolve/expansion/location.rs": "5be82d9bb8232e8c8097902fdcfb7130f96899a813a7e3ee758ffcab326451aa",
     "dev/src/resolve/expansion/panic_dispatch.rs": "b31a081aa5279d10924bfdaa6e1321884074a6babfcdb7123497896ad607ee9a",
-    "dev/src/resolve/expansion/paths.rs": "98c364bfa3d8938aed2156ad1e4c4929ab76ea8de8e55aaf2763062faee60f0f",
+    "dev/src/resolve/expansion/paths.rs": "fa5da4adffd019c88078e2854ad7ff5f78fc3dde633d7b4d0fd23db77cd31ab5",
     "dev/src/resolve/expansion/permission_frames.rs": "dd77c316a24aa51fa4143bcecbec9b4d1a870f3e1a4c727de92804ee03c30ddb",
     "dev/src/resolve/expansion/permission_session.rs": "e13fdc3b9f5f2dc9e62a17dc6ecec3b489ab16a424044857e1928f713e034690",
     "dev/src/resolve/expansion/removed_functions/ancestry_links.rs": "506dcf72e848ba76e13562577b6ac47755793151dd397cb625ddad13c528201c",
@@ -616,28 +492,30 @@
     "dev/src/resolve/expansion/removed_functions/identities.rs": "55eebe70635865ebd6c49811f8921feda62cc74b7816509bad1feb82d296a564",
     "dev/src/resolve/expansion/removed_functions/retirement.rs": "90ce0b578426d9b570eb74fe0962f625fe6ba044cbeddbdb223d43e4a3fa6e79",
     "dev/src/resolve/expansion/removed_functions/saved_uses.rs": "c97f6a8869b647b33dfb162aaa268beaa51054d86338a1d30be040d3b24f58bf",
-    "dev/src/resolve/expansion/removed_functions.rs": "dbbe57c48029fa95fa409fa64d98e276d2fe4cb73921a733dc73afd21e98a5a0",
+    "dev/src/resolve/expansion/removed_functions.rs": "73b5b496cf71819e007f2dab8c57bcd21b28642b42c723376edf0b6675afab84",
     "dev/src/resolve/expansion/resources.rs": "506ae29629eb1d1fca80452b6f50d9ed694c341511f552b81d39bd255b119184",
     "dev/src/resolve/expansion/transcription.rs": "9c1354ad27488de0180f22f85713d60344f982e33ba84b5e526b49417effbbd1",
     "dev/src/resolve/expansion/unavailable.rs": "db0d19771b56fef664ea27d0bf29a18309768eaf1feedd07f0552759e15402fd",
-    "dev/src/resolve/expansion.rs": "00a75e6a1cdade08e1d3cdf51d3fa5a28ba68aa3f38bfac085e0f344fb30a2e0",
+    "dev/src/resolve/expansion/unnamed_visibility/recorded_owners.rs": "96930a40972c0477ff78c22e7a6a248ac11e3f9745cab0ce959bfac7afe4d52e",
+    "dev/src/resolve/expansion/unnamed_visibility.rs": "f2112b930ad3c64ed88b6086cfdc018ddaeeb27b6bd983231ddc1bf14d3131b0",
+    "dev/src/resolve/expansion.rs": "bcddddf0ecb4d62949565a649c5fa5f43648dc3746d6a564f7a49a1b7248b4dc",
     "dev/src/resolve/float_features.rs": "2b6051d05746321cd5711cd279a5641b37d39c61d7492681103fccf7bcff85fe",
     "dev/src/resolve/hygiene.rs": "3c369e8857bfff67a5f1c1a618d2e489f789a118ff3e36a9790ce347602b5e41",
     "dev/src/resolve/identifiers.rs": "9d2634ec5a2c7211f35c0884136f1005a5bdceafc35f0b24069c44bc8343e391",
     "dev/src/resolve/imports/trees.rs": "fd8bd0b4203c486673d1f5078c9a666db727bdaff650e82ecff476132e6badc3",
     "dev/src/resolve/imports.rs": "296c71b0d9c4c5bbe667cc82b4da5da30d815f8ef4ad614a3e69a03cb65f9ba2",
-    "dev/src/resolve/index.rs": "3570ad9869e369f2a51f1face30b58f97f8fb8a6684f4342bfc0848cd68502db",
-    "dev/src/resolve/lint_policy/attribute_changes.rs": "dfda717eafd98da1addf29395fececeb189e1ccdee836cdf348d7a2795a7b0c9",
+    "dev/src/resolve/index.rs": "5ed013380f3613d43417e6f9dbce916d518911f08b2f05263c151adde13b8fd6",
+    "dev/src/resolve/lint_policy/attribute_changes.rs": "d4d54f92058dc9da820b83eaa86c781b313e6ddc8f6f373fe9dc8fd9c8790b51",
     "dev/src/resolve/lint_policy/producer/snapshots.rs": "2509bf594fdc70fae257edcfdeaacf07e7426e04bb59950c3c5dc81c296d6a96",
-    "dev/src/resolve/lint_policy/producer.rs": "f01e5d9563871a4e188407d7c5cf5f81e306025490edc5494a8ad4fe0f471ebd",
-    "dev/src/resolve/lint_policy.rs": "280288b41cca7849d3cc7903bedcd777fbb35018c63d8e5e57539e523dba1b2e",
+    "dev/src/resolve/lint_policy/producer.rs": "a5aadda767a154baf20fc0d5cb34bd013f7f45c09018f85c9b82d2ef5d0456d0",
+    "dev/src/resolve/lint_policy.rs": "5de8833e3d0ae1f387bdb938d90b2d3f9b1c4abe19a92c78c57ab844afa8a2ae",
     "dev/src/resolve/load.rs": "8cf8293ac9505ed3badcf8c0feea375c65fc9a1b404c0dd01cd467b7fdd88f35",
     "dev/src/resolve/lookup.rs": "385250047b731318a2db0b59dc46766e69ac951e1e9a8c0ea58272278d9be1f7",
-    "dev/src/resolve/mod.rs": "735d0b6bfad934988910fb7bc30d263584f8d8eef03c852cb65b14c4851184ae",
+    "dev/src/resolve/mod.rs": "9b3e9747e7aacf11459b11e385b7d26e08ab806ae6259fc61011adea07981cf4",
     "dev/src/resolve/model.rs": "d98258fd7f9bf7b929022bc1badb32b14108615ef2071dd2f552a6b8ae32f58e",
     "dev/src/resolve/module_domains.rs": "fcaca7c57f5d65f87a4b53a0248c735504699fe9c754e3f22ff869fb7ca672f7",
-    "dev/src/resolve/package/diagnostic_warnings.rs": "07577426bef2410168dc9105b4c31586da118cfa125977fa27e1f4dc8ae14762",
-    "dev/src/resolve/package.rs": "b40355b1ddb3eaf583b5c7129af0e3eb7876446ae075804c9560698548488322",
+    "dev/src/resolve/package/diagnostic_warnings.rs": "f078a591344d92c6c378901700d11a6a0384c55825806487b68cc2d00f39672e",
+    "dev/src/resolve/package.rs": "13ce660335ce093e8e36a94527d5b18f1a15f4a9b7c2b962a2deb0a3207eed8d",
     "dev/src/resolve/paths.rs": "015cd2c051ee1b82d0c2a52bc42db159d0b006f526864de383e72f792241bc0a",
     "dev/src/resolve/patterns.rs": "cc4eb75e1ea61f68947e2c33d32942ee5aee3dfdc4305f778217ef94cdba352f",
     "dev/src/resolve/render.rs": "426e16b08e72038224c91499e71cc5130852324d3f32b0107adcd9dbff9d3276",
@@ -656,6 +534,7 @@
     "dev/src/resolve/unit/original.rs": "9d19ab40d1ae5f23d00521e2ac4b1b1dfc3369cc14484c1da30e44a95bf9d3b8",
     "dev/src/resolve/unit/retirement.rs": "beea4c0a925cabe13a127d987cded56fe52c1209e53234a560cfe8dd669074bd",
     "dev/src/resolve/unit.rs": "5aa0b4c4bb77bc038b5aef0d068a0161346cbe4f766359805372bffbda4c75e4",
+    "dev/src/resolve/unnamed_values.rs": "11ea2c43449af6204a1ecaa50ac9358f0f38306152cc4297a1cb42d0c1f3d6d1",
     "dev/src/sema/alias_requirements/normalizations.rs": "a79a2dfc06dc58f5809dd519cf4fe22f9db2f60c5b6ecdf63d5819171d94b07b",
     "dev/src/sema/alias_requirements/scopes.rs": "30a06fa504b20b759f31269c95179d3c8e0ef453d1e5216ce308d7396225c255",
     "dev/src/sema/alias_requirements/tests.rs": "ac4b51e4024ee677c313bc14e095a5594f86ebbd48de7872fc2e715a126777d7",
@@ -1117,14 +996,14 @@
     "dev/src/sema/methods/visible.rs": "ca306e9f59de0a787c4dd90026020190bcf42697eb9bdb91749429d258ed9a3c",
     "dev/src/sema/methods.rs": "fef8248183d0665d24bf5564e58ad9a195ab47467f9a8e6e4edc6018bc56f8f8",
     "dev/src/sema/mod.rs": "53fb5eac853d3e4ed82113a8dd4329daffaa10cbf6348e9c3c5744ae58e1340c",
-    "dev/src/sema/model.rs": "df9bba6148a097fe4c96f4bfa55556523cafbd57ad21e21c29615b17374962cb",
+    "dev/src/sema/model.rs": "045cc0e9a4fb741746d16baae07c82bac0ab6084f6082a0fdcbc639af67e83fe",
     "dev/src/sema/must_use/declarations.rs": "dec3abbe8980110f2a0af86ba96fe12b066bfbbff381af3ca4117f24d3ee2ade",
     "dev/src/sema/must_use/discarded_types.rs": "65c6f625127606d9f4037625ccedb2e59f75bd10a11b25ace59575b32814815e",
     "dev/src/sema/must_use/messages.rs": "0f4b49695ae864265e82981e853429e886d9fd8cf0f15b214e3d4faae5481d8b",
     "dev/src/sema/must_use/removed_owners.rs": "1efc80261165f90807375057d681a180db03ec88a814ae158648c2c7a444bfcd",
     "dev/src/sema/must_use/supertraits.rs": "c3d7149576225ff28157956757f6632cd948d95f5cdb745b0affbde899404702",
     "dev/src/sema/must_use/trivial_types.rs": "abf746d51eba8a70c61e4356f71e318d9beb76f2c687d5741208f115f4e23244",
-    "dev/src/sema/must_use.rs": "3c8d1654a297994aa9100b13a377dc12d1b9c25a6bb24cd7c95130aa9101c7b7",
+    "dev/src/sema/must_use.rs": "12135276fbccee3f783790f7832330c98232f44a1cb88f47cc9957426bd0766f",
     "dev/src/sema/nested_outputs.rs": "3f4d861063a17cbaf2496145b3c1a68d3ad25941301082f7687b7183148585ee",
     "dev/src/sema/nominals/formation.rs": "a59aa570b0b2b2ddcac1937d5ff429dcffb90635078d79cd48b4b938fcf16b32",
     "dev/src/sema/nominals/requirements.rs": "400d0ee0819b38616f142d98041f6850b974e3f2c1ca47f23a4be6d6787ccc6d",
@@ -1174,7 +1053,7 @@
     "dev/src/sema/projections.rs": "2b2c7ee5cdbe07d184844fc390bdbbf01142d60466eab235b45b8254bbf5bdaf",
     "dev/src/sema/regions.rs": "4218e5753ff0750b3c01c86bebff7af1a22a20e7aa291eae14556515e09899cd",
     "dev/src/sema/representation.rs": "0c43dfeccf5997abdac7bfbf5c3aac73a506122921986ee7f6b22a2d98e931a1",
-    "dev/src/sema/safety.rs": "36de531172eba028d58dc66b4e3a588520702e6255a45e0cb6d8fd0799ec8de1",
+    "dev/src/sema/safety.rs": "6c7c732f5d2899478ddaba1aa3c7176d89b34e5ea4e081ea0739620d01969819",
     "dev/src/sema/scalar.rs": "ff264cf78b82823e6b967c9ecea344e22393dec6cff02d3baf5d5edaa9a88275",
     "dev/src/sema/scopes/controls.rs": "33fdb5c3cbb3134734557399ef0227673159e1c60c84573a4a484012815355d9",
     "dev/src/sema/scopes/extend.rs": "90b24fa49607c234d74e8417cc6a26fc8410c62fb7777df4dbf9e5ed4e27c9a1",
@@ -1385,7 +1264,7 @@
     "dev/src/support/crates/type_graph.rs": "7efd77e3c58bd3ae6468fd81580084c7e65f1943faa06712b89e4c5503eec5d2",
     "dev/src/support/crates.rs": "096e7ea3f0f736e116ee500ef2884fe429ec5e592854507f6f1d809069bbe6dc",
     "dev/src/support/decorations.rs": "7b963c7acc39c15cd5dc263e030c81d211c80e46ee1e94a6a4c7e09f43d766df",
-    "dev/src/support/diagnostics.rs": "3a47f9da48f6842aad711d45def99f1b53c1ee73fe6f9c9cd2f0c658e8e21801",
+    "dev/src/support/diagnostics.rs": "ab82f1b793b73fd626f5351f0d785f715948572918333c18dc4f84b865b2a021",
     "dev/src/support/edition.rs": "a071d955a31bdcb5dbe5bfb0bf60e4754626ed0fff2215fefe09085cb1fd76f3",
     "dev/src/support/hash.rs": "c7fe39f43951beae4409781f5ef1abb16312a899edb578c4ae5fb0587af2735c",
     "dev/src/support/intern_slice.rs": "68ba7b95a1c1f96845bf8ba67377065a89babefeb2e22753a15dfcc0969bc0a0",
@@ -2045,7 +1924,7 @@
     "dev/tests/invariants/erased_entries.rs": "adba6efdec8f0a7c0d68fd24a9a54537dee8fbb3d0291a3e633a325d0e03cfec",
     "dev/tests/invariants/erased_formation.rs": "07d86b739b37e4c2ea6e1fa3dd55bafe2e31353244e4ea8db21345392d159b72",
     "dev/tests/invariants/erased_promises.rs": "44b6d877b353c045abba642c5539aa0d8c0d930777b615cb3952b2d1923456bc",
-    "dev/tests/invariants/error_warning_transfer.rs": "8e47514dcb7d3314af44e9e454bc850902fca2c27779fad7c696f1d2962a85dd",
+    "dev/tests/invariants/error_warning_transfer.rs": "8c416260142597b06890a408288150d610be0e330dcf772101ba19d6c0f69592",
     "dev/tests/invariants/evaluated_storage.rs": "8939f4b11f146604c3b0eb2fa2f389c81b4ea9df329e0862b7bf1a9a6c5b1689",
     "dev/tests/invariants/executed_reference_calls.rs": "091b2fd92fcf55f0081916895ca6147b577dfc251af9e09ea9764252069b711a",
     "dev/tests/invariants/execution_storage.rs": "9eff5c5047e601771f5747ba5c93fd8990b57fbb447d32b88175ff87cd8ffc1d",
@@ -2080,6 +1959,7 @@
     "dev/tests/invariants/forwarded_configuration.rs": "74401375304258a73f919e59eabddc2ace71ddb1a921646b5d0292c8322718d2",
     "dev/tests/invariants/fragment_ranges.rs": "f3a92a274985d4a6ba05d5aa22a88e0d8b6044a1b9fad3372e7d3be7f7066eff",
     "dev/tests/invariants/free_callers.rs": "e121c65df1b0fd58d0627ce07c088f84ec7baed5925cf074acba74e50614d4f1",
+    "dev/tests/invariants/free_constant_bodies.rs": "aca57091c39ee33e86b03911d0c582230735f0db66c9d991a5b311e0e6faf3b4",
     "dev/tests/invariants/function_headers.rs": "0cde2a2020d158345a14da1ef71b1d2711bbab3d5cf06d2df5a8d1f924caf196",
     "dev/tests/invariants/function_roots.rs": "b1941e0ca784c756a34e25d5a4e3fe9f5a888ab629d8a7dec277660a04361305",
     "dev/tests/invariants/glob_adjustment.rs": "f053de4cbb644c0a556623b5dd36b3de03204df2f11f9f83410316a76beae077",
@@ -2222,7 +2102,7 @@
     "dev/tests/invariants/premise_matching.rs": "0946ecd152a42084725df508dbbef12a30389e6a675b9a521dd12e2be169b6af",
     "dev/tests/invariants/premise_region_models.rs": "4cbba3c6f22adc3b28e339ebc39a96d7465a5e5528f19e537a903ddacbbab72d",
     "dev/tests/invariants/premise_scopes.rs": "e0560e59bdd85d9aff9d05b5dc6f7550d0717a6a4efa91934c4e4f3da77dc4c9",
-    "dev/tests/invariants/prepared_callables.rs": "08734eadbd645347834a3bb5bb378fadea5259d94e36ad769e4ecd989a3cfa32",
+    "dev/tests/invariants/prepared_callables.rs": "4b95a70a756d3541f80cddcdf23630a2f950ee090eeb55ae47c285c181918646",
     "dev/tests/invariants/primitive_factories.rs": "03c6184ed01267a943081af2acc37cf6ad639f0ec269a0ca8fbbd0661b64adcc",
     "dev/tests/invariants/progression_contracts.rs": "630099e1721b5783b3aea1b15342de8915206d637b26c9fee1f642e14db2d640",
     "dev/tests/invariants/progression_inference.rs": "25878dd4eee7ae9a1a7e0be3b3ad18a756fa1d0f37ffbd6e96f27f8b9358d4f8",
@@ -2264,7 +2144,7 @@
     "dev/tests/invariants/refutation_layout.rs": "216a3f17cb6654dc81321197287bd5dede1b1c34e95907ab189d9b05d0b397eb",
     "dev/tests/invariants/regional_forest.rs": "32358c418c8b414150ed102ba195e11ff79dc99b5a50d5363f7438951057b54c",
     "dev/tests/invariants/registration_seal.rs": "7232a2824094883d4b6a82205b5ac9cf913d8e2ad74427ab03b0a067a92bebf2",
-    "dev/tests/invariants/removed_test_demand.rs": "8f5ad2814a0570c716d8c61a261a693df82fe7c249f6c7a7015f0e46c8cf2cf1",
+    "dev/tests/invariants/removed_test_demand.rs": "0ec5efee31fd61d4c0f01bf71c9ef93477ee7b2ca84cc678e5abcdd7444dbc41",
     "dev/tests/invariants/replay.rs": "366256fc371d24411b80a6d0f6cd66e4c51d7b486908e6eeb2a27e78cf972622",
     "dev/tests/invariants/replay_capabilities.rs": "8dd934a325665d284484b4ff4b15ca38245946dee862db0aa759db706f9c7c05",
     "dev/tests/invariants/requirement_catalog.rs": "bab2cbdc07311c0a9604eb0a9d2d47d90b31ad66cd74525654c2af622dd1ae1e",
@@ -2337,11 +2217,14 @@
     "dev/tests/invariants/universal_inference.rs": "7a4cc33a30eb2e57db73b781471b4f23e3a483cebb5f776ac24342009ef25035",
     "dev/tests/invariants/universal_premises.rs": "8b0e5e29dc3cf280efe78e36a0d98e73acba87cde30d7c946a3943422464c33f",
     "dev/tests/invariants/universal_work.rs": "4f6c048ed002ca39ac392dd6ed36fd68cecffa2c34557d09e8a1c7399cf7aca1",
+    "dev/tests/invariants/unnameable_items.rs": "9d01cb06ffc07483ac1657cdda70fff795a5feb9db49cffc9810e02c6d322738",
     "dev/tests/invariants/unsizing_casts.rs": "1b269016fdfff5a950c4271563ff605c0688d5b1b15e56754ac7bf23dd080556",
     "dev/tests/invariants/unused_families.rs": "dc4341576ec43e6a57a5c8d5116845b63838123d3696e4e51789beb04aed5e5c",
     "dev/tests/invariants/upstream_originals.rs": "fdf8343dff4b27c23d911f4c3304b90b464994a824a9065fd05acf808f132624",
     "dev/tests/invariants/variant_contexts.rs": "8aff3a57c4915c435450f3aafbbd6d4af1f9882a434362aef7034294348300c0",
     "dev/tests/invariants/versioned_attributes.rs": "a687b359edf933cdee1ae9b56a97bc63c5685f1e81cc23d79017e9d854936286",
+    "dev/tests/invariants/visibility_cause_proofs.rs": "4f8eb7857af134385f29fa41e2cc97a56205db885a7598f6808d81e935bb76c7",
+    "dev/tests/invariants/visibility_policy_cases.rs": "b2769334503e121a3cae4c255b7055f84d197b7e91490ccd3b36c759db8f83a8",
     "dev/tests/invariants/vtable_quantifiers.rs": "a72e577275ba98e4c81d1b332775839dcdfe64a3e8ed6535c92163e0b3c6c9ea",
     "dev/tests/invariants/waited_queries.rs": "691eb3aa41dc02d2023c43dd0727bb80e3ae9ab61aafc26d03e07a3acec846af",
     "dev/tests/invariants/waiting_heads.rs": "f3496b1387fe77dcd55c1def53d7ac0696c49813ad4c74f4165f44defb3091fe",
@@ -2680,66 +2563,21 @@
     "dev/tests/wide_enum_bytes.rs": "b6a3f3056e1773ec01136758fc73e1b5f83879bd9cb2b9161e59a4cb5707789f",
     "dev/tests/wide_layouts.rs": "3b57f2f6f1141212b999ed9de1f41a26bb27a86c6c8931692b4513efb647d871",
     "dev/tests/wide_references.rs": "8987ef994a1f279af0fa68c1bb27c5ec7d4e32cefa2327f62df9bc483edb34bb",
-    "dev/tests/witness_sources.rs": "da58e0fbbc2e7068c97165988e4f764f7b4044be0fe2f8172f472acf5738b652",
-    "dev/Cargo.toml": "c41a67b8228ba0905c85d0cd8d23283b07a8c642a00a92c886bb049707edbd32",
-    "dev/Cargo.lock": "516c35eb1bf38a93a1a05de12123b155de9fb4ac80d05dc7a7389158441675c0",
-    "scripts/fastcheck.py": "807d1ce7d26d28f884ad99d7ff8cbd99fc535ad55bc454009684615c0405bf00",
-    "scripts/fastcheck_run.py": "37782e3f9478b7b209cb5c51dc5b1817cb02c00c59895adbcebab6632a1db1a0",
-    "scripts/rust_audit.py": "5920a6bea67a992947578398fd95d91226635cb861191016826e65d6fa968d0b",
-    "scripts/rust-module-roles.json": "cfe775bae88e8bc6d53b9a7477ea50d8715b8a65b60b05220f2c5e8714f02240",
-    "scripts/maintainer_batch.py": "68fa70a7cc1e0152b9623180df1dc7cf981ce2e447cb5abb28914875c28af6fc",
-    "scripts/maintainer_suites.py": "1304a2d109031d7ca68142cbda7ec890ec8ee585a42a65125f051fe0cf086438",
-    "scripts/storage.py": "16ae2cd0a3e486daaeee4cf9586a4ce4004b1748e9de22e859bc401eb07f76b5",
-    "scripts/resource_runner.py": "b6304fb1779468991bdbefdca2395b8f77ed419846a138fb9b5249baf02ce0c3",
-    "scripts/resource_policy.py": "b5930e11465985d7432fd7f6a01d5c3520224d7bc9b09ae74cba2e845013f142",
-    "scripts/resource_locks.py": "a97fa53c9c75be008cd45db77c8f5190584b014f53a3ce7ac5c6abb9a73f3a26",
-    "assignments.json": "40ac9fa0eb024c71f2b5d161c03c37bd1ef84d174b361d2e81cf979eb0761a1a",
-    "Makefile": "c310242954fdfdc1bb2cf732d8608b7e4e69f099423999c1d329c2ee445d1c0c",
-    "scripts/assignment_metadata.py": "2dcf1c132a2e5f9e7543cea26bffa163b81bb2e49bf96855df5184dcd44e8445",
-    "scripts/course.py": "baf9956a33bb150344c33bdb41992ccc6b56ae5268a6c1a9f076edb75a7101f9",
-    "scripts/check_native.py": "52763426e20d37dad0b8b5a157f27954ce5b57fc554caa41ce80a1262eb14733",
-    "scripts/check_layouts.py": "f7e706ceeaae1f7a14173afe2a98ee1e773598a57d70ae2a0e6d921d4fad1ca5",
-    "scripts/check_syntax.py": "65242050814720b1c7fffeba91ca950b9c49951d9dd8dd864f63373235a2d30f",
-    "pa1/tests/manifest.json": "a260be01e6f4ab42ec0b953dd6804f548f8ce71a1ada2bfa4cbe9b509f1a1ef6",
-    "pa10/tests/manifest.json": "f8b3df2bc49b716626dedd565368362fe2868f09c0a99844eaca9abd93a430dd",
-    "pa11/tests/manifest.json": "77fe4e2e56955d668fb94caf0a84a2652f726face36c8ec895a1756e3315e460",
-    "pa12/tests/manifest.json": "4f1aa1d191b4543f8896f8471bb773809b3469d34757125b716a14d60f0f5160",
-    "pa13/tests/manifest.json": "6611b1a42ba893cda681838065fcde92f9d7f9263afe4f6328f2d76ae4dae52b",
-    "pa14/tests/manifest.json": "ef52097914b3ca10ab1450c17c6c2d6c67ac6dbccef87ad4ac62a468741d87f1",
-    "pa15/tests/manifest.json": "44ee0af56bb6c36fe2d955f7dc0c95b35bea720c81b371c32bb358dfd5857ce8",
-    "pa16/tests/manifest.json": "6d2cd2f0d9afdf5be06a09137f658a9e4fbc93e79da719c1670d2e290953043f",
-    "pa17/tests/manifest.json": "fc439f952e6ef3e6b4947fde1248b964a60cd14ab3ad0fa95cfd9853c19fe8d4",
-    "pa18/tests/manifest.json": "d2e4b2a642adb07aa559bcb1a219c49404667652c044607291b67723eef9f698",
-    "pa19/tests/manifest.json": "1c289e4bbf1dfb4accc4b672032d1429cfee4154e9fce42a2bc8ad8b294306e5",
-    "pa2/tests/manifest.json": "8955bd5420ce9e0b64b2468736ca96e528f6ba78aa590dd5692d545242589ae0",
-    "pa20/tests/manifest.json": "ccbca62f3d3c95ba8902c218407bb4d62498e162d8b16be11243c08a2062e1b4",
-    "pa21/tests/manifest.json": "cff338f5e0f06b03a0d55bd6616a5cc5346fbfc9ec4051ddcc479c5b4dac6934",
-    "pa22/tests/manifest.json": "327ce70e1c35b99824540551a40481ede32d4020cff75d8bab8d41e4b5dda444",
-    "pa23/tests/manifest.json": "16e1f43acf62ed7c13156abfa38f170840a537c58330aa7f2c97ed96cd8316e0",
-    "pa24/tests/manifest.json": "3dc04f9da9e14eb869e7a62da7095846699ae5dd5aef2357ce9332dc8519f67c",
-    "pa3/tests/manifest.json": "4fe3ecd83fdc09507df12601c4ecc952f831eb2dec0cee79c8fa7b2feb2c37f5",
-    "pa4/tests/manifest.json": "34d751414c4e42150f19084a3098913cbe99d62147f4e87264c138a5a22b8f28",
-    "pa5/tests/manifest.json": "677d523e1e091e27fd40b8029aaf2b10643685602dcf7aea71a94cf95858f640",
-    "pa6/tests/manifest.json": "8b5806717927b4d617d2f020ab922e6ea6c3ff7cc75c2b0306f8d121ad0c8379",
-    "pa7/tests/manifest.json": "a0e1243c9236775481c356b13c0a1efdb99a740aad0af765aa425ea2a746a8d2",
-    "pa8/tests/manifest.json": "b8f8752e59f91b334e5837b0f573db629b1a2368aa0ef0766dfa504bc5023fac",
-    "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
+    "dev/tests/witness_sources.rs": "da58e0fbbc2e7068c97165988e4f764f7b4044be0fe2f8172f472acf5738b652"
   },
-  "selected": {
-    "lib": [
-      "sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_retain_full_family_and_unused_formals",
-      "sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_reject_changed_provenance_and_incomplete_formals",
-      "sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_bound_selected_work_and_warm_storage",
-      "sema::crates::typed_headers::unpaid_provided::template_demands::tests::private_callable_templates_keep_failed_attempt_and_peak_costs",
-      "support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof",
-      "resolve::body_origin::catalog::freezing_tests::clone_drop_and_unique_access_never_reopen_frozen_installation"
-    ]
-  },
-  "binaries": {
-    "lib": {
-      "path": "/home/runner/work/rustgm/rustgm/obj/rust/dev-fast/deps/rustgm-bf276c380d3725dd",
-      "sha256": "323d600d9975e913aec99faaa69477cd890b1c8bb666a5a8cd5e62fe8d85b495"
+  "selected_paths": [
+    "tests/spec/expansion/unnamed-constants.rs"
+  ],
+  "cases": {
+    "tests/spec/expansion/unnamed-constants.rs": {
+      "case_sha256": "fafb878ebba834dc51ad20c2c9730b5c6ce474e64f6d546789b7baad10f94a3b",
+      "input_sha256": "fb47037b398c65de98ae81382d8833cb27e5863c027b7d5f03c4710d01aa8d51",
+      "auxiliary": {},
+      "outputs": {
+        ".ref": "6fb5dc7edd1f072e547f2f906d1d3cdbef41941194575e9b3dafb35cd4ad13c1",
+        ".ref.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        ".ref.exit_status": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      }
     }
-  },
-  "error": "lib failed with status 101"
+  }
 }

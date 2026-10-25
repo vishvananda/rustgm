@@ -217,6 +217,24 @@ impl Inputs {
     }
 }
 impl<'a> RecipeView<'a> {
+    pub(crate) fn input_site(
+        &self,
+        owner: crate::support::crates::owner_catalog::DeclarationRef,
+        site: u32,
+        work: &mut ReservationWork,
+    ) -> Result<crate::resolve::body_origin::ProofSite, Error> {
+        let declaration = self.declaration(owner, work)?;
+        work.charge(2)?;
+        let site = self
+            .owner
+            .catalog
+            .declaration_site(declaration, site)
+            .map_err(error)?;
+        self.owner
+            .catalog
+            .declaration_proof_site(declaration, site)
+            .map_err(error)
+    }
     pub(crate) fn root(&self) -> crate::resolve::body_origin::ImportedDeclarationId {
         self.owner.root
     }

@@ -22,6 +22,11 @@ pub(in crate::sema::crates::typed_headers) struct Reserved<'rows, 'maps> {
     maps: &'maps mut Maps,
 }
 impl<'rows, 'maps> Reserved<'rows, 'maps> {
+    pub(in crate::sema::crates::typed_headers) fn input_site(
+        &self, owner: DeclarationRef, site: u32, work: &mut ReservationWork,
+    ) -> Result<crate::resolve::body_origin::ProofSite, Error> {
+        self.view.input_site(owner, site, work)
+    }
     pub(in crate::sema::crates::typed_headers) fn new(
         view: RecipeView<'rows>,
         maps: &'maps mut Maps,
