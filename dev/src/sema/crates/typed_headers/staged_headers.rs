@@ -21,6 +21,7 @@ use crate::{
     },
 };
 use std::sync::Arc;
+pub(super) use template_ports::register as register_callable;
 
 /// This is a transaction-local canonical correspondence, never an installed
 /// descriptor, completed role inventory or proof of an original/call instance.

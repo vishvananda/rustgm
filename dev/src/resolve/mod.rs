@@ -78,10 +78,12 @@ pub fn analyze_expanded(
         .and_then(|()| resolver.declare_pending(&pending, &mut work))
         .and_then(|()| resolver.finish_imports(work))
         .and_then(|()| resolver.bodies());
-    result.map_err(|error| report.diagnostic(error))?;
     report.resolution = state.facts;
-    bindings::finish(&mut report.package, &mut report.resolution)?;
-    float_features::validate_paths(&report).map_err(|error| report.diagnostic(error))?;
+    result.map_err(|error| report.retain_visibility_warnings(report.diagnostic(error)))?;
+    bindings::finish(&mut report.package, &mut report.resolution)
+        .map_err(|error| report.retain_visibility_warnings(report.diagnostic(error)))?;
+    float_features::validate_paths(&report)
+        .map_err(|error| report.retain_visibility_warnings(report.diagnostic(error)))?;
     report.names_resolved = true;
     Ok(report)
 }
