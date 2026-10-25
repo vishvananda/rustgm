@@ -17,6 +17,7 @@ use crate::{
 };
 
 pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
+    crate::sema::specialization::prepare(report, facts)?;
     let mut by_source = HashMap::default();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
@@ -40,6 +41,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
             }
             let key = NodeKey { file, node };
             crate::sema::header_attributes::observe_owner(report, facts, owner_key, key)?;
+            crate::sema::specialization::observe_owner(report, facts, owner_key, key)?;
             let supported = matches!(unit.configured.ast.node(node).kind, Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
                 ItemKind::Function { .. } | ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. } | ItemKind::Trait { .. }));
             for effect in owner.attributes.clone() {
@@ -48,13 +50,16 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                     continue;
                 };
                 let name = attribute.name(forest, unit.source.text());
-                match name.and_then(Consumer::named) {
-                    Some(Consumer::NonExhaustive) => {
-                        non_exhaustive::consume(report, facts, owner_key, key, attribute, effect)?;
-                        continue;
-                    }
-                    Some(Consumer::MustUse) => {}
-                    _ => continue,
+                if consume_other(
+                    report,
+                    facts,
+                    owner_key,
+                    key,
+                    attribute,
+                    effect,
+                    name.and_then(Consumer::named),
+                )? {
+                    continue;
                 }
                 facts.reserve_must_use_source(owner_key, attribute.span)?;
                 let reason = reason(unit.source.text(), forest, attribute)
@@ -106,6 +111,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
         }
     }
     bind_definitions(report, facts, &by_source)?;
+    crate::sema::specialization::finish(facts)?;
     crate::sema::header_attributes::prepare_imported(report, facts)?;
     if let Some(imported) = &report.resolution.crates {
         let unknown: HashSet<_> = imported
@@ -118,12 +124,46 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
     }
     Ok(())
 }
+fn consume_other(
+    report: &Report,
+    facts: &mut Declarations,
+    owner: NodeKey,
+    declaration: NodeKey,
+    attribute: Attribute,
+    effect: usize,
+    consumer: Option<Consumer>,
+) -> Result<bool, Error> {
+    match consumer {
+        Some(Consumer::NonExhaustive) => {
+            non_exhaustive::consume(report, facts, owner, declaration, attribute, effect)?;
+        }
+        Some(Consumer::UnsafeSpecialization) => {
+            crate::sema::specialization::consume(
+                report,
+                facts,
+                owner,
+                declaration,
+                attribute,
+                effect,
+            )?;
+        }
+        Some(Consumer::MustUse) => return Ok(false),
+        _ => {}
+    }
+    Ok(true)
+}
 fn bind_definitions(
     report: &Report,
     facts: &mut Declarations,
     by_source: &HashMap<NodeKey, usize>,
 ) -> Result<(), Error> {
-    if !by_source.is_empty() || report.package.source_core().is_some() {
+    if !by_source.is_empty()
+        || report.package.source_core().is_some()
+        || facts
+            .must_use_contracts
+            .as_deref()
+            .is_some_and(|owner| owner.specialization.is_some())
+    {
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
             if let Some(key) = definition.node {
                 crate::sema::header_attributes::bind_definition(
@@ -132,6 +172,18 @@ fn bind_definitions(
                     DefId(u32::try_from(index).map_err(|_| {
                         Error::at(key.file, 0, "too many source header definitions")
                     })?),
+                    key,
+                )?;
+            }
+            if let Some(key) = definition.node {
+                crate::sema::specialization::bind_trait(
+                    report,
+                    facts,
+                    DefId(
+                        u32::try_from(index).map_err(|_| {
+                            Error::at(key.file, 0, "too many specialization traits")
+                        })?,
+                    ),
                     key,
                 )?;
             }

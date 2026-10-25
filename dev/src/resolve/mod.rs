@@ -28,6 +28,7 @@ mod float_features;
 pub mod package;
 mod paths;
 mod patterns;
+pub(crate) mod specialization_authority;
 mod table;
 pub mod unit;
 

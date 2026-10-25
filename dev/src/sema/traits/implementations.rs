@@ -1,7 +1,10 @@
 //! Prepared headers may discharge declaration obligations; bodies require completed impls.
 mod identity;
 mod member_contracts;
+mod registry_keys;
+mod specialization_access;
 pub(in crate::sema) use identity::Identity;
+pub(in crate::sema) use registry_keys::EntryKey;
 mod pending;
 mod polarity;
 pub(in crate::sema) use pending::{Candidates, Header as PendingHeader};
@@ -62,6 +65,7 @@ pub(in crate::sema) struct Implementations {
     open: HashMap<(Identity, Option<Head>), Vec<usize>>,
     closed: HashMap<(Identity, ShapeKey), Vec<usize>>,
     pairs: Vec<(usize, usize)>,
+    graph: Option<Box<crate::sema::specialization::Graph>>,
 }
 impl Implementations {
     /// Any explicit impl replaces the structural default for the entire nominal
@@ -340,6 +344,9 @@ impl Implementations {
         } else {
             Some(Head::canonical(kind))
         };
+        if let Some(graph) = &self.graph {
+            graph.require_insertion(item, head)?;
+        }
         if let Some(pending) = &self.pending {
             pending.validate(value.owner, item, head)?;
         }

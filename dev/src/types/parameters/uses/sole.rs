@@ -1,14 +1,13 @@
 //! One-parameter summaries share type, list and argument graphs across default bounds.
+use super::dag_parts::{Node, Summary, parts};
 use crate::support::hash::HashMap;
 use crate::types::{
-    GenericArgs, Kind, ListId, Store, TypeId,
-    arguments::{Argument, ConstId, ConstKind},
+    Store,
     parameters::{
         ParameterId,
         clauses::Clause,
         predicates::{Bound, Predicate},
     },
-    traits::ApplicationId,
 };
 #[cfg(test)]
 #[path = "../../../../tests/invariants/default_occurrences.rs"]
@@ -31,12 +30,13 @@ impl Value {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
-enum Node {
-    Type(TypeId),
-    Types(ListId),
-    Arguments(GenericArgs),
-    Trait(ApplicationId),
+impl Summary for Value {
+    fn empty() -> Self {
+        Self::Empty
+    }
+    fn merge(self, other: Self) -> Self {
+        Self::merge(self, other)
+    }
 }
 
 #[derive(Default)]
@@ -100,20 +100,26 @@ impl Sole {
             }
             let mut ready = true;
             let mut edges = 0;
-            let value = parts(store, node, &mut edges, |child| {
-                if let Some(value) = self.completed.get(&child) {
-                    return Ok(*value);
-                }
-                if finish {
-                    return Err("unfinished default parameter dependency");
-                }
-                if self.work.len() >= 1_000_000 {
-                    return Err("default parameter occurrence work budget exceeded");
-                }
-                ready = false;
-                self.work.push((child, false));
-                Ok(Value::Empty)
-            })?;
+            let value = parts(
+                store,
+                node,
+                &mut edges,
+                |id| Ok(Value::One(id)),
+                |child| {
+                    if let Some(value) = self.completed.get(&child) {
+                        return Ok(*value);
+                    }
+                    if finish {
+                        return Err("unfinished default parameter dependency");
+                    }
+                    if self.work.len() >= 1_000_000 {
+                        return Err("default parameter occurrence work budget exceeded");
+                    }
+                    ready = false;
+                    self.work.push((child, false));
+                    Ok(Value::Empty)
+                },
+            )?;
             self.charge(edges)?;
             if ready {
                 if !finish {
@@ -135,107 +141,4 @@ impl Sole {
         }
         Ok(())
     }
-}
-
-fn constant(store: &Store, id: ConstId) -> Result<Value, &'static str> {
-    Ok(
-        match store
-            .const_kind(id)
-            .ok_or("invalid default parameter constant")?
-        {
-            ConstKind::Parameter(id) => Value::One(id),
-            ConstKind::Value(_) => Value::Empty,
-        },
-    )
-}
-
-fn parts(
-    store: &Store,
-    node: Node,
-    edges: &mut usize,
-    mut child: impl FnMut(Node) -> Result<Value, &'static str>,
-) -> Result<Value, &'static str> {
-    let mut value = Value::Empty;
-    match node {
-        Node::Types(list) => {
-            for &ty in store.list(list).ok_or("invalid default parameter list")? {
-                *edges += 1;
-                value = value.merge(child(Node::Type(ty))?);
-            }
-        }
-        Node::Arguments(arguments) => {
-            for argument in store
-                .arguments(arguments)
-                .ok_or("invalid default parameter arguments")?
-            {
-                *edges += 1;
-                value = value.merge(match argument {
-                    Argument::Type(ty) => child(Node::Type(ty))?,
-                    Argument::Const(id) => constant(store, id)?,
-                    Argument::Lifetime(_) => Value::Empty,
-                });
-            }
-        }
-        Node::Trait(id) => {
-            *edges += 1;
-            value = child(Node::Arguments(
-                store
-                    .trait_application(id)
-                    .ok_or("invalid default parameter trait")?
-                    .arguments,
-            ))?;
-        }
-        Node::Type(ty) => {
-            if !store
-                .contains_parameters(ty)
-                .ok_or("invalid default parameter type")?
-            {
-                return Ok(Value::Empty);
-            }
-            let mut dependency = |node| {
-                *edges += 1;
-                child(node)
-            };
-            value = match store.kind(ty).ok_or("missing default parameter type")? {
-                Kind::Parameter(id) => Value::One(id),
-                Kind::ArrayTerm { element, length } => {
-                    dependency(Node::Type(element))?.merge(constant(store, length)?)
-                }
-                Kind::Array { element, .. }
-                | Kind::Slice(element)
-                | Kind::Reference {
-                    referent: element, ..
-                }
-                | Kind::Pointer {
-                    pointee: element, ..
-                } => dependency(Node::Type(element))?,
-                Kind::Closure {
-                    arguments,
-                    signature,
-                    environment,
-                    ..
-                } => dependency(Node::Arguments(arguments))?
-                    .merge(dependency(Node::Type(signature))?)
-                    .merge(dependency(Node::Type(environment))?),
-                Kind::Tuple(list) => dependency(Node::Types(list))?,
-                Kind::Function {
-                    parameters, result, ..
-                } => dependency(Node::Types(parameters))?.merge(dependency(Node::Type(result))?),
-                Kind::Adt(_, arguments)
-                | Kind::Opaque(_, arguments)
-                | Kind::Dynamic { arguments, .. } => dependency(Node::Arguments(arguments))?,
-                Kind::FunctionItem {
-                    arguments,
-                    signature,
-                    ..
-                } => dependency(Node::Arguments(arguments))?
-                    .merge(dependency(Node::Type(signature))?),
-                Kind::Projection(application) => dependency(Node::Type(application.subject))?
-                    .merge(dependency(Node::Trait(application.trait_application))?)
-                    .merge(dependency(Node::Arguments(application.arguments))?),
-                Kind::Never | Kind::Primitive(_) => Value::Empty,
-            };
-        }
-    }
-    Ok(value)
 }
