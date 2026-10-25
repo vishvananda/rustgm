@@ -242,8 +242,6 @@ impl Unit {
                 self.configured.ast.node(node),
                 self.configured.active[node.get() as usize],
                 self.owner_indices[node.get() as usize],
-                self.owner_indices[node.get() as usize]
-                    .is_some_and(|index| self.configured.owners[index.get() as usize - 1].enabled),
             );
             self.configured.active[node.get() as usize] = false;
             self.configured.ast.push_children(node, &mut obsolete);
@@ -591,15 +589,9 @@ impl Unit {
     }
 
     pub(crate) fn retire_arguments(&mut self, root: NodeId) {
-        self.retire_tree(root, false);
-    }
-    fn retire_tree(&mut self, root: NodeId, owners: bool) {
         let mut work = vec![root];
         while let Some(node) = work.pop() {
             self.configured.active[node.get() as usize] = false;
-            if owners && let Some(index) = self.owner_indices[node.get() as usize] {
-                self.configured.owners[index.get() as usize - 1].enabled = false;
-            }
             self.configured.ast.push_children(node, &mut work);
         }
     }

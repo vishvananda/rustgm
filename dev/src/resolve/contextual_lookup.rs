@@ -136,20 +136,9 @@ impl Resolver<'_> {
         c: Context,
         name: NameId,
         namespace: Namespace,
-        context: ItemContext,
-        observed: Option<&mut Observations>,
-    ) -> Result<Option<Selected>, &'static str> {
-        self.item_lexical_filtered(c, (name, namespace, context), observed, None)
-    }
-
-    pub(super) fn item_lexical_filtered(
-        &self,
-        c: Context,
-        requested: (NameId, Namespace, ItemContext),
+        mut context: ItemContext,
         mut observed: Option<&mut Observations>,
-        filter: Option<super::lookup::MacroFilter<'_>>,
     ) -> Result<Option<Selected>, &'static str> {
-        let (name, namespace, mut context) = requested;
         let mut current = Some(c.scope);
         if namespace == Namespace::Type && self.package.names.get(name) == "Self" {
             context = ItemContext::ROOT;
@@ -192,7 +181,6 @@ impl Resolver<'_> {
                 }));
             }
             if let Some(binding) = self.facts.bindings.get_key(key)
-                && filter.is_none_or(|filter| filter.permits(binding.target))
                 && binding.permits_lexical_lookup(
                     &self.facts.definitions,
                     frame,
@@ -237,7 +225,6 @@ impl Resolver<'_> {
         // whose item context remains opaque at its lexical boundary.
         Ok(self
             .lexical_prelude(privacy, name, namespace)
-            .filter(|(_, binding)| filter.is_none_or(|filter| filter.permits(binding.target)))
             .map(|(scope, binding)| Selected {
                 key: (scope, name, namespace, ItemContext::ROOT),
                 binding,

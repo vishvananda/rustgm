@@ -7,31 +7,6 @@ use crate::support::hash::HashSet;
 use crate::{lex::token::LexError, resolve::package::ExpansionTrace};
 
 impl<S: Sources> Engine<'_, S> {
-    pub(super) fn failed_invocation(
-        &mut self,
-        index: usize,
-        definition: usize,
-        mut error: Error,
-    ) -> Error {
-        self.calls[index].state = super::State::Failed;
-        let call = &self.calls[index];
-        error.expansions.push(frame(
-            &self.loader.package,
-            &self.definitions[definition],
-            Location {
-                file: call.file,
-                span: self
-                    .loader
-                    .package
-                    .unit(call.file)
-                    .configured
-                    .ast
-                    .node(call.visit.node)
-                    .span,
-            },
-        ));
-        error
-    }
     pub(super) fn diagnostic(&self, error: Error) -> Error {
         project(
             &self.loader.package,

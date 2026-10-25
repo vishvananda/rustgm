@@ -186,8 +186,7 @@ pub(super) fn primary(
             claims.iter().any(|claim| {
                 matches!(
                     claim,
-                    Claim::BuiltinMacro(role) if *role == crate::expand::builtin::Builtin::CfgSelect
-                        || role.kind() == crate::expand::builtin::BuiltinKind::Attribute
+                    Claim::BuiltinMacro(crate::expand::builtin::Builtin::CfgSelect)
                 )
             })
         }),

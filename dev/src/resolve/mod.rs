@@ -78,5 +78,3 @@ pub fn analyze_expanded(
     report.names_resolved = true;
     Ok(report)
 }
-
-pub(crate) mod lint_policy;

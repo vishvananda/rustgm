@@ -6,7 +6,7 @@ import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
-from check_native import accepted_frontend, classification, execution, native_cases, run_executables
+from check_native import classification, execution, native_cases, run_executables
 
 
 class NativeContract(unittest.TestCase):
@@ -97,50 +97,3 @@ class NativeContract(unittest.TestCase):
                 classification(invalid)
         with self.assertRaises(ValueError):
             classification(dict(case, exit_status=1))
-
-
-class SuccessfulFrontendDiagnostics(unittest.TestCase):
-    warning = b"warning[unused_must_use]: file 0: 37: unused must_use result: retain result\n"
-
-    def test_empty_diagnostics_preserve_the_existing_success_contract(self):
-        accepted_frontend((b"program\n", b"", b"0\n"))
-        for actual in ((b"", b"", b"0\n"), (b"program\n", b"", b"1\n")):
-            with self.subTest(actual=actual), self.assertRaises(ValueError):
-                accepted_frontend(actual)
-
-    def test_exact_declared_warning_is_accepted(self):
-        accepted_frontend((b"program\n", self.warning, b"0\n"), self.warning, ("unused_must_use",))
-
-    def test_explicit_diagnostic_attribute_warnings_require_exact_code_and_bytes(self):
-        for code in ("malformed_diagnostic_attributes", "malformed_diagnostic_format_literals",
-                     "misplaced_diagnostic_attributes"):
-            warning = f"warning[{code}]: file 0: 37: declared attribute diagnostic\n".encode()
-            accepted_frontend((b"program\n", warning, b"0\n"), warning, (code,))
-            with self.assertRaises(ValueError):
-                accepted_frontend((b"program\n", warning, b"0\n"), warning)
-            with self.assertRaises(ValueError):
-                accepted_frontend((b"program\n", warning + b"error: failure\n", b"0\n"),
-                                  warning + b"error: failure\n", (code,))
-
-    def test_undeclared_changed_or_additional_warnings_reject(self):
-        for expected, actual in ((b"", self.warning), (self.warning, b""),
-                                 (self.warning, self.warning + self.warning),
-                                 (self.warning, self.warning.replace(b"37", b"38"))):
-            with self.subTest(expected=expected, actual=actual), self.assertRaises(ValueError):
-                accepted_frontend((b"program\n", actual, b"0\n"), expected, ("unused_must_use",) if expected else ())
-
-    def test_reference_presence_cannot_invent_a_warning_declaration(self):
-        with self.assertRaises(ValueError):
-            accepted_frontend((b"program\n", self.warning, b"0\n"), self.warning)
-        with self.assertRaises(ValueError):
-            accepted_frontend((b"program\n", self.warning, b"0\n"), self.warning, ("unused_attributes",))
-        with self.assertRaises(ValueError):
-            accepted_frontend((b"program\n", b"", b"0\n"), b"", ("unused_must_use",))
-
-    def test_error_status_or_error_text_cannot_masquerade_as_warning(self):
-        with self.assertRaises(ValueError):
-            accepted_frontend((b"program\n", self.warning, b"1\n"), self.warning)
-        for text in (b"ERROR: type failure\n", self.warning + b"error: type failure\n",
-                     b"warning[unknown]: file 0: 37: arbitrary stderr\n"):
-            with self.subTest(text=text), self.assertRaises(ValueError):
-                accepted_frontend((b"program\n", text, b"0\n"), text, ("unused_must_use",))

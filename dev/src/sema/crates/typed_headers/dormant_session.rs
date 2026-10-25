@@ -10,6 +10,8 @@ use crate::{
     types::arena::Identity,
 };
 use std::sync::Arc;
+#[path = "demanded_headers.rs"]
+mod header_demands;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/held_stores.rs"]
 mod tests;
@@ -22,15 +24,9 @@ struct Session {
     provider_index: u32,
     arena: Identity,
     old_definitions: usize,
+    recipes: Option<Box<header_demands::State>>,
 }
 impl Session {
-    #[cfg_attr(
-        not(test),
-        expect(
-            dead_code,
-            reason = "private unpaid reservation entry awaits the reviewed canonical RecipeCursor consumer; Provided import/publication remains closed"
-        )
-    )]
     fn prepare(
         report: Report,
         mut facts: Declarations,
@@ -102,6 +98,7 @@ impl Session {
             provider_index,
             arena,
             old_definitions,
+            recipes: None,
         };
         session.require(work)?;
         Ok(session)
@@ -114,15 +111,25 @@ impl Session {
                 .saturating_sub(self.old_definitions)
                 .saturating_add(1),
         )?;
+        self.require_owner(work)?;
+        if self
+            .facts
+            .definitions
+            .get(self.old_definitions..)
+            .is_none_or(|cells| cells.iter().any(Option::is_some))
+        {
+            return Err(Error::unlocated(
+                "unpaid session changed its actual arena or reserved semantic slots",
+            ));
+        }
+        Ok(())
+    }
+    fn require_owner(&self, work: &mut ReservationWork) -> Result<(), Error> {
+        work.charge(1)?;
         self.inputs
             .require(&self.inventory, self.provider_index, work)?;
         if !self.facts.types.has_identity(&self.arena)
             || self.facts.definitions.len() != self.inputs.definitions_len()
-            || self
-                .facts
-                .definitions
-                .get(self.old_definitions..)
-                .is_none_or(|cells| cells.iter().any(Option::is_some))
         {
             return Err(Error::unlocated(
                 "unpaid session changed its actual arena or reserved semantic slots",

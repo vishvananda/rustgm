@@ -99,9 +99,8 @@ impl Checker<'_> {
                     self.publish_canonical_equalities();
                 }
                 selection::Progress::Ready(_) => {
-                    return Err(self.suspended_trait_failure(
+                    return Err(self.error(
                         node,
-                        &goal,
                         "user trait obligation requires a matching assumption or implementation",
                     ));
                 }

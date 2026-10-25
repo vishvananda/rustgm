@@ -1,6 +1,5 @@
 //! Resolve call goals before inference completion, retaining actual assumption evidence.
 mod canonical;
-mod diagnostics;
 mod inference;
 use super::{Checker, Error, NodeId};
 use crate::sema::traits::{
@@ -101,9 +100,8 @@ impl Checker<'_> {
         };
         let equalities = std::mem::take(&mut context.region_equalities);
         let Selection::Proven(evidence) = evidence.map_err(|e| self.error(node, e))? else {
-            return Err(self.canonical_trait_failure(
+            return Err(self.error(
                 node,
-                predicate,
                 "user trait obligation requires a matching assumption or implementation",
             ));
         };

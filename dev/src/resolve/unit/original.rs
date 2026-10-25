@@ -12,25 +12,9 @@ use crate::{
     },
 };
 use std::num::NonZeroU32;
-#[cfg(test)]
-#[path = "../../../tests/invariants/retirement_snapshots.rs"]
-mod tests;
-#[repr(transparent)]
-struct SavedFlags(u8);
-impl SavedFlags {
-    fn new(active: bool, owner_enabled: bool) -> Self {
-        Self(u8::from(active) | (u8::from(owner_enabled) << 1))
-    }
-    fn active(&self) -> bool {
-        self.0 & 1 != 0
-    }
-    fn owner_enabled(&self) -> bool {
-        self.0 & 2 != 0
-    }
-}
 struct Saved {
     node: Node,
-    flags: SavedFlags,
+    active: bool,
     owner: Option<NonZeroU32>,
 }
 pub(super) struct Original {
@@ -50,36 +34,11 @@ impl Original {
             overwritten: HashMap::default(),
         }
     }
-    pub(super) fn needs_retirement_save(
-        &self,
-        id: NodeId,
-        active: bool,
-        owner_enabled: bool,
-    ) -> bool {
-        (active || owner_enabled)
-            && (id.get() as usize) < self.syntax.nodes
-            && !self.overwritten.contains_key(&id)
-    }
-    pub(super) fn retirement_row_bytes() -> usize {
-        crate::support::retained::new_map::<NodeId, Saved>(1)
-    }
-    pub(super) fn reserve_retirements(&mut self, count: usize) -> Result<(), &'static str> {
-        self.overwritten
-            .try_reserve(count)
-            .map_err(|_| "Test original journal allocation failed")
-    }
-    pub(super) fn save(
-        &mut self,
-        id: NodeId,
-        node: Node,
-        active: bool,
-        owner: Option<NonZeroU32>,
-        owner_enabled: bool,
-    ) {
+    pub(super) fn save(&mut self, id: NodeId, node: Node, active: bool, owner: Option<NonZeroU32>) {
         if (id.get() as usize) < self.syntax.nodes {
             self.overwritten.entry(id).or_insert(Saved {
                 node,
-                flags: SavedFlags::new(active, owner_enabled),
+                active,
                 owner,
             });
         }
@@ -106,31 +65,10 @@ impl Unit {
             .get(..original.syntax.nodes)
             .ok_or_else(|| error(0, "invalid original owner-index prefix"))?
             .to_vec();
-        let mut owners = self
-            .configured
-            .owners
-            .get(..original.owners)
-            .ok_or_else(|| error(0, "invalid original attribute-owner prefix"))?
-            .to_vec();
         for (id, saved) in &original.overwritten {
-            *ast.nodes
-                .get_mut(id.get() as usize)
-                .ok_or_else(|| error(0, "saved original node is outside its prefix"))? = saved.node;
-            *active
-                .get_mut(id.get() as usize)
-                .ok_or_else(|| error(0, "saved original active flag is outside its prefix"))? =
-                saved.flags.active();
-            if let Some(owner) = saved.owner {
-                owners
-                    .get_mut(owner.get() as usize - 1)
-                    .filter(|owner| owner.node == *id)
-                    .ok_or_else(|| error(0, "invalid saved original attribute owner"))?
-                    .enabled = saved.flags.owner_enabled();
-            }
-            *owner_indices
-                .get_mut(id.get() as usize)
-                .ok_or_else(|| error(0, "saved original owner index is outside its prefix"))? =
-                saved.owner;
+            ast.nodes[id.get() as usize] = saved.node;
+            active[id.get() as usize] = saved.active;
+            owner_indices[id.get() as usize] = saved.owner;
         }
         let configured = ConfiguredSyntax {
             ast,
@@ -140,7 +78,12 @@ impl Unit {
                 // traversing feature uses from prior expansion instances.
                 uses.original_prefix(original.effects)
             }),
-            owners,
+            owners: self
+                .configured
+                .owners
+                .get(..original.owners)
+                .ok_or_else(|| error(0, "invalid original attribute-owner prefix"))?
+                .to_vec(),
             active,
             effects: self
                 .configured

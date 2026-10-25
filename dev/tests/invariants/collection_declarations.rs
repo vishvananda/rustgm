@@ -305,11 +305,10 @@ fn collection_layout_preserves_scalar_owners_and_padded_derive_entries() {
         size_of::<Properties>(),
         size_of::<(ItemId, Declaration)>()
     );
-    // Contextual-field and source-attribute handles each add one cold pointer
-    // to the measured 7032-byte baseline.
+    // One cold contextual-field index handle adds to the measured 7032-byte baseline.
     assert_eq!(
         size_of::<crate::sema::model::Declarations>(),
-        7032 + 2 * size_of::<usize>()
+        7032 + size_of::<usize>()
     );
     assert_eq!(size_of::<Type>(), 24);
     assert_eq!(

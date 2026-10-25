@@ -12,7 +12,6 @@ mod conditions;
 mod declared_callees;
 mod defining_bodies;
 mod dependency_roots;
-mod discarded_results;
 mod divergence;
 mod dot_calls;
 mod effect_facts;
@@ -111,25 +110,19 @@ pub fn analyze_with_hidden(
     ) -> Result<(), Error>,
 ) -> Result<Declarations, Error> {
     let mut checker = Checker::new(report, &mut facts);
-    checker.functions(&mut close).map_err(|error| {
-        checker
-            .facts
-            .retain_error_warnings(report.diagnostic(error))
-    })?;
+    checker
+        .functions(&mut close)
+        .map_err(|error| report.diagnostic(error))?;
     for index in 0..checker.facts.initializers.len() {
         if !checker.facts.initializers[index].type_checked() {
-            checker.initializer(index).map_err(|error| {
-                checker
-                    .facts
-                    .retain_error_warnings(report.diagnostic(error))
-            })?;
+            checker
+                .initializer(index)
+                .map_err(|e| report.diagnostic(e))?;
         }
     }
-    checker.complete_constant_patterns().map_err(|error| {
-        checker
-            .facts
-            .retain_error_warnings(report.diagnostic(error))
-    })?;
+    checker
+        .complete_constant_patterns()
+        .map_err(|e| report.diagnostic(e))?;
     Ok(facts)
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -2604,10 +2597,6 @@ impl Checker<'_> {
         // Keep only negated literal IDs; no per-function copy of the file's AST.
         for index in 0..self.state.touched.len() {
             let node = self.state.touched[index];
-            if let Kind::Statement(value) = self.kind(node) {
-                self.validate_discarded_result(node, value)?;
-                continue;
-            }
             if let Kind::Repeat { value, .. } = self.kind(node) {
                 self.validate_repeat(node, value)?;
                 continue;

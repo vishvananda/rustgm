@@ -194,17 +194,13 @@ impl<S: Sources> Engine<'_, S> {
         });
         self.work.push(Work::Restore(self.head));
         self.head = scope;
-        let tail = self.lint_call_tail(index)?;
-        self.push_visit_with_tail(
-            Visit {
-                node: root,
-                depth: visit.depth + 1,
-                introduction: context,
-                eager: Some(index),
-                ..visit
-            },
-            tail,
-        )?;
+        self.push_visit(Visit {
+            node: root,
+            depth: visit.depth + 1,
+            introduction: context,
+            eager: Some(index),
+            ..visit
+        })?;
         self.scan()?;
         if self.calls[index]
             .eager
@@ -246,9 +242,7 @@ impl<S: Sources> Engine<'_, S> {
                     .charge(steps, bytes)
                     .map_err(|message| error(call.offset, message))
             },
-            call.grammar
-                .bang()
-                .map_err(|message| call.diagnostic(message))?,
+            call.grammar,
             self.config,
         )
         .map_err(|failure| Error::at(call.file, failure.offset, failure.message))
@@ -275,15 +269,8 @@ impl<S: Sources> Engine<'_, S> {
 
     pub(super) fn finish_eager(&mut self, index: usize, definition: usize) -> Result<(), Error> {
         let call = &self.calls[index];
-        let (file, visit, grammar, scope, output) = (
-            call.file,
-            call.visit,
-            call.grammar
-                .bang()
-                .map_err(|message| call.diagnostic(message))?,
-            call.scope,
-            call.output,
-        );
+        let (file, visit, grammar, scope, output) =
+            (call.file, call.visit, call.grammar, call.scope, call.output);
         let arguments = call
             .eager
             .as_ref()
@@ -326,16 +313,12 @@ impl<S: Sources> Engine<'_, S> {
             restore: self.head,
         });
         self.head = scope;
-        let tail = self.lint_call_tail(index)?;
-        self.push_visit_with_tail(
-            Visit {
-                depth: visit.depth + 1,
-                introduction: context,
-                include,
-                ..visit
-            },
-            tail,
-        )?;
+        self.push_visit(Visit {
+            depth: visit.depth + 1,
+            introduction: context,
+            include,
+            ..visit
+        })?;
         self.scan()?;
         self.completed(index)
     }
@@ -346,13 +329,7 @@ impl<S: Sources> Engine<'_, S> {
         root: NodeId,
     ) -> Result<builtin::Expansion, Error> {
         let call = &self.calls[index];
-        let (file, visit, grammar) = (
-            call.file,
-            call.visit,
-            call.grammar
-                .bang()
-                .map_err(|message| call.diagnostic(message))?,
-        );
+        let (file, visit, grammar) = (call.file, call.visit, call.grammar);
         let unit = self.loader.package.unit(file);
         if matches!(self.definitions[definition].body,Body::Builtin(role) if role.formatting()) {
             return self.format_literal_value(index, definition, root);

@@ -10,7 +10,20 @@ pub(crate) fn actual(provided: bool) -> Result<(Report, Declarations, Arc<crates
         "pa31/tests/spec/source-functions-transport/minimal-provider.rs"
     };
     let source = crate::test_source::fixture(path)?;
-    let report = crate::test_source::source_provider(&source, "unpaid_reservations")?;
+    compile(&source, provided)
+}
+pub(crate) fn extended(suffix: &str) -> Result<(Report, Declarations, Arc<crates::Dependencies>)> {
+    let mut source = crate::test_source::fixture(
+        "pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs",
+    )?;
+    source.push_str(suffix);
+    compile(&source, true)
+}
+fn compile(
+    source: &str,
+    provided: bool,
+) -> Result<(Report, Declarations, Arc<crates::Dependencies>)> {
+    let report = crate::test_source::source_provider(source, "unpaid_reservations")?;
     let owner = report
         .package
         .source_core()

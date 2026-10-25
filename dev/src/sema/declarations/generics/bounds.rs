@@ -386,7 +386,10 @@ impl Checker<'_> {
                         == crate::resolve::model::DefKind::Trait =>
                     {
                         if crate::sema::lifetimes::call_arguments(self.report, key)?.is_some() {
-                            self.require_parenthesized_trait(key, id)?;
+                            return Err(self.error(
+                                key,
+                                "parenthesized arguments require a language call trait",
+                            ));
                         }
                         Ok(Written::User {
                             path: key,

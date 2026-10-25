@@ -31,7 +31,6 @@ impl<'a> FrameView<'a> {
             .get(frame.definition)
             .is_some_and(|actual| {
                 self.executed(frame.context, actual)
-                    && !unavailable_attribute(actual)
                     && actual.node == frame.owner
                     && actual.module == frame.module
                     && actual.edition == frame.edition
@@ -60,11 +59,6 @@ impl<'a> FrameView<'a> {
             .definitions
             .get(index)
             .ok_or_else(|| error("unknown panic macro definition"))?;
-        if unavailable_attribute(definition) {
-            return Err(error(
-                "builtin attribute declaration has no executed expansion frame",
-            ));
-        }
         let package = self.package;
         let root = self
             .facts
@@ -219,16 +213,4 @@ impl<'a> FrameView<'a> {
         }
         Ok(data)
     }
-}
-
-/// Denial checks both retained role views, so a forged executable body tag cannot
-/// turn an actual unavailable attribute header into a usable allowance frame.
-fn unavailable_attribute(definition: &Definition) -> bool {
-    matches!(definition.body, Body::Builtin(role) if role.kind() == crate::expand::builtin::BuiltinKind::Attribute)
-        || definition.header.as_ref().is_some_and(|header| {
-            header
-                .declaration()
-                .builtin
-                .is_some_and(|role| role.kind() == crate::expand::builtin::BuiltinKind::Attribute)
-        })
 }

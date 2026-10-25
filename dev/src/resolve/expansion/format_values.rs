@@ -19,12 +19,7 @@ impl<S: Sources> Engine<'_, S> {
             ));
         }
         let call = &self.calls[index];
-        let (file, grammar) = (
-            call.file,
-            call.grammar
-                .bang()
-                .map_err(|message| call.diagnostic(message))?,
-        );
+        let (file, grammar) = (call.file, call.grammar);
         let Some(Source::Core(source)) = self.loader.package.source.as_deref() else {
             return Err(Error::at(
                 file,

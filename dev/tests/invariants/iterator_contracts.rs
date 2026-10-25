@@ -258,9 +258,8 @@ fn iterator_layout_keeps_ordinary_records_compact() {
         size_of::<crate::sema::iteration::Call>(),
         size_of::<body::ir::Value>()
     );
-    // Contextual-field and source-attribute handles each add one cold pointer
-    // to the measured 7032-byte baseline.
-    assert_eq!(size_of::<Declarations>(), 7032 + 2 * size_of::<usize>());
+    // One cold contextual-field index handle adds to the measured 7032-byte baseline.
+    assert_eq!(size_of::<Declarations>(), 7032 + size_of::<usize>());
     assert_eq!(size_of::<Original>(), 56);
     // The demand-only collection catalog adds one optional Box to this owner.
     // Range adds one more lazy pointer to this demand-only owner.

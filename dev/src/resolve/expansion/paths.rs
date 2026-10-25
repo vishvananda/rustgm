@@ -230,17 +230,8 @@ impl Paths {
                     "scoped declaration has no actual item identity",
                 )
             })?;
-        let target = if mode.header.as_ref().is_some_and(|header| {
-            header
-                .declaration()
-                .builtin
-                .is_some_and(|role| role.kind() == crate::expand::builtin::BuiltinKind::Attribute)
-        }) {
-            MacroTarget::SourceAttribute(index)
-        } else {
-            MacroTarget::Declarative(index)
-        };
-        self.macro_targets.insert(id, target);
+        self.macro_targets
+            .insert(id, MacroTarget::Declarative(index));
         self.macros.resize(index + 1, None);
         self.macros[index] = Some(id);
         Ok((mode, resolver.facts.definitions[id.0 as usize].name))
@@ -513,12 +504,6 @@ impl Paths {
                 .last()
                 .is_some_and(|name| resolver.package.names.get(*name) == Builtin::OptionEnv.name())
         });
-        let needs_test_prelude = resolver.facts.imports[first..].iter().any(|import| {
-            import
-                .path
-                .last()
-                .is_some_and(|name| resolver.package.names.get(*name) == Builtin::Test.name())
-        });
         for index in first..resolver.facts.imports.len() {
             if textual.1.0 != 0 {
                 resolver
@@ -538,9 +523,6 @@ impl Paths {
         }
         if library_builtin {
             self.library_builtin(package, context, node)?;
-        }
-        if needs_test_prelude {
-            self.test_prelude(package, context.file)?;
         }
         Ok(())
     }
@@ -656,19 +638,10 @@ impl Paths {
             foreign: call.visit.foreign,
         };
         let node = call.visit.node;
-        if matches!(call.grammar, super::CallGrammar::Attribute)
-            && call
-                .path
-                .last()
-                .is_some_and(|name| package.names.get(*name) == Builtin::Test.name())
-        {
-            self.test_prelude(package, call.file)?;
-        }
-        if matches!(call.grammar, super::CallGrammar::Bang(_))
-            && call
-                .path
-                .last()
-                .is_some_and(|name| package.names.get(*name) == Builtin::OptionEnv.name())
+        if call
+            .path
+            .last()
+            .is_some_and(|name| package.names.get(*name) == Builtin::OptionEnv.name())
         {
             self.library_builtin(package, context, node)?;
         }
@@ -682,15 +655,7 @@ impl Paths {
             node,
             call.absolute,
             call.path.view(),
-            LookupMode::Macro(crate::resolve::lookup::MacroFilter {
-                kind: call.grammar.kind(),
-                classify: &|target| {
-                    self.macro_targets
-                        .get(&target)
-                        .copied()
-                        .map(MacroTarget::kind)
-                },
-            }),
+            LookupMode::Use(Namespace::Macro),
             Some(&mut observed),
         );
         let ambiguous =
@@ -704,7 +669,12 @@ impl Paths {
         }
         match found? {
             Lookup::Missing => Ok(None),
-            Lookup::Found(binding) => Ok(self.macro_targets.get(&binding.target).copied()),
+            Lookup::Found(binding) => self
+                .macro_targets
+                .get(&binding.target)
+                .copied()
+                .map(Some)
+                .ok_or_else(|| resolver.error(context, node, "path does not name a macro")),
             Lookup::Associated(..) | Lookup::Member(..) | Lookup::SelfConstructor(..) => {
                 Err(resolver.error(context, node, "associated items are not macro paths"))
             }
@@ -752,43 +722,6 @@ impl Paths {
         self.work.extend(resolver.facts);
         self.work.declared(
             &resolver.facts.bindings,
-            (scope, name, Namespace::Macro, ItemContext::ROOT),
-        );
-        Ok(())
-    }
-
-    /// Demand-driven publication uses the ordinary prelude and import journals.
-    fn test_prelude(&mut self, package: &mut Package, file: super::FileId) -> Result<(), Error> {
-        if package.uses_source_bindings() {
-            return Ok(());
-        }
-        let name = package
-            .names
-            .intern(Builtin::Test.name())
-            .map_err(|message| Error::at(file, 0, message))?;
-        if self.state.facts.macro_prelude.contains_key(&name) {
-            return Ok(());
-        }
-        let scope = self.state.facts.module_scopes[0];
-        let target = DefId(
-            u32::try_from(self.state.facts.definitions.len())
-                .map_err(|_| Error::at(file, 0, "too many builtin macro definitions"))?,
-        );
-        self.state.facts.definitions.push(Definition {
-            name,
-            namespace: Namespace::Macro,
-            kind: DefKind::BuiltinMacro,
-            scope,
-            node: None,
-            access: Access::Public,
-            members: None,
-        });
-        self.state.facts.macro_prelude.insert(name, target);
-        self.macro_targets
-            .insert(target, MacroTarget::Builtin(Builtin::Test));
-        self.work.extend(&self.state.facts);
-        self.work.declared(
-            &self.state.facts.bindings,
             (scope, name, Namespace::Macro, ItemContext::ROOT),
         );
         Ok(())

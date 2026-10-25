@@ -9,10 +9,6 @@ Implement `macro_rules!` definition checking, ordered matching, parser fragment
 callbacks and typed transcription. `dev/rustgm --emit-expanded [-o OUTPUT]
 [SOURCE|-]` reports one matching/transcription step for source-written calls.
 The input is a configured crate source image. Earlier views remain available.
-`--cfg=test` enables ordinary `cfg(test)` filtering and is repeatable. It does
-not request a generated test harness; compiler/library Test bindings and their
-owner-removal behavior are separate PA31 responsibilities. Other compiler-owned
-target and profile configuration keys remain protected.
 
 PA7 does not parse the transcription as a new item, expression, type or pattern,
 recursively invoke generated macros, load generated modules, resolve qualified

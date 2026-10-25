@@ -94,21 +94,3 @@ mod never_editions;
 mod availability_contracts;
 #[path = "../../return_editions.rs"]
 mod return_editions;
-
-#[path = "../../frontend_diagnostics.rs"]
-mod frontend_diagnostics;
-
-#[path = "../../attribute_contracts.rs"]
-mod attribute_contracts;
-
-#[path = "../../diagnostic_contracts.rs"]
-mod diagnostic_contracts;
-
-#[path = "../../discarded_domains.rs"]
-mod discarded_domains;
-
-#[path = "../../inhabited_aggregates.rs"]
-mod inhabited_aggregates;
-
-#[path = "../../test_removal_lints.rs"]
-mod test_removal_lints;

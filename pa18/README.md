@@ -135,10 +135,6 @@ expansion notes. Signals, timeouts, panics and exit 86 are failures, never
 accepted rejection. Earlier type/layout/body/ownership/region/loan views retain
 their own inspection contracts; they are not generic execution authorization.
 
-The supplemental `--emit-patterns` lane checks canonical instantiated fields and
-module visibility for empty-match coverage. It retains PA13's selected-pattern
-format and does not authorize executable monomorphization.
-
 The LowIR dialect, entry adapter `main`, aggregate calling convention, globals,
 scalar operations and cleanup vocabulary are inherited from PA11–PA17. Ordinary
 bodies retain `rg.D` names, where D is the resolved declaration identity.

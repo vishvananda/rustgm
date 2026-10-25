@@ -15,7 +15,6 @@ pub(crate) mod compiler_items;
 pub(crate) mod declaration_inputs;
 pub mod declarations;
 pub mod destructors;
-mod diagnostic_contracts;
 pub(crate) mod dispatch;
 pub mod dyn_compat;
 pub mod entry;
@@ -54,8 +53,3 @@ pub mod unreduced;
 pub(crate) mod vtable_plans;
 
 pub mod text;
-
-pub mod must_use;
-
-pub mod inlining;
-pub mod parentheses;

@@ -75,9 +75,7 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Erro
         let attribute = effect.attribute.attribute;
         let forest = &unit.configured.ast.attributes[effect.capture as usize].forest;
         let name = attribute.name(forest, unit.source.text());
-        if name.and_then(crate::support::decorations::Consumer::named)
-            != Some(crate::support::decorations::Consumer::Representation)
-        {
+        if !matches!(name, Some("repr" | "derive")) {
             continue;
         }
         let error = |message| Error::at(key.file, attribute.span.start, message);

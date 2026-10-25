@@ -347,7 +347,6 @@ pub struct UnionWork {
     pub unique_types: usize,
 }
 pub struct Declarations {
-    pub(super) must_use_contracts: Option<Box<super::must_use::Contracts>>,
     pub(crate) source_bindings: Option<Box<super::compiler_items::Catalog>>,
     pub(super) source_computations: Option<Box<super::constants::Computations>>,
     pub crates: Option<Box<super::crates::Linkage>>,
@@ -546,15 +545,8 @@ impl Declarations {
             super::stored_fields::Registry::work,
         )
     }
-    fn collect_declaration_attributes(&mut self, report: &Report) -> Result<(), Error> {
-        super::must_use::collect(report, self)?;
-        super::inlining::collect(report, self)?;
-        super::parentheses::collect(report, self)?;
-        super::diagnostic_contracts::collect(report, self)
-    }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
-            must_use_contracts: None,
             source_bindings: super::compiler_items::Catalog::reserve(report)?,
             source_computations: None,
             crates: None,
@@ -648,15 +640,9 @@ impl Declarations {
                 .collect(),
             functions: Vec::new(),
         };
-        value
-            .prepare_resolution(report)
-            .map_err(|error| value.retain_error_warnings(error))?;
+        value.import_resolution(report)?;
+        super::crates::import(report, &mut value)?;
         Ok(value)
-    }
-    fn prepare_resolution(&mut self, report: &Report) -> Result<(), Error> {
-        self.import_resolution(report)?;
-        super::crates::import(report, self)?;
-        self.collect_declaration_attributes(report)
     }
     fn import_resolution(&mut self, report: &Report) -> Result<(), Error> {
         for reference in &report.resolution.references {

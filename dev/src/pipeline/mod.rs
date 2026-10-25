@@ -75,19 +75,12 @@ pub fn analyze_source(report: &Report) -> Result<Analysis, Error> {
     let context = execution::Context::default();
     let facts = sema::declarations::analyze_with_executor(report, context.executor())?;
     let mut analysis = analyze(report, facts)?;
-    context
-        .check_inline_bodies(report, &mut analysis.facts)
-        .map_err(|error| analysis.facts.retain_error_warnings(error))?;
+    context.check_inline_bodies(report, &mut analysis.facts)?;
     if !analysis.facts.initializers.is_empty() {
-        let validated = {
-            let mut evaluator = sema::values::Evaluator::new(report, &mut analysis.facts);
-            evaluator.validate_ordinary_initializers()
-        };
-        validated.map_err(|error| analysis.facts.retain_error_warnings(error))?;
+        sema::values::Evaluator::new(report, &mut analysis.facts)
+            .validate_ordinary_initializers()?;
     }
-    context
-        .transfer(report, &mut analysis.facts, &mut analysis.prepared)
-        .map_err(|error| analysis.facts.retain_error_warnings(error))?;
+    context.transfer(report, &mut analysis.facts, &mut analysis.prepared)?;
     analysis.prepared.constants = Some(context);
     Ok(analysis)
 }

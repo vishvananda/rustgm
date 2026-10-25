@@ -11074,36 +11074,6 @@
         "default_lints": true
       },
       "mode": "--emit-patterns"
-    },
-    {
-      "path": "tests/spec/canonical-inhabitation/private-caller.rs",
-      "source_sha256": "9bb2f4cadde465f78605386d02d9bb1eedaee09df721c8df4416a370fa58fd2b",
-      "exit_status": 1,
-      "features": [
-        "pa13.canonical-inhabitation"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 1,
-        "default_lints": true
-      },
-      "mode": "--emit-patterns",
-      "maintainer_origin": "dev/tests/canonical_inhabitation.rs"
-    },
-    {
-      "path": "tests/spec/canonical-inhabitation/private-owner.rs",
-      "source_sha256": "1e907b28f96b82ece600d7f04b74cde4ba54a2c23e7949d9b9ebbc4b13f6bd31",
-      "exit_status": 0,
-      "features": [
-        "pa13.canonical-inhabitation"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true
-      },
-      "mode": "--emit-patterns",
-      "maintainer_origin": "dev/tests/canonical_inhabitation.rs"
     }
   ]
 }

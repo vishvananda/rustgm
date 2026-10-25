@@ -67,8 +67,9 @@ impl Checker<'_> {
         owner: DefId,
         context: regions::Context,
     ) -> Result<(), Error> {
-        if crate::sema::lifetimes::call_arguments(self.report, key)?.is_some() {
-            self.require_parenthesized_trait(key, owner)?;
+        if self.declared_callable(owner)
+            && crate::sema::lifetimes::call_arguments(self.report, key)?.is_some()
+        {
             return self.schedule_call_arguments(key, context);
         }
         if !self.facts.generics.parameters.contains_key(&owner)
@@ -141,9 +142,9 @@ impl Checker<'_> {
         owner: DefId,
         context: regions::Context,
     ) -> Result<GenericArgs, Error> {
-        if crate::sema::lifetimes::call_arguments(self.report, key)?.is_some() {
-            self.require_parenthesized_trait(key, owner)?;
-            self.validate_parenthesis_inputs(key, owner)?;
+        if self.declared_callable(owner)
+            && crate::sema::lifetimes::call_arguments(self.report, key)?.is_some()
+        {
             return self.call_application_arguments(key);
         }
         let (supplied, omitted) = self.supplied_arguments(key, owner)?;

@@ -180,9 +180,8 @@ fn range_catalog_preserves_ordinary_record_sizes() {
         size_of::<types::Kind>(),
         size_of::<body::ir::Value>()
     );
-    // Contextual-field and source-attribute handles each add one cold pointer
-    // to the measured 7032-byte baseline.
-    assert_eq!(size_of::<Declarations>(), 7032 + 2 * size_of::<usize>());
+    // One cold contextual-field index handle adds to the measured 7032-byte baseline.
+    assert_eq!(size_of::<Declarations>(), 7032 + size_of::<usize>());
     // A lazy item-scope owner adds eight bytes; per-item and body rows are unchanged.
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
     assert_eq!(size_of::<sema::iteration::Registry>(), 304);

@@ -1,9 +1,5 @@
-import pathlib,subprocess,shutil,json,hashlib
-subprocess.run(['timeout','30s','python3','scripts/storage.py','run','--no-prune','--','python3','scripts/setup_backend.py'],check=True)
-command=['timeout','--kill-after=5s','185s','python3','scripts/resources.py','run','--wait-seconds','0','--','python3','.github/check_selected_metadata_native.py','--review','.github/selected_reference_review.json','--app',str(pathlib.Path('obj/rust/dev-fast/rustgm').resolve()),'--seconds','180']
-subprocess.run(command,check=True)
-root=pathlib.Path('obj/parallel/pa31/attribute-native-outcome-closure-v1/runs')
-bundles=list(root.glob('*.tar.gz'));assert len(bundles)==1
-out=pathlib.Path('obj/parallel/all-attribute-selected-output-v1');out.mkdir()
-for bundle in bundles:shutil.copyfile(bundle,out/bundle.name)
-(out/'archive-sha256.json').write_text(json.dumps({p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in bundles},indent=2)+'\n')
+import os,subprocess,sys
+selectors=['sema::crates::typed_headers::unpaid_provided::header_demands::tests::header_signature_cursor_uses_real_full_family_ports', 'sema::crates::typed_headers::unpaid_provided::header_demands::tests::header_signature_cursor_rejects_foreign_owner_arena_and_purpose', 'sema::crates::typed_headers::unpaid_provided::header_demands::tests::header_signature_cursor_reuses_memo_and_leaves_undemanded_body_nodes', 'sema::crates::typed_headers::unpaid_provided::header_demands::tests::header_signature_cursor_bounds_shared_depth_and_unrelated_originals', 'sema::crates::typed_headers::unpaid_provided::header_demands::tests::header_signature_cursor_failure_drops_owned_session_and_keeps_charges', 'sema::crates::typed_headers::unpaid_provided::tests::unpaid_session_moves_actual_store_and_only_reserves_empty_semantic_cells', 'sema::crates::typed_headers::unpaid_provided::tests::unpaid_session_rejects_replaced_arena_and_invented_semantic_payment', 'support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof', 'resolve::body_origin::catalog::freezing_tests::clone_drop_and_unique_access_never_reopen_frozen_installation']
+command=[sys.executable,"scripts/fastcheck.py","--seconds","190"]
+for name in selectors:command += ["--lib-case",name]
+subprocess.run(command,env={**os.environ,"RUST_TEST_NOCAPTURE":"1"},check=True)

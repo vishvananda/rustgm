@@ -8,21 +8,9 @@ use super::{
 };
 use crate::{expand::marks::ItemContext, syntax::ast::NodeId};
 #[derive(Clone, Copy)]
-pub(crate) enum LookupMode<'a> {
+pub(crate) enum LookupMode {
     Use(Namespace),
     Import(Namespace),
-    Macro(MacroFilter<'a>),
-}
-/// Unknown targets remain selected and pending; they cannot expose an outer role.
-#[derive(Clone, Copy)]
-pub(crate) struct MacroFilter<'a> {
-    pub kind: crate::expand::builtin::BuiltinKind,
-    pub classify: &'a dyn Fn(DefId) -> Option<crate::expand::builtin::BuiltinKind>,
-}
-impl MacroFilter<'_> {
-    pub(super) fn permits(self, target: DefId) -> bool {
-        (self.classify)(target).is_none_or(|kind| kind == self.kind)
-    }
 }
 pub(crate) struct Selection {
     pub key: BindingKey,
@@ -224,13 +212,12 @@ impl Resolver<'_> {
         node: NodeId,
         absolute: bool,
         path: crate::resolve::paths::Identified<'_>,
-        mode: LookupMode<'_>,
+        mode: LookupMode,
         mut observed: Option<&mut Observations>,
     ) -> Result<Lookup, Error> {
         let (namespace, check_final_privacy) = match mode {
             LookupMode::Use(ns) => (ns, true),
             LookupMode::Import(ns) => (ns, false),
-            LookupMode::Macro(_) => (Namespace::Macro, true),
         };
         let Some(first) = path.first().copied() else {
             return Err(self.error(c, node, "empty path"));
@@ -323,14 +310,9 @@ impl Resolver<'_> {
                 Namespace::Type
             };
             let context = path.context(index).map_err(|e| self.error(c, node, e))?;
-            let filter = match mode {
-                LookupMode::Macro(filter) if ns == Namespace::Macro => Some(filter),
-                _ => None,
-            };
             let found = if let Some(scope) = scope {
                 self.item_in_scope(c, (scope, name, ns, context), observed.as_deref_mut())
                     .map_err(|e| self.error(c, node, e))?
-                    .filter(|selected| filter.is_none_or(|f| f.permits(selected.binding.target)))
             } else if self.hygiene.is_some()
                 && matches!(ns, Namespace::Value | Namespace::Label)
                 && !matches!(mode, LookupMode::Import(_))
@@ -341,7 +323,7 @@ impl Resolver<'_> {
                 );
                 self.hygienic_selection(c, offset, name, ns)?
             } else {
-                self.item_lexical_filtered(c, (name, ns, context), observed.as_deref_mut(), filter)
+                self.item_lexical(c, name, ns, context, observed.as_deref_mut())
                     .map_err(|e| self.error(c, node, e))?
             };
             let selected = match found {

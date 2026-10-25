@@ -22217,65 +22217,6 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/associated_declarations/elision.rs:CASES"
-    },
-    {
-      "path": "tests/spec/discard-domains/projection-published-bound.rs",
-      "source_sha256": "c6d0077613e2fb96dbe7a0c30b0118ba94dca0a0dfbe2e937d6032175b457e92",
-      "exit_status": 0,
-      "features": [
-        "pa20.discard-domains"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true
-      },
-      "maintainer_origin": "dev/tests/discarded_domains.rs",
-      "warnings": [
-        "unused_must_use"
-      ]
-    },
-    {
-      "path": "tests/spec/discard-domains/projection-explicit-let.rs",
-      "source_sha256": "8ea2d44c4b8ae78d63060c492075c4613af41f4f61366bcad7d04f13ee3bbf11",
-      "exit_status": 0,
-      "features": [
-        "pa20.discard-domains"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true
-      },
-      "maintainer_origin": "dev/tests/discarded_domains.rs"
-    },
-    {
-      "path": "tests/spec/discard-domains/projection-normalized-concrete.rs",
-      "source_sha256": "5152c16c4098fc28646701879193a57df30e39eb099814620f25fb0a969c9fc9",
-      "exit_status": 0,
-      "features": [
-        "pa20.discard-domains"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true
-      },
-      "maintainer_origin": "dev/tests/discarded_domains.rs"
-    },
-    {
-      "path": "tests/spec/discard-domains/projection-unmarked-bound.rs",
-      "source_sha256": "43e7b785ec771108a1ed9f8a2702fb58e5394f865d6eec678b211839fa7f129b",
-      "exit_status": 0,
-      "features": [
-        "pa20.discard-domains"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true
-      },
-      "maintainer_origin": "dev/tests/discarded_domains.rs"
     }
   ]
 }

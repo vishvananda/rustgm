@@ -222,9 +222,8 @@ fn iterator_clone_preserves_ordinary_record_sizes_and_lazy_owner_cost() {
         size_of::<types::infer::Context>(),
         size_of::<types::Store>()
     );
-    // Contextual-field and source-attribute handles each add one cold pointer
-    // to the measured 7032-byte baseline.
-    assert_eq!(size_of::<Declarations>(), 7032 + 2 * size_of::<usize>());
+    // One cold contextual-field index handle adds to the measured 7032-byte baseline.
+    assert_eq!(size_of::<Declarations>(), 7032 + size_of::<usize>());
     // A lazy item-scope owner adds eight bytes; per-item and body rows are unchanged.
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
     assert_eq!(size_of::<Kind>(), 24);
