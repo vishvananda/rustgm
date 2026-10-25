@@ -1,6 +1,7 @@
 //! Test removal retains authenticated ownership without an executed expansion frame.
 mod demand;
 mod identities;
+#[path = "removed_functions/ancestry_links.rs"]
 mod parent_edges;
 mod retirement;
 mod saved_uses;

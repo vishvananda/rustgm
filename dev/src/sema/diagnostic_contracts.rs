@@ -1,6 +1,7 @@
 //! Declaration-bound diagnostic text never supplies a trait or execution proof.
 mod attribute_directives;
 mod obligation_failure;
+#[path = "diagnostic_contracts/message_literals.rs"]
 mod template_text;
 mod typed_format;
 use crate::{

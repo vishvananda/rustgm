@@ -13,7 +13,7 @@ use crate::{
 };
 use std::num::NonZeroU32;
 #[cfg(test)]
-#[path = "../../../tests/invariants/original_retirement.rs"]
+#[path = "../../../tests/invariants/retirement_snapshots.rs"]
 mod tests;
 #[repr(transparent)]
 struct SavedFlags(u8);
