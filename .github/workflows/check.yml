@@ -22,6 +22,7 @@ jobs:
         with:
           path: |
             obj/rust/dev-fast
+            obj/rust/private-lint
             obj/fast-audit.json
             ~/.cargo/registry
           key: dev-fast-${{ runner.os }}-rust-1.98-${{ hashFiles('dev/Cargo.lock', 'dev/Cargo.toml') }}-${{ github.sha }}
@@ -30,7 +31,7 @@ jobs:
       - name: Audit setup
         run: make setup-audit
       - name: Five-minute development check
-        run: make fastcheck FAST_ARGS='lexer'
+        run: RUST_TEST_NOCAPTURE=1 make fastcheck FAST_ARGS='--lib-case resolve::crates::unpaid_provided::tests::unpaid_reservations_move_full_family_without_names_roles_or_import_publication --lib-case resolve::crates::unpaid_provided::tests::unpaid_reservations_reject_real_foreign_inventory_catalog_and_changed_cells --lib-case resolve::crates::unpaid_provided::tests::unpaid_reservation_failures_keep_attempts_without_returning_an_input_owner --lib-case sema::crates::typed_headers::unpaid_provided::tests::unpaid_session_moves_actual_store_and_only_reserves_empty_semantic_cells --lib-case sema::crates::typed_headers::unpaid_provided::tests::unpaid_session_rejects_replaced_arena_and_invented_semantic_payment --lib-case support::crates::codec::packet_envelope::tests::actual_source_functions_cross_public_codec_and_fresh_client_proof --lib-case support::crates::generics::source::validation::numbered_tests::numbered_inspection_cannot_publish_through_functions_profile --lib-case resolve::bindings::client::tests::empty_legacy_and_wrong_identity_artifacts_never_authenticate_source_client'
       - name: Harness, audit cache and upstream contracts
         run: make test-harness test-upstream && obj/audit-venv/bin/python -m unittest discover -s scripts/audit_tests -v
       - name: Retain focused evidence
