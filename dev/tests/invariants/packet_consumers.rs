@@ -227,11 +227,7 @@ fn ordinary_source_profiles_capture_plain_contract_bytes_before_adapter() -> Res
         std::fs::write(folder.join(format!("{version}.rgcrate")), &bytes)?;
         std::fs::write(
             folder.join(format!("{version}.rows.txt")),
-            format!(
-                "{:#?}\nattributes={:#?}\n",
-                &*rows,
-                rows.header_attributes()
-            ),
+            format!("{:#?}\nattributes={:#?}\n", *rows, rows.header_attributes()),
         )?;
         std::fs::write(
             folder.join(format!("{version}.binding.txt")),
