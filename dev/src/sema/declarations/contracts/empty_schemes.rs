@@ -23,9 +23,9 @@ pub(super) fn prepare(
     if !checker.report.package.uses_source_bindings() {
         return Ok(None);
     }
-    let owned = checker.report.resolution.definitions.get(owner.0 as usize);
+    let definition = checker.report.resolution.definitions.get(owner.0 as usize);
     let total = checker.regions.count(binder);
-    if owned.is_none_or(|row| {
+    if definition.is_none_or(|row| {
         row.kind != crate::resolve::model::DefKind::Function || row.node != Some(source)
     }) || checker.regions.owner(binder) != Some(owner)
         || total != 0
