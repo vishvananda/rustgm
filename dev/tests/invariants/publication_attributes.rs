@@ -31,7 +31,7 @@ fn prepared(text: &str, tag: &str) -> Result<(Report, crate::pipeline::Analysis,
     let analysis = crate::pipeline::analyze_source(&report)?;
     Ok((report, analysis, identity))
 }
-fn staged(report: &Report, facts: &Declarations, identity: &CrateIdentity) -> Result<Source> {
+fn staged(report: &Report, facts: &mut Declarations, identity: &CrateIdentity) -> Result<Source> {
     Ok(Source {
         stage: Stage::begin(report, facts, identity)?,
         openings: HashMap::default(),
@@ -86,14 +86,14 @@ fn plain_and_configured_absent_headers_publish_with_the_existing_profile() -> Re
             .to_string()
             .contains("nested source modules require a wider source namespace profile")
     );
-    let (report, analysis, identity) =
+    let (report, mut analysis, identity) =
         prepared(&fixture("negative-crate-owner")?, "negative_crate_owner")?;
     let warnings: Vec<_> = analysis.facts.warnings().collect();
     assert_eq!(warnings.len(), 1);
     assert_eq!(warnings[0].code.name(), "unused_attributes");
     let root = report.resolution.crate_root.ok_or("actual crate owner")?;
     assert!(analysis.facts.must_use_contract(&report, root)?.is_none());
-    staged(&report, &analysis.facts, &identity)?
+    staged(&report, &mut analysis.facts, &identity)?
         .require_plain_attributes(&report, &analysis.facts)?;
     publish(&fixture("negative-crate-owner")?)?;
     for name in ["nominal-plain", "nominal-marked"] {
@@ -168,8 +168,8 @@ fn all_selected_function_and_trait_contracts_reject_before_payload_publication()
 
 #[test]
 fn staged_identity_and_existing_query_failures_are_preserved() -> Result {
-    let (mut report, analysis, identity) = prepared(&fixture("must-use")?, "authority_source")?;
-    let mut source = staged(&report, &analysis.facts, &identity)?;
+    let (mut report, mut analysis, identity) = prepared(&fixture("must-use")?, "authority_source")?;
+    let mut source = staged(&report, &mut analysis.facts, &identity)?;
     let (foreign, _, _) = prepared(&plain()?, "another_provider")?;
     let error = source
         .require_plain_attributes(&foreign, &analysis.facts)
