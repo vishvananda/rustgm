@@ -646,5 +646,5 @@ impl Store {
 }
 
 #[cfg(test)]
-#[path = "../../tests/invariants/wide_float_layouts.rs"]
+#[path = "../../tests/invariants/interchange_storage.rs"]
 mod wide_float_tests;

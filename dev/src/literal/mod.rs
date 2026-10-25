@@ -81,5 +81,5 @@ fn reserved_period(tail: &str) -> bool {
 }
 
 #[cfg(test)]
-#[path = "../../tests/invariants/wide_float_values.rs"]
+#[path = "../../tests/invariants/floating_literals.rs"]
 mod tests;

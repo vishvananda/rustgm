@@ -112,5 +112,5 @@ fn rational(num: &Unsigned, den: &Unsigned, format: Format) -> Result<u128, &'st
 }
 
 #[cfg(test)]
-#[path = "../../tests/invariants/wide_float_scratch.rs"]
+#[path = "../../tests/invariants/rounding_scratch.rs"]
 mod tests;
