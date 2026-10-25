@@ -1,0 +1,21 @@
+# Version-two module and implementation-domain artifacts
+
+These PA29/PA31 source-provider reducers retain the complete ordinary source header
+prefix and its attribution. Rust language expectations reuse the frozen 40 independent
+metadata/object observations; no native/CTFE execution is inferred. The hex files
+preserve exact previously qualified v1 metadata bytes, not outputs of the new writer.
+The existing v0 hex remains in source-attribute-transport.
+
+Candidate controls must publish/decode actual metadata and run fresh consumers.
+A complete domain row is required for every actual trait, including Unrestricted.
+The canonical private module remains independent of public aliases. Local source
+impl permission and valid provider-owned impl selection are separate checks.
+Unsupported Provided/defaultness, unsafe/results/stability, macro/nominal/value and
+mixed-provider profiles stay closed. No assignment activation is implied.
+
+The bound-only client is checked at the actual type-analysis boundary. Its generic
+SourceClient republication remains explicitly rejected by the legacy original
+export profile. The separate provider-selection client must complete LowIR
+lowering through `prove::<u8>()`; changing the bound-only observation does not
+substitute for that reached selection or its impl obligations. The first mistaken
+all-positive-LowIR prediction and its failure remain in the frozen contract.

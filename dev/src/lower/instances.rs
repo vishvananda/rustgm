@@ -1,8 +1,22 @@
 //! Demand concrete CFGs from checked templates before ordinary executable lowering.
 mod demand;
 mod dependencies;
+mod namespace_snapshot;
 mod proof;
 mod staged_originals;
+#[cfg_attr(
+    not(test),
+    expect(
+        unused_imports,
+        reason = "private namespace transaction awaits qualified module-contract publication; public profile guards remain closed"
+    )
+)]
+pub(crate) use namespace_snapshot::inspect_source_namespace;
+#[cfg(test)]
+#[path = "../../tests/invariants/module_snapshot_fixture.rs"]
+mod namespace_fixtures;
+#[cfg(test)]
+pub(crate) use namespace_fixtures::namespace_fixture;
 #[cfg(test)]
 #[path = "../../tests/invariants/upstream_originals.rs"]
 mod upstream_originals;
@@ -176,6 +190,7 @@ pub fn build_library_prepared(
 pub enum SourcePublication {
     LegacyFunctions,
     FunctionContracts,
+    ModuleContracts,
 }
 
 /// Publish only an explicitly selected ordinary source row profile.
@@ -206,9 +221,10 @@ pub fn build_source_library_profile(
         facts,
         prepared,
         |facts, checked| {
-            let source =
-                super::transported_source::Source::begin(report, facts, checked, &identity)
-                    .map_err(|e| diagnostic(report, None, e.into()))?;
+            let (source, modules) = super::transported_source::Source::begin_publication(
+                report, facts, checked, &identity, profile,
+            )
+            .map_err(|e| diagnostic(report, None, e.into()))?;
             let mut dependencies =
                 report
                     .resolution
@@ -234,14 +250,14 @@ pub fn build_source_library_profile(
                 .map_err(|e| diagnostic(report, None, e.into()))?;
             let roots = super::roots::exports(facts, &[])
                 .map_err(|e| diagnostic(report, None, e.into()))?;
-            Ok((None, roots, (source, base)))
+            Ok((None, roots, (source, base, modules)))
         },
-        |(source, _), facts, proved, input| {
+        |(source, _, _), facts, proved, input| {
             source
                 .collect(facts, proved, input)
                 .map_err(|e| diagnostic(report, None, e.into()))
         },
-        |facts, assembled, roots, (source, base)| {
+        |facts, assembled, roots, (source, base, modules)| {
             let program = super::build_assembled(facts, assembled, roots)
                 .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
             let interface = match profile {
@@ -249,6 +265,18 @@ pub fn build_source_library_profile(
                 SourcePublication::FunctionContracts => {
                     source.complete_contract_payload(report, facts, base)
                 }
+                SourcePublication::ModuleContracts => source.complete_module_contract_payload(
+                    modules.ok_or_else(|| {
+                        diagnostic(
+                            report,
+                            None,
+                            "module namespace/domain collection is absent".into(),
+                        )
+                    })?,
+                    report,
+                    facts,
+                    base,
+                ),
             }
             .map_err(|error| facts.retain_error_warnings(error))?;
             Ok((program, interface))

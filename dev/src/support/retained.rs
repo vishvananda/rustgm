@@ -22,6 +22,47 @@ pub(crate) fn sum(parts: impl IntoIterator<Item = usize>) -> usize {
     parts.into_iter().fold(0, usize::saturating_add)
 }
 
+/// Allocation/copy work before a collection changes capacity. No values or
+/// semantic lookup results are exposed by this cost-only record.
+#[derive(Clone, Copy, Default)]
+pub(crate) struct Growth {
+    pub bytes: usize,
+    pub work: usize,
+}
+impl Growth {
+    pub fn include(&mut self, other: Self) {
+        self.bytes = self.bytes.saturating_add(other.bytes);
+        self.work = self.work.saturating_add(other.work);
+    }
+    pub fn vector<T>(length: usize, capacity: usize, additional: usize) -> Self {
+        let element = size_of::<T>();
+        let needed = length.saturating_add(additional);
+        if element == 0 || needed <= capacity {
+            return Self::default();
+        }
+        // Byte vectors can start with eight slots; other nonzero elements have
+        // a minimum no greater than four in the pinned standard library.
+        let minimum = if element == 1 { 8 } else { 4 };
+        Self {
+            bytes: needed
+                .saturating_mul(4)
+                .max(minimum)
+                .saturating_mul(element),
+            work: capacity,
+        }
+    }
+    pub fn map<K, V>(length: usize, capacity: usize, additional: usize) -> Self {
+        let needed = length.saturating_add(additional);
+        if needed <= capacity {
+            return Self::default();
+        }
+        Self {
+            bytes: new_map::<K, V>(needed),
+            work: length.saturating_add(needed.saturating_mul(4)),
+        }
+    }
+}
+
 /// Capacity accounting visits collections, not their elements or allocator metadata.
 #[derive(Clone, Copy, Default)]
 pub(crate) struct Allocation {
