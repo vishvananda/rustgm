@@ -24,17 +24,7 @@ pub(super) fn reserve(
     imported: &mut Imported,
     work: &mut Work,
 ) -> Result<(), Error> {
-    let artifact = context.artifact;
-    if artifact.public_names().is_some()
-        || !artifact.functions().is_empty()
-        || !artifact.constants().is_empty()
-        || artifact.nominals().is_some()
-        || artifact.storage().is_some()
-    {
-        return Err(error(
-            "source function declarations require their complete dedicated namespace",
-        ));
-    }
+    require_namespace(context.artifact)?;
     preflight(context.rows, imported, work)?;
     let definitions_before = resolver.facts.definitions.len();
     let scopes_before = resolver.facts.scopes.len();
@@ -47,6 +37,19 @@ pub(super) fn reserve(
     }
     result
 }
+fn require_namespace(artifact: &Interface) -> Result<(), Error> {
+    if artifact.public_names().is_some()
+        || !artifact.functions().is_empty()
+        || !artifact.constants().is_empty()
+        || artifact.nominals().is_some()
+        || artifact.storage().is_some()
+    {
+        return Err(error(
+            "source function declarations require their complete dedicated namespace",
+        ));
+    }
+    Ok(())
+}
 fn staged(
     resolver: &mut Resolver<'_>,
     context: &Reservation<'_>,
@@ -56,12 +59,10 @@ fn staged(
     let Reservation {
         scope,
         artifact,
-        payload,
         rows,
+        ..
     } = *context;
-    let (definitions, owners) = declarations(resolver, scope, artifact, rows, imported, work)?;
-    let body_scopes = scope_rows::bodies(resolver, rows, &owners, work)?;
-    scope_rows::assign(resolver, rows, &definitions, &owners, &body_scopes, work)?;
+    let definitions = reserve_definitions(resolver, scope, artifact, rows, imported, work)?;
     let pending = installed_bindings::prepare(
         resolver,
         scope,
@@ -71,10 +72,21 @@ fn staged(
         imported,
         work,
     )?;
+    let input = catalog_input(context, definitions, work)?;
+    // Binding insertion can fail before catalog installation. The pending owner
+    // rolls back those exact fresh keys; Catalog::install itself is transactional.
+    pending.install(resolver, imported, input)
+}
+fn catalog_input(
+    context: &Reservation<'_>,
+    definitions: Vec<DefId>,
+    work: &mut Work,
+) -> Result<Input, Error> {
+    let rows = context.rows;
     let (declarations, declaration_labels) = declaration_sites(rows, work)?;
     let (bindings, labels) = body_sites(rows, work)?;
-    let input = Input {
-        owners: payload.owners().clone(),
+    Ok(Input {
+        owners: context.payload.owners().clone(),
         edition: rows.policy.edition,
         definitions,
         declarations,
@@ -82,10 +94,53 @@ fn staged(
         files: Vec::new(),
         labels,
         declaration_labels,
-    };
-    // Binding insertion can fail before catalog installation. The pending owner
-    // rolls back those exact fresh keys; Catalog::install itself is transactional.
-    pending.install(resolver, imported, input)
+    })
+}
+fn reserve_definitions(
+    resolver: &mut Resolver<'_>,
+    scope: ScopeId,
+    artifact: &Interface,
+    rows: s::ValidatedView<'_>,
+    imported: &Imported,
+    work: &mut Work,
+) -> Result<Vec<DefId>, Error> {
+    let (definitions, owners) = declarations(resolver, scope, artifact, rows, imported, work)?;
+    let body_scopes = scope_rows::bodies(resolver, rows, &owners, work)?;
+    scope_rows::assign(resolver, rows, &definitions, &owners, &body_scopes, work)?;
+    Ok(definitions)
+}
+pub(super) fn unpaid_input(
+    resolver: &mut Resolver<'_>,
+    scope: ScopeId,
+    artifact: &Interface,
+    imported: &Imported,
+    work: &mut Work,
+) -> Result<Input, Error> {
+    let payload = artifact
+        .generic_payload()
+        .ok_or_else(|| error("unpaid source payload is absent"))?;
+    let descriptor = artifact
+        .source_descriptor()
+        .ok_or_else(|| error("unpaid source descriptor is absent"))?;
+    if descriptor.profile() != s::Profile::Source2024Provided {
+        return Err(error(
+            "unpaid reservations require their actual Provided descriptor",
+        ));
+    }
+    require_namespace(artifact)?;
+    let rows = descriptor.rows();
+    preflight(rows, imported, work)?;
+    let definitions = reserve_definitions(resolver, scope, artifact, rows, imported, work)?;
+    catalog_input(
+        &Reservation {
+            scope,
+            artifact,
+            payload,
+            rows,
+        },
+        definitions,
+        work,
+    )
 }
 fn declarations(
     resolver: &mut Resolver<'_>,
@@ -223,6 +278,9 @@ fn preflight(
             "source function profile requires one complete source binding provider",
         ));
     }
+    work.peak = work
+        .peak
+        .max(work.retained.saturating_add(base).saturating_add(scratch));
     if work.retained.saturating_add(base).saturating_add(scratch)
         > crate::support::crates::MAX_BYTES
     {

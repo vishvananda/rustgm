@@ -16,15 +16,34 @@ fn error(message: &'static str) -> Error {
 }
 
 #[derive(Default)]
-pub(super) struct Work {
+pub(crate) struct Work {
     pub steps: usize,
     pub retained: usize,
+    pub peak: usize,
 }
 impl Work {
-    fn charge(&mut self, count: usize) -> Result<(), Error> {
+    pub(crate) fn charge(&mut self, count: usize) -> Result<(), Error> {
         self.steps = self.steps.saturating_add(count);
         if self.steps > crates::MAX_COMPONENTS {
             return Err(error("imported original reservation work budget exceeded"));
+        }
+        Ok(())
+    }
+    pub(crate) fn reserve(&mut self, bytes: usize) -> Result<(), Error> {
+        self.reserve_raw(bytes).map_err(error)
+    }
+    pub(crate) fn reserve_raw(&mut self, bytes: usize) -> Result<(), &'static str> {
+        self.retained = self.retained.saturating_add(bytes);
+        self.observe_raw(0, 0)
+    }
+    fn observe(&mut self, base: usize, scratch: usize) -> Result<(), Error> {
+        self.observe_raw(base, scratch).map_err(error)
+    }
+    fn observe_raw(&mut self, base: usize, scratch: usize) -> Result<(), &'static str> {
+        let peak = self.retained.saturating_add(base).saturating_add(scratch);
+        self.peak = self.peak.max(peak);
+        if peak > crates::MAX_BYTES {
+            return Err("imported original reservations exceed combined storage budget");
         }
         Ok(())
     }
@@ -68,18 +87,20 @@ impl Work {
                     .len()
                     .saturating_mul(size_of::<Vec<ScopeId>>() + size_of::<BodyBinding>()),
             );
-        if self
-            .retained
-            .saturating_add(catalog)
-            .saturating_add(scratch)
-            > crates::MAX_BYTES
-        {
-            return Err(error(
-                "imported original reservations exceed combined storage budget",
-            ));
-        }
-        Ok(())
+        self.observe(catalog, scratch)
     }
+}
+pub(super) fn unpaid_input(
+    resolver: &mut Resolver<'_>,
+    scope: ScopeId,
+    artifact: &Interface,
+    imported: &Imported,
+    work: &mut Work,
+) -> Result<Input, Error> {
+    packet_declarations::unpaid_input(resolver, scope, artifact, imported, work)
+}
+pub(super) fn source_kind(kind: g::source::DefinitionKind) -> (DefKind, Namespace) {
+    packet_declarations::kind(kind)
 }
 #[derive(Clone, Copy)]
 struct Expected {
