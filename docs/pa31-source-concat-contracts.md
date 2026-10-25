@@ -73,8 +73,9 @@ The development component covers 1,464 private cases, 18 affected frontend test
 functions and 48 native programs: 19 byte programs in both admitted editions plus
 10 formatting programs affected by the shared producer. Fresh format, architecture
 and placement audit (2,335 files, zero findings), all-target strict Clippy, harness
-and upstream checks pass. This is a local component result; integrated release and
-shared-algorithm performance qualification remain integrator work.
+and upstream checks pass. This is the local component record. The later
+[combined checkpoint](scoped-bytes-checkpoint.md) completes integrated release
+and performance qualification while retaining the recorded RSS costs.
 
 `obj/parallel/pa31/concat-bytes-source-v1` retains the initial test-only Clippy
 failure, with no candidate execution. V2 retains all 1,464 passing private cases

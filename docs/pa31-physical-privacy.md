@@ -19,8 +19,8 @@ module ancestry once. Primitive-only checks allocate no graph storage. Attempts,
 edges and errors consume the bounded budget. Actual source signatures with
 shared tuple/pointer DAGs at depths 8, 32 and 128 require 29, 101 and 389 steps,
 visiting 19, 67 and 259 unique nodes. Another 128 uses cost exactly 128 steps
-at every scale. This invariant measures the privacy traversal, not total frontend
-compile time; release performance qualification remains required.
+at every scale. This invariant measures the privacy traversal; the combined
+checkpoint below separately qualifies total frontend costs.
 
 ## Independent and RustGM evidence
 
@@ -58,7 +58,8 @@ an interrupted build as a test pass.
 The integrator has merged this component with the separately qualified source
 concat_bytes implementation. Their shared eager seam preserves the actual
 formatting builtin's opaque definition context and normal builtin transparency.
-The combined compiler still needs fresh release, native, affected source and
-performance qualification before publication. This does not complete foreign
+The [combined compiler checkpoint](scoped-bytes-checkpoint.md) now completes
+release/native coverage, affected source checks and the 125-input performance
+matrix, retaining all seven reviewed RSS costs. This does not complete foreign
 macro export, nonempty formatting, attribute transformation or a core artifact.
 PA31 remains planned and its scoped fixtures do not enter active PA totals.

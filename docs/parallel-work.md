@@ -10,26 +10,25 @@ The integrator owns shared interface decisions, integration, public pushes,
 assignment activation and final text-oracle publication.
 
 Use [the live library blocker tracker](library-build-blockers.md) for concrete
-issue assignments and closure tests. The [combined prerequisite checkpoint](core-prerequisites-checkpoint.md)
-qualifies compiler `65f20e8b`: 3,766 maintainer passes, 8,382 active text cases,
-110 measured inputs, 85 native preflights and all 58 growth controls. One RSS
-increase has a completed attribution review and remains a recorded cost.
-Original core stops at concat_bytes, line 1126. C's separately qualified byte
-component reaches autodiff_forward, line 1553; integration is next. Neither
-build produces a core artifact or releases an assignment.
+issue assignments and closure tests. The [current scoped/byte checkpoint](scoped-bytes-checkpoint.md)
+qualifies compiler `ca54609a`: 3,791 maintainer passes, 8,385 active text cases,
+125 measured inputs, 116 equal-output pairs, 100 native preflights and 68 growth
+controls. Seven RSS costs remain recorded after bounded attribution. The same
+CLI reaches original `autodiff_forward` at line 1553; stricter attribute checking
+separately exposes the earlier coherence policy at `lib.rs:65`. There is no core
+artifact and no assignment release.
 
 Current lanes:
 
-- A: complete generic original/artifact transport and fresh consumer proof.
-  Canonical sizing validation now passes; actual source-trait debt transfer into
-  the existing body proof is the next observed imported-consumer blocker.
-- B: explicit early implementation readiness, then the selected-reference
-  anonymous const_eval_select caller proof needed by the unchanged original
-  reducer. Coordinate C's existing typed Row/Code/Contract interface.
-- C: source attribute builtin declaration/import and actual application kinds
-  (LIB-019), preserving unsupported executable transformation until implemented.
-- Integrator: actual scoped macro invocation, physical type privacy, shared
-  interface review, combined qualification, integration and public main pushes.
+- A: qualify full-instance artifact/import Scope, then provided/default body and
+  actual environment transport. Earlier API/CLI native result 7 passed at A14;
+  stronger A15 controls remain unqualified.
+- B: integrate separately qualified early readiness; qualify selected-reference
+  anonymous const callers, then actual UB-check preservation/intrinsic semantics.
+- C: qualify actual attribute kinds and consumers, including Test removal,
+  must_use/inline and trait markers/messages; keep incomplete diagnostics explicit.
+- Integrator: combined qualification/main pushes, LIB-004 handoff integration and
+  real primitive inherent coherence. Keep CPPGM and upstream sources unchanged.
 
 Each new private binary runs its full nonignored inventory once, with required
 names and captured outputs. Schema 2 remains active. Select each absolute cap

@@ -1,6 +1,6 @@
 # Library build blocker tracker
 
-Updated 2026-10-24. This is the work queue for compiling the original pinned
+Updated 2026-10-25. This is the work queue for compiling the original pinned
 `core`, `alloc` and `std`, not a count of completed internal checkpoints.
 PA1–PA24 remain implemented drafts; PA25–PA44 remain planned. No additional
 assignment or whole upstream library has been completed.
@@ -14,7 +14,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Functionally qualified combined `65f20e8b` reaches `concat_bytes`, line 1126. Separately qualified byte component `a3d7dc49` reaches `autodiff_forward`, line 1553. Both open only four unchanged original files; no artifact. | Integrate LIB-018, implement LIB-019 and rerun the unchanged root; complete scoped semantics, nonempty formatting and remaining source requirements. |
+| Original core loading and expansion | Qualified combined `ca54609a` reaches `autodiff_forward`, line 1553, opening four unchanged original files. The stricter attribute candidate separately exposes the earlier coherence policy at `lib.rs:65`. No artifact. | Implement LIB-019/020/021 and rerun the unchanged root; complete scoped semantics, nonempty formatting and remaining source requirements. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -39,7 +39,7 @@ tests and all 60 functional qualification stages. The newer
 3,644 release/native tests (1,721 fresh plus 1,923 authenticated retained),
 8,382 text cases and 65 functional stages. Neither count releases a PA.
 
-The newest published unchanged-core observation uses the qualified integrated compiler
+An earlier published unchanged-core observation used the qualified integrated compiler
 `20eb54f33961841b6e496bec52dae3a41f51e10ee97dbdb4b03de68d8e728134`,
 source `6bba6589`, in the validation worktree's
 `obj/parallel/whole-core-blockers-v5/`. It exits 1 at file 3, byte 1250,
@@ -67,39 +67,40 @@ foreign API-use boundary.
 
 ## Current implementation and qualification
 
-The [combined prerequisite checkpoint](core-prerequisites-checkpoint.md) records
-3,766 maintainer passes (354 fresh and 3,412 authenticated retained), all 8,382
-active text cases and complete affected independent checks. Its 110-input
-performance run passes 101 equal-output pairs, 85 native programs and all 58
-growth controls. The +620 KiB RSS trigger has a completed bounded attribution review: peak
-live heap grows by 1,047 bytes; the original RSS cost remains recorded. The previous
-quadratic projection failure is repaired: 32→128 subjects now costs 3.732×,
-and the largest case uses 81.2% fewer instructions than `5602dc27`.
+The [scoped/byte checkpoint](scoped-bytes-checkpoint.md) qualifies compiler
+`ca54609a`: 3,791 maintainer passes (1,868 fresh and 1,923 authenticated retained),
+all 8,385 active text cases, affected independent source/native checks and
+transitive metadata. Its immutable comparison against public `65f20e8b` retains
+all 110 preceding workloads and adds fifteen: 125 output checks, 116 successful
+equal-output pairs, 100 native programs and all 68 growth controls pass.
+Instruction changes range from -0.157% to +3.367%, median +0.353%. Seven RSS
+increases of 534–746 KiB have a fixed heap/mapping review; the costs remain recorded.
 
-The combined original-core probe reaches `concat_bytes`, line 1126. C's separate
-qualified byte component advances it to `autodiff_forward`, line 1553. Neither
-completes the crate. Only four original files have opened, all unchanged.
+The same CLI reaches `autodiff_forward` at original `macros/mod.rs:1553`, four files
+unchanged. This is an expansion boundary, not complete core semantic support.
+The stricter attribute candidate exposes `rustc_coherence_is_core` earlier at
+`lib.rs:65`; its real primitive inherent semantics must be implemented rather than
+ignored to preserve a later error location.
 
-- Integrator: field visibility has component evidence. Actual scoped invocation
-  exposed three classes of failure: physical type privacy, generated-module
-  primitive lookup and exact opaque item selection. Repairs are under test.
-  Thirteen new privacy contracts match pinned rustc in 26 metadata/object
-  observations and five native executions. Put ordinary controls in PA12 and
-  source-scoped cases in PA31; passing the oracle does not qualify RustGM.
-- A: the source artifact roundtrip passes, but the fresh consumer fails sizing
-  validation. A7 passes canonical sizing validation and reaches a deferred source-trait
-  permission mismatch. The next repair proves actual trait debts with the
-  existing body-local solver before transferring obligations; fresh-client/native7
-  acceptance remains pending.
-- B: typed implementation readiness and error-priority changes are running fresh
-  static, private, frontend and native validation. Do not interpret pending
-  validation as a negative trait answer.
-- C: byte concatenation is separately qualified at `a3d7dc49`; source attribute
-  declaration/import and application-kind work is in progress. Executable
-  attribute transformation remains explicit unsupported work, never an empty stub.
+- Integrator: scoped execution, contextual members and physical type privacy
+  have combined qualification. Next are LIB-004 integration and primitive
+  coherence (LIB-020); 44 independent source predictions are frozen, not yet run.
+- A: the actual API and CLI artifact→fresh consumer→native paths both returned
+  7 at A14. Stronger full-instance Scope controls at A15 require qualification.
+  Provided/default trait bodies and their actual environments remain required
+  beyond the current ordinary Functions metadata profile.
+- B: LIB-004 is separately qualified at 96fd35a4. The LIB-005 extension passes
+  1,503 private cases; one stale diagnostic assertion has a test-only continuation.
+  Its frontend/native selections, including the original native result, remain
+  unrun. LIB-021 has a source-derived policy proposal and frozen oracle plan.
+- C: source attribute kinds and must_use/inline/Test/trait-marker consumers are
+  merged with the qualified scoped/byte base, but remain unqualified. Actual
+  diagnostic messages and mixed error/warning transport have explicit remaining
+  contracts; no ignored active attribute or empty expansion closes a blocker.
 
-The exclusive measurement finished and workers resumed under the unchanged
-three-job, 150 GiB reserve policy. Successful output roots use scoped cleanup.
+Use three workers under the unchanged three-job/150 GiB reserve policy. Group
+related changes, reuse authenticated unaffected evidence and clean known
+successful output roots. Broad measurements remain exclusive.
 
 ## Prioritized issues and assignment ownership
 
@@ -112,25 +113,27 @@ without those later features. Do not move fixtures mechanically by subsystem.
 
 | ID | Priority and evidence | Blocking issue | Owner PA / test PA | Worker | State / dependencies |
 | --- | --- | --- | --- | --- | --- |
-| LIB-001 | P0; preceding whole-core parse blocker removed, scoped semantics still required | Scoped declarative macro publication, item/path/import/glob lookup and definition-site visibility | PA31 internal feature; PA8 shared machinery / PA31, plus applicable PA7–PA8 regressions | C + integrator | Scoped declaration publication is integrated. Actual retained-matcher invocation and physical privacy repairs pass component qualification at `80f9e069`: 1,498 private, 319 frontend, five native test functions and all earlier texts. Three PA12 ordinary controls are independently qualified. Integrated candidate `69c344e3` includes bytes and these changes; full combined release/performance and foreign macro transport remain open. |
-| LIB-002 | P0; prerequisite of LIB-001 | Hygienic field, method and associated-member identity; captured names and container-relative privacy | PA31; PA12/PA19 shared consumers / PA31, with earlier ordinary controls | C + integrator | Contextual field consumers pass separate component qualification at `14a71f1b`. Canonical impl-member conformance passes combined `65f20e8b` qualification. Physical type privacy repairs pass component qualification at `80f9e069`, with thirteen independent source contracts and three separately observed PA12 programs. Fields/scoped execution are merged with bytes in local `69c344e3`; fresh combined qualification remains required. |
+| LIB-001 | P0; preceding whole-core parse blocker removed, scoped semantics still required | Scoped declarative macro publication, item/path/import/glob lookup and definition-site visibility | PA31 internal feature; PA8 shared machinery / PA31, plus applicable PA7–PA8 regressions | C + integrator | Local scoped invocation, actual owner/scope authentication and physical privacy pass combined ca54609a functional/performance qualification. Foreign macro transport remains required; the full issue is not closed. |
+| LIB-002 | P0; prerequisite of LIB-001 | Hygienic field, method and associated-member identity; captured names and container-relative privacy | PA31; PA12/PA19 shared consumers / PA31, with earlier ordinary controls | C + integrator | Contextual field/member identity, canonical conformance and physical type privacy pass combined ca54609a qualification. PA12 ordinary controls and PA31 source contracts are independently checked. Foreign transported member identities remain required. |
 | LIB-003 | P1; actual reduced source failure | Projected Copy proof sees one lifetime premise in inconsistent declaration/body namespaces | PA21 scoped proof + PA31 source const-trait defaults / PA31; add PA21 control where expressible | B | Declaration/body alias scope and fresh Copy reproof pass combined functional qualification. The related LIB-016 projection-growth failure is repaired and all combined growth controls pass; do not conflate this with LIB-004 early readiness. |
-| LIB-004 | P1; actual reduced source failure, readiness cause observed directly | Early const read treats source `u8: Copy` as absent although its impl is present | PA20 implementation readiness + PA25 early CTFE / PA31 source-binding reproduction | B, coordinated with C | Fresh static/layout and all thirteen new private controls pass. Twelve old observers need correction: eleven must count a pending lookup attempt; the original Copy failure now reaches a separate selected-reference anonymous const_eval_select caller boundary. Full original native acceptance remains open under LIB-005; readiness recovery and reachable native controls are pending. |
-| LIB-005 | P1; independently qualified reduced program | Anonymous constant-expression `const_eval_select` ownership and cache validation | PA25 execution + PA28 intrinsic semantics + PA31 source identity / PA31 | C | Preserved `379006ad` is unqualified and supports only a closed scalar anonymous caller; it explicitly rejects the selected-reference descriptor in the original LIB-004 reducer. B owns the typed owner/reference/liveness extension after qualifying readiness, coordinating C's existing Row/Code/Contract interface. Full original native7 remains required. |
+| LIB-004 | P1; actual reduced source failure, readiness cause observed directly | Early const read treats source `u8: Copy` as absent although its impl is present | PA20 implementation readiness + PA25 early CTFE / PA31 source-binding reproduction | B, coordinated with C | Separately qualified at `96fd35a4`: 1,498 private tests, seven frontend cases, thirteen native contexts, strict/static and layout checks pass. Integrator has a clean reviewed handoff against ca54609a. Original selected-reference native acceptance remains under LIB-005. |
+| LIB-005 | P1; independently qualified reduced program | Anonymous constant-expression `const_eval_select` ownership and cache validation | PA25 execution + PA28 intrinsic semantics + PA31 source identity / PA31 | B, coordinated with C | B owns the typed selected-reference/actual-owner extension. V5 passes 1,503 private cases including all 26 required controls; one existing diagnostic assertion is corrected in frozen test-only v6. Twenty frontend cases and 78 native contexts remain unrun, so original native result `7 1` is not yet qualified. |
 | LIB-006 | P1; core-to-consumer prerequisite | Complete substituted signatures, operation types and required inputs for real exported generic originals | PA29 / PA29 data invariants; PA31 source-provider fixtures | A | Complete operation-derived input/signature validation passes the combined checkpoint, including all 11 private controls and actual complete-source A/B output equality. Executable artifact/import proof is still required. |
-| LIB-007 | P1; core-to-consumer prerequisite | Deterministic generic/source metadata, authenticated remapping and fresh imported body proof | PA29 + PA31 source-role admission / PA29 ordinary multi-crate tests and PA31 source-provider tests | A + integrator | Actual artifact roundtrip passes. Fresh source-client admission stops at sizing validation; A7 passes the canonical trait-header input repair and now fails on deferred source-trait permissions. The existing solver must discharge actual debts under the exact imported caller; public artifact→fresh consumer→native7 acceptance remains required. |
-| LIB-008 | P1; next whole-crate acceptance gate | Close remaining active core source requirements and emit a real core artifact | PA32, with each failure assigned back to its language owner / PA32 original crate plus reduced owning-PA cases | Integrator | Blocked on LIB-001/002; discover concrete additional issues from unchanged-root runs, not guesses. |
+| LIB-007 | P1; core-to-consumer prerequisite | Deterministic generic/source metadata, authenticated remapping and fresh imported body proof | PA29 + PA31 source-role admission / PA29 ordinary multi-crate tests and PA31 source-provider tests | A + integrator | API and CLI tag10 artifact→fresh consumer→native result 7 both passed at A14. Stronger full-instance identity Scope at A15 is frozen pending qualification. Wider provided/default bodies, const/auto roles and nonempty lifetime/body environments need explicit codec/profile extensions; ordinary Functions semantics must not be relaxed. |
+| LIB-008 | P1; next whole-crate acceptance gate | Close remaining active core source requirements and emit a real core artifact | PA32, with each failure assigned back to its language owner / PA32 original crate plus reduced owning-PA cases | Integrator | No artifact. Current expansion frontier is LIB-019, while stricter active-attribute checking exposes LIB-020/021. Implement actual semantics and discover additional issues through unchanged-root attempts. |
 | LIB-009 | P2; crate-graph prerequisite | Source dependency identity, edition/build configuration and reproducible build orchestration | PA34 / PA34 | Integrator | Partial interfaces exist; complete original graph qualification remains required. |
 | LIB-010 | P2; not yet reached as a whole crate | Original alloc, allocator/runtime contracts and collection consumers | PA33; PA27/PA28 operation prerequisites / PA33 plus reduced owning-PA cases | Unassigned until core advances | Blocked on LIB-007/008/009; split observed alloc failures into concrete issues when reached. |
 | LIB-011 | P2; not yet reached as a whole crate | Original std, platform linkage and abort-profile consumers | PA36; PA30/PA34 platform/build prerequisites / PA36 plus reduced owning-PA cases | Unassigned until prerequisites advance | Blocked on the original core/alloc graph; no unsupported percentage-complete estimate. |
 | LIB-012 | P2; externally useful acceptance | Original no-default-features serde_core, then alloc/std serde_json graphs | PA35 / PA35 | Integrator | Run the core-only graph as soon as LIB-007/008/009 permit it; do not wait for std. |
 | LIB-013 | P0; prior unchanged-core blocker advanced | Source-declared `core_panic` builtin and edition-dependent delegation with authentic defining-crate/token provenance | PA31 source builtin contract; PA8 expansion machinery / PA31, plus applicable PA8 ordinary controls | C + integrator | Local 2021/2024 source delegation and exact warm spelling guards pass combined qualification. The qualified unchanged-core probe advances to LIB-014. Foreign macro transport and Rust 2018 remain required; full LIB-013 is not closed. |
 | LIB-014 | P0; previous unchanged-core failure at `assert_eq`, line 41 | Macro-specific internal unstable feature allowances, beginning with actual `panic_internals` | PA31 source/compiler policy; PA8 token provenance / PA31 with applicable PA8 ordinary controls | C + integrator | Complete local allowance lists and provenance pass combined functional qualification and move original core to LIB-001. The allowance growth controls pass; foreign API/const consumers remain required. |
-| LIB-015 | Component fixed; unchanged-core boundary advanced | Authenticated source-declared builtin `cfg_select`, complete predicate/branch parsing and selected syntax | PA31 source/compiler role; PA7/PA8 shared cfg/expansion machinery / PA31 plus earlier ordinary controls where expressible | C + integrator | Local cfg_select behavior passes combined functional qualification at `65f20e8b`, including width/depth growth controls. Foreign macro transport remains open; original core now reaches LIB-018 in this snapshot. |
+| LIB-015 | Component fixed; unchanged-core boundary advanced | Authenticated source-declared builtin `cfg_select`, complete predicate/branch parsing and selected syntax | PA31 source/compiler role; PA7/PA8 shared cfg/expansion machinery / PA31 plus earlier ordinary controls where expressible | C + integrator | Local cfg_select behavior passes combined functional qualification at `65f20e8b`, including width/depth growth controls. Foreign macro transport remains open; that older snapshot reaches LIB-018. |
 | LIB-016 | Algorithmic repair qualified; one reviewed RSS cost | Repeated full caller-environment opening and premise-index construction across independent projections | PA21 projection/formation machinery; PA31 complete source regression / PA31 plus earlier ordinary controls | B + integrator | Shared mapped-view opening is integrated as `5a5e9d51` and passes combined functional/performance checks at `65f20e8b`. The 32→128 subject ratio is 3.732; 128 subjects use 103,395,319 instructions versus 550,412,747 previously. All 58 combined growth controls pass; one reviewed RSS cost remains. |
 | LIB-017 | P0; earlier unchanged-core failure at `format_args`, line 994 | Source formatting builtins and actual constructor calls, including full argument parsing/evaluation | PA26 formatting + PA31 compiler/source bindings / PA31 complete providers, plus earlier ordinary controls | C | Literal source formatting and its real constructor privacy boundary pass combined functional qualification at `65f20e8b`. Nonempty arguments, obligations, temporary lifetimes and foreign transport remain open. |
-| LIB-018 | P0; preceding unchanged-core failure at `concat_bytes`, line 1126 | Source-declared byte concatenation builtin, typed byte/string/array operands and exact rejection rules | PA8 builtin expansion + PA31 source identity / PA31 complete providers, plus PA8 where independently expressible | C | Separately qualified source `a3d7dc49` passes 1,464 private, eighteen frontend and 48 native cases, with 256 independent observations. The unchanged-core probe reaches LIB-019. Integration/release and foreign/scoped source builtin coverage remain pending. |
-| LIB-019 | P0; current unchanged-core failure at `autodiff_forward`, line 1553 | Source attribute macro identity, declaration/import kinds and genuine invocation semantics | PA31 source compiler bindings; PA38 actual procedural/attribute execution / PA31 declaration/import controls, PA38 execution | C | All 45 frozen source/tool language predictions match independent rustc across both editions: 268 observations and 44 native programs. Twelve diagnostic-phrase mismatches are retained. Typed bang/attribute dispatch and actual parsed-owner lookup pass fresh static checks; runtime qualification is in progress. No empty expansion is permitted. |
+| LIB-018 | P0; preceding unchanged-core failure at `concat_bytes`, line 1126 | Source-declared byte concatenation builtin, typed byte/string/array operands and exact rejection rules | PA8 builtin expansion + PA31 source identity / PA31 complete providers, plus PA8 where independently expressible | C | Local typed operand/source identity contracts pass combined ca54609a release/native and performance qualification. The same CLI original core reaches LIB-019. Foreign macro transport and wider source contracts remain required. |
+| LIB-019 | P0; current unchanged-core failure at `autodiff_forward`, line 1553 | Source attribute macro identity, declaration/import kinds and genuine invocation semantics | PA31 source compiler bindings; PA38 actual procedural/attribute execution / PA31 declaration/import controls, PA38 execution | C | Merged unqualified candidate `2af76aec` includes typed Bang/Attribute lookup and real consumer drafts for must_use/inline/Test and trait markers. Independent observations are preserved; fresh static/runtime and reviewed warning oracles remain required. Mixed hard-error plus warning transport is explicitly incomplete, not silently dropped from parity claims. |
+| LIB-020 | P0; stricter original-root failure at `lib.rs:65` | Actual rustc_coherence_is_core and primitive inherent implementation policy, lookup and coherence | PA31 binding + PA19/20 language/index; PA29 transport / PA31 source reproductions plus applicable earlier controls | Integrator | Source investigation and 44 predeclared independent cases only. Reuse typed structural heads and nominal fast path, retain complete Self/conditions; crate name or known attribute spelling grants no authority. |
+| LIB-021 | P0; active original crate policy at `lib.rs:66` | rustc_preserve_ub_checks and actual UB-check intrinsic/runtime/CTFE behavior | PA28 operations + PA25 CTFE + PA31 policy + PA29 transport / PA31 complete source providers | B, coordinated with C/A | No current UB-check source intrinsic/folding path. Provisional typed operation/profile/metadata proposal and 13 native policy predictions are frozen, not executed. Distinguish CTFE returning true, producer code and deferred consumer specialization; CPPGM remains unchanged. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):

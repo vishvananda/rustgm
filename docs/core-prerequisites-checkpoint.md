@@ -1,5 +1,8 @@
 # Core macro and projection prerequisites
 
+Historical qualified snapshot. The [scoped/byte successor](scoped-bytes-checkpoint.md)
+records the current integrated compiler and unchanged-source frontier.
+
 Compiler snapshot `65f20e8b` combines scoped declaration publication, cfg_select,
 literal source formatting, contextual member conformance and the shared
 projection-opening repair. Functional qualification is complete. The broad
