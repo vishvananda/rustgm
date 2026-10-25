@@ -75,3 +75,12 @@ imported stage→bind→publish domain, followed by complete raw Contract/Requir
 identity and fresh original/instance region, move and loan proof. No imported
 default execution, attribute absence or UB-check policy follows from this
 checkpoint.
+
+The merged defining-environment and numbering slice passed 11 exact private
+controls, including the existing Functions codec and fresh-client proof
+regressions, under the bounded development workflow in 54.15 seconds. Formatting,
+the full content-cached file audit and private-harness strict Clippy also passed.
+Evidence: `obj/qualification/fast/1792903533112484554/`. The earlier zero-execution
+attempt used an incorrect test module path and remains retained separately.
+This integration does not activate Provided imports or claim a standard-library
+build; the next stage above remains required.
