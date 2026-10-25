@@ -1,0 +1,42 @@
+{
+  "state": "frozen syntax-only input, no semantic/execution permission",
+  "base": "31b2f913ac2ec9c8b62cf4a35fcda271ac746e0d",
+  "input_source": "6bc6820ec249710efd3a92723bcb365227f53682",
+  "inputs": {
+    "dev/src/resolve/bindings/positions.rs": "bbeba8a4a5db7a8c043d7448a776e38758a59f69c847550f9ced71a4af38dfbf",
+    "dev/src/resolve/bodies.rs": "7849ec16ed46c9069c0ad02ae8ebe5b55c3f14df27253f2a95d546ff97d1e473",
+    "dev/src/resolve/index.rs": "9a50acbd93b27095041fc6d50d3d2d961eef5a2b19ed9a098c192526e2bfec3e",
+    "dev/src/syntax/expression/items.rs": "df2e3d5f1ba233c5c11b610212e5e9b7e69ed65e765786928815c383f2e535bc",
+    "dev/src/syntax/expression/render/item.rs": "ac04e71303d6c94074ed5ee6885ca8a43fbda7d3b2091f8e5e58731d03af5f21",
+    "dev/src/syntax/item.rs": "d2e0a3c5bf56b65a6fdda5857c3f2c9673250f3434ef56be87411fd005b98ab8",
+    "dev/src/syntax/transfer.rs": "d25d1bc1b25df748a0a292dae931453b3f358196a0eecaf9e60fe1690c8f5beb",
+    "dev/src/syntax/walk.rs": "b7d1bd9adfd71033385f1b24a548cd31ceb4c1dcc2470f25c0f284d6c597e196",
+    "dev/tests/crate_syntax.rs": "4328e5b21463b103728c03060e9fc2a852feff5a5460a6e8748ab839ade55ab8"
+  },
+  "selected": [
+    "crate_syntax::trait_aliases_retain_real_bounds_parameters_and_post_bounds_where_clauses",
+    "crate_syntax::trait_alias_grammar_rejects_qualifiers_and_where_before_equals",
+    "crate_syntax::configured_aliases_keep_their_actual_disabled_children",
+    "crate_syntax::owner_grammar_controls_associated_and_external_definitions",
+    "crate_syntax::every_child_precedes_its_owner_in_typed_arenas"
+  ],
+  "reference_writes": false,
+  "total_budget_seconds": 300,
+  "const_alias_observations": [
+    {
+      "name": "const-alias-over-const-trait",
+      "source": "#![allow(dead_code,unused_imports,incomplete_features,internal_features)]\n#![feature(trait_alias,const_trait_impl)]\nconst trait A{} const trait Alias=A;fn main(){}\n",
+      "expected_status": 0
+    },
+    {
+      "name": "const-alias-over-ordinary-trait",
+      "source": "#![allow(dead_code,unused_imports,incomplete_features,internal_features)]\n#![feature(trait_alias,const_trait_impl)]\ntrait A{} const trait Alias=A;fn main(){}\n",
+      "expected_status": 0
+    },
+    {
+      "name": "const-alias-without-const-gate",
+      "source": "#![allow(dead_code,unused_imports,incomplete_features,internal_features)]\n#![feature(trait_alias)]\ntrait A{} const trait Alias=A;fn main(){}\n",
+      "expected_status": 1
+    }
+  ]
+}
