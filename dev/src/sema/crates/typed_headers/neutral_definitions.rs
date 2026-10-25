@@ -79,6 +79,18 @@ pub(super) fn signature(
     Ok(true)
 }
 impl Owner {
+    // A route hint only: cached_numbered still authenticates every seal/key.
+    pub(super) fn numbered_hint(
+        &self,
+        expected: Ready,
+        work: &mut ReservationWork,
+    ) -> Result<bool, Error> {
+        work.charge(1)?;
+        Ok(
+            matches!(self.bodies.get(expected.pair.function_row as usize).and_then(Option::as_deref),
+            Some(Body::Numbered { expected: actual, .. }) if *actual == expected),
+        )
+    }
     pub(super) fn finish_numbered(
         &self,
         port: &ports::Inputs<'_, '_>,

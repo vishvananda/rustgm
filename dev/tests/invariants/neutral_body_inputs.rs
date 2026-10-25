@@ -52,6 +52,7 @@ pub(in super::super) fn controls(
     blocked()?;
     scaling()?;
     failed_prepayment()?;
+    universal_widths()?;
     Ok(())
 }
 fn positive(session: &Session, owner: DeclarationRef) -> Result {
@@ -332,5 +333,43 @@ fn failed_prepayment() -> Result {
     let before = work.steps;
     assert!(session.defining_environment(owner, &mut work).is_err());
     assert!(work.steps > before && work.peak > crate::support::crates::MAX_BYTES);
+    Ok(())
+}
+
+fn universal_widths() -> Result {
+    let mut common = None;
+    for width in [1, 8, 32] {
+        let mut source = String::from("trait Holder<V>{fn carry<U>(value:U)->U{value}fn borrow(");
+        for index in 0..width {
+            if index != 0 {
+                source.push(',');
+            }
+            write!(source, "value{index}:&V")?;
+        }
+        source.push_str("){}}");
+        let mut work = ReservationWork::default();
+        let inherited::Case {
+            session,
+            contracts: _contracts,
+            ..
+        } = inherited::start(&source, &mut work)?;
+        let owner = named(&session, "borrow")?;
+        let session = inherited::ready(session.defining_environment(owner, &mut work)?)?;
+        assert_eq!(
+            entry(&session, owner)?.0.header.regions.total as usize,
+            width
+        );
+        let (session, cost) = warm(session, owner, &mut work)?;
+        if let Some(previous) = common {
+            assert_eq!(cost, previous);
+        } else {
+            common = Some(cost);
+        }
+        eprintln!(
+            "neutral universals={width} warm1000={cost} owner_bytes={} peak={}",
+            inherited::environment(&session)?.retained_bytes(),
+            work.peak
+        );
+    }
     Ok(())
 }

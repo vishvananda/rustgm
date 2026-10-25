@@ -332,7 +332,18 @@ impl Prepared {
                 error("private defining demand lacks its actual prepared named callable")
             })?;
         self.require(&view, &facts.types, owner, expected.pair, work)?;
-        let (_, origin) = body_origin(rows, expected, work)?;
+        let numbered = expected.header.regions.total != 0
+            && self
+                .environments
+                .as_deref()
+                .map(|owner| owner.numbered_hint(expected, work))
+                .transpose()?
+                .unwrap_or(false);
+        let origin = if numbered {
+            Some(Origin::Numbered)
+        } else {
+            body_origin(rows, expected, work)?.1
+        };
         let Some(origin) = origin else {
             return Ok(Demand::Blocked(Dependency::OwnedBodyDomain(
                 expected.pair.body.ok_or_else(|| {
