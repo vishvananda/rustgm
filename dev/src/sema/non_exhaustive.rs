@@ -179,6 +179,20 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
                         "non_exhaustive attribute requires word form without arguments or an unsafe wrapper",
                     ));
                 }
+                if matches!(
+                    unit.configured.ast.node(node).kind,
+                    Kind::FieldDefinition { .. }
+                ) {
+                    facts.must_use_diagnostic(
+                        report,
+                        owner_key,
+                        attribute.span.start,
+                        0,
+                        WarningCode::UnusedAttributes,
+                        "non_exhaustive attribute cannot be used on struct fields".into(),
+                    )?;
+                    continue;
+                }
                 let role = target(unit, node).map_err(error)?;
                 retain(
                     report,

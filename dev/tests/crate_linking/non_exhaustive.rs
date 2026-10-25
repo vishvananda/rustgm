@@ -45,7 +45,6 @@ fn non_exhaustive_owners_forms_duplicates_and_unknown_attributes_stay_checked() 
         "wrong-function",
         "wrong-union",
         "wrong-trait",
-        "wrong-field",
         "wrong-crate",
     ] {
         let report = crate::resolve::resolve(&source(name)?, true)?;
@@ -59,6 +58,37 @@ fn non_exhaustive_owners_forms_duplicates_and_unknown_attributes_stay_checked() 
             "{name}: {error}"
         );
     }
+    let report = crate::resolve::resolve(&source("wrong-field")?, true)?;
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    let warnings: Vec<_> = analysis.facts.warnings().collect();
+    assert_eq!(warnings.len(), 1);
+    assert_eq!(warnings[0].code.name(), "unused_attributes");
+    assert_eq!(
+        warnings[0].diagnostic.message,
+        "non_exhaustive attribute cannot be used on struct fields"
+    );
+    let record = report
+        .resolution
+        .definitions
+        .iter()
+        .find(|definition| report.package.names.get(definition.name) == "S")
+        .and_then(|definition| definition.node)
+        .ok_or("missing actual field owner type")?;
+    assert!(
+        analysis
+            .facts
+            .non_exhaustive_contract(&report, record)?
+            .is_none()
+    );
+    let report = crate::resolve::resolve(&source("wrong-field-deny")?, true)?;
+    let error = rustgm::pipeline::analyze_source(&report)
+        .err()
+        .ok_or("denied field annotation accepted")?;
+    assert!(
+        error
+            .to_string()
+            .contains("non_exhaustive attribute cannot be used on struct fields")
+    );
     for name in [
         "empty-list",
         "argument-list",

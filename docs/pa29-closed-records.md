@@ -36,6 +36,8 @@ enum or enum-variant owner, retaining source-bound facts for export checks.
 Its defining-crate construction and matching behavior is ordinary Rust. The
 record exporter consumes those facts and keeps the same explicit profile
 rejection; it does not publish an artifact lacking the foreign contract.
+The pinned compiler diagnoses a field annotation through `unused_attributes`
+at its default warning level. That annotation does not mark its enclosing type.
 
 The source inventory declares two providers, nine accepted clients and six
 language rejections, plus ten Rust-positive profile boundaries. The two
