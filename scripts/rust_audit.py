@@ -2,6 +2,10 @@
 """Rust syntax-aware companion to cppgm_file_audit.pl (tree-sitter 0.25)."""
 import argparse
 from collections import defaultdict
+from contextlib import redirect_stdout
+import hashlib
+from importlib.metadata import version
+import io
 import json
 from pathlib import Path
 import re
@@ -156,15 +160,46 @@ def inspect_file(path, root, roles):
     return errors, normalized
 
 
-def audit(root):
+def audit(root, cache_path=None):
     role_path = root / "scripts/rust-module-roles.json"
     roles = json.loads(role_path.read_text()) if role_path.exists() else {}
+    signature = hashlib.sha256(Path(__file__).read_bytes() + json.dumps(roles, sort_keys=True).encode()
+                               + version("tree-sitter").encode()
+                               + version("tree-sitter-rust").encode()).hexdigest()
+    cached = {}
+    if cache_path is not None:
+        try:
+            document = json.loads(cache_path.read_text())
+            if document.get("signature") == signature:
+                cached = document["files"]
+                if not isinstance(cached, dict):
+                    cached = {}
+        except (OSError, ValueError, KeyError, AttributeError):
+            pass
+    updated = {}
+    parsed = 0
     files = sorted((root / "dev").rglob("*.rs"))
     errors = []
     windows = {}
     stems = defaultdict(list)
     for path in files:
-        problems, normalized = inspect_file(path, root, roles)
+        relative = path.relative_to(root).as_posix()
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        entry = cached.get(relative)
+        if not (isinstance(entry, dict) and entry.get("sha256") == digest
+                and all(isinstance(entry.get(key), list)
+                        and all(isinstance(row, str) for row in entry[key])
+                        for key in ("problems", "normalized"))
+                and isinstance(entry.get("warnings"), str)):
+            warnings = io.StringIO()
+            with redirect_stdout(warnings):
+                problems, normalized = inspect_file(path, root, roles)
+            entry = {"sha256": digest, "problems": problems, "normalized": normalized,
+                     "warnings": warnings.getvalue()}
+            parsed += 1
+        print(entry["warnings"], end="")
+        problems, normalized = entry["problems"], entry["normalized"]
+        updated[relative] = entry
         errors.extend(f"{path.relative_to(root)}: {problem}" for problem in problems)
         stems[re.split(r"[_-]", path.stem)[0]].append(path)
         for offset in range(max(0, len(normalized) - 27)):
@@ -185,10 +220,18 @@ def audit(root):
     for error in errors:
         print(error)
     print(f"Rust file audit: {len(files)} files; {len(errors)} findings")
+    if cache_path is not None:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = cache_path.with_suffix(".tmp")
+        temporary.write_text(json.dumps({"signature": signature, "files": updated}))
+        temporary.replace(cache_path)
+        print(f"Audit cache: parsed {parsed}; reused {len(files) - parsed}")
     return not errors
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    sys.exit(0 if audit(parser.parse_args().root.resolve()) else 1)
+    parser.add_argument("--cache", type=Path, help="content-addressed local cache; global checks still run")
+    args = parser.parse_args()
+    sys.exit(0 if audit(args.root.resolve(), args.cache) else 1)

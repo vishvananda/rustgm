@@ -38,6 +38,13 @@ mem_forget = "deny"
 [profile.release]
 debug = 1
 
+# Keep one reusable, bounded cache for the development feedback loop.
+[profile.dev-fast]
+inherits = "dev"
+debug = 0
+incremental = true
+codegen-units = 256
+
 [[test]]
 name = "suite_frontend"
 path = "tests/suites/frontend/mod.rs"

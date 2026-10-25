@@ -32,8 +32,10 @@ Current lanes:
 - Integrator: combined qualification/main pushes and real primitive inherent
   coherence. Keep CPPGM and upstream sources unchanged.
 
-Each new private binary runs its full nonignored inventory once, with required
-names and captured outputs. Schema 2 remains active. Select each absolute cap
+Development validation uses `make fastcheck` with exact affected controls and
+captured outputs within five minutes. A new private binary does not require a
+full inventory run. Long qualification runs in scheduled/manual CI. Schema 2
+remains active. Select each absolute cap
 from actual usage plus build headroom and admit work only when the unchanged
 150 GiB reserve permits. Keep all successful disposable outputs scoped and
 clean them between native targets; retain failure diagnostics and input hashes.
@@ -264,15 +266,18 @@ active text suites as a candidate regression check when the checkpoint is cohere
 Coordinate full suites and broad performance matrices with the integrator.
 Do not mutate the source while a build or qualification is running.
 
-Use all-target strict Clippy before code generation to catch type/lint failures
-in both new tests and production code. A separate `cargo check` normally repeats
-that work. Settle related test edits first, then use debug focused tests, batching
-suite and exact private selections with `scripts/maintainer_suites.py batch`.
+Use `make fastcheck FAST_ARGS='SUITE --lib-case full::test::path'`. It supplies
+the resource guard, fails immediately on unavailable capacity, uses a bounded
+incremental `dev-fast` cache and runs strict Clippy for the selected compilation
+modes (including CLI for integration/text selections). Do not duplicate this with `cargo check`, full private inventories or
+all-target builds. Keep each batch below five minutes; partition unrelated
+target groups instead of extending the deadline. Native controls are explicit
+`--ignored` selections with declared `--prune-under obj/OUTPUT` roots. The
+default output cap is 16 GiB; pass a larger justified absolute cap when retained
+outputs require it, never reduce a refused cap just to obtain admission.
 Keep release code generation for optimization-sensitive checks, performance and
-the combined integration checkpoint. Workers do not each repeat the full release
-suite; the integrator runs it once against the merged candidate. Local
-`make test-maintainer` includes regular and native tests in the same release
-build and performs one cleanup scan. Existing successful independent observations
+periodic CI qualification. Neither workers nor the integrator repeat the full
+release/native sweep before each development push. Existing independent observations
 can be cited for identical frozen inputs/toolchain/profile; candidate execution
 and candidate-specific proofs must still be checked after integration. Do not
 turn an object-only rustc observation into executable or runtime qualification.
@@ -288,5 +293,6 @@ Commit coherent checkpoints locally and report commit/source hashes, exact
 passed/failed/pending checks, evidence locations, interface changes and remaining
 boundaries. No worker pushes branches/main, changes assignment activation,
 auto-blesses outputs or hand-edits references. The integrator runs the required
-combined release checks before publishing to main. A resource interruption is
+focused integration checks before publishing to main; scheduled/manual CI owns
+the full qualification. A resource interruption is
 an infrastructure failure, never a language rejection or passing test.

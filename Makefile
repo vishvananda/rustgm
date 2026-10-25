@@ -11,6 +11,13 @@ REF_TEST_APP ?= $(ROOT)/dev/rustgm-ref
 .PHONY: all test test-debug test-debug-invariants test-maintainer test-report ref-test lint setup-audit audit-rust test-harness test-backend test-native test-maintainer-native test-layouts test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-layouts perf-body-ir perf-ownership perf-lowir clean tidy tidy-build check-space
 all:
 	$(PYTHON) scripts/storage.py run --no-prune -- $(CARGO) build --manifest-path dev/Cargo.toml --release --locked
+.PHONY: fastcheck
+# Example: make fastcheck FAST_ARGS='lexer --lib-case full::private::test'
+fastcheck:
+	$(PYTHON) scripts/fastcheck.py $(FAST_ARGS)
+.PHONY: tidy-archive
+tidy-archive:
+	$(PYTHON) scripts/resources.py run --wait-seconds 0 $(ARCHIVE_RESOURCE_ARGS) -- $(PYTHON) scripts/archive_scratch.py $(ARCHIVE_ARGS)
 test:
 	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked --no-fail-fast
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
