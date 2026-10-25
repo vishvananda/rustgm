@@ -168,7 +168,9 @@ impl<'a, S: Sources> Loader<'a, S> {
         let implicit_prelude = !unit
             .word_attribute(Some(root_node), "no_implicit_prelude")
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?
-            && source.is_none();
+            && source
+                .as_deref()
+                .is_none_or(|source| !source.owns_bindings());
         let mut loader = Self {
             package: Package {
                 marks: crate::expand::marks::Marks::default(),

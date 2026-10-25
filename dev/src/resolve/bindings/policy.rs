@@ -154,7 +154,13 @@ pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prep
             ));
         }
         return Ok(Prepared {
-            source: None,
+            source: if features.has(Feature::InternalMacroAllowance) {
+                Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
+                    unit, features,
+                )?)))
+            } else {
+                None
+            },
             library,
             macros,
         });

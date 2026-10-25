@@ -4,6 +4,7 @@ mod allowances;
 mod annotations;
 mod claim_tokens;
 mod client;
+mod macro_context;
 pub(in crate::resolve) mod panic_contracts;
 pub(super) mod policy;
 mod positions;
@@ -19,6 +20,7 @@ use crate::support::{
 pub(super) use admission::validate as validate_features;
 pub use allowances::{FeatureName, KnownFeature};
 pub use client::SourceClient;
+use macro_context::LocalMacros;
 pub(super) use reservations::finish;
 pub use reservations::{Declaration, IntrinsicDeclaration, Reservations};
 pub(crate) use role_attributes::{HeaderAttribute, HeaderAttributes};
@@ -28,6 +30,7 @@ use std::sync::Arc;
 pub(in crate::resolve) enum Source {
     Core(SourceCore),
     Client(SourceClient),
+    LocalMacros(LocalMacros),
 }
 
 /// Driver-independent source selection, fixed before expansion or ordinary lookup.
@@ -48,20 +51,20 @@ pub struct SourceCore {
 impl super::package::Package {
     #[must_use]
     pub fn uses_source_bindings(&self) -> bool {
-        self.source.is_some()
+        self.source.as_deref().is_some_and(Source::owns_bindings)
     }
     /// Only the actual provider may claim local language declarations.
     #[must_use]
     pub fn source_core(&self) -> Option<&SourceCore> {
         match self.source.as_deref()? {
             Source::Core(source) => Some(source),
-            Source::Client(_) => None,
+            Source::Client(_) | Source::LocalMacros(_) => None,
         }
     }
     #[must_use]
     pub fn source_client(&self) -> Option<&SourceClient> {
         match self.source.as_deref()? {
-            Source::Core(_) => None,
+            Source::Core(_) | Source::LocalMacros(_) => None,
             Source::Client(source) => Some(source),
         }
     }
@@ -69,6 +72,7 @@ impl super::package::Package {
         Some(match self.source.as_deref()? {
             Source::Core(source) => &source.features,
             Source::Client(source) => &source.features,
+            Source::LocalMacros(_) => return None,
         })
     }
     pub(crate) fn permits_source_negative_impls(&self) -> bool {
