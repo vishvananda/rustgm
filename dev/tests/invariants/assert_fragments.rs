@@ -9,7 +9,7 @@ use crate::{
     },
     syntax::ast::{MacroContext, NodeId},
 };
-pub(super) fn relocated_and_forwarded() -> Result {
+fn capture() -> std::result::Result<(&'static str, Registry, Stream), LexError> {
     let source = "macro_rules! outer {($x:expr)=>{actual!($x)}} fn f(){outer!(1 + 2 == 4);}";
     let mut report = session::analyze(source, &Config::default())?;
     let mut call = report.invocations.remove(0);
@@ -40,6 +40,11 @@ pub(super) fn relocated_and_forwarded() -> Result {
         &call.input,
     )?;
     assert_eq!(registry.len(), 1);
+    Ok((source, registry, stream))
+}
+
+pub(super) fn relocated_and_forwarded() -> Result {
+    let (source, registry, stream) = capture()?;
     let view = registry.view(|id| (id == FileId(0)).then_some(source));
     let parsed = fragment::parse_expansion_with_inputs(
         &stream.source,
