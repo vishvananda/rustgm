@@ -64,6 +64,20 @@ impl Stage {
             if function.definition != definition {
                 return Err("source function header index names another declaration");
             }
+            if facts.target_feature_functions.contains(&definition)
+                || facts
+                    .foreign
+                    .as_deref()
+                    .and_then(|registry| registry.function(definition))
+                    .is_some_and(|function| {
+                        function.naming != crate::support::linkage::Naming::Rust
+                            || function.linkage != crate::support::linkage::Linkage::Internal
+                    })
+            {
+                return Err(
+                    "source named/foreign/target-feature function metadata requires its wider profile",
+                );
+            }
             let declaration = self.declaration(definition)?;
             self.function(report, facts, function, declaration)?;
             count = count
@@ -127,10 +141,17 @@ impl Stage {
             .associated
             .owner(function.definition)
             .and_then(|owner| facts.associated.get(owner))
-            .map(|owner| match owner.kind {
-                OwnerKind::Trait { definition, .. } => definition,
-                OwnerKind::Impl { .. } => owner.self_definition,
+            .map(|owner| {
+                let owner = owner.source_owner()?;
+                match owner.kind {
+                    OwnerKind::Trait { definition, .. } => Ok(definition),
+                    OwnerKind::Impl { .. } => Ok(owner.self_definition),
+                    OwnerKind::ImportedImpl(_) => {
+                        Err("source function cannot acquire imported syntax ownership")
+                    }
+                }
             })
+            .transpose()?
             .map(|owner| self.declaration(owner))
             .transpose()?;
         let header = s::FunctionHeader {

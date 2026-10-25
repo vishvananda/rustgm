@@ -12,10 +12,11 @@ impl Stage {
                 .owner(actual.owner)
                 .and_then(|owner| facts.associated.get(owner))
                 .ok_or("source implementation has no actual associated owner")?;
-            if owner.self_definition != actual.owner || owner.source != actual.source {
+            let owner = owner.source_owner()?;
+            if owner.self_definition != actual.owner || Some(owner.source) != actual.source {
                 return Err("source implementation changed its defining Self or source owner");
             }
-            self.implementation(facts, owner, actual.predicate, &actual.methods)?;
+            self.implementation(facts, &owner, actual.predicate, &actual.methods)?;
             if !actual.types.is_empty() || !actual.constants.is_empty() {
                 return Err(
                     "source associated type/value implementation transport is not implemented",
@@ -42,7 +43,7 @@ impl Stage {
     fn implementation(
         &mut self,
         facts: &Declarations,
-        owner: &crate::sema::associated::Owner,
+        owner: &crate::sema::associated::SourceOwner,
         predicate: Predicate,
         methods: &[(DefId, Option<DefId>)],
     ) -> Result<(), &'static str> {

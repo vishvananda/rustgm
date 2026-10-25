@@ -27,6 +27,37 @@ pub(crate) struct Original {
     pub contract: Contract,
 }
 impl Original {
+    /// Raw imported equality precedes every ephemeral caller-local transfer.
+    pub(crate) fn prepare_imported(
+        facts: &mut Declarations,
+        body: &crate::body::ir::Body,
+        contract: &Contract,
+    ) -> Result<Contract, String> {
+        if body.instance.is_some() || body.source.source().is_some() {
+            return Err("imported proof input requires its immutable original".into());
+        }
+        Self::validate_parts_charged(facts, body, contract)?;
+        if facts
+            .constant_work
+            .template_bytes
+            .saturating_add(contract.retained_bytes())
+            > 64 * 1024 * 1024
+        {
+            return Err("imported original proof input exceeds aggregate storage budget".into());
+        }
+        let mut prepared = contract.clone();
+        crate::body::copy_requirements::prepare(facts, body, &mut prepared)?;
+        prepared.prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)?;
+        if facts
+            .constant_work
+            .template_bytes
+            .saturating_add(prepared.retained_bytes())
+            > 64 * 1024 * 1024
+        {
+            return Err("imported original proof input exceeds aggregate storage budget".into());
+        }
+        Ok(prepared)
+    }
     pub fn validate(&self, facts: &Declarations) -> Result<(), &'static str> {
         Self::validate_parts(facts, &self.template.body, &self.contract)?;
         if let Owner::Function { definition, .. } = self.template.body.owner
@@ -44,11 +75,41 @@ impl Original {
         body: &crate::body::ir::Body,
         contract: &Contract,
     ) -> Result<(), &'static str> {
+        Self::validate_parts_counted(facts, body, contract, &mut 0)
+    }
+    pub(super) fn validate_parts_charged(
+        facts: &mut Declarations,
+        body: &crate::body::ir::Body,
+        contract: &Contract,
+    ) -> Result<(), &'static str> {
+        let mut steps = 0;
+        let result = Self::validate_parts_counted(facts, body, contract, &mut steps);
+        facts.body_work.canonical_steps = facts
+            .body_work
+            .canonical_steps
+            .checked_add(steps)
+            .ok_or("original input validation work counter overflow")?;
+        if steps > crate::support::crates::MAX_COMPONENTS {
+            return Err("original input validation work budget exceeded");
+        }
+        result
+    }
+    fn validate_parts_counted(
+        facts: &Declarations,
+        body: &crate::body::ir::Body,
+        contract: &Contract,
+        steps: &mut usize,
+    ) -> Result<(), &'static str> {
         if body.instance.is_some() || contract.key != body.key() || contract.source != body.source {
             return Err("original component contract belongs to another body");
         }
         if body.source.source().is_none() {
-            return Self::validate_imported_parts(facts, body, contract);
+            if crate::body::transported_originals::validate_source_parts(
+                facts, body, contract, steps,
+            )? {
+                return Ok(());
+            }
+            return Self::validate_legacy_imported_parts(facts, body, contract);
         }
         let source = body
             .source
@@ -124,7 +185,7 @@ impl Original {
         }
         Ok(())
     }
-    fn validate_imported_parts(
+    fn validate_legacy_imported_parts(
         facts: &Declarations,
         body: &crate::body::ir::Body,
         contract: &Contract,
@@ -327,6 +388,7 @@ impl Originals {
         Ok(crate::borrow::templates::Contexts {
             bodies: Templates::source(self.contexts),
             source,
+            imported: None,
         })
     }
 }

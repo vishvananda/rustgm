@@ -202,6 +202,7 @@ fn context_parents_prove_originals_without_entering_runtime_lookup() -> Result {
     let contexts = crate::borrow::templates::Contexts {
         bodies: Templates::source(component.templates.bodies[1..].to_vec()),
         source: Vec::new(),
+        imported: None,
     };
     let inputs = crate::body::regions::Contracts {
         bodies: component.contracts.clone(),
@@ -263,6 +264,7 @@ fn context_parents_prove_originals_without_entering_runtime_lookup() -> Result {
     let mut duplicated = crate::borrow::templates::Contexts {
         bodies: Templates::source(contexts.bodies.bodies.clone()),
         source: Vec::new(),
+        imported: None,
     };
     duplicated.bodies.bodies.push(templates.bodies[0].clone());
     assert!(
@@ -315,6 +317,7 @@ fn source_and_provider_component_debts_are_both_mandatory() -> Result {
         let mut contexts = crate::borrow::templates::Contexts {
             bodies: Templates::source(component.templates.bodies[1..].to_vec()),
             source: component.contracts.clone(),
+            imported: None,
         };
         let mut inputs = crate::body::regions::Contracts {
             bodies: component.contracts.clone(),

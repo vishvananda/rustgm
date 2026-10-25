@@ -74,19 +74,20 @@ pub(super) fn function(
     );
     headers.charge(allocation.visits)?;
     headers.observed.include(allocation);
-    headers.observed.add(2 * size_of::<usize>());
+    headers.observed.add(4 * size_of::<usize>());
     headers.observed.vector(&inputs);
     headers.observed.vector(&formals.parameters);
     let signature = canonical[function.original.0 as usize];
     let callable = canonical[function.callable.0 as usize];
     let header = Header {
         declaration: origin,
-        body,
+        body: Some(body),
         signature,
         callable,
         environment,
-        inputs,
+        inputs: Arc::from(inputs),
         declared: function.declared_clauses as usize,
+        universals: 0,
         constant: function.constant,
     };
     let g::Declaration::Function { identity, .. } =

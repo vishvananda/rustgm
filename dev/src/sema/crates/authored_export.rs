@@ -173,6 +173,11 @@ impl Stage {
         if report.package.library_policy().is_some() {
             return Err("source stability contracts are outside this metadata profile");
         }
+        if report.resolution.bindings.has_contextual_items()
+            || report.package.marks.context_count() != 1
+        {
+            return Err("source macro/semantic-name provenance metadata is not implemented");
+        }
         facts
             .source_bindings
             .as_deref()
@@ -248,6 +253,14 @@ impl Stage {
 
     fn declarations(&mut self, report: &Report, facts: &Declarations) -> Result<(), &'static str> {
         let mut owners = scope_owners(report, facts, self)?;
+        let root = report
+            .resolution
+            .crate_root
+            .ok_or("source provider has no actual root")?;
+        let provider = report
+            .package
+            .source_core()
+            .ok_or("source provider policy disappeared")?;
         self.reserve(
             report
                 .resolution
@@ -288,7 +301,13 @@ impl Stage {
             } else {
                 0
             };
-            let name = report.package.names.get(definition.name);
+            // The resolver names its exact root `crate`; its external module
+            // spelling belongs to the authenticated artifact identity.
+            let name = if id == root {
+                provider.provider.name()
+            } else {
+                report.package.names.get(definition.name)
+            };
             self.reserve(4 * size_of::<s::Declaration>() + name.len())?;
             let row = DeclarationRef(
                 u32::try_from(self.rows.declarations.len())
@@ -369,9 +388,13 @@ fn scope_owners(
     }
     for owner in facts.associated.owners() {
         stage.charge(1)?;
+        let owner = owner.source_owner()?;
         let definition = match owner.kind {
             OwnerKind::Trait { definition, .. } => definition,
             OwnerKind::Impl { .. } => owner.self_definition,
+            OwnerKind::ImportedImpl(_) => {
+                return Err("source export cannot acquire an imported syntax owner");
+            }
         };
         let module = report.resolution.scopes
             [report.resolution.definitions[definition.0 as usize].scope.0 as usize]

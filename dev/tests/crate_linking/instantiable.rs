@@ -21,8 +21,8 @@ fn provider() -> Result<crates::Interface> {
     let payload = interface
         .generic_payload()
         .ok_or("generic original export was omitted")?;
-    assert_eq!(payload.rows().functions.len(), 1);
-    assert_eq!(payload.rows().parameters.len(), 1);
+    assert_eq!(payload.legacy_rows()?.functions.len(), 1);
+    assert_eq!(payload.legacy_rows()?.parameters.len(), 1);
     assert!(interface.functions().is_empty());
     let encoded = crates::encode(&interface)?;
     let decoded = crates::decode(&encoded)?;

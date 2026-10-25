@@ -161,12 +161,13 @@ fn generated_trait_owners_keep_module_and_source_identities()
     for owner in inventory.owners() {
         if let OwnerKind::Trait { definition, .. } = owner.kind {
             let declaration = &report.resolution.definitions[definition.0 as usize];
-            assert_eq!(declaration.node, Some(owner.source));
+            let source = owner.source.ok_or("generated trait lost its real source")?;
+            assert_eq!(declaration.node, Some(source));
             assert_eq!(
                 inventory.owner(definition),
                 inventory.owner(owner.self_definition)
             );
-            traits.push((definition, owner.source));
+            traits.push((definition, source));
         }
     }
     assert_eq!(traits.len(), 2);

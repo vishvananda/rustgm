@@ -7,6 +7,7 @@ pub(in crate::sema) mod equalities;
 pub(super) mod formation;
 pub(super) mod heads;
 pub(super) mod implementations;
+pub(in crate::sema) mod inherited_inputs;
 pub(super) mod object_bounds;
 pub(super) mod obligations;
 pub(super) mod results;
@@ -26,9 +27,8 @@ use std::sync::Arc;
 
 pub(super) struct Header {
     pub self_type: TypeId,
-    pub self_bounds: crate::support::hash::HashSet<crate::resolve::unit::NodeKey>,
     pub parameters: Vec<Parameter>,
-    pub predicates: Vec<Located>,
+    pub inputs: inherited_inputs::HeaderInputs,
     pub results: Vec<(ItemId, Located)>,
     pub regions: Vec<crate::types::outlives::Pair>,
 }
@@ -41,7 +41,24 @@ impl Header {
         store: &Store,
         predicate: &Located,
     ) -> Result<bool, &'static str> {
-        if !self.self_bounds.contains(&predicate.source) {
+        self.source_inputs()?;
+        self.implies_input(store, 0, predicate.into())
+    }
+    pub(in crate::sema) fn source_inputs(&self) -> Result<&inherited_inputs::Source, &'static str> {
+        self.inputs.source_ref()
+    }
+    pub(in crate::sema) fn source_inputs_mut(
+        &mut self,
+    ) -> Result<&mut inherited_inputs::Source, &'static str> {
+        self.inputs.source_mut()
+    }
+    pub(in crate::sema) fn implies_input(
+        &self,
+        store: &Store,
+        index: usize,
+        predicate: crate::sema::declaration_inputs::Input,
+    ) -> Result<bool, &'static str> {
+        if !self.inputs.is_self(index, predicate)? {
             return Ok(false);
         }
         // Classification of the written Self subject does not open its clause.
@@ -58,8 +75,13 @@ impl Header {
         Ok(subject == self.self_type)
     }
     /// Classify only the subject identity; the caller retains the complete clause.
-    fn implies(&self, store: &Store, predicate: &Located) -> Result<bool, &'static str> {
-        if self.implies_self(store, predicate)? {
+    fn implies(
+        &self,
+        store: &Store,
+        index: usize,
+        predicate: crate::sema::declaration_inputs::Input,
+    ) -> Result<bool, &'static str> {
+        if self.implies_input(store, index, predicate)? {
             return Ok(true);
         }
         let body = match predicate.value {
@@ -101,6 +123,12 @@ pub(super) struct Contracts {
 }
 
 impl Contracts {
+    pub(in crate::sema) fn header_table_allocation(&self) -> crate::support::retained::Allocation {
+        let mut result = crate::support::retained::Allocation::default();
+        result.map(&self.headers);
+        result.vector(&self.order);
+        result
+    }
     pub(super) fn header(&self, item: ItemId) -> Option<&Header> {
         self.headers.get(&item)
     }
@@ -134,7 +162,7 @@ impl Contracts {
                         .or_default()
                         .push(predicate.value);
                 } else {
-                    header.predicates.push(predicate);
+                    header.source_inputs_mut()?.predicates.push(predicate);
                 }
             }
         }
@@ -191,7 +219,11 @@ impl Contracts {
                     .ok_or((item, "missing trait contract"))?;
                 states.insert(item, false);
                 work.push((item, true));
-                for predicate in header.predicates.iter().rev() {
+                let inputs = header.inputs.view();
+                for index in (0..inputs.len()).rev() {
+                    let predicate = inputs
+                        .get(index)
+                        .ok_or((item, "trait input prefix is incomplete"))?;
                     let value = match predicate.value {
                         Clause::Predicate(value) => value,
                         Clause::ForAll(id) => {
@@ -202,7 +234,7 @@ impl Contracts {
                         }
                     };
                     if header
-                        .implies_self(store, predicate)
+                        .implies_input(store, index, predicate)
                         .map_err(|error| (item, error))?
                         && let Some((application, _)) = value.bound.trait_parts()
                     {
@@ -241,9 +273,9 @@ impl Contracts {
         if arguments.len() != header.parameters.len() {
             return Err("trait contract argument arity mismatch");
         }
-        self.steps = self
-            .steps
-            .saturating_add(1 + arguments.len() + header.predicates.len() + header.results.len());
+        self.steps = self.steps.saturating_add(
+            1 + arguments.len() + header.inputs.view().len() + header.results.len(),
+        );
         if self.steps > 1_000_000 {
             return Err("trait contract work budget exceeded");
         }
@@ -283,10 +315,10 @@ impl Contracts {
             }
         }
         let mut replace = substitute::Bound::parameters_captured(store, &mapping, regions)?;
-        for predicate in &header.predicates {
+        for (index, predicate) in header.inputs.view().iter().enumerate() {
             let value = replace.clause(store, predicate.value)?;
             let value = effects::in_context(store, value, effect)?;
-            if header.implies(store, predicate)? {
+            if header.implies(store, index, predicate)? {
                 result.implied.push(value);
             } else {
                 result.required.push(value);

@@ -164,11 +164,9 @@ impl Checker<'_> {
         }
         self.state.method_environment.clone_from(&environment);
         self.state.prepare_parameter_queries();
-        if let Some(catalog) = self.facts.source_bindings.as_deref() {
-            let declaration = catalog
-                .validated_language(crate::support::bindings::LangItem::Copy)
-                .map_err(|e| self.error(node, e))?
-                .map(|declaration| declaration.definition);
+        if self.facts.source_bindings.is_some() {
+            let declaration = crate::sema::compiler_items::copy_declaration(self.facts)
+                .map_err(|e| self.error(node, e))?;
             let requirements = self
                 .facts
                 .generics

@@ -16,13 +16,19 @@ pub(crate) struct NeedsDropSelection {
 impl Catalog {
     /// Absence of a role is different from its incomplete implementation inventory.
     pub(crate) fn require_source_destructors_prepared(&self) -> Result<(), &'static str> {
-        let Some(declaration) = self.validated_language(LangItem::Drop)? else {
+        let Some(declaration) = self.validated_role(LangItem::Drop)? else {
             return if self.destruction_registration.is_none() {
                 Ok(())
             } else {
                 Err("source destructor registration has no actual Drop declaration")
             };
         };
+        if matches!(
+            declaration.origin,
+            crate::resolve::body_origin::DeclarationOrigin::Imported(_)
+        ) {
+            return Err("imported Drop registration requires its complete wider source profile");
+        }
         if self.destruction_registration != Some(declaration.definition) {
             return Err("source destructor registration requires exhaustive preparation");
         }
@@ -30,9 +36,15 @@ impl Catalog {
     }
     /// Only the exhaustive declaration pass publishes completion, including empty.
     pub(in crate::sema) fn complete_destructor_registration(&mut self) -> Result<(), &'static str> {
-        let Some(declaration) = self.validated_language(LangItem::Drop)? else {
+        let Some(declaration) = self.validated_role(LangItem::Drop)? else {
             return Ok(());
         };
+        if matches!(
+            declaration.origin,
+            crate::resolve::body_origin::DeclarationOrigin::Imported(_)
+        ) {
+            return Err("imported Drop registration requires its complete wider source profile");
+        }
         if self.destruction_registration.is_some() {
             return Err("source destructor registration was completed twice");
         }

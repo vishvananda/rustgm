@@ -136,7 +136,7 @@ fn generic_metadata_never_relabels_the_defining_crate_edition()
                 interface
                     .generic_payload()
                     .ok_or("missing generic original")?
-                    .rows()
+                    .legacy_rows()?
                     .edition,
                 edition
             );

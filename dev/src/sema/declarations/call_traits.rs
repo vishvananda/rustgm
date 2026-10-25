@@ -140,9 +140,11 @@ impl Checker<'_> {
             .declare_callable(definition, kind, output, origin);
         let mut header = Header {
             self_type,
-            self_bounds: crate::support::hash::HashSet::default(),
             parameters: self.facts.generics.parameters[&definition].clone(),
-            predicates: Vec::new(),
+            inputs: crate::sema::traits::inherited_inputs::HeaderInputs::source(
+                crate::support::hash::HashSet::default(),
+                Vec::new(),
+            ),
             results: Vec::new(),
             regions: Vec::new(),
         };
@@ -161,8 +163,11 @@ impl Checker<'_> {
                     arguments,
                 })
                 .map_err(|e| self.error(origin, e))?;
-            header.self_bounds.insert(origin);
-            header.predicates.push(Located {
+            let inputs = header
+                .source_inputs_mut()
+                .map_err(|e| self.error(origin, e))?;
+            inputs.self_bounds.insert(origin);
+            inputs.predicates.push(Located {
                 source: origin,
                 value: Predicate {
                     ty: self_type,

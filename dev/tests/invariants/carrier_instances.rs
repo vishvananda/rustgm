@@ -205,10 +205,7 @@ fn alias_materialization_reselects_in_a_fresh_exact_instance_environment() -> Re
         &concrete.contract,
         Some(environment),
     )?;
-    println!(
-        "instance_scope_peak_bytes={}",
-        scope.retained_bytes_for_test()
-    );
+    println!("instance_scope_peak_bytes={}", scope.retained_bytes());
     let mut reproved = concrete.contract.clone();
     concrete.prepare_source_copy(&mut facts, &concrete.body, &mut reproved)?;
     let mut raw = concrete.contract.clone();

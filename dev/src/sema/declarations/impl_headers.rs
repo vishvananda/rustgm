@@ -23,10 +23,77 @@ struct Partial {
 
 impl Checker<'_> {
     pub(super) fn reserve_implementation_candidates(&mut self) -> Result<(), Error> {
+        let mut work = 0_usize;
+        let result = self.implementation_candidates(&mut work);
+        self.facts.body_work.canonical_steps =
+            self.facts.body_work.canonical_steps.saturating_add(work);
+        let headers = result?;
+        if headers.is_empty() {
+            return Ok(());
+        }
+        self.facts
+            .generics
+            .implementations
+            .get_or_insert_with(Default::default)
+            .reserve(headers)
+            .map_err(Error::unlocated)?;
+        self.facts
+            .generics
+            .implementations
+            .as_mut()
+            .ok_or_else(|| Error::unlocated("missing reserved implementation inventory"))?
+            .register_collection_heads(self.report)
+            .map_err(Error::unlocated)?;
+        self.prepare_imported_candidates()
+    }
+
+    fn implementation_candidates(
+        &self,
+        imported_work: &mut usize,
+    ) -> Result<Vec<crate::sema::traits::implementations::PendingHeader>, Error> {
         use crate::sema::{associated::OwnerKind, traits::implementations::PendingHeader};
         let mut headers = Vec::new();
         let mut heads = super::heads::Heads::new(self.report, &self.facts);
-        for owner in self.facts.associated.owners() {
+        for index in 0..self.facts.associated.owners().len() {
+            let actual = self.facts.associated.owners()[index];
+            if matches!(actual.kind, OwnerKind::ImportedImpl(_)) {
+                *imported_work = imported_work.saturating_add(1);
+                let predicate = self
+                    .facts
+                    .associated
+                    .imported_impl_request(actual)
+                    .map_err(Error::unlocated)?;
+                let Some((application, _)) = predicate.bound.trait_parts() else {
+                    return Err(Error::unlocated(
+                        "imported candidate lacks its actual trait application",
+                    ));
+                };
+                let application =
+                    self.facts
+                        .types
+                        .trait_application(application)
+                        .ok_or_else(|| {
+                            Error::unlocated("imported candidate lost its full trait arguments")
+                        })?;
+                let kind = self.facts.types.kind(predicate.ty).ok_or_else(|| {
+                    Error::unlocated("imported candidate lacks its actual Self type")
+                })?;
+                headers.push(PendingHeader {
+                    owner: actual.self_definition,
+                    item: application.item.into(),
+                    head: (!matches!(kind, crate::types::Kind::Parameter(_)))
+                        .then_some(crate::sema::traits::heads::Head::canonical(kind)),
+                });
+                continue;
+            }
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             let OwnerKind::Impl {
                 target,
                 trait_type: Some(path),
@@ -49,28 +116,58 @@ impl Checker<'_> {
             });
         }
         self.library_implementation_headers(&mut headers)?;
-        if headers.is_empty() {
-            return Ok(());
-        }
-        self.facts
-            .generics
-            .implementations
-            .get_or_insert_with(Default::default)
-            .reserve(headers)
-            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
-        self.facts
-            .generics
-            .implementations
-            .as_mut()
-            .ok_or_else(|| {
-                Error::at(
-                    crate::resolve::unit::FileId(0),
-                    0,
-                    "missing reserved implementation inventory",
+        Ok(headers)
+    }
+
+    fn prepare_imported_candidates(&mut self) -> Result<(), Error> {
+        use crate::sema::{associated::OwnerKind, traits::implementations::Implementation};
+        let facts = &mut self.facts;
+        for &owner in facts.associated.owners() {
+            if !matches!(owner.kind, OwnerKind::ImportedImpl(_)) {
+                continue;
+            }
+            facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
+            let predicate = facts
+                .associated
+                .imported_impl_request(owner)
+                .map_err(Error::unlocated)?;
+            let Some((application, _)) = predicate.bound.trait_parts() else {
+                return Err(Error::unlocated(
+                    "imported candidate lacks its actual full application",
+                ));
+            };
+            let identity = facts
+                .types
+                .trait_application(application)
+                .ok_or_else(|| {
+                    Error::unlocated("imported candidate lost its actual trait identity")
+                })?
+                .item
+                .into();
+            facts
+                .generics
+                .implementations
+                .as_mut()
+                .ok_or_else(|| {
+                    Error::unlocated("imported candidates lack their reserved registry")
+                })?
+                .prepare_imported(
+                    &mut facts.types,
+                    &facts.associated,
+                    identity,
+                    owner,
+                    Implementation {
+                        owner: owner.self_definition,
+                        source: None,
+                        predicate,
+                        methods: Vec::new(),
+                        types: Vec::new(),
+                        constants: Vec::new(),
+                    },
                 )
-            })?
-            .register_collection_heads(self.report)
-            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))
+                .map_err(Error::unlocated)?;
+        }
+        Ok(())
     }
 
     fn library_implementation_headers(

@@ -26,10 +26,10 @@ fn header(
     })?;
     Ok(Implementation {
         owner: DefId(ordinal + 10),
-        source: NodeKey {
+        source: Some(NodeKey {
             file: FileId(0),
             node: NodeId::new(ordinal),
-        },
+        }),
         predicate: Predicate {
             ty: TypeId::primitive(Primitive::U8),
             bound: Bound::Trait(application),
@@ -405,7 +405,13 @@ fn unavailable_negative_header_preserves_polarity_and_normal_completion()
         },
     )?;
     let arena = facts.types.arena_identity();
-    registry.mark_early_unavailable(&facts.types, &arena, definition, source, predicate)?;
+    registry.mark_early_unavailable(
+        &facts.types,
+        &arena,
+        definition,
+        source.ok_or("actual source header")?,
+        predicate,
+    )?;
     assert!(registry.early_unavailable(&facts.types, definition)?);
     assert!(!registry.is_validated(definition));
     assert!(matches!(

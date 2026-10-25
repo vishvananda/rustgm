@@ -1,5 +1,5 @@
 //! Convert retained operation rows directly; source text is never reconstructed.
-mod lexical;
+pub(super) mod lexical;
 use super::ImportedOriginals;
 use crate::types::TypeId;
 use crate::{
@@ -13,20 +13,42 @@ use crate::{
     resolve::{body_origin::Catalog, crates::Imported},
     support::crates::{CrateIdentity, generics as g},
 };
-pub(super) fn allocation(raw: &g::Original) -> usize {
-    raw.arguments
+pub(super) fn allocation(record: &g::Original) -> usize {
+    record
+        .arguments
         .len()
         .saturating_mul(size_of::<ValueId>())
         .saturating_add(
-            raw.locals
+            record
+                .locals
                 .len()
                 .saturating_mul(size_of::<Local>())
-                .saturating_add(raw.values.len().saturating_mul(size_of::<Value>()))
-                .saturating_add(raw.statements.len().saturating_mul(size_of::<Statement>()))
-                .saturating_add(raw.blocks.len().saturating_mul(size_of::<Block>()))
-                .saturating_add(raw.scopes.len().saturating_mul(size_of::<storage::Scope>()))
-                .saturating_add(raw.exits.len().saturating_mul(size_of::<storage::Exit>()))
-                .saturating_add(raw.temporaries.len().saturating_mul(size_of::<Temporary>())),
+                .saturating_add(record.values.len().saturating_mul(size_of::<Value>()))
+                .saturating_add(
+                    record
+                        .statements
+                        .len()
+                        .saturating_mul(size_of::<Statement>()),
+                )
+                .saturating_add(record.blocks.len().saturating_mul(size_of::<Block>()))
+                .saturating_add(
+                    record
+                        .scopes
+                        .len()
+                        .saturating_mul(size_of::<storage::Scope>()),
+                )
+                .saturating_add(
+                    record
+                        .exits
+                        .len()
+                        .saturating_mul(size_of::<storage::Exit>()),
+                )
+                .saturating_add(
+                    record
+                        .temporaries
+                        .len()
+                        .saturating_mul(size_of::<Temporary>()),
+                ),
         )
 }
 pub(super) struct Context<'a> {
@@ -38,13 +60,13 @@ pub(super) struct Context<'a> {
 }
 pub(super) fn build(
     context: &Context<'_>,
-    raw: &g::Original,
+    record: &g::Original,
     definition: DefId,
     signature: TypeId,
     constant: bool,
     work: &mut ImportedOriginals,
 ) -> Result<Body, &'static str> {
-    let id = context.imported.generic_body(context.owner, raw.body)?;
+    let id = context.imported.generic_body(context.owner, record.body)?;
     let source = context.catalog.origin(id)?;
     context
         .catalog
@@ -56,55 +78,48 @@ pub(super) fn build(
             execution: None,
         },
         source,
-        context.types[raw.result.0 as usize],
+        context.types[record.result.0 as usize],
     );
     body.const_context = constant;
     let site = |index| context.catalog.site(id, index);
     work.charge(
-        raw.locals
+        record
+            .locals
             .len()
-            .saturating_add(raw.values.len())
-            .saturating_add(raw.statements.len())
-            .saturating_add(raw.blocks.len())
-            .saturating_add(raw.scopes.len())
-            .saturating_add(raw.exits.len())
-            .saturating_add(raw.temporaries.len())
-            .saturating_add(raw.arguments.len()),
+            .saturating_add(record.values.len())
+            .saturating_add(record.statements.len())
+            .saturating_add(record.blocks.len())
+            .saturating_add(record.scopes.len())
+            .saturating_add(record.exits.len())
+            .saturating_add(record.temporaries.len())
+            .saturating_add(record.arguments.len()),
     )?;
-    ports(context, raw, &mut body, &site)?;
-    control(raw, &mut body, &site)?;
-    lexical::fill(raw, &mut body, &site)?;
+    ports(context, record, &mut body, &site)?;
+    control(record, &mut body, &site)?;
+    lexical::fill(record, &mut body, &site)?;
     Ok(body)
 }
 fn ports(
     context: &Context<'_>,
-    raw: &g::Original,
+    record: &g::Original,
     body: &mut Body,
     site: &impl Fn(u32) -> Result<BodySite, &'static str>,
 ) -> Result<(), &'static str> {
-    body.locals = raw
-        .locals
-        .iter()
-        .map(|local| {
-            Ok(Local {
-                scope: scopes::Id(local.scope),
-                storage_parent: local.storage_parent.map(LocalId),
-                ty: context.types[local.ty.0 as usize],
-                kind: match local.kind {
-                    g::LocalKind::Parameter(index) => LocalKind::Parameter(index),
-                    g::LocalKind::Binding => LocalKind::Binding,
-                    g::LocalKind::Merge => LocalKind::Merge,
-                },
-                definition: local
-                    .definition
-                    .map(|d| context.imported.generic_definition(context.owner, d))
-                    .transpose()?,
-                mutable: local.mutable,
-                source: site(local.site)?,
-            })
+    body.locals = locals(&record.locals, |local| {
+        Ok(LocalData {
+            ty: context
+                .types
+                .get(local.ty.0 as usize)
+                .copied()
+                .ok_or("imported local type is outside its actual graph")?,
+            definition: local
+                .definition
+                .map(|d| context.imported.generic_definition(context.owner, d))
+                .transpose()?,
+            source: site(local.site)?,
         })
-        .collect::<Result<_, &'static str>>()?;
-    body.values = raw
+    })?;
+    body.values = record
         .values
         .iter()
         .map(|value| {
@@ -137,15 +152,44 @@ fn ports(
             })
         })
         .collect::<Result<_, &'static str>>()?;
-    body.arguments = raw.arguments.iter().copied().map(ValueId).collect();
+    body.arguments = record.arguments.iter().copied().map(ValueId).collect();
     Ok(())
 }
+pub(super) struct LocalData {
+    pub ty: TypeId,
+    pub definition: Option<DefId>,
+    pub source: BodySite,
+}
+pub(super) fn locals(
+    record: &[g::Local],
+    mut data: impl FnMut(&g::Local) -> Result<LocalData, &'static str>,
+) -> Result<Vec<Local>, &'static str> {
+    record
+        .iter()
+        .map(|local| {
+            let data = data(local)?;
+            Ok(Local {
+                scope: scopes::Id(local.scope),
+                storage_parent: local.storage_parent.map(LocalId),
+                ty: data.ty,
+                kind: match local.kind {
+                    g::LocalKind::Parameter(index) => LocalKind::Parameter(index),
+                    g::LocalKind::Binding => LocalKind::Binding,
+                    g::LocalKind::Merge => LocalKind::Merge,
+                },
+                definition: data.definition,
+                mutable: local.mutable,
+                source: data.source,
+            })
+        })
+        .collect()
+}
 fn control(
-    raw: &g::Original,
+    record: &g::Original,
     body: &mut Body,
     site: &impl Fn(u32) -> Result<BodySite, &'static str>,
 ) -> Result<(), &'static str> {
-    body.statements = raw
+    body.statements = record
         .statements
         .iter()
         .map(|s| {
@@ -171,8 +215,14 @@ fn control(
             })
         })
         .collect::<Result<_, &'static str>>()?;
-    body.blocks = raw
-        .blocks
+    body.blocks = blocks(&record.blocks, &mut |index| site(index))?;
+    Ok(())
+}
+pub(super) fn blocks(
+    record: &[g::Block],
+    site: &mut impl FnMut(u32) -> Result<BodySite, &'static str>,
+) -> Result<Vec<Block>, &'static str> {
+    record
         .iter()
         .map(|block| {
             Ok(Block {
@@ -186,6 +236,5 @@ fn control(
                 },
             })
         })
-        .collect::<Result<_, &'static str>>()?;
-    Ok(())
+        .collect::<Result<_, &'static str>>()
 }

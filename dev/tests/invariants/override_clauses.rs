@@ -19,6 +19,27 @@ use crate::{
 use std::path::Path;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const METHODS: &str = "trait Api{fn f<T>();}impl Api for u8{fn f<T>(){}}";
+const _: [(); 12] = [(); size_of::<super::Method>()];
+
+#[test]
+fn method_view_preserves_source_contract_and_rejects_imported_authority() -> Result {
+    let mut fixture = Fixture::new(METHODS)?;
+    let method = super::Method::source(&fixture.facts, fixture.expected);
+    assert_eq!(method.definition, fixture.expected.definition);
+    assert_eq!(method.signature, fixture.expected.signature);
+    assert_eq!(method.written_signature, fixture.expected.signature);
+    assert!(fixture.expected.body.is_none());
+    let before = fixture.facts.body_work.canonical_steps;
+    let error = super::Method::imported(&mut fixture.facts, fixture.expected.definition)
+        .err()
+        .ok_or("source method acquired imported authority")?;
+    assert_eq!(
+        error,
+        "imported conformance cannot replace an actual source method"
+    );
+    assert_eq!(fixture.facts.body_work.canonical_steps, before + 1);
+    fixture.valid(true)
+}
 struct NoFiles;
 impl Sources for NoFiles {
     fn read(&mut self, _: &Path) -> std::result::Result<Option<InputFile>, String> {

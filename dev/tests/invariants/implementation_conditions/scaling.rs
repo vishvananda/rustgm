@@ -22,7 +22,8 @@ fn install(
         .implementations()
         .find(|header| header.owner == owner)
         .ok_or("missing scaling implementation")?
-        .source;
+        .source
+        .ok_or("source scaling fixture requires an actual source implementation")?;
     facts.generics.predicates.insert(
         owner,
         clauses

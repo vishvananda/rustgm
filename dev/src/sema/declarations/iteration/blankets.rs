@@ -105,7 +105,7 @@ impl Checker<'_> {
                 ItemId(owner.definition.0),
                 Implementation {
                     owner: declaration.definition,
-                    source,
+                    source: Some(source),
                     predicate,
                     methods: Vec::new(),
                     types: Vec::new(),

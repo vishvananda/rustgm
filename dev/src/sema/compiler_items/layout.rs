@@ -40,9 +40,15 @@ pub(in crate::sema) fn validate_member(
         .owner(definition)
         .and_then(|owner| facts.associated.get(owner))
         .ok_or_else(|| error("source layout member has no actual associated owner"))?;
+    let owner = owner.source_owner().map_err(error)?;
     let actual_parent = match owner.kind {
         crate::sema::associated::OwnerKind::Trait { definition, .. } => definition,
         crate::sema::associated::OwnerKind::Impl { .. } => owner.self_definition,
+        crate::sema::associated::OwnerKind::ImportedImpl(_) => {
+            return Err(error(
+                "source layout member cannot use an imported syntax owner",
+            ));
+        }
     };
     if parent != actual_parent
         || report

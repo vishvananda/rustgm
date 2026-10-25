@@ -80,7 +80,9 @@ fn flags() -> Flags {
 fn source_role_views_borrow_complete_actual_owner_vectors_and_bodyless_methods() -> Result {
     let (report, facts) = prepare()?;
     let declaration = role_declaration(&facts, LangItem::Clone)?;
-    let header = Trait::source(&report, &facts, declaration)?;
+    let mut steps = 0;
+    let header = Trait::current(&report, &facts, declaration.into(), &mut steps)?;
+    assert!(steps > 0);
     header.profile(&facts.types, flags(), 0)?;
     assert_eq!(header.origin.source(), Some(declaration.origin));
     let owner = facts
@@ -305,5 +307,91 @@ fn neutral_role_views_do_not_grow_dense_owners_or_allocate_import_catalogs() -> 
         size_of::<crate::types::parameters::predicates::Predicate>(),
         size_of::<crate::body::ir::Value>()
     );
+    Ok(())
+}
+
+#[test]
+fn sizing_hierarchy_rejects_wrong_canonical_self_key_and_actual_supertrait() -> Result {
+    use crate::types::parameters::predicates::Predicate;
+    let (report, mut facts) = prepare()?;
+    let meta = role_declaration(&facts, LangItem::MetaSized)?;
+    let sized = role_declaration(&facts, LangItem::Sized)?;
+    {
+        let (other, other_definition) = {
+            let header = Trait::source(&report, &facts, sized)?;
+            (header.self_type, header.self_definition)
+        };
+        let mut header = Trait::source(&report, &facts, meta)?;
+        assert_eq!(header.canonical_inputs(&facts)?.len(), 1);
+        header.self_type = other;
+        header.self_definition = other_definition;
+        assert_eq!(
+            header.canonical_inputs(&facts).err(),
+            Some("source role canonical header has a different actual Self identity")
+        );
+        let mut header = Trait::source(&report, &facts, meta)?;
+        header.definition = sized.definition;
+        assert!(header.canonical_inputs(&facts).is_err());
+    }
+    let actual = facts
+        .generics
+        .traits
+        .as_deref()
+        .and_then(|traits| traits.header(ItemId(meta.definition.0)))
+        .ok_or("actual MetaSized canonical header")?;
+    let self_type = actual.self_type;
+    let predicates = actual.source_inputs()?.predicates.clone();
+    let subjects = actual.source_inputs()?.self_bounds.clone();
+    let parameters = actual.parameters.clone();
+    let regions = actual.regions.clone();
+    let wrong_bound = facts
+        .generics
+        .trait_self_bounds
+        .get(&sized.definition)
+        .ok_or("actual Sized application")?
+        .bound;
+    for missing in [false, true] {
+        let mut inputs = predicates.clone();
+        if missing {
+            inputs.clear();
+        } else {
+            let input = inputs.first_mut().ok_or("actual supertrait input")?;
+            input.value = Predicate {
+                ty: self_type,
+                bound: wrong_bound,
+            }
+            .into();
+        }
+        let mut contracts = crate::sema::traits::Contracts::default();
+        contracts.declare(
+            ItemId(meta.definition.0),
+            crate::sema::traits::Header {
+                self_type,
+                parameters: parameters.clone(),
+                inputs: crate::sema::traits::inherited_inputs::HeaderInputs::source(
+                    subjects.clone(),
+                    inputs,
+                ),
+                results: Vec::new(),
+                regions: regions.clone(),
+            },
+        )?;
+        facts.generics.traits = Some(Box::new(contracts));
+        let header = Trait::source(&report, &facts, meta)?;
+        let catalog = facts
+            .source_bindings
+            .as_deref()
+            .ok_or("actual source role catalog")?;
+        assert!(
+            crate::sema::compiler_items::sizing::hierarchy(
+                &facts,
+                catalog,
+                LangItem::MetaSized,
+                meta.definition,
+                &header
+            )
+            .is_err()
+        );
+    }
     Ok(())
 }

@@ -1,7 +1,11 @@
 //! Canonical imported headers retain actual catalog ownership and declared inputs.
 mod applications;
 mod ingest;
+pub(super) mod mapped_source;
+pub(in crate::sema) mod predicate_remap;
 mod roots;
+mod staged_headers;
+mod staged_ingest;
 use super::{Declarations, Error};
 use crate::{
     resolve::{
@@ -23,26 +27,28 @@ mod tests;
 
 pub(super) struct Header {
     pub declaration: DeclarationOrigin,
-    pub body: BodyOrigin,
+    pub body: Option<BodyOrigin>,
     pub signature: TypeId,
     pub callable: TypeId,
     pub environment: Arc<Environment>,
-    pub inputs: Vec<Input>,
+    pub inputs: Arc<[Input]>,
     pub declared: usize,
+    pub universals: u32,
     pub constant: bool,
 }
 #[derive(Default)]
-pub(super) struct Headers {
+pub(in crate::sema) struct Headers {
     entries: HashMap<DefId, Header>,
     graphs: HashMap<CrateIdentity, Vec<TypeId>>,
     applications: HashMap<CrateIdentity, Vec<applications::Application>>,
+    source: Option<std::rc::Rc<mapped_source::Graph>>,
     bytes: usize,
     work: usize,
     base: usize,
     observed: crate::support::retained::Allocation,
 }
 impl Headers {
-    fn reserve(&mut self, growth: usize) -> Result<(), Error> {
+    pub(in crate::sema) fn reserve(&mut self, growth: usize) -> Result<(), Error> {
         self.bytes = self.bytes.saturating_add(growth);
         if self.bytes.saturating_add(self.base) > crate::support::crates::MAX_BYTES {
             return Err(error(
@@ -74,7 +80,7 @@ impl Headers {
             >(1));
         self.reserve(growth)
     }
-    fn charge(&mut self, count: usize) -> Result<(), Error> {
+    pub(in crate::sema) fn charge(&mut self, count: usize) -> Result<(), Error> {
         self.work = self.work.saturating_add(count);
         if self.work > crate::support::crates::MAX_COMPONENTS {
             return Err(error("imported generic header work budget exceeded"));
@@ -105,6 +111,38 @@ impl Headers {
     }
 }
 impl super::Linkage {
+    pub(in crate::sema) fn require_original_store(
+        &self,
+        store: &crate::types::Store,
+    ) -> Result<(), &'static str> {
+        if let Some(graph) = self
+            .originals
+            .as_deref()
+            .and_then(|headers| headers.source.as_deref())
+        {
+            graph.require_store(store)?;
+        }
+        Ok(())
+    }
+    pub(in crate::sema) fn require_source_method(
+        &self,
+        definition: DefId,
+        scheme: &crate::sema::lifetimes::FunctionRegions,
+        steps: &mut usize,
+    ) -> Result<(), &'static str> {
+        *steps = steps.saturating_add(1);
+        self.original_header(definition)?
+            .ok_or("source method lost its actual completed original header")?;
+        let graph = self
+            .originals
+            .as_deref()
+            .and_then(|h| h.source.as_deref())
+            .ok_or("source method lacks its authenticated canonical owner graph")?;
+        let catalog = self
+            .origin_catalog()
+            .ok_or("source method lacks its actual catalog")?;
+        graph.require_method_regions(catalog, definition, scheme, steps)
+    }
     pub(crate) fn original_work(&self) -> Option<(usize, usize, usize, usize)> {
         self.originals
             .as_ref()
@@ -140,12 +178,25 @@ impl super::Linkage {
             definition,
             crate::resolve::model::DefKind::Function,
         )?;
-        catalog.validate_function_origin(definition, header.body)?;
+        let source = self
+            .originals
+            .as_deref()
+            .and_then(|h| h.source.as_deref())
+            .map(|source| source.function(catalog, definition, header.body, header.universals))
+            .transpose()?
+            .unwrap_or(false);
+        if !source {
+            if let Some(body) = header.body {
+                catalog.validate_function_origin(definition, body)?;
+            } else {
+                return Err("imported required method lacks its authenticated source header");
+            }
+        }
         Ok(Some(FunctionHeader {
             declaration: header.declaration,
-            body: Some(header.body),
+            body: header.body,
             signature: header.signature,
-            universals: 0,
+            universals: header.universals,
             environment: Some(&header.environment),
         }))
     }
@@ -170,7 +221,15 @@ impl super::Linkage {
         declared: bool,
     ) -> Result<&[Input], &'static str> {
         let Some(header) = self.originals.as_deref().and_then(|h| h.get(definition)) else {
-            return Ok(&[]);
+            let Some(source) = self.originals.as_deref().and_then(|h| h.source.as_deref()) else {
+                return Ok(&[]);
+            };
+            let catalog = self
+                .origin_catalog()
+                .ok_or("source declaration inputs lack their actual catalog")?;
+            return Ok(source
+                .declaration_inputs(catalog, definition, declared)?
+                .unwrap_or(&[]));
         };
         self.original_header(definition)?
             .ok_or("imported input header disappeared")?;
@@ -181,7 +240,131 @@ impl super::Linkage {
         })
     }
 }
-pub(super) fn import(imported: &Imported, facts: &mut Declarations) -> Result<(), Error> {
+pub(crate) fn is_source_original(
+    facts: &Declarations,
+    definition: DefId,
+    steps: &mut usize,
+) -> Result<bool, &'static str> {
+    *steps = steps.saturating_add(1);
+    let Some(linkage) = facts.crates.as_deref() else {
+        return Ok(false);
+    };
+    let Some(graph) = linkage
+        .originals
+        .as_deref()
+        .and_then(|headers| headers.source.as_deref())
+    else {
+        return Ok(false);
+    };
+    graph.require_store(&facts.types)?;
+    let catalog = linkage
+        .origin_catalog()
+        .ok_or("source classification lacks its actual catalog")?;
+    graph.owns_original(catalog, definition, steps)
+}
+
+pub(crate) fn source_original<'a>(
+    facts: &'a Declarations,
+    definition: DefId,
+    steps: &mut usize,
+) -> Result<Option<mapped_source::SourceOriginal<'a>>, &'static str> {
+    let Some(linkage) = facts.crates.as_deref() else {
+        return Ok(None);
+    };
+    let Some(headers) = linkage.originals.as_deref() else {
+        return Ok(None);
+    };
+    let Some(graph) = headers.source.as_deref() else {
+        return Ok(None);
+    };
+    *steps = steps.saturating_add(1);
+    let catalog = linkage
+        .origin_catalog()
+        .ok_or("source original lacks its actual current catalog")?;
+    graph.source_original(catalog, facts, headers, definition, steps)
+}
+
+pub(in crate::sema) fn source_trait_header<'a>(
+    facts: &'a Declarations,
+    role: crate::sema::compiler_items::Role,
+    steps: &mut usize,
+) -> Result<crate::sema::compiler_items::headers::Trait<'a>, &'static str> {
+    *steps = steps.saturating_add(1);
+    let linkage = facts
+        .crates
+        .as_deref()
+        .ok_or("imported trait lacks actual linkage")?;
+    let graph = linkage
+        .originals
+        .as_deref()
+        .and_then(|h| h.source.as_deref())
+        .ok_or("imported trait requires its actual canonical source graph")?;
+    let catalog = linkage
+        .origin_catalog()
+        .ok_or("imported trait lacks its actual catalog")?;
+    graph.trait_header(catalog, facts, role, steps)
+}
+
+pub(in crate::sema) fn charge_source_headers(
+    facts: &mut Declarations,
+    steps: usize,
+    bytes: usize,
+) -> Result<(), Error> {
+    let headers = facts
+        .crates
+        .as_deref_mut()
+        .and_then(|l| l.originals.as_deref_mut())
+        .ok_or_else(|| error("source validation lacks its installed header budget"))?;
+    if headers.source.is_none() {
+        return Err(error(
+            "source validation cannot use legacy header authority",
+        ));
+    }
+    headers.charge(steps)?;
+    headers.reserve(bytes)?;
+    headers.observed.add(bytes);
+    Ok(())
+}
+
+/// Charge attempted classification at its mutable caller, including rejection.
+pub(in crate::sema) fn source_readiness(
+    facts: &mut Declarations,
+    definition: DefId,
+) -> Result<Option<mapped_source::Readiness>, Error> {
+    let mut steps = 0;
+    let result = (|| {
+        let Some(linkage) = facts.crates.as_deref() else {
+            return Ok(None);
+        };
+        let Some(headers) = linkage.originals.as_deref() else {
+            return Ok(None);
+        };
+        let Some(graph) = headers.source.as_deref() else {
+            return Ok(None);
+        };
+        steps += 1;
+        let catalog = linkage
+            .origin_catalog()
+            .ok_or("source readiness lacks its actual semantic catalog")?;
+        graph
+            .readiness(catalog, facts, headers, definition, &mut steps)
+            .map(Some)
+    })();
+    if let Some(headers) = facts
+        .crates
+        .as_deref_mut()
+        .and_then(|l| l.originals.as_deref_mut())
+    {
+        headers.charge(steps)?;
+    }
+    result.map_err(error)
+}
+
+pub(super) fn import(
+    report: &crate::resolve::expansion::Report,
+    imported: &Imported,
+    facts: &mut Declarations,
+) -> Result<(), Error> {
     if !imported
         .dependencies()
         .artifacts()
@@ -190,6 +373,20 @@ pub(super) fn import(imported: &Imported, facts: &mut Declarations) -> Result<()
     {
         return Ok(());
     }
+    if imported.dependencies().artifacts().iter().any(|artifact| {
+        artifact.generic_payload().is_some_and(|payload| {
+            matches!(
+                payload.view(),
+                crate::support::crates::generics::PayloadView::Source(_)
+            )
+        })
+    }) {
+        return staged_ingest::import(report, imported, facts);
+    }
+    import_legacy(imported, facts)
+}
+
+fn import_legacy(imported: &Imported, facts: &mut Declarations) -> Result<(), Error> {
     if facts.uses_source_copy() {
         return Err(error(
             "generic row version zero cannot import into a source language-role provider",
@@ -217,7 +414,7 @@ pub(super) fn import(imported: &Imported, facts: &mut Declarations) -> Result<()
         let Some(payload) = artifact.generic_payload() else {
             continue;
         };
-        let rows = payload.rows();
+        let rows = payload.legacy_rows().map_err(error)?;
         headers.prepare(rows)?;
         let mut types = roots::import(imported, facts, artifact.identity(), rows, &mut headers)?;
         for function in &rows.functions {

@@ -302,8 +302,8 @@ pub(in crate::sema) fn prepare_outlives(facts: &mut Declarations) -> Result<(), 
     let mut inherited = false;
     if let Some(contracts) = &facts.generics.traits {
         for (_, header) in contracts.headers() {
-            for predicate in &header.predicates {
-                if header.implies_self(&facts.types, predicate)? {
+            for (index, predicate) in header.inputs.view().iter().enumerate() {
+                if header.implies_input(&facts.types, index, predicate)? {
                     inherited |= predicate.value.is_outlives(&facts.types)?;
                 }
             }

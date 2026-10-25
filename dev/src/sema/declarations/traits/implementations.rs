@@ -4,6 +4,7 @@ mod copying;
 mod methods;
 mod negative;
 mod orphans;
+mod portable_impls;
 mod readiness;
 pub(in crate::sema::declarations) use readiness::Readiness;
 mod coercions;
@@ -41,7 +42,14 @@ impl Checker<'_> {
         limit: usize,
     ) -> Result<(), Error> {
         for index in 0..self.facts.associated.owners().len() {
-            let owner = self.facts.associated.owners()[index];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             if matches!(
                 owner.kind,
                 OwnerKind::Impl {
@@ -71,38 +79,14 @@ impl Checker<'_> {
 
     pub(in crate::sema::declarations) fn validate_trait_header(
         &mut self,
-        owner: crate::sema::associated::Owner,
+        owner: crate::sema::associated::SourceOwner,
         path: NodeKey,
         unsafe_: bool,
         negative: bool,
     ) -> Result<(), Error> {
         self.validate_impl_polarity_profile(owner.source, negative)?;
         let (path, definition) = self.resolved_impl_trait_path(path)?;
-        if self
-            .facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.language(crate::support::bindings::LangItem::Freeze))
-            .is_some_and(|role| role.definition == definition)
-            && !self.report.package.permits_source_freeze_impls()
-        {
-            return Err(self.error(
-                owner.source,
-                "explicit source Freeze implementations require freeze_impls",
-            ));
-        }
-        if self
-            .report
-            .resolution
-            .source_bindings
-            .as_deref()
-            .is_some_and(|bindings| bindings.denies_implementation(definition))
-        {
-            return Err(self.error(
-                owner.source,
-                "explicit implementation is prohibited by its source trait declaration",
-            ));
-        }
+        self.validate_source_impl_policy(owner.source, definition)?;
         let trait_unsafe = self.impl_trait_safety(path, definition)?;
         if if negative {
             unsafe_
@@ -173,7 +157,7 @@ impl Checker<'_> {
 
     pub(in crate::sema::declarations) fn publish_trait_header(
         &mut self,
-        owner: crate::sema::associated::Owner,
+        owner: crate::sema::associated::SourceOwner,
         path: NodeKey,
         ty: crate::types::TypeId,
         context: super::super::regions::Context,
@@ -222,10 +206,10 @@ impl Checker<'_> {
                 &mut self.facts.types,
                 &self.facts.associated,
                 identity,
-                owner,
+                owner.into(),
                 Implementation {
                     owner: owner.self_definition,
-                    source: owner.source,
+                    source: Some(owner.source),
                     predicate,
                     methods: Vec::new(),
                     types: Vec::new(),
@@ -233,6 +217,56 @@ impl Checker<'_> {
                 },
             )
             .map_err(|e| self.error(owner.source, e))
+    }
+
+    fn validate_source_impl_policy(
+        &mut self,
+        source: NodeKey,
+        definition: DefId,
+    ) -> Result<(), Error> {
+        if self
+            .facts
+            .source_bindings
+            .as_deref()
+            .and_then(|catalog| catalog.language(crate::support::bindings::LangItem::Freeze))
+            .is_some_and(|role| role.definition == definition)
+            && !self.report.package.permits_source_freeze_impls()
+        {
+            return Err(self.error(
+                source,
+                "explicit source Freeze implementations require freeze_impls",
+            ));
+        }
+        let prohibited = self
+            .report
+            .resolution
+            .source_bindings
+            .as_deref()
+            .is_some_and(|bindings| bindings.denies_implementation(definition));
+        let imported_prohibited = if self.facts.uses_source_copy()
+            && self
+                .report
+                .resolution
+                .definitions
+                .get(definition.0 as usize)
+                .is_none_or(|declaration| declaration.node.is_none())
+        {
+            self.facts.body_work.canonical_steps =
+                self.facts.body_work.canonical_steps.saturating_add(1);
+            self.facts
+                .associated
+                .imported_denies_implementation(definition)
+                .map_err(|e| self.error(source, e))?
+        } else {
+            false
+        };
+        if prohibited || imported_prohibited {
+            return Err(self.error(
+                source,
+                "explicit implementation is prohibited by its source trait declaration",
+            ));
+        }
+        Ok(())
     }
 
     fn impl_trait_safety(&self, path: NodeKey, definition: DefId) -> Result<bool, Error> {

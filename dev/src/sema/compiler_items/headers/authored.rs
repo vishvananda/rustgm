@@ -8,6 +8,34 @@ use crate::{
 };
 
 impl<'a> Trait<'a> {
+    pub(in crate::sema) fn current(
+        report: &Report,
+        facts: &'a Declarations,
+        role: crate::sema::compiler_items::Role,
+        steps: &mut usize,
+    ) -> Result<Self, &'static str> {
+        *steps = steps.saturating_add(1);
+        facts
+            .source_bindings
+            .as_deref()
+            .ok_or("role header lacks its actual declaration catalog")?
+            .require_provider_report(report)?;
+        match role.origin {
+            crate::resolve::body_origin::DeclarationOrigin::Source(origin) => Self::source(
+                report,
+                facts,
+                Declaration {
+                    definition: role.definition,
+                    parent: role.parent,
+                    origin,
+                },
+            ),
+            crate::resolve::body_origin::DeclarationOrigin::Imported(_) => {
+                crate::sema::crates::source_trait_header(facts, role, steps)
+            }
+        }
+    }
+
     pub(in crate::sema) fn source(
         report: &Report,
         facts: &'a Declarations,
@@ -64,7 +92,7 @@ impl<'a> Trait<'a> {
             return Err("source trait role belongs to an implementation");
         };
         if actual != declaration.definition
-            || owner.source != declaration.origin
+            || owner.source != Some(declaration.origin)
             || (auto_, unsafe_, constant) != (written_auto, written_unsafe, written_const)
         {
             return Err("source trait owner changed its declaration");

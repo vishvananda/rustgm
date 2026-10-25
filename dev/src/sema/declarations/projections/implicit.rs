@@ -224,6 +224,12 @@ impl Checker<'_> {
             OwnerKind::Impl {
                 trait_type: None, ..
             } => None,
+            OwnerKind::ImportedImpl(_) => {
+                return Err(self.error(
+                    key,
+                    "imported associated projections require their complete wider profile",
+                ));
+            }
         }
         .ok_or_else(|| {
             self.error(

@@ -22,7 +22,7 @@ impl Engine {
         if !facts.opaques.owners.contains_key(&definition) {
             return self.prove(report, facts, template, contract, purpose);
         }
-        Original::validate_parts(facts, body, contract).map_err(identity_error)?;
+        Original::validate_parts_charged(facts, body, contract).map_err(identity_error)?;
         let regions = Self::source_regions(report, facts, body, contract)?;
         self.prove_loans(
             report,
@@ -74,7 +74,7 @@ pub(super) fn close_component(
         if !std::ptr::eq(original, template) || regions.source != body.source {
             return Err(error("defining proof belongs to another original"));
         }
-        Original::validate_parts(facts, body, contract).map_err(error)?;
+        Original::validate_parts_charged(facts, body, contract).map_err(error)?;
     }
     // A Checked family seals the CFG proofs, but does not validate declaration
     // identity. Every original pairing must pass before any head is published.

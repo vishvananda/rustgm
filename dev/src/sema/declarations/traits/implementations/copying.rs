@@ -2,7 +2,6 @@
 use super::{Checker, Error, NodeKey};
 use crate::{
     sema::nominals::Proof,
-    support::bindings::LangItem,
     types::{
         Kind, TypeId,
         parameters::predicates::{Bound, Predicate},
@@ -15,11 +14,10 @@ impl Checker<'_> {
         predicate: Predicate,
         proof: &mut Proof,
     ) -> Result<(), Error> {
-        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+        if self.facts.source_bindings.is_none() {
             return Ok(());
-        };
-        let Some(declaration) = catalog
-            .validated_language(LangItem::Copy)
+        }
+        let Some(declaration) = crate::sema::compiler_items::copy_declaration(&mut self.facts)
             .map_err(|e| self.error(source, e))?
         else {
             return Ok(());
@@ -30,7 +28,7 @@ impl Checker<'_> {
         let Some(actual) = self.facts.types.trait_application(application) else {
             return Err(self.error(source, "source Copy impl has invalid application"));
         };
-        if actual.item.0 != declaration.definition.0 {
+        if actual.item.0 != declaration.0 {
             return Ok(());
         }
         let fields = self.source_copy_fields(source, predicate.ty)?;

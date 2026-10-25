@@ -96,6 +96,27 @@ impl Interface {
         if self.atoms > MAX_COMPONENTS || self.names > MAX_NAME_BYTES {
             return Err("generic interface exceeds combined artifact budget");
         }
+        match payload.view() {
+            generics::PayloadView::Source(_) => {
+                if !self.functions.is_empty()
+                    || !self.constants.is_empty()
+                    || self.nominals.is_some()
+                    || self.storage.is_some()
+                    || self.public_names.is_some()
+                {
+                    return Err("source payload requires its complete dedicated namespace");
+                }
+            }
+            generics::PayloadView::Legacy(_) => self.check_legacy_names(&payload)?,
+        }
+        self.generic_payload = Some(Box::new(payload));
+        if let Some(names) = self.public_names.as_deref() {
+            self.check_generic_names_storage(names, false)?;
+            names.validate(&self)?;
+        }
+        Ok(self)
+    }
+    fn check_legacy_names(&self, payload: &generics::Payload) -> Result<(), &'static str> {
         let mut functions = self
             .functions
             .iter()
@@ -113,7 +134,8 @@ impl Interface {
             .flat_map(crate::support::crates::Storage::statics)
             .map(|s| s.definition().path())
             .peekable();
-        for declaration in &payload.rows().declarations {
+        let rows = payload.legacy_rows()?;
+        for declaration in &rows.declarations {
             let generics::Declaration::Function { identity, .. } = declaration else {
                 continue;
             };
@@ -124,12 +146,7 @@ impl Interface {
                 return Err("generic declaration duplicates a closed interface name");
             }
         }
-        self.generic_payload = Some(Box::new(payload));
-        if let Some(names) = self.public_names.as_deref() {
-            self.check_generic_names_storage(names, false)?;
-            names.validate(&self)?;
-        }
-        Ok(self)
+        Ok(())
     }
     #[must_use]
     pub fn generic_payload(&self) -> Option<&generics::Payload> {

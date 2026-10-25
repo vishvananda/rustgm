@@ -63,6 +63,10 @@ impl Checker<'_> {
         let types = super::super::associated_types::Members::new(self.report, &self.facts);
         let mut constants = self.constant_members.take_members(self.report, &self.facts);
         for (owner, source, predicate) in headers {
+            let Some(source) = source else {
+                self.validate_imported_trait_implementation(owner, predicate)?;
+                continue;
+            };
             self.validate_impl_owner(
                 owner,
                 source,
@@ -170,32 +174,46 @@ impl Checker<'_> {
 
     pub(super) fn validate_impl_pair(
         &mut self,
-        key: NodeKey,
+        key: Option<NodeKey>,
         first: (Predicate, DefId),
         second: (Predicate, DefId),
         steps: &mut usize,
     ) -> Result<(), Error> {
-        let (possible, work) =
-            overlap::possible(&mut self.facts, first, second).map_err(|e| self.error(key, e))?;
+        let (possible, work) = overlap::possible(&mut self.facts, first, second)
+            .map_err(|e| self.implementation_error(key, e))?;
         *steps = steps.saturating_add(work);
         let possible = if possible {
             let (possible, work) = overlap::iteration(&mut self.facts, first, second)
-                .map_err(|e| self.error(key, e))?;
+                .map_err(|e| self.implementation_error(key, e))?;
             *steps = steps.saturating_add(work);
             possible
         } else {
             false
         };
         if *steps > 1_000_000 {
-            return Err(self.error(key, "trait implementation overlap work budget exceeded"));
+            return Err(
+                self.implementation_error(key, "trait implementation overlap work budget exceeded")
+            );
         }
         if possible {
-            return Err(self.error(
+            return Err(self.implementation_error(
                 key,
                 "overlapping trait implementation headers require coherence proof",
             ));
         }
         Ok(())
+    }
+
+    pub(super) fn implementation_error(
+        &self,
+        source: Option<NodeKey>,
+        message: impl Into<String>,
+    ) -> Error {
+        if let Some(source) = source {
+            self.error(source, message)
+        } else {
+            Error::unlocated(message)
+        }
     }
 
     fn negative_impl_contract(

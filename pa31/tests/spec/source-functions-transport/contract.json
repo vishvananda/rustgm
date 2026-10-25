@@ -1,0 +1,154 @@
+{
+  "state": "predeclared hypotheses; no oracle/candidate run",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "bootstrap": true,
+    "cap_lints": "allow"
+  },
+  "source_origin": "Sizing trio copied verbatim except feature-request list from already qualified semantic-provider-qualified.rs; genuinely independent smaller Clone/Copy header declaration, not claimed original upstream Clone coverage. Every provided selected body is included.",
+  "rows": [
+    {
+      "name": "sizing-only-ordinary",
+      "entry": "sizing-only-ordinary.rs",
+      "initial_metadata": 1,
+      "initial_object": 1,
+      "competing_prediction": "Pinned Rust may classify the single move without Copy; keep any actual acceptance. Candidate currently fails missing Copy at Prepared::decision and must not bypass that policy.",
+      "sha256": "1f1b9c7b165cc8a4d55104484878e98e185bd04e9da9d9601dd342c943059d42"
+    },
+    {
+      "name": "minimal-provider",
+      "entry": "minimal-provider.rs",
+      "initial_metadata": 0,
+      "initial_object": 0,
+      "source_shape": "six ordinary traits, required clone method, two bodyless LegacyReceiver reference impls, exactly one provided ordinary generic identity; no const traits or Copy/Clone impls",
+      "sha256": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297"
+    },
+    {
+      "name": "invalid-move-provider",
+      "entry": "invalid-move-provider.rs",
+      "initial_metadata": 1,
+      "initial_object": 1,
+      "expected_diagnostic": "E0382",
+      "purpose": "same real role headers cannot pay generic Copy; second move rejects at definition",
+      "sha256": "2529c01d1b1cddd4b55688dfae05bbfb6f8d64af81e559c91997c0e1a06ad474"
+    },
+    {
+      "name": "runtime-client",
+      "entry": "runtime-client.rs",
+      "provider": "minimal-provider",
+      "initial_metadata": 0,
+      "initial_object": 0,
+      "initial_native_status": 0,
+      "initial_native_stdout": "7\n",
+      "sha256": "99553f08b7b79367da7410943e228c55e4005a69c8848dd8c90a3138df0aadbb"
+    },
+    {
+      "name": "double-move-client",
+      "entry": "double-move-client.rs",
+      "provider": "minimal-provider",
+      "initial_metadata": 1,
+      "initial_object": 1,
+      "expected_diagnostic": "E0382",
+      "competing_prediction": "If pinned Rust gives primitives builtin Copy without a user impl, retain actual acceptance and investigate the exact source-role selection rule; do not force candidate outcome.",
+      "sha256": "38838ef425b50b3f21d34ca9dc28d8f6fe779430758b2f4dcf94ef2acf3a8795"
+    }
+  ],
+  "rlib_dependency": "build minimal-provider once as a complete rlib for two clients; no consumer body/source/metadata fallback",
+  "native_driver": {
+    "entry": "native-driver.c",
+    "sha256": "ef2747a597a1edafbf706092983f268dc9f653d0f277177fd58b3eaef2e4fbcd"
+  },
+  "collection": "run all ten metadata/object observations regardless prediction failure; native only if its declared object exists; preserve every command/tool/source/output hash and raw diagnostic",
+  "candidate_expected": "minimal provider + source-free runtime client7 should use real source Copy false-selection/move fallback, without const execution, const-trait/default, intrinsic or library factory permission",
+  "status": "Independently qualified pinned Rust13 observations/native7; RustGM source functions transaction is unqualified and descriptor/publication remains disabled.",
+  "evidence": {
+    "receipt_sha256": "3aed63552c9478fc113817ef25f5d633ca66d6b3aeeb1335409d35432f8985dc",
+    "guard": "82542",
+    "cleanup": "1792833727045568732",
+    "preserved_source": "exact byte copies of the declared independent five source hypotheses; no observer/expected-outcome changes"
+  },
+  "implementation_profile": "Source2024Functions ordinary free move bodies; no name, arity, declaration/body-count special cases. Complete selected provided bodies and real required-body absence. Full semantic-provider Clone default family remains required successor.",
+  "transaction_controls": [
+    "fresh artifact-only consumer/native7",
+    "missing/foreign actual role and same-kind Self",
+    "omitted Copy query and forged paid Copy claim",
+    "wrong binder/public signature",
+    "missing/changed unused original",
+    "truncated/unknown-count/unknown-enum fields",
+    "stale/foreign catalog",
+    "late binding/catalog failure rollback",
+    "renamed/reordered/multiple ordinary functions"
+  ],
+  "successor_opponents": [
+    {
+      "entry": "ordinary-clone-const-use.rs",
+      "sha256": "8f1c6dc3679e8d546d1748ec3a28c1346bb040aca042882997053d06b5966dfd",
+      "status": "new predeclared, unexecuted; original13 observations retained unchanged",
+      "expected_metadata": 1,
+      "expected_object": 1,
+      "primary_diagnostic": "E0015",
+      "candidate_gate": "actual appended const-use failure after ordinary Clone role validation; no role-profile fallback"
+    }
+  ],
+  "successor_prerequisite_matrix": {
+    "state": "new four-observation predeclaration; unexecuted",
+    "profile": {
+      "rustc": "1.98.0",
+      "edition": "2024",
+      "target": "x86_64-unknown-linux-gnu",
+      "panic": "abort",
+      "bootstrap": "1",
+      "cap_lints": "allow"
+    },
+    "base_sha256": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297",
+    "freeze_header": "exact same #[lang = \"freeze\"] pub unsafe auto trait Freeze {} as unchanged qualified semantic-provider-qualified.rs",
+    "positive_purpose": "complete genuine Freeze prerequisite and a permitted generic const move body; no const Clone capability",
+    "rows": [
+      {
+        "name": "complete-prerequisite-provider",
+        "source": "pa31/tests/spec/source-functions-transport/ordinary-clone-freeze-provider.rs",
+        "sha256": "023b1380af920392d1ccfee631d6beceaa6c3032992af28b89fc117c47a766fb",
+        "expected_metadata": 0,
+        "expected_object": 0
+      },
+      {
+        "name": "actual-ordinary-clone-const-use",
+        "source": "pa31/tests/spec/source-functions-transport/ordinary-clone-const-use-freeze.rs",
+        "sha256": "e7ecb6a3accbf4d328f88837cb37624d738b5bae4ccbc25ee117b1be8e978212",
+        "expected_metadata": 1,
+        "expected_object": 1,
+        "primary_diagnostic": "E0015"
+      }
+    ],
+    "preserved_failed_preflight": "columns-fourth metadata/object both missing Freeze; earlier E0015 prediction remains falsified, not const-use evidence",
+    "codec_scope": "minimal-provider.rs unchanged; Freeze/const originals stay outside first Source2024Functions profile"
+  },
+  "concrete_const_use_matrix": {
+    "state": "new complete concrete four-observation predeclaration; unexecuted",
+    "rows": [
+      {
+        "name": "complete-concrete-provider",
+        "source": "pa31/tests/spec/source-functions-transport/ordinary-clone-concrete-provider.rs",
+        "sha256": "aed3deb935be1f89e7429073cc9f209e58b56a425d65b70c34df48e7a8a408a9",
+        "expected_metadata": 0,
+        "expected_object": 0
+      },
+      {
+        "name": "ordinary-concrete-const-use",
+        "source": "pa31/tests/spec/source-functions-transport/ordinary-clone-concrete-const-use.rs",
+        "sha256": "84d53456e326c46976ab6c9b1d1fbced460652bf58aeedf3c55ac4eddc1aaeb7",
+        "expected_metadata": 1,
+        "expected_object": 1,
+        "primary_diagnostic": "E0015"
+      }
+    ],
+    "preamble_origin": "byte-exact already-qualified semantic-provider-qualified.rs prefix before Clone: complete sizing, receiver, const Destruct, unsafe auto Freeze and original feature requests",
+    "qualified_source_sha256": "1eadd5e238a13743e96b14c62312b48cd4c13e67a9b521541e2aa66d70ec2eb4",
+    "intent": "ordinary u8 Clone impl returns7; positive nongeneric const literal and runtime clone use; negative appends only nongeneric const clone use. No generic const drop/alias dependency.",
+    "retained_failures": "generic missing Freeze and Freeze-only missing Destruct preflights retained; neither is const-use qualification",
+    "codec_provider": "minimal-provider.rs unchanged; no Freeze/Destruct/constant-body support added to Source2024Functions"
+  }
+}

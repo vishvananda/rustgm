@@ -7,6 +7,7 @@ pub(in crate::body) struct Original {
     source: BodyOrigin,
     environment: Arc<Environment>,
     instance: Instance,
+    arena: crate::types::arena::Identity,
 }
 
 pub(in crate::body) struct InstanceScope {
@@ -25,6 +26,7 @@ pub(in crate::body) fn capture(
     if facts.source_bindings.is_none() {
         return Ok(None);
     }
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
     let environment = contract
         .builtins
         .as_deref()
@@ -34,20 +36,66 @@ pub(in crate::body) fn capture(
         .source()
         .and_then(|source| facts.generics.builtin_requirements.get(&source))
         .and_then(|input| input.environment.as_ref());
-    if environment.is_none_or(|environment| environment.body_aliases().is_none())
-        && actual.is_none_or(|environment| environment.body_aliases().is_none())
-    {
+    let aliases = environment.is_some_and(|environment| environment.body_aliases().is_some())
+        || actual.is_some_and(|environment| environment.body_aliases().is_some());
+    let predicates = contract
+        .builtins
+        .as_deref()
+        .map_or(&[][..], |input| input.predicates.as_slice());
+    facts.body_work.canonical_steps = facts
+        .body_work
+        .canonical_steps
+        .saturating_add(predicates.len());
+    if predicates.len() > crate::support::crates::MAX_COMPONENTS {
+        return Err("instance trait scope requirement budget exceeded");
+    }
+    let traits = predicates.iter().any(|(_, goal)| {
+        matches!(
+            goal.bound,
+            crate::types::parameters::predicates::Bound::Trait(_)
+        )
+    });
+    if !aliases && !traits {
         return Ok(None);
     }
     let environment = environment
         .cloned()
         .ok_or("instance lost its original alias environment")?;
     super::carrier::check(facts, body, contract, Some(&environment))?;
+    if !aliases {
+        let crate::body::ir::Owner::Function {
+            definition,
+            signature,
+            execution: None,
+        } = body.owner
+        else {
+            return Err("ordinary trait instance scope requires its actual function original");
+        };
+        let header = facts
+            .function_header(definition)?
+            .ok_or("instance trait scope lost its original function header")?;
+        if header.signature != signature || header.universals != contract.universals {
+            return Err("instance trait scope changed its original signature or universals");
+        }
+        let current = original_environment(facts, body.key(), body.source, false)?;
+        if !Arc::ptr_eq(current, &environment) {
+            return Err("instance trait scope changed its original environment");
+        }
+    }
+    let bytes = size_of::<Original>()
+        .saturating_add(size_of::<InstanceScope>())
+        .saturating_add(crate::types::arena::Identity::allocation_bytes());
+    if facts.constant_work.template_bytes.saturating_add(bytes) > 64 * 1024 * 1024 {
+        return Err("instance source scope exceeds aggregate storage budget");
+    }
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
+    let arena = facts.types.arena_identity();
     Ok(Some(Original {
         key: body.key(),
         source: body.source,
         environment,
         instance,
+        arena,
     }))
 }
 
@@ -58,6 +106,9 @@ impl Original {
         body: &Body,
         contract: &mut Contract,
     ) -> Result<Box<InstanceScope>, &'static str> {
+        if !facts.types.has_identity(&self.arena) {
+            return Err("instance source scope belongs to another type arena");
+        }
         let signatures = body
             .owner
             .signatures()
@@ -92,24 +143,46 @@ impl Original {
             return Err("instance retained its original alias environment");
         }
         pending.environment = Some(Arc::clone(&environment));
-        Ok(Box::new(InstanceScope {
+        let scope = InstanceScope {
             original: self,
             signatures,
             universals: contract.universals,
             environment,
-        }))
+        };
+        scope.check_storage(facts)?;
+        Ok(Box::new(scope))
     }
 }
 
 impl InstanceScope {
-    #[cfg(test)]
-    pub(in crate::body) fn retained_bytes_for_test(&self) -> usize {
+    fn allocation(&self) -> crate::support::retained::Allocation {
         let mut observer = crate::types::parameters::environment::Retained::default();
-        size_of::<Self>().saturating_add(
-            self.environment
-                .retain_owned_from(&self.original.environment, &mut observer)
-                .bytes,
-        )
+        let mut allocation = self
+            .environment
+            .retain_owned_from(&self.original.environment, &mut observer);
+        allocation.add(size_of::<Self>());
+        allocation.add(crate::types::arena::Identity::allocation_bytes());
+        allocation
+    }
+    fn check_storage(&self, facts: &mut Declarations) -> Result<(), &'static str> {
+        let allocation = self.allocation();
+        facts.body_work.canonical_steps = facts
+            .body_work
+            .canonical_steps
+            .saturating_add(allocation.visits);
+        if facts
+            .constant_work
+            .template_bytes
+            .saturating_add(allocation.bytes)
+            > 64 * 1024 * 1024
+        {
+            return Err("instance source scope exceeds aggregate storage budget");
+        }
+        Ok(())
+    }
+    #[cfg(test)]
+    pub(in crate::body) fn retained_bytes(&self) -> usize {
+        self.allocation().bytes
     }
 
     pub(in crate::body) fn check(
@@ -120,12 +193,11 @@ impl InstanceScope {
         environment: Option<&Arc<Environment>>,
     ) -> Result<(), &'static str> {
         facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
-        let actual = self
-            .original
-            .source
-            .source()
-            .and_then(|source| facts.generics.builtin_requirements.get(&source))
-            .and_then(|input| input.environment.as_ref());
+        if !facts.types.has_identity(&self.original.arena) {
+            return Err("instance Copy scope belongs to another materialization or environment");
+        }
+        let aliases = self.original.environment.body_aliases().is_some();
+        let actual = original_environment(facts, self.original.key, self.original.source, aliases)?;
         if facts.source_bindings.is_none()
             || body.instance != Some(self.original.instance)
             || body.key() != self.original.key
@@ -143,7 +215,7 @@ impl InstanceScope {
             || contract.signature != Some(self.signatures.1)
             || contract.universals != self.universals
             || !contract.parameters.is_empty()
-            || actual.is_none_or(|actual| !Arc::ptr_eq(actual, &self.original.environment))
+            || !Arc::ptr_eq(actual, &self.original.environment)
             || environment.is_none_or(|actual| !Arc::ptr_eq(actual, &self.environment))
             || self.environment.body_aliases().is_some()
             || Arc::ptr_eq(&self.environment, &self.original.environment)
@@ -189,6 +261,38 @@ impl InstanceScope {
             .ok_or("rewritten instance lost its builtin inputs")?;
         Arc::make_mut(pending).environment = Some(Arc::clone(&environment));
         self.environment = environment;
-        Ok(())
+        self.check_storage(facts)
     }
+}
+
+fn original_environment(
+    facts: &Declarations,
+    key: BodyKey,
+    source: BodyOrigin,
+    aliases: bool,
+) -> Result<&Arc<Environment>, &'static str> {
+    if let Some(input) = source
+        .source()
+        .and_then(|source| facts.generics.builtin_requirements.get(&source))
+    {
+        return input
+            .environment
+            .as_ref()
+            .ok_or("instance source scope lost its actual builtin environment");
+    }
+    if aliases {
+        return Err("instance source scope lost its actual alias ledger");
+    }
+    let BodyKey::Declaration(definition) = key else {
+        return Err("nonalias trait scope requires its actual function owner");
+    };
+    let header = facts
+        .function_header(definition)?
+        .ok_or("instance source scope lost its original header")?;
+    if header.body != Some(source) {
+        return Err("instance source scope changed its actual original header");
+    }
+    header
+        .environment
+        .ok_or("instance source scope lost its original header environment")
 }

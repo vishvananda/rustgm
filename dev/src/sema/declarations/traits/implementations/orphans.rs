@@ -5,10 +5,8 @@ use crate::{
     types::{ItemId, Kind, TypeId, arguments::Argument},
 };
 
-// This is the ownership seam for future nominal metadata. The current external
-// profile transports scalar functions/constants, never nominal declarations.
-// Canonical library types are explicitly foreign; resolved source nominal IDs
-// retain their ownership through aliases, without diagnostic-source inspection.
+// Canonical library and source-free nominal declarations remain foreign.
+// A local nominal keeps its real declaration origin through aliases.
 fn local_nominal(report: &Report, item: ItemId) -> Result<bool, &'static str> {
     let definition = DefId(item.0);
     if report
@@ -27,7 +25,7 @@ fn local_nominal(report: &Report, item: ItemId) -> Result<bool, &'static str> {
     if !matches!(definition.kind, DefKind::Struct | DefKind::Enum) {
         return Err("nominal ownership requires a nominal declaration identity");
     }
-    Ok(true)
+    Ok(definition.node.is_some())
 }
 
 impl Checker<'_> {
@@ -37,17 +35,42 @@ impl Checker<'_> {
         trait_definition: DefId,
         predicate: Predicate,
     ) -> Result<(), Error> {
-        if !matches!(
-            self.report
-                .resolution
-                .builtin_traits
-                .identify(trait_definition),
-            Some(
-                BuiltinTrait::Language(_)
-                    | BuiltinTrait::Comparison(_)
-                    | BuiltinTrait::Iteration(_)
+        let imported = self
+            .report
+            .resolution
+            .definitions
+            .get(trait_definition.0 as usize)
+            .ok_or_else(|| self.error(source, "invalid implementation trait ownership identity"))?
+            .node
+            .is_none()
+            && self.facts.uses_source_copy();
+        if imported {
+            let owner = self
+                .facts
+                .associated
+                .owner(trait_definition)
+                .and_then(|id| self.facts.associated.get(id))
+                .ok_or_else(|| {
+                    self.error(source, "imported orphan check lacks its actual trait owner")
+                })?;
+            self.facts
+                .associated
+                .require_imported(*owner)
+                .map_err(|e| self.error(source, e))?;
+        }
+        if !imported
+            && !matches!(
+                self.report
+                    .resolution
+                    .builtin_traits
+                    .identify(trait_definition),
+                Some(
+                    BuiltinTrait::Language(_)
+                        | BuiltinTrait::Comparison(_)
+                        | BuiltinTrait::Iteration(_)
+                )
             )
-        ) {
+        {
             return Ok(());
         }
         let Some((application, _)) = predicate.bound.trait_parts() else {
@@ -105,13 +128,29 @@ impl Checker<'_> {
                         .types
                         .dynamic_shape(shape)
                         .ok_or_else(|| self.error(source, "invalid object ownership shape"))?;
-                    let local = shape
+                    let owner = shape
                         .principal
                         .and_then(|item| self.facts.associated.owner(DefId(item.0)))
-                        .and_then(|owner| self.facts.associated.get(owner))
-                        .is_some_and(|owner| {
-                            matches!(owner.kind, crate::sema::associated::OwnerKind::Trait { .. })
-                        });
+                        .and_then(|owner| self.facts.associated.get(owner));
+                    let local = if let Some(owner) = owner {
+                        if owner.source.is_none() {
+                            self.facts
+                                .associated
+                                .require_imported(*owner)
+                                .map_err(|e| self.error(source, e))?;
+                            false
+                        } else {
+                            matches!(
+                                owner
+                                    .source_owner()
+                                    .map_err(|e| self.error(source, e))?
+                                    .kind,
+                                crate::sema::associated::OwnerKind::Trait { .. }
+                            )
+                        }
+                    } else {
+                        false
+                    };
                     return Ok((local, false));
                 }
                 Some(Kind::Parameter(_) | Kind::Projection(_)) => return Ok((false, true)),

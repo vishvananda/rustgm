@@ -12,9 +12,33 @@ pub struct Options {
     pub externs: Vec<String>,
     pub dependency_metadata: Vec<String>,
     pub source_core: Option<String>,
+    pub source_client: Option<String>,
 }
 impl Options {
+    pub fn source_mode(&mut self, client: bool, provider: Option<String>) -> Result<(), String> {
+        let flag = if client {
+            "--source-client"
+        } else {
+            "--source-core"
+        };
+        let provider = provider.ok_or_else(|| format!("{flag} requires NAME@DISAMBIGUATOR"))?;
+        if client {
+            self.source_client = Some(provider);
+        } else {
+            self.source_core = Some(provider);
+        }
+        Ok(())
+    }
     pub fn validate(&self, mode: &str, count: bool, output: Option<&str>) -> Result<(), String> {
+        if self.source_core.is_some() && self.source_client.is_some() {
+            return Err("--source-core and --source-client are mutually exclusive".into());
+        }
+        if self.source_client.is_some() {
+            if mode != "--emit-lowir" {
+                return Err("--source-client requires --emit-lowir".into());
+            }
+            self.bindings_mode()?;
+        }
         let enabled = self.library
             || self.disambiguator.is_some()
             || self.metadata.is_some()
@@ -94,6 +118,24 @@ impl Options {
         })
     }
     fn bindings_mode(&self) -> Result<rustgm::support::bindings::Mode, String> {
+        if self.source_core.is_some() && self.source_client.is_some() {
+            return Err("--source-core and --source-client are mutually exclusive".into());
+        }
+        if let Some(provider) = &self.source_client {
+            let (name, disambiguator) = provider
+                .split_once('@')
+                .ok_or("--source-client requires NAME@DISAMBIGUATOR")?;
+            let provider = CrateIdentity::new(name, disambiguator).map_err(str::to_owned)?;
+            let current = self
+                .identity()?
+                .ok_or("--source-client requires complete current crate identity")?;
+            if current == provider {
+                return Err(
+                    "source-client provider must differ from current crate identity".into(),
+                );
+            }
+            return Ok(rustgm::support::bindings::Mode::SourceClient { provider });
+        }
         if let Some(provider) = &self.source_core {
             let (name, disambiguator) = provider
                 .split_once('@')

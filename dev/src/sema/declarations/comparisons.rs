@@ -278,9 +278,11 @@ impl LibraryContracts<'_> {
             });
         let mut header = Header {
             self_type: subject,
-            self_bounds: crate::support::hash::HashSet::default(),
             parameters,
-            predicates: Vec::new(),
+            inputs: crate::sema::traits::inherited_inputs::HeaderInputs::source(
+                crate::support::hash::HashSet::default(),
+                Vec::new(),
+            ),
             results: Vec::new(),
             regions: Vec::new(),
         };
@@ -469,8 +471,11 @@ impl LibraryContracts<'_> {
                     arguments,
                 })
                 .map_err(|e| self.error(origin, e))?;
-            header.self_bounds.insert(origin);
-            header.predicates.push(Written {
+            let inputs = header
+                .source_inputs_mut()
+                .map_err(|e| self.error(origin, e))?;
+            inputs.self_bounds.insert(origin);
+            inputs.predicates.push(Written {
                 source: origin,
                 value: Predicate {
                     ty: subject,

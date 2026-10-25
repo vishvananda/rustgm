@@ -5,10 +5,7 @@ use super::{
 };
 use crate::{
     sema::model::{Declarations, SourceCopyRequirements},
-    support::{
-        bindings::LangItem,
-        hash::{HashMap, HashSet},
-    },
+    support::hash::{HashMap, HashSet},
     types::{
         GenericArgs, ItemId, Kind, TypeId,
         instance::Instance,
@@ -21,6 +18,9 @@ use crate::{
 };
 use std::sync::Arc;
 mod carrier;
+mod debt_transfer;
+mod ephemeral_imports;
+pub(crate) use ephemeral_imports::ImportedInputs;
 pub(in crate::body) mod materialized;
 mod reproof;
 #[cfg(test)]
@@ -108,9 +108,7 @@ pub(in crate::body) fn prepare_scoped(
     {
         return Err("source Copy contract belongs to another body".into());
     }
-    let declaration = catalog
-        .validated_language(LangItem::Copy)?
-        .map(|d| d.definition);
+    let declaration = crate::sema::compiler_items::copy_declaration(facts)?;
     let goals = read_requirements(facts, body, declaration)?;
     let requirements = Arc::new(SourceCopyRequirements { declaration, goals });
     let environment = contract
@@ -165,7 +163,8 @@ pub(in crate::body) fn prepare_scoped(
             prepared,
         )));
     }
-    super::defining_cleanups::prepare(facts, body, contract)
+    super::defining_cleanups::prepare(facts, body, contract)?;
+    debt_transfer::prepare(facts, body, contract, scope).map_err(String::from)
 }
 
 fn read_requirements(

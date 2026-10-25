@@ -30,14 +30,28 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         // Reserve every trait Self before elaborating references to other trait headers.
         for index in 0..self.facts.associated.owners().len() {
-            let owner = self.facts.associated.owners()[index];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             if let OwnerKind::Trait { definition, .. } = owner.kind {
                 self.reserve_trait(owner, definition)?;
             }
         }
         // All parameter lists precede bounds, including forward supertrait applications.
         for index in 0..self.facts.associated.owners().len() {
-            let owner = self.facts.associated.owners()[index];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             let OwnerKind::Trait { definition, .. } = owner.kind else {
                 continue;
             };
@@ -58,7 +72,14 @@ impl Checker<'_> {
         self.begin_header_names()?;
         if self.header_names_active() {
             for index in 0..self.facts.associated.owners().len() {
-                let owner = self.facts.associated.owners()[index];
+                let Some(owner) = self
+                    .facts
+                    .associated
+                    .source_at(index)
+                    .map_err(Error::unlocated)?
+                else {
+                    continue;
+                };
                 if let OwnerKind::Trait { definition, .. } = owner.kind {
                     self.reserve_trait_application(owner, definition)?;
                 }
@@ -66,7 +87,14 @@ impl Checker<'_> {
         }
         self.associated_bindings.begin_trait_headers();
         for index in 0..self.facts.associated.owners().len() {
-            let owner = self.facts.associated.owners()[index];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             let OwnerKind::Trait { definition, .. } = owner.kind else {
                 continue;
             };
@@ -94,7 +122,15 @@ impl Checker<'_> {
     /// Drop headers consume trait contracts but retain their own conformance path.
     /// Other trait impls still need an elaborated, validated owner before use.
     pub(super) fn validate_trait_impl_owners(&self) -> Result<(), Error> {
-        for owner in self.facts.associated.owners() {
+        for index in 0..self.facts.associated.owners().len() {
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             if matches!(
                 owner.kind,
                 OwnerKind::Impl {
@@ -123,7 +159,7 @@ impl Checker<'_> {
     }
     fn reserve_trait(
         &mut self,
-        owner: crate::sema::associated::Owner,
+        owner: crate::sema::associated::SourceOwner,
         definition: crate::resolve::model::DefId,
     ) -> Result<(), Error> {
         let key = owner.source;
@@ -177,7 +213,7 @@ impl Checker<'_> {
     }
     fn implicit_trait_bound(
         &mut self,
-        owner: crate::sema::associated::Owner,
+        owner: crate::sema::associated::SourceOwner,
         definition: crate::resolve::model::DefId,
     ) -> Result<(), Error> {
         self.reserve_trait_application(owner, definition)?;
@@ -196,7 +232,7 @@ impl Checker<'_> {
 
     fn reserve_trait_application(
         &mut self,
-        owner: crate::sema::associated::Owner,
+        owner: crate::sema::associated::SourceOwner,
         definition: crate::resolve::model::DefId,
     ) -> Result<(), Error> {
         use crate::types::{

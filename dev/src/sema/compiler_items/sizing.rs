@@ -11,6 +11,9 @@ use crate::{
 };
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
+    if report.package.source_client().is_some() {
+        return super::roles::admitted_headers::sizing(report, facts);
+    }
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
     };
@@ -110,72 +113,60 @@ fn validate_header(
             "source sizing trait header is outside the supported provider profile",
         ));
     }
-    validate_hierarchy(report, facts, catalog, kind, declaration, &header)
+    hierarchy(facts, catalog, kind, declaration.definition, &header).map_err(error)
 }
 
-fn validate_hierarchy(
-    report: &Report,
+pub(super) fn hierarchy(
     facts: &Declarations,
     catalog: &Catalog,
     kind: LangItem,
-    declaration: crate::resolve::bindings::Declaration,
+    definition: DefId,
     header: &Trait<'_>,
-) -> Result<(), Error> {
-    let error = |message| Declarations::error(report, declaration.origin, message);
+) -> Result<(), &'static str> {
     let expected = match kind {
         LangItem::Sized => Some(LangItem::MetaSized),
         LangItem::MetaSized => Some(LangItem::PointeeSized),
         LangItem::PointeeSized => None,
-        _ => {
-            return Err(error("non-sizing language item in sizing validation"));
-        }
+        _ => return Err("non-sizing language item in sizing validation"),
     };
     if header.written.supertraits != usize::from(expected.is_some()) {
-        return Err(error(
-            "source sizing supertrait shape is outside the supported provider profile",
-        ));
+        return Err("source sizing supertrait shape is outside the supported provider profile");
     }
     let expected = expected
-        .and_then(|kind| catalog.language(kind))
-        .map(|d| d.definition);
+        .map(|role| catalog.role(role))
+        .transpose()?
+        .flatten()
+        .map(|declaration| declaration.definition);
     let mut found = false;
-    for predicate in header.inputs.iter() {
+    for predicate in header.canonical_inputs(facts)?.iter() {
         let Clause::Predicate(predicate) = predicate.value else {
-            return Err(error(
-                "source sizing profile does not support quantified header clauses",
-            ));
+            return Err("source sizing profile does not support quantified header clauses");
         };
         let Bound::Trait(application) = predicate.bound else {
-            return Err(error(
-                "source sizing profile requires only its actual trait hierarchy",
-            ));
+            return Err("source sizing profile requires only its actual trait hierarchy");
         };
         let application = facts
             .types
             .trait_application(application)
-            .ok_or_else(|| error("source sizing header has an invalid trait application"))?;
+            .ok_or("source sizing header has an invalid trait application")?;
         if predicate.ty != header.self_type
             || facts
                 .types
                 .arguments(application.arguments)
                 .is_none_or(|a| a.len() != 0)
         {
-            return Err(error(
-                "source sizing hierarchy must apply directly to its actual Self",
-            ));
+            return Err("source sizing hierarchy must apply directly to its actual Self");
         }
-        if application.item.0 == declaration.definition.0 {
+        if application.item.0 == definition.0 {
             continue;
         }
         if Some(DefId(application.item.0)) != expected || found {
-            return Err(error(
-                "source sizing profile requires its exact declared supertrait",
-            ));
+            return Err("source sizing profile requires its exact declared supertrait");
         }
         found = true;
     }
     if found != expected.is_some() {
-        return Err(error("source sizing hierarchy is incomplete"));
+        return Err("source sizing hierarchy is incomplete");
     }
     Ok(())
 }

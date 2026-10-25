@@ -25,8 +25,8 @@ pub(in crate::sema) struct Written {
     pub supertraits: usize,
 }
 
-/// Source vectors remain owned by their producer. A future imported adapter must
-/// authenticate its complete declaration remap before borrowing equivalent rows.
+/// Both adapters borrow their producer-owned vectors. Imported rows require the
+/// actual completed catalog, canonical remap and installed declaration facts.
 pub(in crate::sema) struct Trait<'a> {
     pub definition: DefId,
     pub parent: Option<DefId>,
@@ -69,6 +69,43 @@ impl super::Catalog {
     }
 }
 impl Trait<'_> {
+    /// Role hierarchy checks use the actual canonical declaration contract.
+    /// Full elaborated inputs remain borrowed separately for export/environments.
+    pub(super) fn canonical_inputs<'a>(
+        &self,
+        facts: &'a crate::sema::model::Declarations,
+    ) -> Result<Inputs<'a>, &'static str> {
+        self.validate_self(&facts.types)?;
+        let header = facts
+            .generics
+            .traits
+            .as_deref()
+            .and_then(|contracts| contracts.header(ItemId(self.definition.0)))
+            .ok_or("source role lacks its actual canonical trait header")?;
+        if header.self_type != self.self_type {
+            return Err("source role canonical header has a different actual Self identity");
+        }
+        match self.origin {
+            DeclarationOrigin::Source(_) => {
+                header.inputs.source_ref()?;
+            }
+            DeclarationOrigin::Imported(id) => {
+                let catalog = facts
+                    .crates
+                    .as_deref()
+                    .and_then(|linkage| linkage.origin_catalog())
+                    .ok_or("imported role canonical header lacks its actual catalog")?;
+                catalog.validate_declaration(
+                    id,
+                    self.definition,
+                    crate::resolve::model::DefKind::Trait,
+                )?;
+                header.inputs.require_catalog(catalog, self.definition)?;
+            }
+        }
+        Ok(header.inputs.view())
+    }
+
     pub(super) fn profile(
         &self,
         store: &Store,
@@ -84,7 +121,7 @@ impl Trait<'_> {
         self.validate_self(store)
     }
 
-    pub(super) fn validate_self(&self, store: &Store) -> Result<(), &'static str> {
+    pub(in crate::sema) fn validate_self(&self, store: &Store) -> Result<(), &'static str> {
         let Some(Kind::Parameter(id)) = store.kind(self.self_type) else {
             return Err("trait header has no exact Self parameter");
         };

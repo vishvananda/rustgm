@@ -60,7 +60,7 @@ impl Search<'_> {
         let source_rule = Self::source_freeze_goal(facts, &frame.goal)?
             || matches!(
                 Self::source_sizing_kind(facts, &frame.goal)?,
-                Some(LangItem::MetaSized | LangItem::PointeeSized)
+                Some(LangItem::Sized | LangItem::MetaSized | LangItem::PointeeSized)
             )
             || source_destruct_goal(facts, frame)?
             || Self::source_callable_marker_goal(facts, frame)?;

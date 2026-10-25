@@ -92,7 +92,8 @@ impl Declarations {
             .owner(trait_definition)
             .and_then(|id| self.associated.get(id))
             .ok_or("const member requirement has no actual trait owner")?;
-        if input.source.source() != Some(owner.source) {
+        let source = owner.source.ok_or("imported const-member defining requests require their authenticated source-profile counterpart")?;
+        if input.source.source() != Some(source) {
             return Ok(clause);
         }
         let mut implicit = self.const_self_predicate(trait_definition)?;

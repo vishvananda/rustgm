@@ -233,7 +233,12 @@ fn check(source: &str) -> TestResult {
     let members =
         crate::sema::declarations::traits::associated_types::Members::new(&report, &checker.facts);
     for (owner, source, predicate) in headers {
-        checker.trait_impl_types(owner, source, predicate, &members)?;
+        checker.trait_impl_types(
+            owner,
+            source.ok_or("source family fixture requires an actual source impl")?,
+            predicate,
+            &members,
+        )?;
     }
     Ok(())
 }
@@ -249,7 +254,7 @@ pub(super) fn prepare(checker: &mut Checker<'_>) -> TestResult {
         if report.resolution.definitions[member.definition.0 as usize].kind != DefKind::TypeAlias {
             continue;
         }
-        let owner = checker.facts.associated.owners()[member.owner.0 as usize];
+        let owner = checker.facts.associated.owners()[member.owner.0 as usize].source_owner()?;
         let key = report.resolution.definitions[member.definition.0 as usize]
             .node
             .ok_or("missing source")?;
@@ -263,7 +268,7 @@ pub(super) fn prepare(checker: &mut Checker<'_>) -> TestResult {
     }
     crate::sema::traits::results::prepare_outlives(&mut checker.facts)?;
     for member in &members {
-        let owner = checker.facts.associated.owners()[member.owner.0 as usize];
+        let owner = checker.facts.associated.owners()[member.owner.0 as usize].source_owner()?;
         if report.resolution.definitions[member.definition.0 as usize].kind == DefKind::TypeAlias
             && matches!(owner.kind, OwnerKind::Impl { .. })
         {

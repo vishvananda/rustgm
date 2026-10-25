@@ -1,11 +1,32 @@
 //! Physical scope/end/temporary records preserve the source body's exact order.
 use super::{BlockId, Body, BodySite, Temporary, ValueId, g, scopes, storage};
+#[derive(Clone, Copy)]
+pub(in crate::body::transported_originals) struct Records<'a> {
+    pub scopes: &'a [g::Scope],
+    pub exits: &'a [g::Exit],
+    pub temporaries: &'a [g::Temporary],
+}
 pub(super) fn fill(
-    raw: &g::Original,
+    record: &g::Original,
     body: &mut Body,
     site: &impl Fn(u32) -> Result<BodySite, &'static str>,
 ) -> Result<(), &'static str> {
-    let scopes = raw
+    fill_records(
+        Records {
+            scopes: &record.scopes,
+            exits: &record.exits,
+            temporaries: &record.temporaries,
+        },
+        body,
+        &mut |index| site(index),
+    )
+}
+pub(in crate::body::transported_originals) fn fill_records(
+    record: Records<'_>,
+    body: &mut Body,
+    site: &mut impl FnMut(u32) -> Result<BodySite, &'static str>,
+) -> Result<(), &'static str> {
+    let scopes = record
         .scopes
         .iter()
         .map(|scope| {
@@ -16,20 +37,11 @@ pub(super) fn fill(
             })
         })
         .collect::<Result<_, &'static str>>()?;
-    let exits = raw
+    let exits = record
         .exits
         .iter()
         .map(|exit| storage::Exit {
-            location: match exit.location {
-                g::Location::At { block, before } => storage::Location::At {
-                    block: BlockId(block),
-                    before,
-                },
-                g::Location::Edge { block, target } => storage::Location::Edge {
-                    block: BlockId(block),
-                    target: BlockId(target),
-                },
-            },
+            location: location(exit.location),
             end: match exit.end {
                 g::End::Scopes { inner, outer } => storage::End::Scopes(storage::Range {
                     inner: scopes::Id(inner),
@@ -43,30 +55,46 @@ pub(super) fn fill(
         })
         .collect();
     body.storage = Some(storage::Facts {
-        scope_work: raw.scopes.len(),
+        scope_work: record.scopes.len(),
         scopes,
         exits,
     });
-    body.temporaries = raw
+    body.temporaries = record
         .temporaries
         .iter()
-        .map(|temp| {
-            Ok(Temporary {
-                lifetime: match temp.lifetime {
-                    g::Lifetime::Scope(scope) => scopes::Lifetime::Scope(scopes::Id(scope)),
-                    g::Lifetime::Static => scopes::Lifetime::Static,
-                },
-                value: ValueId(temp.value),
-                source: site(temp.site)?,
-                block: BlockId(temp.block),
-                before: temp.before,
-                exits_before: temp.exits_before,
-            })
-        })
+        .map(|temp| temporary(temp, site))
         .collect::<Result<_, &'static str>>()?;
     Ok(())
 }
-fn scope_kind(kind: g::ScopeKind) -> scopes::Kind {
+pub(in crate::body::transported_originals) fn temporary(
+    temp: &g::Temporary,
+    site: &mut impl FnMut(u32) -> Result<BodySite, &'static str>,
+) -> Result<Temporary, &'static str> {
+    Ok(Temporary {
+        lifetime: match temp.lifetime {
+            g::Lifetime::Scope(scope) => scopes::Lifetime::Scope(scopes::Id(scope)),
+            g::Lifetime::Static => scopes::Lifetime::Static,
+        },
+        value: ValueId(temp.value),
+        source: site(temp.site)?,
+        block: BlockId(temp.block),
+        before: temp.before,
+        exits_before: temp.exits_before,
+    })
+}
+pub(in crate::body::transported_originals) fn location(record: g::Location) -> storage::Location {
+    match record {
+        g::Location::At { block, before } => storage::Location::At {
+            block: BlockId(block),
+            before,
+        },
+        g::Location::Edge { block, target } => storage::Location::Edge {
+            block: BlockId(block),
+            target: BlockId(target),
+        },
+    }
+}
+pub(in crate::body::transported_originals) fn scope_kind(kind: g::ScopeKind) -> scopes::Kind {
     match kind {
         g::ScopeKind::Body => scopes::Kind::Body,
         g::ScopeKind::Block => scopes::Kind::Block,

@@ -36,7 +36,11 @@ fn checked_pending_profile_and_completion_never_publish_absence() -> Result {
     );
     let arena = facts.types.arena_identity();
     let registry = facts.generics.implementations.as_mut().ok_or("registry")?;
-    let source = registry.header(owner).ok_or("actual header")?.source;
+    let source = registry
+        .header(owner)
+        .ok_or("actual header")?
+        .source
+        .ok_or("actual source header")?;
     registry.mark_early_unavailable(&facts.types, &arena, owner, source, predicate)?;
     assert!(!registry.is_validated(owner));
     assert!(registry.early_unavailable(&facts.types, owner)?);
@@ -70,7 +74,11 @@ fn profile_markers_reject_foreign_arena_source_predicate_and_completed_owner() -
     let arena = facts.types.arena_identity();
     let foreign = crate::types::Store::default();
     let registry = facts.generics.implementations.as_mut().ok_or("registry")?;
-    let source = registry.header(owner).ok_or("header")?.source;
+    let source = registry
+        .header(owner)
+        .ok_or("header")?
+        .source
+        .ok_or("actual source header")?;
     assert!(
         registry
             .mark_early_unavailable(&foreign, &arena, owner, source, predicate)

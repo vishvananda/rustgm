@@ -43,7 +43,7 @@ fn report(source: &str) -> TestResult<resolve::expansion::Report> {
 
 fn reserve(checker: &mut Checker<'_>) -> TestResult {
     let mut steps = 0;
-    checker.reserve_member_parents();
+    checker.reserve_member_parents()?;
     checker.reserve_nominals()?;
     checker.reserve_implementation_candidates()?;
     checker.reserve_inherent_headers()?;
@@ -190,7 +190,7 @@ fn input_requirements_and_projected_result_promises_remain_separate() -> TestRes
     let mut checker = Checker::new(&report)?;
     reserve(&mut checker)?;
     let member = checker.facts.associated.members()[0];
-    let owner = checker.facts.associated.owners()[member.owner.0 as usize];
+    let owner = checker.facts.associated.owners()[member.owner.0 as usize].source_owner()?;
     let OwnerKind::Trait { definition, .. } = owner.kind else {
         return Err("missing trait owner".into());
     };

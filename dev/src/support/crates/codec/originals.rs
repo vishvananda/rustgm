@@ -13,18 +13,19 @@ use crate::support::{
 };
 
 pub(super) fn encode(out: &mut Writer, payload: &g::Payload) -> Result<(), &'static str> {
-    if payload.rows().edition != Edition::Rust2024 {
+    let rows = payload.legacy_rows()?;
+    if rows.edition != Edition::Rust2024 {
         return Err("generic row version zero requires defining edition2024");
     }
     // These descriptor IDs belong to envelope9, not to the old language header.
-    let version = u8::from(payload.rows().calls.is_some());
+    let version = u8::from(rows.calls.is_some());
     out.bytes(&[version, 0, 0])?; // Row version, Rust2024, legacy language-role policy.
-    tables::encode(out, payload.rows())?;
-    if let Some(calls) = &payload.rows().calls {
+    tables::encode(out, rows)?;
+    if let Some(calls) = &rows.calls {
         applications::encode(out, calls)?;
     }
-    out.u32(payload.rows().originals.len())?;
-    for original in &payload.rows().originals {
+    out.u32(rows.originals.len())?;
+    for original in &rows.originals {
         bodies::encode(out, original, version)?;
     }
     Ok(())

@@ -127,8 +127,7 @@ impl Profile {
         }
         Ok(())
     }
-    pub(super) fn read(input: &mut Reader<'_>) -> Result<Self, &'static str> {
-        let mut tag = input.u8()?;
+    pub(super) fn read(input: &mut Reader<'_>, mut tag: u8) -> Result<Self, &'static str> {
         let generic = tag == GENERIC_ORIGINALS;
         if generic {
             tag = input.u8()?;

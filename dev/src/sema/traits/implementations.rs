@@ -30,7 +30,7 @@ pub(in crate::sema) enum Availability {
 
 pub struct Implementation {
     pub owner: DefId,
-    pub source: NodeKey,
+    pub source: Option<NodeKey>,
     pub predicate: Predicate,
     /// Trait declaration identity paired with an override, or its checked default.
     pub methods: Vec<(DefId, Option<DefId>)>,

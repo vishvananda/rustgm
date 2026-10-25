@@ -6,6 +6,7 @@ use crate::support::language_hooks::Hook;
 
 #[derive(Default)]
 pub(super) struct Declarations {
+    pub imported: Option<std::rc::Rc<crate::sema::crates::ImportedOwners>>,
     pub schemas: HashMap<DefId, Schema>,
     pub members: HashMap<DefId, DefId>,
     pub inherent_members: HashMap<DefId, DefId>,
@@ -17,6 +18,22 @@ pub(super) struct Declarations {
     callable_definitions: [Option<DefId>; 3],
     operations: HashMap<DefId, (Hook, DefId)>,
     pub(super) comparisons: Option<Box<super::comparisons::Comparisons>>,
+}
+impl Declarations {
+    pub(super) fn accepts_imported(&self) -> bool {
+        self.imported.is_none()
+            && self.schemas.is_empty()
+            && self.members.is_empty()
+            && self.inherent_members.is_empty()
+            && self.callables.is_empty()
+            && self.output.is_none()
+            && self.hooks.is_empty()
+            && self.hook_members.is_empty()
+            && self.origins.is_empty()
+            && self.callable_definitions.iter().all(Option::is_none)
+            && self.operations.is_empty()
+            && self.comparisons.is_none()
+    }
 }
 impl Inventory {
     /// Publish validated real source identities without synthetic members, schemas
@@ -43,7 +60,7 @@ impl Inventory {
             let owner = self
                 .get(owner)
                 .ok_or("missing source callable declaration")?;
-            if owner.source != declaration.origin
+            if owner.source != Some(declaration.origin)
                 || self.schema(declaration.definition).is_none()
                 || self.trait_owner(method) != Some(declaration.definition)
                 || self.language.as_ref().is_some_and(|l| {

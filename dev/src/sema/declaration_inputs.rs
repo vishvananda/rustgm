@@ -36,6 +36,16 @@ impl<'a> Inputs<'a> {
             .map(Input::from)
             .chain(self.imported.iter().copied())
     }
+    pub(crate) fn len(self) -> usize {
+        self.source.len().saturating_add(self.imported.len())
+    }
+    pub(crate) fn get(self, index: usize) -> Option<Input> {
+        if index < self.source.len() {
+            self.source.get(index).map(Input::from)
+        } else {
+            self.imported.get(index - self.source.len()).copied()
+        }
+    }
 }
 
 pub(crate) fn own_view<'a>(

@@ -81,6 +81,15 @@ impl Catalog {
             .copied()
             .ok_or("imported declaration is absent from this catalog")
     }
+    /// Optional presence is only a lookup: callers requiring an imported
+    /// declaration still validate its exact handle/kind before consuming data.
+    pub(crate) fn declaration_if_imported(
+        &self,
+        definition: DefId,
+    ) -> Result<Option<ImportedDeclarationId>, &'static str> {
+        self.charge(1)?;
+        Ok(self.definitions.get(&definition).copied())
+    }
     pub(super) fn declaration_row(
         &self,
         id: ImportedDeclarationId,

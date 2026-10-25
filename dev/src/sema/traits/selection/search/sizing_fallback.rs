@@ -20,6 +20,24 @@ impl Search<'_> {
             return Ok(None);
         };
         let kind = catalog.sizing_kind(DefId(item.0))?;
+        if let Some(kind) = kind {
+            let declaration = catalog
+                .validated_role(kind)?
+                .ok_or("source sizing goal lost its actual validated declaration")?;
+            if matches!(
+                declaration.origin,
+                crate::resolve::body_origin::DeclarationOrigin::Imported(_)
+            ) {
+                facts.associated.require_imported_role(declaration)?;
+            }
+        }
+        if kind.is_some()
+            && goal.constness() != Some(crate::support::constness::Constness::Ordinary)
+        {
+            return Err(
+                "source sizing applications require their actual ordinary trait effect".into(),
+            );
+        }
         if kind.is_some() && !arguments.is_empty() {
             return Err("source sizing application has unexpected arguments".into());
         }
@@ -53,8 +71,8 @@ impl Search<'_> {
         if !shape.well_formed {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
-        let valid = if shape.sized {
-            true
+        let valid = if kind == LangItem::Sized || shape.sized {
+            shape.sized
         } else {
             match facts
                 .types
@@ -106,7 +124,7 @@ impl Search<'_> {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
         match kind {
-            LangItem::MetaSized | LangItem::PointeeSized => {
+            LangItem::Sized | LangItem::MetaSized | LangItem::PointeeSized => {
                 let node = self.source_builtin_node(frame, goal, shape.sized);
                 let selected = self.query.push_source_sizing(
                     facts,

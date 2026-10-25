@@ -54,7 +54,7 @@ pub(super) fn collect(
         associated: Vec::new(),
     };
     let mut uses = Occurrences::new(header.self_type, false);
-    for bound in &header.predicates {
+    for (index, bound) in header.inputs.view().iter().enumerate() {
         charge(steps, 1)?;
         let value = predicate(&facts.types, bound.value)?;
         if let Some((id, _)) = value.bound.trait_parts() {
@@ -65,7 +65,7 @@ pub(super) fn collect(
             if uses.arguments(&facts.types, application.arguments, steps)? {
                 return Err(reject(item, Rule::SelfType));
             }
-            if header.implies_self(&facts.types, bound)? {
+            if header.implies_input(&facts.types, index, bound)? {
                 contract.supertraits.push(bound.value);
             }
         }
@@ -122,7 +122,7 @@ fn callable(
         .as_ref()
         .and_then(|traits| traits.header(ItemId(item.0)))
         .ok_or("missing completed callable object header")?;
-    charge(steps, header.predicates.len().saturating_add(1))?;
+    charge(steps, header.inputs.view().len().saturating_add(1))?;
     let associated = if kind == crate::support::call_traits::CallTrait::FnOnce {
         vec![
             facts
@@ -134,7 +134,7 @@ fn callable(
         Vec::new()
     };
     Ok(Contract {
-        supertraits: header.predicates.iter().map(|p| p.value).collect(),
+        supertraits: header.inputs.view().iter().map(|p| p.value).collect(),
         methods: Vec::new(),
         associated,
     })

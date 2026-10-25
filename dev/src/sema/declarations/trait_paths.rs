@@ -228,7 +228,7 @@ impl Checker<'_> {
 
     pub(super) fn retain_trait_contract(
         &mut self,
-        owner: crate::sema::associated::Owner,
+        owner: crate::sema::associated::SourceOwner,
         definition: DefId,
         self_bounds: crate::support::hash::HashSet<NodeKey>,
     ) -> Result<(), Error> {
@@ -239,15 +239,16 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(owner.source, "missing trait Self schema"))?;
         let mut header = crate::sema::traits::Header {
             self_type: schema.self_type,
-            self_bounds,
             parameters: self.facts.generics.parameters[&definition].clone(),
-            predicates: self
-                .facts
-                .generics
-                .predicates
-                .get(&definition)
-                .cloned()
-                .unwrap_or_default(),
+            inputs: crate::sema::traits::inherited_inputs::HeaderInputs::source(
+                self_bounds,
+                self.facts
+                    .generics
+                    .predicates
+                    .get(&definition)
+                    .cloned()
+                    .unwrap_or_default(),
+            ),
             results: Vec::new(),
             regions: schema.bounds.clone(),
         };
@@ -278,7 +279,14 @@ impl Checker<'_> {
         }
         self.complete_projection_promises()?;
         for index in 0..self.facts.associated.owners().len() {
-            let owner = self.facts.associated.owners()[index];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             if let crate::sema::associated::OwnerKind::Trait { definition, .. } = owner.kind {
                 self.facts
                     .generics

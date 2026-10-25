@@ -58,7 +58,7 @@ fn fixture(source: &str) -> TestResult<Fixture> {
                 == "Out"
         })
         .ok_or("missing family")?;
-    let owner = checker.facts.associated.owners()[member.owner.0 as usize];
+    let owner = checker.facts.associated.owners()[member.owner.0 as usize].source_owner()?;
     let OwnerKind::Trait { definition, .. } = owner.kind else {
         return Err("missing family trait".into());
     };
@@ -68,7 +68,7 @@ fn fixture(source: &str) -> TestResult<Fixture> {
     checker.declare_associated_type(member.definition, key, owner, definition)?;
     checker.complete_associated_result_bounds(member.definition, key, &mut 0, 100_000)?;
     for member in checker.facts.associated.members().to_vec() {
-        let owner = checker.facts.associated.owners()[member.owner.0 as usize];
+        let owner = checker.facts.associated.owners()[member.owner.0 as usize].source_owner()?;
         if matches!(owner.kind, OwnerKind::Impl { .. })
             && report.resolution.definitions[member.definition.0 as usize].kind
                 == crate::resolve::model::DefKind::TypeAlias

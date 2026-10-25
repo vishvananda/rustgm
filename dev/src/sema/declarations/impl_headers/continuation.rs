@@ -2,7 +2,7 @@
 use super::{Checker, DefId, Error, Partial, Work, regions};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
-    sema::associated::{Owner, OwnerId, OwnerKind},
+    sema::associated::{OwnerId, OwnerKind, SourceOwner as Owner},
     types::{
         Kind,
         parameters::predicates::{Bound, Predicate},
@@ -50,7 +50,9 @@ impl Checker<'_> {
                     0,
                     "missing impl header owner",
                 )
-            })?;
+            })?
+            .source_owner()
+            .map_err(Error::unlocated)?;
         let OwnerKind::Impl {
             target, trait_type, ..
         } = owner.kind

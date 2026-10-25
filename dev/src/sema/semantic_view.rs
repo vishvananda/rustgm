@@ -139,7 +139,8 @@ fn owners(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Re
             OwnerKind::Impl {
                 trait_type: Some(_),
                 ..
-            } => "trait-impl",
+            }
+            | OwnerKind::ImportedImpl(_) => "trait-impl",
         };
         let ty = facts
             .associated
@@ -154,12 +155,18 @@ fn owners(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Re
             .ok_or_else(|| io::Error::other("missing associated Self type"))?;
         write!(
             out,
-            "associated-owner {index} kind={kind} self-def={} self={} source={}:{}",
-            owner.self_definition.0,
-            ty.0,
-            owner.source.file.0,
-            owner.source.node.get()
+            "associated-owner {index} kind={kind} self-def={} self={}",
+            owner.self_definition.0, ty.0,
         )?;
+        if let Some(source) = owner.source {
+            write!(out, " source={}:{}", source.file.0, source.node.get())?;
+        } else {
+            facts
+                .associated
+                .require_imported(*owner)
+                .map_err(io::Error::other)?;
+            write!(out, " source=imported")?;
+        }
         if let OwnerKind::Trait {
             definition,
             auto_,
@@ -278,13 +285,23 @@ fn requirement(store: &Store, predicate: Predicate, out: &mut impl Write) -> io:
 
 fn implementations(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     for implementation in facts.generics.implementations() {
-        write!(
-            out,
-            "impl owner={} source={}:{} ",
-            implementation.owner.0,
-            implementation.source.file.0,
-            implementation.source.node.get()
-        )?;
+        write!(out, "impl owner={}", implementation.owner.0)?;
+        if let Some(source) = implementation.source {
+            write!(out, " source={}:{} ", source.file.0, source.node.get())?;
+        } else {
+            let owner = facts
+                .associated
+                .owner(implementation.owner)
+                .and_then(|id| facts.associated.get(id))
+                .ok_or_else(|| {
+                    io::Error::other("imported implementation lacks its actual owner")
+                })?;
+            facts
+                .associated
+                .imported_implementation(*owner, implementation.predicate)
+                .map_err(io::Error::other)?;
+            write!(out, " source=imported ")?;
+        }
         requirement(&facts.types, implementation.predicate, out)?;
         writeln!(out)?;
         for &(declaration, selected) in &implementation.methods {

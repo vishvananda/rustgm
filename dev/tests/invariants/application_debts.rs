@@ -8,7 +8,11 @@ fn imported_call_goals_are_derived_even_for_unused_originals() -> Result {
         "const fn helper<T:Copy>(x:T)->T{x}pub const fn through<T:Copy>(x:T)->T{helper(x)}",
     )?;
     let interface = crates::decode(&bytes)?;
-    let mut rows = interface.generic_payload().ok_or("payload")?.rows().clone();
+    let mut rows = interface
+        .generic_payload()
+        .ok_or("payload")?
+        .legacy_rows()?
+        .clone();
     let clauses = std::mem::take(&mut rows.clauses);
     for function in &mut rows.functions {
         let begin = u32::try_from(rows.clauses.len())?;
@@ -56,7 +60,11 @@ fn application_arguments_cannot_capture_another_function_in_the_same_artifact() 
         "const fn helper<T:Copy>(x:T)->T{x}pub const fn through<T:Copy>(x:T)->T{helper(x)}",
     )?;
     let interface = crates::decode(&bytes)?;
-    let mut rows = interface.generic_payload().ok_or("payload")?.rows().clone();
+    let mut rows = interface
+        .generic_payload()
+        .ok_or("payload")?
+        .legacy_rows()?
+        .clone();
     let foreign = rows.types.iter().position(|ty|matches!(ty,g::Type::Parameter(reference) if matches!(rows.declarations[reference.0 as usize],g::Declaration::TypeParameter{owner,..} if owner.0 == 0))).ok_or("foreign root")?;
     rows.calls.as_mut().ok_or("calls")?.arguments[0] = g::TypeRef(u32::try_from(foreign)?);
     let mut work = g::Work::default();
@@ -75,7 +83,10 @@ fn direct_call_preparation_tracks_calls_and_distinct_helpers_independently() -> 
             ));
             let bytes = provider_source(&std::fs::read_to_string(path)?)?;
             let interface = crates::decode(&bytes)?;
-            let rows = interface.generic_payload().ok_or("payload")?.rows();
+            let rows = interface
+                .generic_payload()
+                .ok_or("payload")?
+                .legacy_rows()?;
             let calls = rows.calls.as_ref().ok_or("calls")?;
             assert_eq!(
                 calls.applications.len(),
@@ -143,7 +154,11 @@ fn imported_call_results_cannot_replace_independent_caller_parameters() -> Resul
         "const fn helper<T:Copy>(x:T)->T{x}pub const fn through<T:Copy,U:Copy>(x:T)->T{helper(x)}",
     )?;
     let interface = crates::decode(&bytes)?;
-    let mut rows = interface.generic_payload().ok_or("payload")?.rows().clone();
+    let mut rows = interface
+        .generic_payload()
+        .ok_or("payload")?
+        .legacy_rows()?
+        .clone();
     let unrelated = rows.types.iter().position(|ty|matches!(ty,g::Type::Parameter(reference) if matches!(rows.declarations[reference.0 as usize],g::Declaration::TypeParameter{owner,ordinal:1,..} if owner.0 == 1))).ok_or("unrelated actual parameter")?;
     let value = rows.originals[1]
         .values

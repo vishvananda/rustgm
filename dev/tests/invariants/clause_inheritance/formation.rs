@@ -31,11 +31,12 @@ fn reference(store: &mut Store, depth: u16, referent: TypeId) -> Result<TypeId, 
         referent,
     })
 }
-fn requirement(header: &mut Header, clause: Clause) {
-    header.predicates.push(Located {
+fn requirement(header: &mut Header, clause: Clause) -> Result<(), &'static str> {
+    header.source_inputs_mut()?.predicates.push(Located {
         source: source(20),
         value: clause,
     });
+    Ok(())
 }
 
 #[test]
@@ -86,7 +87,7 @@ fn formation_keeps_nested_quantifiers_and_lifts_only_independent_requirements() 
             parameter,
             &[Argument::Lifetime(RegionId::bound(0, slot)?)],
         )?;
-        requirement(&mut header, ordinary.into());
+        requirement(&mut header, ordinary.into())?;
         let inner = predicate(
             &mut store,
             ItemId(3),
@@ -96,7 +97,7 @@ fn formation_keeps_nested_quantifiers_and_lifts_only_independent_requirements() 
                 Argument::Lifetime(RegionId::bound(1, slot)?),
             ],
         )?;
-        requirement(&mut header, clause(&mut store, 1, inner)?);
+        requirement(&mut header, clause(&mut store, 1, inner)?)?;
     }
     header.regions = vec![
         (RegionId::bound(0, 0)?, RegionId::bound(0, 1)?),
@@ -244,7 +245,7 @@ fn distinct_formation_queries_share_growing_captured_type_tails() -> TestResult 
                 bound: Bound::Copy,
             }
             .into(),
-        );
+        )?;
         let mut contracts = Contracts::default();
         contracts.declare(item, header)?;
         let mut tail = BYTE;

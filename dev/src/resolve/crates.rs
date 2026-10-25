@@ -75,12 +75,20 @@ impl Imported {
             .artifacts()
             .iter()
             .filter_map(|artifact| {
-                artifact
-                    .generic_payload()
-                    .map(|payload| (artifact.identity(), payload.rows()))
+                artifact.generic_payload().map(|payload| {
+                    let declarations = match payload.view() {
+                        crate::support::crates::generics::PayloadView::Legacy(rows) => {
+                            rows.declarations.len()
+                        }
+                        crate::support::crates::generics::PayloadView::Source(rows) => {
+                            rows.descriptor().rows().declarations.len()
+                        }
+                    };
+                    (artifact.identity(), declarations)
+                })
             })
-            .flat_map(move |(owner, rows)| {
-                (0..rows.declarations.len()).map(move |index| {
+            .flat_map(move |(owner, declarations)| {
+                (0..declarations).map(move |index| {
                     let index = u32::try_from(index)
                         .map_err(|_| "imported generic declaration ordinal overflow")?;
                     self.generic_definition(

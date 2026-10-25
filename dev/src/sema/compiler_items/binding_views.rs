@@ -221,18 +221,12 @@ fn reserve_roles(
             return Err("source descriptor has duplicate language roles");
         }
         if role_kind(role.role) == DefKind::Trait {
-            let mut found = None;
-            for header in &rows.traits {
-                charge(work, 1)?;
-                if header.declaration == role.declaration.declaration
-                    && found.replace(header.flags).is_some()
-                {
-                    return Err("source role has duplicate canonical trait headers");
-                }
-            }
-            let flags = found
-                .ok_or("source trait role has no actual canonical header")?
-                .bits();
+            charge(work, 1)?;
+            let Some(s::HeaderRef::Trait(index)) = rows.header(role.declaration.declaration)?
+            else {
+                return Err("source trait role has no actual canonical header");
+            };
+            let flags = rows.traits[index as usize].flags.bits();
             charge(work, 4)?;
             attributes[role.role.index()] = HeaderAttributes::retained(
                 [
@@ -256,7 +250,7 @@ fn reserve_roles(
 }
 
 fn role_parent(
-    rows: &s::SourceRows,
+    rows: s::ValidatedView<'_>,
     role: LangItem,
     declaration: DeclarationRef,
     work: &mut usize,
@@ -265,14 +259,11 @@ fn role_parent(
     if role_kind(role) != DefKind::Function {
         return Ok(None);
     }
-    let mut comparisons = 0usize;
-    let found = rows.functions.binary_search_by(|function| {
-        comparisons = comparisons.saturating_add(1);
-        function.declaration.0.cmp(&declaration.0)
-    });
-    charge(work, comparisons)?;
-    let index = found.map_err(|_| "source function role has no actual canonical header")?;
-    Ok(rows.functions[index].parent)
+    charge(work, 1)?;
+    let Some(s::HeaderRef::Function(index)) = rows.header(declaration)? else {
+        return Err("source function role has no actual canonical header");
+    };
+    Ok(rows.functions[index as usize].parent)
 }
 fn charge(work: &mut usize, count: usize) -> Result<(), &'static str> {
     *work = work.saturating_add(count);

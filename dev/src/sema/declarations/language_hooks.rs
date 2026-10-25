@@ -234,9 +234,11 @@ impl Checker<'_> {
         } = declaration;
         let mut header = Header {
             self_type: subject,
-            self_bounds: crate::support::hash::HashSet::default(),
             parameters,
-            predicates: Vec::new(),
+            inputs: crate::sema::traits::inherited_inputs::HeaderInputs::source(
+                crate::support::hash::HashSet::default(),
+                Vec::new(),
+            ),
             results: bounds
                 .into_iter()
                 .filter_map(|value| {
@@ -256,8 +258,11 @@ impl Checker<'_> {
         if matches!(output, BuiltinLanguageOutput::Inherited { .. })
             && let Some(application) = application
         {
-            header.self_bounds.insert(origin);
-            header.predicates.push(crate::sema::generics::Predicate {
+            let inputs = header
+                .source_inputs_mut()
+                .map_err(|e| self.error(origin, e))?;
+            inputs.self_bounds.insert(origin);
+            inputs.predicates.push(crate::sema::generics::Predicate {
                 source: origin,
                 value: Predicate {
                     ty: subject,

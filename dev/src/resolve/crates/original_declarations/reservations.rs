@@ -15,7 +15,8 @@ pub(super) fn functions(
     let rows = artifact
         .generic_payload()
         .ok_or_else(|| error("missing generic declaration rows"))?
-        .rows();
+        .legacy_rows()
+        .map_err(error)?;
     let mut definitions = Vec::with_capacity(rows.declarations.len());
     let mut expected = Vec::with_capacity(rows.declarations.len());
     let mut owners = vec![None; rows.declarations.len()];

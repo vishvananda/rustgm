@@ -15,14 +15,25 @@ fn source_callable_role(facts: &Declarations, goal: &Goal) -> Result<bool, Strin
     let Some((item, arguments)) = goal.trait_arguments() else {
         return Ok(false);
     };
-    let Some(role) = [LangItem::Copy, LangItem::Clone].into_iter().find(|&role| {
-        catalog
-            .language(role)
-            .is_some_and(|declaration| declaration.definition.0 == item.0)
-    }) else {
+    let mut found = false;
+    for role in [LangItem::Copy, LangItem::Clone] {
+        if let Some(declaration) = catalog.role(role)?
+            && declaration.definition.0 == item.0
+        {
+            catalog.validated_role(role)?;
+            if matches!(
+                declaration.origin,
+                crate::resolve::body_origin::DeclarationOrigin::Imported(_)
+            ) {
+                facts.associated.require_imported_role(declaration)?;
+            }
+            found = true;
+            break;
+        }
+    }
+    if !found {
         return Ok(false);
-    };
-    catalog.validated_language(role)?;
+    }
     if !arguments.is_empty() {
         return Err("source callable copying role has unexpected arguments".into());
     }

@@ -29,7 +29,6 @@ impl Members {
         }
         result
     }
-
     pub(super) fn prepare_source_owner(
         &mut self,
         report: &Report,
@@ -56,6 +55,7 @@ impl Members {
         {
             return Err("early method inventory requires an actual source owner");
         }
+        actual.source_owner()?;
         let members = facts
             .associated
             .owner_members(id)
@@ -73,19 +73,51 @@ impl Members {
         Ok(())
     }
 
-    fn function(&self, facts: &Declarations, definition: DefId) -> Result<Function, &'static str> {
+    fn function(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+    ) -> Result<Option<Function>, &'static str> {
         let function = if let Some(&index) = facts.function_indices.get(&definition) {
-            facts.functions.get(index)
+            Some(
+                facts
+                    .functions
+                    .get(index)
+                    .ok_or("method inventory has a stale source index")?,
+            )
+        } else if let Some(&index) = self.libraries.get(&definition) {
+            Some(
+                facts
+                    .associated
+                    .language_function(index)
+                    .ok_or("method inventory has a stale library index")?,
+            )
         } else {
-            self.libraries
-                .get(&definition)
-                .and_then(|&index| facts.associated.language_function(index))
-        }
-        .ok_or("method inventory lost its actual function declaration")?;
-        if function.definition != definition {
+            None
+        };
+        if function.is_some_and(|function| function.definition != definition) {
             return Err("method inventory index belongs to another actual declaration");
         }
-        Ok(*function)
+        Ok(function.copied())
+    }
+    fn expected(
+        &self,
+        facts: &mut Declarations,
+        definition: DefId,
+    ) -> Result<(conformance::Method, bool), &'static str> {
+        if let Some(function) = self.function(facts, definition)? {
+            return Ok((
+                conformance::Method::source(facts, function),
+                function.body.is_some(),
+            ));
+        }
+        let method = conformance::Method::imported(facts, definition)?;
+        let body = facts
+            .function_header(definition)?
+            .ok_or("imported conformance lost its required method header")?
+            .body
+            .is_some();
+        Ok((method, body))
     }
 }
 impl Checker<'_> {
@@ -133,41 +165,19 @@ impl Checker<'_> {
         })?;
         let mut result = Vec::new();
         for &definition in members.owners.get(&trait_owner).into_iter().flatten() {
-            let expected = members
-                .function(&self.facts, definition)
+            let (expected, has_body) = members
+                .expected(&mut self.facts, definition)
                 .map_err(|e| self.error(source, e))?;
             if let Some(&actual) = overrides.get(&definition) {
                 let actual = members
                     .function(&self.facts, actual)
-                    .map_err(|e| self.error(source, e))?;
-                self.trait_override(actual)?;
-                if self
-                    .facts
-                    .methods
-                    .receivers
-                    .contains_key(&expected.definition)
-                    != self
-                        .facts
-                        .methods
-                        .receivers
-                        .contains_key(&actual.definition)
-                {
-                    return Err(self.error(
-                        actual.node,
-                        "implementation method receiver presence disagrees with trait",
-                    ));
-                }
-                conformance::check(
-                    &mut self.facts,
-                    owner,
-                    predicate,
-                    expected,
-                    actual,
-                    definitions,
-                )
-                .map_err(|e| self.error(actual.node, e))?;
+                    .map_err(|e| self.error(source, e))?
+                    .ok_or_else(|| {
+                        self.error(source, "source override lacks its actual function syntax")
+                    })?;
+                self.trait_override_contract(owner, predicate, expected, actual, definitions)?;
                 result.push((expected.definition, Some(actual.definition)));
-            } else if expected.body.is_some()
+            } else if has_body
                 || self
                     .facts
                     .associated
@@ -180,6 +190,42 @@ impl Checker<'_> {
             }
         }
         Ok(result)
+    }
+    fn trait_override_contract(
+        &mut self,
+        owner: DefId,
+        predicate: Predicate,
+        expected: conformance::Method,
+        actual: Function,
+        definitions: &conformance::Definitions,
+    ) -> Result<(), Error> {
+        self.trait_override(actual)?;
+        if self
+            .facts
+            .methods
+            .receivers
+            .contains_key(&expected.definition)
+            != self
+                .facts
+                .methods
+                .receivers
+                .contains_key(&actual.definition)
+        {
+            return Err(self.error(
+                actual.node,
+                "implementation method receiver presence disagrees with trait",
+            ));
+        }
+        let actual_method = conformance::Method::source(&self.facts, actual);
+        conformance::check_methods(
+            &mut self.facts,
+            owner,
+            predicate,
+            expected,
+            actual_method,
+            definitions,
+        )
+        .map_err(|e| self.error(actual.node, e))
     }
     fn trait_override(&self, function: Function) -> Result<(), Error> {
         let item = self.item(function.node)?;

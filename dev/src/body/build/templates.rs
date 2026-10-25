@@ -58,6 +58,11 @@ impl Templates {
     pub(crate) fn input_count(&self, sources: usize) -> usize {
         sources.saturating_add(self.imported.as_ref().map_or(0, |i| i.len()))
     }
+    pub(crate) fn imported_originals(
+        &self,
+    ) -> Option<&std::rc::Rc<crate::body::transported_originals::ImportedOriginals>> {
+        self.imported.as_ref()
+    }
     pub(crate) fn get(&self, index: usize) -> Option<&Template> {
         if index < self.bodies.len() {
             self.bodies.get(index)

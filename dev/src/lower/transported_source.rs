@@ -172,4 +172,28 @@ impl Source {
         drop(headers);
         Ok(SourceInspection { rows, work })
     }
+    /// The publishing path consumes the same completed collector directly.
+    /// Inspection's indexes are not constructed and discarded before validation.
+    pub(super) fn complete_payload(
+        self,
+        base: crate::support::crates::Interface,
+    ) -> Result<crate::support::crates::Interface, &'static str> {
+        drop(self.openings);
+        let (rows, work) = self.stage.into_rows()?;
+        let base_bytes = base.base_retained_bytes();
+        if work
+            .reserved_bytes
+            .saturating_add(work.scratch_bytes)
+            .saturating_add(base_bytes)
+            > crate::support::crates::MAX_BYTES
+        {
+            return Err("source export base exceeds its combined collection envelope");
+        }
+        let mut validation = g::Work {
+            steps: work.steps,
+            ..g::Work::default()
+        };
+        let payload = g::Payload::from_source(base.identity(), rows, base_bytes, &mut validation)?;
+        base.with_generic_payload(payload)
+    }
 }

@@ -70,11 +70,10 @@ fn options() -> Result<Options, String> {
             continue;
         }
         match arg.as_str() {
-            "--source-core" => {
-                options.crates.source_core = Some(
-                    args.next()
-                        .ok_or("--source-core requires NAME@DISAMBIGUATOR")?,
-                );
+            "--source-core" | "--source-client" => {
+                options
+                    .crates
+                    .source_mode(arg == "--source-client", args.next())?;
             }
             "--crate-name" => {
                 options.crates.name = Some(args.next().ok_or("--crate-name requires a name")?);

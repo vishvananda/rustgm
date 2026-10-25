@@ -86,7 +86,14 @@ impl Checker<'_> {
         limit: usize,
     ) -> Result<(), Error> {
         for index in 0..self.facts.associated.owners().len() {
-            let owner = self.facts.associated.owners()[index];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             if matches!(
                 owner.kind,
                 OwnerKind::Impl {
@@ -105,9 +112,16 @@ impl Checker<'_> {
     }
 
     /// Resolved ownership does not imply that the owner's environment is ready.
-    pub(super) fn reserve_member_parents(&mut self) {
+    pub(super) fn reserve_member_parents(&mut self) -> Result<(), Error> {
         for member in self.facts.associated.members() {
-            let owner = self.facts.associated.owners()[member.owner.0 as usize];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(member.owner.0 as usize)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             if matches!(
                 self.report.resolution.definitions[member.definition.0 as usize].kind,
                 DefKind::Function | DefKind::Const | DefKind::TypeAlias
@@ -121,6 +135,7 @@ impl Checker<'_> {
                 );
             }
         }
+        Ok(())
     }
     pub(super) fn signature_binder(
         &mut self,

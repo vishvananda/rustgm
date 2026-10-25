@@ -76,9 +76,11 @@ impl super::comparisons::LibraryContracts<'_> {
                 ItemId(declaration.definition.0),
                 Header {
                     self_type: subject,
-                    self_bounds: crate::support::hash::HashSet::from_iter([source]),
                     parameters: Vec::new(),
-                    predicates: builtins.to_vec(),
+                    inputs: crate::sema::traits::inherited_inputs::HeaderInputs::source(
+                        crate::support::hash::HashSet::from_iter([source]),
+                        builtins.to_vec(),
+                    ),
                     results: Vec::new(),
                     regions: Vec::new(),
                 },

@@ -44,7 +44,7 @@ fn actual_default_context_keeps_nested_runtime_and_rejects_mismatched_bodies() -
         .ok_or("trait owner")?;
     let ordinary = facts.generics.trait_self_bounds[&trait_definition];
     let input = crate::sema::declaration_inputs::Input {
-        source: trait_owner.source.into(),
+        source: trait_owner.source_owner()?.source.into(),
         value: ordinary.into(),
     };
     let projected = facts.member_use_clause(

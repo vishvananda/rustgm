@@ -9,12 +9,14 @@ pub(crate) struct Contexts {
     // Exact current source rows displaced by provider-added contracts. They
     // must also prove, but only for the indexed retained components.
     pub source: Vec<Contract>,
+    pub imported: Option<Box<crate::body::copy_requirements::ImportedInputs>>,
 }
 impl Default for Contexts {
     fn default() -> Self {
         Self {
             bodies: Templates::source(Vec::new()),
             source: Vec::new(),
+            imported: None,
         }
     }
 }
@@ -27,7 +29,7 @@ pub(crate) fn verify<'a, S: BuildHasher>(
     custom: &[ItemId],
     position: impl Fn(TypeId, crate::body::ir::Selection) -> Result<(u32, u32), &'static str>,
 ) -> Result<Checked<'a>, Error> {
-    if context.bodies.bodies.is_empty() && context.source.is_empty() {
+    if context.bodies.bodies.is_empty() && context.source.is_empty() && context.imported.is_none() {
         return super::verify(
             environment,
             variances,
@@ -42,24 +44,7 @@ pub(crate) fn verify<'a, S: BuildHasher>(
         .len()
         .checked_add(contexts.bodies.len())
         .ok_or_else(|| error("original context count overflow"))?;
-    if crate::support::retained::new_map::<crate::body::ir::BodyKey, usize>(count)
-        .saturating_mul(2)
-        .saturating_add(crate::support::retained::new_map::<
-            crate::body::ir::NodeKey,
-            (),
-        >(count))
-        .saturating_add(crate::support::retained::new_map::<
-            crate::body::ir::BodyKey,
-            &Contract,
-        >(templates.input_count(contracts.bodies.len())))
-        .saturating_add(crate::support::retained::new_map::<
-            crate::body::ir::BodyKey,
-            (),
-        >(context.source.len()))
-        > 64 * 1024 * 1024
-    {
-        return Err(error("original proof contexts exceed storage budget"));
-    }
+    check_budget(contracts, templates, context, count)?;
     let owners::Indices {
         functions: index,
         closures,
@@ -67,13 +52,31 @@ pub(crate) fn verify<'a, S: BuildHasher>(
     } = owners::indices(templates)?;
     owners::indices(contexts)?;
     let inputs = context_inputs(contracts, templates, contexts)?;
+    let mut overlaid = None;
+    if let Some(imported) = &context.imported {
+        let mut proof_inputs = inputs.clone();
+        for prepared in imported
+            .inputs(environment.types, templates.imported_originals())
+            .map_err(error)?
+        {
+            let target = proof_inputs
+                .get_mut(&prepared.key)
+                .ok_or_else(|| error("prepared imported input lost its raw original"))?;
+            if target.source != prepared.source || target.signature != prepared.signature {
+                return Err(error("prepared imported input changed its raw header"));
+            }
+            *target = prepared;
+        }
+        overlaid = Some(proof_inputs);
+    }
+    let proof_inputs = overlaid.as_ref().unwrap_or(&inputs);
     source_regions(environment, variances, contracts, templates, context)?;
     let mut regions = regions::check_nested_bodies(
         environment.types,
         variances,
         contracts,
         templates.iter().chain(&contexts.bodies).map(|template| {
-            inputs
+            proof_inputs
                 .get(&template.body.key())
                 .map(|&input| (input, &template.body))
                 .ok_or_else(|| regions::Error {
@@ -117,6 +120,49 @@ pub(crate) fn verify<'a, S: BuildHasher>(
         loans,
         contracts,
     })
+}
+fn check_budget(
+    contracts: &Contracts<'_>,
+    templates: &Templates,
+    context: &Contexts,
+    count: usize,
+) -> Result<(), Error> {
+    let clone_bytes = if context.imported.is_some() {
+        templates
+            .inputs(&contracts.bodies)
+            .map(Contract::retained_bytes)
+            .fold(0, usize::saturating_add)
+    } else {
+        0
+    };
+    if crate::support::retained::new_map::<crate::body::ir::BodyKey, usize>(count)
+        .saturating_mul(2)
+        .saturating_add(crate::support::retained::new_map::<
+            crate::body::ir::NodeKey,
+            (),
+        >(count))
+        .saturating_add(
+            crate::support::retained::new_map::<crate::body::ir::BodyKey, &Contract>(
+                templates.input_count(contracts.bodies.len()),
+            )
+            .saturating_mul(if context.imported.is_some() { 2 } else { 1 }),
+        )
+        .saturating_add(crate::support::retained::new_map::<
+            crate::body::ir::BodyKey,
+            (),
+        >(context.source.len()))
+        .saturating_add(clone_bytes)
+        .saturating_add(
+            context
+                .imported
+                .as_ref()
+                .map_or(0, |inputs| inputs.combined_bytes()),
+        )
+        > 64 * 1024 * 1024
+    {
+        return Err(error("original proof contexts exceed storage budget"));
+    }
+    Ok(())
 }
 fn context_inputs<'a>(
     contracts: &'a Contracts<'_>,

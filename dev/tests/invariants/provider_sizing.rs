@@ -13,6 +13,8 @@ use crate::{
 };
 use std::path::Path;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+#[path = "sized_obligations.rs"]
+mod applications;
 const SOURCE: &str = "#![feature(no_core,lang_items,intrinsics,rustc_attrs)]#![no_core]#[lang=\"pointee_sized\"]pub trait PointeeSized{}#[lang=\"meta_sized\"]pub trait MetaSized:PointeeSized{}#[lang=\"sized\"]pub trait Sized:MetaSized{}";
 struct NoFiles;
 impl Sources for NoFiles {
@@ -54,11 +56,17 @@ fn source_headers_validate_before_sizing_answers() -> Result {
         .language(LangItem::MetaSized)
         .ok_or("meta")?
         .definition;
+    let sized = catalog
+        .role(LangItem::Sized)?
+        .ok_or("actual Sized")?
+        .definition;
+    assert!(catalog.sizing_kind(sized).is_err());
     assert!(catalog.sizing_kind(meta).is_err());
     assert_eq!(catalog.sizing_kind(DefId(u32::MAX))?, None);
     let mut facts = sema::declarations::analyze(&report)?;
     let catalog = facts.source_bindings.as_deref().ok_or("catalog")?;
     assert_eq!(catalog.sizing_kind(meta)?, Some(LangItem::MetaSized));
+    assert_eq!(catalog.sizing_kind(sized)?, Some(LangItem::Sized));
     assert!(validate_sizing(&report, &mut facts).is_err());
     Ok(())
 }

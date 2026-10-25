@@ -18,6 +18,15 @@ pub(crate) struct FunctionHeader<'a> {
     pub environment: Option<&'a Arc<Environment>>,
 }
 impl super::model::Declarations {
+    #[cfg(test)]
+    pub(crate) const fn metadata_model_layouts() -> (usize, usize, usize, usize) {
+        (
+            size_of::<super::associated::Owner>(),
+            size_of::<super::associated::OwnerKind>(),
+            size_of::<super::traits::Header>(),
+            size_of::<super::traits::implementations::Implementation>(),
+        )
+    }
     pub(crate) fn function_header(
         &self,
         definition: DefId,
@@ -26,6 +35,7 @@ impl super::model::Declarations {
             let Some(linkage) = self.crates.as_ref() else {
                 return Ok(None);
             };
+            linkage.require_original_store(&self.types)?;
             let header = linkage.original_header(definition)?;
             if let Some((signature, constant)) = linkage.original_callable(definition)
                 && (!matches!(self.definitions.get(definition.0 as usize).copied().flatten().and_then(|ty| self.types.kind(ty)),

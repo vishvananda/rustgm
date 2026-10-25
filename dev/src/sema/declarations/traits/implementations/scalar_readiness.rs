@@ -36,6 +36,23 @@ impl Pending {
             .owner(owner)
             .and_then(|id| facts.associated.get(id));
         if let Some(source) = source {
+            if source.source.is_none() {
+                let header = facts
+                    .generics
+                    .implementations
+                    .as_ref()
+                    .and_then(|registry| registry.header(owner))
+                    .ok_or("imported early profile lost its actual header")?;
+                if header.source.is_some() || header.owner != owner {
+                    return Err("imported early profile changed its source-free header");
+                }
+                facts
+                    .associated
+                    .imported_implementation(*source, header.predicate)?;
+                self.skipped.insert(owner, reason);
+                return Ok(());
+            }
+            let actual = source.source_owner()?;
             let registry = facts
                 .generics
                 .implementations
@@ -55,7 +72,7 @@ impl Pending {
                 &facts.types,
                 &arena,
                 owner,
-                header_source,
+                actual.source,
                 predicate,
             )?;
         }
@@ -184,6 +201,23 @@ impl Checker<'_> {
             .ok_or_else(|| {
                 Error::unlocated("implementation validation requires its actual header")
             })?;
+        let Some(source) = source else {
+            let actual = self
+                .facts
+                .associated
+                .owner(owner)
+                .and_then(|id| self.facts.associated.get(id))
+                .copied()
+                .ok_or_else(|| Error::unlocated("imported early profile lost its actual owner"))?;
+            self.facts
+                .associated
+                .imported_implementation(actual, predicate)
+                .map_err(Error::unlocated)?;
+            pending
+                .skip(&mut self.facts, owner, Unsupported::SourceOwner)
+                .map_err(Error::unlocated)?;
+            return Ok(false);
+        };
         match self.early_impl_plan(owner, source, predicate, pending)? {
             Eligibility::Ready(plan) => {
                 pending.plans.insert(owner, plan);
@@ -334,7 +368,7 @@ impl Checker<'_> {
                     &mut self.facts,
                     pending.overlap_steps.saturating_sub(before),
                 )
-                .map_err(|e| self.error(source, e))?;
+                .map_err(|e| self.implementation_error(source, e))?;
             result?;
         }
         Ok(())

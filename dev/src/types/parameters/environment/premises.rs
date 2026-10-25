@@ -49,6 +49,13 @@ fn projection(types: &Store, predicate: Predicate) -> Result<Option<ProjectionKe
 }
 
 impl TraitAssumptions {
+    pub(super) fn leaf_allocation_bound(clauses: usize) -> usize {
+        size_of::<Self>()
+            .saturating_add(2 * size_of::<usize>())
+            .saturating_add(clauses.saturating_mul(4 * size_of::<Predicate>()))
+            .saturating_add(crate::support::retained::new_map::<Predicate, ()>(clauses))
+    }
+
     pub(super) fn mapped(
         source: Arc<Self>,
         index: Arc<ClauseIndex>,

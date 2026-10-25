@@ -54,6 +54,16 @@ enum FormalOrder {
     Monomorphic,
 }
 impl Templates {
+    pub(crate) fn is_empty(&self) -> bool {
+        self.entries.is_empty() && self.bounds.is_empty() && self.generics.is_empty()
+    }
+    pub(crate) fn allocation(&self) -> crate::support::retained::Allocation {
+        let mut result = crate::support::retained::Allocation::default();
+        result.map(&self.entries);
+        result.vector(&self.bounds);
+        result.vector(&self.generics);
+        result
+    }
     /// Publish a completed callable with no early/type/const slots.
     /// Late-bound signature lifetimes remain part of the function type.
     /// # Errors

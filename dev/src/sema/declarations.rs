@@ -296,6 +296,14 @@ impl<'a> Checker<'a> {
         if let Some(imported) = &report.resolution.crates {
             for definition in imported.generic_definitions() {
                 let definition = definition.map_err(Error::unlocated)?;
+                match super::crates::source_readiness(&mut checker.facts, definition)? {
+                    Some(super::crates::ImportedReadiness::Declaration) => {
+                        checker.states[definition.0 as usize] = State::Complete;
+                        continue;
+                    }
+                    Some(super::crates::ImportedReadiness::ValueBinding) => continue,
+                    None => {}
+                }
                 if checker
                     .facts
                     .definitions
@@ -327,7 +335,7 @@ impl<'a> Checker<'a> {
 impl Checker<'_> {
     fn run(&mut self) -> Result<(), Error> {
         self.validate_foreign_blocks()?;
-        self.reserve_member_parents();
+        self.reserve_member_parents()?;
         self.prepare_library_types()?;
         self.prepare_intrinsics()?;
         self.reserve_nominals()?;

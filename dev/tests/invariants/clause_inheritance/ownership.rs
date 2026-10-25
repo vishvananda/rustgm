@@ -58,7 +58,7 @@ fn quantified_results_belong_only_to_the_captured_complete_formal_parent()
             header.owned_result(&store, owner, value)?,
             expected.then_some(member)
         );
-        header.predicates.push(Located {
+        header.source_inputs_mut()?.predicates.push(Located {
             source: source(slot.into()),
             value,
         });
@@ -66,10 +66,17 @@ fn quantified_results_belong_only_to_the_captured_complete_formal_parent()
     }
     header.partition_results(&store, owner)?;
     assert_eq!(header.results.len(), 1);
-    assert_eq!(header.predicates.len(), 3);
+    assert_eq!(header.source_inputs()?.predicates.len(), 3);
     for (value, owned) in retained {
         assert_eq!(header.results.iter().any(|(_, p)| p.value == value), owned);
-        assert_eq!(header.predicates.iter().any(|p| p.value == value), !owned);
+        assert_eq!(
+            header
+                .source_inputs()?
+                .predicates
+                .iter()
+                .any(|p| p.value == value),
+            !owned
+        );
     }
     Ok(())
 }

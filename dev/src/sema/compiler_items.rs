@@ -18,7 +18,7 @@ mod layout;
 mod needs_drop;
 mod select_calls;
 mod select_contract;
-pub(crate) use copying::copy_decisions;
+pub(crate) use copying::{copy_decisions, copy_declaration, prove_body_requirements};
 pub(crate) use select_calls::{Select, check_const_select, prepare_select, source_select};
 mod roles;
 pub(crate) use roles::callable_role;
@@ -188,7 +188,7 @@ impl Catalog {
     pub(crate) fn forces_dyn_incompatible(&self, definition: DefId) -> Result<bool, &'static str> {
         for role in [LangItem::Sized, LangItem::Destruct, LangItem::Unsize] {
             if self
-                .language(role)
+                .role(role)?
                 .is_some_and(|declaration| declaration.definition == definition)
                 && self.attributes[role.index()]
                     .contains(crate::resolve::bindings::HeaderAttribute::DynIncompatible)
@@ -198,7 +198,7 @@ impl Catalog {
                         return Err("source dyn restriction requires completed sizing headers");
                     }
                 } else {
-                    self.validated_language(role)?;
+                    self.validated_role(role)?;
                 }
                 return Ok(true);
             }
@@ -212,14 +212,18 @@ impl Catalog {
     }
     /// Reservation is enough to identify an obligation, never to answer it.
     pub(crate) fn sizing_kind(&self, definition: DefId) -> Result<Option<LangItem>, &'static str> {
-        let found = [LangItem::MetaSized, LangItem::PointeeSized]
-            .into_iter()
-            .find(|kind| {
-                self.language(*kind)
-                    .is_some_and(|d| d.definition == definition)
-            });
+        let mut found = None;
+        for kind in [LangItem::Sized, LangItem::MetaSized, LangItem::PointeeSized] {
+            if self.role(kind)?.is_some_and(|d| d.definition == definition) {
+                found = Some(kind);
+                break;
+            }
+        }
         if found.is_some() && self.sizing.is_none() {
             return Err("source sizing declarations require completed validation");
+        }
+        if let Some(kind) = found {
+            self.validated_role(kind)?;
         }
         Ok(found)
     }

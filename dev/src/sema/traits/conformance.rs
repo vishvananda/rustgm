@@ -2,6 +2,7 @@
 mod implied;
 mod mapping;
 mod outputs;
+mod override_inputs;
 mod projections;
 mod regions;
 #[cfg(test)]
@@ -20,6 +21,7 @@ use crate::{
         },
     },
 };
+pub(in crate::sema) use override_inputs::Method;
 pub(in crate::sema) use projections::Definitions;
 use std::sync::Arc;
 
@@ -46,6 +48,19 @@ pub(in crate::sema) fn check(
     predicate: Predicate,
     expected: Function,
     actual: Function,
+    definitions: &Definitions,
+) -> Result<(), String> {
+    let expected = Method::source(facts, expected);
+    let actual = Method::source(facts, actual);
+    check_methods(facts, owner, predicate, expected, actual, definitions)
+}
+
+pub(in crate::sema) fn check_methods(
+    facts: &mut Declarations,
+    owner: DefId,
+    predicate: Predicate,
+    expected: Method,
+    actual: Method,
     definitions: &Definitions,
 ) -> Result<(), String> {
     let mut contract = mapping::contract(facts, owner, predicate, expected, actual)?;

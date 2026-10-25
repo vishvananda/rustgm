@@ -199,7 +199,7 @@ fn validate_original_exports(
     payload: &crate::support::crates::generics::Payload,
 ) -> Result<(), &'static str> {
     let mut requested = requests.iter();
-    for declaration in &payload.rows().declarations {
+    for declaration in &payload.legacy_rows()?.declarations {
         if let crate::support::crates::generics::Declaration::Function {
             identity,
             public: true,

@@ -118,12 +118,13 @@ impl Checker<'_> {
         };
         Ok(closed)
     }
-    fn inherent_owner(&self, member: DefId) -> Result<crate::sema::associated::Owner, Error> {
+    fn inherent_owner(&self, member: DefId) -> Result<crate::sema::associated::SourceOwner, Error> {
+        let id = self.facts.associated.owner(member).ok_or_else(|| {
+            Error::at(crate::resolve::unit::FileId(0), 0, "missing inherent owner")
+        })?;
         self.facts
             .associated
-            .owner(member)
-            .and_then(|id| self.facts.associated.get(id))
-            .copied()
-            .ok_or_else(|| Error::at(crate::resolve::unit::FileId(0), 0, "missing inherent owner"))
+            .source_owner(id)
+            .map_err(Error::unlocated)
     }
 }

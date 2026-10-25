@@ -18,10 +18,11 @@ pub(super) fn append(
     predicates: &mut Vec<(crate::body::ir::ProofSite, Predicate)>,
     work: &mut ImportedOriginals,
 ) -> Result<(), &'static str> {
-    let Some(_) = &payload.rows().calls else {
+    let rows = payload.legacy_rows()?;
+    let Some(_) = &rows.calls else {
         return Ok(());
     };
-    let original = &payload.rows().originals[function.body.0 as usize];
+    let original = &rows.originals[function.body.0 as usize];
     let linkage = facts
         .crates
         .as_deref()
@@ -43,8 +44,7 @@ pub(super) fn append(
         else {
             continue;
         };
-        let Some(g::Type::FunctionItem(application)) = payload
-            .rows()
+        let Some(g::Type::FunctionItem(application)) = rows
             .types
             .get(original.values[callee as usize].ty.0 as usize)
         else {

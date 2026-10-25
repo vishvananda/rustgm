@@ -25,7 +25,7 @@ fn canonical_normalization_keeps_family_inputs_and_restores_selected_result_life
     let mut checker = Checker::new(&report)?;
     reserve(&mut checker)?;
     let member = checker.facts.associated.members()[0];
-    let owner = checker.facts.associated.owners()[member.owner.0 as usize];
+    let owner = checker.facts.associated.owners()[member.owner.0 as usize].source_owner()?;
     let OwnerKind::Trait { definition, .. } = owner.kind else {
         return Err("missing family trait owner".into());
     };

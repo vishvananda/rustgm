@@ -2,6 +2,10 @@
 mod comparisons;
 mod language;
 mod matching;
+mod provenance;
+mod reserved_owners;
+pub(in crate::sema) use provenance::SourceOwner;
+pub(in crate::sema) use reserved_owners::ImportedOwner;
 #[cfg(test)]
 #[path = "../../tests/invariants/owner_slots.rs"]
 mod tests;
@@ -51,10 +55,11 @@ pub enum OwnerKind {
         constant: bool,
         negative: bool,
     },
+    ImportedImpl(crate::resolve::body_origin::ImportedDeclarationId),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Owner {
-    pub source: NodeKey,
+    pub source: Option<NodeKey>,
     pub self_definition: DefId,
     pub kind: OwnerKind,
 }
@@ -181,7 +186,7 @@ impl Inventory {
         }
         match self.get(self.owner(member)?)?.kind {
             OwnerKind::Trait { definition, .. } => Some(definition),
-            OwnerKind::Impl { .. } => None,
+            OwnerKind::Impl { .. } | OwnerKind::ImportedImpl(_) => None,
         }
     }
     pub(crate) fn constant_trait(&self, definition: DefId) -> Option<bool> {
@@ -295,6 +300,9 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
         if library_owner(report, index) {
             continue;
         }
+        if definition.node.is_none() && provenance::imported_self(report, index)? {
+            continue;
+        }
         let source = definition
             .node
             .ok_or_else(|| Error::at(FileId(0), 0, "associated Self definition has no source"))?;
@@ -315,7 +323,7 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
         }
         result.declarations.insert(self_definition, owner);
         result.owners.push(Owner {
-            source,
+            source: Some(source),
             self_definition,
             kind,
         });
@@ -334,7 +342,10 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
         ) {
             continue;
         }
-        let source = result.owners[owner.0 as usize].source;
+        let source = result.owners[owner.0 as usize]
+            .source_owner()
+            .map_err(Error::unlocated)?
+            .source;
         let id = identity(report, source, index)?;
         if definition.kind == DefKind::TypeAlias {
             result.type_members.insert((owner, id), id);

@@ -1,0 +1,110 @@
+//! Reuse empty extensions; source trait identities never become builtin abilities.
+use super::{Abilities, Clause, Declarations, Environment, Error, Headers, ParameterId, error};
+use crate::types::{
+    Kind, TypeId,
+    arguments::Argument,
+    parameters::{environment::Retained, predicates::Bound},
+};
+use std::sync::Arc;
+
+pub(super) fn prepare(
+    facts: &Declarations,
+    parent: Option<&Arc<Environment>>,
+    parameters: &[(ParameterId, Abilities)],
+    clauses: &[Clause],
+    previous_parameters: usize,
+    previous_clauses: usize,
+    budget: &mut Headers,
+) -> Result<Arc<Environment>, Error> {
+    let own = &clauses[previous_clauses..];
+    if previous_parameters == parameters.len()
+        && own.is_empty()
+        && let Some(parent) = parent
+    {
+        budget.charge(1)?;
+        return Ok(Arc::clone(parent));
+    }
+    let mut roots = 0_usize;
+    let mut copied = 0_usize;
+    let (assumptions, inherited) = if previous_parameters == parameters.len() {
+        if let Some(parent) = parent {
+            copied = previous_clauses;
+            (own, Some(parent))
+        } else {
+            (clauses, None)
+        }
+    } else {
+        (clauses, None)
+    };
+    for clause in assumptions {
+        budget.charge(1)?;
+        let Clause::Predicate(predicate) = clause else {
+            return Err(error(
+                "quantified source assumptions require a wider environment profile",
+            ));
+        };
+        leaf(facts, predicate.ty)?;
+        let Bound::Trait(id) = predicate.bound else {
+            return Err(error(
+                "source assumption is outside the ordinary actual trait profile",
+            ));
+        };
+        let application = facts
+            .types
+            .trait_application(id)
+            .ok_or_else(|| error("source environment lost its actual trait application"))?;
+        let arguments = facts
+            .types
+            .arguments(application.arguments)
+            .ok_or_else(|| error("source environment lost its full trait arguments"))?;
+        budget.charge(arguments.len().saturating_add(1))?;
+        roots = roots.saturating_add(arguments.len().saturating_add(1));
+        for argument in arguments {
+            let Argument::Type(ty) = argument else {
+                return Err(error(
+                    "source regional assumption requires a wider environment profile",
+                ));
+            };
+            leaf(facts, ty)?;
+        }
+    }
+    budget.charge(parameters.len().saturating_add(copied))?;
+    budget.reserve(Environment::trait_leaf_allocation_bound(
+        parameters.len(),
+        clauses.len(),
+        roots,
+    ))?;
+    let environment = if let Some(parent) = inherited {
+        parent.as_ref().clone()
+    } else {
+        Environment::new(&facts.types, parameters).map_err(error)?
+    };
+    let environment = Arc::new(
+        environment
+            .with_clauses(&facts.types, assumptions)
+            .map_err(error)?,
+    );
+    let retained = if let Some(parent) = inherited {
+        environment.retain_owned_from(parent, &mut Retained::default())
+    } else {
+        let empty = Environment::new(&facts.types, &[]).map_err(error)?;
+        environment.retain_owned_from(&empty, &mut Retained::default())
+    };
+    budget.charge(retained.visits)?;
+    budget.observed.include(retained);
+    budget.observed.add(2 * size_of::<usize>());
+    Ok(environment)
+}
+fn leaf(facts: &Declarations, ty: TypeId) -> Result<(), Error> {
+    if ty != TypeId::UNIT
+        && !matches!(
+            facts.types.kind(ty),
+            Some(Kind::Parameter(_) | Kind::Primitive(_))
+        )
+    {
+        return Err(error(
+            "source trait assumption has an unsupported non-leaf actual type",
+        ));
+    }
+    Ok(())
+}

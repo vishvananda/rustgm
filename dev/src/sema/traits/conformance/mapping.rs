@@ -1,12 +1,12 @@
 //! Map both method contracts to trait-owned rigid parameters and one lifetime proof scope.
-use super::{Clause, Contract, Declarations, DefId, Function, Predicate, RegionId};
+use super::{Clause, Contract, Declarations, DefId, Method, Predicate, RegionId};
 use crate::{
     sema::{
         generics::{Parameter, parameter_id},
         lifetimes::FunctionRegions,
     },
     types::{
-        Kind, Store,
+        Store,
         arguments::Argument,
         parameters::{
             ParameterId, ParameterKind,
@@ -24,20 +24,28 @@ struct Folders {
     output_regions: Vec<RegionId>,
     variables: Vec<RegionId>,
 }
-fn scheme(facts: &Declarations, function: Function) -> FunctionRegions {
-    facts
-        .lifetimes
-        .functions
-        .get(&function.definition)
-        .cloned()
-        .unwrap_or(FunctionRegions {
-            total: 0,
-            captures: 0,
-            early: Vec::new(),
-            late: Vec::new(),
-            has_declared_late: false,
-            bounds: Vec::new(),
-        })
+fn scheme(facts: &Declarations, function: Method) -> Result<FunctionRegions, &'static str> {
+    if let Some(scheme) = facts.lifetimes.functions.get(&function.definition).cloned() {
+        return Ok(scheme);
+    }
+    if facts
+        .crates
+        .as_ref()
+        .map(|linkage| linkage.original_header(function.definition))
+        .transpose()?
+        .flatten()
+        .is_some()
+    {
+        return Err("imported method lacks its installed lifetime scheme");
+    }
+    Ok(FunctionRegions {
+        total: 0,
+        captures: 0,
+        early: Vec::new(),
+        late: Vec::new(),
+        has_declared_late: false,
+        bounds: Vec::new(),
+    })
 }
 fn own_parameters(facts: &Declarations, owner: DefId) -> Vec<Parameter> {
     facts
@@ -182,31 +190,16 @@ fn folders(
     })
 }
 
-// Normalized shapes can erase inputs whose formation remains an obligation.
-fn written_signature(facts: &Declarations, function: Function) -> crate::types::TypeId {
-    if facts.associated.families.is_empty() {
-        return function.signature;
-    }
-    match facts
-        .unreduced
-        .node(function.node)
-        .and_then(|ty| facts.types.kind(ty))
-    {
-        Some(Kind::FunctionItem { signature, .. }) => signature,
-        _ => function.signature,
-    }
-}
-
 pub(super) fn contract(
     facts: &mut Declarations,
     owner: DefId,
     predicate: Predicate,
-    expected: Function,
-    actual: Function,
+    expected: Method,
+    actual: Method,
 ) -> Result<Contract, String> {
     let method_parameters = paired_parameters(facts, expected.definition, actual.definition)?;
-    let expected_regions = scheme(facts, expected);
-    let actual_regions = scheme(facts, actual);
+    let expected_regions = scheme(facts, expected)?;
+    let actual_regions = scheme(facts, actual)?;
     let mut folders = folders(
         facts,
         predicate,
@@ -220,20 +213,23 @@ pub(super) fn contract(
     // The written impl signature may already have normalized to a scalar.
     // Its original applications still carry requirements; they cannot acquire
     // the declared signature's implied lifetime permissions by disappearing.
-    let actual_template = written_signature(facts, actual);
+    let actual_template = actual.written_signature;
     let actual_signature = folders
         .actual
         .signature(&mut facts.types, actual_template, 0)?;
-    let mut assumptions: Vec<_> = facts
-        .generics
-        .predicates_in_scope(owner)
-        .map(|p| p.value)
-        .collect();
+    let mut assumptions: Vec<_> =
+        crate::sema::declaration_inputs::all(&facts.generics, facts.crates.as_deref(), owner)?
+            .map(|p| p.value)
+            .collect();
     // The impl header already proves the trait's parent requirements. Retain
     // the method's own caller bounds here; synthetic inherited Self assumptions
     // would hide the impl's concrete associated definitions during normalization.
-    let method_bounds = facts.generics.predicates.get(&expected.definition);
-    for predicate in method_bounds.into_iter().flatten() {
+    let method_bounds = crate::sema::declaration_inputs::own_view(
+        &facts.generics,
+        facts.crates.as_deref(),
+        expected.definition,
+    )?;
+    for predicate in method_bounds.iter() {
         assumptions.push(folders.expected.clause(&mut facts.types, predicate.value)?);
     }
     let obligations = method_requirements(
@@ -313,7 +309,10 @@ fn method_requirements(
     method_parameters: &[(Parameter, Parameter)],
 ) -> Result<Vec<Clause>, &'static str> {
     let mut obligations = Vec::new();
-    for predicate in facts.generics.predicates.get(&method).into_iter().flatten() {
+    for predicate in
+        crate::sema::declaration_inputs::own_view(&facts.generics, facts.crates.as_deref(), method)?
+            .iter()
+    {
         obligations.push(folder.clause(&mut facts.types, predicate.value)?);
     }
     for (_, implementation) in method_parameters {

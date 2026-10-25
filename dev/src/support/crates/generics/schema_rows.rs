@@ -20,7 +20,7 @@ use crate::support::{
     edition::Edition,
 };
 pub use bodies::*;
-pub use descriptor::{Descriptor, Profile, ValidatedRows};
+pub use descriptor::{Columns, Descriptor, Profile, ValidatedRows, ValidatedView};
 pub use inputs::*;
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};
 pub use validation::{

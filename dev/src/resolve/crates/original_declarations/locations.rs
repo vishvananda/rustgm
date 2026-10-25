@@ -65,7 +65,8 @@ pub(super) fn authenticate(
     let rows = artifact
         .generic_payload()
         .ok_or_else(|| error("missing authenticated original rows"))?
-        .rows();
+        .legacy_rows()
+        .map_err(error)?;
     if rows.declarations.len() != definitions.len() || expected.len() != definitions.len() {
         return Err(error("imported original remap is incomplete"));
     }

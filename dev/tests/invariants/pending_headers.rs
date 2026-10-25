@@ -33,10 +33,10 @@ fn implementation(
 ) -> Result<Implementation, &'static str> {
     Ok(Implementation {
         owner: DefId(owner),
-        source: NodeKey {
+        source: Some(NodeKey {
             file: FileId(0),
             node: NodeId::new(owner),
-        },
+        }),
         predicate: Predicate {
             ty,
             bound: Bound::Trait(store.intern_trait_application(Application {

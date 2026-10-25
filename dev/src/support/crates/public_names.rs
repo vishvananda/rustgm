@@ -193,7 +193,11 @@ pub(super) fn owned_public_definitions(
             interface
                 .generic_payload()
                 .into_iter()
-                .flat_map(|payload| &payload.rows().declarations)
+                .filter_map(|payload| match payload.view() {
+                    super::generics::PayloadView::Legacy(rows) => Some(&rows.declarations),
+                    super::generics::PayloadView::Source(_) => None,
+                })
+                .flatten()
                 .filter_map(|declaration| match declaration {
                     super::generics::Declaration::Function {
                         identity,

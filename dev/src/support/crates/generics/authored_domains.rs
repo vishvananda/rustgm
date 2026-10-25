@@ -100,6 +100,21 @@ impl<'a> HeaderIndex<'a> {
         })
     }
 
+    pub(super) fn into_header_rows(self) -> Result<(Vec<Option<HeaderRef>>, usize), &'static str> {
+        let scope_payload = self
+            .scopes
+            .retained_bytes()
+            .saturating_sub(size_of::<ScopeIndex<'_>>());
+        let indexes = size_of::<Self>()
+            .saturating_add(scope_payload)
+            .saturating_add(crate::support::retained::vector(&self.headers));
+        let rows = self
+            .bytes
+            .checked_sub(indexes)
+            .ok_or("source header storage decomposition is inconsistent")?;
+        Ok((self.headers, rows))
+    }
+
     /// # Errors
     /// Rejects unknown declarations and charges rejected lookups as well.
     pub fn header(

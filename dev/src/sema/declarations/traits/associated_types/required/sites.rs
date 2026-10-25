@@ -27,11 +27,13 @@ impl Analysis {
                 continue;
             };
             let definition = &checker.report.resolution.definitions[id.0 as usize];
+            let source_owner = checker
+                .facts
+                .associated
+                .source_owner(member.owner)
+                .map_err(Error::unlocated)?;
             let source = definition.node.ok_or_else(|| {
-                checker.error(
-                    checker.facts.associated.owners()[member.owner.0 as usize].source,
-                    "missing required-bound member source",
-                )
+                checker.error(source_owner.source, "missing required-bound member source")
             })?;
             self.collect_site(checker, id, owner, source)?;
         }
@@ -48,10 +50,15 @@ impl Analysis {
             let Some(contract) = checker.facts.associated.type_contract(id) else {
                 continue;
             };
+            let source_owner = checker
+                .facts
+                .associated
+                .source_owner(member.owner)
+                .map_err(Error::unlocated)?;
             let Some(Kind::Projection(formal)) = checker.facts.types.kind(contract.projection)
             else {
                 return Err(checker.error(
-                    checker.facts.associated.owners()[member.owner.0 as usize].source,
+                    source_owner.source,
                     "missing required-bound family projection",
                 ));
             };
@@ -61,10 +68,7 @@ impl Analysis {
             let source = checker.report.resolution.definitions[id.0 as usize]
                 .node
                 .ok_or_else(|| {
-                    checker.error(
-                        checker.facts.associated.owners()[member.owner.0 as usize].source,
-                        "missing required-bound family source",
-                    )
+                    checker.error(source_owner.source, "missing required-bound family source")
                 })?;
             charge(&mut self.steps, 1).map_err(|e| checker.error(source, e))?;
             owners.insert(owner);

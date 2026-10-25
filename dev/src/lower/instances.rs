@@ -109,6 +109,9 @@ pub fn build_library_prepared(
     ),
     Error,
 > {
+    if report.package.source_core().is_some() {
+        return build_source_library(report, facts, identity, prepared);
+    }
     let mut interface = None;
     let program = inspect_selected(
         report,
@@ -134,6 +137,69 @@ pub fn build_library_prepared(
     let interface = interface
         .ok_or_else(|| diagnostic(report, None, "missing checked library exports".into()))?;
     Ok((program, interface))
+}
+
+fn build_source_library(
+    report: &Report,
+    facts: &mut Declarations,
+    identity: crate::support::crates::CrateIdentity,
+    prepared: crate::pipeline::Prepared,
+) -> Result<
+    (
+        crate::lowir::program::Program,
+        crate::support::crates::Interface,
+    ),
+    Error,
+> {
+    inspect_staged(
+        report,
+        facts,
+        prepared,
+        |facts, checked| {
+            let source =
+                super::transported_source::Source::begin(report, facts, checked, &identity)
+                    .map_err(|e| diagnostic(report, None, e.into()))?;
+            let mut dependencies =
+                report
+                    .resolution
+                    .crates
+                    .as_ref()
+                    .map_or_else(Vec::new, |imported| {
+                        imported
+                            .dependencies()
+                            .aliases()
+                            .iter()
+                            .map(|alias| alias.identity().clone())
+                            .collect::<Vec<_>>()
+                    });
+            dependencies.sort_unstable();
+            dependencies.dedup();
+            let base =
+                crate::support::crates::Interface::new(identity.clone(), dependencies, Vec::new())
+                    .map_err(|e| diagnostic(report, None, e.into()))?;
+            facts
+                .crates
+                .get_or_insert_default()
+                .set_identity(identity)
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            let roots = super::roots::exports(facts, &[])
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            Ok((None, roots, (source, base)))
+        },
+        |(source, _), facts, proved, input| {
+            source
+                .collect(facts, proved, input)
+                .map_err(|e| diagnostic(report, None, e.into()))
+        },
+        |facts, assembled, roots, (source, base)| {
+            let program = super::build_assembled(facts, assembled, roots)
+                .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
+            let interface = source
+                .complete_payload(base)
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            Ok((program, interface))
+        },
+    )?
 }
 
 /// Inspect the complete checked source program without requiring an executable entry.
@@ -409,6 +475,25 @@ fn prepare_original_contracts(
     contexts: &mut borrow::templates::Contexts,
     inputs: &mut [body::regions::Contract],
 ) -> Result<(), Error> {
+    if facts.uses_source_copy()
+        && let Some(originals) = templates.imported_originals()
+    {
+        if contexts.imported.is_some() {
+            return Err(diagnostic(
+                report,
+                None,
+                "imported proof inputs were prepared twice".into(),
+            ));
+        }
+        contexts.imported = Some(Box::new(
+            body::copy_requirements::ImportedInputs::build(
+                facts,
+                std::rc::Rc::clone(originals),
+                crate::pipeline::OriginalInput::prepare_imported,
+            )
+            .map_err(|e| diagnostic(report, None, e))?,
+        ));
+    }
     if facts.uses_source_copy() {
         // The shared input inventory also contains concrete bodies built later.
         // Only actual original rows enter this proof; each concrete body must

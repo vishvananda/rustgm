@@ -11,7 +11,7 @@ impl super::super::Header {
         store: &Store,
         owner: ItemId,
     ) -> Result<(), &'static str> {
-        let mut predicates = std::mem::take(&mut self.predicates);
+        let mut predicates = std::mem::take(&mut self.source_inputs_mut()?.predicates);
         let mut retained = 0;
         for index in 0..predicates.len() {
             let predicate = predicates[index];
@@ -23,7 +23,7 @@ impl super::super::Header {
             }
         }
         predicates.truncate(retained);
-        self.predicates = predicates;
+        self.source_inputs_mut()?.predicates = predicates;
         Ok(())
     }
     pub(in crate::sema) fn owned_result(

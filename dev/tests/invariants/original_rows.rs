@@ -1,7 +1,7 @@
 //! Metadata validation derives ownership/operation checks without proving execution.
 use super::*;
 use crate::support::crates::{
-    ExternalDef, ExternalKind, Scalar,
+    CrateIdentity, ExternalDef, ExternalKind, Scalar,
     owner_catalog::{BodyRef, DeclarationRef},
 };
 use crate::support::edition::Edition;
@@ -94,7 +94,7 @@ fn generic_rows_preserve_unused_slots_and_derive_return_obligations() -> Result 
     let (owner, rows) = fixture(3)?;
     let mut work = Work::default();
     let payload = Payload::new(&owner, rows.clone(), &mut work)?;
-    assert_eq!(payload.rows().parameters.len(), 3);
+    assert_eq!(payload.legacy_rows()?.parameters.len(), 3);
     assert_eq!(payload.owners().owner(), &owner);
     assert_eq!(
         payload.relations(BodyRef(0))?.collect::<Vec<_>>(),

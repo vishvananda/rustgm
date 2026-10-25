@@ -100,7 +100,15 @@ impl Checker<'_> {
             return Ok(());
         }
         let mut headers = Headers::default();
-        for owner in self.facts.associated.owners() {
+        for index in 0..self.facts.associated.owners().len() {
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             let OwnerKind::Trait { definition, .. } = owner.kind else {
                 continue;
             };

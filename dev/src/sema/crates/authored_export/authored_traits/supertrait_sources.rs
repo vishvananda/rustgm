@@ -31,8 +31,9 @@ fn authenticate(
         .get(&header.definition)
         .map_or(&[][..], Vec::as_slice);
     let declared = facts.generics.declared_predicates(header.definition).len();
+    let canonical_inputs = &canonical.source_inputs()?.predicates;
     if canonical.self_type != header.self_type
-        || canonical.predicates.len() >= declared
+        || canonical_inputs.len() >= declared
         || declared > full.len()
     {
         return Err("source canonical/declared/full trait boundaries changed");
@@ -46,7 +47,7 @@ fn authenticate(
         if input.source.source() != Some(expected.source) || input.value != expected.value {
             return Err("source trait inputs changed their exact source/clause owner");
         }
-        if let Some(expected) = canonical.predicates.get(count)
+        if let Some(expected) = canonical_inputs.get(count)
             && (input.source.source() != Some(expected.source) || input.value != expected.value)
         {
             return Err("source trait canonical prefix changed its exact source/clause");
@@ -65,13 +66,13 @@ fn authenticate(
         .get(&header.definition)
         .ok_or("source trait has no actual implicit own-trait premise")?;
     let actual = full
-        .get(canonical.predicates.len())
+        .get(canonical_inputs.len())
         .ok_or("source canonical prefix lost its following own-trait premise")?;
     if actual.source != owner || actual.value != Clause::Predicate(*implicit) {
         return Err("source trait canonical prefix has a foreign implicit premise");
     }
     Ok(Prefix {
-        canonical: u32::try_from(canonical.predicates.len())
+        canonical: u32::try_from(canonical_inputs.len())
             .map_err(|_| "source canonical prefix overflow")?,
         declared: u32::try_from(declared).map_err(|_| "source declared prefix overflow")?,
     })
@@ -129,6 +130,7 @@ impl<'a> Inventory<'a> {
     }
     pub fn is_self(&self, facts: &Declarations, ordinal: usize) -> Result<bool, &'static str> {
         self.canonical
+            .source_inputs()?
             .predicates
             .get(ordinal)
             .map_or(Ok(false), |predicate| {
@@ -145,7 +147,7 @@ impl<'a> Inventory<'a> {
         is_self: bool,
     ) -> Result<(), &'static str> {
         stage.charge(1)?;
-        if ordinal >= self.canonical.predicates.len() {
+        if ordinal >= self.canonical.source_inputs()?.predicates.len() {
             return Ok(());
         }
         let source = input

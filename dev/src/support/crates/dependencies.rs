@@ -55,7 +55,7 @@ impl Dependencies {
         if descriptor.identity() != provider
             || descriptor.provider() != provider
             || descriptor.edition() != crate::support::edition::Edition::Rust2024
-            || descriptor.profile() != super::generics::source::Profile::Source2024
+            || descriptor.profile() != super::generics::source::Profile::Source2024Functions
         {
             return Err("source client provider descriptor does not match the requested profile");
         }
@@ -143,7 +143,12 @@ fn validate_graph(
             .saturating_add(
                 artifact
                     .generic_payload()
-                    .map_or(0, |p| p.rows().functions.len()),
+                    .map_or(0, |payload| match payload.view() {
+                        super::generics::PayloadView::Legacy(rows) => rows.functions.len(),
+                        super::generics::PayloadView::Source(rows) => {
+                            rows.descriptor().rows().functions.len()
+                        }
+                    }),
             )
             .saturating_add(artifact.constants().len())
             .saturating_add(artifact.nominals().map_or(0, |n| n.records().len()));

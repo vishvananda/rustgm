@@ -135,9 +135,11 @@ impl Checker<'_> {
                 ItemId(declaration.definition.0),
                 Header {
                     self_type: subject,
-                    self_bounds: crate::support::hash::HashSet::default(),
                     parameters: Vec::new(),
-                    predicates: Vec::new(),
+                    inputs: crate::sema::traits::inherited_inputs::HeaderInputs::source(
+                        crate::support::hash::HashSet::default(),
+                        Vec::new(),
+                    ),
                     results,
                     regions: Vec::new(),
                 },

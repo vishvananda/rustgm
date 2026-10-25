@@ -28,7 +28,7 @@ pub(super) fn import(
     mapped: &mut Mapped,
     headers: &mut Headers,
 ) -> Result<Vec<Application>, Error> {
-    let rows = payload.rows();
+    let rows = payload.legacy_rows().map_err(error)?;
     let Some(calls) = &rows.calls else {
         return Ok(Vec::new());
     };

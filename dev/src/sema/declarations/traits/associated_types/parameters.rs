@@ -74,7 +74,14 @@ impl Checker<'_> {
         for index in 0..self.facts.associated.members().len() {
             let member = self.facts.associated.members()[index];
             let definition = &self.report.resolution.definitions[member.definition.0 as usize];
-            let owner = self.facts.associated.owners()[member.owner.0 as usize];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(member.owner.0 as usize)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             if definition.kind != DefKind::TypeAlias
                 || matches!(owner.kind, OwnerKind::Trait { .. }) != traits
                 || self

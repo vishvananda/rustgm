@@ -1,7 +1,10 @@
 //! Immutable imported originals share one owner; no row is a Checked or Permit.
+mod decoded_bodies;
 mod interface_goals;
 mod invocations;
 mod operations;
+mod rebuilt_inputs;
+mod rebuilt_operations;
 use crate::{
     body::{regions::Contract, templates::Template},
     resolve::{expansion::Report, model::DefId, package::Error},
@@ -49,6 +52,21 @@ impl ImportedOriginals {
         if self.steps > crates::MAX_COMPONENTS {
             return Err("imported original construction work budget exceeded");
         }
+        Ok(())
+    }
+    fn retain(&mut self, row: Original) -> Result<(), &'static str> {
+        let crate::body::ir::Owner::Function { definition, .. } = row.template.body.owner else {
+            return Err("imported original lost its function owner");
+        };
+        if self.index.insert(definition, self.rows.len()).is_some() {
+            return Err("duplicate imported executable original");
+        }
+        self.payload = self
+            .payload
+            .saturating_add(row.template.body.allocation_bytes())
+            .saturating_add(row.template.destruction.allocation_bytes())
+            .saturating_add(interface_goals::allocation(&row.contract));
+        self.rows.push(row);
         Ok(())
     }
     fn prepare(
@@ -142,6 +160,26 @@ impl ImportedOriginals {
         Ok(())
     }
 }
+/// Exact source-only input correspondence. The caller owns failed-query accounting.
+pub(crate) fn validate_source_parts(
+    facts: &Declarations,
+    body: &crate::body::ir::Body,
+    contract: &Contract,
+    steps: &mut usize,
+) -> Result<bool, &'static str> {
+    let crate::body::ir::Owner::Function { definition, .. } = body.owner else {
+        return Err("source original requires its actual imported function owner");
+    };
+    if !crate::sema::crates::is_source_original(facts, definition, steps)? {
+        return Ok(false);
+    }
+    let view = crate::sema::crates::source_original(facts, definition, steps)?
+        .ok_or("source original cannot execute an absent required method")?;
+    rebuilt_operations::validate(&view, body, steps)?;
+    rebuilt_inputs::validate(facts, &view, body, contract, steps)?;
+    Ok(true)
+}
+
 pub(crate) fn build(
     report: &Report,
     facts: &mut Declarations,
@@ -188,9 +226,6 @@ pub(crate) fn build(
             let Some(payload) = artifact.generic_payload() else {
                 continue;
             };
-            originals
-                .prepare(payload.rows(), available)
-                .map_err(|e| report.body_optional_error(None, e))?;
             let context = Import {
                 report,
                 imported,
@@ -198,33 +233,33 @@ pub(crate) fn build(
                 owner: artifact.identity(),
                 payload,
             };
-            for (function, raw) in payload
-                .rows()
-                .functions
-                .iter()
-                .zip(&payload.rows().originals)
-            {
+            if let crates::generics::PayloadView::Source(source) = payload.view() {
+                decoded_bodies::append(
+                    &context,
+                    facts,
+                    scratch,
+                    &mut originals,
+                    decoded_bodies::Allowance {
+                        header_work,
+                        header_bytes: header_bound,
+                        templates: available,
+                    },
+                    source.descriptor().rows(),
+                )?;
+                continue;
+            }
+            let rows = payload
+                .legacy_rows()
+                .map_err(|e| report.body_optional_error(None, e))?;
+            originals
+                .prepare(rows, available)
+                .map_err(|e| report.body_optional_error(None, e))?;
+            for (function, raw) in rows.functions.iter().zip(&rows.originals) {
                 let row = row(&context, facts, function, raw, scratch, &mut originals)?;
-                let crate::body::ir::Owner::Function { definition, .. } = row.template.body.owner
-                else {
-                    return Err(report.body_error(
-                        row.template.body.source,
-                        "imported original lost its function owner",
-                    ));
-                };
-                let ordinal = originals.rows.len();
-                if originals.index.insert(definition, ordinal).is_some() {
-                    return Err(report.body_error(
-                        row.template.body.source,
-                        "duplicate imported executable original",
-                    ));
-                }
-                originals.payload = originals
-                    .payload
-                    .saturating_add(row.template.body.allocation_bytes())
-                    .saturating_add(row.template.destruction.allocation_bytes())
-                    .saturating_add(interface_goals::allocation(&row.contract));
-                originals.rows.push(row);
+                let source = row.template.body.source;
+                originals
+                    .retain(row)
+                    .map_err(|e| report.body_error(source, e))?;
             }
         }
         Ok::<_, Error>(())

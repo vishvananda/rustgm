@@ -5,6 +5,82 @@ use crate::{
     types::{Kind as Type, arguments::Argument, parameters::predicates::Bound},
 };
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+const _: [(); 32] = [(); size_of::<Owner>()];
+const _: [(); 20] = [(); size_of::<OwnerKind>()];
+const _: [(); 32] = [(); size_of::<SourceOwner>()];
+const _: [(); 96] = [(); size_of::<crate::sema::traits::implementations::Implementation>()];
+
+#[test]
+fn source_owner_requires_real_provenance_and_absence_is_not_import_authority() -> Result {
+    use crate::sema::traits::implementations::{Implementation, Implementations};
+    let mut facts = fixture("trait K{}struct S;impl K for S{}")?;
+    let actual = *facts
+        .associated
+        .owners()
+        .iter()
+        .find(|owner| matches!(owner.kind, OwnerKind::Impl { .. }))
+        .ok_or("actual impl")?;
+    let id = facts
+        .associated
+        .owner(actual.self_definition)
+        .ok_or("impl id")?;
+    let source = facts.associated.source_owner(id)?;
+    assert_eq!(Some(source.source), actual.source);
+    assert_eq!(Owner::from(source), actual);
+    let header = facts
+        .generics
+        .implementations
+        .as_ref()
+        .and_then(|r| r.header(actual.self_definition))
+        .ok_or("actual header")?;
+    let value = Implementation {
+        owner: header.owner,
+        source: None,
+        predicate: header.predicate,
+        methods: Vec::new(),
+        types: Vec::new(),
+        constants: Vec::new(),
+    };
+    let (application, _) = value.predicate.bound.trait_parts().ok_or("trait")?;
+    let item = facts
+        .types
+        .trait_application(application)
+        .ok_or("application")?
+        .item;
+    let missing = Owner {
+        source: None,
+        ..actual
+    };
+    facts.associated.owners[id.0 as usize] = missing;
+    assert!(facts.associated.source_owner(id).is_err());
+    assert!(facts.associated.source_at(id.0 as usize).is_err());
+    let mut registry = Implementations::default();
+    assert!(
+        registry
+            .prepare_source(
+                &mut facts.types,
+                &facts.associated,
+                crate::sema::traits::implementations::Identity::User(item),
+                missing,
+                value
+            )
+            .is_err()
+    );
+    assert!(registry.headers().next().is_none());
+    assert!(!registry.is_validated(actual.self_definition));
+    facts.associated.owners[id.0 as usize] = actual;
+    assert!(facts.associated.source_at(id.0 as usize)?.is_some());
+    println!(
+        "source-owner layouts owner={} kind={} source={} impl={} inventory={} cold_language={}",
+        size_of::<Owner>(),
+        size_of::<OwnerKind>(),
+        size_of::<SourceOwner>(),
+        size_of::<crate::sema::traits::implementations::Implementation>(),
+        size_of::<Inventory>(),
+        size_of::<language::Declarations>()
+    );
+    Ok(())
+}
 
 #[test]
 fn projected_header_readiness_keeps_empty_completed_and_pending_family_inputs_distinct() -> Result {

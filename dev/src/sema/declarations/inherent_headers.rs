@@ -116,6 +116,15 @@ impl Checker<'_> {
                     );
                 }
                 OwnerKind::Impl { .. } => {}
+                OwnerKind::ImportedImpl(_) => {
+                    self.facts
+                        .associated
+                        .require_imported(*owner)
+                        .map_err(Error::unlocated)?;
+                    return Err(Error::unlocated(
+                        "imported inherent/member lookup requires its wider profile",
+                    ));
+                }
             }
         }
         self.inherent_headers = pending;

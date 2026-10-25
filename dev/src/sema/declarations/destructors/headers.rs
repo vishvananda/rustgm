@@ -39,7 +39,14 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
     };
     let mut headers = Vec::new();
     let mut owners = vec![None; facts.associated.owners().len()];
-    for (index, owner) in facts.associated.owners().iter().enumerate() {
+    for index in 0..facts.associated.owners().len() {
+        let Some(owner) = facts
+            .associated
+            .source_at(index)
+            .map_err(Error::unlocated)?
+        else {
+            continue;
+        };
         let OwnerKind::Impl {
             unsafe_,
             negative,

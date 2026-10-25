@@ -99,10 +99,10 @@ impl Plan {
             .and_then(|id| facts.associated.get(id))
             .ok_or("scalar validation lost its actual source owner")?;
         if header.owner != owner
-            || header.source != self.source
+            || header.source != Some(self.source)
             || header.predicate != self.predicate
             || actual.self_definition != owner
-            || actual.source != self.source
+            || actual.source != Some(self.source)
             || actual.kind != self.owner_kind
         {
             return Err("scalar validation changed its actual owner or complete predicate");
@@ -140,7 +140,7 @@ impl Checker<'_> {
             .and_then(|id| self.facts.associated.get(id));
         if actual.is_none_or(|actual| {
             actual.self_definition != owner
-                || actual.source != source
+                || actual.source != Some(source)
                 || !matches!(
                     actual.kind,
                     OwnerKind::Impl {
@@ -245,7 +245,7 @@ impl Checker<'_> {
             .item;
         Ok(self.facts.associated.owner(DefId(item.0))
             .and_then(|id| self.facts.associated.get(id))
-            .filter(|owner| matches!(owner.kind, OwnerKind::Trait { definition, .. } if definition.0 == item.0))
+            .filter(|owner| owner.source.is_some() && matches!(owner.kind, OwnerKind::Trait { definition, .. } if definition.0 == item.0))
             .copied())
     }
 

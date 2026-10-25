@@ -34,13 +34,25 @@ impl BuiltinRequirements {
         environment: Arc<Environment>,
         predicates: Vec<(ProofSite, Predicate)>,
     ) -> Self {
+        Self::unpaid_imported(Some(environment), predicates, None)
+    }
+    /// Raw imported requests carry no selected Copy or defining-body permission.
+    pub(crate) fn unpaid_imported(
+        environment: Option<Arc<Environment>>,
+        predicates: Vec<(ProofSite, Predicate)>,
+        source_copy: Option<Arc<crate::sema::model::SourceCopyRequirements>>,
+    ) -> Self {
         Self {
-            environment: Some(environment),
+            environment,
             predicates,
-            source_copy: None,
+            source_copy,
             prepared_copy: None,
             defining: None,
         }
+    }
+
+    pub(crate) fn is_unprepared_imported(&self) -> bool {
+        self.prepared_copy.is_none() && self.defining.is_none()
     }
 
     #[cfg(test)]

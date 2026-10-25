@@ -1,0 +1,231 @@
+//! Publish one completely prepared canonical inventory; executable proof stays separate.
+use super::{Declarations, Error, Headers, Stage, error, mapped_source};
+use crate::{
+    resolve::model::DefId,
+    sema::{generics::Parameter, lifetimes::FunctionRegions},
+    support::retained,
+    types::{TypeId, parameters::environment::Environment},
+};
+use std::{rc::Rc, sync::Arc};
+
+impl Stage {
+    pub(in crate::sema::crates::typed_headers) fn install(
+        mut self,
+        context: &mapped_source::Context<'_>,
+        facts: &mut Declarations,
+        budget: &mut Headers,
+    ) -> Result<(), Error> {
+        self.preflight(context, facts, budget)?;
+        let owners = self.associated_rows(context, budget)?;
+        budget.reserve(facts.associated.imported_allocation_bound(
+            owners.len(),
+            owners.iter().map(|row| row.members.len()).sum(),
+        ))?;
+        let (callables, functions) =
+            super::template_ports::prepare(context, facts, &self.scopes, budget)?;
+        let cells = super::definition_cells::prepare(
+            context,
+            &self.graph,
+            facts,
+            &self.scopes,
+            &functions,
+            budget,
+        )?;
+        let (contracts, self_bounds) = super::contract_ports::prepare(
+            context,
+            &self.graph,
+            &facts.types,
+            &mut self.scopes,
+            budget,
+        )?;
+        let rows = context.descriptor.rows();
+        budget.charge(
+            rows.traits
+                .len()
+                .saturating_add(rows.clauses.len())
+                .saturating_mul(2),
+        )?;
+        budget.reserve(
+            retained::new_map::<crate::types::ItemId, bool>(rows.traits.len()).saturating_add(
+                rows.traits
+                    .len()
+                    .saturating_add(rows.clauses.len())
+                    .saturating_mul(size_of::<(crate::types::ItemId, bool)>()),
+            ),
+        )?;
+        contracts
+            .check_cycles(&facts.types)
+            .map_err(|(_, message)| error(message))?;
+        let before = table_allocation(facts, budget);
+        budget.charge(before.visits.saturating_mul(2).saturating_add(1))?;
+        // This shared work count is checked inside the owner installer BEFORE
+        // its first write; failure cannot leave a partially installed owner.
+        let mut work = budget.work;
+        let installed =
+            facts
+                .associated
+                .install_imported(Rc::clone(&self.graph), owners, &mut work);
+        budget.work = work;
+        installed.map_err(error)?;
+        // Every remaining key, index and allocation bound was checked above.
+        // No fallible remap, quota check or proof follows this first publication.
+        for (definition, ty) in cells {
+            facts.definitions[definition.0 as usize] = Some(ty);
+        }
+        for scope in self.scopes {
+            if let Some(parent) = scope.parent {
+                facts.generics.parents.insert(scope.definition, parent);
+            }
+            facts
+                .generics
+                .parameters
+                .insert(scope.definition, scope.parameters);
+            facts
+                .generics
+                .environments
+                .insert(scope.definition, scope.environment);
+            if let Some(callable) = scope.function {
+                facts
+                    .lifetimes
+                    .functions
+                    .insert(scope.definition, callable.regions);
+                if let Some(receiver) = callable.receiver {
+                    facts.methods.receivers.insert(scope.definition, receiver);
+                }
+                budget.entries.insert(scope.definition, callable.header);
+            }
+        }
+        let linkage = facts.crates.get_or_insert_default();
+        for function in functions {
+            linkage.symbols.insert(function.definition, function.symbol);
+        }
+        facts.generics.traits = Some(Box::new(contracts));
+        facts.generics.trait_self_bounds.extend(self_bounds);
+        facts.lifetimes.callables = callables;
+        budget.source = Some(self.graph);
+        let after = table_allocation(facts, budget);
+        budget.observed.include(retained::Allocation {
+            bytes: after.bytes.saturating_sub(before.bytes),
+            visits: before.visits.saturating_add(after.visits),
+        });
+        Ok(())
+    }
+
+    fn preflight(
+        &self,
+        context: &mapped_source::Context<'_>,
+        facts: &Declarations,
+        budget: &mut Headers,
+    ) -> Result<(), Error> {
+        self.graph.require(
+            context.imported,
+            context.catalog,
+            context.descriptor,
+            budget,
+        )?;
+        self.graph.require_store(&facts.types).map_err(error)?;
+        if facts
+            .crates
+            .as_ref()
+            .and_then(|linkage| linkage.origin_catalog())
+            .is_none_or(|catalog| !std::ptr::eq(catalog, context.catalog))
+        {
+            return Err(error(
+                "source installation changed its actual semantic ownership catalog",
+            ));
+        }
+        let rows = context.descriptor.rows();
+        if self.scopes.len() != rows.scopes.len()
+            || budget.source.is_some()
+            || !budget.entries.is_empty()
+            || facts.generics.traits.is_some()
+            || !facts.lifetimes.callables.is_empty()
+        {
+            return Err(error(
+                "source canonical installation cannot replace a partial or existing header inventory",
+            ));
+        }
+        budget.reserve(retained::sum([
+            retained::new_map::<DefId, Vec<Parameter>>(
+                facts
+                    .generics
+                    .parameters
+                    .len()
+                    .saturating_add(rows.scopes.len()),
+            ),
+            retained::new_map::<DefId, Arc<Environment>>(
+                facts
+                    .generics
+                    .environments
+                    .len()
+                    .saturating_add(rows.scopes.len()),
+            ),
+            retained::new_map::<DefId, DefId>(
+                facts
+                    .generics
+                    .parents
+                    .len()
+                    .saturating_add(rows.scopes.len()),
+            ),
+            retained::new_map::<DefId, super::Header>(rows.functions.len()),
+            retained::new_map::<DefId, FunctionRegions>(
+                facts
+                    .lifetimes
+                    .functions
+                    .len()
+                    .saturating_add(rows.functions.len()),
+            ),
+            retained::new_map::<DefId, String>(
+                facts
+                    .crates
+                    .as_ref()
+                    .map_or(0, |l| l.symbols.len())
+                    .saturating_add(rows.functions.len()),
+            ),
+            retained::new_map::<DefId, (TypeId, u32)>(
+                facts
+                    .methods
+                    .receivers
+                    .len()
+                    .saturating_add(rows.functions.len()),
+            ),
+        ]))?;
+        for scope in &self.scopes {
+            budget.charge(1)?;
+            let definition = scope.definition;
+            if facts.generics.parameters.contains_key(&definition)
+                || facts.generics.environments.contains_key(&definition)
+                || facts.generics.parents.contains_key(&definition)
+                || facts.generics.predicates.contains_key(&definition)
+                || facts.generics.trait_self_bounds.contains_key(&definition)
+                || facts.lifetimes.functions.contains_key(&definition)
+                || facts.methods.receivers.contains_key(&definition)
+                || facts.function_indices.contains_key(&definition)
+                || facts
+                    .crates
+                    .as_ref()
+                    .is_some_and(|linkage| linkage.symbols.contains_key(&definition))
+            {
+                return Err(error(
+                    "source scope destination contains previously installed declaration facts",
+                ));
+            }
+        }
+        Ok(())
+    }
+}
+
+fn table_allocation(facts: &Declarations, headers: &Headers) -> retained::Allocation {
+    let mut result = facts.associated.imported_table_allocation();
+    result.map(&facts.generics.parameters);
+    result.map(&facts.generics.parents);
+    result.map(&facts.generics.environments);
+    result.map(&facts.generics.trait_self_bounds);
+    result.map(&facts.lifetimes.functions);
+    result.map(&facts.methods.receivers);
+    result.map(&headers.entries);
+    if let Some(linkage) = &facts.crates {
+        result.map(&linkage.symbols);
+    }
+    result
+}

@@ -290,6 +290,31 @@ impl Default for Store {
     }
 }
 impl Store {
+    /// Conservative kind/property-vector and intern-index growth before new
+    /// canonical nodes are allocated. Child/argument payloads are charged by
+    /// their producers separately; private Properties stays encapsulated.
+    pub(crate) fn node_allocation_bound(&self, count: usize) -> usize {
+        let kinds = self.kinds.len().saturating_add(count);
+        let properties = self.properties.len().saturating_add(count);
+        let entries = self.index.len().saturating_add(count);
+        crate::support::retained::sum([
+            if kinds > self.kinds.capacity() {
+                kinds.saturating_mul(4 * size_of::<Kind>())
+            } else {
+                0
+            },
+            if properties > self.properties.capacity() {
+                properties.saturating_mul(4 * size_of::<Properties>())
+            } else {
+                0
+            },
+            if entries > self.index.capacity() {
+                crate::support::retained::new_map::<Kind, TypeId>(entries)
+            } else {
+                0
+            },
+        ])
+    }
     /// Total size of the append-only canonical tables. Equal values before and
     /// after a query certify that the query interned no new identity.
     pub(crate) fn interned_extent(&self) -> usize {

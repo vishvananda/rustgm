@@ -1,6 +1,8 @@
 //! Versioned little-endian metadata validates bounded tables before inference.
 mod nominals;
+mod ordinary_columns;
 mod originals;
+mod packet_envelope;
 mod profiles;
 mod public_names;
 mod reader;
@@ -27,6 +29,9 @@ const PROFILE: [u8; 3] = [TARGET_LINUX_X86_64, LANGUAGE_RUST_1_98_EDITION_2024, 
 /// # Errors
 /// Rejects metadata that exceeds the bounded artifact size.
 pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
+    if interface.source_descriptor().is_some() {
+        return packet_envelope::encode(interface);
+    }
     let mut out = Writer::default();
     out.bytes(MAGIC)?;
     out.u16(SCHEMA)?;
@@ -101,13 +106,21 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
         return Err("metadata artifact exceeds 16 MB budget");
     }
     let mut input = Reader::new(bytes);
-    let profile = decode_profile(&mut input)?;
+    decode_header(&mut input)?;
+    let tag = input.u8()?;
+    if tag == packet_envelope::TAG {
+        return packet_envelope::decode(&mut input);
+    }
+    let profile = Profile::read(&mut input, tag)?;
+    decode_legacy(&mut input, profile)
+}
+fn decode_legacy(input: &mut Reader<'_>, profile: Profile) -> Result<Interface, &'static str> {
     let stored = profile.payload == Payload::Storage;
     let identity = input.identity()?;
-    let dependencies = decode_dependencies(&mut input)?;
+    let dependencies = decode_dependencies(input)?;
     let nominal = if profile.shared {
         Some(nominals::decode(
-            &mut input,
+            input,
             &identity,
             dependencies.len(),
             profile,
@@ -119,7 +132,7 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     let mut functions = Vec::with_capacity(count);
     for _ in 0..count {
         functions.push(decode_function(
-            &mut input,
+            input,
             &identity,
             dependencies.len(),
             profile,
@@ -150,14 +163,14 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
         Vec::new()
     } else {
         scalars::decode(
-            &mut input,
+            input,
             &identity,
             functions.len() + nominal.as_ref().map_or(0, |n| n.records().len()),
             profile.typed() || nominal.is_some(),
         )?
     };
     let storage = if stored {
-        Some(stored_globals::decode(&mut input, &identity, profile)?)
+        Some(stored_globals::decode(input, &identity, profile)?)
     } else {
         None
     };
@@ -170,10 +183,10 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
             nominal,
             storage,
         )?;
-        return generic_tail(&mut input, interface, profile);
+        return generic_tail(input, interface, profile);
     }
     let public = if profile.public_names {
-        Some(public_names::decode(&mut input, &identity, &dependencies)?)
+        Some(public_names::decode(input, &identity, &dependencies)?)
     } else {
         None
     };
@@ -243,14 +256,14 @@ fn generic_tail(
         None => Ok(interface),
     }
 }
-fn decode_profile(input: &mut Reader<'_>) -> Result<Profile, &'static str> {
+fn decode_header(input: &mut Reader<'_>) -> Result<(), &'static str> {
     if input.bytes(MAGIC.len())? != MAGIC || input.u16()? != SCHEMA {
         return Err("metadata magic or schema mismatch");
     }
     if input.bytes(2)? != &PROFILE[..2] {
         return Err("metadata target, language or profile mismatch");
     }
-    Profile::read(input)
+    Ok(())
 }
 fn decode_dependencies(input: &mut Reader<'_>) -> Result<Vec<CrateIdentity>, &'static str> {
     let count = input.count(MAX_DEPENDENCIES, 10)?;

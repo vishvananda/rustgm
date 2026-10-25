@@ -20,7 +20,15 @@ impl Checker<'_> {
         let mut dependents: HashMap<DefId, Vec<DefId>> = HashMap::default();
         let mut work = Vec::new();
         let mut steps = 0_usize;
-        for owner in self.facts.associated.owners() {
+        for index in 0..self.facts.associated.owners().len() {
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             let OwnerKind::Trait { definition, .. } = owner.kind else {
                 continue;
             };
@@ -176,12 +184,16 @@ impl Checker<'_> {
                         "missing trait declaration source",
                     )
                 })?;
-            steps = steps.saturating_add(1 + header.predicates.len());
+            let predicates = &header
+                .source_inputs()
+                .map_err(|e| self.error(key, e))?
+                .predicates;
+            steps = steps.saturating_add(1 + predicates.len());
             if steps > 1_000_000 {
                 return Err(self.error(key, "typed builtin promise work budget exceeded"));
             }
             let mut result = Builtins::default();
-            for predicate in &header.predicates {
+            for predicate in predicates {
                 if !header
                     .implies_self(&self.facts.types, predicate)
                     .map_err(|e| self.error(key, e))?

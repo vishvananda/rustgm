@@ -7,7 +7,7 @@ use super::super::generics::bounds::Syntax;
 use super::super::{Checker, DefId, Error, ItemId, Kind, NodeKey, Type};
 use crate::{
     resolve::model::DefKind,
-    sema::associated::{Owner, OwnerKind, TypeContract},
+    sema::associated::{OwnerKind, SourceOwner as Owner, TypeContract},
     syntax::{
         ast::List,
         item::{ItemKind, Visibility},
@@ -32,7 +32,14 @@ impl Checker<'_> {
         for index in 0..self.facts.associated.members().len() {
             let member = self.facts.associated.members()[index];
             let declaration = &self.report.resolution.definitions[member.definition.0 as usize];
-            let owner = self.facts.associated.owners()[member.owner.0 as usize];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(member.owner.0 as usize)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             let OwnerKind::Trait {
                 definition: trait_item,
                 ..
@@ -102,7 +109,14 @@ impl Checker<'_> {
             if definition.kind != DefKind::TypeAlias {
                 continue;
             }
-            let owner = self.facts.associated.owners()[member.owner.0 as usize];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(member.owner.0 as usize)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             let key = definition
                 .node
                 .ok_or_else(|| self.error(owner.source, "missing associated type source"))?;
@@ -145,6 +159,12 @@ impl Checker<'_> {
                     return Err(self.error(
                         key,
                         "inherent associated types are not supported by the stable profile",
+                    ));
+                }
+                OwnerKind::ImportedImpl(_) => {
+                    return Err(self.error(
+                        key,
+                        "source associated type cannot use an imported syntax owner",
                     ));
                 }
             };

@@ -4,7 +4,14 @@ use super::{Checker, Error, Type};
 impl Checker<'_> {
     pub(super) fn validate_owner_bounds(&mut self) -> Result<(), Error> {
         for index in 0..self.facts.associated.owners().len() {
-            let owner = self.facts.associated.owners()[index];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             if self
                 .facts
                 .associated

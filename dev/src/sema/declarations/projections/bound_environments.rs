@@ -32,7 +32,14 @@ impl Checker<'_> {
         &mut self,
     ) -> Result<(), Error> {
         for index in 0..self.facts.associated.owners().len() {
-            let owner = self.facts.associated.owners()[index];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             let crate::sema::associated::OwnerKind::Trait { definition, .. } = owner.kind else {
                 continue;
             };

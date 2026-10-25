@@ -45,6 +45,36 @@ impl Status {
     }
 }
 impl Implementations {
+    /// Imported headers stay unpaid until ordinary conformance proves all of
+    /// their requirements and explicitly completes the registry entry.
+    pub(in crate::sema) fn prepare_imported(
+        &mut self,
+        store: &mut Store,
+        associated: &Inventory,
+        identity: Identity,
+        owner: Owner,
+        value: Implementation,
+    ) -> Result<(), &'static str> {
+        if value.source.is_some()
+            || owner.self_definition != value.owner
+            || associated
+                .owner(value.owner)
+                .and_then(|id| associated.get(id))
+                .copied()
+                != Some(owner)
+        {
+            return Err("imported implementation changed its actual retained owner");
+        }
+        let (constant, negative) = associated.imported_implementation(owner, value.predicate)?;
+        check_effect(value.predicate, constant)?;
+        let status = if negative {
+            Status::NegativeHeader
+        } else {
+            Status::PositiveHeader
+        };
+        self.prepare_with_status(store, identity, value, status)
+    }
+
     /// This records the source scheduler's profile result, never conformance.
     /// Normal completion remains the only route to validated availability.
     pub(in crate::sema) fn mark_early_unavailable(
@@ -69,7 +99,7 @@ impl Implementations {
             .and_then(|&i| self.entries.get_mut(i))
             .ok_or("early implementation profile lost its actual header")?;
         if entry.value.owner != owner
-            || entry.value.source != source
+            || entry.value.source != Some(source)
             || entry.value.predicate != predicate
             || entry.status.validated()
         {
@@ -112,6 +142,7 @@ impl Implementations {
         owner: Owner,
         value: Implementation,
     ) -> Result<(), &'static str> {
+        let source = owner.source_owner()?;
         let OwnerKind::Impl {
             negative, constant, ..
         } = owner.kind
@@ -124,7 +155,7 @@ impl Implementations {
             .copied()
             != Some(owner)
             || owner.self_definition != value.owner
-            || owner.source != value.source
+            || Some(source.source) != value.source
         {
             return Err("source implementation changed its retained owner");
         }
@@ -144,7 +175,8 @@ impl Implementations {
         identity: impl Into<Identity>,
         value: Implementation,
     ) -> Result<(), &'static str> {
-        if associated.owner(value.owner).is_some()
+        if value.source.is_none()
+            || associated.owner(value.owner).is_some()
             || associated.declaration_owner(value.owner) != Some(value.owner)
             || associated.schema(value.owner).is_none()
         {
@@ -172,17 +204,28 @@ impl Implementations {
             .owner(definition)
             .and_then(|id| associated.get(id))
         {
-            let OwnerKind::Impl {
-                negative, constant, ..
-            } = owner.kind
-            else {
-                return Err("implementation polarity belongs to a non-impl owner");
+            let (constant, negative) = match owner.kind {
+                OwnerKind::Impl {
+                    negative, constant, ..
+                } => {
+                    let source = owner.source_owner()?;
+                    if Some(source.source) != entry.value.source {
+                        return Err("implementation polarity changed its actual source owner");
+                    }
+                    (constant, negative)
+                }
+                OwnerKind::ImportedImpl(_) => {
+                    if entry.value.source.is_some() {
+                        return Err("imported conformance cannot acquire source syntax provenance");
+                    }
+                    associated.imported_implementation(*owner, entry.value.predicate)?
+                }
+                OwnerKind::Trait { .. } => {
+                    return Err("implementation polarity belongs to a non-impl owner");
+                }
             };
             check_effect(entry.value.predicate, constant)?;
-            if owner.self_definition != definition
-                || owner.source != entry.value.source
-                || negative != entry.status.negative()
-            {
+            if owner.self_definition != definition || negative != entry.status.negative() {
                 return Err("implementation polarity disagrees with its source owner");
             }
         } else {

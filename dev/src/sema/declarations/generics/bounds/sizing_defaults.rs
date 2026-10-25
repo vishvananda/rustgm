@@ -14,15 +14,26 @@ impl Checker<'_> {
         key: NodeKey,
         definition: DefId,
     ) -> Result<bool, Error> {
-        if !self
-            .report
-            .resolution
-            .source_bindings
-            .as_deref()
-            .and_then(|bindings| bindings.language(LangItem::Sized))
-            .is_some_and(|declaration| declaration.definition == definition)
-        {
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
             return Ok(false);
+        };
+        let Some(role) = catalog
+            .role(LangItem::Sized)
+            .map_err(|e| self.error(key, e))?
+        else {
+            return Ok(false);
+        };
+        if role.definition != definition {
+            return Ok(false);
+        }
+        if matches!(
+            role.origin,
+            crate::resolve::body_origin::DeclarationOrigin::Imported(_)
+        ) {
+            self.facts
+                .associated
+                .require_imported_role(role)
+                .map_err(|e| self.error(key, e))?;
         }
         if crate::sema::lifetimes::arguments(self.report, key, false)?
             .is_some_and(|list| list.start != list.end)
@@ -38,17 +49,29 @@ impl Checker<'_> {
         parameters: &[NodeKey],
         syntax: &mut Vec<Syntax>,
     ) -> Result<(), Error> {
-        let Some(bindings) = self.report.resolution.source_bindings.as_deref() else {
+        let Some(bindings) = self.facts.source_bindings.as_deref() else {
             return Ok(());
         };
         let meta = bindings
-            .language(LangItem::MetaSized)
-            .ok_or_else(|| self.error(key, "source sizing defaults require MetaSized"))?
-            .definition;
+            .role(LangItem::MetaSized)
+            .map_err(|e| self.error(key, e))?
+            .ok_or_else(|| self.error(key, "source sizing defaults require MetaSized"))?;
         let pointee = bindings
-            .language(LangItem::PointeeSized)
-            .ok_or_else(|| self.error(key, "source sizing defaults require PointeeSized"))?
-            .definition;
+            .role(LangItem::PointeeSized)
+            .map_err(|e| self.error(key, e))?
+            .ok_or_else(|| self.error(key, "source sizing defaults require PointeeSized"))?;
+        for role in [meta, pointee] {
+            if matches!(
+                role.origin,
+                crate::resolve::body_origin::DeclarationOrigin::Imported(_)
+            ) {
+                self.facts
+                    .associated
+                    .require_imported_role(role)
+                    .map_err(|e| self.error(key, e))?;
+            }
+        }
+        let (meta, pointee) = (meta.definition, pointee.definition);
         let mut levels: HashMap<DefId, u8> = HashMap::default();
         for bound in syntax.iter() {
             let binding = match bound.subject {

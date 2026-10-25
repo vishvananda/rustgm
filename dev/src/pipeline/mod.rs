@@ -12,6 +12,7 @@ use crate::{
     },
     types::{ItemId, opaque::OpaqueId},
 };
+pub(crate) use original_contexts::Original as OriginalInput;
 
 /// Definition CFGs and contracts already demanded during semantic analysis.
 #[derive(Default)]

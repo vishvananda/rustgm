@@ -6,6 +6,7 @@ mod glue;
 pub(crate) use destructibility::destruct_predicate;
 pub(crate) use freezing::predicate as freeze_predicate;
 pub(crate) use glue::member as drop_glue_member;
+pub(super) mod admitted_headers;
 mod invocation;
 pub(crate) use invocation::definition as callable_role;
 mod unsizing;
@@ -29,6 +30,35 @@ pub(super) struct Validated {
     pub(super) methods: [Option<DefId>; 3],
 }
 impl Catalog {
+    /// The declaration-validation ledger is complete and its retained catalog
+    /// identity is authentic. This grants no impl/instance/body proof; imported
+    /// consumers must still authenticate their actual canonical headers.
+    pub(in crate::sema) fn validated_role(
+        &self,
+        role: LangItem,
+    ) -> Result<Option<super::Role>, &'static str> {
+        let Some(declaration) = self.role(role)? else {
+            return Ok(None);
+        };
+        if let Some(index) = match role {
+            LangItem::Sized => Some(0),
+            LangItem::MetaSized => Some(1),
+            LangItem::PointeeSized => Some(2),
+            _ => None,
+        } {
+            if self.sizing.as_ref().map(|ids| ids[index]) != Some(declaration.definition) {
+                return Err("source sizing role requires completed declaration validation");
+            }
+        } else if self
+            .traits
+            .as_ref()
+            .is_none_or(|v| v.roles & (1 << role.index()) == 0)
+        {
+            return Err("source trait role requires completed declaration validation");
+        }
+        Ok(Some(declaration))
+    }
+
     /// Missing, reserved and completed roles are distinct states.
     pub(crate) fn validated_language(
         &self,
@@ -49,6 +79,9 @@ impl Catalog {
 }
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
+    if report.package.source_client().is_some() {
+        return admitted_headers::traits(report, facts);
+    }
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
     };

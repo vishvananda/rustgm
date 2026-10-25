@@ -185,7 +185,7 @@ fn operation_derived_coercion_rejects_an_unused_forged_generic_original() -> Res
     let payload = interface
         .generic_payload()
         .ok_or("missing real provider payload")?;
-    let mut rows = payload.rows().clone();
+    let mut rows = payload.legacy_rows()?.clone();
     let unit = if let Some(index) = rows
         .types
         .iter()

@@ -17,7 +17,14 @@ mod tests;
 impl Checker<'_> {
     pub(in super::super) fn trait_defaults(&mut self) -> Result<(), Error> {
         for index in 0..self.facts.associated.owners().len() {
-            let owner = self.facts.associated.owners()[index];
+            let Some(owner) = self
+                .facts
+                .associated
+                .source_at(index)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
             if let crate::sema::associated::OwnerKind::Trait { definition, .. } = owner.kind {
                 let mut proof = self.declaration_proof(definition, None);
                 self.parameter_defaults(definition, owner.source, &mut proof)?;

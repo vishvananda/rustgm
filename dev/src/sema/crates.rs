@@ -19,6 +19,15 @@ use crate::{
 };
 pub use export::{Exports, export};
 pub(crate) use export::{GenericRequest, export_with_originals, scalar as export_scalar};
+pub(in crate::sema) use typed_headers::mapped_source::Graph as ImportedOwners;
+pub(in crate::sema) use typed_headers::predicate_remap::Prepared as PreparedSourceInputs;
+pub(super) use typed_headers::{
+    charge_source_headers, mapped_source::Readiness as ImportedReadiness, source_readiness,
+    source_trait_header,
+};
+pub(crate) use typed_headers::{
+    is_source_original, mapped_source::SourceOriginal, source_original,
+};
 
 #[derive(Default)]
 pub struct Linkage {
@@ -98,7 +107,7 @@ pub(super) fn import(report: &Report, facts: &mut Declarations) -> Result<(), Er
         facts.crates.get_or_insert_default().origins = Some(origins);
     }
     let records = imported_records::prepare(imported, facts)?;
-    typed_headers::import(imported, facts)?;
+    typed_headers::import(report, imported, facts)?;
     for (definition, function) in imported.functions() {
         let signature = records.signature(facts, function)?;
         let ty = facts

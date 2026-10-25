@@ -144,7 +144,8 @@ fn validate_definitions(
         if definition.node.is_some()
             || !matches!(
                 definition.kind,
-                DefKind::Function
+                DefKind::Module
+                    | DefKind::Function
                     | DefKind::Const
                     | DefKind::Static
                     | DefKind::Struct

@@ -8,6 +8,36 @@ pub(crate) struct Retained {
     index: premise_index::Retained,
 }
 impl Environment {
+    /// Accounting only for already validated ordinary trait predicates whose
+    /// subject/arguments are rigid parameters or scalar leaves. Wider clauses
+    /// must use an explicit wider estimator before any environment allocation.
+    pub(crate) fn trait_leaf_allocation_bound(
+        parameters: usize,
+        clauses: usize,
+        roots: usize,
+    ) -> usize {
+        use crate::support::retained::new_map;
+        use crate::types::{
+            TypeId,
+            parameters::{ParameterId, uses::Uses},
+        };
+        let retained = size_of::<Self>()
+            .saturating_add(4 * size_of::<usize>())
+            .saturating_add(size_of::<super::HashMap<ParameterId, super::Abilities>>())
+            .saturating_add(new_map::<ParameterId, super::Abilities>(parameters))
+            .saturating_add(super::premises::TraitAssumptions::leaf_allocation_bound(
+                clauses,
+            ));
+        let scratch = size_of::<Uses>()
+            .saturating_add(size_of::<Self>() + 2 * size_of::<usize>())
+            .saturating_add(size_of::<super::HashMap<ParameterId, super::Abilities>>())
+            .saturating_add(new_map::<ParameterId, ()>(roots))
+            .saturating_add(new_map::<TypeId, ()>(roots))
+            .saturating_add(new_map::<crate::types::traits::ApplicationId, ()>(clauses))
+            .saturating_add(roots.saturating_mul(4 * size_of::<TypeId>()));
+        retained.saturating_add(scratch)
+    }
+
     /// Preflight only a validated region-free scalar/parameter/function graph
     /// with Copy/Sized clauses. This is allocation accounting, not validation
     /// or permission to interpret an arbitrary predicate as a builtin.

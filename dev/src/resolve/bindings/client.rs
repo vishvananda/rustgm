@@ -48,7 +48,7 @@ impl SourceClient {
         if descriptor.identity() != &self.provider
             || descriptor.provider() != &self.provider
             || descriptor.edition() != Edition::Rust2024
-            || descriptor.profile() != SourceProfile::Source2024
+            || descriptor.profile() != SourceProfile::Source2024Functions
         {
             return Err("source client provider descriptor changed");
         }

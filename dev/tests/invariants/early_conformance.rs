@@ -52,7 +52,10 @@ fn plan(checker: &mut Checker<'_>, pending: &mut Pending, owner: DefId) -> Resul
         .as_ref()
         .and_then(|r| r.header(owner))
         .ok_or("missing actual header")?;
-    let (source, predicate) = (header.source, header.predicate);
+    let (source, predicate) = (
+        header.source.ok_or("actual source header")?,
+        header.predicate,
+    );
     let Eligibility::Ready(plan) = checker.early_impl_plan(owner, source, predicate, pending)?
     else {
         return Err("actual closed source owner was outside scalar profile".into());
@@ -277,7 +280,10 @@ fn functions_only_witness_authenticates_both_actual_complete_buckets() -> Result
             .as_ref()
             .and_then(|r| r.header(owner))
             .ok_or("missing associated header")?;
-        let (source, predicate) = (header.source, header.predicate);
+        let (source, predicate) = (
+            header.source.ok_or("actual source header")?,
+            header.predicate,
+        );
         assert!(matches!(
             actual.early_impl_plan(owner, source, predicate, &mut Pending::default())?,
             Eligibility::Unsupported(Unsupported::Members)

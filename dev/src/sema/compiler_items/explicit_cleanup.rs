@@ -78,6 +78,10 @@ pub(in crate::sema) fn explicit_drop_member(
         OwnerKind::Impl {
             trait_type: None, ..
         } => return Ok(false),
+        OwnerKind::ImportedImpl(_) => {
+            facts.associated.require_imported(*owner)?;
+            return Err("imported explicit Drop rules require their wider supported role profile");
+        }
     };
     catalog.validated_language(LangItem::Drop)?;
     let members = facts

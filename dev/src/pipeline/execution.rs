@@ -625,12 +625,14 @@ impl Engine {
         for row in originals.iter() {
             crate::borrow::storage::validate(&row.template.body)
                 .map_err(|e| report.body_error(e.node, e.message))?;
-            super::original_contexts::Original::validate_parts(
-                facts,
-                &row.template.body,
-                &row.contract,
-            )
-            .map_err(|e| report.body_error(row.template.body.source, e))?;
+            if !facts.uses_source_copy() {
+                super::original_contexts::Original::validate_parts_charged(
+                    facts,
+                    &row.template.body,
+                    &row.contract,
+                )
+                .map_err(|e| report.body_error(row.template.body.source, e))?;
+            }
             self.prove(
                 report,
                 facts,
@@ -677,7 +679,7 @@ impl Engine {
         let row = originals.get(definition).ok_or_else(|| {
             report.body_optional_error(None, "imported function has no exact original row")
         })?;
-        super::original_contexts::Original::validate_parts(
+        super::original_contexts::Original::validate_parts_charged(
             facts,
             &row.template.body,
             &row.contract,
@@ -778,7 +780,14 @@ impl Engine {
         destruction: &body::drops::Requirements,
         input: ProofInput<'_>,
     ) -> Result<CheckedInput, Error> {
-        let mut prepared = if facts.source_bindings.is_some()
+        let imported_original =
+            facts.uses_source_copy() && body.instance.is_none() && body.source.source().is_none();
+        let mut prepared = if imported_original {
+            Some(
+                super::original_contexts::Original::prepare_imported(facts, body, input.contract)
+                    .map_err(|e| report.body_error(body.source, e))?,
+            )
+        } else if facts.source_bindings.is_some()
             || input.contract.requires_defining_cleanup_preparation()
             || body::defining_cleanups::needs_preparation(facts, body)
         {
@@ -786,7 +795,7 @@ impl Engine {
         } else {
             None
         };
-        if let Some(contract) = prepared.as_mut() {
+        if !imported_original && let Some(contract) = prepared.as_mut() {
             let result = if let Some(materialized) = input.materialized {
                 materialized.prepare_source_copy(facts, body, contract)
             } else {

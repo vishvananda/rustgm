@@ -3,9 +3,30 @@ use super::{CrateIdentity, MAX_BYTES};
 #[derive(Default)]
 pub(super) struct Writer {
     bytes: Vec<u8>,
+    source: Option<(usize, usize)>,
 }
 impl Writer {
+    pub(super) const fn source(base: usize) -> Self {
+        Self {
+            bytes: Vec::new(),
+            source: Some((base, 0)),
+        }
+    }
     pub(super) fn bytes(&mut self, bytes: &[u8]) -> Result<(), &'static str> {
+        if let Some((base, steps)) = &mut self.source {
+            *steps = steps.saturating_add(1);
+            let capacity = self
+                .bytes
+                .len()
+                .saturating_add(bytes.len())
+                .max(8)
+                .saturating_mul(4);
+            if *steps > crate::support::crates::MAX_COMPONENTS
+                || base.saturating_add(capacity) > MAX_BYTES
+            {
+                return Err("source encoded output exceeds combined work/storage budget");
+            }
+        }
         if self
             .bytes
             .len()

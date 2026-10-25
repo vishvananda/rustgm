@@ -73,7 +73,7 @@ pub(super) fn require_super(
     require_header_super(facts, catalog, &header, expected, constness).map_err(error)
 }
 
-fn require_header_super(
+pub(super) fn require_header_super(
     facts: &Declarations,
     catalog: &Catalog,
     header: &Trait<'_>,
@@ -84,13 +84,13 @@ fn require_header_super(
         return Err("source role requires its exact pinned supertrait");
     }
     let expected = catalog
-        .language(expected)
+        .role(expected)?
         .ok_or("source role is missing its prerequisite declaration")?;
     let found = header.requires(
         &facts.types,
         expected.definition,
         catalog
-            .language(LangItem::Sized)
+            .role(LangItem::Sized)?
             .map(|declaration| declaration.definition),
         constness,
     );

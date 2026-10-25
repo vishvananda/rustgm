@@ -53,8 +53,7 @@ fn header(store: &mut Store, owner: ItemId, count: u16) -> Result<Header, &'stat
     Ok(Header {
         self_type,
         parameters,
-        self_bounds: HashSet::default(),
-        predicates: Vec::new(),
+        inputs: super::inherited_inputs::HeaderInputs::source(HashSet::default(), Vec::new()),
         results: Vec::new(),
         regions: Vec::new(),
     })
@@ -81,12 +80,14 @@ fn clause(store: &mut Store, count: u32, predicate: Predicate) -> Result<Clause,
 fn lifetime(depth: u16, slot: u16) -> Result<Argument, &'static str> {
     Ok(Argument::Lifetime(RegionId::bound(depth, slot)?))
 }
-fn implied(header: &mut Header, value: Clause, index: u32) {
-    header.self_bounds.insert(source(index));
-    header.predicates.push(Located {
+fn implied(header: &mut Header, value: Clause, index: u32) -> Result<(), &'static str> {
+    let inputs = header.source_inputs_mut()?;
+    inputs.self_bounds.insert(source(index));
+    inputs.predicates.push(Located {
         source: source(index),
         value,
     });
+    Ok(())
 }
 
 #[test]
@@ -103,14 +104,14 @@ fn nested_supertraits_compose_independent_slots_and_preserve_outer_captures()
         first.self_type,
         &[lifetime(1, 0)?, lifetime(0, 0)?],
     )?;
-    implied(&mut first, clause(&mut store, 1, value)?, 1);
+    implied(&mut first, clause(&mut store, 1, value)?, 1)?;
     let value = predicate(
         &mut store,
         c,
         second.self_type,
         &[lifetime(1, 1)?, lifetime(0, 0)?, lifetime(1, 0)?],
     )?;
-    implied(&mut second, clause(&mut store, 1, value)?, 2);
+    implied(&mut second, clause(&mut store, 1, value)?, 2)?;
     let mut contracts = Contracts::default();
     for (item, header) in [(a, first), (b, second), (c, third)] {
         contracts.declare(item, header)?;
@@ -190,8 +191,8 @@ fn quantified_non_self_contracts_remain_requirements_without_granting_caller_per
     let value = predicate(&mut store, b, other, &[lifetime(1, 0)?, lifetime(0, 0)?])?;
     let requirement = clause(&mut store, 1, value)?;
     // Even the same written source cannot turn a different subject into Self.
-    implied(&mut first, requirement, 1);
-    assert!(!first.implies_self(&store, &first.predicates[0])?);
+    implied(&mut first, requirement, 1)?;
+    assert!(!first.implies_self(&store, &first.source_inputs()?.predicates[0])?);
     let second = header(&mut store, b, 2)?;
     let mut contracts = Contracts::default();
     contracts.declare(a, first)?;
@@ -235,7 +236,7 @@ fn quantified_supertrait_cycles_are_rejected_before_argument_growth() -> Result<
     let mut second = header(&mut store, b, 1)?;
     for (parent, item) in [(&mut first, b), (&mut second, a)] {
         let value = predicate(&mut store, item, parent.self_type, &[lifetime(0, 0)?])?;
-        implied(parent, clause(&mut store, 1, value)?, 1);
+        implied(parent, clause(&mut store, 1, value)?, 1)?;
     }
     let mut contracts = Contracts::default();
     contracts.declare(a, first)?;
@@ -261,7 +262,7 @@ fn distinct_supertrait_applications_share_structural_work() -> Result<(), &'stat
             first.self_type,
             &[lifetime(1, 0)?, lifetime(0, 0)?],
         )?;
-        implied(&mut first, clause(&mut store, 1, value)?, 1);
+        implied(&mut first, clause(&mut store, 1, value)?, 1)?;
         let mut contracts = Contracts::default();
         contracts.declare(a, first)?;
         contracts.declare(b, second)?;

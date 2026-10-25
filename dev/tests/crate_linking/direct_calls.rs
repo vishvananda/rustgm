@@ -18,7 +18,7 @@ fn dependencies(provider: &str) -> Result<Arc<Dependencies>> {
     let interface = crates::decode(&encoded)?;
     assert_eq!(crates::encode(&interface)?, encoded);
     let payload = interface.generic_payload().ok_or("generic payload")?;
-    assert!(payload.rows().calls.is_some());
+    assert!(payload.legacy_rows()?.calls.is_some());
     let identity = interface.identity().clone();
     Ok(Arc::new(Dependencies::new(
         vec![interface],

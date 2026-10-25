@@ -1,5 +1,6 @@
 //! Reserve real owner-local declarations, then authenticate the complete remap.
 mod locations;
+mod packet_declarations;
 mod reservations;
 use super::{Error, Imported, Resolver};
 use crate::{
@@ -112,7 +113,20 @@ impl Resolver<'_> {
         let payload = artifact
             .generic_payload()
             .ok_or_else(|| error("missing generic original payload"))?;
-        let rows = payload.rows();
+        if let g::PayloadView::Source(source) = payload.view() {
+            return packet_declarations::reserve(
+                self,
+                packet_declarations::Reservation {
+                    scope,
+                    artifact,
+                    payload,
+                    rows: source.descriptor().rows(),
+                },
+                imported,
+                work,
+            );
+        }
+        let rows = payload.legacy_rows().map_err(error)?;
         let catalog_bytes = imported
             .origins
             .get()

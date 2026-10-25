@@ -28,6 +28,16 @@ impl Facts {
             map(&self.index),
         ])
     }
+    pub(crate) fn has_exact_index(&self, steps: &mut usize) -> bool {
+        *steps = steps.saturating_add(1);
+        if self.index.len() != self.created.len() {
+            return false;
+        }
+        self.created.iter().enumerate().all(|(index, value)| {
+            *steps = steps.saturating_add(1);
+            self.index.get(&value.value) == Some(&index)
+        })
+    }
     #[must_use]
     pub fn creation(&self, value: ValueId) -> Option<&Temporary> {
         self.index.get(&value).map(|&index| &self.created[index])

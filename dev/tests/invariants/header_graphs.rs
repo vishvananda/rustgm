@@ -23,7 +23,7 @@ fn fixture(count: usize) -> Result<(CrateIdentity, g::Rows)> {
         interface
             .generic_payload()
             .ok_or("missing actual provider rows")?
-            .rows()
+            .legacy_rows()?
             .clone(),
     ))
 }
@@ -84,7 +84,7 @@ fn shared_diamond_bounds_ignore_repeated_edges_and_unrelated_declarations() -> R
         }
         rows.clauses[function.clauses.start as usize].subject = child;
         let payload = g::Payload::new(&owner, rows, &mut g::Work::default())?;
-        let rows = payload.rows();
+        let rows = payload.legacy_rows()?;
         let mapped = mapped(rows)?;
         let bound = mapped.environment_bound(rows, &rows.functions[0])?;
         assert_eq!(
