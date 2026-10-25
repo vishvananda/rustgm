@@ -70,15 +70,15 @@ pub(super) fn prepare(
                         crate::types::callable::Template,
                     >(1)),
             )?;
-            if !parameters.is_empty() {
-                callables
-                    .insert_scoped(&facts.types, &owners, header.callable, 0, &[], &parameters)
-                    .map_err(error)?;
-            } else {
+            if parameters.is_empty() {
                 // A completed empty scope still owns a callable registration;
                 // its absence must not stand in for a checked closed signature.
                 callables
                     .insert_monomorphic(&facts.types, ItemId(scope.definition.0), header.callable)
+                    .map_err(error)?;
+            } else {
+                callables
+                    .insert_scoped(&facts.types, &owners, header.callable, 0, &[], &parameters)
                     .map_err(error)?;
             }
             let ty = facts
