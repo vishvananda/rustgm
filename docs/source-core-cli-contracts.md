@@ -1,8 +1,8 @@
 # SourceCore CLI contract publication
 
-This source checkpoint activates the already qualified function-contract API
-at the real library driver boundary. CLI and native qualification remain
-pending. The source is composed over published main `b830f5dc`, including the
+This checkpoint activates the qualified function-contract API at the real
+library driver boundary. Source `41b60e31` passes the selected frontend and
+native gates below. It is composed over published main `b830f5dc`, including the
 authenticated local crate-root repair (five passes in CI40213866643). The
 library checkpoint is source `4311d7ed`, nine selected passes in
 CI40205079379; those controls are retained, not repeated for this driver change.
@@ -66,3 +66,35 @@ AttributeColumns48 and ValidatedRows120 bytes. C collection capacities,
 allocation counts and total retained/work costs were not printed. This driver
 checkpoint adds no counter or allocator instrumentation and makes no new claim
 about those missing measurements.
+
+The frontend gate [CI40214484371](https://github.com/vishvananda/rustgm/actions/runs/40214484371)
+passes both exact integration controls and three Python harness controls. Its
+helper takes 112.60 seconds; the 24 candidate commands take 0.216 seconds.
+The separate native gate
+[CI40214804906](https://github.com/vishvananda/rustgm/actions/runs/40214804906)
+passes both exact ignored controls in 90.60 seconds including backend setup and
+focused static checks. Its 79 candidate/independent commands take 1.926 seconds.
+All 17 native outputs (nine RustGM and eight rustc) are exactly `7\n`, with zero
+status and empty stderr; three independent lint-error controls also pass.
+Both jobs pass the mandatory CLI build, metadata, formatting, architecture,
+strict CLI/integration Clippy, harness, upstream and audit-cache checks. These
+are bounded functional observations, not paired performance measurements.
+
+All 2,583 source fingerprints match the frozen product in both receipts. Both
+retained CLIs have SHA-256
+`b1fb5873b3824265750e47043e39e6dd9f7c36b8b971cf06b01807956611fc39`.
+The native receipt is
+`b96dcc42641e2be73ad756b78ffd5be4b736419e6ce3e51cbaaa3b4db3790ee9`.
+Verified raw artifacts, command logs, bindings and summaries are retained under
+`obj/parallel/pa31/cli-source-activation-v2/qualified-frontend-40214484371` and
+`qualified-native-40214804906`. Successful native object/executable scratch is
+reclaimed between cases. No local Cargo or CPPGM build was used.
+
+Observed metadata sizes are 3,716 bytes for plain v1 (88 bytes above the retained
+v0 golden), 3,736 for the reason-bearing provider, 3,722 for bodyless inline and
+4,519 with the unused private marked function. A warned invalid crate owner
+produces the same bytes as the plain provider; two ordinary exports are exactly
+the same 82 bytes. The retained v0 golden hash stays unchanged. These wire sizes
+and existing command durations are measured; heap allocations and collection
+capacities remain unmeasured. Wider profiles and original upstream crate
+artifacts remain required; this checkpoint does not activate an assignment.
