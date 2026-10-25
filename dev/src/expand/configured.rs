@@ -43,6 +43,22 @@ pub(crate) struct ConfiguredUses {
     entries: Vec<ConfiguredUse>,
 }
 impl ConfiguredUses {
+    pub(crate) fn get(&self, index: usize) -> Option<&ConfiguredUse> {
+        self.entries.get(index)
+    }
+    #[cfg(test)]
+    pub(crate) fn get_mut(&mut self, index: usize) -> Option<&mut ConfiguredUse> {
+        self.entries.get_mut(index)
+    }
+    pub(crate) fn effect_range(&self, effect: usize) -> std::ops::Range<usize> {
+        let start = self
+            .entries
+            .partition_point(|used| (used.effect as usize) < effect);
+        let end = self
+            .entries
+            .partition_point(|used| (used.effect as usize) <= effect);
+        start..end
+    }
     pub(crate) fn len(&self) -> usize {
         self.entries.len()
     }

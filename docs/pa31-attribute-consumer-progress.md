@@ -206,3 +206,56 @@ B's isolated owned OriginalImage prerequisite is committed as
 two focused source-identity tests passed. It is being integrated normally;
 this does not qualify C's dependent producer or imply full UB integration.
 C holds all new heavy scopes for root's current profiling/attribution window.
+
+## Focused checkpoint and Test-body demand draft
+
+The preserved `366ca380` checkpoint passed thirteen exact private controls, seven
+measured layout callers and nine selected frontend controls under the bounded
+development workflow. The discarded-result table's accidental generic rustc
+lint-note expectations were replaced with exact primary messages and complete
+count/order checks; the original failed execution and independent observations
+remain retained. This is focused development evidence, not full native,
+performance, imported-contract or original-core qualification.
+
+The source-only integration `4be4fa16` composes A's source/packet proofs, B's typed
+UB and owned-source query, C's consumers and root's builtin generation/install
+split. Its merged source remains unqualified. B's saved cfg uses are produced
+before Test removal, so the approved follow-up adds cold typed retirement
+evidence for strict descendants below the actual `Function.body` edge. It
+retains body-root inner attributes and every own/header/parameter/generic/result,
+ancestor and live-sibling demand. It grants no feature, attribute execution,
+allowance frame or test harness.
+
+The retirement transaction preflights the real DFS and its final reserves before
+changing any flags. A fallible child visitor shares the existing exhaustive typed
+child dispatch with `push_children`, stopping on the first budget error. Shared
+ancestor prefixes retain actual node, indirect item/generic records and exact
+child ordinals. The immutable report session checks each selected parent and its
+retained edges once; indexed warm reads consume private borrowed checked saved-use
+ordinals, exact effect/capture trees and current origin/image witnesses. Failed
+work is charged; no hot node, call, visit, scope, definition or body field grows.
+New cold layout/allocation costs are not yet measured.
+
+Eight new focused private controls and thirteen permanent PA31 source controls
+are authored but unrun. Eleven source files retain the exact bytes from the
+completed 144-observation independent corpus, whose results hash remains
+`903e888607797c10bb43365613cd5bd5a43c11dad48bb73d5003ac92d974ebb9`.
+The two additional cases actually ran four metadata-only observations, in both
+editions with `-Zub-checks=no`: generated Test removal on an old macrocall root
+with a forwarded predicate accepts, while body-root inner cfg rejects with
+E0658. The body-root accept hypotheses were disproved and remain preserved.
+These results confirm the strict descendant domain; they do not qualify the
+candidate implementation. Results hash:
+`e2d165059ce653d064665a185e09e577520803b8ad1232685bf309067f3fc31e`.
+No old 144-case or native matrix is repeated.
+
+The existing flags-only retirement also leaked into later original module
+instances. The approved narrow draft reuses `Original.overwritten`: a private
+one-byte `SavedFlags` replaces the old active boolean, preserving exact prior
+active and owner-enabled values without adding an Original field. Only genuinely
+new original journal rows are precharged/reserved. Commit remains infallible and
+first-save-wins, including generated functions on old macrocall IDs; fresh copies
+restore owner state through checked original-prefix indices. Actual Saved,
+Original and Unit sizes, separate module receipts, shared physical bytes,
+pre-disabled owners and overwrite composition have authored controls but are
+unmeasured/unrun. RustGM validation remains held for coordinated storage recovery.

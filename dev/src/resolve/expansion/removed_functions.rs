@@ -1,4 +1,9 @@
 //! Test removal retains authenticated ownership without an executed expansion frame.
+mod demand;
+mod identities;
+mod parent_edges;
+mod retirement;
+mod saved_uses;
 use super::{Body, Builtin, CallGrammar, Engine, Error, NodeKey, Report, Sources, State};
 use crate::{
     resolve::{
@@ -12,6 +17,7 @@ use crate::{
         item::ItemKind,
     },
 };
+pub(crate) use demand::{ConfiguredDemandSession, DemandDisposition};
 
 pub(crate) struct Removal {
     pub owner: NodeKey,
@@ -27,6 +33,8 @@ pub(crate) struct Removal {
 pub(crate) struct Removals {
     pub entries: Vec<Removal>,
     owners: HashMap<NodeKey, usize>,
+    demand: Option<Box<demand::Index>>,
+    work: std::cell::Cell<demand::Work>,
 }
 impl Removals {
     pub(crate) fn owner(&self, key: NodeKey) -> bool {
@@ -46,14 +54,24 @@ impl Removals {
                     "removed Test owner index changed",
                 ));
             }
-            removal.validate_owner(report)?;
+            demand::charge(
+                &self.work,
+                removal.owner.file,
+                1 + removal.duplicates.len(),
+                0,
+            )?;
+            removal.validate_owner(report, &self.work)?;
             removal.validate_role(report)?;
         }
         Ok(())
     }
 }
 impl Removal {
-    fn validate_owner(&self, report: &Report) -> Result<(), Error> {
+    fn validate_owner(
+        &self,
+        report: &Report,
+        work: &std::cell::Cell<demand::Work>,
+    ) -> Result<(), Error> {
         let removal = self;
         let error = |message| Error::at(removal.owner.file, 0, message);
         let unit = report
@@ -101,7 +119,7 @@ impl Removal {
                 removal.declaration.node,
                 Namespace::Value,
             ))
-            || function_declaration(unit, removal.owner.node).map_err(error)?
+            || function_declaration(unit, removal.owner.node, removal.owner.file, 0, work)?
                 != removal.declaration.node
             || removal.duplicates.iter().any(|effect| {
                 !owner.attributes.contains(effect)
@@ -157,8 +175,22 @@ impl<S: Sources> Engine<'_, S> {
         if let Some(error) = self.test_form_error(index)? {
             return Err(error);
         }
+        if self.attribute_effects.is_none() {
+            let removals = Removals::default();
+            demand::charge(
+                &removals.work,
+                self.calls[index].file,
+                1,
+                size_of::<super::attribute_effects::Effects>(),
+            )?;
+            self.attribute_effects = Some(Box::new(super::attribute_effects::Effects {
+                removals,
+                policy: None,
+            }));
+        }
         let removal = self.checked_test_removal(index, definition)?;
         let owner = removal.owner;
+        self.preflight_test_completion(index)?;
         let removals = &mut self.attribute_effects.get_or_insert_default().removals;
         if removals.entries.len() >= 1_000_000 || removals.owners.contains_key(&owner) {
             return Err(Error::at(
@@ -167,12 +199,75 @@ impl<S: Sources> Engine<'_, S> {
                 "test removal owner storage budget exceeded or duplicated",
             ));
         }
+        demand::charge(
+            &removals.work,
+            owner.file,
+            1,
+            4 * size_of::<Removal>() + crate::support::retained::new_map::<NodeKey, usize>(1),
+        )?;
+        removals
+            .entries
+            .try_reserve(1)
+            .map_err(|_| Error::at(owner.file, 0, "Test removal allocation failed"))?;
+        removals
+            .owners
+            .try_reserve(1)
+            .map_err(|_| Error::at(owner.file, 0, "Test owner allocation failed"))?;
+        let (before, tail) = self
+            .loader
+            .package
+            .units
+            .split_at_mut(owner.file.0 as usize);
+        let (unit, after) = tail
+            .split_first_mut()
+            .ok_or_else(|| Error::at(owner.file, 0, "Test retirement source disappeared"))?;
+        let builder = retirement::Builder::new(
+            removals,
+            &removal,
+            unit,
+            before,
+            after,
+            &self.definitions[definition],
+            &self.paths.state.facts.scopes[removal.scope.0 as usize],
+        )?;
+        let prepared = unit.remove_function_owner_with(owner.node, builder)?;
+        removals.install_demand(prepared);
         removals.owners.insert(owner, removals.entries.len());
         removals.entries.push(removal);
-        self.loader.package.units[owner.file.0 as usize].remove_function_owner(owner.node);
         self.calls[index].selected = Some(definition);
         self.completed(index)?;
         self.calls[index].state = State::Removed;
+        Ok(())
+    }
+    fn preflight_test_completion(&mut self, index: usize) -> Result<(), Error> {
+        let call = &self.calls[index];
+        if !call.notified
+            && let Some(parent) = call.visit.eager
+        {
+            let pending = self
+                .calls
+                .get(parent)
+                .and_then(|call| call.eager.as_ref())
+                .map(|arguments| arguments.pending)
+                .filter(|pending| *pending != 0)
+                .ok_or_else(|| call.diagnostic("Test removal has an invalid eager dependency"))?;
+            if pending == 1 {
+                let work = &self
+                    .attribute_effects
+                    .as_ref()
+                    .ok_or_else(|| call.diagnostic("Test completion lost its cold owner"))?
+                    .removals
+                    .work;
+                demand::charge(work, call.file, 1, 4 * size_of::<usize>())?;
+                self.ready.try_reserve(1).map_err(|_| {
+                    Error::at(
+                        call.file,
+                        call.offset,
+                        "Test completion queue allocation failed",
+                    )
+                })?;
+            }
+        }
         Ok(())
     }
     fn test_form_error(&mut self, index: usize) -> Result<Option<Error>, Error> {
@@ -236,8 +331,13 @@ impl<S: Sources> Engine<'_, S> {
         {
             return Err(call.diagnostic("test attribute requires an outer word attribute"));
         }
-        let node =
-            function_declaration(unit, owner.node).map_err(|message| call.diagnostic(message))?;
+        let work = &self
+            .attribute_effects
+            .as_ref()
+            .ok_or_else(|| call.diagnostic("Test removal lost its cold budget owner"))?
+            .removals
+            .work;
+        let node = function_declaration(unit, owner.node, owner.file, call.offset, work)?;
         let configured = unit.owner_indices[owner.node.get() as usize]
             .and_then(|index| unit.configured.owners.get(index.get() as usize - 1))
             .ok_or_else(|| call.diagnostic("test function has no configured owner"))?;
@@ -252,6 +352,12 @@ impl<S: Sources> Engine<'_, S> {
                 )
                 .map_err(|message| call.diagnostic(message))?;
         }
+        demand::charge(
+            work,
+            owner.file,
+            1 + configured.attributes.len(),
+            4 * configured.attributes.len() * size_of::<usize>(),
+        )?;
         let duplicates: Vec<_> = configured
             .attributes
             .clone()
@@ -280,17 +386,34 @@ impl<S: Sources> Engine<'_, S> {
 fn function_declaration(
     unit: &crate::resolve::unit::Unit,
     mut node: NodeId,
-) -> Result<NodeId, &'static str> {
+    file: crate::resolve::unit::FileId,
+    offset: u32,
+    work: &std::cell::Cell<demand::Work>,
+) -> Result<NodeId, Error> {
     let mut remaining = unit.configured.ast.nodes.len();
-    while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
-        remaining = remaining
-            .checked_sub(1)
-            .ok_or("test owner ancestry work budget exceeded")?;
-        node = value;
+    loop {
+        demand::charge(work, file, 1, 0)?;
+        let actual = unit
+            .configured
+            .ast
+            .nodes
+            .get(node.get() as usize)
+            .ok_or_else(|| Error::at(file, offset, "test function lost its actual syntax node"))?;
+        if let Kind::Attributed { value, .. } = actual.kind {
+            remaining = remaining.checked_sub(1).ok_or_else(|| {
+                Error::at(file, offset, "test owner ancestry work budget exceeded")
+            })?;
+            node = value;
+            continue;
+        }
+        if matches!(actual.kind, Kind::Item(item) if unit.configured.ast.items.get(item as usize).is_some_and(|item| matches!(item.kind, ItemKind::Function { .. })))
+        {
+            return Ok(node);
+        }
+        return Err(Error::at(
+            file,
+            offset,
+            "test attribute requires a function owner",
+        ));
     }
-    if !matches!(unit.configured.ast.node(node).kind, Kind::Item(item) if matches!(unit.configured.ast.items[item as usize].kind, ItemKind::Function {..}))
-    {
-        return Err("test attribute requires a function owner");
-    }
-    Ok(node)
 }
