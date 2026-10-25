@@ -1,0 +1,18 @@
+{
+  "status": 1,
+  "seconds": 185.350275511,
+  "absolute_budget_seconds": 190,
+  "command": [
+    "/usr/bin/python3",
+    "scripts/resources.py",
+    "run",
+    "--wait-seconds",
+    "0",
+    "--",
+    "/usr/bin/python3",
+    ".github/focused_refs.py",
+    "--worker",
+    "273.567628094",
+    "/home/runner/work/rustgm/rustgm/obj/qualification/fast/1792956702367639336"
+  ]
+}

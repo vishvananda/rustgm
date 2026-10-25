@@ -22,6 +22,7 @@ pub(crate) struct Policy {
     pub(crate) unreachable_patterns: Level,
     pub(crate) must_use: Level,
     pub(crate) unused_attributes: Level,
+    pub(crate) unused_visibilities: Level,
     pub(crate) duplicate_macro_attributes: Level,
     pub(crate) diagnostic_attributes: [Level; 3],
 }
@@ -34,6 +35,7 @@ impl Default for Policy {
             unreachable_patterns: Level::Warn,
             must_use: Level::Warn,
             unused_attributes: Level::Warn,
+            unused_visibilities: Level::Warn,
             duplicate_macro_attributes: Level::Warn,
             diagnostic_attributes: [Level::Warn; 3],
         }
@@ -47,6 +49,7 @@ pub(crate) enum Lint {
     UnreachablePatterns,
     MustUse,
     UnusedAttributes,
+    UnusedVisibilities,
     DuplicateMacroAttributes,
     DiagnosticAttributes(u8),
 }
@@ -76,6 +79,7 @@ impl Policy {
             Lint::UnreachablePatterns => &mut self.unreachable_patterns,
             Lint::MustUse => &mut self.must_use,
             Lint::UnusedAttributes => &mut self.unused_attributes,
+            Lint::UnusedVisibilities => &mut self.unused_visibilities,
             Lint::DuplicateMacroAttributes => &mut self.duplicate_macro_attributes,
             Lint::DiagnosticAttributes(index) => {
                 &mut self.diagnostic_attributes[usize::from(index)]
@@ -94,6 +98,9 @@ impl Policy {
                         Lint::MustUse => "forbidden unused_must_use lint cannot be weakened",
                         Lint::UnusedAttributes => {
                             "forbidden unused_attributes lint cannot be weakened"
+                        }
+                        Lint::UnusedVisibilities => {
+                            "forbidden unused_visibilities lint cannot be weakened"
                         }
                         Lint::DuplicateMacroAttributes => {
                             "forbidden duplicate_macro_attributes lint cannot be weakened"
