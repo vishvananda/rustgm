@@ -1,0 +1,130 @@
+{
+  "base": "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+  "base_sha256": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297",
+  "profile": "Source2024Functions; source attribute publishing guard only, no wire change",
+  "cases": [
+    {
+      "name": "must-use",
+      "path": "pa31/tests/spec/source-publication-attributes/must-use.rs",
+      "source_sha256": "065e36b6959325d67b39da3690fcae0f9ac08f7d49729558c8f3231aa7cf444c",
+      "source_profile_publication_status": 1,
+      "boundary": "must_use",
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "must-use-reason",
+      "path": "pa31/tests/spec/source-publication-attributes/must-use-reason.rs",
+      "source_sha256": "d647bf4d6b998a861ab6641925c41ec8657d51d78cfc6d072d99bab09feb961d",
+      "source_profile_publication_status": 1,
+      "boundary": "must_use",
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "inline",
+      "path": "pa31/tests/spec/source-publication-attributes/inline.rs",
+      "source_sha256": "9732712885f7e7dbbc89cd912afd5eff6eadeb817b404c9f76422de0cef51ef6",
+      "source_profile_publication_status": 1,
+      "boundary": "inline",
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "inline-always",
+      "path": "pa31/tests/spec/source-publication-attributes/inline-always.rs",
+      "source_sha256": "011a2d6dc21e06876619b3851f36ebc4cecc74700a6d9d689fcdbbe681212aa4",
+      "source_profile_publication_status": 1,
+      "boundary": "inline",
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "inline-never",
+      "path": "pa31/tests/spec/source-publication-attributes/inline-never.rs",
+      "source_sha256": "24ee3df7bba70f490758397ff6676f1171d604a86c3990db169cb74837b3e61f",
+      "source_profile_publication_status": 1,
+      "boundary": "inline",
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "cfg-off",
+      "path": "pa31/tests/spec/source-publication-attributes/cfg-off.rs",
+      "source_sha256": "ee3b19521fec7a3c821aef52c5e521c16e85cce3d5eb6eb7bf44ac73b17bc08f",
+      "source_profile_publication_status": 0,
+      "boundary": null,
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "cfg-on",
+      "path": "pa31/tests/spec/source-publication-attributes/cfg-on.rs",
+      "source_sha256": "165eab0971584deb147b1db78d830ccd64af3eb5a49e60ad2d409db9be63a405",
+      "source_profile_publication_status": 1,
+      "boundary": "must_use",
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "unused-marked",
+      "path": "pa31/tests/spec/source-publication-attributes/unused-marked.rs",
+      "source_sha256": "f99f31dd41a2d53b5117bade7bf1a5b448d424e592934955aec71baf20b2f997",
+      "source_profile_publication_status": 1,
+      "boundary": "must_use",
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "required-member",
+      "path": "pa31/tests/spec/source-publication-attributes/required-member.rs",
+      "source_sha256": "7bd788a9fd309c845ff479635f20ac9dcad6f68a006f3f8debbf0f7b2f29e8f5",
+      "source_profile_publication_status": 1,
+      "boundary": "must_use",
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "required-inline",
+      "path": "pa31/tests/spec/source-publication-attributes/required-inline.rs",
+      "source_sha256": "81e929cfed4f57d086e71954e072432267bcae64aa99d222af4a2b715ac8b03a",
+      "source_profile_publication_status": 1,
+      "boundary": "inline",
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "trait-owner",
+      "path": "pa31/tests/spec/source-publication-attributes/trait-owner.rs",
+      "source_sha256": "022bd11bb6844fa867e5b98a484fc3ccad0c0a620af0512cdc696fc12fb0fd6f",
+      "source_profile_publication_status": 1,
+      "boundary": "must_use",
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "distinct-owner",
+      "path": "pa31/tests/spec/source-publication-attributes/distinct-owner.rs",
+      "source_sha256": "a8071616672176aee61c635d42e7ca1b24103ee48f732fa86343958196a4e6e6",
+      "source_profile_publication_status": 1,
+      "boundary": "must_use",
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "negative-owner",
+      "path": "pa31/tests/spec/source-publication-attributes/negative-owner.rs",
+      "source_sha256": "5cd927013fedeeed36b71e65368ca0ce39299ee351b48964fcc2f0a53357a777",
+      "source_profile_publication_status": 0,
+      "boundary": null,
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "nominal-marked",
+      "path": "pa31/tests/spec/source-publication-attributes/nominal-marked.rs",
+      "source_sha256": "5c73d4946c3fee35e55dd653335b634ad443a1a011db4b5b6ad3c94329a88af7",
+      "source_profile_publication_status": 1,
+      "boundary": "existing nominal profile rejection",
+      "state": "predeclared before compiler validation"
+    },
+    {
+      "name": "nominal-plain",
+      "path": "pa31/tests/spec/source-publication-attributes/nominal-plain.rs",
+      "source_sha256": "881a3f3d30b6b6f19d1e7e724fa08da68f2bede06d970d23544ed037644eeee7",
+      "source_profile_publication_status": 1,
+      "boundary": "existing nominal profile rejection",
+      "state": "predeclared before compiler validation"
+    }
+  ],
+  "nominal_limit": "Struct/Enum/Union not selected by current Stage; marked/unmarked both existing profile denial, never counted as attribute-boundary coverage",
+  "old_imports": "Unknown remains error; no synthetic KnownAbsent",
+  "inspection": "original full semantic-provider-qualified.rs bytes and nonpublishing inspection retained"
+}
