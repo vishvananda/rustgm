@@ -16,6 +16,7 @@ pub(super) fn install(
     catalog: &mut Catalog,
     definitions: &[Definition],
     input: Input,
+    before_allocation: impl FnOnce(usize) -> Result<(), &'static str>,
 ) -> Result<Installed, &'static str> {
     catalog.mutable()?;
     catalog.charge(
@@ -34,7 +35,11 @@ pub(super) fn install(
     let artifact =
         u32::try_from(catalog.artifacts.len()).map_err(|_| "imported artifact overflow")?;
     quotas(catalog, &input)?;
-    let retained = storage(catalog, &input)?;
+    let (retained, peak) = storage(catalog, &input)?;
+    before_allocation(peak)?;
+    if peak > catalog.limits.bytes {
+        return Err("imported body publication exceeds storage budget");
+    }
     validate_definitions(catalog, definitions, &input)?;
     super::locations::validate(catalog, &input)?;
     let rows = rows(catalog, definitions, &input, first_body, artifact)?;
@@ -90,7 +95,7 @@ fn quotas(catalog: &Catalog, input: &Input) -> Result<(), &'static str> {
     Ok(())
 }
 
-fn storage(catalog: &Catalog, input: &Input) -> Result<usize, &'static str> {
+fn storage(catalog: &Catalog, input: &Input) -> Result<(usize, usize), &'static str> {
     // Four slots per appended entry conservatively cover amortized vector/map
     // capacity including old+new allocations during growth. Shared immutable
     // owner-catalog/identity Arc pointees are excluded by retained policy.
@@ -123,10 +128,7 @@ fn storage(catalog: &Catalog, input: &Input) -> Result<usize, &'static str> {
                 .len()
                 .saturating_mul(4 * size_of::<DefId>()),
         );
-    if retained.saturating_add(scratch) > catalog.limits.bytes {
-        return Err("imported body publication exceeds storage budget");
-    }
-    Ok(retained)
+    Ok((retained, retained.saturating_add(scratch)))
 }
 
 fn validate_definitions(
