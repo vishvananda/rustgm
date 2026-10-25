@@ -122,3 +122,12 @@ valid generic early readiness, broader anonymous caller profiles and full
 unchanged core/alloc/std acceptance. Development follow-ups use exact affected
 controls under the five-minute fastcheck budget; combined release, broad text
 and performance qualification belongs to the integrator and periodic CI.
+
+The current merged source also passes 16 exact private controls, including
+the shared unsafe-lint authority and existing Functions codec/fresh-client and
+numbering-denial sentinels (246.81 seconds locally). CI run `40170400821` passes
+the four affected frontend functions and PA7/PA8 text suites in a 23.87-second
+warm fastcheck, all 198 Python harness tests, exact backend installation and
+the backend smoke contract. The earlier filename ownership and function-size
+Clippy failures remain retained. Native component evidence above is retained;
+the complete merged native suite is delegated to periodic CI.

@@ -33,12 +33,14 @@ jobs:
         run: make fastcheck FAST_ARGS='lexer'
       - name: Harness, audit cache and upstream contracts
         run: make test-harness test-upstream && obj/audit-venv/bin/python -m unittest discover -s scripts/audit_tests -v
-      - name: Retain failure evidence
-        if: failure()
+      - name: Retain focused evidence
+        if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: fastcheck-failure
+          name: fastcheck-evidence
           path: obj/qualification/fast
+          if-no-files-found: ignore
+          retention-days: 7
   qualification:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04

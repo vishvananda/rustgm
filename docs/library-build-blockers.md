@@ -79,6 +79,14 @@ artifact-to-fresh-consumer native programs produce `7`. The 130-input preflight,
 retain bounded attribution and the separate A14→A15 timing costs remain visible.
 There is no new assignment or original crate artifact.
 
+The bounded development workflow is public at `1ac88c11`: its local warm
+format/audit/strict-Clippy/selected-test/text-oracle check passed in 57.35 seconds;
+the new push CI job passed in 2 minutes 22 seconds. Full release/native and
+independent qualification runs in nightly/manual CI. The defining-environment
+producer and raw original numbering are public at `f8cff8ba`, with 11 exact
+merged controls passing in 54.15 seconds. These smaller checkpoints do not
+replace assignment-release acceptance or claim a new core artifact.
+
 The preceding [scoped/byte checkpoint](scoped-bytes-checkpoint.md) is the
 performance baseline: 125 inputs, 116 equal-output pairs, 100 native
 preflights and 68 growth controls. Seven measured RSS costs remain recorded.
@@ -90,20 +98,25 @@ four files unchanged. Stricter attribute checking separately exposes the earlier
   followed by primitive inherent coherence (LIB-020). All 56 independent source
   cases have run, retaining three disproved hypotheses; primitive behavior
   is still unimplemented.
-- A: A15 API/CLI artifacts and fresh full-instance proof are integrated and
-  functionally qualified. The next shared source environment producer has
-  static/focused/native evidence and its full 1,561-case nonignored private
-  inventory passes. It is a separate handoff, not part of `fa0f4e08`.
-  Provided/default bodies and their real nonempty environments still require
-  separate authenticated transport.
-- B: LIB-004 and the original LIB-005 reproduction are integrated and functionally
-  qualified. Wider generic/imported profiles remain required. LIB-021 has actual
-  metadata/object/native and MIR observations; implementation, owned source-cache
-  identity and cfg-demand semantics remain unqualified.
-- C: actual attribute kinds, must_use/inline/Test and trait-message consumers
-  remain unqualified. New independent observations preserve disagreement rows.
-  Mixed hard-error/warning transport and shared generic inhabitation are required
-  consumer fixes; no ignored active attribute or empty expansion closes a blocker.
+- A: the shared defining-environment producer and raw numbering data are now
+  integrated at `f8cff8ba`. The separate unpaid Provided codec at `616e3caf`
+  passes five focused controls, formatting, audit and private strict Clippy in
+  223.17 seconds; it is not yet integrated. All canonical Provided import guards
+  remain closed. A charged inverse-allocation helper and a distinct nonpublishing
+  Provided staging wrapper are the next work; raw data is not an execution proof.
+- B: the bounded LIB-021 component at `ca2f0a80` passes 1,519 private tests,
+  24 frontend cases, 84 native contexts, 26 layouts and seven CLI controls.
+  Its merge preserving current macro permissions and A's source data is staged
+  as `e1c15e27` with focused integration fixes. Sixteen private controls and four
+  frontend functions plus PA7/PA8 text suites pass; periodic merged native checks
+  remain separate. Imported runtime-policy
+  transport and the combined Test-body/configuration demand seam remain open.
+- C: the attribute/consumer candidate at `366ca380` passes 13 private, seven
+  layout and nine selected frontend controls, including mixed warning/error
+  transport and shared generic inhabitation. The discarded-warning test table
+  was corrected against retained primary diagnostics, with exact counts/order;
+  the original failure remains. Integration and native qualification remain
+  pending. The Test/configuration body receipt is not implemented or waived.
 
 Use three workers under the unchanged three-job/150 GiB reserve policy. Group
 related changes, reuse authenticated unaffected evidence and clean known
