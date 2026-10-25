@@ -1,4 +1,4 @@
-//! Owned unpublished reservations never install an Interface or SourceClient report.
+//! Owned unpublished reservations never install an `Interface` or `SourceClient` report.
 use super::{Error, Input, Resolver, Work, error, kind, s, scope_rows};
 use crate::{
     expand::marks::ItemContext,

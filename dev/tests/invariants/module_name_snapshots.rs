@@ -51,6 +51,43 @@ fn actual_nonrole_traits_modules_aliases_and_ordered_names_remain_unpublished() 
             .find(outer, "hidden", Namespace::Type, &mut work)?
             .is_none()
     );
+    check_invalid_columns(&names, visible)?;
+    let mut failed = Work {
+        steps: crates::MAX_COMPONENTS,
+        ..Work::default()
+    };
+    assert!(
+        names
+            .find(outer, "Visible", Namespace::Type, &mut failed)
+            .is_err()
+    );
+    assert_eq!(failed.steps, crates::MAX_COMPONENTS + 1);
+    assert!(
+        names
+            .find(outer, "Visible", Namespace::Type, &mut Work::default())?
+            .is_some()
+    );
+    check_growth()?;
+    println!(
+        "namespace layouts raw={} binding={} frozen={} stats={} Columns={} SourceRows={} Package={} Report={}",
+        size_of::<NamespaceColumns>(),
+        size_of::<ExportBinding>(),
+        size_of::<UnpublishedNamespace>(),
+        size_of::<NamespaceWork>(),
+        size_of::<Columns>(),
+        size_of::<SourceRows>(),
+        size_of::<crate::resolve::package::Package>(),
+        size_of::<crate::resolve::expansion::Report>()
+    );
+    println!(
+        "namespace owned layout pending={} frozen={}",
+        size_of::<crate::resolve::crates::PendingNamespace>(),
+        size_of::<crate::resolve::crates::OwnedNamespaceCatalog>()
+    );
+    Ok(())
+}
+
+fn check_invalid_columns(names: &UnpublishedNamespace, visible: DeclarationRef) -> Result {
     let declarations = &names.columns().declarations;
     for changed in [
         {
@@ -86,38 +123,6 @@ fn actual_nonrole_traits_modules_aliases_and_ordered_names_remain_unpublished() 
         duplicate
             .sort(&mut Work::default(), &mut NamespaceWork::default())
             .is_err()
-    );
-    let mut failed = Work {
-        steps: crates::MAX_COMPONENTS,
-        ..Work::default()
-    };
-    assert!(
-        names
-            .find(outer, "Visible", Namespace::Type, &mut failed)
-            .is_err()
-    );
-    assert_eq!(failed.steps, crates::MAX_COMPONENTS + 1);
-    assert!(
-        names
-            .find(outer, "Visible", Namespace::Type, &mut Work::default())?
-            .is_some()
-    );
-    check_growth()?;
-    println!(
-        "namespace layouts raw={} binding={} frozen={} stats={} Columns={} SourceRows={} Package={} Report={}",
-        size_of::<NamespaceColumns>(),
-        size_of::<ExportBinding>(),
-        size_of::<UnpublishedNamespace>(),
-        size_of::<NamespaceWork>(),
-        size_of::<Columns>(),
-        size_of::<SourceRows>(),
-        size_of::<crate::resolve::package::Package>(),
-        size_of::<crate::resolve::expansion::Report>()
-    );
-    println!(
-        "namespace owned layout pending={} frozen={}",
-        size_of::<crate::resolve::crates::PendingNamespace>(),
-        size_of::<crate::resolve::crates::OwnedNamespaceCatalog>()
     );
     Ok(())
 }
