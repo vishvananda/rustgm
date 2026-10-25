@@ -12,6 +12,7 @@ use crate::support::{
 pub(super) const TAG: u8 = 10;
 pub(super) const PROVIDED_TAG: u8 = 11;
 const ROW_VERSION: u16 = 0;
+const CONTRACT_VERSION: u16 = 1;
 const DEFINING_RUST2024: u8 = 0;
 
 pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
@@ -22,7 +23,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         .source_descriptor()
         .ok_or("source envelope lacks its actual descriptor")?;
     let tag = match descriptor.profile() {
-        Profile::Source2024Functions => TAG,
+        Profile::Source2024Functions | Profile::Source2024FunctionContracts => TAG,
         Profile::Source2024Provided => PROVIDED_TAG,
         Profile::Source2024 => return Err("unpublished source facade has no wire profile"),
     };
@@ -38,7 +39,13 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     out.u16(SCHEMA)?;
     out.bytes(&PROFILE[..2])?;
     out.u8(tag)?;
-    out.u16(ROW_VERSION)?;
+    out.u16(
+        if descriptor.profile() == Profile::Source2024FunctionContracts {
+            CONTRACT_VERSION
+        } else {
+            ROW_VERSION
+        },
+    )?;
     out.u8(DEFINING_RUST2024)?;
     out.identity(interface.identity())?;
     out.u32(interface.dependencies().len())?;
@@ -47,6 +54,8 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     }
     if tag == PROVIDED_TAG {
         ordinary_columns::encode_provided(&mut out, descriptor.rows())?;
+    } else if descriptor.profile() == Profile::Source2024FunctionContracts {
+        ordinary_columns::encode_contracts(&mut out, descriptor.rows())?;
     } else {
         ordinary_columns::encode(&mut out, descriptor.rows())?;
     }
@@ -59,7 +68,10 @@ pub(super) fn decode_provided(input: &mut Reader<'_>) -> Result<Interface, &'sta
     decode_profile(input, true)
 }
 fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &'static str> {
-    if input.u16()? != ROW_VERSION || input.u8()? != DEFINING_RUST2024 {
+    let version = input.u16()?;
+    if (version != ROW_VERSION && (provided || version != CONTRACT_VERSION))
+        || input.u8()? != DEFINING_RUST2024
+    {
         return Err("unsupported source row version or defining edition");
     }
     let identity = input.identity()?;
@@ -69,10 +81,13 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
     if base > MAX_BYTES {
         return Err("source envelope base exceeds retained storage budget");
     }
-    let rows = if provided {
-        ordinary_columns::decode_provided(input, base)?
+    let (rows, attributes) = if provided {
+        (ordinary_columns::decode_provided(input, base)?, None)
+    } else if version == CONTRACT_VERSION {
+        let (rows, attributes) = ordinary_columns::decode_contracts(input, base)?;
+        (rows, Some(attributes))
     } else {
-        ordinary_columns::decode(input, base)?
+        (ordinary_columns::decode(input, base)?, None)
     };
     if !input.done() {
         return Err("trailing source metadata bytes");
@@ -83,6 +98,8 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
     };
     let payload = if provided {
         Payload::from_source_provided(interface.identity(), rows, base, &mut work)?
+    } else if let Some(attributes) = attributes {
+        Payload::from_source_contracts(interface.identity(), rows, attributes, base, &mut work)?
     } else {
         Payload::from_source(interface.identity(), rows, base, &mut work)?
     };

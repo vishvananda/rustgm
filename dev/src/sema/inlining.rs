@@ -8,11 +8,12 @@ use crate::{
         unit::{FileId, NodeKey},
     },
     sema::{model::Declarations, must_use::WarningCode},
+    support::{crates::generics::source::InlineApplicability, source::OriginalImage},
     syntax::{
         ast::Kind,
         attribute::{Attribute, Input},
         item::ItemKind,
-        token_tree::{Delimiter, Forest, Span, TreeKind},
+        token_tree::{Delimiter, Forest, TreeKind},
     },
 };
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -22,15 +23,22 @@ pub enum Hint {
     Never,
 }
 #[derive(Clone, Copy)]
-pub struct View {
-    pub owner: NodeKey,
-    pub declaration: NodeKey,
-    pub span: Span,
+pub struct View<'a> {
+    pub origin: super::header_attributes::ContractOrigin<'a>,
     pub hint: Hint,
+    pub applicability: InlineApplicability,
+}
+struct Entry {
+    source: super::header_attributes::SourceContractSite,
+    hint: Hint,
+    applicability: InlineApplicability,
+    effect: usize,
+    image: std::sync::Arc<OriginalImage>,
 }
 #[derive(Default)]
 pub(in crate::sema) struct Contracts {
-    entries: HashMap<NodeKey, View>,
+    entries: HashMap<NodeKey, Entry>,
+    bytes: usize,
 }
 impl Declarations {
     /// Read a validated advisory hint without authorizing a body or invocation.
@@ -40,16 +48,16 @@ impl Declarations {
         &self,
         report: &Report,
         declaration: NodeKey,
-    ) -> Result<Option<View>, Error> {
-        let Some(view) = self
+    ) -> Result<Option<View<'_>>, Error> {
+        let Some(entry) = self
             .must_use_contracts
             .as_deref()
             .and_then(|contracts| contracts.inline.as_deref())
             .and_then(|contracts| contracts.entries.get(&declaration))
-            .copied()
         else {
             return Ok(None);
         };
+        let view = entry.source;
         let unit = report.package.unit(view.owner.file);
         let owner = unit
             .owner_indices
@@ -57,23 +65,34 @@ impl Declarations {
             .copied()
             .flatten()
             .and_then(|index| unit.configured.owners.get(index.get() as usize - 1));
-        if owner.is_none_or(|owner| {
-            !owner.enabled
-                || owner.node != view.owner.node
-                || !unit
-                    .retained_attributes(owner.attributes.clone())
-                    .any(|(attribute, forest)| {
-                        attribute.span == view.span
-                            && attribute.name(forest, unit.source.text()) == Some("inline")
-                    })
-        }) {
+        if !std::sync::Arc::ptr_eq(&entry.image, unit.source.original_image())
+            || owner.is_none_or(|owner| {
+                !owner.enabled
+                    || owner.node != view.owner.node
+                    || !owner.attributes.contains(&entry.effect)
+                    || !unit
+                        .retained_attributes(entry.effect..entry.effect + 1)
+                        .any(|(attribute, forest)| {
+                            attribute.span == view.span
+                                && attribute.name(forest, unit.source.text()) == Some("inline")
+                        })
+            })
+        {
             return Err(Error::at(
                 view.owner.file,
                 view.span.start,
                 "inline hint actual owner changed",
             ));
         }
-        Ok(Some(view))
+        Ok(Some(View {
+            origin: super::header_attributes::ContractOrigin::source_site(
+                view.owner,
+                view.declaration,
+                view.span,
+            ),
+            hint: entry.hint,
+            applicability: entry.applicability,
+        }))
     }
     /// # Errors
     /// Rejects unknown identities and untransported imported hints.
@@ -81,12 +100,31 @@ impl Declarations {
         &self,
         report: &Report,
         definition: DefId,
-    ) -> Result<Option<View>, Error> {
+    ) -> Result<Option<View<'_>>, Error> {
         let actual = report
             .resolution
             .definitions
             .get(definition.0 as usize)
             .ok_or_else(|| Error::at(FileId(0), 0, "unknown inline declaration"))?;
+        if actual.node.is_none() {
+            use super::header_attributes::ContractKnowledge;
+            if super::header_attributes::has_imported(self, definition) {
+                return match self.header_attribute_contracts(report, definition)?.inline {
+                    ContractKnowledge::KnownAbsent => Ok(None),
+                    ContractKnowledge::KnownPresent(view) => Ok(Some(view)),
+                    ContractKnowledge::Unknown => Err(Error::at(
+                        crate::resolve::unit::FileId(0),
+                        0,
+                        "imported inline hint transport is not implemented",
+                    )),
+                };
+            }
+            return Err(Error::at(
+                crate::resolve::unit::FileId(0),
+                0,
+                "imported inline hint transport is not implemented",
+            ));
+        }
         if self
             .must_use_contracts
             .as_deref()
@@ -124,15 +162,17 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
                 node = value;
             }
             let key = NodeKey { file, node };
-            for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
+            for (effect, attribute, forest) in
+                unit.retained_indexed_attributes(owner.attributes.clone())
+            {
                 if attribute.name(forest, unit.source.text()) != Some("inline") {
                     continue;
                 }
                 let hint = parse(unit.source.text(), forest, attribute)
                     .map_err(|message| Error::at(file, attribute.span.start, message))?;
-                if !target(unit, node)
-                    .map_err(|message| Error::at(file, attribute.span.start, message))?
-                {
+                let applicability = target(unit, node)
+                    .map_err(|message| Error::at(file, attribute.span.start, message))?;
+                if applicability != InlineApplicability::FunctionBody {
                     facts.must_use_diagnostic(
                         report,
                         owner_key,
@@ -163,7 +203,10 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
                     .get_or_insert_default()
                     .inline
                     .get_or_insert_default();
-                if contracts.entries.len() >= 1_000_000 {
+                contracts.bytes = contracts
+                    .bytes
+                    .saturating_add(crate::support::retained::new_map::<NodeKey, Entry>(1));
+                if contracts.entries.len() >= 1_000_000 || contracts.bytes > 64 * 1024 * 1024 {
                     return Err(Error::at(
                         file,
                         attribute.span.start,
@@ -172,11 +215,16 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
                 }
                 contracts.entries.insert(
                     key,
-                    View {
-                        owner: owner_key,
-                        declaration: key,
-                        span: attribute.span,
+                    Entry {
+                        source: super::header_attributes::SourceContractSite {
+                            owner: owner_key,
+                            declaration: key,
+                            span: attribute.span,
+                        },
                         hint,
+                        applicability,
+                        effect,
+                        image: std::sync::Arc::clone(unit.source.original_image()),
                     },
                 );
             }
@@ -187,13 +235,17 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
 fn target(
     unit: &crate::resolve::unit::Unit,
     node: crate::syntax::ast::NodeId,
-) -> Result<bool, &'static str> {
+) -> Result<InlineApplicability, &'static str> {
     match unit.configured.ast.node(node).kind {
         Kind::Item(index) => match unit.configured.ast.items[index as usize].kind {
-            ItemKind::Function { body, .. } => Ok(body.is_some()),
+            ItemKind::Function { body, .. } => Ok(if body.is_some() {
+                InlineApplicability::FunctionBody
+            } else {
+                InlineApplicability::DiagnosedNoBody
+            }),
             _ => Err("inline attribute requires a function or closure"),
         },
-        Kind::Closure { .. } => Ok(true),
+        Kind::Closure { .. } => Ok(InlineApplicability::FunctionBody),
         _ => Err("inline attribute requires a function or closure"),
     }
 }
