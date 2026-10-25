@@ -14,6 +14,8 @@ const POSITIVE: &[(&str, &str)] = &[
     ("caller-scaling-128", "7 1\n"),
     ("reference-nested-named", "7 1\n"),
     ("reference-anonymous-runtime-opposite", "7 1\n"),
+    ("anonymous-empty-selector", "7 1\n"),
+    ("reference-anonymous-selector", "7 1\n"),
 ];
 fn fixture(name: &str, extension: &str) -> TestResult<String> {
     Ok(std::fs::read_to_string(
@@ -53,19 +55,8 @@ fn selected_reference_callbacks_keep_lifetime_and_const_eligibility_obligations(
     Ok(())
 }
 #[test]
-fn anonymous_selector_expression_does_not_acquire_named_owner_permission() -> TestResult {
-    // The separately declared scalar case isolates owner admission. The original
-    // reference case retains an earlier Copy/read frontier and its own observer.
-    let error = lower(&fixture("anonymous-empty-selector", "rs")?)
-        .err()
-        .ok_or("anonymous selector caller permission changed")?
-        .to_string();
-    assert!(
-        error.contains(
-            "source const_eval_select execution for this caller owner is not implemented"
-        ),
-        "{error}"
-    );
+fn anonymous_scalar_selector_keeps_its_own_proved_expression_owner() -> TestResult {
+    lower(&fixture("anonymous-empty-selector", "rs")?)?;
     Ok(())
 }
 #[test]

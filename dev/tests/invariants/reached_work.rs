@@ -41,7 +41,7 @@ fn replay(
             Progress::Prepare(Requirement::FunctionBody(target)) => {
                 let (mut state, _) = machine.suspend();
                 assert!(state.paid_call.is_none());
-                let reached = state.reached_const_call(facts, catalog, target)?;
+                let reached = state.reached_const_call(facts, catalog, rows, target)?;
                 state.pay_const_call(facts, catalog, rows, &reached, usize::MAX)?;
                 pending = Some(state);
                 payments += 1;

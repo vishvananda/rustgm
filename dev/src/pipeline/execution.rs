@@ -235,6 +235,8 @@ impl Engine {
             checked.map_err(|e| Error::at(FileId(0), 0, e))?;
         }
         if let Some(&value) = self.completed.get(request) {
+            self.check_completed_expression(facts, request.target)
+                .map_err(|e| Error::at(FileId(0), 0, e))?;
             return Ok(Progress::Complete(value));
         }
         let mut session = self.take_session(request)?;

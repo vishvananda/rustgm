@@ -49,16 +49,8 @@ fn actual_early_copy_controls_reach_complete_original_lowering() -> TestResult {
     Ok(())
 }
 #[test]
-fn unchanged_selected_reference_caller_retains_its_distinct_explicit_frontier() -> TestResult {
-    let error = lower(&original()?)
-        .err()
-        .ok_or("selected-reference caller frontier unexpectedly closed")?;
-    assert!(
-        error.to_string().contains(
-            "source const_eval_select execution for this caller owner is not implemented"
-        ),
-        "{error}"
-    );
+fn unchanged_selected_reference_caller_reaches_complete_original_lowering() -> TestResult {
+    lower(&original()?)?;
     Ok(())
 }
 

@@ -4,7 +4,33 @@ use super::{
     Templates, body,
 };
 use crate::{resolve::unit::NodeKey, types::TypeId};
+#[cfg(test)]
+#[path = "../../../tests/invariants/expression_owners.rs"]
+mod tests;
 impl Engine {
+    pub(super) fn check_completed_expression(
+        &self,
+        facts: &Declarations,
+        target: Target,
+    ) -> Result<(), &'static str> {
+        let Target::Expression {
+            source,
+            result,
+            context,
+        } = target
+        else {
+            return Ok(());
+        };
+        if context.is_some() {
+            return Err("associated constant execution needs a specialized body");
+        }
+        let index = *self
+            .roots
+            .get(&target)
+            .ok_or("completed expression lost its canonical Code root")?;
+        self.catalog.expression(facts, index, source, result)?;
+        Ok(())
+    }
     pub(super) fn root(
         &mut self,
         report: &Report,
@@ -31,30 +57,49 @@ impl Engine {
             // source, type, kind and canonical Code before reusing proof.
             return self.initializer_root(report, facts, definition);
         }
+        if let Target::Expression {
+            source,
+            context: Some(_),
+            ..
+        } = target
+        {
+            return Err(report.body_error(
+                source,
+                "associated constant execution needs a specialized body",
+            ));
+        }
         if let Some(&index) = self.roots.get(&target) {
+            if let Target::Expression { source, result, .. } = target {
+                self.catalog
+                    .expression(facts, index, source, result)
+                    .map_err(|e| report.body_error(source, e))?;
+            }
             return Ok(index);
         }
         if let Target::Anonymous { instance, result } = target {
             return self.anonymous_root(report, facts, instance, result);
         }
-        let Target::Expression {
-            source,
-            result,
-            context,
-        } = target
-        else {
+        let Target::Expression { source, result, .. } = target else {
             return Err(Error::at(
                 crate::resolve::unit::FileId(0),
                 0,
                 "constant root is not a typed expression",
             ));
         };
-        if context.is_some() {
-            return Err(report.body_error(
-                source,
-                "associated constant execution needs a specialized body",
-            ));
-        }
+        self.expression_root(report, facts, source, result)
+    }
+    fn expression_root(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        source: NodeKey,
+        result: TypeId,
+    ) -> Result<usize, Error> {
+        let target = Target::Expression {
+            source,
+            result,
+            context: None,
+        };
         if let Some(index) = self.lent_expression(report, facts, source, result)? {
             self.roots.insert(target, index);
             return Ok(index);

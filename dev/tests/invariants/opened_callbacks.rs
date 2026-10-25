@@ -353,11 +353,13 @@ fn warmed_reference_callback_keeps_caller_allocations_and_requires_its_input_own
                     .advance()
                     .err()
                     .ok_or("a warmed callback bypassed caller input authority")?;
-                assert!(
-                    error.message.contains("caller inputs")
-                        || error.message.contains("retained caller row"),
-                    "{}",
-                    error.message
+                assert_eq!(
+                    error.message,
+                    if provided.is_some() {
+                        "source caller has no actual retained row"
+                    } else {
+                        "source const_eval_select callback binders require proved caller inputs"
+                    }
                 );
                 assert_eq!(
                     machine.work.calls, 2,

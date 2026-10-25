@@ -85,9 +85,24 @@ impl Call<'_> {
     }
 }
 
+/// Only this actual checked Row's whole opening may admit this reached call.
+/// The borrowed frame and call identity cannot authorize another invocation.
+struct ReferenceOpening<'caller> {
+    row: &'caller super::use_inputs::Row,
+    frame: &'caller Frame,
+    call: ValueId,
+    signature: TypeId,
+}
+impl ReferenceOpening<'_> {
+    fn matches(&self, row: &super::use_inputs::Row, frame: &Frame, call: ValueId) -> bool {
+        std::ptr::eq(self.row, row) && std::ptr::eq(self.frame, frame) && self.call == call
+    }
+}
+
 /// All graph properties and list equality below are constant-time typed facts.
 /// Machine charges each attempted reached inspection; no per-call chain walk or
 /// signature opening replaces the caller's completed source/ownership proof.
+#[cfg(test)]
 pub(super) fn validate<'code>(
     facts: &Declarations,
     catalog: &Catalog,
@@ -168,36 +183,51 @@ pub(super) fn validate_source<'code>(
         catalog,
         inputs,
         body,
-        (frame.body, id),
+        (frame, id),
         selection,
         callback,
     )?;
-    caller(facts, catalog, body, frame.body, reference.is_some())?;
-    let width = callback_signature(facts, selection, callback, reference)?;
+    caller(
+        facts,
+        catalog,
+        inputs,
+        body,
+        (frame, id),
+        reference.as_ref(),
+    )?;
+    let width = callback_signature(
+        facts,
+        selection,
+        callback,
+        reference.as_ref().map(|r| r.signature),
+    )?;
     let tuple =
         Machine::value(frame, operands[0]).map_err(|_| "source selector ARG was not evaluated")?;
     if !matches!(Reader::new(facts).view(tuple)?, View::Product { length, variant: None } if length == width as u64)
     {
         return Err("source selector ARG differs from its exact owned tuple");
     }
-    Ok(Some(Call {
+    let call = Call {
         code: body,
         frame,
         value: id,
         selection,
         callback,
-    }))
+    };
+    #[cfg(test)]
+    observation::record(facts, catalog, inputs, &call, reference.as_ref());
+    Ok(Some(call))
 }
 
-fn reference_opening(
+fn reference_opening<'caller>(
     facts: &Declarations,
     catalog: &Catalog,
-    inputs: Option<&super::use_inputs::Inputs>,
+    inputs: Option<&'caller super::use_inputs::Inputs>,
     body: &Code,
-    site: (usize, ValueId),
+    site: (&'caller Frame, ValueId),
     selection: Select,
     callback: Instance,
-) -> Result<Option<TypeId>, &'static str> {
+) -> Result<Option<ReferenceOpening<'caller>>, &'static str> {
     let Some(Kind::FunctionItem { signature, .. }) = facts.types.kind(callback.ty()) else {
         return Err("source selector callback lost its actual item");
     };
@@ -212,18 +242,31 @@ fn reference_opening(
     }
     let inputs =
         inputs.ok_or("source const_eval_select callback binders require proved caller inputs")?;
-    let opening = inputs.opening(catalog, site.0, body, site.1)?;
-    opening.validate(facts, selection, callback).map(Some)
+    let row = inputs.checked(catalog, site.0.body, body)?;
+    let signature = inputs
+        .opening(catalog, site.0.body, body, site.1)?
+        .validate(facts, selection, callback)?;
+    Ok(Some(ReferenceOpening {
+        row,
+        frame: site.0,
+        call: site.1,
+        signature,
+    }))
 }
 
 fn caller(
     facts: &Declarations,
     catalog: &Catalog,
+    inputs: Option<&super::use_inputs::Inputs>,
     code: &Code,
-    index: usize,
-    reference: bool,
+    site: (&Frame, ValueId),
+    reference: Option<&ReferenceOpening<'_>>,
 ) -> Result<(), &'static str> {
+    let index = site.0.body;
     match code.owner {
+        crate::body::ir::Owner::AnonymousConstant => {
+            anonymous_caller(facts, catalog, inputs, code, site, reference)?;
+        }
         crate::body::ir::Owner::Function { definition, .. } => {
             let function = facts
                 .function_indices
@@ -234,7 +277,7 @@ fn caller(
                 .owner
                 .signatures()
                 .ok_or("source selector caller has no signature pair")?;
-            if !reference
+            if reference.is_none()
                 && (!matches!(
                     facts.types.kind(public),
                     Some(Kind::Function {
@@ -245,7 +288,7 @@ fn caller(
             {
                 return Err("source const_eval_select open caller signatures are not implemented");
             }
-            if !reference && owned != public {
+            if reference.is_none() && owned != public {
                 return Err(
                     "source selector closed caller changed its public/internal signature pair",
                 );
@@ -304,6 +347,36 @@ fn caller(
                 "source const_eval_select execution for this caller owner is not implemented",
             );
         }
+    }
+    Ok(())
+}
+
+fn anonymous_caller(
+    facts: &Declarations,
+    catalog: &Catalog,
+    inputs: Option<&super::use_inputs::Inputs>,
+    code: &Code,
+    site: (&Frame, ValueId),
+    reference: Option<&ReferenceOpening<'_>>,
+) -> Result<(), &'static str> {
+    let source = code
+        .source
+        .source()
+        .ok_or("anonymous selector has no source root")?;
+    catalog.expression(facts, site.0.body, source, code.result)?;
+    let row = inputs
+        .ok_or("anonymous selector requires its actual proved caller inputs")?
+        .checked(catalog, site.0.body, code)?;
+    if reference.is_some_and(|reference| !reference.matches(row, site.0, site.1)) {
+        return Err("anonymous selector reference belongs to another proved row, frame or Call");
+    }
+    let contract = row.contract();
+    if contract.universals != 0
+        || !contract.parameters.is_empty()
+        || contract.signature.is_some()
+        || facts.types.needs_region_context(code.result) != Some(false)
+    {
+        return Err("anonymous selector open caller contracts are not implemented");
     }
     Ok(())
 }
@@ -458,3 +531,7 @@ fn callback_signature(
 #[cfg(test)]
 #[path = "../../tests/invariants/selector_guards.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../tests/invariants/executed_reference_calls.rs"]
+mod observation;

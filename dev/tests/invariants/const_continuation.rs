@@ -43,7 +43,7 @@ fn reached_payment_is_one_use_and_keeps_the_same_box_across_suspension() -> Resu
                     return Err("cached code skipped the reached payment".into());
                 };
                 let (mut state, _) = machine.suspend();
-                let reached = state.reached_const_call(&facts, catalog, target)?;
+                let reached = state.reached_const_call(&facts, catalog, rows, target)?;
                 let slots = state.retained_slots();
                 assert!(
                     state

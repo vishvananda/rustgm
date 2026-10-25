@@ -327,36 +327,37 @@ impl Inputs {
         body: &Code,
         call: crate::body::ir::ValueId,
     ) -> Result<Opening, &'static str> {
-        catalog.validate_entry(code)?;
-        if catalog
-            .code(code)
-            .is_none_or(|actual| !std::ptr::eq(actual, body))
-        {
-            return Err("reference selector descriptor belongs to another actual catalog code");
-        }
-        let row = self
-            .rows
-            .get(&code)
-            .ok_or("reference selector has no actual retained caller row")?;
-        row.validate(code, body)?;
+        let row = self.checked(catalog, code, body)?;
         row.selectors
             .as_deref()
             .and_then(|rows| rows.get(call))
             .ok_or("reference selector has no proved input/output descriptor")
     }
-    pub(super) fn get(&self, code: usize, catalog: &Catalog) -> Result<Rc<Row>, &'static str> {
-        catalog.validate_entry(code)?;
+    pub(super) fn checked(
+        &self,
+        catalog: &Catalog,
+        index: usize,
+        code: &Code,
+    ) -> Result<&Rc<Row>, &'static str> {
+        catalog.validate_entry(index)?;
+        if catalog
+            .code(index)
+            .is_none_or(|actual| !std::ptr::eq(actual, code))
+        {
+            return Err("source inputs belong to another actual catalog code");
+        }
         let row = self
             .rows
-            .get(&code)
-            .ok_or("source conditional use has no checked materialized caller/callee inputs")?;
-        row.validate(
-            code,
-            catalog
-                .code(code)
-                .ok_or("source conditional code disappeared")?,
-        )?;
-        Ok(Rc::clone(row))
+            .get(&index)
+            .ok_or("source caller has no actual retained row")?;
+        row.validate(index, code)?;
+        Ok(row)
+    }
+    pub(super) fn get(&self, code: usize, catalog: &Catalog) -> Result<Rc<Row>, &'static str> {
+        let body = catalog
+            .code(code)
+            .ok_or("source conditional code disappeared")?;
+        self.checked(catalog, code, body).map(Rc::clone)
     }
 }
 

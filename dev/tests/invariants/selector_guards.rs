@@ -10,6 +10,8 @@ use crate::{
     },
 };
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+#[path = "expression_rows.rs"]
+mod anonymous;
 
 fn checked(
     name: &str,
@@ -116,9 +118,16 @@ fn source_selector_reached_values_reject_wrong_callee_callback_tuple_and_site() 
             frame.next = u32::MAX;
             assert!(validate(&facts, &catalog, code, frame, Phase::Suspended).is_err());
             frame.next = position;
+            // This bare-catalog opponent has no retained Row; changing the
+            // evaluated callback still cannot acquire another target's payment.
             assert!(
                 state
-                    .reached_const_call(&facts, &catalog, selected[1].1)
+                    .reached_const_call(
+                        &facts,
+                        &catalog,
+                        &super::super::use_inputs::Inputs::default(),
+                        selected[1].1
+                    )
                     .is_err()
             );
         } else {

@@ -180,12 +180,13 @@ fn anonymous_reference_read_frontier_keeps_actual_copy_selection_observable() ->
         .ok_or("actual Copy declaration")?;
     let scope = Scope::begin(root)?;
     assert!(Scope::begin(root).is_err());
-    let error = crate::pipeline::analyze_source(&report)
-        .err()
-        .ok_or("selected-reference anonymous caller frontier unexpectedly closed")?;
-    assert_eq!(
-        error.to_string(),
-        "file 0: 2386: source const_eval_select execution for this caller owner is not implemented"
+    let analysis = crate::pipeline::analyze_source(&report)?;
+    assert!(
+        analysis
+            .facts
+            .array_lengths
+            .values()
+            .any(|&length| length == 7)
     );
     let capture = scope.finish()?;
     assert!(CAPTURE.with(|slot| slot.borrow().is_none()));

@@ -39,6 +39,7 @@ impl Reached {
 fn inspect(
     facts: &Declarations,
     catalog: &Catalog,
+    inputs: Option<&Inputs>,
     frame: &Frame,
     phase: super::selector_sites::Phase,
     target: Instance,
@@ -48,26 +49,27 @@ fn inspect(
     let body = catalog
         .code(frame.body)
         .ok_or("source const caller code disappeared")?;
-    let form =
-        if let Some(call) = super::selector_sites::validate(facts, catalog, body, frame, phase)? {
-            if call.callback() != target {
-                return Err("selected const payment changed its evaluated callback instance");
-            }
-            super::function_calls::Form::Selected {
-                selector: call.selector(),
-            }
-        } else {
-            let (definition, _, _, primitive) = const_payments::profile(facts, target)?;
-            super::argument_witness::checked_call(
-                facts,
-                body,
-                frame,
-                position,
-                target,
-                (definition, primitive),
-            )?;
-            super::function_calls::Form::Direct
-        };
+    let form = if let Some(call) =
+        super::selector_sites::validate_source(facts, catalog, inputs, body, frame, phase)?
+    {
+        if call.callback() != target {
+            return Err("selected const payment changed its evaluated callback instance");
+        }
+        super::function_calls::Form::Selected {
+            selector: call.selector(),
+        }
+    } else {
+        let (definition, _, _, primitive) = const_payments::profile(facts, target)?;
+        super::argument_witness::checked_call(
+            facts,
+            body,
+            frame,
+            position,
+            target,
+            (definition, primitive),
+        )?;
+        super::function_calls::Form::Direct
+    };
     Ok(Site {
         frame: frame.instance,
         code: frame.body,
@@ -82,6 +84,7 @@ impl State {
         &self,
         facts: &Declarations,
         catalog: &Catalog,
+        inputs: &Inputs,
         target: Instance,
     ) -> Result<Reached, &'static str> {
         if self.paid_call.is_some() {
@@ -95,6 +98,7 @@ impl State {
             site: inspect(
                 facts,
                 catalog,
+                Some(inputs),
                 frame,
                 super::selector_sites::Phase::Suspended,
                 target,
@@ -120,6 +124,7 @@ impl State {
             != inspect(
                 facts,
                 catalog,
+                Some(inputs),
                 frame,
                 super::selector_sites::Phase::Suspended,
                 reached.site.target,
@@ -167,6 +172,7 @@ impl Machine<'_, '_> {
         let checked = inspect(
             self.evaluator.facts(),
             &self.bodies,
+            self.bodies.inputs(),
             frame,
             super::selector_sites::Phase::Suspended,
             continuation.site.target,
@@ -191,6 +197,7 @@ impl Machine<'_, '_> {
         let site = inspect(
             self.evaluator.facts(),
             catalog,
+            self.bodies.inputs(),
             frame,
             super::selector_sites::Phase::Executing,
             target,

@@ -38,8 +38,12 @@ impl Engine {
         }
         let state = state
             .ok_or_else(|| error("source conditional payment requires an actual reached caller"))?;
+        let rows = self
+            .const_calls
+            .as_deref()
+            .ok_or_else(|| error("source const-call inputs were not retained"))?;
         let reached = state
-            .reached_const_call(facts, &self.catalog, instance)
+            .reached_const_call(facts, &self.catalog, rows, instance)
             .map_err(error)?;
         if !self.function_for_reached(report, facts, &reached)? {
             return Ok(false);

@@ -1,0 +1,39 @@
+{
+  "declared_before_implementation_and_candidate_execution": true,
+  "scope": "LIB005 exact original selected-reference AnonymousConstant caller; reuse C canonical expression/Row checks and existing whole reference Opening; no named-owner relabel, new retained hot fields, proof graph or broader open/generic/instance caller claim",
+  "readiness_checkpoint": "96fd35a41b9610277b203311ffa25d8632a5e414",
+  "unqualified_source_component": "ee0a1fa8762b26e4566720d51591ca4fbf44dd34",
+  "original": {
+    "source": "pa31/tests/spec/const-eval-select-ctfe/reference-anonymous-selector.rs",
+    "sha256": "ed3c2609e8941711e25eeb6d0949f418ce5f11de48758653d88b4dbfa42d57b0",
+    "client": "pa31/tests/spec/const-eval-select-ctfe/reference-anonymous-selector.c",
+    "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+    "root_node": 303,
+    "dereference_node": 301,
+    "span": 2386,
+    "root_result": "usize",
+    "selected_F": "ct<'a>(&'a u8)->&'a u8",
+    "candidate_hypothesis": "accept exact actual anonymous owner through proved reference Opening",
+    "native_status_hypothesis": 0,
+    "native_stdout_hypothesis": "7 1\n",
+    "native_stderr_hypothesis": "",
+    "independent_original_evidence": "retained byte-identical LIB004 oracle-v1 metadata/object/native observation; authenticate receipt before execution",
+    "prior_candidate_frontier": "file 0: 2386: source const_eval_select execution for this caller owner is not implemented"
+  },
+  "private_controls": [
+    "actual reached Call with exact checked Code/Row/Contract/Opening/full selector/F and scalar consuming Cast",
+    "borrowed reference capability bound to exact real frame and call ValueId; no surviving permit across calls",
+    "actual same-header foreign Code/Catalog/Inputs and missing descriptor reject",
+    "wrong source/result/context/instance/key/const mode/stale canonical root reject",
+    "warm/completed data does not grant new reached permission; actual cache identities/work/storage stay fixed",
+    "source lifetime and const eligibility negatives remain rejecting",
+    "reached payments stay fresh and one-use; parent/lease success/fault/retirement controls remain",
+    "Entry/Row/Code/Contract/Frame/Machine retained layouts unchanged by this extension"
+  ],
+  "remaining_requirements": [
+    "valid generic early implementation readiness",
+    "open/generic/specialized/imported anonymous callers beyond this actual closed-root proof",
+    "full original upstream core/alloc/std and merged release/performance qualification"
+  ],
+  "scope_guard": "No gate deletion, fixture replacement or dropped negative; original full/native acceptance required independently of intermediate Copy proof"
+}

@@ -1,0 +1,40 @@
+{
+  "declared_before_implementation": true,
+  "base": "9aa7d80212104af15c6b0dba074d6f7bf3530305",
+  "scope": "Actual closed AnonymousConstant selector ownership via canonical expression publication and the existing proved Row; no named-owner relabel, new fields, proof replay, or broader member/conditional/generic/reference profile. Original reference Copy frontier untouched.",
+  "cases": [
+    {
+      "name": "anonymous-empty-selector",
+      "source": "pa31/tests/spec/const-eval-select-ctfe/anonymous-empty-selector.rs",
+      "sha256": "b0b528fe6a78abd1b4da27530ea66d0244f1b3a964f37ff5051265ec8cd0145a",
+      "client": "pa31/tests/spec/const-eval-select-ctfe/anonymous-empty-selector.c",
+      "client_sha256": "784b24fed4936b9e86c270eb9942bf49c51892acfbd2c60d98f687aafaedb004",
+      "independent_metadata": 0,
+      "independent_object": 0,
+      "independent_native_status": 0,
+      "independent_native_stdout": "7 1\n",
+      "independent_native_stderr": "",
+      "observations": "retained unchanged C7 independently accepted source; no new oracle required",
+      "oracle_binding_sha256": "f80d135ba08de3fc1a18d9f54b482b4430394db188e65d2b1667c364608b36d2",
+      "oracle_results_sha256": "c5ca0dd6a53bcd6d184eeb75fab44e0b920e7f6932439e242b5f0a7aced49ae4",
+      "candidate_hypothesis": "accept actual anonymous owner with const F7 and runtime G1",
+      "prior_candidate_frontier": "source const_eval_select execution for this caller owner is not implemented; prior receipt remains preserved"
+    }
+  ],
+  "private_controls": [
+    "cold exact anonymous source/result/index and proved Code/Row/Contract permit scalar CTFE",
+    "warm same root reuses Code/Row identity and construction/proof counts",
+    "cold/warm wrong canonical source/result/context and invalid catalog index reject",
+    "same-header foreign Code/Catalog/Inputs and missing/unproved Row reject",
+    "anonymous owner never becomes a named initializer or specialized instance",
+    "actual retained Call/F/ARG/full-selector opponents remain rejected",
+    "source conditional reached inspection/payment/resume/consume all use actual existing Inputs; no cached payment grants permission",
+    "original reference Copy fixture and exact-root observer remain unchanged"
+  ],
+  "integration_controls": [
+    "existing paid conditional source-call fresh/warm controls",
+    "existing named early/warm and suspension/budget controls",
+    "ordinary no-selector/no-source owner storage unchanged",
+    "retained scalar native control joins reference native selection as64th context"
+  ]
+}

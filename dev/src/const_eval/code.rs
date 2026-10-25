@@ -293,6 +293,40 @@ impl Catalog {
         }
         Ok(())
     }
+    pub(crate) fn expression(
+        &self,
+        facts: &crate::sema::model::Declarations,
+        index: usize,
+        source: NodeKey,
+        result: crate::types::TypeId,
+    ) -> Result<&Code, &'static str> {
+        self.validate_entry(index)?;
+        let code = self
+            .code(index)
+            .ok_or("anonymous expression Code disappeared")?;
+        let typed = facts
+            .inline_constants
+            .as_deref()
+            .and_then(|registry| registry.get(source))
+            .and_then(|body| body.result)
+            .or_else(|| {
+                facts
+                    .node(source)
+                    .and_then(|node| node.adjustment.map(|a| a.target).or(node.ty))
+            });
+        if self.expressions.get(&source) != Some(&index)
+            || !matches!(code.owner, Owner::AnonymousConstant)
+            || code.source.source() != Some(source)
+            || code.result != result
+            || typed != Some(result)
+            || !code.const_context
+            || code.instance.is_some()
+            || code.source_only
+        {
+            return Err("anonymous expression changed its canonical source, result or owner");
+        }
+        Ok(code)
+    }
     pub(crate) fn initializer(
         &self,
         index: usize,
