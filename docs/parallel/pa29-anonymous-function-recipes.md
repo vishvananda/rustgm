@@ -6,6 +6,14 @@ failed compilation in CI `40195601133` because the moved scalar adapter used its
 old module-relative path. Its new controls have not run yet. That original source,
 packet and failure log remain retained.
 
+The corrected merged candidate compiled its production CLI in CI `40197315817`;
+metadata and formatting passed. Architecture checking stopped on two repeated
+filename prefixes before private Clippy or tests. The new type worklist now lives
+in `canonical_nodes/recipe_emission.rs`, and its contracts in
+`invariants/signature_recipes.rs`. The explicit test module path retains every
+selected Rust test identity. This naming correction changes no semantic code or
+audit rule; the old run and its evidence remain failed and retained.
+
 The existing authored type worklist now enters actual `Kind::Function` nodes,
 allocates their real `CallableType` frames, demands their actual input/result
 TypeIds, and finishes the recipe after its children. Declaration signatures and

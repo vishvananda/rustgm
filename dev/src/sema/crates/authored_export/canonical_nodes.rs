@@ -1,10 +1,10 @@
 //! Canonical summaries select actual ownership keys; graph traversal is memoized.
 mod memo_owner;
-mod owned_types;
+mod recipe_emission;
 mod regional_roots;
 mod signatures;
 #[cfg(test)]
-#[path = "../../../../tests/invariants/anonymous_functions.rs"]
+#[path = "../../../../tests/invariants/signature_recipes.rs"]
 mod tests;
 use super::{DeclarationRef, Declarations, DefId, Stage, g, s};
 use crate::support::crates::owner_catalog::BodyRef;
