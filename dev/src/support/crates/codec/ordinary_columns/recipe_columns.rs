@@ -23,8 +23,13 @@ pub(super) fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static
             out.u8(3)?;
             signature_write(out, signature)
         }
-        s::Type::FunctionItem(_) | s::Type::ApplicationSignature(_) => {
-            Err("source application recipe requires a wider source profile")
+        s::Type::FunctionItem(application) | s::Type::ApplicationSignature(application) => {
+            out.u8(if matches!(*row, s::Type::FunctionItem(_)) {
+                4
+            } else {
+                5
+            })?;
+            id(out, application.0)
         }
     }
 }
@@ -38,6 +43,15 @@ pub(super) fn type_read(read: &mut Input<'_, '_>) -> Result<s::Type, &'static st
             referent: g::TypeRef(read.id()?),
         },
         3 => s::Type::Function(signature_read(read)?),
+        tag @ (4 | 5) => {
+            read.require_provided("unknown source function type recipe")?;
+            let application = s::FunctionApplicationRef(read.id()?);
+            if tag == 4 {
+                s::Type::FunctionItem(application)
+            } else {
+                s::Type::ApplicationSignature(application)
+            }
+        }
         _ => return Err("unknown source function type recipe"),
     })
 }
@@ -79,6 +93,12 @@ pub(super) fn root_write(out: &mut Writer, row: g::TypeRef) -> Result<(), &'stat
 pub(super) fn root_read(read: &mut Input<'_, '_>) -> Result<g::TypeRef, &'static str> {
     Ok(g::TypeRef(read.id()?))
 }
+pub(super) fn root_region_write(out: &mut Writer, row: s::RegionRef) -> Result<(), &'static str> {
+    id(out, row.0)
+}
+pub(super) fn root_region_read(read: &mut Input<'_, '_>) -> Result<s::RegionRef, &'static str> {
+    Ok(s::RegionRef(read.id()?))
+}
 pub(super) fn region_write(out: &mut Writer, row: &s::Region) -> Result<(), &'static str> {
     match *row {
         s::Region::Static => out.u8(0),
@@ -97,7 +117,11 @@ pub(super) fn region_write(out: &mut Writer, row: &s::Region) -> Result<(), &'st
             id(out, slot.0)?;
             out.u16(depth)
         }
-        s::Region::Variable { .. } => Err("source body region requires a wider source profile"),
+        s::Region::Variable { body, slot } => {
+            out.u8(3)?;
+            id(out, body.0)?;
+            id(out, slot)
+        }
     }
 }
 pub(super) fn region_read(read: &mut Input<'_, '_>) -> Result<s::Region, &'static str> {
@@ -112,6 +136,13 @@ pub(super) fn region_read(read: &mut Input<'_, '_>) -> Result<s::Region, &'stati
             slot: s::SlotRef(read.id()?),
             depth: read.reader.u16()?,
         },
+        3 => {
+            read.require_provided("unknown source function region recipe")?;
+            s::Region::Variable {
+                body: super::BodyRef(read.id()?),
+                slot: read.id()?,
+            }
+        }
         _ => return Err("unknown source function region recipe"),
     })
 }
@@ -147,6 +178,21 @@ pub(super) fn application_read(
         arguments: read.range()?,
     })
 }
+pub(super) fn function_write(
+    out: &mut Writer,
+    row: &s::FunctionApplication,
+) -> Result<(), &'static str> {
+    address_write(out, row.declaration)?;
+    range(out, row.arguments)
+}
+pub(super) fn function_read(
+    read: &mut Input<'_, '_>,
+) -> Result<s::FunctionApplication, &'static str> {
+    Ok(s::FunctionApplication {
+        declaration: address_read(read)?,
+        arguments: read.range()?,
+    })
+}
 pub(super) fn clause_write(out: &mut Writer, row: &s::Clause) -> Result<(), &'static str> {
     id(out, row.owner.0)?;
     id(out, row.site)?;
@@ -167,14 +213,11 @@ pub(super) fn requirement_write(out: &mut Writer, row: s::Requirement) -> Result
     match row {
         s::Requirement::Trait {
             application,
-            effect: Constness::Ordinary,
+            effect,
         } => {
             out.u8(0)?;
             id(out, application.0)?;
-            out.u8(0)
-        }
-        s::Requirement::Trait { .. } => {
-            Err("source qualified request requires a wider source profile")
+            effect_write(out, effect)
         }
         s::Requirement::TypeOutlives { subject, shorter } => {
             out.u8(1)?;
@@ -191,12 +234,13 @@ pub(super) fn requirement_read(read: &mut Input<'_, '_>) -> Result<s::Requiremen
     Ok(match read.reader.u8()? {
         0 => {
             let application = s::TraitApplicationRef(read.id()?);
-            if read.reader.u8()? != 0 {
-                return Err("source qualified request requires a wider source profile");
-            }
+            let effect = effect_read(
+                read,
+                "source qualified request requires a wider source profile",
+            )?;
             s::Requirement::Trait {
                 application,
-                effect: Constness::Ordinary,
+                effect,
             }
         }
         1 => s::Requirement::TypeOutlives {
@@ -206,6 +250,28 @@ pub(super) fn requirement_read(read: &mut Input<'_, '_>) -> Result<s::Requiremen
         2 => s::Requirement::Outlives(bound_read(read)?),
         _ => return Err("unknown source function requirement"),
     })
+}
+pub(super) fn effect_write(out: &mut Writer, effect: Constness) -> Result<(), &'static str> {
+    out.u8(match effect {
+        Constness::Ordinary => 0,
+        Constness::Const => 1,
+        Constness::Conditional => 2,
+    })
+}
+pub(super) fn effect_read(
+    read: &mut Input<'_, '_>,
+    unsupported: &'static str,
+) -> Result<Constness, &'static str> {
+    let tag = read.reader.u8()?;
+    if tag != 0 {
+        read.require_provided(unsupported)?;
+    }
+    match tag {
+        0 => Ok(Constness::Ordinary),
+        1 => Ok(Constness::Const),
+        2 => Ok(Constness::Conditional),
+        _ => Err("unknown source constness effect"),
+    }
 }
 pub(super) fn bound_write(out: &mut Writer, row: s::RegionBound) -> Result<(), &'static str> {
     id(out, row.longer.0)?;

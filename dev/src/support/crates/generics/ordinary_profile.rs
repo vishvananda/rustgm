@@ -20,7 +20,7 @@ pub(super) fn validate(
     if rows.policy.edition != Edition::Rust2024 || rows.policy.provider.0 != 0 {
         return Err("ordinary source functions require their own Rust2024 provider profile");
     }
-    let sizing = bindings(rows, headers, work)?;
+    let sizing = bindings(rows, headers, work, false)?;
     recipes(rows, work)?;
     for header in &rows.traits {
         work.charge(1)?;
@@ -237,10 +237,11 @@ fn ordinary(request: super::super::Requirement) -> Result<(), &'static str> {
     }
     Ok(())
 }
-fn bindings(
+pub(super) fn bindings(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
+    provided: bool,
 ) -> Result<[Option<crate::support::crates::owner_catalog::DeclarationRef>; 3], &'static str> {
     work.charge(1)?;
     if rows.policy.roles.start != 0 || rows.policy.roles.end as usize != rows.roles.len() {
@@ -249,7 +250,7 @@ fn bindings(
     let mut declarations = [None; LangItem::ALL.len()];
     for role in &rows.roles {
         work.charge(declarations.len())?;
-        if !matches!(
+        let allowed = matches!(
             role.role,
             LangItem::Sized
                 | LangItem::MetaSized
@@ -258,7 +259,8 @@ fn bindings(
                 | LangItem::Clone
                 | LangItem::CloneFn
                 | LangItem::Copy
-        ) {
+        ) || provided && matches!(role.role, LangItem::Destruct | LangItem::Freeze);
+        if !allowed {
             return Err("source role requires a wider explicit source profile");
         }
         let address = role.declaration;

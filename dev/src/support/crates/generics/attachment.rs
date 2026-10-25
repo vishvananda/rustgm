@@ -70,6 +70,25 @@ impl Payload {
             source::ValidatedRows::stage(owner, rows, base.saturating_add(overhead), work)?;
         Ok(Self::from(staged))
     }
+    /// Validate complete provided-body data without granting canonical import,
+    /// defining-environment or executable permission.
+    /// # Errors
+    /// Rejects malformed/unsupported domains and combined resource limits.
+    pub fn from_source_provided(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        let staged = source::ValidatedRows::stage_provided(
+            owner,
+            rows,
+            base.saturating_add(overhead),
+            work,
+        )?;
+        Ok(Self::from(staged))
+    }
     #[must_use]
     pub const fn view(&self) -> PayloadView<'_> {
         match &self.data {

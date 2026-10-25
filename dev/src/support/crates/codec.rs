@@ -111,6 +111,9 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     if tag == packet_envelope::TAG {
         return packet_envelope::decode(&mut input);
     }
+    if tag == packet_envelope::PROVIDED_TAG {
+        return packet_envelope::decode_provided(&mut input);
+    }
     let profile = Profile::read(&mut input, tag)?;
     decode_legacy(&mut input, profile)
 }

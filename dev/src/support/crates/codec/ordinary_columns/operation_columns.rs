@@ -1,21 +1,22 @@
 //! The ordinary move profile retains complete CFG, cleanup and owned-value rows.
 use super::{
-    BodyRef, DeclarationRef, Input, Writer, cfg_columns as storage, crates, empty_write, g, id, s,
-    write,
+    BodyRef, DeclarationRef, Input, Writer, allocation_columns as allocations,
+    cfg_columns as storage, crates, g, id, index_write, invoked_rows, s, write, write_copy,
 };
 
 pub(super) fn original_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
     for value in [row.body.0, row.declaration.0, row.result.0, row.sites] {
         id(out, value)?;
     }
-    if row.context != s::CallContext::Runtime {
-        return Err("source defining context requires a wider source profile");
-    }
-    out.u8(0)?;
-    empty_write(out, &row.variables)?;
+    out.u8(match row.context {
+        s::CallContext::Runtime => 0,
+        s::CallContext::ConstDefinition => 1,
+        s::CallContext::ClosedConst => 2,
+    })?;
+    write(out, &row.variables, allocations::owned_write)?;
     write(out, &row.locals, storage::local_write)?;
     write(out, &row.parameter_bindings, storage::parameter_write)?;
-    empty_write(out, &row.projections)?;
+    write(out, &row.projections, allocations::projection_write)?;
     write(out, &row.values, value_write)?;
     write(out, &row.statements, statement_write)?;
     write(out, &row.blocks, storage::block_write)?;
@@ -27,22 +28,31 @@ pub(super) fn original_write(out: &mut Writer, row: &s::Original) -> Result<(), 
         write(out, &owned.created, storage::temporary_write)?;
         write(out, &owned.returned, release_write)?;
     }
-    empty_write(out, &row.arguments)?;
-    empty_write(out, &row.openings)?;
-    empty_write(out, &row.calls)
+    write_copy(out, &row.arguments, index_write)?;
+    write_copy(out, &row.openings, super::recipe_columns::root_region_write)?;
+    write(out, &row.calls, invoked_rows::write)
 }
 pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'static str> {
     let body = BodyRef(read.id()?);
     let declaration = DeclarationRef(read.id()?);
     let result = g::TypeRef(read.id()?);
     let sites = read.id()?;
-    if read.reader.u8()? != 0 {
-        return Err("source defining context requires a wider source profile");
-    }
-    read.empty()?;
+    let context = match read.reader.u8()? {
+        0 => s::CallContext::Runtime,
+        tag => {
+            read.require_provided("source defining context requires a wider source profile")?;
+            match tag {
+                1 => s::CallContext::ConstDefinition,
+                2 => s::CallContext::ClosedConst,
+                _ => return Err("unknown source defining call context"),
+            }
+        }
+    };
+    let variables = read.provided_list(crates::MAX_COMPONENTS, 6, allocations::owned_read)?;
     let locals = read.list(crates::MAX_COMPONENTS, 16, storage::local_read)?;
     let parameter_bindings = read.list(crates::MAX_COMPONENTS, 12, storage::parameter_read)?;
-    read.empty()?;
+    let projections =
+        read.provided_list(crates::MAX_COMPONENTS, 14, allocations::projection_read)?;
     let values = read.list(crates::MAX_COMPONENTS, 5, value_read)?;
     let statements = read.list(crates::MAX_COMPONENTS, 9, statement_read)?;
     let blocks = read.list(crates::MAX_COMPONENTS, 13, storage::block_read)?;
@@ -57,19 +67,23 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
     } else {
         None
     };
-    read.empty()?;
-    read.empty()?;
-    read.empty()?;
+    let arguments = read.provided_list(crates::MAX_COMPONENTS, 4, Input::id)?;
+    let openings = read.provided_list(
+        crates::MAX_COMPONENTS,
+        4,
+        super::recipe_columns::root_region_read,
+    )?;
+    let calls = read.provided_list(crates::MAX_COMPONENTS, 19, invoked_rows::read)?;
     Ok(s::Original {
         body,
         declaration,
         result,
         sites,
-        context: s::CallContext::Runtime,
-        variables: Vec::new(),
+        context,
+        variables,
         locals,
         parameter_bindings,
-        projections: Vec::new(),
+        projections,
         values,
         statements,
         blocks,
@@ -77,23 +91,28 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
         exits,
         temporaries,
         owned,
-        arguments: Vec::new(),
-        openings: Vec::new(),
-        calls: Vec::new(),
+        arguments,
+        openings,
+        calls,
     })
 }
-fn place_write(out: &mut Writer, place: s::Place) -> Result<(), &'static str> {
-    let s::Place::Local(local) = place else {
-        return Err("source projection requires a wider source profile");
+pub(super) fn place_write(out: &mut Writer, place: s::Place) -> Result<(), &'static str> {
+    let (tag, index) = match place {
+        s::Place::Local(index) => (0, index),
+        s::Place::Projection(index) => (1, index),
     };
-    out.u8(0)?;
-    id(out, local)
+    out.u8(tag)?;
+    id(out, index)
 }
-fn place_read(read: &mut Input<'_, '_>) -> Result<s::Place, &'static str> {
-    if read.reader.u8()? != 0 {
-        return Err("source projection requires a wider source profile");
+pub(super) fn place_read(read: &mut Input<'_, '_>) -> Result<s::Place, &'static str> {
+    match read.reader.u8()? {
+        0 => Ok(s::Place::Local(read.id()?)),
+        1 => {
+            read.require_provided("source projection requires a wider source profile")?;
+            Ok(s::Place::Projection(read.id()?))
+        }
+        _ => Err("source projection requires a wider source profile"),
     }
-    Ok(s::Place::Local(read.id()?))
 }
 fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
     id(out, row.ty.0)?;
@@ -107,7 +126,24 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
             out.u8(2)?;
             id(out, value)
         }
-        _ => Err("source value operation requires a wider source profile"),
+        s::ValueKind::Borrow(place) => {
+            out.u8(3)?;
+            place_write(out, place)
+        }
+        s::ValueKind::Function(application) => {
+            out.u8(4)?;
+            id(out, application.0)
+        }
+        s::ValueKind::Call {
+            signature,
+            callee,
+            arguments,
+        } => {
+            out.u8(5)?;
+            id(out, signature.0)?;
+            id(out, callee)?;
+            super::range(out, arguments)
+        }
     }
 }
 fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static str> {
@@ -116,6 +152,18 @@ fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static str> {
         0 => s::ValueKind::Unit,
         1 => s::ValueKind::Read(place_read(read)?),
         2 => s::ValueKind::Constrain(read.id()?),
+        tag @ (3..=5) => {
+            read.require_provided("unknown source ordinary value operation")?;
+            match tag {
+                3 => s::ValueKind::Borrow(place_read(read)?),
+                4 => s::ValueKind::Function(s::FunctionApplicationRef(read.id()?)),
+                _ => s::ValueKind::Call {
+                    signature: g::TypeRef(read.id()?),
+                    callee: read.id()?,
+                    arguments: read.range()?,
+                },
+            }
+        }
         _ => return Err("unknown source ordinary value operation"),
     };
     Ok(s::Value { ty, kind })
@@ -153,7 +201,10 @@ fn statement_write(out: &mut Writer, row: &s::Statement) -> Result<(), &'static 
             out.u8(6)?;
             place_write(out, place)
         }
-        s::Action::Project(_) => Err("source projection requires a wider source profile"),
+        s::Action::Project(projection) => {
+            out.u8(7)?;
+            id(out, projection)
+        }
     }
 }
 fn statement_read(read: &mut Input<'_, '_>) -> Result<s::Statement, &'static str> {
@@ -172,6 +223,10 @@ fn statement_read(read: &mut Input<'_, '_>) -> Result<s::Statement, &'static str
         },
         5 => s::Action::CheckInitialized(place_read(read)?),
         6 => s::Action::Mention(place_read(read)?),
+        7 => {
+            read.require_provided("unknown source ordinary statement operation")?;
+            s::Action::Project(read.id()?)
+        }
         _ => return Err("unknown source ordinary statement operation"),
     };
     Ok(s::Statement { site, action })

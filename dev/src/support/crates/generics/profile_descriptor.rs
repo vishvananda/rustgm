@@ -3,6 +3,8 @@
 mod columns;
 #[path = "ordinary_profile.rs"]
 mod functions;
+#[path = "supplied_profile.rs"]
+mod provided;
 use super::{HeaderIndex, SourceRows};
 use crate::support::{
     crates::{
@@ -21,6 +23,8 @@ pub enum Profile {
     Source2024,
     /// Ordinary function/move bodies; no const trait/default execution profile.
     Source2024Functions,
+    /// Complete unpaid provided-body data; canonical import and proof stay gated.
+    Source2024Provided,
 }
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct Budget {
@@ -56,12 +60,36 @@ impl ValidatedRows {
         base: usize,
         work: &mut Work,
     ) -> Result<Self, &'static str> {
+        Self::stage_profile(owner, rows, base, work, Profile::Source2024Functions)
+    }
+    pub(crate) fn stage_provided(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        Self::stage_profile(owner, rows, base, work, Profile::Source2024Provided)
+    }
+    fn stage_profile(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        base: usize,
+        work: &mut Work,
+        profile: Profile,
+    ) -> Result<Self, &'static str> {
         let start = work.steps;
         let indexed = HeaderIndex::new(&rows, base, work)?;
-        functions::validate(&rows, &indexed, work)?;
+        let numbering_peak = match profile {
+            Profile::Source2024Functions => {
+                functions::validate(&rows, &indexed, work)?;
+                0
+            }
+            Profile::Source2024Provided => provided::validate(&rows, &indexed, work)?,
+            Profile::Source2024 => return Err("unpublished source facade has no data profile"),
+        };
         let domains = indexed.domains(work)?;
         let plan = domains.original_inputs(work)?;
-        let previous_peak = plan.peak_bytes();
+        let previous_peak = plan.peak_bytes().max(numbering_peak);
         drop(plan);
         drop(domains);
         let (headers, raw_bytes) = indexed.into_header_rows()?;
@@ -91,7 +119,7 @@ impl ValidatedRows {
         budget.names = names;
         Ok(Self {
             owners,
-            profile: Profile::Source2024Functions,
+            profile,
             columns: Box::new(columns),
             headers: headers.into_boxed_slice(),
             budget,

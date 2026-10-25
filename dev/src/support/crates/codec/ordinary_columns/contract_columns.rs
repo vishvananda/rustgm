@@ -2,7 +2,7 @@
 use super::{
     BodyRef, DeclarationRef, Input, Writer, address_read, address_write, g, id, option, range, s,
 };
-use crate::support::{bindings::LangItem, constness::Constness};
+use crate::support::bindings::LangItem;
 
 pub(super) fn trait_write(out: &mut Writer, row: &s::TraitHeader) -> Result<(), &'static str> {
     for value in [
@@ -107,10 +107,7 @@ pub(super) fn function_write(
         }
         out.u8(u8::from(receiver.mutable_binding))?;
     }
-    if row.constness != Constness::Ordinary {
-        return Err("source callable effect requires a wider source profile");
-    }
-    out.u8(0)?;
+    super::recipe_columns::effect_write(out, row.constness)?;
     match row.body {
         s::FunctionBody::Absent => out.u8(0),
         s::FunctionBody::Original(body) => {
@@ -145,9 +142,10 @@ pub(super) fn function_read(read: &mut Input<'_, '_>) -> Result<s::FunctionHeade
     } else {
         None
     };
-    if read.reader.u8()? != 0 {
-        return Err("source callable effect requires a wider source profile");
-    }
+    let constness = super::recipe_columns::effect_read(
+        read,
+        "source callable effect requires a wider source profile",
+    )?;
     let body = match read.reader.u8()? {
         0 => s::FunctionBody::Absent,
         1 => s::FunctionBody::Original(BodyRef(read.id()?)),
@@ -164,7 +162,7 @@ pub(super) fn function_read(read: &mut Input<'_, '_>) -> Result<s::FunctionHeade
         declared_inputs,
         formals,
         receiver,
-        constness: Constness::Ordinary,
+        constness,
         body,
     })
 }
@@ -205,6 +203,8 @@ pub(super) fn role_write(out: &mut Writer, row: &s::RoleBinding) -> Result<(), &
         LangItem::Clone => 4,
         LangItem::CloneFn => 5,
         LangItem::Copy => 6,
+        LangItem::Destruct => 7,
+        LangItem::Freeze => 8,
         _ => return Err("source role requires a wider source profile"),
     })?;
     address_write(out, row.declaration)
@@ -218,6 +218,14 @@ pub(super) fn role_read(read: &mut Input<'_, '_>) -> Result<s::RoleBinding, &'st
         4 => LangItem::Clone,
         5 => LangItem::CloneFn,
         6 => LangItem::Copy,
+        tag @ (7 | 8) => {
+            read.require_provided("unknown source function role ID")?;
+            if tag == 7 {
+                LangItem::Destruct
+            } else {
+                LangItem::Freeze
+            }
+        }
         _ => return Err("unknown source function role ID"),
     };
     Ok(s::RoleBinding {

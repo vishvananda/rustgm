@@ -1,7 +1,7 @@
 //! Complete unpaid original requests remain separate from immutable operation rows.
 use super::{
-    BodyRef, DeclarationRef, Input, Writer, address_read, address_write, crates, empty_write, g,
-    id, recipe_columns as types, s, write, write_copy,
+    BodyRef, DeclarationRef, Input, Writer, address_read, address_write, crates, g, id,
+    recipe_columns as types, s, write, write_copy,
 };
 
 pub(super) fn body_write(out: &mut Writer, row: &s::BodyInputs) -> Result<(), &'static str> {
@@ -44,16 +44,27 @@ fn environment_write(out: &mut Writer, row: s::EnvironmentOrigin) -> Result<(), 
             id(out, owner.0)
         }
         s::EnvironmentOrigin::Contract => out.u8(2),
-        s::EnvironmentOrigin::ConstTraitDefault { .. } => {
-            Err("source defining environment requires a wider source profile")
+        s::EnvironmentOrigin::ConstTraitDefault { member, trait_ } => {
+            out.u8(3)?;
+            id(out, member.0)?;
+            address_write(out, trait_)
         }
     }
 }
-fn environment_read(read: &mut Input<'_, '_>) -> Result<s::EnvironmentOrigin, &'static str> {
+pub(super) fn environment_read(
+    read: &mut Input<'_, '_>,
+) -> Result<s::EnvironmentOrigin, &'static str> {
     Ok(match read.reader.u8()? {
         0 => s::EnvironmentOrigin::Absent,
         1 => s::EnvironmentOrigin::Declaration(DeclarationRef(read.id()?)),
         2 => s::EnvironmentOrigin::Contract,
+        3 => {
+            read.require_provided("unknown source ordinary environment origin")?;
+            s::EnvironmentOrigin::ConstTraitDefault {
+                member: DeclarationRef(read.id()?),
+                trait_: address_read(read)?,
+            }
+        }
         _ => return Err("unknown source ordinary environment origin"),
     })
 }
@@ -96,13 +107,19 @@ fn obligation_write(out: &mut Writer, row: &s::Obligation) -> Result<(), &'stati
         s::InputKind::Coercion {
             actual,
             expected,
-            unsize: false,
-            reference: None,
+            unsize,
+            reference,
         } => {
             out.u8(0)?;
             id(out, actual.0)?;
             id(out, expected.0)?;
-            out.bytes(&[0, 0])
+            out.u8(u8::from(unsize))?;
+            out.u8(u8::from(reference.is_some()))?;
+            if let Some(reference) = reference {
+                id(out, reference.dereferences)?;
+                out.bytes(&[u8::from(reference.unsize), u8::from(reference.two_phase)])?;
+            }
+            Ok(())
         }
         s::InputKind::WellFormed(root) => {
             out.u8(1)?;
@@ -121,7 +138,28 @@ fn obligation_write(out: &mut Writer, row: &s::Obligation) -> Result<(), &'stati
             id(out, ty.0)?;
             id(out, shorter.0)
         }
-        _ => Err("source adjusted/scoped/allocation input requires a wider source profile"),
+        s::InputKind::Variable {
+            slot,
+            needs_provenance,
+        } => {
+            out.u8(5)?;
+            id(out, slot)?;
+            out.u8(u8::from(needs_provenance))
+        }
+        s::InputKind::Membership { region, captures } => {
+            out.u8(6)?;
+            id(out, region.0)?;
+            super::range(out, captures)
+        }
+        s::InputKind::LocalBorrow(region) => {
+            out.u8(7)?;
+            id(out, region.0)
+        }
+        s::InputKind::ScopedWellFormed { ty, frame } => {
+            out.u8(8)?;
+            id(out, ty.0)?;
+            id(out, frame.0)
+        }
     }
 }
 fn obligation_read(read: &mut Input<'_, '_>) -> Result<s::Obligation, &'static str> {
@@ -131,14 +169,25 @@ fn obligation_read(read: &mut Input<'_, '_>) -> Result<s::Obligation, &'static s
             let actual = g::TypeRef(read.id()?);
             let expected = g::TypeRef(read.id()?);
             // These are explicit raw adjustment fields, never implied permissions.
-            if read.boolean()? || read.boolean()? {
-                return Err("source adjusted coercion requires a wider source profile");
+            let unsize = read.boolean()?;
+            if unsize {
+                read.require_provided("source adjusted coercion requires a wider source profile")?;
             }
+            let reference = if read.boolean()? {
+                read.require_provided("source adjusted coercion requires a wider source profile")?;
+                Some(s::ReferenceConversion {
+                    dereferences: read.id()?,
+                    unsize: read.boolean()?,
+                    two_phase: read.boolean()?,
+                })
+            } else {
+                None
+            };
             s::InputKind::Coercion {
                 actual,
                 expected,
-                unsize: false,
-                reference: None,
+                unsize,
+                reference,
             }
         }
         1 => s::InputKind::WellFormed(g::TypeRef(read.id()?)),
@@ -148,6 +197,24 @@ fn obligation_read(read: &mut Input<'_, '_>) -> Result<s::Obligation, &'static s
             ty: g::TypeRef(read.id()?),
             shorter: s::RegionRef(read.id()?),
         },
+        tag @ (5..=8) => {
+            read.require_provided("unknown source ordinary obligation kind")?;
+            match tag {
+                5 => s::InputKind::Variable {
+                    slot: read.id()?,
+                    needs_provenance: read.boolean()?,
+                },
+                6 => s::InputKind::Membership {
+                    region: s::RegionRef(read.id()?),
+                    captures: read.range()?,
+                },
+                7 => s::InputKind::LocalBorrow(s::RegionRef(read.id()?)),
+                _ => s::InputKind::ScopedWellFormed {
+                    ty: g::TypeRef(read.id()?),
+                    frame: g::BinderRef(read.id()?),
+                },
+            }
+        }
         _ => return Err("unknown source ordinary obligation kind"),
     };
     Ok(s::Obligation { site, kind })
@@ -155,7 +222,7 @@ fn obligation_read(read: &mut Input<'_, '_>) -> Result<s::Obligation, &'static s
 fn normalization_write(out: &mut Writer, row: &s::NormalizationInput) -> Result<(), &'static str> {
     site_write(out, &row.site)?;
     write(out, &row.sources, site_write)?;
-    empty_write(out, &row.owned)?;
+    write_copy(out, &row.owned, super::range)?;
     write_copy(out, &row.equalities, types::bound_write)?;
     write_copy(out, &row.outlives, types::bound_write)?;
     write_copy(out, &row.types, outlives_write)
@@ -163,11 +230,11 @@ fn normalization_write(out: &mut Writer, row: &s::NormalizationInput) -> Result<
 fn normalization_read(read: &mut Input<'_, '_>) -> Result<s::NormalizationInput, &'static str> {
     let site = site_read(read)?;
     let sources = read.list(crates::MAX_COMPONENTS, 5, site_read)?;
-    read.empty()?;
+    let owned = read.provided_list(crates::MAX_COMPONENTS, 8, Input::range)?;
     Ok(s::NormalizationInput {
         site,
         sources,
-        owned: Vec::new(),
+        owned,
         equalities: read.list(crates::MAX_COMPONENTS, 8, types::bound_read)?,
         outlives: read.list(crates::MAX_COMPONENTS, 8, types::bound_read)?,
         types: read.list(crates::MAX_COMPONENTS, 8, outlives_read)?,

@@ -162,10 +162,12 @@ pub(super) fn binder_write(out: &mut Writer, row: &s::Binder) -> Result<(), &'st
         s::BinderKind::PublicFunction => 2,
         s::BinderKind::Clause => 3,
         s::BinderKind::CallableType => 4,
-        s::BinderKind::CallSignature { .. } => {
-            return Err("source call binder requires a wider source profile");
-        }
+        s::BinderKind::CallSignature { .. } => 5,
     })?;
+    if let s::BinderKind::CallSignature { body, value } = row.kind {
+        id(out, body.0)?;
+        id(out, value)?;
+    }
     id(out, row.count)
 }
 pub(super) fn binder_read(read: &mut Input<'_, '_>) -> Result<s::Binder, &'static str> {
@@ -177,6 +179,13 @@ pub(super) fn binder_read(read: &mut Input<'_, '_>) -> Result<s::Binder, &'stati
         2 => s::BinderKind::PublicFunction,
         3 => s::BinderKind::Clause,
         4 => s::BinderKind::CallableType,
+        5 => {
+            read.require_provided("unsupported source binder kind")?;
+            s::BinderKind::CallSignature {
+                body: BodyRef(read.id()?),
+                value: read.id()?,
+            }
+        }
         _ => return Err("unsupported source binder kind"),
     };
     Ok(s::Binder {

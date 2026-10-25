@@ -1,10 +1,15 @@
 //! Draft ordinary-source columns. Public descriptor admission stays disconnected.
+mod allocation_columns;
 mod cfg_columns;
 mod contract_columns;
+mod invoked_rows;
 mod operation_columns;
 mod owner_rows;
 mod recipe_columns;
 mod relation_columns;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/supplied_packets.rs"]
+mod supplied_tests;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/packet_roundtrip.rs"]
 mod tests;
@@ -19,10 +24,23 @@ use crate::support::{
 };
 
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
+    encode_profile(out, rows, false)
+}
+pub(super) fn encode_provided(
+    out: &mut Writer,
+    rows: s::ValidatedView<'_>,
+) -> Result<(), &'static str> {
+    encode_profile(out, rows, true)
+}
+fn encode_profile(
+    out: &mut Writer,
+    rows: s::ValidatedView<'_>,
+    provided: bool,
+) -> Result<(), &'static str> {
     if rows.policy.edition != Edition::Rust2024 {
         return Err("source function columns require defining Rust2024 edition");
     }
-    if !rows.body_units.is_empty() {
+    if !provided && !rows.body_units.is_empty() {
         return Err("source function columns cannot encode numbering units");
     }
     id(out, rows.policy.provider.0)?;
@@ -45,7 +63,11 @@ pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(),
         &rows.trait_applications,
         recipe_columns::application_write,
     )?;
-    empty_write(out, &rows.function_applications)?;
+    write(
+        out,
+        &rows.function_applications,
+        recipe_columns::function_write,
+    )?;
     write(out, &rows.traits, contract_columns::trait_write)?;
     write(
         out,
@@ -58,14 +80,32 @@ pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(),
     write(out, &rows.member_links, contract_columns::member_write)?;
     write(out, &rows.roles, contract_columns::role_write)?;
     write(out, &rows.originals, operation_columns::original_write)?;
-    write(out, &rows.body_inputs, relation_columns::body_write)
+    write(out, &rows.body_inputs, relation_columns::body_write)?;
+    if provided {
+        write(out, &rows.body_units, allocation_columns::unit_write)?;
+    }
+    Ok(())
 }
 
 pub(super) fn decode(reader: &mut Reader<'_>, base: usize) -> Result<s::SourceRows, &'static str> {
+    decode_profile(reader, base, false)
+}
+pub(super) fn decode_provided(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<s::SourceRows, &'static str> {
+    decode_profile(reader, base, true)
+}
+fn decode_profile(
+    reader: &mut Reader<'_>,
+    base: usize,
+    provided: bool,
+) -> Result<s::SourceRows, &'static str> {
     let mut read = Input {
         reader,
         bytes: size_of::<s::SourceRows>(),
         base,
+        provided,
     };
     Ok(s::SourceRows {
         policy: s::Policy {
@@ -91,10 +131,11 @@ pub(super) fn decode(reader: &mut Reader<'_>, base: usize) -> Result<s::SourceRo
             20,
             recipe_columns::application_read,
         )?,
-        function_applications: {
-            read.empty()?;
-            Vec::new()
-        },
+        function_applications: read.provided_list(
+            crates::MAX_COMPONENTS,
+            16,
+            recipe_columns::function_read,
+        )?,
         traits: read.list(crates::MAX_FUNCTIONS, 66, contract_columns::trait_read)?,
         implementations: read.list(
             crates::MAX_FUNCTIONS,
@@ -108,7 +149,11 @@ pub(super) fn decode(reader: &mut Reader<'_>, base: usize) -> Result<s::SourceRo
         roles: read.list(crates::MAX_COMPONENTS, 9, contract_columns::role_read)?,
         originals: read.list(crates::MAX_FUNCTIONS, 70, operation_columns::original_read)?,
         body_inputs: read.list(crates::MAX_FUNCTIONS, 30, relation_columns::body_read)?,
-        body_units: Vec::new(),
+        body_units: if provided {
+            read.list(crates::MAX_FUNCTIONS, 13, allocation_columns::unit_read)?
+        } else {
+            Vec::new()
+        },
     })
 }
 
@@ -116,8 +161,25 @@ struct Input<'a, 'b> {
     reader: &'b mut Reader<'a>,
     bytes: usize,
     base: usize,
+    provided: bool,
 }
 impl Input<'_, '_> {
+    fn require_provided(&self, message: &'static str) -> Result<(), &'static str> {
+        if self.provided { Ok(()) } else { Err(message) }
+    }
+    fn provided_list<T>(
+        &mut self,
+        limit: usize,
+        minimum: usize,
+        row: impl FnMut(&mut Self) -> Result<T, &'static str>,
+    ) -> Result<Vec<T>, &'static str> {
+        if self.provided {
+            self.list(limit, minimum, row)
+        } else {
+            self.empty()?;
+            Ok(Vec::new())
+        }
+    }
     fn reserve(&mut self, bytes: usize) -> Result<(), &'static str> {
         self.bytes = self.bytes.saturating_add(bytes);
         if self.base.saturating_add(self.bytes) > crates::MAX_BYTES {
@@ -186,12 +248,6 @@ fn write<T>(
         row(out, value)?;
     }
     Ok(())
-}
-fn empty_write<T>(out: &mut Writer, rows: &[T]) -> Result<(), &'static str> {
-    if !rows.is_empty() {
-        return Err("source function profile cannot encode this nonempty column");
-    }
-    out.u32(0)
 }
 fn id(out: &mut Writer, value: u32) -> Result<(), &'static str> {
     out.u32(value as usize)

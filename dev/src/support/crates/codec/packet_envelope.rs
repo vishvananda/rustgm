@@ -10,6 +10,7 @@ use crate::support::{
     edition::Edition,
 };
 pub(super) const TAG: u8 = 10;
+pub(super) const PROVIDED_TAG: u8 = 11;
 const ROW_VERSION: u16 = 0;
 const DEFINING_RUST2024: u8 = 0;
 
@@ -20,10 +21,12 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     let descriptor = interface
         .source_descriptor()
         .ok_or("source envelope lacks its actual descriptor")?;
-    if descriptor.profile() != Profile::Source2024Functions
-        || descriptor.edition() != Edition::Rust2024
-        || descriptor.identity() != interface.identity()
-    {
+    let tag = match descriptor.profile() {
+        Profile::Source2024Functions => TAG,
+        Profile::Source2024Provided => PROVIDED_TAG,
+        Profile::Source2024 => return Err("unpublished source facade has no wire profile"),
+    };
+    if descriptor.edition() != Edition::Rust2024 || descriptor.identity() != interface.identity() {
         return Err("source envelope changed its actual defining profile/identity");
     }
     let mut out = Writer::source(
@@ -34,7 +37,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     out.bytes(MAGIC)?;
     out.u16(SCHEMA)?;
     out.bytes(&PROFILE[..2])?;
-    out.u8(TAG)?;
+    out.u8(tag)?;
     out.u16(ROW_VERSION)?;
     out.u8(DEFINING_RUST2024)?;
     out.identity(interface.identity())?;
@@ -42,10 +45,20 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     for dependency in interface.dependencies() {
         out.identity(dependency)?;
     }
-    ordinary_columns::encode(&mut out, descriptor.rows())?;
+    if tag == PROVIDED_TAG {
+        ordinary_columns::encode_provided(&mut out, descriptor.rows())?;
+    } else {
+        ordinary_columns::encode(&mut out, descriptor.rows())?;
+    }
     Ok(out.finish())
 }
 pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> {
+    decode_profile(input, false)
+}
+pub(super) fn decode_provided(input: &mut Reader<'_>) -> Result<Interface, &'static str> {
+    decode_profile(input, true)
+}
+fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &'static str> {
     if input.u16()? != ROW_VERSION || input.u8()? != DEFINING_RUST2024 {
         return Err("unsupported source row version or defining edition");
     }
@@ -56,7 +69,11 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
     if base > MAX_BYTES {
         return Err("source envelope base exceeds retained storage budget");
     }
-    let rows = ordinary_columns::decode(input, base)?;
+    let rows = if provided {
+        ordinary_columns::decode_provided(input, base)?
+    } else {
+        ordinary_columns::decode(input, base)?
+    };
     if !input.done() {
         return Err("trailing source metadata bytes");
     }
@@ -64,7 +81,11 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
         steps: input.used_atoms(),
         ..Work::default()
     };
-    let payload = Payload::from_source(interface.identity(), rows, base, &mut work)?;
+    let payload = if provided {
+        Payload::from_source_provided(interface.identity(), rows, base, &mut work)?
+    } else {
+        Payload::from_source(interface.identity(), rows, base, &mut work)?
+    };
     interface.with_generic_payload(payload)
 }
 
