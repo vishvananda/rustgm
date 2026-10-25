@@ -135,6 +135,36 @@ fn symbol(
     let id = context.catalog.declaration(definition).map_err(error)?;
     let (owner, row, _) = context.catalog.declaration_coordinate(id).map_err(error)?;
     let rows = context.descriptor.rows();
+    let path = if context.descriptor.profile() == s::Profile::Source2024ModuleContracts {
+        let root = context
+            .descriptor
+            .module_contracts()
+            .map_err(error)?
+            .rows()
+            .namespace
+            .root;
+        let path = s::callable_path(&rows.declarations, root, row, |n| budget.charge(n), error)?;
+        budget.reserve(path.storage_bound())?;
+        path.materialize().map_err(error)?
+    } else {
+        legacy_callable_path(&rows, row, budget)?
+    };
+    let identity = ExternalDef::new(owner.clone(), path, ExternalKind::Function).map_err(error)?;
+    if context.imported.definition(&identity) != Some(definition) {
+        return Err(error(
+            "source callable changed its actual reserved external identity",
+        ));
+    }
+    let symbol = budget.symbol(&identity)?;
+    budget.observed.add(symbol.capacity());
+    Ok(symbol)
+}
+
+fn legacy_callable_path(
+    rows: &s::Columns,
+    row: crate::support::crates::owner_catalog::DeclarationRef,
+    budget: &mut Headers,
+) -> Result<Vec<String>, Error> {
     let raw = &rows.declarations[row.0 as usize];
     let parent = raw
         .definition
@@ -175,13 +205,5 @@ fn symbol(
             .sum::<usize>()
             .saturating_add(1),
     )?;
-    let identity = ExternalDef::new(owner.clone(), path, ExternalKind::Function).map_err(error)?;
-    if context.imported.definition(&identity) != Some(definition) {
-        return Err(error(
-            "source callable changed its actual reserved external identity",
-        ));
-    }
-    let symbol = budget.symbol(&identity)?;
-    budget.observed.add(symbol.capacity());
-    Ok(symbol)
+    Ok(path)
 }

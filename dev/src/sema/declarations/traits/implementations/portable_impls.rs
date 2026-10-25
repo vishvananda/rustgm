@@ -34,42 +34,24 @@ impl Checker<'_> {
             .associated
             .imported_implementation(owner, predicate)
             .map_err(Error::unlocated)?;
-        let role = self
-            .facts
-            .source_bindings
-            .as_deref()
-            .ok_or_else(|| {
-                Error::unlocated("imported receiver conformance lacks its actual role catalog")
-            })?
-            .validated_role(LangItem::LegacyReceiver)
-            .map_err(Error::unlocated)?
-            .ok_or_else(|| {
-                Error::unlocated("imported receiver conformance lacks its actual receiver role")
-            })?;
-        self.facts
-            .associated
-            .require_imported_role(role)
-            .map_err(Error::unlocated)?;
         let Bound::Trait(application) = predicate.bound else {
             return Err(Error::unlocated(
                 "imported impl effect requires its wider explicit profile",
             ));
         };
-        if self
+        let trait_definition = self
             .facts
             .types
             .trait_application(application)
-            .is_none_or(|application| application.item.0 != role.definition.0)
-            || self
-                .facts
-                .associated
-                .owner(role.definition)
-                .and_then(|id| self.facts.associated.owner_members(id))
-                .is_none_or(|members| !members.is_empty())
+            .map(|application| DefId(application.item.0))
+            .ok_or_else(|| Error::unlocated("imported impl lacks its actual trait application"))?;
+        if !self
+            .facts
+            .associated
+            .imported_empty_module_trait(trait_definition)
+            .map_err(Error::unlocated)?
         {
-            return Err(Error::unlocated(
-                "imported impl family requires its wider complete conformance consumer",
-            ));
+            self.require_imported_receiver_trait(trait_definition)?;
         }
         let registry = self
             .facts
@@ -94,6 +76,38 @@ impl Checker<'_> {
             .ok_or_else(|| {
                 Error::unlocated("imported impl lacks its complete actual input environment")
             })
+    }
+
+    fn require_imported_receiver_trait(&self, definition: DefId) -> Result<(), Error> {
+        let role = self
+            .facts
+            .source_bindings
+            .as_deref()
+            .ok_or_else(|| {
+                Error::unlocated("imported receiver conformance lacks its actual role catalog")
+            })?
+            .validated_role(LangItem::LegacyReceiver)
+            .map_err(Error::unlocated)?
+            .ok_or_else(|| {
+                Error::unlocated("imported receiver conformance lacks its actual receiver role")
+            })?;
+        self.facts
+            .associated
+            .require_imported_role(role)
+            .map_err(Error::unlocated)?;
+        if definition != role.definition
+            || self
+                .facts
+                .associated
+                .owner(role.definition)
+                .and_then(|id| self.facts.associated.owner_members(id))
+                .is_none_or(|members| !members.is_empty())
+        {
+            return Err(Error::unlocated(
+                "imported impl family requires its wider complete conformance consumer",
+            ));
+        }
+        Ok(())
     }
 
     pub(super) fn validate_imported_trait_implementation(

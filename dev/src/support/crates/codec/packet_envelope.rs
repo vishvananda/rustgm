@@ -13,6 +13,7 @@ pub(super) const TAG: u8 = 10;
 pub(super) const PROVIDED_TAG: u8 = 11;
 const ROW_VERSION: u16 = 0;
 const CONTRACT_VERSION: u16 = 1;
+const MODULE_CONTRACT_VERSION: u16 = 2;
 const DEFINING_RUST2024: u8 = 0;
 
 pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
@@ -23,7 +24,9 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         .source_descriptor()
         .ok_or("source envelope lacks its actual descriptor")?;
     let tag = match descriptor.profile() {
-        Profile::Source2024Functions | Profile::Source2024FunctionContracts => TAG,
+        Profile::Source2024Functions
+        | Profile::Source2024FunctionContracts
+        | Profile::Source2024ModuleContracts => TAG,
         Profile::Source2024Provided => PROVIDED_TAG,
         Profile::Source2024 => return Err("unpublished source facade has no wire profile"),
     };
@@ -39,13 +42,11 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     out.u16(SCHEMA)?;
     out.bytes(&PROFILE[..2])?;
     out.u8(tag)?;
-    out.u16(
-        if descriptor.profile() == Profile::Source2024FunctionContracts {
-            CONTRACT_VERSION
-        } else {
-            ROW_VERSION
-        },
-    )?;
+    out.u16(match descriptor.profile() {
+        Profile::Source2024ModuleContracts => MODULE_CONTRACT_VERSION,
+        Profile::Source2024FunctionContracts => CONTRACT_VERSION,
+        _ => ROW_VERSION,
+    })?;
     out.u8(DEFINING_RUST2024)?;
     out.identity(interface.identity())?;
     out.u32(interface.dependencies().len())?;
@@ -54,6 +55,8 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     }
     if tag == PROVIDED_TAG {
         ordinary_columns::encode_provided(&mut out, descriptor.rows())?;
+    } else if descriptor.profile() == Profile::Source2024ModuleContracts {
+        ordinary_columns::encode_module_contracts(&mut out, descriptor.rows())?;
     } else if descriptor.profile() == Profile::Source2024FunctionContracts {
         ordinary_columns::encode_contracts(&mut out, descriptor.rows())?;
     } else {
@@ -69,7 +72,12 @@ pub(super) fn decode_provided(input: &mut Reader<'_>) -> Result<Interface, &'sta
 }
 fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &'static str> {
     let version = input.u16()?;
-    if (version != ROW_VERSION && (provided || version != CONTRACT_VERSION))
+    if (provided && version != ROW_VERSION
+        || !provided
+            && !matches!(
+                version,
+                ROW_VERSION | CONTRACT_VERSION | MODULE_CONTRACT_VERSION
+            ))
         || input.u8()? != DEFINING_RUST2024
     {
         return Err("unsupported source row version or defining edition");
@@ -81,13 +89,16 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
     if base > MAX_BYTES {
         return Err("source envelope base exceeds retained storage budget");
     }
-    let (rows, attributes) = if provided {
-        (ordinary_columns::decode_provided(input, base)?, None)
+    let (rows, attributes, modules) = if provided {
+        (ordinary_columns::decode_provided(input, base)?, None, None)
+    } else if version == MODULE_CONTRACT_VERSION {
+        let (rows, attributes, modules) = ordinary_columns::decode_module_contracts(input, base)?;
+        (rows, Some(attributes), Some(modules))
     } else if version == CONTRACT_VERSION {
         let (rows, attributes) = ordinary_columns::decode_contracts(input, base)?;
-        (rows, Some(attributes))
+        (rows, Some(attributes), None)
     } else {
-        (ordinary_columns::decode(input, base)?, None)
+        (ordinary_columns::decode(input, base)?, None, None)
     };
     if !input.done() {
         return Err("trailing source metadata bytes");
@@ -98,6 +109,15 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
     };
     let payload = if provided {
         Payload::from_source_provided(interface.identity(), rows, base, &mut work)?
+    } else if let Some(modules) = modules {
+        Payload::from_source_module_contracts(
+            interface.identity(),
+            rows,
+            attributes.ok_or("module advisory columns missing")?,
+            modules,
+            base,
+            &mut work,
+        )?
     } else if let Some(attributes) = attributes {
         Payload::from_source_contracts(interface.identity(), rows, attributes, base, &mut work)?
     } else {
@@ -109,3 +129,7 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
 #[cfg(test)]
 #[path = "../../../../tests/invariants/packet_consumers.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/domain_artifacts.rs"]
+mod module_tests;
