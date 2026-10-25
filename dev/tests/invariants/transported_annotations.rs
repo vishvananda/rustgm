@@ -237,6 +237,12 @@ fn versioned_contract_profiles_authenticate_unrestricted_domains_before_fresh_im
     assert!(contract.origin.imported().is_some());
     assert!(contract.origin.source().is_none());
     let copy = imported_copy_trait(&report, &interface)?;
+    assert!(
+        !analysis
+            .facts
+            .associated
+            .imported_empty_module_trait(copy)?
+    );
     assert_eq!(
         analysis
             .facts

@@ -52,7 +52,7 @@ fn canonical_domain() -> Result {
         .iter()
         .find(|row| matches!(row.domain, s::ImplementationDomain::RestrictedTo { .. }))
         .ok_or("restricted trait")?;
-    let (report, analysis, _) = source_packets::client_analysis(
+    let (report, mut analysis, _) = source_packets::client_analysis(
         crates::decode(&crates::encode(&interface)?)?,
         &test::fixture("sealed-public-bound")?,
     )?;
@@ -77,6 +77,25 @@ fn canonical_domain() -> Result {
             .all(|(_, actual)| actual != definition)
     );
     let rows = descriptor.rows();
+    let associated = &mut analysis.facts.associated;
+    let owner = associated.owner(definition).ok_or("actual trait owner")?;
+    for _ in 0..8 {
+        assert!(associated.imported_empty_module_trait(definition)?);
+    }
+    let actual_self = associated.get(owner).ok_or("actual owner")?.self_definition;
+    assert!(associated.imported_empty_module_trait(actual_self).is_err());
+    for header in &rows.traits {
+        if header.flags.bits() & !s::TraitFlags::RESTRICTED_IMPL != 0
+            || header.members.start != header.members.end
+        {
+            let actual = imported.generic_definition(interface.identity(), header.declaration)?;
+            assert!(associated.imported_empty_module_trait(actual).is_err());
+        }
+    }
+    associated.owner_members[owner.0 as usize].push(actual_self);
+    assert!(associated.imported_empty_module_trait(definition).is_err());
+    associated.owner_members[owner.0 as usize].clear();
+    assert!(associated.imported_empty_module_trait(definition)?);
     let module = rows.declarations[domain.defining_module.0 as usize]
         .name
         .as_deref();

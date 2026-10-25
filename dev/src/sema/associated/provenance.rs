@@ -92,6 +92,29 @@ impl Inventory {
         }
         Ok(owner)
     }
+    /// Only complete v2 rows can describe an ordinary empty non-role trait.
+    /// This authenticates its family; callers must still prove impl obligations.
+    pub(in crate::sema) fn imported_empty_module_trait(
+        &self,
+        definition: DefId,
+    ) -> Result<bool, &'static str> {
+        let owner = self.imported_trait_owner(definition)?;
+        let eligible = self
+            .language
+            .as_ref()
+            .and_then(|l| l.imported.as_deref())
+            .ok_or("imported trait conformance lacks its canonical source graph")?
+            .empty_module_trait(owner)?;
+        if eligible
+            && self
+                .owner(definition)
+                .and_then(|id| self.owner_members(id))
+                .is_none_or(|members| !members.is_empty())
+        {
+            return Err("ordinary module conformance changed its installed empty trait members");
+        }
+        Ok(eligible)
+    }
     pub(in crate::sema) fn imported_denies_implementation(
         &self,
         definition: DefId,

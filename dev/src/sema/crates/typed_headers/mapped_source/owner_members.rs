@@ -44,6 +44,36 @@ impl Graph {
             _ => Err("implementation domain has no complete admitted source profile"),
         }
     }
+    pub(in crate::sema) fn empty_module_trait(&self, owner: Owner) -> Result<bool, &'static str> {
+        self.owner(owner)?;
+        let descriptor = self.descriptor(&self.origins)?;
+        let OwnerKind::Trait { definition, .. } = owner.kind else {
+            return Err("ordinary module conformance requires its actual trait owner");
+        };
+        let id = self.origins.declaration(definition)?;
+        let (_, row, _) = self.origins.declaration_coordinate(id)?;
+        let rows = descriptor.rows();
+        let Some(s::HeaderRef::Trait(index)) = rows.header(row)? else {
+            return Err("ordinary module conformance lacks its exact trait header");
+        };
+        match descriptor.profile() {
+            s::Profile::Source2024Functions | s::Profile::Source2024FunctionContracts => {
+                return Ok(false);
+            }
+            s::Profile::Source2024ModuleContracts => {}
+            _ => return Err("imported conformance has no complete admitted source profile"),
+        }
+        descriptor
+            .module_contracts()?
+            .trait_domain(index as usize, row)?;
+        let header = &rows.traits[index as usize];
+        if header.flags.bits() & !s::TraitFlags::RESTRICTED_IMPL != 0
+            || !header.members.slice(&rows.members)?.is_empty()
+        {
+            return Err("imported impl family requires its wider complete conformance consumer");
+        }
+        Ok(true)
+    }
     pub(in crate::sema) fn denies_implementation(
         &self,
         owner: Owner,
