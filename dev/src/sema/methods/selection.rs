@@ -1,6 +1,7 @@
 //! Prefix-only candidate probes never consume result or call-argument constraints.
 mod applicability;
 mod paths;
+use super::buckets::Bucket;
 use crate::support::hash::HashMap;
 use crate::{
     resolve::{
@@ -237,9 +238,10 @@ pub(super) fn candidates(
     facts: &mut Declarations,
     context: &mut Context,
     prefix: TermId,
-    key: (ItemId, NameId),
+    key: impl Into<Bucket>,
     site: super::names::Use,
 ) -> Result<Found, &'static str> {
+    let key = key.into();
     let mut result = context_candidates(facts, context, prefix, key, ItemContext::ROOT)?;
     if facts.methods.has_contextual_inherent(key) {
         let mut cursor = super::names::Cursor::new(site.context);
@@ -273,7 +275,7 @@ fn context_candidates(
     facts: &mut Declarations,
     context: &mut Context,
     prefix: TermId,
-    key: (ItemId, NameId),
+    key: Bucket,
     identity: ItemContext,
 ) -> Result<Vec<DefId>, &'static str> {
     let bucket = facts
@@ -319,7 +321,7 @@ fn context_candidates(
 /// bucket can build the same shape index without authorizing unchecked owners.
 fn prepare_candidates(
     facts: &mut Declarations,
-    key: (ItemId, NameId),
+    key: Bucket,
     identity: ItemContext,
 ) -> Result<(), &'static str> {
     if facts.methods.candidate_index(key, identity).is_some() {
@@ -332,14 +334,20 @@ fn prepare_candidates(
         selection_shape_steps,
         ..
     } = &mut facts.methods;
-    let members = if identity == ItemContext::ROOT {
-        inherent.get(&key)
-    } else {
-        names
+    let members: &[DefId] = match key {
+        Bucket::Nominal(item, name) if identity == ItemContext::ROOT => {
+            inherent.get(&(item, name)).map(Vec::as_slice)
+        }
+        Bucket::Nominal(item, name) => names
             .as_ref()
             .and_then(|names| names.contextual.as_ref())
-            .and_then(|names| names.inherent.get(&key))
+            .and_then(|names| names.inherent.get(&(item, name)))
             .and_then(|names| names.get(&identity))
+            .map(Vec::as_slice),
+        Bucket::Structural(head, name) => names
+            .as_ref()
+            .and_then(|names| names.structural.as_ref())
+            .and_then(|names| names.members((head, name), identity)),
     }
     .ok_or("missing method bucket")?;
     let shapes = shapes.get_or_insert_with(|| Box::new(crate::types::substitute::Bound::shape()));

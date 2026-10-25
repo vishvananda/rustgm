@@ -118,9 +118,10 @@ impl<'package> CheckedHeader<'package> {
             return Ok(None);
         };
         self.package
-            .source_core()
+            .macro_context()
+            .map_err(error)?
             .ok_or_else(|| error("missing macro header provider"))?
-            .macros
+            .contracts()
             .charge(
                 1 + data.witnesses.len().checked_ilog2().unwrap_or(0) as usize,
                 0,

@@ -1,4 +1,6 @@
 //! Typed inherent candidate buckets and selected qualified source uses.
+mod adjusted_targets;
+pub(in crate::sema) mod buckets;
 pub(in crate::sema) mod names;
 pub(super) mod overlap;
 pub(crate) mod pointers;
@@ -13,10 +15,15 @@ use crate::{
 };
 
 #[derive(Clone, Copy)]
+pub enum PrefixKind {
+    Nominal(ItemId),
+    Annotation,
+}
+
+#[derive(Clone, Copy)]
 pub struct Qualified {
     pub prefix: NodeKey,
-    pub annotation: bool,
-    pub nominal: ItemId,
+    pub kind: PrefixKind,
     pub implementation: DefId,
 }
 

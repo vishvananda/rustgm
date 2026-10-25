@@ -49,6 +49,22 @@ pub fn parse_crate_in_edition<'s>(
 use super::fragment::FragmentKind as F;
 
 impl Parser<'_, '_> {
+    /// A standalone `!` is an inherent Self type, before its body or where clause.
+    fn negative_impl(&mut self) -> Result<bool, LexError> {
+        if !self.cursor.at(P::Bang)? {
+            return Ok(false);
+        }
+        if self
+            .cursor
+            .peek(1)?
+            .is_some_and(|token| token.kind == TokenKind::Punctuation(P::OpenBrace))
+            || self.cursor.peek_word(1)? == Word::Where
+        {
+            return Ok(false);
+        }
+        self.eat(P::Bang)
+    }
+
     pub(super) fn item_list(&mut self, braced: bool, scope: Scope) -> Result<List, LexError> {
         let mark = self.scratch.len();
         loop {
@@ -275,7 +291,7 @@ impl Parser<'_, '_> {
                     return Err(error(start, "invalid impl qualifier"));
                 }
                 item.generics = self.generics()?;
-                let negative = self.eat(P::Bang)?;
+                let negative = self.negative_impl()?;
                 let first = self.ty()?;
                 let (trait_path, ty) = if self.eat_word(Word::For)? {
                     (Some(first), self.ty()?)

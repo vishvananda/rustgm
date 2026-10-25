@@ -129,7 +129,7 @@ pub(super) fn collect(
     if declaration.builtin.is_none()
         && !declaration.has_allowance
         && !declaration.unsafe_lint
-        && (package.source_core().is_none() || !is_macro(owner.unit, owner.node))
+        && (package.macro_context().map_err(error)?.is_none() || !is_macro(owner.unit, owner.node))
     {
         return Ok(None);
     }

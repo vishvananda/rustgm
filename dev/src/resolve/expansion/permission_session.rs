@@ -199,11 +199,11 @@ impl Query<'_, '_> {
     }
     fn context(&self, site: Location) -> Result<(Option<ExpansionId>, usize, usize), Error> {
         let package = self.view.package;
-        let Some(source) = package.source_core() else {
+        let error = |message| Error::at(site.file, site.span.start, message);
+        let Some(context) = package.macro_context().map_err(error)? else {
             return Ok((None, 0, 0));
         };
-        let error = |message| Error::at(site.file, site.span.start, message);
-        source.macros.charge(1, 0).map_err(error)?;
+        context.contracts().charge(1, 0).map_err(error)?;
         if site.span.start >= site.span.end
             || package
                 .units
@@ -226,7 +226,7 @@ impl Query<'_, '_> {
             |steps, links, lookups| {
                 origin_links = origin_links.saturating_add(links);
                 origin_lookups = origin_lookups.saturating_add(lookups);
-                source.macros.charge(steps, 0)
+                context.contracts().charge(steps, 0)
             },
         )?;
         let context = package.marks.outer(raw).map_err(error)?;
@@ -234,21 +234,22 @@ impl Query<'_, '_> {
     }
     fn retain(&mut self, frame: Frame, data: Option<Rc<HeaderData>>) -> Result<(), Error> {
         let error = |message| Error::at(frame.call.file, frame.original.start, message);
-        let source = self
+        let context = self
             .view
             .package
-            .source_core()
+            .macro_context()
+            .map_err(error)?
             .ok_or_else(|| error("missing macro allowance memo provider"))?;
         let owner = frame
             .owner
             .ok_or_else(|| error("unowned macro allowance memo"))?;
-        source
-            .macros
+        context
+            .contracts()
             .charge(1, 4 * size_of::<(ExpansionId, Frame)>())
             .map_err(error)?;
         if self.memo.is_none() {
-            source
-                .macros
+            context
+                .contracts()
                 .charge(1, 4 * size_of::<Memo>())
                 .map_err(error)?;
             *self.memo = Some(Box::default());
@@ -261,15 +262,18 @@ impl Query<'_, '_> {
             .try_reserve(1)
             .map_err(|_| error("macro frame memo allocation failed"))?;
         if !memo.headers.contains_key(&owner) {
-            source
-                .macros
+            context
+                .contracts()
                 .charge(1, 4 * size_of::<(NodeKey, CachedHeader)>())
                 .map_err(error)?;
             memo.headers
                 .try_reserve(1)
                 .map_err(|_| error("macro header memo allocation failed"))?;
         }
-        source.macros.memo_payload(memo.payload()).map_err(error)?;
+        context
+            .contracts()
+            .memo_payload(memo.payload())
+            .map_err(error)?;
         let image = Arc::clone(
             self.view
                 .package

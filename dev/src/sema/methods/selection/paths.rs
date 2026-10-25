@@ -1,8 +1,9 @@
 //! Owned path lookup retains its prefix, candidate cursor and isolated trial across headers.
 mod conditions;
+use super::super::buckets::Bucket;
 use super::{
-    Assumptions, Caller, Context, Declarations, DefId, Environment, Error, ItemId, NameId, NodeKey,
-    Prefix, Report, ScopeId, TermId, account_probe, applicability, candidates, trait_groups,
+    Assumptions, Caller, Context, Declarations, DefId, Environment, Error, NameId, NodeKey, Prefix,
+    Report, ScopeId, TermId, account_probe, applicability, candidates, trait_groups,
 };
 use crate::sema::{annotations::Scratch, traits::implementations::Availability};
 use crate::support::hash::HashMap;
@@ -53,7 +54,7 @@ impl Query {
         facts: &mut Declarations,
         key: NodeKey,
         prefix: NodeKey,
-        bucket: (ItemId, NameId),
+        bucket: impl Into<Bucket>,
         site: super::super::names::Use,
         caller: OwnedCaller,
     ) -> Result<Self, Error> {
@@ -81,7 +82,7 @@ impl Query {
         facts: &mut Declarations,
         key: NodeKey,
         ty: crate::types::TypeId,
-        bucket: (ItemId, NameId),
+        bucket: impl Into<Bucket>,
         site: super::super::names::Use,
         caller: OwnedCaller,
     ) -> Result<Self, Error> {
@@ -97,11 +98,11 @@ impl Query {
         facts: &mut Declarations,
         key: NodeKey,
         (mut prefix, term): (Context, TermId),
-        bucket: (ItemId, NameId),
+        bucket: impl Into<Bucket>,
         site: super::super::names::Use,
         caller: OwnedCaller,
     ) -> Result<Self, Error> {
-        let members = candidates(report, facts, &mut prefix, term, bucket, site)
+        let members = candidates(report, facts, &mut prefix, term, bucket.into(), site)
             .map_err(|message| Declarations::error(report, key, message))?
             .members;
         facts.methods.selection_steps = facts.methods.selection_steps.saturating_add(prefix.steps);
