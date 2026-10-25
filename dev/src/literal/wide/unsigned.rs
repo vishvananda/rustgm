@@ -27,6 +27,21 @@ impl Unsigned {
             self.words.pop();
         }
     }
+    fn reserve(&mut self, additional: usize) -> Result<(), &'static str> {
+        let needed = self.words.len().saturating_add(additional);
+        if needed > MAX_WORDS {
+            return Err("wide literal scratch bound exceeded");
+        }
+        if needed > self.words.capacity() {
+            let capacity = needed
+                .max(self.words.capacity().saturating_mul(2))
+                .min(MAX_WORDS);
+            self.words
+                .try_reserve_exact(capacity - self.words.len())
+                .map_err(|_| "wide literal scratch allocation failed")?;
+        }
+        Ok(())
+    }
     pub fn multiply_add(&mut self, factor: u32, addend: u32) -> Result<(), &'static str> {
         let mut carry = u64::from(addend);
         for word in &mut self.words {
@@ -36,9 +51,7 @@ impl Unsigned {
             carry = product >> 32;
         }
         if carry != 0 {
-            if self.words.len() == MAX_WORDS {
-                return Err("wide literal scratch bound exceeded");
-            }
+            self.reserve(1)?;
             self.words
                 .push(u32::try_from(carry).map_err(|_| "wide literal carry overflow")?);
         }
@@ -62,9 +75,7 @@ impl Unsigned {
         }
         let bits = usize::try_from(bits).map_err(|_| "negative wide literal shift")?;
         let whole = bits / 32;
-        if self.words.len().saturating_add(whole).saturating_add(1) > MAX_WORDS {
-            return Err("wide literal scratch bound exceeded");
-        }
+        self.reserve(whole.saturating_add(1))?;
         let rest = bits % 32;
         if rest != 0 {
             let mut carry = 0;
