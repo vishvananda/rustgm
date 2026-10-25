@@ -48,8 +48,10 @@ Current lanes:
   [checkpoint](private-callable-template-checkpoint.md). Private zero-domain
   Declaration environments now have six qualified controls; see the
   [environment checkpoint](private-defining-environments-checkpoint.md).
-  Continue the genuine empty Contract adapter, preserving old v0/v1 bytes.
-  Public Provided execution and type-alias transport remain required.
+  The [empty Contract adapter](private-empty-contracts-checkpoint.md) now passes
+  six focused controls and exact first-encoded old v0/v1 bytes. Continue actual
+  inherited/nonrole and nonzero regional environments. Public Provided
+  execution and type-alias transport remain required.
 - B: local LIB-026 implementation domains and their version-one imported
   unrestricted-profile control are qualified, with 74 independent observations.
   The private declaration-coordinate namespace and ordinary-trait producer
