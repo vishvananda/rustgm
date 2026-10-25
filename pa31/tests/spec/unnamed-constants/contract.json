@@ -1,0 +1,104 @@
+{
+  "state": "independently observed contract; compiler candidate unrun",
+  "original_frozen_plan_sha256": "d82346485dc83998ae7d723eee351031b4d49b33bcae6b33950b4db832f9ab61",
+  "original_visibility_plan_sha256": "e2646be271402b440e1b95408c86b25786d5860d998399ddedf56edff4d12a4e",
+  "observations": [
+    {
+      "run": 40216397961,
+      "observations": 38,
+      "infra": 0,
+      "disagreements": 4,
+      "artifact_sha256": "cc5bae8a2e719eaa534b7612cbb9879fe4fdf987219caa2c7ec6cb6452dc5ede"
+    },
+    {
+      "run": 40218068532,
+      "observations": 28,
+      "infra": 0,
+      "disagreements": 2,
+      "artifact_sha256": "38cdcb8254009d2f162f0f13f8f302b2b976fd5ad8e9696099ca11992002afb3"
+    },
+    {
+      "run": 40219038737,
+      "observations": 10,
+      "infra": 0,
+      "disagreements": 0,
+      "artifact_sha256": "e1da5fe072f28c18b9dc679b1f0c681c7f95a962258a80e24e1f7f2bb7b9a299"
+    }
+  ],
+  "amended_warning_contract": {
+    "pub-repeat": [
+      "unused_visibilities",
+      "unused_visibilities"
+    ],
+    "named-privacy": [
+      "unused_visibilities"
+    ],
+    "visibility-macro-forwarded": [
+      "unused_visibilities"
+    ],
+    "literal-many-calls": [
+      "unused_visibilities",
+      "unused_visibilities"
+    ]
+  },
+  "frozen_sources": {
+    "module-repeat": "pa6/tests/spec/unnamed-constants/module-repeat.rs",
+    "block-repeat": "pa6/tests/spec/unnamed-constants/block-repeat.rs",
+    "nested-distinct-scopes": "pa6/tests/spec/unnamed-constants/nested-distinct-scopes.rs",
+    "named-duplicate": "pa6/tests/spec/unnamed-constants/named-duplicate.rs",
+    "trait-unnamed": "pa6/tests/spec/unnamed-constants/trait-unnamed.rs",
+    "inherent-unnamed": "pa6/tests/spec/unnamed-constants/inherent-unnamed.rs",
+    "named-associated": "pa6/tests/spec/unnamed-constants/named-associated.rs",
+    "macro-repeat": "pa8/tests/spec/expansion/unnamed-constants.rs",
+    "unused-wrong-type": "pa25/tests/spec/unnamed-constants/unused-wrong-type.rs",
+    "unused-divzero": "pa25/tests/spec/unnamed-constants/unused-divzero.rs",
+    "unused-function-divzero": "pa25/tests/spec/unnamed-constants/unused-function-divzero.rs",
+    "macro-wrong-type": "pa25/tests/spec/unnamed-constants/macro-wrong-type.rs",
+    "macro-divzero": "pa25/tests/spec/unnamed-constants/macro-divzero.rs",
+    "named-privacy": "pa25/tests/spec/unnamed-constants/named-privacy.rs",
+    "pub-repeat": "pa25/tests/spec/unnamed-constants/pub-repeat.rs",
+    "repeated-anonymous-import": "pa25/tests/spec/unnamed-constants/repeated-anonymous-import.rs",
+    "alignment-reducer": "pa31/tests/spec/unnamed-constants/alignment-reducer.rs"
+  },
+  "scope": "PA5 parsed names/spans preserved; PA6 real unnameable declarations; PA8 generated identity; PA25 typing/CTFE and semantic lint warnings; PA31 real unchanged alignment frontier reducer",
+  "pending": "Exact six compiler groups, bounded CLI warnings and actual layout/work measurements pending; root owns eight active selected references after code pass; no old oracle or full text rerun.",
+  "final_opponents_plan_sha256": "5afc9c7add84f84c3a1791f1515050903a6772c544fd16cee873966fe7129761",
+  "all_fixture_sha256": {
+    "pa6/tests/spec/unnamed-constants/block-repeat.rs": "7d964f0dfe0aac9e690a0e08cc1e0cf986c9a94759cda0ffde91869507672b3f",
+    "pa6/tests/spec/unnamed-constants/inherent-unnamed.rs": "26a3c8a976a702efd3989c29e55b35e26c5ba3549492746c99edc2b14e8cad22",
+    "pa6/tests/spec/unnamed-constants/module-repeat.rs": "5ab18ab8b6f70650fcd6b975e0f86ab45170b2314497a7ca9f2d4497044a1b9c",
+    "pa6/tests/spec/unnamed-constants/named-associated.rs": "aec57a4cfc67fc9f9e7cf404f7790a7344b458c13d8c390c1344a653f23a7498",
+    "pa6/tests/spec/unnamed-constants/named-duplicate.rs": "7fae4693da52681d27f7d7a98efcb105c4783cf2fcb061ffb94d5ac9628a41cf",
+    "pa6/tests/spec/unnamed-constants/nested-distinct-scopes.rs": "697e09ad58a55cf57cc9f68bb9aac723ad847d8e0b93c13921df643351141429",
+    "pa6/tests/spec/unnamed-constants/trait-unnamed.rs": "c6d2ecc4d0e461a8eaba04851d3ac9d984cd7f1320bc2f1897d179df974e198c",
+    "pa25/tests/spec/unnamed-constants/disabled-owner.rs": "2bdbe107c411a3aa50eb3ea3b3a9ab04ad3b845cf412670ac9a8dc4e304bc149",
+    "pa25/tests/spec/unnamed-constants/literal-many-calls.rs": "3e885c9aa646479eaef7b80e51ba0093e8634fbc8e83417ee793a3fb5c77307c",
+    "pa25/tests/spec/unnamed-constants/macro-divzero.rs": "eb35048e0cf2623e53bfc280cdea2fa247ea8741330455bed101134b5af07e8d",
+    "pa25/tests/spec/unnamed-constants/macro-wrong-type.rs": "8e7265b63cac28cf6200c90205a0b8b54b125cce6c44c604c3e61e5fde395eb8",
+    "pa25/tests/spec/unnamed-constants/named-privacy.rs": "26c702ab4bde3b9b3e5409002067cde11b01d6491503166bc0be42ae3e906eb8",
+    "pa25/tests/spec/unnamed-constants/pub-repeat.rs": "ce4677045aa558f5cf383f30753dc7bea14a6d6cba6ffa8422158b3e70ae61b7",
+    "pa25/tests/spec/unnamed-constants/public-library.rs": "3e160e345ef0edc2f31a877f998318302a1b3f93d53ae7cb1b09c2399477f106",
+    "pa25/tests/spec/unnamed-constants/repeated-anonymous-import.rs": "4e44d69a23786c27c871da51d892d10a2100b80c01855d116961e2fe47f0820e",
+    "pa25/tests/spec/unnamed-constants/unexecuted-macro.rs": "8211e885e4f7a46554e0c4299186ec015b1c97da78745902a10270699909cb97",
+    "pa25/tests/spec/unnamed-constants/unresolved-initializer.rs": "9d6205b8d05c2a57f5d26cb177a6386b831138e4e957fb6617eca00ab755e2c4",
+    "pa25/tests/spec/unnamed-constants/unused-divzero.rs": "98d6a44925e2a4d1ac963b91ccdbead19544a19a4a35e0f1ded3ea2262b2aafd",
+    "pa25/tests/spec/unnamed-constants/unused-function-divzero.rs": "96db4ce80a64d321027731a934ff1a8c2db47cdf5da80f00faa0cff343277150",
+    "pa25/tests/spec/unnamed-constants/unused-wrong-type.rs": "b4ba828c8148113c94758c5d7ca40b0411656238cd0455c911734eacbdbe42db",
+    "pa25/tests/spec/unnamed-constants/visibility-allow.rs": "539ba3f9b74b6eb26bb209198f6639b3b5a7a43cc69f69c250d37791188e4980",
+    "pa25/tests/spec/unnamed-constants/visibility-deny.rs": "7b40ef28ec72018a361bc076bced41dbebf40656829b8e7827dd1f46134a8df9",
+    "pa25/tests/spec/unnamed-constants/visibility-disabled.rs": "ca351a5d8c2fe9a196018b410c16bb3bc06cdbf03802c485fd4d77555f092b92",
+    "pa25/tests/spec/unnamed-constants/visibility-forbid-weaken.rs": "b59987af80a881bb1576d34883071480fe7d9cf84d6c8060afe52c70875259ed",
+    "pa25/tests/spec/unnamed-constants/visibility-forbid.rs": "644c643353cd23ccb96de53e955ab8c2f83af9bae50feb15345470297bdd78d7",
+    "pa25/tests/spec/unnamed-constants/visibility-invalid-ctfe.rs": "9b8d9e8dfe0235a999e050f0a47073a87dc37bde270ab14cba1829241ce9fba3",
+    "pa25/tests/spec/unnamed-constants/visibility-invalid-type.rs": "ba0122d0b53ec3a40274bf0609bcba94686b43f9163356e5f7d32aea05bc5e31",
+    "pa25/tests/spec/unnamed-constants/visibility-macro-allow.rs": "8333f546d6aefdffe65200c1924d1083f700a7df46606be943aa1270a7a4ac54",
+    "pa25/tests/spec/unnamed-constants/visibility-macro-default.rs": "94857fe7756dfadf3d5ad468313c8e0ce904ae4d278f67994d505c2188bf02b5",
+    "pa25/tests/spec/unnamed-constants/visibility-macro-forwarded.rs": "94348869728a98be4a9780bf32b04a68ea27da0aa5eec81762123f06be2e87a6",
+    "pa25/tests/spec/unnamed-constants/visibility-restricted.rs": "cb17052c6bada2176ad587578293f1b597a8d44a7a2d38baf07fe8b585ad0b96",
+    "pa25/tests/spec/unnamed-constants/visibility-root-allow-local-warn.rs": "35865c0cbf7d26cea2a0f7e74ebba38c1dba8d1a5df784cd29444977b16bfaf0",
+    "pa25/tests/spec/unnamed-constants/visibility-root-deny-local-allow.rs": "be90eb4c57364d1e1dde33769be0d5939ef09b0b614153921d21df8f1ea9836b",
+    "pa25/tests/spec/unnamed-constants/visibility-warn.rs": "e123f89243d83137e9f4b794f87bdb7bec3e7cd52ecd823dcb1f56deb7fdde9f",
+    "pa31/tests/spec/unnamed-constants/alignment-reducer.rs": "6b8d4ea0d2351d9394865e008d3366971741fedd56bab6259c556e3e2a49993e",
+    "pa8/tests/spec/expansion/unnamed-constants.rs": "fb47037b398c65de98ae81382d8833cb27e5863c027b7d5f03c4710d01aa8d51"
+  }
+}
