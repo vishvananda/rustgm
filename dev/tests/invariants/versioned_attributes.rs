@@ -158,14 +158,14 @@ fn malformed_complete_columns_and_wire_tags_reject_before_publication() -> Resul
                     .iter_mut()
                     .find_map(|row| row.must_use.as_mut())
                     .ok_or("marked row")?
-                    .owner_site = u32::MAX
+                    .owner_site = u32::MAX;
             }
             5 => {
                 changed.traits[0].inline = Some(s::InlineContract {
                     owner_site: 0,
                     hint: s::InlineHint::Hint,
                     applicability: s::InlineApplicability::DiagnosedNoBody,
-                })
+                });
             }
             _ => {
                 changed
@@ -173,7 +173,7 @@ fn malformed_complete_columns_and_wire_tags_reject_before_publication() -> Resul
                     .iter_mut()
                     .find_map(|row| row.must_use.as_mut())
                     .ok_or("marked row")?
-                    .reason = Some("x".repeat(s::MAX_REASON_BYTES + 1))
+                    .reason = Some("x".repeat(s::MAX_REASON_BYTES + 1));
             }
         }
         assert!(
@@ -204,6 +204,11 @@ fn malformed_complete_columns_and_wire_tags_reject_before_publication() -> Resul
         .ok_or("encoded reason")?;
     invalid[offset] = 255;
     assert!(crates::decode(&invalid).is_err());
+    assert_transport_reason_limit(&source)?;
+    Ok(())
+}
+
+fn assert_transport_reason_limit(source: &str) -> Result {
     let long_source = source.replace("keep result", &"x".repeat(s::MAX_REASON_BYTES + 1));
     let report = crate::test_source::source_provider(&long_source, "attribute_transport")?;
     let analysis = pipeline::analyze_source(&report)?;
