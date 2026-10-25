@@ -14,7 +14,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Qualified CLI `af667d74` passes the builtin declaration family and reaches the `_f128` PI literal at `num/f128.rs:27`, byte 921. Nine unchanged original files opened. No artifact. | Implement LIB-024's exact wide literals and genuine feature/type consumers; retain imported/scoped, formatting and remaining source requirements. |
+| Original core loading and expansion | Qualified isolated CLI `da5d4343` advances to `num/nonzero.rs:34`, byte 1279, with 42 unchanged original files opened. Public integration/reference review is pending. No artifact. | Review LIB-024's text effects and implement LIB-026's actual trait implementation restrictions; retain imported/scoped, formatting and remaining source requirements. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -144,6 +144,14 @@ changes. The 6.731-second observer verifies all 722 source files. LIB-024 owns
 the newly observed valid suffix failure; metadata/object Rust observations alone
 do not establish exact literal bits or native wide-float support.
 
+The [wide-literal successor](wide-literals-checkpoint.md) passes eight merged
+controls in 170.27 seconds and advances the unchanged root from nine to 42
+opened files. Its next failure is actual `impl_restriction` syntax at
+`num/nonzero.rs:34` (LIB-026). All 4902 LowIR outputs and every active text
+case's exit status remain exact in a 51.79-second read-only effect run. Other
+view changes and six warning streams remain under review; public integration
+and reference approval are pending.
+
 - Integrator: the [structural owner checkpoint](primitive-inherent-checkpoint.md)
   qualifies local primitive policy and full-Self lookup with 66 source cases,
   nineteen focused private controls and eight actual native programs. Ordinary
@@ -222,6 +230,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-023 | Local regression repaired; imported openness still required | Actual local `non_exhaustive` attribute consumption and retained unsupported cross-crate contract | PA29 declaration/export contract / PA29 local and artifact opponents | C | Four merged controls pass with strict Clippy/audit/build in 129.31 seconds; nineteen sources bind 38 independent observations. Same-crate behavior and actual field/duplicate lint policy are implemented through the existing attribute traversal. Typed export still rejects unsupported cross-crate contracts. |
 | LIB-024 | P0; current unchanged-root failure at `num/f128.rs:27` | Exact f16/f128 literal values, active feature authority and real primitive/type consumers | PA2 literals + PA9 types; PA25 operations and later ABI/metadata own their effects / PA2 ordinary controls plus PA31 actual source | B | Candidate `f97c675f` passes six exact conversion/authority/layout/scratch controls with strict Clippy and audit in 232.10 seconds. Forty independent language observations and 64 actual exported-static bit comparisons pass; no runtime claim. Old PA2/PA9 compatibility and integration remain pending. f64 substitution, cfg bypass and implicit wider wire/native support are forbidden. |
 | LIB-025 | Closed publication guard qualified; wider transport still required | Closed source Functions publication must not omit actual must-use/inline contracts | PA29 publication + PA31 actual headers / PA31 selected-header source variants | C | Mandatory typed guard passes merged selected-header/error/Unknown/inspection controls; three corrected fixture groups pass in 173.56 seconds with strict Clippy/audit/build. Inspection stays unpaid, and imported absence stays Unknown. Explicit wider contract transport remains required. |
+| LIB-026 | P0; next unchanged-root failure at `num/nonzero.rs:34` in the qualified isolated wide candidate | Source trait implementation restrictions with genuine feature, module-scope and imported identity checks | PA5 grammar + PA6 paths/privacy + PA19 traits; PA31 internal feature and PA29 transport / earliest expressible controls plus complete PA31 providers | B | Source investigation next. Original root enables `impl_restriction`; ten core declarations use self/crate and const/unsafe combinations. Pinned parser and UI tests are available. No modifier skipping, scope bypass or new artifact authority is approved. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):
