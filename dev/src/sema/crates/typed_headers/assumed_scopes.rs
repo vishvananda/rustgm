@@ -30,7 +30,7 @@ use crate::{
     },
 };
 use std::sync::Arc;
-#[path = "environment_entries.rs"]
+#[path = "assumed_originals.rs"]
 mod originals;
 #[path = "assumption_ports.rs"]
 mod ports;
@@ -50,17 +50,17 @@ impl Scope {
     fn prepare(
         port: &mut ports::Inputs<'_, '_>,
         facts: &mut Declarations,
-        raw: s::ParameterScope,
+        scope_row: s::ParameterScope,
         inherited: Option<&Scope>,
         applications: &mut [Option<Predicate>],
         work: &mut ReservationWork,
     ) -> Result<(Self, usize), Error> {
         let rows = port.port.rows();
-        let (range, canonical) = originals::input_range(rows, raw)?;
+        let (range, canonical) = originals::input_range(rows, scope_row)?;
         let own = range.slice(&rows.clauses).map_err(error)?.len();
         let previous_parameters = inherited.map_or(0, |scope| scope.parameters.len());
         let previous_clauses = inherited.map_or(0, |scope| scope.clauses.len());
-        let slots = raw.declared.slice(&rows.slots).map_err(error)?.len();
+        let slots = scope_row.declared.slice(&rows.slots).map_err(error)?.len();
         let before = work.retained;
         let store_bytes = facts.types.trait_input_bytes();
         work.charge(
@@ -83,11 +83,11 @@ impl Scope {
             parameters.extend_from_slice(&parent.parameters);
             clauses.extend_from_slice(&parent.clauses);
         }
-        let definition = port.port.definition(raw.owner, work)?;
+        let definition = port.port.definition(scope_row.owner, work)?;
         formal_path::visit(
             &mut port.port,
             &mut facts.types,
-            &raw,
+            &scope_row,
             definition,
             work,
             |parameter| parameters.push((parameter, Abilities::default())),
@@ -95,7 +95,7 @@ impl Scope {
         let (inputs, subjects) = translation::inputs(
             port,
             applications,
-            raw.owner,
+            scope_row.owner,
             range,
             canonical,
             &mut facts.types,
@@ -116,7 +116,7 @@ impl Scope {
             &mut accounting,
         )?;
         let scope = Scope {
-            raw,
+            raw: scope_row,
             inputs,
             subjects,
             parameters,
