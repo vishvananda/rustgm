@@ -1,6 +1,6 @@
 # Completed empty source function schemes
 
-Source-only checkpoint on public `7a40e005`; qualification is pending.
+Source checkpoint on public `7a40e005`; complete qualification is pending.
 
 Declaration completion now retains an actual zero lifetime scheme for Core and
 Client sessions selected by the typed `Package::uses_source_bindings()` policy.
@@ -30,4 +30,29 @@ growth with 1000 warm reads. They compare the legacy and LocalMacros map extent
 with the ordinary baseline. The existing Functions fresh-client and nonempty
 source-header scheme controls complete the six-test selection. Provider/client
 test helpers are shared with the existing codec control without changing its
-proof path. No tests have run on this checkpoint yet.
+proof path.
+
+The merged remote gate `40187088367` passed strict Clippy, architecture audit,
+and the unoptimized build. Twelve of thirteen selected controls passed; the
+actual nongeneric fresh-client call failed with `invalid generic callable
+template`. The completed source zero schemes, missing-owner and growth controls
+passed. The full failure log is retained; this is not a qualified end-to-end
+nongeneric artifact checkpoint.
+
+The source-only follow-up registers the actual empty imported formal domain
+through `Templates::insert_monomorphic`, using the authenticated staged header's
+callable signature and canonical item identity. Nonempty complete formal vectors,
+including unused type formals, keep `insert_scoped`. The existing registration
+preflight already reserves the map entry and type storage for each function;
+the existing post-construction allocation observation includes the new entries.
+No new fields, environment producer, callable fallback, wire row or admission
+permission are introduced. `has_parameters` still recognizes an explicitly
+retained empty scope, so a missing registration continues to fail.
+
+Four selected follow-up controls cover the failed real fresh proof, a new actual
+decoded `keep(u8)->u8`/`discard(u8)->()`/`unused<T>(u8)->u8` family, the existing
+Functions fresh-client regression, and the existing original lifetime-context
+forgery regression. The new family verifies complete unused formals and invokes
+the real instance-selection kernel against a wrong closed result signature,
+another actual item owner and an absent entry. These follow-up controls have not
+run locally; the integrator will qualify them in one focused remote gate.

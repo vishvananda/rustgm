@@ -384,3 +384,7 @@ pub(super) fn owner(
 #[cfg(test)]
 #[path = "../../../tests/invariants/original_contexts.rs"]
 mod original_context_tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/mono_imports.rs"]
+mod monomorphic_import_tests;

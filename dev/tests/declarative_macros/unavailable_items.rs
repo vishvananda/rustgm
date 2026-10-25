@@ -173,15 +173,10 @@ fn malformed_scoped_declarations_reject_at_their_actual_language_boundary() -> T
 fn original_assert_matches_is_a_real_declaration_with_an_explicit_stability_frontier() -> TestResult
 {
     let original = source("original-assert-matches")?;
-    let error = expanded(&original)
-        .err()
-        .ok_or("ordinary source borrowed provider permission")?;
-    assert!(
-        error
-            .to_string()
-            .contains("internal macro contracts require an actual source provider"),
-        "{error}"
-    );
+    let ordinary = expanded(&original)?;
+    assert!(!ordinary.package.uses_source_bindings());
+    assert!(ordinary.package.source_core().is_none());
+    assert!(ordinary.package.source_client().is_none());
     let identity = rustgm::support::crates::CrateIdentity::new("minicore", "scoped_header")?;
     let context = resolve::bindings::Context {
         crate_name: Some("minicore".into()),
@@ -189,30 +184,33 @@ fn original_assert_matches_is_a_real_declaration_with_an_explicit_stability_fron
         mode: rustgm::support::bindings::Mode::Source { provider: identity },
         ..Default::default()
     };
-    let report = expanded_with_context(&source("source-assert-matches")?, &context)?;
-    let definition = report
-        .definitions
-        .iter()
-        .find(|definition| report.package.names.get(definition.name) == "assert_matches")
-        .ok_or("original attributed declaration was not published")?;
-    assert!(definition.node.is_some());
-    assert!(matches!(
-        definition.body,
-        Body::Scoped {
-            mode: Transparency::SemiOpaque,
-            ..
-        }
-    ));
-    assert!(report.invocations.is_empty());
-    let error = resolve::analyze_expanded(report)
-        .err()
-        .ok_or("scoped stability contract silently accepted")?;
-    assert!(
-        error
-            .message
-            .contains("scoped macro library stability declarations are not implemented"),
-        "{error}"
-    );
+    let provider = expanded_with_context(&source("source-assert-matches")?, &context)?;
+    assert!(provider.package.source_core().is_some());
+    for report in [ordinary, provider] {
+        let definition = report
+            .definitions
+            .iter()
+            .find(|definition| report.package.names.get(definition.name) == "assert_matches")
+            .ok_or("original attributed declaration was not published")?;
+        assert!(definition.node.is_some());
+        assert!(matches!(
+            definition.body,
+            Body::Scoped {
+                mode: Transparency::SemiOpaque,
+                ..
+            }
+        ));
+        assert!(report.invocations.is_empty());
+        let error = resolve::analyze_expanded(report)
+            .err()
+            .ok_or("scoped stability contract silently accepted")?;
+        assert!(
+            error
+                .message
+                .contains("scoped macro library stability declarations are not implemented"),
+            "{error}"
+        );
+    }
     Ok(())
 }
 
