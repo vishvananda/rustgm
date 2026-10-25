@@ -41,8 +41,10 @@ Current lanes:
 - A: anonymous Function recipes and the genuine function argument-index repair
   pass the selected private/declaration gates. All 8485 paired text cases and
   122 reviewed stdout changes are qualified. Actual callback-bearing executable
-  consumers now pass three focused controls. Continue private Provided template preparation;
-  public Provided execution and type-alias transport remain separate work.
+  consumers now pass three focused controls. Private Provided callable-template
+  preparation now passes six focused controls; see the
+  [checkpoint](private-callable-template-checkpoint.md). Continue defining-Environment
+  preparation. Public Provided execution and type-alias transport remain required.
 - B: local LIB-026 implementation domains and their version-one imported
   unrestricted-profile control are qualified, with 74 independent observations.
   Restricted policy transport remains open; keep the real trait/catalog identity
