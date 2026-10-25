@@ -379,6 +379,13 @@ pub fn write_syntax<L, W: Write>(
         }
         if let Kind::Item(index) = node.kind {
             write!(output, "item {index} ")?;
+            if let Some(defaultness) = ast.defaultness(index) {
+                write!(
+                    output,
+                    "default {} {} ",
+                    defaultness.keyword.start, defaultness.keyword.end
+                )?;
+            }
             item::item(source, ast, &ast.items[index as usize], output)?;
             writeln!(output)?;
         }

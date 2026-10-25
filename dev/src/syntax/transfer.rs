@@ -1,4 +1,5 @@
 //! Copy parsed fragments by typed facts, rebasing dense IDs and source provenance.
+mod span_preflight;
 use super::{
     ast::{Kind, List, NodeId, Syntax},
     attribute,
@@ -6,6 +7,7 @@ use super::{
     token_tree::{Span, error},
 };
 use crate::lex::token::LexError;
+pub(crate) use span_preflight::validate as validate_spans;
 
 /// Original arena bounds require no speculative AST copy. A later module
 /// instance copies only these typed facts, excluding prior generated syntax.
@@ -13,6 +15,7 @@ use crate::lex::token::LexError;
 pub(crate) struct Extent {
     pub nodes: usize,
     items: usize,
+    defaultness: usize,
     variants: usize,
     use_trees: usize,
     generics: usize,
@@ -29,6 +32,7 @@ impl Extent {
         Self {
             nodes: ast.nodes.len(),
             items: ast.items.len(),
+            defaultness: ast.defaultness.as_ref().map_or(0, |entries| entries.len()),
             variants: ast.variants.len(),
             use_trees: ast.use_trees.len(),
             generics: ast.generics.len(),
@@ -45,6 +49,7 @@ impl Extent {
         Ok(Syntax {
             nodes: prefix(&ast.nodes, self.nodes)?,
             items: prefix(&ast.items, self.items)?,
+            defaultness: ast.defaultness_prefix(self.defaultness)?,
             variants: prefix(&ast.variants, self.variants)?,
             use_trees: prefix(&ast.use_trees, self.use_trees)?,
             generics: prefix(&ast.generics, self.generics)?,
@@ -72,6 +77,7 @@ struct Bases {
     literals: u32,
     captures: u32,
     items: u32,
+    defaultness: usize,
     variants: u32,
     use_trees: u32,
     generics: u32,
@@ -93,6 +99,10 @@ impl Bases {
             literals: base(destination.literals.len(), source.literals.len())?,
             captures: base(destination.captures.len(), source.captures.len())?,
             items: base(destination.items.len(), source.items.len())?,
+            defaultness: destination
+                .defaultness
+                .as_ref()
+                .map_or(0, |entries| entries.len()),
             variants: base(destination.variants.len(), source.variants.len())?,
             use_trees: base(destination.use_trees.len(), source.use_trees.len())?,
             generics: base(destination.generics.len(), source.generics.len())?,
@@ -129,6 +139,7 @@ impl Bases {
         destination.literals.truncate(self.literals as usize);
         destination.captures.truncate(self.captures as usize);
         destination.items.truncate(self.items as usize);
+        destination.truncate_defaultness(self.defaultness);
         destination.variants.truncate(self.variants as usize);
         destination.use_trees.truncate(self.use_trees as usize);
         destination.generics.truncate(self.generics as usize);
@@ -216,6 +227,19 @@ impl Bases {
             self.list(&mut item.where_clause);
             self.item(&mut item.kind, span)?;
             destination.items.push(item);
+        }
+        if let Some(entries) = &source.defaultness {
+            entries
+                .charge(1 + entries.len(), source.defaultness_bytes())
+                .map_err(|message| error(0, message))?;
+            for entry in entries.entries() {
+                entry.validate(source)?;
+                destination.record_defaultness(
+                    entry.item + self.items,
+                    self.rebased(entry.node),
+                    span(entry.keyword)?,
+                )?;
+            }
         }
         for variant in &source.variants {
             let mut variant = *variant;
