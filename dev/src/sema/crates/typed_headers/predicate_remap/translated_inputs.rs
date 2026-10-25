@@ -18,6 +18,7 @@ use crate::{
     },
 };
 use std::sync::Arc;
+pub(in crate::sema::crates::typed_headers) type InputRows = (Arc<[Input]>, Box<[bool]>);
 
 pub(in crate::sema::crates::typed_headers) mod sealed {
     pub trait Sealed {}
@@ -222,7 +223,7 @@ pub(in crate::sema::crates::typed_headers) fn inputs<'rows, B: Budget>(
     canonical: Option<usize>,
     store: &mut Store,
     budget: &mut B,
-) -> Result<(Arc<[Input]>, Box<[bool]>), Error> {
+) -> Result<InputRows, Error> {
     let rows = port.rows();
     let raw = range.slice(&rows.clauses).map_err(error)?;
     let prefix = canonical.unwrap_or(0);
