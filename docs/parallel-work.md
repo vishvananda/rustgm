@@ -45,13 +45,19 @@ Current lanes:
   122 reviewed stdout changes are qualified. Actual callback-bearing executable
   consumers now pass three focused controls. Private Provided callable-template
   preparation now passes six focused controls; see the
-  [checkpoint](private-callable-template-checkpoint.md). Continue defining-Environment
-  preparation. Public Provided execution and type-alias transport remain required.
+  [checkpoint](private-callable-template-checkpoint.md). Private zero-domain
+  Declaration environments now have six qualified controls; see the
+  [environment checkpoint](private-defining-environments-checkpoint.md).
+  Continue the genuine empty Contract adapter, preserving old v0/v1 bytes.
+  Public Provided execution and type-alias transport remain required.
 - B: local LIB-026 implementation domains and their version-one imported
   unrestricted-profile control are qualified, with 74 independent observations.
   The private declaration-coordinate namespace and ordinary-trait producer
-  prerequisite is underway. Restricted policy transport remains open; keep the
-  real trait/catalog identity distinct from an external function linker identity.
+  prerequisite now has five qualified controls; see the
+  [namespace checkpoint](pa29-module-namespace-inspection.md). Implement the
+  reviewed explicit v2 module/domain/advisory artifact and fresh consumer.
+  Restricted policy transport remains open; keep the real trait/catalog
+  identity distinct from an external function linker identity.
 - C: SourceCore CLI contract publication and fresh native consumers are qualified.
   LIB-027 unnamed constants now pass six focused controls and reviewed text
   qualification. Investigate LIB-028's actual specialization defaultness,
@@ -309,6 +315,14 @@ release/native sweep before each development push. Existing independent observat
 can be cited for identical frozen inputs/toolchain/profile; candidate execution
 and candidate-specific proofs must still be checked after integration. Do not
 turn an object-only rustc observation into executable or runtime qualification.
+
+Custom private-source checkpoint gates must qualify production Clippy as well
+as harness-mode Clippy: test compilation changes unused-import and wildcard
+lint behavior. A production build alone does not qualify those lints. Reuse
+unchanged authenticated passes; otherwise run production and private Rust
+commands sequentially. An independent Python architecture audit may run beside
+that sequence, with separate receipts and a joined failure result. This keeps
+one Rust compiler command active and does not extend the five-minute budget.
 
 For hot-path changes, apply the frontend performance precedent in `spec.md`:
 identify repeated work removed, cache and ownership boundaries, and dimensions

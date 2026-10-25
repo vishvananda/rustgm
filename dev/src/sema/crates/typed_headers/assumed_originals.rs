@@ -1,5 +1,9 @@
 //! Zero-domain body environments retain actual Declaration or Contract construction.
-use super::*;
+use super::{
+    Allocation, Arc, Argument, DeclarationRef, Declarations, Demand, Dependency, Environment,
+    Error, Observed, Owner, Port, Prepared, Progress, Ready, RecipeView, ReservationWork, Scope,
+    Session, State, error, ports, s,
+};
 use crate::{
     sema::crates::typed_headers::staged_headers::rebuilt_environments::{
         ContractParts, EmptyContract,
