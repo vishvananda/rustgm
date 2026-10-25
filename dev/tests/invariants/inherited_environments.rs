@@ -222,7 +222,7 @@ fn inherited_opponents() -> Result {
                     .as_mut()
                     .and_then(|state| state.callables.as_mut())
                     .ok_or("actual template")?
-                    .scopes[owner.0 as usize] = None
+                    .scopes[owner.0 as usize] = None;
             }
             3 => work.retained = crate::support::crates::MAX_BYTES,
             _ => {
@@ -318,7 +318,7 @@ fn growth() -> Result {
             contracts: _contracts,
         } = start(&source, &mut work)?;
         let session = ready(session.defining_environment(owner, &mut work)?)?;
-        let (session, steps) = warm(session, owner, &mut work)?;
+        let (session, steps) = super::tests::warm_environment(session, owner, &mut work)?;
         if let Some(previous) = baseline {
             assert_eq!(steps, previous);
         } else {
@@ -346,7 +346,7 @@ fn growth() -> Result {
             contracts: _contracts,
         } = start(&source, &mut work)?;
         let session = ready(session.defining_environment(owner, &mut work)?)?;
-        let (session, steps) = warm(session, owner, &mut work)?;
+        let (session, steps) = super::tests::warm_environment(session, owner, &mut work)?;
         let environments = environment(&session)?;
         let count = environments
             .scopes
@@ -363,34 +363,4 @@ fn growth() -> Result {
         );
     }
     Ok(())
-}
-fn warm(
-    mut session: Box<Session>,
-    owner: DeclarationRef,
-    work: &mut ReservationWork,
-) -> Result<(Box<Session>, usize)> {
-    let before = work.steps;
-    let bytes = work.retained;
-    let extent = session.facts.types.interned_extent();
-    let counters = session
-        .recipes
-        .as_ref()
-        .ok_or("actual cursor")?
-        .cursor
-        .counters();
-    for _ in 0..1000 {
-        session = ready(session.defining_environment(owner, work)?)?;
-    }
-    assert_eq!(work.retained, bytes);
-    assert_eq!(session.facts.types.interned_extent(), extent);
-    assert_eq!(
-        session
-            .recipes
-            .as_ref()
-            .ok_or("actual cursor")?
-            .cursor
-            .counters(),
-        counters
-    );
-    Ok((session, work.steps - before))
 }

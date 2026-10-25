@@ -8,6 +8,7 @@ mod publication;
 #[path = "../../tests/invariants/publication_attributes.rs"]
 mod publication_tests;
 mod published_annotations;
+#[path = "transported_source/collected_headers.rs"]
 mod trait_inputs;
 use crate::{
     body::{
