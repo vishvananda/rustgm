@@ -54,7 +54,9 @@ jobs:
       - name: Release and course tests
         run: make test
       - name: Native maintainer qualification
-        run: make test-maintainer-native
+        run: |
+          python3 scripts/storage.py run --no-prune -- python3 scripts/setup_backend.py
+          make test-maintainer-native
       - name: Debug invariants
         run: make test-debug-invariants
       - name: Independent Rust qualification

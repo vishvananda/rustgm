@@ -34,8 +34,8 @@ def configure(checkout):
     print("Configured immutable pinned CPPGM backend")
 
 
-def pin_tool(source, name, expected):
-    pin = ROOT / "obj" / "backend" / "pins" / expected / name
+def pin_tool(source, name, expected, *, root=None):
+    pin = (ROOT if root is None else root) / "obj" / "backend" / "pins" / expected / name
     pin.parent.mkdir(parents=True, exist_ok=True)
     if not pin.exists():
         shutil.copyfile(source, pin)
