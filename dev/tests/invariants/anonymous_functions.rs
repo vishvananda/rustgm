@@ -127,6 +127,101 @@ fn item_summaries() -> Result {
     Ok(())
 }
 
+fn call_formations() -> Result {
+    let source = source(
+        "pub fn nested(value:fn(u8)->u8)->fn(u8)->u8{value}\
+         pub fn twice(value:fn(u8)->u8)->fn(u8)->u8{let next=nested(value);nested(next)}\
+         pub fn other(value:fn(u8)->u8)->fn(u8)->u8{nested(value)}\
+         pub fn scalar(value:u8)->u8{value}\
+         pub fn simple(value:u8)->u8{let next=scalar(value);scalar(next)}\
+         pub fn simple_other(value:u8)->u8{scalar(value)}",
+    )?;
+    let report = test_source::source_provider(&source, "actual_call_formations")?;
+    let mut analysis = crate::pipeline::analyze_source(&report)?;
+    let program = crate::body::build_concrete(&report, &analysis.facts)?;
+    let mut staged = stage(&report, &mut analysis.facts)?;
+    let mut nested = Vec::new();
+    let mut shared = Vec::new();
+    let mut contexts = Vec::new();
+    for body in &program.bodies {
+        let crate::body::ir::Owner::Function { definition, .. } = body.owner else {
+            continue;
+        };
+        let context = staged.original_context(definition)?;
+        for (index, value) in body.values.iter().enumerate() {
+            let crate::body::ir::Rvalue::Call { signature, .. } = value.kind else {
+                continue;
+            };
+            let value = u32::try_from(index)?;
+            let parts = signatures::Parts::actual(&analysis.facts, signature)?;
+            let is_nested = staged
+                .anonymous_signature_field(&analysis.facts, parts)?
+                .is_some();
+            let recipe = staged.ty(&analysis.facts, signature, context)?;
+            let actual = staged.call_signature(&analysis.facts, signature, context, value)?;
+            assert_ne!(actual, recipe);
+            let s::Type::Function(selected) = staged.rows.types[actual.0 as usize] else {
+                return Err("actual call signature recipe".into());
+            };
+            let frame = &staged.rows.binders[selected.binder.0 as usize];
+            if is_nested {
+                assert_eq!(frame.owner, context.owner);
+                assert_eq!(
+                    frame.kind,
+                    s::BinderKind::CallSignature {
+                        body: context.body.ok_or("actual body")?,
+                        value
+                    }
+                );
+                nested.push(actual);
+                contexts.push(context);
+            } else {
+                assert_eq!(frame.kind, s::BinderKind::CallableType);
+                assert!(frame.parent.is_none());
+                shared.push(actual);
+            }
+            let before = staged.work();
+            for _ in 0..8 {
+                assert_eq!(
+                    staged.call_signature(&analysis.facts, signature, context, value)?,
+                    actual
+                );
+            }
+            assert_eq!(staged.work().steps - before.steps, 16);
+            assert_eq!(staged.work().reserved_bytes, before.reserved_bytes);
+        }
+    }
+    assert_eq!(nested.len(), 3);
+    assert!(nested[0] != nested[1] && nested[1] != nested[2] && nested[0] != nested[2]);
+    assert!(contexts.windows(2).any(|pair| pair[0] == pair[1]));
+    assert!(contexts.windows(2).any(|pair| pair[0] != pair[1]));
+    assert_eq!(shared.len(), 3);
+    assert!(shared.iter().all(|&actual| actual == shared[0]));
+    Ok(())
+}
+
+fn key_layout(ty: TypeId, context: Context) {
+    struct BeforeKey {
+        ty: TypeId,
+        context: Option<Context>,
+    }
+    let before = BeforeKey {
+        ty,
+        context: Some(context),
+    };
+    assert!(size_of::<Key>() >= size_of::<BeforeKey>());
+    assert!(size_of::<Key>() <= size_of::<BeforeKey>() + size_of::<Formation>());
+    eprintln!(
+        "authored key {:?}/{:?} bytes before={} actual={} formation={} graph={}",
+        before.ty,
+        before.context,
+        size_of::<BeforeKey>(),
+        size_of::<Key>(),
+        size_of::<Formation>(),
+        size_of::<Graph>()
+    );
+}
+
 #[test]
 fn anonymous_function_headers_cross_codec_without_declaration_surrogates() -> Result {
     let interface = source_packets::exported(&source(CARRY)?)?;
@@ -175,6 +270,7 @@ fn anonymous_function_headers_cross_codec_without_declaration_surrogates() -> Re
 
 #[test]
 fn anonymous_function_context_and_binder_opponents_fail_before_publication() -> Result {
+    call_formations()?;
     let (identity, rows) = inspected(CARRY)?;
     let binder = rows
         .binders
@@ -195,6 +291,7 @@ fn anonymous_function_context_and_binder_opponents_fail_before_publication() -> 
     let (report, mut facts) = prepared(CARRY)?;
     let mut staged = stage(&report, &mut facts)?;
     let (ty, context) = root(&report, &facts, &mut staged, "carry")?;
+    key_layout(ty, context);
     let (other_report, mut other_facts) = prepared(CARRY)?;
     let mut other = stage(&other_report, &mut other_facts)?;
     let (other_ty, other_context) = root(&other_report, &other_facts, &mut other, "carry")?;

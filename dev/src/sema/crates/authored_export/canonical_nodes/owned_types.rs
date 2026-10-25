@@ -167,7 +167,7 @@ impl Stage {
                 if key.ty == TypeId::UNIT || matches!(kind, Kind::Primitive(_)) =>
             {
                 s::Type::Scalar(
-                    super::super::export_scalar(facts, key.ty)
+                    crate::sema::crates::export_scalar(facts, key.ty)
                         .map_err(|_| "source scalar type is outside the supported profile")?,
                 )
             }

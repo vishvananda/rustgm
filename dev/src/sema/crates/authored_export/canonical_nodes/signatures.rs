@@ -83,20 +83,34 @@ impl Stage {
     ) -> Result<g::TypeRef, &'static str> {
         self.charge(2)?;
         self.graph.require_arena(&facts.types)?;
-        let closed = facts.types.needs_region_context(ty) == Some(false)
-            && facts.types.contains_parameters(ty) == Some(false);
-        let key = super::Key {
-            ty,
-            context: (!closed).then_some(context),
-        };
-        self.graph.roots = self.graph.roots.saturating_add(1);
-        if let Some(&root) = self.graph.types.get(&key) {
-            self.graph.hits = self.graph.hits.saturating_add(1);
-            return Ok(root);
-        }
+        let parts = Parts::actual(facts, ty)?;
         let body = context
             .body
             .ok_or("source call signature has no actual original owner")?;
+        let local = super::Key {
+            ty,
+            context: Some(context),
+            formation: super::Formation::Call { value },
+        };
+        let shared = super::Key {
+            ty,
+            context: None,
+            formation: super::Formation::SharedCall,
+        };
+        self.graph.roots = self.graph.roots.saturating_add(1);
+        // Only this producer writes SharedCall, and only without anonymous
+        // signature fields. Formation separates real recipes and value sites.
+        for key in [local, shared] {
+            if let Some(&root) = self.graph.types.get(&key) {
+                self.graph.hits = self.graph.hits.saturating_add(1);
+                return Ok(root);
+            }
+        }
+        let nested = self.anonymous_signature_field(facts, parts)?.is_some();
+        let closed = facts.types.needs_region_context(ty) == Some(false)
+            && facts.types.contains_parameters(ty) == Some(false)
+            && !nested;
+        let key = if closed { shared } else { local };
         let (parent, purpose) = if closed {
             (
                 Context {
@@ -168,11 +182,7 @@ impl Stage {
             .list(parts.parameters)
             .ok_or("source callable input list is unknown")?;
         let deferred = matches!(mode, Roots::Demand)
-            && parameter_types
-                .iter()
-                .copied()
-                .chain(std::iter::once(parts.result))
-                .any(|ty| facts.types.contains_anonymous_callables(ty) == Some(true));
+            && self.anonymous_signature_field(facts, parts)?.is_some();
         // Only new nested functions need temporary roots. Ordinary signatures
         // keep their existing direct append and allocation behavior.
         self.reserve(

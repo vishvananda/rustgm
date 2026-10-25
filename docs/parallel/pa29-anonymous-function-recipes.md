@@ -1,7 +1,10 @@
 # Actual anonymous function recipes
 
 This source-only checkpoint follows the qualified empty-scheme/monomorphic
-import controls from CI `40190841475`. Its new controls have not run yet.
+import controls from CI `40190841475`. The first anonymous-producer candidate
+failed compilation in CI `40195601133` because the moved scalar adapter used its
+old module-relative path. Its new controls have not run yet. That original source,
+packet and failure log remain retained.
 
 The existing authored type worklist now enters actual `Kind::Function` nodes,
 allocates their real `CallableType` frames, demands their actual input/result
@@ -36,6 +39,18 @@ one. Once anchored, type/signature/application memo hits first reject another,
 replaced or absent arena. Anonymous-bearing keys include the actual owner/frame/
 body Context; actual Original/Public frames distinguish signature purpose.
 
+A cold `Formation` discriminator separates actual recipes, old nonnested shared
+call signatures, and calls at their actual value indices. Contextual calls retain
+the actual owner/frame/body as well as their value. A call signature with an
+anonymous function in its actual inputs/result cannot share the first owner's
+frame or reuse a recipe's `CallableType` binder. Old closed call signatures with
+no nested function fields keep `SharedCall` and their previous shared ordinal
+behavior. Exact local-call and shared-call memo probes precede a cold field scan,
+so warm calls perform no parameter-list traversal. The immediate-field scan is
+shared by the header owner, cold call classification and Demand signature
+assembly; each real scan prepays its complete input/result work. Completed
+signature assembly does no such scan.
+
 The collector's facts borrow becomes mutable through its existing owned builder
 and callback chain. Original proof matching, callback order and raw Contract
 identity stay intact. No extra body/CFG traversal or unrelated-body walk prepares
@@ -57,7 +72,11 @@ Four new controls are frozen before execution:
   unsafe function-pointer type checks safety retention without an unsafe call.
 - Actual proved rows reject changed binder roles/counts; real source rejects a
   nonzero HRTB function type. Actual foreign and replaced arenas fail before
-  warm hits, and the restored real arena remains usable.
+  warm hits, and the restored real arena remains usable. Actual nested calls at
+  two sites in one body and a third site in another body remain distinct from
+  each other and a same-context recipe; ordinary scalar calls still share.
+  Cold Key size calibration records the discriminator cost against the previous
+  key layout in the same compiler build.
 - Real function-item type arguments retain the new summary while declaration
   signatures alone do not. A nongeneric body-only uninitialized function-pointer
   local exercises the actual mutable owner hook. Shared roots and 1000 warm

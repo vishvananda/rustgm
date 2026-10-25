@@ -30,9 +30,16 @@ impl Context {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum Formation {
+    Recipe,
+    SharedCall,
+    Call { value: u32 },
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Key {
     ty: TypeId,
     context: Option<Context>,
+    formation: Formation,
 }
 struct Frame {
     binder: g::BinderRef,
@@ -166,6 +173,7 @@ impl Stage {
         Ok(Key {
             ty,
             context: (contextual || anonymous).then_some(context),
+            formation: Formation::Recipe,
         })
     }
 
