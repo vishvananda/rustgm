@@ -1,4 +1,5 @@
 //! Configured module instances share parsed files while retaining lexical owners.
+mod diagnostic_warnings;
 use super::{
     names::{NameId, Names},
     unit::{FileId, NodeKey, Unit},
@@ -40,6 +41,11 @@ pub struct ExpansionTrace {
     pub call: crate::expand::stream::Location,
     pub definition: Option<crate::expand::stream::Location>,
 }
+#[derive(Debug)]
+pub struct Warning {
+    pub code: crate::support::diagnostics::WarningCode,
+    pub diagnostic: Error,
+}
 /// A frontend diagnostic. It is one pointer, so the results that carry it
 /// return in registers; diagnostics are rare and their data lives on the heap.
 pub struct Error(Box<ErrorData>);
@@ -65,6 +71,10 @@ pub struct ErrorData {
     pub message: String,
     pub expansions: Vec<ExpansionTrace>,
     pub(crate) introduction: ExpansionId,
+    retained_warnings: Vec<Warning>,
+    warning_bytes: usize,
+    warning_work: usize,
+    warning_limit_note: bool,
 }
 impl Error {
     #[must_use]
@@ -78,6 +88,10 @@ impl Error {
             message: message.into(),
             expansions: Vec::new(),
             introduction: ExpansionId(0),
+            retained_warnings: Vec::new(),
+            warning_bytes: 0,
+            warning_work: 0,
+            warning_limit_note: false,
         })
     }
     pub(crate) fn imported(
@@ -91,6 +105,10 @@ impl Error {
             message: message.into(),
             expansions: Vec::new(),
             introduction: ExpansionId(0),
+            retained_warnings: Vec::new(),
+            warning_bytes: 0,
+            warning_work: 0,
+            warning_limit_note: false,
         })
     }
     pub(crate) fn unlocated(message: impl Into<String>) -> Self {
@@ -100,6 +118,10 @@ impl Error {
             message: message.into(),
             expansions: Vec::new(),
             introduction: ExpansionId(0),
+            retained_warnings: Vec::new(),
+            warning_bytes: 0,
+            warning_work: 0,
+            warning_limit_note: false,
         })
     }
 }
@@ -140,6 +162,12 @@ impl std::fmt::Display for Error {
             )?,
             DiagnosticFile::Unlocated => write!(output, "input: {}", self.message)?,
         }
+        if self.warning_limit_note {
+            write!(
+                output,
+                "\n  note: retained warning work or storage budget exceeded; further warnings unavailable"
+            )?;
+        }
         for trace in &self.expansions {
             write!(
                 output,
@@ -177,6 +205,12 @@ impl Package {
         self.runtime_checks
     }
 
+    pub(crate) fn requested_internal_attributes(&self) -> bool {
+        self.macro_features.internal()
+    }
+    pub(crate) fn requested_unboxed_closures(&self) -> bool {
+        self.macro_features.unboxed()
+    }
     /// Library requests and completed policy are published only by resolution.
     #[must_use]
     pub fn library_policy(&self) -> Option<&super::stability::Library> {

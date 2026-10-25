@@ -13,15 +13,38 @@ pub(crate) fn actual(provided: bool) -> Result<(Report, Declarations, Arc<crates
     compile(&source, provided)
 }
 pub(crate) fn extended(suffix: &str) -> Result<(Report, Declarations, Arc<crates::Dependencies>)> {
+    extended_with(suffix, |_, _, _, _| Ok(()))
+}
+pub(crate) fn extended_with(
+    suffix: &str,
+    observe: impl FnOnce(
+        &Report,
+        &Declarations,
+        &crates::generics::source::SourceRows,
+        &crates::Interface,
+    ) -> Result,
+) -> Result<(Report, Declarations, Arc<crates::Dependencies>)> {
     let mut source = crate::test_source::fixture(
         "pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs",
     )?;
     source.push_str(suffix);
-    compile(&source, true)
+    compile_with(&source, true, observe)
 }
 fn compile(
     source: &str,
     provided: bool,
+) -> Result<(Report, Declarations, Arc<crates::Dependencies>)> {
+    compile_with(source, provided, |_, _, _, _| Ok(()))
+}
+fn compile_with(
+    source: &str,
+    provided: bool,
+    observe: impl FnOnce(
+        &Report,
+        &Declarations,
+        &crates::generics::source::SourceRows,
+        &crates::Interface,
+    ) -> Result,
 ) -> Result<(Report, Declarations, Arc<crates::Dependencies>)> {
     let report = crate::test_source::source_provider(source, "unpaid_reservations")?;
     let owner = report
@@ -40,6 +63,7 @@ fn compile(
     )?
     .rows;
     let interface = crates::Interface::new(owner, Vec::new(), Vec::new())?;
+    observe(&report, &facts, &rows, &interface)?;
     let payload = if provided {
         crates::generics::Payload::from_source_provided(
             interface.identity(),

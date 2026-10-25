@@ -1,0 +1,14 @@
+macro-matching 1
+definition 0 12 61 "chosen" rules 1
+invocation 0 129 138 definition 0 rule 0
+token definition identifier "fn"
+token definition identifier "answer"
+token definition punctuation "("
+token definition punctuation ")"
+token definition punctuation "->"
+token definition identifier "u32"
+token definition punctuation "{"
+token definition integer "7u32"
+token definition punctuation "}"
+end-invocation parser-calls 0
+end-macro-matching definitions 1 invocations 1

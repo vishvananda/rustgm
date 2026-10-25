@@ -47,11 +47,14 @@ pub(in crate::sema::declarations) fn collect(
                 node = value;
             }
             for (attribute, forest) in unit.retained_attributes(owner.attributes.clone()) {
-                let Some(name @ ("link_name" | "export_name" | "no_mangle")) =
-                    attribute.name(forest, unit.source.text())
-                else {
+                let Some(name) = attribute.name(forest, unit.source.text()) else {
                     continue;
                 };
+                if crate::support::decorations::Consumer::named(name)
+                    != Some(crate::support::decorations::Consumer::Linkage)
+                {
+                    continue;
+                }
                 let error = |message| Error::at(file, attribute.span.start, message);
                 let Kind::Item(index) = unit.configured.ast.node(node).kind else {
                     return Err(error(

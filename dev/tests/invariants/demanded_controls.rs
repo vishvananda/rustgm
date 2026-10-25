@@ -308,6 +308,14 @@ fn reference_frontier(depth: usize, repeats: usize) -> Result {
     };
     let original = &rows.originals[body.0 as usize];
     assert_eq!(original.declaration, owner);
+    assert_eq!(
+        rows.body_inputs[body.0 as usize]
+            .obligations
+            .iter()
+            .filter(|input| matches!(input.kind, s::InputKind::LocalBorrow(_)))
+            .count(),
+        depth
+    );
     let name = format!("cursor_ref{}", depth - 1);
     let local = original
         .locals
@@ -417,6 +425,7 @@ fn header_signature_cursor_bounds_shared_depth_and_unrelated_originals() -> Resu
 }
 #[test]
 fn header_signature_cursor_failure_drops_owned_session_and_keeps_charges() -> Result {
+    provenance_opponents()?;
     let (report, facts, inventory) = actual(true)?;
     let owner = named(&inventory, "identity")?;
     let old = facts.types.len();
@@ -435,5 +444,119 @@ fn header_signature_cursor_failure_drops_owned_session_and_keeps_charges() -> Re
     };
     assert!(Session::select_signature(report, facts, inventory, 0, owner, &mut exhausted).is_err());
     assert!(exhausted.peak > crate::support::crates::MAX_BYTES);
+    Ok(())
+}
+
+#[derive(Default)]
+struct PlaceBudget {
+    work: ReservationWork,
+    emitted: usize,
+}
+impl crate::borrow::regions::PlaceBoundsSink for PlaceBudget {
+    fn charge(&mut self, count: usize) -> std::result::Result<(), &'static str> {
+        self.work.charge(count).map_err(|_| "place work exhausted")
+    }
+    fn scratch(&mut self, growth: usize) -> std::result::Result<(), &'static str> {
+        self.work
+            .reserve(growth)
+            .map_err(|_| "place scratch exhausted")
+    }
+    fn obligation(
+        &mut self,
+        _: crate::body::regions::Obligation,
+    ) -> std::result::Result<(), &'static str> {
+        self.charge(1)?;
+        self.work
+            .reserve(4 * size_of::<crate::body::regions::Obligation>())
+            .map_err(|_| "place output exhausted")?;
+        self.emitted += 1;
+        Ok(())
+    }
+}
+fn place_budget(report: &Report, facts: &Declarations) -> Result {
+    let templates = crate::body::templates::build(report, facts)?;
+    let body = &templates
+        .iter()
+        .find(|template| match template.body.owner {
+            crate::body::ir::Owner::Function { definition, .. } => {
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[definition.0 as usize].name)
+                    == "cursor_chain"
+            }
+            _ => false,
+        })
+        .ok_or("actual reference-chain CFG")?
+        .body;
+    let mut ordinary = PlaceBudget::default();
+    crate::borrow::regions::visit_place_bounds(&facts.types, body, &mut ordinary)?;
+    assert_eq!(ordinary.emitted, 2);
+    let mut failed_work = PlaceBudget::default();
+    failed_work.work.steps = crate::support::crates::MAX_COMPONENTS;
+    assert!(
+        crate::borrow::regions::visit_place_bounds(&facts.types, body, &mut failed_work).is_err()
+    );
+    assert!(failed_work.work.steps > crate::support::crates::MAX_COMPONENTS);
+    assert_eq!(failed_work.emitted, 0);
+    let mut failed_storage = PlaceBudget::default();
+    failed_storage.work.retained = crate::support::crates::MAX_BYTES;
+    assert!(
+        crate::borrow::regions::visit_place_bounds(&facts.types, body, &mut failed_storage)
+            .is_err()
+    );
+    assert!(failed_storage.work.peak > crate::support::crates::MAX_BYTES);
+    assert_eq!(failed_storage.emitted, 0);
+    Ok(())
+}
+fn provenance_opponents() -> Result {
+    crate::unpaid_cases::extended_with(&reference_chain(2)?, |report, facts, rows, interface| {
+        place_budget(report, facts)?;
+        let header = rows
+            .functions
+            .iter()
+            .find(|header| {
+                rows.declarations[header.declaration.0 as usize]
+                    .name
+                    .as_deref()
+                    == Some("cursor_chain")
+            })
+            .ok_or("actual reference-chain header")?;
+        let s::FunctionBody::Original(body) = header.body else {
+            return Err("actual reference-chain original".into());
+        };
+        let inputs = &rows.body_inputs[body.0 as usize];
+        let borrowed = inputs
+            .obligations
+            .iter()
+            .enumerate()
+            .filter_map(|(index, input)| {
+                matches!(input.kind, s::InputKind::LocalBorrow(_)).then_some(index)
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(borrowed.len(), 2);
+        for replaced in [false, true] {
+            let mut wrong = rows.clone();
+            let obligations = &mut wrong.body_inputs[body.0 as usize].obligations;
+            if replaced {
+                obligations[borrowed[0]].kind = obligations[borrowed[1]].kind;
+            } else {
+                obligations.remove(borrowed[0]);
+            }
+            let error = g::Payload::from_source_provided(
+                interface.identity(),
+                wrong,
+                interface.base_retained_bytes(),
+                &mut g::Work::default(),
+            )
+            .err()
+            .ok_or("missing actual local borrow was accepted")?;
+            assert_eq!(
+                error,
+                "source local borrow omitted its exact function-storage upper-bound input"
+            );
+        }
+        Ok(())
+    })?;
     Ok(())
 }

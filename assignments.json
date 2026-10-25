@@ -275,6 +275,9 @@
       "path": "pa18",
       "title": "Generics",
       "mode": "--emit-lowir",
+      "additional_modes": [
+        "--emit-patterns"
+      ],
       "status": "implemented-draft",
       "scope": "Type/const substitution, generic bodies and demanded monomorphization",
       "test_families": [

@@ -41,6 +41,7 @@ mod receivers;
 mod self_constructors;
 mod slice_methods;
 mod slice_paths;
+mod structural_owners;
 mod trait_paths;
 mod trait_regions;
 mod traits;
@@ -225,7 +226,11 @@ struct Checker<'a> {
 /// Rejects recursive aliases, invalid signatures and unsupported annotation semantics.
 pub fn analyze(report: &Report) -> Result<Declarations, Error> {
     let mut checker = Checker::new(report)?;
-    checker.run().map_err(|error| report.diagnostic(error))?;
+    checker.run().map_err(|error| {
+        checker
+            .facts
+            .retain_error_warnings(report.diagnostic(error))
+    })?;
     Ok(checker.facts)
 }
 /// Resolve declarations with the executable pipeline's checked constant service.
@@ -237,7 +242,11 @@ pub fn analyze_with_executor(
 ) -> Result<Declarations, Error> {
     let mut checker = Checker::new(report)?;
     checker.facts.set_constant_executor(executor);
-    checker.run().map_err(|error| report.diagnostic(error))?;
+    checker.run().map_err(|error| {
+        checker
+            .facts
+            .retain_error_warnings(report.diagnostic(error))
+    })?;
     Ok(checker.facts)
 }
 impl<'a> Checker<'a> {
@@ -250,12 +259,15 @@ impl<'a> Checker<'a> {
             ));
         }
         let mut facts = Declarations::new(report)?;
-        let linkage_sources = foreign::collect(report, &mut facts.foreign)?;
+        let linkage_sources = foreign::collect(report, &mut facts.foreign)
+            .map_err(|error| facts.retain_error_warnings(error))?;
+        let target_feature_sources = call_traits::target_feature_sources(report)
+            .map_err(|error| facts.retain_error_warnings(error))?;
         let mut checker = Self {
             annotation_inputs: annotations::Inputs::default(),
             linkage_sources,
             call_paths: crate::support::hash::HashSet::default(),
-            target_feature_sources: call_traits::target_feature_sources(report)?,
+            target_feature_sources,
             method_queries: crate::support::hash::HashMap::default(),
             inherent_headers: inherent_headers::Pending::default(),
             impl_headers: impl_headers::Pending::default(),
@@ -293,18 +305,26 @@ impl<'a> Checker<'a> {
             constant_binders: crate::support::hash::HashMap::default(),
             owner_binders: crate::support::hash::HashMap::default(),
         };
-        if let Some(imported) = &report.resolution.crates {
+        checker
+            .import_states()
+            .map_err(|error| checker.facts.retain_error_warnings(error))?;
+        Ok(checker)
+    }
+}
+impl Checker<'_> {
+    fn import_states(&mut self) -> Result<(), Error> {
+        if let Some(imported) = &self.report.resolution.crates {
             for definition in imported.generic_definitions() {
                 let definition = definition.map_err(Error::unlocated)?;
-                match super::crates::source_readiness(&mut checker.facts, definition)? {
+                match super::crates::source_readiness(&mut self.facts, definition)? {
                     Some(super::crates::ImportedReadiness::Declaration) => {
-                        checker.states[definition.0 as usize] = State::Complete;
+                        self.states[definition.0 as usize] = State::Complete;
                         continue;
                     }
                     Some(super::crates::ImportedReadiness::ValueBinding) => continue,
                     None => {}
                 }
-                if checker
+                if self
                     .facts
                     .definitions
                     .get(definition.0 as usize)
@@ -314,25 +334,23 @@ impl<'a> Checker<'a> {
                         "imported generic declaration lacks its completed canonical type",
                     ));
                 }
-                checker.states[definition.0 as usize] = State::Complete;
+                self.states[definition.0 as usize] = State::Complete;
             }
             for (definition, _) in imported.functions() {
-                checker.states[definition.0 as usize] = State::Complete;
+                self.states[definition.0 as usize] = State::Complete;
             }
             for (definition, _) in imported.constants() {
-                checker.states[definition.0 as usize] = State::Complete;
+                self.states[definition.0 as usize] = State::Complete;
             }
             for (definition, _) in imported.records() {
-                checker.states[definition.0 as usize] = State::Complete;
+                self.states[definition.0 as usize] = State::Complete;
             }
             for (definition, _) in imported.statics() {
-                checker.states[definition.0 as usize] = State::Complete;
+                self.states[definition.0 as usize] = State::Complete;
             }
         }
-        Ok(checker)
+        Ok(())
     }
-}
-impl Checker<'_> {
     fn run(&mut self) -> Result<(), Error> {
         self.validate_foreign_blocks()?;
         self.reserve_member_parents()?;

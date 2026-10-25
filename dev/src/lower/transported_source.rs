@@ -168,6 +168,7 @@ impl Source {
         let inputs = obligation_rows::emit(
             &mut self.stage,
             facts,
+            body,
             definition,
             input,
             context,

@@ -790,6 +790,464 @@
         "result": 153,
         "type": "u64"
       }
+    },
+    {
+      "path": "tests/spec/must-use/function-discard-default.rs",
+      "source_sha256": "c0cfadf62ee6ac8327924b08bdfae16b11af4f4a2510437e998c2bedcc18ccdd",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs",
+      "warnings": [
+        "unused_must_use"
+      ]
+    },
+    {
+      "path": "tests/spec/must-use/function-discard-deny.rs",
+      "source_sha256": "d15c38875d4e2f165dfd39700630314633100c8573ff53fc9770d2a99618d530",
+      "exit_status": 1,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/function-discard-warn.rs",
+      "source_sha256": "59aebd332dc9c95d2c8af47c34acad8000ce29a98ba345c56b6c0d4f079c0efe",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs",
+      "warnings": [
+        "unused_must_use"
+      ]
+    },
+    {
+      "path": "tests/spec/must-use/function-discard-allow.rs",
+      "source_sha256": "e4c23b3e538831c6c16063342811cc7d2847e3f8da28268e77fb7be329dac682",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/function-explicit-let.rs",
+      "source_sha256": "c59adcda868322f3daab4e8a514b7743302dbb65d4deffa8528ba0cf41638c59",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/function-pointer-discard.rs",
+      "source_sha256": "a97d9ad5bbc78c5d58db44c4328453b265ff1f2aa7351b190c4cb8780793df1e",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/direct-item-variable-discard.rs",
+      "source_sha256": "5f189d3323b368dc06d6fe844f8a5862c81e963e9b3ba018cdfa1e6cfd994372",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/outer-deny-inner-allow.rs",
+      "source_sha256": "3aa82d985bcec73a3a9bf3834e516e9f1d191f3b89ccdc8bf719d92586fe5c1c",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/outer-forbid-inner-allow.rs",
+      "source_sha256": "69cb1abe573a5a6d47d7dae3ebe1f60677665490eef9f4661eb18c0d6e08d87a",
+      "exit_status": 1,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/outer-forbid-inner-warn.rs",
+      "source_sha256": "5d6e5fb32c4833e1b4d9ce4d38658dfeef9e6fd65afaca354b267e0eeb56ad90",
+      "exit_status": 1,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/duplicate-default-warn.rs",
+      "source_sha256": "6398997f926e821e79e411cb62019db122d55005fc4c3d202dd1190fd7e7ac1b",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs",
+      "warnings": [
+        "unused_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/must-use/duplicate-deny.rs",
+      "source_sha256": "978999995ee86b88ff8ed712af832fe084aa57032e6eade83b2f3e2e606cf8ea",
+      "exit_status": 1,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/malformed-list.rs",
+      "source_sha256": "bf5e8633580d5737d21b214b4724871d06cad0e5d02d9e8801a2a22b1608b5af",
+      "exit_status": 1,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/nonstring-message.rs",
+      "source_sha256": "9db5012af6b923cc7f8215869e8f4639a8f8a5dfd97acda4227dcd2ab3d9a818",
+      "exit_status": 1,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/unsafe-wrapper.rs",
+      "source_sha256": "340bf7a0b65c3d406a60a6fe7dec2a89dd578824a4008ba621e16a19bd95dd89",
+      "exit_status": 1,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/inline-attributes/function-hint.rs",
+      "source_sha256": "1ef1f9988608e83c620ef304bd7a79827a7da831775f05eb1a0c2ae97f4893f6",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/inline-attributes/function-always.rs",
+      "source_sha256": "56f0131c923ac8ddc3151fdd40036e883a73df647839226bafc760c5fbf2c4f0",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/inline-attributes/function-never.rs",
+      "source_sha256": "9e76fba894da57a59ee45ffa341db8a5ec629301b26410b196debc5f6e18d237",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/inline-attributes/duplicate-default.rs",
+      "source_sha256": "97e15f3bf02b90e049cd140e7bb82b0233ee046cfbbe4b36feaaff83c4298df6",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs",
+      "warnings": [
+        "unused_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/inline-attributes/duplicate-deny.rs",
+      "source_sha256": "d58dc631780d40518226592bc468e3a480557a274ea5b96e165957675a855172",
+      "exit_status": 1,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/inline-attributes/empty-list.rs",
+      "source_sha256": "5effc2e5d1703eb2cb0306fe7e0f7a2ce028dcc0129a842e137042a02a09fe0d",
+      "exit_status": 1,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/inline-attributes/unsafe-wrapper.rs",
+      "source_sha256": "3ce333ecb4bcaa041a52a2777a8b344bcb343e2f1bcfcc56c6a1a073652c9712",
+      "exit_status": 1,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/test-removal/bootstrap-import-alias.rs",
+      "source_sha256": "153b999ebcaf1810c0dc55de1a7cc8315824746aeec0b1a68d310cedd0e0767f",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/test-removal/bootstrap-qualified-reexport.rs",
+      "source_sha256": "17287ec102a3c4cf9adcae8fc92a852a0878154ff5dc6ee121d133e56fda0857",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/test-removal/bootstrap-forward-alias-chain.rs",
+      "source_sha256": "080a15a31b05d6991665643c1a8ca8253beff5327ca59d517de5d44bf1640bbd",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/test-removal/removed-name-does-not-reserve-binding.rs",
+      "source_sha256": "050216dd33443f67f3da528c8e8c3153c118561ccbb937ebdd05260c86476c71",
+      "exit_status": 0,
+      "features": [
+        "pa10.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-internal-wrong-owner.rs",
+      "source_sha256": "9bdd512d478bab3d36bfa8c09e14b07e2ed97818a3b51b111933b66d06dd4516",
+      "exit_status": 0,
+      "features": [
+        "pa10.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "warnings": [
+        "unused_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-stable-wrong-owner.rs",
+      "source_sha256": "88fbf361962d89eb374cde2b0ce00a8dc155a963a249c03182760a39ecb10ed2",
+      "exit_status": 0,
+      "features": [
+        "pa10.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "warnings": [
+        "misplaced_diagnostic_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/discard-domains/unit-dereference.rs",
+      "source_sha256": "4b662a2b2b8652af3630d596e14fb067811ee4678075dbc7814989ecfc57eee8",
+      "exit_status": 0,
+      "features": [
+        "pa10.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs"
+    },
+    {
+      "path": "tests/spec/discard-domains/unit-borrow-still-must-use.rs",
+      "source_sha256": "f7326e1db50788a81b3314d5624882f0299929dfd356b357f977c2462d8f2099",
+      "exit_status": 0,
+      "features": [
+        "pa10.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "warnings": [
+        "unused_must_use"
+      ]
+    },
+    {
+      "path": "tests/spec/discard-domains/unit-marked-function-still-must-use.rs",
+      "source_sha256": "0c4f38443d5261584c8be06f242db9f0e54e8712ae4bb23cf9f39e13cf175400",
+      "exit_status": 0,
+      "features": [
+        "pa10.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "warnings": [
+        "unused_must_use"
+      ]
     }
   ]
 }

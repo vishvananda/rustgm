@@ -32,11 +32,16 @@ use crate::{
     },
 };
 use std::collections::VecDeque;
+mod application_kind;
+pub(crate) mod attribute_effects;
 pub(super) mod attributes;
 mod bindings;
 mod cfg_gates;
+mod decorated_calls;
 mod diagnostics;
 mod eager;
+pub(crate) mod removed_functions;
+use application_kind::CallGrammar;
 mod format_values;
 mod location;
 mod panic_dispatch;
@@ -61,7 +66,17 @@ pub enum Body {
 #[derive(Clone, Copy)]
 enum MacroTarget {
     Declarative(usize),
+    SourceAttribute(usize),
     Builtin(Builtin),
+}
+impl MacroTarget {
+    fn kind(self) -> builtin::BuiltinKind {
+        match self {
+            Self::Declarative(_) => builtin::BuiltinKind::Bang,
+            Self::SourceAttribute(_) => builtin::BuiltinKind::Attribute,
+            Self::Builtin(role) => role.kind(),
+        }
+    }
 }
 pub struct Definition {
     pub node: Option<NodeKey>,
@@ -98,6 +113,7 @@ pub struct Report {
     pub(crate) imports: Option<super::imports::Work>,
     pub(crate) pending: Vec<super::index::Pending>,
     pub(crate) names_resolved: bool,
+    pub(crate) attribute_effects: Option<Box<attribute_effects::Effects>>,
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
 struct Visit {
@@ -133,13 +149,19 @@ enum State {
     Waiting,
     InProgress,
     Complete,
+    Removed,
     Failed,
+}
+impl State {
+    fn finished(self) -> bool {
+        matches!(self, Self::Complete | Self::Removed)
+    }
 }
 struct Call {
     visit: Visit,
     file: FileId,
     capture: u32,
-    grammar: MacroContext,
+    grammar: CallGrammar,
     absolute: bool,
     path: super::paths::Saved,
     scope: Scope,
@@ -177,6 +199,7 @@ struct Engine<'a, S> {
     recursion_limit: usize,
     builtin_definitions: Vec<Option<usize>>,
     cfg_memo: Option<Box<permission_session::Memo>>,
+    attribute_effects: Option<Box<attribute_effects::Effects>>,
 }
 /// Expand textual macro invocations, including generated syntax and modules.
 /// PA8's path-resolution and hygiene integration builds on this retained state.
@@ -230,51 +253,18 @@ pub fn analyze_with_context(
     config: &Config,
     context: &super::bindings::Context,
 ) -> Result<Report, Error> {
-    let mut loader = Loader::with_context(root, sources, config, context)?;
-    if !loader.package.uses_source_bindings() {
-        loader.package.crate_name =
-            attributes::crate_name(&loader.package, context.crate_name.as_deref())?;
-    }
-    loader.isolate_expansions();
-    let root = loader.package.modules[0].root;
-    let recursion_limit = attributes::recursion_limit(&loader.package)?;
-    let paths = paths::Paths::new(&mut loader.package, context.dependencies.clone())?;
-    let mut engine = Engine {
-        loader,
-        config,
-        definitions: Vec::new(),
-        invocations: Vec::new(),
-        captures: Registry::default(),
-        scopes: Scopes::default(),
-        head: Scope::ROOT,
-        calls: Vec::new(),
-        ready: VecDeque::new(),
-        paths,
-        workspace: Workspace::default(),
-        work: Vec::new(),
-        frames: Vec::new(),
-        children: Vec::new(),
-        recursion_limit,
-        builtin_definitions: vec![None; Builtin::ALL.len()],
-        cfg_memo: None,
-    };
-    let result = engine
-        .push_visit(Visit {
-            module: ModuleId(0),
-            node: root,
-            owner: None,
-            in_block: false,
-            depth: 0,
-            introduction: ExpansionId(0),
-            path_scope: ScopeId(0),
-            eager: None,
-            include: None,
-            foreign: None,
-        })
-        .and_then(|()| engine.run());
+    let mut engine = Engine::create(root, sources, config, context)?;
+    let result = engine.run();
     result.map_err(|error| engine.diagnostic(error))?;
     super::bindings::validate_features(&engine.loader.package)
         .map_err(|error| engine.diagnostic(error))?;
+    if let Some(producer) = engine
+        .attribute_effects
+        .as_deref_mut()
+        .and_then(|effects| effects.policy.as_mut())
+    {
+        producer.finish();
+    }
     let (resolution, imports, pending) = engine.paths.finish();
     let report = Report {
         package: engine.loader.package,
@@ -286,12 +276,66 @@ pub fn analyze_with_context(
         imports: Some(imports),
         pending,
         names_resolved: false,
+        attribute_effects: engine.attribute_effects,
     };
     super::bindings::validate_crate_options(&report).map_err(|error| report.diagnostic(error))?;
     cfg_gates::validate_attributes(&report)?;
     Ok(report)
 }
-impl<S: Sources> Engine<'_, S> {
+impl<'a, S: Sources> Engine<'a, S> {
+    /// Shared actual creation/initial-root producer; tests borrow this same
+    /// engine after a failed use without reconstructing its worklist or owner.
+    fn create(
+        root: InputFile,
+        sources: &'a mut S,
+        config: &'a Config,
+        context: &super::bindings::Context,
+    ) -> Result<Self, Error> {
+        let mut loader = Loader::with_context(root, sources, config, context)?;
+        if !loader.package.uses_source_bindings() {
+            loader.package.crate_name =
+                attributes::crate_name(&loader.package, context.crate_name.as_deref())?;
+        }
+        loader.isolate_expansions();
+        let root = loader.package.modules[0].root;
+        let recursion_limit = attributes::recursion_limit(&loader.package)?;
+        let paths = paths::Paths::new(&mut loader.package, context.dependencies.clone())?;
+        let mut engine = Self {
+            loader,
+            config,
+            definitions: Vec::new(),
+            invocations: Vec::new(),
+            captures: Registry::default(),
+            scopes: Scopes::default(),
+            head: Scope::ROOT,
+            calls: Vec::new(),
+            ready: VecDeque::new(),
+            paths,
+            workspace: Workspace::default(),
+            work: Vec::new(),
+            frames: Vec::new(),
+            children: Vec::new(),
+            recursion_limit,
+            builtin_definitions: vec![None; Builtin::ALL.len()],
+            attribute_effects: None,
+            cfg_memo: None,
+        };
+        engine
+            .push_visit(Visit {
+                module: ModuleId(0),
+                node: root,
+                owner: None,
+                in_block: false,
+                depth: 0,
+                introduction: ExpansionId(0),
+                path_scope: ScopeId(0),
+                eager: None,
+                include: None,
+                foreign: None,
+            })
+            .map_err(|error| engine.diagnostic(error))?;
+        Ok(engine)
+    }
     fn run(&mut self) -> Result<(), Error> {
         self.scan()?;
         while let Some(index) = self.ready.pop_front() {
@@ -305,19 +349,19 @@ impl<S: Sources> Engine<'_, S> {
             .or_else(|| {
                 self.calls
                     .iter()
-                    .position(|call| call.state != State::Complete && call.eager.is_none())
+                    .position(|call| !call.state.finished() && call.eager.is_none())
             })
-            .or_else(|| {
-                self.calls
-                    .iter()
-                    .position(|call| call.state != State::Complete)
-            })
+            .or_else(|| self.calls.iter().position(|call| !call.state.finished()))
         {
             if let Some(error) = self.calls[index].error.take() {
                 return Err(error);
             }
-            return Err(self.calls[index]
-                .diagnostic("unresolved macro is not in textual scope or path scope"));
+            let message = if matches!(self.calls[index].grammar, CallGrammar::Attribute) {
+                "unresolved attribute macro is not in path scope"
+            } else {
+                "unresolved macro is not in textual scope or path scope"
+            };
+            return Err(self.calls[index].diagnostic(message));
         }
         if let Some(error) = self.paths.take_error() {
             return Err(error);
@@ -332,7 +376,15 @@ impl<S: Sources> Engine<'_, S> {
     }
     /// Queue a traversal root in its own frame.
     fn push_visit(&mut self, visit: Visit) -> Result<(), Error> {
+        self.push_visit_with_tail(visit, None)
+    }
+    fn push_visit_with_tail(
+        &mut self,
+        visit: Visit,
+        tail: Option<super::lint_policy::producer::Tail>,
+    ) -> Result<(), Error> {
         let frame = self.frame_mark()?;
+        self.lint_set_frame(frame, visit, tail)?;
         self.work.push(Work::Frames(frame));
         self.frames.push(visit);
         self.work.push(Work::Visit {
@@ -360,7 +412,16 @@ impl<S: Sources> Engine<'_, S> {
                         error
                     })?;
                 }
-                Work::Frames(mark) => self.frames.truncate(mark as usize),
+                Work::Frames(mark) => {
+                    self.frames.truncate(mark as usize);
+                    if let Some(producer) = self
+                        .attribute_effects
+                        .as_deref_mut()
+                        .and_then(|effects| effects.policy.as_mut())
+                    {
+                        producer.truncate(mark);
+                    }
+                }
                 Work::Restore(head) => self.head = head,
                 Work::Finish { output, restore } => {
                     if let Some(output) = output {
@@ -429,6 +490,7 @@ impl<S: Sources> Engine<'_, S> {
         path: NodeId,
         capture: u32,
         grammar: MacroContext,
+        frame: u32,
     ) -> Result<(), Error> {
         let (absolute, path_names) = self.macro_path(file, path)?;
         let offset = self
@@ -464,7 +526,7 @@ impl<S: Sources> Engine<'_, S> {
             visit,
             file,
             capture,
-            grammar,
+            grammar: CallGrammar::Bang(grammar),
             absolute,
             path: path_names.save(),
             scope,
@@ -477,6 +539,7 @@ impl<S: Sources> Engine<'_, S> {
             eager: None,
             notified: false,
         });
+        self.lint_save_call(index, frame)?;
         Ok(())
     }
     fn attempt(&mut self, index: usize) -> Result<(), Error> {
@@ -495,18 +558,13 @@ impl<S: Sources> Engine<'_, S> {
         };
         if let Some(definition) = found {
             let call = &self.calls[index];
-            #[cfg(test)]
-            if matches!(self.definitions[definition].body, Body::Scoped { .. }) {
-                crate::resolve::index::unavailable_macros::observation::note(
-                    crate::resolve::index::unavailable_macros::observation::Event::Selected(
-                        self.scoped_snapshot(definition),
-                    ),
-                );
-            }
-            self.require_invocable(definition, call.file, call.offset)?;
+            self.require_call_definition(call, definition)?;
         }
         if let Some(previous) = self.calls[index].selected {
             if found == Some(previous) {
+                if self.calls[index].state == State::Removed {
+                    return Ok(());
+                }
                 if let Some(arguments) = self.calls[index].eager.as_ref() {
                     if arguments.pending == 0 {
                         self.finish_eager(index, previous)?;
@@ -527,6 +585,12 @@ impl<S: Sources> Engine<'_, S> {
             self.calls[index].state = State::Waiting;
             return Ok(());
         };
+        if matches!(
+            self.definitions[definition].body,
+            Body::Builtin(Builtin::Test)
+        ) {
+            return self.remove_test_function(index, definition);
+        }
         self.calls[index].state = State::InProgress;
         if matches!(self.definitions[definition].body, Body::Builtin(builtin) if builtin.eager()) {
             return self.begin_eager(index, definition);
@@ -536,33 +600,16 @@ impl<S: Sources> Engine<'_, S> {
             call.visit,
             call.file,
             call.capture,
-            call.grammar,
+            call.grammar
+                .bang()
+                .map_err(|message| call.diagnostic(message))?,
             call.scope,
             call.output,
             call.visit.introduction,
         );
         let introduction = match self.invoke(visit, file, capture, grammar, definition, parent) {
             Ok(context) => context,
-            Err(error) => {
-                self.calls[index].state = State::Failed;
-                let mut error = error;
-                error.expansions.push(diagnostics::frame(
-                    &self.loader.package,
-                    &self.definitions[definition],
-                    Location {
-                        file,
-                        span: self
-                            .loader
-                            .package
-                            .unit(file)
-                            .configured
-                            .ast
-                            .node(visit.node)
-                            .span,
-                    },
-                ));
-                return Err(error);
-            }
+            Err(error) => return Err(self.failed_invocation(index, definition, error)),
         };
         self.calls[index].selected = Some(definition);
         self.work.push(Work::Finish {
@@ -570,11 +617,15 @@ impl<S: Sources> Engine<'_, S> {
             restore: self.head,
         });
         self.head = scope;
-        self.push_visit(Visit {
-            depth: visit.depth + 1,
-            introduction,
-            ..visit
-        })?;
+        let tail = self.lint_call_tail(index)?;
+        self.push_visit_with_tail(
+            Visit {
+                depth: visit.depth + 1,
+                introduction,
+                ..visit
+            },
+            tail,
+        )?;
         self.scan()?;
         self.completed(index)
     }
@@ -585,15 +636,29 @@ impl<S: Sources> Engine<'_, S> {
     )]
     fn visit(&mut self, mut visit: Visit, frame: u32) -> Result<(), Error> {
         let module = &self.loader.package.modules[visit.module.0 as usize];
-        let file = module.file;
+        let (file, module_root) = (module.file, module.root);
         let unit = self.loader.package.unit(file);
         if !unit.configured.active[visit.node.get() as usize] {
             return Ok(());
         }
         let kind = unit.configured.ast.node(visit.node).kind;
+        if matches!(kind, Kind::Attributed { .. }) && self.attribute_call(visit, file, frame)? {
+            return Ok(());
+        }
+        let tail = if matches!(kind, Kind::Attributed { .. }) {
+            self.lint_owner(visit, frame)?
+        } else {
+            self.lint_frame(
+                frame,
+                NodeKey {
+                    file,
+                    node: visit.node,
+                },
+            )?
+        };
         let mut item_scope = None;
         if let Kind::Item(index) = kind {
-            let item = unit.configured.ast.items[index as usize];
+            let item = self.loader.package.unit(file).configured.ast.items[index as usize];
             if let ItemKind::MacroRules { capture } = item.kind {
                 return self.define(visit, file, index, capture);
             }
@@ -614,8 +679,8 @@ impl<S: Sources> Engine<'_, S> {
                     (self.head, visit.introduction),
                 );
             }
-            if matches!(item.kind, ItemKind::Module { .. }) && visit.node != module.root {
-                return self.module(visit, file, item.visibility);
+            if matches!(item.kind, ItemKind::Module { .. }) && visit.node != module_root {
+                return self.module(visit, file, item.visibility, tail);
             }
             if !matches!(item.kind, ItemKind::Module { .. }) {
                 item_scope = Some(self.paths.item(
@@ -665,7 +730,7 @@ impl<S: Sources> Engine<'_, S> {
             if self.invocations.len() >= 1_000_000 {
                 return Err(Error::at(file, 0, "crate expansion work budget exceeded"));
             }
-            return self.register(visit, file, path, capture, context);
+            return self.register(visit, file, path, capture, context, frame);
         }
         // The alternative of an `if` stays outside the scope of its condition.
         let mut outside = None;
@@ -743,13 +808,14 @@ impl<S: Sources> Engine<'_, S> {
                     path_scope,
                     ..child
                 },
+                tail,
             )?;
             self.work.push(Work::Visit {
                 node: otherwise,
                 frame: shared,
             });
         }
-        let shared = self.share_frame(frame, child)?;
+        let shared = self.share_frame(frame, child, tail)?;
         self.work
             .extend(self.children.iter().rev().map(|node| Work::Visit {
                 node: *node,
@@ -759,21 +825,34 @@ impl<S: Sources> Engine<'_, S> {
     }
     /// The frame for children visited with `child`: the parent's own frame
     /// when they inherit it unchanged, otherwise a new one released after them.
-    fn share_frame(&mut self, frame: u32, child: Visit) -> Result<u32, Error> {
+    fn share_frame(
+        &mut self,
+        frame: u32,
+        child: Visit,
+        tail: Option<super::lint_policy::producer::Tail>,
+    ) -> Result<u32, Error> {
         let parent = self.frames[frame as usize];
         if (Visit {
             node: parent.node,
             ..child
         }) == parent
+            && self.lint_frame(frame, self.visit_key(child))? == tail
         {
             return Ok(frame);
         }
         let mark = self.frame_mark()?;
         self.work.push(Work::Frames(mark));
+        self.lint_set_frame(mark, child, tail)?;
         self.frames.push(child);
         Ok(mark)
     }
-    fn module(&mut self, visit: Visit, file: FileId, visibility: Visibility) -> Result<(), Error> {
+    fn module(
+        &mut self,
+        visit: Visit,
+        file: FileId,
+        visibility: Visibility,
+        tail: Option<super::lint_policy::producer::Tail>,
+    ) -> Result<(), Error> {
         let child = self.loader.load_module(
             visit.module,
             visit.node,
@@ -797,16 +876,19 @@ impl<S: Sources> Engine<'_, S> {
         if !self.flags(file, visit.owner)?.macro_use {
             self.work.push(Work::Restore(self.head));
         }
-        self.push_visit(Visit {
-            module: child,
-            node: self.loader.package.modules[child.0 as usize].root,
-            owner: None,
-            in_block: false,
-            include: None,
-            foreign: None,
-            path_scope,
-            ..visit
-        })
+        self.push_visit_with_tail(
+            Visit {
+                module: child,
+                node: self.loader.package.modules[child.0 as usize].root,
+                owner: None,
+                in_block: false,
+                include: None,
+                foreign: None,
+                path_scope,
+                ..visit
+            },
+            tail,
+        )
     }
     fn define(
         &mut self,
@@ -912,10 +994,13 @@ impl<S: Sources> Engine<'_, S> {
     }
     fn lookup_call(&mut self, index: usize) -> Result<Option<usize>, Error> {
         let call = &self.calls[index];
+        if matches!(call.grammar, CallGrammar::Attribute) {
+            decorated_calls::validate(&self.loader.package, &self.paths.state.facts, call)?;
+        }
         if call.absolute {
             return Err(call.diagnostic("external macro paths require external metadata"));
         }
-        if call.path.len() == 1 {
+        if matches!(call.grammar, CallGrammar::Bang(_)) && call.path.len() == 1 {
             let name = call.path[0];
             match (bindings::Bindings {
                 definitions: &self.definitions,
@@ -954,7 +1039,9 @@ impl<S: Sources> Engine<'_, S> {
         let call = &self.calls[index];
         let target = self.paths.lookup(&mut self.loader.package, call, index)?;
         match target {
-            Some(MacroTarget::Declarative(index)) => Ok(Some(index)),
+            Some(MacroTarget::Declarative(index) | MacroTarget::SourceAttribute(index)) => {
+                Ok(Some(index))
+            }
             Some(MacroTarget::Builtin(builtin)) => self.builtin_definition(builtin).map(Some),
             None => Ok(None),
         }
@@ -1227,7 +1314,7 @@ impl<S: Sources> Engine<'_, S> {
             .node(visit.node)
             .span
             .start;
-        self.require_invocable(definition, file, offset)?;
+        self.require_invocable(definition, builtin::BuiltinKind::Bang, file, offset)?;
         let docs = matches!(
             self.definitions[definition].body,
             Body::Builtin(Builtin::Stringify)

@@ -8500,6 +8500,66 @@
         "kind": "codegen",
         "reason": "The empty entrypoint does not exercise the generic body; this control checks its validity without claiming runtime coverage."
       }
+    },
+    {
+      "path": "tests/spec/must-use/closure-expression-warn.rs",
+      "source_sha256": "3df19f157190f2c19955ee34107b4c9c3e2e22a373bc8141c063fe1024bbe53d",
+      "exit_status": 0,
+      "features": [
+        "pa24.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs",
+      "warnings": [
+        "unused_must_use"
+      ],
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/must-use/closure-variable-warn.rs",
+      "source_sha256": "46ec45b10cfa294df5b0f09b5f0b2a22a2ba86cf1033af315d5f35b857db223b",
+      "exit_status": 0,
+      "features": [
+        "pa24.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs",
+      "warnings": [
+        "unused_must_use"
+      ],
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/discard-domains/tuple-two-closures.rs",
+      "source_sha256": "57cc0f403b9e010eeb6ae234ff5a9a7c435fde1a9ef79da103d003e3c16757ff",
+      "exit_status": 0,
+      "features": [
+        "pa24.discard-domains"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "warnings": [
+        "unused_must_use"
+      ],
+      "native": {
+        "outcome": "pass"
+      }
     }
   ]
 }

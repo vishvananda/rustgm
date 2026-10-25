@@ -37,6 +37,7 @@ pub(in crate::resolve) enum Event {
         key: NodeKey,
     },
     Selected(Snapshot),
+    Denied(Snapshot),
 }
 #[derive(Default)]
 struct Trace {
@@ -151,7 +152,7 @@ fn assert_prepared(trace: &Trace, width: usize) -> TestResult<usize> {
             Event::Published { module, key } => {
                 assert!(published.insert((*module, *key)));
             }
-            Event::Selected(_) => {
+            Event::Selected(_) | Event::Denied(_) => {
                 return Err("unused declaration executed".into());
             }
         }
@@ -313,3 +314,6 @@ mod authority;
 
 #[path = "format_declarations.rs"]
 mod formatting;
+
+#[path = "attribute_declarations.rs"]
+mod attributes;

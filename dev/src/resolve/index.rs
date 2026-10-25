@@ -380,6 +380,10 @@ impl Resolver<'_> {
             self.facts.definitions.push(definition);
             return Ok(id);
         }
+        if self.retains_inherent_collision(&definition, key)? {
+            self.facts.definitions.push(definition);
+            return Ok(id);
+        }
         let node = definition.node;
         Err(Error::at(
             node.map_or(FileId(0), |n| n.file),

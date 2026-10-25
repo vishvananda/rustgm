@@ -1,7 +1,22 @@
 # Private signature cursor checkpoint
 
-This source checkpoint is unqualified. Its focused remote controls have not run.
-It builds on the qualified unpaid reservation checkpoint on `5f641fa0`.
+This source checkpoint is unqualified and builds on the qualified unpaid
+reservation checkpoint on `5f641fa0`. Remote CI 40181876733 passed formatting,
+audit, strict Clippy and eight of nine controls on `63f342f5`; the scaling setup
+exposed the provenance-input omission below. The current source fix is pending
+focused qualification, with that failure retained.
+
+The flat-reference setup exposed an actual export omission: the original region
+checker proved raw Contract inputs together with typed CFG place-provenance
+requests, but export retained only the Contract inputs. The shared place-bounds
+visitor now serves both the existing proof-vector adapter and export. Export
+streams the actual LocalBorrow and reborrow Outlives requests into existing raw
+input rows once per authenticated collected original. It preserves immutable
+Contract identity, proof adapter ordering and the provenance work limit. It
+charges actual traversal, emitted ancestry and scratch-capacity growth before
+allocation; recipe lookup never reruns that CFG traversal. Removed or replaced
+actual local-borrow rows must still fail structural coverage. Two existing
+ordinary proof controls are included because the typed producer is shared.
 
 The next private consumer is `Session::signature_pair`. It consumes and returns
 the same boxed owner of the real resolver report, declaration store and frozen
@@ -51,7 +66,7 @@ ready-signature interning remain PA29 closure requirements. The earlier
 nongeneric zero-lifetime export failure is also retained; the real unused
 generic formal invokes the actual lifetime-scheme producer and stays undemanded.
 
-All four public Functions admission guards and metadata files are unchanged.
+All four public Functions admission guards and wire/schema/codec files are unchanged.
 No semantic Header, environment, callable template, body allocation, proof,
 public name/role, Provided Graph or imported default execution is published.
 Attribute and UB-policy transport remain separate explicit requirements.

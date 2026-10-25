@@ -2,6 +2,7 @@
 """Independent source-to-LowIR execution against pinned rustc and explicit outcomes."""
 import argparse
 import os
+import re
 from concurrent.futures import ThreadPoolExecutor
 import json
 from pathlib import Path
@@ -15,11 +16,24 @@ from course import ROOT, case_environment, library_arguments, load_cases, run_ca
 from check_syntax import rustc_arguments
 
 
+REVIEWED_WARNING_CODES = (
+    "unused_must_use", "unused_attributes", "duplicate_macro_attributes",
+    "malformed_diagnostic_attributes", "malformed_diagnostic_format_literals",
+    "misplaced_diagnostic_attributes",
+)
+
+
 def classification(case):
     metadata = case["rustc"]
     library = metadata["kind"] == "library"
     if metadata["kind"] not in ("program", "library") or metadata["status"] not in (0, 1):
         raise ValueError("native fixtures must declare complete program or library rustc outcomes")
+    if "warnings" in case:
+        warnings = case["warnings"]
+        if (case["exit_status"] != 0 or not isinstance(warnings, list) or not warnings
+                or any(code not in REVIEWED_WARNING_CODES for code in warnings)
+                or len(set(warnings)) != len(warnings)):
+            raise ValueError("successful warnings require explicit unique reviewed manifest codes")
     library_arguments(case, "--emit-lowir")
     if metadata["status"] != case["exit_status"] and not metadata.get("reason"):
         raise ValueError("acceptance differences require a phase-boundary reason")
@@ -84,6 +98,34 @@ def native_cases(manifest, cases):
     return selected
 
 
+def accepted_frontend(actual, expected_stderr=b"", declared_codes=()):
+    """Accept only the exact independently reviewed successful-warning reference."""
+    stdout, stderr, status = actual
+    if status != b"0\n" or not stdout:
+        raise ValueError("successful LowIR emission requires exit 0 and nonempty stdout")
+    if stderr != expected_stderr:
+        raise ValueError("successful frontend stderr differs from its declared reference")
+    if not expected_stderr:
+        if declared_codes:
+            raise ValueError("declared successful warnings have an empty diagnostic reference")
+        return
+    try:
+        lines = expected_stderr.decode("utf-8").splitlines()
+    except UnicodeError as error:
+        raise ValueError("successful frontend warnings must be UTF-8 diagnostics") from error
+    header = re.compile(r"warning\[(" + "|".join(REVIEWED_WARNING_CODES) + r")\]: file [0-9]+: [0-9]+: .+")
+    if not lines or header.fullmatch(lines[0]) is None:
+        raise ValueError("successful frontend stderr requires a declared warning code")
+    actual_codes = {match[1] for line in lines if (match := header.fullmatch(line))}
+    if actual_codes != set(declared_codes):
+        raise ValueError("successful warning codes differ from the explicit manifest declaration")
+    for line in lines:
+        if line.startswith(("ERROR:", "error:", "error[")):
+            raise ValueError("an error diagnostic cannot masquerade as a successful warning")
+        if line.startswith("warning[") and header.fullmatch(line) is None:
+            raise ValueError("successful frontend warning code was not reviewed")
+
+
 def check(app, jobs, stage="pa11"):
     version = subprocess.check_output(["rustc", "--version"], text=True)
     if not version.startswith("rustc 1.98.0 "):
@@ -128,8 +170,12 @@ def check(app, jobs, stage="pa11"):
                 (folder / ("frontend." + suffix)).write_bytes(data)
             if actual[2] != f"{case['exit_status']}\n".encode():
                 raise ValueError(f"frontend outcome differs: {actual[2]!r}, {actual[1]!r}")
-            if not case["exit_status"] and (actual[1] or not actual[0]):
-                raise ValueError("successful LowIR emission requires nonempty stdout and empty stderr")
+            if not case["exit_status"]:
+                warning_reference = Path(str(fixture) + ".ref.stderr")
+                accepted_frontend(actual, warning_reference.read_bytes(), case.get("warnings", []))
+                evidence["warning_reference"] = str(warning_reference.relative_to(ROOT))
+                evidence["warning_reference_sha256"] = digest(warning_reference)
+                evidence["declared_warning_codes"] = case.get("warnings", [])
             if case["exit_status"] and (actual[0] or not actual[1]):
                 raise ValueError("rejections require empty stdout and a diagnostic")
             library = case["rustc"]["kind"] == "library"

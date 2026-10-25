@@ -7,6 +7,7 @@ mod bodies;
 )]
 pub(crate) mod body_origin;
 mod builtins;
+mod collision_retention;
 mod container_scopes;
 mod contextual_lookup;
 pub mod crates;
@@ -78,3 +79,5 @@ pub fn analyze_expanded(
     report.names_resolved = true;
     Ok(report)
 }
+
+pub(crate) mod lint_policy;

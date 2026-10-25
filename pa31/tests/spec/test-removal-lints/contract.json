@@ -1,0 +1,194 @@
+{
+  "schema": 1,
+  "family": "pa31.test-removal-lints",
+  "maintainer_origin": "dev/tests/test_removal_lints.rs",
+  "cases": [
+    {
+      "name": "crate-allow",
+      "path": "pa31/tests/spec/test-removal-lints/crate-allow.rs",
+      "source_sha256": "531399df84167bc3ee81ef0cce5d6a154d064989f2ff5d6af132bd9edcc1cde1",
+      "status": 0,
+      "warnings": 0,
+      "error": null,
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/crate-allow.rs"
+    },
+    {
+      "name": "crate-warn",
+      "path": "pa31/tests/spec/test-removal-lints/crate-warn.rs",
+      "source_sha256": "2f140f2eddbdbf7680344f372d98b7c3243737947b21035e82cbc6b83a8a335e",
+      "status": 0,
+      "warnings": 1,
+      "error": null,
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/crate-warn.rs"
+    },
+    {
+      "name": "crate-deny",
+      "path": "pa31/tests/spec/test-removal-lints/crate-deny.rs",
+      "source_sha256": "6ad4f52d66e291dd64ddd6afd2ac9f71b690e8c7e75c0939862cfe6ffaca2adc",
+      "status": 1,
+      "warnings": 0,
+      "error": "duplicated test attribute",
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/crate-deny.rs"
+    },
+    {
+      "name": "crate-forbid",
+      "path": "pa31/tests/spec/test-removal-lints/crate-forbid.rs",
+      "source_sha256": "15c0d29b48ab2355fa18af487d40221a3b7f61ee2b6427388439a33df5356d9b",
+      "status": 1,
+      "warnings": 0,
+      "error": "duplicated test attribute",
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/crate-forbid.rs"
+    },
+    {
+      "name": "module-allow",
+      "path": "pa31/tests/spec/test-removal-lints/module-allow.rs",
+      "source_sha256": "7e1cf8c11bd6e2b27d829d46db73bd0402e0a3df89148b3ccd5505cb700bc697",
+      "status": 0,
+      "warnings": 0,
+      "error": null,
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/module-allow.rs"
+    },
+    {
+      "name": "owner-allow",
+      "path": "pa31/tests/spec/test-removal-lints/owner-allow.rs",
+      "source_sha256": "fa162dc11c9fc98e8955e6067992eb9b2c81913497fb3ba754e49af7fabcd469",
+      "status": 0,
+      "warnings": 1,
+      "error": null,
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/owner-allow.rs"
+    },
+    {
+      "name": "module-deny",
+      "path": "pa31/tests/spec/test-removal-lints/module-deny.rs",
+      "source_sha256": "585158683368c9d3d0471c24ab23b15c4df04ead19e9d7859089ed9283410cdb",
+      "status": 1,
+      "warnings": 0,
+      "error": "duplicated test attribute",
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/module-deny.rs"
+    },
+    {
+      "name": "owner-deny",
+      "path": "pa31/tests/spec/test-removal-lints/owner-deny.rs",
+      "source_sha256": "9f5aa5583dc5ef851c92ba1cb27b9c42f71a58d28c049e8464d131e862c9728d",
+      "status": 0,
+      "warnings": 1,
+      "error": null,
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/owner-deny.rs"
+    },
+    {
+      "name": "forbid-inner-allow",
+      "path": "pa31/tests/spec/test-removal-lints/forbid-inner-allow.rs",
+      "source_sha256": "8aaf4c0e34660540755718831b9eff7aef725d74460e268d393c571fa874688d",
+      "status": 1,
+      "warnings": 0,
+      "error": "duplicated test attribute",
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/forbid-inner-allow.rs"
+    },
+    {
+      "name": "deny-inner-allow",
+      "path": "pa31/tests/spec/test-removal-lints/deny-inner-allow.rs",
+      "source_sha256": "48db529be7b290a36381d4cc03c4b6b9e80787906aa38d9aa79339af55f0acbb",
+      "status": 1,
+      "warnings": 0,
+      "error": "duplicated test attribute",
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/deny-inner-allow.rs"
+    },
+    {
+      "name": "triple-default",
+      "path": "pa31/tests/spec/test-removal-lints/triple-default.rs",
+      "source_sha256": "b9eb41f4e9ba2a5d77996d1e8d60d638cb3b28d21d5bdbd38014e3c9a7e98511",
+      "status": 0,
+      "warnings": 1,
+      "error": null,
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/triple-default.rs"
+    },
+    {
+      "name": "duplicate-argument-after-first",
+      "path": "pa31/tests/spec/test-removal-lints/duplicate-argument-after-first.rs",
+      "source_sha256": "9b420d20879d8a3bc9d4c5e5030004547ab574ad9d6c2c9f84c4878bd4ed8fac",
+      "status": 0,
+      "warnings": 1,
+      "error": null,
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/duplicate-argument-after-first.rs"
+    },
+    {
+      "name": "duplicate-argument-first",
+      "path": "pa31/tests/spec/test-removal-lints/duplicate-argument-first.rs",
+      "source_sha256": "61ae943c7a89b55cce2ca2844d65b132daef6a437189c1cab49cf69d112ae2f5",
+      "status": 1,
+      "warnings": 1,
+      "error": "test attribute requires an outer word attribute",
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/duplicate-argument-first.rs"
+    },
+    {
+      "name": "alias-twice",
+      "path": "pa31/tests/spec/test-removal-lints/alias-twice.rs",
+      "source_sha256": "0b911e073cbb5cc7e2bc9673b286b31f73e7446f01785d2d25ce3773675d9ada",
+      "status": 0,
+      "warnings": 0,
+      "error": null,
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/alias-twice.rs"
+    },
+    {
+      "name": "alias-then-test",
+      "path": "pa31/tests/spec/test-removal-lints/alias-then-test.rs",
+      "source_sha256": "340063e9916f83f2373470f5000e1efc88137de2ea64ccb427af650a0ca9627b",
+      "status": 0,
+      "warnings": 1,
+      "error": null,
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/alias-then-test.rs"
+    },
+    {
+      "name": "test-then-alias",
+      "path": "pa31/tests/spec/test-removal-lints/test-then-alias.rs",
+      "source_sha256": "111117a600ddd55573540f471c71bc667b9bdf799756665c161bec4073a9c7a3",
+      "status": 0,
+      "warnings": 0,
+      "error": null,
+      "cfg_test": false,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/test-then-alias.rs"
+    },
+    {
+      "name": "cfg-test-no-harness",
+      "path": "pa31/tests/spec/test-removal-lints/cfg-test-no-harness.rs",
+      "source_sha256": "9c9328b64e257a130d288973709a594960dd02568434f9707ac798109e27858b",
+      "status": 0,
+      "warnings": 1,
+      "error": null,
+      "cfg_test": true,
+      "exact_source_oracle": "unrun",
+      "observed_origin": "obj/parallel/pa31/test-removal-lints-independent-v2/cfg-test-no-harness.rs"
+    }
+  ]
+}

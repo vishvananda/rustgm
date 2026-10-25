@@ -17210,6 +17210,293 @@
       },
       "maintainer_origin": "dev/tests/self_constructors.rs",
       "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/must-use/trait-concrete-discard.rs",
+      "source_sha256": "9e0863d335711d015c1bcfadcd795bd7ac35927caaa41f1adb9904c1354f9bd3",
+      "exit_status": 0,
+      "features": [
+        "pa19.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/trait-method-discard.rs",
+      "source_sha256": "f7aa257e141b512f798ef139b1c70a5c3b8b2f056c49456448aaddb2416b8e69",
+      "exit_status": 1,
+      "features": [
+        "pa19.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/must-use/inherent-method-discard.rs",
+      "source_sha256": "26337a811c0bd777aea9a44c2bd92c6cffd1297460b72eeede3f36f3d34586e0",
+      "exit_status": 1,
+      "features": [
+        "pa19.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/inline-attributes/trait-required.rs",
+      "source_sha256": "5524433840b6f9cba5b301be5a4a2ef8f72c277f445e0d1b57791b263490665e",
+      "exit_status": 0,
+      "features": [
+        "pa19.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs",
+      "warnings": [
+        "unused_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/inline-attributes/trait-provided.rs",
+      "source_sha256": "b7e89740410f5a9edbd08949b22a108f04e6b593c27183d9571b3629b8924da0",
+      "exit_status": 0,
+      "features": [
+        "pa19.attribute-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/attribute_contracts.rs"
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-internal-unused.rs",
+      "source_sha256": "1254d43539911f0915aadedbf6b36757bf3e5645dc0a9b16b673a78b9aa8c072",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-internal-selected.rs",
+      "source_sha256": "6832d50dd6910906a063705430304fb1f33ec06164bbe6ec4b0024191c2d525c",
+      "exit_status": 1,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-internal-unselected.rs",
+      "source_sha256": "3ae291081aa1ec27cc089f872c1d975990df3a5816a90dbb563a34b8e835d63d",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-stable-selected.rs",
+      "source_sha256": "25ba0c025c1c7c48cf87a5d0f68c2fbeb7b195d62381fe3e05349d7c8d54ebe0",
+      "exit_status": 1,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-no-gate.rs",
+      "source_sha256": "7a0ca2592d1a5695b25e6ff3a59045e4cc9c52e04d253ca4846e1d4996319f7b",
+      "exit_status": 1,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-empty.rs",
+      "source_sha256": "4494be91119055d470080ca9964ce34e46336e860860a97a51c5bff02f8270bc",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "warnings": [
+        "malformed_diagnostic_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-bare.rs",
+      "source_sha256": "3f937f7acb958fd53a3effcb31c5c4251ea32e29ba5fda9f554b7949789ea801",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "warnings": [
+        "malformed_diagnostic_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-unknown-option.rs",
+      "source_sha256": "e9329ab220085a74cda2d2cd361075fff3c67c0ab574f611f826822c76e33679",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "warnings": [
+        "malformed_diagnostic_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-nonstring.rs",
+      "source_sha256": "d3bf0cbaa243584ce0d2f1516ce37732829390d29ca77c612a6a4dd897b01cd8",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "warnings": [
+        "malformed_diagnostic_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-unknown-format.rs",
+      "source_sha256": "1d351203109399409ec7e3a919bb022ea16c2b5fe15e83d46272eb19b5edb0dc",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "warnings": [
+        "malformed_diagnostic_format_literals"
+      ]
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-duplicate.rs",
+      "source_sha256": "d6ae2dbfc7dbf5b26ce44a5087ffc18b65cd6b41e1d087ef926b54657efacf48",
+      "exit_status": 1,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-duplicate-option.rs",
+      "source_sha256": "f1730bafdcd19bbcc9bdb140d4de5985780e7937146945bc2b612ce36eba592a",
+      "exit_status": 0,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "warnings": [
+        "malformed_diagnostic_attributes"
+      ]
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-condition-selected.rs",
+      "source_sha256": "2a9986d710121811177aba5fed64c5962dad1aea6452624b5308179fc97e593d",
+      "exit_status": 1,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+    },
+    {
+      "path": "tests/spec/trait-diagnostics/diagnostic-condition-not-selected.rs",
+      "source_sha256": "808a1cefcff377be75b872c85dcc5ff1b1058baf6c4879de2d8d1d3c52a6ce37",
+      "exit_status": 1,
+      "features": [
+        "pa19.trait-diagnostics"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
     }
   ]
 }

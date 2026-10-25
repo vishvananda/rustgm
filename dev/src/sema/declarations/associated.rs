@@ -13,7 +13,7 @@ pub(super) struct Path {
     pub prefix: NodeKey,
     pub suffix: NodeKey,
     pub owner: Option<DefId>,
-    pub nominal: ItemId,
+    pub head: crate::types::subject_head::Head,
     pub name: NameId,
     pub scope: ScopeId,
     pub namespace: Namespace,

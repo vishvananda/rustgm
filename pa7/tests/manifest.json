@@ -1999,6 +1999,38 @@
         "kind": "program",
         "status": 1
       }
+    },
+    {
+      "path": "tests/spec/scope/cfg-test-disabled.rs",
+      "source_sha256": "b16ebe3c03fe49d80d7d016ad07541de8b08912ed01eb04ebda59adbdcb5b90e",
+      "exit_status": 0,
+      "features": [
+        "pa7.cfg-test-request"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/token_trees.rs"
+    },
+    {
+      "path": "tests/spec/scope/cfg-test-enabled.rs",
+      "source_sha256": "b16ebe3c03fe49d80d7d016ad07541de8b08912ed01eb04ebda59adbdcb5b90e",
+      "exit_status": 0,
+      "features": [
+        "pa7.cfg-test-request"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/token_trees.rs",
+      "args": [
+        "--cfg",
+        "test"
+      ]
     }
   ]
 }

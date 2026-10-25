@@ -21,6 +21,7 @@ pub(crate) mod contexts;
 pub(crate) mod editions;
 mod expansion;
 mod original;
+pub(crate) mod retirement;
 
 pub use crate::support::source::FileId;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

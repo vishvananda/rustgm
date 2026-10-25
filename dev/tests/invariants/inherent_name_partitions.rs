@@ -1,7 +1,7 @@
 //! Inherent name partitions preserve lookup work and caller-specific privacy.
 use super::*;
 use crate::expand::marks::{ExpansionId, Marks, SyntaxContextId, Transparency};
-type TestResult = Result<(), Box<dyn std::error::Error>>;
+type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
 fn mark(
     marks: &mut Marks,
@@ -66,10 +66,7 @@ fn sibling_opaque_names_do_not_multiply_candidate_queries_by_declaration_width()
             );
             assert_eq!(cursor.next(&mut methods, &report, key)?, None);
         }
-        let work = methods
-            .contextual()
-            .ok_or("missing contextual index")?
-            .steps;
+        let work = methods.names.as_deref().ok_or("missing name index")?.steps;
         assert_eq!(work, width as usize);
         println!("member-name-partitions width={width} queries={width} ancestor-visits={work}");
     }
@@ -102,7 +99,7 @@ fn nested_use_walks_only_its_own_ancestry_and_cold_shapes_follow_exact_contexts(
     assert!(methods.candidate_index(key, child).is_none());
     assert!(methods.candidate_index(key, parent).is_some());
     assert!(methods.candidate_index(key, sibling).is_some());
-    assert_eq!(methods.contextual().ok_or("missing index")?.steps, 2);
+    assert_eq!(methods.names.as_deref().ok_or("missing index")?.steps, 2);
     Ok(())
 }
 
@@ -115,16 +112,89 @@ fn identity_lookup_exhaustion_counts_the_attempt_before_returning() -> TestResul
     let syntax = mark(marks, SyntaxContextId::ROOT, 1)?;
     let context = marks.item(syntax)?;
     methods.publish_inherent(key, context, DefId(1));
-    methods.contextual_mut().ok_or("missing index")?.steps = 1_000_000;
+    methods.names.as_deref_mut().ok_or("missing index")?.steps = 1_000_000;
     assert!(
         Cursor::new(context)
             .next(&mut methods, &report, key)
             .is_err()
     );
     assert_eq!(
-        methods.contextual().ok_or("missing index")?.steps,
+        methods.names.as_deref().ok_or("missing index")?.steps,
         1_000_001
     );
+    Ok(())
+}
+
+fn structural_query_work(depth: u32, nominal_noise: bool) -> TestResult<[usize; 5]> {
+    use crate::types::subject_head::Head;
+    let key = Bucket::Structural(Head::Pointer(false), NameId(0));
+    let missing = Bucket::Structural(Head::Pointer(true), NameId(0));
+    let nominal = (ItemId(99), NameId(99));
+    let mut report = crate::test_source::resolve("", true)?;
+    let marks = &mut report.package.marks;
+    let first = mark(marks, SyntaxContextId::ROOT, 1)?;
+    let parent = marks.item(first)?;
+    let mut syntax = first;
+    for index in 2..=depth {
+        syntax = mark(marks, syntax, index)?;
+    }
+    let leaf = marks.item(syntax)?;
+    let mut methods = Methods::default();
+    methods.publish_inherent(key, parent, DefId(1));
+    if nominal_noise {
+        methods.publish_inherent(nominal, leaf, DefId(99));
+    }
+    methods.freeze_inherent_names();
+    assert_eq!(methods.contextual().is_some(), nominal_noise);
+    assert!(methods.candidate_index(key, parent).is_none());
+    let before = methods.names.as_deref().ok_or("name index")?.steps;
+    let mut cursor = Cursor::new(leaf);
+    assert_eq!(cursor.next(&mut methods, &report, key)?, Some(parent));
+    assert_eq!(cursor.next(&mut methods, &report, key)?, None);
+    assert_eq!(methods.inherent_members(key, parent), Some(&[DefId(1)][..]));
+    let cold = methods.names.as_deref().ok_or("name index")?.steps - before;
+    methods.retain_candidate_index(key, parent, Candidates::default())?;
+    let before = methods.names.as_deref().ok_or("name index")?.steps;
+    let mut cursor = Cursor::new(leaf);
+    assert_eq!(cursor.next(&mut methods, &report, key)?, Some(parent));
+    assert_eq!(cursor.next(&mut methods, &report, key)?, None);
+    assert!(methods.candidate_index(key, parent).is_some());
+    let warm = methods.names.as_deref().ok_or("name index")?.steps - before;
+    let before = methods.names.as_deref().ok_or("name index")?.steps;
+    assert_eq!(
+        Cursor::new(leaf).next(&mut methods, &report, missing)?,
+        None
+    );
+    let absent = methods.names.as_deref().ok_or("name index")?.steps - before;
+    methods.names.as_deref_mut().ok_or("name index")?.steps = 1_000_000;
+    assert!(Cursor::new(leaf).next(&mut methods, &report, key).is_err());
+    let first_failure = methods.names.as_deref().ok_or("name index")?.steps - 1_000_000;
+    // An unrelated nominal bucket must consume the same exhausted owner budget.
+    let failed_key = if nominal_noise {
+        nominal.into()
+    } else {
+        missing
+    };
+    assert!(
+        Cursor::new(leaf)
+            .next(&mut methods, &report, failed_key)
+            .is_err()
+    );
+    let repeated_failure = methods.names.as_deref().ok_or("name index")?.steps - 1_000_001;
+    assert!(methods.candidate_index(key, parent).is_some());
+    Ok([cold, warm, absent, first_failure, repeated_failure])
+}
+
+#[test]
+fn structural_cold_warm_and_failed_queries_share_owner_work_with_nominal_noise() -> TestResult {
+    for depth in [8_u32, 32, 128] {
+        let structural = structural_query_work(depth, false)?;
+        let with_nominal = structural_query_work(depth, true)?;
+        let expected = [depth as usize, depth as usize, depth as usize, 1, 1];
+        assert_eq!(structural, expected);
+        assert_eq!(with_nominal, expected);
+        println!("structural-name-depth={depth} cold/warm/absent/failed={structural:?}");
+    }
     Ok(())
 }
 
@@ -172,7 +242,7 @@ fn actual_source_receiver_and_path_sites_retain_their_identifier_context() -> Te
     assert_eq!(size_of::<Methods>(), 312);
     assert_eq!(
         size_of::<crate::sema::model::Declarations>(),
-        7032 + size_of::<usize>()
+        7032 + 2 * size_of::<usize>()
     );
     Ok(())
 }
