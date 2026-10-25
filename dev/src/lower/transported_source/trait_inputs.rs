@@ -48,7 +48,7 @@ impl Source {
         report: &Report,
         facts: &Declarations,
     ) -> Result<TraitInspection, Error> {
-        let before = self.work();
+        let before = self.stage.work();
         let overhead = size_of::<TraitInspection>()
             .saturating_sub(size_of::<SourceInspection>())
             .saturating_sub(size_of::<s::HeaderAttributeColumns>());
@@ -57,7 +57,7 @@ impl Source {
         // actual qualified hooks must be integrated before this entry is gated.
         let contracts = self.collect_header_columns(report, facts)?;
         let mut validation = g::Work {
-            steps: self.work().steps,
+            steps: self.stage.work().steps,
             ..g::Work::default()
         };
         let start = validation.steps;
@@ -69,6 +69,7 @@ impl Source {
         let live = contract_bytes.saturating_add(overhead);
         if live
             > self
+                .stage
                 .work()
                 .reserved_bytes
                 .saturating_sub(before.reserved_bytes)

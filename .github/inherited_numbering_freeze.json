@@ -57,7 +57,7 @@
     "production Clippy",
     "private Clippy"
   ],
-  "source_commit": "38d290f2cd528992bfe48546284faa0ea271f571",
+  "source_commit": "30a03f57a41398b683077764027e98e4af8507c8",
   "public_base": "6824f6cf5a9a457093242cd41fc2e37c3ec88888",
   "sources": {
     "dev/bin/crates.rs": "5e73d44f2c3b8a5042018f45e6af26a87e655111456e80c5449265667e0b5de6",
@@ -444,7 +444,7 @@
     "dev/src/lower/transported_source/obligation_rows.rs": "525c6538eb620d6245efea8e277f3c8c907528e903404b60ac29f556d8648ed9",
     "dev/src/lower/transported_source/publication.rs": "d3754b1626589cab8532de8bb4aad33793a31a5df95e8d74238b1802f4162962",
     "dev/src/lower/transported_source/published_annotations.rs": "2be18fc1da5e47d5c40308ad416be2a99a98e73cbe7dbdfa1bd139d7bd0b5c0b",
-    "dev/src/lower/transported_source/trait_inputs.rs": "e23ab1c2cb8bca88b7d4e6357e40ba04e4dd11fb97a40212311e9eb6ecf832aa",
+    "dev/src/lower/transported_source/trait_inputs.rs": "deba1b13dc781fe1340844e3fc69a07af48187622ac7c370e3541b27d157bfdd",
     "dev/src/lower/transported_source.rs": "d46989d5c484d22ca9e93b547f499ad40bda4d6ba9195c9e77f4c5144c33ef8d",
     "dev/src/lower/virtual_dispatch/forwarders.rs": "41e2ec04cd3ed9d64ac3b1b0fb8f3c7ee5831bbd3ae7e28352bfd98180877093",
     "dev/src/lower/virtual_dispatch/tables.rs": "5ed171df8d809851365394cd5ebf325513b40c6eb0a96db2ec7b95266a6032e7",
@@ -2692,7 +2692,7 @@
     "pa8/tests/manifest.json": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
     "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
   },
-  "source_sha256": "55526c6b0da6a2dade4acc6dee300eb33071ae0560f2813327e3b70b3cab22ee",
+  "source_sha256": "2ffaba88b6a960a1f6e15f4967a976cd7f6696d11a9c5a764389943bcaf22ef0",
   "selected": [
     "lower::transported_source::trait_inputs::tests::numbered_trait_inputs_retain_full_family_and_actual_contract_capacity",
     "lower::transported_source::trait_inputs::tests::numbered_trait_inputs_preserve_defaultness_fences_and_failed_work",
