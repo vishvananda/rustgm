@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -77,6 +78,8 @@ def main():
     root = Path.cwd().resolve()
     sys.path.insert(0, str(root / 'scripts'))
     import course
+    import check_native
+    from check_layouts import classification as layout_classification
     from storage import exclusive
     report_bytes = args.review.read_bytes()
     report = json.loads(report_bytes)
@@ -85,7 +88,17 @@ def main():
         raise ValueError('root assignment metadata differs from reviewed mode declarations')
     assignments = {stage['path']: stage for stage in json.loads(assignment_bytes)['stages']}
     app = args.app.resolve()
-    evidence = root / 'obj/parallel/pa31/all-attribute-selected-generation-v1' / str(time.time_ns())
+    if digest(app.read_bytes()) != report['expected_cli_sha256']:
+        raise ValueError('candidate differs from the already qualified generation CLI')
+    source_hashes = {str(path.relative_to(root)): digest(path.read_bytes()) for path in sorted((root / 'dev').rglob('*.rs'))}
+    if source_hashes != report['expected_compiler_source_sha256']:
+        raise ValueError('Rust compiler sources differ from the qualified 91-case source')
+    if digest((root / 'backend.lock.json').read_bytes()) != report['backend_lock_sha256']:
+        raise ValueError('reviewed backend lock differs')
+    for path, expected in report['frozen_generated_sha256'].items():
+        if digest((root / path).read_bytes()) != expected:
+            raise ValueError(f'previously qualified 281-file bundle differs: {path}')
+    evidence = root / 'obj/parallel/pa31/attribute-native-outcome-closure-v1/runs' / str(time.time_ns())
     selected = []
     for stage, declared in report['stages'].items():
         if digest((root / stage / 'tests/manifest.json').read_bytes()) != declared['manifest_sha256']:
@@ -100,6 +113,12 @@ def main():
             raise ValueError(f'{stage}: root and manifest mode declarations disagree')
         if manifest.get('additional_modes', []) != declared['additional_modes']:
             raise ValueError(f'{stage}: supplemental modes differ from frozen review')
+        for case in cases:
+            mode = case.get('mode', manifest['mode'])
+            if mode == '--emit-lowir':
+                check_native.classification(case)
+            elif mode == '--emit-layouts':
+                layout_classification(case)
         if declared['already_generated']:
             # Import the separately reviewed PA7 artifact before invoking this driver.
             course.reference_batches.validate(root, stage, manifest, cases)
@@ -109,9 +128,14 @@ def main():
                 raise ValueError(f'{stage}/{case["path"]}: fixture differs')
             if course.reference_batches.case_digest(by_path[case['path']], manifest['mode']) != case['case_sha256']:
                 raise ValueError(f'{stage}/{case["path"]}: effective case contract differs')
-            if not declared['already_generated']:
+            if case['path'] in declared['generation_paths']:
                 selected.append((stage, manifest, by_path[case['path']], case))
     selected_paths = {f'{stage}/{case["path"]}' for stage, _, case, _ in selected}
+    for stage, declared in report['stages'].items():
+        if declared['native_paths']:
+            directory = root / 'obj/native' / stage
+            if (directory / 'evidence.json').exists() or any((directory / path.removesuffix('.rs')).exists() for path in declared['native_paths']):
+                raise ValueError('native subset needs fresh output slots; refusing to replace retained observations')
     excluded = {Path(str(root / source) + suffix) for source in selected_paths for suffix in course.SIDECARS}
     preserved = {path: digest(path.read_bytes()) for stage in report['stages']
                  for path in (root / stage / 'tests').rglob('*.ref*')
@@ -119,6 +143,8 @@ def main():
     preserved.update({root / stage / 'reference.json': declared['base_reference_sha256'] for stage, declared in report['stages'].items()})
     preserved.update({root / batch['path']: batch['sha256'] for declared in report['stages'].values() for batch in declared['preserve_scoped_receipts']})
     old_batches = {path for stage in report['stages'] for path in (root / stage / 'reference-batches').glob('*.json')}
+    preserved.update({path: digest(path.read_bytes()) for path in old_batches})
+    original_selected_outputs = {path: digest(path.read_bytes()) for path in excluded}
     def remaining_timeout():
         remaining = deadline - time.monotonic()
         if remaining <= 0:
@@ -131,6 +157,9 @@ def main():
         try:
             _, actual = original(root, stage, manifest['mode'], case, [str(app)], remaining_timeout())
             verify(contract, actual)
+            prior = tuple(Path(str(root / stage / case['path']) + suffix).read_bytes() for suffix in course.SIDECARS)
+            if actual != prior:
+                raise ValueError(f'{stage}/{case["path"]}: metadata-only change altered previously qualified output bytes')
             error = None
         except (ValueError, OSError) as problem:
             error = str(problem)
@@ -151,10 +180,11 @@ def main():
         if failures:
             for failure in failures:
                 print(json.dumps(failure), file=sys.stderr)
-            raise ValueError(f'{len(failures)}/91 preflight contracts failed; NO references written; evidence {evidence}')
+            raise ValueError(f'{len(failures)}/13 preflight contracts failed; NO references written; evidence {evidence}')
         frozen = {key: actual for key, actual, _ in observations}
         receipt = {'candidate': report['candidate'], 'actual_ci_source': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip(),
                    'metadata_component': report['metadata_component'],
+                   'native_metadata_component': report['native_metadata_component'],
                    'root_assignment_metadata_sha256': report['root_assignment_metadata_sha256'],
                    'review_sha256': digest(report_bytes),
                    'app': str(app), 'app_sha256': digest(app.read_bytes()),
@@ -175,27 +205,71 @@ def main():
                 continue
             if not course.run_stage(root, stage, [str(app)], bless=True, jobs=2, timeout=10,
                                     evidence_root=evidence,
-                                    case_paths=[case['path'] for case in declared['selected_cases']]):
+                                    case_paths=declared['generation_paths']):
                 raise ValueError(f'{stage}: selected reference generation failed')
         for path, expected in preserved.items():
             if digest(path.read_bytes()) != expected:
                 raise ValueError(f'unselected reference changed: {path}')
+        for path, expected in original_selected_outputs.items():
+            if digest(path.read_bytes()) != expected:
+                raise ValueError(f'one of 39 metadata-only sidecars changed bytes: {path}')
         for stage, declared in report['stages'].items():
             manifest, cases = course.load_cases(root, stage)
             course.reference_batches.validate(root, stage, manifest, cases)
         new_batches = {path for stage in report['stages'] for path in (root / stage / 'reference-batches').glob('*.json')} - old_batches
-        if len(new_batches) != 8:
-            raise ValueError('expected exactly eight new scoped receipts')
+        if len(new_batches) != 3:
+            raise ValueError('expected exactly three new scoped receipts')
+        original_loader = check_native.load_cases
+        def selected_native(root_arg, stage):
+            manifest, cases = original_loader(root_arg, stage)
+            wanted = report['stages'][stage]['native_paths']
+            if not wanted or len(wanted) != len(set(wanted)):
+                raise ValueError('native selection must be explicitly nonempty and unique')
+            result = [case for case in cases if case['path'] in wanted]
+            if {case['path'] for case in result} != set(wanted):
+                raise ValueError('native fixture selection does not match the declared paths')
+            return manifest, result
+        check_native.load_cases = selected_native
+        native_count = 0
+        for stage, declared in report['stages'].items():
+            if not declared['native_paths']:
+                continue
+            remaining_timeout()
+            directory = root / 'obj/native' / stage
+            source_folders = [directory / path.removesuffix('.rs') for path in declared['native_paths']]
+            if (directory / 'evidence.json').exists() or any(path.exists() for path in source_folders):
+                raise ValueError('native subset needs fresh output slots; refusing to replace retained observations')
+            destination = evidence / 'native' / stage
+            destination.mkdir(parents=True)
+            try:
+                # This is the actual checker/backend/rustc path; only its loader's exact subset is selected.
+                check_native.check(app, 2, stage)
+            finally:
+                for folder in source_folders:
+                    if folder.exists():
+                        target = destination / folder.relative_to(directory)
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.move(str(folder), str(target))
+                if (directory / 'evidence.json').exists():
+                    shutil.move(str(directory / 'evidence.json'), str(destination / 'evidence.json'))
+            native_result = json.loads((destination / 'evidence.json').read_text())
+            if {case['path'] for case in native_result['cases']} != set(declared['native_paths']) or not all(case['passed'] for case in native_result['cases']):
+                raise ValueError('native execution count/outcomes differ from the exact selection')
+            native_count += len(native_result['cases'])
+        if native_count != 15:
+            raise ValueError('expected exactly fifteen native comparisons')
+        receipt['native_comparisons'] = native_count
         generated = sorted(excluded | new_batches)
         receipt['generated_sha256'] = {str(path.relative_to(root)): digest(path.read_bytes()) for path in generated}
         receipt['state'] = 'passed'
         (evidence / 'binding.json').write_text(json.dumps(receipt, indent=2) + '\n')
         bundle = evidence.with_suffix('.tar.gz')
         with tarfile.open(bundle, 'w:gz') as archive:
-            for path in [*generated, *sorted(path for path in evidence.rglob('*') if path.is_file())]:
+            raw_suffixes = {'.json', '.stdout', '.stderr', '.status', '.exit_status', '.lowir'}
+            for path in [*generated, *sorted(path for path in evidence.rglob('*') if path.is_file() and path.suffix in raw_suffixes)]:
                 archive.add(path, arcname=str(path.relative_to(root)), recursive=False)
         print(f'Upload selected-only bundle: {bundle.relative_to(root)} sha256={digest(bundle.read_bytes())}')
-        print('All 91 remaining selected contracts/references passed; all unselected references and full receipts unchanged.')
+        print('Thirteen metadata-only cases/39 identical sidecars/three new receipts and fifteen exact native comparisons passed.')
 
 
 if __name__ == '__main__':

@@ -1871,7 +1871,10 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/discarded_domains.rs"
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/discard-domains/unit-array-dereference.rs",
@@ -1885,7 +1888,10 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/discarded_domains.rs"
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/discard-domains/marked-empty-enum.rs",
@@ -1899,7 +1905,10 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/discarded_domains.rs"
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/discard-domains/marked-public-empty-field.rs",
@@ -1913,7 +1922,10 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/discarded_domains.rs"
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/discard-domains/marked-private-empty-field-caller.rs",
@@ -1930,7 +1942,10 @@
       "maintainer_origin": "dev/tests/discarded_domains.rs",
       "warnings": [
         "unused_must_use"
-      ]
+      ],
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/discard-domains/marked-private-empty-field-owner.rs",
@@ -1944,7 +1959,10 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/discarded_domains.rs"
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/discard-domains/tuple-repeated-marked-type.rs",
@@ -1961,7 +1979,10 @@
       "maintainer_origin": "dev/tests/discarded_domains.rs",
       "warnings": [
         "unused_must_use"
-      ]
+      ],
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/discard-domains/function-and-result-both-marked.rs",
@@ -1978,7 +1999,10 @@
       "maintainer_origin": "dev/tests/discarded_domains.rs",
       "warnings": [
         "unused_must_use"
-      ]
+      ],
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/discard-domains/marked-array-one-warning.rs",
@@ -1995,7 +2019,10 @@
       "maintainer_origin": "dev/tests/discarded_domains.rs",
       "warnings": [
         "unused_must_use"
-      ]
+      ],
+      "native": {
+        "outcome": "pass"
+      }
     }
   ]
 }
