@@ -5,12 +5,25 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from fastcheck_run import Steps
+import fastcheck_run
 
 
 class FastcheckBudget(unittest.TestCase):
+    def test_metadata_failure_stops_before_format_lint_and_build(self):
+        steps = mock.Mock()
+        steps.receipt = {}
+        steps.run.side_effect = ValueError("invalid assignment metadata")
+        args = Namespace(suites=["lexer"], lib_case=[], ignored=False, prune_under=[])
+        with mock.patch.object(fastcheck_run, "discover", return_value={"lexer": "suite_frontend"}), \
+                mock.patch.object(fastcheck_run, "fingerprint", return_value={}):
+            with self.assertRaisesRegex(ValueError, "invalid assignment metadata"):
+                fastcheck_run.execute(Path("unused"), args, steps)
+        steps.run.assert_called_once_with("assignment-metadata", [sys.executable, "scripts/assignment_metadata.py"])
+
     def test_subprocess_timeout_retains_failure_receipt(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

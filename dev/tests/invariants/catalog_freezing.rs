@@ -41,7 +41,17 @@ fn clone_drop_and_unique_access_never_reopen_frozen_installation() -> Result<(),
     let work = unique.work();
     assert!(unique.install(&defs, input("later", 1, 1)?).is_err());
     assert_eq!(unique.work() - work, 1);
-    assert!(super::super::publication::install(unique, &defs, input("later", 1, 1)?).is_err());
+    let work = unique.work();
+    let mut callback_calls = 0;
+    assert!(
+        super::super::publication::install(unique, &defs, input("later", 1, 1)?, |_| {
+            callback_calls += 1;
+            Ok(())
+        })
+        .is_err()
+    );
+    assert_eq!(callback_calls, 0);
+    assert_eq!(unique.work() - work, 1);
     assert_eq!(unique.body_count(), 1);
     assert_eq!(unique.retained_bytes(), bytes);
     Ok(())

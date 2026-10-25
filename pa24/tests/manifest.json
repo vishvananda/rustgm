@@ -8556,7 +8556,10 @@
       "maintainer_origin": "dev/tests/discarded_domains.rs",
       "warnings": [
         "unused_must_use"
-      ]
+      ],
+      "native": {
+        "outcome": "pass"
+      }
     }
   ]
 }

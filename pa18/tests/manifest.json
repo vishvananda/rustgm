@@ -1,6 +1,9 @@
 {
   "schema": 1,
   "mode": "--emit-lowir",
+  "additional_modes": [
+    "--emit-patterns"
+  ],
   "language": "Rust 1.98.0",
   "edition": "2024",
   "target": "x86_64-unknown-linux-gnu",
@@ -7330,7 +7333,10 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/discarded_domains.rs"
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/discard-domains/array-template-is-not-relinted.rs",
@@ -7344,7 +7350,10 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/discarded_domains.rs"
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/discard-domains/marked-generic-empty-field.rs",
@@ -7358,7 +7367,10 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/discarded_domains.rs"
+      "maintainer_origin": "dev/tests/discarded_domains.rs",
+      "native": {
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/canonical-inhabitation/generic-visible-empty.rs",
