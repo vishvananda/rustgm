@@ -2534,6 +2534,51 @@
         "kind": "program",
         "status": 1
       }
+    },
+    {
+      "path": "tests/spec/items/default-function.rs",
+      "exit_status": 0,
+      "features": [
+        "pa5.items"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/items/default-implementation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa5.items"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/items/default-associated-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa5.items"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
     }
   ]
 }

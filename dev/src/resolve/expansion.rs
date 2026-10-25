@@ -38,6 +38,8 @@ pub(super) mod attributes;
 mod bindings;
 mod cfg_gates;
 mod decorated_calls;
+#[path = "expansion/unvisited_syntax.rs"]
+mod default_warnings;
 mod diagnostics;
 mod eager;
 pub(crate) mod removed_functions;
@@ -56,6 +58,7 @@ mod resources;
 mod role_declarations;
 mod transcription;
 mod unavailable;
+mod unnamed_visibility;
 
 pub enum Body {
     Declarative(Compiled),
@@ -260,9 +263,9 @@ pub fn analyze_with_context(
 ) -> Result<Report, Error> {
     let mut engine = Engine::create(root, sources, config, context)?;
     let result = engine.run();
-    result.map_err(|error| engine.diagnostic(error))?;
+    result.map_err(|error| engine.retain_expansion_warnings(engine.diagnostic(error)))?;
     super::bindings::validate_features(&engine.loader.package)
-        .map_err(|error| engine.diagnostic(error))?;
+        .map_err(|error| engine.retain_expansion_warnings(engine.diagnostic(error)))?;
     if let Some(producer) = engine
         .attribute_effects
         .as_deref_mut()
@@ -283,10 +286,20 @@ pub fn analyze_with_context(
         names_resolved: false,
         attribute_effects: engine.attribute_effects,
     };
-    super::bindings::validate_crate_options(&report).map_err(|error| report.diagnostic(error))?;
-    cfg_gates::validate_attributes(&report)?;
-    super::impl_restrictions::validate(&report).map_err(|error| report.diagnostic(error))?;
-    super::float_features::validate_literals(&report).map_err(|error| report.diagnostic(error))?;
+    let validation = super::bindings::validate_crate_options(&report)
+        .map_err(|error| report.diagnostic(error))
+        .and_then(|()| cfg_gates::validate_attributes(&report))
+        .and_then(|()| {
+            super::default_items::validate(&report).map_err(|error| report.diagnostic(error))
+        })
+        .and_then(|()| {
+            super::impl_restrictions::validate(&report).map_err(|error| report.diagnostic(error))
+        })
+        .and_then(|()| {
+            super::float_features::validate_literals(&report)
+                .map_err(|error| report.diagnostic(error))
+        });
+    validation.map_err(|error| report.retain_expansion_warnings(error))?;
     Ok(report)
 }
 impl<'a, S: Sources> Engine<'a, S> {
@@ -642,6 +655,8 @@ impl<'a, S: Sources> Engine<'a, S> {
         reason = "one typed-node visit coordinates declaration, module and expansion scope transitions"
     )]
     fn visit(&mut self, mut visit: Visit, frame: u32) -> Result<(), Error> {
+        let file = self.loader.package.modules[visit.module.0 as usize].file;
+        super::default_items::bind_pending(&mut self.loader.package, file)?;
         let module = &self.loader.package.modules[visit.module.0 as usize];
         let (file, module_root) = (module.file, module.root);
         let unit = self.loader.package.unit(file);
@@ -702,6 +717,7 @@ impl<'a, S: Sources> Engine<'a, S> {
                     item,
                     visit.introduction,
                 )?);
+                self.unnamed_visibility(visit, item, tail)?;
             }
         }
         if let Kind::Item(index) = kind {
