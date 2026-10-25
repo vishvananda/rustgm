@@ -96,7 +96,7 @@ impl Identity {
             work,
             removal.owner.file,
             1 + forest.forest.nodes().len(),
-            forest.forest.nodes().len() * size_of::<Tree>(),
+            size_of_val(forest.forest.nodes()),
         )?;
         let mut origins = Vec::new();
         for tree in forest.forest.nodes() {

@@ -192,7 +192,7 @@ impl Witness {
             work,
             file,
             forest.forest.nodes().len(),
-            size_of::<Self>() + forest.forest.nodes().len() * size_of::<Tree>(),
+            size_of::<Self>() + size_of_val(forest.forest.nodes()),
         )?;
         let trees = forest.forest.nodes().to_vec();
         let leaves = predicate_leaves(unit, &forest.forest, file, work)?;

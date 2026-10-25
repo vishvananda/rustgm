@@ -157,7 +157,7 @@ fn corrupt(report: &mut Report, file: FileId, ordinal: usize, opponent: usize) -
     let declaration = removal.declaration.node;
     let definition = removal.definition;
     let scope = removal.scope;
-    let body = removals.demand.as_ref().ok_or("body index")?.bodies[0].body;
+    let body = removals.demand.as_ref().ok_or("body index")?.bodies[0].root;
     let edge = (opponent == 7)
         .then(|| retained_block_edge(report))
         .transpose()?;
@@ -208,11 +208,11 @@ fn corrupt(report: &mut Report, file: FileId, ordinal: usize, opponent: usize) -
         }
         5 => {
             report.definitions[definition].local_inner_macros =
-                !report.definitions[definition].local_inner_macros
+                !report.definitions[definition].local_inner_macros;
         }
         6 => {
             report.resolution.scopes[scope.0 as usize].barrier =
-                !report.resolution.scopes[scope.0 as usize].barrier
+                !report.resolution.scopes[scope.0 as usize].barrier;
         }
         7 => unit.configured.ast.edges[edge.ok_or("missing actual child edge")?] = declaration,
         8 => unit.configured.ast.nodes[body.get() as usize].span.start += 1,
