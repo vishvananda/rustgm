@@ -92,6 +92,25 @@ fn authenticated_unused_attribute_declarations_and_predefined_tools_lower_in_bot
     Ok(())
 }
 #[test]
+fn opposing_block_macro_kinds_select_the_actual_eligible_outer_binding() -> TestResult {
+    for edition in [Edition::Rust2021, Edition::Rust2024] {
+        for (name, invocations) in [
+            ("block-outer-bang-control", 1),
+            ("block-inner-attribute-outer-bang", 1),
+            ("block-outer-attribute-control", 0),
+            ("block-inner-bang-outer-attribute", 0),
+        ] {
+            let report = checked(name, edition)?;
+            assert_eq!(report.invocations.len(), invocations, "{name}/{edition:?}");
+            // A genuine Test removes the function with missing body names;
+            // the opposite kind never supplies a substitute invocation frame.
+            rustgm::pipeline::analyze_source(&report)
+                .map_err(|error| format!("{name}/{edition:?}: {error}"))?;
+        }
+    }
+    Ok(())
+}
+#[test]
 fn actual_attribute_lookup_kind_owner_and_unavailable_execution_remain_distinct() -> TestResult {
     for edition in [Edition::Rust2021, Edition::Rust2024] {
         for (name, message) in [
