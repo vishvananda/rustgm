@@ -1,0 +1,52 @@
+{
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": [
+    {
+      "source": "pa31/tests/spec/source-try-blocks/literal-keyword-forwarded-block.rs",
+      "sha256": "53ec4714b39c07c7600829d91ea0e8f09467e434ccb97ea04ab6dc75caca3f8f",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": []
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/forwarded-both.rs",
+      "sha256": "6216cb5f5e545f22dfa770aa00ade62e937d3125a132e2f5a0993dc3ec71568c",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0658"
+      ],
+      "rustc_warning_codes_hypothesis": []
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/nested-forwarded-keyword.rs",
+      "sha256": "bc7bc882d3a911a6a18e4b8868fa0b0f1dc59daf9b85895bb34cde8948c4b062",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": []
+    }
+  ],
+  "pending": [
+    "runtime and actual no_core source protocol consumer",
+    "typed heterogeneous syntax remains separate unsupported assignment requirement"
+  ],
+  "original_core": {
+    "source": "library/core/src/ops/index_range.rs",
+    "offset": 5482,
+    "actual": "try { accum }"
+  },
+  "note": "Three NEW actual endpoint-composition opponents; primary rustc_span::Span::prepare_to_combine and parser try_span.to(body.span). No repeated observations."
+}
