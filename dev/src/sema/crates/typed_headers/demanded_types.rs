@@ -294,12 +294,12 @@ impl<M: Storage> Worklist<M> {
             if let Some(child) = child {
                 self.counters.edges = self.counters.edges.saturating_add(1);
                 let child = child.0 as usize;
-                let ready = self
-                    .nodes
-                    .get(child)
-                    .ok_or_else(|| error("source recipe has an unknown actual type dependency"))?;
-                if ready.is_some() {
-                    continue;
+                match self.nodes.get(child) {
+                    CellState::Missing => {
+                        return Err(error("source recipe has an unknown actual type dependency"));
+                    }
+                    CellState::Ready(_) => continue,
+                    CellState::Pending => {}
                 }
                 if self.visiting[child] {
                     return Err(error("source canonical type recipes contain a cycle"));

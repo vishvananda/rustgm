@@ -1,5 +1,5 @@
 {
-  "source_commit": "ec6207f457ffb51d0accf2b2244f12c9a8d80dca",
+  "source_commit": "dcf1976eb4ef3cb23e40ee5f070e01f03a38d45c",
   "public_base": "d249fd21adb29d394ff1a8be58afece02e049656",
   "sources": {
     "dev/bin/crates.rs": "efbab4e37ff93eb8c4affdbc721a01d33017da46a0c4472ce6dfcee80905340b",
@@ -792,7 +792,7 @@
     "dev/src/sema/crates/typed_headers/demanded_headers.rs": "55f6a3b9d4a139a6b5c191690647ee0f7736e5724906f643a769b68fe74c8c6f",
     "dev/src/sema/crates/typed_headers/demanded_ports.rs": "6eb4b57958f31ac4008825c42196735d4d43f1ffd1ffcb1ce6e46facc7e0de2e",
     "dev/src/sema/crates/typed_headers/demanded_signatures.rs": "0e77b66b89a25be21fcf6bbd983a0f33edcc1160d015352aaed80597fb59d49b",
-    "dev/src/sema/crates/typed_headers/demanded_types.rs": "26e5aa7d0b4b5eefd8f9154e7956304e51484cee474917b1c3bd013799310e21",
+    "dev/src/sema/crates/typed_headers/demanded_types.rs": "c1f03760d3599fad7b5068ed38581c2fa6ffe52f9fea38711f26b9d39de55d9a",
     "dev/src/sema/crates/typed_headers/dormant_session.rs": "6656a4ae04b291cc85f0ccbf8f5f9e6617d7bb436f96bd0804cd72d17b2ecef4",
     "dev/src/sema/crates/typed_headers/formal_ancestry.rs": "b147aba1304142db65af7a366375fcd55fdf24f88a1fa4f036c391999222eef5",
     "dev/src/sema/crates/typed_headers/ingest.rs": "641e70612c27ce9a4091ca8443a178ce066174ad370f154e8733fd1d89f55e61",
@@ -2742,7 +2742,7 @@
     "pa8/tests/manifest.json": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
     "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
   },
-  "source_sha256": "c4eae20c501bb8c00bb5b2f1790dd3cafa372ed8a30978c15204b2e19a512072",
+  "source_sha256": "5c7650f8aaa998775b1f99ff3699fa145b854e0f57c1da6b4bc7abf90b6959ca",
   "selected": [
     "sema::crates::typed_headers::unpaid_provided::header_demands::mapping_tests::shared_signature_reader_binds_actual_writer_owner_arena_and_ready_shapes",
     "sema::crates::typed_headers::unpaid_provided::header_demands::mapping_tests::shared_signature_mapping_bounds_warm_width_unrelated_and_failed_precharge",
