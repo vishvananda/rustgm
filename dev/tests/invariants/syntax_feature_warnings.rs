@@ -40,7 +40,7 @@ fn unvisited_default_syntax_preserves_exact_unconditional_and_mixed_diagnostics(
                     .unit(key.file)
                     .configured
                     .ast
-                    .defaultness
+                    .gate_sites
                     .as_ref()
                     .is_none_or(|entries| entries
                         .entries()
@@ -74,7 +74,7 @@ fn unvisited_default_syntax_preserves_exact_unconditional_and_mixed_diagnostics(
             .package
             .units
             .iter()
-            .all(|unit| unit.configured.ast.defaultness.is_none())
+            .all(|unit| unit.configured.ast.gate_sites.is_none())
     );
     assert!(
         pipeline::analyze_source(&found)?

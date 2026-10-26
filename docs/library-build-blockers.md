@@ -1,6 +1,6 @@
 # Library build blocker tracker
 
-Updated 2026-10-25. This is the work queue for compiling the original pinned
+Updated 2026-10-26. This is the work queue for compiling the original pinned
 `core`, `alloc` and `std`, not a count of completed internal checkpoints.
 PA1–PA24 remain implemented drafts; PA25–PA44 remain planned. No additional
 assignment or whole upstream library has been completed.
@@ -30,11 +30,28 @@ authenticate actual body ownership without granting defining-environment proof.
 Seven original v0/v1 first-encoding files remain byte-identical. Nonzero binding,
 original/instance proof and public Provided execution remain required.
 
+The [neutral numbered-environment successor](private-neutral-numbered-environments.md)
+qualifies actual nonzero Declaration signatures with empty regional inputs and
+positively absent builtin/region payloads. Six controls and strict static checks
+pass in a153.01-second helper. Warm work is constant across1/8/32 actual
+universals. Genuine Holder::borrow has no alias ledger; the separate real-ledger
+cost utility does not qualify a present-ledger body. Actual body/availability
+ports, regional proof, substituted instances and public execution remain open.
+
 The [provided-method execution milestone](parallel/provided-method-execution.md)
 keeps the next acceptance target concrete: the complete source family plus a
 real non-role provided method, actual encoded artifact, fresh imported original
 and instance proof, and a linked consumer printing `7\n`. Private producer and
 Environment checkpoints are prerequisites to that target, not its replacement.
+
+The [Assert condition checkpoint](source-assert-implementation.md) qualifies
+single parsing and owned typed transfer, including real opaque-fragment
+provenance, failed-attempt accounting and an existing configuration sentinel.
+Its three focused controls pass; Assert execution stays closed while the exact
+expression writer and source Not/panic/abort/format/constant paths are built.
+Integration retains the component evidence after checking its ten compiler/test
+files are disjoint from the fifteen neutral-environment files. This is not a
+fresh combined execution or completion of LIB-029.
 
 ## Observable crate milestones
 
@@ -297,7 +314,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-028 | P0; modifier checkpoint qualified; graph remains open | Specialization defaultness on implementation members, with actual feature authority, overlap and method selection | PA5 item grammar + PA19 default members + PA20 specialization relationships + PA31 internal feature / PA5 applicable grammar controls and complete PA31 source providers | C | The [defaultness checkpoint](defaultness-checkpoint.md) qualifies typed modifiers, exact feature/token authority, nonoverlapping methods and six reviewed references; all8,493 earlier text cases remain exact. Fresh observer40239001850 advances to65 files and LIB-031. Actual overlap, effective member finality, inherited-body substitution, Min checks and unsafe marker identity require the specialization graph. Default impl/value and imported transport remain closed. |
 | LIB-029 | P1; independently accepted reduced-source requirement | Real assertion expansion with source-owned panic, runtime and constant semantics | PA8 builtin expansion + PA25 constant execution + PA31 source identity / PA31 actual source providers plus earlier applicable controls | B, after module-contract v2 qualification; C coordinates source/panic authority | The unchanged alignment reducer is accepted by rustc but RustGM reaches unresolved `assert!` at byte129. Source Assert is catalogued with execution closed. Sixteen new [independent observations](source-assert-observations.md) qualify condition/operator semantics, lazy messages, exact panic payloads, constant failures and malformed inputs; no candidate expansion claim. The fresh whole-core observer advances to LIB-031. Preserve every assertion and initializer obligation; no fake local assertion or suppressed initializer. |
 | LIB-030 | P1; observed SourceClient library-export boundary | Republish genuine imported source trait/generic contracts from a downstream library | PA29 cross-crate generic export plus PA31 authentic source headers / complete source-provider/client cases, with ordinary PA29 controls where expressible | A + B + integrator | Run 40235770528 accepts the public sealed-bound consumer semantically, then its library helper reaches the existing legacy generic re-export rejection. Preserve that rejection until a complete source contract can be transported; a types-only control is semantic evidence only. The module/domain checkpoint still requires actual LowIR provider-impl selection. Mixed-provider generic re-exports and downstream library publication remain required for real crate graphs; no foreign owner may be retagged local. |
-| LIB-031 | P0; current unchanged-core stop at `ptr/metadata.rs:85` | Genuine trait-alias syntax, feature authority and substituted bound expansion | PA5 item grammar + PA21 trait relationships + PA31 compiler feature; PA29 imported contracts / PA5 grammar, PA21 shared ordinary controls and PA31 unstable source providers | Integrator | Observer40239001850 verifies722 original files and opens65 in6.08s; source byte3311 is the equals sign in `pub trait Thin = Pointee<Metadata = ()> + PointeeSized;`. The [implementation plan](trait-alias-design.md) retains16 source fixtures,32 pinned metadata observations and six native executions, zero infrastructure failures and eight wrong predictions. Implementation remains open. Preserve actual alias identity, complete bounds/equalities and source authority; no synthesized ordinary trait or permission from parsing. |
+| LIB-031 | P0; current unchanged-core stop at `ptr/metadata.rs:85` | Genuine trait-alias syntax, feature authority and substituted bound expansion | PA5 item grammar + PA21 trait relationships + PA31 compiler feature; PA29 imported contracts / PA5 grammar, PA21 shared ordinary controls and PA31 unstable source providers | Integrator | Observer40239001850 verifies722 original files and opens65 in6.08s; source byte3311 is the equals sign in `pub trait Thin = Pointee<Metadata = ()> + PointeeSized;`. The [implementation plan](trait-alias-design.md) retains16 source fixtures,32 pinned metadata observations and six native executions, zero infrastructure failures and eight wrong predictions. The [source-site checkpoint](trait-alias-sites-checkpoint.md) now qualifies grammar, distinct resolver identity, lexical Self/generics, whole-item feature authority and inactive diagnostics with six focused groups and all230 PA5 text cases in200.90 seconds. Active typed contract preparation remains explicitly unsupported. Complete multiple-bound/equality expansion, associated/object uses and imported transport remain open; no synthesized ordinary trait or permission from parsing. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):

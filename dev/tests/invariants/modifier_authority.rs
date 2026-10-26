@@ -13,7 +13,7 @@ fn default_features_and_actual_impl_owners_keep_observed_token_authority() -> Te
         assert!(report.package.units.iter().any(|unit| {
             unit.configured
                 .ast
-                .defaultness
+                .gate_sites
                 .as_ref()
                 .is_some_and(|entries| entries.len() == 1)
         }));

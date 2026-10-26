@@ -2,14 +2,14 @@
 use super::*;
 use crate::unpaid_cases::{Result, TraitFixture, trait_extended};
 use std::fmt::Write as _;
-const HOLDER: &str = "\npub trait Holder<V>{fn carry<U>(value:U)->U{value}fn borrow(value:&V)->&V{value}}\nimpl Holder<u8> for u8{}";
+pub(super) const HOLDER: &str = "\npub trait Holder<V>{fn carry<U>(value:U)->U{value}fn borrow(value:&V)->&V{value}}\nimpl Holder<u8> for u8{}";
 
-struct Case {
-    session: Box<Session>,
-    owner: DeclarationRef,
-    contracts: s::HeaderAttributeColumns,
+pub(super) struct Case {
+    pub(super) session: Box<Session>,
+    pub(super) owner: DeclarationRef,
+    pub(super) contracts: s::HeaderAttributeColumns,
 }
-fn start(suffix: &str, work: &mut ReservationWork) -> Result<Case> {
+pub(super) fn start(suffix: &str, work: &mut ReservationWork) -> Result<Case> {
     let TraitFixture {
         report,
         facts,
@@ -49,14 +49,14 @@ fn start(suffix: &str, work: &mut ReservationWork) -> Result<Case> {
         contracts,
     })
 }
-fn ready(progress: Progress) -> Result<Box<Session>> {
+pub(super) fn ready(progress: Progress) -> Result<Box<Session>> {
     let (session, status) = progress;
     if status != Demand::Ready(()) {
         return Err("actual inherited declaration environment blocked".into());
     }
     Ok(session)
 }
-fn environment(session: &Session) -> Result<&Owner> {
+pub(super) fn environment(session: &Session) -> Result<&Owner> {
     session
         .recipes
         .as_ref()
@@ -89,13 +89,9 @@ fn inherited_trait_inputs_prepare_actual_self_formals_and_bound_warm_work() -> R
         })
         .ok_or("actual nonzero provided method")?
         .declaration;
-    let (next, status) = session.defining_environment(borrowed, &mut work)?;
-    session = next;
-    assert!(matches!(
-        status,
-        Demand::Blocked(Dependency::OwnedBodyDomain(_))
-    ));
-    assert_eq!(environment(&session)?.bodies.iter().flatten().count(), 1);
+    session = ready(session.defining_environment(borrowed, &mut work)?)?;
+    assert_eq!(environment(&session)?.bodies.iter().flatten().count(), 2);
+    numbered::tests::controls(session, borrowed, &mut work)?;
     inherited_opponents()?;
     growth()?;
     Ok(())

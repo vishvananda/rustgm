@@ -11,9 +11,10 @@ use crate::{
         unit::FileId,
     },
     support::{diagnostics::WarningCode, hash::HashSet},
-    syntax::defaultness::{Declarations, Kind},
+    syntax::gate_sites::{Declarations, Kind},
 };
 const MESSAGE: &str = "specialization is experimental";
+const ALIAS_MESSAGE: &str = "trait aliases are experimental";
 #[cfg(test)]
 #[path = "../../../tests/invariants/modifier_contracts.rs"]
 mod tests;
@@ -44,27 +45,28 @@ fn failure(entries: &Declarations, error: Error) -> Failure {
 }
 fn diagnostic(
     file: FileId,
-    declaration: &crate::syntax::defaultness::Declaration,
+    declaration: &crate::syntax::gate_sites::Declaration,
     entries: &Declarations,
+    message: &str,
     project: &impl Fn(Error, &Declarations) -> Result<Error, Error>,
 ) -> Result<Error, Failure> {
     entries
         .charge(
             1,
-            MESSAGE.len()
+            message.len()
                 + size_of::<crate::resolve::package::ErrorData>()
                 // Prepay coexistence with the exact terminal Vec<Warning> conversion.
                 + 4 * (size_of::<(NodeKey, Warning)>() + size_of::<Warning>()),
         )
-        .map_err(|message| failure(entries, Error::at(file, declaration.keyword.start, message)))?;
-    let diagnostic = project(Error::at(file, declaration.keyword.start, MESSAGE), entries)
+        .map_err(|message| failure(entries, Error::at(file, declaration.span.start, message)))?;
+    let diagnostic = project(Error::at(file, declaration.span.start, message), entries)
         .map_err(|error| failure(entries, error))?;
     let (steps, bytes) = diagnostic.warning_payload().ok_or_else(|| {
         failure(
             entries,
             Error::at(
                 file,
-                declaration.keyword.start,
+                declaration.span.start,
                 "default warning acquired a nested carrier",
             ),
         )
@@ -78,7 +80,7 @@ fn diagnostic(
                     (),
                 >(1),
         )
-        .map_err(|message| failure(entries, Error::at(file, declaration.keyword.start, message)))?;
+        .map_err(|message| failure(entries, Error::at(file, declaration.span.start, message)))?;
     Ok(diagnostic)
 }
 fn collect(
@@ -93,7 +95,7 @@ fn collect(
     let mut warnings = Vec::new();
     let mut origins = None;
     for (file, unit) in package.units.iter().enumerate() {
-        let Some(entries) = &unit.configured.ast.defaultness else {
+        let Some(entries) = &unit.configured.ast.gate_sites else {
             continue;
         };
         let full = FeatureName::new("specialization")
@@ -115,26 +117,40 @@ fn collect(
             if unit.configured.active[declaration.node.get() as usize] {
                 continue;
             }
-            if package
-                .requested_defaultness(declaration.kind == Kind::Function)
-                .map_err(|message| {
-                    failure(entries, Error::at(file, declaration.keyword.start, message))
-                })?
-                || allows(file, declaration.keyword, &full)
+            let message = if declaration.kind == Kind::TraitAlias {
+                let feature = FeatureName::new("trait_alias")
+                    .map_err(|message| Failure::Origin(Error::unlocated(message)))?;
+                if package.requested_alias_feature(false).map_err(|message| {
+                    failure(entries, Error::at(file, declaration.span.start, message))
+                })? || allows(file, declaration.span, &feature)
                     .map_err(|error| failure(entries, error))?
-                || declaration.kind == Kind::Function
-                    && allows(file, declaration.keyword, &minimal)
+                {
+                    continue;
+                }
+                ALIAS_MESSAGE
+            } else {
+                if package
+                    .requested_defaultness(declaration.kind == Kind::Function)
+                    .map_err(|message| {
+                        failure(entries, Error::at(file, declaration.span.start, message))
+                    })?
+                    || allows(file, declaration.span, &full)
                         .map_err(|error| failure(entries, error))?
-            {
-                continue;
-            }
-            let diagnostic = diagnostic(file, declaration, entries, &project)?;
+                    || declaration.kind == Kind::Function
+                        && allows(file, declaration.span, &minimal)
+                            .map_err(|error| failure(entries, error))?
+                {
+                    continue;
+                }
+                MESSAGE
+            };
+            let diagnostic = diagnostic(file, declaration, entries, message, &project)?;
             let origin = diagnostic.file.source().ok_or_else(|| {
                 failure(
                     entries,
                     Error::at(
                         file,
-                        declaration.keyword.start,
+                        declaration.span.start,
                         "default warning lost its source",
                     ),
                 )

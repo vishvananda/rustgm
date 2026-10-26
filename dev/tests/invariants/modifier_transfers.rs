@@ -11,11 +11,11 @@ use crate::syntax::{
 fn rollback_and_retry() -> TestResult {
     let text = "struct S;impl S{default fn f(){} default fn g(){}}";
     let source = expression::parse_crate(text).map_err(|error| error.message)?;
-    let rows = source.defaultness.as_ref().ok_or("source default rows")?;
+    let rows = source.gate_sites.as_ref().ok_or("source default rows")?;
     assert_eq!(rows.len(), 2);
-    let rejected = rows.entries()[1].keyword;
+    let rejected = rows.entries()[1].span;
     let mut destination = Syntax::default();
-    assert!(destination.defaultness.is_none());
+    assert!(destination.gate_sites.is_none());
     let empty = Extent::new(&destination);
     let mut previous = 0;
     for _ in 0..3 {
@@ -37,7 +37,7 @@ fn rollback_and_retry() -> TestResult {
         assert!(result.is_err());
         assert!(destination.nodes.is_empty() && destination.items.is_empty());
         let retained = destination
-            .defaultness
+            .gate_sites
             .as_ref()
             .ok_or("zero-prefix debt owner lost")?;
         let (len, capacity, steps, bytes) = retained.storage();
@@ -47,7 +47,7 @@ fn rollback_and_retry() -> TestResult {
         let copied = empty.copy(&destination).map_err(|error| error.message)?;
         assert!(
             copied
-                .defaultness
+                .gate_sites
                 .as_ref()
                 .ok_or("replay discarded failed work")?
                 .storage()
@@ -59,7 +59,7 @@ fn rollback_and_retry() -> TestResult {
         .map_err(|error| error.message)?;
     destination.root = root;
     let copied = destination
-        .defaultness
+        .gate_sites
         .as_ref()
         .ok_or("successful retry rows")?;
     assert_eq!(copied.len(), 2);
@@ -131,7 +131,7 @@ fn root_replacement_and_originals() -> TestResult {
     let row = unit
         .configured
         .ast
-        .defaultness
+        .gate_sites
         .as_ref()
         .ok_or("committed root row")?
         .entries()[0];
@@ -145,7 +145,7 @@ fn root_replacement_and_originals() -> TestResult {
     );
     unit.configured
         .ast
-        .validate_defaultness_source(unit.source.original_image())
+        .validate_gate_sites_source(unit.source.original_image())
         .map_err(|error| error.message)?;
     for _ in 0..2 {
         let fresh = unit.fresh_instance().map_err(|error| error.message)?;
@@ -153,7 +153,7 @@ fn root_replacement_and_originals() -> TestResult {
         let debt = fresh
             .configured
             .ast
-            .defaultness
+            .gate_sites
             .as_ref()
             .ok_or("fresh replay lost retention debt")?;
         assert_eq!(debt.len(), 0);
@@ -169,7 +169,7 @@ fn root_replacement_and_originals() -> TestResult {
         fresh
             .configured
             .ast
-            .validate_defaultness_source(fresh.source.original_image())
+            .validate_gate_sites_source(fresh.source.original_image())
             .map_err(|error| error.message)?;
     }
     Ok(())
@@ -194,7 +194,7 @@ fn sparse_modifiers_preserve_transfer_retry_root_and_original_identities() -> Te
     ] {
         let text = fixture(lane, name)?;
         let ast = expression::parse_crate(&text).map_err(|error| error.message)?;
-        let rows = ast.defaultness.as_ref().ok_or("parsed modifier rows")?;
+        let rows = ast.gate_sites.as_ref().ok_or("parsed modifier rows")?;
         assert_eq!(rows.len(), 1, "{name}");
         assert_eq!(rows.entries()[0].kind, expected);
         let mut output = Vec::new();
@@ -205,6 +205,6 @@ fn sparse_modifiers_preserve_transfer_retry_root_and_original_identities() -> Te
         "fn default(){}macro_rules! default{()=>{}}fn main(){default();default!();}",
     )
     .map_err(|error| error.message)?;
-    assert!(plain.defaultness.is_none());
+    assert!(plain.gate_sites.is_none());
     Ok(())
 }
