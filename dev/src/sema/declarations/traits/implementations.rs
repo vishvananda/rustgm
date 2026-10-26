@@ -71,7 +71,9 @@ impl Checker<'_> {
                 self.drain(steps, limit)?;
             }
         }
-        if let Some(registry) = &mut self.facts.generics.implementations {
+        if let Some(selected) = self.selected.as_deref_mut() {
+            selected.require_imported_pending(self.report, &self.facts)?;
+        } else if let Some(registry) = &mut self.facts.generics.implementations {
             registry
                 .finish_constant_headers()
                 .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;

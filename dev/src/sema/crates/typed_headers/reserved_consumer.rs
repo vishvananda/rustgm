@@ -77,6 +77,141 @@ impl HeaderDraft {
     }
 }
 impl SelectedConsumer<'_> {
+    pub(in crate::sema) fn require_imported_implementation(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        owner: DefId,
+    ) -> Result<(), Error> {
+        self.require(report, facts)?;
+        self.work.charge(3)?;
+        let actual = facts
+            .associated
+            .owner(owner)
+            .and_then(|id| facts.associated.get(id))
+            .filter(|actual| {
+                matches!(
+                    actual.kind,
+                    crate::sema::associated::OwnerKind::ImportedImpl(_)
+                ) && actual.source.is_none()
+                    && actual.self_definition == owner
+            })
+            .ok_or_else(|| {
+                Error::unlocated("selected conformance lost its actual imported impl")
+            })?;
+        let catalog = self.reservation.catalog();
+        catalog
+            .validate_declaration(
+                catalog
+                    .declaration(actual.self_definition)
+                    .map_err(Error::unlocated)?,
+                owner,
+                crate::resolve::model::DefKind::SelfType,
+            )
+            .map_err(Error::unlocated)
+    }
+
+    pub(in crate::sema) fn require_imported_pending(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+    ) -> Result<(), Error> {
+        self.require(report, facts)?;
+        if let Some(registry) = facts.generics.implementations.as_deref() {
+            for owner in registry.pending_owners() {
+                self.work.charge(2)?;
+                let catalog = self.reservation.catalog();
+                let id = catalog.declaration(owner).map_err(Error::unlocated)?;
+                catalog
+                    .validate_declaration(id, owner, crate::resolve::model::DefKind::SelfType)
+                    .map_err(Error::unlocated)?;
+            }
+        }
+        // This intentionally changes no registry completion flag. Every
+        // unfinished imported candidate remains an ordinary selection dependency.
+        Ok(())
+    }
+
+    pub(in crate::sema) fn implementation_candidates(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        headers: &mut Vec<crate::sema::traits::implementations::PendingHeader>,
+    ) -> Result<(), Error> {
+        use crate::{
+            sema::{associated::OwnerKind, traits::implementations::Implementations},
+            support::retained::Growth,
+        };
+        self.require(report, facts)?;
+        let view = self.reservation.recipe_view(report, self.work)?;
+        let rows = view.rows()?;
+        self.work
+            .charge(rows.implementations.len().saturating_add(1))?;
+        let growth = Growth::vector::<crate::sema::traits::implementations::PendingHeader>(
+            headers.len(),
+            headers.capacity(),
+            rows.implementations.len(),
+        );
+        self.work.charge(growth.work)?;
+        let count = headers.len().saturating_add(rows.implementations.len());
+        if count != 0 {
+            self.work.reserve(
+                growth
+                    .bytes
+                    .saturating_add(if facts.generics.implementations.is_none() {
+                        size_of::<Implementations>()
+                    } else {
+                        0
+                    })
+                    .saturating_add(Implementations::reservation_allocation_bound(count)),
+            )?;
+        }
+        for raw in &rows.implementations {
+            let Some(reference) = raw.trait_application else {
+                continue;
+            };
+            self.work.charge(4)?;
+            let owner = view.definition(raw.self_definition, self.work)?;
+            if let Some(actual) = facts
+                .associated
+                .owner(owner)
+                .and_then(|id| facts.associated.get(id))
+            {
+                if !matches!(actual.kind, OwnerKind::ImportedImpl(_)) {
+                    return Err(Error::unlocated(
+                        "selected implementation candidate changed its actual owner kind",
+                    ));
+                }
+                // The ordinary owner walk already included this exact identity.
+                continue;
+            }
+            let application = rows
+                .trait_applications
+                .get(reference.0 as usize)
+                .ok_or_else(|| Error::unlocated("selected candidate lost its trait application"))?;
+            if application.declaration.artifact != rows.policy.provider {
+                return Err(Error::unlocated(
+                    "selected implementation candidate requires its actual dependency trait",
+                ));
+            }
+            let definition = view.definition(application.declaration.declaration, self.work)?;
+            let catalog = self.reservation.catalog();
+            catalog
+                .validate_declaration(
+                    catalog.declaration(definition).map_err(Error::unlocated)?,
+                    definition,
+                    crate::resolve::model::DefKind::Trait,
+                )
+                .map_err(Error::unlocated)?;
+            headers.push(crate::sema::traits::implementations::PendingHeader {
+                owner,
+                item: crate::types::ItemId(definition.0).into(),
+                head: None,
+            });
+        }
+        Ok(())
+    }
+
     pub(in crate::sema) fn begin(
         &mut self,
         report: &Report,

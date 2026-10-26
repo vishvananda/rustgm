@@ -68,6 +68,12 @@ impl Checker<'_> {
         let mut constants = self.constant_members.take_members(self.report, &self.facts);
         for (owner, source, predicate) in headers {
             let Some(source) = source else {
+                if let Some(selected) = self.selected.as_deref_mut() {
+                    // Private imported conformance is driven by the actual
+                    // selected dependency, never by this unrelated eager walk.
+                    selected.require_imported_implementation(self.report, &self.facts, owner)?;
+                    continue;
+                }
                 self.validate_imported_trait_implementation(owner, predicate)?;
                 continue;
             };
@@ -85,6 +91,10 @@ impl Checker<'_> {
         }
         self.finish_constant_contracts()?;
         self.finish_iteration_contracts()?;
+        if let Some(selected) = self.selected.as_deref_mut() {
+            selected.require_imported_pending(self.report, &self.facts)?;
+            return Ok(());
+        }
         self.facts
             .generics
             .implementations

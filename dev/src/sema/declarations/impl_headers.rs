@@ -48,7 +48,7 @@ impl Checker<'_> {
     }
 
     fn implementation_candidates(
-        &self,
+        &mut self,
         imported_work: &mut usize,
     ) -> Result<Vec<crate::sema::traits::implementations::PendingHeader>, Error> {
         use crate::sema::{associated::OwnerKind, traits::implementations::PendingHeader};
@@ -116,6 +116,9 @@ impl Checker<'_> {
             });
         }
         self.library_implementation_headers(&mut headers)?;
+        if let Some(selected) = self.selected.as_deref_mut() {
+            selected.implementation_candidates(self.report, &self.facts, &mut headers)?;
+        }
         Ok(headers)
     }
 

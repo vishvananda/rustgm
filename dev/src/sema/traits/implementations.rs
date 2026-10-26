@@ -69,6 +69,15 @@ pub(in crate::sema) struct Implementations {
     graph: Option<Box<crate::sema::specialization::Graph>>,
 }
 impl Implementations {
+    pub(in crate::sema) fn pending_owners(&self) -> impl Iterator<Item = DefId> + '_ {
+        self.pending.iter().flat_map(|pending| pending.owners())
+    }
+
+    /// Cost only: reserve constructs the same pending inventory in both paths.
+    pub(in crate::sema) fn reservation_allocation_bound(count: usize) -> usize {
+        pending::Pending::allocation_bound(count)
+    }
+
     /// Any explicit impl replaces the structural default for the entire nominal
     /// family, even when the requested application does not match its bounds.
     pub fn auto_override(
