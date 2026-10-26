@@ -99,26 +99,6 @@ impl crate::resolve::expansion::Report {
         let Some(context) = self.package.macro_context().map_err(error)? else {
             return Ok(());
         };
-        let scope = self
-            .resolution
-            .scopes
-            .get(actual.scope.0 as usize)
-            .ok_or_else(|| error("helper diagnostic macro scope disappeared"))?;
-        if actual.kind != DefKind::Macro
-            || self
-                .package
-                .modules
-                .get(scope.module.0 as usize)
-                .is_none_or(|module| module.file != key.file)
-            || self
-                .resolution
-                .item_definitions
-                .get(&(scope.module, key.node, Namespace::Macro))
-                != Some(&definition)
-            || self.resolution.node_scopes.get(&(scope.module, key.node)) != Some(&actual.scope)
-        {
-            return Err(error("helper diagnostic macro identity changed"));
-        }
         let Some(header) = super::checked_definition(&self.package, key)? else {
             return Ok(());
         };
@@ -126,8 +106,30 @@ impl crate::resolve::expansion::Report {
         if summary.node != key {
             return Err(error("helper diagnostic header belongs to another macro"));
         }
-        if summary.builtin.is_none() {
+        let Some(role) = summary.builtin else {
             return Ok(());
+        };
+        let scope = self
+            .resolution
+            .scopes
+            .get(actual.scope.0 as usize)
+            .ok_or_else(|| error("helper diagnostic macro scope disappeared"))?;
+        if actual.kind != DefKind::Macro
+            || actual.namespace != Namespace::Macro
+            || self
+                .package
+                .modules
+                .get(scope.module.0 as usize)
+                .is_none_or(|module| module.file != key.file)
+            || role.kind() != crate::expand::builtin::BuiltinKind::Bang
+                && self
+                    .resolution
+                    .item_definitions
+                    .get(&(scope.module, key.node, Namespace::Macro))
+                    != Some(&definition)
+            || self.resolution.node_scopes.get(&(scope.module, key.node)) != Some(&actual.scope)
+        {
+            return Err(error("helper diagnostic macro identity changed"));
         }
         let data = header
             .into_data()

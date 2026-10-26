@@ -176,6 +176,19 @@ fn malformed_helpers_global_use_wrong_roles_and_reincarnated_headers_reject() ->
 }
 #[test]
 fn helper_collision_warnings_use_actual_owner_policy_macro_origin_and_error_carrier() -> Result {
+    let bang =
+        source("bang-helper-without-decl-gate")?.replace("attributes(helper)", "attributes(doc)");
+    let bang = crate::test_source::source_provider(&bang, "bang_helper_collision")?;
+    let bang = crate::pipeline::analyze_source(&bang)?;
+    assert_eq!(bang.facts.warnings().count(), 1);
+    assert_eq!(
+        bang.facts
+            .warnings()
+            .next()
+            .ok_or("Bang helper warning")?
+            .code,
+        WarningCode::AmbiguousDeriveHelpers
+    );
     for name in [
         "builtin-collision",
         "collision-warn",
