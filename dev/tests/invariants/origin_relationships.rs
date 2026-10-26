@@ -33,6 +33,61 @@ fn replace_environment(
         .ok_or("actual retained imported header")?;
     Ok(std::mem::replace(&mut header.environment, environment))
 }
+fn actual_origins(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+) -> Result<Vec<DefId>> {
+    let linkage = facts.crates.as_deref().ok_or("actual linkage")?;
+    linkage
+        .originals
+        .as_deref()
+        .and_then(|headers| headers.source.as_deref())
+        .ok_or("actual canonical graph")?;
+    let catalog = linkage.origin_catalog().ok_or("actual catalog")?;
+    let descriptor = report
+        .resolution
+        .crates
+        .as_deref()
+        .ok_or("actual import inventory")?
+        .dependencies()
+        .artifacts()
+        .iter()
+        .find_map(crate::support::crates::Interface::source_descriptor)
+        .ok_or("actual complete source descriptor")?;
+    let rows = descriptor.rows();
+    let mut definitions = Vec::new();
+    for name in ["clone", "identity", "plain"] {
+        let raw = rows
+            .functions
+            .iter()
+            .find(|header| {
+                rows.declarations[header.declaration.0 as usize]
+                    .name
+                    .as_deref()
+                    == Some(name)
+            })
+            .ok_or("actual named function row")?;
+        match (name, raw.body) {
+            ("clone", crate::support::crates::generics::source::FunctionBody::Absent) => {}
+            (_, crate::support::crates::generics::source::FunctionBody::Original(body)) => {
+                let origin = rows.body_inputs[body.0 as usize].environment;
+                assert_eq!(
+                    origin,
+                    if name == "plain" {
+                        crate::support::crates::generics::source::EnvironmentOrigin::Contract
+                    } else {
+                        crate::support::crates::generics::source::EnvironmentOrigin::Declaration(
+                            raw.declaration,
+                        )
+                    }
+                );
+            }
+            _ => return Err("actual required method acquired a body".into()),
+        }
+        definitions.push(catalog.definition_at(descriptor.identity(), raw.declaration)?);
+    }
+    Ok(definitions)
+}
 
 #[test]
 fn imported_method_environment_validation_preserves_actual_contract_origin() -> Result {
@@ -47,58 +102,7 @@ fn imported_method_environment_validation_preserves_actual_contract_origin() -> 
         "#![feature(no_core)]#![no_core]extern crate base;pub fn idle(){}",
     )?;
     let facts = &mut analysis.facts;
-    let definitions = {
-        let linkage = facts.crates.as_deref().ok_or("actual linkage")?;
-        linkage
-            .originals
-            .as_deref()
-            .and_then(|headers| headers.source.as_deref())
-            .ok_or("actual canonical graph")?;
-        let catalog = linkage.origin_catalog().ok_or("actual catalog")?;
-        let descriptor = report
-            .resolution
-            .crates
-            .as_deref()
-            .ok_or("actual import inventory")?
-            .dependencies()
-            .artifacts()
-            .iter()
-            .find_map(crate::support::crates::Interface::source_descriptor)
-            .ok_or("actual complete source descriptor")?;
-        let rows = descriptor.rows();
-        let mut definitions = Vec::new();
-        for name in ["clone", "identity", "plain"] {
-            let raw = rows
-                .functions
-                .iter()
-                .find(|header| {
-                    rows.declarations[header.declaration.0 as usize]
-                        .name
-                        .as_deref()
-                        == Some(name)
-                })
-                .ok_or("actual named function row")?;
-            match (name, raw.body) {
-                ("clone", crate::support::crates::generics::source::FunctionBody::Absent) => {}
-                (_, crate::support::crates::generics::source::FunctionBody::Original(body)) => {
-                    let origin = rows.body_inputs[body.0 as usize].environment;
-                    assert_eq!(
-                        origin,
-                        if name == "plain" {
-                            crate::support::crates::generics::source::EnvironmentOrigin::Contract
-                        } else {
-                            crate::support::crates::generics::source::EnvironmentOrigin::Declaration(
-                                raw.declaration,
-                            )
-                        }
-                    );
-                }
-                _ => return Err("actual required method acquired a body".into()),
-            }
-            definitions.push(catalog.definition_at(descriptor.identity(), raw.declaration)?);
-        }
-        definitions
-    };
+    let definitions = actual_origins(&report, facts)?;
     let mut steps = 0;
     for (index, &definition) in definitions.iter().enumerate() {
         require(facts, definition, &mut steps)?;
