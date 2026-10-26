@@ -44,7 +44,7 @@ fn alias_shorthand_uses_real_leaf_arguments_equalities_and_shared_seed() -> Test
 }
 
 fn original_leaf_arguments(checker: &Checker<'_>, report: &Report) -> TestResult {
-    let leaf = definition(&report, "Leaf", DefKind::Trait)?;
+    let leaf = definition(report, "Leaf", DefKind::Trait)?;
     let mut original = 0;
     for (_, ty) in checker.facts.unreduced.node_entries() {
         let Some(Type::Projection(application)) = checker.facts.types.kind(ty) else { continue };
