@@ -15,6 +15,7 @@ complete original Metadata Debug/Copy/Send/Sync/Ord/Hash/Unpin/Freeze requiremen
 remain pending. The first six no_core observations retain missing prerequisite
 errors and the wrong library-feature hypothesis; they are not successes.
 
-Candidate results are pending. Independent pinned evidence is frozen under the
+Candidate selected-source, constant, LowIR and native results pass; see
+[the measured checkpoint](../../../../docs/source-nonnull-pattern-checkpoint.md). Independent pinned evidence is frozen under the
 maintainer source-nonnull-pattern-v1 receipt; no native claim follows from object
 acceptance alone.

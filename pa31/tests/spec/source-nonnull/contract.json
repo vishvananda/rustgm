@@ -1,5 +1,5 @@
 {
-  "state": "planned-candidate-unrun",
+  "state": "qualified-reduced-local-source-constant-native",
   "source": "source-methods.rs",
   "sha256": "86ab25bc51550188fd7bc8210faa99a04a8cd95eafe1e641d5a0ac64d16408cc",
   "expect": "accept source typing/CTFE/native19 23 119 1; preserve wide metadata4 and storage16",
@@ -14,5 +14,8 @@
     "foreign Pattern transport"
   ],
   "independent_source": "source-independent-v2:4/4 metadata/object +real C native19 23 119 1; explicit UB=false; original failed6 and wrong gate hypotheses retained",
-  "reduced_pointee": "genuine source-owned Pointee/Metadata:Sized; complete original Debug/Copy/Send/Sync/Ord/Hash/Unpin/Freeze contract remains required"
+  "reduced_pointee": "genuine source-owned Pointee/Metadata:Sized; complete original Debug/Copy/Send/Sync/Ord/Hash/Unpin/Freeze contract remains required",
+  "candidate_source": "44ea6bff66d533d8b466ce320d266a450b3f1624",
+  "candidate_receipt_sha256": "6d151b75660b84f1527186b046bca9ede9e2d60f41641d703534832ad2392e6c",
+  "native_stream": "19 23 119 1\n"
 }
