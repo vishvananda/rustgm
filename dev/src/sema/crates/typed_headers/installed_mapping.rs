@@ -7,6 +7,7 @@ use super::super::{
 use super::{
     header_demands::State,
     schema_mapping::{Authority, Borrowed},
+    template_demands,
 };
 use crate::{
     resolve::{
@@ -35,6 +36,8 @@ pub(in crate::sema) struct ProvidedOwners {
     data_identity: HeaderDataIdentity,
     reader: MemoReader,
     maps: Rc<Maps>,
+    scopes: template_demands::ScopeReader,
+    applications: super::super::predicate_remap::translation::applications::Reader,
 }
 impl ProvidedOwners {
     pub(super) fn new(
@@ -53,6 +56,8 @@ impl ProvidedOwners {
         )?;
         let view = authority.reservation.retained_recipe_view(work)?;
         let reader = state.retained_reader(&view, store, work)?;
+        let applications = template_demands::application_reader(state, &view, store, work)?;
+        let scopes = template_demands::scope_reader(state, &view, store, work)?;
         let arena = store
             .existing_arena_identity()
             .ok_or_else(|| error("selected owner lost its actual current arena"))?
@@ -69,6 +74,8 @@ impl ProvidedOwners {
             data,
             reader,
             maps: Rc::clone(&state.maps),
+            applications,
+            scopes,
         }))
     }
     pub(super) fn require_source(
@@ -96,7 +103,15 @@ impl ProvidedOwners {
         state
             .cursor
             .require_reader(&self.reader, &view, store, work)?;
-        self.require_store(store).map_err(error)
+        template_demands::require_application_reader(
+            state,
+            &self.applications,
+            &view,
+            store,
+            work,
+        )?;
+        template_demands::require_scope_reader(state, &self.scopes, &view, store, work)?;
+        self.require_current(store, work).map_err(error)
     }
     fn view(&self) -> RecipeView<'_> {
         RecipeView::retained_parts(&self.inventory, self.index, &self.catalog, self.root)
@@ -125,19 +140,33 @@ impl ProvidedOwners {
         }
         Ok(descriptor)
     }
-    pub(in crate::sema) fn require_store(&self, store: &Store) -> Result<(), &'static str> {
+    fn require_current(
+        &self,
+        store: &Store,
+        work: &mut ReservationWork,
+    ) -> Result<(), &'static str> {
+        work.charge(14)
+            .map_err(|_| "selected owner validation work budget exceeded")?;
         self.descriptor()?;
         if !store.has_identity(&self.arena) {
             return Err("selected owner belongs to another current type arena");
         }
-        let mut work = ReservationWork::default();
         let view = self.view();
         self.reader
-            .require(&view, store, &mut work)
+            .require(&view, store, work)
             .map_err(|_| "selected owner lost its canonical reader")?;
         self.maps
-            .require(&view, store, &mut work)
-            .map_err(|_| "selected owner lost its canonical slot maps")
+            .require(&view, store, work)
+            .map_err(|_| "selected owner lost its canonical slot maps")?;
+        self.scopes
+            .require(&view, store, work)
+            .map_err(|_| "selected owner lost its actual scope allocation")?;
+        self.applications
+            .require(&view, store, work)
+            .map_err(|_| "selected owner lost its actual canonical applications")
+    }
+    pub(in crate::sema) fn require_store(&self, store: &Store) -> Result<(), &'static str> {
+        self.require_current(store, &mut ReservationWork::default())
     }
     pub(in crate::sema) fn owner(&self, owner: Owner) -> Result<(), &'static str> {
         checked_rows::require_owner(&self.catalog, || self.descriptor(), owner)
@@ -150,19 +179,21 @@ impl ProvidedOwners {
         members: &[crate::resolve::model::DefId],
         steps: &mut usize,
     ) -> Result<(), &'static str> {
-        self.require_store(store)?;
         let view = self.view();
         let mut work = ReservationWork::default();
-        let result = Borrowed::retained(
-            &self.catalog,
-            &view,
-            &self.reader,
-            &self.maps,
-            store,
-            &mut work,
-        )
-        .map_err(|_| "selected inventory lost its actual checked mapping")
-        .and_then(|mut mapped| mapped.require_schema(store, owner, schema, members, steps));
+        let result = (|| {
+            self.require_current(store, &mut work)?;
+            let mut mapped = Borrowed::retained(
+                &self.catalog,
+                &view,
+                &self.reader,
+                &self.maps,
+                store,
+                &mut work,
+            )
+            .map_err(|_| "selected inventory lost its actual checked mapping")?;
+            mapped.require_schema(store, owner, schema, members, steps)
+        })();
         *steps = steps.saturating_add(work.steps);
         if *steps > crate::support::crates::MAX_COMPONENTS {
             return Err("selected owner validation work budget exceeded");
@@ -180,6 +211,62 @@ impl ProvidedOwners {
             return Err("selected role belongs to another actual artifact");
         }
         Ok(())
+    }
+    fn implementation_header(&self, owner: Owner) -> Result<&s::ImplHeader, &'static str> {
+        self.owner(owner)?;
+        let OwnerKind::ImportedImpl(id) = owner.kind else {
+            return Err("selected implementation requires its actual imported impl owner");
+        };
+        let (_, row, _) = self.catalog.declaration_coordinate(id)?;
+        let descriptor = self.descriptor()?;
+        let Some(s::HeaderRef::Implementation(index)) = descriptor.rows().header(row)? else {
+            return Err("selected implementation lost its actual header");
+        };
+        descriptor
+            .rows()
+            .implementations
+            .get(index as usize)
+            .ok_or("selected implementation is outside its actual table")
+    }
+    pub(in crate::sema) fn implementation_request(
+        &self,
+        store: &Store,
+        owner: Owner,
+    ) -> Result<crate::types::parameters::predicates::Predicate, &'static str> {
+        self.require_store(store)?;
+        let raw = self.implementation_header(owner)?;
+        let reference = raw
+            .trait_application
+            .ok_or("selected inherent implementation requires its explicit producer")?;
+        let mut work = ReservationWork::default();
+        self.applications
+            .get(&self.view(), store, reference, &mut work)
+            .map_err(|_| "selected implementation changed its actual application cache")?
+            .ok_or("selected implementation requires its actual pending application producer")
+    }
+    pub(in crate::sema) fn implementation(
+        &self,
+        store: &Store,
+        owner: Owner,
+        predicate: crate::types::parameters::predicates::Predicate,
+    ) -> Result<(bool, bool), &'static str> {
+        let expected = self.implementation_request(store, owner)?;
+        let raw = self.implementation_header(owner)?;
+        let view = self.view();
+        let mut work = ReservationWork::default();
+        let mut mapped = Borrowed::retained(
+            &self.catalog,
+            &view,
+            &self.reader,
+            &self.maps,
+            store,
+            &mut work,
+        )
+        .map_err(|_| "selected implementation lost its actual checked mapping")?;
+        if predicate != expected || mapped.ty(raw.self_type)? != predicate.ty {
+            return Err("selected implementation changed its complete actual trait/Self predicate");
+        }
+        Ok((raw.constant, raw.negative))
     }
     pub(in crate::sema) fn trait_flags(&self, owner: Owner) -> Result<u16, &'static str> {
         self.owner(owner)?;

@@ -21,6 +21,7 @@ use crate::{
 };
 #[path = "assumed_scopes.rs"]
 mod assumption_environments;
+pub(in crate::sema::crates::typed_headers) use assumption_environments::ScopeReader;
 #[path = "formal_ancestry.rs"]
 mod formal_path;
 #[path = "recorded_regions.rs"]
@@ -43,7 +44,7 @@ struct Ready {
 }
 pub(super) struct Prepared {
     templates: Templates,
-    scopes: Vec<Option<usize>>,
+    scopes: std::rc::Rc<Vec<Option<usize>>>,
     ready: Vec<Option<Ready>>,
     occurrences: Vec<Option<u32>>,
     environments: Option<Box<assumption_environments::Owner>>,
@@ -61,6 +62,7 @@ impl Prepared {
         )?;
         work.reserve(
             size_of::<Self>()
+                .saturating_add(size_of::<Vec<Option<usize>>>() + 2 * size_of::<usize>())
                 .saturating_add(
                     rows.declarations
                         .len()
@@ -84,7 +86,7 @@ impl Prepared {
         }
         Ok(Self {
             templates: Templates::default(),
-            scopes,
+            scopes: std::rc::Rc::new(scopes),
             ready: vec![None; rows.functions.len()],
             occurrences: vec![None; rows.types.len()],
             environments: None,
@@ -95,6 +97,8 @@ impl Prepared {
         size_of::<Self>()
             + self.templates.allocation().bytes
             + retained::vector(&self.scopes)
+            + size_of::<Vec<Option<usize>>>()
+            + 2 * size_of::<usize>()
             + retained::vector(&self.ready)
             + retained::vector(&self.occurrences)
             + self
@@ -299,6 +303,58 @@ impl Session {
         )?;
         Ok((self, result))
     }
+}
+
+pub(super) fn scope_reader(
+    state: &State,
+    view: &RecipeView<'_>,
+    store: &Store,
+    work: &mut ReservationWork,
+) -> Result<ScopeReader, Error> {
+    let prepared = state
+        .callables
+        .as_deref()
+        .ok_or_else(|| error("selected scope reader omitted its actual callable owner"))?;
+    application_owner(state)?.scope_reader(prepared, view, store, work)
+}
+pub(super) fn require_scope_reader(
+    state: &State,
+    reader: &ScopeReader,
+    view: &RecipeView<'_>,
+    store: &Store,
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
+    let prepared = state
+        .callables
+        .as_deref()
+        .ok_or_else(|| error("selected scope reader lost its actual callable owner"))?;
+    application_owner(state)?.require_scope_reader(prepared, reader, view, store, work)
+}
+fn application_owner(state: &State) -> Result<&assumption_environments::Owner, Error> {
+    state
+        .callables
+        .as_deref()
+        .and_then(|prepared| prepared.environments.as_deref())
+        .ok_or_else(|| {
+            error("selected applications require their actual declaration environment owner")
+        })
+}
+pub(super) fn application_reader(
+    state: &State,
+    view: &RecipeView<'_>,
+    store: &Store,
+    work: &mut ReservationWork,
+) -> Result<super::super::predicate_remap::translation::applications::Reader, Error> {
+    application_owner(state)?.application_reader(view, store, work)
+}
+pub(super) fn require_application_reader(
+    state: &State,
+    reader: &super::super::predicate_remap::translation::applications::Reader,
+    view: &RecipeView<'_>,
+    store: &Store,
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
+    application_owner(state)?.require_application_reader(reader, view, store, work)
 }
 
 /// The consumer lends its one real table exclusively; buffer handles move and

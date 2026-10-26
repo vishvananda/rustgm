@@ -139,7 +139,8 @@ fn check_scope(
     };
     assert_eq!(expected.header.declaration, owner);
     let scope = environments.scopes[*scope]
-        .as_deref()
+        .get()
+        .map(Box::as_ref)
         .ok_or("actual member scope")?;
     assert!(Arc::ptr_eq(environment, &scope.environment));
     assert_eq!(scope.parameters.len(), 3);
@@ -213,12 +214,13 @@ fn inherited_opponents() -> Result {
                 session.inventory = foreign;
             }
             2 => {
-                session
+                let table = session
                     .recipes
                     .as_mut()
                     .and_then(|state| state.callables.as_mut())
-                    .ok_or("actual template")?
-                    .scopes[owner.0 as usize] = None;
+                    .ok_or("actual template")?;
+                Rc::get_mut(&mut table.scopes).ok_or("exclusive actual scope index")?
+                    [owner.0 as usize] = None;
             }
             3 => work.retained = crate::support::crates::MAX_BYTES,
             _ => {
@@ -238,8 +240,9 @@ fn inherited_opponents() -> Result {
                 else {
                     return Err("actual inherited Declaration".into());
                 };
-                environments.scopes[*scope]
-                    .as_mut()
+                Rc::get_mut(&mut environments.scopes)
+                    .ok_or("exclusive actual environment scopes")?[*scope]
+                    .get_mut()
                     .ok_or("actual scope")?
                     .parameters
                     .pop()
@@ -288,7 +291,7 @@ fn missing_parent(
         .ok_or("actual member")?;
     let parent = header.parent.ok_or("actual inherited trait owner")?;
     let mut table = Prepared::new(&view, work)?;
-    table.scopes[parent.0 as usize] = None;
+    Rc::get_mut(&mut table.scopes).ok_or("exclusive actual scope index")?[parent.0 as usize] = None;
     session
         .recipes
         .as_mut()

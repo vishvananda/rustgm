@@ -43,7 +43,7 @@ pub(super) struct Header {
     pub body: Option<BodyOrigin>,
     pub signature: TypeId,
     pub callable: TypeId,
-    pub environment: Arc<Environment>,
+    pub environment: Option<Arc<Environment>>,
     pub inputs: Arc<[Input]>,
     pub declared: usize,
     pub universals: u32,
@@ -240,7 +240,12 @@ impl super::Linkage {
             body: header.body,
             signature: header.signature,
             universals: header.universals,
-            environment: Some(&header.environment),
+            environment: Some(
+                header
+                    .environment
+                    .as_ref()
+                    .ok_or("imported original requires its actual pending defining environment")?,
+            ),
         }))
     }
     pub(crate) fn original_application(

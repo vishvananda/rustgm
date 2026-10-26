@@ -107,13 +107,7 @@ impl ImportedOwners {
     ) -> Result<Predicate, &'static str> {
         match self {
             Self::Ordinary(graph) => graph.implementation_request(store, owner),
-            Self::Provided(mapping) => {
-                mapping.require_store(store)?;
-                mapping.owner(owner)?;
-                Err(
-                    "selected implementation request requires its actual pending application producer",
-                )
-            }
+            Self::Provided(mapping) => mapping.implementation_request(store, owner),
         }
     }
     pub(in crate::sema) fn implementation(
@@ -124,13 +118,7 @@ impl ImportedOwners {
     ) -> Result<(bool, bool), &'static str> {
         match self {
             Self::Ordinary(graph) => graph.implementation(store, owner, predicate),
-            Self::Provided(mapping) => {
-                mapping.require_store(store)?;
-                mapping.owner(owner)?;
-                Err(
-                    "selected implementation conformance requires its actual pending application producer",
-                )
-            }
+            Self::Provided(mapping) => mapping.implementation(store, owner, predicate),
         }
     }
 }

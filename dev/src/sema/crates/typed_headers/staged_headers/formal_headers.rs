@@ -137,7 +137,7 @@ pub(super) fn header(
         body,
         signature,
         callable,
-        environment: Arc::clone(environment),
+        environment: Some(Arc::clone(environment)),
         inputs: Arc::clone(inputs),
         declared,
         universals: raw.regions.total,

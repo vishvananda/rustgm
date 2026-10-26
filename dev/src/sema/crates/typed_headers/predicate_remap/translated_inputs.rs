@@ -18,6 +18,9 @@ use crate::{
     },
 };
 use std::sync::Arc;
+#[path = "application_cells.rs"]
+pub(in crate::sema::crates::typed_headers) mod applications;
+use applications::Cache;
 pub(in crate::sema::crates::typed_headers) type InputRows = (Arc<[Input]>, Box<[bool]>);
 
 pub(in crate::sema::crates::typed_headers) mod sealed {
@@ -128,7 +131,7 @@ impl<'rows> Mapping<'rows, Headers> for Ordinary<'rows> {
 
 pub(in crate::sema::crates::typed_headers) fn trait_inputs<'rows, B: Budget>(
     port: &mut impl Mapping<'rows, B>,
-    cache: &mut [Option<Predicate>],
+    cache: &mut impl Cache,
     owner: DeclarationRef,
     store: &mut Store,
     budget: &mut B,
@@ -159,7 +162,7 @@ pub(in crate::sema::crates::typed_headers) fn trait_inputs<'rows, B: Budget>(
 
 pub(in crate::sema::crates::typed_headers) fn application<'rows, B: Budget>(
     port: &mut impl Mapping<'rows, B>,
-    cache: &mut [Option<Predicate>],
+    cache: &mut impl Cache,
     reference: s::TraitApplicationRef,
     store: &mut Store,
     budget: &mut B,
@@ -167,10 +170,10 @@ pub(in crate::sema::crates::typed_headers) fn application<'rows, B: Budget>(
     budget.charge(1)?;
     let index = reference.0 as usize;
     let cached = cache
-        .get(index)
+        .entry(index)
         .ok_or_else(|| error("source clause has an unknown trait application"))?;
     if let Some(predicate) = cached {
-        return Ok(*predicate);
+        return Ok(predicate);
     }
     let rows = port.rows();
     let application = &rows.trait_applications[index];
@@ -206,13 +209,13 @@ pub(in crate::sema::crates::typed_headers) fn application<'rows, B: Budget>(
         ty: port.ty(store, application.subject, budget)?,
         bound: Bound::Trait(id),
     };
-    cache[index] = Some(predicate);
+    cache.publish(index, predicate)?;
     Ok(predicate)
 }
 
 fn clause<'rows, B: Budget>(
     port: &mut impl Mapping<'rows, B>,
-    cache: &mut [Option<Predicate>],
+    cache: &mut impl Cache,
     raw: &s::Clause,
     store: &mut Store,
     budget: &mut B,
@@ -265,7 +268,7 @@ fn clause<'rows, B: Budget>(
 
 pub(in crate::sema::crates::typed_headers) fn inputs<'rows, B: Budget>(
     port: &mut impl Mapping<'rows, B>,
-    cache: &mut [Option<Predicate>],
+    cache: &mut impl Cache,
     owner: DeclarationRef,
     range: g::Range,
     canonical: Option<usize>,

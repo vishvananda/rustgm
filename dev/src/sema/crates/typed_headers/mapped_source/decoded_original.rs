@@ -123,8 +123,13 @@ impl Original<'_> {
     pub(crate) fn source(&self) -> Result<BodyOrigin, &'static str> {
         self.catalog.origin(self.body)
     }
-    pub(crate) fn environment(&self) -> &Arc<crate::types::parameters::environment::Environment> {
-        &self.header.environment
+    pub(crate) fn environment(
+        &self,
+    ) -> Result<&Arc<crate::types::parameters::environment::Environment>, &'static str> {
+        self.header
+            .environment
+            .as_ref()
+            .ok_or("source original requires its actual pending defining environment")
     }
     pub(crate) fn ty(&self, reference: TypeRef, steps: &mut usize) -> Result<TypeId, &'static str> {
         charge(steps)?;

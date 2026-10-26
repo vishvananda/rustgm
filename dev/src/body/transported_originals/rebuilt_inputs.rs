@@ -178,7 +178,7 @@ pub(super) fn build(
         .collect::<Result<_, _>>()?;
     let environment = match record.builtins.as_ref().map(|b| b.environment) {
         None | Some(s::EnvironmentOrigin::Absent) => None,
-        Some(origin) if origin == record.environment => Some(Arc::clone(view.environment())),
+        Some(origin) if origin == record.environment => Some(Arc::clone(view.environment()?)),
         _ => return Err("source original builtin environment changed its actual provenance"),
     };
     let source_copy = record
@@ -436,7 +436,7 @@ fn validate_builtins(
     match (environment, builtin.environment.as_ref()) {
         (None | Some(s::EnvironmentOrigin::Absent), None) => {}
         (Some(origin), Some(actual))
-            if origin == record.environment && Arc::ptr_eq(actual, view.environment()) => {}
+            if origin == record.environment && Arc::ptr_eq(actual, view.environment()?) => {}
         _ => return Err("source original borrowed a different record environment origin"),
     }
     let mut predicates = expected.predicates(steps);

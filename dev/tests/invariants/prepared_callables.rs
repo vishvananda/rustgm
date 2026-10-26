@@ -229,7 +229,8 @@ fn private_callable_templates_reject_changed_provenance_and_incomplete_formals()
                         .flatten()
                         .any(|r| r.header.declaration == owner)
                 );
-                table.scopes[owner.0 as usize] = None;
+                std::rc::Rc::get_mut(&mut table.scopes).ok_or("exclusive actual scope index")?
+                    [owner.0 as usize] = None;
             }
             _ => {
                 let other = named(&session.inventory, "identity")?;
@@ -245,7 +246,9 @@ fn private_callable_templates_reject_changed_provenance_and_incomplete_formals()
                         .flatten()
                         .any(|r| r.header.declaration == owner)
                 );
-                table.scopes[owner.0 as usize] = table.scopes[other.0 as usize];
+                let other = table.scopes[other.0 as usize];
+                std::rc::Rc::get_mut(&mut table.scopes).ok_or("exclusive actual scope index")?
+                    [owner.0 as usize] = other;
             }
         }
         let before = work.steps;

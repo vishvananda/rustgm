@@ -31,7 +31,10 @@ fn replace_environment(
         .and_then(|linkage| linkage.originals.as_mut())
         .and_then(|headers| headers.entries.get_mut(&definition))
         .ok_or("actual retained imported header")?;
-    Ok(std::mem::replace(&mut header.environment, environment))
+    header
+        .environment
+        .replace(environment)
+        .ok_or_else(|| "actual defining environment was pending".into())
 }
 fn actual_origins(
     report: &crate::resolve::expansion::Report,

@@ -84,7 +84,7 @@ pub(super) fn function(
         body: Some(body),
         signature,
         callable,
-        environment,
+        environment: Some(environment),
         inputs: Arc::from(inputs),
         declared: function.declared_clauses as usize,
         universals: 0,
@@ -192,7 +192,9 @@ fn publish(
         ids,
     } = formals;
     let callable = header.callable;
-    let environment = &header.environment;
+    let environment = header.environment.as_ref().ok_or_else(|| {
+        error("ordinary imported function omitted its actual defining environment")
+    })?;
     facts
         .lifetimes
         .callables

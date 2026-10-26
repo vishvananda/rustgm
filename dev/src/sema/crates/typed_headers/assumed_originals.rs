@@ -81,7 +81,7 @@ pub(super) fn require_leaf_inputs(
     rows: s::ValidatedView<'_>,
     scope: s::ParameterScope,
     inputs: &[Input],
-    applications: &[Option<Predicate>],
+    applications: &impl super::translation::applications::Cache,
     work: &mut ReservationWork,
 ) -> Result<(), Error> {
     let (range, _) = input_range(rows, scope)?;
@@ -108,8 +108,7 @@ pub(super) fn require_leaf_inputs(
             ));
         }
         let mut expected = applications
-            .get(application.0 as usize)
-            .copied()
+            .entry(application.0 as usize)
             .flatten()
             .ok_or_else(|| error("private leaf environment lost its translated application"))?;
         let Bound::Trait(actual) = expected.bound else {
@@ -314,7 +313,8 @@ pub(super) fn finish(
     let scope = owner
         .scopes
         .get(expected.scope.0)
-        .and_then(Option::as_deref)
+        .and_then(std::cell::OnceCell::get)
+        .map(Box::as_ref)
         .ok_or_else(|| error("private original lost its actual prepared scope"))?;
     let (body, actual) = body_origin(rows, expected, work)?;
     if actual != Some(origin)
@@ -514,14 +514,16 @@ impl Owner {
         let declaring = self
             .scopes
             .get(index)
-            .and_then(Option::as_deref)
+            .and_then(std::cell::OnceCell::get)
+            .map(Box::as_ref)
             .filter(|actual| actual.raw == raw)
             .ok_or_else(|| error("private original lost its actual declaring scope"))?;
         let inherited = if let Some(parent) = raw.parent {
             let (index, parent_raw) = prepared.scope(rows, parent)?;
             self.scopes
                 .get(index)
-                .and_then(Option::as_deref)
+                .and_then(std::cell::OnceCell::get)
+                .map(Box::as_ref)
                 .filter(|actual| actual.raw == parent_raw)
                 .ok_or_else(|| error("private original lost its actual parent scope"))?
                 .parameters
