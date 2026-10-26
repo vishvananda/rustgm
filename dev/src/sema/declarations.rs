@@ -266,12 +266,12 @@ pub fn analyze_with_executor(
 /// Resume the genuine staged consumer without reconstructing its semantic arena.
 pub(in crate::sema) fn analyze_reserved<'a>(
     report: &'a Report,
-    facts: Declarations,
+    mut facts: Declarations,
     mut selected: Box<super::crates::SelectedConsumer<'a>>,
 ) -> Result<(Declarations, Box<super::crates::SelectedConsumer<'a>>), Error> {
     selected.begin(
         report,
-        &facts,
+        &mut facts,
         report
             .resolution
             .definitions

@@ -169,13 +169,13 @@ impl super::Linkage {
         let catalog = self
             .origin_catalog()
             .ok_or("source method lacks its actual catalog")?;
-        graph.require_method_regions(catalog, definition, scheme, steps)?;
+        graph.require_method_regions(catalog, &facts.types, definition, scheme, steps)?;
         // Ordinary Graph headers retain their established eager relationship.
         // A private demanded declaration must use its own checked scope owner.
         let header = headers
             .get(definition)
             .ok_or("source method lost its actual completed original header")?;
-        graph.require_method_environment(catalog, facts, definition, header, steps)
+        graph.require_method_declaration(catalog, facts, definition, header, steps)
     }
 
     pub(crate) fn original_work(&self) -> Option<(usize, usize, usize, usize)> {

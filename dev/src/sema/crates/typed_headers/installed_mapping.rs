@@ -26,6 +26,9 @@ use crate::{
 };
 use std::{rc::Rc, sync::Arc};
 
+#[path = "signature_contracts.rs"]
+mod callables;
+
 pub(in crate::sema) struct ProvidedOwners {
     inventory: Arc<Dependencies>,
     catalog: Rc<Catalog>,

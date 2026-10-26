@@ -207,6 +207,7 @@ fn method_headers(
         let (returned, status) = stage.method_declaration(owner, work)?;
         stage = returned;
         assert_eq!(status, Demand::Ready(()));
+        declaration_scope(&mut stage, definition)?;
         let facts = &stage.session.authority.facts;
         let linkage = facts.crates.as_deref().ok_or("actual method linkage")?;
         let declaration = linkage
@@ -263,6 +264,52 @@ fn method_headers(
         size_of::<crate::sema::crates::typed_headers::unpaid_provided::ProvidedOwners>()
     );
     Ok(stage)
+}
+
+fn declaration_scope(stage: &mut HeaderDraft, definition: crate::resolve::model::DefId) -> Result {
+    let check = |facts: &crate::sema::model::Declarations| -> Result {
+        let linkage = facts
+            .crates
+            .as_deref()
+            .ok_or("actual declaration linkage")?;
+        let scheme = facts
+            .lifetimes
+            .functions
+            .get(&definition)
+            .ok_or("actual callable scheme")?;
+        let mut steps = 0;
+        linkage.require_source_declaration(facts, definition, scheme, &mut steps)?;
+        let mut changed = scheme.clone();
+        changed.total += 1;
+        assert!(
+            linkage
+                .require_source_declaration(facts, definition, &changed, &mut steps)
+                .is_err()
+        );
+        Ok(())
+    };
+    let facts = &mut stage.session.authority.facts;
+    check(facts)?;
+    let header = facts
+        .crates
+        .as_deref_mut()
+        .and_then(|link| link.originals.as_deref_mut())
+        .and_then(|headers| headers.entries.get_mut(&definition))
+        .ok_or("actual selected header")?;
+    let original = Arc::clone(&header.inputs);
+    header.inputs = Arc::from(original.as_ref());
+    assert!(
+        check(facts).is_err(),
+        "an equal clone cannot replace the actual scope input Arc"
+    );
+    facts
+        .crates
+        .as_deref_mut()
+        .and_then(|link| link.originals.as_deref_mut())
+        .and_then(|headers| headers.entries.get_mut(&definition))
+        .ok_or("actual selected header")?
+        .inputs = original;
+    check(facts)
 }
 
 fn owner_failed_precharge() -> Result {

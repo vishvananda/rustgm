@@ -69,6 +69,7 @@ impl ImportedOwners {
     pub(super) fn require_method_regions(
         &self,
         catalog: &Catalog,
+        store: &crate::types::Store,
         definition: DefId,
         scheme: &crate::sema::lifetimes::FunctionRegions,
         steps: &mut usize,
@@ -77,12 +78,12 @@ impl ImportedOwners {
             Self::Ordinary(graph) => {
                 graph.require_method_regions(catalog, definition, scheme, steps)
             }
-            Self::Provided(_) => {
-                Err("selected method requires its actual pending callable-scheme consumer")
+            Self::Provided(owner) => {
+                owner.require_method_regions(catalog, store, definition, scheme, steps)
             }
         }
     }
-    pub(super) fn require_method_environment(
+    pub(super) fn require_method_declaration(
         &self,
         catalog: &Catalog,
         facts: &Declarations,
@@ -94,8 +95,8 @@ impl ImportedOwners {
             Self::Ordinary(graph) => {
                 graph.require_method_environment(catalog, facts, definition, header, steps)
             }
-            Self::Provided(_) => {
-                Err("selected method requires its actual pending declaration-scope consumer")
+            Self::Provided(owner) => {
+                owner.require_method_declaration(catalog, facts, definition, header, steps)
             }
         }
     }

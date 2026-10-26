@@ -80,13 +80,14 @@ impl SelectedConsumer<'_> {
     pub(in crate::sema) fn begin(
         &mut self,
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         state_bytes: usize,
     ) -> Result<(), Error> {
         self.require(report, facts)?;
         self.work
             .charge(report.resolution.definitions.len().saturating_add(1))?;
-        self.work.reserve(state_bytes)
+        self.work.reserve(state_bytes)?;
+        facts.complete_staged_sources(report, self.work)
     }
 
     pub(in crate::sema) fn sizing(

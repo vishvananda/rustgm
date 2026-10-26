@@ -12,6 +12,7 @@ mod role_headers;
 pub(in crate::sema::crates::typed_headers) use role_headers::installed as installed_trait_header;
 mod scheme_inputs;
 use scheme_inputs::SignaturePort;
+pub(in crate::sema::crates::typed_headers) use scheme_inputs::require_regions as require_method_regions;
 mod scope_inputs;
 pub(super) mod slot_bindings;
 use super::{Declarations, Error, Headers, error};
