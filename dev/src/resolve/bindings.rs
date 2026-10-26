@@ -9,6 +9,7 @@ pub(crate) mod consumer_policy;
 mod macro_context;
 mod panic_claims;
 pub(in crate::resolve) mod panic_contracts;
+mod pointee_claims;
 pub(super) mod policy;
 mod positions;
 mod reservations;
