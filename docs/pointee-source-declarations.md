@@ -1,6 +1,6 @@
 # Source Pointee declaration checkpoint
 
-This source checkpoint is uncompiled and unqualified. It adds the actual
+This checkpoint qualifies source declaration production and authentication. It adds the actual
 PointeeTrait, MetadataType and DynMetadata source roles at indices 28–30. The
 existing u32 role ledger has one remaining slot. B's source Transmute work adds
 no language role and is separate. No pointer-metadata intrinsic, automatic
@@ -81,9 +81,25 @@ validate_associated_type_bounds calls complete_environment, whose shared
 elaborate_trait_bounds producer records the declared prefix and appends implied
 consequences. The correction uses that actual prefix and retains a mutation
 opponent; it does not ignore declaration changes or move completion earlier.
-Full candidate qualification remains pending.
+That failed checkpoint remains retained. Successor 40290718023 qualifies exact
+source `12e87c240cc10d308364a0b832df4665e90b9e6e`: all six nonignored groups,
+production/private strict Clippy, global architecture, formatting, metadata,
+private build, harness/upstream and audit-cache checks pass. Its helper took
+125.314 seconds; the six tests reported 0.04 seconds. It authenticates 2,741
+compiler/configuration fingerprints and 24 fixture/data hashes. The declared-prefix
+opponent confirms a real derived environment tail and still rejects mutation of
+the actual declaration prefix. No source fixture or independent oracle was rerun.
 
-Actual after observations from that run are Catalog 776 (+72), Reservations
+Successful primary receipt SHA:
+`f70fc7eed17e5d4e082e95c917ca3ad8cd152d5c28c190a250c7788d344244bd`.
+Separate audit receipt SHA:
+`56078392f108f60a56f548b3373bbe93f16f1a7616b77bc801f6d4bef22c580f`.
+Remote CLI SHA:
+`b43102ccc4d572c4872bbd8bd72247dc55f94bfde755fee05dd560f94ede80d0`.
+The qualified component is retained at `pa31-pointee-source-producer-qualified-v1`;
+no binary was hydrated locally.
+
+Actual after observations, repeated unchanged by the successful successor, are Catalog 776 (+72), Reservations
 872 (+64), Validated 40 (+12), Contracts 928, State 224, CheckedMember 24 and
 SourceImage 40 bytes. Package 256, Declarations 7048, Unit 688, Node 36, Scope 32,
 Definition 36, Body 448 and Store 472 remain unchanged. The new provider's
@@ -91,8 +107,8 @@ existing budget grows from 90 to 2394 steps over 32 checked queries while charge
 bytes stay 7824; source declaration rows stay 6, map capacity 7 and total owner
 vector capacity 24. The actual contract vector capacities are
 [0,2,0,0,0,0,1,1,1,1,0,0,0,0,1]. Warm queries retain the same Rc owner/capacities;
-failed work is cumulative. These are observations of the bounded failed
-checkpoint, not whole producer qualification. The optional pointer affects every
+failed work is cumulative. These costs are retained from both actual runs. They do not establish
+metadata normalization, full library, runtime or artifact qualification. The optional pointer affects every
 allocated Validated; the three extra array slots affect source Catalog and
 Reservations even when these roles are absent. No allocator measurement or
 unobserved enclosing-size delta is claimed. Ordinary bootstrap has no source
@@ -108,4 +124,6 @@ specialization observations are repeated. Wrong-associated-owner acceptance was 
 now observed in both editions. Our actual-owner source-protocol profile remains
 explicitly unsupported for that case, with no language-invalid claim. The kind
 errors, missing-lang_items E0658 and genuine deny-impl E0322 are observed; all
-raw streams and initial predictions remain retained. No candidate test has run.
+raw streams and initial predictions remain retained. The historical contract
+retains its pre-candidate status; this document records the later actual six-group
+producer qualification without altering its frozen bytes.
