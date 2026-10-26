@@ -141,6 +141,7 @@ fn final_dynamic_calls_are_static_while_ordinary_methods_retain_slots() -> Resul
         let contract = queries.demand(&report, &analysis.facts, owner)?;
         assert_eq!(contract.methods.contains(&method), name == "dyn-ordinary");
         let mut dynamic_instances = 0;
+        let mut virtual_instances = 0;
         for index in 0..analysis.facts.types.len() {
             let ty = crate::types::TypeId(u32::try_from(index)?);
             if crate::sema::dispatch::object_method(&mut analysis.facts, ty)?
@@ -148,16 +149,18 @@ fn final_dynamic_calls_are_static_while_ordinary_methods_retain_slots() -> Resul
             {
                 dynamic_instances += 1;
                 let instance = crate::types::instance::Instance::new(&analysis.facts.types, ty)?;
-                assert_eq!(
-                    analysis.facts.objects.call(instance).is_some(),
-                    name == "dyn-ordinary"
-                );
+                virtual_instances += usize::from(analysis.facts.objects.call(instance).is_some());
             }
         }
         assert!(
             dynamic_instances > 0,
             "{name} did not reach actual dynamic Self"
         );
+        if name == "dyn-ordinary" {
+            assert!(virtual_instances > 0, "ordinary call lost its virtual plan");
+        } else {
+            assert_eq!(virtual_instances, 0, "final method gained a virtual slot");
+        }
     }
     let report = report("dyn-generic-ordinary")?;
     assert!(pipeline::analyze_source(&report).is_err());
