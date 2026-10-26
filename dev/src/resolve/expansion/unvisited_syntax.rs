@@ -110,7 +110,7 @@ fn collect(
         for declaration in entries.entries() {
             // Pinned extern-types gating happens after configuration. Unlike
             // defaultness and aliases, inactive Foreign syntax emits no warning.
-            if declaration.kind == Kind::ForeignType {
+            if matches!(declaration.kind, Kind::ForeignType | Kind::FinalFunction) {
                 continue;
             }
             let key = NodeKey {

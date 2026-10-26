@@ -20,20 +20,30 @@ fn walk(
         };
         let file =
             FileId(u32::try_from(index).map_err(|_| Error::unlocated("alias file overflow"))?);
-        for site in sites
-            .entries()
-            .iter()
-            .filter(|site| matches!(site.kind, Kind::TraitAlias | Kind::ForeignType))
-        {
+        for site in sites.entries().iter().filter(|site| {
+            matches!(
+                site.kind,
+                Kind::TraitAlias | Kind::ForeignType | Kind::FinalFunction
+            )
+        }) {
             let key = NodeKey {
                 file,
                 node: site.node,
             };
             let item = super::gate_provenance::checked(package, key, site)?;
-            if !unit.configured.active[site.node.get() as usize] {
+            if site.kind != Kind::FinalFunction && !unit.configured.active[site.node.get() as usize]
+            {
                 continue;
             }
             let requests = match item.kind {
+                ItemKind::Function { .. } if site.kind == Kind::FinalFunction => [
+                    Some((
+                        "final_associated_functions",
+                        None,
+                        "final method requires final_associated_functions or exact token allowance",
+                    )),
+                    None,
+                ],
                 ItemKind::TraitAlias { constant, .. } => [
                     Some((
                         "trait_alias",
@@ -65,6 +75,8 @@ fn walk(
             for (name, alias_const, message) in requests.into_iter().flatten() {
                 let requested = if let Some(constant) = alias_const {
                     package.requested_alias_feature(constant)
+                } else if site.kind == Kind::FinalFunction {
+                    package.requested_final_functions()
                 } else {
                     package.requested_foreign_types()
                 };

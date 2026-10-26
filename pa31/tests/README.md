@@ -172,3 +172,9 @@ are separate from the pending compiler qualification; PA31 remains planned.
 bodies for logical variance/ownership versus physical fieldless storage. Its
 contract records independent outcomes separately from candidate qualification;
 Location/caller tracking and the complete panic path remain required.
+`spec/final-methods/` freezes eighteen new final-associated-function sources
+with separate metadata predictions in both editions and four still-unrun native
+outcomes. They distinguish final trait bodies/override prohibition, ordinary
+provided overrides, dynamic static-versus-virtual calls, actual source Share,
+exact keyword authority and inactive syntax. The initial contract is retained
+even when observations disprove a prediction. This does not activate PA31.

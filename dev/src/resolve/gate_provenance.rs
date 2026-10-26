@@ -31,10 +31,10 @@ fn parsed<'a>(
                 .source
                 .text()
                 .get(declaration.span.start as usize..declaration.span.end as usize)
-                != Some(if declaration.kind == Kind::ForeignType {
-                    "type"
-                } else {
-                    "default"
+                != Some(match declaration.kind {
+                    Kind::ForeignType => "type",
+                    Kind::FinalFunction => "final",
+                    _ => "default",
                 })
     {
         return Err(invalid());

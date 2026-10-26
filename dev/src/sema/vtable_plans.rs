@@ -209,6 +209,13 @@ pub(crate) fn prepare_call(
     let Some((method, predicate)) = super::dispatch::object_method(facts, instance.ty())? else {
         return Ok(false);
     };
+    if super::declarations::is_final_trait_method(report, facts, method)
+        .map_err(|error| error.to_string())?
+    {
+        // The unchanged actual FunctionItem reaches the provided original body.
+        // A final trait method has no virtual slot, even with dynamic Self.
+        return Ok(false);
+    }
     let storage = facts.objects.storage.get_or_insert_with(Default::default);
     let before = storage.erase.steps;
     let predicate = storage.erase.predicate(&mut facts.types, predicate)?;
