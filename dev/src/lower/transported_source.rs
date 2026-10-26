@@ -1,5 +1,6 @@
 //! Source transport borrows actual successful originals; emitted rows grant no proof.
 mod cfg_rows;
+mod collector_origin;
 mod locations;
 mod numbered_inputs;
 mod obligation_rows;
@@ -38,6 +39,7 @@ pub(super) struct Source {
     /// A single pass over actual semantic allocations, not a log scan per call.
     openings: HashMap<(NodeKey, NodeKey), Vec<RegionId>>,
     numbering: Option<Vec<Option<s::BodyUnit>>>,
+    collector: Option<Box<collector_origin::CollectorOrigin>>,
 }
 /// Neutral staged observations. Rows still require complete validation,
 /// serialization/authenticated import and fresh original/instance proof.
@@ -71,8 +73,9 @@ impl Source {
         checked: &Checked<'_>,
         identity: &CrateIdentity,
     ) -> Result<Self, &'static str> {
-        let stage = Stage::begin_with_ordinary_traits(report, facts, identity)?;
-        Self::begin_stage(facts, checked, stage, true)
+        let mut stage = Stage::begin_with_ordinary_traits(report, facts, identity)?;
+        let collector = collector_origin::CollectorOrigin::new(report, facts, &mut stage)?;
+        Self::begin_stage(facts, checked, stage, true, Some(collector))
     }
 
     fn begin_with_numbering(
@@ -83,7 +86,7 @@ impl Source {
         numbered: bool,
     ) -> Result<Self, &'static str> {
         let stage = Stage::begin(report, facts, identity)?;
-        Self::begin_stage(facts, checked, stage, numbered)
+        Self::begin_stage(facts, checked, stage, numbered, None)
     }
 
     pub(super) fn begin_namespace(
@@ -94,7 +97,10 @@ impl Source {
     ) -> Result<(Self, s::NamespaceColumns), &'static str> {
         let mut stage = Stage::begin_with_ordinary_traits(report, facts, identity)?;
         let names = stage.namespace_columns(report)?;
-        Ok((Self::begin_stage(facts, checked, stage, false)?, names))
+        Ok((
+            Self::begin_stage(facts, checked, stage, false, None)?,
+            names,
+        ))
     }
 
     pub(super) fn begin_module_contracts(
@@ -105,7 +111,10 @@ impl Source {
     ) -> Result<(Self, s::ModuleContractRows), &'static str> {
         let mut stage = Stage::begin_module_contracts(report, facts, identity)?;
         let modules = stage.module_contract_rows(report, facts)?;
-        Ok((Self::begin_stage(facts, checked, stage, false)?, modules))
+        Ok((
+            Self::begin_stage(facts, checked, stage, false, None)?,
+            modules,
+        ))
     }
     pub(super) fn begin_publication(
         report: &Report,
@@ -131,11 +140,13 @@ impl Source {
         checked: &Checked<'_>,
         stage: Stage,
         numbered: bool,
+        collector: Option<Box<collector_origin::CollectorOrigin>>,
     ) -> Result<Self, &'static str> {
         let mut source = Self {
             stage,
             openings: HashMap::default(),
             numbering: None,
+            collector,
         };
         if numbered {
             let count = source.stage.rows.body_owners.len();
@@ -203,6 +214,9 @@ impl Source {
         input: &Contract,
     ) -> Result<(), &'static str> {
         // Validate before any operation/input row or collected bit can change.
+        if let Some(collector) = self.collector.as_deref() {
+            collector.require_store(facts, &mut self.stage)?;
+        }
         let Owner::Function {
             definition,
             signature,

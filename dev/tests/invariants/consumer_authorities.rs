@@ -17,6 +17,10 @@ use crate::{
     unpaid_cases::Result,
 };
 use std::{fmt::Write as _, path::Path, sync::Arc};
+#[path = "collected_consumers.rs"]
+mod completed;
+#[path = "consumer_appends.rs"]
+mod selected;
 
 struct NoFiles;
 impl Sources for NoFiles {

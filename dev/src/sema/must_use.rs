@@ -47,6 +47,7 @@ pub struct Work {
 #[derive(Default)]
 pub(super) struct Contracts {
     pub(in crate::sema) headers: Option<Box<super::header_attributes::Ledger>>,
+    pub(in crate::sema) specialization: Option<Box<super::specialization::LocalMarkers>>,
     pub(in crate::sema) non_exhaustive: Option<Box<super::non_exhaustive::Contracts>>,
     pub(in crate::sema) inline: Option<Box<super::inlining::Contracts>>,
     pub(in crate::sema) parentheses: Option<Box<super::parentheses::Contracts>>,

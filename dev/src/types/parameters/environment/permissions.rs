@@ -4,6 +4,7 @@ use super::{
     instantiation::{Matches, Pattern},
 };
 use crate::support::hash::{HashMap, HashSet};
+use crate::support::retained::Growth;
 use crate::types::{
     Store, TypeId,
     parameters::{clauses::Clause, predicates::Bound},
@@ -59,6 +60,17 @@ impl Index {
         self.entries.iter().copied()
     }
     pub fn insert(&mut self, types: &Store, clause: Clause) -> Result<(), &'static str> {
+        self.insert_observed::<false>(types, clause, &|_, _| Ok(()))
+    }
+    fn insert_observed<const CHARGED: bool>(
+        &mut self,
+        types: &Store,
+        clause: Clause,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        if CHARGED {
+            charge(1, 0)?;
+        }
         if self.unique.contains(&clause) {
             return Ok(());
         }
@@ -85,7 +97,11 @@ impl Index {
         if let Bound::Auto(marker) = predicate.bound {
             self.autos |= 1 << marker as u8;
         }
-        let shape = self.shapes.get(types, predicate.ty).map_err(error)?;
+        let shape = if CHARGED {
+            self.shapes.get_charged(types, predicate.ty, charge)?
+        } else {
+            self.shapes.get(types, predicate.ty).map_err(error)?
+        };
         let subject = Subject {
             pattern: Pattern {
                 ty: predicate.ty,
@@ -93,6 +109,9 @@ impl Index {
             },
             bound: predicate.bound,
         };
+        if CHARGED {
+            self.prepay_entry(subject, shape, charge)?;
+        }
         if self.subjects.insert(subject) {
             self.candidates.entry(shape).or_default().push(subject);
         }
@@ -105,10 +124,31 @@ impl Index {
         types: &mut Store,
         fold: &mut substitute::Bound,
     ) -> Result<Self, &'static str> {
+        self.substitute_observed::<false>(types, fold, &|_, _| Ok(()))
+    }
+    pub(super) fn substitute_charged(
+        &self,
+        types: &mut Store,
+        fold: &mut substitute::Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        self.substitute_observed::<true>(types, fold, charge)
+    }
+    fn substitute_observed<const CHARGED: bool>(
+        &self,
+        types: &mut Store,
+        fold: &mut substitute::Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
         let mut mapped = Self::default();
         for clause in self.clauses() {
-            let clause = fold.clause(types, clause)?;
-            mapped.insert(types, clause)?;
+            let clause = if CHARGED {
+                charge(1, 0)?;
+                fold.clause_charged(types, clause, charge)?
+            } else {
+                fold.clause(types, clause)?
+            };
+            mapped.insert_observed::<CHARGED>(types, clause, charge)?;
         }
         Ok(mapped)
     }
@@ -275,5 +315,39 @@ fn error(error: Error) -> &'static str {
     match error {
         Error::Budget => "builtin assumption matching work budget exceeded",
         _ => "invalid builtin assumption matching input",
+    }
+}
+
+impl Index {
+    fn prepay_entry(
+        &self,
+        subject: Subject,
+        shape: u64,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        let mut growth = Growth::vector::<Clause>(self.entries.len(), self.entries.capacity(), 1);
+        growth.include(Growth::map::<Clause, ()>(
+            self.unique.len(),
+            self.unique.capacity(),
+            1,
+        ));
+        growth.include(Growth::map::<Subject, ()>(
+            self.subjects.len(),
+            self.subjects.capacity(),
+            usize::from(!self.subjects.contains(&subject)),
+        ));
+        if !self.subjects.contains(&subject) {
+            growth.include(Growth::map::<u64, Vec<Subject>>(
+                self.candidates.len(),
+                self.candidates.capacity(),
+                usize::from(!self.candidates.contains_key(&shape)),
+            ));
+            let (length, capacity) = self
+                .candidates
+                .get(&shape)
+                .map_or((0, 0), |values| (values.len(), values.capacity()));
+            growth.include(Growth::vector::<Subject>(length, capacity, 1));
+        }
+        charge(1 + growth.work, growth.bytes)
     }
 }

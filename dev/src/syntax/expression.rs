@@ -23,6 +23,7 @@ mod attributes;
 mod interpolate;
 use fragment::FragmentKind as F;
 mod pattern;
+pub(crate) mod pretty;
 pub mod render;
 mod types;
 

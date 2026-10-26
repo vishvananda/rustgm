@@ -1,11 +1,14 @@
-//! Actual fresh consumer reservation is opaque and cannot expose checked facts.
+//! Actual fresh consumer reservation and selected append remain opaque.
+use super::{recipe_cursor::Demand, unpaid_provided::SelectedHeaders};
+use crate::sema::crates::authored_export::{CollectedArtifact, CollectedReceipt};
 use crate::{
     resolve::{
-        crates::{ConsumerInput, ConsumerReservation, ReservationWork},
+        crates::{ConsumerInput, ConsumerRequest, ConsumerReservation, ReservationWork},
         expansion::Report,
         package::Error,
     },
     sema::model::Declarations,
+    support::crates::owner_catalog::DeclarationRef,
     types::arena::Identity,
 };
 
@@ -16,6 +19,13 @@ mod tests;
 pub(crate) struct ProofSession {
     authority: ConsumerAuthority,
 }
+/// Fatal errors consume this owner; only an explicit blocked edge is resumable.
+pub(crate) struct HeaderDraft {
+    session: Box<ProofSession>,
+    selected: SelectedHeaders,
+    completion: Option<Box<CollectedReceipt>>,
+}
+type HeaderProgress = (Box<HeaderDraft>, Demand<()>);
 struct ConsumerAuthority {
     // Canonical identities retire before their actual resolver owner.
     facts: Declarations,
@@ -28,9 +38,21 @@ impl ProofSession {
         not(test),
         expect(
             dead_code,
-            reason = "selected imported header/role collectors must consume this opaque reserved authority before body proof can open"
+            reason = "the real collected-artifact consumer remains private until retained role/member and original/instance conformance completes"
         )
     )]
+    pub(super) fn from_collected(
+        artifact: CollectedArtifact,
+        request: ConsumerRequest<'_, impl crate::resolve::load::Sources>,
+        work: &mut ReservationWork,
+    ) -> Result<Box<HeaderDraft>, Error> {
+        request.require_inventory(artifact.inventory(), work)?;
+        let (admission, receipt) = artifact.into_admission(work)?;
+        let input = request.admit(admission, work)?;
+        Self::new(input, work)?
+            .selected_headers(work)?
+            .source_headers(receipt, work)
+    }
     pub(crate) fn new(
         input: ConsumerInput,
         work: &mut ReservationWork,
@@ -58,12 +80,36 @@ impl ProofSession {
         Ok(session)
     }
     fn require(&self, work: &mut ReservationWork) -> Result<(), Error> {
+        self.authority.require(work)?;
+        if !self.authority.facts.lifetimes.callables.is_empty() {
+            return Err(Error::unlocated(
+                "reserved consumer already contains callable registrations",
+            ));
+        }
+        Ok(())
+    }
+    pub(crate) fn selected_headers(
+        self: Box<Self>,
+        work: &mut ReservationWork,
+    ) -> Result<Box<HeaderDraft>, Error> {
+        self.require(work)?;
+        work.charge(1)?;
+        work.reserve(size_of::<HeaderDraft>())?;
+        Ok(Box::new(HeaderDraft {
+            session: self,
+            selected: SelectedHeaders::default(),
+            completion: None,
+        }))
+    }
+}
+impl ConsumerAuthority {
+    fn require(&self, work: &mut ReservationWork) -> Result<(), Error> {
         let ConsumerAuthority {
             facts,
             report,
             reservation,
             arena,
-        } = &self.authority;
+        } = self;
         reservation.require(report, work)?;
         work.charge(6)?;
         let catalog = facts.source_bindings.as_deref().ok_or_else(|| {
@@ -75,7 +121,6 @@ impl ProofSession {
         if !facts.types.has_identity(arena)
             || facts.definitions.len() != report.resolution.definitions.len()
             || !facts.functions.is_empty()
-            || !facts.lifetimes.callables.is_empty()
             || facts
                 .crates
                 .as_deref()
@@ -87,5 +132,51 @@ impl ProofSession {
             ));
         }
         Ok(())
+    }
+}
+impl HeaderDraft {
+    pub(super) fn source_headers(
+        mut self: Box<Self>,
+        receipt: CollectedReceipt,
+        work: &mut ReservationWork,
+    ) -> Result<Box<Self>, Error> {
+        self.session.authority.require(work)?;
+        work.charge(1)?;
+        if self.completion.is_some() {
+            return Err(Error::unlocated(
+                "selected source header completion cannot be replaced",
+            ));
+        }
+        receipt.columns(&self.session.authority.report, work)?;
+        work.reserve(size_of::<CollectedReceipt>())?;
+        self.completion = Some(Box::new(receipt));
+        Ok(self)
+    }
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "selected callable registration grants no header/role/body completion; the genuine retained family still requires conformance"
+        )
+    )]
+    pub(super) fn callable_template(
+        mut self: Box<Self>,
+        owner: DeclarationRef,
+        work: &mut ReservationWork,
+    ) -> Result<HeaderProgress, Error> {
+        self.session.authority.require(work)?;
+        if let Some(completion) = self.completion.as_deref() {
+            completion.columns(&self.session.authority.report, work)?;
+        }
+        let ConsumerAuthority {
+            facts,
+            report,
+            reservation,
+            ..
+        } = &mut self.session.authority;
+        let result = self.selected.callable(facts, owner, work, |work| {
+            reservation.recipe_view(report, work)
+        })?;
+        Ok((self, result))
     }
 }

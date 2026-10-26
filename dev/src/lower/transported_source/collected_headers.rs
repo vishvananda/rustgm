@@ -1,86 +1,66 @@
-//! Positive source sidecars remain unpaid beside their actual numbered rows.
-use super::{Declarations, Report, Source, SourceInspection, g, s};
+//! Complete source inspection retains a sealed joint row/contract owner.
+use super::{Declarations, Report, Source, SourceInspection, s};
 use crate::{
-    resolve::package::Error, sema::crates::authored_export::SourceWork, support::retained,
+    resolve::package::Error,
+    sema::crates::authored_export::{CollectedRows, SourceWork, validate_collected_rows},
 };
-
-/// Complete source observations, never an imported contract or execution token.
 #[cfg(test)]
 #[path = "../../../tests/invariants/numbered_headers.rs"]
 mod tests;
 
 pub(crate) struct TraitInspection {
-    source: SourceInspection,
-    contracts: s::HeaderAttributeColumns,
-    contract_bytes: usize,
+    collected: CollectedRows,
 }
 impl TraitInspection {
-    fn new(
-        source: SourceInspection,
-        contracts: s::HeaderAttributeColumns,
-        contract_bytes: usize,
-    ) -> Result<Self, &'static str> {
-        let inspection = Self {
-            source,
-            contracts,
-            contract_bytes,
-        };
-        let minimum = size_of::<s::HeaderAttributeColumns>()
-            .saturating_add(retained::vector(&inspection.contracts.functions))
-            .saturating_add(retained::vector(&inspection.contracts.traits));
-        if inspection.contracts.functions.len() != inspection.source.rows.functions.len()
-            || inspection.contracts.traits.len() != inspection.source.rows.traits.len()
-            || inspection.contract_bytes < minimum
-            || inspection.contract_bytes > inspection.source.work.reserved_bytes
-        {
-            return Err("numbered trait inspection changed its complete sidecar ownership");
-        }
-        Ok(inspection)
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "genuine private collected-artifact admission precedes full retained role conformance and original/instance proof"
+        )
+    )]
+    pub(crate) fn into_artifact(
+        self,
+        base: crate::support::crates::Interface,
+        work: &mut crate::resolve::crates::ReservationWork,
+    ) -> Result<crate::sema::crates::authored_export::CollectedArtifact, Error> {
+        self.collected.into_artifact(base, work)
     }
     #[cfg(test)]
     pub(crate) fn into_parts(self) -> (SourceInspection, s::HeaderAttributeColumns, usize) {
-        (self.source, self.contracts, self.contract_bytes)
+        let (rows, work, contracts, bytes) = self.collected.into_unpaid();
+        (SourceInspection { rows, work }, contracts, bytes)
     }
 }
 impl Source {
     pub(in crate::lower) fn complete_trait_numbered(
-        mut self,
+        self,
         report: &Report,
         facts: &Declarations,
     ) -> Result<TraitInspection, Error> {
-        let before = self.stage.work();
-        let overhead = size_of::<TraitInspection>()
-            .saturating_sub(size_of::<SourceInspection>())
-            .saturating_sub(size_of::<s::HeaderAttributeColumns>());
-        self.stage.reserve(overhead).map_err(Error::unlocated)?;
-        // This same selected-header producer owns C's defaultness fence. Its
-        // actual qualified hooks must be integrated before this entry is gated.
-        let contracts = self.collect_header_columns(report, facts)?;
-        let mut validation = g::Work {
-            steps: self.stage.work().steps,
-            ..g::Work::default()
-        };
-        let start = validation.steps;
-        let result = contracts.validate(&self.stage.rows, before.reserved_bytes, &mut validation);
-        self.stage
-            .charge(validation.steps.saturating_sub(start))
+        let Source {
+            mut stage,
+            openings,
+            numbering,
+            collector,
+        } = self;
+        let collector = collector.ok_or_else(|| {
+            Error::unlocated("source header completion lacks its actual producer origin")
+        })?;
+        collector
+            .require_root(report, facts, &mut stage)
             .map_err(Error::unlocated)?;
-        let contract_bytes = result.map_err(Error::unlocated)?;
-        let live = contract_bytes.saturating_add(overhead);
-        if live
-            > self
-                .stage
-                .work()
-                .reserved_bytes
-                .saturating_sub(before.reserved_bytes)
-        {
-            return Err(Error::unlocated(
-                "trait sidecar exceeded its selected allocation prepayment",
-            ));
-        }
-        self.stage.charge(3).map_err(Error::unlocated)?;
-        let source = self.complete_with_extra(live).map_err(Error::unlocated)?;
-        TraitInspection::new(source, contracts, contract_bytes).map_err(Error::unlocated)
+        let collected = stage.collect_provider_headers(report, facts, |stage, declaration| {
+            collector
+                .require_header(report, declaration, stage)
+                .map_err(Error::unlocated)
+        })?;
+        drop(collector);
+        // Preserve the original release boundary before index validation.
+        drop(openings);
+        Ok(TraitInspection {
+            collected: collected.finish(numbering).map_err(Error::unlocated)?,
+        })
     }
     pub(super) fn complete_with_extra(
         self,
@@ -92,32 +72,5 @@ impl Source {
     }
 }
 fn validate(rows: &s::SourceRows, work: &mut SourceWork, extra: usize) -> Result<(), &'static str> {
-    let mut validation = g::Work {
-        steps: work.steps,
-        ..g::Work::default()
-    };
-    let result = (|| {
-        let headers = s::HeaderIndex::new(rows, extra, &mut validation)?;
-        let numbering_peak = if rows.body_units.is_empty() {
-            0
-        } else {
-            headers.numbering(&mut validation)?.peak_bytes()
-        };
-        let domains = headers.domains(&mut validation)?;
-        let plan = domains.original_inputs(&mut validation)?;
-        let previous_peak = work.reserved_bytes.saturating_add(work.scratch_bytes);
-        let retained = work.reserved_bytes.max(plan.retained_bytes());
-        let peak = previous_peak.max(plan.peak_bytes()).max(numbering_peak);
-        // Existing Stage reservations already include the live sidecar. The
-        // validator's extra base covers index coexistence without paying twice.
-        work.reserved_bytes = retained;
-        work.scratch_bytes = peak.saturating_sub(retained);
-        drop(plan);
-        drop(domains);
-        drop(headers);
-        Ok(())
-    })();
-    // Rejected lengths, indexes and work limits still consume attempted work.
-    work.steps = validation.steps;
-    result
+    validate_collected_rows(rows, work, extra)
 }
