@@ -116,7 +116,7 @@ impl crate::resolve::expansion::Report {
         {
             return Err(error("helper diagnostic macro identity changed"));
         }
-        let Some(header) = super::checked(&self.package, key)? else {
+        let Some(header) = super::checked_definition(&self.package, key)? else {
             return Ok(());
         };
         let summary = header.summary();

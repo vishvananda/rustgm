@@ -273,6 +273,14 @@ pub(in crate::resolve) fn existing(
     package: &Package,
     key: NodeKey,
 ) -> Result<Option<Declaration>, Error> {
+    Ok(checked_definition(package, key)?.map(|header| header.summary()))
+}
+/// Follow an already-published actual declaration to its configured wrapper;
+/// inner item nodes intentionally have no entry in the owner's dense index.
+pub(in crate::resolve) fn checked_definition(
+    package: &Package,
+    key: NodeKey,
+) -> Result<Option<CheckedHeader<'_>>, Error> {
     let context = package
         .macro_context()
         .map_err(|message| Error::at(key.file, 0, message))?
@@ -286,13 +294,14 @@ pub(in crate::resolve) fn existing(
         state
             .charge(1, 0)
             .map_err(|message| Error::at(key.file, 0, message))?;
-        state
-            .declarations
-            .get(&key)
-            .map(|entry| entry.declaration().owner)
+        let declaration = state.declarations.get(&key).map(Entry::declaration);
+        if declaration.is_some_and(|declaration| declaration.node != key) {
+            return Err(Error::at(key.file, 0, "source macro declaration key changed"));
+        }
+        declaration.map(|declaration| declaration.owner)
     };
     owner
-        .map(|owner| declaration(package, owner))
+        .map(|owner| checked(package, owner))
         .transpose()
         .map(Option::flatten)
 }
