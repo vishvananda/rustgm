@@ -222,7 +222,11 @@ headers own full declared slots, direct clauses and typed dependency edges;
 seal their graph before use and distinguish unfinished, failed and empty
 contracts. Substitution-only expansion may share identical actual declaration,
 subject and full-argument applications within one Store and binder context.
-That membership is not proof evidence. Retain original/normalized inputs and
+That membership is not proof evidence. Compose nested universal alias edges
+through the existing validated typed-input opening, preserving unused slots and
+callable locals. Retain one canonical surrounding binder per application instead
+of copying its ancestor path; the [binder checkpoint](docs/trait-alias-binders-checkpoint.md)
+records changed-path scaling. Retain original/normalized inputs and
 binder identities when their consumers are implemented; incomplete consumers
 and imported transport keep explicit fences.
 

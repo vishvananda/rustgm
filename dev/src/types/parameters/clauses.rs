@@ -244,7 +244,9 @@ impl Store {
         value: Quantified,
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<QuantifiedId, &'static str> {
-        if CHARGED { charge(1, 0)?; }
+        if CHARGED {
+            charge(1, 0)?;
+        }
         if let Some(&id) = self
             .arguments
             .as_ref()
@@ -270,8 +272,13 @@ impl Store {
         );
         if CHARGED {
             use crate::support::retained::Growth;
-            let mut growth = Growth::vector::<Quantified>(storage.values.len(), storage.values.capacity(), 1);
-            growth.include(Growth::map::<Quantified, QuantifiedId>(storage.index.len(), storage.index.capacity(), 1));
+            let mut growth =
+                Growth::vector::<Quantified>(storage.values.len(), storage.values.capacity(), 1);
+            growth.include(Growth::map::<Quantified, QuantifiedId>(
+                storage.index.len(),
+                storage.index.capacity(),
+                1,
+            ));
             charge(growth.work, growth.bytes)?;
         }
         storage.values.push(value);
@@ -294,8 +301,16 @@ impl Store {
     ) -> Result<(u32, usize), &'static str> {
         if CHARGED {
             let arguments = self.arguments.as_ref();
-            let bytes = if arguments.is_none() { size_of::<crate::types::arguments::Storage>() } else { 0 };
-            let clauses = if arguments.is_none_or(|storage| storage.clauses.is_none()) { size_of::<Storage>() } else { 0 };
+            let bytes = if arguments.is_none() {
+                size_of::<crate::types::arguments::Storage>()
+            } else {
+                0
+            };
+            let clauses = if arguments.is_none_or(|storage| storage.clauses.is_none()) {
+                size_of::<Storage>()
+            } else {
+                0
+            };
             charge(1, bytes.saturating_add(clauses))?;
         }
         let mut slots = self
@@ -304,7 +319,11 @@ impl Store {
             .and_then(|storage| storage.clauses.as_mut())
             .map_or_else(Slots::default, |storage| std::mem::take(&mut storage.slots));
         let before = slots.steps;
-        let required = if CHARGED { slots.predicate_charged(self, predicate, charge) } else { slots.predicate(self, predicate) };
+        let required = if CHARGED {
+            slots.predicate_charged(self, predicate, charge)
+        } else {
+            slots.predicate(self, predicate)
+        };
         let work = slots.steps.saturating_sub(before).saturating_add(1);
         let paid = if CHARGED { charge(work, 0) } else { Ok(()) };
         let storage = self

@@ -332,11 +332,24 @@ fn alias_cycles_arity_and_unfinished_binder_consumers_fail_without_empty_success
     ));
     let b = edge(&checker, "B", a.subject, GenericArgs::EMPTY)?;
     let clauses = checker.expand_alias_edge(b)?;
-    let [Predicate { value: Clause::ForAll(id), .. }] = clauses.as_slice() else {
+    let [
+        Predicate {
+            value: Clause::ForAll(id),
+            ..
+        },
+    ] = clauses.as_slice()
+    else {
         return Err("nested alias lost its complete quantifier".into());
     };
-    let quantified = checker.facts.types.quantified(*id).ok_or("actual composed alias")?;
-    assert_eq!(quantified.bound_regions, 2, "unused outer lifetime remains a declared slot");
+    let quantified = checker
+        .facts
+        .types
+        .quantified(*id)
+        .ok_or("actual composed alias")?;
+    assert_eq!(
+        quantified.bound_regions, 2,
+        "unused outer lifetime remains a declared slot"
+    );
     let empty = edge(&checker, "Empty", a.subject, GenericArgs::EMPTY)?;
     assert!(checker.expand_alias_edge(empty)?.is_empty());
     Ok(())

@@ -162,7 +162,8 @@ impl Bound {
         let mut arguments: Vec<_> = source.collect();
         let result = (|| {
             for argument in &mut arguments {
-                *argument = self.apply_argument_observed::<CHARGED>(store, *argument, depth, charge)?;
+                *argument =
+                    self.apply_argument_observed::<CHARGED>(store, *argument, depth, charge)?;
             }
             store.intern_arguments(&arguments)
         })();

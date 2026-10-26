@@ -8,7 +8,9 @@ The [source-site foundation](trait-alias-sites-checkpoint.md) is qualified.
 The [clause requirements and shared Self producer](trait-alias-contracts-checkpoint.md)
 add typed-phase groundwork. The [canonical clause checkpoint](trait-alias-clauses-checkpoint.md)
 now qualifies local headers, shared dependency edges and a bounded ordinary-bound
-consumer. Complete alias semantics, imported transport and a core artifact remain open.
+consumer. Its [binder successor](trait-alias-binders-checkpoint.md) now composes
+nested universal scopes without ancestor-path copies. Complete alias semantics,
+imported transport and a core artifact remain open.
 
 Independent run40239493812 freezes 16 authored sources before execution, then
 observes 32 metadata compilations and six actual native executions on pinned
