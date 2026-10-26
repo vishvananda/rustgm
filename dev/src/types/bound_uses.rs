@@ -243,7 +243,7 @@ impl Uses {
                     }
                     self.push(result, depth)?;
                 }
-                Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => {}
+                Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) | Kind::Parameter(_) => {}
             }
         }
         Ok(())

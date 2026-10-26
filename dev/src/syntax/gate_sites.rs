@@ -14,8 +14,12 @@ pub enum Kind {
     Constant,
     Type,
     TraitAlias,
+    ForeignType,
 }
 impl Kind {
+    pub(crate) const fn is_defaultness(self) -> bool {
+        matches!(self, Self::Function | Self::Implementation | Self::Constant | Self::Type)
+    }
     fn item(item: ItemKind) -> Option<Self> {
         Some(match item {
             ItemKind::Function { .. } => Self::Function,
@@ -23,6 +27,7 @@ impl Kind {
             ItemKind::Const { .. } => Self::Constant,
             ItemKind::TypeAlias { .. } => Self::Type,
             ItemKind::TraitAlias { .. } => Self::TraitAlias,
+            ItemKind::ForeignType => Self::ForeignType,
             _ => return None,
         })
     }
@@ -57,7 +62,7 @@ impl Declaration {
             || if self.kind == Kind::TraitAlias {
                 self.span.end <= self.span.start || self.span != node.span
             } else {
-                self.span.end.checked_sub(self.span.start) != Some(7)
+                self.span.end.checked_sub(self.span.start) != Some(if self.kind == Kind::ForeignType { 4 } else { 7 })
             }
             || node.span.start > self.span.start
             || self.span.end > node.span.end
@@ -174,7 +179,7 @@ impl<L> Syntax<L> {
     #[must_use]
     pub fn defaultness(&self, item: u32) -> Option<&Declaration> {
         self.gate_site(item)
-            .filter(|site| site.kind != Kind::TraitAlias)
+            .filter(|site| site.kind.is_defaultness())
     }
     #[must_use]
     pub(crate) fn has_defaultness(&self) -> bool {
@@ -182,7 +187,7 @@ impl<L> Syntax<L> {
             entries
                 .entries
                 .iter()
-                .any(|site| site.kind != Kind::TraitAlias)
+                .any(|site| site.kind.is_defaultness())
         })
     }
     pub(crate) fn gate_site(&self, item: u32) -> Option<&Declaration> {
@@ -200,7 +205,7 @@ impl<L> Syntax<L> {
     ) -> Result<(), LexError> {
         if matches!(
             self.items.get(item as usize).map(|item| item.kind),
-            Some(ItemKind::TraitAlias { .. })
+            Some(ItemKind::TraitAlias { .. } | ItemKind::ForeignType)
         ) {
             return Err(error(
                 span.start,

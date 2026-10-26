@@ -276,6 +276,11 @@ impl Parser<'_, '_> {
             kind: ItemKind::Module { items: None },
         };
         let mut inner = crate::syntax::item::AttributeRange::default();
+        let foreign_keyword = if self.item_scope == Scope::External && self.cursor.at_word(Word::Type)? {
+            self.cursor.peek(0)?.map(|token| Span { start: token.start, end: token.end })
+        } else {
+            None
+        };
         if self.cursor.peek(0)?.is_none() {
             return Err(error(self.cursor.end(), "expected item"));
         }
@@ -306,7 +311,20 @@ impl Parser<'_, '_> {
                 item.where_clause = self.where_clause()?;
             }
             self.expect(P::Semicolon)?;
-            ItemKind::TypeAlias { bounds, ty }
+            if foreign_keyword.is_some() {
+                if item.generics.start != item.generics.end {
+                    return Err(error(start, "types inside external blocks cannot have generic parameters"));
+                }
+                if bounds.start != bounds.end || item.where_clause.start != item.where_clause.end {
+                    return Err(error(start, "external types cannot have bounds or where clauses"));
+                }
+                if ty.is_some() {
+                    return Err(error(start, "external type cannot have a definition"));
+                }
+                ItemKind::ForeignType
+            } else {
+                ItemKind::TypeAlias { bounds, ty }
+            }
         } else if self.eat_word(Word::Mod)? {
             item.name = Some(self.name()?);
             let items = if self.eat(P::Semicolon)? {
@@ -477,7 +495,7 @@ impl Parser<'_, '_> {
             }
         };
         self.validate_item(&item, intrinsic)?;
-        let node = self.item_node(start, item, defaultness)?;
+        let node = self.item_node(start, item, defaultness, foreign_keyword)?;
         let node = self.attach(inner, node)?;
         self.attach(attrs, node)
     }
@@ -487,12 +505,15 @@ impl Parser<'_, '_> {
         start: u32,
         item: Item,
         defaultness: Option<Span>,
+        foreign_keyword: Option<Span>,
     ) -> Result<NodeId, LexError> {
         let id = u32::try_from(self.ast.items.len()).map_err(|_| error(start, "too many items"))?;
         self.ast.items.push(item);
         let node = self.node(start, Kind::Item(id))?;
         if let Some(keyword) = defaultness {
             self.ast.record_defaultness(id, node, keyword)?;
+        } else if let Some(keyword) = foreign_keyword {
+            self.ast.record_gate_site(id, node, keyword)?;
         } else if matches!(item.kind, ItemKind::TraitAlias { .. }) {
             self.ast
                 .record_gate_site(id, node, self.ast.node(node).span)?;
@@ -543,7 +564,7 @@ impl Parser<'_, '_> {
             ),
             Scope::External => matches!(
                 item.kind,
-                ItemKind::Function { .. } | ItemKind::Static { .. } | ItemKind::MacroInvocation(_)
+                ItemKind::Function { .. } | ItemKind::Static { .. } | ItemKind::ForeignType | ItemKind::MacroInvocation(_)
             ),
         };
         if !valid {

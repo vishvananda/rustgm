@@ -583,6 +583,7 @@ impl Resolver<'_> {
                 | ItemKind::TraitAlias { .. }
                 | ItemKind::Impl { .. }
                 | ItemKind::TypeAlias { .. }
+                | ItemKind::ForeignType
                 | ItemKind::Const { .. }
                 | ItemKind::Static { .. }
         );
@@ -614,6 +615,7 @@ impl Resolver<'_> {
             ItemKind::Const { .. } => (Namespace::Value, DefKind::Const),
             ItemKind::Static { .. } => (Namespace::Value, DefKind::Static),
             ItemKind::TypeAlias { .. } => (Namespace::Type, DefKind::TypeAlias),
+            ItemKind::ForeignType => (Namespace::Type, DefKind::ForeignType),
             ItemKind::MacroRules { .. } => (Namespace::Macro, DefKind::Macro),
             ItemKind::DeclarativeMacro { .. } => {
                 return Err(self.error(c, node, "scoped declaration bypassed its actual producer"));

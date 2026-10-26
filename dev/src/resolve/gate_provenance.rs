@@ -31,7 +31,7 @@ fn parsed<'a>(
                 .source
                 .text()
                 .get(declaration.span.start as usize..declaration.span.end as usize)
-                != Some("default")
+                != Some(if declaration.kind == Kind::ForeignType { "type" } else { "default" })
     {
         return Err(invalid());
     }

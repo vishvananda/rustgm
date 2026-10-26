@@ -45,6 +45,7 @@ pub enum Constructor {
     Primitive(Primitive),
     Parameter(super::parameters::ParameterId),
     Adt(ItemId, GenericArgs),
+    Foreign(ItemId),
     Never,
     Tuple,
     Array(u64),
@@ -297,6 +298,7 @@ impl Context {
             Constructor::Primitive(_)
             | Constructor::Parameter(_)
             | Constructor::Adt(..)
+            | Constructor::Foreign(_)
             | Constructor::Never => children.is_empty(),
             Constructor::Tuple => true,
             Constructor::Function { parameters, .. } => {
@@ -791,6 +793,7 @@ impl Context {
                 )
             }
             Kind::Never => Constructor::Never,
+            Kind::Foreign(item) => Constructor::Foreign(item),
             Kind::Opaque(id, args) => {
                 Constructor::Opaque(id, self.materialize_arguments(store, args, &mut children)?)
             }
@@ -999,6 +1002,7 @@ fn canonical(
         Constructor::Parameter(id) => Kind::Parameter(id),
         Constructor::Adt(item, args) => Kind::Adt(item, args),
         Constructor::Never => Kind::Never,
+        Constructor::Foreign(item) => Kind::Foreign(item),
         Constructor::Tuple => {
             Kind::Tuple(store.intern_list(children).map_err(|_| Error::Overflow)?)
         }

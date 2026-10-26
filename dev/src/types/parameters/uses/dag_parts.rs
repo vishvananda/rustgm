@@ -175,7 +175,7 @@ fn type_parts<const SET: bool, V: Summary>(
                     depth,
                 )?)
         }
-        Kind::Never | Kind::Primitive(_) => V::empty(),
+        Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) => V::empty(),
     };
     Ok(value)
 }

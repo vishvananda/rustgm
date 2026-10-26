@@ -148,7 +148,8 @@ impl Inspection<'_> {
                     Answer::Unresolved => unresolved = true,
                     Answer::Ordinary => {}
                 },
-                Kind::ArrayTerm { .. }
+                Kind::Foreign(_)
+                | Kind::ArrayTerm { .. }
                 | Kind::Parameter(_)
                 | Kind::Projection(_)
                 | Kind::Opaque(..)

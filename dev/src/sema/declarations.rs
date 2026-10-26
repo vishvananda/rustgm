@@ -420,6 +420,7 @@ impl Checker<'_> {
                 DefKind::Primitive
                     | DefKind::Function
                     | DefKind::TypeAlias
+                    | DefKind::ForeignType
                     | DefKind::Const
                     | DefKind::Static
             ) {
@@ -860,6 +861,9 @@ impl Checker<'_> {
             .node
             .ok_or_else(|| Error::at(FileId(0), 0, "type declaration has no syntax"))?;
         let item = self.item(key)?;
+        if item.kind == ItemKind::ForeignType {
+            return self.foreign_type(id, key, item);
+        }
         if matches!(
             item.kind,
             ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. }
@@ -1125,6 +1129,7 @@ impl Checker<'_> {
             kind,
             DefKind::Primitive
                 | DefKind::TypeAlias
+                | DefKind::ForeignType
                 | DefKind::Struct
                 | DefKind::Enum
                 | DefKind::Generic

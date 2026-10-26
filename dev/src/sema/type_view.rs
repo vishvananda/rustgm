@@ -370,6 +370,7 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
             generic_arguments(store, arguments, out)
         }
         Kind::Never => write!(out, "never"),
+        Kind::Foreign(item) => write!(out, "foreign def={}", item.0),
         Kind::Primitive(p) => write!(out, "primitive {}", p.name()),
         Kind::Parameter(id) => {
             let parameter = store

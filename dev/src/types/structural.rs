@@ -80,6 +80,7 @@ pub(crate) trait Compare<'t> {
                 return self.arguments(a, b, depth);
             }
             (Kind::Never, Kind::Never) => {}
+            (Kind::Foreign(a), Kind::Foreign(b)) if a == b => {}
             (Kind::Primitive(a), Kind::Primitive(b)) if a == b => {}
             (Kind::Parameter(a), Kind::Parameter(b)) if a == b => {}
             (

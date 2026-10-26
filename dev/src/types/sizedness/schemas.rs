@@ -219,7 +219,7 @@ where
         }
         Ok(
             match types.kind(ty).ok_or("invalid sizedness template type")? {
-                Kind::Slice(_) | Kind::Primitive(Primitive::Str) | Kind::Dynamic { .. } => {
+                Kind::Foreign(_) | Kind::Slice(_) | Kind::Primitive(Primitive::Str) | Kind::Dynamic { .. } => {
                     Step::Complete(Term::Unsized)
                 }
                 Kind::Parameter(_) | Kind::Projection(_) | Kind::Opaque(..) => {

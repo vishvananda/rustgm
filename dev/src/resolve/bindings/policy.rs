@@ -36,6 +36,7 @@ pub(in crate::resolve) enum Feature {
     MinSpecialization,
     Specialization,
     TraitAlias,
+    ExternTypes = 24,
     PatternTypeMacro,
     PatternTypes,
 }
@@ -71,6 +72,7 @@ impl Request {
             "min_specialization" => Self::Capability(Feature::MinSpecialization),
             "specialization" => Self::Capability(Feature::Specialization),
             "trait_alias" => Self::Capability(Feature::TraitAlias),
+            "extern_types" => Self::Capability(Feature::ExternTypes),
             "pattern_type_macro" => Self::Capability(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.

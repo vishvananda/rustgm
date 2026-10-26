@@ -310,6 +310,7 @@ pub(super) fn item<L>(
             if constant { "const " } else { "" },
             Children(ast, bounds)
         ),
+        ItemKind::ForeignType => write!(output, "foreign-type"),
         ItemKind::TypeAlias { bounds, ty } => write!(
             output,
             "type-alias {} {}",

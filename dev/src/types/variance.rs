@@ -426,7 +426,7 @@ impl Graph {
                         self.invariant_arguments(types, owner, args, invariant, depth)?;
                     }
                 }
-                Kind::Never | Kind::Primitive(_) => {}
+                Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) => {}
             }
         }
         Ok(())

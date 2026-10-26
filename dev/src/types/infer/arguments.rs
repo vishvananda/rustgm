@@ -309,6 +309,7 @@ impl Context {
             Constructor::Parameter(id) => Kind::Parameter(id),
             Constructor::Adt(item, args) => Kind::Adt(item, args),
             Constructor::Never => Kind::Never,
+            Constructor::Foreign(item) => Kind::Foreign(item),
             Constructor::Tuple => {
                 let Some(list) = store.find_list(children) else {
                     return Ok(None);

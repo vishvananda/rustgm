@@ -1,4 +1,4 @@
-//! Whole-item alias spans use actual crate requests or exact expansion authority.
+//! Sparse unstable items consume actual crate requests or exact token authority.
 use super::{
     bindings::FeatureName,
     expansion::Report,
@@ -23,7 +23,7 @@ fn walk(
         for site in sites
             .entries()
             .iter()
-            .filter(|site| site.kind == Kind::TraitAlias)
+            .filter(|site| matches!(site.kind, Kind::TraitAlias | Kind::ForeignType))
         {
             let key = NodeKey {
                 file,
@@ -33,36 +33,29 @@ fn walk(
             if !unit.configured.active[site.node.get() as usize] {
                 continue;
             }
-            let ItemKind::TraitAlias { constant, .. } = item.kind else {
-                return Err(Error::at(
-                    file,
-                    site.span.start,
-                    "alias site changed its actual item",
-                ));
+            let requests = match item.kind {
+                ItemKind::TraitAlias { constant, .. } => [
+                    Some(("trait_alias", Some(false),
+                        "trait alias requires trait_alias or exact item allowance")),
+                    constant.then_some(("const_trait_impl", Some(true),
+                        "const trait alias requires const_trait_impl or exact item allowance")),
+                ],
+                ItemKind::ForeignType => [Some(("extern_types", None,
+                    "foreign type requires extern_types or exact token allowance")), None],
+                _ => return Err(Error::at(file, site.span.start, "unstable site changed its actual item")),
             };
-            for is_const in [false, true].into_iter().take(if constant { 2 } else { 1 }) {
-                if package
-                    .requested_alias_feature(is_const)
-                    .map_err(Error::unlocated)?
-                {
+            for (name, alias_const, message) in requests.into_iter().flatten() {
+                let requested = if let Some(constant) = alias_const {
+                    package.requested_alias_feature(constant)
+                } else {
+                    package.requested_foreign_types()
+                };
+                if requested.map_err(Error::unlocated)? {
                     continue;
                 }
-                let feature = FeatureName::new(if is_const {
-                    "const_trait_impl"
-                } else {
-                    "trait_alias"
-                })
-                .map_err(Error::unlocated)?;
+                let feature = FeatureName::new(name).map_err(Error::unlocated)?;
                 if !allows(file, site.span, &feature)? {
-                    return Err(Error::at(
-                        file,
-                        site.span.start,
-                        if is_const {
-                            "const trait alias requires const_trait_impl or exact item allowance"
-                        } else {
-                            "trait alias requires trait_alias or exact item allowance"
-                        },
-                    ));
+                    return Err(Error::at(file, site.span.start, message));
                 }
             }
         }

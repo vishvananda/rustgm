@@ -187,6 +187,8 @@ pub enum Kind {
     Parameter(parameters::ParameterId),
     /// Nominal identity; field definitions and by-value cycles are checked separately.
     Adt(ItemId, GenericArgs),
+    /// An actual external type declaration; value size and alignment are unknown.
+    Foreign(ItemId),
     /// An associated type application is not injective in Self or its arguments.
     Projection(projection::Application),
     /// Declaration identity and captured inputs; representation is private to its body.
@@ -497,7 +499,7 @@ impl Store {
         }
         let valid_type = |id: TypeId| self.kind(id).is_some();
         let valid = match kind {
-            Kind::Never | Kind::Primitive(_) => true,
+            Kind::Never | Kind::Primitive(_) | Kind::Foreign(_) => true,
             Kind::Parameter(id) => self
                 .parameter(id)
                 .is_some_and(|p| matches!(p.kind, parameters::ParameterKind::Type { .. })),
@@ -578,6 +580,7 @@ impl Store {
         let mut result = Properties::default();
         match kind {
             Kind::Never => {}
+            Kind::Foreign(_) => result.set(Property::Sized, false),
             Kind::Parameter(id) => {
                 let parameter = self.parameter(id).ok_or("invalid type parameter")?;
                 let parameters::ParameterKind::Type { sized } = parameter.kind else {

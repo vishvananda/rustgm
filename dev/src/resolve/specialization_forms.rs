@@ -18,11 +18,11 @@ fn semantic_form(
 ) -> Result<(), Error> {
     let message = match declaration.kind {
         Kind::Function => return Ok(()),
-        Kind::TraitAlias => {
+        Kind::TraitAlias | Kind::ForeignType => {
             return Err(Error::at(
                 file,
                 declaration.span.start,
-                "alias site is not a default modifier",
+                "feature site is not a default modifier",
             ));
         }
         Kind::Implementation => {
@@ -88,7 +88,7 @@ fn walk(
         for declaration in entries
             .entries()
             .iter()
-            .filter(|site| site.kind != Kind::TraitAlias)
+            .filter(|site| site.kind.is_defaultness())
         {
             let key = NodeKey {
                 file,
