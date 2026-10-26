@@ -14,6 +14,38 @@ x86-64 Linux, panic abort. Use the existing immutable shared source tree and
 record target configuration, compiler identity and opened-file hashes on each
 whole-crate attempt. Never patch upstream source to move a blocker.
 
+## Observable crate milestones
+
+| Milestone | Current result | Next acceptance evidence |
+| --- | --- | --- |
+| Original core loading and expansion | Qualified CLI `af93787c` passes Thin syntax and reaches `ptr/metadata.rs:170`, byte6689, at foreign `type VTable;`. All722 pinned inputs verify;65 original files opened; no artifact. | Implement LIB-032 foreign opaque types while closing LIB-031 alias and Pointee consumers, imported bodies and actual assertion/formatting. |
+| Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
+| Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
+| Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
+| Original std and consumer | Not reached; depends on the preceding crate graph and platform contracts. | Build unchanged std and execute a default-std consumer. |
+
+## Current execution queue
+
+The [execution plan](library-bootstrap-acceleration.md#scheduling-decisions)
+supersedes historical immediate tasks in checkpoint records. Keep these exits
+concrete; a private Ready state is not an executable result.
+
+| Owner | Issues and owning assignments | Next observable exit |
+| --- | --- | --- |
+| A | LIB-007/030, PA29/31 | Complete encoded provider to fresh named Holder consumer, original/instance proof and native output 7. Names/receiver shapes are merged locally; the public Provided codec and body joins remain. |
+| B | LIB-029/021, PA25–28/31 | Actual NonNull source, then Location/PanicInfo/handler and false assertion reaching Abort; follow with dynamic formatting. |
+| C | LIB-032, PA22/30/31 | Real Foreign VTable identity and metadata, then an unchanged-core attempt past the current declaration. Share Pattern/Pointee representation with B. |
+| Integrator | LIB-031/008, PA19–21/31/32 | Complete actual Thin declaration/use with Pointee, integrate qualified consumers, and advance original core through checking/export. |
+| Integrator, queued independent preparation | LIB-009/010/011, PA30/33/34/36 | Selected alloc/std dependency/build/runtime inventory and small real ABI/build consumers; do not wait until core works to discover graph prerequisites. |
+
+Track assignment closure separately: implemented behavior, owning text fixtures,
+independent/native evidence and publication/release checks. Broad remaining
+features stay required but only enter this immediate queue when a real library
+consumer needs them or a PA is otherwise ready for release. No whole core build
+or additional PA release is implied by these targets.
+
+## Historical checkpoint evidence
+
 The [private environment/namespace integration](private-environment-namespace-integration.md)
 passes eleven focused controls plus production/private Clippy and global audits
 in a 117.86-second helper, alongside a separate 30.44-second production CLI
@@ -123,16 +155,6 @@ qualifies actual const pointer formation and runtime calls, all26 selected contr
 and217 harness checks. A fresh unchanged-core observation passes Thin syntax and
 reaches the foreign `type VTable;` declaration at ptr/metadata.rs170 (LIB-032).
 All722 pinned inputs verify,65 files are opened and no artifact is produced.
-
-## Observable crate milestones
-
-| Milestone | Current result | Next acceptance evidence |
-| --- | --- | --- |
-| Original core loading and expansion | Qualified CLI `af93787c` passes Thin syntax and reaches `ptr/metadata.rs:170`, byte6689, at foreign `type VTable;`. All722 pinned inputs verify;65 original files opened; no artifact. | Implement LIB-032 foreign opaque types while closing LIB-031 alias and Pointee consumers, imported bodies and actual assertion/formatting. |
-| Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
-| Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
-| Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
-| Original std and consumer | Not reached; depends on the preceding crate graph and platform contracts. | Build unchanged std and execute a default-std consumer. |
 
 The preceding published probe uses immutable compiler `9793c30f2d29a99196687032f88960c317c28c47a3f4f6973ba681bb09698ac4`
 from integration `1df52349` (production `91113764`). It exits 1 with
@@ -629,10 +651,7 @@ still work in the current consumer slice. Neither success nor complete
 Keep the three existing GPT-6.1-Sol/high workers. A worker can carry multiple
 independent issues, but keeps coherent commits and an explicit handoff for each.
 Agree shared APIs before concurrent edits; use separate worktrees. Current
-primary lanes are A: LIB-007 provided/default body and environment transport;
-B: LIB-021 UB policy, cfg-demand and owned source cache identity; C: LIB-019 actual
-attribute consumers, lint/error transport and shared inhabitation correctness;
-integrator: LIB-020 primitive coherence, LIB-008/009/012 and combined qualification.
+primary lanes and next executable exits are in the current execution queue above.
 These are independent blockers; keep three implementation workers while giving
 integration/qualification priority for heavy slots, without increasing concurrency.
 
@@ -640,8 +659,9 @@ Source work proceeds concurrently. Heavy jobs use the existing 150-GiB reserve,
 50-GiB/worktree ceiling and CPU/RAM limits. After the qualified schema-2 tooling
 is installed at an idle boundary, admit up to three jobs with explicit smaller
 absolute caps and measured headroom. Keep measurements exclusive.
-Use focused batched checks during a fix and one combined release gate
-for a coherent integration. Reuse unchanged qualification and independent
+Use focused batched checks during a fix and combined focused checks at integration.
+Long release qualification runs in scheduled/manual CI and at actual assignment
+release, not after each integration. Reuse unchanged qualification and independent
 observations with exact source/tool bindings; retain failures and clean outputs.
 
 Update this tracker at each handoff/integration and each original crate attempt.

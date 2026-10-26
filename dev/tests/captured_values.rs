@@ -96,7 +96,7 @@ const CASES: &[Case] = &[
         1,
         [0, 1, 1],
         false,
-        "one complete provenance word",
+        "numeric references, function or wide-pointer words require supported validity proof",
     ),
     (
         "local-escape",

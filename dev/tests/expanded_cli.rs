@@ -25,12 +25,20 @@ fn run_env(
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()?;
-    child
+    let write = child
         .stdin
         .take()
         .ok_or_else(|| std::io::Error::other("missing stdin"))?
-        .write_all(source.as_bytes())?;
-    child.wait_with_output()
+        .write_all(source.as_bytes());
+    let output = child.wait_with_output()?;
+    if let Err(error) = write
+        && (error.kind() != std::io::ErrorKind::BrokenPipe || output.status.success())
+    {
+        return Err(error);
+    }
+    // Usage errors may close stdin before the writer runs. Still collect and
+    // assert the child's exact status and diagnostic in the calling control.
+    Ok(output)
 }
 
 #[test]

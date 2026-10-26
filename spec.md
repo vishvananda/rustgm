@@ -93,6 +93,24 @@ includes declaration and owning crate; familiar names are not implementation
 evidence. Transport checked generic/const bodies and their retained contracts
 through deterministic crate metadata with indexed external-to-local remapping.
 
+Implement obligations required by the pinned language and actual consumer.
+Keep declaration checking, value validity, optional optimization and advisory
+lint claims distinct. A documented niche guarantee does not invent a field
+proof requirement, and a lint-only pointer-return annotation does not grant
+runtime pointer validity. Before adding a stricter prerequisite or another
+proof/state graph, verify the real Rust rule and reuse its existing typed
+producer/consumer. Preserve uncertain cases as explicit unsupported behavior.
+
+Establish structural, identity, visibility and required coherence invariants at
+the owning import/phase boundary, then reuse that immutable typed owner and its
+indexes. Do not add equivalent provenance wrappers or repeat whole-catalog
+validation for each demand. Expensive unrelated imported elaboration may stay
+Pending when it cannot affect lookup, coherence or the selected proof; required
+source declaration/body checks and actual original/instance obligations remain.
+Implement a complete supported consumer path before broadening the profile.
+Unsupported forms must diagnose at their actual boundary rather than requiring
+every future form to be implemented before any supported source can execute.
+
 Header diagnostic and advisory contracts use complete versioned cold columns.
 Authenticate local declaration, configured owner and retained source incarnation;
 join imported declarations to their actual catalog coordinates once. Reuse the
@@ -1480,6 +1498,14 @@ registered derive contracts before fields finish, but final derive validation is
 mandatory. Check retained type formation even if an outer alias erases the result
 and the lifetime proof is empty; completing that check does not overwrite the
 actual annotation's type.
+
+Unused trait-alias defaults validate their directly written closed bounds through
+the ordinary parameter-default proof. Preserve the alias's canonical clauses;
+do not recursively expand inherited alias edges into extra default obligations.
+The pinned compiler accepts an unused default that violates such an inherited
+bound. Aliases without defaults need neither graph expansion nor temporary
+clause storage for this pass. The broader alias execution/export boundary remains
+explicit until its consumers are complete.
 
 Retain the implicit Sized premises of selected implementations and their recursive
 conditions when alias normalization removes the original inputs. Alias parameters

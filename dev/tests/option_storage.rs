@@ -49,7 +49,7 @@ const CASES: &[(&str, &str, i32, bool, &str)] = &[
         "pa27/tests/spec/option-niche/option-invalid-numeric-reference.rs",
         1,
         false,
-        "symbolic pointer read requires one complete provenance word",
+        "numeric references, function or wide-pointer words require supported validity proof",
     ),
     (
         "option-expired-reference",
@@ -189,7 +189,7 @@ const CASES: &[(&str, &str, i32, bool, &str)] = &[
         "pa27/tests/spec/option-niche/invalid-function-word.rs",
         1,
         false,
-        "symbolic pointer read requires one complete provenance word",
+        "numeric references, function or wide-pointer words require supported validity proof",
     ),
     (
         "one-past-reference",

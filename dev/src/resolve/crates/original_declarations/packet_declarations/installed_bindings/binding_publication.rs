@@ -97,7 +97,7 @@ pub(super) fn prepare(
     }
     Ok(Pending { bindings, external })
 }
-fn actual_cells(
+pub(super) fn actual_cells(
     resolver: &Resolver<'_>,
     rows: s::ValidatedView<'_>,
     definitions: &[DefId],

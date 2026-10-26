@@ -1,4 +1,5 @@
 //! Owned unpublished reservations never install an `Interface` or `SourceClient` report.
+use super::installed_bindings::PendingBinding;
 use super::{Error, Input, Resolver, Work, error, kind, s, scope_rows};
 use crate::{
     expand::marks::ItemContext,
@@ -6,7 +7,7 @@ use crate::{
         body_origin::{Catalog, ImportedDeclarationId, Limits},
         expansion::Report,
         index::State,
-        model::{Access, Binding, DefId, Definition, Namespace, Origin, ScopeId},
+        model::{Access, DefId, Definition, Namespace, Origin, ScopeId},
         names::NameId,
     },
     support::{
@@ -22,9 +23,15 @@ use std::{ops::Range, sync::Arc};
 mod module_remap;
 
 type Key = (ScopeId, NameId, Namespace);
-struct PendingBinding {
-    key: Key,
-    binding: Binding,
+pub(super) fn pending_columns(
+    resolver: &mut Resolver<'_>,
+    names: &s::NamespaceColumns,
+    definitions: &[DefId],
+    work: &mut Work,
+) -> Result<Vec<PendingBinding>, Error> {
+    let (bindings, _) =
+        module_remap::pending_columns(resolver.package, resolver.facts, names, definitions, work)?;
+    Ok(bindings)
 }
 pub(crate) struct PendingNamespace {
     report: Report,
@@ -132,9 +139,9 @@ impl PendingNamespace {
                 .bindings
                 .declare_key(
                     (
-                        pending.key.0,
-                        pending.key.1,
-                        pending.key.2,
+                        pending.scope,
+                        pending.name,
+                        pending.namespace,
                         ItemContext::ROOT,
                     ),
                     pending.binding,

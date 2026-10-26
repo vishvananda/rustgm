@@ -1,4 +1,5 @@
 //! Canonical alias clauses share actual declaration slots without a trait owner.
+mod default_arguments;
 mod dependency_cycles;
 mod expansion;
 mod headers;
