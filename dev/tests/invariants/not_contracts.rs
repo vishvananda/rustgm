@@ -233,13 +233,58 @@ fn primitive_source_not_preserves_const_effects_and_real_constant_evaluation() -
         .err()
         .ok_or("const Not accepted an ordinary implementation")?;
     eprintln!("actual const Not ordinary-impl rejection: {rejection}");
-    assert!(!rejection.to_string().contains("compiler marker"));
+    assert!(rejection.to_string().contains(
+        "trait obligation requires an unambiguous matching assumption or implementation"
+    ));
     let accepted = (rejected + "pub fn value()->bool{VALUE}")
         .replace("impl Inverter for bool", "const impl Inverter for bool");
     let report = crate::test_source::source_provider(&accepted, "source_unary")?;
     let checked = pipeline::analyze_source(&report)?;
     true_constant(&report, checked)?;
     assert!(!crate::expand::builtin::Builtin::Assert.executable());
+    Ok(())
+}
+
+#[test]
+fn source_not_prepares_native_exports_only_after_actual_body_and_const_proof() -> Result {
+    let glue = "#[lang=\"destruct\"]#[rustc_deny_explicit_impl]#[rustc_dyn_incompatible_trait]pub const trait Destruct:PointeeSized{}#[lang=\"drop_glue\"]pub(crate) const unsafe fn drop_glue<T:PointeeSized>(_:&mut T)where T:[const]Destruct{}";
+    let tail = format!(
+        "{glue}{NOT}{BOOL}pub struct Flag(bool);impl Inverter for Flag{{type Output=bool;fn not(self)->bool{{!self.0}}}}pub const VALUE:bool=!false;#[unsafe(no_mangle)]pub extern \"C\" fn rg_not_scalar(x:bool)->bool{{!x}}#[unsafe(no_mangle)]pub extern \"C\" fn rg_not_overloaded(x:bool)->bool{{!Flag(x)}}#[unsafe(no_mangle)]pub extern \"C\" fn rg_not_constant()->bool{{VALUE}}"
+    );
+    let input = format!("#![feature(const_trait_impl)]{}", source(&tail)?);
+    let report = crate::test_source::source_provider(&input, "source_not_native")?;
+    let Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(&report)?;
+    let program = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
+    for expected in ["rg_not_scalar", "rg_not_overloaded", "rg_not_constant"] {
+        assert_eq!(
+            program
+                .symbols
+                .iter()
+                .filter(|symbol| symbol.name == expected && symbol.body.is_some())
+                .count(),
+            1
+        );
+    }
+    assert!(program.symbols.iter().filter(|s| s.body.is_some()).count() >= 4);
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/all-attribute-selected-output-v1/native");
+    std::fs::create_dir_all(&folder)?;
+    std::fs::write(folder.join("provider.rs"), input)?;
+    crate::lowir::writer::write(
+        &program,
+        &mut std::fs::File::create(folder.join("provider.lowir"))?,
+    )?;
     Ok(())
 }
 
