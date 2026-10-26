@@ -108,9 +108,7 @@ impl ImportedOwners {
     ) -> Result<crate::sema::compiler_items::headers::Trait<'a>, &'static str> {
         match self {
             Self::Ordinary(graph) => graph.trait_header(catalog, facts, role, steps),
-            Self::Provided(_) => {
-                Err("selected trait requires its actual pending canonical role-header consumer")
-            }
+            Self::Provided(owner) => owner.trait_header(catalog, facts, role, steps),
         }
     }
     pub(super) fn readiness(

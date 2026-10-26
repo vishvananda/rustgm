@@ -9,6 +9,7 @@ mod origin_ports;
 pub(in crate::sema::crates::typed_headers) use origin_ports::require_function;
 mod owner_members;
 mod role_headers;
+pub(in crate::sema::crates::typed_headers) use role_headers::installed as installed_trait_header;
 mod scheme_inputs;
 use scheme_inputs::SignaturePort;
 mod scope_inputs;

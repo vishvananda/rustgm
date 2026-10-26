@@ -107,6 +107,9 @@ impl Checker<'_> {
         }
         self.end_header_names();
         self.complete_trait_bindings(steps, limit)?;
+        if let Some(selected) = self.selected.as_deref_mut() {
+            selected.sizing(self.report, &mut self.facts)?;
+        }
         crate::sema::compiler_items::validate_sizing(self.report, &mut self.facts)?;
         self.complete_trait_contracts()?;
         self.retain_header_projection_requirements()?;

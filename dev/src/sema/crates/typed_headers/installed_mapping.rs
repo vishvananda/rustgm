@@ -350,4 +350,74 @@ impl ProvidedOwners {
         };
         Ok(descriptor.rows().traits[index as usize].flags.bits())
     }
+    pub(in crate::sema::crates::typed_headers) fn trait_header<'a>(
+        &self,
+        catalog: &Catalog,
+        facts: &'a crate::sema::model::Declarations,
+        role: Role,
+        steps: &mut usize,
+    ) -> Result<crate::sema::compiler_items::headers::Trait<'a>, &'static str> {
+        let mut work = ReservationWork::default();
+        let current = self.require_current(&facts.types, &mut work);
+        *steps = steps.saturating_add(work.steps);
+        current?;
+        let authenticated = work.steps;
+        self.role_origin(role)?;
+        if !std::ptr::eq(catalog, self.catalog.as_ref()) {
+            return Err("selected role header changed its actual current catalog");
+        }
+        let id = catalog.declaration(role.definition)?;
+        if role.origin != crate::resolve::body_origin::DeclarationOrigin::Imported(id) {
+            return Err("selected role header changed its actual declaration origin");
+        }
+        let (_, row, _) = catalog.declaration_coordinate(id)?;
+        let descriptor = self.descriptor()?;
+        let rows = descriptor.rows();
+        let Some(s::HeaderRef::Trait(index)) = rows.header(row)? else {
+            return Err("selected role header lost its actual trait row");
+        };
+        let raw = &rows.traits[index as usize];
+        let owner_id = facts
+            .associated
+            .owner(role.definition)
+            .ok_or("selected role header requires its actual pending owner producer")?;
+        let owner = *facts
+            .associated
+            .get(owner_id)
+            .ok_or("selected role header lost its actual installed owner")?;
+        let schema = facts
+            .associated
+            .schema(role.definition)
+            .ok_or("selected role header requires its actual pending schema producer")?;
+        let members = facts
+            .associated
+            .owner_members(owner_id)
+            .ok_or("selected role header lost its actual complete member inventory")?;
+        self.associated_row(&facts.types, owner, schema, members, steps)?;
+        let header = facts
+            .generics
+            .traits
+            .as_deref()
+            .and_then(|contracts| contracts.header(crate::types::ItemId(role.definition.0)))
+            .ok_or("selected role header requires its actual pending canonical input producer")?;
+        let checked = (|| {
+            let (all, prefix) = self
+                .scopes
+                .inputs(&self.view(), catalog, &facts.generics, row, &mut work)
+                .map_err(|_| "selected role header changed its actual installed scope")?;
+            let (actual, subjects) = header.inputs.imported_parts(catalog, role.definition)?;
+            if !Arc::ptr_eq(all, actual)
+                || prefix != raw.declared_inputs as usize
+                || subjects.len() != raw.canonical_inputs as usize
+                || header.self_type != schema.self_type
+            {
+                return Err(
+                    "selected role header changed its exact all-input Arc/canonical prefix/Self",
+                );
+            }
+            super::super::mapped_source::installed_trait_header(facts, role, raw, rows)
+        })();
+        *steps = steps.saturating_add(work.steps.saturating_sub(authenticated));
+        checked
+    }
 }

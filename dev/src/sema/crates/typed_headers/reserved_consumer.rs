@@ -89,6 +89,35 @@ impl SelectedConsumer<'_> {
         self.work.reserve(state_bytes)
     }
 
+    pub(in crate::sema) fn sizing(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+    ) -> Result<(), Error> {
+        self.require(report, facts)?;
+        for kind in [
+            crate::support::bindings::LangItem::Sized,
+            crate::support::bindings::LangItem::MetaSized,
+            crate::support::bindings::LangItem::PointeeSized,
+        ] {
+            self.work.charge(1)?;
+            let role = facts
+                .source_bindings
+                .as_deref()
+                .ok_or_else(|| Error::unlocated("selected sizing lost its actual role catalog"))?
+                .role(kind)
+                .map_err(Error::unlocated)?
+                .ok_or_else(|| {
+                    Error::unlocated("selected sizing lacks its actual role declaration")
+                })?;
+            if !self.definition(report, facts, role.definition)? {
+                return Err(Error::unlocated(
+                    "selected sizing role is not an actual imported declaration",
+                ));
+            }
+        }
+        Ok(())
+    }
     pub(in crate::sema) fn is_imported(&self, definition: DefId) -> Result<bool, Error> {
         // Exclusion from eager walking grants no semantic completion.
         self.reservation

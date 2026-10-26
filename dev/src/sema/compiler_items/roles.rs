@@ -83,6 +83,18 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
     if report.package.source_client().is_some() {
         return admitted_headers::traits(report, facts);
     }
+    if report.package.staged_consumer().is_some() {
+        // Full source validation belongs to the defining crate. Imported roles
+        // retain their real identities and stay pending until selected validators
+        // complete their existing per-role ledger; the first wire profile is
+        // deliberately not applied wholesale to this retained full family.
+        return facts
+            .source_bindings
+            .as_deref()
+            .ok_or_else(|| Error::unlocated("staged roles lack their actual imported catalog"))?
+            .require_provider_report(report)
+            .map_err(Error::unlocated);
+    }
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
     };
