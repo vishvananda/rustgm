@@ -114,6 +114,46 @@ pub(crate) fn prepare<'source>(
     })
 }
 impl Prepared<'_> {
+    /// Custom messages never demand the default expression spelling path.
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "default Assert messages await the actual source-runtime consumer"
+        )
+    )]
+    pub(crate) fn default_message(
+        &self,
+        inputs: &dyn Inputs,
+        charge: &Charge<'_>,
+    ) -> Result<String, LexError> {
+        charge(1, 0)?;
+        if !self.message.is_empty() {
+            return Err(error(
+                self.condition.start,
+                "custom assertion has no default message",
+            ));
+        }
+        let expression = crate::syntax::expression::pretty::expression(
+            self.source.text,
+            &self.ast,
+            self.ast.root,
+            inputs,
+            charge,
+        )?;
+        charge(
+            expression.len().saturating_add(1),
+            expression.len().saturating_add(18).saturating_mul(4),
+        )?;
+        let mut result = String::new();
+        result
+            .try_reserve_exact(expression.len().saturating_add(18))
+            .map_err(|_| error(self.condition.start, "assert message allocation failed"))?;
+        result.push_str("assertion failed: ");
+        result.push_str(&expression);
+        Ok(result)
+    }
+
     /// Consume once into a caller-owned draft; errors publish no package state.
     #[cfg_attr(
         not(test),
