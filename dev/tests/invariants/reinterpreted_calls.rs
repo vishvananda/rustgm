@@ -62,5 +62,5 @@ fn actual_source_transmute_preserves_owned_drop_and_prepares_native_roundtrips()
     Ok(())
 }
 
-#[path = "erased_formatters.rs"]
+#[path = "formatter_calls.rs"]
 mod erased_formatters;
