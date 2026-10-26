@@ -1120,13 +1120,13 @@
       },
       "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
       "environment": {
-        "RUSTC_BOOTSTRAP": "1"
+        "RUSTC_BOOTSTRAP": null
       },
       "library": {
         "crate_name": "transmute_contract",
         "disambiguator": "source_transmute_v1"
       },
-      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+      "maintainer_profile": "Actual standard-library MaybeUninit source contract; current source-provider transport remains unsupported."
     }
   ]
 }
