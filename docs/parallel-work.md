@@ -61,9 +61,10 @@ Current lanes after the [source-contract integration](library-contracts-integrat
   no semantic or runtime intrinsic authority. Coordinate central role/bit changes
   with B before editing.
 - The integrator owns complete aliases, qualification and direct-main publication.
-  Canonical clauses and nested binders are integrated. Continue scoped region,
-  original/normalized projection, object, complete unused/default/const and
-  imported consumers. Alias execution/export stays fenced while incomplete.
+  Canonical clauses, nested binders, shorthand naming and source Self-sizing
+  are qualified. Continue header-time naming, complete original/normalized
+  formation, associated-family input prefixes, scoped regions, objects, complete
+  unused/default/const and imported consumers. Alias execution/export stays fenced while incomplete.
   Do not change CPPGM or pinned upstream sources.
 
 Development validation uses `make fastcheck` with exact affected controls and

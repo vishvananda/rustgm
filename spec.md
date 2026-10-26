@@ -230,6 +230,17 @@ records changed-path scaling. Retain original/normalized inputs and
 binder identities when their consumers are implemented; incomplete consumers
 and imported transport keep explicit fences.
 
+Alias naming consumes the declaration-Self view, while proof retains the complete
+contract. Filter original typed subjects before actual substitution or result
+normalization can make another formal or associated result equal Self. Reuse the
+same dependency graph, charged substitutions and ordinary member/binder machinery;
+do not manufacture a trait identity or clone a second flattened graph. Preserve
+written edge subjects and existing unreduced clause facts. The
+[naming checkpoint](docs/trait-alias-naming-checkpoint.md) records the independent
+counterexample, actual consumer and selected-table cost. Associated-family input
+prefixes must include every emitted alias requirement; object principal
+multiplicity is separate from deduplicated proof/naming clauses.
+
 Share structural layout readiness and field instantiation across constant
 storage and source intrinsic consumers. A layout answer supplies physical data,
 not trait, source-call or memory-access permission. Authenticate the reached

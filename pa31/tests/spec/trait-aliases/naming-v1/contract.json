@@ -1,5 +1,5 @@
 {
-  "state": "observed pinned Rust 88d9e12a in 40278863399; original predictions retained",
+  "state": "eight pinned Rust observations qualified; six retained40278863399 and two fresh40281334667; no native/core/assignment completion",
   "scope": "trait alias shorthand associated type naming, not alias execution/export completion",
   "cases": [
     {
@@ -72,13 +72,25 @@
       "source": "where-self.rs",
       "rustc_success": true,
       "original_prediction": true,
-      "state": "new hypothesis; observe once"
+      "state": "observed; original prediction retained",
+      "observation": {
+        "run": 40281334667,
+        "status": 0,
+        "source_sha256": "c68aeae2ed88f73b49679817dafeded7269bfb5b23b1fcc4b16df3a975714968",
+        "stderr_sha256": "793490872090c6641b61ef8bc99df4f9aebb40cd48e4366c5816c4a44063e14a"
+      }
     },
     {
       "source": "erased-projection-subject.rs",
       "rustc_success": false,
       "original_prediction": false,
-      "state": "new hypothesis; observe once"
+      "state": "observed; original prediction retained",
+      "observation": {
+        "run": 40281334667,
+        "status": 1,
+        "source_sha256": "41d0aa9d878be5414a73ec27a1397bae2ee49b72ff31453e13740120c9877eb3",
+        "stderr_sha256": "eec507c69f7d3becf5d9b485429bc00fde9ad9d03c96ac00c0157cc61aee0ad0"
+      }
     }
   ],
   "naming_contract": "explicit_super_predicates_of uses SelfOnly in declaring alias, before actual substitution; full predicates remain available to proof"
