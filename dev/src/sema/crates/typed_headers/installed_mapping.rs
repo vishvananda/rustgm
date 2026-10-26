@@ -26,7 +26,7 @@ use crate::{
 };
 use std::{rc::Rc, sync::Arc};
 
-#[path = "signature_contracts.rs"]
+#[path = "checked_callables.rs"]
 mod callables;
 
 pub(in crate::sema) struct ProvidedOwners {
