@@ -41,3 +41,29 @@ real provider true/false runtime and CTFE, overloaded Not, lazy/dynamic message
 arguments, exact default text, genuine source handler identity, edition/provenance
 opponents and transactional budget/layout evidence. Rich generic-assert capture
 remains explicitly unsupported until its actual separate source policy is added.
+
+## Qualified private condition checkpoint
+
+[CI40247036202](https://github.com/vishvananda/rustgm/actions/runs/40247036202)
+qualifies source e4d8aeb19566fb1e547765313f5e0c32579e19ee: the two new condition
+transaction groups and an existing actual configuration-transfer sentinel pass.
+The genuine registry test forwards the same retained expression through two
+images, preserves its owned typed payload, and rejects an out-of-interval span
+before producing any output origin. Failed parsing/transfer attempts retain debt.
+Fresh formatting/audit/build take5.38/29.22/64.50 seconds; three exact tests take
+0.008 seconds. All2648 source fingerprints remain identical before/after.
+
+Metadata and both strict Clippy modes passed in the preceding run40246716105.
+That run failed only filename ownership (`source` stem7), before a test build.
+The successor renames the byte-identical file to `image_interval.rs` and retains
+its private module identity through a path attribute. The retained-check proof
+normalizes exactly that path and attribute and requires equality of every other
+source/tool fingerprint. The failed audit and its raw receipt remain retained.
+
+The actual public-source rlib observer in CI40246022336 measures the predecessor
+before the planned role/intrinsic representation change: Reservations680,
+SourceCore176, Resolution2056, Package256, Declaration20, IntrinsicDeclaration24;
+LangItem/SourceIntrinsic/Intrinsic are each1 byte on the pinned x86-64 target.
+These are real compiled layouts, not model structs. The identical after observer
+is still required once the checked roles are appended. No representation change
+or runtime/CTFE assertion is qualified by the condition-only checkpoint.
