@@ -3,7 +3,9 @@ use super::*;
 use crate::types::Kind as Type;
 
 fn prepared(report: &Report) -> TestResult<Checker<'_>> {
-    let mut checker = headers(report)?;
+    let mut checker = Checker::new(report)?;
+    checker.reserve_member_parents()?;
+    checker.prepare_trait_owners(&mut 0, 1_000_000)?;
     checker.prepare_associated_types(&mut 0, 1_000_000)?;
     if let Some(contracts) = &mut checker.facts.generics.traits {
         contracts.complete_results();
