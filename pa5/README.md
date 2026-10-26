@@ -205,3 +205,10 @@ prior suites, debug/release invariants, Clippy, file/architecture audits,
 harness/provenance checks and affected immutable A/B scaling measurements.
 `make perf-crate-ast` measures parsing plus configuration without rendering,
 while separately checking complete output equality.
+
+The `default` item modifier retains its exact keyword span and actual function,
+impl, constant or type item identity in sparse typed metadata. Fragment transfer
+and original-module copies preserve those facts without enlarging expression
+nodes or ordinary item payloads. Ordinary item text stays unchanged. This is
+syntax only: feature authority, legal owners and specialization remain later
+checks. `tests/spec/items/default-*` preserves independently observed sources.

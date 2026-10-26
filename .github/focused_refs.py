@@ -1,143 +1,79 @@
-"""CI-only genuine trait-coordinate test correction with authenticated eight-pass retention."""
-import hashlib
-import json
-import os
+"""New pinned no_core Not observations; no RustGM private build or native execution."""
+import hashlib,io,json,os,signal,struct,subprocess,sys,time
 from pathlib import Path
-import re
-import shutil
-import signal
-import subprocess
-import sys
-import time
-from types import SimpleNamespace
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
-from fastcheck_run import Steps, fingerprint
-from maintainer_batch import artifacts, inventory
-from storage import check_space, exclusive, minimum_reserve
-CANDIDATE = "22e00b6e734d10fd5135eba7216578787af13282"
-MANIFEST_SHA = "b33bdd94cceb1bd2531fb251139561d8af67961adcf2f3404126015153da8dde"
-OUTPUT = ROOT / "obj/parallel/all-attribute-selected-output-v1"
-
-
-def sha(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def worker(deadline, folder):
-    with exclusive(ROOT):
-        check_space(ROOT, minimum_reserve())
-        steps = Steps(ROOT, SimpleNamespace(deadline=deadline, evidence_root=folder, prune_under=[]))
-        try:
-            retained_root = ROOT / ".github/lib026-versioned-proof"
-            if sha(retained_root / "manifest.json") != MANIFEST_SHA:
-                raise ValueError("retained proof manifest changed")
-            manifest = json.loads((retained_root / "manifest.json").read_bytes())
-            for path, expected in manifest["files"].items():
-                if sha(retained_root / path) != expected:
-                    raise ValueError("retained raw proof changed: " + path)
-            proof = json.loads((retained_root / manifest["receipt"]).read_bytes())
-            if proof["state"] != "failed" or [(s["name"], s["status"]) for s in proof["steps"]] != [(name, 0) for name in ["assignment-metadata", "format", "architecture", "clippy-private", "build", "lib-inventory", "lib-ignored"]] + [("lib", 101)]:
-                raise ValueError("original static/eight-pass failure state differs")
-            original_output = (retained_root / manifest["stdout"]).read_text()
-            if any(f"test {name} ... ok" not in original_output for name in manifest["retained_exact8"]):
-                raise ValueError("original exact-eight passes differ")
-            sources = fingerprint(ROOT)
-            source_sha = hashlib.sha256(json.dumps(sources, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-            if len(sources) != 2590 or source_sha != manifest["current_sources_sha256"]:
-                raise ValueError("current full source fingerprint changed")
-            changes = {p for p in sources if sources[p] != proof["sources"].get(p)}
-            if set(sources) != set(proof["sources"]) or changes != {"dev/tests/invariants/transported_annotations.rs"}:
-                raise ValueError("test correction changed production or unrelated sources")
-            fixtures = manifest["fixtures"]
-            if any(sha(ROOT / p) != h for p, h in fixtures.items()):
-                raise ValueError("provider fixture changed")
-            groups = {"lib": [manifest["selector"]]}
-            target = OUTPUT / "cli/candidate/rustgm"
-            target.parent.mkdir(parents=True, exist_ok=True)
-            (target.parent / ".keep-artifacts").touch()
-            shutil.copy2(ROOT / "obj/rust/dev-fast/rustgm", target)
-            target.chmod(0o755)
-            binding = {"source_commit": CANDIDATE, "compiler_unchanged_from": manifest["prior_candidate"],
-                "ci_commit": os.environ.get("GITHUB_SHA"), "candidate_sha256": sha(target), "sources": sources,
-                "compiler_source_sha256": {p: h for p, h in sources.items() if p.endswith(".rs") and (p.startswith("dev/src/") or p.startswith("dev/bin/"))},
-                "fixtures": fixtures, "profile": "dev-fast", "qualification": {"state": "pending"}, "build": "mandatory unchanged workflow CLI step; no helper CLI rebuild"}
-            (OUTPUT / "binding.json").write_text(json.dumps(binding, indent=2) + "\n")
-            steps.receipt.update(sources=sources, fixtures=fixtures, groups=groups, cli=binding,
-                retained_functional={"run": manifest["prior_run"], "candidate": manifest["prior_candidate"],
-                    "files": manifest["files"], "receipt_sha256": manifest["receipt_sha256"],
-                    "exact8": manifest["retained_exact8"], "original_ci_source_guard": manifest["original_ci_source_guard"]},
-                retained_metadata=proof["steps"][0])
-            steps.environment["RUST_TEST_NOCAPTURE"] = "1"
-            steps.save()
-            steps.run("format", ["cargo", "fmt", "--manifest-path", "dev/Cargo.toml", "--all", "--", "--check"])
-            steps.run("architecture", [ROOT / "obj/audit-venv/bin/python", "scripts/rust_audit.py", "--root", ".", "--cache", "obj/fast-audit.json"])
-            steps.run("clippy-private", ["cargo", "clippy", "--manifest-path", "dev/Cargo.toml", "--locked", "--profile", "dev-fast", "--lib", "--", "--test", "-D", "warnings"], overrides={"CARGO_TARGET_DIR": str(ROOT / "obj/rust/private-lint")})
-            built = steps.run("build", ["cargo", "test", "--manifest-path", "dev/Cargo.toml", "--locked", "--profile", "dev-fast", "--lib", "--no-run", "--message-format=json"])
-            binary = artifacts(built, groups)["lib"]
-            listed = steps.run("lib-inventory", [binary, "--list"], cwd=ROOT / "dev")
-            ignored = steps.run("lib-ignored", [binary, "--ignored", "--list"], cwd=ROOT / "dev")
-            ignored_rows = set(ignored.splitlines())
-            selected = inventory("\n".join(row for row in listed.splitlines() if row not in ignored_rows), "lib", groups["lib"])
-            if selected != groups["lib"]:
-                raise ValueError("nonignored inventory differs from exact new selector")
-            steps.receipt.update(selected={"lib": selected}, binaries={"lib": {"path": str(binary), "sha256": sha(binary)}})
-            steps.save()
-            output = steps.run("lib", [binary, "--exact", *selected], cwd=ROOT / "dev")
-            counts = re.findall(r"test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;", output)
-            if len(counts) != 1 or tuple(map(int, counts[0])) != (1, 0, 0):
-                raise ValueError("executed count differs from exact new selector")
-            if fingerprint(ROOT) != sources or any(sha(ROOT / p) != h for p, h in fixtures.items()):
-                raise ValueError("source or provider fixture changed during qualification")
-            steps.receipt["state"] = "passed"
-            binding["qualification"] = {"state": "passed", "fresh_selector": groups["lib"], "retained_exact8": manifest["retained_exact8"], "receipt": str(folder.relative_to(ROOT))}
-            (OUTPUT / "binding.json").write_text(json.dumps(binding, indent=2) + "\n")
-            print("Passed exact new v1 domain control with fresh fmt/audit/privateClippy; original exact8 retained.", flush=True)
-            return 0
-        except BaseException as error:
-            steps.receipt.update(state="failed", error=str(error))
-            raise
-        finally:
-            steps.receipt["sources_after"] = fingerprint(ROOT)
-            steps.save()
-            OUTPUT.mkdir(parents=True, exist_ok=True)
-            (OUTPUT / "result.json").write_text(json.dumps({"candidate": CANDIDATE, "state": steps.receipt["state"],
-                "receipt": str(folder.relative_to(ROOT)), "receipt_sha256": sha(folder / "receipt.json"), "retained_run": 40215420059}, indent=2) + "\n")
-            print(f"Continuation evidence: {folder}", flush=True)
-
-
-def main():
-    if len(sys.argv) == 4 and sys.argv[1] == "--worker":
-        return worker(float(sys.argv[2]), Path(sys.argv[3]))
-    started = time.monotonic()
-    folder = ROOT / f"obj/qualification/fast/{time.time_ns()}"
-    command = [sys.executable, "scripts/resources.py", "run", "--wait-seconds", "0", "--", sys.executable,
-        ".github/focused_refs.py", "--worker", str(started + 197), str(folder)]
-    process = subprocess.Popen(command, cwd=ROOT, start_new_session=True)
-    status = 1
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'scripts'))
+from fastcheck_run import fingerprint
+from storage import exclusive,check_space,minimum_reserve
+OUT=ROOT/'obj/parallel/all-attribute-selected-output-v1';PLAN_SHA='680cba3e58575dd23b1befe9c7ce4578a2c3ad760b5342ad3692ca82c1df487a';SOURCE='93fe092ffd50759b9849f5735d9cc72a9ed2b534'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+def static_byte(path):
+ # The retained LIB024 exported-static inspection algorithm, bounded to one byte.
+ data=path.read_bytes()
+ if len(data)>1024*1024 or data[:6]!=b'\x7fELF\x02\x01':raise ValueError('expected bounded real ELF64 little endian')
+ offset=struct.unpack_from('<Q',data,40)[0];stride,count=struct.unpack_from('<HH',data,58)
+ if stride!=64 or not 0<count<4096:raise ValueError('unexpected ELF section shape')
+ sections=[struct.unpack_from('<IIQQQQIIQQ',data,offset+i*stride)for i in range(count)];found=[]
+ for table in sections:
+  if table[1]!=2:continue
+  strings=sections[table[6]];names=data[strings[4]:strings[4]+strings[5]]
+  if table[9]!=24:raise ValueError('unexpected ELF symbol shape')
+  for pos in range(table[4],table[4]+table[5],24):
+   name,info,_,index,value,size=struct.unpack_from('<IBBHQQ',data,pos);end=names.find(b'\0',name)
+   if names[name:end]!=b'ANSWER':continue
+   if info&15!=1 or not 0<index<len(sections):raise ValueError('nonobject ANSWER symbol')
+   owner=sections[index]
+   if size!=1 or owner[1]==8 or value+size>owner[5]:raise ValueError('ANSWER has no genuine bool byte')
+   raw=data[owner[4]+value:owner[4]+value+size]
+   if len(raw)!=1:raise ValueError('truncated static')
+   found.append({'section':index,'offset':value,'actual_hex':raw.hex()})
+ if len(found)!=1:raise ValueError('missing/duplicate ANSWER object symbol')
+ return found[0]
+def worker(deadline):
+ pp=ROOT/'.github/not-oracle.json'
+ if sha(pp)!=PLAN_SHA:raise ValueError('frozen oracle plan changed')
+ plan=json.loads(pp.read_bytes());sources=fingerprint(ROOT)
+ if sources!=plan['sources']:raise ValueError('compiler source binding changed')
+ tool=Path(subprocess.check_output(['rustup','which','rustc'],text=True,timeout=10).strip())
+ if sha(tool)!=plan['tool_sha256']:raise ValueError('pinned rustc changed')
+ if any(sha(ROOT/r['source'])!=r['sha256'] for r in plan['rows']):raise ValueError('source reducers changed')
+ OUT.mkdir(parents=True,exist_ok=True);observations=[];infra=[]
+ with exclusive(ROOT):
+  check_space(ROOT,minimum_reserve())
+  for row in plan['rows']:
+   for emit in plan['emits']:
+    folder=OUT/'observed'/(row['id']+'-'+emit);folder.mkdir(parents=True,exist_ok=False);artifact=folder/('actual.o' if emit=='obj' else 'actual.rmeta')
+    command=[str(tool),'--edition='+plan['edition'],'--crate-type=lib','--crate-name=not_source_contract','--target='+plan['target'],'-Cpanic=abort','--error-format=json','--emit='+emit,str(ROOT/row['source']),'-o',str(artifact)]
+    observed={'id':row['id'],'emit':emit,'source_sha256':row['sha256'],'command':command,'expected_status':row['expected_status'],'expected_error_code':row['expected_error_code']}
     try:
-        status = process.wait(timeout=max(0.01, started + 198 - time.monotonic()))
-        return status
-    except subprocess.TimeoutExpired:
-        os.killpg(process.pid, signal.SIGTERM)
-        try:
-            process.wait(timeout=max(0.01, started + 199 - time.monotonic()))
-        except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGKILL)
-            process.wait(timeout=max(0.01, started + 200 - time.monotonic()))
-        status = 124
-        return status
-    finally:
-        if status:
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-        folder.parent.mkdir(parents=True, exist_ok=True)
-        folder.with_suffix(".launcher.json").write_text(json.dumps({"state": "passed" if status == 0 else "failed", "status": status,
-            "seconds": time.monotonic() - started, "absolute_budget_seconds": 200, "command": command, "retained_run": 40215420059}, indent=2) + "\n")
-        print(f"Focused v1 total: {time.monotonic() - started:.2f}s", flush=True)
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+     completed=subprocess.run(command,env={**os.environ,'RUSTC_BOOTSTRAP':'1'},capture_output=True,timeout=max(.1,min(30,deadline-time.monotonic())),check=False)
+     (folder/'stdout').write_bytes(completed.stdout);(folder/'stderr').write_bytes(completed.stderr);codes=[]
+     for line in completed.stderr.splitlines():
+      try:diag=json.loads(line)
+      except (ValueError,UnicodeDecodeError):continue
+      if diag.get('code'):codes.append(diag['code']['code'])
+     observed.update(status=completed.returncode,error_codes=codes,stdout_sha256=hashlib.sha256(completed.stdout).hexdigest(),stderr_sha256=hashlib.sha256(completed.stderr).hexdigest())
+     observed['matches_prediction']=completed.returncode==row['expected_status'] and (row['expected_error_code'] is None or row['expected_error_code'] in codes)
+     if completed.returncode not in (0,1) or b'internal compiler error' in completed.stderr:infra.append(row['id']+': nonlanguage failure')
+     if artifact.exists():
+      observed.update(artifact_sha256=sha(artifact),artifact_bytes=artifact.stat().st_size)
+      if completed.returncode==0 and emit=='obj' and row['answer_byte_hex'] is not None:
+       observed['actual_static']=static_byte(artifact);observed['static_matches']=observed['actual_static']['actual_hex']==row['answer_byte_hex'];observed['matches_prediction'] &= observed['static_matches']
+      artifact.unlink();observed['compiler_output_removed_after_hash']=True
+    except (OSError,ValueError,IndexError,struct.error,subprocess.TimeoutExpired) as error:infra.append(row['id']+': '+str(error));observed['infrastructure_error']=str(error)
+    observations.append(observed)
+    (OUT/'results.json').write_text(json.dumps({'observations':observations,'infrastructure_errors':infra,'runtime_execution':False},indent=2)+'\n')
+  unchanged=fingerprint(ROOT)==sources and sha(tool)==plan['tool_sha256'] and all(sha(ROOT/r['source'])==r['sha256'] for r in plan['rows'])
+  result={'state':'completed' if not infra and unchanged and len(observations)==plan['commands'] else 'infrastructure-failed','source_commit':SOURCE,'ci_commit':os.environ.get('GITHUB_SHA'),'source_before':sources,'source_after':fingerprint(ROOT),'rustc_sha256':sha(tool),'plan_sha256':sha(pp),'sources_unchanged':unchanged,'observations':observations,'infrastructure_errors':infra,'predictions_match':all(r.get('matches_prediction',False) for r in observations),'runtime_execution':False}
+  (OUT/'results.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps({k:v for k,v in result.items() if k not in ['source_before','source_after']}),flush=True)
+  return 0 if result['state']=='completed' else 1
+def main():
+ if len(sys.argv)==3 and sys.argv[1]=='--worker':return worker(float(sys.argv[2]))
+ start=time.monotonic();command=[sys.executable,'scripts/resources.py','run','--wait-seconds','0','--',sys.executable,'.github/focused_refs.py','--worker',str(start+90)]
+ process=subprocess.Popen(command,cwd=ROOT,start_new_session=True)
+ try:return process.wait(timeout=95)
+ except subprocess.TimeoutExpired:
+  os.killpg(process.pid,signal.SIGTERM)
+  try:process.wait(timeout=2)
+  except subprocess.TimeoutExpired:os.killpg(process.pid,signal.SIGKILL);process.wait(timeout=1)
+  return 124
+if __name__=='__main__':sys.exit(main())

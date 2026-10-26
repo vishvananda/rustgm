@@ -1,5 +1,6 @@
 //! Canonical imported headers retain actual catalog ownership and declared inputs.
 mod applications;
+mod consumer_sessions;
 mod ingest;
 pub(super) mod mapped_source;
 pub(in crate::sema) mod predicate_remap;

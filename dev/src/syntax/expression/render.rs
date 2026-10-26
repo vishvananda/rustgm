@@ -59,7 +59,7 @@ fn label(source: &str, span: Option<Span>, output: &mut impl Write) -> io::Resul
     }
 }
 
-fn operator(op: P) -> &'static str {
+pub(super) fn operator(op: P) -> &'static str {
     match op {
         P::Plus => "+",
         P::Minus => "-",
@@ -379,6 +379,13 @@ pub fn write_syntax<L, W: Write>(
         }
         if let Kind::Item(index) = node.kind {
             write!(output, "item {index} ")?;
+            if let Some(defaultness) = ast.defaultness(index) {
+                write!(
+                    output,
+                    "default {} {} ",
+                    defaultness.span.start, defaultness.span.end
+                )?;
+            }
             item::item(source, ast, &ast.items[index as usize], output)?;
             writeln!(output)?;
         }

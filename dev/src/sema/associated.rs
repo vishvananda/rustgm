@@ -467,6 +467,9 @@ fn owner_kind(
             constant,
             negative,
         }),
+        ItemKind::TraitAlias { .. } => {
+            Err(error("trait alias contract expansion is not implemented"))
+        }
         _ => Err(error("Self definition is not owned by a trait or impl")),
     }
 }
