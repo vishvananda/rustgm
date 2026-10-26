@@ -76,36 +76,51 @@ fn abort_dependency_requires_current_header_full_instance_and_direct_call() -> R
         assert!(source_call(&report, &facts, &changed_body, call, ty).is_err());
         let foreign = crate::test_source::source_provider(source, "abort_dependencies")?;
         assert!(source_call(&foreign, &facts, body, call, ty).is_err());
-        let def = crate::resolve::model::DefId(item.0);
-        let node = facts.functions[*facts.function_indices.get(&def).ok_or("function")?].node;
-        let unit = report
-            .package
-            .units
-            .get_mut(node.file.0 as usize)
-            .ok_or("current unit")?;
-        let crate::syntax::ast::Kind::Item(index) = unit.configured.ast.node(node.node).kind else {
-            return Err("item".into());
-        };
-        let original = unit.configured.ast.items[index as usize].kind;
-        if let crate::syntax::item::ItemKind::Function { ref mut flags, .. } =
-            unit.configured.ast.items[index as usize].kind
-        {
-            flags.constant = true;
-        }
-        assert!(source_call(&report, &facts, body, call, ty).is_err());
-        report
-            .package
-            .units
-            .get_mut(node.file.0 as usize)
-            .ok_or("current unit")?
-            .configured
-            .ast
-            .items[index as usize]
-            .kind = original;
-        assert_eq!(
-            source_call(&report, &facts, body, call, ty)?,
-            Some(SourceIntrinsic::Abort)
-        );
+        changed_live_header(&mut report, &facts, body, call, ty)?;
     }
+    Ok(())
+}
+
+/// Mutating a completed declaration cannot borrow a warm source-header answer.
+fn changed_live_header(
+    report: &mut crate::resolve::expansion::Report,
+    facts: &Declarations,
+    body: &Body,
+    call: &crate::body::ir::Value,
+    ty: TypeId,
+) -> Result {
+    let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(ty) else {
+        return Err("item".into());
+    };
+    let def = crate::resolve::model::DefId(item.0);
+    let node = facts.functions[*facts.function_indices.get(&def).ok_or("function")?].node;
+    let unit = report
+        .package
+        .units
+        .get_mut(node.file.0 as usize)
+        .ok_or("current unit")?;
+    let crate::syntax::ast::Kind::Item(index) = unit.configured.ast.node(node.node).kind else {
+        return Err("item".into());
+    };
+    let original = unit.configured.ast.items[index as usize].kind;
+    if let crate::syntax::item::ItemKind::Function { ref mut flags, .. } =
+        unit.configured.ast.items[index as usize].kind
+    {
+        flags.constant = true;
+    }
+    assert!(source_call(report, facts, body, call, ty).is_err());
+    report
+        .package
+        .units
+        .get_mut(node.file.0 as usize)
+        .ok_or("current unit")?
+        .configured
+        .ast
+        .items[index as usize]
+        .kind = original;
+    assert_eq!(
+        source_call(report, facts, body, call, ty)?,
+        Some(SourceIntrinsic::Abort)
+    );
     Ok(())
 }
