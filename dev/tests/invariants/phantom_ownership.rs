@@ -210,6 +210,17 @@ fn logical_argument_graphs_preserve_physical_drop_warm_work_and_hot_layouts() ->
         );
         assert_eq!(query.steps, before);
     }
+    let mut exhausted = Query::new(Obligation {
+        ty: generic,
+        marker: AutoTrait::Send,
+    });
+    exhausted.steps = 1_000_000;
+    assert!(
+        exhausted
+            .advance(&mut store, &mut defs, |_, _| Ok(Rule::Structural))
+            .is_err()
+    );
+    assert!(exhausted.steps > 1_000_000);
     owned_argument(&mut store, &mut defs, item)?;
     let empty = store.intern_list(&[])?;
     let ordinary = ItemId(93);

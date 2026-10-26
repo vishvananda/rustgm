@@ -1,4 +1,4 @@
-//! Actual source PhantomData contributes logical ownership, never invented storage.
+//! Actual source `PhantomData` contributes logical ownership, never invented storage.
 use crate::{
     resolve::{bindings::Declaration, expansion::Report, model::DefKind, package::Error},
     sema::model::Declarations,

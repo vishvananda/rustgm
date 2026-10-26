@@ -32,7 +32,7 @@ pub enum Kind {
     Struct,
     Enum,
     Union,
-    /// Checked source PhantomData: physical fields stay empty; the argument is logical ownership.
+    /// Checked source `PhantomData`: physical fields stay empty; the argument is logical ownership.
     PhantomData,
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
