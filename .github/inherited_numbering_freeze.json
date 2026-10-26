@@ -1,5 +1,5 @@
 {
-  "source_commit": "016676caec9db7407f4d920750db300fbb5f0faf",
+  "source_commit": "56317f893cc60592f8141600ded7daa3ba0ee676",
   "public_base": "0acddbc2",
   "sources": {
     "dev/bin/crates.rs": "efbab4e37ff93eb8c4affdbc721a01d33017da46a0c4472ce6dfcee80905340b",
@@ -379,7 +379,7 @@
     "dev/src/lower/transported_source/cfg_rows/lexical_rows.rs": "b16ecafed37ec7c34e8101099d6311994444ae8bbaf902da1b7829d353d2fe87",
     "dev/src/lower/transported_source/cfg_rows/value_rows.rs": "0e445991c428054a1aaabf550f9a0772bb03f25dcabf77e0ccdeb67d0ca0ed9b",
     "dev/src/lower/transported_source/cfg_rows.rs": "d9abec01699c338000ca2d76601d25520465439bbccaae47b0f66f2a342a2c34",
-    "dev/src/lower/transported_source/collected_headers.rs": "de2d8725ed4a73d87b0865c38e1ba018c641e2f0bad7afb064c3dcd55b763104",
+    "dev/src/lower/transported_source/collected_headers.rs": "08a62e318b5bf687f99b2de4d02b9ace243e107d04ef0f6ca25061b40bf4b790",
     "dev/src/lower/transported_source/collector_origin.rs": "640bc6bc67d57e29a9b78627a58c011c50d685f293535a5dad039fd421cd059e",
     "dev/src/lower/transported_source/locations.rs": "abec00ed89f8b4c4cf399142ead9386c3b34f216015a5faa217c0926b4774e49",
     "dev/src/lower/transported_source/numbered_inputs.rs": "ede299e6082fb6e399d3473c6cf508444ebafa9a679841da41b95e85066e7ff1",
@@ -388,7 +388,7 @@
     "dev/src/lower/transported_source/obligation_rows/provenance_rows.rs": "8390ebfc176efb12c28ec4622e0f693453a404e57af821a1deaf8153a765232a",
     "dev/src/lower/transported_source/obligation_rows/request_ports.rs": "00e8ff71827538880defbb29792722772afdbb525c8b35491be93d52adc26cfb",
     "dev/src/lower/transported_source/obligation_rows.rs": "525c6538eb620d6245efea8e277f3c8c907528e903404b60ac29f556d8648ed9",
-    "dev/src/lower/transported_source/publication.rs": "e9ca366e49a60fb46200d8dc7f76ea15e65d7d99fa0d8858707d83abc2db1633",
+    "dev/src/lower/transported_source/publication.rs": "2e92c5a1564c02dabe3137b96fb4ac5fba1b4125adf1fb784562de69a5be12c2",
     "dev/src/lower/transported_source/published_annotations.rs": "ca8124c61e3af3a5068394787eed2d9a56aeb7bbbe4974bd4aaedc5e0631038c",
     "dev/src/lower/transported_source.rs": "916a181ddb851ede2b9d9569fb6b8911a5e419faec519aeed1ad9063541af295",
     "dev/src/lower/virtual_dispatch/forwarders.rs": "41e2ec04cd3ed9d64ac3b1b0fb8f3c7ee5831bbd3ae7e28352bfd98180877093",
@@ -2201,7 +2201,7 @@
     "dev/tests/invariants/premise_scopes.rs": "e0560e59bdd85d9aff9d05b5dc6f7550d0717a6a4efa91934c4e4f3da77dc4c9",
     "dev/tests/invariants/prepared_callables.rs": "4b95a70a756d3541f80cddcdf23630a2f950ee090eeb55ae47c285c181918646",
     "dev/tests/invariants/primitive_factories.rs": "03c6184ed01267a943081af2acc37cf6ad639f0ec269a0ca8fbbd0661b64adcc",
-    "dev/tests/invariants/producer_incarnations.rs": "b3e3f181b8153eb173e4c8e7f44411e471942334c8fab569239d7c1b3305df0b",
+    "dev/tests/invariants/producer_incarnations.rs": "993e3493ad0565f1c9cf7833ffd410d720d6c58c68acf7b3d6879e24a6fc7c5a",
     "dev/tests/invariants/progression_contracts.rs": "630099e1721b5783b3aea1b15342de8915206d637b26c9fee1f642e14db2d640",
     "dev/tests/invariants/progression_inference.rs": "25878dd4eee7ae9a1a7e0be3b3ad18a756fa1d0f37ffbd6e96f27f8b9358d4f8",
     "dev/tests/invariants/prohibited_calls.rs": "62a38e19ec366d89dea98a9ef8945f8d576ccaf7d5d3efa1ad2cbdfee5475626",
@@ -2223,7 +2223,7 @@
     "dev/tests/invariants/provider_reservations.rs": "5e080068bf5c48abd9b59f92a729a6356340bf80ae36b4970fdc47f478265296",
     "dev/tests/invariants/provider_sizing.rs": "5baeac9f0eb7dbfbfd90efe03f864e9d901acf7ff52da3cf576bc8ed46e8366a",
     "dev/tests/invariants/public_signature_storage.rs": "202948dc32a686e839d0d7cef1034a5eff477f7e2ca2ad221995fdc394d97c3d",
-    "dev/tests/invariants/publication_attributes.rs": "50ab7d0a07ccaa430a7027414f4eac9dc86c28d20ea6e796b50b1447b1f66ef4",
+    "dev/tests/invariants/publication_attributes.rs": "11099c59fc3679e9a3e8a88027d6cc82853071902d4e9cee9507c4c3a0a265fc",
     "dev/tests/invariants/published_parents.rs": "90941af44bd8f0061954e0fee27e7edf7d9d0acaf73076bef3816f49b54de55e",
     "dev/tests/invariants/qualified_source_rows.rs": "a0f94f41e7f4c2e190799fffc9037c7476787f262afa692234eb780cf50a448e",
     "dev/tests/invariants/qualifiers.rs": "3ed448b792910644583b5a753afbaeabb5b4f0a328f06428bb995415cfa026d1",
@@ -2711,7 +2711,7 @@
     "pa8/tests/manifest.json": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
     "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
   },
-  "source_sha256": "6a57e0e2a78c7d4a82abcd8ee530b55347d546c9e729ca593772ca581574e25f",
+  "source_sha256": "585fe55283adcd87152963c619eac3df8502221daf9084f800bdec240a23d363",
   "selected": [
     "sema::crates::typed_headers::consumer_sessions::tests::completed::collected_source_headers_bind_full_family_to_fresh_actual_consumer",
     "sema::crates::typed_headers::consumer_sessions::tests::completed::collected_source_headers_reject_unpaid_swapped_and_foreign_sidecars",

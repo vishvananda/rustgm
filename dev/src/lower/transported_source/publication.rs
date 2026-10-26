@@ -1,5 +1,5 @@
 //! Closed source publication checks retained must-use and inline contracts.
-use super::{Declarations, Report, Source, s};
+use super::{Declarations, Report, Source};
 use crate::resolve::{model::DefId, package::Error, unit::NodeKey};
 
 impl Source {

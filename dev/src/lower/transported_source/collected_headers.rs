@@ -1,4 +1,6 @@
 //! Complete source inspection retains a sealed joint row/contract owner.
+#[cfg(test)]
+use super::g;
 use super::{Declarations, Report, Source, SourceInspection, s};
 use crate::{
     resolve::package::Error,
