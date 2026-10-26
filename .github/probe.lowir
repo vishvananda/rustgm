@@ -1,0 +1,14 @@
+declare function @marker() -> void
+function @abort() -> u8 {
+  block ^b0:
+    call void @marker()
+    return u8 7
+}
+function @probe(%p0 : i1) -> u8 {
+  block ^b0:
+    branch i1 %p0, ^b1, ^b2
+  block ^b1:
+    unreachable
+  block ^b2:
+    return u8 9
+}

@@ -83,7 +83,7 @@ pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inp
     else {
         return Err("invalid callable instance");
     };
-    let Some(callable) = facts.lifetimes.callables.get(item) else {
+    let Some((callable, parameters)) = facts.lifetimes.callables.registration(item) else {
         let owner = crate::resolve::model::DefId(item.0);
         if arguments != crate::types::GenericArgs::EMPTY
             || facts.generics.has_parameters(owner)
@@ -100,11 +100,6 @@ pub(super) fn select(facts: &mut Declarations, instance: Instance) -> Result<Inp
             connections: None,
         });
     };
-    let parameters = facts
-        .lifetimes
-        .callables
-        .generic_parameters(item)
-        .ok_or("missing callable parameters")?;
     let arguments = facts
         .types
         .arguments(arguments)

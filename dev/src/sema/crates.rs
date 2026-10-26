@@ -99,6 +99,37 @@ impl Linkage {
 fn error(message: &'static str) -> Error {
     Error::at(FileId(0), 0, message)
 }
+pub(in crate::sema) fn reserve_staged(
+    report: &Report,
+    facts: &mut Declarations,
+) -> Result<(), Error> {
+    let actual = report
+        .package
+        .staged_consumer()
+        .ok_or_else(|| error("private semantic reservation requires its actual consumer policy"))?;
+    actual.require_package(&report.package).map_err(error)?;
+    let origins = report
+        .resolution
+        .crates
+        .as_deref()
+        .ok_or_else(|| error("private semantic reservation lacks its actual imported inventory"))?
+        .origin_catalog()
+        .map_err(error)?
+        .ok_or_else(|| error("private semantic reservation lacks its actual shared catalog"))?;
+    if facts.crates.is_some() {
+        return Err(error(
+            "private semantic reservation cannot replace installed linkage",
+        ));
+    }
+    facts.crates = Some(Box::new(Linkage {
+        origins: Some(origins),
+        ..Linkage::default()
+    }));
+    Ok(())
+}
+pub(in crate::sema) const fn staged_linkage_allocation() -> usize {
+    size_of::<Linkage>()
+}
 pub(super) fn import(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     let Some(imported) = &report.resolution.crates else {
         return Ok(());

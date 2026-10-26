@@ -233,14 +233,25 @@ impl BodyRegions {
         self.positions(body)?.get(index)
     }
     fn push(&mut self, region: BodyRegion) -> Result<RegionId, &'static str> {
-        let id = RegionId(next_identity(self.active.len())?);
-        let position =
-            u32::try_from(self.log.len()).map_err(|_| "body region log exceeds 32 bits")?;
-        self.log.push(AllocatedRegion { id, region });
-        self.active.push(position);
-        self.widest = self.widest.max(self.active.len());
-        Ok(id)
+        record_next(self.active.len(), |id| {
+            let position =
+                u32::try_from(self.log.len()).map_err(|_| "body region log exceeds 32 bits")?;
+            self.log.push(AllocatedRegion { id, region });
+            self.active.push(position);
+            self.widest = self.widest.max(self.active.len());
+            Ok(())
+        })
     }
+}
+/// Issue an actual unit-local identity only after its owner records allocation.
+/// The caller uses its recorded count, never an external slot or guessed prefix.
+pub(in crate::sema) fn record_next(
+    count: usize,
+    append: impl FnOnce(RegionId) -> Result<(), &'static str>,
+) -> Result<RegionId, &'static str> {
+    let id = RegionId(next_identity(count)?);
+    append(id)?;
+    Ok(id)
 }
 fn next_identity(count: usize) -> Result<u32, &'static str> {
     u32::try_from(count)

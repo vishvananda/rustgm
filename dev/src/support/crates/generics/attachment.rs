@@ -108,6 +108,27 @@ impl Payload {
             work,
         )?))
     }
+    /// Validate complete module/domain/advisory rows, without transporting paid proof.
+    /// # Errors
+    /// Rejects incomplete policy, unsupported forms and combined budgets.
+    pub fn from_source_module_contracts(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        attributes: source::HeaderAttributeColumns,
+        modules: source::ModuleContractRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        Ok(Self::from(source::ValidatedRows::stage_module_contracts(
+            owner,
+            rows,
+            attributes,
+            modules,
+            base.saturating_add(overhead),
+            work,
+        )?))
+    }
     #[must_use]
     pub const fn view(&self) -> PayloadView<'_> {
         match &self.data {

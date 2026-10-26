@@ -46,14 +46,7 @@ fn compile_with(
         &crates::Interface,
     ) -> Result,
 ) -> Result<(Report, Declarations, Arc<crates::Dependencies>)> {
-    let report = crate::test_source::source_provider(source, "unpaid_reservations")?;
-    let owner = report
-        .package
-        .source_core()
-        .ok_or("actual source policy")?
-        .provider
-        .clone();
-    let analysis = crate::pipeline::analyze_source(&report)?;
+    let (report, analysis, owner) = analyze(source)?;
     let mut facts = analysis.facts;
     let mut rows = crate::lower::instances::inspect_source_transport_with_numbering(
         &report,
@@ -83,4 +76,66 @@ fn compile_with(
     let inventory =
         crates::Dependencies::new(vec![interface.with_generic_payload(payload)?], Vec::new())?;
     Ok((report, facts, Arc::new(inventory)))
+}
+
+fn analyze(source: &str) -> Result<(Report, crate::pipeline::Analysis, crates::CrateIdentity)> {
+    let report = crate::test_source::source_provider(source, "unpaid_reservations")?;
+    let owner = report
+        .package
+        .source_core()
+        .ok_or("actual source policy")?
+        .provider
+        .clone();
+    let analysis = crate::pipeline::analyze_source(&report)?;
+    Ok((report, analysis, owner))
+}
+
+pub(crate) struct TraitFixture {
+    pub report: Report,
+    pub facts: Declarations,
+    pub inventory: Arc<crates::Dependencies>,
+    pub contracts: crates::generics::source::HeaderAttributeColumns,
+    pub contract_bytes: usize,
+    pub work: crate::lower::instances::SourceWork,
+}
+pub(crate) fn trait_extended(suffix: &str) -> Result<TraitFixture> {
+    let mut source = crate::test_source::fixture(
+        "pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs",
+    )?;
+    source.push_str(suffix);
+    let (report, analysis, owner) = analyze(&source)?;
+    let mut facts = analysis.facts;
+    let (inspection, contracts, contract_bytes) =
+        crate::lower::instances::inspect_source_trait_inputs_with_numbering(
+            &report,
+            &mut facts,
+            &owner,
+            analysis.prepared,
+        )?
+        .into_parts();
+    let mut work = inspection.work;
+    let mut validation = crates::generics::Work {
+        steps: work.steps,
+        ..crates::generics::Work::default()
+    };
+    let interface = crates::Interface::new(owner, Vec::new(), Vec::new())?;
+    let payload = crates::generics::Payload::from_source_provided(
+        interface.identity(),
+        inspection.rows,
+        interface.base_retained_bytes(),
+        &mut validation,
+    )?;
+    work.steps = validation.steps;
+    let inventory = Arc::new(crates::Dependencies::new(
+        vec![interface.with_generic_payload(payload)?],
+        Vec::new(),
+    )?);
+    Ok(TraitFixture {
+        report,
+        facts,
+        inventory,
+        contracts,
+        contract_bytes,
+        work,
+    })
 }

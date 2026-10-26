@@ -1,8 +1,11 @@
 //! Shared type graphs are visited once while accumulating rigid parameter uses.
+mod dag_parts;
+mod multiplicities;
 mod sole;
 use super::ParameterId;
 use crate::support::hash::HashSet;
 use crate::types::{Kind, Store, TypeId, arguments::Argument};
+pub(crate) use multiplicities::Multiplicities;
 pub(crate) use sole::Sole;
 #[derive(Default)]
 pub struct Uses {
