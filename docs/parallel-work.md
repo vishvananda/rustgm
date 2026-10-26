@@ -62,6 +62,10 @@ Current lanes:
   and instance proof bridge toward the concrete
   [provided-method execution milestone](parallel/provided-method-execution.md).
   Public Provided execution and type-alias transport remain required.
+  The [fresh consumer constructor](private-consumer-authority-checkpoint.md) now
+  qualifies a separate real Report/Store and one Catalog reservation. Continue
+  selected append and genuine role/member validation on that same consumer;
+  reserved construction does not establish checked header or body availability.
 - B: local LIB-026 implementation domains and their version-one imported
   unrestricted-profile control are qualified, with 74 independent observations.
   The private declaration-coordinate namespace and ordinary-trait producer
