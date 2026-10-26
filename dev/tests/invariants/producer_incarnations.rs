@@ -19,7 +19,7 @@ impl Sources for Part {
             return Ok(None);
         }
         Ok(Some(InputFile {
-            identity: path.to_string_lossy().into_owned(),
+            identity: path.to_owned(),
             path: path.to_owned(),
             source: SourceFile::new(b"pub fn selected<T>(value:T)->T{value}".to_vec())?,
         }))

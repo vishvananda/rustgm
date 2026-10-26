@@ -38,6 +38,7 @@ fn staged(report: &Report, facts: &mut Declarations, identity: &CrateIdentity) -
         stage: Stage::begin(report, facts, identity)?,
         openings: HashMap::default(),
         numbering: None,
+        collector: None,
     })
 }
 fn publish(text: &str) -> Result<crates::Interface> {
