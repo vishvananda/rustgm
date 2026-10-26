@@ -5,7 +5,7 @@ use crate::{
     support::source::FileId,
     syntax::{expression, interpolation::EMPTY_INPUTS, token_tree::Forest},
 };
-use std::cell::Cell;
+use std::{cell::Cell, fmt::Write};
 type TestResult = Result<(), LexError>;
 fn write(source: &str) -> Result<String, LexError> {
     let ast = expression::parse(source)?;
@@ -97,12 +97,11 @@ fn expression_writer_work_is_selected_bounded_and_layout_storage_is_cold() -> Te
     }
     let mut ordinary_work = None;
     for width in [0usize, 32, 128] {
-        let source = format!(
-            "fn chosen(){{let _=2usize==3usize;}}{}",
-            (0..width)
-                .map(|i| format!("fn unrelated{i}(){{}} "))
-                .collect::<String>()
-        );
+        let mut source = "fn chosen(){let _=2usize==3usize;}".to_owned();
+        for index in 0..width {
+            write!(&mut source, "fn unrelated{index}(){{}} ")
+                .map_err(|_| error(0, "test source formatting failed"))?;
+        }
         let ast = expression::parse_crate(&source)?;
         let root = ast
             .nodes

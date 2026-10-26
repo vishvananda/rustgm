@@ -220,10 +220,10 @@ fn delimiters(delimiter: Delimiter) -> (P, P) {
     }
 }
 fn space(previous: Option<TokenKind>, current: TokenKind) -> bool {
+    use TokenKind::Punctuation as Q;
     let Some(previous) = previous else {
         return false;
     };
-    use TokenKind::Punctuation as Q;
     if matches!(
         current,
         Q(P::Comma

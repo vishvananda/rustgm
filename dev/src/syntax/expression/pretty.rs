@@ -270,7 +270,7 @@ impl<'a> Writer<'a> {
                     offset,
                 })?,
                 Action::BeginBox { indent, consistent } => {
-                    self.document(layout::Token::Begin { indent, consistent })?
+                    self.document(layout::Token::Begin { indent, consistent })?;
                 }
                 Action::EndBox => self.document(layout::Token::End)?,
                 Action::Forest {

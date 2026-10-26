@@ -110,10 +110,10 @@ impl<'a> Writer<'a> {
                 ])?;
                 if let Some(base) = base {
                     self.enqueue(&[
-                        W(if fields.start != fields.end {
-                            ", .."
-                        } else {
+                        W(if fields.start == fields.end {
                             ".."
+                        } else {
+                            ", .."
                         }),
                         view.n(base),
                     ])?;

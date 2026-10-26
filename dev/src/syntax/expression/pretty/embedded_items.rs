@@ -84,10 +84,10 @@ impl<'a> Writer<'a> {
             } => self.enqueue(&[
                 W("&"),
                 view.span(lifetime),
-                W(if lifetime.start != lifetime.end {
-                    " "
-                } else {
+                W(if lifetime.start == lifetime.end {
                     ""
+                } else {
+                    " "
                 }),
                 W(if mutable { "mut " } else { "" }),
                 view.span(name),
@@ -105,10 +105,10 @@ impl<'a> Writer<'a> {
             Kind::Expansion { children, tail } => {
                 if let Some(tail) = tail {
                     self.enqueue(&[
-                        W(if children.start != children.end {
-                            " "
-                        } else {
+                        W(if children.start == children.end {
                             ""
+                        } else {
+                            " "
                         }),
                         view.n(tail),
                     ])?;
@@ -380,22 +380,20 @@ impl<'a> Writer<'a> {
         self.enqueue(&[Action::Word(keyword), view.span(name)])
     }
     fn generics(&mut self, view: View<'a>, list: List) -> Result<(), LexError> {
-        if list.start != list.end {
-            self.enqueue(&[
-                Action::Word("<"),
-                view.ty().sequence(list, ", "),
-                Action::Word(">"),
-            ])
-        } else {
-            Ok(())
+        if list.start == list.end {
+            return Ok(());
         }
+        self.enqueue(&[
+            Action::Word("<"),
+            view.ty().sequence(list, ", "),
+            Action::Word(">"),
+        ])
     }
     fn where_clause(&mut self, view: View<'a>, list: List) -> Result<(), LexError> {
-        if list.start != list.end {
-            self.enqueue(&[Action::Word(" where "), view.ty().sequence(list, ", ")])
-        } else {
-            Ok(())
+        if list.start == list.end {
+            return Ok(());
         }
+        self.enqueue(&[Action::Word(" where "), view.ty().sequence(list, ", ")])
     }
     fn fields(&mut self, view: View<'a>, shape: Shape, fields: List) -> Result<(), LexError> {
         use Action::Word as W;
