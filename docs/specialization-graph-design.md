@@ -1,9 +1,11 @@
-# Concrete private graph, mode and marker proposal (source only)
+# Specialization graph proposal and verifier checkpoint
 
-Successor branch pa31-specialization-graph-v1, still at qualified64c9f507.
-No production graph/schema edits. New observations40237725892 supersede ONLY
-incorrect predictions, not source bytes. All numeric new type sizes below are
-UNMEASURED; budgets explicitly use size_of/capacity instead of guessed sizes.
+The initial concrete proposal below records the reviewed design from
+qualified64c9f507. The later verifier-checkpoint and correction sections describe
+the current unqualified production implementation; the full dispatch draft stays
+preserved on pa31-specialization-graph-v1. New observations40237725892 supersede
+only incorrect predictions, preserving their source bytes and raw results.
+Unmeasured sizes remain explicit; logical budgets use actual types/capacities.
 
 ## Private types and ownership
 
@@ -239,3 +241,222 @@ Vertex/marker row, actual pair and selected-parent capacities. Preserve all hot
 layouts and never-default/no-marker no-owner allocations. Scaling includes
 ordinary8/32/128 nonoverlap buckets and real chain/fanout with cold/warm/failed
 queries; no performance or allocation-count claim is inferred from oracle time.
+
+## Member-specific proof and source progress
+
+The successor remains uncompiled and unqualified. Source-only save `a10e9c73`
+retains the graph/proof/marker draft; `e7ce67ce` cleanly merges published B v2
+`a598b799`. Both its module-contract publisher and v1 still use the shared
+selected-header/defaultness/marker presence boundary. No new public profile,
+executable graph or imported marker/defaultness authority is inferred.
+
+The new [member-demand contract](../pa31/tests/spec/specialization-graph/member-demand/contract.json)
+freezes the exact Full own-child/static-parent opponent. Hosted run 40245869391
+uses the unchanged pinned workflow and qualified public compiler baseline;
+its two metadata and two actual native observations pass in 0.151553 seconds,
+with `2\n` and no warnings. The 6 command statuses and every output hash are
+retained in that contract. No candidate graph ran. The 4343-byte artifact
+12617824460 has SHA-256
+`a0bf4c60e859eb355b203b33596173058c3365a668d139bbdbc97ad8d2956d67`;
+binding SHA-256 is
+`4bfd4f102843928062ac1948a3afc25f092b6e4b12adce4f3d0b71048d39014d`.
+The raw ZIP is authenticated in memory; guarded local hydration awaits recovery
+above the unchanged 150 GiB reserve.
+
+This result rules out blanket ancestor requirements during implementation
+selection. Only an actually requested inherited member/result may demand its
+actual defining header. Both public normal-form Query and the selection engine's
+already-boxed Normalization need their own optional cold continuation (+8 bytes
+each, still awaiting actual layout measurement). They share one typed
+`Conditions { clauses, outlives }` producer, including implicit Sized, full
+ordinary/quantified clauses and schema region pairs. A selected own child body
+never demands the unused parent's header. No synthetic parent Self:Trait query
+may authorize an inherited body. Existing pending scopes/proofs must reach the
+ordinary final lifetime/body proof before result publication.
+
+The source draft now has retained pair attempts, immediate-parent reduction,
+ranked ancestry, parent-first conformance slots and member finality at each
+immediate boundary. It also factors charged/no-op adapters over the existing
+nominal, trait-application, capture and substitution producers. Growth callbacks
+prepay typed collection/copy work and logical bytes before mutation; existing
+shift/fold counters retain failed work. These changes add no fields to Store,
+Bound, Requirements or Proof. Exact layouts, capacities and allocation-path
+invariants remain unmeasured until the focused gate.
+
+Capped multiplicities use one canonical demanded DAG with Kahn propagation,
+including real child capture slots under their actual binder depths. Duplicate
+edges remain distinct; function-item signatures are metadata rather than a
+second set of generic inputs. Sole keeps its existing fields, set summary and
+ordinary edge behavior. The bound is O(V+E+R+P) logical work/storage for demanded
+(node,binder-depth) keys, edges, roots and parameters with ordinary hashing;
+it is not an adversarial hash bound. Shared diamonds, many parameters, nested
+capture slots, function-item inputs and failed payment controls are authored
+and unrun. All prior 74/40 independent observations and 8 wrong chain predictions
+remain unchanged; the new opponent adds only 2 metadata and 2 actual natives.
+
+Graph execution is still closed in this draft. Required work before its focused
+candidate gate includes requested-member resolution/substitution, both RPIT
+continuations, dispatcher proof joins, coherent conformance/selection wiring
+and actual mode/marker/finality/storage controls. Wider quantified implication,
+projection-constrained Min parent arguments, associated-value/default-impl
+specialization and imported graph/marker transport remain explicit required
+followups rather than inferred absence or discarded goals.
+
+## First verifier component (focused qualification)
+
+The successor `pa31-specialization-verifier-v1` keeps the full dispatch draft on
+`pa31-specialization-graph-v1`. The component connects actual coarse-head pair
+checking to the one paid comparison memo, a closed immediate-parent forest,
+crate-Min admission, conformance ordering and member finality. Omitted inherited
+members are final at their immediate boundary. No successful analyzed facts or
+artifact can escape this component: a completed graph returns the explicit
+`specialization graph execution is not implemented` diagnostic. This is a
+verifier checkpoint, not implementation of executable specialization.
+
+One optional Graph belongs to the registry. Its shared Rc budget retains failed
+work across pending queries, closure and failure. Local marker knowledge belongs
+to the existing optional semantic contracts owner; genuine publication still
+rejects present untransported markers, and imported missing metadata is Unknown.
+No syntax, item, scope, definition, Store, Requirements or Proof field is added.
+Actual enclosing sizes, graph/marker capacities and logical work/byte charges are
+printed by the selected controls and remain unmeasured until qualification.
+Logical retention accounting is not a measured allocator count.
+
+The counted nominal producer shares the existing canonical traversal. A failed
+query rolls back only its prepaid newly inserted visitation keys, preserving
+previously completed dependencies and cumulative failed work. Shared canonical
+clause caches may retain fully computed results; incomplete roots cannot become
+cached absence. The ordinary uncharged path retains its existing behavior.
+
+Minimal-specialization repetition uses one demanded canonical DAG with capped
+path multiplicities, shared with Sole's parts enumerator. Collection is
+O(V+E+R+P) logical work under the existing hashing policy, with V distinguished
+by demanded node and binder depth. Duplicate edges and roots count; a shared
+node does not cause a parameter-by-node result table or a traversal per parameter.
+
+Focused hosted plan, six exact private groups only:
+
+- `sema::specialization::component_tests::marker_authority_retains_actual_source_and_rejects_invalid_or_forwarded_requests`
+- `sema::specialization::component_tests::marker_publication_is_closed_and_imported_contracts_remain_unknown`
+- `sema::nominals::requirements::counted_tests::counted_formation_replays_real_clauses_and_rolls_back_only_failed_visitation`
+- `types::parameters::uses::multiplicities::tests::specialization_counts_shared_diamonds_many_parameters_and_failed_work`
+- `sema::declarations::specialization_tests::specialization_verifier_checks_immediate_finality_min_authority_and_closed_execution`
+- `types::parameters::uses::sole::tests::default_occurrences_share_all_growing_prefixes`
+
+Production and private strict Clippy run sequentially and both retain findings;
+architecture runs alongside. A static failure prevents build/test execution.
+The total hosted development gate stays below 300 seconds. No independent oracle
+set, broad private/native suite or source-core observer is repeated here.
+
+Executable continuation remains required: one checked SelectedMethod must feed
+method dispatch and both RPIT normalization consumers. Only the actual requested
+inherited member may demand its defining header and translated substitutions;
+ordinary own-child dispatch must not collect unused ancestor debts. The retained
+member-demand opponent confirms the own child method avoids the unused parent's
+static bound. Full obligations, regions, schemas, callable/body proof, pending
+state and source authority must be retained before execution opens. No Provided
+or graph wire transport is granted by this component.
+
+### Retained verifier observations and correction
+
+Hosted40252035090, source b3b21245, passed metadata, format, global architecture,
+production and private strict Clippy, CLI/private builds, and five of the six
+selected controls. The actual verifier group failed its first corrected chain:
+Min admission omitted structural WF clauses and rejected the implicit child
+Sized obligation. This is a real producer deficiency, not a revised language
+expectation. No graph/native/executable qualification follows from that run.
+The independent graph/member-demand source bytes and all disagreements remain
+unchanged; this correction runs no independent oracle again.
+
+Observed logical costs from that exact source (not allocator counts):
+
+| owner/control | widths or state | actual values |
+| --- | --- | --- |
+| LocalMarkers / Contracts | bytes | 88 / 448 |
+| marker rows | 8 / 32 / 128 | capacity14/56/224; work194/846/3406; logicalbytes7912/33704/134088 |
+| demanded DAG | widths8/32/128 | nodes18/66/258; edges27/99/387; work331/1311/5207; logicalbytes11984/48016/190032 |
+| ordinary Sole / Requirements | bytes | 64 / 128 |
+| shared Budget | bytes | 8; failed alias work10000002 then retry10000004, same owner |
+
+The correction uses a distinct FormationRequirements wrapper around the same
+Requirements state and traversal, preventing nominal-only visitation from
+implying structural completion. Its shared Shape predicate emits Sized only on
+array/slice element edges and non-tail tuple edges. Reference referent-outlives
+clauses retain their actual binder. Bare parameters, pointers and callable
+signature positions gain no blanket Sized. Wider dynamic/projection/closure/item
+formation remains explicit. Pinned rustc wf.rs750–850/917 supplies these rules
+(SHA2560f0f029b52e543386ba875d931dc8ea4e3ba3759a7c191923a51e0bdeff20a3d).
+
+Before integration, dynamic environment and clause-index storage must also be
+prepaid. The successor's nonbreaking charged adapters share the original field
+mapping, structural fingerprint and canonical clause insertion algorithms.
+They pay actual Arc copies, map/set/vector and bucket growth before allocation;
+region equality reconstruction derives its bound from actual equation counts,
+typed graph/SCC buffers and output maps. Failed callbacks remain charged.
+The declaration adapter requires a lifetime-only folder and rejects an already
+opened caller rather than materializing unpaid body/import opening state.
+Ordinary adapters retain their original general behavior. No fields are added
+to Environment, Shapes, ClauseIndex, Requirements, Proof, Store or hot nodes.
+
+A budget failure during lazy ClauseIndex construction never installs a semantic
+Err/empty result into the immutable source's OnceLock. Success alone publishes
+the complete index. The same counted group now contains an actual captured
+source caller with two real trait bounds and a quantified builtin: failed
+mapping preserves the original; retry shares cumulative work; a partially built
+index fails, retries both real rows and then reuses the same warm Arc. Structural
+formation controls explicitly oppose arbitrary generic/reference/pointer/fn
+Sized assumptions and callable-local lifetime escape. The successor remains an execution-fenced verifier; its focused qualification
+and observed costs are recorded below.
+
+
+### Qualified verifier source `9147a49a`
+
+Hosted run 40256578419 is GREEN on source `9147a49a07af941991b84601492d64c8c2082fef`,
+CI commit `ee0dd17aab0ff72428bac7b27b09936ea7163bfa`. All 2,689 frozen fingerprints
+and all independent-fixture hashes match. Metadata, formatting, global
+architecture, strict production and private Clippy, CLI/private builds and the
+same exact six groups pass; six selected tests execute in 0.05 seconds. The helper
+used 175.8 seconds within its 180 second work budget. Downstream harness, audit-cache
+and upstream checks also pass. No reference, oracle, native or full-suite repeat
+was used. Earlier failures remain retained and this checkpoint claims no native
+specialization behavior.
+
+Actual nocapture figures on that exact source:
+
+| object/control | measured size or logical cost |
+| --- | --- |
+| Graph / registry / Budget | 56 / 240 / 8 bytes |
+| LocalMarkers / existing cold Contracts | 88 / 448 bytes |
+| Environment / Requirements / FormationRequirements | 64 / 128 / 128 bytes |
+| three-vertex chain, either declaration order | 2 edges, depth 2, capacity 3; work 441, logical bytes 13,736 |
+| actual unsafe-marker two-vertex family | 1 edge, depth 1, capacity 2; work 297, logical bytes 7,432 |
+| Full structural-static two-vertex family | work 155, logical bytes 5,136 |
+| literal Full-authorized family | work 177, logical bytes 4,896 |
+| mapped captured caller | retained owned payload 1,372; cumulative logical charge 3,272; work 145/folder 18; failed index 13, retry total 26 |
+| nominal rollback/retry | prior completed 2, final visited 6; failed work 4, total 41; logical bytes 208 |
+
+Marker and DAG width 8/32/128 figures above are reproduced exactly by this run.
+Ordinary Sole's growing-prefix counts 16/128/1024/4096 are 115/899/7171/28675.
+Ordinary declarations retain no Graph; no-marker/no-default declarations retain
+no LocalMarkers owner. Source-forgery, missing/forwarded authority, malformed
+markers, actual v2 publication rejection and imported Unknown opponents pass.
+Closed-forest insertion rejection and every immediate-boundary finality/Min
+opponent pass. Failed budget aliases and partial lazy-index failures keep their
+charges and cannot turn into checked absence.
+
+The measured unchanged enclosing sizes are Syntax 312, Unit 688, Report 3040,
+Node 36, Item 64, Scope 32, resolver Definition 36 and NodeFacts 80. No hot field or
+persistent counter was added. Graph and LocalMarkers are the approved optional
+cold owners. These are Rust type sizes, actual capacities and logical work/
+payload accounting; they are not allocator-call counts, peak heap measurements
+or a replacement for later performance qualification.
+
+Metadata-only retained evidence lives in Worker C
+obj/parallel/pa31/specialization-graph-v1/qualified-verifier-40256578419.
+Fastcheck artifact 12622213761 (297,438 bytes) has ZIP SHA-256
+f17aeae43761df6223cd5e5c9e07ecbd3093ea7a140a0ee9ae132e5fc67f0369;
+its binding SHA-256 is a26272f768485cdb9659e223b30122319c9436a01bc2b41f048838f1081dc31a.
+The compiled CLI hash is 3ae4b3c6127a962328454d5e0c13b140e7fe3b79e58936aa35725ba630237f47;
+no executable was hydrated locally. The explicit execution fence remains in
+place until selected methods, actual defining-header conditions, dispatch and
+both RPIT continuations are complete and independently qualified.

@@ -63,9 +63,11 @@ Current lanes:
   [provided-method execution milestone](parallel/provided-method-execution.md).
   Public Provided execution and type-alias transport remain required.
   The [fresh consumer constructor](private-consumer-authority-checkpoint.md) now
-  qualifies a separate real Report/Store and one Catalog reservation. Continue
-  selected append and genuine role/member validation on that same consumer;
-  reserved construction does not establish checked header or body availability.
+  qualifies a separate real Report/Store and one Catalog reservation. The [selected registration checkpoint](private-selected-callables-checkpoint.md)
+  now appends actual callable templates on that same consumer and passes the
+  [fresh combined controls](trait-alias-clauses-checkpoint.md). Continue genuine
+  collected-header completion, role/member validation and original/instance proof;
+  registration does not establish checked header or body availability.
 - B: local LIB-026 implementation domains and their version-one imported
   unrestricted-profile control are qualified, with 74 independent observations.
   The private declaration-coordinate namespace and ordinary-trait producer
@@ -81,13 +83,14 @@ Current lanes:
   Assert execution, wider imported contracts and Provided execution remain open.
 - C: SourceCore CLI contract publication and fresh native consumers are qualified.
   LIB-027 unnamed constants and the [LIB-028 modifier checkpoint](defaultness-checkpoint.md)
-  pass focused controls and reviewed text qualification. Implement the actual
-  specialization graph, effective finality, inherited dispatch and Min checks.
+  pass focused controls and reviewed text qualification. The [integrated verifier](frontend-components-integration.md) now qualifies
+  the real forest, Min checks and effective finality. Continue actual member-specific
+  dispatch, both RPIT consumers and native behavior; execution stays fenced.
   B takes LIB-029 assertion expansion after module-contract v2 qualification;
   coordinate its source/panic authority with C.
 - Integrator: the [trait alias source-site checkpoint](trait-alias-sites-checkpoint.md)
   qualifies grammar, distinct identity and whole-item authority with shared sparse
-  storage. Continue real typed alias contracts and their bound consumers. Handle
+  storage. The [canonical clause successor](trait-alias-clauses-checkpoint.md) now qualifies actual local schemas, shared dependency edges and a bounded ordinary-bound consumer. Continue nested binder/region, projection/object, full declaration and imported consumers. Handle
   focused integration/main pushes, periodic CI follow-up and original-source observations. Local primitive ownership is qualified. Keep
   CPPGM and upstream sources unchanged.
 

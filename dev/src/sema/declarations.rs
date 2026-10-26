@@ -12,6 +12,7 @@ pub(in crate::sema) mod cloning;
 mod comparison_methods;
 mod comparisons;
 pub(in crate::sema) use comparisons::prepare as prepare_comparison;
+mod aliases;
 mod constants;
 mod contracts;
 #[path = "declarations/overridable_methods.rs"]
@@ -41,6 +42,7 @@ mod primitive_constants;
 mod projections;
 mod receivers;
 mod self_constructors;
+mod self_schema;
 mod slice_methods;
 mod slice_paths;
 mod structural_owners;
@@ -174,6 +176,7 @@ struct Signature {
     convention: crate::types::callable::Convention,
 }
 struct Checker<'a> {
+    trait_aliases: Option<Box<aliases::Pending>>,
     annotation_inputs: annotations::Inputs,
     call_paths: crate::support::hash::HashSet<NodeKey>,
     linkage_sources: crate::support::hash::HashMap<NodeKey, foreign::Attributes>,
@@ -266,6 +269,7 @@ impl<'a> Checker<'a> {
         let target_feature_sources = call_traits::target_feature_sources(report)
             .map_err(|error| facts.retain_error_warnings(error))?;
         let mut checker = Self {
+            trait_aliases: aliases::collect(report)?,
             annotation_inputs: annotations::Inputs::default(),
             linkage_sources,
             call_paths: crate::support::hash::HashSet::default(),
@@ -383,6 +387,7 @@ impl Checker<'_> {
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
         self.prepare_trait_owners(&mut steps, work_limit)?;
+        self.reject_alias_execution()?;
         self.prepare_source_call_contracts(&mut steps, work_limit)?;
         self.prepare_destructors(destructors, &mut steps, work_limit)?;
         self.prepare_trait_implementations(&mut steps, work_limit)?;
@@ -442,7 +447,8 @@ impl Checker<'_> {
                 "unfinished method applicability queries",
             ));
         }
-        self.complete_layouts()
+        self.complete_layouts()?;
+        super::specialization::reject_execution(&self.facts, self.report)
     }
     fn latent_library_definition(&self, id: DefId) -> bool {
         self.report
@@ -1095,7 +1101,9 @@ impl Checker<'_> {
                 | DefKind::Struct
                 | DefKind::Enum
                 | DefKind::Generic
-        ) || (kind == DefKind::SelfType && self.facts.associated.schema(id).is_some()))
+        ) || (kind == DefKind::SelfType
+            && (self.facts.associated.schema(id).is_some()
+                || self.alias_self_schema(id)?.is_some())))
         {
             return Err(self.error(
                 key,
@@ -1218,6 +1226,7 @@ impl Checker<'_> {
                         | ItemKind::Union { .. }
                         | ItemKind::Impl { .. }
                         | ItemKind::Trait { .. }
+                        | ItemKind::TraitAlias { .. }
                 )
             {
                 continue;
@@ -1232,7 +1241,8 @@ impl Checker<'_> {
                             | ItemKind::Enum { .. }
                             | ItemKind::Union { .. }
                             | ItemKind::Impl { .. }
-                            | ItemKind::Trait { .. })
+                            | ItemKind::Trait { .. }
+                            | ItemKind::TraitAlias { .. })
                     ))
             {
                 let message = match self.item(key).map(|item| item.kind) {
@@ -1713,3 +1723,7 @@ pub(super) fn array_length(report: &Report, key: NodeKey) -> Result<u64, Error> 
     }
     u64::try_from(value.magnitude).map_err(|_| error("array length overflows usize"))
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/verifier_states.rs"]
+mod specialization_tests;
