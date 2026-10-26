@@ -288,5 +288,5 @@ fn method_signature(
 }
 
 #[cfg(test)]
-#[path = "../../../tests/invariants/source_unary.rs"]
+#[path = "../../../tests/invariants/not_contracts.rs"]
 mod tests;
