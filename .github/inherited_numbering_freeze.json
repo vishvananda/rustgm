@@ -1,5 +1,5 @@
 {
-  "source_commit": "b9e8a52c3ae255a0d6bc208205b7505db21a028f",
+  "source_commit": "ec6207f457ffb51d0accf2b2244f12c9a8d80dca",
   "public_base": "d249fd21adb29d394ff1a8be58afece02e049656",
   "sources": {
     "dev/bin/crates.rs": "efbab4e37ff93eb8c4affdbc721a01d33017da46a0c4472ce6dfcee80905340b",
@@ -763,7 +763,7 @@
     "dev/src/sema/crates/authored_export/canonical_nodes/regional_roots.rs": "7100a1c39d8452017c78d05dda357a783c9c05b474d903c48e5ef63569646c6b",
     "dev/src/sema/crates/authored_export/canonical_nodes/signatures.rs": "122ea2db9278144a3f771c44e315490676186121fac107e5388a31994daf7670",
     "dev/src/sema/crates/authored_export/canonical_nodes.rs": "3b95b865cb20b59b2c56827798316370f0240d2efa0dfdd9a8dc517392228661",
-    "dev/src/sema/crates/authored_export/collected_formals.rs": "16890d6b0dac3604114665d9bab159baad93ae5b5c4987e6ad2f97c00b04ff63",
+    "dev/src/sema/crates/authored_export/collected_formals.rs": "24c5f87baabcb5feb5ba79d2685c45b68d3df4006a19612460198d0fb86d6d94",
     "dev/src/sema/crates/authored_export/collected_inventory.rs": "8559359758e173c704f94344d76eb6429e9e4466f28734b73022cad870f509ad",
     "dev/src/sema/crates/authored_export/collected_provider.rs": "ef768fd91daae20f83b90a8163d47db15fcc1d280e6342b212546c8e15959285",
     "dev/src/sema/crates/authored_export/contract_rows.rs": "fafb7d12c2e638e9c51a5c61f1d2f7ae477d8e2384cbbca88e53060dab37af96",
@@ -792,7 +792,7 @@
     "dev/src/sema/crates/typed_headers/demanded_headers.rs": "55f6a3b9d4a139a6b5c191690647ee0f7736e5724906f643a769b68fe74c8c6f",
     "dev/src/sema/crates/typed_headers/demanded_ports.rs": "6eb4b57958f31ac4008825c42196735d4d43f1ffd1ffcb1ce6e46facc7e0de2e",
     "dev/src/sema/crates/typed_headers/demanded_signatures.rs": "0e77b66b89a25be21fcf6bbd983a0f33edcc1160d015352aaed80597fb59d49b",
-    "dev/src/sema/crates/typed_headers/demanded_types.rs": "4663053e74a52698583b98791b35092faf41643db222f8ea2979761de7e54d7c",
+    "dev/src/sema/crates/typed_headers/demanded_types.rs": "26e5aa7d0b4b5eefd8f9154e7956304e51484cee474917b1c3bd013799310e21",
     "dev/src/sema/crates/typed_headers/dormant_session.rs": "6656a4ae04b291cc85f0ccbf8f5f9e6617d7bb436f96bd0804cd72d17b2ecef4",
     "dev/src/sema/crates/typed_headers/formal_ancestry.rs": "b147aba1304142db65af7a366375fcd55fdf24f88a1fa4f036c391999222eef5",
     "dev/src/sema/crates/typed_headers/ingest.rs": "641e70612c27ce9a4091ca8443a178ce066174ad370f154e8733fd1d89f55e61",
@@ -806,7 +806,7 @@
     "dev/src/sema/crates/typed_headers/mapped_source/scope_inputs.rs": "c0847232ae5b944515dea1dc775ad62876b043f0fa82dbfc0e3f05386b7df807",
     "dev/src/sema/crates/typed_headers/mapped_source/slot_bindings.rs": "55e85b6a65ab4adc246502a0434164c43c15b4ee41540ec1e4808439dfdb7be1",
     "dev/src/sema/crates/typed_headers/mapped_source.rs": "71ba394f8782003e5aa1e3c65e8be7fbb3c16227c0b81f87e5c661908f1987dc",
-    "dev/src/sema/crates/typed_headers/memo_cells.rs": "0b4f0840c0bae48273e8e56fb507d404e3102cbbbd19e165b8f42ebe51c63ce5",
+    "dev/src/sema/crates/typed_headers/memo_cells.rs": "9e4c5e761fde157dc7f04b890034a997ee6cd3f8166fadc3d99d8c306d2ff8fc",
     "dev/src/sema/crates/typed_headers/neutral_aliases.rs": "0b25b27375b79d8b64c121ae928e9d696ab40616fcf51a6e113e14cde3c997fd",
     "dev/src/sema/crates/typed_headers/neutral_definitions.rs": "29e7406056c1f98e34b4c8359e2838e61dd4f5a29ef47b79f4e13d1ca675089a",
     "dev/src/sema/crates/typed_headers/predicate_remap/application_rows.rs": "6b6cf21c56968770e1c7918081bafe3101bbbe44842b6850cd0e6b2a507f4efe",
@@ -2144,7 +2144,7 @@
     "dev/tests/invariants/local_macro_context.rs": "3b6eefb05cb61c1830b824566e2f84e77354246c88fcb09e7ca4f2e23c3f65cc",
     "dev/tests/invariants/location_errors.rs": "8f626a57e6f0dcbff8e51cd35f8c03c78f8de83b9403ed430205c4cd75cab641",
     "dev/tests/invariants/mapped_environment_sharing.rs": "be949b813e07e878ad1bc6a236fbf942052044ade5b5e8c3c74050c4b4e5d69c",
-    "dev/tests/invariants/mapped_signature_controls.rs": "eb584b319a7ba815d451bd5817caa02c3bac901d451bdc5d9d45c0f1d1ad237e",
+    "dev/tests/invariants/mapped_signature_controls.rs": "213fa71ee397a5f073154e247788ac50bb08e9305414fd7bdafe117e9c9456be",
     "dev/tests/invariants/mark_contexts.rs": "ae61f2b8d55d3d7fe6701e633318521a3c3f2998f108ce197d74b2383f59a86c",
     "dev/tests/invariants/marker_contracts.rs": "4215c85b281b088fe7d0e012cf94e573b3eff370c73031f958458861e093a7a4",
     "dev/tests/invariants/marker_evidence.rs": "8989a2a52be480ea29374546b818876e57bb35f60295aec92078ab5648416caa",
@@ -2742,7 +2742,7 @@
     "pa8/tests/manifest.json": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
     "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
   },
-  "source_sha256": "b45fb347755bc71c02dc5b9ecdde63cc452ef19cada403525c24ff6ecf96d0e9",
+  "source_sha256": "c4eae20c501bb8c00bb5b2f1790dd3cafa372ed8a30978c15204b2e19a512072",
   "selected": [
     "sema::crates::typed_headers::unpaid_provided::header_demands::mapping_tests::shared_signature_reader_binds_actual_writer_owner_arena_and_ready_shapes",
     "sema::crates::typed_headers::unpaid_provided::header_demands::mapping_tests::shared_signature_mapping_bounds_warm_width_unrelated_and_failed_precharge",

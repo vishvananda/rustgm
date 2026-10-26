@@ -18,7 +18,7 @@ mod reserved;
 pub(super) use reserved::{Maps, Reserved};
 #[path = "memo_cells.rs"]
 mod memo;
-use memo::Storage;
+use memo::{CellState, Storage};
 pub(super) use memo::{Lookup as MemoLookup, Reader as MemoReader};
 mod sealed {
     pub trait Sealed {}
@@ -258,13 +258,13 @@ impl<M: Storage> Worklist<M> {
         budget: &mut B,
     ) -> Result<Demand<TypeId>, Error> {
         self.require_owner(port, store, budget)?;
-        let slot = self
-            .nodes
-            .get(root.0 as usize)
-            .ok_or_else(|| error("source recipe has an unknown demanded root"))?;
-        if let Some(ready) = slot {
-            self.counters.hits = self.counters.hits.saturating_add(1);
-            return Ok(Demand::Ready(ready));
+        match self.nodes.get(root.0 as usize) {
+            CellState::Missing => return Err(error("source recipe has an unknown demanded root")),
+            CellState::Ready(ready) => {
+                self.counters.hits = self.counters.hits.saturating_add(1);
+                return Ok(Demand::Ready(ready));
+            }
+            CellState::Pending => {}
         }
         if let Some(dependency) = self.blocked {
             return Ok(Demand::Blocked(dependency));
@@ -316,21 +316,21 @@ impl<M: Storage> Worklist<M> {
                 }
             }
         }
-        self.nodes
-            .get(root.0 as usize)
-            .flatten()
+        self.child(root)
             .map(Demand::Ready)
-            .ok_or_else(|| error("source demanded recipe did not complete"))
+            .map_err(|_| error("source demanded recipe did not complete"))
     }
     fn block(&mut self, dependency: Dependency) -> Demand<TypeId> {
         self.blocked = Some(dependency);
         Demand::Blocked(dependency)
     }
     pub(super) fn child(&self, reference: g::TypeRef) -> Result<TypeId, Error> {
-        self.nodes
-            .get(reference.0 as usize)
-            .flatten()
-            .ok_or_else(|| error("source type recipe has an unresolved actual dependency"))
+        match self.nodes.get(reference.0 as usize) {
+            CellState::Ready(ty) => Ok(ty),
+            CellState::Missing | CellState::Pending => Err(error(
+                "source type recipe has an unresolved actual dependency",
+            )),
+        }
     }
     fn intern<'rows, B: Budget, P: Port<'rows, B>>(
         &self,

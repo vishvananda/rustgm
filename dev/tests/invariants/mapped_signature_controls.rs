@@ -22,7 +22,9 @@ fn start(source: &str, work: &mut ReservationWork) -> Result<Box<Session>> {
 }
 fn ready(progress: Progress) -> Result<Box<Session>> {
     let (session, status) = progress;
-    assert_eq!(status, Demand::Ready(()));
+    if status != Demand::Ready(()) {
+        return Err("actual callable unexpectedly blocked".into());
+    }
     Ok(session)
 }
 #[test]

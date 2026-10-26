@@ -13,6 +13,7 @@ use crate::{
 #[path = "../../../../tests/invariants/collected_formal_controls.rs"]
 mod tests;
 
+#[derive(Clone, Copy)]
 struct Formal<'a> {
     definition: DefId,
     source: NodeKey,

@@ -6,17 +6,26 @@ use std::{cell::Cell, rc::Rc};
 mod sealed {
     pub trait Sealed {}
 }
+pub(in crate::sema::crates::typed_headers) enum CellState {
+    Missing,
+    Pending,
+    Ready(TypeId),
+}
 pub(in crate::sema::crates::typed_headers) trait Storage:
     sealed::Sealed
 {
-    fn get(&self, index: usize) -> Option<Option<TypeId>>;
+    fn get(&self, index: usize) -> CellState;
     fn publish(&mut self, index: usize, value: TypeId) -> Result<(), Error>;
     fn retained_bytes(&self) -> usize;
 }
 impl sealed::Sealed for Vec<Option<TypeId>> {}
 impl Storage for Vec<Option<TypeId>> {
-    fn get(&self, index: usize) -> Option<Option<TypeId>> {
-        self.as_slice().get(index).copied()
+    fn get(&self, index: usize) -> CellState {
+        match self.as_slice().get(index) {
+            Some(Some(ty)) => CellState::Ready(*ty),
+            Some(None) => CellState::Pending,
+            None => CellState::Missing,
+        }
     }
     fn publish(&mut self, index: usize, value: TypeId) -> Result<(), Error> {
         let cell = self
@@ -75,8 +84,12 @@ impl Shared {
 }
 impl sealed::Sealed for Shared {}
 impl Storage for Shared {
-    fn get(&self, index: usize) -> Option<Option<TypeId>> {
-        self.nodes.get(index).map(Cell::get)
+    fn get(&self, index: usize) -> CellState {
+        match self.nodes.get(index).map(Cell::get) {
+            Some(Some(ty)) => CellState::Ready(ty),
+            Some(None) => CellState::Pending,
+            None => CellState::Missing,
+        }
     }
     fn publish(&mut self, index: usize, value: TypeId) -> Result<(), Error> {
         let cell = self
