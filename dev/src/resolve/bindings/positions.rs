@@ -226,6 +226,7 @@ fn item(kind: ItemKind, child: NodeId) -> Position {
         | ItemKind::TraitAlias { .. }
         | ItemKind::Impl { .. }
         | ItemKind::TypeAlias { .. }
+        | ItemKind::ForeignType
         | ItemKind::Module { .. }
         | ItemKind::Use(_)
         | ItemKind::ExternCrate { .. }

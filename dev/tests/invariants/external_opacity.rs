@@ -198,7 +198,12 @@ fn foreign_values_keep_unknown_layout_and_transport_while_pointer_storage_is_rea
     let transport = "#![feature(no_core,lang_items,extern_types)]#![no_core]#![allow(internal_features,incomplete_features)]\n#[lang=\"pointee_sized\"]pub trait PointeeSized{}\n#[lang=\"meta_sized\"]pub trait MetaSized:PointeeSized{}\n#[lang=\"sized\"]pub trait Sized:MetaSized{}\nunsafe extern \"C\"{pub type Opaque;}";
     let report = crate::test_source::source_provider(transport, "foreign_transport")?;
     let mut facts = declarations::analyze(&report)?;
-    let error = crate::sema::crates::authored_export::Stage::begin(&report, &mut facts)
+    let identity = &report
+        .package
+        .source_core()
+        .ok_or("actual source provider identity")?
+        .provider;
+    let error = crate::sema::crates::authored_export::Stage::begin(&report, &mut facts, identity)
         .err()
         .ok_or("Foreign transport invented")?;
     assert_eq!(
