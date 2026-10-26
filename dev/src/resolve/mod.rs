@@ -28,13 +28,13 @@ mod alias_gates;
 mod default_items;
 mod float_features;
 mod gate_provenance;
-mod try_blocks;
 pub mod package;
 mod paths;
 mod patterns;
 #[path = "impl_admission.rs"]
 pub(crate) mod specialization_authority;
 mod table;
+mod try_blocks;
 pub mod unit;
 
 /// Resolve configured modules into stable scope, definition and reference facts.

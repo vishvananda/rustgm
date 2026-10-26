@@ -12,6 +12,7 @@ use crate::{
     support::{diagnostics::WarningCode, hash::HashSet},
     syntax::gate_sites::{Declarations, Kind},
 };
+#[path = "unvisited_syntax/sites.rs"]
 mod sites;
 use sites::Site;
 const MESSAGE: &str = "specialization is experimental";
