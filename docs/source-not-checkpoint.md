@@ -8,7 +8,7 @@ execution is erased to the existing unary operation only after those ordinary
 requirements have been checked. Overloaded execution retains its actual method
 call and checked original body through LowIR.
 
-This is a local source consumer checkpoint. Candidate native execution, source
+The native successor below also executes this local source consumer. Source
 Assert expansion, panic execution, Abort execution and foreign Not role transport
 remain required. None is established by the source language-item claim.
 
@@ -122,3 +122,75 @@ Its source, actual diagnostic, full binary binding and closure selector are
 retained at `obj/parallel/pa31/not-factory-predecessor-v1/verified.json`, SHA-256
 `f075fef900dd1be6e767ce7d234a55bceea6f9cc01b68b3b65fafafe015b710f`.
 No ordinary imported-contract permission was broadened for this checkpoint.
+
+## Genuine native successor
+
+Test-only source `ab7c3da9d0d0e1cb7d8ff88e768f8a63cfbd9b6d` passes run
+`40268518172`. The production source and actual production CLI are identical to
+the qualified checkpoint above. The only test delta adds an actual native export
+producer and strengthens the earlier const rejection assertion to its observed
+trait-obligation producer. Fresh private Clippy, formatting, architecture,
+one private build, exact nonignored inventory, both affected controls and
+harness/upstream pass. Metadata and production Clippy are retained with the full
+2,714-source/tool proof and the exact reviewed single-test-file delta.
+
+The intact minimal-provider foundation supplies real sizing, LegacyReceiver,
+Clone and Copy declarations. This reducer adds the real Destruct restrictions
+and pinned drop-glue contract, actual primitive Not body `!self`, actual
+`Flag::not` body `!self.0`, and `const VALUE: bool = !false`. Three ordinary,
+authenticated C ABI exports expose scalar, overloaded and constant results.
+The private producer applies the existing foreign export roots and full checked
+body/const pipeline; it does not publish a new source metadata profile.
+
+The frozen provider is 2,624 bytes, SHA-256
+`404287a06d4af7de9dd85fac87b909f5a5f64b65229aff49d784161e05f99e45`.
+Pinned rustc first compiles that exact source to an object; the independent C
+observer links and executes it before candidate native execution. The actual
+checked producer's source must match this hash. The locked CPPGM object backend
+then consumes its genuine LowIR, and the same C observer links and executes the
+candidate. Both runs return status zero and exact stdout `1 0 1 0 1\n`:
+scalar false/true, overloaded false/true and the constant true value.
+
+The actual 898-byte LowIR retains `rg_not_overloaded`'s call to the checked
+source `Flag::not` body; that body and the scalar export emit primitive
+`unary not i1`. The constant export returns `i1 1`. The primitive implementation
+body therefore does not recursively dispatch to itself. No source panic handler
+or Assert/Abort shortcut participates in these executions.
+
+Evidence is under `obj/parallel/pa31/source-not-native-v1`:
+
+- `plan.json` SHA-256
+  `c24c9f9be7bd3efefcc669e38a9b279d611782d3aad87d7bf1e4c7a609b804db`.
+- `qualified-evidence/1792988459638197208/receipt.json` SHA-256
+  `2381d98cd7ac45f84b82a913c6732d05eb1e7f1efebf999654aa9becfb9e98a7`.
+- `verified.json` SHA-256
+  `5a832388fd73bf6f3312eef934e4a8de9497a899ac730c1a0c8c2fed5fd9b2ce`.
+- Fast evidence artifact `12627512721`, ZIP SHA-256
+  `61016e325afa041a951bd7b408131bceacc4e803d20e5e9b45e576600b517380`.
+- Actual LowIR SHA-256
+  `633bcf12446ed42d43377e0f06844a350eaddb6b0992af84ce75ce4cec40777d`.
+- Locked CPPGM object backend SHA-256
+  `ded1b6800ce1bdaeaad45cd28c2903d7c96de7cdc29261f6834869a6eaf525fc`.
+- Candidate object/executable SHA-256
+  `158d40f41e4e6fc0d63a601fe6e1470adaefa7b6b99881b011b4d7b7b9050a17` /
+  `aa6b9903914173480d35d0d7c80948ff479a9dcf274c89ceaad5779e921465db`.
+- Rust object/executable SHA-256
+  `aca64eabd65e107e9a02f8e14d86d1c65223aff74358acc8a2779026af364350` /
+  `fd96d2d92f6d19c7ee6cc3e8b60e5b158b7f868f244631f4bb82dd902d87a03e`.
+
+Successful objects/executables were removed after recording their hashes.
+Source, actual LowIR and raw observations remain in selected artifact
+`12627238339` (published ZIP SHA-256
+`2f840ae2a69bcd502f09e58d744884e04212ffc943b10aa55af053a878258554`),
+alongside the unchanged pinned production CLI and its full source binding.
+Only the source and LowIR members were read locally using 67,243 bytes of exact
+HTTP ranges. Their restored bytes match the qualified receipt hashes; no ELF
+data was requested. The full selected ZIP was not downloaded or independently
+rehash-verified locally. The range-authentication record is
+`qualified-native-raw/verified.json`, SHA-256
+`338e398e9fcecf8019f522e4513f538ff96d114c68a13aa090a4af2e469b07ea`.
+
+This qualifies the local boolean primitive and concrete overloaded source paths.
+Broader primitive/reference/generic profiles, full Assert/panic/Abort and foreign
+role transport remain open. The ordinary imported must_use factory requirement
+above is unchanged.
