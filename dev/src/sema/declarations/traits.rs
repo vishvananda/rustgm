@@ -7,18 +7,10 @@ pub(super) use implementations::{
     EarlyImplementations, ImplementationPhase, Readiness as ConstantReadiness,
 };
 mod promises;
-use super::{Checker, Error, ItemId, Kind, NodeKey, Type, regions};
+use super::{Checker, Error, ItemId, Kind, NodeKey, regions};
 use crate::{
-    sema::{
-        associated::{OwnerKind, Schema},
-        generics::Parameter,
-        model::Function,
-    },
+    sema::{associated::OwnerKind, model::Function},
     syntax::item::{ItemKind, Safety, Visibility},
-    types::{
-        arguments::Argument,
-        parameters::{Parameter as TypeParameter, ParameterKind},
-    },
 };
 pub(super) use associated_types::Bounds as AssociatedBounds;
 
@@ -162,54 +154,8 @@ impl Checker<'_> {
         owner: crate::sema::associated::SourceOwner,
         definition: crate::resolve::model::DefId,
     ) -> Result<(), Error> {
-        let key = owner.source;
-        let declared = self.declared_regions(key, self.item(key)?.generics)?;
-        let binder = self.regions.binder(None, declared.clone());
-        self.regions.associate(binder, owner.self_definition);
-        for &parameter in &declared {
-            self.regions
-                .named(Some(binder), parameter)
-                .map_err(|e| self.error(key, e))?;
-        }
-        let bounds = self.function_bounds(key, binder)?;
-        let parameter = self
-            .facts
-            .types
-            .intern_parameter(TypeParameter {
-                owner: ItemId(owner.self_definition.0),
-                index: 0,
-                kind: ParameterKind::Type { sized: false },
-            })
-            .map_err(|e| self.error(key, e))?;
-        let self_type = self.intern(key, Type::Parameter(parameter))?;
-        self.facts.generics.parameters.insert(
-            owner.self_definition,
-            vec![Parameter {
-                anonymous: false,
-                binding: owner.self_definition,
-                argument: Argument::Type(self_type),
-                default: None,
-            }],
-        );
-        self.facts
-            .generics
-            .parents
-            .insert(definition, owner.self_definition);
-        self.facts
-            .associated
-            .declare(
-                owner.self_definition,
-                Schema {
-                    self_type,
-                    captures: self.regions.count(binder),
-                    bounds,
-                },
-            )
-            .map_err(|e| self.error(key, e))?;
-        self.owner_binders.insert(owner.self_definition, binder);
-        self.complete(owner.self_definition, key, self_type)?;
-        self.facts.lifetimes.parameters.insert(definition, declared);
-        Ok(())
+        self.reserve_lexical_self(owner.source, definition, owner.self_definition,
+            |facts, schema| facts.associated.declare(owner.self_definition, schema))
     }
     fn implicit_trait_bound(
         &mut self,

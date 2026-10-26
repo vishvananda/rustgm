@@ -30,6 +30,7 @@ mod intrinsics;
 pub(in crate::sema) mod iteration;
 mod language_hooks;
 mod library_types;
+mod lexical_self;
 mod lifetimes;
 mod method_overlap;
 mod method_paths;
