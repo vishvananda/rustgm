@@ -393,7 +393,8 @@ impl Resolver<'_> {
         self.visit_list(c, item.generics, Namespace::Type)?;
         self.visit_list(c, item.where_clause, Namespace::Type)?;
         match item.kind {
-            ItemKind::Module { .. }
+            ItemKind::ForeignType
+            | ItemKind::Module { .. }
             | ItemKind::Use(_)
             | ItemKind::ExternCrate { .. }
             | ItemKind::MacroRules { .. } => Ok(()),

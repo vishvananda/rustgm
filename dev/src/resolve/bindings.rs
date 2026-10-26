@@ -143,6 +143,18 @@ impl super::package::Package {
             .macro_context()?
             .is_some_and(|context| context.requested(feature)))
     }
+    pub(crate) fn requested_foreign_types(&self) -> Result<bool, &'static str> {
+        if let Some(client) = self.source_client() {
+            if client.current().name() != self.crate_name || client.current() == client.provider() {
+                return Err("foreign-type client identity changed");
+            }
+            client.validate_inventory()?;
+            return Ok(client.features.has(policy::Feature::ExternTypes));
+        }
+        Ok(self
+            .macro_context()?
+            .is_some_and(|context| context.requested(policy::Feature::ExternTypes)))
+    }
     #[must_use]
     pub fn uses_source_bindings(&self) -> bool {
         self.source.as_deref().is_some_and(Source::owns_bindings)

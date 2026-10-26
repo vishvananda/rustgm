@@ -186,6 +186,7 @@ impl Shapes {
             }
 
             Kind::Never => {}
+            Kind::Foreign(item) => item.hash(hash),
             Kind::Primitive(value) => value.hash(hash),
             Kind::Parameter(value) => value.hash(hash),
             Kind::Reference {

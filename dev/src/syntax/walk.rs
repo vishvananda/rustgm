@@ -348,7 +348,8 @@ impl<L> Syntax<L> {
                 visit_all(abi, visit)?;
                 self.children(items, visit)?;
             }
-            ItemKind::ExternCrate { .. }
+            ItemKind::ForeignType
+            | ItemKind::ExternCrate { .. }
             | ItemKind::MacroRules { .. }
             | ItemKind::DeclarativeMacro { .. } => {}
         }

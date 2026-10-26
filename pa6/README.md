@@ -49,6 +49,13 @@ retained initializer, including within unused functions. Public visibility does
 not give an unnamed constant an export name; its semantic lint is
 `unused_visibilities`. See [the checkpoint contract](../docs/unnamed-free-constants.md).
 
+An opaque external type contributes an ordinary type-namespace declaration,
+with its actual extern-block owner, visibility and source identity. Reexports
+retain that identity; duplicates and private uses follow the ordinary rules.
+The name kind is `foreign-type`, distinct from aliases and aggregates. Names
+supply no value size, alignment or empty field list. PA30/PA31 own the semantic
+and language-binding consumers.
+
 Associated functions, constants and type aliases require qualified paths; they
 do not shadow bare lexical items of the same name. Ordinary items nested inside
 a method still introduce lexical bindings in that body. Method-call syntax is

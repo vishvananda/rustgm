@@ -138,7 +138,7 @@ impl Occurrences {
                 argument_types(types, parent.arguments, children)?;
                 argument_types(types, application.arguments, children)?;
             }
-            Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => {}
+            Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) | Kind::Parameter(_) => {}
         }
         Ok(())
     }

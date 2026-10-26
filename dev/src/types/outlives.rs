@@ -219,7 +219,7 @@ fn children(
                 _ => None,
             }));
         }
-        Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => {}
+        Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) | Kind::Parameter(_) => {}
         Kind::Projection(_) => {
             return Err("associated type outlives checking requires normalization");
         }

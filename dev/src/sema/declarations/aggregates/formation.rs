@@ -87,7 +87,7 @@ impl Checker<'_> {
             | Type::Dynamic { arguments, .. } => {
                 self.constant_argument_contracts(arguments)?;
             }
-            Type::Never | Type::Primitive(_) | Type::Parameter(_) => {}
+            Type::Never | Type::Foreign(_) | Type::Primitive(_) | Type::Parameter(_) => {}
         }
         Ok(())
     }

@@ -600,6 +600,7 @@ impl Bases {
                 self.optional(value);
             }
             ItemKind::TraitAlias { bounds, .. } => self.list(bounds),
+            ItemKind::ForeignType => {}
             ItemKind::TypeAlias { bounds, ty } => {
                 self.list(bounds);
                 self.optional(ty);

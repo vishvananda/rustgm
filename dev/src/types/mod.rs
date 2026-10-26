@@ -241,6 +241,8 @@ pub enum Kind {
         base: TypeId,
         constraint: Constraint,
     },
+    /// An actual external type declaration; value size and alignment are unknown.
+    Foreign(ItemId),
 }
 /// Child lists occupy one shared arena. Hash collisions compare their typed slices.
 /// Type/list IDs are valid only in the store that produced them.
@@ -497,7 +499,7 @@ impl Store {
         }
         let valid_type = |id: TypeId| self.kind(id).is_some();
         let valid = match kind {
-            Kind::Never | Kind::Primitive(_) => true,
+            Kind::Never | Kind::Primitive(_) | Kind::Foreign(_) => true,
             Kind::Parameter(id) => self
                 .parameter(id)
                 .is_some_and(|p| matches!(p.kind, parameters::ParameterKind::Type { .. })),
@@ -578,6 +580,7 @@ impl Store {
         let mut result = Properties::default();
         match kind {
             Kind::Never => {}
+            Kind::Foreign(_) => result.set(Property::Sized, false),
             Kind::Parameter(id) => {
                 let parameter = self.parameter(id).ok_or("invalid type parameter")?;
                 let parameters::ParameterKind::Type { sized } = parameter.kind else {

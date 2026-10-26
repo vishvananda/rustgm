@@ -137,6 +137,7 @@ fn inspect(
                 },
             ),
             Kind::Never
+            | Kind::Foreign(_)
             | Kind::Primitive(_)
             | Kind::Array { .. }
             | Kind::ArrayTerm { .. }

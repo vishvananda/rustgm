@@ -60,6 +60,9 @@ impl Layouts {
                     pending.push(types.storage_head(next)?);
                     None
                 }
+                Kind::Foreign(_) => {
+                    return Err("foreign type has unknown value size and alignment");
+                }
                 Kind::Parameter(_) | Kind::Projection(_) | Kind::ArrayTerm { .. } => {
                     return Err("constant storage layout requires a closed normalized type");
                 }

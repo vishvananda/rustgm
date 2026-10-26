@@ -108,6 +108,11 @@ fn collect(
                 .map_err(|_| Failure::Origin(Error::unlocated("default warning file overflow")))?,
         );
         for declaration in entries.entries() {
+            // Pinned extern-types gating happens after configuration. Unlike
+            // defaultness and aliases, inactive Foreign syntax emits no warning.
+            if declaration.kind == Kind::ForeignType {
+                continue;
+            }
             let key = NodeKey {
                 file,
                 node: declaration.node,

@@ -1,0 +1,20 @@
+#![feature(no_core,lang_items,rustc_attrs,extern_types,auto_traits,freeze_impls)]
+#![no_core]
+#![allow(internal_features,incomplete_features,dead_code)]
+#[lang="pointee_sized"] pub trait PointeeSized {}
+#[lang="meta_sized"] pub trait MetaSized: PointeeSized {}
+#[lang="sized"] pub trait Sized: MetaSized {}
+#[lang="legacy_receiver"]pub trait LegacyReceiver:PointeeSized{}
+impl<T:PointeeSized>LegacyReceiver for &T{}
+impl<T:PointeeSized>LegacyReceiver for &mut T{}
+#[lang="clone"]pub trait Clone:Sized{#[lang="clone_fn"]fn clone(&self)->Self;}
+#[lang="copy"]pub trait Copy:Clone{}
+#[lang="pointee_trait"] pub trait Pointee: PointeeSized {
+    #[lang="metadata_type"] type Metadata: Sized;
+}
+#[lang="dyn_metadata"] pub struct DynMetadata<Dyn: PointeeSized> { pointer: *const Dyn }
+unsafe extern "C"{pub type Opaque;}
+#[lang="freeze"]pub unsafe auto trait Freeze{}
+unsafe impl<T:PointeeSized>Freeze for *const T{}
+pub fn require<T:PointeeSized+Freeze>(){}
+pub fn caller(){require::<*const Opaque>();}

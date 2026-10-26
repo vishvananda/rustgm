@@ -229,7 +229,7 @@ impl Sets {
                 }),
                 budget,
             ),
-            Kind::Never | Kind::Primitive(_) => Ok(Id::EMPTY),
+            Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) => Ok(Id::EMPTY),
         }
     }
 

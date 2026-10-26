@@ -209,7 +209,8 @@ impl Templates {
             Ok(())
         })?;
         match kind {
-            Kind::Parameter(_)
+            Kind::Foreign(_)
+            | Kind::Parameter(_)
             | Kind::Projection(_)
             | Kind::ArrayTerm { .. }
             | Kind::Slice(_)

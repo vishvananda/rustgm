@@ -193,6 +193,7 @@ impl<'a> Privacy<'a> {
                 .ok_or("missing queued privacy type")?;
             match kind {
                 Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => {}
+                Kind::Foreign(item) => self.item(item)?,
                 Kind::Adt(item, arguments) => {
                     self.item(item)?;
                     self.arguments(arguments)?;

@@ -414,6 +414,7 @@ impl Layouts {
             Kind::Pattern { base, .. } => {
                 self.get(base).copied().ok_or("missing pattern base layout")
             }
+            Kind::Foreign(_) => Err("foreign type has unknown value size and alignment"),
             Kind::Parameter(_) => Err("generic type parameter has no concrete layout"),
             Kind::Projection(_) => Err("associated type layout requires normalization"),
             Kind::Opaque(..) => self
