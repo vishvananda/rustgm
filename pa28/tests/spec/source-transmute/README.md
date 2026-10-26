@@ -8,9 +8,10 @@ in the checkpoint receipt. No observation is repeated here.
 
 The full positive provider retains source declarations, nominal ownership and
 source/destination destructor markers; it is not a bootstrap factory. Same-signature
-function/raw roundtrip is required. Function ABI erasure, numeric ZST reference
-validity and genuine MaybeUninit symbolic values remain required unsupported
-profiles in this bounded checkpoint. Their Rust-positive outcomes remain explicit.
+function/raw roundtrip was required in the initial value-transport checkpoint.
+That initial receipt kept function ABI erasure, numeric ZST reference validity and
+genuine MaybeUninit symbolic values as required unsupported profiles; the formatter
+successor below supplies the function-word/ABI operation. Their Rust-positive outcomes remain explicit.
 Strict CTFE destination validity must reject symbolic pointer bytes interpreted
 as integers or integer arrays; raw transport alone is not a valid integer value.
 
