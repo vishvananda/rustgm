@@ -47,9 +47,11 @@ pub enum LangItem {
     MetadataType,
     DynMetadata,
     PhantomData,
+    PanicLocation,
+    PanicInfo,
 }
 impl LangItem {
-    pub const ALL: [Self; 32] = [
+    pub const ALL: [Self; 34] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -82,6 +84,8 @@ impl LangItem {
         Self::MetadataType,
         Self::DynMetadata,
         Self::PhantomData,
+        Self::PanicLocation,
+        Self::PanicInfo,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -118,6 +122,8 @@ impl LangItem {
             Self::MetadataType => 29,
             Self::DynMetadata => 30,
             Self::PhantomData => 31,
+            Self::PanicLocation => 32,
+            Self::PanicInfo => 33,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -156,6 +162,8 @@ impl LangItem {
             "metadata_type" => Some(Self::MetadataType),
             "dyn_metadata" => Some(Self::DynMetadata),
             "phantom_data" => Some(Self::PhantomData),
+            "panic_location" => Some(Self::PanicLocation),
+            "panic_info" => Some(Self::PanicInfo),
             _ => None,
         }
     }

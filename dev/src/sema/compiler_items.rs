@@ -31,6 +31,8 @@ mod select_contract;
 pub(crate) use copying::{copy_decisions, copy_declaration, prove_body_requirements};
 pub(crate) use select_calls::{Select, check_const_select, prepare_select, source_select};
 mod roles;
+pub(super) use roles::bit as role_bit;
+pub(in crate::sema) mod panic_nominals;
 pub(crate) use roles::callable_role;
 pub(crate) use roles::{destruct_predicate, drop_glue_member, freeze_predicate};
 pub(crate) use roles::{unsizing_predicate, unsizing_role};

@@ -24,7 +24,7 @@ pub(super) enum DiagnosticItem {
     NonNull,
 }
 impl DiagnosticItem {
-    const fn index(self) -> usize {
+    pub(super) const fn index(self) -> usize {
         self as usize
     }
 }
