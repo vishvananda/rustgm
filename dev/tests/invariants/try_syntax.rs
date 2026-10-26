@@ -49,7 +49,7 @@ fn grammar_keeps_real_block_edges_statement_boundaries_and_explicit_semantic_fen
         assert!(entry.context_key().is_none());
     }
     let mut text = Vec::new();
-    expression::write_ast("try { try { 7 } } ", &ast, &mut text)?;
+    expression::render::write_ast("try { try { 7 } } ", &ast, &mut text)?;
     assert_eq!(String::from_utf8(text)?.matches("try-block ").count(), 2);
     for invalid in ["try 7", "try {", "try { 7 } catch {}"] {
         assert!(expression::parse(invalid).is_err(), "{invalid}");
