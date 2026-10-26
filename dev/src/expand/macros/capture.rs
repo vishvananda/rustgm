@@ -472,6 +472,7 @@ fn syntax_start(
                             | "match"
                             | "move"
                             | "return"
+                            | "try"
                             | "unsafe"
                             | "while"
                     ))
