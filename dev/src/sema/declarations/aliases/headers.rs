@@ -2,6 +2,33 @@
 use super::{Checker, Error, Predicate, regions};
 
 impl Checker<'_> {
+    /// Alias declarations retain shared edges; other owners receive real clauses.
+    pub(in crate::sema::declarations) fn complete_alias_bound(
+        &mut self,
+        owner: super::DefId,
+        edge: super::Edge,
+        completed: &mut Vec<Predicate>,
+        dependencies: &mut Vec<super::Edge>,
+    ) -> Result<(), Error> {
+        if self.alias_self(owner).is_some() {
+            return self.push_alias_edge(dependencies, edge);
+        }
+        if edge.original_subject != edge.subject
+            || self.facts.unreduced.arguments(edge.source).is_some()
+        {
+            return Err(self.error(
+                edge.source,
+                "unreduced alias inputs require complete projection consumers",
+            ));
+        }
+        let clauses = self.expand_alias_edge(edge)?;
+        self.charge_alias_growth(crate::support::retained::Growth::vector::<Predicate>(
+            completed.len(), completed.capacity(), clauses.len(),
+        ))?;
+        completed.extend(clauses);
+        Ok(())
+    }
+
     pub(in crate::sema::declarations) fn reserve_alias_owners(&mut self) -> Result<(), Error> {
         let Some(mut pending) = self.trait_aliases.take() else {
             return Ok(());

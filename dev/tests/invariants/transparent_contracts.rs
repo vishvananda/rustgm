@@ -1,10 +1,10 @@
 //! Actual resolved aliases exercise canonical slots, equality clauses and shared dependencies.
 #[path = "transparent_binders.rs"]
 mod binders;
-#[path = "transparent_naming.rs"]
-mod naming;
 #[path = "transparent_families.rs"]
 mod families;
+#[path = "transparent_naming.rs"]
+mod naming;
 use super::*;
 use crate::{
     expand::config::Config,

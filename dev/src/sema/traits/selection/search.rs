@@ -729,7 +729,10 @@ pub(in crate::sema) const fn specialization_layouts() -> (usize, usize, usize) {
 fn pointee_source_predecessor_layouts_are_observed() {
     let source = Source::Builtin;
     let retained = source;
-    assert!(matches!((source, retained), (Source::Builtin, Source::Builtin)));
+    assert!(matches!(
+        (source, retained),
+        (Source::Builtin, Source::Builtin)
+    ));
     eprintln!(
         "Pointee source predecessor Source={} SourceAlign={} OptionalSource={} Evidence={} Frame={} Node={} Normalization={} ProjectionQuery={} SearchQuery={}",
         size_of::<Source>(),
