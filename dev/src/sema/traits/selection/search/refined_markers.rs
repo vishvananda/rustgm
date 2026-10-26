@@ -21,7 +21,6 @@ impl Search<'_> {
         Ok(matches!(head, Some(Constructor::Pattern(_))))
     }
     pub(super) fn source_refinement_marker_result(
-        &mut self,
         facts: &Declarations,
         frame: &mut Frame,
     ) -> Result<Option<Action>, String> {
