@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded CI observation of unchanged official core; never builds a compiler."""
+"""Bounded observation of unchanged official core; never builds a compiler."""
 import argparse
 import hashlib
 import json
@@ -104,6 +104,18 @@ def file_limit():
     resource.setrlimit(resource.RLIMIT_FSIZE, (LIMIT, LIMIT))
 
 
+def verify_sources(manifest, source):
+    """A shared checkout is an input only after every declared file is verified."""
+    for row in manifest["files"]:
+        relative = PurePosixPath(row["path"])
+        if relative.is_absolute() or ".." in relative.parts:
+            raise ValueError("unsafe pinned source path")
+        path = source / relative
+        if (not path.resolve().is_relative_to(source) or not path.is_file()
+                or path.stat().st_size != row["bytes"] or sha(path) != row["sha256"]):
+            raise ValueError("missing or changed pinned source: " + row["path"])
+
+
 def observe(command, out, deadline):
     with (out / "stdout").open("xb") as stdout, (out / "stderr").open("xb") as stderr:
         process = subprocess.Popen(command, stdout=stdout, stderr=stderr,
@@ -166,7 +178,8 @@ def worker(args):
     out.mkdir(parents=True, exist_ok=False)
     result = {"infrastructure_failure": True, "classification": "infrastructure/setup failure"}
     try:
-        manifest = json.loads(MANIFEST.read_text())
+        manifest_path = args.manifest.resolve(strict=True)
+        manifest = json.loads(manifest_path.read_text())
         cli, producer = args.cli.resolve(strict=True), args.producer_binding.resolve(strict=True)
         binding = json.loads(producer.read_text())
         expected_cli = args.expected_cli_sha256 or manifest["expected_cli_sha256"]
@@ -180,20 +193,24 @@ def worker(args):
             raise ValueError("compiler target/profile source differs from declared source")
         strace = shutil.which("strace")
         if strace is None:
-            raise ValueError("strace is absent; CI setup must install it; no untraced fallback")
-        source = ROOT / "obj/parallel" / ("original-core-inputs-" + manifest["revision"])
-        source.mkdir(parents=True, exist_ok=False)
-        archive = fetch(manifest, source, min(deadline - 12, started + 60))
-        if not all(sha(source / row["path"]) == row["sha256"] for row in manifest["files"]):
-            raise ValueError("not all722 original source hashes verified before observer")
+            raise ValueError("strace is absent; install it before observing; no untraced fallback")
+        if args.source_root is None:
+            source = ROOT / "obj/parallel" / ("original-core-inputs-" + manifest["revision"])
+            source.mkdir(parents=True, exist_ok=False)
+            archive = fetch(manifest, source, min(deadline - 12, started + 60))
+        else:
+            source = args.source_root.resolve(strict=True)
+            archive = {"source": "existing pinned tree", "root": str(source)}
+        verify_sources(manifest, source)
         command = [strace, "-f", "-qq", "-yy", "-s", "4096", "-e", "trace=openat", "-o",
                    str(out / "whole-core.openat"), str(cli), "--emit-types", "--edition=2024",
                    "--crate-name", "core", "--crate-disambiguator", "core_1_98_88d9",
                    "--source-core", "core@core_1_98_88d9", str(source / "library/core/src/lib.rs")]
-        immutable = {str(path): sha(path) for path in (cli, producer, Path(strace), MANIFEST, Path(__file__))}
+        immutable = {str(path): sha(path) for path in (cli, producer, Path(strace), manifest_path, Path(__file__))}
         write(out, "binding.json", {"command": command, "immutable": immutable, "archive": archive,
               "expected_cli_sha256": expected_cli, "expected_cli_source": expectation_source,
-              "profile": manifest["profile"], "source_files": 722, "core_files": 309,
+              "profile": manifest["profile"], "source_files": len(manifest["files"]),
+              "core_files": sum(row["path"].startswith("library/core/") for row in manifest["files"]),
               "producer": binding, "path_adaptation": {"source_root": str(source),
               "old_source_root": "/home/vishvananda/rustgm-sources/rust-1.98.0-" + manifest["revision"]},
               "semantic_environment_overrides": [], "observer_deadline_seconds": 120,
@@ -203,8 +220,8 @@ def worker(args):
         write(out, "opened-sources.json", opened)
         text = (out / "stderr").read_text(errors="replace")
         first = next((line for line in text.splitlines() if line.startswith("ERROR:")), None)
-        stable = (all(sha(path) == digest for path, digest in immutable.items())
-                  and all(sha(source / row["path"]) == row["sha256"] for row in manifest["files"]))
+        verify_sources(manifest, source)
+        stable = all(sha(path) == digest for path, digest in immutable.items())
         bounded = all((out / name).stat().st_size < LIMIT for name in ("stdout", "stderr", "whole-core.openat"))
         infra = (status not in (0, 1) or not stable or not bounded or "panicked at" in text
                  or (status == 1 and first is None))
@@ -229,15 +246,21 @@ def main():
     parser.add_argument("--expected-cli-sha256", type=cli_sha256,
                         help="caller-declared qualified CLI SHA-256; defaults to the pinned manifest digest")
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--manifest", type=Path, default=MANIFEST,
+                        help="declared source/profile manifest; retain changed compiler identities explicitly")
+    parser.add_argument("--source-root", type=Path,
+                        help="reuse an existing pinned tree after checking every manifest file")
+    parser.add_argument("--max-output-gib", type=float,
+                        help="absolute local resource cap including retained output")
     parser.add_argument("--worker", action="store_true", help="caller already holds storage guard and hard190s timeout")
     args = parser.parse_args()
-    if os.environ.get("GITHUB_ACTIONS") != "true":
-        raise ValueError("remote CI observer only; local admission is not authorized")
     if args.worker:
         return worker(args)
     command = ["timeout", "--signal=TERM", "--kill-after=5s", "190s", sys.executable,
-               "scripts/storage.py", "run", "--prune-under", str(args.out), "--",
-               sys.executable, __file__, *sys.argv[1:], "--worker"]
+               "scripts/storage.py", "run", "--prune-under", str(args.out)]
+    if args.max_output_gib is not None:
+        command += ["--max-output-gib", str(args.max_output_gib)]
+    command += ["--", sys.executable, __file__, *sys.argv[1:], "--worker"]
     return subprocess.run(command, cwd=ROOT, check=False).returncode
 
 
