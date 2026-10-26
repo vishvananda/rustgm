@@ -1,8 +1,9 @@
 //! Actual fresh consumer reservation and selected append remain opaque.
 use super::{recipe_cursor::Demand, unpaid_provided::SelectedHeaders};
+use crate::sema::crates::authored_export::{CollectedArtifact, CollectedReceipt};
 use crate::{
     resolve::{
-        crates::{ConsumerInput, ConsumerReservation, ReservationWork},
+        crates::{ConsumerInput, ConsumerRequest, ConsumerReservation, ReservationWork},
         expansion::Report,
         package::Error,
     },
@@ -22,6 +23,7 @@ pub(crate) struct ProofSession {
 pub(crate) struct HeaderDraft {
     session: Box<ProofSession>,
     selected: SelectedHeaders,
+    completion: Option<Box<CollectedReceipt>>,
 }
 type HeaderProgress = (Box<HeaderDraft>, Demand<()>);
 struct ConsumerAuthority {
@@ -36,9 +38,21 @@ impl ProofSession {
         not(test),
         expect(
             dead_code,
-            reason = "selected imported header/role collectors must consume this opaque reserved authority before body proof can open"
+            reason = "the real collected-artifact consumer remains private until retained role/member and original/instance conformance completes"
         )
     )]
+    pub(super) fn from_collected(
+        artifact: CollectedArtifact,
+        request: ConsumerRequest<'_, impl crate::resolve::load::Sources>,
+        work: &mut ReservationWork,
+    ) -> Result<Box<HeaderDraft>, Error> {
+        request.require_inventory(artifact.inventory(), work)?;
+        let (admission, receipt) = artifact.into_admission(work)?;
+        let input = request.admit(admission, work)?;
+        Self::new(input, work)?
+            .selected_headers(work)?
+            .source_headers(receipt, work)
+    }
     pub(crate) fn new(
         input: ConsumerInput,
         work: &mut ReservationWork,
@@ -74,13 +88,6 @@ impl ProofSession {
         }
         Ok(())
     }
-    #[cfg_attr(
-        not(test),
-        expect(
-            dead_code,
-            reason = "private selected headers precede real role/member conformance and original-body admission"
-        )
-    )]
     pub(crate) fn selected_headers(
         self: Box<Self>,
         work: &mut ReservationWork,
@@ -91,6 +98,7 @@ impl ProofSession {
         Ok(Box::new(HeaderDraft {
             session: self,
             selected: SelectedHeaders::default(),
+            completion: None,
         }))
     }
 }
@@ -127,6 +135,23 @@ impl ConsumerAuthority {
     }
 }
 impl HeaderDraft {
+    pub(super) fn source_headers(
+        mut self: Box<Self>,
+        receipt: CollectedReceipt,
+        work: &mut ReservationWork,
+    ) -> Result<Box<Self>, Error> {
+        self.session.authority.require(work)?;
+        work.charge(1)?;
+        if self.completion.is_some() {
+            return Err(Error::unlocated(
+                "selected source header completion cannot be replaced",
+            ));
+        }
+        receipt.columns(&self.session.authority.report, work)?;
+        work.reserve(size_of::<CollectedReceipt>())?;
+        self.completion = Some(Box::new(receipt));
+        Ok(self)
+    }
     #[cfg_attr(
         not(test),
         expect(
@@ -140,6 +165,9 @@ impl HeaderDraft {
         work: &mut ReservationWork,
     ) -> Result<HeaderProgress, Error> {
         self.session.authority.require(work)?;
+        if let Some(completion) = self.completion.as_deref() {
+            completion.columns(&self.session.authority.report, work)?;
+        }
         let ConsumerAuthority {
             facts,
             report,

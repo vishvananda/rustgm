@@ -11,7 +11,7 @@ impl Definitions {
     /// # Errors
     /// Rejects missing/malformed fields and bounded substitution/graph exhaustion.
     pub fn prepare(&mut self, types: &mut Store, root: TypeId) -> Result<(), &'static str> {
-        self.prepare_with(types, root, false)
+        self.prepare_with(types, root, false, true)
     }
     /// Equality additionally inspects reference referents. Raw pointer targets
     /// and function signatures remain outside that dependency graph.
@@ -22,29 +22,46 @@ impl Definitions {
         types: &mut Store,
         root: TypeId,
     ) -> Result<(), &'static str> {
-        self.prepare_with(types, root, true)
+        self.prepare_with(types, root, true, true)
+    }
+    /// A layout demand may meet a declaration that is still being completed.
+    /// Reuse real substitution, but never publish that pending root as failed.
+    /// This is structural data and supplies no Sized or source-call permission.
+    pub(crate) fn prepare_storage_fields(
+        &mut self,
+        types: &mut Store,
+        root: TypeId,
+    ) -> Result<(), &'static str> {
+        self.prepare_with(types, root, false, false)
     }
     fn prepare_with(
         &mut self,
         types: &mut Store,
         root: TypeId,
         references: bool,
+        cache_failures: bool,
     ) -> Result<(), &'static str> {
         if let Some(result) = self
             .instances
             .as_ref()
             .and_then(|i| i.prepared.get(root, references))
+            && (cache_failures || result.is_ok())
         {
             return result;
         }
         let mut seen = HashSet::default();
-        let result = self.prepare_graph(types, root, references, &mut seen);
+        let result = self.prepare_graph(types, root, references, cache_failures, &mut seen);
         let instances = self.instances.get_or_insert_with(Default::default);
         if result.is_ok() {
+            if !cache_failures {
+                instances.charge(seen.len())?;
+                let rows = seen.iter().map(|ty| ty.0 as usize + 1).max().unwrap_or(0);
+                instances.prepare_success_rows(rows)?;
+            }
             for ty in seen {
                 instances.prepared.insert(ty, references, Ok(()));
             }
-        } else if seen.contains(&root) {
+        } else if cache_failures && seen.contains(&root) {
             // A failed query cannot publish unfinished descendants as prepared.
             instances.prepared.insert(root, references, result);
         }
@@ -55,13 +72,16 @@ impl Definitions {
         types: &mut Store,
         root: TypeId,
         references: bool,
+        reuse_failures: bool,
         seen: &mut HashSet<TypeId>,
     ) -> Result<(), &'static str> {
         let mut work = vec![root];
         while let Some(ty) = work.pop() {
             let instances = self.instances.get_or_insert_with(Default::default);
             instances.charge(1)?;
-            if let Some(result) = instances.prepared.get(ty, references) {
+            if let Some(result) = instances.prepared.get(ty, references)
+                && (reuse_failures || result.is_ok())
+            {
                 result?;
                 continue;
             }

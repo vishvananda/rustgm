@@ -2,9 +2,12 @@
 use super::*;
 use crate::unpaid_cases::{Result, trait_extended};
 const HOLDER: &str = "\npub trait Holder<V>{fn carry<U>(value:U)->U{value}fn borrow(value:&V)->&V{value}}\nimpl Holder<u8> for u8{}";
+#[path = "producer_incarnations.rs"]
+mod incarnations;
 
 #[test]
 fn numbered_trait_inputs_retain_full_family_and_actual_contract_capacity() -> Result {
+    incarnations::retain_actual_failed_freeze_cost()?;
     raw_original_parameter_order()?;
     let actual = trait_extended(HOLDER)?;
     let rows = actual.inventory.artifacts()[0]
@@ -154,6 +157,7 @@ fn inspect_prefixed(
 }
 #[test]
 fn numbered_trait_inputs_preserve_defaultness_fences_and_failed_work() -> Result {
+    incarnations::reject_replaced_producer_units()?;
     for (declaration, expected) in [
         (
             "trait Local{fn item(){}} impl Local for u8{default fn item(){}}",

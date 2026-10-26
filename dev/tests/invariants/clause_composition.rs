@@ -274,3 +274,75 @@ fn distinct_composed_clauses_share_validation_and_opening_of_growing_tails()
     }
     Ok(())
 }
+
+#[test]
+fn typed_binder_inputs_validate_parent_slots_and_prepay_failed_growth() -> Result<(), &'static str>
+{
+    use std::cell::Cell;
+    let mut store = Store::default();
+    let work = Cell::new(0_usize);
+    let bytes = Cell::new(0_usize);
+    let charge = |steps: usize, retained: usize| {
+        work.set(work.get().saturating_add(steps));
+        bytes.set(bytes.get().saturating_add(retained));
+        Ok(())
+    };
+    let subject = reference(&mut store, 1, 0)?;
+    let arguments = store.intern_arguments(&[
+        Argument::Lifetime(RegionId::bound(0, 0)?),
+        Argument::Lifetime(RegionId::bound(1, 0)?),
+    ])?;
+    let mut composer = Quantifier::new(1)?;
+    let actual = composer.inputs_charged(&mut store, subject, arguments, 1, &charge)?;
+    assert_eq!(actual.0, reference(&mut store, 0, 0)?);
+    assert_eq!(actual.2, 2);
+    assert_eq!(
+        store
+            .arguments(actual.1)
+            .ok_or("composed real inputs")?
+            .collect::<Vec<_>>(),
+        vec![
+            Argument::Lifetime(RegionId::bound(0, 1)?),
+            Argument::Lifetime(RegionId::bound(0, 0)?)
+        ]
+    );
+    let invalid = reference(&mut store, 1, 1)?;
+    for (ty, args) in [
+        (invalid, crate::types::GenericArgs::EMPTY),
+        (
+            TypeId::UNIT,
+            store.intern_arguments(&[Argument::Type(invalid)])?,
+        ),
+    ] {
+        let before = work.get();
+        assert_eq!(
+            composer.inputs_charged(&mut store, ty, args, 1, &charge),
+            Err("composed clause references an unbound outer lifetime")
+        );
+        assert!(
+            work.get() > before,
+            "rejected input validation retains attempted work"
+        );
+    }
+    assert!(bytes.get() > 0);
+    let mut denied = Quantifier::new(1)?;
+    let calls = Cell::new(0_usize);
+    let reject = |_: usize, bytes: usize| {
+        calls.set(calls.get() + 1);
+        if bytes > 0 {
+            Err("test refuses unpaid binder growth")
+        } else {
+            Ok(())
+        }
+    };
+    assert_eq!(
+        denied.inputs_charged(&mut store, TypeId::UNIT, arguments, 1, &reject),
+        Err("test refuses unpaid binder growth")
+    );
+    assert!(
+        denied.openings.is_empty(),
+        "rejected preflight cannot install a binder opening"
+    );
+    assert!(calls.get() > 0 && denied.steps > 0);
+    Ok(())
+}

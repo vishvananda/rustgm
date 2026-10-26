@@ -11,7 +11,25 @@ impl Bound {
         arguments: crate::types::GenericArgs,
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<crate::types::GenericArgs, &'static str> {
-        self.apply_arguments_observed::<true>(store, arguments, charge)
+        self.arguments_inside_charged(store, arguments, 0, charge)
+    }
+    pub(crate) fn arguments_inside_charged(
+        &mut self,
+        store: &mut Store,
+        arguments: crate::types::GenericArgs,
+        depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<crate::types::GenericArgs, &'static str> {
+        self.apply_arguments_observed::<true>(store, arguments, depth, charge)
+    }
+    pub(crate) fn argument_inside_charged(
+        &mut self,
+        store: &mut Store,
+        argument: Argument,
+        depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Argument, &'static str> {
+        self.apply_argument_observed::<true>(store, argument, depth, charge)
     }
     pub(crate) fn parameters_captured_charged(
         store: &Store,

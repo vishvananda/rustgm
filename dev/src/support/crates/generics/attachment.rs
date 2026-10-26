@@ -89,6 +89,23 @@ impl Payload {
         )?;
         Ok(Self::from(staged))
     }
+    pub(crate) fn from_source_provided_observed(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        base: usize,
+        work: &mut Work,
+        observe: &mut impl FnMut(usize, usize),
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        let staged = source::ValidatedRows::stage_provided_observed(
+            owner,
+            rows,
+            base.saturating_add(overhead),
+            work,
+            observe,
+        )?;
+        Ok(Self::from(staged))
+    }
     /// Validate complete ordinary header contracts without granting body proof.
     /// # Errors
     /// Rejects malformed/incomplete facts and combined storage/work limits.
