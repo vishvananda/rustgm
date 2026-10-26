@@ -60,10 +60,21 @@ fn unpaid_reservations_move_full_family_without_names_roles_or_import_publicatio
             .all(|row| row.node.is_none())
     );
     assert!(work.steps > 0 && work.peak > 0 && work.peak <= MAX_BYTES);
-    let owner = inputs.inventory.artifacts()[0].identity();
+    let artifact = &inputs.inventory.artifacts()[0];
+    let owner = artifact.identity();
+    let descriptor = artifact
+        .source_descriptor()
+        .ok_or("actual supplied descriptor")?;
+    assert_eq!(descriptor.identity(), owner);
+    assert_eq!(descriptor.provider(), owner);
+    assert_eq!(
+        descriptor.edition(),
+        crate::support::edition::Edition::Rust2024
+    );
+    assert_eq!(descriptor.profile(), Profile::Source2024Provided);
     assert_eq!(
         inputs.inventory.source_provider_index(owner),
-        Err("source client provider descriptor does not match the requested profile")
+        Err("source client provider profile is unsupported")
     );
     Ok(())
 }
