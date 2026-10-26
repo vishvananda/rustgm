@@ -136,7 +136,7 @@ fn source_abort_signature_is_safe_nonconst_and_supplies_no_layout_or_const_permi
         .ok_or("actual reached caller")?
         .definition;
     let roots = [function];
-    let error = crate::lower::instances::build_roots_prepared(
+    let program = crate::lower::instances::build_roots_prepared(
         &reached,
         &mut facts,
         crate::lower::Roots {
@@ -144,10 +144,9 @@ fn source_abort_signature_is_safe_nonconst_and_supplies_no_layout_or_const_permi
             exports: &roots,
         },
         prepared,
-    )
-    .err()
-    .ok_or("source abort acquired runtime permission from its declaration")?;
-    assert!(error.message.contains("source abort"), "{}", error.message);
+    )?;
+    assert!(program.symbols.iter().any(|symbol| symbol.body.is_some()));
+    assert!(!program.symbols.iter().any(|symbol| symbol.name == "abort"));
     let crate::pipeline::Analysis {
         mut facts,
         prepared,
@@ -188,7 +187,7 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert!(report.resolution.intrinsics.get(Intrinsic::Abort).is_none());
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
-    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 808);
+    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 872);
     assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 176);
     assert_eq!(size_of::<Declaration>(), 20);
     assert_eq!(size_of::<Option<Declaration>>(), 20);

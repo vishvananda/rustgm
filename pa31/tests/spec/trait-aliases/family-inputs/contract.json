@@ -1,0 +1,48 @@
+{
+  "state": "independently observed against pinned Rust; no assignment activation",
+  "scope": "GAT alias input prefix versus projected-result promises",
+  "cases": [
+    {
+      "source": "accepted-input.rs",
+      "rustc_success": true,
+      "observed": {
+        "source_sha256": "db4a78378c4b6931581ddcf9b88f70f85f441c712d7389d87c875bc0c22f0a8f",
+        "status": 0,
+        "matches_prediction": true,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "645528318973a2c9df50d97d5fb03a4d35abec5cb8e8fc995e7597a54e5b9ced"
+      }
+    },
+    {
+      "source": "missing-copy.rs",
+      "rustc_success": false,
+      "observed": {
+        "source_sha256": "4dae897664b8f2e7d93da54ffb1f9f1fc138e2c3d4eab86bb8ab9e7fef7ce44c",
+        "status": 1,
+        "matches_prediction": true,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "7f1f2231fc004a4ff17f3627a494c4cb0ddf9e53ceef9a19e44fc06507be1bb1"
+      }
+    },
+    {
+      "source": "alias-result.rs",
+      "rustc_success": true,
+      "observed": {
+        "source_sha256": "b11da2c9b5fea58b278ed643ee6027c7882740e15ebe57d6ffd52ef42845a01b",
+        "status": 0,
+        "matches_prediction": true,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "0484af209f4054bd22bb16ee7481855b2f279cedbf8d5b417815e0d5dc942069"
+      }
+    }
+  ],
+  "independent": {
+    "run": 40344203033,
+    "artifact": 12659754457,
+    "zip_sha256": "59f398748dde44c3e3eaef4d45f97d99b94c558f62a3c8513467d7f4a7d214b9",
+    "receipt_sha256": "80a36281217193f54992c52e910692ad44e11019c371fd0d19bee8193cb710c3",
+    "commands": 3,
+    "infrastructure_failures": 0,
+    "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  }
+}

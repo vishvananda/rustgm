@@ -269,6 +269,18 @@ impl Checker<'_> {
                 "explicit implementation is prohibited by its source trait declaration",
             ));
         }
+        if self
+            .facts
+            .source_bindings
+            .as_deref()
+            .and_then(|catalog| catalog.language(crate::support::bindings::LangItem::PointeeTrait))
+            .is_some_and(|role| role.definition == definition)
+        {
+            return Err(self.error(
+                source,
+                "explicit source Pointee implementation selection is not implemented",
+            ));
+        }
         Ok(())
     }
 

@@ -86,6 +86,7 @@ pub(in crate::sema::compiler_items) fn traits(
         .traits = Some(Box::new(Validated {
         roles,
         methods: [None; 3],
+        pointee: None,
     }));
     Ok(())
 }

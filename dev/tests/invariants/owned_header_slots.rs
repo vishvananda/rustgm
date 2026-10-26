@@ -96,7 +96,13 @@ fn inherited_slots_keep_self_and_method_owners_distinct() -> Result<(), &'static
     let (rows, definitions) = fixture();
     let mut work = Work::default();
     let index = ScopeIndex::new(&rows, &definitions, 0, &mut work)?;
-    assert!(TraitFlags::from_bits(256).is_err());
+    assert_eq!(
+        TraitFlags::from_bits(TraitFlags::RESTRICTED_IMPL)?.bits(),
+        TraitFlags::RESTRICTED_IMPL
+    );
+    for unknown in [512, 512 | TraitFlags::CONST, u16::MAX] {
+        assert!(TraitFlags::from_bits(unknown).is_err());
+    }
     assert_eq!(TraitFlags::from_bits(255)?.bits(), 255);
     println!(
         "SourceRows={} SourceFunction={} SourceTrait={} SourceImpl={} SourceSlot={} SourceScope={} SourceCall={} SourceOriginal={} ScopeIndex={}",

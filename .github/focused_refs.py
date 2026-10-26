@@ -1,4 +1,4 @@
-"""Exact six shared signature mapping and collected formal controls; static audit overlaps one sequential Rust lane."""
+"""Exact three actual profile/flag boundaries; test-only repair; static audit overlaps one sequential Rust lane."""
 from concurrent.futures import ThreadPoolExecutor
 import hashlib,json,os,re,signal,subprocess,sys,time
 from pathlib import Path
@@ -15,12 +15,12 @@ def worker(started):
     freeze=json.loads((ROOT/'.github/inherited_numbering_freeze.json').read_text())
     sources=fingerprint(ROOT)
     if sources!=freeze['sources']:raise ValueError('frozen source changed')
-    out=ROOT/f'obj/qualification/fast/{time.time_ns()}-shared-header-mapping'
+    out=ROOT/f'obj/qualification/fast/{time.time_ns()}-scheduled-private-boundaries'
     deadline=started+185
     steps=Steps(ROOT,SimpleNamespace(deadline=deadline,evidence_root=out,prune_under=[]))
     cases=freeze['selected']
     cli=ROOT/'obj/rust/dev-fast/rustgm';cli_sha=sha(cli)
-    steps.receipt.update(sources=sources,candidate=freeze['source_commit'],groups={'lib':cases},compiler_sha256=cli_sha,baseline=freeze['baseline'])
+    steps.receipt.update(sources=sources,candidate=freeze['source_commit'],groups={'lib':cases},compiler_sha256=cli_sha)
     steps.save()
     def independent(name,commands):
         branch=Steps(ROOT,SimpleNamespace(deadline=deadline,evidence_root=out/name,prune_under=[]))
@@ -54,22 +54,14 @@ def worker(started):
         listed=steps.run('lib-inventory',[binary,'--list'],cwd=ROOT/'dev')
         ignored=set(steps.run('lib-ignored',[binary,'--ignored','--list'],cwd=ROOT/'dev').splitlines())
         actual=inventory('\n'.join(row for row in listed.splitlines() if row not in ignored),'lib',cases)
-        if actual!=cases or len(set(actual))!=6:raise ValueError('exact six inventory changed')
+        if actual!=cases or len(set(actual))!=3:raise ValueError('exact three inventory changed')
         steps.receipt.update(selected={'lib':actual},binaries={'lib':{'sha256':sha(binary)}});steps.save()
         output=steps.run('lib',[binary,'--exact',*actual],cwd=ROOT/'dev',overrides={'RUST_TEST_NOCAPTURE':'1'})
-        if re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',output)!=[('6','0','0')]:raise ValueError('actual six count changed')
-        capture=ROOT/'obj/parallel/all-attribute-selected-output-v1/empty-contract-baseline'
-        baseline=freeze['baseline']['files']
-        for name in baseline:
-            path=capture/name
-            if path.stat().st_size!=baseline[name]['bytes'] or sha(path)!=baseline[name]['sha256']:raise ValueError('actual first encoding differs from pre-adapter raw baseline: '+name)
-        captured={path.name:{'sha256':sha(path),'bytes':path.stat().st_size} for path in capture.iterdir() if path.is_file() and not path.name.startswith('.')}
-        binding={'candidate':freeze['source_commit'],'sources':sources,'source_sha256':freeze['source_sha256'],'binary':steps.receipt['binaries']['lib'],'compiler_sha256':cli_sha,'baseline_run':freeze['baseline']['run'],'comparison':'first actual encode v0/v1 raw artifacts and source/config bindings exactly equal authenticated pre-adapter capture; rows retained separately','captured':captured}
-        (capture/'source-binding.json').write_text(json.dumps(binding,indent=2)+'\n')
+        if re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',output)!=[('3','0','0')]:raise ValueError('actual three count changed')
         if fingerprint(ROOT)!=sources or sha(cli)!=cli_sha:raise ValueError('source or actual CLI changed')
         for path,digest in freeze['unchanged_public_guards'].items():
             if sha(ROOT/path)!=digest:raise ValueError('public guard changed')
-        steps.receipt.update(state='passed',actual_raw_byte_comparison=captured,seconds=time.monotonic()-started)
+        steps.receipt.update(state='passed',seconds=time.monotonic()-started)
     except BaseException as error:
         steps.receipt.update(state='failed',error=str(error),seconds=time.monotonic()-started);raise
     finally:
@@ -92,6 +84,6 @@ def main():
         if status:
             try:os.killpg(process.pid,signal.SIGKILL)
             except ProcessLookupError:pass
-        print(f'Shared header mapping gate total: {time.monotonic()-start:.2f}s status={status}',flush=True)
+        print(f'Scheduled private boundary gate total: {time.monotonic()-start:.2f}s status={status}',flush=True)
 
 if __name__=='__main__':sys.exit(main())

@@ -43,9 +43,12 @@ pub enum LangItem {
     PanicImpl,
     PanicDisplay,
     ConstPanicFmt,
+    PointeeTrait,
+    MetadataType,
+    DynMetadata,
 }
 impl LangItem {
-    pub const ALL: [Self; 28] = [
+    pub const ALL: [Self; 31] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -74,6 +77,9 @@ impl LangItem {
         Self::PanicImpl,
         Self::PanicDisplay,
         Self::ConstPanicFmt,
+        Self::PointeeTrait,
+        Self::MetadataType,
+        Self::DynMetadata,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -106,6 +112,9 @@ impl LangItem {
             Self::PanicImpl => 25,
             Self::PanicDisplay => 26,
             Self::ConstPanicFmt => 27,
+            Self::PointeeTrait => 28,
+            Self::MetadataType => 29,
+            Self::DynMetadata => 30,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -140,6 +149,9 @@ impl LangItem {
             "panic_impl" => Some(Self::PanicImpl),
             "panic_display" => Some(Self::PanicDisplay),
             "const_panic_fmt" => Some(Self::ConstPanicFmt),
+            "pointee_trait" => Some(Self::PointeeTrait),
+            "metadata_type" => Some(Self::MetadataType),
+            "dyn_metadata" => Some(Self::DynMetadata),
             _ => None,
         }
     }
