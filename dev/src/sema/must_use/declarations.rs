@@ -44,6 +44,10 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                 else {
                     continue;
                 };
+                if unit.derive_is_expanded(effect) {
+                    report.expanded_derive(owner_key, effect)?;
+                    continue;
+                }
                 let name = attribute.name(forest, unit.source.text());
                 if name.and_then(Consumer::named) == Some(Consumer::MarkerTrait) {
                     crate::sema::marker_traits::consume(
@@ -51,6 +55,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                         facts,
                         key,
                         attribute,
+                        forest.tree(attribute.path.start).span,
                         &mut allowances,
                     )?;
                     continue;

@@ -19,6 +19,7 @@ pub(super) fn consume(
     facts: &mut Declarations,
     declaration: NodeKey,
     attribute: Attribute,
+    name: crate::syntax::token_tree::Span,
     allowances: &mut MacroAllowanceSession<'_>,
 ) -> Result<(), Error> {
     facts.reserve_must_use_source(declaration, attribute.span)?;
@@ -31,7 +32,7 @@ pub(super) fn consume(
     if !report.package.requested_marker_traits().map_err(error)?
         && !allowances.allows_at(
             declaration.file,
-            attribute.span,
+            name,
             &FeatureName::new("marker_trait_attr").map_err(error)?,
         )?
     {

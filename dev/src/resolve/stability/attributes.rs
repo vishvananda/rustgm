@@ -25,16 +25,18 @@ pub(in crate::resolve) fn collect(
     let name = attribute.name(forest, unit.source.text()).unwrap_or("");
     let extended = matches!(
         name,
-        "rustc_const_stable"
-            | "rustc_const_unstable"
-            | "rustc_default_body_unstable"
+        "rustc_default_body_unstable"
             | "rustc_allow_const_fn_unstable"
             | "allow_internal_unstable"
             | "allow_internal_unsafe"
             | "rustc_const_stable_indirect"
     );
     if unit.include_context.is_some() {
-        return Ok(extended || matches!(name, "stable" | "unstable"));
+        return Ok(extended
+            || matches!(
+                name,
+                "stable" | "unstable" | "rustc_const_stable" | "rustc_const_unstable"
+            ));
     }
     if matches!(name, "allow_internal_unstable" | "allow_internal_unsafe")
         && allowance.is_some_and(|allowance| allowance.matches(key, attribute))
@@ -48,7 +50,8 @@ pub(in crate::resolve) fn collect(
             "const, default-body and macro library stability contracts are not implemented",
         ));
     }
-    if !matches!(name, "stable" | "unstable") {
+    let constant = matches!(name, "rustc_const_stable" | "rustc_const_unstable");
+    if !constant && !matches!(name, "stable" | "unstable") {
         return Ok(false);
     }
     if attribute.unsafe_wrapper {
@@ -67,14 +70,27 @@ pub(in crate::resolve) fn collect(
     }
     let draft = draft.get_or_insert_with(Draft::default);
     draft.charge(1, 0)?;
-    if draft.attributes.contains_key(&key) {
+    if (if constant {
+        &draft.const_attributes
+    } else {
+        &draft.attributes
+    })
+    .contains_key(&key)
+    {
         return Err(Error::at(
             key.file,
             attribute.span.start,
             "duplicate or conflicting library stability",
         ));
     }
-    let policy = parse(unit, key, attribute, forest, name == "stable", draft)?;
+    let policy = parse(
+        unit,
+        key,
+        attribute,
+        forest,
+        matches!(name, "stable" | "rustc_const_stable"),
+        draft,
+    )?;
     let id = NonZeroUsize::new(draft.policies.len() + 1).ok_or_else(|| {
         Error::at(
             key.file,
@@ -88,7 +104,11 @@ pub(in crate::resolve) fn collect(
         4 * (size_of::<Policy>() + size_of::<(NodeKey, NonZeroUsize)>()),
     )?;
     draft.policies.push(policy);
-    draft.attributes.insert(key, id);
+    if constant {
+        draft.const_attributes.insert(key, id);
+    } else {
+        draft.attributes.insert(key, id);
+    }
     Ok(true)
 }
 

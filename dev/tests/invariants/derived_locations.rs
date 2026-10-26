@@ -30,6 +30,26 @@ fn actual_location_derives_reach_source_clone_field_obligations_and_lowering() -
             .validated_language(LangItem::PanicLocation)?
             .is_some()
     );
+    let identity = report
+        .package
+        .source_core()
+        .ok_or("actual source provider")?
+        .provider
+        .clone();
+    for result in [
+        crate::sema::crates::authored_export::Stage::begin(&report, &mut facts, &identity),
+        crate::sema::crates::authored_export::Stage::begin_with_ordinary_traits(
+            &report, &mut facts, &identity,
+        ),
+        crate::sema::crates::authored_export::Stage::begin_module_contracts(
+            &report, &mut facts, &identity,
+        ),
+    ] {
+        assert_eq!(
+            result.err(),
+            Some("source stability contracts are outside this metadata profile")
+        );
+    }
     let program = crate::lower::instances::build_roots_prepared(
         &report,
         &mut facts,

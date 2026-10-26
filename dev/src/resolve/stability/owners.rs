@@ -1,5 +1,8 @@
 //! Scope and import ownership comes from the resolved graph, never name spelling.
-use super::{Draft, PolicyId};
+use super::{
+    Draft, PolicyId,
+    const_policies::{ConstPolicies, Frame, Role},
+};
 use crate::{
     resolve::{
         model::{DefKind, Resolution, ScopeId},
@@ -13,6 +16,7 @@ use crate::{
 pub(super) struct Owners {
     pub declarations: Vec<Option<PolicyId>>,
     pub imports: Vec<Option<PolicyId>>,
+    pub consts: Option<Box<ConstPolicies>>,
 }
 
 pub(super) fn collect(
@@ -27,14 +31,15 @@ pub(super) fn collect(
         .saturating_add(facts.imports.len());
     draft.charge(
         count,
-        count.saturating_mul(4 * size_of::<Option<PolicyId>>()),
+        count.saturating_mul(4 * (size_of::<Frame>() + size_of::<Option<PolicyId>>())),
     )?;
-    let mut scopes = vec![None; facts.scopes.len()];
+    let mut scopes = vec![Frame::default(); facts.scopes.len()];
     let mut used = HashSet::default();
     modules(package, facts, draft, &mut scopes, &mut used)?;
     definition_scopes(package, facts, draft, &mut scopes, &mut used)?;
     // Lexical scope IDs are append-only and parent-first. Module scopes were
     // seeded separately because their lexical parent is intentionally absent.
+    let mut has_const = false;
     for (index, scope) in facts.scopes.iter().enumerate() {
         draft.charge(1, 0)?;
         if let Some(parent) = scope.parent {
@@ -43,37 +48,14 @@ pub(super) fn collect(
                     "library scope parent is not earlier than its child",
                 ));
             }
-            if scopes[index].is_none() {
-                scopes[index] = draft.inherit(scopes[parent.0 as usize]);
-            }
+            let inherited = scopes[parent.0 as usize];
+            scopes[index].inherit(draft, inherited);
         }
+        has_const |= scopes[index].constant.is_some();
     }
-    draft.charge(facts.definitions.len(), 0)?;
-    let declarations = facts
-        .definitions
-        .iter()
-        .enumerate()
-        .map(|(index, definition)| {
-            if definition.kind == DefKind::Module {
-                if definition.node.is_none()
-                    && facts.crate_root.is_none_or(|root| root.0 as usize != index)
-                {
-                    return None;
-                }
-                return definition
-                    .members
-                    .and_then(|scope| scopes[scope.0 as usize]);
-            }
-            if definition.kind != DefKind::Function {
-                return None;
-            }
-            let key = definition.node?;
-            let explicit = draft.attributes.get(&key).copied();
-            explicit.or_else(|| draft.inherit(scopes[definition.scope.0 as usize]))
-        })
-        .collect();
+    let mut owners = declaration_rows(package, facts, draft, &scopes, has_const)?;
     import_attributes(package, draft, &mut used)?;
-    let imports = facts
+    owners.imports = facts
         .imports
         .iter()
         .map(|import| {
@@ -81,36 +63,102 @@ pub(super) fn collect(
                 .import_attributes
                 .get(&import.node)
                 .copied()
-                .or_else(|| draft.inherit(scopes[import.scope.0 as usize]))
+                .or_else(|| draft.inherit(scopes[import.scope.0 as usize].regular))
         })
         .collect();
-    if let Some(policy) = draft
-        .policies
-        .iter()
-        .find(|policy| !used.contains(&policy.origin))
-    {
+    if let Some((_, policy)) = draft.policies.iter().enumerate().find(|(index, policy)| {
+        let constant = draft
+            .const_attributes
+            .get(&policy.origin)
+            .is_some_and(|id| id.get() == index + 1);
+        !used.contains(&(policy.origin, constant))
+    }) {
         return Err(error(
             package,
             policy.origin,
             "unsupported library stability annotation owner",
         ));
     }
+    Ok(owners)
+}
+
+fn declaration_rows(
+    package: &Package,
+    facts: &Resolution,
+    draft: &mut Draft,
+    scopes: &[Frame],
+    has_const: bool,
+) -> Result<Owners, Error> {
+    draft.charge(facts.definitions.len(), 0)?;
+    let mut declarations = Vec::with_capacity(facts.definitions.len());
+    let mut constants = has_const.then(|| Vec::with_capacity(facts.definitions.len()));
+    for (index, definition) in facts.definitions.iter().enumerate() {
+        let scope = declaration_scope(package, facts, definition);
+        let regular = if definition.kind == DefKind::Module {
+            if definition.node.is_none()
+                && facts.crate_root.is_none_or(|root| root.0 as usize != index)
+            {
+                declarations.push(None);
+                if let Some(constants) = &mut constants {
+                    constants.push(None);
+                }
+                continue;
+            }
+            definition
+                .members
+                .and_then(|id| scopes[id.0 as usize].regular)
+        } else if definition.kind.is_local() && definition.kind != DefKind::SelfType {
+            None
+        } else {
+            definition
+                .node
+                .and_then(|key| draft.attributes.get(&key).copied())
+                .or_else(|| draft.inherit(scopes[definition.scope.0 as usize].regular))
+        };
+        declarations.push(regular);
+        if let Some(constants) = &mut constants {
+            constants.push(scope.and_then(|id| scopes[id.0 as usize].constant));
+        }
+    }
     Ok(Owners {
         declarations,
-        imports,
+        imports: Vec::new(),
+        consts: constants.map(|declarations| Box::new(ConstPolicies { declarations })),
     })
+}
+
+fn declaration_scope(
+    package: &Package,
+    facts: &Resolution,
+    definition: &crate::resolve::model::Definition,
+) -> Option<ScopeId> {
+    let key = definition.node?;
+    let module = facts.scopes[definition.scope.0 as usize].module;
+    let Kind::Item(index) = package.unit(key.file).configured.ast.node(key.node).kind else {
+        return None;
+    };
+    let item = package.unit(key.file).configured.ast.items[index as usize];
+    if definition.kind == DefKind::Constructor
+        || (definition.kind == DefKind::SelfType && !matches!(item.kind, ItemKind::Impl { .. }))
+    {
+        return None;
+    }
+    facts.node_scopes.get(&(module, key.node)).copied()
 }
 
 fn definition_scopes(
     package: &Package,
     facts: &Resolution,
     draft: &mut Draft,
-    scopes: &mut [Option<PolicyId>],
-    used: &mut HashSet<NodeKey>,
+    scopes: &mut [Frame],
+    used: &mut HashSet<(NodeKey, bool)>,
 ) -> Result<(), Error> {
     draft.charge(facts.definitions.len(), 0)?;
     for definition in &facts.definitions {
         let Some(key) = definition.node else {
+            continue;
+        };
+        let Some(scope) = declaration_scope(package, facts, definition) else {
             continue;
         };
         let unit = package.unit(key.file);
@@ -118,44 +166,42 @@ fn definition_scopes(
             continue;
         };
         let item = unit.configured.ast.items[index as usize];
-        match item.kind {
-            ItemKind::Module { .. } | ItemKind::MacroRules { .. } => {}
-            ItemKind::DeclarativeMacro { .. } => {
-                return Err(error(
-                    package,
-                    key,
-                    "scoped macro library stability declarations are not implemented",
-                ));
-            }
-            ItemKind::Function {
-                flags,
-                body: Some(_),
-                ..
-            } if !flags.constant
-                && !flags.asynchronous
-                && item.generics.start == item.generics.end
-                && item.where_clause.start == item.where_clause.end =>
-            {
-                if definition.kind != DefKind::Function {
-                    continue;
-                }
-                let module = facts.scopes[definition.scope.0 as usize].module;
-                let scope = *facts.node_scopes.get(&(module, key.node)).ok_or_else(|| {
-                    error(package, key, "library function has no actual owner scope")
-                })?;
-                if let Some(&policy) = draft.attributes.get(&key) {
-                    used.insert(key);
-                    scopes[scope.0 as usize] = Some(policy);
-                }
-            }
-            _ => {
-                return Err(error(
-                    package,
-                    key,
-                    "this local library stability profile requires ordinary functions and modules",
-                ));
-            }
+        let role = Role::of(item.kind);
+        let explicit = draft.const_attributes.get(&key).copied();
+        let parent = facts.scopes[scope.0 as usize]
+            .parent
+            .map(|p| scopes[p.0 as usize].role);
+        let const_member = matches!(role, Role::Function(_))
+            && matches!(parent, Some(Role::Trait(true) | Role::Impl(true)));
+        if explicit.is_some() && !role.accepts_const() && !const_member {
+            return Err(error(
+                package,
+                key,
+                "const library stability requires a const function, const trait or const trait implementation",
+            ));
         }
+        if matches!(
+            item.kind,
+            ItemKind::Module { .. }
+                | ItemKind::MacroRules { .. }
+                | ItemKind::DeclarativeMacro { .. }
+        ) {
+            if draft.attributes.contains_key(&key) {
+                used.insert((key, false));
+            }
+            continue;
+        }
+        if draft.attributes.contains_key(&key) {
+            used.insert((key, false));
+        }
+        if explicit.is_some() {
+            used.insert((key, true));
+        }
+        scopes[scope.0 as usize] = Frame {
+            regular: draft.attributes.get(&key).copied(),
+            constant: explicit,
+            role,
+        };
     }
     Ok(())
 }
@@ -164,8 +210,8 @@ fn modules(
     package: &Package,
     facts: &Resolution,
     draft: &mut Draft,
-    scopes: &mut [Option<PolicyId>],
-    used: &mut HashSet<NodeKey>,
+    scopes: &mut [Frame],
+    used: &mut HashSet<(NodeKey, bool)>,
 ) -> Result<(), Error> {
     for (index, module) in package.modules.iter().enumerate() {
         draft.charge(1, 0)?;
@@ -194,16 +240,16 @@ fn modules(
             ));
         }
         if inner.is_some() {
-            used.insert(root);
+            used.insert((root, false));
         }
         if outer.is_some()
             && let Some(key) = declaration
         {
-            used.insert(key);
+            used.insert((key, false));
         }
         let parent = match module.parent {
             Some(parent) if (parent.0 as usize) < index => {
-                draft.inherit(scopes[facts.module_scopes[parent.0 as usize].0 as usize])
+                draft.inherit(scopes[facts.module_scopes[parent.0 as usize].0 as usize].regular)
             }
             Some(_) => {
                 return Err(error(
@@ -222,7 +268,7 @@ fn modules(
                 "crate has missing library stability attribute",
             ));
         }
-        scopes[facts.module_scopes[index].0 as usize] = effective;
+        scopes[facts.module_scopes[index].0 as usize].regular = effective;
     }
     Ok(())
 }
@@ -242,7 +288,7 @@ fn underlying(package: &Package, mut key: NodeKey, draft: &mut Draft) -> Result<
 fn import_attributes(
     package: &Package,
     draft: &mut Draft,
-    used: &mut HashSet<NodeKey>,
+    used: &mut HashSet<(NodeKey, bool)>,
 ) -> Result<(), Error> {
     // Only annotated import groups need an auxiliary leaf lookup. A group is
     // expanded once; each actual Import still owns its effective policy.
@@ -264,7 +310,7 @@ fn import_attributes(
         let ItemKind::Use(tree) = unit.configured.ast.items[index as usize].kind else {
             continue;
         };
-        used.insert(key);
+        used.insert((key, false));
         pending.push(tree);
         while let Some(node) = pending.pop() {
             draft.charge(1, 4 * size_of::<(NodeKey, PolicyId)>())?;
@@ -347,7 +393,22 @@ pub(super) fn reachable(
                     "public declaration has missing library stability attribute",
                 ));
             }
-            if definition.kind == DefKind::Module
+            let unit = package.unit(key.file);
+            if matches!(unit.configured.ast.node(key.node).kind, Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
+                ItemKind::Function { flags: crate::syntax::item::FunctionFlags { constant: true, .. }, .. } | ItemKind::Trait { constant: true, .. }))
+                && owners
+                    .consts
+                    .as_deref()
+                    .and_then(|c| c.declarations[binding.target.0 as usize])
+                    .is_none()
+            {
+                return Err(error(
+                    package,
+                    key,
+                    "public const declaration has missing const library stability attribute",
+                ));
+            }
+            if matches!(definition.kind, DefKind::Module | DefKind::Trait)
                 && let Some(members) = definition.members
                 && seen.insert(members)
             {
