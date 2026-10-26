@@ -263,20 +263,25 @@ pub fn analyze_with_context(
 ) -> Result<Report, Error> {
     finish_analysis(Engine::create(root, sources, config, context)?)
 }
-pub(crate) fn analyze_staged(
+pub(in crate::resolve) fn analyze_staged(
     root: InputFile,
     sources: &mut impl Sources,
     config: &Config,
     context: &super::bindings::Context,
     request: super::bindings::consumer_policy::Request<'_>,
-) -> Result<Report, Error> {
-    finish_analysis(Engine::create_with_admission(
-        root,
-        sources,
-        config,
-        context,
-        Some(request),
-    )?)
+) -> Result<(Report, Option<super::crates::ReservationSeed>), Error> {
+    let (admission, runtime_checks, work) = request.into_parts();
+    if runtime_checks != config.runtime_checks() {
+        return Err(Error::unlocated(
+            "staged expansion changed its actual runtime configuration",
+        ));
+    }
+    let request = super::bindings::consumer_policy::Request::new(admission, config, work);
+    let mut engine = Engine::create_with_admission(root, sources, config, context, Some(request))?;
+    let seed = engine
+        .paths
+        .reserve_staged_names(&mut engine.loader.package, work)?;
+    Ok((finish_analysis(engine)?, seed))
 }
 fn finish_analysis<S: Sources>(mut engine: Engine<'_, S>) -> Result<Report, Error> {
     let result = engine.run();

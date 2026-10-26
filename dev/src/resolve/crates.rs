@@ -24,6 +24,7 @@ use crate::support::crates::{
 };
 use crate::support::hash::HashMap;
 pub(crate) use consumer_inputs::{ConsumerInput, ConsumerRequest, ConsumerReservation};
+pub(in crate::resolve) use consumer_inputs::{ReservationSeed, reserve_names};
 pub(crate) use original_declarations::Work as ReservationWork;
 use std::sync::Arc;
 
@@ -129,6 +130,50 @@ impl Imported {
     pub fn definition(&self, external: &ExternalDef) -> Option<DefId> {
         self.definitions.get(external).copied()
     }
+    /// Borrow only an actual configured alias and its authenticated catalog root.
+    /// This namespace lookup allocates nothing and grants no semantic readiness.
+    pub(super) fn alias_root(&self, spelling: &str, definition: DefId) -> bool {
+        let aliases = self.dependencies.aliases();
+        let Ok(index) = aliases.binary_search_by(|alias| alias.alias().cmp(spelling)) else {
+            return false;
+        };
+        let Some(catalog) = self.origins.get() else {
+            return false;
+        };
+        let Ok(declaration) = catalog.declaration(definition) else {
+            return false;
+        };
+        if catalog
+            .validate_declaration(declaration, definition, DefKind::Module)
+            .is_err()
+        {
+            return false;
+        }
+        let Ok((owner, row, _)) = catalog.declaration_coordinate(declaration) else {
+            return false;
+        };
+        if owner != aliases[index].identity() {
+            return false;
+        }
+        let artifacts = self.dependencies.artifacts();
+        let Ok(index) = artifacts.binary_search_by(|artifact| artifact.identity().cmp(owner))
+        else {
+            return false;
+        };
+        artifacts[index]
+            .source_descriptor()
+            .is_some_and(|descriptor| {
+                descriptor
+                    .rows()
+                    .declarations
+                    .get(row.0 as usize)
+                    .is_some_and(|actual| {
+                        actual.definition.kind
+                            == crate::support::crates::generics::source::DefinitionKind::Module
+                            && actual.definition.parent.is_none()
+                    })
+            })
+    }
     pub fn definitions(&self) -> impl Iterator<Item = (&ExternalDef, DefId)> {
         self.definitions
             .iter()
@@ -216,6 +261,13 @@ impl Resolver<'_> {
         for artifact in artifacts.artifacts() {
             self.bind_public_modules(artifact, &imported)?;
         }
+        self.bind_crate_aliases(external, &imported)?;
+        self.facts.extern_scope = Some(external);
+        imported.origins.freeze().map_err(error)?;
+        self.facts.crates = Some(Box::new(imported));
+        Ok(())
+    }
+    fn bind_crate_aliases(&mut self, external: ScopeId, imported: &Imported) -> Result<(), Error> {
         for alias in imported.dependencies.aliases() {
             let identity =
                 ExternalDef::new(alias.identity().clone(), Vec::new(), ExternalKind::Module)
@@ -241,9 +293,6 @@ impl Resolver<'_> {
                 )
                 .map_err(error)?;
         }
-        self.facts.extern_scope = Some(external);
-        imported.origins.freeze().map_err(error)?;
-        self.facts.crates = Some(Box::new(imported));
         Ok(())
     }
     fn reserve_artifact_root(

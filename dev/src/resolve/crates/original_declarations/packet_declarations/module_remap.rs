@@ -132,35 +132,46 @@ pub(super) fn pending_bindings(
     definitions: &[DefId],
     work: &mut Work,
 ) -> Result<(Vec<PendingBinding>, Vec<Key>), Error> {
+    pending_columns(
+        &mut report.package,
+        &report.resolution,
+        snapshot.namespace(),
+        definitions,
+        work,
+    )
+}
+pub(super) fn pending_columns(
+    package: &mut crate::resolve::package::Package,
+    resolution: &crate::resolve::model::Resolution,
+    names: &s::NamespaceColumns,
+    definitions: &[DefId],
+    work: &mut Work,
+) -> Result<(Vec<PendingBinding>, Vec<Key>), Error> {
     let mut keys = HashSet::default();
-    let mut bindings = Vec::with_capacity(snapshot.bindings().len());
-    let mut export_keys = Vec::with_capacity(snapshot.bindings().len());
-    for entry in snapshot.bindings() {
+    let mut bindings = Vec::with_capacity(names.bindings.len());
+    let mut export_keys = Vec::with_capacity(names.bindings.len());
+    for entry in &names.bindings {
         work.charge(1 + entry.name.len())?;
         let module = definitions[entry.module.0 as usize];
-        let scope = report.resolution.definitions[module.0 as usize]
+        let scope = resolution.definitions[module.0 as usize]
             .members
             .ok_or_else(|| error("namespace export owner has no real member scope"))?;
-        let name = report.package.names.intern(&entry.name).map_err(error)?;
+        let name = package.names.intern(&entry.name).map_err(error)?;
         let namespace = match entry.namespace {
             crate::support::crates::Namespace::Type => Namespace::Type,
             crate::support::crates::Namespace::Value => Namespace::Value,
         };
         let key = (scope, name, namespace);
-        if !keys.insert(key)
-            || report
-                .resolution
-                .bindings
-                .get(scope, name, namespace)
-                .is_some()
-        {
+        if !keys.insert(key) || resolution.bindings.get(scope, name, namespace).is_some() {
             return Err(error(
                 "namespace pending batch has a duplicate or existing key",
             ));
         }
         export_keys.push(key);
         bindings.push(PendingBinding {
-            key,
+            scope,
+            name,
+            namespace,
             binding: Binding {
                 target: definitions[entry.target.declaration.0 as usize],
                 access: Access::Public,

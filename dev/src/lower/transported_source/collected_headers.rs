@@ -28,6 +28,21 @@ impl TraitInspection {
     ) -> Result<crate::sema::crates::authored_export::CollectedArtifact, Error> {
         self.collected.into_artifact(base, work)
     }
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "private named provided consumers await complete checked headers/body demand and supported public artifact policy"
+        )
+    )]
+    pub(crate) fn into_named_artifact(
+        self,
+        base: crate::support::crates::Interface,
+        alias: crate::support::crates::Dependency,
+        work: &mut crate::resolve::crates::ReservationWork,
+    ) -> Result<crate::sema::crates::authored_export::CollectedArtifact, Error> {
+        self.collected.into_named_artifact(base, alias, work)
+    }
     #[cfg(test)]
     pub(crate) fn into_parts(self) -> (SourceInspection, s::HeaderAttributeColumns, usize) {
         let (rows, work, contracts, bytes) = self.collected.into_unpaid();

@@ -148,6 +148,30 @@ pub(super) fn unpaid_input(
         work,
     )
 }
+pub(super) fn named_unpaid(
+    resolver: &mut Resolver<'_>,
+    scope: ScopeId,
+    artifact: &Interface,
+    imported: &mut Imported,
+    names: &s::NamespaceColumns,
+    work: &mut Work,
+) -> Result<(), Error> {
+    let input = unpaid_input(resolver, scope, artifact, imported, work)?;
+    let rows = artifact
+        .source_descriptor()
+        .ok_or_else(|| error("named unpaid descriptor disappeared"))?
+        .rows();
+    let pending = installed_bindings::prepare_namespace(
+        resolver,
+        artifact,
+        rows,
+        &input.definitions,
+        imported,
+        names,
+        work,
+    )?;
+    pending.install_charged(resolver, imported, input, work)
+}
 fn declarations(
     resolver: &mut Resolver<'_>,
     scope: ScopeId,

@@ -9,6 +9,23 @@ pub(super) fn reserve(
     rows: ValidatedView<'_>,
     work: &mut ReservationWork,
 ) -> Result<(), Error> {
+    reserve_resolution(
+        &report.package,
+        &report.resolution,
+        inventory,
+        artifact,
+        rows,
+        work,
+    )
+}
+pub(in crate::resolve::crates) fn reserve_resolution(
+    package: &crate::resolve::package::Package,
+    resolution: &crate::resolve::model::Resolution,
+    inventory: &Dependencies,
+    artifact: &Interface,
+    rows: ValidatedView<'_>,
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
     let metadata = inventory
         .artifacts()
         .iter()
@@ -46,29 +63,26 @@ pub(super) fn reserve(
     // while genuine cells append. Charge the moved report's actual size
     // dimensions too, not just the small incoming packet's row counts.
     work.reserve(
-        report
-            .resolution
+        resolution
             .definitions
             .capacity()
             .saturating_add(rows.declarations.len())
             .saturating_mul(4 * size_of::<crate::resolve::model::Definition>())
             .saturating_add(
-                report
-                    .resolution
+                resolution
                     .scopes
                     .capacity()
                     .saturating_add(lexical)
                     .saturating_mul(4 * size_of::<crate::resolve::model::Scope>()),
             )
             .saturating_add(
-                report
-                    .package
+                package
                     .names
                     .len()
                     .saturating_add(rows.declarations.len())
                     .saturating_mul(256),
             )
-            .saturating_add(report.package.names.byte_len().saturating_mul(8)),
+            .saturating_add(package.names.byte_len().saturating_mul(8)),
     )?;
     Ok(())
 }

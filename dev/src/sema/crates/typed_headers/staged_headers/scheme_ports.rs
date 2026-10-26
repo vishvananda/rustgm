@@ -93,11 +93,12 @@ pub(super) fn receiver(
             "source receiver lacks its actual original function signature",
         ));
     };
-    let mut ty = *facts
+    let actual = *facts
         .types
         .list(parameters)
         .and_then(|inputs| inputs.first())
         .ok_or_else(|| error("source receiver omitted its actual signature input"))?;
+    let mut ty = actual;
     for _ in 0..receiver.references {
         budget.charge(1)?;
         let Some(Kind::Reference { referent, .. }) = facts.types.kind(ty) else {
@@ -113,5 +114,5 @@ pub(super) fn receiver(
             "source receiver base disagrees with its actual original signature",
         ));
     }
-    Ok(Some((base, receiver.references)))
+    Ok(Some((actual, receiver.references)))
 }
