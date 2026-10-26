@@ -169,9 +169,10 @@ Apply the following rules at the next handoffs:
   into that selection. Private and public/CLI controls share one standard batch
   where needed; avoid repeating static work just to change selectors.
 - Use `make smoke` for shared push coverage through the existing runner. Its
-  eighteen exact tests cover source roles/Pointee, reached const execution and
-  ownership failures, an encoded generic import, frontend-to-LowIR execution
-  and ordinary lexer cases. The local check passes in 37.33 seconds including
+  nineteen exact tests cover source roles/Pointee, reached const execution and
+  ownership failures, encoded generic/source imports, required local trait impls,
+  frontend-to-LowIR execution
+  and ordinary lexer cases. The local check passes in 34.63 seconds including
   strict Clippy, formatting, global audit and both integration binaries. Keep
   the existing five-minute limit and ordinary exact selection for changed paths.
 - Update the live tracker and the owning handout at a consumer milestone.
@@ -386,8 +387,7 @@ two wrong predictions remain recorded. No complete alias execution, assignment
 release or original library artifact is claimed.
 
 The shared push smoke now uses the existing fastcheck runner through `make smoke`;
-the workflow uses that same target. SSH repository publication is available, so
-the previous OAuth workflow-scope limitation does not require a new approval.
+the workflow uses that same target and passes push CI.
 A reusable source-observation runner remains separate work. New custom gate wrappers
 have already caused avoidable serialization/launcher failures, so workers now
 use standard exact private selections and share reviewed source dependencies.
