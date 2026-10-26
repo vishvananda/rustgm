@@ -43,6 +43,9 @@ pub(super) fn prepare(
         ));
     };
     let raw = &rows.traits[index as usize];
+    if template_demands::declaration_ready(&selected.recipes, &view, facts, owner, work)? {
+        return Ok(Demand::Ready(()));
+    }
     let members = raw.members.slice(&rows.members).map_err(error)?;
     work.charge(members.len().saturating_add(1))?;
     if raw.region_captures != 0
@@ -54,9 +57,6 @@ pub(super) fn prepare(
         return Err(error(
             "selected trait region/result contracts require their explicit wider producer",
         ));
-    }
-    if template_demands::declaration_ready(&selected.recipes, &view, facts, owner, work)? {
-        return Ok(Demand::Ready(()));
     }
     let mut declarations =
         template_demands::declarations(&mut selected.recipes, facts, owner, work, |work| {
