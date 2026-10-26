@@ -16,6 +16,10 @@ use crate::{
 #[path = "demanded_ports.rs"]
 mod reserved;
 pub(super) use reserved::{Maps, Reserved};
+#[path = "memo_cells.rs"]
+mod memo;
+use memo::{CellState, Storage};
+pub(super) use memo::{Lookup as MemoLookup, Reader as MemoReader};
 mod sealed {
     pub trait Sealed {}
 }
@@ -129,8 +133,9 @@ pub(super) struct Counters {
     pub edges: usize,
     pub hits: usize,
 }
-pub(super) struct Cursor {
-    nodes: Vec<Option<TypeId>>,
+pub(super) type Cursor = Worklist<memo::Shared>;
+pub(super) struct Worklist<M> {
+    nodes: M,
     visiting: Vec<bool>,
     children: Vec<usize>,
     stack: Vec<usize>,
@@ -149,8 +154,59 @@ impl Cursor {
         arena: Identity,
         root: ImportedDeclarationId,
     ) -> Self {
+        Self::with_memo(
+            memo::Shared::prepaid(count),
+            count,
+            availability,
+            arena,
+            root,
+        )
+    }
+    pub(super) fn scratch_bytes(count: usize) -> usize {
+        memo::Shared::allocation_bound(count)
+            .saturating_add(count.saturating_mul(size_of::<bool>() + 2 * size_of::<usize>()))
+            .saturating_add(size_of::<Self>())
+    }
+    pub(super) fn reader<B: Budget>(
+        &self,
+        view: &crate::resolve::crates::unpaid_provided::RecipeView<'_>,
+        store: &Store,
+        budget: &mut B,
+    ) -> Result<MemoReader, Error> {
+        budget.charge(1)?;
+        if self.root != view.root() || !store.has_identity(&self.arena) {
+            return Err(error(
+                "source shared memo changed its actual catalog or arena",
+            ));
+        }
+        if self.availability != Availability::DeclaredSignatures {
+            return Err(error(
+                "source shared memo reader requires its actual declared-signature phase",
+            ));
+        }
+        self.nodes.reader(self.root, &self.arena, budget)
+    }
+    pub(super) fn require_reader(
+        &self,
+        reader: &MemoReader,
+        view: &crate::resolve::crates::unpaid_provided::RecipeView<'_>,
+        store: &Store,
+        budget: &mut impl Budget,
+    ) -> Result<(), Error> {
+        self.nodes.require_reader(reader, budget)?;
+        reader.require(view, store, budget)
+    }
+}
+impl<M: Storage> Worklist<M> {
+    fn with_memo(
+        nodes: M,
+        count: usize,
+        availability: Availability,
+        arena: Identity,
+        root: ImportedDeclarationId,
+    ) -> Self {
         Self {
-            nodes: vec![None; count],
+            nodes,
             visiting: vec![false; count],
             children: vec![0; count],
             stack: Vec::with_capacity(count),
@@ -161,13 +217,6 @@ impl Cursor {
             counters: Counters::default(),
         }
     }
-    pub(super) fn scratch_bytes(count: usize) -> usize {
-        count
-            .saturating_mul(
-                size_of::<Option<TypeId>>() + size_of::<bool>() + 2 * size_of::<usize>(),
-            )
-            .saturating_add(size_of::<Self>())
-    }
     #[cfg(test)]
     pub(super) fn counters(&self) -> Counters {
         self.counters
@@ -177,7 +226,7 @@ impl Cursor {
     }
     pub(super) fn retained_bytes(&self) -> usize {
         size_of::<Self>()
-            + crate::support::retained::vector(&self.nodes)
+            + self.nodes.retained_bytes()
             + crate::support::retained::vector(&self.visiting)
             + crate::support::retained::vector(&self.children)
             + crate::support::retained::vector(&self.stack)
@@ -209,13 +258,13 @@ impl Cursor {
         budget: &mut B,
     ) -> Result<Demand<TypeId>, Error> {
         self.require_owner(port, store, budget)?;
-        let slot = self
-            .nodes
-            .get(root.0 as usize)
-            .ok_or_else(|| error("source recipe has an unknown demanded root"))?;
-        if let Some(ready) = slot {
-            self.counters.hits = self.counters.hits.saturating_add(1);
-            return Ok(Demand::Ready(*ready));
+        match self.nodes.get(root.0 as usize) {
+            CellState::Missing => return Err(error("source recipe has an unknown demanded root")),
+            CellState::Ready(ready) => {
+                self.counters.hits = self.counters.hits.saturating_add(1);
+                return Ok(Demand::Ready(ready));
+            }
+            CellState::Pending => {}
         }
         if let Some(dependency) = self.blocked {
             return Ok(Demand::Blocked(dependency));
@@ -245,12 +294,12 @@ impl Cursor {
             if let Some(child) = child {
                 self.counters.edges = self.counters.edges.saturating_add(1);
                 let child = child.0 as usize;
-                let ready = self
-                    .nodes
-                    .get(child)
-                    .ok_or_else(|| error("source recipe has an unknown actual type dependency"))?;
-                if ready.is_some() {
-                    continue;
+                match self.nodes.get(child) {
+                    CellState::Missing => {
+                        return Err(error("source recipe has an unknown actual type dependency"));
+                    }
+                    CellState::Ready(_) => continue,
+                    CellState::Pending => {}
                 }
                 if self.visiting[child] {
                     return Err(error("source canonical type recipes contain a cycle"));
@@ -259,7 +308,7 @@ impl Cursor {
             } else {
                 match self.intern(port, store, row, budget)? {
                     Demand::Ready(mapped) => {
-                        self.nodes[index] = Some(mapped);
+                        self.nodes.publish(index, mapped)?;
                         self.visiting[index] = false;
                         self.stack.pop();
                     }
@@ -267,30 +316,21 @@ impl Cursor {
                 }
             }
         }
-        self.nodes[root.0 as usize]
+        self.child(root)
             .map(Demand::Ready)
-            .ok_or_else(|| error("source demanded recipe did not complete"))
+            .map_err(|_| error("source demanded recipe did not complete"))
     }
     fn block(&mut self, dependency: Dependency) -> Demand<TypeId> {
         self.blocked = Some(dependency);
         Demand::Blocked(dependency)
     }
-    pub(super) fn into_complete(self, budget: &mut impl Budget) -> Result<Vec<TypeId>, Error> {
-        // The final dense vector may coexist with the optional memo during
-        // transfer. Do not rely on a standard-library in-place optimization.
-        budget.charge(self.nodes.len())?;
-        budget.reserve(self.nodes.len().saturating_mul(4 * size_of::<TypeId>()))?;
-        self.nodes
-            .into_iter()
-            .map(|node| node.ok_or_else(|| error("source canonical graph is incomplete")))
-            .collect()
-    }
     pub(super) fn child(&self, reference: g::TypeRef) -> Result<TypeId, Error> {
-        self.nodes
-            .get(reference.0 as usize)
-            .copied()
-            .flatten()
-            .ok_or_else(|| error("source type recipe has an unresolved actual dependency"))
+        match self.nodes.get(reference.0 as usize) {
+            CellState::Ready(ty) => Ok(ty),
+            CellState::Missing | CellState::Pending => Err(error(
+                "source type recipe has an unresolved actual dependency",
+            )),
+        }
     }
     fn intern<'rows, B: Budget, P: Port<'rows, B>>(
         &self,
@@ -354,6 +394,18 @@ impl Cursor {
         store.intern(kind).map(Demand::Ready).map_err(error)
     }
 }
+impl Worklist<Vec<Option<TypeId>>> {
+    fn into_complete(self, budget: &mut impl Budget) -> Result<Vec<TypeId>, Error> {
+        // The final dense vector may coexist with the optional memo during
+        // transfer. Do not rely on a standard-library in-place optimization.
+        budget.charge(self.nodes.len())?;
+        budget.reserve(self.nodes.len().saturating_mul(4 * size_of::<TypeId>()))?;
+        self.nodes
+            .into_iter()
+            .map(|node| node.ok_or_else(|| error("source canonical graph is incomplete")))
+            .collect()
+    }
+}
 fn next(
     row: s::Type,
     cursor: usize,
@@ -388,8 +440,10 @@ pub(super) fn prepare_functions(
     // Graph::prepare already reserves these exact memo/frontier arrays and the
     // complete node envelope. Do not pay a second time for the same allocation.
     budget.charge(context.descriptor.rows().types.len().saturating_mul(3))?;
-    let mut cursor = Cursor::prepaid(
-        context.descriptor.rows().types.len(),
+    let count = context.descriptor.rows().types.len();
+    let mut cursor = Worklist::with_memo(
+        vec![None; count],
+        count,
         Availability::Functions,
         facts.types.arena_identity(),
         root,

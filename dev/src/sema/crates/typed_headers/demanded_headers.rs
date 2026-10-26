@@ -1,7 +1,9 @@
 //! Real signature pairs are private data, never provisional semantic headers.
 use super::super::{
     error,
-    recipe_cursor::{Availability, Cursor, Demand, Dependency, Maps, Port, Reserved},
+    recipe_cursor::{
+        Availability, Cursor, Demand, Dependency, Maps, MemoLookup, MemoReader, Port, Reserved,
+    },
     signature_shapes,
 };
 use super::Session;
@@ -21,6 +23,9 @@ use crate::{
     types::{RegionId, Store, TypeId, arguments::Argument},
 };
 use std::sync::Arc;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/mapped_signature_controls.rs"]
+mod mapping_tests;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/demanded_controls.rs"]
 mod tests;
@@ -43,6 +48,7 @@ pub(super) struct State {
     pub cursor: Cursor,
     pub maps: Maps,
     pairs: Vec<Pair>,
+    reader: Option<MemoReader>,
     pub(super) callables: Option<Box<super::template_demands::Prepared>>,
 }
 pub(super) type Progress = (Box<Session>, Demand<()>);
@@ -61,7 +67,7 @@ impl State {
                 .saturating_add(rows.slots.len())
                 .saturating_add(rows.regions.len())
                 .saturating_add(rows.functions.len())
-                .saturating_add(1),
+                .saturating_add(2),
         )?;
         let growth = size_of::<Self>()
             .saturating_add(Cursor::scratch_bytes(rows.types.len()))
@@ -94,6 +100,7 @@ impl State {
                 regions: vec![None; rows.regions.len()],
             },
             pairs: vec![Pair::Empty; rows.functions.len()],
+            reader: None,
             callables: None,
         };
         if state.retained_bytes() > growth {
@@ -110,6 +117,9 @@ impl State {
         owner: DeclarationRef,
         work: &mut ReservationWork,
     ) -> Result<Demand<SignaturePair>, Error> {
+        if let Some(reader) = &self.reader {
+            self.cursor.require_reader(reader, &view, store, work)?;
+        }
         let mut port = Reserved::new(view, &mut self.maps)?;
         self.cursor.require_owner(&port, store, work)?;
         work.charge(1)?;
@@ -178,6 +188,85 @@ impl State {
         };
         *memo = Pair::Ready(pair);
         Ok(Demand::Ready(pair))
+    }
+    pub(super) fn require_mapping(
+        &mut self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        cold: bool,
+        work: &mut ReservationWork,
+    ) -> Result<(), Error> {
+        if self.reader.is_none() && cold {
+            self.reader = Some(self.cursor.reader(view, store, work)?);
+        }
+        let reader = self
+            .reader
+            .as_ref()
+            .ok_or_else(|| error("private callable readiness lost its actual memo reader"))?;
+        self.cursor.require_reader(reader, view, store, work)
+    }
+    pub(super) fn require_signatures(
+        &self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        header: s::FunctionHeader,
+        pair: SignaturePair,
+        work: &mut ReservationWork,
+    ) -> Result<(), Error> {
+        let reader = self
+            .reader
+            .as_ref()
+            .ok_or_else(|| error("private callable signature lacks its actual memo reader"))?;
+        let rows = view.rows()?;
+        for (raw, kind, actual) in [
+            (
+                header.original,
+                s::BinderKind::OriginalFunction,
+                pair.original,
+            ),
+            (
+                header.callable,
+                s::BinderKind::PublicFunction,
+                pair.callable,
+            ),
+        ] {
+            // Pay the complete selected argument/result scan before any lookup.
+            work.charge(
+                raw.parameters
+                    .slice(&rows.roots)
+                    .map_err(error)?
+                    .len()
+                    .saturating_add(1),
+            )?;
+            let mut steps = 0usize;
+            signature_shapes::require(
+                rows,
+                store,
+                signature_shapes::SignaturePort {
+                    owner: header.declaration,
+                    kind,
+                    raw,
+                },
+                actual,
+                &mut steps,
+                |reference| match reader.get(view, store, reference, work) {
+                    Ok(MemoLookup::Ready(ty)) => Ok(ty),
+                    Ok(MemoLookup::Pending {
+                        owner: pending_owner,
+                        root,
+                    }) => {
+                        if pending_owner != view.root() || root != reference {
+                            Err("private signature changed its actual pending dependency")
+                        } else {
+                            Err("private signature requires a pending actual source type")
+                        }
+                    }
+                    Err(_) => Err("private signature lost its actual source memo"),
+                },
+            )
+            .map_err(error)?;
+        }
+        Ok(())
     }
     pub(super) fn retained_bytes(&self) -> usize {
         size_of::<Self>()

@@ -96,7 +96,7 @@ pub(super) fn implementation_negative(facts: &Declarations, owner: DefId) -> Res
         .implementations
         .as_ref()
         .ok_or("missing implementation polarity registry")?
-        .polarity(&facts.associated, owner)?
+        .polarity(&facts.types, &facts.associated, owner)?
         == Polarity::Negative)
 }
 pub(super) fn require_positive_source(

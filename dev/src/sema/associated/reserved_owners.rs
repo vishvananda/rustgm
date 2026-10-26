@@ -51,11 +51,13 @@ impl Inventory {
     /// import budget before entering this operation. All checks precede writes.
     pub(in crate::sema) fn install_imported(
         &mut self,
+        store: &crate::types::Store,
         graph: Rc<ImportedOwners>,
         rows: Vec<ImportedOwner>,
         steps: &mut usize,
     ) -> Result<(), &'static str> {
         *steps = steps.saturating_add(1);
+        graph.require_store(store)?;
         if rows.len() != graph.associated_count()?
             || self
                 .language
@@ -76,7 +78,7 @@ impl Inventory {
             .map_err(|_| "imported owner identity space exhausted")?;
         let mut identities = HashSet::default();
         for row in &rows {
-            graph.associated_row(row.owner, &row.schema, &row.members, steps)?;
+            graph.associated_row(store, row.owner, &row.schema, &row.members, steps)?;
             let definitions = std::iter::once(row.owner.self_definition)
                 .chain(match row.owner.kind {
                     OwnerKind::Trait { definition, .. } => Some(definition),

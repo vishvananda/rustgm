@@ -140,6 +140,7 @@ impl Inventory {
 
     pub(in crate::sema) fn imported_impl_request(
         &self,
+        store: &crate::types::Store,
         owner: Owner,
     ) -> Result<crate::types::parameters::predicates::Predicate, &'static str> {
         if self
@@ -154,7 +155,7 @@ impl Inventory {
             .as_ref()
             .and_then(|l| l.imported.as_deref())
             .ok_or("imported candidate request lacks its exact canonical graph")?
-            .implementation_request(owner)
+            .implementation_request(store, owner)
     }
     pub(in crate::sema) fn require_imported_role(
         &self,
@@ -202,6 +203,7 @@ impl Inventory {
     }
     pub(in crate::sema) fn imported_implementation(
         &self,
+        store: &crate::types::Store,
         owner: Owner,
         predicate: crate::types::parameters::predicates::Predicate,
     ) -> Result<(bool, bool), &'static str> {
@@ -209,7 +211,7 @@ impl Inventory {
             .as_ref()
             .and_then(|l| l.imported.as_deref())
             .ok_or("imported implementation lacks its exact canonical owner graph")?
-            .implementation(owner, predicate)
+            .implementation(store, owner, predicate)
     }
 }
 

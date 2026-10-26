@@ -52,12 +52,13 @@ impl CollectorOrigin {
         let mut units = vec![None; report.package.units.len()];
         units[0] = Some(Arc::clone(root_unit.source.original_image()));
         for index in 0..stage.definitions.len() {
-            let Some((_, declaration)) = stage
-                .selected_header(report, facts, index)
+            let Some(scope) = stage
+                .collected_scope(report, facts, index)
                 .map_err(|_| "collected source header has no actual declaration context")?
             else {
                 continue;
             };
+            let declaration = scope.source();
             stage.charge(2)?;
             let unit = report
                 .package

@@ -65,7 +65,8 @@ impl Implementations {
         {
             return Err("imported implementation changed its actual retained owner");
         }
-        let (constant, negative) = associated.imported_implementation(owner, value.predicate)?;
+        let (constant, negative) =
+            associated.imported_implementation(store, owner, value.predicate)?;
         check_effect(value.predicate, constant)?;
         let status = if negative {
             Status::NegativeHeader
@@ -192,6 +193,7 @@ impl Implementations {
     /// source owners are legal only for the explicit positive factory entry.
     pub(in crate::sema) fn polarity(
         &self,
+        store: &Store,
         associated: &Inventory,
         definition: DefId,
     ) -> Result<Polarity, &'static str> {
@@ -218,7 +220,7 @@ impl Implementations {
                     if entry.value.source.is_some() {
                         return Err("imported conformance cannot acquire source syntax provenance");
                     }
-                    associated.imported_implementation(*owner, entry.value.predicate)?
+                    associated.imported_implementation(store, *owner, entry.value.predicate)?
                 }
                 OwnerKind::Trait { .. } => {
                     return Err("implementation polarity belongs to a non-impl owner");

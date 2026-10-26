@@ -180,7 +180,7 @@ impl Graph {
             .owner(definition)
             .and_then(|id| facts.associated.owner_members(id))
             .ok_or("source trait readiness lacks its actual member inventory")?;
-        self.associated_row(owner, schema, members, steps)?;
+        self.associated_row(&facts.types, owner, schema, members, steps)?;
         let header = facts
             .generics
             .traits
