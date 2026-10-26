@@ -23,6 +23,8 @@ impl Source {
             else {
                 continue;
             };
+            require_defaultness_transport(report, declaration)?;
+            facts.reject_specialization_transport(report, definition)?;
             self.stage.charge(2).map_err(Error::unlocated)?;
             if let Some(contract) = facts.must_use_contract(report, definition)? {
                 let source = contract.origin.source().ok_or_else(|| {
@@ -191,4 +193,26 @@ fn source_header(
         }
     }
     Ok(())
+}
+
+/// Defaultness is a semantic implementation contract, absent from both v0/v1.
+pub(super) fn require_defaultness_transport(
+    report: &Report,
+    declaration: NodeKey,
+) -> Result<(), Error> {
+    let Some(defaultness) = report.active_defaultness(declaration)? else {
+        return Ok(());
+    };
+    if defaultness.node != declaration.node {
+        return Err(Error::at(
+            declaration.file,
+            defaultness.span.start,
+            "source defaultness header names another declaration",
+        ));
+    }
+    Err(report.diagnostic(Error::at(
+        declaration.file,
+        defaultness.span.start,
+        "source defaultness contract transport is not implemented",
+    )))
 }

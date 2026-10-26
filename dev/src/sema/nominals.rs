@@ -12,7 +12,9 @@ use crate::types::{
         predicates::{Bound, Predicate},
     },
 };
-pub(super) use requirements::{Requirements, immediate, requirements};
+pub(super) use requirements::{
+    FormationRequirements, Requirements, formation_requirements_counted, immediate, requirements,
+};
 
 /// Predicate proofs are reusable only within one immutable declaration environment.
 pub(super) struct Proof {

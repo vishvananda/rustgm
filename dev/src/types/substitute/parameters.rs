@@ -141,16 +141,27 @@ impl Bound {
         store: &mut Store,
         args: GenericArgs,
     ) -> Result<GenericArgs, &'static str> {
+        self.apply_arguments_observed::<false>(store, args, &|_, _| Ok(()))
+    }
+    pub(super) fn apply_arguments_observed<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        args: GenericArgs,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<GenericArgs, &'static str> {
         let source = store
             .arguments(args)
             .ok_or("invalid substituted arguments")?;
         let length = source.len();
+        if CHARGED {
+            charge(length, length.saturating_mul(size_of::<Argument>()))?;
+        }
         self.account_arguments(length)?;
         let scratch = self.reserve_region_scratch(super::bounded::growth::<Argument>(length))?;
         let mut arguments: Vec<_> = source.collect();
         let result = (|| {
             for argument in &mut arguments {
-                *argument = self.apply_argument(store, *argument)?;
+                *argument = self.apply_argument_observed::<CHARGED>(store, *argument, 0, charge)?;
             }
             store.intern_arguments(&arguments)
         })();
@@ -251,11 +262,12 @@ impl Bound {
         Ok(substitution)
     }
 
-    pub(super) fn parameter(
+    pub(super) fn parameter_observed<const CHARGED: bool>(
         &mut self,
         store: &mut Store,
         id: ParameterId,
         depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Option<TypeId>, &'static str> {
         let Some(Argument::Type(ty)) = self.argument(store, id)? else {
             return Ok(None);
@@ -263,9 +275,15 @@ impl Bound {
         if depth == 0 || store.escaping_binders(ty) == Some(0) {
             return Ok(Some(ty));
         }
-        let (result, work) = store.shift_type(ty, depth)?;
-        self.account_arguments(work)?;
-        Ok(Some(result))
+        if !CHARGED {
+            let (result, work) = store.shift_type(ty, depth)?;
+            self.account_arguments(work)?;
+            return Ok(Some(result));
+        }
+        let before = store.capture_shift_steps();
+        let result = store.shift_type_charged(ty, depth, charge);
+        self.account_arguments(store.capture_shift_steps().saturating_sub(before))?;
+        result.map(|(ty, _)| Some(ty))
     }
     pub(super) fn constant(&self, store: &Store, id: ConstId) -> Result<ConstId, &'static str> {
         let kind = store
@@ -278,7 +296,11 @@ impl Bound {
         }
         Ok(id)
     }
-    fn argument(&self, store: &Store, id: ParameterId) -> Result<Option<Argument>, &'static str> {
+    pub(super) fn argument(
+        &self,
+        store: &Store,
+        id: ParameterId,
+    ) -> Result<Option<Argument>, &'static str> {
         let Some(bindings) = &self.parameters else {
             return Ok(None);
         };

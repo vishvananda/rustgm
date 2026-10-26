@@ -1,6 +1,6 @@
 # Library build blocker tracker
 
-Updated 2026-10-25. This is the work queue for compiling the original pinned
+Updated 2026-10-26. This is the work queue for compiling the original pinned
 `core`, `alloc` and `std`, not a count of completed internal checkpoints.
 PA1–PA24 remain implemented drafts; PA25–PA44 remain planned. No additional
 assignment or whole upstream library has been completed.
@@ -10,11 +10,76 @@ x86-64 Linux, panic abort. Use the existing immutable shared source tree and
 record target configuration, compiler identity and opened-file hashes on each
 whole-crate attempt. Never patch upstream source to move a blocker.
 
+The [private environment/namespace integration](private-environment-namespace-integration.md)
+passes eleven focused controls plus production/private Clippy and global audits
+in a 117.86-second helper, alongside a separate 30.44-second production CLI
+build. It closes two transport prerequisites while leaving the current original
+core frontier and public Provided/restricted-policy boundaries explicit.
+
+The [empty Contract successor](private-empty-contracts-checkpoint.md) now passes
+six focused groups, exact first-encoding old v0/v1 bytes and fresh plain-function
+consumers. Its 132.99-second focused helper plus 34.79-second production CLI build
+retain the five-minute development budget. Public Provided execution and full
+original-crate builds remain required.
+
+The [numbered trait-input checkpoint](private-numbered-trait-inputs.md) now passes
+six focused controls, the complete architecture audit and strict production and
+private Clippy in a133.06-second helper. Actual Holder::carry prepares inherited
+Self/V/U; Holder::borrow retains its nonzero boundary. Selected numbering records
+authenticate actual body ownership without granting defining-environment proof.
+Seven original v0/v1 first-encoding files remain byte-identical. Nonzero binding,
+original/instance proof and public Provided execution remain required.
+
+The [neutral numbered-environment successor](private-neutral-numbered-environments.md)
+qualifies actual nonzero Declaration signatures with empty regional inputs and
+positively absent builtin/region payloads. Six controls and strict static checks
+pass in a153.01-second helper. Warm work is constant across1/8/32 actual
+universals. Genuine Holder::borrow has no alias ledger; the separate real-ledger
+cost utility does not qualify a present-ledger body. Actual body/availability
+ports, regional proof, substituted instances and public execution remain open.
+
+The [provided-method execution milestone](parallel/provided-method-execution.md)
+keeps the next acceptance target concrete: the complete source family plus a
+real non-role provided method, actual encoded artifact, fresh imported original
+and instance proof, and a linked consumer printing `7\n`. Private producer and
+Environment checkpoints are prerequisites to that target, not its replacement.
+
+The [fresh consumer authority checkpoint](private-consumer-authority-checkpoint.md)
+now constructs a distinct consumer Report, Store and one shared imported Catalog
+from actual source/configuration/context. Six focused groups pass, with all seven
+old v0/v1 raw captures unchanged. The owner remains reserved: selected header
+append, complete role/member validation, original/instance proofs and the native
+consumer remain required. Unpaid header columns cannot certify absent attributes
+or defaultness, and public Provided admission remains closed.
+
+The [Assert condition checkpoint](source-assert-implementation.md) qualifies
+single parsing and owned typed transfer, including real opaque-fragment
+provenance, failed-attempt accounting and an existing configuration sentinel.
+Its three focused controls pass; Assert execution stays closed while the exact
+expression writer and source Not/panic/abort/format/constant paths are built.
+Integration retains the component evidence after checking its ten compiler/test
+files are disjoint from the fifteen neutral-environment files. This is not a
+fresh combined execution or completion of LIB-029.
+
+The [integrated writer/verifier checkpoint](frontend-components-integration.md)
+now freshly passes six cross-component groups and all strict static checks in
+108.91 seconds. It adds the real private expression writer and specialization
+forest/Min/finality verifier; their execution fences remain closed. Alias clause
+expansion, imported body proof and actual source panic/runtime paths still block
+the original libraries.
+
+The [canonical alias/selected-consumer integration](trait-alias-clauses-checkpoint.md)
+now passes14 focused groups and both strict static modes in174.59seconds. It
+adds actual local alias schemas/clauses and shared application expansion, selected
+callable registration in the genuine fresh consumer, and validated source
+panic/abort declaration claims. Complete alias consumers, imported body proof,
+source Not/panic execution and the original library artifacts remain open.
+
 ## Observable crate milestones
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Qualified CLI `da5d4343` advances to `num/nonzero.rs:34`, byte 1279, with 42 unchanged original files opened. Wide literals and reviewed text effects are qualified. No artifact. | Implement LIB-026's actual trait implementation restrictions; retain imported/scoped, formatting and remaining source requirements. |
+| Original core loading and expansion | Qualified CLI `321dec58` advances to `ptr/metadata.rs:85`, byte3311, at the equals sign in `pub trait Thin = ...`, with65 unchanged original files opened. All722 pinned inputs verify; no artifact. | Implement LIB-031 trait aliases alongside LIB-028 specialization graph/dispatch; assertion expansion and imported/scoped requirements stay open. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -66,6 +131,18 @@ records source/native evidence, retained failures, measured costs and the
 foreign API-use boundary.
 
 ## Current implementation and qualification
+
+The [combined library frontier](library-frontier-checkpoint.md) qualifies actual
+CLI attribute-contract consumers, anonymous Function recipes and local trait
+implementation domains. Its final integration check passes all 8485 text cases,
+sixteen native outputs, three independent lint rejections, the fresh global
+architecture audit, formatting, metadata, harness and upstream checks in 126.82
+seconds without a local compiler build. Selected strict-Clippy/private checks
+remain authenticated from their focused gates. The subsequent
+[unnamed-constant checkpoint](unnamed-free-constants.md) passes six focused
+controls and all 8,493 text cases, with eight reviewed scoped references and
+215 fresh harness tests. Its unchanged-core observer advances to LIB-028 with
+58 original files opened; no original crate artifact exists.
 
 The [source-artifact/readiness checkpoint](source-artifact-readiness-checkpoint.md)
 combines A15 imported-body/full-instance proof, LIB-004 early implementation
@@ -235,8 +312,8 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-004 | P1; actual reduced source failure, readiness cause observed directly | Early const read treats source `u8: Copy` as absent although its impl is present | PA20 implementation readiness + PA25 early CTFE / PA31 source-binding reproduction | B, coordinated with C | Bounded scalar readiness fix is integrated and functionally qualified at `fa0f4e08`, including declaration order, invalid unused body, cycles and repeated-use controls. The original selected-reference reproduction also passes through LIB-005. Generic prerequisite and imported early-readiness profiles remain required. |
 | LIB-005 | P1; independently qualified reduced program | Anonymous constant-expression `const_eval_select` ownership and cache validation | PA25 execution + PA28 intrinsic semantics + PA31 source identity / PA31 | B, coordinated with C | The original reproduction now produces native `7 1` in the qualified B checkpoint and integrated full functional gate. Actual caller/operand/instance and cached Code/body controls pass; the old stale diagnostic assertion failure remains preserved. Wider generic/imported anonymous profiles remain explicitly unsupported and required. |
 | LIB-006 | P1; core-to-consumer prerequisite | Complete substituted signatures, operation types and required inputs for real exported generic originals | PA29 / PA29 data invariants; PA31 source-provider fixtures | A | Complete operation-derived input/signature validation passes the combined checkpoint, including all 11 private controls and actual complete-source A/B output equality. Executable artifact/import proof is still required. |
-| LIB-007 | P1; core-to-consumer prerequisite | Deterministic generic/source metadata, authenticated remapping and fresh imported body proof | PA29 + PA31 source-role admission / PA29 ordinary multi-crate tests and PA31 source-provider tests | A + integrator | API and CLI tag10 artifact→fresh consumer→native result 7 and stronger full-instance Scope/foreign-owner guards pass A15 and the combined `fa0f4e08` functional gate. Wider provided/default bodies, const/auto roles and nonempty lifetime/body environments need explicit codec/profile extensions; ordinary Functions semantics must not be relaxed. |
-| LIB-008 | P1; next whole-crate acceptance gate | Close remaining active core source requirements and emit a real core artifact | PA32, with each failure assigned back to its language owner / PA32 original crate plus reduced owning-PA cases | Integrator | No artifact. Current loading frontier is LIB-026 after the qualified wide-literal slice advances the original root to 42 files. Wider execution, imported policy and metadata remain required. |
+| LIB-007 | P1; core-to-consumer prerequisite | Deterministic generic/source metadata, authenticated remapping and fresh imported body proof | PA29 + PA31 source-role admission / PA29 ordinary multi-crate tests and PA31 source-provider tests | A + integrator | API and CLI tag10 artifact→fresh consumer→native result 7 and stronger full-instance Scope/foreign-owner guards pass A15 and the combined `fa0f4e08` functional gate. Private callable-template, zero-domain Declaration and actual [empty Contract](private-empty-contracts-checkpoint.md) preparation now pass focused controls with bounded warm work. Exact old first-encoded v0/v1 bytes and fresh plain consumers pass. Inherited/nonrole, default/nonzero environments, original/instance proof and public Provided execution remain required, alongside const/auto roles and nonempty lifetime/body environments. Ordinary Functions origins and v0/v1 bytes must not change. |
+| LIB-008 | P1; next whole-crate acceptance gate | Close remaining active core source requirements and emit a real core artifact | PA32, with each failure assigned back to its language owner / PA32 original crate plus reduced owning-PA cases | Integrator | No artifact. Current loading frontier is LIB-031 after default modifiers advance the original root to65 files. Specialization execution, wider macro execution, imported policy and metadata remain required. |
 | LIB-009 | P2; crate-graph prerequisite | Source dependency identity, edition/build configuration and reproducible build orchestration | PA34 / PA34 | Integrator | Partial interfaces exist; complete original graph qualification remains required. |
 | LIB-010 | P2; not yet reached as a whole crate | Original alloc, allocator/runtime contracts and collection consumers | PA33; PA27/PA28 operation prerequisites / PA33 plus reduced owning-PA cases | Unassigned until core advances | Blocked on LIB-007/008/009; split observed alloc failures into concrete issues when reached. |
 | LIB-011 | P2; not yet reached as a whole crate | Original std, platform linkage and abort-profile consumers | PA36; PA30/PA34 platform/build prerequisites / PA36 plus reduced owning-PA cases | Unassigned until prerequisites advance | Blocked on the original core/alloc graph; no unsupported percentage-complete estimate. |
@@ -253,8 +330,13 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-022 | Local declarations qualified; original-root boundary advanced | Complete authenticated builtin declaration kinds independently of invocation availability | PA31 source binding + PA8 expansion; execution stays with owning feature / PA31 source providers plus earlier applicable controls | B + integrator | All 61 primary registry roles have actual kinds/availability; seven isolated controls pass in 165.33 seconds. Original 24 slots/ordinals and hot layouts are preserved. All 37 new executions stay closed; imported macro contracts remain required. |
 | LIB-023 | Local regression repaired; imported openness still required | Actual local `non_exhaustive` attribute consumption and retained unsupported cross-crate contract | PA29 declaration/export contract / PA29 local and artifact opponents | C | Four merged controls pass with strict Clippy/audit/build in 129.31 seconds; nineteen sources bind 38 independent observations. Same-crate behavior and actual field/duplicate lint policy are implemented through the existing attribute traversal. Typed export still rejects unsupported cross-crate contracts. |
 | LIB-024 | Local literal/gate/type slice qualified; wider operations still required | Exact f16/f128 literal values, active feature authority and real primitive/type consumers | PA2 literals + PA9 types; PA25 operations and later ABI/metadata own their effects / PA2 ordinary controls plus PA31 actual source | B | Eight merged controls pass in 170.27 seconds; 40 independent language observations and 64 actual exported-static bit comparisons pass. Reviewed references and 8484 text cases are qualified, including six new public PA2/PA9 cases. The unchanged root reaches LIB-026. Wide arithmetic, casts, pattern/wire/ABI/runtime support remain explicit requirements; no native-wide or core-artifact claim. |
-| LIB-025 | Versioned library transport qualified; CLI activation pending | Source Functions publication must retain actual must-use/inline contracts and positively checked absence | PA29 publication + PA31 actual headers / PA31 selected-header source variants | C | Nine exact controls pass metadata, formatting, architecture, private strict Clippy, build and execution in 131.84 seconds. Explicit tag10/v1 library publication supports fresh consumers and their lint policy; legacy API bytes remain exact and old imported absence remains Unknown. CLI activation and native client checks are next. See the [transport checkpoint](source-header-contract-transport.md). |
-| LIB-026 | P0; next unchanged-root failure at `num/nonzero.rs:34` in the qualified isolated wide candidate | Source trait implementation restrictions with genuine feature, module-scope and imported identity checks | PA5 grammar + PA6 paths/privacy + PA19 traits; PA31 internal feature and PA29 transport / earliest expressible controls plus complete PA31 providers | B | Source investigation next. Original root enables `impl_restriction`; ten core declarations use self/crate and const/unsafe combinations. Pinned parser and UI tests are available. No modifier skipping, scope bypass or new artifact authority is approved. |
+| LIB-025 | Library transport and CLI consumers qualified | Source Functions publication must retain actual must-use/inline contracts and positively checked absence | PA29 publication + PA31 actual headers / PA31 selected-header source variants | C | Nine library controls and the five-control root-owner repair pass. CLI frontend/native gates pass in 112.60/90.60 seconds, including seventeen exact native outputs and three independent lint rejections. Legacy bytes and imported Unknown remain exact. See the [CLI checkpoint](source-core-cli-contracts.md); wider profiles remain required. |
+| LIB-026 | Local domains and explicit v2 transport qualified; wider source contracts open | Source trait implementation restrictions with genuine feature, module-scope and imported identity checks | PA5 grammar + PA6 paths/privacy + PA19 traits; PA31 internal feature and PA29 transport / earliest expressible controls plus complete PA31 providers | B | The [v2 checkpoint](pa29-module-contracts-v2.md) carries complete namespace/domain/advisory rows, preserves old v0/v1 bytes, denies fresh foreign restricted impls and selects a valid provider-owned impl through actual LowIR. Final A+B source has a fresh actual CLI consumer pass and strict production/integration/private Clippy; earlier six component controls are retained separately. Wider trait/associated/unsafe/stability contracts, mixed-provider re-exports and Provided/default body execution remain required. Local domains retain74 independent observations and the prior56-file frontier as historical evidence. |
+| LIB-027 | Qualified; original root advances | Repeated unnamed free constants retain distinct owners and compile-time checks without colliding lexical names | PA5 syntax + PA6 names + PA25 initializer evaluation / PA6 ordinary names, PA8 macro repetitions, PA25 unused failures and PA31 original-source reducer | C | Six focused controls, 76 independent metadata observations and all 8,493 text cases pass; eight new references are independently checked and reviewed. Actual visibility lint policy, warning provenance/error retention and unused initializer obligations are preserved. The unchanged root advances to 58 files. The alignment reducer retains its separate LIB-029 assertion prerequisite; see the [checkpoint](unnamed-free-constants.md). |
+| LIB-028 | P0; modifier and verifier qualified; execution open | Specialization defaultness on implementation members, with actual feature authority, overlap and method selection | PA5 item grammar + PA19 default members + PA20 specialization relationships + PA31 internal feature / PA5 applicable grammar controls and complete PA31 source providers | C | The [defaultness checkpoint](defaultness-checkpoint.md) qualifies typed modifiers, exact feature/token authority, nonoverlapping methods and six reviewed references; all8,493 earlier text cases remain exact. Fresh observer40239001850 advances to65 files and LIB-031. The [integrated verifier](frontend-components-integration.md) now qualifies real overlap/forest closure, Min checks, marker authority and immediate-boundary finality. Actual SelectedMethod dispatch, member-specific inherited conditions, both RPIT consumers and native behavior remain required. Default impl/value and imported transport remain closed. |
+| LIB-029 | P1; independently accepted reduced-source requirement | Real assertion expansion with source-owned panic, runtime and constant semantics | PA8 builtin expansion + PA25 constant execution + PA31 source identity / PA31 actual source providers plus earlier applicable controls | B, after module-contract v2 qualification; C coordinates source/panic authority | The unchanged alignment reducer is accepted by rustc but RustGM reaches unresolved `assert!` at byte129. Source Assert is catalogued with execution closed; its typed condition transfer and private AST writer are now [integrated and qualified](frontend-components-integration.md). Actual panic/Not/Abort role claims and the safe source Abort declaration now pass the [combined clause checkpoint](trait-alias-clauses-checkpoint.md), with execution still closed. Actual source Not, tagged Arguments/NonNull/PhantomData, transmute/provenance, caller tracking and genuine panic/runtime/CTFE remain required in their owning PAs. Sixteen new [independent observations](source-assert-observations.md) qualify condition/operator semantics, lazy messages, exact panic payloads, constant failures and malformed inputs; no candidate expansion claim. The fresh whole-core observer advances to LIB-031. Preserve every assertion and initializer obligation; no fake local assertion or suppressed initializer. |
+| LIB-030 | P1; observed SourceClient library-export boundary | Republish genuine imported source trait/generic contracts from a downstream library | PA29 cross-crate generic export plus PA31 authentic source headers / complete source-provider/client cases, with ordinary PA29 controls where expressible | A + B + integrator | Run 40235770528 accepts the public sealed-bound consumer semantically, then its library helper reaches the existing legacy generic re-export rejection. Preserve that rejection until a complete source contract can be transported; a types-only control is semantic evidence only. The module/domain checkpoint still requires actual LowIR provider-impl selection. Mixed-provider generic re-exports and downstream library publication remain required for real crate graphs; no foreign owner may be retagged local. |
+| LIB-031 | P0; current unchanged-core stop at `ptr/metadata.rs:85` | Genuine trait-alias syntax, feature authority and substituted bound expansion | PA5 item grammar + PA21 trait relationships + PA31 compiler feature; PA29 imported contracts / PA5 grammar, PA21 shared ordinary controls and PA31 unstable source providers | Integrator | Observer40239001850 verifies722 original files and opens65 in6.08s; source byte3311 is the equals sign in `pub trait Thin = Pointee<Metadata = ()> + PointeeSized;`. The [implementation plan](trait-alias-design.md) retains16 source fixtures,32 pinned metadata observations and six native executions, zero infrastructure failures and eight wrong predictions. The [source-site checkpoint](trait-alias-sites-checkpoint.md) now qualifies grammar, distinct resolver identity, lexical Self/generics, whole-item feature authority and inactive diagnostics with six focused groups and all230 PA5 text cases in200.90 seconds. The [canonical clause checkpoint](trait-alias-clauses-checkpoint.md) now qualifies full formal schemas, direct real/equality clauses, shared dependency graphs and bounded ordinary-bound expansion with five source groups plus nine controls. Nested binders, region relations, complete original/normalized projection and object consumers, unused default WF/source sizing/const qualification and imported transport remain open; execution/export stays fenced; no synthesized ordinary trait or permission from parsing. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):
