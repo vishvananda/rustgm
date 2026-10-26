@@ -218,7 +218,10 @@ fn wrong_source_owners_and_unsupported_relaxations_do_not_gain_alias_authority()
     assert!(checker.source_alias_self(other, key).is_err());
     assert!(
         checker
-            .source_alias_self(report.resolution.crate_root, key)
+            .source_alias_self(
+                report.resolution.crate_root.ok_or("actual crate root")?,
+                key
+            )
             .is_err()
     );
     assert_eq!(
