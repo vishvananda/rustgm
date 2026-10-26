@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "state": "declared before candidate execution",
+  "scope": "focused PA34 CLI option slice; no assignment activation or Rust2021 metadata publication",
+  "sources": {
+    "pa34/tests/spec/driver-edition/plain-provider.rs": "664c522bbf35e9ab7d8aecb374bdb2205343a2c6e672669d57c30bcd26d8c485",
+    "pa34/tests/spec/driver-edition/configured.rs": "db1d6c484a0871b53dd14e3ca1c970032156c82fc779204ebc7b1db91990bea4",
+    "pa34/tests/spec/driver-edition/keyword.rs": "071ae2a4d389a1cb915f10cd6b365c0ff58f5c7321f5b208764bd288b0fab23c"
+  },
+  "controls": [
+    "keyword gen accepted explicit2021, rejected default/2024",
+    "repeated edition options retain actual last selection",
+    "cfg selected before/after edition survives selection",
+    "ub runtime and cfg map survive typed setter",
+    "unknown2020 usage2 exact diagnostic",
+    "SourceCore defining2021 source remains denied by existing Rust2024 artifact profile before metadata publication"
+  ],
+  "native_qualification": "existing specialization case source bytes unchanged; only missing2021 counterparts and separately authenticated own-child observer pair",
+  "independent_keyword_basis": "PA34 existing edition token/context qualification; no new Rust language grammar or unknown profile inferred"
+}

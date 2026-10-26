@@ -196,3 +196,65 @@ fn expanded_cli_diagnoses_non_unicode_environment_values() -> std::io::Result<()
     assert!(String::from_utf8_lossy(&output.stderr).contains("is not Unicode"));
     Ok(())
 }
+
+#[test]
+fn source_edition_options_retain_configuration_and_keep_metadata_profile_closed()
+-> Result<(), Box<dyn std::error::Error>> {
+    let keyword = include_str!("../../pa34/tests/spec/driver-edition/keyword.rs");
+    for (args, accepted) in [
+        (vec!["--edition=2021"], true),
+        (vec![], false),
+        (vec!["--edition=2024"], false),
+        (vec!["--edition=2024", "--edition=2021"], true),
+        (vec!["--edition=2021", "--edition=2024"], false),
+    ] {
+        let output = run_args("--emit-types", keyword, &args)?;
+        assert_eq!(output.status.code(), Some(i32::from(!accepted)));
+        assert_eq!(output.stdout.is_empty(), !accepted);
+        assert_eq!(output.stderr.is_empty(), accepted);
+    }
+    let configured = include_str!("../../pa34/tests/spec/driver-edition/configured.rs");
+    for args in [
+        vec!["--cfg", "selected", "--edition=2021"],
+        vec!["--edition=2021", "--cfg", "selected"],
+    ] {
+        let output = run_args("--emit-lowir", configured, &args)?;
+        assert!(output.status.success());
+        assert!(!output.stdout.is_empty() && output.stderr.is_empty());
+    }
+    let invalid = run_args("--emit-types", keyword, &["--edition=2020"])?;
+    assert_eq!(invalid.status.code(), Some(2));
+    assert!(invalid.stdout.is_empty());
+    assert_eq!(invalid.stderr, b"USAGE: unknown option: --edition=2020\n");
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
+        "../obj/parallel/cli-edition-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let metadata = folder.join("forbidden.rgm");
+    let path = metadata.to_str().ok_or("metadata path is not UTF-8")?;
+    let output = run_args(
+        "--emit-lowir",
+        include_str!("../../pa34/tests/spec/driver-edition/plain-provider.rs"),
+        &[
+            "--edition=2021",
+            "--source-core",
+            "minicore@driver_edition",
+            "--crate-name",
+            "minicore",
+            "--crate-disambiguator",
+            "driver_edition",
+            "--crate-type=lib",
+            "--metadata-output",
+            path,
+        ],
+    )?;
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty() && !metadata.exists());
+    assert!(
+        String::from_utf8_lossy(&output.stderr)
+            .contains("source export requires defining Rust2024 edition")
+    );
+    std::fs::remove_dir(&folder)?;
+    Ok(())
+}

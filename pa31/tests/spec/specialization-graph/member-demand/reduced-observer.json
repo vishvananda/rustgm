@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "metadata_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "native_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Cdebug-assertions=no",
+    "-Coverflow-checks=no",
+    "-Copt-level=2",
+    "-Ccodegen-units=1",
+    "-Clto=off",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "source_prediction_disagreements": "Retain all actual raw observations and wrong predictions; disagreements are data, not automatic infrastructure failures.",
+  "baseline": "52bb6dda",
+  "candidate_execution": false,
+  "runtime_observer": "Exact check predicates call a real dynamic division-by-zero failure path on wrong result; success is exit0 with empty stdout/stderr. RPIT controls call the returned actual Get implementation.",
+  "purpose": "NEW explicit observer adapter only: preserve exact original impls/call/lifetimes, replace unsupported println output with already-supported check/use_it==2 and real division failure. This is separate reduced execution evidence, no printing parity.",
+  "planned_metadata_observations": 2,
+  "planned_native_programs": 2,
+  "cases": [
+    {
+      "name": "own-child-nonstatic-reduced-observer",
+      "source": "pa31/tests/spec/specialization-graph/member-demand/own-child-nonstatic-reduced-observer.rs",
+      "sha256": "71f57663e98019ebd3baa16b2cc423ce9a7292d9cc790a5873436baad824ce62",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "Frozen before observation; required own-child does not demand unused static ancestor body."
+    }
+  ],
+  "original_printing_source": "pa31/tests/spec/specialization-graph/member-demand/own-child-does-not-demand-unused-static-parent.rs",
+  "original_sha256": "83b5d112caf818518d660d024c46058efe92890908002ca51a1a30abaa30a7a8",
+  "observed": {
+    "run": 40268587039,
+    "binding_sha256": "d8a8dee2ffb1623c51b44e4e0b39df4b2d810257af76349c488662cef6e76495",
+    "commands": 6,
+    "metadata": 2,
+    "native": 2,
+    "infra": 0,
+    "disagreements": 0,
+    "candidate_support": "pending; original printing observer remains separately required"
+  }
+}
