@@ -61,7 +61,8 @@ Current lanes after the [source-contract integration](library-contracts-integrat
 - B owns actual source language/intrinsic consumers. Source Not, closed layout,
   nominal Clone/provided clone_from and genuine reached source Abort have
   qualified native evidence and combined source/LowIR equality. Continue source
-  Transmute and the real panic/format/constant pipeline. Use supported LowIR
+  Pattern/NonNull and the real panic/format/constant pipeline; source Transmute
+  and const formatter erasure are integrated. Use supported LowIR
   operations; preserve ordinary source algorithms,
   const restrictions and imported transport requirements.
 - C owns actual source sizing/Pointee contracts after qualified local specialization,
@@ -69,7 +70,9 @@ Current lanes after the [source-contract integration](library-contracts-integrat
   producer. Continue automatic Pointee proof and actual metadata normalization
   through both existing normalizers. Representation metadata grants no source
   proof or runtime intrinsic authority. Coordinate central role/bit changes
-  with B before editing.
+  with B before editing. Next close the observed LIB-032 foreign opaque VTable
+  declaration; B owns Pattern/NonNull/PhantomData. Share the same metadata
+  classifier with explicit component evidence and pending consumer checks.
 - The integrator owns complete aliases, qualification and direct-main publication.
   Canonical clauses, nested binders, shorthand naming and source Self-sizing
   are qualified. Continue header-time naming, complete original/normalized
