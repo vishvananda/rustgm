@@ -22,13 +22,25 @@ versions, issue numbers and reasons. Duplicate levels/arguments, malformed
 versions and non-identifier feature names reject. Cached include templates are
 provenance; only installed active syntax contributes library annotations.
 
-The first functional profile is local ordinary functions with bodies, modules,
-and their named/group/glob imports. Generic and const functions, nominal/trait
-owners and nominal type reachability remain explicit unsupported boundaries.
-Const/default-body stability, implied/renamed features, macro allowances and
-external dependency availability also remain unsupported. Metadata export
-rejects library policy rather than silently omitting it. These boundaries must
-be extended to build the original upstream libraries.
+The initial ordinary-function/module profile is extended by the source Location
+consumer below. The same owner pass now validates actual local generic, const,
+nominal, trait, impl and scoped macro declaration annotations. Regular and const
+API policies remain separate entries in the same table. Const annotations require
+staged_api, a real const function/trait/trait-impl target, and valid nonconflicting
+arguments. Immediate associated members inherit an unstable const parent policy;
+a const function may inherit its unstable regular policy as implicitly safe for
+stable const exposure. A selected const impl checks its policy against the actual
+trait identity. Stable or implicitly indirect const bodies check each actual
+callee's API policy independently of semantic const-call, unsafe, body and trait
+obligations. Same-crate API naming needs no foreign unstable-feature permission.
+
+The source Location checkpoint still closes dependency availability and all
+v0/v1/v2 stability publication. Explicit default-body, allow_const_fn_unstable,
+const_stable_indirect and implied/renamed policies remain unsupported. Complete
+hidden-public nominal effective visibility through public signatures remains
+required PA31 work; this local-use extension does not implement that graph or
+claim a publishable original-core artifact. Existing effective-visibility and
+publication consumers must own its eventual implementation.
 
 Module instances retain separate effective policies even when they share a
 parsed source file. Outer and loaded inner annotations identify the same actual
@@ -127,3 +139,15 @@ Checks receipt SHA-256:
 `4014df9e1dba4885b939db417c65631e0812e8bb898cfd2f684ea59aee2e0b8f`.
 These are focused candidate results; broad release/native/text qualification is
 still required for integration and public publication.
+
+## Source Location const-policy extension
+
+The actual selected Location source, including its original regular/const policy
+and macro allowance attributes, passes source checking, lowering and a native C
+observer returning `31 7`. See the [source assertion milestone](source-assert-implementation.md#source-location-derive-consumer)
+for exact source/LowIR hashes and the remaining caller-tracking/panic requirements.
+The cold Inventory grows80→88 bytes and embedded Library120→128. One optional
+24-byte ConstPolicies owner holds direct declaration IDs only when needed; the
+Policy/Level sizes remain48/24. No-const and ordinary no-library controls pass.
+Both policy axes share the existing parent-first scope walk and bounded work/
+storage charges. No Node, Body, Context, Package or Report field was added.
