@@ -44,7 +44,6 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let item = self.item(key)?;
         let function = matches!(item.kind, crate::syntax::item::ItemKind::Function { .. });
-        let implementation = matches!(item.kind, crate::syntax::item::ItemKind::Impl { .. });
         let family = matches!(item.kind, crate::syntax::item::ItemKind::TypeAlias { .. })
             && self.facts.associated.owner(owner).is_some();
         if family && self.facts.generics.parameters.contains_key(&owner) {
@@ -68,7 +67,12 @@ impl Checker<'_> {
             self.generic_syntax(*key)
                 .is_ok_and(|p| p.flavor != GenericFlavor::Lifetime)
         }) || (!nodes.is_empty()
-            && (family || matches!(item.kind, crate::syntax::item::ItemKind::Trait { .. } | crate::syntax::item::ItemKind::TraitAlias { .. }))))
+            && (family
+                || matches!(
+                    item.kind,
+                    crate::syntax::item::ItemKind::Trait { .. }
+                        | crate::syntax::item::ItemKind::TraitAlias { .. }
+                ))))
         {
             if !function && self.bound_syntax.contains_key(&owner) {
                 self.deferred_bounds.push((owner, context));
@@ -81,38 +85,7 @@ impl Checker<'_> {
                 "type/const parameters and lifetime bounds require later semantic assignments",
             ));
         }
-        let mut names = crate::support::hash::HashSet::default();
-        let mut non_lifetime = false;
-        let mut defaulted = false;
-        for node in &nodes {
-            let parameter = self.generic_syntax(*node)?;
-            let binding = self.generic_binding(*node)?;
-            let name = self.report.resolution.definitions[binding.0 as usize].name;
-            let lifetime = parameter.flavor == GenericFlavor::Lifetime;
-            if !names.insert((lifetime, name)) {
-                return Err(self.error(*node, "duplicate generic parameter"));
-            }
-            if lifetime && non_lifetime {
-                return Err(self.error(
-                    *node,
-                    "lifetime parameters must precede type and const parameters",
-                ));
-            }
-            non_lifetime |= !lifetime;
-            if function && parameter.default.is_some() {
-                return Err(self.error(*node, "function generic parameters cannot have defaults"));
-            }
-            if implementation && parameter.default.is_some() {
-                return Err(self.error(*node, "impl generic parameters cannot have defaults"));
-            }
-            if family && parameter.default.is_some() {
-                return Err(self.error(*node, "associated type parameters cannot have defaults"));
-            }
-            if !lifetime && defaulted && parameter.default.is_none() {
-                return Err(self.error(*node, "generic parameters with defaults must be trailing"));
-            }
-            defaulted |= parameter.default.is_some();
-        }
+        self.validate_parameter_order(&nodes, item.kind, family)?;
         self.facts
             .generics
             .parameters
@@ -142,6 +115,48 @@ impl Checker<'_> {
                     .map_err(|_| self.error(key, "too many generic parameters"))?,
                 phase: Phase::Begin,
             }));
+        }
+        Ok(())
+    }
+    fn validate_parameter_order(
+        &self,
+        nodes: &[NodeKey],
+        kind: crate::syntax::item::ItemKind,
+        family: bool,
+    ) -> Result<(), Error> {
+        let function = matches!(kind, crate::syntax::item::ItemKind::Function { .. });
+        let implementation = matches!(kind, crate::syntax::item::ItemKind::Impl { .. });
+        let mut names = crate::support::hash::HashSet::default();
+        let mut non_lifetime = false;
+        let mut defaulted = false;
+        for node in nodes {
+            let parameter = self.generic_syntax(*node)?;
+            let binding = self.generic_binding(*node)?;
+            let name = self.report.resolution.definitions[binding.0 as usize].name;
+            let lifetime = parameter.flavor == GenericFlavor::Lifetime;
+            if !names.insert((lifetime, name)) {
+                return Err(self.error(*node, "duplicate generic parameter"));
+            }
+            if lifetime && non_lifetime {
+                return Err(self.error(
+                    *node,
+                    "lifetime parameters must precede type and const parameters",
+                ));
+            }
+            non_lifetime |= !lifetime;
+            if function && parameter.default.is_some() {
+                return Err(self.error(*node, "function generic parameters cannot have defaults"));
+            }
+            if implementation && parameter.default.is_some() {
+                return Err(self.error(*node, "impl generic parameters cannot have defaults"));
+            }
+            if family && parameter.default.is_some() {
+                return Err(self.error(*node, "associated type parameters cannot have defaults"));
+            }
+            if !lifetime && defaulted && parameter.default.is_none() {
+                return Err(self.error(*node, "generic parameters with defaults must be trailing"));
+            }
+            defaulted |= parameter.default.is_some();
         }
         Ok(())
     }

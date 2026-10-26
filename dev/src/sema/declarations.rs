@@ -12,6 +12,7 @@ pub(in crate::sema) mod cloning;
 mod comparison_methods;
 mod comparisons;
 pub(in crate::sema) use comparisons::prepare as prepare_comparison;
+mod aliases;
 mod constants;
 mod contracts;
 #[path = "declarations/overridable_methods.rs"]
@@ -46,7 +47,6 @@ mod slice_methods;
 mod slice_paths;
 mod structural_owners;
 mod trait_paths;
-mod aliases;
 mod trait_regions;
 mod traits;
 mod unreduced;

@@ -32,7 +32,10 @@ pub(in super::super) enum Written {
         definition: DefId,
         constness: crate::support::constness::Constness,
     },
-    Alias { path: NodeKey, definition: DefId },
+    Alias {
+        path: NodeKey,
+        definition: DefId,
+    },
     SourceSizing(DefId),
     Outlives(NodeKey),
 }
@@ -67,13 +70,17 @@ impl Checker<'_> {
             )?;
         }
         if let crate::syntax::item::ItemKind::Trait { bounds, .. }
-            | crate::syntax::item::ItemKind::TraitAlias { bounds, .. } = item.kind {
-            let self_definition = self.alias_self(owner).or_else(|| self
-                .facts
-                .associated
-                .owner(owner)
-                .and_then(|id| self.facts.associated.get(id))
-                .map(|owner| owner.self_definition))
+        | crate::syntax::item::ItemKind::TraitAlias { bounds, .. } = item.kind
+        {
+            let self_definition = self
+                .alias_self(owner)
+                .or_else(|| {
+                    self.facts
+                        .associated
+                        .owner(owner)
+                        .and_then(|id| self.facts.associated.get(id))
+                        .map(|owner| owner.self_definition)
+                })
                 .ok_or_else(|| self.error(key, "missing bound owner Self declaration"))?;
             self.bound_list(
                 key,
@@ -387,7 +394,10 @@ impl Checker<'_> {
                     None if self.report.resolution.definitions[id.0 as usize].kind
                         == crate::resolve::model::DefKind::TraitAlias =>
                     {
-                        Ok(Written::Alias { path: key, definition: id })
+                        Ok(Written::Alias {
+                            path: key,
+                            definition: id,
+                        })
                     }
                     None if self.report.resolution.definitions[id.0 as usize].kind
                         == crate::resolve::model::DefKind::Trait =>
@@ -424,7 +434,8 @@ impl Checker<'_> {
             let bound_context = bound.context(context);
             if let Written::User {
                 path, definition, ..
-            } | Written::Alias { path, definition } = bound.bound
+            }
+            | Written::Alias { path, definition } = bound.bound
             {
                 self.bound_subject_lifetimes(path, owner)?;
                 self.schedule_associated_bindings(path, bound_context)?;
@@ -550,12 +561,21 @@ impl Checker<'_> {
             let ty = self.bound_subject(bound.source, bound.scope, ty)?;
             let original_ty = self.bound_subject(bound.source, bound.scope, original_ty)?;
             if let Written::Alias { path, definition } = bound.bound {
-                let edge = self.canonical_alias_edge(path, definition, ty, bound.context(context), self.alias_scope_count(bound.scope))?;
+                let edge = self.canonical_alias_edge(
+                    path,
+                    definition,
+                    ty,
+                    bound.context(context),
+                    self.alias_scope_count(bound.scope),
+                )?;
                 if self.alias_self(owner).is_some() {
                     self.push_alias_edge(&mut alias_edges, edge)?;
                 } else {
                     if original_ty != ty || self.facts.unreduced.arguments(path).is_some() {
-                        return Err(self.error(path, "unreduced alias inputs require complete projection consumers"));
+                        return Err(self.error(
+                            path,
+                            "unreduced alias inputs require complete projection consumers",
+                        ));
                     }
                     completed.extend(self.expand_alias_edge(edge)?);
                 }
@@ -629,7 +649,9 @@ impl Checker<'_> {
         context: regions::Context,
     ) -> Result<(Bound, Bound), Error> {
         let value = match written {
-            Written::Alias { path, .. } => return Err(self.error(path, "trait aliases require a complete clause consumer")),
+            Written::Alias { path, .. } => {
+                return Err(self.error(path, "trait aliases require a complete clause consumer"));
+            }
             Written::Trait(bound) => bound,
             Written::SourceSizing(definition) => {
                 let application = self
@@ -723,7 +745,10 @@ impl Syntax {
             Written::User {
                 path, definition, ..
             } => Some((path, definition)),
-            Written::Trait(_) | Written::SourceSizing(_) | Written::Outlives(_) | Written::Alias { .. } => None,
+            Written::Trait(_)
+            | Written::SourceSizing(_)
+            | Written::Outlives(_)
+            | Written::Alias { .. } => None,
         }
     }
     pub(in super::super) fn subject(self) -> Option<NodeKey> {

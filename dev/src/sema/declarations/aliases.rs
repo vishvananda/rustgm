@@ -1,11 +1,14 @@
 //! Canonical alias clauses share actual declaration slots without a trait owner.
-mod headers;
-mod expansion;
 mod dependency_cycles;
+mod expansion;
+mod headers;
 mod mapping;
 use super::{Checker, DefId, Error, NodeKey, regions};
 use crate::{
-    resolve::{expansion::Report, model::{DefKind, Namespace}},
+    resolve::{
+        expansion::Report,
+        model::{DefKind, Namespace},
+    },
     sema::{associated::Schema, generics::Predicate},
     support::{hash::HashMap, retained::Growth},
     syntax::{ast::Kind, item::ItemKind},
@@ -64,52 +67,93 @@ pub(super) fn collect(report: &Report) -> Result<Option<Box<Pending>>, Error> {
         if definition.kind != DefKind::SelfType {
             continue;
         }
-        let Some(source) = definition.node else { continue };
+        let Some(source) = definition.node else {
+            continue;
+        };
         let ast = &report.package.unit(source.file).configured.ast;
-        let Kind::Item(item) = ast.node(source.node).kind else { continue };
+        let Kind::Item(item) = ast.node(source.node).kind else {
+            continue;
+        };
         if !matches!(ast.items[item as usize].kind, ItemKind::TraitAlias { .. }) {
             continue;
         }
         let error = |message| crate::sema::model::Declarations::error(report, source, message);
         let module = report.resolution.scopes[definition.scope.0 as usize].module;
-        let actual = *report.resolution.item_definitions
+        let actual = *report
+            .resolution
+            .item_definitions
             .get(&(module, source.node, Namespace::Type))
             .ok_or_else(|| error("trait alias has no actual declaration identity"))?;
         if report.resolution.definitions[actual.0 as usize].kind != DefKind::TraitAlias {
-            return Err(error("trait alias Self belongs to a different declaration kind"));
+            return Err(error(
+                "trait alias Self belongs to a different declaration kind",
+            ));
         }
         let owner = Owner {
             definition: actual,
-            self_definition: DefId(u32::try_from(index).map_err(|_| error("too many alias definitions"))?),
+            self_definition: DefId(
+                u32::try_from(index).map_err(|_| error("too many alias definitions"))?,
+            ),
             source,
         };
-        let table = pending.get_or_insert_with(|| Box::new(Pending {
-            headers: Vec::new(), index: HashMap::default(), budget: Budget::default(), closed: false,
-        }));
+        if pending.is_none() {
+            pending = Some(Pending::new().map_err(error)?);
+        }
+        let table = pending.as_mut().ok_or_else(|| error("missing allocated alias table"))?;
         table.insert(owner).map_err(error)?;
     }
     Ok(pending)
 }
 impl Pending {
+    fn new() -> Result<Box<Self>, &'static str> {
+        let budget = Budget::default();
+        budget.charge(1, size_of::<Self>())?;
+        Ok(Box::new(Self { headers: Vec::new(), index: HashMap::default(), budget, closed: false }))
+    }
     fn insert(&mut self, owner: Owner) -> Result<(), &'static str> {
-        self.budget.grow(Growth::vector::<Header>(self.headers.len(), self.headers.capacity(), 1))?;
-        self.budget.grow(Growth::map::<DefId, usize>(self.index.len(), self.index.capacity(), 1))?;
-        if self.index.insert(owner.definition, self.headers.len()).is_some() {
+        self.budget.grow(Growth::vector::<Header>(
+            self.headers.len(),
+            self.headers.capacity(),
+            1,
+        ))?;
+        self.budget.grow(Growth::map::<DefId, usize>(
+            self.index.len(),
+            self.index.capacity(),
+            1,
+        ))?;
+        if self
+            .index
+            .insert(owner.definition, self.headers.len())
+            .is_some()
+        {
             return Err("trait alias has multiple lexical Self declarations");
         }
-        self.headers.push(Header { owner, schema: None, clauses: None, edges: Vec::new() });
+        self.headers.push(Header {
+            owner,
+            schema: None,
+            clauses: None,
+            edges: Vec::new(),
+        });
         Ok(())
     }
     fn header(&self, definition: DefId) -> Result<&Header, &'static str> {
         self.budget.charge(1, 0)?;
-        self.index.get(&definition).and_then(|index| self.headers.get(*index))
+        self.index
+            .get(&definition)
+            .and_then(|index| self.headers.get(*index))
             .ok_or("trait alias has no local canonical owner")
     }
 }
 impl Checker<'_> {
     pub(super) fn push_alias_edge(&self, edges: &mut Vec<Edge>, edge: Edge) -> Result<(), Error> {
-        let pending = self.trait_aliases.as_ref().ok_or_else(|| self.error(edge.source, "missing canonical alias owner"))?;
-        pending.budget.grow(Growth::vector::<Edge>(edges.len(), edges.capacity(), 1)).map_err(|e| self.error(edge.source, e))?;
+        let pending = self
+            .trait_aliases
+            .as_ref()
+            .ok_or_else(|| self.error(edge.source, "missing canonical alias owner"))?;
+        pending
+            .budget
+            .grow(Growth::vector::<Edge>(edges.len(), edges.capacity(), 1))
+            .map_err(|e| self.error(edge.source, e))?;
         edges.push(edge);
         Ok(())
     }
@@ -118,24 +162,60 @@ impl Checker<'_> {
         let index = pending.index.get(&definition)?;
         Some(pending.headers[*index].owner.self_definition)
     }
-    pub(super) fn alias_scope_count(&self, scope: Option<super::generics::bounds::lexical::Scope>) -> Option<u32> {
+    pub(super) fn alias_scope_count(
+        &self,
+        scope: Option<super::generics::bounds::lexical::Scope>,
+    ) -> Option<u32> {
         scope.map(|scope| scope.count(&self.regions))
     }
-    pub(super) fn retain_alias_edges(&mut self, owner: DefId, edges: Vec<Edge>) -> Result<(), Error> {
-        if edges.is_empty() { return Ok(()) }
-        let pending = self.trait_aliases.as_mut().ok_or_else(|| Error::unlocated("missing alias declaration owner"))?;
-        let index = *pending.index.get(&owner).ok_or_else(|| Error::unlocated("alias edges require an alias owner"))?;
+    pub(super) fn retain_alias_edges(
+        &mut self,
+        owner: DefId,
+        edges: Vec<Edge>,
+    ) -> Result<(), Error> {
+        if edges.is_empty() {
+            return Ok(());
+        }
+        let pending = self
+            .trait_aliases
+            .as_mut()
+            .ok_or_else(|| Error::unlocated("missing alias declaration owner"))?;
+        let index = *pending
+            .index
+            .get(&owner)
+            .ok_or_else(|| Error::unlocated("alias edges require an alias owner"))?;
         pending.headers[index].edges = edges;
         Ok(())
     }
-    pub(super) fn canonical_alias_edge(&mut self, path: NodeKey, target: DefId, subject: TypeId, context: regions::Context, quantified: Option<u32>) -> Result<Edge, Error> {
+    pub(super) fn canonical_alias_edge(
+        &mut self,
+        path: NodeKey,
+        target: DefId,
+        subject: TypeId,
+        context: regions::Context,
+        quantified: Option<u32>,
+    ) -> Result<Edge, Error> {
         let arguments = self.application_arguments(path, target, context)?;
-        Ok(Edge { source: path, target, subject, arguments, quantified })
+        Ok(Edge {
+            source: path,
+            target,
+            subject,
+            arguments,
+            quantified,
+        })
     }
     pub(super) fn reject_alias_execution(&self) -> Result<(), Error> {
         if let Some(pending) = &self.trait_aliases {
-            let source = pending.headers.first().ok_or_else(|| Error::unlocated("empty allocated alias inventory"))?.owner.source;
-            return Err(self.error(source, "trait alias contract expansion is not implemented for all consumers and export"));
+            let source = pending
+                .headers
+                .first()
+                .ok_or_else(|| Error::unlocated("empty allocated alias inventory"))?
+                .owner
+                .source;
+            return Err(self.error(
+                source,
+                "trait alias contract expansion is not implemented for all consumers and export",
+            ));
         }
         Ok(())
     }
