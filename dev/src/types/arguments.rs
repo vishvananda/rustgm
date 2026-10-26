@@ -71,6 +71,42 @@ pub(super) struct Storage {
     constant_index: HashMap<ConstKind, ConstId>,
 }
 impl Store {
+    pub(crate) fn find_mixed_arguments_charged(
+        &self,
+        values: &[Argument],
+        mut charge: impl FnMut(usize) -> Result<(), &'static str>,
+    ) -> Result<Option<GenericArgs>, &'static str> {
+        let Some(storage) = &self.arguments else {
+            charge(1)?;
+            return Ok(None);
+        };
+        storage
+            .mixed
+            .find_charged(values, charge)
+            .map(|value| value.map(|id| GenericArgs(id | MIXED)))
+    }
+    /// Capacity payload touched by the selected trait-input interning producer.
+    pub(crate) fn trait_input_bytes(&self) -> usize {
+        self.arguments
+            .as_ref()
+            .map_or(0, |storage| {
+                size_of::<Storage>().saturating_add(storage.mixed.allocation().bytes)
+            })
+            .saturating_add(self.trait_tables_bytes())
+    }
+    /// Cost only for a selected, already probed type-only mixed-list miss. The empty list keeps
+    /// its existing allocation-free lifetime representation.
+    pub(crate) fn trait_arguments_growth(&self, count: usize) -> crate::support::retained::Growth {
+        if count == 0 {
+            return crate::support::retained::Growth::default();
+        }
+        if let Some(storage) = &self.arguments {
+            return storage.mixed.interning_growth(count);
+        }
+        let mut growth = Slices::<Argument>::default().interning_growth(count);
+        growth.bytes = growth.bytes.saturating_add(size_of::<Storage>());
+        growth
+    }
     pub(super) fn argument_extent(&self) -> usize {
         self.arguments.as_ref().map_or(0, |storage| {
             storage

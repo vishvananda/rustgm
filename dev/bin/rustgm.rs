@@ -78,6 +78,9 @@ fn options() -> Result<Options, String> {
                     .crates
                     .source_mode(arg == "--source-client", args.next())?;
             }
+            "--source-profile" => options
+                .crates
+                .select_source_profile(args.next().as_deref())?,
             "--crate-name" => {
                 options.crates.name = Some(args.next().ok_or("--crate-name requires a name")?);
             }

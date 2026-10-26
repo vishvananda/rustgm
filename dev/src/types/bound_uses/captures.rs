@@ -1,5 +1,5 @@
 //! Shared DAG folds for captured binders and the required local lifetime slot count.
-use crate::support::hash::HashMap;
+use crate::support::{hash::HashMap, retained::Growth};
 use crate::types::{
     GenericArgs, Kind, ListId, RegionId, Store, TypeId,
     arguments::Argument,
@@ -80,12 +80,20 @@ impl Captures {
         store: &Store,
         clause: crate::types::parameters::clauses::Clause,
     ) -> Result<bool, &'static str> {
+        self.clause_charged(store, clause, &|_, _| Ok(()))
+    }
+    pub(crate) fn clause_charged(
+        &mut self,
+        store: &Store,
+        clause: crate::types::parameters::clauses::Clause,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<bool, &'static str> {
         use crate::types::parameters::clauses::Clause;
         match clause {
-            Clause::Predicate(predicate) => self.predicate_inside(store, predicate, 0),
+            Clause::Predicate(predicate) => self.predicate_inside(store, predicate, 0, charge),
             Clause::ForAll(id) => {
                 let value = store.quantified(id).ok_or("invalid capture clause")?;
-                self.predicate_inside(store, value.predicate, 1)
+                self.predicate_inside(store, value.predicate, 1, charge)
             }
         }
     }
@@ -121,20 +129,24 @@ impl<Q: Query> Occurrences<Q> {
         store: &Store,
         value: Predicate,
     ) -> Result<Q::Value, &'static str> {
-        self.predicate_inside(store, value, 0)
+        self.predicate_inside(store, value, 0, &|_, _| Ok(()))
     }
     fn predicate_inside(
         &mut self,
         store: &Store,
         value: Predicate,
         depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Q::Value, &'static str> {
-        let subject = self.collect_inside(store, value.ty, depth)?;
+        charge(1, 0)?;
+        let subject = self.collect_inside_observed(store, value.ty, depth, charge)?;
         if Q::decisive(subject) {
             return Ok(subject);
         }
         let bound = match value.bound {
-            Bound::ProjectionEqual(result) => self.collect_inside(store, result, depth),
+            Bound::ProjectionEqual(result) => {
+                self.collect_inside_observed(store, result, depth, charge)
+            }
             Bound::Outlives(region) => Ok(self.region(region, depth)),
             Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => {
                 let cached = if depth == 0 {
@@ -150,9 +162,25 @@ impl<Q: Query> Occurrences<Q> {
                 let application = store
                     .trait_application(id)
                     .ok_or("invalid capture trait application")?;
-                self.arguments(store, application.arguments, depth, false)?;
-                self.drain(store)?;
-                let found = self.arguments(store, application.arguments, depth, true)?;
+                self.arguments(store, application.arguments, depth, false, charge)?;
+                self.drain(store, charge)?;
+                let found = self.arguments(store, application.arguments, depth, true, charge)?;
+                let growth = if depth == 0 {
+                    Growth::map::<ApplicationId, Q::Value>(
+                        self.applications.len(),
+                        self.applications.capacity(),
+                        1,
+                    )
+                } else if let Some(cache) = &self.scoped_applications {
+                    Growth::map::<(ApplicationId, u16), Q::Value>(cache.len(), cache.capacity(), 1)
+                } else {
+                    let mut growth = Growth::map::<(ApplicationId, u16), Q::Value>(0, 0, 1);
+                    growth.bytes = growth
+                        .bytes
+                        .saturating_add(size_of::<ScopedApplications<Q::Value>>());
+                    growth
+                };
+                charge(growth.work, growth.bytes)?;
                 if depth == 0 {
                     self.applications.insert(id, found);
                 } else {
@@ -175,25 +203,50 @@ impl<Q: Query> Occurrences<Q> {
         ty: TypeId,
         depth: u16,
     ) -> Result<Q::Value, &'static str> {
+        self.collect_inside_observed(store, ty, depth, &|_, _| Ok(()))
+    }
+    fn collect_inside_observed(
+        &mut self,
+        store: &Store,
+        ty: TypeId,
+        depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Q::Value, &'static str> {
+        charge(1, 0)?;
         let root = (ty, depth);
         if let Some(found) = self.result(store, root)? {
             return Ok(found);
         }
+        let growth = Growth::vector::<(Key, bool)>(self.work.len(), self.work.capacity(), 1);
+        charge(growth.work, growth.bytes)?;
         self.work.push((root, false));
-        self.drain(store)?;
+        self.drain(store, charge)?;
         self.result(store, root)?.ok_or("missing capture result")
     }
-    fn drain(&mut self, store: &Store) -> Result<(), &'static str> {
+    fn drain(
+        &mut self,
+        store: &Store,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
         while let Some((key, finish)) = self.work.pop() {
             self.account(1)?;
             if self.result(store, key)?.is_some() {
                 continue;
             }
             if !finish {
+                let growth =
+                    Growth::vector::<(Key, bool)>(self.work.len(), self.work.capacity(), 1);
+                charge(growth.work, growth.bytes)?;
                 self.work.push((key, true));
             }
-            let found = self.inspect(store, key, finish)?;
+            let found = self.inspect(store, key, finish, charge)?;
             if finish {
+                let growth = Growth::map::<Key, Q::Value>(
+                    self.completed.len(),
+                    self.completed.capacity(),
+                    1,
+                );
+                charge(growth.work, growth.bytes)?;
                 self.completed.insert(key, found);
             }
         }
@@ -209,7 +262,13 @@ impl<Q: Query> Occurrences<Q> {
         }
         Ok(self.completed.get(&key).copied())
     }
-    fn child(&mut self, store: &Store, key: Key, finish: bool) -> Result<Q::Value, &'static str> {
+    fn child(
+        &mut self,
+        store: &Store,
+        key: Key,
+        finish: bool,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Q::Value, &'static str> {
         if let Some(found) = self.result(store, key)? {
             return Ok(found);
         }
@@ -217,6 +276,8 @@ impl<Q: Query> Occurrences<Q> {
             return Err("missing capture dependency");
         }
         self.account(1)?;
+        let growth = Growth::vector::<(Key, bool)>(self.work.len(), self.work.capacity(), 1);
+        charge(growth.work, growth.bytes)?;
         self.work.push((key, false));
         Ok(Q::Value::default())
     }
@@ -225,6 +286,7 @@ impl<Q: Query> Occurrences<Q> {
         store: &Store,
         (ty, depth): Key,
         finish: bool,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Q::Value, &'static str> {
         let mut found = Q::Value::default();
         let list = match store.kind(ty).ok_or("invalid capture type")? {
@@ -233,7 +295,7 @@ impl<Q: Query> Occurrences<Q> {
             } => {
                 found = Q::merge(
                     self.region(region, depth),
-                    self.child(store, (referent, depth), finish)?,
+                    self.child(store, (referent, depth), finish, charge)?,
                 );
                 None
             }
@@ -243,7 +305,7 @@ impl<Q: Query> Occurrences<Q> {
             | Kind::Pointer {
                 pointee: element, ..
             } => {
-                found = self.child(store, (element, depth), finish)?;
+                found = self.child(store, (element, depth), finish, charge)?;
                 None
             }
             Kind::Tuple(list) => Some((list, depth)),
@@ -253,7 +315,7 @@ impl<Q: Query> Occurrences<Q> {
                 let nested = depth
                     .checked_add(1)
                     .ok_or("capture binder depth overflow")?;
-                found = self.child(store, (result, nested), finish)?;
+                found = self.child(store, (result, nested), finish, charge)?;
                 Some((parameters, nested))
             }
             Kind::Closure {
@@ -263,16 +325,16 @@ impl<Q: Query> Occurrences<Q> {
                 ..
             } => {
                 found = Q::merge(
-                    self.arguments(store, arguments, depth, finish)?,
+                    self.arguments(store, arguments, depth, finish, charge)?,
                     Q::merge(
-                        self.child(store, (signature, depth), finish)?,
-                        self.child(store, (environment, depth), finish)?,
+                        self.child(store, (signature, depth), finish, charge)?,
+                        self.child(store, (environment, depth), finish, charge)?,
                     ),
                 );
                 None
             }
             Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
-                found = self.arguments(store, arguments, depth, finish)?;
+                found = self.arguments(store, arguments, depth, finish, charge)?;
                 None
             }
             Kind::Dynamic {
@@ -283,7 +345,7 @@ impl<Q: Query> Occurrences<Q> {
                     .ok_or("capture binder depth overflow")?;
                 found = Q::merge(
                     self.region(region, depth),
-                    self.arguments(store, arguments, nested, finish)?,
+                    self.arguments(store, arguments, nested, finish, charge)?,
                 );
                 None
             }
@@ -292,10 +354,10 @@ impl<Q: Query> Occurrences<Q> {
                     .trait_application(application.trait_application)
                     .ok_or("invalid capture projection trait")?;
                 found = Q::merge(
-                    self.child(store, (application.subject, depth), finish)?,
+                    self.child(store, (application.subject, depth), finish, charge)?,
                     Q::merge(
-                        self.arguments(store, trait_.arguments, depth, finish)?,
-                        self.arguments(store, application.arguments, depth, finish)?,
+                        self.arguments(store, trait_.arguments, depth, finish, charge)?,
+                        self.arguments(store, application.arguments, depth, finish, charge)?,
                     ),
                 );
                 None
@@ -306,27 +368,43 @@ impl<Q: Query> Occurrences<Q> {
                 ..
             } => {
                 found = Q::merge(
-                    self.arguments(store, arguments, depth, finish)?,
-                    self.child(store, (signature, depth), finish)?,
+                    self.arguments(store, arguments, depth, finish, charge)?,
+                    self.child(store, (signature, depth), finish, charge)?,
                 );
                 None
             }
             Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => None,
         };
         if let Some((list, depth)) = list {
-            found = Q::merge(found, self.list(store, list, depth, finish)?);
+            found = Q::merge(found, self.list(store, list, depth, finish, charge)?);
         }
         Ok(found)
     }
     fn cached_group(&self, group: Group, depth: u16) -> Option<Q::Value> {
         self.groups.as_ref()?.get(&(group, depth)).copied()
     }
-    fn remember_group(&mut self, group: Group, depth: u16, value: Q::Value, finish: bool) {
+    fn remember_group(
+        &mut self,
+        group: Group,
+        depth: u16,
+        value: Q::Value,
+        finish: bool,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
         if finish {
+            let growth = if let Some(groups) = &self.groups {
+                Growth::map::<(Group, u16), Q::Value>(groups.len(), groups.capacity(), 1)
+            } else {
+                let mut growth = Growth::map::<(Group, u16), Q::Value>(0, 0, 1);
+                growth.bytes = growth.bytes.saturating_add(size_of::<Groups<Q::Value>>());
+                growth
+            };
+            charge(growth.work, growth.bytes)?;
             self.groups
                 .get_or_insert_with(Default::default)
                 .insert((group, depth), value);
         }
+        Ok(())
     }
     fn list(
         &mut self,
@@ -334,6 +412,7 @@ impl<Q: Query> Occurrences<Q> {
         list: ListId,
         depth: u16,
         finish: bool,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Q::Value, &'static str> {
         let key = Group::Types(list);
         if let Some(found) = self.cached_group(key, depth) {
@@ -346,9 +425,9 @@ impl<Q: Query> Occurrences<Q> {
         self.account(children.len())?;
         let mut found = Q::Value::default();
         for &child in children {
-            found = Q::merge(found, self.child(store, (child, depth), finish)?);
+            found = Q::merge(found, self.child(store, (child, depth), finish, charge)?);
         }
-        self.remember_group(key, depth, found, finish);
+        self.remember_group(key, depth, found, finish, charge)?;
         Ok(found)
     }
     fn arguments(
@@ -357,6 +436,7 @@ impl<Q: Query> Occurrences<Q> {
         args: GenericArgs,
         depth: u16,
         finish: bool,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Q::Value, &'static str> {
         if args == GenericArgs::EMPTY {
             return Ok(Q::Value::default());
@@ -371,12 +451,12 @@ impl<Q: Query> Occurrences<Q> {
         for argument in arguments {
             let value = match argument {
                 Argument::Lifetime(region) => self.region(region, depth),
-                Argument::Type(ty) => self.child(store, (ty, depth), finish)?,
+                Argument::Type(ty) => self.child(store, (ty, depth), finish, charge)?,
                 Argument::Const(_) => Q::Value::default(),
             };
             found = Q::merge(found, value);
         }
-        self.remember_group(key, depth, found, finish);
+        self.remember_group(key, depth, found, finish, charge)?;
         Ok(found)
     }
     fn region(&self, region: RegionId, depth: u16) -> Q::Value {

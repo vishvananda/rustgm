@@ -70,17 +70,13 @@ pub(super) fn prepare(
                         crate::types::callable::Template,
                     >(1)),
             )?;
-            if parameters.is_empty() {
-                // A completed empty scope still owns a callable registration;
-                // its absence must not stand in for a checked closed signature.
-                callables
-                    .insert_monomorphic(&facts.types, ItemId(scope.definition.0), header.callable)
-                    .map_err(error)?;
-            } else {
-                callables
-                    .insert_scoped(&facts.types, &owners, header.callable, 0, &[], &parameters)
-                    .map_err(error)?;
-            }
+            register(
+                &facts.types,
+                &mut callables,
+                &owners,
+                &parameters,
+                header.callable,
+            )?;
             let ty = facts
                 .types
                 .intern(Kind::FunctionItem {
@@ -108,6 +104,29 @@ pub(super) fn prepare(
     Ok((callables, result))
 }
 
+/// Both private preparation owners supply their already authenticated complete
+/// ancestry/formals and prepay their own actual allocation envelope.
+pub(in crate::sema::crates::typed_headers) fn register(
+    types: &crate::types::Store,
+    callables: &mut Templates,
+    owners: &[ItemId],
+    parameters: &[ParameterId],
+    signature: TypeId,
+) -> Result<(), Error> {
+    if parameters.is_empty() {
+        let item = *owners
+            .last()
+            .ok_or_else(|| error("missing actual callable owner"))?;
+        callables
+            .insert_monomorphic(types, item, signature)
+            .map_err(error)
+    } else {
+        callables
+            .insert_scoped(types, owners, signature, 0, &[], parameters)
+            .map_err(error)
+    }
+}
+
 fn symbol(
     context: &mapped_source::Context<'_>,
     definition: DefId,
@@ -116,6 +135,36 @@ fn symbol(
     let id = context.catalog.declaration(definition).map_err(error)?;
     let (owner, row, _) = context.catalog.declaration_coordinate(id).map_err(error)?;
     let rows = context.descriptor.rows();
+    let path = if context.descriptor.profile() == s::Profile::Source2024ModuleContracts {
+        let root = context
+            .descriptor
+            .module_contracts()
+            .map_err(error)?
+            .rows()
+            .namespace
+            .root;
+        let path = s::callable_path(&rows.declarations, root, row, |n| budget.charge(n), error)?;
+        budget.reserve(path.storage_bound())?;
+        path.materialize().map_err(error)?
+    } else {
+        legacy_callable_path(&rows, row, budget)?
+    };
+    let identity = ExternalDef::new(owner.clone(), path, ExternalKind::Function).map_err(error)?;
+    if context.imported.definition(&identity) != Some(definition) {
+        return Err(error(
+            "source callable changed its actual reserved external identity",
+        ));
+    }
+    let symbol = budget.symbol(&identity)?;
+    budget.observed.add(symbol.capacity());
+    Ok(symbol)
+}
+
+fn legacy_callable_path(
+    rows: &s::Columns,
+    row: crate::support::crates::owner_catalog::DeclarationRef,
+    budget: &mut Headers,
+) -> Result<Vec<String>, Error> {
     let raw = &rows.declarations[row.0 as usize];
     let parent = raw
         .definition
@@ -156,13 +205,5 @@ fn symbol(
             .sum::<usize>()
             .saturating_add(1),
     )?;
-    let identity = ExternalDef::new(owner.clone(), path, ExternalKind::Function).map_err(error)?;
-    if context.imported.definition(&identity) != Some(definition) {
-        return Err(error(
-            "source callable changed its actual reserved external identity",
-        ));
-    }
-    let symbol = budget.symbol(&identity)?;
-    budget.observed.add(symbol.capacity());
-    Ok(symbol)
+    Ok(path)
 }

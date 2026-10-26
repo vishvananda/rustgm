@@ -2,8 +2,10 @@
 pub mod ast;
 pub mod attribute;
 pub mod cursor;
+pub mod defaultness;
 pub mod edition_context;
 pub mod expression;
+pub mod gate_sites;
 pub mod interpolation;
 pub mod item;
 pub mod token_tree;
