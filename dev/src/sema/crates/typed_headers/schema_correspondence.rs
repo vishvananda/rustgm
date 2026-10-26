@@ -135,12 +135,10 @@ impl<'rows> Mapping<'rows> for Borrowed<'rows, '_, '_> {
     ) -> Result<MemberRows<'rows>, &'static str> {
         match header {
             s::HeaderRef::Trait(index) => Ok(MemberRows::Declared(
-                rows.traits[index as usize].members.slice(&rows.members)?,
+                rows.declared_members(rows.traits[index as usize].members)?,
             )),
             s::HeaderRef::Implementation(index) => Ok(MemberRows::Implementation(
-                rows.implementations[index as usize]
-                    .members
-                    .slice(&rows.member_links)?,
+                rows.implementation_members(rows.implementations[index as usize].members)?,
             )),
             s::HeaderRef::Function(_) => {
                 Err("private schema requires its actual trait or implementation")

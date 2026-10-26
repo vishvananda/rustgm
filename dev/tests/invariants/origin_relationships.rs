@@ -8,7 +8,7 @@ fn require(facts: &Declarations, definition: DefId, steps: &mut usize) -> Result
         .crates
         .as_deref()
         .ok_or("actual imported linkage")?
-        .require_source_method(
+        .require_source_declaration(
             facts,
             definition,
             facts

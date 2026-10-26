@@ -287,7 +287,7 @@ impl<'a> Mapping<'a> for Ordinary<'a> {
     ) -> Result<MemberRows<'a>, &'static str> {
         match header {
             s::HeaderRef::Trait(index) => Ok(MemberRows::Declared(
-                rows.traits[index as usize].members.slice(&rows.members)?,
+                rows.declared_members(rows.traits[index as usize].members)?,
             )),
             s::HeaderRef::Implementation(index) => {
                 if rows.implementations[index as usize].members.start
