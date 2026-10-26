@@ -115,7 +115,6 @@ impl Parser<'_, '_> {
         Ok(match word {
             Word::Auto => self.cursor.peek_word(1)? == Word::Trait,
             Word::Default => self.default_item_after()?,
-            Word::Final => true,
             Word::Union => self.cursor.peek(1)?.is_some_and(|t| {
                 t.kind == TokenKind::Identifier || t.kind == TokenKind::RawIdentifier
             }),
@@ -127,7 +126,8 @@ impl Parser<'_, '_> {
                         t.kind == TokenKind::Identifier || t.kind == TokenKind::RawIdentifier
                     })
             }
-            Word::Fn
+            Word::Final
+            | Word::Fn
             | Word::Macro
             | Word::Struct
             | Word::Enum
