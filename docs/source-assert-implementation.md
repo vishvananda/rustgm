@@ -131,3 +131,76 @@ tracking/roles and wider runtime transport remain PA29 requirements. The next
 checked-role layout checkpoint must still run the identical before/after observer;
 this writer adds no language role, intrinsic, bootstrap slot, wire permission or
 executable source Assert path.
+
+
+## Qualified source claim and representation checkpoint
+
+[CI40259415112](https://github.com/vishvananda/rustgm/actions/runs/40259415112)
+qualifies sourcefe65e6e9fde8596940dede3ad670bcce5ab1c00d with six exact private
+controls. The three new groups cover source declaration identity/kind, safe
+non-const Abort signature and denied execution, and ordinary storage/closed wire
+profiles. Existing actual sizing, absent ordinary source-catalog storage and
+versioned module-contract/legacy-byte controls also pass. Harness/upstream checks
+pass. No external language observations, native programs or full inventories were
+repeated.
+
+LangItem indices0–21 are unchanged. Not, Panic, PanicFmt, PanicImpl, PanicDisplay
+and ConstPanicFmt append at22–27. Source reservations check actual trait versus
+module-function owners and the existing provider/features/declaration inventory.
+These are incomplete role claims: the test's unused declaration reducers do not
+validate pinned panic signatures/bodies or make Not usable. Their completed-role
+queries still reject. Actual Not/Self/Output/method validation and all real panic
+consumers remain required.
+
+The semantic Abort identity appends at24; its source identity requires the actual
+attributed declaration. The validated signature is safe, non-const, bodyless Rust,
+with no arguments, generic/lifetime parameters or predicates and never result.
+Malformed variants reject. It is excluded from the generic layout descriptor and
+constant-call permission, and reached local runtime demand explicitly rejects
+until its proved operation consumer exists. A same-name ordinary function remains
+ordinary. This stage emits no abort instruction and executes no panic handler.
+
+The ordinary intrinsic table, factories, name scans and declaration loops use an
+explicit frozen BOOTSTRAP24 inventory. Appended Abort has no ordinary table slot;
+lookup returns None. Existing wire role IDs are profile-local0–8, independent of
+the LangItem enum, and both encode/decode and profile allowlists remain unchanged.
+The new groups reject all six roles in v0/v1, private Provided and v2 staging.
+The genuine old byte witnesses remain equal. Bodyless module functions are not
+ordinary required trait members, and unsupported Never metadata also rejects;
+there is no inferred transport permission from an enum or missing body. Source
+Not must not populate the bootstrap operator/factory map in its next phase.
+
+The byte-identical public observer measures actual Reservations680→808, a128-byte
+cold increase for the six extra role slots and attributes. SourceCore176,
+Resolution2056, Package256, Declaration20, IntrinsicDeclaration24 and the three
+one-byte enums are unchanged. Actual Option<Declaration> is20 bytes, preserving
+its niche. Actual after sizes for private cold Catalog/Bindings/Imported/ImportedRole
+are704/560/520/16; no authenticated private before value is claimed. These tables
+are paid by source profiles. Ordinary crates retain absent source-catalog storage
+and the old fixed intrinsic table; no Function/Body/Context/AST field was added.
+This does not claim zero extra work inside the source-role inventory validators.
+
+The first frozen size prediction832 was wrong and is retained with its actual808
+observation in failed run40257879794. Run40258235902 passed production/private
+Clippy, metadata, formatting, audit and the authenticated observer, then timed out
+while building private tests. Run40258937251 built and passed five tests; its Abort
+test accidentally entered artifact staging before local demand and saw the genuine
+unsupported Never row. The correction separately retains that artifact error and
+uses existing explicit local roots for the actual runtime-denial control. It adds
+no compiler API or transport profile.
+
+The final run refreshes formatting, audit, private Clippy, build and all six tests.
+Metadata, production Clippy and the identical observer are retained only after
+all production/tool/CLI/rlib fingerprints match and the sole reviewed test-file
+delta is authenticated. The actual CLI is
+`e88d41c1e95ad284210eaee65e880571a4f48217abeba0b7a99a69912f2434ea`;
+its production rlib is
+`110c90dabcb831ccd10d33e00060b4deab81f995000a1cc071a5238c2be0fbad`.
+Fresh formatting/private Clippy/build/tests take7.03/46.27/77.70/0.064 seconds.
+All2672 source fingerprints remain unchanged across that run. The earlier timeout
+and diagnostic failure remain failed evidence, not successful executions.
+
+Real Not, PanicInfo/Location/caller tracking, tagged Arguments/NonNull/PhantomData,
+transmute/provenance, nounwind/stability/handler attributes, CTFE instance redirect,
+dynamic formatting and native abort consumers remain required. Source Assert is
+still unavailable and CPPGM is unchanged.
