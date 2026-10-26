@@ -29,9 +29,33 @@ The no_core provider controls inspect actual canonical alias applications and
 typed clauses, distinguish unused formal identity from actual Self, reject wrong
 source owners, retain the execution fence and cover ordinary absence/layouts.
 The focused qualification also selects the existing explicit source-sizing
-control and genuine legacy Functions golden/Unknown test. These six groups and
-actual layouts are pending until hosted strict-first qualification; no candidate
-source or runtime acceptance is claimed yet.
+control and genuine legacy Functions golden/Unknown test. Hosted run 40276199238 qualified all six nonignored groups on component
+`5c0bc127925b2edf9a4571608e6af4c3392d143f`, with production and private strict
+Clippy, formatting, metadata and the global architecture audit. The helper took
+179.476 seconds within its 180-second work limit. Its source binding authenticates
+2,720 compiler/configuration fingerprints and 31 fixture/data hashes. This is
+source/typed-clause qualification; no native or metadata-intrinsic support is
+claimed.
+
+Measured sizes in bytes are BoundSyntax 56, Checker 10232, Declarations 7048,
+Package 256, Unit 688, Node 36, Scope 32 and Definition 36. No allocator count was
+measured. The implementation adds no field or owner allocation and reuses the
+existing decoded-Syntax scan and generic-level map.
+
+The qualified component is retained at `pa31-alias-self-sizing-qualified-v1`.
+Merge `ed3261c32fb6514b9dfa4798386f78788ef31b53` combines it with public
+`3cb7cfc5b8a80b3e0d2b3b00a4ecbea6dee1a824` without conflicts; the sizing
+implementation, tests and fixtures are byte-identical to the qualified component.
+That merged composition has not received a separate candidate run.
+
+The successful primary receipt SHA is
+`b8adf5a504064b5bcf5a67a6545e54f281d7c3822d1da7f90ef86661c673af27`;
+the separate audit receipt SHA is
+`39adec3d0dab3de965c70fd78e7609b812cf518c70398ddfb592acdf8893b5bd`.
+The remote CLI SHA is
+`2e4ed121176648a628b915197bdc3b0bbc1c1342f1667e3d2cad81c9dca7f3ee`;
+it has not been hydrated locally. Earlier private-test type and semicolon failures
+remain retained with their raw diagnostics.
 
 Primary source revision: `88d9e12ae178fab0fb5cc050a94da85685d449ea`.
 Predicates source SHA: `4992d01b843fa5af76e36389c727e7756c99cb36920af471552aaad49728791d`.
