@@ -252,6 +252,10 @@ impl Unit {
         self.configured.active[target.get() as usize] =
             self.configured.active[new_root.get() as usize];
         self.configured.active[new_root.get() as usize] = false;
+        self.configured
+            .ast
+            .commit_gate_sites_source(self.source.original_image());
+        self.configured.ast.move_gate_sites_root(new_root, target);
         self.configured.ast.nodes[target.get() as usize] =
             self.configured.ast.nodes[new_root.get() as usize];
     }
@@ -264,6 +268,9 @@ impl Unit {
         base: u32,
         length: usize,
     ) -> Result<Vec<NonZeroU32>, LexError> {
+        self.configured
+            .ast
+            .validate_gate_sites_source(self.source.original_image())?;
         let node_base = add(self.configured.ast.nodes.len(), ast.nodes.len())?;
         let attribute_base = add(self.configured.ast.attributes.len(), ast.attributes.len())?;
         let effect_base = add(self.configured.effects.len(), generated.effects.len())?;

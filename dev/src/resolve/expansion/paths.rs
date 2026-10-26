@@ -284,6 +284,9 @@ impl Paths {
                     .definitions
                     .insert(id, introduction);
             }
+            if resolver.unnamed_constant(definition)? {
+                continue;
+            }
             let key = resolver.binding_key(definition)?;
             work.declared(&resolver.facts.bindings, key);
         }

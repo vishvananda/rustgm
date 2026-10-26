@@ -1,5 +1,5 @@
 //! Terminal error owners move warning payloads once; merges scan only new records.
-use super::{DiagnosticFile, Error, Warning};
+use super::{DiagnosticFile, Error, RetentionNote, Warning};
 const RECORDS: usize = 1_000_000;
 const BYTES: usize = 64 * 1024 * 1024;
 const WORK: usize = 10_000_000;
@@ -19,15 +19,18 @@ impl Error {
             return self;
         }
         let records = self.retained_warnings.len().saturating_add(warnings.len());
-        if self.warning_limit_note || records > RECORDS {
-            self.warning_limit_note = true;
+        if self.warning_limit_note != RetentionNote::Complete {
+            return self;
+        }
+        if records > RECORDS {
+            self.warning_limit_note = RetentionNote::Budget;
             return self;
         }
         let mut work = 0_usize;
         let mut bytes = 0_usize;
         for warning in &warnings {
             let Some((steps, payload)) = warning.diagnostic.warning_payload() else {
-                self.warning_limit_note = true;
+                self.warning_limit_note = RetentionNote::Budget;
                 return self;
             };
             work = work.saturating_add(steps);
@@ -38,13 +41,20 @@ impl Error {
         self.warning_work = self.warning_work.saturating_add(work);
         self.warning_bytes = self.warning_bytes.saturating_add(bytes);
         if self.warning_work > WORK || self.warning_bytes > BYTES {
-            self.warning_limit_note = true;
+            self.warning_limit_note = RetentionNote::Budget;
             return self;
         }
         if self.retained_warnings.is_empty() {
             std::mem::swap(&mut self.retained_warnings, &mut warnings);
         } else {
             self.retained_warnings.append(&mut warnings);
+        }
+        self
+    }
+
+    pub(crate) fn warning_retention_failed(mut self, note: RetentionNote) -> Self {
+        if self.warning_limit_note == RetentionNote::Complete {
+            self.warning_limit_note = note;
         }
         self
     }

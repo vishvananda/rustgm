@@ -1,0 +1,6 @@
+    Checking tinyvec_macros v0.1.1
+    Checking unicode-ident v1.0.24
+    Checking tinyvec v1.10.0
+    Checking unicode-normalization v0.1.25
+    Checking rustgm v0.1.0 (/home/runner/work/rustgm/rustgm/dev)
+    Finished `dev-fast` profile [unoptimized] target(s) in 37.67s
