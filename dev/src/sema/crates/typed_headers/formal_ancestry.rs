@@ -132,7 +132,7 @@ pub(super) fn visit(
         let binding = slot
             .definition
             .ok_or_else(|| error("private callable type formal omitted its actual declaration"))?;
-        port.definition(binding, work)?;
+        let binding = port.definition(binding, work)?;
         let offset = u32::try_from(offset)
             .map_err(|_| error("private callable formal reference overflow"))?;
         let reference = scope
