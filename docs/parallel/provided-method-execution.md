@@ -39,6 +39,38 @@ default bodies stay explicitly Pending; the first actual demand must construct
 the genuine defining environment and prove the original before fresh instance
 proof. Their complete demanded cases remain PA29/upstream requirements.
 
+## Proposed codec boundary for the executable consumer
+
+The disjoint codec task should reuse the existing row codec and add one explicit
+`Source2024ProvidedContracts` profile (tag 11, row version 1). Existing tag 11
+version 0 and all tag 10 versions remain byte-exact. This is an interface proposal,
+not public admission or a completed transport claim.
+
+| Cold record | Exact content and authority boundary |
+| --- | --- |
+| `ProvidedContractRows` | Existing complete Provided columns plus `NamespaceColumns`, `HeaderAttributeColumns` and `FinalityColumns`. Keep `SourceRows`, `FunctionHeader` and `TraitHeader` unchanged; retain the raw full family and numbering. |
+| `NamespaceColumns` | Reuse the actual root/module/binding rows from the same `Stage::namespace_columns` / `ExportBindings` producer and existing pending-binding/module-remap validator. Consumer supplies its real validated `Dependency` alias. Missing columns grant no names. The first executable target requires only the genuine root-public Holder family; unsupported domain/reexport breadth stays explicit. |
+| `HeaderAttributeColumns` | Reuse complete parallel function/trait rows, actual declaration/site, `must_use` presence and optional reason, and inline hint plus applicability. New complete rows give checked absence/presence; older omitted columns remain Unknown. Existing shared marker/defaultness/publication fences still run. |
+| `FinalityColumns` | Complete parallel function, trait and implementation rows. Each `FinalDeclaration { declaration: DeclarationRef, site: u32, contract: Final }` binds the exact header; an implementation uses its existing actual `ImplHeader.self_definition` coordinate. `Final` is an explicit wire value, never inferred from a missing row. No specialization/default graph is admitted. A normal trait-provided body is still a Final declaration. |
+
+Produce finality from the actual authenticated local owner and C's typed
+`active_defaultness` query during the existing selected collector walk, including
+real impl-owner scopes. Preserve the whole-package default impl/associated-value
+gates. Const/type declarations outside this profile remain unsupported rather
+than acquiring an empty/final record. Decoder validation must check complete
+coverage, exact row kind/order/owner/site, bounds and aggregate bytes before
+publishing the immutable columns; malformed, duplicate, missing or swapped rows
+fail. No NodeKey, TypeId, RegionId, Environment or paid proof goes on wire.
+
+The descriptor may expose a borrowed `provided_contracts()` view over these
+validated data columns. Actual namespace installation, metadata-contract queries
+and finality consumers must reuse their current Catalog/owner/site validators.
+Keep the four public Provided guards closed while this data codec is qualified.
+A's installed owner, demanded original/instance and runtime checks must consume
+the reloaded records before the explicit public constructor/driver gate opens.
+Other untransported semantic policies, including UB binding, stay Unknown or
+unsupported when needed; this profile must not imply their absence.
+
 ## Required implementation path
 
 | Boundary | Required result |
