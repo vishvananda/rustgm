@@ -9,78 +9,40 @@ Workers own implementation, independently qualified tests and handout drafts.
 The integrator owns shared interface decisions, integration, public pushes,
 assignment activation and final text-oracle publication.
 
-Use [the live library blocker tracker](library-build-blockers.md) for concrete
-issue assignments and closure tests. The [current scoped/byte checkpoint](scoped-bytes-checkpoint.md)
-qualifies compiler `ca54609a`: 3,791 maintainer passes, 8,385 active text cases,
-125 measured inputs, 116 equal-output pairs, 100 native preflights and 68 growth
-controls. Seven RSS costs remain recorded after bounded attribution. The same
-CLI reaches original `autodiff_forward` at line 1553; stricter attribute checking
-separately exposes the earlier coherence policy at `lib.rs:65`. There is no core
-artifact and no assignment release.
+Use [the live library blocker tracker](library-build-blockers.md#current-execution-queue)
+for current assignments and the [execution plan](library-bootstrap-acceleration.md)
+for scheduling and imported-demand policy. Historical checkpoint documents retain
+their evidence, not authority to replace this queue with old remaining tasks.
 
-The newer [unchanged-core observer](original-core-lib020-checkpoint.md) uses the
-qualified primitive compiler and reaches `offload_kernel`, line 1668. It verifies
-722 original files and completes download/hash/trace work in 5.729 seconds.
-Use this current frontier when selecting work; the scoped/byte measurements
-above remain the performance baseline.
-
-The [builtin declaration successor](builtin-declarations-checkpoint.md) now
-advances the root to `num/f128.rs:27`: nine original files opened and all 722
-inputs verified. Its seven isolated controls pass in 165.33 seconds. Use LIB-024
-as the current frontier; wider macro execution and import remain open.
-
-The [wide-literal successor](wide-literals-checkpoint.md) advances the original
-root to `num/nonzero.rs:34`, with 42 unchanged files opened. All 722 source
-inputs are verified. The newer
-[domain checkpoint](implementation-domains-core-checkpoint.md) now reaches
-`mem/alignment.rs:26`, with 56 unchanged files opened. The
-[unnamed-constant checkpoint](unnamed-free-constants.md) reaches
-`mem/maybe_uninit.rs:1644`, with58 unchanged files opened. The
-[defaultness checkpoint](defaultness-checkpoint.md) advances to
-`ptr/metadata.rs:85`, with65 unchanged files opened. The
+The qualified original-core observer reaches `ptr/metadata.rs:170`, the foreign
+`type VTable;` declaration (LIB-032). All 722 pinned inputs verify, 65 files are
+opened, and no artifact exists. The
 [formatter integration](formatter-pointer-erasure-checkpoint.md#combined-integration-and-core-frontier)
-now passes that alias syntax and reaches `ptr/metadata.rs:170`, the foreign
-`type VTable;` declaration. LIB-032 is the current loading blocker; complete
-LIB-031 alias consumers and LIB-028 specialization execution remain required.
-Earlier stops remain retained history.
+records that boundary; the tracker retains earlier observations separately.
 
-Current lanes after the [source-contract integration](library-contracts-integration-checkpoint.md):
+- A: complete actual imported Provided execution. Names and receiver shapes now
+  pass combined checks. Join selected checked headers, defining environments,
+  original/instance proof and an explicit codec using the same imported owner.
+  Next exit is the [encoded/native7 consumer](parallel/provided-method-execution.md).
+  Complete source checking and structural/coherence inventory remain mandatory;
+  unrelated imported elaboration and bodies may remain Pending until needed.
+- B: actual Pattern/NonNull, then PhantomData/Location/track_caller/PanicInfo and
+  a false assertion reaching the real handler/Abort. Formatting follows through
+  source constructors and selected methods. Reuse the same Pointee metadata
+  classifier and source-owned obligations rather than new library algorithms.
+- C: genuine Foreign VTable identity, sizing and pointer metadata on B's shared
+  Pattern base. Actual Pointee consumers are integrated locally. Next exit is
+  unchanged core past VTable, plus actual Thin use with the integrator. Unknown
+  value layout does not prevent correct pointer metadata.
+- Integrator: actual Thin alias semantics, consumer joins, original core
+  checking/export and publication. Prioritize complete supported declarations
+  and uses over unrelated alias breadth; preserve explicit unsupported forms.
+  Prepare the selected alloc/std dependency/runtime graph and PA34 orchestration
+  before core completion. Do not change CPPGM or pinned upstream sources.
 
-- A owns actual PA29 imported headers and provided bodies. Collected source
-  admission, selected callable registration and shared ordinary/private input
-  kernels are qualified. Continue complete trait/schema/member validation on the
-  same fresh consumer and one demand memo, then actual original/instance and
-  borrow proof toward the [native7 milestone](parallel/provided-method-execution.md).
-  The fixed shared mapping and actual named-formal certificate now pass combined
-  qualification. Complete trait/impl headers, default-Self/Contract environments
-  and actual body proof remain required.
-  Follow the [reviewed demand policy](library-bootstrap-acceleration.md): source
-  bodies remain checked at export; imported unrequested bodies stay Pending.
-  Prioritize genuine early namespace installation and named artifact consumers.
-  Private preparation does not grant public Provided execution.
-- B owns actual source language/intrinsic consumers. Source Not, closed layout,
-  nominal Clone/provided clone_from and genuine reached source Abort have
-  qualified native evidence and combined source/LowIR equality. Continue source
-  Pattern/NonNull and the real panic/format/constant pipeline; source Transmute
-  and const formatter erasure are integrated. Use supported LowIR
-  operations; preserve ordinary source algorithms,
-  const restrictions and imported transport requirements.
-- C owns actual source sizing/Pointee contracts after qualified local specialization,
-  source alias Self sizing and the sealed Pointee/Metadata/DynMetadata declaration
-  producer. Continue automatic Pointee proof and actual metadata normalization
-  through both existing normalizers. Representation metadata grants no source
-  proof or runtime intrinsic authority. Coordinate central role/bit changes
-  with B before editing. Next close the observed LIB-032 foreign opaque VTable
-  declaration; B owns Pattern/NonNull/PhantomData. Share the same metadata
-  classifier with explicit component evidence and pending consumer checks.
-- The integrator owns complete aliases, qualification and direct-main publication.
-  Canonical clauses, nested binders, shorthand naming and source Self-sizing
-  are qualified. Continue header-time naming, complete original/normalized
-  formation, scoped regions, objects, complete
-  unused/default/const and imported consumers. Alias execution/export stays fenced while incomplete.
-  The combined runtime/header checkpoint fixes associated-family alias input
-  prefixes and admits associated-result aliases through the same bound worklist.
-  Do not change CPPGM or pinned upstream sources.
+Keep one executable exit per lane. Shared-interface preparation is work within
+that task, not an endlessly expanding replacement milestone. At consumer exits,
+reconcile the owning PA's remaining implementation and release checklist.
 
 Development validation uses `make fastcheck` with exact affected controls and
 captured outputs within five minutes. A new private binary does not require a

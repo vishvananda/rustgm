@@ -101,6 +101,16 @@ runtime pointer validity. Before adding a stricter prerequisite or another
 proof/state graph, verify the real Rust rule and reuse its existing typed
 producer/consumer. Preserve uncertain cases as explicit unsupported behavior.
 
+Establish structural, identity, visibility and required coherence invariants at
+the owning import/phase boundary, then reuse that immutable typed owner and its
+indexes. Do not add equivalent provenance wrappers or repeat whole-catalog
+validation for each demand. Expensive unrelated imported elaboration may stay
+Pending when it cannot affect lookup, coherence or the selected proof; required
+source declaration/body checks and actual original/instance obligations remain.
+Implement a complete supported consumer path before broadening the profile.
+Unsupported forms must diagnose at their actual boundary rather than requiring
+every future form to be implemented before any supported source can execute.
+
 Header diagnostic and advisory contracts use complete versioned cold columns.
 Authenticate local declaration, configured owner and retained source incarnation;
 join imported declarations to their actual catalog coordinates once. Reuse the
