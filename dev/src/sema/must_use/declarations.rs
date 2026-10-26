@@ -55,7 +55,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                         facts,
                         key,
                         attribute,
-                        forest.tree(attribute.path.start).span,
+                        forest,
                         &mut allowances,
                     )?;
                     continue;

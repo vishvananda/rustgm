@@ -11,6 +11,7 @@ use crate::{
         ast::Kind,
         attribute::{Attribute, Input},
         item::ItemKind,
+        token_tree::Forest,
     },
 };
 
@@ -19,7 +20,7 @@ pub(super) fn consume(
     facts: &mut Declarations,
     declaration: NodeKey,
     attribute: Attribute,
-    name: crate::syntax::token_tree::Span,
+    forest: &Forest,
     allowances: &mut MacroAllowanceSession<'_>,
 ) -> Result<(), Error> {
     facts.reserve_must_use_source(declaration, attribute.span)?;
@@ -29,6 +30,10 @@ pub(super) fn consume(
             "marker attribute requires word form without an unsafe wrapper",
         ));
     }
+    let name = forest
+        .tree(attribute.path.start)
+        .ok_or_else(|| error("marker attribute has no actual name token"))?
+        .span;
     if !report.package.requested_marker_traits().map_err(error)?
         && !allowances.allows_at(
             declaration.file,
