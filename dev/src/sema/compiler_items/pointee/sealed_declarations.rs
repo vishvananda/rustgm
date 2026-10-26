@@ -51,9 +51,9 @@ struct State {
     clauses: Vec<Predicate>,
     fields: Vec<Field>,
 }
-pub(super) struct Contracts {
-    pub arena: arena::Identity,
-    pub plan: Plan,
+pub(in crate::sema::compiler_items) struct Contracts {
+    pub(super) arena: arena::Identity,
+    pub(super) plan: Plan,
     states: [State; 2],
     nominal: Option<State>,
     inputs: Vec<Input>,
