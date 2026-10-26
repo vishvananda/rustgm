@@ -41,6 +41,7 @@ mod primitive_constants;
 mod projections;
 mod receivers;
 mod self_constructors;
+mod self_schema;
 mod slice_methods;
 mod slice_paths;
 mod structural_owners;
