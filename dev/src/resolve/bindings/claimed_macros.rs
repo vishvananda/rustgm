@@ -115,7 +115,8 @@ fn argument<'a>(
             return Err(error);
         }
         cursor += 1;
-        helpers = forest.children(cursor).ok_or(error)?;
+        let children = forest.children(cursor).ok_or(error)?;
+        helpers = children.start..children.end;
         if !forest.tree(cursor).is_some_and(|tree| {
             matches!(
                 tree.kind,
