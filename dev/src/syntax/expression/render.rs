@@ -59,7 +59,7 @@ fn label(source: &str, span: Option<Span>, output: &mut impl Write) -> io::Resul
     }
 }
 
-fn operator(op: P) -> &'static str {
+pub(super) fn operator(op: P) -> &'static str {
     match op {
         P::Plus => "+",
         P::Minus => "-",
