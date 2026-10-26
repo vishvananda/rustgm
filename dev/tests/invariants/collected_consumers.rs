@@ -67,6 +67,70 @@ fn named(stage: &HeaderDraft, name: &str, work: &mut ReservationWork) -> Result<
         .ok_or_else(|| "actual collected function".into())
 }
 
+fn check_member_contracts(
+    rows: crate::support::crates::generics::source::ValidatedView<'_>,
+    columns: &crate::support::crates::generics::source::HeaderAttributeColumns,
+) -> Result {
+    use crate::support::crates::generics::source as s;
+    let member = rows
+        .roles
+        .iter()
+        .find(|row| row.role == LangItem::CloneFn)
+        .ok_or("actual clone_fn role")?
+        .declaration;
+    assert_eq!(member.artifact.0, 0);
+    let mut counts = (0, 0);
+    for (header, contract) in rows.functions.iter().zip(&columns.functions) {
+        assert_eq!(header.declaration, contract.declaration);
+        let name = rows.declarations[header.declaration.0 as usize]
+            .name
+            .as_deref();
+        if header.declaration == member.declaration {
+            assert_eq!(name, Some("clone"));
+            assert_eq!(header.body, s::FunctionBody::Absent);
+            assert!(
+                contract
+                    .must_use
+                    .as_ref()
+                    .and_then(|value| value.reason.as_deref())
+                    .is_some_and(|reason| reason.contains("cloning"))
+            );
+            counts.0 += 1;
+        } else if name == Some("clone") {
+            let link = rows
+                .member_links
+                .iter()
+                .find(|link| link.implementation == Some(header.declaration))
+                .ok_or("actual clone implementation member link")?;
+            assert_eq!(link.trait_member, Some(member));
+            assert!(
+                contract.must_use.is_none(),
+                "an impl method has its own actual contract"
+            );
+            assert!(matches!(header.body, s::FunctionBody::Original(_)));
+            let implementation = rows
+                .implementations
+                .iter()
+                .find(|implementation| {
+                    implementation
+                        .members
+                        .slice(&rows.member_links)
+                        .is_ok_and(|links| links.contains(link))
+                })
+                .ok_or("actual clone implementation owner")?;
+            assert!(
+                !implementation.constant,
+                "the actual u8 Clone implementation is ordinary"
+            );
+            counts.1 += 1;
+        } else if matches!(name, Some("clone_from" | "identity")) {
+            assert!(contract.inline.is_some());
+        }
+    }
+    assert_eq!(counts, (1, 1));
+    Ok(())
+}
+
 #[test]
 fn collected_source_headers_bind_full_family_to_fresh_actual_consumer() -> Result {
     let mut work = ReservationWork::default();
@@ -88,23 +152,7 @@ fn collected_source_headers_bind_full_family_to_fresh_actual_consumer() -> Resul
         (rows.functions.len(), rows.traits.len())
     );
     assert_eq!(rows.roles.len(), 9);
-    for (header, contract) in rows.functions.iter().zip(&columns.functions) {
-        assert_eq!(header.declaration, contract.declaration);
-        let name = rows.declarations[header.declaration.0 as usize]
-            .name
-            .as_deref();
-        if name == Some("clone") {
-            assert!(
-                contract
-                    .must_use
-                    .as_ref()
-                    .and_then(|value| value.reason.as_deref())
-                    .is_some_and(|reason| reason.contains("cloning"))
-            );
-        } else if matches!(name, Some("clone_from" | "identity")) {
-            assert!(contract.inline.is_some());
-        }
-    }
+    check_member_contracts(rows, columns)?;
     let carry = named(&stage, "carry", &mut work)?;
     let (next, status) = stage.callable_template(carry, &mut work)?;
     stage = next;
