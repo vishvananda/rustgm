@@ -1,12 +1,36 @@
 //! Actual source completion keeps rows and advisory contracts under one owner.
-use super::{Declarations, Report, SourceWork, Stage, g, s};
+use super::{Declarations, DefId, OwnerKind, Report, SourceWork, Stage, g, s};
 use crate::{
-    resolve::package::Error,
+    resolve::{model::DefKind, package::Error, unit::NodeKey},
     support::{crates::CrateIdentity, retained},
 };
 #[path = "collected_inventory.rs"]
 mod inventory;
 pub(crate) use inventory::{CollectedArtifact, CollectedReceipt};
+
+pub(crate) struct CollectedScope {
+    definition: DefId,
+    source: NodeKey,
+    header: bool,
+}
+impl CollectedScope {
+    pub(super) fn header_source(definition: DefId, source: NodeKey) -> Self {
+        Self {
+            definition,
+            source,
+            header: true,
+        }
+    }
+    pub(crate) fn source(&self) -> NodeKey {
+        self.source
+    }
+    pub(super) fn definition(&self) -> DefId {
+        self.definition
+    }
+    pub(super) fn header(&self) -> bool {
+        self.header
+    }
+}
 
 /// Producer-local Stage IDs retire before this arena-independent data can move.
 pub(crate) struct CollectedStage {
@@ -25,11 +49,72 @@ pub(crate) struct CollectedRows {
     contract_bytes: usize,
 }
 impl Stage {
+    pub(crate) fn collected_scope(
+        &self,
+        report: &Report,
+        facts: &Declarations,
+        index: usize,
+    ) -> Result<Option<CollectedScope>, Error> {
+        if let Some((definition, source)) = self.selected_header(report, facts, index)? {
+            return Ok(Some(CollectedScope {
+                definition,
+                source,
+                header: true,
+            }));
+        }
+        let definition = DefId(
+            u32::try_from(index)
+                .map_err(|_| Error::unlocated("collected scope identity overflow"))?,
+        );
+        if self.definitions.get(index).is_none_or(Option::is_none)
+            || report
+                .resolution
+                .definitions
+                .get(index)
+                .is_none_or(|declaration| declaration.kind != DefKind::SelfType)
+        {
+            return Ok(None);
+        }
+        let owner = facts
+            .associated
+            .owner(definition)
+            .and_then(|owner| facts.associated.get(owner))
+            .ok_or_else(|| {
+                Error::unlocated("collected Self formal lost its actual associated owner")
+            })?;
+        if owner.self_definition != definition {
+            return Err(Error::unlocated(
+                "collected Self formal changed its actual owner identity",
+            ));
+        }
+        match owner.kind {
+            OwnerKind::Trait { .. } => return Ok(None),
+            OwnerKind::Impl { .. } => {}
+            OwnerKind::ImportedImpl(_) => {
+                return Err(Error::unlocated(
+                    "collected source formal cannot use an imported owner",
+                ));
+            }
+        }
+        let owner = owner.source_owner().map_err(Error::unlocated)?;
+        if owner.self_definition != definition
+            || report.resolution.definitions[index].node != Some(owner.source)
+        {
+            return Err(Error::unlocated(
+                "collected impl formal scope changed its actual source owner",
+            ));
+        }
+        Ok(Some(CollectedScope {
+            definition,
+            source: owner.source,
+            header: false,
+        }))
+    }
     pub(crate) fn collect_provider_headers(
         mut self,
         report: &Report,
         facts: &Declarations,
-        check: impl FnMut(&mut Stage, crate::resolve::unit::NodeKey) -> Result<(), Error>,
+        mut check: impl FnMut(&mut Stage, crate::resolve::unit::NodeKey) -> Result<(), Error>,
     ) -> Result<CollectedStage, Error> {
         let before = self.work();
         let overhead = size_of::<CollectedRows>()
@@ -37,7 +122,21 @@ impl Stage {
             .saturating_sub(size_of::<SourceWork>())
             .saturating_sub(size_of::<s::HeaderAttributeColumns>());
         self.reserve(overhead).map_err(Error::unlocated)?;
-        let contracts = self.collect_header_columns_checked(report, facts, check)?;
+        let expected = self.selected_type_slots().map_err(Error::unlocated)?;
+        let mut observed = 0usize;
+        let contracts =
+            self.collect_formal_columns(report, facts, |stage, definition, source| {
+                check(stage, source)?;
+                observed = observed.saturating_add(
+                    stage.require_named_parameters(report, facts, definition, source)?,
+                );
+                Ok(())
+            })?;
+        if observed != expected {
+            return Err(Error::unlocated(
+                "collected formals omitted complete actual type-slot coverage",
+            ));
+        }
         let mut validation = g::Work {
             steps: self.work().steps,
             ..g::Work::default()

@@ -55,3 +55,62 @@ pub(super) fn intern(
         })
         .map_err(error)
 }
+
+#[derive(Clone, Copy)]
+pub(super) struct SignaturePort {
+    pub owner: DeclarationRef,
+    pub kind: s::BinderKind,
+    pub raw: g::Signature,
+}
+
+/// The same canonical shape check serves eager Graphs and the private memo.
+/// Callers authenticate their actual owner/arena and pay their own lookup work.
+pub(super) fn require(
+    rows: s::ValidatedView<'_>,
+    store: &Store,
+    expected: SignaturePort,
+    actual: TypeId,
+    steps: &mut usize,
+    mut mapped: impl FnMut(g::TypeRef) -> Result<TypeId, &'static str>,
+) -> Result<(), &'static str> {
+    let SignaturePort { owner, kind, raw } = expected;
+    let frame = rows
+        .binders
+        .get(raw.binder.0 as usize)
+        .ok_or("imported callable signature lacks its actual binder frame")?;
+    let Some(Kind::Function {
+        bound_regions,
+        parameters,
+        result,
+        unsafe_,
+        convention,
+    }) = store.kind(actual)
+    else {
+        return Err("imported callable signature is not an actual function type");
+    };
+    if frame.owner != owner
+        || frame.kind != kind
+        || bound_regions != frame.count
+        || unsafe_ != raw.unsafe_
+        || raw.variadic
+        || raw.convention != g::Convention::Rust
+        || convention != Convention::RUST
+        || mapped(raw.result).map_err(|_| "missing actual source result type")? != result
+    {
+        return Err("imported callable changed its full actual binder/signature contract");
+    }
+    let expected = raw.parameters.slice(&rows.roots)?;
+    let actual = store
+        .list(parameters)
+        .ok_or("imported callable omitted its actual inputs")?;
+    if actual.len() != expected.len() {
+        return Err("imported callable signature omitted actual inputs");
+    }
+    for (&actual, &expected) in actual.iter().zip(expected) {
+        *steps = steps.saturating_add(1);
+        if actual != mapped(expected).map_err(|_| "missing actual source input type")? {
+            return Err("imported callable changed an actual full parameter type");
+        }
+    }
+    Ok(())
+}

@@ -46,9 +46,11 @@ impl Pending {
                 if header.source.is_some() || header.owner != owner {
                     return Err("imported early profile changed its source-free header");
                 }
-                facts
-                    .associated
-                    .imported_implementation(*source, header.predicate)?;
+                facts.associated.imported_implementation(
+                    &facts.types,
+                    *source,
+                    header.predicate,
+                )?;
                 self.skipped.insert(owner, reason);
                 return Ok(());
             }
@@ -211,7 +213,7 @@ impl Checker<'_> {
                 .ok_or_else(|| Error::unlocated("imported early profile lost its actual owner"))?;
             self.facts
                 .associated
-                .imported_implementation(actual, predicate)
+                .imported_implementation(&self.facts.types, actual, predicate)
                 .map_err(Error::unlocated)?;
             pending
                 .skip(&mut self.facts, owner, Unsupported::SourceOwner)

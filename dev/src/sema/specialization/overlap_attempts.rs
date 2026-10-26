@@ -116,7 +116,9 @@ pub(in crate::sema) fn compare(
 }
 fn authenticate(facts: &mut Declarations, report: &Report, key: PairKey) -> Result<(), String> {
     for entry in key.entries() {
-        if registry(facts)?.polarity(&facts.associated, entry.owner())? != Polarity::Positive {
+        if registry(facts)?.polarity(&facts.types, &facts.associated, entry.owner())?
+            != Polarity::Positive
+        {
             return Err("negative implementation cannot participate in specialization".into());
         }
         let witness = registry(facts)?

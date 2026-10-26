@@ -1,5 +1,5 @@
 //! One actual selected-header collector owns source advisory completion.
-use super::{Declarations, Report, Stage, s};
+use super::{Declarations, Report, Stage, collected_provider::CollectedScope, s};
 use crate::{
     resolve::{
         model::{DefId, DefKind, Namespace},
@@ -9,6 +9,12 @@ use crate::{
     sema::header_attributes::{ContractKnowledge, HeaderAttributeView},
     syntax::{ast::Kind, item::ItemKind},
 };
+
+#[derive(Clone, Copy)]
+enum Collection {
+    Headers,
+    FormalScopes,
+}
 
 impl Stage {
     pub(crate) fn collect_header_columns(
@@ -24,6 +30,25 @@ impl Stage {
         facts: &Declarations,
         mut check: impl FnMut(&mut Stage, NodeKey) -> Result<(), Error>,
     ) -> Result<s::HeaderAttributeColumns, Error> {
+        self.collect_columns(report, facts, Collection::Headers, |stage, _, source| {
+            check(stage, source)
+        })
+    }
+    pub(super) fn collect_formal_columns(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        check: impl FnMut(&mut Stage, DefId, NodeKey) -> Result<(), Error>,
+    ) -> Result<s::HeaderAttributeColumns, Error> {
+        self.collect_columns(report, facts, Collection::FormalScopes, check)
+    }
+    fn collect_columns(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        mode: Collection,
+        mut check: impl FnMut(&mut Stage, DefId, NodeKey) -> Result<(), Error>,
+    ) -> Result<s::HeaderAttributeColumns, Error> {
         self.require_attribute_context(report, facts)?;
         let count = self.rows.declarations.len();
         self.reserve(
@@ -34,11 +59,21 @@ impl Stage {
         let mut completed: Vec<Option<s::HeaderContract>> = (0..count).map(|_| None).collect();
         for index in 0..self.definitions.len() {
             self.charge(1).map_err(Error::unlocated)?;
-            let Some((definition, declaration)) = self.selected_header(report, facts, index)?
-            else {
+            let selected = match mode {
+                Collection::Headers => self
+                    .selected_header(report, facts, index)?
+                    .map(|(definition, source)| CollectedScope::header_source(definition, source)),
+                Collection::FormalScopes => self.collected_scope(report, facts, index)?,
+            };
+            let Some(selected) = selected else {
                 continue;
             };
-            check(self, declaration)?;
+            let definition = selected.definition();
+            let declaration = selected.source();
+            check(self, definition, declaration)?;
+            if !selected.header() {
+                continue;
+            }
             require_defaultness_transport(report, declaration)?;
             let row = self.definitions[index]
                 .ok_or_else(|| Error::unlocated("selected attribute declaration disappeared"))?;
@@ -63,6 +98,12 @@ impl Stage {
                 ));
             }
         }
+        self.finish_columns(completed)
+    }
+    fn finish_columns(
+        &mut self,
+        mut completed: Vec<Option<s::HeaderContract>>,
+    ) -> Result<s::HeaderAttributeColumns, Error> {
         self.reserve(
             self.rows
                 .functions

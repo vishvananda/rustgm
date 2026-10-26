@@ -298,7 +298,7 @@ fn implementations(facts: &Declarations, out: &mut impl Write) -> io::Result<()>
                 })?;
             facts
                 .associated
-                .imported_implementation(*owner, implementation.predicate)
+                .imported_implementation(&facts.types, *owner, implementation.predicate)
                 .map_err(io::Error::other)?;
             write!(out, " source=imported ")?;
         }
