@@ -251,9 +251,10 @@ fn source_edition_options_retain_configuration_and_keep_metadata_profile_closed(
     )?;
     assert_eq!(output.status.code(), Some(1));
     assert!(output.stdout.is_empty() && !metadata.exists());
+    let diagnostic = String::from_utf8_lossy(&output.stderr);
     assert!(
-        String::from_utf8_lossy(&output.stderr)
-            .contains("source export requires defining Rust2024 edition")
+        diagnostic.contains("source export requires defining Rust2024 edition"),
+        "{diagnostic}"
     );
     std::fs::remove_dir(&folder)?;
     Ok(())
