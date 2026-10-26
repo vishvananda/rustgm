@@ -4,7 +4,10 @@ LIB-031 is the current loading frontier after the defaultness checkpoint. Observ
 40239001850 verifies 722 original inputs, opens 65 and stops at `ptr/metadata.rs:85`,
 byte3311, the equals sign in `pub trait Thin = Pointee<Metadata = ()> + PointeeSized;`.
 Source SHA is `90be519b27b46064f0bec607170ffce37aa9afb160a1edfab9c51641c8af15e2`.
-This plan does not claim a trait-alias implementation or a core artifact.
+The [source-site foundation](trait-alias-sites-checkpoint.md) is qualified.
+The [clause requirements and shared Self producer](trait-alias-contracts-checkpoint.md)
+add typed-phase groundwork; actual alias clause expansion and a core artifact
+remain open.
 
 Independent run40239493812 freezes 16 authored sources before execution, then
 observes 32 metadata compilations and six actual native executions on pinned
@@ -33,10 +36,10 @@ Primary background: [unstable book](https://doc.rust-lang.org/unstable-book/lang
 [RFC 1733](https://rust-lang.github.io/rfcs/1733-trait-alias.html). Pinned outcomes
 above, rather than a broader proposed RFC profile, define these test requirements.
 
-The current parser has a single real trait branch in `syntax/expression/items.rs`.
-It reads generics/bounds/where before requiring an opening brace. This is the
-observed failure. The existing explicit implementation-restriction alias fence
-must remain. Introduce an actual `ItemKind::TraitAlias { constant, bounds }` variant; retain
+The earlier parser failure was the ordinary trait branch requiring an opening
+brace. The qualified foundation now has an actual
+`ItemKind::TraitAlias { constant, bounds }` variant. Preserve the explicit
+implementation-restriction alias fence and
 the existing Item generics, visibility, name and post-bounds where-clause. Accept
 `=` only immediately after the name/generics, allow empty bounds and require `;`.
 Reject inappropriate unsafe/auto/default/restriction forms explicitly. Retain
@@ -46,7 +49,7 @@ const feature. This corrects the original const-qualifier rejection hypothesis.
 Reuse `bounds()` and `where_clause()`. Walk, transfer, render and configured
 expansion must preserve the real nodes and source context without reparsing.
 
-Add a distinct resolved alias definition kind in the type namespace, with a real
+The foundation also adds a distinct resolved alias definition kind in the type namespace, with a real
 lexical generic/Self scope. It is neither an ordinary trait owner nor a type
 alias with a fabricated RHS. Do not create an implementation registry entry,
 trait application, associated-member owner or vtable principal for the alias.

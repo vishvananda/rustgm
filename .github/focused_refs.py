@@ -1,4 +1,4 @@
-"""Exact six private consumer constructor and unchanged source controls; static audit overlaps one sequential Rust lane."""
+"""Exact six selected consumer callable and unchanged source controls; static audit overlaps one sequential Rust lane."""
 from concurrent.futures import ThreadPoolExecutor
 import hashlib,json,os,re,signal,subprocess,sys,time
 from pathlib import Path
@@ -15,7 +15,7 @@ def worker(started):
     freeze=json.loads((ROOT/'.github/inherited_numbering_freeze.json').read_text())
     sources=fingerprint(ROOT)
     if sources!=freeze['sources']:raise ValueError('frozen source changed')
-    out=ROOT/f'obj/qualification/fast/{time.time_ns()}-consumer-authority'
+    out=ROOT/f'obj/qualification/fast/{time.time_ns()}-selected-headers'
     deadline=started+185
     steps=Steps(ROOT,SimpleNamespace(deadline=deadline,evidence_root=out,prune_under=[]))
     cases=freeze['selected']
@@ -92,6 +92,6 @@ def main():
         if status:
             try:os.killpg(process.pid,signal.SIGKILL)
             except ProcessLookupError:pass
-        print(f'Private consumer gate total: {time.monotonic()-start:.2f}s status={status}',flush=True)
+        print(f'Selected consumer gate total: {time.monotonic()-start:.2f}s status={status}',flush=True)
 
 if __name__=='__main__':sys.exit(main())

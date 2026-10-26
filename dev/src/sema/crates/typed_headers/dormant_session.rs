@@ -12,8 +12,11 @@ use crate::{
 use std::sync::Arc;
 #[path = "demanded_headers.rs"]
 mod header_demands;
+#[path = "selected_headers.rs"]
+mod selected;
 #[path = "registered_templates.rs"]
 mod template_demands;
+pub(super) use selected::SelectedHeaders;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/held_stores.rs"]
 mod tests;
