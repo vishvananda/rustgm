@@ -8,11 +8,13 @@ import json
 from pathlib import Path
 import subprocess
 import time
+import tomllib
 
 from build_units import Execution, index
 from build_environment import package_environment
 import host_build_script
 import host_profile
+import manifest_lints
 
 
 def pair(plan, selected, package, context):
@@ -40,7 +42,8 @@ def pair(plan, selected, package, context):
     return unit, compiled
 
 
-def execute(plan, selected, package, context, folder):
+def execute(plan, selected, package, context, folder, *, lint_cap=None):
+    manifest_lints.cap_arguments(lint_cap)
     package.verify()
     context.validate()
     unit, compiled = pair(plan, selected, package, context)
@@ -52,8 +55,10 @@ def execute(plan, selected, package, context, folder):
     implementation = {name: host_build_script.digest(wrapper.with_name(name)) for name in (
         'planned_build_script.py', 'host_build_script.py', 'host_process.py', 'build_script_output.py',
         'build_environment.py', 'host_profile.py', 'cargo_query.py', 'build_units.py',
-        'package_snapshot.py', 'local_package.py')}
-    common = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', **package_environment(package)}
+        'package_snapshot.py', 'local_package.py', 'manifest_lints.py')}
+    document = tomllib.loads((package.root / 'Cargo.toml').read_text())
+    common = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8',
+              **package_environment(package, document)}
     queries = folder / 'queries.jsonl'
     runtime = {**common, **context.cfg_environment(), **host_profile.environment(unit.profile_json),
                'HOST': context.host, 'TARGET': unit.platform or context.host, 'NUM_JOBS': '2',
@@ -66,12 +71,14 @@ def execute(plan, selected, package, context, folder):
                                context.compiler, context.compiler_sha256,
                                {name: sha for name, sha, _ in package.files},
                                {**common, 'CARGO_CRATE_NAME': 'build_script_build'}, runtime,
-                               compiled.features, profile_json=compiled.profile_json)
+                               compiled.features, profile_json=compiled.profile_json,
+                               lints=document.get('lints'), lint_cap=lint_cap)
     receipt = {'state': 'running', 'package': package.identity, 'selected': selected,
                'run': asdict(unit), 'compile': asdict(compiled), 'host': context.host,
                'target': unit.platform or context.host, 'cfg': context.cfg,
                'configuration_inputs': [(str(path), sha) for path, sha in context.inputs],
                'implementation_sha256': implementation}
+    receipt['lint_cap'] = lint_cap
     started = time.monotonic()
 
     def save():

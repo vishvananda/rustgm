@@ -5,14 +5,16 @@ import re
 import tomllib
 
 from host_build_script import digest
+import manifest_lints
 
 
 def package_environment(package, document=None):
     manifest = package.root / 'Cargo.toml'
     if document is None:
         document = tomllib.loads(manifest.read_text())
-    if 'lints' in document or 'cargo-features' in document:
-        raise ValueError('build-script manifest lint/unstable policy is not implemented')
+    if 'cargo-features' in document:
+        raise ValueError('build-script manifest unstable policy is not implemented')
+    manifest_lints.arguments(document.get('lints', {}))
     data = document['package']
     version = re.fullmatch(r'(\d+)\.(\d+)\.(\d+)(?:-([^+]+))?(?:\+.+)?', package.version)
     if version is None or data.get('name') != package.name or data.get('version') != package.version:

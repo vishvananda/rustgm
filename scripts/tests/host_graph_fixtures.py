@@ -36,7 +36,9 @@ FILES = {'app/Cargo.toml': '[package]\n'
                       'host_side=[]\n'
                       'target_side=[]\n'
                       '[dependencies]\n'
-                      'native-sys={version="=1.0.0"}\n',
+                      'native-sys={version="=1.0.0"}\n'
+                      '[lints.rust]\n'
+                      'unsafe_code="forbid"\n',
  'helper/build.rs': 'fn main(){\n'
                     ' '
                     'assert_eq!(std::env::var("DEP_RUSTGM_NATIVE_ROOT_DIR").unwrap(),"headers=ready");\n'

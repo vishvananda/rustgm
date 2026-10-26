@@ -12,14 +12,20 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from build_environment import Context, package_environment
 import host_profile
+import manifest_lints
 from host_build_script import digest
 from planned_build_script import execute, pair
 import test_build_units as units
 import test_package_snapshot as snapshots
 
 
-def setup(root):
-    package = snapshots.snapshot(root, [('sample-1.0.0/build.rs', b'fn main() {}')])
+def setup(root, lint_table=''):
+    source = snapshots.archive(root, [('sample-1.0.0/build.rs', b'fn main() {}')],
+                               manifest=('[package]\nname="sample"\nversion="1.0.0"\n'
+                                         'edition="2021"\n' + lint_table).encode())
+    vendor = root / 'vendor'
+    vendor.mkdir()
+    package = snapshots.extract(source, digest(source), 'sample', '1.0.0', vendor)
     compiler = root / 'compiler'
     compiler.write_bytes(b'pinned host compiler')
     facts = root / 'context.json'
@@ -170,13 +176,66 @@ class Tasks(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     replace(context, cfg=cfg).validate()
 
-    def test_manifest_compiler_policy_is_never_silently_ignored(self):
+    def test_manifest_lints_reach_real_task_command_and_receipt(self):
         with tempfile.TemporaryDirectory() as temporary:
-            package, _, _ = setup(Path(temporary))
-            manifest = package.root / 'Cargo.toml'
-            manifest.write_text(manifest.read_text() + '\n[lints.rust]\nunused="deny"\n')
-            with self.assertRaisesRegex(ValueError, 'manifest lint/unstable policy'):
-                package_environment(package)
+            root = Path(temporary)
+            package, context, data = setup(root, '\n[lints.rust]\nunused="deny"\n'
+                'dead_code={level="allow",priority=1}\n[lints.clippy]\nall="warn"\n')
+            with patch('host_build_script.subprocess.run', side_effect=self.process) as run:
+                execute(units.decode(data), 1, package, context, root / 'output', lint_cap='warn')
+            command = run.call_args_list[0].args[0]
+            self.assertLess(command.index('--deny=unused'), command.index('--allow=dead_code'))
+            self.assertIn('--warn=clippy::all', command)
+            self.assertEqual(command[command.index('--cap-lints') + 1], 'warn')
+            receipt = json.loads((root / 'output/host/receipt.json').read_text())
+            self.assertEqual(receipt['lints']['rust']['unused'], 'deny')
+            self.assertEqual(receipt['lint_cap'], 'warn')
+            self.assertIn('--deny=unused', receipt['commands'][0]['command'])
+
+    def test_unknown_manifest_policy_still_fails_before_execution(self):
+        for table in ('\n[lints]\nworkspace=true\n', '\ncargo-features=["unknown"]\n',
+                      '\n[lints.rust]\nunused="expect"\n'):
+            with self.subTest(table=table), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                if 'cargo-features' in table:
+                    # This key is at the manifest root, not under [package].
+                    package, context, data = setup(root)
+                    document = {'cargo-features': ['unknown']}
+                    with self.assertRaisesRegex(ValueError, 'unstable policy'):
+                        package_environment(package, document)
+                    continue
+                package, context, data = setup(root, table)
+                with patch('host_build_script.subprocess.run') as run, self.assertRaises(ValueError):
+                    execute(units.decode(data), 1, package, context, root / 'output')
+                run.assert_not_called()
+
+
+class Lints(unittest.TestCase):
+    def test_frozen_cargo_priorities_and_cfg_expectations_remain_ordered(self):
+        flags = manifest_lints.arguments({'rust': {
+            'unused': {'level': 'deny', 'priority': -1},
+            'dead_code': {'level': 'allow', 'priority': 1},
+            'unexpected_cfgs': {'level': 'deny', 'check-cfg': ['cfg(host_lint_probe)']},
+        }, 'clippy': {'all': {'level': 'warn', 'priority': -1}}})
+        self.assertEqual(flags, ('--deny=unused', '--warn=clippy::all',
+                                '--deny=unexpected_cfgs', '--allow=dead_code',
+                                '--check-cfg', 'cfg(host_lint_probe)'))
+
+    def test_unimplemented_and_malformed_policies_cannot_inject_or_discard_flags(self):
+        variants = [{'workspace': True}, {'cargo': {'unknown': 'allow'}},
+                    {'rust': {'dead_code': {'level': 'allow', 'priority': True}}},
+                    {'rust': {'dead_code': {'level': 'allow', 'priority': 128}}},
+                    {'rust': {'dead_code': {'level': 'allow', 'extra': 'ignored'}}},
+                    {'rust': {'dead_code': {'level': 'allow', 'check-cfg': []}}},
+                    {'rust': {'unexpected_cfgs': {'level': 'deny', 'check-cfg': ['cfg(x)\n']}}},
+                    {'clippy': {'all': {'level': 'warn', 'check-cfg': ['cfg(x)']}}},
+                    {'rust': {'dead_code -o injected': 'allow'}}]
+        for table in variants:
+            with self.subTest(table=table), self.assertRaises(ValueError):
+                manifest_lints.arguments(table)
+        for cap in ('', '--deny=all', True, 1):
+            with self.subTest(cap=cap), self.assertRaises(ValueError):
+                manifest_lints.cap_arguments(cap)
 
 
 if __name__ == '__main__':
