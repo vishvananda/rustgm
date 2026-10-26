@@ -74,13 +74,66 @@ fn actual_terminal_abort_preserves_owned_scope_and_prepares_native_controls() ->
 }
 #[test]
 fn terminal_edge_and_const_reification_opponents_remain_closed() -> Result {
-    let input = source("#[rustc_intrinsic]pub fn abort()->!;fn reached()->!{abort()}")?;
+    let input = source(
+        "#[rustc_intrinsic]pub fn abort()->!;#[unsafe(no_mangle)]pub fn reached()->!{abort()}",
+    )?;
     let report = crate::test_source::source_provider(&input, "abort_edges")?;
-    let facts = crate::sema::declarations::analyze(&report)?;
-    let facts = crate::sema::bodies::analyze(&report, facts)?;
-    let program = crate::body::build(&report, &facts)?;
-    let original = program.bodies.iter().find(|body| matches!(body.owner, ir::Owner::Function{definition,..}
-        if report.package.names.get(report.resolution.definitions[definition.0 as usize].name)=="reached")).ok_or("reached body")?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    crate::lower::instances::inspect_prepared(
+        &report,
+        &mut facts,
+        prepared,
+        |_, proof| -> Result {
+            let original = proof.program().bodies.iter().find(|body| matches!(body.owner, ir::Owner::Function{definition,..}
+            if report.package.names.get(report.resolution.definitions[definition.0 as usize].name)=="reached")).ok_or("reached checked body")?;
+            terminal_opponents(original)
+        },
+    )??;
+    for (name, tail) in [
+        (
+            "const",
+            "#[rustc_intrinsic]pub fn abort()->!;const fn bad()->!{abort()}",
+        ),
+        (
+            "const_false",
+            "#[rustc_intrinsic]pub fn abort()->!;const fn bad()->u8{if false{abort()}else{3}}",
+        ),
+        (
+            "reify",
+            "#[rustc_intrinsic]pub fn abort()->!;#[unsafe(no_mangle)]pub fn bad()->!{let call:fn()->! = abort;call()}",
+        ),
+    ] {
+        let input = source(tail)?;
+        let result =
+            crate::test_source::source_provider(&input, "abort_opponents").and_then(|report| {
+                let crate::pipeline::Analysis {
+                    mut facts,
+                    prepared,
+                } = crate::pipeline::analyze_source(&report).map_err(|error| error.to_string())?;
+                crate::lower::instances::build_roots_prepared(
+                    &report,
+                    &mut facts,
+                    crate::lower::Roots {
+                        entry: None,
+                        exports: &[],
+                    },
+                    prepared,
+                )
+                .map_err(|error| error.to_string())
+            });
+        let error = result
+            .err()
+            .ok_or_else(|| format!("{name} acquired source Abort permission"))?;
+        eprintln!("source Abort {name} rejected: {error}");
+    }
+    Ok(())
+}
+
+/// Observe actual prepared ownership/instance proof before opposing terminal facts.
+fn terminal_opponents(original: &ir::Body) -> Result {
     let (index, block) = original
         .blocks
         .iter()
@@ -127,42 +180,5 @@ fn terminal_edge_and_const_reification_opponents_remain_closed() -> Result {
     changed = original.clone();
     changed.statements[before as usize].action = ir::Action::Mention(ir::Place::Temporary(value));
     assert!(terminal(&changed, value, location).is_err());
-    for (name, tail) in [
-        (
-            "const",
-            "#[rustc_intrinsic]pub fn abort()->!;const fn bad()->!{abort()}",
-        ),
-        (
-            "const_false",
-            "#[rustc_intrinsic]pub fn abort()->!;const fn bad()->u8{if false{abort()}else{3}}",
-        ),
-        (
-            "reify",
-            "#[rustc_intrinsic]pub fn abort()->!;#[unsafe(no_mangle)]pub fn bad()->!{let call:fn()->! = abort;call()}",
-        ),
-    ] {
-        let input = source(tail)?;
-        let result =
-            crate::test_source::source_provider(&input, "abort_opponents").and_then(|report| {
-                let crate::pipeline::Analysis {
-                    mut facts,
-                    prepared,
-                } = crate::pipeline::analyze_source(&report).map_err(|error| error.to_string())?;
-                crate::lower::instances::build_roots_prepared(
-                    &report,
-                    &mut facts,
-                    crate::lower::Roots {
-                        entry: None,
-                        exports: &[],
-                    },
-                    prepared,
-                )
-                .map_err(|error| error.to_string())
-            });
-        let error = result
-            .err()
-            .ok_or_else(|| format!("{name} acquired source Abort permission"))?;
-        eprintln!("source Abort {name} rejected: {error}");
-    }
     Ok(())
 }
