@@ -1,13 +1,58 @@
 //! A mapped environment charges copied payload, excluding unchanged declaration tables.
 use super::Environment;
-use crate::{support::retained::Allocation, types::parameters::premise_index};
+use crate::{
+    support::retained::{Allocation, Growth},
+    types::parameters::premise_index,
+};
 use std::sync::Arc;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/alias_accounting.rs"]
+pub(crate) mod alias_tests;
 #[derive(Default)]
 pub(crate) struct Retained {
     base: bool,
     index: premise_index::Retained,
 }
 impl Environment {
+    /// Cost only for an actual declaration without prior regional payload.
+    /// Existing region tables, even empty ones, need their separately sized clone.
+    pub(crate) fn neutral_alias_finish_bound(&self, count: usize) -> Result<Growth, &'static str> {
+        if self.builtins.is_some() || self.regions.is_some() {
+            return Err("neutral alias finish has preexisting regional payload");
+        }
+        let mut growth = crate::types::relations::BodyAliases::construction_bound(count)?;
+        growth.work = growth.work.saturating_add(2);
+        if count != 0 {
+            growth.bytes = growth
+                .bytes
+                .saturating_add(size_of::<Self>())
+                .saturating_add(size_of::<crate::types::relations::RegionEqualities>())
+                .saturating_add(4 * size_of::<usize>());
+        }
+        Ok(growth)
+    }
+    /// Reconcile only the fresh alias finish; other declaration Arcs stay shared.
+    pub(crate) fn neutral_alias_owned_from(
+        &self,
+        shared: &Self,
+    ) -> Result<Allocation, &'static str> {
+        if shared.builtins.is_some() || shared.regions.is_some() {
+            return Err("neutral alias finish changed its original regional payload");
+        }
+        let regions = self
+            .regions
+            .as_deref()
+            .filter(|regions| regions.is_empty() && !regions.has_equation_storage())
+            .ok_or("neutral alias finish changed its actual equality construction")?;
+        let aliases = regions
+            .body_aliases()
+            .ok_or("neutral alias finish omitted its actual retained ledger")?;
+        let mut retained = self.retain_owned_from(shared, &mut Retained::default());
+        retained.add(6 * size_of::<usize>());
+        retained.add(aliases.control_allocation());
+        Ok(retained)
+    }
+
     /// Accounting only for already validated ordinary trait predicates whose
     /// subject/arguments are rigid parameters or scalar leaves. Wider clauses
     /// must use an explicit wider estimator before any environment allocation.

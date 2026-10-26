@@ -21,6 +21,53 @@ pub(super) struct Storage {
 }
 
 impl Store {
+    pub(super) fn trait_tables_bytes(&self) -> usize {
+        self.arguments
+            .as_ref()
+            .and_then(|storage| storage.traits.as_deref())
+            .map_or(0, |storage| {
+                size_of::<Storage>()
+                    .saturating_add(crate::support::retained::vector(&storage.applications))
+                    .saturating_add(crate::support::retained::vector(&storage.properties))
+                    .saturating_add(crate::support::retained::map(&storage.index))
+            })
+    }
+    /// Bound a known miss's real append/copy/rehash costs without interning or proof.
+    pub(crate) fn trait_application_growth(&self) -> crate::support::retained::Growth {
+        use crate::support::retained::Growth;
+        let storage = self
+            .arguments
+            .as_ref()
+            .and_then(|storage| storage.traits.as_deref());
+        let mut growth = Growth::default();
+        if let Some(storage) = storage {
+            growth.include(Growth::vector::<Application>(
+                storage.applications.len(),
+                storage.applications.capacity(),
+                1,
+            ));
+            growth.include(Growth::vector::<Properties>(
+                storage.properties.len(),
+                storage.properties.capacity(),
+                1,
+            ));
+            growth.include(Growth::map::<Application, ApplicationId>(
+                storage.index.len(),
+                storage.index.capacity(),
+                1,
+            ));
+        } else {
+            growth.bytes = size_of::<Storage>().saturating_add(if self.arguments.is_none() {
+                size_of::<super::arguments::Storage>()
+            } else {
+                0
+            });
+            growth.include(Growth::vector::<Application>(0, 0, 1));
+            growth.include(Growth::vector::<Properties>(0, 0, 1));
+            growth.include(Growth::map::<Application, ApplicationId>(0, 0, 1));
+        }
+        growth
+    }
     pub(super) fn trait_application_count(&self) -> usize {
         self.arguments
             .as_ref()

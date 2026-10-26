@@ -1,4 +1,5 @@
 //! Trait contracts retain direct predicates; applications share one capture-safe fold.
+mod applied_bounds;
 pub(super) mod assumptions;
 pub(in crate::sema) mod callables;
 pub(super) mod conformance;
@@ -16,12 +17,10 @@ use super::{generics::Parameter, generics::Predicate as Located, generics::param
 use crate::support::hash::HashMap;
 use crate::types::{
     ItemId, Store, TypeId,
-    arguments::Argument,
     parameters::{
         clauses::Clause,
         predicates::{Bound, Predicate},
     },
-    substitute,
 };
 use std::sync::Arc;
 
@@ -247,105 +246,6 @@ impl Contracts {
             }
         }
         Ok(())
-    }
-
-    pub fn requirements(
-        &mut self,
-        store: &mut Store,
-        predicate: Predicate,
-    ) -> Result<Arc<Requirements>, &'static str> {
-        if let Some(result) = self.applications.get(&predicate) {
-            return Ok(Arc::clone(result));
-        }
-        let Some((id, effect)) = predicate.bound.trait_parts() else {
-            return Err("trait contract requires a trait application");
-        };
-        let application = store
-            .trait_application(id)
-            .ok_or("invalid trait application")?;
-        let header = self
-            .headers
-            .get(&application.item)
-            .ok_or("missing trait contract")?;
-        let arguments = store
-            .arguments(application.arguments)
-            .ok_or("invalid trait arguments")?;
-        if arguments.len() != header.parameters.len() {
-            return Err("trait contract argument arity mismatch");
-        }
-        self.steps = self.steps.saturating_add(
-            1 + arguments.len() + header.inputs.view().len() + header.results.len(),
-        );
-        if self.steps > 1_000_000 {
-            return Err("trait contract work budget exceeded");
-        }
-        let self_parameter = parameter_id(store, Argument::Type(header.self_type))?;
-        let mut mapping = vec![(self_parameter, Argument::Type(predicate.ty))];
-        let mut regions = Vec::new();
-        let mut result = Requirements {
-            implied: Vec::new(),
-            results: Vec::new(),
-            required: Vec::new(),
-            types: Vec::new(),
-            regions: Vec::new(),
-        };
-        for (parameter, argument) in header.parameters.iter().zip(arguments) {
-            if let (Argument::Lifetime(_), Argument::Lifetime(region)) =
-                (parameter.argument, argument)
-            {
-                regions.push(region);
-                continue;
-            }
-            let id = parameter_id(store, parameter.argument)?;
-            mapping.push((id, argument));
-            if let Argument::Type(ty) = argument {
-                result.types.push(ty);
-                if matches!(
-                    store.parameter(id).map(|p| p.kind),
-                    Some(crate::types::parameters::ParameterKind::Type { sized: true })
-                ) {
-                    result.required.push(
-                        Predicate {
-                            ty,
-                            bound: Bound::Sized,
-                        }
-                        .into(),
-                    );
-                }
-            }
-        }
-        let mut replace = substitute::Bound::parameters_captured(store, &mapping, regions)?;
-        for (index, predicate) in header.inputs.view().iter().enumerate() {
-            let value = replace.clause(store, predicate.value)?;
-            let value = effects::in_context(store, value, effect)?;
-            if header.implies(store, index, predicate)? {
-                result.implied.push(value);
-            } else {
-                result.required.push(value);
-            }
-        }
-        for (_, predicate) in &header.results {
-            let value = replace.clause(store, predicate.value)?;
-            result
-                .results
-                .push(effects::in_context(store, value, effect)?);
-        }
-        for &(longer, shorter) in &header.regions {
-            let (Argument::Lifetime(longer), Argument::Lifetime(shorter)) = (
-                replace.apply_argument(store, Argument::Lifetime(longer))?,
-                replace.apply_argument(store, Argument::Lifetime(shorter))?,
-            ) else {
-                return Err("invalid trait region substitution");
-            };
-            result.regions.push((longer, shorter));
-        }
-        self.steps = self.steps.saturating_add(replace.steps);
-        if self.steps > 1_000_000 {
-            return Err("trait contract work budget exceeded");
-        }
-        let result = Arc::new(result);
-        self.applications.insert(predicate, Arc::clone(&result));
-        Ok(result)
     }
 }
 

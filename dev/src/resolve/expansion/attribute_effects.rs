@@ -8,6 +8,7 @@ use crate::resolve::lint_policy::{
 pub(crate) struct Effects {
     pub removals: Removals,
     pub policy: Option<Producer>,
+    pub(super) visibilities: Option<Box<super::unnamed_visibility::Causes>>,
 }
 impl Report {
     pub(crate) fn removed_functions(&self) -> Option<&Removals> {
@@ -57,6 +58,7 @@ impl<S: Sources> Engine<'_, S> {
             self.attribute_effects = Some(Box::new(Effects {
                 removals: Removals::default(),
                 policy: Some(producer),
+                visibilities: None,
             }));
         }
         let producer = self

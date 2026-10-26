@@ -50,12 +50,34 @@ impl Store {
         ty: TypeId,
         amount: u16,
     ) -> Result<(TypeId, usize), &'static str> {
+        self.shift_type_observed::<false>(ty, amount, &|_, _| Ok(()))
+    }
+    pub(crate) fn shift_type_charged(
+        &mut self,
+        ty: TypeId,
+        amount: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(TypeId, usize), &'static str> {
+        self.shift_type_observed::<true>(ty, amount, charge)
+    }
+    fn shift_type_observed<const CHARGED: bool>(
+        &mut self,
+        ty: TypeId,
+        amount: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(TypeId, usize), &'static str> {
+        if CHARGED {
+            charge(1, 0)?;
+        }
         let escaping = self.escaping_binders(ty).ok_or("invalid shifted type")?;
         if amount == 0 || escaping == 0 {
             return Ok((ty, 0));
         }
+        if CHARGED && self.shifts.is_none() {
+            charge(1, size_of::<Shifts>())?;
+        }
         let mut shifts = self.shifts.take().unwrap_or_default();
-        let result = shifts.apply(self, ty, amount);
+        let result = shifts.apply_observed::<CHARGED>(self, ty, amount, charge);
         // Failed folds retain their budget and any completed structural children.
         self.shifts = Some(shifts);
         result
@@ -63,13 +85,22 @@ impl Store {
 }
 
 impl Shifts {
-    fn apply(
+    fn apply_observed<const CHARGED: bool>(
         &mut self,
         store: &mut Store,
         ty: TypeId,
         amount: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<(TypeId, usize), &'static str> {
         self.account(0)?;
+        if CHARGED {
+            let growth = crate::support::retained::Growth::map::<u16, Bound>(
+                self.folders.len(),
+                self.folders.capacity(),
+                usize::from(!self.folders.contains_key(&amount)),
+            );
+            charge(growth.work, growth.bytes)?;
+        }
         let mut work = 0;
         let folder = match self.folders.entry(amount) {
             Entry::Occupied(entry) => entry.into_mut(),
@@ -79,7 +110,7 @@ impl Shifts {
             }
         };
         let before = folder.steps;
-        let result = folder.apply(store, ty);
+        let result = folder.apply_inside_observed::<CHARGED>(store, ty, 0, charge);
         work += folder.steps.saturating_sub(before);
         self.account(work)?;
         result.map(|ty| (ty, work))
