@@ -236,6 +236,35 @@ impl<'a> ScopeIndex<'a> {
         Ok(position)
     }
 
+    /// Raw body contracts retain the source iterator's inner-to-outer scope
+    /// order. Callable applications keep their separate outer-to-inner order.
+    /// # Errors
+    /// Rejects foreign, regional, missing or malformed actual formal identities.
+    pub fn original_type_parameter_position(
+        &self,
+        owner: DeclarationRef,
+        slot: SlotRef,
+        work: &mut Work,
+    ) -> Result<u32, &'static str> {
+        // Reuse the same actual containment, kind and own-index checks.
+        self.type_argument_position(owner, slot, work)?;
+        work.charge(2)?;
+        let slot = &self.rows.slots[slot.0 as usize];
+        let consumer = self.owners[owner.0 as usize]
+            .ok_or("source original formal lost its actual consumer scope")?;
+        let declaring = self.owners[slot.owner.0 as usize]
+            .ok_or("source original formal lost its actual declaring scope")?;
+        let complete = self.totals[consumer as usize].types;
+        let position = complete
+            .checked_sub(self.totals[declaring as usize].types)
+            .and_then(|prefix| prefix.checked_add(slot.index))
+            .ok_or("source original type parameter ordinal overflow")?;
+        if position >= complete {
+            return Err("source original formal is outside its complete body order");
+        }
+        Ok(position)
+    }
+
     /// # Errors
     /// Rejects unknown owners rather than inferring inheritance from lexical scope.
     pub fn parent(

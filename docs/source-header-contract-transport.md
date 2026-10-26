@@ -5,8 +5,9 @@ The library implementation of source tag 10, row version 1,
 [CI 40205079379](https://github.com/vishvananda/rustgm/actions/runs/40205079379).
 Metadata, formatting, architecture, strict private Clippy, build and execution
 take 131.84 seconds. Version 0 Functions bytes and imported Unknown behavior
-stay unchanged. Tag 11 Provided stays closed. CLI activation is a separate,
-pending checkpoint; this does not complete an assignment or upstream crate.
+stay unchanged. Tag 11 Provided stays closed. The
+[CLI checkpoint](source-core-cli-contracts.md) separately qualifies activation,
+exact warnings and native consumers; this completes no assignment or upstream crate.
 
 Every admitted function and trait header has a complete parallel contract row.
 KnownAbsent requires a completed source producer witness; an absent map entry,
@@ -48,7 +49,8 @@ accessor exposes `coordinate`, checked declaration handle, optional checked
 annotation site (absent only for legacy Unknown), and optional real function
 `ExternalDef`. The lower opt-in is
 `instances::build_source_library_profile(..., SourcePublication::FunctionContracts)`.
-Existing library callers still select LegacyFunctions; no CLI flag activates v1.
+The explicit legacy library API still selects LegacyFunctions. The driver opts
+into the new profile for an actual SourceCore provider, without a wire-version flag.
 
 The six exact private selectors and all provider/client source bindings are
 predeclared in `pa31/tests/spec/source-attribute-transport/contract.json`.
@@ -95,7 +97,7 @@ regressions, legacy imported Unknown and fresh version-one consumers. All five
 execute with metadata, formatting, architecture, strict private Clippy and build
 in 131.15 seconds. Harness, upstream and audit-cache checks also pass. Source
 `2b3dff02` is integrated at `b670e3f0`; the earlier 12/13 failure remains retained.
-CLI activation remains a separate pending checkpoint.
+The separate CLI activation and native-consumer checkpoint now passes too.
 
 The full reviewed proposal is retained at
 `obj/parallel/pa31/source-attribute-transport-v1/proposal.json`, SHA-256

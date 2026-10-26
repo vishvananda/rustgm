@@ -57,6 +57,26 @@ fn cfg_admission_uses_only_demanded_token_provenance() -> Result<(), rustgm::lex
     Ok(())
 }
 
+#[test]
+fn changing_source_edition_preserves_explicit_configuration_inputs()
+-> Result<(), rustgm::lex::token::LexError> {
+    use rustgm::support::runtime_checks::RuntimeCheckConfig;
+    let mut config = Config::default();
+    config.add("selected")?;
+    config.add("flavor = \"retained\"")?;
+    config.set_runtime_checks(RuntimeCheckConfig::with_ub_checks(true));
+    config.set_edition(Edition::Rust2021);
+    assert_eq!(config.edition(), Edition::Rust2021);
+    assert!(config.contains("selected", None));
+    assert!(config.contains("flavor", Some("retained")));
+    assert!(config.runtime_checks().ub_checks());
+    config.set_edition(Edition::Rust2024);
+    assert_eq!(config.edition(), Edition::Rust2024);
+    assert!(config.contains("selected", None));
+    assert!(config.runtime_checks().ub_checks());
+    Ok(())
+}
+
 #[derive(Default)]
 pub(super) struct Files(Vec<(PathBuf, String)>);
 impl Sources for Files {

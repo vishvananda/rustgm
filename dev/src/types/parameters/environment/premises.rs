@@ -155,6 +155,40 @@ impl TraitAssumptions {
         Ok(index)
     }
 
+    pub(super) fn index_charged(
+        &self,
+        types: &Store,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Arc<ClauseIndex>, &'static str> {
+        charge(1, 0)?;
+        if let Some(mapped) = &self.mapped {
+            mapped
+                .index
+                .opening()
+                .ok_or("missing mapped trait opening")?
+                .validate(types)?;
+            return Ok(Arc::clone(&mapped.index));
+        }
+        if let Some(result) = self.index.get() {
+            return result.clone();
+        }
+        // Retention failure is query-local: it must not become a permanent
+        // semantic Err in the immutable source's OnceLock.
+        charge(1, size_of::<ClauseIndex>() + 2 * size_of::<usize>())?;
+        let mut index = ClauseIndex::default();
+        for clause in self.clauses() {
+            index.insert_clause_charged(types, clause, charge)?;
+        }
+        let index = Arc::new(index);
+        if self.index.set(Ok(Arc::clone(&index))).is_ok() {
+            return Ok(index);
+        }
+        self.index
+            .get()
+            .ok_or("caller trait index publication disappeared")?
+            .clone()
+    }
+
     pub fn is_empty(&self) -> bool {
         if let Some(mapped) = &self.mapped {
             return mapped.source.is_empty();
@@ -242,6 +276,28 @@ impl TraitAssumptions {
         types: &mut Store,
         fold: &mut substitute::Bound,
     ) -> Result<(), &'static str> {
+        self.substitute_observed::<false>(types, fold, &|_, _| Ok(()))
+    }
+    pub(super) fn substitute_charged(
+        &mut self,
+        types: &mut Store,
+        fold: &mut substitute::Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        self.substitute_observed::<true>(types, fold, charge)
+    }
+    fn substitute_observed<const CHARGED: bool>(
+        &mut self,
+        types: &mut Store,
+        fold: &mut substitute::Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        if CHARGED {
+            charge(1, 0)?;
+            if self.mapped.is_some() {
+                return Err("charged declaration mapping requires an unopened caller environment");
+            }
+        }
         if let Some(mapped) = self.mapped.take() {
             let opening = mapped
                 .index
@@ -278,18 +334,40 @@ impl TraitAssumptions {
                 let (_, id) = quantified
                     .next()
                     .ok_or("missing quantified environment entry")?;
-                let Clause::ForAll(mapped) = fold.clause(types, Clause::ForAll(*id))? else {
+                let mapped = if CHARGED {
+                    charge(1, 0)?;
+                    fold.clause_charged(types, Clause::ForAll(*id), charge)?
+                } else {
+                    fold.clause(types, Clause::ForAll(*id))?
+                };
+                let Clause::ForAll(mapped) = mapped else {
                     return Err("substitution flattened quantified environment clause");
                 };
                 *id = mapped;
                 region_mapping |= Clause::ForAll(mapped).has_free_regions(types)?;
             } else {
-                self.predicates[position] = fold.predicate(types, self.predicates[position])?;
+                self.predicates[position] = if CHARGED {
+                    charge(1, 0)?;
+                    fold.clause_charged(types, self.predicates[position].into(), charge)?
+                        .ordinary()?
+                } else {
+                    fold.predicate(types, self.predicates[position])?
+                };
                 region_mapping |= self.predicates[position].has_free_regions(types)?;
                 position += 1;
             }
         }
         self.region_mapping = region_mapping;
+        self.rebuild_observed::<CHARGED>(types, charge)
+    }
+    fn rebuild_observed<const CHARGED: bool>(
+        &mut self,
+        types: &Store,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        if CHARGED {
+            self.prepay_rebuild(charge)?;
+        }
         self.unique = self.predicates.iter().copied().collect();
         self.projected.clear();
         for (index, &predicate) in self.predicates.iter().enumerate() {
@@ -330,4 +408,87 @@ pub(super) fn ordered<'a>(
         }
         ordinary.next().map(|(_, p)| Clause::Predicate(*p))
     })
+}
+
+impl TraitAssumptions {
+    pub(super) fn prepay_clone(
+        &self,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        use crate::support::retained;
+        charge(1, size_of::<Self>() + 2 * size_of::<usize>())?;
+        charge(self.predicates.len(), retained::vector(&self.predicates))?;
+        charge(
+            self.unique.len(),
+            self.unique
+                .capacity()
+                .saturating_mul(size_of::<Predicate>()),
+        )?;
+        charge(
+            self.constants.len(),
+            self.constants
+                .capacity()
+                .saturating_mul(size_of::<ParameterId>()),
+        )?;
+        charge(self.projected.len(), retained::map(&self.projected))?;
+        for values in self.projected.values() {
+            charge(1 + values.len(), retained::vector(values))?;
+        }
+        if let Some(q) = &self.quantified {
+            charge(1, size_of::<Quantifiers>())?;
+            charge(q.entries.len(), retained::vector(&q.entries))?;
+            charge(
+                q.unique.len(),
+                q.unique
+                    .capacity()
+                    .saturating_mul(size_of::<QuantifiedId>()),
+            )?;
+            charge(q.projected.len(), retained::map(&q.projected))?;
+            for values in q.projected.values() {
+                charge(1 + values.len(), retained::vector(values))?;
+            }
+        }
+        Ok(())
+    }
+}
+
+impl TraitAssumptions {
+    fn prepay_rebuild(
+        &self,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        use crate::support::retained::Growth;
+        let n = self.predicates.len();
+        let mut growth = Growth::map::<Predicate, ()>(0, 0, n);
+        growth.include(Growth::map::<ProjectionKey, Vec<usize>>(
+            0,
+            self.projected.capacity(),
+            n,
+        ));
+        // Every emitted projection bucket has at least one input row; four
+        // slots per row bounds all geometric bucket buffers together.
+        growth.bytes = growth
+            .bytes
+            .saturating_add(n.saturating_mul(4 * size_of::<usize>()));
+        growth.work = growth.work.saturating_add(n);
+        if let Some(q) = &self.quantified {
+            growth.include(Growth::map::<QuantifiedId, ()>(
+                0,
+                q.unique.capacity(),
+                q.entries.len(),
+            ));
+            growth.include(Growth::map::<ProjectionKey, Vec<QuantifiedId>>(
+                0,
+                q.projected.capacity(),
+                q.entries.len(),
+            ));
+            growth.bytes = growth.bytes.saturating_add(
+                q.entries
+                    .len()
+                    .saturating_mul(4 * size_of::<QuantifiedId>()),
+            );
+            growth.work = growth.work.saturating_add(q.entries.len());
+        }
+        charge(growth.work, growth.bytes)
+    }
 }

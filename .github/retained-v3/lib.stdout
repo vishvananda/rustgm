@@ -1,0 +1,16 @@
+
+running 6 tests
+test lower::function::termination_call::tests::terminal_edge_and_const_reification_opponents_remain_closed ... FAILED
+test lower::instances::dependencies::abort_tests::abort_dependency_requires_current_header_full_instance_and_direct_call ... ok
+test lower::instances::dependencies::ub_tests::ub_dependency_omission_checks_actual_role_complete_instance_and_direct_call_shape ... ok
+test lower::function::termination_call::tests::actual_terminal_abort_preserves_owned_scope_and_prepares_native_controls ... ok
+test sema::compiler_items::panic_declarations::appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles ... ok
+test sema::compiler_items::panic_declarations::source_abort_signature_is_safe_nonconst_and_supplies_no_layout_or_const_permission ... ok
+
+failures:
+
+failures:
+    lower::function::termination_call::tests::terminal_edge_and_const_reification_opponents_remain_closed
+
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 1747 filtered out; finished in 0.02s
+

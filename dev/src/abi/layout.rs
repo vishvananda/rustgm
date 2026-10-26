@@ -5,6 +5,7 @@ use crate::types::{
 };
 
 mod niches;
+mod physical_ready;
 use niches::Budget;
 pub use niches::{Niche, NicheId};
 

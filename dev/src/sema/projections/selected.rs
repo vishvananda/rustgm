@@ -54,7 +54,7 @@ impl Definition {
     }
 
     pub fn alias(
-        facts: &Declarations,
+        facts: &mut Declarations,
         alias: Alias,
         family: GenericArgs,
         source: Source,
@@ -68,24 +68,12 @@ impl Definition {
             )
             .map(Some);
         };
-        let Source::Implementation { owner, arguments } = source else {
-            return Err("trait output requires a selected implementation");
-        };
-        let method = facts
-            .opaques
-            .declarations
-            .get(&id)
-            .ok_or("missing trait result declaration")?
-            .owner;
-        let target = facts
-            .generics
-            .implementations
-            .as_ref()
-            .and_then(|registry| registry.method(owner, method))
-            .ok_or("missing selected trait result method")?;
-        if target == method {
+        let selected = Self::method(facts, alias, source)?
+            .ok_or("trait output requires a selected implementation")?;
+        let target = selected.definition();
+        let Some((owner, arguments)) = selected.implementation() else {
             return Ok(None);
-        }
+        };
         Ok(Some(Self {
             id: target,
             value: Value::Implementation {
@@ -95,6 +83,27 @@ impl Definition {
                 result: Some(id),
             },
         }))
+    }
+
+    /// Both result proof consumers and result formation use this same typed
+    /// target producer. Selecting it alone grants no inherited body permission.
+    pub(in crate::sema) fn method(
+        facts: &mut Declarations,
+        alias: Alias,
+        source: Source,
+    ) -> Result<Option<crate::sema::specialization::SelectedMethod>, &'static str> {
+        let (Alias::TraitResult(id, _), Source::Implementation { owner, arguments }) =
+            (alias, source)
+        else {
+            return Ok(None);
+        };
+        let method = facts
+            .opaques
+            .declarations
+            .get(&id)
+            .ok_or("missing trait result declaration")?
+            .owner;
+        crate::sema::specialization::selected_method(facts, owner, arguments, method).map(Some)
     }
 
     pub fn result(&self, facts: &mut Declarations) -> Result<Option<TypeId>, &'static str> {

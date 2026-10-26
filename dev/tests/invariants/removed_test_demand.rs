@@ -353,6 +353,7 @@ fn failed_retirement_preflight_publishes_neither_flags_nor_receipts() -> TestRes
     engine.attribute_effects = Some(Box::new(Effects {
         removals,
         policy: None,
+        visibilities: None,
     }));
     let call = engine
         .calls

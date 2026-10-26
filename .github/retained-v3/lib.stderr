@@ -1,0 +1,4 @@
+Error: ErrorData { file: Source(FileId(0)), span: Span { start: 3936, end: 3936 }, message: "generic body construction requires parameterized ownership and destruction", expansions: [], introduction: ExpansionId(0), retained_warnings: [], warning_bytes: 0, warning_work: 0, warning_limit_note: Complete }
+source abort Catalog=704 Resolution=2056 Package=256 Body=448 Selection=8
+source planner node=20 flags=1 nodes=3/4 flags_cap=8 memo=7/7 steps=210 reserved=20783 peak=20839
+source claims Reservations=808 SourceCore=176 Resolution=2056 Package=256 Declaration=20 OptionDeclaration=20 IntrinsicDeclaration=24 Catalog=704 bindings=(560, 520, 16)

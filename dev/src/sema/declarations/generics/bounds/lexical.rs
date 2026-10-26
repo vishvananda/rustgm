@@ -16,6 +16,9 @@ pub(in crate::sema::declarations) struct Scope {
 }
 
 impl Scope {
+    pub(in crate::sema::declarations) fn count(self, regions: &regions::Regions) -> u32 {
+        regions.count(self.binder)
+    }
     pub fn context(self, parent: regions::Context) -> regions::Context {
         regions::Context {
             binder: Some(self.binder),
