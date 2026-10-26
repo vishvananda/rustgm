@@ -95,7 +95,7 @@ binary gives the after values:
 One no-build existing ordinary/restriction group additionally passed in0.01s,
 observing Syntax312/Configured392 and retaining the0/8/64/128 no-clause
 work/zero-permission-query controls. Its exact qualified binary and all frozen
-fixture hashes are unchanged; raw evidence is `native/ordinary{{.stdout,.stderr}}`.
+fixture hashes are unchanged; raw evidence is `native/ordinary.stdout` and `native/ordinary.stderr`.
 
 The sixth diagnostic slot reused existing padding, so the actual cold growth is
 16 bytes. There are no new hot fields, canonical default entries, per-node/body
