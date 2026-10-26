@@ -1,9 +1,8 @@
 //! Raw access footprints reuse canonical ABI records after bounded readiness checks.
 use super::{Evaluator, Failure, Reader};
-use crate::support::hash::HashSet;
 use crate::{
     abi::layout::Shape,
-    types::{Kind, TypeId, aggregate::ShapeReadiness},
+    types::{Kind, TypeId},
 };
 
 #[derive(Clone, Copy)]
@@ -26,83 +25,11 @@ pub(crate) struct ProjectionLayout {
 }
 impl Evaluator<'_> {
     fn storage_readiness(&self, ty: TypeId, limit: usize) -> Result<usize, Failure> {
-        if self.facts().layouts.get(ty).is_some() {
-            return (limit != 0)
-                .then_some(1)
-                .ok_or("constant storage layout work budget exceeded".into());
-        }
-        let mut pending = vec![ty];
-        let mut seen = HashSet::default();
-        let mut work = 0usize;
-        while let Some(next) = pending.pop() {
-            work = work
-                .checked_add(1)
-                .filter(|n| *n <= limit)
-                .ok_or("constant storage layout work budget exceeded")?;
-            let facts = self.facts();
-            if facts.layouts.get(next).is_some() || !seen.insert(next) {
-                continue;
-            }
-            let fields = match facts.types.kind(next).ok_or("missing storage type")? {
-                Kind::Tuple(fields) => Some(fields),
-                Kind::Opaque(..) => {
-                    pending.push(facts.types.storage_head(next)?);
-                    None
-                }
-                Kind::Parameter(_) | Kind::Projection(_) | Kind::ArrayTerm { .. } => {
-                    return Err("constant storage layout requires a closed normalized type".into());
-                }
-                Kind::Array { element, .. } => {
-                    pending.push(element);
-                    None
-                }
-                Kind::Closure { environment, .. } => {
-                    pending.push(environment);
-                    None
-                }
-                Kind::Adt(item, _) => {
-                    let ShapeReadiness::Ready(shape) =
-                        facts.aggregates.try_shape(&facts.types, next)?
-                    else {
-                        return Err("constant storage layout requires completed fields".into());
-                    };
-                    if shape.definition.kind == crate::types::aggregate::Kind::Enum
-                        && !facts.aggregates.discriminants_ready(item)
-                    {
-                        return Err(
-                            "constant storage layout requires completed enum discriminants".into(),
-                        );
-                    }
-                    for variant in shape.variants() {
-                        let fields = facts
-                            .types
-                            .list(variant.fields)
-                            .ok_or("missing storage fields")?;
-                        if work
-                            .saturating_add(pending.len())
-                            .saturating_add(fields.len())
-                            > limit
-                        {
-                            return Err("constant storage layout work budget exceeded".into());
-                        }
-                        pending.extend(fields.iter().copied());
-                    }
-                    None
-                }
-                _ => None,
-            };
-            if let Some(fields) = fields {
-                let fields = facts.types.list(fields).ok_or("missing storage fields")?;
-                if work
-                    .saturating_add(pending.len())
-                    .saturating_add(fields.len())
-                    > limit
-                {
-                    return Err("constant storage layout work budget exceeded".into());
-                }
-                pending.extend(fields.iter().copied());
-            }
-        }
+        let facts = self.facts();
+        let mut work = 0;
+        facts
+            .layouts
+            .storage_readiness(&facts.types, &facts.aggregates, ty, &mut work, limit)?;
         Ok(work)
     }
 
