@@ -21,6 +21,8 @@ fn source_marker_constructor_clone_and_const_storage_use_real_headers() -> Resul
         mut facts,
         prepared,
     } = crate::pipeline::analyze_source(&report)?;
+    let contracts = crate::body::regions::collect(&facts)?;
+    crate::borrow::regions::check(&facts.types, &facts.lifetimes.variances, &contracts)?;
     let declaration = facts
         .source_bindings
         .as_deref()
@@ -128,13 +130,38 @@ fn source_marker_rejects_changed_roles_formals_fields_and_lifetime_escape() -> R
     ] {
         let error = match test_source::source_provider(&changed, name) {
             Ok(report) => crate::pipeline::analyze_source(&report)
-                .err()
-                .map(|e| e.to_string()),
+                .map_err(|error| error.to_string())
+                .and_then(|analysis| {
+                    let contracts = crate::body::regions::collect(&analysis.facts)
+                        .map_err(|error| error.to_string())?;
+                    crate::borrow::regions::check(
+                        &analysis.facts.types,
+                        &analysis.facts.lifetimes.variances,
+                        &contracts,
+                    )
+                    .map_err(|error| error.to_string())
+                })
+                .err(),
             Err(error) => Some(error),
         }
         .ok_or_else(|| format!("{name} unexpectedly accepted"))?;
         assert!(error.contains(needle), "{name}: {error}");
     }
+    let ordinary = test_source::resolve(
+        "struct PhantomData;fn main(){let _marker=PhantomData;}",
+        true,
+    )?;
+    let analysis = crate::pipeline::analyze_source(&ordinary)?;
+    assert!(
+        ordinary.resolution.source_bindings.is_none() && analysis.facts.source_bindings.is_none()
+    );
+    assert!(
+        analysis
+            .facts
+            .aggregates
+            .iter()
+            .all(|definition| definition.kind != types::aggregate::Kind::PhantomData)
+    );
     assert_eq!(crate::support::bindings::LangItem::ALL.len(), 32);
     let mut all_roles = 0_u32;
     for (index, role) in crate::support::bindings::LangItem::ALL
