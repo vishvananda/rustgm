@@ -1,7 +1,7 @@
 {
   "state": "planned-candidate-unrun",
   "source": "source-methods.rs",
-  "sha256": "7837cab24d68ce6ac07a40ea0d6d378d3668b03694281722ab9294dab2cee327",
+  "sha256": "86ab25bc51550188fd7bc8210faa99a04a8cd95eafe1e641d5a0ac64d16408cc",
   "expect": "accept source typing/CTFE/native19 23 119 1; preserve wide metadata4 and storage16",
   "independent": "nine standard-library pointer pattern reducers18commands pass; genuine native8 8 16 16 19 4 1",
   "source_contract": "Rust88d9 actual selected NonNull field/from_ref/as_ptr/as_ref/cast + actual raw cast_const body; stability attributes/full original file remain required",
@@ -12,5 +12,7 @@
     "PhantomData/Arguments/Location/PanicInfo",
     "range/or/nonpointer Pattern profiles",
     "foreign Pattern transport"
-  ]
+  ],
+  "independent_source": "source-independent-v2:4/4 metadata/object +real C native19 23 119 1; explicit UB=false; original failed6 and wrong gate hypotheses retained",
+  "reduced_pointee": "genuine source-owned Pointee/Metadata:Sized; complete original Debug/Copy/Send/Sync/Ord/Hash/Unpin/Freeze contract remains required"
 }

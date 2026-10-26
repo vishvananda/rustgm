@@ -163,25 +163,20 @@ impl<S: Sources> Engine<'_, S> {
             view,
             memo: &mut self.cfg_memo,
         };
-        for (syntax, name) in [(false, "pattern_type_macro"), (true, "pattern_types")] {
-            if !package
-                .requested_pattern_feature(syntax)
-                .map_err(Error::unlocated)?
-                && !query.allows(
-                    super::Location { file, span },
-                    &crate::resolve::bindings::FeatureName::new(name).map_err(Error::unlocated)?,
-                )?
-            {
-                return Err(Error::at(
-                    file,
-                    span.start,
-                    if syntax {
-                        "pattern types require pattern_types or actual literal allowance"
-                    } else {
-                        "pattern_type requires pattern_type_macro or actual literal allowance"
-                    },
-                ));
-            }
+        if !package
+            .requested_pattern_feature(true)
+            .map_err(Error::unlocated)?
+            && !query.allows(
+                super::Location { file, span },
+                &crate::resolve::bindings::FeatureName::new("pattern_types")
+                    .map_err(Error::unlocated)?,
+            )?
+        {
+            return Err(Error::at(
+                file,
+                span.start,
+                "pattern types require pattern_types or actual literal allowance",
+            ));
         }
         Ok(())
     }

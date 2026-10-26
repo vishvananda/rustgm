@@ -62,7 +62,7 @@ impl Checker<'_> {
                 self.constant_argument_contracts(arguments)?;
             }
             Type::Tuple(list) => {
-                self.constant_type_children(list, "missing constant tuple types")?
+                self.constant_type_children(list, "missing constant tuple types")?;
             }
             Type::Array { element, .. }
             | Type::ArrayTerm { element, .. }

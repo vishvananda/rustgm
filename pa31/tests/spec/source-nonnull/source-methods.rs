@@ -1,4 +1,4 @@
-#![feature(intrinsics,pattern_type_macro,pattern_types)]
+#![feature(intrinsics,pattern_types)]
 #![rustc_coherence_is_core]#![feature(no_core,lang_items,rustc_attrs,const_trait_impl,const_destruct,fundamental,auto_traits)]
 #![no_core]
 #![allow(internal_features,dead_code,unused_variables)]
@@ -136,6 +136,21 @@ pub const fn identity<T>(x: T) -> T {
 
 
 pub mod intrinsics { #[rustc_intrinsic]pub const unsafe fn transmute<Src,Dst>(src:Src)->Dst; }
+
+
+// Actual source raw-pointer copying declarations (core marker.rs/clone.rs).
+const impl<T:PointeeSized> Clone for *const T { fn clone(&self)->Self { *self } }
+impl<T:PointeeSized> Copy for *const T {}
+const impl<T:PointeeSized> Clone for *mut T { fn clone(&self)->Self { *self } }
+impl<T:PointeeSized> Copy for *mut T {}
+// Authored reduced real Pointee/Metadata owner, independently qualified by C;
+// complete original Debug/Copy/Send/Sync/Ord/Hash/Unpin/Freeze bounds remain required.
+#[lang="pointee_trait"]
+#[rustc_deny_explicit_impl]
+#[rustc_dyn_incompatible_trait]
+pub trait Pointee: PointeeSized {
+    #[lang="metadata_type"] type Metadata: Sized;
+}
 
 // Pinned core::pat compiler declaration; no ordinary macro body is substituted.
 #[rustc_builtin_macro(pattern_type)]
