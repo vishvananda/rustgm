@@ -383,7 +383,7 @@ pub fn write_syntax<L, W: Write>(
                 write!(
                     output,
                     "default {} {} ",
-                    defaultness.keyword.start, defaultness.keyword.end
+                    defaultness.span.start, defaultness.span.end
                 )?;
             }
             item::item(source, ast, &ast.items[index as usize], output)?;

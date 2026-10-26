@@ -7,6 +7,14 @@ mod declarative_forms;
 
 pub(super) use crate::syntax::item::ItemContext as Scope;
 
+#[derive(Clone, Copy)]
+struct TraitModifiers {
+    restriction: Option<NodeId>,
+    auto_: bool,
+    unsafe_: bool,
+    constant: bool,
+}
+
 /// # Errors
 /// Rejects unsupported/malformed crate syntax and excessive recursive nesting.
 pub fn parse_crate(source: &str) -> Result<Ast<'_>, LexError> {
@@ -188,6 +196,64 @@ impl Parser<'_, '_> {
         result
     }
 
+    fn trait_item(
+        &mut self,
+        item: &mut Item,
+        start: u32,
+        modifiers: TraitModifiers,
+    ) -> Result<(ItemKind, crate::syntax::item::AttributeRange), LexError> {
+        let TraitModifiers {
+            restriction,
+            auto_,
+            unsafe_,
+            constant,
+        } = modifiers;
+        item.name = Some(self.name()?);
+        item.generics = self.generics()?;
+        if self.eat(P::Equal)? {
+            if restriction.is_some() {
+                return Err(error(
+                    start,
+                    "trait aliases cannot have implementation restrictions",
+                ));
+            }
+            if unsafe_ || auto_ {
+                return Err(error(start, "invalid trait alias qualifier"));
+            }
+            let bounds = self.bounds()?;
+            item.where_clause = self.where_clause()?;
+            self.expect(P::Semicolon)?;
+            return Ok((
+                ItemKind::TraitAlias { constant, bounds },
+                crate::syntax::item::AttributeRange::default(),
+            ));
+        }
+        let bounds = if self.eat(P::Colon)? {
+            self.bounds()?
+        } else {
+            Self::empty_list()
+        };
+        item.where_clause = self.where_clause()?;
+        if restriction.is_some() && self.cursor.at(P::Equal)? {
+            return Err(error(
+                start,
+                "trait aliases cannot have implementation restrictions",
+            ));
+        }
+        self.expect(P::OpenBrace)?;
+        let inner = self.attributes(true)?;
+        self.item_attributes(inner);
+        let kind = ItemKind::Trait {
+            restriction,
+            auto_,
+            unsafe_,
+            constant,
+            bounds,
+            items: self.item_list(true, Scope::Trait)?,
+        };
+        Ok((kind, inner))
+    }
+
     #[expect(
         clippy::too_many_lines,
         reason = "item introducer dispatch shares visibility and attribute ownership and stays within the file audit limit"
@@ -298,31 +364,18 @@ impl Parser<'_, '_> {
                 if asynchronous || safe {
                     return Err(error(start, "invalid trait qualifier"));
                 }
-                item.name = Some(self.name()?);
-                item.generics = self.generics()?;
-                let bounds = if self.eat(P::Colon)? {
-                    self.bounds()?
-                } else {
-                    Self::empty_list()
-                };
-                item.where_clause = self.where_clause()?;
-                if restriction.is_some() && self.cursor.at(P::Equal)? {
-                    return Err(error(
-                        start,
-                        "trait aliases cannot have implementation restrictions",
-                    ));
-                }
-                self.expect(P::OpenBrace)?;
-                inner = self.attributes(true)?;
-                self.item_attributes(inner);
-                ItemKind::Trait {
-                    restriction,
-                    auto_,
-                    unsafe_,
-                    constant,
-                    bounds,
-                    items: self.item_list(true, Scope::Trait)?,
-                }
+                let (kind, attributes) = self.trait_item(
+                    &mut item,
+                    start,
+                    TraitModifiers {
+                        restriction,
+                        auto_,
+                        unsafe_,
+                        constant,
+                    },
+                )?;
+                inner = attributes;
+                kind
             } else if self.eat_word(Word::Impl)? {
                 if asynchronous || safe {
                     return Err(error(start, "invalid impl qualifier"));
@@ -440,6 +493,9 @@ impl Parser<'_, '_> {
         let node = self.node(start, Kind::Item(id))?;
         if let Some(keyword) = defaultness {
             self.ast.record_defaultness(id, node, keyword)?;
+        } else if matches!(item.kind, ItemKind::TraitAlias { .. }) {
+            self.ast
+                .record_gate_site(id, node, self.ast.node(node).span)?;
         }
         Ok(node)
     }

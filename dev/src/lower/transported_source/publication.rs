@@ -205,13 +205,13 @@ pub(super) fn require_defaultness_transport(
     if defaultness.node != declaration.node {
         return Err(Error::at(
             declaration.file,
-            defaultness.keyword.start,
+            defaultness.span.start,
             "source defaultness header names another declaration",
         ));
     }
     Err(report.diagnostic(Error::at(
         declaration.file,
-        defaultness.keyword.start,
+        defaultness.span.start,
         "source defaultness contract transport is not implemented",
     )))
 }

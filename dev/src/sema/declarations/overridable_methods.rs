@@ -14,7 +14,7 @@ impl Checker<'_> {
         if defaultness.node != key.node || body.is_none() {
             return Err(Error::at(
                 key.file,
-                defaultness.keyword.start,
+                defaultness.span.start,
                 "default function requires its actual defining body",
             ));
         }
@@ -24,7 +24,7 @@ impl Checker<'_> {
         if owner.is_none_or(|owner| !matches!(owner.kind, OwnerKind::Impl { .. })) {
             return Err(Error::at(
                 key.file,
-                defaultness.keyword.start,
+                defaultness.span.start,
                 "default function requires an actual impl owner",
             ));
         }

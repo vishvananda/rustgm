@@ -36,10 +36,13 @@ above, rather than a broader proposed RFC profile, define these test requirement
 The current parser has a single real trait branch in `syntax/expression/items.rs`.
 It reads generics/bounds/where before requiring an opening brace. This is the
 observed failure. The existing explicit implementation-restriction alias fence
-must remain. Introduce an actual `ItemKind::TraitAlias { bounds }` variant; retain
+must remain. Introduce an actual `ItemKind::TraitAlias { constant, bounds }` variant; retain
 the existing Item generics, visibility, name and post-bounds where-clause. Accept
 `=` only immediately after the name/generics, allow empty bounds and require `;`.
-Reject inappropriate unsafe/auto/const/default/restriction forms explicitly.
+Reject inappropriate unsafe/auto/default/restriction forms explicitly. Retain
+constness: six additional pinned metadata observations accept const aliases over
+both const and ordinary traits with `const_trait_impl`, and reject a missing
+const feature. This corrects the original const-qualifier rejection hypothesis.
 Reuse `bounds()` and `where_clause()`. Walk, transfer, render and configured
 expansion must preserve the real nodes and source context without reparsing.
 

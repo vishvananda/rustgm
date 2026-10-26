@@ -95,6 +95,23 @@ impl super::package::Package {
                 || function && context.requested(policy::Feature::MinSpecialization)
         }))
     }
+    pub(crate) fn requested_alias_feature(&self, constant: bool) -> Result<bool, &'static str> {
+        let feature = if constant {
+            policy::Feature::ConstTrait
+        } else {
+            policy::Feature::TraitAlias
+        };
+        if let Some(client) = self.source_client() {
+            if client.current().name() != self.crate_name || client.current() == client.provider() {
+                return Err("trait alias client identity changed");
+            }
+            client.validate_inventory()?;
+            return Ok(client.features.has(feature));
+        }
+        Ok(self
+            .macro_context()?
+            .is_some_and(|context| context.requested(feature)))
+    }
     #[must_use]
     pub fn uses_source_bindings(&self) -> bool {
         self.source.as_deref().is_some_and(Source::owns_bindings)

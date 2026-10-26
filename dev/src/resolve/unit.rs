@@ -163,7 +163,7 @@ impl Unit {
         }
         configured
             .ast
-            .bind_defaultness_source(source.original_image())?;
+            .bind_gate_sites_source(source.original_image())?;
         let original = original::Original::new(&configured, &literals);
         Ok(Self {
             source,

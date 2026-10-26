@@ -43,20 +43,20 @@ fn budget_and_origin_failures() -> TestResult {
     let entries = found.package.units[0]
         .configured
         .ast
-        .defaultness
+        .gate_sites
         .as_ref()
         .ok_or("generated column")?;
     let row = entries.entries()[0];
     assert_ne!(row.context_key(), Some(std::num::NonZeroU32::MIN));
     let limit = 64 * 1024 * 1024;
     entries.charge(0, limit - entries.storage().3)?;
-    let original = Error::at(FileId(0), row.keyword.start, "primary projection");
+    let original = Error::at(FileId(0), row.span.start, "primary projection");
     let failure = found
         .diagnostic_charged(original, |steps, bytes| entries.charge(steps, bytes))
         .err()
         .ok_or("exhausted projection retained a partial trace")?;
     assert_eq!(failure.message, "primary projection");
-    assert_eq!(failure.span.start, row.keyword.start);
+    assert_eq!(failure.span.start, row.span.start);
     assert!(failure.expansions.is_empty());
     let joined = found.retain_expansion_warnings(Error::at(FileId(0), 0, "primary unchanged"));
     assert_eq!(joined.message, "primary unchanged");
@@ -76,7 +76,7 @@ fn budget_and_origin_failures() -> TestResult {
         let row = found.package.units[0]
             .configured
             .ast
-            .defaultness
+            .gate_sites
             .as_ref()
             .ok_or("actual row")?
             .entries()[0];
@@ -87,8 +87,8 @@ fn budget_and_origin_failures() -> TestResult {
                 .origins
                 .iter_mut()
                 .find(|origin| {
-                    origin.generated.start <= row.keyword.start
-                        && row.keyword.start < origin.generated.end
+                    origin.generated.start <= row.span.start
+                        && row.span.start < origin.generated.end
                 })
                 .ok_or("actual keyword origin")?;
             origin.context = Some(crate::expand::marks::SyntaxContextId::ROOT);
@@ -109,7 +109,7 @@ fn cold_storage_and_enclosing_layouts() -> TestResult {
         ordinary.package.units[0]
             .configured
             .ast
-            .defaultness
+            .gate_sites
             .is_none()
     );
     assert!(ordinary.attribute_effects.is_none());
@@ -125,7 +125,7 @@ fn cold_storage_and_enclosing_layouts() -> TestResult {
         let entries = found.package.units[0]
             .configured
             .ast
-            .defaultness
+            .gate_sites
             .as_ref()
             .ok_or("scaled column")?;
         let before = entries.storage();
@@ -141,9 +141,9 @@ fn cold_storage_and_enclosing_layouts() -> TestResult {
             "defaultness width={width} rows={} capacity={} owner={} row={} payload={} steps={} bytes={} replay-step-delta={}",
             after.0,
             after.1,
-            size_of::<crate::syntax::defaultness::Declarations>(),
-            size_of::<crate::syntax::defaultness::Declaration>(),
-            found.package.units[0].configured.ast.defaultness_bytes(),
+            size_of::<crate::syntax::gate_sites::Declarations>(),
+            size_of::<crate::syntax::gate_sites::Declaration>(),
+            found.package.units[0].configured.ast.gate_sites_bytes(),
             after.2,
             after.3,
             after.2 - before.2
