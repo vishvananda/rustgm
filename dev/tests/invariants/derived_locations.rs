@@ -346,10 +346,7 @@ fn trivial_role_headers() -> TestResult {
         "Renamed"
     );
     assert_eq!(LangItem::TrivialClone.index(), 34);
-    assert_eq!(
-        crate::sema::compiler_items::role_bit(LangItem::TrivialClone),
-        1_u64 << 34
-    );
+    assert_eq!(LangItem::ALL[34], LangItem::TrivialClone);
     for malformed in [
         declaration.replace("unsafe trait", "trait"),
         declaration.replace("const unsafe", "unsafe"),
