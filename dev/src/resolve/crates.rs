@@ -130,6 +130,50 @@ impl Imported {
     pub fn definition(&self, external: &ExternalDef) -> Option<DefId> {
         self.definitions.get(external).copied()
     }
+    /// Borrow only an actual configured alias and its authenticated catalog root.
+    /// This namespace lookup allocates nothing and grants no semantic readiness.
+    pub(super) fn alias_root(&self, spelling: &str, definition: DefId) -> bool {
+        let aliases = self.dependencies.aliases();
+        let Ok(index) = aliases.binary_search_by(|alias| alias.alias().cmp(spelling)) else {
+            return false;
+        };
+        let Some(catalog) = self.origins.get() else {
+            return false;
+        };
+        let Ok(declaration) = catalog.declaration(definition) else {
+            return false;
+        };
+        if catalog
+            .validate_declaration(declaration, definition, DefKind::Module)
+            .is_err()
+        {
+            return false;
+        }
+        let Ok((owner, row, _)) = catalog.declaration_coordinate(declaration) else {
+            return false;
+        };
+        if owner != aliases[index].identity() {
+            return false;
+        }
+        let artifacts = self.dependencies.artifacts();
+        let Ok(index) = artifacts.binary_search_by(|artifact| artifact.identity().cmp(owner))
+        else {
+            return false;
+        };
+        artifacts[index]
+            .source_descriptor()
+            .is_some_and(|descriptor| {
+                descriptor
+                    .rows()
+                    .declarations
+                    .get(row.0 as usize)
+                    .is_some_and(|actual| {
+                        actual.definition.kind
+                            == crate::support::crates::generics::source::DefinitionKind::Module
+                            && actual.definition.parent.is_none()
+                    })
+            })
+    }
     pub fn definitions(&self) -> impl Iterator<Item = (&ExternalDef, DefId)> {
         self.definitions
             .iter()

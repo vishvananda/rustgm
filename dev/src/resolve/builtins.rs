@@ -5,7 +5,7 @@ mod primitives;
 mod traits;
 use super::{
     index::{Context, Resolver},
-    model::{Access, Binding, DefId, DefKind, Definition, Namespace, ScopeId},
+    model::{Access, Binding, DefId, DefKind, Definition, Namespace, Origin, ScopeId},
     names::NameId,
     package::{Error, ModuleId},
 };
@@ -371,6 +371,28 @@ impl Resolver<'_> {
             return None;
         }
         let external = self.facts.extern_scope?;
+        if self.package.uses_source_bindings() {
+            if namespace != Namespace::Type {
+                return None;
+            }
+            let binding = self.facts.bindings.get(external, name, namespace)?;
+            let definition = self.facts.definitions.get(binding.target.0 as usize)?;
+            if definition.kind != DefKind::Module
+                || definition.node.is_some()
+                || definition.members.is_none()
+                || binding.access != Access::Public
+                || binding.origin != Origin::Direct
+                || binding.ambiguous
+                || !self
+                    .facts
+                    .crates
+                    .as_deref()?
+                    .alias_root(self.package.names.get(name), binding.target)
+            {
+                return None;
+            }
+            return Some((external, *binding));
+        }
         if let Some(target) = self.facts.library_types.prelude(name, namespace) {
             let scope = self.facts.definitions[target.0 as usize].scope;
             return self

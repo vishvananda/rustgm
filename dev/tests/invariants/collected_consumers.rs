@@ -52,7 +52,7 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
     let context = context(artifact.inventory())?;
     let config = Config::default();
     let mut sources = NoFiles;
-    let text = "#![feature(no_core)]#![no_core]extern crate base;fn main(){let value=<u8 as base::Holder<u8>>::carry::<u8>(7u8);let borrowed=<u8 as base::Holder<u8>>::borrow(&value);let _=*borrowed;}";
+    let text = "#![feature(no_core)]#![no_core]fn main(){let value=<u8 as base::Holder<u8>>::carry::<u8>(7u8);let borrowed=<u8 as base::Holder<u8>>::borrow(&value);let _=*borrowed;}";
     let request = ConsumerRequest::new(input(text)?, &mut sources, &config, &context);
     let mut stage = ProofSession::from_collected(artifact, request, &mut work)?;
     let authority = &stage.session.authority;
@@ -94,6 +94,57 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
     assert!(stage.session.authority.facts.generics.traits.is_none());
     assert!(stage.session.authority.facts.functions.is_empty());
     stage.session.authority.require(&mut work)?;
+    actual_implicit_prelude_controls()?;
+    Ok(())
+}
+fn actual_implicit_prelude_controls() -> Result {
+    for (declarations, body, accepted) in [
+        (
+            "",
+            "mod inner{pub fn f(){let _=<u8 as base::Holder<u8>>::carry::<u8>(7u8);}}fn main(){}",
+            true,
+        ),
+        (
+            "#![no_implicit_prelude]",
+            "fn main(){let _=<u8 as base::Holder<u8>>::carry::<u8>(7u8);}",
+            false,
+        ),
+        (
+            "#![no_implicit_prelude]extern crate base;",
+            "fn main(){let _=<u8 as base::Holder<u8>>::carry::<u8>(7u8);}",
+            true,
+        ),
+        (
+            "#![no_implicit_prelude]",
+            "mod inner{pub fn f(){let _=<u8 as base::Holder<u8>>::carry::<u8>(7u8);}}fn main(){}",
+            false,
+        ),
+        (
+            "",
+            "mod inner{#![no_implicit_prelude]pub fn f(){let _=<u8 as base::Holder<u8>>::carry::<u8>(7u8);}}fn main(){}",
+            false,
+        ),
+    ] {
+        let mut work = ReservationWork::default();
+        let (artifact, _) = artifact_with_alias(HOLDER, Some("base"), &mut work)?;
+        let context = context(artifact.inventory())?;
+        let config = Config::default();
+        let mut sources = NoFiles;
+        let text = format!("#![feature(no_core)]#![no_core]{declarations}{body}");
+        let request = ConsumerRequest::new(input(&text)?, &mut sources, &config, &context);
+        let result = ProofSession::from_collected(artifact, request, &mut work);
+        if accepted {
+            let stage = result?;
+            stage.session.authority.require(&mut work)?;
+            assert!(stage.session.authority.facts.functions.is_empty());
+        } else {
+            let error = result
+                .err()
+                .ok_or("no_implicit_prelude unexpectedly exposed an alias")?;
+            assert_eq!(error.message, "unresolved type name");
+            assert!(work.steps > 0);
+        }
+    }
     Ok(())
 }
 fn context(inventory: &Arc<crate::support::crates::Dependencies>) -> Result<Context> {
