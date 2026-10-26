@@ -60,6 +60,7 @@ fn source_builtin_definitions_retain_real_identity_and_normal_shadowing() -> Res
         "#[rustc_builtin_macro(line)]",
         "#[rustc_builtin_macro(line,)]",
         "#[rustc_builtin_macro(r#line,attributes())]",
+        "#[rustc_builtin_macro(line,attributes(helper))]",
         "#[cfg_attr(all(),cfg_attr(all(),rustc_builtin_macro(line)))]",
     ] {
         let source = format!(
@@ -109,7 +110,6 @@ fn source_builtin_claims_fail_closed_in_both_pipelines() {
         "#[rustc_builtin_macro()]macro_rules!line{()=>{99u32}}",
         "#[rustc_builtin_macro(\"line\")]macro_rules!line{()=>{99u32}}",
         "#[rustc_builtin_macro(core::line)]macro_rules!line{()=>{99u32}}",
-        "#[rustc_builtin_macro(line,attributes(a))]macro_rules!line{()=>{99u32}}",
         "#[rustc_builtin_macro(line,attributes(),other)]macro_rules!line{()=>{99u32}}",
         "#[rustc_builtin_macro]#[rustc_builtin_macro]macro_rules!line{()=>{99u32}}",
         "#[rustc_builtin_macro(unknown_builtin)]macro_rules!line{()=>{99u32}}",

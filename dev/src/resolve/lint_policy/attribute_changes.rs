@@ -120,6 +120,7 @@ fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
         Some("unused_attributes") => &[Lint::UnusedAttributes],
         Some("unused_visibilities") => &[Lint::UnusedVisibilities],
         Some("duplicate_macro_attributes") => &[Lint::DuplicateMacroAttributes],
+        Some("ambiguous_derive_helpers" | "future_incompatible") => &[Lint::AmbiguousDeriveHelpers],
         Some("malformed_diagnostic_attributes") => &[Lint::DiagnosticAttributes(0)],
         Some("malformed_diagnostic_format_literals") => &[Lint::DiagnosticAttributes(1)],
         Some("misplaced_diagnostic_attributes") => &[Lint::DiagnosticAttributes(2)],

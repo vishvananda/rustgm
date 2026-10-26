@@ -168,6 +168,32 @@ fn bind_definitions(
             .is_some_and(|owner| owner.specialization.is_some())
     {
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
+            if definition.kind == crate::resolve::model::DefKind::Macro && definition.node.is_some()
+            {
+                report.visit_builtin_helpers(
+                    DefId(
+                        u32::try_from(index)
+                            .map_err(|_| Error::unlocated("too many source macro definitions"))?,
+                    ),
+                    |owner, name, span, introduction| {
+                        if crate::support::helper_collisions::helper_collision(name) {
+                            facts.reserve_must_use_source(owner, span)?;
+                            facts.must_use_diagnostic_in(
+                                report,
+                                owner,
+                                span.start,
+                                0,
+                                WarningCode::AmbiguousDeriveHelpers,
+                                (
+                                    "there exists a built-in attribute with the same name".into(),
+                                    introduction,
+                                ),
+                            )?;
+                        }
+                        Ok(())
+                    },
+                )?;
+            }
             if let Some(key) = definition.node {
                 crate::sema::header_attributes::bind_definition(
                     report,

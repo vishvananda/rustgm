@@ -10,6 +10,7 @@ pub(super) enum Spelling {
     UnsafeLintAttribute,
     BuiltinRole(Builtin),
     Feature(Rc<str>),
+    Helper(Rc<str>),
 }
 impl Spelling {
     pub(super) fn read(name: &str, builtin: Option<Builtin>) -> Result<Self, &'static str> {
@@ -31,7 +32,7 @@ impl Spelling {
             Self::AllowanceAttribute => "allow_internal_unstable",
             Self::UnsafeLintAttribute => "allow_internal_unsafe",
             Self::BuiltinRole(role) => role.name(),
-            Self::Feature(lexeme) => lexeme,
+            Self::Feature(lexeme) | Self::Helper(lexeme) => lexeme,
         }
     }
     pub(super) fn matches(
@@ -40,7 +41,7 @@ impl Spelling {
         forest: &crate::syntax::token_tree::Forest,
         index: u32,
     ) -> bool {
-        if let Self::Feature(lexeme) = self {
+        if let Self::Feature(lexeme) | Self::Helper(lexeme) = self {
             forest.tree(index).is_some_and(|tree| {
                 source.get(tree.span.start as usize..tree.span.end as usize)
                     == Some(lexeme.as_ref())
