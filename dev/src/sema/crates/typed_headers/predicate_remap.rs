@@ -8,15 +8,11 @@ use crate::{
     },
     sema::declaration_inputs::Input,
     support::crates::{SourceDescriptor, generics::source as s},
-    types::{
-        RegionId, Store, TypeId,
-        parameters::{
-            clauses::{Clause, Quantified},
-            predicates::{Bound, Predicate},
-        },
-    },
+    types::{RegionId, Store, TypeId, parameters::predicates::Predicate},
 };
 mod application_rows;
+#[path = "predicate_remap/translated_inputs.rs"]
+pub(super) mod translation;
 use std::sync::Arc;
 
 /// The graph is the canonical remap owned by the same staged header ingest.
@@ -39,6 +35,20 @@ pub(in crate::sema) struct Prepared {
 impl Prepared {
     pub(super) fn all(&self) -> &Arc<[Input]> {
         &self.inputs
+    }
+    pub(super) fn subjects(&self) -> &[bool] {
+        &self.self_subjects
+    }
+    pub(super) fn require_declaration(
+        &self,
+        declaration: ImportedDeclarationId,
+    ) -> Result<(), Error> {
+        if self.declaration != declaration {
+            return Err(error(
+                "source trait inputs changed their actual imported declaration",
+            ));
+        }
+        Ok(())
     }
     pub(in crate::sema) fn into_parts(self) -> (ImportedDeclarationId, Arc<[Input]>, Box<[bool]>) {
         (self.declaration, self.inputs, self.self_subjects)
@@ -111,60 +121,23 @@ impl<'a> Context<'a> {
                 "source trait input remap has a foreign catalog/descriptor owner",
             ));
         }
-        let rows = self.descriptor.rows();
-        let Some(s::HeaderRef::Trait(index)) = rows.header(ordinal).map_err(error)? else {
-            return Err(error(
-                "source trait input remap lacks its actual trait header",
-            ));
-        };
-        let header = &rows.traits[index as usize];
-        let raw = header.inputs.slice(&rows.clauses).map_err(error)?;
-        let canonical = header.canonical_inputs as usize;
-        if canonical > raw.len() {
-            return Err(error("source trait inputs truncate their canonical prefix"));
-        }
-        budget.reserve(
-            raw.len()
-                .saturating_mul(2 * size_of::<Input>())
-                .saturating_add(canonical.saturating_mul(2 * size_of::<bool>()))
-                .saturating_add(2 * size_of::<usize>()),
-        )?;
-        let mut inputs = Vec::with_capacity(raw.len());
-        let mut self_subjects = Vec::with_capacity(canonical);
-        for (index, raw) in raw.iter().enumerate() {
-            budget.charge(1)?;
-            if raw.owner != ordinal || (index >= canonical && raw.self_subject.is_some()) {
-                return Err(error(
-                    "source trait input changed canonical owner/prefix membership",
-                ));
-            }
-            let value = self.clause(raw, store, budget)?;
-            let site = self
-                .catalog
-                .declaration_site(declaration, raw.site)
-                .map_err(error)?;
-            inputs.push(Input {
-                source: self
-                    .catalog
-                    .declaration_proof_site(declaration, site)
-                    .map_err(error)?,
-                value,
-            });
-            if index < canonical {
-                self_subjects.push(raw.self_subject.is_some());
-            }
-        }
+        let mut port = self.port(Some((ordinal, declaration)));
+        let prepared =
+            translation::trait_inputs(&mut port, &mut self.applications, ordinal, store, budget)?;
         budget.observed.add(
-            raw.len()
+            prepared
+                .inputs
+                .len()
                 .saturating_mul(size_of::<Input>())
                 .saturating_add(2 * size_of::<usize>())
-                .saturating_add(self_subjects.len().saturating_mul(size_of::<bool>())),
+                .saturating_add(
+                    prepared
+                        .self_subjects
+                        .len()
+                        .saturating_mul(size_of::<bool>()),
+                ),
         );
-        Ok(Prepared {
-            declaration,
-            inputs: Arc::from(inputs),
-            self_subjects: self_subjects.into_boxed_slice(),
-        })
+        Ok(prepared)
     }
     pub(super) fn declaration_inputs(
         &mut self,
@@ -207,96 +180,37 @@ impl<'a> Context<'a> {
         self.catalog
             .validate_declaration(declaration, definition, kind)
             .map_err(error)?;
-        let raw = inputs.slice(&rows.clauses).map_err(error)?;
-        budget.reserve(
-            raw.len()
-                .saturating_mul(2 * size_of::<Input>())
-                .saturating_add(2 * size_of::<usize>()),
+        let mut port = self.port(Some((ordinal, declaration)));
+        let (inputs, _) = translation::inputs(
+            &mut port,
+            &mut self.applications,
+            ordinal,
+            inputs,
+            None,
+            store,
+            budget,
         )?;
-        let mut inputs = Vec::with_capacity(raw.len());
-        for clause in raw {
-            budget.charge(1)?;
-            if clause.owner != ordinal || clause.self_subject.is_some() {
-                return Err(error(
-                    "source declaration input invents a foreign/canonical Self premise",
-                ));
-            }
-            let value = self.clause(clause, store, budget)?;
-            let site = self
-                .catalog
-                .declaration_site(declaration, clause.site)
-                .map_err(error)?;
-            inputs.push(Input {
-                source: self
-                    .catalog
-                    .declaration_proof_site(declaration, site)
-                    .map_err(error)?,
-                value,
-            });
-        }
         budget.observed.add(
             inputs
                 .len()
                 .saturating_mul(size_of::<Input>())
                 .saturating_add(2 * size_of::<usize>()),
         );
-        Ok(Arc::from(inputs))
+        Ok(inputs)
     }
-    fn clause(
-        &mut self,
-        raw: &s::Clause,
-        store: &mut Store,
-        budget: &mut Headers,
-    ) -> Result<Clause, Error> {
-        let predicate = match raw.requirement {
-            s::Requirement::Trait {
-                application,
-                effect,
-            } => {
-                let mut predicate = self.application(application, store, budget)?;
-                let Bound::Trait(application) = predicate.bound else {
-                    return Err(error(
-                        "source clause remap changed its ordinary application cache",
-                    ));
-                };
-                predicate.bound = Bound::trait_application(application, effect);
-                predicate
-            }
-            s::Requirement::TypeOutlives { subject, shorter } => Predicate {
-                ty: self.ty(subject)?,
-                bound: Bound::Outlives(self.region(shorter)?),
-            },
-            s::Requirement::Outlives(_) => {
-                return Err(error(
-                    "regional clauses require their separate header relation remap",
-                ));
-            }
-        };
-        if let Some(binder) = raw.binder {
-            let rows = self.descriptor.rows();
-            let binder = rows
-                .binders
-                .get(binder.0 as usize)
-                .ok_or_else(|| error("source clause has an unknown actual binder"))?;
-            if binder.owner != raw.owner || binder.kind != s::BinderKind::Clause {
-                return Err(error("source clause binder changed its actual owner/kind"));
-            }
-            Ok(Clause::ForAll(
-                store
-                    .intern_quantified(Quantified {
-                        bound_regions: binder.count,
-                        predicate,
-                    })
-                    .map_err(error)?,
-            ))
-        } else {
-            Ok(Clause::Predicate(predicate))
+    fn port(
+        &self,
+        site_owner: Option<(
+            crate::support::crates::owner_catalog::DeclarationRef,
+            ImportedDeclarationId,
+        )>,
+    ) -> translation::Ordinary<'a> {
+        translation::Ordinary {
+            imported: self.imported,
+            catalog: self.catalog,
+            descriptor: self.descriptor,
+            graph: self.graph,
+            site_owner,
         }
-    }
-    fn ty(&self, ty: crate::support::crates::generics::TypeRef) -> Result<TypeId, Error> {
-        self.graph.ty(ty)
-    }
-    fn region(&self, region: s::RegionRef) -> Result<RegionId, Error> {
-        self.graph.region(region)
     }
 }

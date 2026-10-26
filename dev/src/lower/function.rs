@@ -9,9 +9,11 @@ mod invocations;
 mod pointers;
 mod references;
 mod referents;
+mod reinterpret_calls;
 mod runtime_checks;
 mod selections;
 mod slices;
+mod termination_call;
 mod text;
 use super::{
     Error,
@@ -226,14 +228,14 @@ impl Lower<'_, '_, '_> {
                 }
             }
             let block = &self.body.blocks[id];
-            if let Some(cleanup) = &self.cleanup {
+            let terminated = if let Some(cleanup) = &self.cleanup {
                 let range = cleanup.timeline.blocks[id].clone();
-                self.cleanup_events(range)?;
+                self.cleanup_events(range)?
             } else {
-                for statement in &self.body.statements[block.start as usize..block.end as usize] {
-                    self.source = statement.source;
-                    self.statement(statement.action)?;
-                }
+                self.statements(id)?
+            };
+            if terminated {
+                continue;
             }
             self.source = block.source;
             let terminator = match block.terminator {
@@ -278,7 +280,29 @@ impl Lower<'_, '_, '_> {
         }
         Ok(())
     }
-    fn statement(&mut self, action: Action) -> Result<(), &'static str> {
+    fn statements(&mut self, id: usize) -> Result<bool, &'static str> {
+        let block = &self.body.blocks[id];
+        let block_id = ir::BlockId(u32::try_from(id).map_err(|_| "too many function blocks")?);
+        for before in block.start..block.end {
+            let statement = &self.body.statements[before as usize];
+            self.source = statement.source;
+            if self.statement(
+                statement.action,
+                crate::body::storage::Location::At {
+                    block: block_id,
+                    before,
+                },
+            )? {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+    fn statement(
+        &mut self,
+        action: Action,
+        location: crate::body::storage::Location,
+    ) -> Result<bool, &'static str> {
         match action {
             Action::BindView { view, place } => self.bind_view(view, place)?,
             Action::Project(id) => self.project(id)?,
@@ -291,6 +315,9 @@ impl Lower<'_, '_, '_> {
             | Action::StorageDead(_)
             | Action::StorageEnd { .. } => {}
             Action::Evaluate(value) => {
+                if self.source_abort(value, location)? {
+                    return Ok(true);
+                }
                 let result = self.evaluate(value)?;
                 self.materialize(value, result)?;
                 self.values[value.0 as usize] = Some(result);
@@ -301,7 +328,7 @@ impl Lower<'_, '_, '_> {
                 self.write(address, selected, self.body.values[value.0 as usize].ty)?;
             }
         }
-        Ok(())
+        Ok(false)
     }
     fn initialize_storage(
         &mut self,
@@ -834,6 +861,9 @@ impl Lower<'_, '_, '_> {
                 callee,
                 arguments,
             } => {
+                if let Some(value) = self.runtime_transmute(id)? {
+                    return Ok(value);
+                }
                 if let Some(value) = self.runtime_ub_check(id)? {
                     return Ok(value);
                 }

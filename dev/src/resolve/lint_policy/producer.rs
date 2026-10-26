@@ -68,6 +68,9 @@ pub(crate) struct Work {
     pub bytes: usize,
 }
 impl Work {
+    fn exhausted(&self) -> bool {
+        self.steps > 10_000_000 || self.bytes > 64 * 1024 * 1024
+    }
     pub(super) fn charge(
         &mut self,
         key: NodeKey,
@@ -76,7 +79,7 @@ impl Work {
     ) -> Result<(), Violation> {
         self.steps = self.steps.saturating_add(steps);
         self.bytes = self.bytes.saturating_add(bytes);
-        if self.steps > 10_000_000 || self.bytes > 64 * 1024 * 1024 {
+        if self.exhausted() {
             return Err(Violation {
                 key,
                 offset: 0,
@@ -128,6 +131,48 @@ impl Producer {
         bytes: usize,
     ) -> Result<(), Violation> {
         self.work.charge(key, 1, bytes)
+    }
+    pub(crate) fn diagnostic_read(&self, key: NodeKey, bytes: usize) -> Result<(), Violation> {
+        self.diagnostic_payload(key, 1, bytes)
+    }
+    pub(crate) fn diagnostic_payload(
+        &self,
+        key: NodeKey,
+        steps: usize,
+        bytes: usize,
+    ) -> Result<(), Violation> {
+        let mut reads = self.reads.get();
+        let result = reads.charge(key, steps, bytes);
+        self.reads.set(reads);
+        result?;
+        self.work().charge(key, 0, 0)
+    }
+    pub(crate) fn diagnostic_budget_exhausted(&self) -> bool {
+        self.work().exhausted()
+    }
+    pub(crate) fn validate_diagnostic_path(
+        &self,
+        package: &Package,
+        mut tail: Option<Tail>,
+        key: NodeKey,
+        validated: &mut crate::support::hash::HashSet<Tail>,
+    ) -> Result<(), Violation> {
+        while let Some(current) = tail {
+            self.diagnostic_read(key, 4 * size_of::<Tail>())?;
+            if !validated.insert(current) {
+                return Ok(());
+            }
+            let owner = self.record(current, key)?;
+            owner.validate(package, &self.reads)?;
+            if owner
+                .parent
+                .is_some_and(|parent| parent.0.get() >= current.0.get())
+            {
+                return Err(invalid(key, "source diagnostic lint ancestry changed"));
+            }
+            tail = owner.parent;
+        }
+        Ok(())
     }
     fn charge_read(&self, key: NodeKey, steps: usize) -> Result<(), Violation> {
         let mut reads = self.reads.get();

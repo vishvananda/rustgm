@@ -123,6 +123,16 @@ before generating oracles; use pinned rustc independently and retain negative
 controls. Register the complete selected dependency graph and native consumers,
 not just reducers or successful submodules. Never hand-edit generated references.
 
+Trait aliases needed by original source, including `ptr::Thin`, require their
+actual declaration identity, exact feature/token authority and complete
+substituted predicates/associated equalities. Reuse PA5 grammar and PA21's typed
+bound machinery. Diagnose cycles, invalid impl owners and object restrictions
+after expansion. Preserve disabled-syntax warnings and generic/where-clause
+scope. The [planned source contracts](tests/spec/trait-aliases/README.md) retain
+pinned acceptance/runtime observations; they do not activate this assignment.
+Imported alias contracts need genuine PA29 transport, with no ordinary-trait
+substitution or permission inferred from parsing.
+
 ## Completion and review
 
 Publish the semantic/lowering boundary, nonempty `tests/manifest.json`, text

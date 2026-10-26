@@ -112,11 +112,35 @@ impl Equalities {
         types: &mut Store,
         fold: &mut substitute::Bound,
     ) -> Result<(), &'static str> {
+        self.substitute_observed::<false>(types, fold, &|_, _| Ok(()))
+    }
+    pub(super) fn substitute_charged(
+        &mut self,
+        types: &mut Store,
+        fold: &mut substitute::Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        self.substitute_observed::<true>(types, fold, charge)
+    }
+    fn substitute_observed<const CHARGED: bool>(
+        &mut self,
+        types: &mut Store,
+        fold: &mut substitute::Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        if CHARGED {
+            self.prepay_rebuild(charge)?;
+        }
         if self.quantified.is_some() {
             // Preserve mixed declaration order when allocating captured aliases.
             let original = std::mem::take(self);
             for clause in original.clauses() {
-                let mapped = fold.clause(types, clause)?;
+                let mapped = if CHARGED {
+                    charge(1, 0)?;
+                    fold.clause_charged(types, clause, charge)?
+                } else {
+                    fold.clause(types, clause)?
+                };
                 self.insert(types, mapped)?;
             }
             return Ok(());
@@ -124,7 +148,13 @@ impl Equalities {
         // Ordinary environments reuse their existing storage and compact entries.
         self.region_mapping = false;
         for predicate in &mut self.predicates {
-            *predicate = fold.predicate(types, *predicate)?;
+            *predicate = if CHARGED {
+                charge(1, 0)?;
+                fold.clause_charged(types, (*predicate).into(), charge)?
+                    .ordinary()?
+            } else {
+                fold.predicate(types, *predicate)?
+            };
             self.region_mapping |= predicate.has_free_regions(types)?;
         }
         self.unique.clear();
@@ -138,5 +168,77 @@ impl Equalities {
                 .push(index);
         }
         Ok(())
+    }
+}
+
+impl Equalities {
+    pub(super) fn prepay_clone(
+        &self,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        use crate::support::retained;
+        charge(1, size_of::<Self>() + 2 * size_of::<usize>())?;
+        charge(self.predicates.len(), retained::vector(&self.predicates))?;
+        charge(
+            self.unique.len(),
+            self.unique
+                .capacity()
+                .saturating_mul(size_of::<Predicate>()),
+        )?;
+        charge(self.items.len(), retained::map(&self.items))?;
+        for values in self.items.values() {
+            charge(1 + values.len(), retained::vector(values))?;
+        }
+        if let Some(q) = &self.quantified {
+            charge(1, size_of::<Quantifiers>())?;
+            charge(q.entries.len(), retained::vector(&q.entries))?;
+            charge(
+                q.unique.len(),
+                q.unique
+                    .capacity()
+                    .saturating_mul(size_of::<QuantifiedId>()),
+            )?;
+            charge(q.items.len(), retained::map(&q.items))?;
+            for values in q.items.values() {
+                charge(1 + values.len(), retained::vector(values))?;
+            }
+        }
+        Ok(())
+    }
+    fn prepay_rebuild(
+        &self,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        use crate::support::retained::Growth;
+        let n = self.predicates.len();
+        let fresh = self.quantified.is_some();
+        let mut growth =
+            Growth::map::<Predicate, ()>(0, if fresh { 0 } else { self.unique.capacity() }, n);
+        growth.include(Growth::vector::<Predicate>(
+            0,
+            if fresh { 0 } else { self.predicates.capacity() },
+            n,
+        ));
+        growth.include(Growth::map::<ItemId, Vec<usize>>(
+            0,
+            if fresh { 0 } else { self.items.capacity() },
+            n,
+        ));
+        growth.bytes = growth
+            .bytes
+            .saturating_add(n.saturating_mul(4 * size_of::<usize>()));
+        growth.work = growth.work.saturating_add(n);
+        if let Some(q) = &self.quantified {
+            let count = q.entries.len();
+            growth.bytes = growth.bytes.saturating_add(size_of::<Quantifiers>());
+            growth.include(Growth::vector::<(usize, QuantifiedId)>(0, 0, count));
+            growth.include(Growth::map::<QuantifiedId, ()>(0, 0, count));
+            growth.include(Growth::map::<ItemId, Vec<QuantifiedId>>(0, 0, count));
+            growth.bytes = growth
+                .bytes
+                .saturating_add(count.saturating_mul(4 * size_of::<QuantifiedId>()));
+            growth.work = growth.work.saturating_add(count);
+        }
+        charge(growth.work, growth.bytes)
     }
 }

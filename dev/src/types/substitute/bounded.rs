@@ -150,6 +150,49 @@ fn needs(store: &Store, kind: Kind) -> Result<Needs, &'static str> {
         .saturating_add(result.list);
     Ok(result)
 }
+/// Growth payment is separate from actual traversal-step reconciliation. Store
+/// interning retains canonical data under its existing arena limits.
+pub(super) fn charge_prepare(
+    fold: &Bound,
+    store: &Store,
+    kind: Kind,
+    finish: bool,
+    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    use crate::support::retained::Growth;
+    let needs = needs(store, kind)?;
+    let mut growth = Growth::default();
+    if finish || matches!(kind, Kind::Parameter(_)) {
+        growth.include(Growth::map::<Key, TypeId>(
+            fold.completed.len(),
+            fold.completed.capacity(),
+            1,
+        ));
+        growth.include(Growth::vector::<TypeId>(
+            fold.children.len(),
+            fold.children.capacity(),
+            needs.list,
+        ));
+        growth.include(Growth::vector::<super::RegionId>(
+            fold.regions.len(),
+            fold.regions.capacity(),
+            needs.arguments,
+        ));
+        growth.include(Growth::vector::<Argument>(
+            fold.generic.len(),
+            fold.generic.capacity(),
+            needs.arguments,
+        ));
+    } else {
+        growth.include(Growth::vector::<(Key, bool)>(
+            fold.work.len(),
+            fold.work.capacity(),
+            needs.edges.saturating_add(1),
+        ));
+    }
+    charge(growth.work, growth.bytes)
+}
+
 #[cfg(test)]
 #[path = "../../../tests/invariants/bounded_shapes.rs"]
 mod tests;

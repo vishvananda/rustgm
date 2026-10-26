@@ -51,9 +51,16 @@ impl SourceClient {
         if descriptor.identity() != &self.provider
             || descriptor.provider() != &self.provider
             || descriptor.edition() != Edition::Rust2024
-            || !descriptor.profile().ordinary_functions()
         {
             return Err("source client provider descriptor changed");
+        }
+        if !descriptor.profile().ordinary_functions() {
+            match descriptor.profile() {
+                crate::support::crates::generics::source::Profile::Source2024ModuleContracts => {
+                    descriptor.module_contracts()?;
+                }
+                _ => return Err("source client retained provider profile is unsupported"),
+            }
         }
         Ok(self.provider_index)
     }
@@ -67,24 +74,8 @@ pub(super) fn prepare(
     features: Features,
     library: Option<Box<Library>>,
 ) -> Result<Prepared, Error> {
+    let current = identity(unit, context, provider, no_core, &features)?;
     let error = |message| Error::at(FileId(0), 0, message);
-    let current = context
-        .current
-        .as_ref()
-        .ok_or_else(|| error("source client requires complete current crate identity"))?;
-    if current == provider || context.crate_name.as_deref() != Some(current.name()) {
-        return Err(error(
-            "source client requires its distinct exact current crate identity",
-        ));
-    }
-    if unit.edition() != Edition::Rust2024 {
-        return Err(error("source client requires the Rust 2024 source profile"));
-    }
-    if !no_core || !features.has(Feature::NoCore) {
-        return Err(error(
-            "source client requires no_core and its explicit source feature",
-        ));
-    }
     let dependencies = context
         .dependencies
         .as_ref()
@@ -104,6 +95,34 @@ pub(super) fn prepare(
         library,
         macros,
     })
+}
+
+pub(super) fn identity<'a>(
+    unit: &Unit,
+    context: &'a Context,
+    provider: &CrateIdentity,
+    no_core: bool,
+    features: &Features,
+) -> Result<&'a CrateIdentity, Error> {
+    let error = |message| Error::at(FileId(0), 0, message);
+    let current = context
+        .current
+        .as_ref()
+        .ok_or_else(|| error("source client requires complete current crate identity"))?;
+    if current == provider || context.crate_name.as_deref() != Some(current.name()) {
+        return Err(error(
+            "source client requires its distinct exact current crate identity",
+        ));
+    }
+    if unit.edition() != Edition::Rust2024 {
+        return Err(error("source client requires the Rust 2024 source profile"));
+    }
+    if !no_core || !features.has(Feature::NoCore) {
+        return Err(error(
+            "source client requires no_core and its explicit source feature",
+        ));
+    }
+    Ok(current)
 }
 
 #[cfg(test)]

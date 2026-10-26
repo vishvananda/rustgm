@@ -89,7 +89,7 @@ impl Lower<'_, '_, '_> {
     pub(super) fn cleanup_events(
         &mut self,
         range: std::ops::Range<usize>,
-    ) -> Result<(), &'static str> {
+    ) -> Result<bool, &'static str> {
         let plan = self
             .cleanup
             .as_ref()
@@ -109,7 +109,11 @@ impl Lower<'_, '_, '_> {
                     let Location::At { before, .. } = event.location else {
                         return Err("statement on cleanup edge");
                     };
-                    self.statement(self.body.statements[before as usize].action)?;
+                    if self
+                        .statement(self.body.statements[before as usize].action, event.location)?
+                    {
+                        return Ok(true);
+                    }
                 }
                 Effect::Cleanup(index) => {
                     let cleanup = &plan.cleanups[index as usize];
@@ -140,7 +144,7 @@ impl Lower<'_, '_, '_> {
                 _ => {}
             }
         }
-        Ok(())
+        Ok(false)
     }
     pub(super) fn cleanup_edges(&mut self) -> Result<(), &'static str> {
         let count = self.cleanup.as_ref().map_or(0, |p| p.lanes.len());
@@ -148,9 +152,10 @@ impl Lower<'_, '_, '_> {
             let (block, target, range) =
                 self.cleanup.as_ref().ok_or("missing cleanup edges")?.lanes[index].clone();
             self.builder.enter(block)?;
-            self.cleanup_events(range)?;
-            self.builder
-                .terminate(Terminator::Jump(self.blocks[target.0 as usize]))?;
+            if !self.cleanup_events(range)? {
+                self.builder
+                    .terminate(Terminator::Jump(self.blocks[target.0 as usize]))?;
+            }
         }
         Ok(())
     }
