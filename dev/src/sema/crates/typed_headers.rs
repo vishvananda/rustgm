@@ -29,7 +29,7 @@ fn error(message: &'static str) -> Error {
     Error::unlocated(message)
 }
 #[cfg(test)]
-#[path = "../../../tests/invariants/environment_origins.rs"]
+#[path = "../../../tests/invariants/origin_relationships.rs"]
 mod origin_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/header_reservations.rs"]

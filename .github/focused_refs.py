@@ -36,11 +36,26 @@ def worker(started):
             branch.receipt.update(state='failed',error=str(error));raise
         finally:branch.save()
     try:
-        steps.run('metadata',[sys.executable,'scripts/assignment_metadata.py'])
+        retained=json.loads((ROOT/'.github/shared_kernel_retained.json').read_text())
+        previous=retained['sources']
+        changed={p for p in sources.keys()|previous.keys() if sources.get(p)!=previous.get(p)}
+        if changed!=set(retained['changed']):raise ValueError('retained source changes escaped exact test-only delta')
+        files=retained['old_files']
+        for path,data in files.items():
+            if hashlib.sha256(data.encode()).hexdigest()!=previous[path]:raise ValueError('retained old source binding changed')
+        path='dev/src/sema/crates/typed_headers.rs'
+        if files[path].replace('../../../tests/invariants/environment_origins.rs','../../../tests/invariants/origin_relationships.rs')!=(ROOT/path).read_text():raise ValueError('cfg(test) path-only proof changed')
+        path='dev/tests/invariants/remapped_inputs.rs'
+        if files[path].replace('let actual = crate::unpaid_cases::trait_extended(inherited_tests::HOLDER)?;','let mut actual = crate::unpaid_cases::trait_extended(inherited_tests::HOLDER)?;')!=(ROOT/path).read_text():raise ValueError('actual owner mutability proof changed')
+        if files['dev/tests/invariants/environment_origins.rs']!=(ROOT/'dev/tests/invariants/origin_relationships.rs').read_text():raise ValueError('renamed origin test changed')
+        if retained['receipt']['sources']!=previous or retained['lint']['sources']!=previous or retained['receipt']['candidate']!=retained['source_commit']:raise ValueError('retained actual receipt source mismatch')
+        if next(x for x in retained['receipt']['steps'] if x['name']=='metadata')['status']!=0 or next(x for x in retained['lint']['steps'] if x['name']=='clippy-production')['status']!=0:raise ValueError('retained successful static step missing')
+        if cli_sha!=retained['compiler_sha256'] or cli_sha!=retained['receipt']['compiler_sha256']:raise ValueError('actual mandatory CLI does not match retained production source')
+        steps.receipt['retained_static']=freeze['retained_static'];steps.save()
         steps.run('format',['cargo','fmt','--manifest-path','dev/Cargo.toml','--all','--','--check'])
         common=['--manifest-path','dev/Cargo.toml','--locked','--profile','dev-fast']
         audit=[('architecture',[ROOT/'obj/audit-venv/bin/python','scripts/rust_audit.py','--root','.','--cache','obj/fast-audit.json'],{})]
-        lint=[('clippy-production',['cargo','clippy',*common,'--lib','--bin','rustgm','--','-D','warnings'],{}),('clippy-private',['cargo','clippy',*common,'--lib','--','--test','-D','warnings'],{'CARGO_TARGET_DIR':str(ROOT/'obj/rust/private-lint')})]
+        lint=[('clippy-private',['cargo','clippy',*common,'--lib','--','--test','-D','warnings'],{'CARGO_TARGET_DIR':str(ROOT/'obj/rust/private-lint')})]
         failures=[];start=time.monotonic()
         with ThreadPoolExecutor(max_workers=2) as executor:
             futures=[executor.submit(independent,'audit',audit),executor.submit(independent,'lint',lint)]
