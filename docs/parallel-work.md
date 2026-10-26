@@ -44,6 +44,16 @@ Keep one executable exit per lane. Shared-interface preparation is work within
 that task, not an endlessly expanding replacement milestone. At consumer exits,
 reconcile the owning PA's remaining implementation and release checklist.
 
+Keep at most one qualified handoff queued per worker; the integrator takes shared
+bases before adding an unrelated implementation task. Integrate Foreign and
+observe the next original-core boundary without waiting for all Thin/panic
+semantics. After that observation, C may take A's disjoint Provided codec if the
+new core blocker already has an owner. A first defines the exact wire rows in
+the existing Provided milestone and retains member/body semantics. The integrator
+finishes its current Thin join, then protects integration/observation time rather
+than opening a fourth long compiler workstream. Keep three workers; shared
+TypeKind/ABI/proof edits are not an opportunity for more concurrent owners.
+
 Development validation uses `make fastcheck` with exact affected controls and
 captured outputs within five minutes. A new private binary does not require a
 full inventory run. Long qualification runs in scheduled/manual CI. Schema 2

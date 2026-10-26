@@ -44,6 +44,50 @@ features stay required but only enter this immediate queue when a real library
 consumer needs them or a PA is otherwise ready for release. No whole core build
 or additional PA release is implied by these targets.
 
+The next scheduling boundary is the Foreign handoff and a fresh original-core
+observation. Integrate that independently useful change without waiting for
+all alias/panic work. If the next blocker is already assigned, C can take A's
+separate Provided namespace/advisory/defaultness codec while A finishes genuine
+member/body execution. A defines the wire rows first in the existing
+[Provided milestone](parallel/provided-method-execution.md); no new worker or
+parallel edit of A's semantic tables is needed. B stays on the actual
+PhantomData/Location/PanicInfo path. The integrator finishes its current Thin
+join and prioritizes queued integrations over another implementation workstream.
+
+The latest full CI run
+[40382875468](https://github.com/vishvananda/rustgm/actions/runs/40382875468)
+failed one old Pointee diagnostic assertion; 1,787 ordinary private tests and
+all thirteen ordinary integration binaries passed. C's 27b1712dd Foreign
+successor qualifies the exact correction and its remaining ordinary-mode group
+in 112.86 seconds; root integration/CLI/core observation are pending.
+Native/debug/independent checks were skipped, so they
+remain pending. The current push check still selects lexer tests; the shared
+source/const/import/LowIR smoke is an integrator task, not an implemented gate.
+
+## Assignment closure queue
+
+All rows below remain open. This queue identifies the next reconciliation, not
+an exhaustive fresh audit of every historical unsupported case. PA25–PA31 have
+no published text-test manifest. Preserve complete handout requirements and
+independent outcomes; missing release packaging and missing semantics are
+different debts. Reconcile existing fixtures at consumer exits instead of
+creating another parallel test corpus or repeatedly running every PA.
+
+| Owning PA | Library-critical work first | Closure review at the next consumer exit |
+| --- | --- | --- |
+| PA25 | Source const operations and imported const/generic calls required by the actual core path | Reconcile constants-view, provenance/promotion and sequence outcomes; identify remaining valid unsupported inputs, then review the text vocabulary and references. |
+| PA26 | Source-owned operators/desugaring and actual panic/format constructors | Reconcile iteration, question-mark, derive and formatting contracts against source-library execution. Do not count a bootstrap factory as compiling its upstream implementation. |
+| PA27 | Actual core pointer/storage validity and layout consumers | Reconcile existing raw/reference/union/byte-storage outcomes and live unsupported backing families. Keep runtime unsafe permission distinct from CTFE validity. |
+| PA28 | Source-used memory/numeric/atomic intrinsics and metadata operations | Match active source declarations to implemented operations and backend evidence; retain other required intrinsic/atomic families in the release inventory. |
+| PA29 | Encoded provided/generic bodies, fresh consumers and downstream republication | Audit generic/lifetime/trait/default/const transport and deterministic public metadata, then generate the complete text/export reference set. The first native Holder call alone does not close this PA. |
+| PA30 | Foreign VTable now; genuine allocator/platform ABI and linkage consumers next | Reconcile remaining representations, callable/static/linkage contracts and native interoperability evidence with the handout. |
+| PA31/32 | Actual bindings, then unchanged whole core through checking/export/object/consumer | Reconcile active source features and bindings against the complete configured crate. Reducer/header successes remain prerequisites, not whole-core acceptance. |
+
+The integrator owns publication reconciliation; each worker updates the existing
+owning handout and declared outcomes as its consumer passes. Reuse independent
+evidence whose inputs remain identical. Full cumulative release qualification
+starts once semantic and reference debts are closed, not at every helper commit.
+
 ## Historical checkpoint evidence
 
 The [private environment/namespace integration](private-environment-namespace-integration.md)
