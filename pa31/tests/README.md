@@ -188,3 +188,40 @@ Debug/formatting and false assertion execution remain separate requirements.
 declarations and opposing owner/form/gate/scope inputs, with 38 independent
 metadata predictions. Declaration data grants neither derive execution nor
 helper use; actual selected-derive ownership is a separate consumer requirement.
+
+`spec/source-try-blocks/` freezes genuine source feature/endpoint and residual
+opponents for the original `ops/index_range.rs` try blocks. The pinned checks
+collected 38 metadata observations, zero infrastructure failures; four initial
+predictions disagreed and remain bound to raw diagnostics. A forwarded keyword
+with a definition-owned block accepts, while whole-expression and both-endpoint
+caller captures retain caller gating. Homogeneous try-block residuals differ from
+function-level conversion. The first grammar checkpoint retains explicit semantic
+unsupported at active TryBlock/`?` checking; real Try/FromResidual/branch/from_output,
+residual reconstruction, ownership and native execution remain required PA26/31
+work. No Default derive or assignment activation follows from this syntax work.
+
+The grammar/feature producer is focused-qualified at
+`cd80733707747600e0c70449246b4304f5acaa86`: one standard six-control gate passed
+metadata, full formatting, global architecture, strict private Clippy, build and
+all six tests in 119.03 seconds. Receipt
+`obj/qualification/fast/1793056439747228259/receipt.json`, SHA-256
+`af6f11d1a34da7ddac65a2ec43f01ecb34e988005b552aae2c5cd846a2edf48b`.
+The separate cold timeout and continuation's five-pass/one-fail result remain
+retained as failures; neither is combined into a claimed five-minute pass.
+
+The same sparse gate owner now measures 88 bytes (previously 56) for every
+existing item-gate owner as well as new expression owners. A try expression row is
+32 bytes and retains its actual node/body edge, block/keyword spans and both
+sealed contexts. Item rows stay 24 bytes. Packed original/transfer prefixes stay
+8 bytes. Actual Kind28, Node36, Item64, Syntax312, Unit688, Extent104,
+Original160/Saved44, Report3040 and Engine4088 are unchanged. Widths 8/32/128
+retain capacities 8/32/128 and total column payload 344/1112/4184 bytes; attempted
+work is 54/222/894 steps. Ordinary no-gate syntax has no sparse owner allocation.
+These are type/capacity/accounting observations, not allocator counts.
+
+The PA4 `control/try-block.rs` and `control/try-needs-block.rs` inputs declare
+syntax-only outcomes; their official selected references are pending integration.
+The executable source Try protocol, homogeneous residual reconstruction, real
+branch/constructor calls, scope exits and native proof remain required. Language
+roles 35–41 and runtime plans are approved next work, not implemented by this
+qualified grammar producer.

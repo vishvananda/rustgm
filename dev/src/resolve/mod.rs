@@ -34,6 +34,7 @@ mod patterns;
 #[path = "impl_admission.rs"]
 pub(crate) mod specialization_authority;
 mod table;
+mod try_blocks;
 pub mod unit;
 
 /// Resolve configured modules into stable scope, definition and reference facts.
@@ -52,6 +53,7 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     float_features::validate_plain(package, &state.facts)?;
     default_items::validate_plain(package)?;
     alias_gates::validate_plain(package)?;
+    try_blocks::validate_plain(package)?;
     Ok(state.facts)
 }
 pub mod render;

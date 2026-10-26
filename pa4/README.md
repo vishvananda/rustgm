@@ -32,6 +32,9 @@ The grammar includes:
 - `if`/`else if`/`else`, condition let chains, loops, while/for, loop/block labels,
   return/break/continue, match arms and guards, closures (including move and async),
   and plain/unsafe/const/async blocks.
+- `try { ... }` has its own typed wrapper around the ordinary block. PA4 parses
+  it without granting its unstable feature or Try protocol; PA31 checks source
+  feature authority and PA26 owns the executable question-mark protocol.
 - Delimited macro invocations with opaque input. Invocation syntax is recorded;
   expansion is PA7/PA8. PA4 intentionally does not validate escapes or arbitrary
   suffixes inside opaque captures, even where rustc diagnoses them eagerly.
@@ -116,6 +119,7 @@ record, which identifies the expression.
 | `struct` | path, field list, optional update base |
 | `field-init` | quoted name, value |
 | `block` | flavor, statements, optional tail |
+| `try-block` | actual block child |
 | `empty-statement` | no fields |
 | `statement` | expression |
 | `let` | pattern, optional type, optional value, optional else block |

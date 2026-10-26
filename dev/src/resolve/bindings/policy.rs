@@ -41,6 +41,7 @@ pub(in crate::resolve) enum Feature {
     ExternTypes = 24,
     FinalAssociatedFunctions = 25,
     MarkerTraitAttr = 26,
+    TryBlocks = 27,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -79,6 +80,7 @@ impl Request {
             "extern_types" => Self::Capability(Feature::ExternTypes),
             "final_associated_functions" => Self::Capability(Feature::FinalAssociatedFunctions),
             "marker_trait_attr" => Self::Capability(Feature::MarkerTraitAttr),
+            "try_blocks" => Self::Capability(Feature::TryBlocks),
             "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.
@@ -207,6 +209,7 @@ pub(in crate::resolve) fn prepare_with_admission(
                 || features.has(Feature::ExternTypes)
                 || features.has(Feature::FinalAssociatedFunctions)
                 || features.has(Feature::MarkerTraitAttr)
+                || features.has(Feature::TryBlocks)
             {
                 Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
                     unit, features,

@@ -28,7 +28,10 @@ pub(super) fn child<L>(
     child: NodeId,
 ) -> Position {
     match ast.node(parent).kind {
-        Kind::Attributed { .. } | Kind::Loop { .. } | Kind::Label { .. } => position,
+        Kind::Attributed { .. }
+        | Kind::Loop { .. }
+        | Kind::Label { .. }
+        | Kind::TryBlock { .. } => position,
         Kind::Statement(_) | Kind::Block { .. } => Position::Statement,
         Kind::Expansion { tail, .. } => {
             if tail == Some(child) {

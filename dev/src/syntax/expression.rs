@@ -455,6 +455,7 @@ impl<'source> Parser<'source, '_> {
                     self.closure(true, false, token.start)
                 }
                 Word::Async => self.async_expression(),
+                Word::Try => self.try_block(),
                 Word::Unsafe | Word::Const => {
                     self.cursor.take()?;
                     let flavor = if word == Word::Unsafe {
@@ -869,6 +870,7 @@ impl<'source> Parser<'source, '_> {
                 ..
             }
             | Kind::If { .. }
+            | Kind::TryBlock { .. }
             | Kind::Loop { .. }
             | Kind::While { .. }
             | Kind::For { .. }

@@ -1,4 +1,5 @@
 //! Sparse feature sites share source identity, transfer and failed-attempt accounting.
+mod expressions;
 mod retention;
 use super::{
     ast::{Kind as NodeKind, NodeId, Syntax},
@@ -6,6 +7,7 @@ use super::{
     token_tree::{Span, error},
 };
 use crate::lex::token::LexError;
+pub(crate) use expressions::{Expression, Prefix};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
@@ -90,6 +92,8 @@ pub(crate) struct Declarations {
     entries: Vec<Declaration>,
     witness: retention::Witness,
     completed: usize,
+    expressions: Vec<Expression>,
+    expressions_completed: usize,
 }
 impl Declarations {
     #[cfg(test)]
@@ -131,26 +135,27 @@ impl Declarations {
         self.entries.push(declaration);
         Ok(())
     }
-    pub(crate) fn prefix(&self, count: usize) -> Result<Box<Self>, LexError> {
+    pub(crate) fn prefix(&self, count: Prefix) -> Result<Box<Self>, LexError> {
         let entries = self
             .entries
-            .get(..count)
+            .get(..count.items as usize)
             .ok_or_else(|| error(0, "invalid original defaultness prefix"))?;
         self.charge(
-            1 + count,
-            size_of::<Self>() + count * size_of::<Declaration>(),
+            1 + count.items as usize,
+            size_of::<Self>() + count.items as usize * size_of::<Declaration>(),
         )
         .map_err(|message| error(0, message))?;
         let mut copied = Self {
             witness: self.witness.clone(),
-            completed: self.completed.min(count),
+            completed: self.completed.min(count.items as usize),
             ..Self::default()
         };
         copied
             .entries
-            .try_reserve_exact(count)
+            .try_reserve_exact(count.items as usize)
             .map_err(|_| error(0, "original defaultness allocation failed"))?;
         copied.entries.extend_from_slice(entries);
+        self.copy_expressions(count.expressions, &mut copied)?;
         Ok(Box::new(copied))
     }
 }
@@ -287,12 +292,16 @@ impl<L> Syntax<L> {
                 .bind(image)
                 .map_err(|message| error(0, message))?;
             entries
-                .charge(entries.entries.len(), 0)
+                .charge(entries.entries.len() + entries.expressions.len(), 0)
                 .map_err(|message| error(0, message))?;
             for entry in &mut entries.entries {
                 entry.context = Some(std::num::NonZeroU32::MIN);
             }
             entries.completed = entries.entries.len();
+            for entry in &mut entries.expressions {
+                entry.context = Some((std::num::NonZeroU32::MIN, std::num::NonZeroU32::MIN));
+            }
+            entries.expressions_completed = entries.expressions.len();
         }
         Ok(())
     }
@@ -302,7 +311,10 @@ impl<L> Syntax<L> {
         image: &std::sync::Arc<crate::support::source::OriginalImage>,
     ) -> Result<(), LexError> {
         if let Some(entries) = &mut self.gate_sites {
-            if entries.entries.is_empty() && !entries.witness.bound() {
+            if entries.entries.is_empty()
+                && entries.expressions.is_empty()
+                && !entries.witness.bound()
+            {
                 // Genuine original replay may carry a prior failed transfer's debt.
                 entries
                     .witness
@@ -329,7 +341,10 @@ impl<L> Syntax<L> {
         image: &std::sync::Arc<crate::support::source::OriginalImage>,
     ) -> Result<(), LexError> {
         if let Some(entries) = &self.gate_sites {
-            if entries.entries.is_empty() && !entries.witness.bound() {
+            if entries.entries.is_empty()
+                && entries.expressions.is_empty()
+                && !entries.witness.bound()
+            {
                 // This is retained failed-attempt debt, never token authority.
                 entries.charge(1, 0).map_err(|message| error(0, message))?;
             } else {
@@ -341,6 +356,14 @@ impl<L> Syntax<L> {
         Ok(())
     }
     pub(crate) fn move_gate_sites_root(&mut self, from: NodeId, to: NodeId) {
+        if let NodeKind::TryBlock { gate, .. } = self.nodes[from.get() as usize].kind {
+            if let Some(entries) = &mut self.gate_sites
+                && let Some(entry) = entries.expressions.get_mut(gate as usize)
+            {
+                entry.node = to;
+            }
+            return;
+        }
         let NodeKind::Item(item) = self.nodes[from.get() as usize].kind else {
             return;
         };
@@ -354,27 +377,33 @@ impl<L> Syntax<L> {
             entries.entries[index].node = to;
         }
     }
-    pub(crate) fn truncate_gate_sites(&mut self, count: usize) {
+    pub(crate) fn truncate_gate_sites(&mut self, count: Prefix) {
         if let Some(entries) = &mut self.gate_sites {
             // A failed default-bearing attempt owns debt even at a zero prefix.
             // Syntax which never attempted defaultness still has no owner.
-            entries.entries.truncate(count);
-            entries.completed = entries.completed.min(count);
+            entries.entries.truncate(count.items as usize);
+            entries.completed = entries.completed.min(count.items as usize);
+            entries.expressions.truncate(count.expressions as usize);
+            entries.expressions_completed = entries
+                .expressions_completed
+                .min(count.expressions as usize);
         }
     }
     pub(crate) fn gate_sites_prefix(
         &self,
-        count: usize,
+        count: Prefix,
     ) -> Result<Option<Box<Declarations>>, LexError> {
         match &self.gate_sites {
             Some(entries) => entries.prefix(count).map(Some),
-            None if count == 0 => Ok(None),
+            None if count == Prefix::default() => Ok(None),
             None => Err(error(0, "original defaultness disappeared")),
         }
     }
     pub(crate) fn gate_sites_bytes(&self) -> usize {
         self.gate_sites.as_ref().map_or(0, |entries| {
-            size_of::<Declarations>() + entries.entries.capacity() * size_of::<Declaration>()
+            size_of::<Declarations>()
+                + entries.entries.capacity() * size_of::<Declaration>()
+                + entries.expressions.capacity() * size_of::<Expression>()
         })
     }
 }
