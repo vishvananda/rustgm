@@ -28,14 +28,14 @@ fn strict_transmute_values_preserve_bits_numeric_addresses_and_reject_invalid_or
                 assert!(
                     matches!(Reader::new(machine.evaluator.facts()).view(address)?,crate::sema::values::View::Address {bits:actual} if actual==bits)
                 );
-                assert_eq!(
-                    take(machine.transmute_value(pointer, usize_, address)?)?,
-                    scalar(u128::from(bits))
+                assert!(
+                    take(machine.transmute_value(pointer, usize_, address)?)?
+                        == scalar(u128::from(bits))
                 );
             }
-            assert_eq!(
-                take(machine.transmute_value(u8_, boolean, scalar(1))?)?,
-                Constant::scalar(Scalar::Boolean(true))
+            assert!(
+                take(machine.transmute_value(u8_, boolean, scalar(1))?)?
+                    == Constant::scalar(Scalar::Boolean(true))
             );
             assert!(machine.transmute_value(u8_, boolean, scalar(2)).is_err());
             assert!(
@@ -52,6 +52,18 @@ fn strict_transmute_values_preserve_bits_numeric_addresses_and_reject_invalid_or
             assert!(machine.transmute_value(pointer, usize_, address).is_err());
             assert_eq!(machine.slots, 0);
             assert!(machine.memory.bytes.roots.is_empty());
+            let failed = machine.work.steps;
+            machine.limits.steps = failed;
+            assert!(
+                machine
+                    .transmute_value(usize_, pointer, scalar(13))
+                    .is_err()
+            );
+            assert!(
+                machine.work.steps > failed,
+                "rejected attempts remain charged"
+            );
+            assert!(machine.memory.bytes.roots.is_empty());
             Ok(())
         },
     )
@@ -60,7 +72,7 @@ fn strict_transmute_values_preserve_bits_numeric_addresses_and_reject_invalid_or
 fn transmute_reference_duties_park_without_reencoding_or_expiring_original_roots()
 -> Result<(), String> {
     for width in [1, 8, 32] {
-        with_static_references(width, |machine, ty, definitions| {
+        with_reference_storage(width, true, |machine, ty, raw, definitions| {
             use crate::const_eval::ReadOperation;
             let mut values = Vec::new();
             for &definition in definitions {
@@ -80,7 +92,7 @@ fn transmute_reference_duties_park_without_reencoding_or_expiring_original_roots
             for (index, &definition) in definitions.iter().enumerate() {
                 machine.waiting = None;
                 assert!(matches!(
-                    machine.transmute_value(ty, ty, input)?,
+                    machine.transmute_value(raw, ty, input)?,
                     Read::Pending
                 ));
                 let now = machine.memory.bytes.decoded;
@@ -98,9 +110,9 @@ fn transmute_reference_duties_park_without_reencoding_or_expiring_original_roots
                     .complete_definition(definition, scalar(index as u128 + 11));
             }
             machine.waiting = None;
-            let result = take(machine.transmute_value(ty, ty, input)?)?;
+            let result = take(machine.transmute_value(raw, ty, input)?)?;
             assert_eq!(Some(machine.memory.bytes.decoded), decoded);
-            assert_eq!(machine.memory.bytes.paid_duties, 2 * width);
+            assert_eq!(machine.memory.bytes.paid_duties, width);
             for (index, original) in values.iter().enumerate() {
                 let actual = machine.evaluator.field(result, index as u64)?;
                 assert_eq!(actual.location(), original.location());
@@ -110,5 +122,34 @@ fn transmute_reference_duties_park_without_reencoding_or_expiring_original_roots
             Ok(())
         })?;
     }
+    with_reference_storage(1, true, |machine, destination, source, definitions| {
+        let address = machine
+            .evaluator
+            .static_address(definitions[0], TypeId::primitive(Primitive::U32))?;
+        let original = machine.evaluator.fields(&[address], None)?;
+        machine.read_operation = Some(crate::const_eval::ReadOperation {
+            frame: 2,
+            position: 0,
+        });
+        assert!(matches!(
+            machine.transmute_value(source, destination, original)?,
+            Read::Pending
+        ));
+        let decoded = machine.memory.bytes.decoded;
+        let changed = machine.evaluator.repeat(address, 1)?;
+        assert!(changed != original);
+        assert!(
+            machine
+                .transmute_value(source, destination, changed)
+                .is_err()
+        );
+        assert_eq!(
+            machine.memory.bytes.decoded, decoded,
+            "stale input must not replay codecs"
+        );
+        assert_eq!(machine.slots, 0);
+        assert!(machine.memory.bytes.roots.is_empty());
+        Ok(())
+    })?;
     Ok(())
 }

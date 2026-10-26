@@ -90,6 +90,9 @@ fn source_transmute_authenticates_full_call_header_instance_and_pre_mono_size_re
             Some(SourceIntrinsic::Transmute)
         );
     }
+    pre_mono_opponents()
+}
+fn pre_mono_opponents() -> Result {
     for (name, tail, message) in [
         (
             "unused-size",

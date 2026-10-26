@@ -27,7 +27,12 @@ impl Origins<'_> {
             .saturating_add(self.body.projections.len())
             .saturating_add(count.saturating_mul(3));
         self.attempted = self.attempted.saturating_add(work);
-        let scratch = self.body.locals.len().saturating_mul(size_of::<Stored>());
+        let scratch = self
+            .body
+            .locals
+            .len()
+            .saturating_mul(size_of::<Stored>())
+            .saturating_add(size_of::<Vec<Stored>>());
         let payload = count.saturating_mul(2 * size_of::<ValueId>());
         let result = (|| {
             let previous = self.roots.capacity().saturating_mul(size_of::<ValueId>());
@@ -37,7 +42,10 @@ impl Origins<'_> {
                 return Err("physical value origin work/storage budget exceeded");
             }
             let stores = unique_stores(self.body)?;
-            let actual_scratch = stores.capacity().saturating_mul(size_of::<Stored>());
+            let actual_scratch = stores
+                .capacity()
+                .saturating_mul(size_of::<Stored>())
+                .saturating_add(size_of::<Vec<Stored>>());
             if actual_scratch
                 .saturating_add(payload)
                 .saturating_add(previous)

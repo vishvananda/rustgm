@@ -610,6 +610,20 @@ fn with_static_references(
         &[crate::resolve::model::DefId],
     ) -> Result<(), Failure>,
 ) -> Result<(), String> {
+    with_reference_storage(width, false, |machine, reference, _, definitions| {
+        check(machine, reference, definitions)
+    })
+}
+fn with_reference_storage(
+    width: usize,
+    raw_source: bool,
+    check: impl FnOnce(
+        &mut Machine<'_, '_>,
+        TypeId,
+        TypeId,
+        &[crate::resolve::model::DefId],
+    ) -> Result<(), Failure>,
+) -> Result<(), String> {
     use std::fmt::Write;
     let mut source = String::new();
     for index in 0..width {
@@ -634,9 +648,21 @@ fn with_static_references(
         element: reference,
         length: width as u64,
     })?;
+    let raw = if raw_source {
+        let element = facts.types.intern(Kind::Pointer {
+            mutable: false,
+            pointee: referent,
+        })?;
+        facts.types.intern(Kind::Array {
+            element,
+            length: width as u64,
+        })?
+    } else {
+        array
+    };
     let evaluator = Evaluator::new(&report, &mut facts);
     let mut machine = Machine::new(evaluator, std::iter::empty(), Limits::default())?;
-    check(&mut machine, array, &definitions).map_err(|error| error.message().to_owned())
+    check(&mut machine, array, raw, &definitions).map_err(|error| error.message().to_owned())
 }
 #[test]
 fn symbolic_reference_duties_resume_each_static_once_and_do_not_cache_later_reads()
