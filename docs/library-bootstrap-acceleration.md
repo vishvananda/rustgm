@@ -53,9 +53,10 @@ run does not qualify them. The earlier successful-step evidence remains scoped.
 The successor full run 40377221175 passed release/course checks but failed one
 native frontend group: the cross-edition never-fallback helper appends a parsed
 donor Unit after expansion without producing its lint-owner records. The error is
-`active lint source owner has no produced record`. Correct the fixture through
-the real producer and cover its frontend/LowIR preparation without requiring a
-native backend; do not weaken production source validation. Debug/independent
+`active lint source owner has no produced record`. The fixture is now corrected
+through the existing provenance-template parser, retaining only the actual
+macro definition, and both ordinary LowIR and native controls pass. Production
+source validation is unchanged. Debug/independent
 steps were skipped. This is a concrete example of useful regression coverage
 arriving too late in the current CI arrangement.
 
@@ -301,5 +302,8 @@ seconds. These are two separately scoped development batches, not one combined
 five-minute run or a full native qualification. Receipts are
 `obj/qualification/fast/1793039582331443219/receipt.json` and
 `obj/qualification/fast/1793040263229452879/receipt.json` in the integrator tree.
-Full CI's native donor-record failure remains open and is queued ahead of the
-next broad qualification. No original-core advance is claimed for these joins.
+Full CI's native donor-record failure is subsequently repaired and verified by
+ordinary and native focused checks; see the
+[never-fallback record](pa34-never-editions.md). A fresh full CI run is still
+required for the previously skipped steps. No original-core advance is claimed
+for these joins.
