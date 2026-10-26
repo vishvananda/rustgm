@@ -1,6 +1,7 @@
 //! Lifetime-erased fingerprints only select candidates; complete input matching proves identity.
 use crate::support::hash::FxHasher;
 use crate::support::hash::HashMap;
+use crate::support::retained::Growth;
 use crate::types::{
     GenericArgs, Kind, ListId, Store, TypeId, arguments::Argument, region_graph::Error,
     traits::ApplicationId,
@@ -48,85 +49,142 @@ impl Shapes {
         Ok(())
     }
     pub fn get(&mut self, types: &Store, ty: TypeId) -> Result<u64, Error> {
+        self.get_observed::<false, Error>(types, ty, &|_, _| Ok(()))
+    }
+    pub(crate) fn get_charged(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<u64, &'static str> {
+        self.get_observed::<true, ChargedError>(types, ty, &|work, bytes| {
+            charge(work, bytes).map_err(ChargedError::Retention)
+        })
+        .map_err(|error| match error {
+            ChargedError::Semantic(Error::Budget) => "structural fingerprint work budget exceeded",
+            ChargedError::Semantic(_) => "invalid structural fingerprint identity",
+            ChargedError::Retention(message) => message,
+        })
+    }
+    fn get_observed<const CHARGED: bool, E: From<Error>>(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        charge: &impl Fn(usize, usize) -> Result<(), E>,
+    ) -> Result<u64, E> {
+        if CHARGED {
+            charge(1, 0)?;
+        }
         let root = Key::Type(ty);
         if let Some(&found) = self.completed.get(&root) {
             return Ok(found);
         }
-        self.work.push((root, false));
+        self.schedule::<CHARGED, E>(root, false, charge)?;
         while let Some((key, finish)) = self.work.pop() {
-            self.charge(1)?;
+            self.account::<CHARGED, E>(1, charge)?;
             if self.completed.contains_key(&key) {
                 continue;
             }
             if !finish {
-                self.work.push((key, true));
+                self.schedule::<CHARGED, E>(key, true, charge)?;
             }
-            let hash = self.inspect(types, key, finish)?;
+            let hash = self.inspect::<CHARGED, E>(types, key, finish, charge)?;
             if finish {
+                if CHARGED {
+                    let growth =
+                        Growth::map::<Key, u64>(self.completed.len(), self.completed.capacity(), 1);
+                    charge(growth.work, growth.bytes)?;
+                }
                 self.completed.insert(key, hash);
             }
         }
-        self.completed.get(&root).copied().ok_or(Error::Identity)
+        self.completed
+            .get(&root)
+            .copied()
+            .ok_or_else(|| Error::Identity.into())
     }
-    fn child(&mut self, key: Key, finish: bool, hash: &mut FxHasher) -> Result<(), Error> {
-        self.charge(1)?;
+    fn child<const CHARGED: bool, E: From<Error>>(
+        &mut self,
+        key: Key,
+        finish: bool,
+        hash: &mut FxHasher,
+        charge: &impl Fn(usize, usize) -> Result<(), E>,
+    ) -> Result<(), E> {
+        self.account::<CHARGED, E>(1, charge)?;
         if let Some(value) = self.completed.get(&key) {
             value.hash(hash);
         } else if finish {
-            return Err(Error::Identity);
+            return Err(Error::Identity.into());
         } else {
-            self.work.push((key, false));
+            self.schedule::<CHARGED, E>(key, false, charge)?;
         }
         Ok(())
     }
-    fn inspect(&mut self, types: &Store, key: Key, finish: bool) -> Result<u64, Error> {
+    fn inspect<const CHARGED: bool, E: From<Error>>(
+        &mut self,
+        types: &Store,
+        key: Key,
+        finish: bool,
+        charge: &impl Fn(usize, usize) -> Result<(), E>,
+    ) -> Result<u64, E> {
         let mut hash = FxHasher::default();
         std::mem::discriminant(&key).hash(&mut hash);
         match key {
-            Key::Type(ty) => self.ty(types.kind(ty).ok_or(Error::Identity)?, finish, &mut hash)?,
+            Key::Type(ty) => self.ty::<CHARGED, E>(
+                types.kind(ty).ok_or(Error::Identity)?,
+                finish,
+                &mut hash,
+                charge,
+            )?,
             Key::List(list) => {
                 let values = types.list(list).ok_or(Error::Identity)?;
-                self.charge(values.len())?;
+                self.account::<CHARGED, E>(values.len(), charge)?;
                 values.len().hash(&mut hash);
                 for &ty in values {
-                    self.child(Key::Type(ty), finish, &mut hash)?;
+                    self.child::<CHARGED, E>(Key::Type(ty), finish, &mut hash, charge)?;
                 }
             }
             Key::Arguments(arguments) => {
                 let values = types.arguments(arguments).ok_or(Error::Identity)?;
-                self.charge(values.len())?;
+                self.account::<CHARGED, E>(values.len(), charge)?;
                 values.len().hash(&mut hash);
                 for value in values {
                     std::mem::discriminant(&value).hash(&mut hash);
                     match value {
                         Argument::Lifetime(_) => {}
                         Argument::Const(value) => value.hash(&mut hash),
-                        Argument::Type(ty) => self.child(Key::Type(ty), finish, &mut hash)?,
+                        Argument::Type(ty) => {
+                            self.child::<CHARGED, E>(Key::Type(ty), finish, &mut hash, charge)?;
+                        }
                     }
                 }
             }
             Key::Trait(id) => {
                 let application = types.trait_application(id).ok_or(Error::Identity)?;
                 application.item.hash(&mut hash);
-                self.child(Key::Arguments(application.arguments), finish, &mut hash)?;
+                self.child::<CHARGED, E>(
+                    Key::Arguments(application.arguments),
+                    finish,
+                    &mut hash,
+                    charge,
+                )?;
             }
         }
         Ok(hash.finish())
     }
-    fn ty(&mut self, kind: Kind, finish: bool, hash: &mut FxHasher) -> Result<(), Error> {
+    fn ty<const CHARGED: bool, E: From<Error>>(
+        &mut self,
+        kind: Kind,
+        finish: bool,
+        hash: &mut FxHasher,
+        charge: &impl Fn(usize, usize) -> Result<(), E>,
+    ) -> Result<(), E> {
         std::mem::discriminant(&kind).hash(hash);
         match kind {
-            Kind::Closure {
-                identity,
-                arguments,
-                signature,
-                environment,
-            } => {
-                identity.hash(hash);
-                self.child(Key::Arguments(arguments), finish, hash)?;
-                self.child(Key::Type(signature), finish, hash)?;
-                self.child(Key::Type(environment), finish, hash)?;
+            kind @ (Kind::Closure { .. } | Kind::Function { .. } | Kind::FunctionItem { .. }) => {
+                self.callable::<CHARGED, E>(kind, finish, hash, charge)?;
             }
+
             Kind::Never => {}
             Kind::Primitive(value) => value.hash(hash),
             Kind::Parameter(value) => value.hash(hash),
@@ -134,25 +192,27 @@ impl Shapes {
                 mutable, referent, ..
             } => {
                 mutable.hash(hash);
-                self.child(Key::Type(referent), finish, hash)?;
+                self.child::<CHARGED, E>(Key::Type(referent), finish, hash, charge)?;
             }
             Kind::Pointer { mutable, pointee } => {
                 mutable.hash(hash);
-                self.child(Key::Type(pointee), finish, hash)?;
+                self.child::<CHARGED, E>(Key::Type(pointee), finish, hash, charge)?;
             }
-            Kind::Slice(element) => self.child(Key::Type(element), finish, hash)?,
+            Kind::Slice(element) => {
+                self.child::<CHARGED, E>(Key::Type(element), finish, hash, charge)?;
+            }
             Kind::Array { element, length } => {
                 length.hash(hash);
-                self.child(Key::Type(element), finish, hash)?;
+                self.child::<CHARGED, E>(Key::Type(element), finish, hash, charge)?;
             }
             Kind::ArrayTerm { element, length } => {
                 length.hash(hash);
-                self.child(Key::Type(element), finish, hash)?;
+                self.child::<CHARGED, E>(Key::Type(element), finish, hash, charge)?;
             }
-            Kind::Tuple(list) => self.child(Key::List(list), finish, hash)?,
+            Kind::Tuple(list) => self.child::<CHARGED, E>(Key::List(list), finish, hash, charge)?,
             Kind::Opaque(id, arguments) => {
                 id.hash(hash);
-                self.child(Key::Arguments(arguments), finish, hash)?;
+                self.child::<CHARGED, E>(Key::Arguments(arguments), finish, hash, charge)?;
             }
             Kind::Dynamic {
                 shape,
@@ -162,11 +222,88 @@ impl Shapes {
             } => {
                 shape.hash(hash);
                 bound_regions.hash(hash);
-                self.child(Key::Arguments(arguments), finish, hash)?;
+                self.child::<CHARGED, E>(Key::Arguments(arguments), finish, hash, charge)?;
             }
             Kind::Adt(item, arguments) => {
                 item.hash(hash);
-                self.child(Key::Arguments(arguments), finish, hash)?;
+                self.child::<CHARGED, E>(Key::Arguments(arguments), finish, hash, charge)?;
+            }
+
+            Kind::Projection(application) => {
+                application.item.hash(hash);
+                self.child::<CHARGED, E>(Key::Type(application.subject), finish, hash, charge)?;
+                self.child::<CHARGED, E>(
+                    Key::Trait(application.trait_application),
+                    finish,
+                    hash,
+                    charge,
+                )?;
+                self.child::<CHARGED, E>(
+                    Key::Arguments(application.arguments),
+                    finish,
+                    hash,
+                    charge,
+                )?;
+            }
+        }
+        Ok(())
+    }
+}
+
+enum ChargedError {
+    Semantic(Error),
+    Retention(&'static str),
+}
+impl From<Error> for ChargedError {
+    fn from(error: Error) -> Self {
+        Self::Semantic(error)
+    }
+}
+impl Shapes {
+    fn schedule<const CHARGED: bool, E>(
+        &mut self,
+        key: Key,
+        finish: bool,
+        charge: &impl Fn(usize, usize) -> Result<(), E>,
+    ) -> Result<(), E> {
+        if CHARGED {
+            let growth = Growth::vector::<(Key, bool)>(self.work.len(), self.work.capacity(), 1);
+            charge(growth.work, growth.bytes)?;
+        }
+        self.work.push((key, finish));
+        Ok(())
+    }
+    fn account<const CHARGED: bool, E: From<Error>>(
+        &mut self,
+        work: usize,
+        charge: &impl Fn(usize, usize) -> Result<(), E>,
+    ) -> Result<(), E> {
+        if CHARGED {
+            charge(work, 0)?;
+        }
+        self.charge(work).map_err(Into::into)
+    }
+}
+
+impl Shapes {
+    fn callable<const CHARGED: bool, E: From<Error>>(
+        &mut self,
+        kind: Kind,
+        finish: bool,
+        hash: &mut FxHasher,
+        charge: &impl Fn(usize, usize) -> Result<(), E>,
+    ) -> Result<(), E> {
+        match kind {
+            Kind::Closure {
+                identity,
+                arguments,
+                signature,
+                environment,
+            } => {
+                identity.hash(hash);
+                self.child::<CHARGED, E>(Key::Arguments(arguments), finish, hash, charge)?;
+                self.child::<CHARGED, E>(Key::Type(signature), finish, hash, charge)?;
+                self.child::<CHARGED, E>(Key::Type(environment), finish, hash, charge)?;
             }
             Kind::Function {
                 bound_regions,
@@ -178,8 +315,8 @@ impl Shapes {
                 bound_regions.hash(hash);
                 unsafe_.hash(hash);
                 convention.hash(hash);
-                self.child(Key::List(parameters), finish, hash)?;
-                self.child(Key::Type(result), finish, hash)?;
+                self.child::<CHARGED, E>(Key::List(parameters), finish, hash, charge)?;
+                self.child::<CHARGED, E>(Key::Type(result), finish, hash, charge)?;
             }
             Kind::FunctionItem {
                 item,
@@ -187,15 +324,10 @@ impl Shapes {
                 signature,
             } => {
                 item.hash(hash);
-                self.child(Key::Arguments(arguments), finish, hash)?;
-                self.child(Key::Type(signature), finish, hash)?;
+                self.child::<CHARGED, E>(Key::Arguments(arguments), finish, hash, charge)?;
+                self.child::<CHARGED, E>(Key::Type(signature), finish, hash, charge)?;
             }
-            Kind::Projection(application) => {
-                application.item.hash(hash);
-                self.child(Key::Type(application.subject), finish, hash)?;
-                self.child(Key::Trait(application.trait_application), finish, hash)?;
-                self.child(Key::Arguments(application.arguments), finish, hash)?;
-            }
+            _ => return Err(Error::Identity.into()),
         }
         Ok(())
     }

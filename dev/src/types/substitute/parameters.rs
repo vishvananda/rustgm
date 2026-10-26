@@ -251,11 +251,12 @@ impl Bound {
         Ok(substitution)
     }
 
-    pub(super) fn parameter(
+    pub(super) fn parameter_observed<const CHARGED: bool>(
         &mut self,
         store: &mut Store,
         id: ParameterId,
         depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Option<TypeId>, &'static str> {
         let Some(Argument::Type(ty)) = self.argument(store, id)? else {
             return Ok(None);
@@ -263,9 +264,15 @@ impl Bound {
         if depth == 0 || store.escaping_binders(ty) == Some(0) {
             return Ok(Some(ty));
         }
-        let (result, work) = store.shift_type(ty, depth)?;
-        self.account_arguments(work)?;
-        Ok(Some(result))
+        if !CHARGED {
+            let (result, work) = store.shift_type(ty, depth)?;
+            self.account_arguments(work)?;
+            return Ok(Some(result));
+        }
+        let before = store.capture_shift_steps();
+        let result = store.shift_type_charged(ty, depth, charge);
+        self.account_arguments(store.capture_shift_steps().saturating_sub(before))?;
+        result.map(|(ty, _)| Some(ty))
     }
     pub(super) fn constant(&self, store: &Store, id: ConstId) -> Result<ConstId, &'static str> {
         let kind = store
@@ -278,7 +285,11 @@ impl Bound {
         }
         Ok(id)
     }
-    fn argument(&self, store: &Store, id: ParameterId) -> Result<Option<Argument>, &'static str> {
+    pub(super) fn argument(
+        &self,
+        store: &Store,
+        id: ParameterId,
+    ) -> Result<Option<Argument>, &'static str> {
         let Some(bindings) = &self.parameters else {
             return Ok(None);
         };

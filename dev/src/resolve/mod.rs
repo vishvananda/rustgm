@@ -31,6 +31,8 @@ mod gate_provenance;
 pub mod package;
 mod paths;
 mod patterns;
+#[path = "impl_admission.rs"]
+pub(crate) mod specialization_authority;
 mod table;
 pub mod unit;
 

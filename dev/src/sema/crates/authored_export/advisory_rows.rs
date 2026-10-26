@@ -42,7 +42,7 @@ impl Stage {
             require_defaultness_transport(report, declaration)?;
             let row = self.definitions[index]
                 .ok_or_else(|| Error::unlocated("selected attribute declaration disappeared"))?;
-            let view = facts.header_attribute_contracts(report, definition)?;
+            let view = facts.publication_header_contracts(report, definition)?;
             if view
                 .origin
                 .source()
