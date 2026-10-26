@@ -256,15 +256,63 @@ fn sized_fallback_never_overrides_assumed_parent_or_actual_equality() -> TestRes
             "{name}: {error}"
         );
     }
-    let error = pipeline::analyze_source(&provider("result-obligation-negative")?)
+    let report = provider("result-obligation-negative")?;
+    missing_actual_result_bound(&report)?;
+    let error = pipeline::analyze_source(&report)
         .err()
         .ok_or("unproved actual result requirement accepted")?;
-    assert!(
-        error
-            .message
-            .contains("user trait obligation requires a matching assumption or implementation"),
+    assert_eq!(
+        error.message,
+        "trait obligation requires an unambiguous matching assumption or implementation",
         "{error}"
     );
+    Ok(())
+}
+/// The unit representation does not manufacture the provider's user bound.
+fn missing_actual_result_bound(report: &Report) -> TestResult {
+    let mut facts = declarations::analyze(report)?;
+    let actual = report
+        .resolution
+        .definitions
+        .iter()
+        .enumerate()
+        .find(|(_, definition)| {
+            definition.kind == crate::resolve::model::DefKind::Trait
+                && report.package.names.get(definition.name) == "Actual"
+        })
+        .ok_or("genuine source Actual trait")?
+        .0;
+    let bound = facts
+        .types
+        .intern_trait_application(crate::types::traits::Application {
+            item: ItemId(u32::try_from(actual)?),
+            arguments: GenericArgs::EMPTY,
+        })?;
+    let mut context = Context::default();
+    let mut substitution = Instantiation::new(&mut context, &facts.types, &[])?;
+    let goal = context.instantiate_predicate(
+        &mut facts.types,
+        Predicate {
+            ty: TypeId::UNIT,
+            bound: Bound::Trait(bound),
+        },
+        &mut substitution,
+    )?;
+    assert!(matches!(
+        selection::select_available(
+            &mut facts,
+            &mut context,
+            &goal,
+            selection::Caller {
+                assumptions: &Assumptions::default(),
+                environment: None,
+                first_region: 1,
+                retain_sized: false,
+            },
+            Availability::Validated,
+        )?,
+        selection::Selection::Absent
+    ));
     Ok(())
 }
 /// Inspect the actual scoped declaration environment before judging the body's
