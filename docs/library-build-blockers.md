@@ -44,6 +44,14 @@ real non-role provided method, actual encoded artifact, fresh imported original
 and instance proof, and a linked consumer printing `7\n`. Private producer and
 Environment checkpoints are prerequisites to that target, not its replacement.
 
+The [fresh consumer authority checkpoint](private-consumer-authority-checkpoint.md)
+now constructs a distinct consumer Report, Store and one shared imported Catalog
+from actual source/configuration/context. Six focused groups pass, with all seven
+old v0/v1 raw captures unchanged. The owner remains reserved: selected header
+append, complete role/member validation, original/instance proofs and the native
+consumer remain required. Unpaid header columns cannot certify absent attributes
+or defaultness, and public Provided admission remains closed.
+
 The [Assert condition checkpoint](source-assert-implementation.md) qualifies
 single parsing and owned typed transfer, including real opaque-fragment
 provenance, failed-attempt accounting and an existing configuration sentinel.

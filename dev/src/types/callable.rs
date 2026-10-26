@@ -325,6 +325,15 @@ impl Templates {
     pub fn get(&self, item: ItemId) -> Option<Template> {
         self.entries.get(&item).copied()
     }
+    /// Borrow a registration's complete formal order from the same actual entry.
+    /// This lookup grants no declaration, body or instance proof.
+    pub(crate) fn registration(&self, item: ItemId) -> Option<(Template, &[ParameterId])> {
+        let template = *self.entries.get(&item)?;
+        Some((
+            template,
+            &self.generics[template.generics_start..template.generics_end],
+        ))
+    }
     #[must_use]
     pub fn bounds(&self, item: ItemId) -> Option<&[Pair]> {
         let template = self.entries.get(&item)?;
