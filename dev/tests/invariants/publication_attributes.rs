@@ -8,6 +8,8 @@ use crate::{
     },
 };
 use std::sync::Arc;
+#[path = "closed_default_headers.rs"]
+mod defaults;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 fn fixture(name: &str) -> Result<String> {
@@ -36,6 +38,7 @@ fn staged(report: &Report, facts: &mut Declarations, identity: &CrateIdentity) -
         stage: Stage::begin(report, facts, identity)?,
         openings: HashMap::default(),
         numbering: None,
+        collector: None,
     })
 }
 fn publish(text: &str) -> Result<crates::Interface> {
@@ -51,6 +54,7 @@ fn publish(text: &str) -> Result<crates::Interface> {
 
 #[test]
 fn plain_and_configured_absent_headers_publish_with_the_existing_profile() -> Result {
+    defaults::reject_untransported_defaultness()?;
     let original = publish(&plain()?)?;
     let disabled = publish(&fixture("cfg-off")?)?;
     assert_eq!(crates::encode(&original)?, crates::encode(&disabled)?);

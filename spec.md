@@ -108,6 +108,20 @@ grants execution or trait permission. The
 [versioned transport checkpoint](docs/source-header-contract-transport.md)
 records exact-byte, fresh-consumer, origin, budget and layout controls.
 
+Free unnamed constants retain real declaration identities, item keys, scopes and
+all initializer typing and evaluation obligations. Omit only their lexical name
+binding and declaration-name wakeup. Associated constants require names. Retain
+actual visibility and emit the real unused-visibilities lint through existing
+lexical policy; a public placeholder creates no exported name. Unsupported
+metadata profiles reject the real constant inventory instead of dropping it.
+One cold owner retains authenticated source warning causes. Success and terminal
+errors share the same bounded collector and canonical warning carrier. Macro
+projection uses the actual introduction; physical source and syntax context
+govern duplicate warnings. Preserve the primary error and distinguish unavailable
+source authentication from exhausted warning budgets. Keep the optional dense
+policy table's aggregate per-node cost explicit. See the
+[unnamed-constant checkpoint](docs/unnamed-free-constants.md).
+
 Local structural inherent ownership consumes the actual crate policy and complete
 member inventory. Head/name/context buckets exclude unrelated work; full Self,
 const arguments, caller conditions and visibility still decide applicability.
@@ -120,6 +134,17 @@ One cold name-work counter covers ordinary and structural contexts, including
 failed queries. Ordinary local feature allowances share authenticated header
 machinery through a distinct cold owner; they do not become source providers or
 disable the prelude. See [the structural owner checkpoint](docs/primitive-inherent-checkpoint.md).
+
+Trait implementation restrictions retain parsed clause nodes and resolve their
+module path once through the existing import fixpoint. Validate the real
+declaration and implementation module ancestry; visibility grants no additional
+implementation permission. Syntax feature checks include parsed disabled
+headers and authenticate actual macro-token origin. Ordinary readable metadata
+can assert an unrestricted domain only through its checked canonical profile,
+trait header, owner and inventory. Missing source nodes or map entries are not
+policy evidence. Restricted source publication stays closed until its explicit
+metadata contract is implemented. See the
+[domain checkpoint](docs/implementation-domains-core-checkpoint.md).
 
 Source macro imports and qualified calls use actual declarations and the existing
 import dependency worklist, including forward definitions and renamed targets.
@@ -182,6 +207,51 @@ bindings from API inheritance. Stability-bearing metadata must reject until its
 transport and use consumers exist; regular policy cannot grant const-callability.
 
 Source-role semantic attributes are validated claims on exact declarations.
+Sparse item feature sites share one source-incarnation witness, transaction and
+monotonic retention envelope across default modifiers and trait aliases. Keep
+whole alias-item spans distinct from default keyword spans; neither source copies
+nor macro root replacement may erase their token authority. Defaultness queries
+must filter alias rows, so aliases cannot allocate specialization state. Retain
+actual alias identities and lexical Self/generic scopes without ordinary trait
+owners, associated member scopes, impl entries or synthetic Self:Alias evidence.
+Typed expansion must share canonical dependency edges rather than repeatedly
+flattening nested alias diamonds. See the
+[source-site checkpoint](docs/trait-alias-sites-checkpoint.md) and
+[canonical clause checkpoint](docs/trait-alias-clauses-checkpoint.md). Canonical
+headers own full declared slots, direct clauses and typed dependency edges;
+seal their graph before use and distinguish unfinished, failed and empty
+contracts. Substitution-only expansion may share identical actual declaration,
+subject and full-argument applications within one Store and binder context.
+That membership is not proof evidence. Compose nested universal alias edges
+through the existing validated typed-input opening, preserving unused slots and
+callable locals. Retain one canonical surrounding binder per application instead
+of copying its ancestor path; the [binder checkpoint](docs/trait-alias-binders-checkpoint.md)
+records changed-path scaling. Retain original/normalized inputs and
+binder identities when their consumers are implemented; incomplete consumers
+and imported transport keep explicit fences.
+
+Alias naming consumes the declaration-Self view, while proof retains the complete
+contract. Filter original typed subjects before actual substitution or result
+normalization can make another formal or associated result equal Self. Reuse the
+same dependency graph, charged substitutions and ordinary member/binder machinery;
+do not manufacture a trait identity or clone a second flattened graph. Preserve
+written edge subjects and existing unreduced clause facts. The
+[naming checkpoint](docs/trait-alias-naming-checkpoint.md) records the independent
+counterexample, actual consumer and selected-table cost. Associated-family input
+prefixes must include every emitted alias requirement; object principal
+multiplicity is separate from deduplicated proof/naming clauses.
+
+Share structural layout readiness and field instantiation across constant
+storage and source intrinsic consumers. A layout answer supplies physical data,
+not trait, source-call or memory-access permission. Authenticate the reached
+source call before demanding layout. Retain pending declarations distinctly from
+completed failures, and reuse the existing substitution graph rather than
+implementing a second layout or field walker. Charge actual cold dense-row
+initialization, graph work and failed attempts; completed warm queries must avoid
+rebuilding the dependency graph. The
+[source storage checkpoint](docs/source-storage-contracts-checkpoint.md) records
+the genuine associated-constant wrappers and native evidence.
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle
@@ -200,6 +270,77 @@ formal, including unused parameters; preserve explicit `?Sized`. Original
 assumptions do not pay substituted instance obligations. Retain a single cold
 owner for immutable imported templates/contracts, with exact owner validation
 at every borrowed view and ordinary per-instance proof on execution.
+
+Private callable preparation consumes the actual reserved declared/callable
+signature pair and complete outer-to-inner formal scope, including unused
+parameters and inherited Self. Share the ordinary callable registration kernel;
+retain the real named owner and anonymous Function types. Build the scope index
+once. A warm hit still authenticates the catalog, source arena, declaration,
+body, signature and exact scope record before reusing readiness, without
+traversing its ancestry again. Prepay actual template capacity growth, temporary
+owner validation and selected regional occurrences; unrelated declarations and
+the entire type store are not per-call allocation bounds. Failed attempts retain
+their charged work and peak, and cannot publish partial readiness. This private
+structural preparation grants no defining Environment, original body proof,
+call-instance proof or wider metadata-profile permission.
+
+Raw original Contract parameters retain the source iterator's inner-to-outer
+scope order. Callable applications retain their separate outer-to-inner formal
+order. Validate each using the same actual scope/slot identities and complete
+inherited counts; never reorder the original body or guess a Self position.
+Imported body preparation maps each raw formal through existing prepared
+declaring/parent scope cells, verifies the exact leaf and port ParameterIds,
+and preserves missing/duplicate/reordered/foreign failures. Reuse the dense
+scope index and charged constant-time lookups instead of rebuilding flattened
+formal tables or walking ancestry per demand.
+
+Private numbering records bind actual catalog/body/raw-row/callable/arena
+identity and reuse the source allocator's checked unit-local issuance order.
+Prepay selected logs, inverse scratch and alias ledgers; preserve failed work,
+capacity costs and absent versus present-empty ledgers. Recorded readiness
+does not bind a defining regional Environment or change reservation availability.
+Separate body/availability-owned regional ports and their actual proof remain
+required before original or substituted-instance execution.
+
+A nonzero signature may use the same defining-environment kernel only after
+the actual Declaration origin, empty regional inputs and supported frames are
+authenticated and both preexisting builtin and region payloads are absent.
+Absent and present-empty payloads are distinct. Prepay real alias vectors, map
+growth/coexistence and Arc storage before the shared finish kernel; reconcile
+fresh owned payload without charging shared declaration tables again. Bind the
+completed body memo to both its actual immutable recording and Environment
+allocations, retaining allocation charges while weak keys survive. Full ledger
+scans stay cold; warm checks authenticate the complete owner/signature/scope and
+both identities in constant work. This grants no body Variable or declared
+lifetime availability, original proof, instance proof or public execution.
+
+Private defining-environment preparation reuses the canonical predicate
+translator and Environment producer through sealed ordinary and reservation
+ports. Authenticate actual Input sites and complete inherited/unused formals.
+Distinguish declaration trait premises from regional body assumptions. An
+unchanged zero-domain Declaration body may share its actual declaration Arc;
+an actual empty Contract body requires a separate neutral body Environment and
+positive function/scope/body/binder identity, never that declaration Arc.
+Conditional default and nonzero origins require their own complete consumers.
+Never insert neutral declaration maps merely to make a private query succeed:
+that changes existing source origins and metadata bytes. Prepay selected work,
+real lazy collection growth and collision comparisons, including minimum vector
+capacities; warm canonical hits must not allocate or scan unrelated originals.
+See the [private environment checkpoint](docs/private-defining-environments-checkpoint.md)
+and its [empty Contract successor](docs/private-empty-contracts-checkpoint.md).
+
+Source-module namespace preparation borrows genuine ordinary trait headers
+without inventing language roles. Retain canonical declaration/module targets
+and actual aliases, move the existing columns and body catalog once, and use
+fallible charged sorting rather than unfolding paths. Reserve/install/freeze
+the actual Catalog transactionally; failed attempts publish no completed owner.
+Foreign module bookkeeping cannot prove local ancestry or implementation
+permission. Private namespace readiness grants no public profile or restricted
+trait transport. A later versioned contract must carry complete implementation
+domains and advisory facts, validate legitimate provider-owned implementations,
+and reject unauthorized fresh foreign implementations separately from the
+deny-explicit-impl policy. Keep each metadata consumer's admission explicit.
+See the [private namespace checkpoint](docs/pa29-module-namespace-inspection.md).
 
 Role validators consume borrowed declaration headers rather than reconstructing
 source syntax. The source adapter validates the actual declaration, separate

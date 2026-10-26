@@ -1,0 +1,1 @@
+use std::mem::{transmute,MaybeUninit};pub const VALUE:MaybeUninit<usize>=unsafe{transmute::<&u8,MaybeUninit<usize>>(&9u8)};

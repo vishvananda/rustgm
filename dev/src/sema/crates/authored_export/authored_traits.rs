@@ -15,6 +15,7 @@ impl Stage {
         &mut self,
         report: &Report,
         facts: &Declarations,
+        ordinary_traits: bool,
     ) -> Result<(), &'static str> {
         let catalog = facts
             .source_bindings
@@ -27,6 +28,12 @@ impl Stage {
             .ok_or("source role reservations are absent")?;
         let start =
             u32::try_from(self.rows.roles.len()).map_err(|_| "source role table overflow")?;
+        let mut emitted = if ordinary_traits {
+            self.reserve(report.resolution.definitions.len())?;
+            vec![false; report.resolution.definitions.len()]
+        } else {
+            Vec::new()
+        };
         for role in LangItem::ALL {
             self.charge(1)?;
             let Some(declaration) = catalog.header_role(role)? else {
@@ -42,6 +49,9 @@ impl Stage {
                 DefKind::Trait => {
                     let (header, literal) = Trait::source_with_bounds(report, facts, declaration)?;
                     self.trait_header(facts, &header, reserved, literal)?;
+                    if let Some(slot) = emitted.get_mut(declaration.definition.0 as usize) {
+                        *slot = true;
+                    }
                 }
                 DefKind::Function if role == LangItem::CloneFn => {}
                 _ => return Err("source role form is outside the complete first transport family"),
@@ -51,6 +61,22 @@ impl Stage {
             start,
             end: u32::try_from(self.rows.roles.len()).map_err(|_| "source role table overflow")?,
         };
+        if ordinary_traits {
+            for owner in facts.associated.owners() {
+                self.charge(1)?;
+                let OwnerKind::Trait { definition, .. } = owner.kind else {
+                    continue;
+                };
+                let slot = emitted
+                    .get_mut(definition.0 as usize)
+                    .ok_or("ordinary trait owner is outside its actual declaration arena")?;
+                if !*slot {
+                    let (header, literal) = Trait::source_owner_with_bounds(report, facts, owner)?;
+                    self.trait_header(facts, &header, reserved, literal)?;
+                    *slot = true;
+                }
+            }
+        }
         let expected = facts
             .associated
             .owners()

@@ -44,6 +44,7 @@ struct Discovered {
 /// Classify only an actual direct operation, never a reified/Invoke target.
 /// Registry identity and signature data do not supply its later execution proof.
 fn source_call(
+    report: &crate::resolve::expansion::Report,
     facts: &Declarations,
     body: &Body,
     value: &crate::body::ir::Value,
@@ -81,6 +82,46 @@ fn source_call(
                 return Err("source ub_checks dependency differs from its exact direct Call");
             }
             Ok(Some(SourceIntrinsic::UbChecks))
+        }
+        Some(SourceIntrinsic::Transmute) => {
+            let selected = Reader::new(facts)
+                .source_transmute(Instance::new(&facts.types, ty)?, body.source)?
+                .ok_or("source transmute lost its dependency descriptor")?;
+            catalog.require_transmute_report(report, facts, &selected)?;
+            let [input] = body
+                .arguments
+                .get(arguments.start as usize..arguments.end as usize)
+                .ok_or("source transmute lost its actual argument range")?
+            else {
+                return Err("source transmute requires one direct value argument");
+            };
+            if signature != selected.signature
+                || value.ty != selected.destination
+                || body
+                    .values
+                    .get(input.0 as usize)
+                    .is_none_or(|v| v.ty != selected.source)
+            {
+                return Err("source transmute dependency differs from its complete direct Call");
+            }
+            Ok(Some(SourceIntrinsic::Transmute))
+        }
+        Some(SourceIntrinsic::Abort) => {
+            let selection = Reader::new(facts)
+                .source_abort(Instance::new(&facts.types, ty)?, body.source)?
+                .ok_or("source abort lost its dependency descriptor")?;
+            catalog.require_abort_report(report, facts, &selection)?;
+            if body.const_context
+                || signature != selection.signature
+                || value.ty != TypeId::NEVER
+                || !body
+                    .arguments
+                    .get(arguments.start as usize..arguments.end as usize)
+                    .is_some_and(<[crate::body::ir::ValueId]>::is_empty)
+            {
+                return Err("source abort dependency differs from its exact runtime Call");
+            }
+            Ok(Some(SourceIntrinsic::Abort))
         }
         _ => Ok(None),
     }
@@ -133,7 +174,7 @@ impl Dependencies {
         body: &Body,
     ) -> Result<Demands, String> {
         let mut layouts = std::mem::take(&mut facts.layouts);
-        let result = self.run(facts, &mut layouts, body);
+        let result = self.run(report, facts, &mut layouts, body);
         facts.layouts = layouts;
         let result = result?;
         self.prepared(report, facts, Some(body), result)
@@ -292,6 +333,7 @@ impl Dependencies {
     }
     fn run(
         &mut self,
+        report: &crate::resolve::expansion::Report,
         facts: &Declarations,
         layouts: &mut Layouts,
         body: &Body,
@@ -331,13 +373,17 @@ impl Dependencies {
                     .get(id.0 as usize)
                     .ok_or("invalid callable operand")?
                     .ty;
-                match source_call(facts, body, value, ty)? {
+                match source_call(report, facts, body, value, ty)? {
                     Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect) => {
                         result.selectors.push(crate::body::ir::ValueId(
                             u32::try_from(index).map_err(|_| "too many source selector values")?,
                         ));
                     }
-                    Some(crate::support::bindings::SourceIntrinsic::UbChecks) => {
+                    Some(
+                        crate::support::bindings::SourceIntrinsic::UbChecks
+                        | crate::support::bindings::SourceIntrinsic::Abort
+                        | crate::support::bindings::SourceIntrinsic::Transmute,
+                    ) => {
                         // Lowering still proves the actual body/call and its
                         // evaluated callee before emitting an existing bool.
                     }
@@ -592,3 +638,11 @@ fn field(
 #[cfg(test)]
 #[path = "../../../tests/invariants/ub_dependencies.rs"]
 mod ub_tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/abort_dependencies.rs"]
+mod abort_tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/transmute_dependencies.rs"]
+mod transmute_tests;

@@ -7,6 +7,15 @@ use super::{Constant, Evaluator, Failure, LocationId, Metadata, Reader};
 use crate::{resolve::model::DefId, types::TypeId};
 
 impl Constant {
+    /// A numeric raw address supplies no allocation, reference or dereference authority.
+    #[must_use]
+    pub(crate) const fn raw_address(bits: u64) -> Self {
+        Self(Value::Address {
+            bits,
+            metadata: None,
+        })
+    }
+
     #[must_use]
     pub const fn location(self) -> Option<LocationId> {
         if let Value::Reference(pointer) = self.0 {

@@ -55,9 +55,16 @@ impl Dependencies {
         if descriptor.identity() != provider
             || descriptor.provider() != provider
             || descriptor.edition() != crate::support::edition::Edition::Rust2024
-            || !descriptor.profile().ordinary_functions()
         {
             return Err("source client provider descriptor does not match the requested profile");
+        }
+        if !descriptor.profile().ordinary_functions() {
+            match descriptor.profile() {
+                super::generics::source::Profile::Source2024ModuleContracts => {
+                    descriptor.module_contracts()?;
+                }
+                _ => return Err("source client provider profile is unsupported"),
+            }
         }
         u32::try_from(index).map_err(|_| "source provider artifact index overflow")
     }

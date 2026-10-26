@@ -1,0 +1,145 @@
+# Default modifiers and the required specialization graph
+
+The bounded compiler source checkpoint is qualified on source `16c0476b`.
+Run40236064195 passes the two corrected groups; run40235524814 retains four
+actual passes on byte-identical production code and shared helpers. Formatting,
+metadata, global architecture, production/private Clippy and the focused build
+pass. Those development gates wrote no references; their later harness stop at
+six pending PA5/PA19 references is resolved by the reviewed publication below.
+Specialization graph/dispatch remains open.
+The unchanged original-core observer40224012971 verifies722 files and opens58.
+Physical57 is `core/src/mem/maybe_uninit.rs`, SHA
+`4189eaa95d41706cd506ef9dfdb81478640a53ccacc4d88f96329ad3a27e90fb`.
+Byte63133/line1644 starts `default fn spec_fill`. The Clone fallback and narrower
+TrivialClone implementation need real specialization, not removal of a modifier.
+
+The first slice records each actual modifier's item/node identity, kind and exact
+keyword span in one optional sparse Syntax column. Nodes and Item payloads do
+not grow. Transfer remaps both identities and spans. An actual bare output root
+moved onto an older macrocall also moves its modifier row. Extent copies retain
+only the original row prefix and genuine fresh instances bind a new source
+incarnation. The optional column owns its current OriginalImage witness and a
+cold bounded retention budget. No lookup binds an image or token context.
+Actual committed output gets context stamps once through the existing checked
+context walker; immutable consumers reauthenticate current image, row, keyword,
+context and marks. Stamps compare actual arena identities; they grant nothing.
+
+Failed attempts stay charged. A zero-prefix rollback retains an empty cold debt
+owner and its reserved capacity; copying that prefix preserves the debt. Syntax
+which never attempted a default modifier has no column allocation. Terminal
+warning conversion explicitly prepays simultaneous pair/output vector storage.
+The shared diagnostic projector prepays rare frame/name/set/vector growth while
+ordinary projection retains its exact output. A callback failure retains the
+primary error identity, drops partial warning traces and uses the existing bounded
+Budget/UnavailableOrigin retention notes. Library code performs no output.
+
+Checked min/full feature requests use existing Features and cold local allowance
+owners, with no new Package/MacroFeatures bit or builtin. Active functions allow
+a checked min/full request or the exact keyword's `specialization` allowance;
+nonfunction modifiers require full specialization authority. The shared active
+row walk keeps ordinary and report authority distinct. Real nonoverlapping trait
+or inherent methods retain their actual bodies and ordinary conformance checks.
+Required/mismatched owners and invalid unused bodies still fail. Overlap remains
+rejected; no second candidate is arbitrated. Default impl and associated default
+values have explicit unsupported semantic fences, not execution permission.
+
+An unvisited parsed function can suppress the direct soft warning through either
+min/full request or the exact min/full token allowance. Otherwise it produces one
+`unstable_syntax_pre_expansion` primary warning. The pinned compiler emits this
+through feature_warn, irrespective of the observed root/local allow/warn/deny/
+forbid attributes. Policy remains11 bytes. There is no new lexical severity slot.
+Unexecuted macro bodies remain opaque; unused_macros is a separate existing gap.
+
+Both legacy and v1 publication walks reject an actual local modifier through
+`require_defaultness_transport` before payload publication. The adapter is
+`Report::active_defaultness` for actual active local item syntax, never an imported
+Final-state inference. Ordinary trait-provided bodies are distinct from a written
+`default` modifier. Existing inspection and all wire schemas/profile bytes remain
+unchanged; the default-impl/value gate is a separate whole-package prerequisite.
+
+The source contract retains74 new metadata observations:48 in40225259813,
+20 in40225927529 and6 narrow code-inspection edges in40233799978. All have zero
+infrastructure failures. Twenty initial hypotheses disagreed; frozen plans/raw
+bindings retain them. Observed corrections include accepted inherent defaults,
+the active/soft allowance distinction and unconditional disabled-owner warnings.
+These are metadata observations, not runtime selection qualification.
+
+PA5 owns the three parsed forms; PA19 owns accepted nonoverlap methods and invalid
+unused bodies. PA20 owns the required coherence/associated-value followups; PA31
+owns actual source-feature/frame consumers and complete-provider proof. Six new
+active PA5/PA19 references are independently reviewed and generated as described
+below. No existing reference or historical receipt changes. Other permanent
+opponents stay in the planned PA31 lane and do not activate that assignment.
+
+The actual cost control in40235524814 measures a56-byte sparse owner and24-byte
+rows. Widths8/32/128 retain capacities8/32/128 and total owner/vector payloads
+248/824/3128 bytes. Charged steps are570/2706/12738; two semantic views add
+528/2544/12096 steps without growing capacities. Charged payload counters are
+824/3128/12344 bytes; they account attempted/worst-case retention and are not
+allocation counts. Never-default syntax allocates no sparse owner. Syntax grows
+304 to312 bytes and Configured384 to392. Unit grows672 to688: it embeds the
+8-byte Syntax option and another8 bytes in Original's Extent. Current Extent is
+104, Original160 and Saved44 bytes; prior Extent/Original were not measured.
+Policy11, Report3040, Engine4088, Node36, Item64, ItemKind28, Scope32,
+Definition36, NodeFacts80, macro Body96/Definition136 and ErrorData128 remain
+unchanged. No wall-time/native-selection nonregression is inferred from these
+bounded storage/work controls.
+
+The qualified CLI hash is
+`321dec585789ce1b64c905ab233343c19ab52805f02d7779dfa9dad78a6721aa`.
+Artifact12615505560 has ZIP SHA
+`715acd6a8d5ad3128a256ea0a189cdb9f05fe0a4537758688a9f694f399aa82f`.
+The fresh receipt SHA is
+`2b37fd782b5ebd2f6efa9d015fc5528b32ffbe050a379ec94e22f7995da4d4c2`;
+the retained four-pass/static receipt SHA is
+`812fea39b9ef438e2ca6e527a4e124ffa3aa8cab3483cfb4134fdf97831a4aac`.
+Earlier static and test-assumption failures remain retained. Candidate native
+specialization execution is not claimed for this checkpoint.
+
+Read-only text run40237819305 checks all8,493 existing cases byte for byte in
+25.10 seconds and captures six new outputs without writing references. Integrator
+review checks their real item identities, exact keyword spans, nonoverlapping
+semantic owners and the unused invalid body's error at byte161. PA5's parsed
+default impl/value forms confer no semantic execution permission. The PA19
+`impl-method` provided-body flag remains distinct from a written modifier.
+
+Explicit scoped publication40238779679 then uses the official course writer for
+only those six cases, requiring the predeclared reviewed output hashes and the
+same qualified CLI/source fingerprints. Generation takes1.05 seconds; all4,257
+existing reference/provenance files in the two affected stages stay unchanged.
+It adds18 sidecars and two scoped receipts, preserving both full-stage receipts.
+The harness, upstream contracts and audit-cache tests pass. The artifact is
+12615559615, ZIP SHA
+`8ba83d600990dd0f9362485a92e495f3de5b0daaf1c424f1570201d8b92548e4`;
+publication binding SHA
+`180eb3ce8aa934d6d808011f454dcdf10178a79a7d11bc78350904ba9969b1e0`.
+The resulting active text inventory is8,499; the retained old8,493 passes and
+fresh six generated/checked cases are separate evidence, not a repeated full run.
+
+The fresh unchanged-core observer40239001850 uses that exact qualified CLI and
+verifies all722 pinned original files before and after execution. It now opens65
+files, advancing past the previous58-file `default fn spec_fill` stop. It diagnoses
+`ERROR: file 64: 3311: expected punctuation` in `core/src/ptr/metadata.rs:85`,
+at the equals sign in `pub trait Thin = Pointee<Metadata = ()> + PointeeSized;`.
+The real loader assigns a new FileId from the current Unit count before parsing;
+the traced first-open sequence and the original byte offset identify this source.
+The source SHA is
+`90be519b27b46064f0bec607170ffce37aa9afb160a1edfab9c51641c8af15e2`.
+The observer takes6.08 seconds, status1, zero infrastructure failures and no
+input changes. Harness/upstream/audit-cache checks pass on the integrated source
+and planned graph fixtures. Artifact12616150477 has ZIP SHA
+`156e430d4ce3df1e9c5391216b368d762c885d6af64b3a4e949c2c9457b4d296`.
+LIB-031 now owns actual trait-alias grammar/feature/semantic expansion; LIB-028
+still owns the graph and dispatch obligations exposed after parsing. Neither
+an original-core artifact nor a type-complete core build has been produced.
+
+The next graph/dispatch checkpoint is mandatory and high priority. Reuse existing
+coarse-head candidate pairs, canonical substitutions and charged comparisons.
+Prove strict subsumption, always-applicability and member overridability before
+recording any parent edge. Resolve inherited bodies through their actual defining
+impl and translated arguments, preserving private/caller/body environments.
+Validate every unused implementation; never flatten ancestor bodies or rescan all
+implementations per call. TrivialClone's unsafe specialization marker needs a real
+consumer. Associated values, partial default impls, imported graph/defaultness
+transport and native selection remain explicitly incomplete. A new small native
+selection set belongs to that stage; do not repeat these74 metadata observations.

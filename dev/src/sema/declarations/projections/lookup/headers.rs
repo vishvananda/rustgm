@@ -240,13 +240,13 @@ impl Checker<'_> {
             .flatten()
         {
             if reached.contains(&seed.definition) {
-                templates.push(
-                    *self
-                        .projections
+                templates.extend(
+                    self.projections
                         .lookup
                         .typed
                         .get(&seed.path)
-                        .ok_or_else(|| self.error(key, "unfinished header parent inputs"))?,
+                        .ok_or_else(|| self.error(key, "unfinished header parent inputs"))?
+                        .clauses(),
                 );
             }
         }

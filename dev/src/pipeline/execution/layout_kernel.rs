@@ -1,8 +1,8 @@
 //! Source intrinsic kernels are reached only from a checked direct constant call.
-use super::{Declarations, Engine, Error, FileId, Kind, Report, const_eval};
+use super::{Declarations, Engine, Error, FileId, Report, const_eval};
 use crate::{
     support::bindings::{LayoutIntrinsic, SourceIntrinsic},
-    types::{Primitive, instance::Instance},
+    types::instance::Instance,
 };
 impl Engine {
     pub(super) fn source_layout(
@@ -12,6 +12,19 @@ impl Engine {
         instance: Instance,
         state: Option<&const_eval::State>,
     ) -> Result<bool, Error> {
+        if let Some(call) = state
+            .map(|state| state.source_transmute_call(report, facts, &self.catalog, instance))
+            .transpose()
+            .map_err(|error| Error::at(FileId(0), 0, error))?
+            .flatten()
+        {
+            let selected = call.selection();
+            prepare_layout(facts, selected.source)
+                .map_err(|error| Error::at(FileId(0), 0, error))?;
+            prepare_layout(facts, selected.destination)
+                .map_err(|error| Error::at(FileId(0), 0, error))?;
+            return Ok(true);
+        }
         if let Some(selection) = facts
             .source_bindings
             .as_deref()
@@ -68,16 +81,7 @@ impl Engine {
         if selected.fallback && !self.function(report, facts, instance)? {
             return Ok(false);
         }
-        if !matches!(facts.types.kind(selected.element), Some(Kind::Primitive(p)) if p != Primitive::Str)
-        {
-            return Err(error(
-                "source layout kernel currently requires a closed primitive type",
-            ));
-        }
-        facts
-            .layouts
-            .demand(&facts.types, &facts.aggregates, selected.element)
-            .map_err(|e| error(e.message))?;
+        prepare_layout(facts, selected.element).map_err(error)?;
         let layout = facts
             .layouts
             .get(selected.element)
@@ -90,3 +94,60 @@ impl Engine {
         Ok(true)
     }
 }
+
+/// The reached call supplies permission; this only prepares its closed storage.
+fn prepare_layout(
+    facts: &mut Declarations,
+    element: crate::types::TypeId,
+) -> Result<(), &'static str> {
+    let limit = crate::support::crates::MAX_COMPONENTS;
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
+    if facts.body_work.canonical_steps > limit {
+        return Err("source layout field preparation work budget exceeded");
+    }
+    let before = facts.aggregates.instantiation_steps();
+    let fields = facts
+        .aggregates
+        .prepare_storage_fields(&mut facts.types, element);
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(
+        facts
+            .aggregates
+            .instantiation_steps()
+            .saturating_sub(before),
+    );
+    fields?;
+    facts.body_work.canonical_steps = facts
+        .body_work
+        .canonical_steps
+        .saturating_add(facts.layouts.pending_state_work(&facts.types, element));
+    if facts.body_work.canonical_steps > limit {
+        return Err("source layout state preparation work budget exceeded");
+    }
+    let limit = limit.saturating_sub(facts.body_work.canonical_steps);
+    let mut work = 0;
+    let readiness =
+        facts
+            .layouts
+            .storage_readiness(&facts.types, &facts.aggregates, element, &mut work, limit);
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
+    readiness?;
+    if facts.layouts.get(element).is_some() {
+        return Ok(());
+    }
+    let before = facts.layouts.steps;
+    let result = facts.layouts.demand_bounded(
+        &facts.types,
+        &facts.aggregates,
+        element,
+        limit.saturating_sub(work),
+    );
+    facts.body_work.canonical_steps = facts
+        .body_work
+        .canonical_steps
+        .saturating_add(facts.layouts.steps.saturating_sub(before));
+    result.map(|_| ()).map_err(|error| error.message)
+}
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/queried_storage.rs"]
+mod tests;

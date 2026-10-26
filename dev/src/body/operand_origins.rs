@@ -3,6 +3,7 @@ use super::ir::{Body, Rvalue, ValueId};
 use crate::types::{Kind, Store, TypeId, instance::Instance};
 
 const WORK_LIMIT: usize = 1_000_000;
+mod transport;
 
 /// This cold index belongs to one immutable actual body. It is structural data,
 /// not permission to execute that body or one of its callable values.

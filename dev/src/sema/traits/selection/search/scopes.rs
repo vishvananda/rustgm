@@ -36,6 +36,21 @@ pub(super) struct Scopes {
     by_start: HashMap<u32, usize>,
 }
 impl Query {
+    pub(super) fn node_growth(&self) -> crate::support::retained::Growth {
+        let mut growth = crate::support::retained::Growth::vector::<Node>(
+            self.nodes.len(),
+            self.nodes.capacity(),
+            1,
+        );
+        if let Some(scopes) = &self.scopes {
+            growth.include(crate::support::retained::Growth::map::<usize, Local>(
+                scopes.nodes.len(),
+                scopes.nodes.capacity(),
+                1,
+            ));
+        }
+        growth
+    }
     pub(super) fn reserve(
         &mut self,
         scope: ScopeId,
@@ -380,6 +395,24 @@ impl Scopes {
         count: u32,
         first: u32,
     ) -> Result<ScopeId, &'static str> {
+        self.introduce_observed::<false>(parent, count, first, &|_, _| Ok(()))
+    }
+    pub(super) fn introduce_counted(
+        &mut self,
+        parent: ScopeId,
+        count: u32,
+        first: u32,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<ScopeId, &'static str> {
+        self.introduce_observed::<true>(parent, count, first, charge)
+    }
+    fn introduce_observed<const CHARGED: bool>(
+        &mut self,
+        parent: ScopeId,
+        count: u32,
+        first: u32,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<ScopeId, &'static str> {
         if parent.0 as usize > self.universes.len()
             || self.universes.len() >= 1_000_000
             || count > 65_536
@@ -390,6 +423,31 @@ impl Scopes {
             .checked_add(count)
             .filter(|end| *end < 0x8000_0000)
             .ok_or("quantified impl region identity space exhausted")?;
+        if CHARGED {
+            let mut growth = crate::support::retained::Growth::vector::<Universe>(
+                self.universes.len(),
+                self.universes.capacity(),
+                1,
+            );
+            growth.include(crate::support::retained::Growth::vector::<Reservation>(
+                self.reservations.len(),
+                self.reservations.capacity(),
+                1,
+            ));
+            growth.include(crate::support::retained::Growth::map::<u32, usize>(
+                self.by_start.len(),
+                self.by_start.capacity(),
+                1,
+            ));
+            charge(
+                1usize
+                    .saturating_add(count as usize)
+                    .saturating_add(growth.work),
+                growth
+                    .bytes
+                    .saturating_add((count as usize).saturating_mul(size_of::<RegionId>())),
+            )?;
+        }
         self.universes.push(Universe {
             parent,
             count,
@@ -410,12 +468,54 @@ impl Scopes {
         predicate: Predicate,
         first: u32,
     ) -> Result<(Predicate, u32, usize), &'static str> {
+        self.open_observed::<false>(facts, scope, predicate, first, &|_, _| Ok(()))
+    }
+    pub(super) fn open_counted(
+        &mut self,
+        facts: &mut Declarations,
+        scope: ScopeId,
+        predicate: Predicate,
+        first: u32,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(Predicate, u32, usize), &'static str> {
+        self.open_observed::<true>(facts, scope, predicate, first, charge)
+    }
+    fn open_observed<const CHARGED: bool>(
+        &mut self,
+        facts: &mut Declarations,
+        scope: ScopeId,
+        predicate: Predicate,
+        first: u32,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(Predicate, u32, usize), &'static str> {
         let universe = self
             .universes
             .get_mut(scope.0 as usize - 1)
             .ok_or("missing impl universe")?;
         let before = universe.opening.steps;
-        let predicate = universe.opening.predicate(&mut facts.types, predicate)?;
+        let result = if CHARGED {
+            use crate::types::parameters::clauses::Clause;
+            universe
+                .opening
+                .clause_charged(&mut facts.types, Clause::Predicate(predicate), charge)
+                .and_then(|clause| match clause {
+                    Clause::Predicate(predicate) => Ok(predicate),
+                    Clause::ForAll(_) => Err("opened member predicate changed clause kind"),
+                })
+        } else {
+            universe.opening.predicate(&mut facts.types, predicate)
+        };
+        if CHARGED {
+            charge(
+                universe
+                    .opening
+                    .steps
+                    .saturating_sub(before)
+                    .saturating_add(1),
+                0,
+            )?;
+        }
+        let predicate = result?;
         Ok((
             predicate,
             first.max(universe.aliases.end),

@@ -22,10 +22,17 @@ pub mod load;
 mod lookup;
 pub mod model;
 pub use crate::support::names;
+#[path = "unstable_aliases.rs"]
+mod alias_gates;
+#[path = "specialization_forms.rs"]
+mod default_items;
 mod float_features;
+mod gate_provenance;
 pub mod package;
 mod paths;
 mod patterns;
+#[path = "impl_admission.rs"]
+pub(crate) mod specialization_authority;
 mod table;
 pub mod unit;
 
@@ -34,6 +41,7 @@ pub mod unit;
 /// # Errors
 /// Reports duplicate declarations, unresolved or private names and invalid imports.
 pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, package::Error> {
+    default_items::prepare_plain(package)?;
     let mut state = index::State::default();
     let mut resolver = state.bind(package);
     resolver.collect()?;
@@ -42,6 +50,8 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     bindings::finish(package, &mut state.facts)?;
     impl_restrictions::validate_plain(package)?;
     float_features::validate_plain(package, &state.facts)?;
+    default_items::validate_plain(package)?;
+    alias_gates::validate_plain(package)?;
     Ok(state.facts)
 }
 pub mod render;
@@ -78,10 +88,12 @@ pub fn analyze_expanded(
         .and_then(|()| resolver.declare_pending(&pending, &mut work))
         .and_then(|()| resolver.finish_imports(work))
         .and_then(|()| resolver.bodies());
-    result.map_err(|error| report.diagnostic(error))?;
     report.resolution = state.facts;
-    bindings::finish(&mut report.package, &mut report.resolution)?;
-    float_features::validate_paths(&report).map_err(|error| report.diagnostic(error))?;
+    result.map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
+    bindings::finish(&mut report.package, &mut report.resolution)
+        .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
+    float_features::validate_paths(&report)
+        .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     report.names_resolved = true;
     Ok(report)
 }

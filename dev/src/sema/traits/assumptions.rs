@@ -172,6 +172,19 @@ impl Assumptions {
         Ok(Self { index })
     }
 
+    pub(crate) fn from_environment_charged(
+        store: &Store,
+        environment: Option<&Environment>,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        charge(1, 0)?;
+        let index = environment
+            .map(|environment| environment.trait_index_charged(store, charge))
+            .transpose()?
+            .flatten();
+        Ok(Self { index })
+    }
+
     fn candidates(&self, item: ItemId, head: Head) -> &[Predicate] {
         self.index
             .as_ref()
