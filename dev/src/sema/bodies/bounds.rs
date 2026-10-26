@@ -195,7 +195,7 @@ impl Checker<'_> {
                 predicates: Vec::new(),
                 source_copy: None,
             });
-        requirements.environment.clone_from(&environment);
+        requirements.environment = environment;
         requirements.source_copy = Some(std::sync::Arc::new(
             crate::sema::model::SourceCopyRequirements {
                 declaration,
