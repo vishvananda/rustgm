@@ -92,6 +92,9 @@ impl RegionEqualities {
         }
         result
     }
+    pub(crate) fn has_equation_storage(&self) -> bool {
+        self.representatives.capacity() != 0
+    }
     pub(crate) fn is_empty(&self) -> bool {
         self.representatives.is_empty()
     }
@@ -161,5 +164,39 @@ impl RegionEqualities {
         }
         Self::from_graph(&graph, &names.into_iter().collect::<Vec<_>>())
             .map_err(|_| "mapped lifetime equality work exceeded")
+    }
+}
+
+impl RegionEqualities {
+    pub(crate) fn substitute_charged(
+        &self,
+        fold: &mut substitute::Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        use crate::support::retained::Growth;
+        let count = self.representatives.len();
+        let names = count
+            .checked_mul(2)
+            .and_then(|n| n.checked_add(1))
+            .ok_or("mapped lifetime equality count overflow")?;
+        let nodes = names
+            .checked_add(1)
+            .ok_or("mapped lifetime equality node overflow")?;
+        let edges = count
+            .checked_mul(2)
+            .ok_or("mapped lifetime equality edge overflow")?;
+        let mut growth = Graph::equality_mapping_bound(nodes, edges);
+        growth.include(Growth::map::<RegionId, Region>(0, 0, names));
+        growth.include(Growth::vector::<(RegionId, RegionId)>(0, 0, count));
+        growth.include(Growth::vector::<(RegionId, Region)>(0, 0, names));
+        growth.include(Growth::map::<Region, RegionId>(0, 0, names));
+        growth.include(Growth::map::<RegionId, RegionId>(0, 0, names));
+        let ordered = count.saturating_mul(count.max(1).ilog2() as usize + 1);
+        growth.work = growth
+            .work
+            .saturating_add(ordered)
+            .saturating_add(names.saturating_mul(3));
+        charge(growth.work, growth.bytes)?;
+        self.substitute(fold)
     }
 }

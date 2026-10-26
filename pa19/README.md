@@ -256,3 +256,12 @@ Run `make test-pa19`, `make test-rustc`, `make test-native-pa19` and
 PA25–PA44 remain planned and fail explicitly. See
 [the validation review](../docs/pa19-validation.md) for qualifications, reference
 review, native evidence and the distinction between inspection and execution.
+
+A checked `min_specialization` request admits nonoverlapping `default fn`
+methods on actual trait or inherent impl owners. Retain the keyword and real
+method body, check every unused body and preserve ordinary conformance and
+method selection. A default trait body is a separate existing contract. This
+bounded checkpoint does not admit overlapping specialization families: the
+checked specialization graph, always-applicability and inherited-impl dispatch
+remain required later source-library work. `tests/spec/default-methods/` owns
+the accepted blanket/inherent and invalid-unused-body controls.
