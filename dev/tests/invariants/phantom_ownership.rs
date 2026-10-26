@@ -21,8 +21,6 @@ fn source_marker_constructor_clone_and_const_storage_use_real_headers() -> Resul
         mut facts,
         prepared,
     } = crate::pipeline::analyze_source(&report)?;
-    let contracts = crate::body::regions::collect(&facts)?;
-    crate::borrow::regions::check(&facts.types, &facts.lifetimes.variances, &contracts)?;
     let declaration = facts
         .source_bindings
         .as_deref()
@@ -128,23 +126,9 @@ fn source_marker_rejects_changed_roles_formals_fields_and_lifetime_escape() -> R
             "lifetime",
         ),
     ] {
-        let error = match test_source::source_provider(&changed, name) {
-            Ok(report) => crate::pipeline::analyze_source(&report)
-                .map_err(|error| error.to_string())
-                .and_then(|analysis| {
-                    let contracts =
-                        crate::body::regions::collect(&analysis.facts).map_err(str::to_owned)?;
-                    crate::borrow::regions::check(
-                        &analysis.facts.types,
-                        &analysis.facts.lifetimes.variances,
-                        &contracts,
-                    )
-                    .map_err(|error| error.to_string())
-                })
-                .err(),
-            Err(error) => Some(error),
-        }
-        .ok_or_else(|| format!("{name} unexpectedly accepted"))?;
+        let error = checked_source(&changed, name)
+            .err()
+            .ok_or_else(|| format!("{name} unexpectedly accepted"))?;
         assert!(error.contains(needle), "{name}: {error}");
     }
     let ordinary = test_source::resolve(
@@ -178,6 +162,27 @@ fn source_marker_rejects_changed_roles_formals_fields_and_lifetime_escape() -> R
         0x8000_0000
     );
     Ok(())
+}
+
+// Use the real CFG/ownership/region consumer, which supplies borrow-place
+// provenance. Type-only contracts alone cannot replace this proof boundary.
+fn checked_source(source: &str, name: &str) -> std::result::Result<(), String> {
+    let report = test_source::source_provider(source, name)?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&report).map_err(|error| error.to_string())?;
+    crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )
+    .map(|_| ())
+    .map_err(|error| error.to_string())
 }
 
 fn marker(
