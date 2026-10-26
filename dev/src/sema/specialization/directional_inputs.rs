@@ -163,20 +163,6 @@ impl Inputs {
         }
         facts.types.intern_arguments(&arguments).map_err(Into::into)
     }
-    pub(super) fn resolved_region_goal(
-        &mut self,
-        facts: &mut Declarations,
-        goal: &Goal,
-    ) -> Result<Predicate, String> {
-        let predicate = self
-            .context
-            .resolved_predicate(&mut facts.types, goal)
-            .map_err(|error| error.to_string())?;
-        if !matches!(predicate.bound, Bound::Outlives(_)) {
-            return Err("specialization region obligation changed kind".into());
-        }
-        Ok(predicate)
-    }
 }
 
 struct Regions {

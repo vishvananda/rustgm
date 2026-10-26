@@ -110,13 +110,22 @@ pub(super) fn close(
         *argument = fold.apply_argument(&mut facts.types, *argument)?;
     }
     fold.pay()?;
+    require_closed(facts, &values, budget)?;
+    facts.types.intern_arguments(&values).map_err(Into::into)
+}
+
+fn require_closed(
+    facts: &mut Declarations,
+    values: &[Argument],
+    budget: &Budget,
+) -> Result<(), String> {
     // Inspect the completed actual mapping; unanchored private witnesses never
     // escape as permanent graph arguments. Static and nested binders remain real.
     let mut check = Counted::new(
         substitute::Bound::observe_budgeted_regions(1_000_000, 64 * 1024 * 1024)?,
         budget,
     )?;
-    for &argument in &values {
+    for &argument in values {
         check.apply_argument(&mut facts.types, argument)?;
     }
     check.pay()?;
@@ -126,5 +135,5 @@ pub(super) fn close(
     {
         return Err("specialization mapping retains a private query region".into());
     }
-    facts.types.intern_arguments(&values).map_err(Into::into)
+    Ok(())
 }

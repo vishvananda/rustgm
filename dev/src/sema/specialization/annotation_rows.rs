@@ -31,10 +31,10 @@ pub(in crate::sema) fn observe_owner(
     owner: NodeKey,
     declaration: NodeKey,
 ) -> Result<(), Error> {
-    if !facts
+    if facts
         .must_use_contracts
         .as_deref()
-        .is_some_and(|table| table.specialization.is_some())
+        .is_none_or(|table| table.specialization.is_none())
         || !matches!(report.package.unit(declaration.file).configured.ast.node(declaration.node).kind,
             Kind::Item(index) if matches!(report.package.unit(declaration.file).configured.ast.items[index as usize].kind, ItemKind::Trait { .. }))
     {

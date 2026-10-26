@@ -112,6 +112,9 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
     }
     bind_definitions(report, facts, &by_source)?;
     crate::sema::specialization::finish(facts)?;
+    complete_imports(report, facts)
+}
+fn complete_imports(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     crate::sema::header_attributes::prepare_imported(report, facts)?;
     if let Some(imported) = &report.resolution.crates {
         let unknown: HashSet<_> = imported

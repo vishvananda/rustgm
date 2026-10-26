@@ -139,12 +139,14 @@ impl<Q: Query> Occurrences<Q> {
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Q::Value, &'static str> {
         charge(1, 0)?;
-        let subject = self.collect_inside(store, value.ty, depth, charge)?;
+        let subject = self.collect_inside_observed(store, value.ty, depth, charge)?;
         if Q::decisive(subject) {
             return Ok(subject);
         }
         let bound = match value.bound {
-            Bound::ProjectionEqual(result) => self.collect_inside(store, result, depth, charge),
+            Bound::ProjectionEqual(result) => {
+                self.collect_inside_observed(store, result, depth, charge)
+            }
             Bound::Outlives(region) => Ok(self.region(region, depth)),
             Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => {
                 let cached = if depth == 0 {
@@ -193,9 +195,17 @@ impl<Q: Query> Occurrences<Q> {
         Ok(Q::merge(subject, bound))
     }
     pub(crate) fn collect(&mut self, store: &Store, ty: TypeId) -> Result<Q::Value, &'static str> {
-        self.collect_inside(store, ty, 0, &|_, _| Ok(()))
+        self.collect_inside(store, ty, 0)
     }
     fn collect_inside(
+        &mut self,
+        store: &Store,
+        ty: TypeId,
+        depth: u16,
+    ) -> Result<Q::Value, &'static str> {
+        self.collect_inside_observed(store, ty, depth, &|_, _| Ok(()))
+    }
+    fn collect_inside_observed(
         &mut self,
         store: &Store,
         ty: TypeId,

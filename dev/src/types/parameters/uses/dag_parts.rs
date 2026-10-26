@@ -90,7 +90,7 @@ pub(super) fn parts<const SET: bool, V: Summary>(
                 &mut parameter,
                 &mut region,
                 &mut child,
-            )?
+            )?;
         }
     }
     Ok(value)
