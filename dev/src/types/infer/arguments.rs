@@ -323,6 +323,10 @@ impl Context {
                 element: first()?,
                 length,
             },
+            Constructor::Pattern(constraint) => Kind::Pattern {
+                base: first()?,
+                constraint,
+            },
             Constructor::Slice => Kind::Slice(first()?),
             Constructor::Reference { mutable, region } => Kind::Reference {
                 mutable,

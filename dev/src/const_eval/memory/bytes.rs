@@ -7,6 +7,7 @@ mod fill;
 mod images;
 mod intervals;
 mod niches;
+mod pattern_values;
 mod products;
 mod relocations;
 mod slice_words;

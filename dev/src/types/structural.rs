@@ -129,6 +129,16 @@ pub(crate) trait Compare<'t> {
                     element: b,
                 },
             ) if x == y => self.child(a, b, depth)?,
+            (
+                Kind::Pattern {
+                    base: a,
+                    constraint: x,
+                },
+                Kind::Pattern {
+                    base: b,
+                    constraint: y,
+                },
+            ) if x == y => self.child(a, b, depth)?,
             (Kind::Slice(a), Kind::Slice(b)) => self.child(a, b, depth)?,
             (Kind::Tuple(a), Kind::Tuple(b)) => return self.list(a, b, depth),
             (Kind::Adt(x, a), Kind::Adt(y, b)) if x == y => return self.arguments(a, b, depth),

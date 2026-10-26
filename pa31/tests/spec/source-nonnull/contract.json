@@ -1,0 +1,16 @@
+{
+  "state": "planned-candidate-unrun",
+  "source": "source-methods.rs",
+  "sha256": "7837cab24d68ce6ac07a40ea0d6d378d3668b03694281722ab9294dab2cee327",
+  "expect": "accept source typing/CTFE/native19 23 119 1; preserve wide metadata4 and storage16",
+  "independent": "nine standard-library pointer pattern reducers18commands pass; genuine native8 8 16 16 19 4 1",
+  "source_contract": "Rust88d9 actual selected NonNull field/from_ref/as_ptr/as_ref/cast + actual raw cast_const body; stability attributes/full original file remain required",
+  "full_nonnull_file": false,
+  "remaining": [
+    "new_unchecked/track_caller/assert_unsafe_precondition",
+    "full stability/FFI/lint consumers",
+    "PhantomData/Arguments/Location/PanicInfo",
+    "range/or/nonpointer Pattern profiles",
+    "foreign Pattern transport"
+  ]
+}

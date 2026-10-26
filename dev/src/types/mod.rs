@@ -176,6 +176,11 @@ impl TypeId {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Constraint {
+    NonNull,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Kind {
     Never,
     Primitive(Primitive),
@@ -230,6 +235,11 @@ pub enum Kind {
         arguments: GenericArgs,
         signature: TypeId,
         environment: TypeId,
+    },
+    /// A logical value refinement; physical storage is supplied by its actual base.
+    Pattern {
+        base: TypeId,
+        constraint: Constraint,
     },
 }
 /// Child lists occupy one shared arena. Hash collisions compare their typed slices.
@@ -505,6 +515,7 @@ impl Store {
             | Kind::ArrayTerm { element, .. } => valid_type(element),
             Kind::Reference { referent, .. } => valid_type(referent),
             Kind::Pointer { pointee, .. } => valid_type(pointee),
+            Kind::Pattern { base, .. } => matches!(self.kind(base), Some(Kind::Pointer { .. })),
             Kind::Function {
                 parameters,
                 result,
@@ -592,6 +603,7 @@ impl Store {
                 result = self.closure_properties(arguments, signature, environment)?;
             }
             Kind::Primitive(p) => result.set(Property::Sized, p != Primitive::Str),
+            Kind::Pattern { base, .. } => result = child(base)?,
             Kind::Array { element, .. }
             | Kind::ArrayTerm { element, .. }
             | Kind::Slice(element) => {

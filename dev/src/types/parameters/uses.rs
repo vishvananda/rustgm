@@ -80,6 +80,7 @@ impl Uses {
                     None
                 }
                 Kind::Array { element, .. }
+                | Kind::Pattern { base: element, .. }
                 | Kind::Slice(element)
                 | Kind::Reference {
                     referent: element, ..

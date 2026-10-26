@@ -58,6 +58,10 @@ pub(super) fn rebuild<F: Folder>(folder: &mut F, kind: Kind, depth: u16) -> Resu
             element: folder.child(element, depth)?,
             length: folder.constant(length)?,
         },
+        Kind::Pattern { base, constraint } => Kind::Pattern {
+            base: folder.child(base, depth)?,
+            constraint,
+        },
         Kind::Slice(element) => Kind::Slice(folder.child(element, depth)?),
         Kind::Reference {
             mutable,

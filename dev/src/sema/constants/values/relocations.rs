@@ -72,6 +72,9 @@ impl super::Reader<'_> {
     }
     pub(crate) fn word_shape(self, ty: TypeId) -> Result<WordShape, &'static str> {
         use crate::{abi::layout::Shape, types::Kind};
+        if let Some(crate::types::Kind::Pattern { base, .. }) = self.facts.types.kind(ty) {
+            return self.word_shape(base);
+        }
         let shape = match self.facts.types.kind(ty) {
             Some(Kind::Function { .. }) => WordShape::Function,
             Some(Kind::Pointer { pointee, .. }) => WordShape::Data {

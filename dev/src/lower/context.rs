@@ -511,6 +511,9 @@ impl<'a> Context<'a> {
     }
     fn represent(&mut self, ty: TypeId) -> Result<Representation, &'static str> {
         let ty = self.types.storage_head(ty)?;
+        if let Some(Kind::Pattern { base, .. }) = self.types.kind(ty) {
+            return self.represent(base);
+        }
         if let Some(
             Kind::Reference { referent, .. }
             | Kind::Pointer {
@@ -784,7 +787,7 @@ pub(super) fn representation(types: &Store, ty: TypeId) -> Result<Type, &'static
     }
     Ok(match types.kind(ty).ok_or("missing canonical type")? {
         Kind::FunctionItem { .. } => Type::Void,
-        Kind::Function { .. } | Kind::Pointer { .. } => Type::Ptr,
+        Kind::Pattern { .. } | Kind::Function { .. } | Kind::Pointer { .. } => Type::Ptr,
         Kind::Primitive(p) => match p {
             Primitive::Bool => Type::I1,
             Primitive::Char | Primitive::U32 => Type::U32,

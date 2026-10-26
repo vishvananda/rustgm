@@ -326,6 +326,7 @@ impl Bound {
             | Kind::ArrayTerm { element: ty, .. }
             | Kind::Slice(ty)
             | Kind::Reference { referent: ty, .. }
+            | Kind::Pattern { base: ty, .. }
             | Kind::Pointer { pointee: ty, .. } => {
                 self.queue(ty, depth)?;
                 None

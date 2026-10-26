@@ -406,6 +406,22 @@ impl Unit {
         config: &crate::expand::config::Config,
         charge: &crate::expand::builtin::choice::Charge<'_>,
     ) -> Result<PreparedChoice, LexError> {
+        self.prepare_builtin_syntax(site, input, registry, other, config, charge, false)
+    }
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "both typed builtin producers share the same actual source/registry/configuration transaction"
+    )]
+    pub(crate) fn prepare_builtin_syntax<'a>(
+        &self,
+        site: crate::expand::builtin::choice::Site,
+        input: &crate::expand::macros::input::Input,
+        registry: &crate::expand::registry::Registry,
+        other: impl Fn(super::FileId) -> Option<&'a Unit>,
+        config: &crate::expand::config::Config,
+        charge: &crate::expand::builtin::choice::Charge<'_>,
+        pattern: bool,
+    ) -> Result<PreparedChoice, LexError> {
         let actual = self
             .configured
             .ast
@@ -438,14 +454,42 @@ impl Unit {
             span,
             parser_calls,
             cfg_uses,
-        } = crate::expand::builtin::choice::select(
-            source,
-            input,
-            config,
-            site.grammar,
-            &inputs,
-            charge,
-        )?;
+        } = if pattern {
+            if site.grammar != crate::syntax::ast::MacroContext::Type {
+                return Err(error(
+                    site.original.start,
+                    "pattern_type requires a type context",
+                ));
+            }
+            charge(
+                1 + input.tokens.len(),
+                input.tokens.len().saturating_mul(256),
+            )?;
+            let ast = crate::syntax::expression::fragment::type_pattern_with_inputs(
+                source,
+                &input.tokens,
+                &crate::expand::builtin::choice::Counted {
+                    inputs: &inputs,
+                    charge,
+                },
+            )?;
+            let span = ast.node(ast.root).span;
+            crate::expand::builtin::choice::Selected {
+                ast,
+                span,
+                parser_calls: 1,
+                cfg_uses: Vec::new(),
+            }
+        } else {
+            crate::expand::builtin::choice::select(
+                source,
+                input,
+                config,
+                site.grammar,
+                &inputs,
+                charge,
+            )?
+        };
         let (ast, configuration) = Configuration::take(
             crate::expand::crate_syntax::configure_with_inputs(source, ast, config, &inputs)?,
         );

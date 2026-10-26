@@ -21,6 +21,7 @@ enum Encode {
     },
 }
 enum Decode {
+    NonNull,
     Value {
         ty: TypeId,
         offset: u64,
@@ -134,6 +135,15 @@ impl Machine<'_, '_> {
     ) -> Result<(), Failure> {
         let layout = self.footprint(ty)?;
         let ty = Reader::new(self.evaluator.facts()).storage_type(ty)?;
+        if let Some(Kind::Pattern { base, .. }) = self.evaluator.facts().types.kind(ty) {
+            self.reserve_cells(pending.len().saturating_add(1).saturating_mul(4))?;
+            pending.push(Encode::Value {
+                ty: base,
+                offset,
+                value,
+            });
+            return Ok(());
+        }
         let start = usize::try_from(offset).map_err(|_| "byte offset exceeds host size")?;
         let end = offset
             .checked_add(layout.size)
@@ -527,6 +537,10 @@ impl Machine<'_, '_> {
                 self.reserve_cells(0)?;
                 self.charge(1)?;
                 match work {
+                    Decode::NonNull => {
+                        let value = *state.values.last().ok_or("missing pattern base value")?;
+                        self.require_nonnull_pattern(value)?;
+                    }
                     Decode::Product { start, variant } => {
                         self.reserve_cells(state.values.len().saturating_sub(start))?;
                         let fields = state.values.split_off(start);
@@ -614,6 +628,12 @@ impl Machine<'_, '_> {
         }
         let layout = self.footprint(ty)?;
         let ty = Reader::new(self.evaluator.facts()).storage_type(ty)?;
+        if let Some(Kind::Pattern { base, .. }) = self.evaluator.facts().types.kind(ty) {
+            self.reserve_decode(state, 0, 2, 0)?;
+            state.pending.push(Decode::NonNull);
+            state.pending.push(Decode::Value { ty: base, offset });
+            return Ok(());
+        }
         let start = usize::try_from(offset).map_err(|_| "byte read exceeds host size")?;
         let end = offset
             .checked_add(layout.size)

@@ -38,7 +38,7 @@ impl<'a> Reader<'a> {
             || encoding.payload != policy.payload
             || encoding.field != policy.field
             || encoding.offset != 0
-            || layout.size != 8
+            || !matches!(layout.size, 8 | 16)
             || layout.align != 8
             || self.facts.layouts.retained_pointer_carrier(encoding.ty) != Some(encoding.word)
         {

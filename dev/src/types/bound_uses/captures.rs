@@ -327,6 +327,7 @@ impl<Q: Query> Occurrences<Q> {
             }
             Kind::Array { element, .. }
             | Kind::ArrayTerm { element, .. }
+            | Kind::Pattern { base: element, .. }
             | Kind::Slice(element)
             | Kind::Pointer {
                 pointee: element, ..

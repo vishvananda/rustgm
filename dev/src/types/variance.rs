@@ -344,6 +344,7 @@ impl Graph {
                     let position = self.referent(position, mutable)?;
                     self.queue_type(referent, position, depth)?;
                 }
+                Kind::Pattern { base, .. } => self.queue_type(base, position, depth)?,
                 Kind::Pointer { mutable, pointee } => {
                     let position = self.referent(position, mutable)?;
                     self.queue_type(pointee, position, depth)?;

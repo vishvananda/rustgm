@@ -149,9 +149,13 @@ impl Plans {
             if niche.owner != head {
                 return Err("nullable C ABI encoding belongs to another type");
             }
+            if layout.size != 8 {
+                return Err("wide nullable C ABI requires its explicit aggregate profile");
+            }
             return Ok(Passing::Scalar(niche.word));
         }
-        if definition.repr.representation == Representation::Transparent
+        if layout.size == 8
+            && definition.repr.representation == Representation::Transparent
             && let Some(carrier) = layouts.pointer_carrier(types, definitions, head)?
         {
             return Ok(Passing::Scalar(carrier));
@@ -259,7 +263,10 @@ fn scalar(kind: Kind) -> Result<bool, &'static str> {
         matches!(kind,Kind::Primitive(p) if p!=types::Primitive::Str)
             || matches!(
                 kind,
-                Kind::Reference { .. } | Kind::Pointer { .. } | Kind::Function { .. }
+                Kind::Pattern { .. }
+                    | Kind::Reference { .. }
+                    | Kind::Pointer { .. }
+                    | Kind::Function { .. }
             ),
     )
 }

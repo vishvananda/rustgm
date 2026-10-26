@@ -103,6 +103,7 @@ fn inspect(
 ) -> Result<Step, &'static str> {
     Ok(
         match types.kind(ty).ok_or("invalid pointer metadata type")? {
+            Kind::Pattern { base, .. } => Step::Tail(base),
             Kind::Slice(_) | Kind::Primitive(Primitive::Str) => Step::Complete(Metadata::Length),
             Kind::Dynamic { .. } => Step::Complete(Metadata::VTable(ty)),
             Kind::Tuple(fields) => tail(types, fields)?,

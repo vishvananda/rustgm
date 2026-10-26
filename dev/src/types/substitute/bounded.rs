@@ -113,6 +113,7 @@ fn needs(store: &Store, kind: Kind) -> Result<Needs, &'static str> {
         | Kind::ArrayTerm { .. }
         | Kind::Slice(_)
         | Kind::Reference { .. }
+        | Kind::Pattern { .. }
         | Kind::Pointer { .. } => {
             result.edges = 1;
             None

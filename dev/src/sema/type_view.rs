@@ -424,6 +424,7 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
                 element.0, parameter.owner.0, parameter.index
             )
         }
+        Kind::Pattern { base, .. } => write!(out, "pattern base={} constraint=nonnull", base.0),
         Kind::Slice(element) => write!(out, "slice element={}", element.0),
         Kind::Pointer { mutable, pointee } => {
             write!(out, "pointer mutable={mutable} pointee={}", pointee.0)

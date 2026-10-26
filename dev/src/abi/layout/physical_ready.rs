@@ -52,6 +52,10 @@ impl Layouts {
             }
             let fields = match types.kind(next).ok_or("missing storage type")? {
                 Kind::Tuple(fields) => Some(fields),
+                Kind::Pattern { base, .. } => {
+                    pending.push(base);
+                    None
+                }
                 Kind::Opaque(..) => {
                     pending.push(types.storage_head(next)?);
                     None
