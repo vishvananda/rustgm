@@ -91,26 +91,17 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                     )?;
                     continue;
                 }
-                let contracts = facts.must_use_contracts.get_or_insert_default();
-                if contracts.sources.len() >= 1_000_000 {
-                    return Err(Error::at(
-                        file,
-                        attribute.span.start,
-                        "must_use contract budget exceeded",
-                    ));
-                }
-                let index = contracts.sources.len();
-                contracts.work.attributes += 1;
-                contracts.work.retained_contracts += 1;
-                contracts.work.retained_reasons += reason.as_ref().map_or(0, |reason| reason.len());
-                contracts.sources.push(Contract {
-                    image: std::sync::Arc::clone(unit.source.original_image()),
-                    owner: owner_key,
-                    declaration: key,
-                    span: attribute.span,
-                    effect,
-                    reason,
-                });
+                let index = retain(
+                    facts,
+                    Contract {
+                        image: std::sync::Arc::clone(unit.source.original_image()),
+                        owner: owner_key,
+                        declaration: key,
+                        span: attribute.span,
+                        effect,
+                        reason,
+                    },
+                )?;
                 by_source.insert(key, index);
             }
         }
@@ -118,6 +109,22 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
     bind_definitions(report, facts, &by_source)?;
     crate::sema::specialization::finish(facts)?;
     complete_imports(report, facts)
+}
+fn retain(facts: &mut Declarations, contract: Contract) -> Result<usize, Error> {
+    let contracts = facts.must_use_contracts.get_or_insert_default();
+    if contracts.sources.len() >= 1_000_000 {
+        return Err(Error::at(
+            contract.owner.file,
+            contract.span.start,
+            "must_use contract budget exceeded",
+        ));
+    }
+    let index = contracts.sources.len();
+    contracts.work.attributes += 1;
+    contracts.work.retained_contracts += 1;
+    contracts.work.retained_reasons += contract.reason.as_ref().map_or(0, |reason| reason.len());
+    contracts.sources.push(contract);
+    Ok(index)
 }
 fn declaration(unit: &crate::resolve::unit::Unit, owner: NodeKey) -> (NodeKey, bool) {
     let mut node = owner.node;
