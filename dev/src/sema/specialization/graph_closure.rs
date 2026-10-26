@@ -107,7 +107,7 @@ fn functions_only(
     for vertex in &forest.vertices {
         let owner = facts
             .associated
-            .declaration_owner(vertex.witness.key.owner())
+            .owner(vertex.witness.key.owner())
             .ok_or("specialization source owner disappeared")?;
         let members = facts
             .associated

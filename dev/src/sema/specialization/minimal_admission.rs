@@ -69,7 +69,7 @@ pub(super) fn validate(
 fn nonempty(facts: &Declarations, child: DefId) -> Result<(), &'static str> {
     let owner = facts
         .associated
-        .declaration_owner(child)
+        .owner(child)
         .ok_or("specialization child owner disappeared")?;
     if facts
         .associated
@@ -140,7 +140,7 @@ fn additional(facts: &Declarations, report: &Report, clause: Clause) -> Result<(
         if super::marker(facts, report, definition).map_err(|error| error.to_string())? {
             let owner = facts
                 .associated
-                .declaration_owner(definition)
+                .owner(definition)
                 .ok_or("specialization marker trait owner disappeared")?;
             if facts
                 .associated
