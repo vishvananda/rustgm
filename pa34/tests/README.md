@@ -2,6 +2,13 @@
 
 Planned: no graded fixtures or generated reference outputs yet.
 
+`stdlib-graph-outcomes.json` records original pinned core/alloc/std planning with
+explicit abort target profiles, authenticated registry/local sources and complete
+unit settings. `spec/legacy-stdlib-editions/contract.json` declares import and
+pattern-fragment opponents for Rust 2015/2018 target dependencies. All four
+pinned rustc metadata observations match. These editions remain required compiler
+work; no library build is implied by the planning observations.
+
 `foreign-edition-outcomes.json` declares 32 paired source outcomes and 13 native
 outcomes for extern blocks, member safety and supported linkage attributes.
 These [development controls](../../docs/pa34-extern-editions.md) pass independent

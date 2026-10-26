@@ -109,7 +109,7 @@ def target(value):
     if not set(crate_types) <= kinds - {'custom-build'}:
         raise ValueError('crate type outside the bootstrap build profile')
     source = string(value['src_path'])
-    if not Path(source).is_absolute() or value['edition'] not in ('2021', '2024'):
+    if not Path(source).is_absolute() or value['edition'] not in ('2015', '2018', '2021', '2024'):
         raise ValueError('source path or edition outside the bootstrap build profile')
     return Target(kind, crate_types, string(value['name']), source, value['edition'],
                   *(boolean(value[key]) for key in ('doc', 'doctest', 'test')))
@@ -131,7 +131,14 @@ def unit(value, size, selected_target):
             raise ValueError('build scripts and procedural macros must compile for the host')
     profile = value['profile']
     fields(profile, 'name opt_level lto codegen_backend codegen_units debuginfo '
-           'split_debuginfo debug_assertions overflow_checks rpath incremental panic strip')
+           'split_debuginfo debug_assertions overflow_checks rpath incremental panic strip'
+           + (' rustflags' if isinstance(profile, dict) and 'rustflags' in profile else ''))
+    if 'rustflags' in profile:
+        flags = profile['rustflags']
+        if not isinstance(flags, list) or len(flags) > MAX_EDGES:
+            raise ValueError('profile rustflags exceed budget or have invalid shape')
+        for flag in flags:
+            string(flag)
     dependencies = value['dependencies']
     if not isinstance(dependencies, list) or len(dependencies) > MAX_EDGES:
         raise ValueError('unit dependencies exceed budget or have invalid shape')

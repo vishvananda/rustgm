@@ -5,6 +5,29 @@ plan nor a successful host build script is evidence that RustGM compiled a
 target crate. Every target Rust dependency must eventually use the RustGM
 frontend, including the source sysroot.
 
+The [original library observations](../pa34/tests/stdlib-graph-outcomes.json)
+now retain the pinned source sysroot's own package graphs: one core unit, five
+alloc units and nineteen std units. The std graph has thirteen target compile
+units and three paired host compile/run scripts (`compiler_builtins`, `libc`,
+`std`). All thirty registry archives match the complete original lockfile;
+nineteen local packages and 2,375 original files are authenticated. The shared
+source tree is reused without changing its manifests or lockfile.
+
+`Job.panic` explicitly selects abort/unwind through Cargo's development profile;
+`None` preserves the manifest default and does not inherit an ambient override.
+Independent query-only observations show abort target profiles with unchanged
+unwind host profiles. The graph reader retains all four Rust edition values and
+the optional ordered per-package `rustflags`, including repetitions. The selected
+panic_abort unit carries `-Cpanic=abort`; execution must interpret supported
+settings or reject them. Recording a profile does not implement that execution.
+
+The original std graph requires Rust 2015 rustc-demangle and Rust 2018 cfg-if.
+The owning PA34 fixtures independently distinguish root imports and pattern
+fragments from later editions. Frontend support remains required. Actual
+compiler-builtins build-script input closure also includes
+`library/compiler-builtins/libm/configure.rs` outside its Cargo package root;
+the full input/configuration closure and target execution remain open.
+
 The adapter uses pinned Cargo 1.98.0's
 [unit graph](https://doc.rust-lang.org/cargo/reference/unstable.html#unit-graph)
 with `--frozen --unit-graph -Z unstable-options`. Cargo is a package planner here.

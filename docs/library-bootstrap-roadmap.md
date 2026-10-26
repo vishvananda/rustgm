@@ -83,7 +83,8 @@ required upstream library bootstrap goal.
 
 Panic-abort support needed by core/alloc is required in PA31–PA33; full unwinding
 is preserved at PA39. Likewise PA34 owns the Rust 2021 behavior used by the pinned
-crate graph. Every internal or target feature actually required by an earlier
+crate graph and the Rust 2015/2018 behavior required by original std's
+rustc-demangle/cfg-if dependencies. Every internal or target feature required by an earlier
 workload must be implemented and tested before that workload passes; PA40/PA41
 cannot be used to waive a failing active source path. Broad closure follows the
 first usable library profile rather than delaying it.

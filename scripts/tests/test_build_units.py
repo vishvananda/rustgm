@@ -111,6 +111,28 @@ class Units(unittest.TestCase):
         self.assertEqual(plan.units[5].execution, Execution.HOST_COMPILE)
         self.assertLess(plan.order.index(5), plan.order.index(0))
 
+    def test_declared_editions_are_preserved_without_granting_target_execution(self):
+        for edition in ('2015', '2018', '2021', '2024'):
+            data = graph()
+            data['units'][0]['target']['edition'] = edition
+            self.assertEqual(decode(data).units[0].target.edition, edition)
+        for edition in ('', '2027', 2024, None):
+            data = graph()
+            data['units'][0]['target']['edition'] = edition
+            with self.subTest(edition=edition), self.assertRaisesRegex(ValueError, 'edition'):
+                decode(data)
+
+    def test_manifest_rustflags_keep_order_and_repetitions_in_the_full_profile(self):
+        data = graph()
+        flags = ['-C', 'panic=abort', '-C', 'panic=abort']
+        data['units'][0]['profile']['rustflags'] = flags
+        profile = json.loads(decode(data).units[0].profile_json)
+        self.assertEqual(profile['rustflags'], flags)
+        for malformed in ('-Cpanic=abort', [False], [None], [''], ['\0']):
+            data['units'][0]['profile']['rustflags'] = malformed
+            with self.subTest(flags=malformed), self.assertRaises(ValueError):
+                decode(data)
+
     def test_unrecognized_protocols_and_empty_graphs_fail(self):
         variants = []
         for key, value in (('version', 2), ('version', True), ('roots', []), ('roots', [True]),
@@ -198,6 +220,25 @@ class Planning(unittest.TestCase):
                 self.assertEqual(receipt['state'], 'failed')
                 self.assertNotIn('order', receipt)
                 self.assertIn('graph.stderr_sha256', receipt)
+
+    def test_panic_selection_is_explicit_and_does_not_inherit_the_callers_profile(self):
+        for panic in (None, 'abort', 'unwind'):
+            with self.subTest(panic=panic), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                job, source = self.job(root)
+                job = replace(job, panic=panic)
+                with patch.dict('os.environ', {'CARGO_PROFILE_DEV_PANIC': 'unwind'}), \
+                        patch('cargo_plan.subprocess.run', side_effect=self.process(source)) as run:
+                    execute(job, root / 'output')
+                environment = run.call_args.kwargs['env']
+                self.assertEqual(environment.get('CARGO_PROFILE_DEV_PANIC'), panic)
+                receipt = json.loads((root / 'output/receipt.json').read_text())
+                self.assertEqual(receipt['environment'], environment)
+        with tempfile.TemporaryDirectory() as temporary:
+            job, _ = self.job(Path(temporary))
+            for panic in ('', 'Abort', 'anything', False):
+                with self.subTest(panic=panic), self.assertRaisesRegex(ValueError, 'panic strategy'):
+                    replace(job, panic=panic).validate()
 
     def test_input_mutation_during_planning_invalidates_output(self):
         with tempfile.TemporaryDirectory() as temporary:

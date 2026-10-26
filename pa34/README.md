@@ -3,6 +3,9 @@
 Status: **planned**. This is a buildout brief, not a released grading contract.
 Prerequisite: PA33. The source profile is Rust 1.98.0, initially edition 2024
 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
+The selected original std graph also contains Rust 2015 `rustc-demangle` and
+Rust 2018 `cfg-if`. Their required behavior belongs to this acceptance path;
+broader edition closure remains in PA40.
 See the [library bootstrap plan](../docs/library-bootstrap-roadmap.md) for
 implementation priority, source pins and the migration of unreleased numbers.
 
@@ -25,6 +28,14 @@ Develop this path alongside PA31/PA32 using small separate crates first. Its
 implementation need not wait for alloc: core-only itoa/serde_core acceptance
 should become available as soon as core and their build prerequisites work.
 The cumulative assignment prerequisite and release checks remain unchanged.
+
+The [original library graph observations](tests/stdlib-graph-outcomes.json)
+pin the complete thirty-package registry lockfile closure and nineteen local
+packages. Frozen planning selects one core unit, five alloc units and nineteen
+std units: thirteen target compilations, three host compilations and three script
+runs. Target panic is explicitly abort; host profiles remain unwind. Preserve
+per-package rustflags, crate types and original 2015/2018 editions. Planning is
+separate from target compilation and runtime acceptance.
 
 Test original Serde build-script outputs and serde_json configuration. Record
 source/package checksums, all transitive versions, compiler/runtime identities,
