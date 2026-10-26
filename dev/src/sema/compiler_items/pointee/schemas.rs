@@ -50,9 +50,16 @@ pub(super) fn plan(report: &Report, facts: &Declarations) -> Result<Option<Plan>
             0,
         )
         .map_err(error)?;
-    if header.written.parameters != 0 || header.members != [member.definition] {
+    if header.written.parameters != 0 {
         return Err(error(
-            "source Pointee requires only its actual Metadata member and no own parameters",
+            "source Pointee parameters are outside the supported declaration profile",
+        ));
+    }
+    if header.members != [member.definition] {
+        return Err(Declarations::error(
+            report,
+            member.origin,
+            "source Metadata role ownership is outside the supported Pointee declaration profile",
         ));
     }
     let pointee = catalog

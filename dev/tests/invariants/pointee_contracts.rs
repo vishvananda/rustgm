@@ -276,10 +276,9 @@ fn actual_kinds_features_and_active_owners_are_checked_without_spelling_fallback
     let error = declarations::analyze(&wrong)
         .err()
         .ok_or("actual owner mismatch must fail")?;
-    assert!(
-        error.message.contains("actual Metadata member")
-            || error.message.contains("actual Pointee associated owner"),
-        "{error}"
+    assert_eq!(
+        error.message,
+        "source Metadata role ownership is outside the supported Pointee declaration profile"
     );
     let prohibited = provider("explicit-policy-impl")?;
     let prohibited_error = declarations::analyze(&prohibited)

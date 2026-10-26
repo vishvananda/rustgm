@@ -73,10 +73,14 @@ Reservations even when these roles are absent. No allocator measurement or
 unobserved enclosing-size delta is claimed. Ordinary bootstrap has no source
 Catalog or witness owner allocation.
 
-Eleven new exact sources and status predictions are frozen in
-pa31/tests/spec/pointee-declarations/contract.json before execution: 22 planned
-metadata observations over 2021/2024, zero native programs. The original nine-case
+Eleven new exact sources and status predictions were frozen in
+pa31/tests/spec/pointee-declarations/contract.json before execution. Hosted 40285338962 actually collected all 22 metadata
+observations over 2021/2024, zero native programs, zero infrastructure failures
+and zero status disagreements in 0.218 seconds. Every actual warning stream was
+empty. Binding SHA: `02e03b99a7e1ece5ed72eff027f21cf7c009d1007827778e0bfbc36152d892a9`. The original nine-case
 7043ead3 prediction contract is separately retained; no old alias sizing or
-specialization observations are repeated. Wrong-associated-owner acceptance is
-an explicit uncertain rustc hypothesis; our first actual-owner profile remains
-closed. All raw statuses and disagreements must be retained.
+specialization observations are repeated. Wrong-associated-owner acceptance was an explicit uncertain hypothesis and is
+now observed in both editions. Our actual-owner source-protocol profile remains
+explicitly unsupported for that case, with no language-invalid claim. The kind
+errors, missing-lang_items E0658 and genuine deny-impl E0322 are observed; all
+raw streams and initial predictions remain retained. No candidate test has run.
