@@ -89,9 +89,19 @@ fn supplied_full_family_data_round_trips_all_columns_without_import_permission()
     assert_ne!(different, encoded);
     assert_eq!(codec::decode(&different)?, distinct);
     let dependencies = Dependencies::new(vec![decoded], Vec::new())?;
+    let descriptor = dependencies.artifacts()[0]
+        .source_descriptor()
+        .ok_or("actual supplied descriptor")?;
+    assert_eq!(descriptor.identity(), &owner);
+    assert_eq!(descriptor.provider(), &owner);
+    assert_eq!(
+        descriptor.edition(),
+        crate::support::edition::Edition::Rust2024
+    );
+    assert_eq!(descriptor.profile(), s::Profile::Source2024Provided);
     assert_eq!(
         dependencies.source_provider_index(&owner),
-        Err("source client provider descriptor does not match the requested profile")
+        Err("source client provider profile is unsupported")
     );
     println!(
         "supplied data bytes={} originals=3 source import denied",

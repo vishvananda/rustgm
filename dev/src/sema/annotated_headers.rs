@@ -1,8 +1,11 @@
 //! Checked source and canonical imported header facts share diagnostic consumers.
 #[path = "header_attributes/metadata_contracts.rs"]
 mod imported;
+#[path = "header_attributes/incarnations.rs"]
+mod incarnations;
 #[path = "header_attributes/declared_origins.rs"]
 mod local;
+pub(in crate::sema) use incarnations::SourceImage;
 #[cfg(test)]
 #[path = "../../tests/invariants/nodeless_owners.rs"]
 mod owner_compatibility_tests;
@@ -132,6 +135,10 @@ impl Declarations {
 }
 pub(super) use imported::prepare as prepare_imported;
 pub(super) use local::{bind_definition, finish, observe_owner};
+pub(in crate::sema) use local::{
+    charge_source_contract_query, completed_source_image, pointee_source_image,
+    reserve_source_contracts,
+};
 pub(super) fn has_imported(facts: &Declarations, definition: DefId) -> bool {
     facts
         .must_use_contracts
@@ -213,3 +220,6 @@ pub(super) fn local_crate_owner(report: &Report, definition: DefId) -> Result<bo
     }
     Ok(true)
 }
+
+#[cfg(test)]
+pub(in crate::sema) use local::source_contract_storage;

@@ -39,6 +39,12 @@ impl Stage {
             let Some(declaration) = catalog.header_role(role)? else {
                 continue;
             };
+            if matches!(
+                role,
+                LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata
+            ) {
+                return Err("source Pointee contract transport is not implemented");
+            }
             let address = self.address(declaration.definition)?;
             self.reserve(4 * size_of::<s::RoleBinding>())?;
             self.rows.roles.push(s::RoleBinding {

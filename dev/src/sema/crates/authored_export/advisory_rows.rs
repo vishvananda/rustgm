@@ -50,6 +50,7 @@ impl Stage {
         mut check: impl FnMut(&mut Stage, DefId, NodeKey) -> Result<(), Error>,
     ) -> Result<s::HeaderAttributeColumns, Error> {
         self.require_attribute_context(report, facts)?;
+        crate::sema::compiler_items::pointee::require_transport(report, facts)?;
         let count = self.rows.declarations.len();
         self.reserve(
             count.saturating_mul(size_of::<Option<s::HeaderContract>>())

@@ -18,6 +18,13 @@ proof requirements. Preserve original subjects before substitution: an unrelated
 formal cannot become a naming path merely because its actual type equals Self.
 Complete header/object/region/default/const/imported consumers remain required.
 
+The [associated-family integration](runtime-header-integration-checkpoint.md)
+now retains every expanded alias input clause in the real family prefix and
+admits result aliases through the same canonical bound worklist. Result
+promises, including implicit Sized, stay separate from input formation debts.
+The real `X::Item<T>` caller control rejects missing Copy. This closes that
+prefix bug while preserving the broader execution/export fence.
+
 Independent run40239493812 freezes 16 authored sources before execution, then
 observes 32 metadata compilations and six actual native executions on pinned
 rustc 1.98.0 in editions 2021/2024. Its 44 commands take 0.75 seconds, with zero

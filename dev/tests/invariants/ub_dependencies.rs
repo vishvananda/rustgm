@@ -34,10 +34,10 @@ fn ub_dependency_omission_checks_actual_role_complete_instance_and_direct_call_s
         };
         let ty = body.values[callee.0 as usize].ty;
         let expected = (name == "actual").then_some(SourceIntrinsic::UbChecks);
-        assert_eq!(source_call(&facts, body, call, ty)?, expected);
+        assert_eq!(source_call(&report, &facts, body, call, ty)?, expected);
         let mut indirect = *call;
         indirect.kind = Rvalue::Reify(callee);
-        assert_eq!(source_call(&facts, body, &indirect, ty)?, None);
+        assert_eq!(source_call(&report, &facts, body, &indirect, ty)?, None);
         if name == "actual" {
             let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(ty) else {
                 return Err("item".into());
@@ -52,23 +52,23 @@ fn ub_dependency_omission_checks_actual_role_complete_instance_and_direct_call_s
                 signature,
                 arguments: extra,
             })?;
-            assert!(source_call(&facts, body, call, changed).is_err());
+            assert!(source_call(&report, &facts, body, call, changed).is_err());
             let mut malformed = *call;
             malformed.ty = TypeId::UNIT;
-            assert!(source_call(&facts, body, &malformed, ty).is_err());
+            assert!(source_call(&report, &facts, body, &malformed, ty).is_err());
             malformed = *call;
             malformed.kind = Rvalue::Call {
                 signature: TypeId::UNIT,
                 callee,
                 arguments,
             };
-            assert!(source_call(&facts, body, &malformed, ty).is_err());
+            assert!(source_call(&report, &facts, body, &malformed, ty).is_err());
             malformed.kind = Rvalue::Call {
                 signature,
                 callee,
                 arguments: body::ir::ValueList { start: 0, end: 1 },
             };
-            assert!(source_call(&facts, body, &malformed, ty).is_err());
+            assert!(source_call(&report, &facts, body, &malformed, ty).is_err());
         }
     }
     Ok(())

@@ -149,7 +149,7 @@ impl Checker<'_> {
         let inputs = self.projection_seed_inputs(seed)?;
         if matches!(inputs, Inputs::Alias(_)) {
             let table = &self.projections.lookup.typed;
-            self.charge_alias_lookup(Growth::map::<NodeKey, Inputs>(
+            self.charge_alias_growth(Growth::map::<NodeKey, Inputs>(
                 table.len(),
                 table.capacity(),
                 1,
@@ -226,7 +226,7 @@ impl Checker<'_> {
                 let predicate =
                     self.open_projection_seed(key, seed, clause, context, &mut opened)?;
                 if alias {
-                    self.charge_alias_lookup(Growth::vector::<Predicate>(
+                    self.charge_alias_growth(Growth::vector::<Predicate>(
                         result.len(),
                         result.capacity(),
                         1,
