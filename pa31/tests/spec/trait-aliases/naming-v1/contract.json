@@ -1,0 +1,30 @@
+{
+  "state": "frozen hypotheses awaiting pinned Rust observation; assignment planned",
+  "scope": "trait alias shorthand associated type naming, not alias execution/export completion",
+  "cases": [
+    {
+      "source": "canonical-equality.rs",
+      "rustc_success": true
+    },
+    {
+      "source": "ambiguous-members.rs",
+      "rustc_success": false
+    },
+    {
+      "source": "unrelated-subject.rs",
+      "rustc_success": false
+    },
+    {
+      "source": "same-actual-subject.rs",
+      "rustc_success": true
+    },
+    {
+      "source": "unused-binder.rs",
+      "rustc_success": true
+    },
+    {
+      "source": "distinct-applications.rs",
+      "rustc_success": false
+    }
+  ]
+}

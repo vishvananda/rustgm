@@ -154,6 +154,15 @@ impl Pending {
     }
 }
 impl Checker<'_> {
+    pub(super) fn charge_alias_lookup(&self, growth: Growth) -> Result<(), Error> {
+        self.trait_aliases
+            .as_ref()
+            .ok_or_else(|| Error::unlocated("missing alias lookup owner"))?
+            .budget
+            .grow(growth)
+            .map_err(Error::unlocated)
+    }
+
     pub(super) fn alias_self_schema(&self, id: DefId) -> Result<Option<&Schema>, Error> {
         let Some(pending) = &self.trait_aliases else {
             return Ok(None);

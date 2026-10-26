@@ -158,7 +158,8 @@ impl Checker<'_> {
                 Some(subject),
                 Written::User {
                     path, definition, ..
-                },
+                }
+                | Written::Alias { path, definition },
             ) = (subject, bound.bound)
             {
                 self.retain_projection_bound(
