@@ -108,7 +108,8 @@ impl SelectedConsumer<'_> {
                 owner,
                 crate::resolve::model::DefKind::SelfType,
             )
-            .map_err(Error::unlocated)
+            .map_err(Error::unlocated)?;
+        Ok(())
     }
 
     pub(in crate::sema) fn require_imported_pending(
