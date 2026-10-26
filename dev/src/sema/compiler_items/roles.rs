@@ -152,10 +152,6 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         glue::validate(report, facts, catalog, declaration, complete.roles)?;
         complete.roles |= 1 << LangItem::DropGlue.index();
     }
-    if let Some(declaration) = catalog.language(LangItem::PhantomData) {
-        super::phantom::require_completed(report, facts, declaration)?;
-        complete.roles |= 1_u32 << LangItem::PhantomData.index();
-    }
     validate_owned_members(report, catalog, complete.roles)?;
     if complete.roles == 0 {
         return Ok(());

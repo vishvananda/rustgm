@@ -119,6 +119,45 @@ fn formal(
     Ok(target)
 }
 
+/// Nominal role completion follows the existing deferred bound/field worklist,
+/// independently of the earlier callable-role header completion.
+pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
+    let Some(claimed) = facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.language(LangItem::PhantomData))
+    else {
+        return Ok(());
+    };
+    require_completed(report, facts, claimed)?;
+    let fresh = facts
+        .source_bindings
+        .as_deref()
+        .is_some_and(|catalog| catalog.traits.is_none());
+    crate::sema::header_attributes::reserve_source_contracts(
+        facts,
+        1,
+        usize::from(fresh) * size_of::<super::roles::Validated>(),
+    )?;
+    let catalog = facts
+        .source_bindings
+        .as_deref_mut()
+        .ok_or_else(|| Error::unlocated("source phantom catalog disappeared"))?;
+    let ledger = catalog.traits.get_or_insert_with(|| {
+        Box::new(super::roles::Validated {
+            roles: 0,
+            methods: [None; 3],
+            pointee: None,
+        })
+    });
+    let bit = 1_u32 << LangItem::PhantomData.index();
+    if ledger.roles & bit != 0 {
+        return Err(Error::unlocated("source phantom role was completed twice"));
+    }
+    ledger.roles |= bit;
+    Ok(())
+}
+
 pub(super) fn require_completed(
     report: &Report,
     facts: &Declarations,

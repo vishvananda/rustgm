@@ -79,10 +79,16 @@ fn source_marker_constructor_clone_and_const_storage_use_real_headers() -> Resul
 #[test]
 fn source_marker_rejects_changed_roles_formals_fields_and_lifetime_escape() -> Result {
     let source = test_source::fixture(PROVIDER)?;
+    // Header opponents retain their genuine malformed declaration without also
+    // referring to a unit constructor that they deliberately removed.
+    let header = source
+        .split("impl<T: PointeeSized> Copy for PhantomData<T> {}")
+        .next()
+        .ok_or("marker declaration prefix")?;
     for (name, changed, needle) in [
         (
             "fields",
-            source.replace(
+            header.replace(
                 "pub struct PhantomData<T: PointeeSized>;",
                 "pub struct PhantomData<T: PointeeSized> {field:*const T}",
             ),
@@ -90,7 +96,7 @@ fn source_marker_rejects_changed_roles_formals_fields_and_lifetime_escape() -> R
         ),
         (
             "tuple",
-            source.replace(
+            header.replace(
                 "pub struct PhantomData<T: PointeeSized>;",
                 "pub struct PhantomData<T: PointeeSized>();",
             ),
@@ -98,7 +104,7 @@ fn source_marker_rejects_changed_roles_formals_fields_and_lifetime_escape() -> R
         ),
         (
             "formals",
-            source.replace(
+            header.replace(
                 "pub struct PhantomData<T: PointeeSized>;",
                 "pub struct PhantomData<T: PointeeSized,U: PointeeSized>;",
             ),
@@ -106,7 +112,7 @@ fn source_marker_rejects_changed_roles_formals_fields_and_lifetime_escape() -> R
         ),
         (
             "kind",
-            source.replace(
+            header.replace(
                 "pub struct PhantomData<T: PointeeSized>;",
                 "pub trait PhantomData<T: PointeeSized> {}",
             ),
