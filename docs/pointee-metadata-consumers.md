@@ -1,9 +1,11 @@
 # Source Pointee selection and metadata normalization
 
-This is the consumer successor under development after qualified declaration source
-`12e87c240cc10d308364a0b832df4665e90b9e6e`. No consumer implementation or
-execution is qualified by this document. The declaration handoff and its six
-controls remain immutable; they are not repeated for this proposal.
+The focused local consumer checkpoint follows qualified declaration source
+`12e87c240cc10d308364a0b832df4665e90b9e6e`. Six selected controls pass using
+source-identical production across the retained runs below. They exercise actual
+source selection, both normalizers and body typing/region proof. There is no
+native execution, full pinned Thin-provider acceptance or artifact transport
+claim. The declaration handoff remains immutable and was not repeated.
 
 ## Selection and result authority
 
@@ -28,9 +30,9 @@ this source, and `Source::Builtin` remains insufficient for projection.
 The shared Rc keeps the exact Contracts incarnation alive across suspension and
 prevents a numerical arena/member coincidence from becoming authority.
 This changes Source from Copy to Clone; existing arms clone only their
-small existing values, and only the Pointee arm retains an Rc. This central API change is approved but remains unqualified here. Its alignment,
-Source/Node/Evidence sizes and enclosing query layouts must be observed;
-no zero-growth claim is made in advance. The ordinary path allocates no
+small existing values, and only the Pointee arm retains an Rc. This central API change has focused evidence below. Actual Source alignment
+changes from four to eight bytes; its size and the observed enclosing layouts
+remain unchanged. The ordinary path allocates no
 Pointee owner, and the rare selection takes a prepaid existing-owner handle.
 
 ## Source seal and readiness
@@ -60,7 +62,7 @@ runs after genuine trait and sizing headers and before alias completion.
 Later package preparation authenticates the already completed member instead
 of recreating consumed reserved syntax. Global `complete_results` is unchanged.
 Forward demand while an owning trait header is still unfinished remains an
-explicit ordering opponent for this unqualified draft; readiness must come from
+explicit ordering opponent for this checkpoint; readiness must come from
 that genuine header producer, never an impl-header alias or guessed absence.
 
 The normalizer authenticates DynMetadata's real head, source, owner and formals.
@@ -162,13 +164,72 @@ does not edit those owned algorithms or widen any imported/public profile.
 
 ## Focused candidate freeze
 
-The current draft is UNQUALIFIED. The next gate selects exactly four new
-source-consumer groups plus the changed Source/enclosing and declaration-cost
-observers. It includes canonical Query, generic-argument Search normalization,
+The focused gate selected four source-consumer groups plus the changed
+Source/enclosing and declaration-cost observers. It includes canonical Query, generic-argument Search normalization,
 real body calls, concrete/changed/projected tails, erased nominal inputs,
 Scoped Sized versus assumed-parent opacity and explicit equality, actual result
 obligations, dynamic object regions, cumulative failed retention and ordinary
 no-owner behavior. Existing 38 observations are not rerun. Source/trait/default
 transport and complete pinned VTable/NonNull/PhantomData remain closed/required.
-Actual new cold/hot sizes and work are unknown until the gate; old producer and
-Source-before measurements remain retained historical observations.
+The exact proof is four passing groups in v8, one corrected region group in v9,
+and the final corrected opacity/result-obligation group in v10. All 1,576
+production source hashes match across these runs. V9 correctly invokes the
+existing body region collector/checker: the previous type-phase-only escape
+assertion was a harness phase mistake, not evidence of a compiler escape.
+V10 separately proves canonical unit lacks the actual provider's Actual trait,
+then requires the original body to fail through its existing trait diagnostic.
+The assumed-parent opponent verifies its real Source::Assumption and opaque
+resolution; the unknown-parent opponent verifies Source::Pointee and opaque
+resolution before checking the body rejection.
+
+Receipts under this worktree's `obj/qualification/fast/`:
+
+| Run | Actual selected result | Receipt SHA-256 |
+| --- | --- | --- |
+| 1793036303681716161 | Four pass; two retained failures | 7928ee0d7b488d9e7cc2599658bbc2f78f79ce6d6d84a4fbf3205a4cc9575520 |
+| 1793037576335560246 | Dynamic regions/budget pass; stale final diagnostic assertion fails | d1376d3616aba8a7850db6e3748279559aa71a8a90483de618ee960da3779fbb |
+| 1793037873044125656 | Final opacity/result-obligation group passes | cb73ab63a661740fb37a61b3c08104edbb80015284683e3ae5e0bfb5af8ecf9a |
+
+V10 completed metadata, formatting, architecture, private strict Clippy, build
+and its exact test in 110.27 seconds under the unchanged 12 GiB absolute cap.
+Its binary SHA-256 is
+`b84d986911388c4456a150f77902724c40822ca520ab8f21e48319b90b364f0a`.
+Production is `3056aa02fc8090c3e538d9a0cd4e06254bfb52db`; test correction source
+is `51e0ea8640586a7f322ad79782e61b4ee7004d9e`.
+The existing physical metadata control also passes on the authenticated v8
+binary, with no additional build.
+
+Actual observed layouts (bytes) are Source 16/alignment 8, optional Source 16,
+Evidence 136, Frame 1312, proof Node 160, Search Normalization 520, projection
+Query 912 and Search Query 656. The authenticated predecessor printed the same
+sizes with Source alignment 4. Catalog 776, Reservations 872, Validated 40,
+Package 256, Declarations 7048, Unit 688, syntax Node 36, Scope 32 and resolver
+Definition 36 are actual current observations, without a claim that unrelated
+baseline changes originated here.
+
+Removing the unconsumed field snapshot changes actual cold Contracts 928 to
+856 and State 224 to 200. The actual current HeaderLedger is 96 and borrowed
+Payments is 8; Cell<usize> and usize are both 8. The counter becomes interior
+mutable without adding a second owner or counter. The measured source ledger
+moves from `(steps=183, bytes=8200)` to `(2615, 8200)` after 32 warm reads;
+its remaining observed storage tuple stays `(6, 7, 24, 64)`. Captured contract
+capacities are `[0,2,0,0,0,0,1,1,0,1,0,0,0,0,1]`. Failed byte retention remains
+cumulative; subsequent replay attempts fail and increase work without replacing
+the source owner. Ordinary no-source analysis retains no source ledger.
+
+The disjoint continuation enum payload sizes and allocator-level allocation
+counts were not printed by these controls. They remain unmeasured, rather than
+being inferred from enclosing sizes or logical prepaid byte calculations.
+
+The 38 independent metadata observations retain 14 hypothesis disagreements,
+including accepted erased nominal inputs and rejected assumed-parent fallback.
+The setup/caller contracts now bind the observed outcomes while preserving their
+original hypothesis fields and original contract hashes. No source bytes were
+changed and no observations were repeated.
+
+The genuine pinned Thin alias body-use control still needs the integrator's
+current alias baseline. The unchanged whole-core frontier is now the actual
+foreign VTable declaration in `ptr/metadata.rs:170`, LIB-032. This checkpoint
+does not replace VTable with an aggregate or complete NonNull/PhantomData,
+pointer metadata intrinsics, wide-pointer runtime/CTFE operations, forward
+unfinished-header demand, imported source roles or transport.

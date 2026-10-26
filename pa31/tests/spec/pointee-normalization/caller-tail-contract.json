@@ -17,7 +17,7 @@
     "RUSTC_BOOTSTRAP": "1"
   },
   "provider": "Explicit authored no_core declarations reuse the qualified minimal declaration fixture; no claim that these replace pinned NonNull/VTable/PhantomData fields.",
-  "phase": "three genuinely new source/caller edge predictions frozen before observation",
+  "phase": "observed metadata outcomes; original frozen hypotheses and every disagreement retained",
   "scope": "six new metadata-only observations; assumed-parent/Sized, explicit equality and projected tail/prefix; no old20/12/22 repeat or native claim",
   "cases": [
     {
@@ -26,7 +26,41 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "actual assumed Pointee parent without an equality still permits caller-scoped Sized fallback"
+      "contract": "actual assumed Pointee parent without an equality still permits caller-scoped Sized fallback",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [],
+          "messages": [
+            "mismatched types",
+            "aborting due to 1 previous error"
+          ],
+          "disagreements": {
+            "status": true,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [],
+          "messages": [
+            "mismatched types",
+            "aborting due to 1 previous error"
+          ],
+          "disagreements": {
+            "status": true,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/pointee-normalization/explicit-equality.rs",
@@ -34,7 +68,31 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "explicit associated equality priority in a generic environment; contradiction behavior is independently observed"
+      "contract": "explicit associated equality priority in a generic environment; contradiction behavior is independently observed",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/pointee-normalization/projected-tail-and-prefix.rs",
@@ -42,7 +100,41 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "actual last projected tail with an unrelated projected prefix; no prefix projection proof for metadata"
+      "contract": "actual last projected tail with an unrelated projected prefix; no prefix projection proof for metadata",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     }
-  ]
+  ],
+  "initial_contract_sha256": "36ac05d56e0fbfd9beb05d9c4177483788f4b1f1ac009efa2b904b4f8156f06a",
+  "observed_binding": {
+    "run": 40348970058,
+    "binding_sha256": "5384553947986ed8745190cc88fd1954c5a9641124085b71c7ed216621e44b40",
+    "artifact_zip_sha256": "e8c57ff21e5c7feda1ba98302011b8eb85a2b11903d2156d44ab54b765315eb7",
+    "metadata": 6,
+    "native": 0,
+    "infrastructure_failures": 0,
+    "hypothesis_disagreements": 2
+  }
 }
