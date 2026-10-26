@@ -177,7 +177,12 @@ fn full_formals(
         (parameter.owner, parameter.index),
         (ItemId(definition.0), 2)
     );
-    assert_eq!(parameter.kind, ParameterKind::Const { ty: TypeId::primitive(Primitive::Usize) });
+    assert_eq!(
+        parameter.kind,
+        ParameterKind::Const {
+            ty: TypeId::primitive(Primitive::Usize)
+        }
+    );
     assert_eq!(
         checker.report.resolution.definitions[parameters[0].binding.0 as usize].namespace,
         Namespace::Lifetime
