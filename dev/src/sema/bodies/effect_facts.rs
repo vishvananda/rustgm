@@ -149,7 +149,9 @@ impl Checker<'_> {
                 })?
                 .operation;
             // ForPlan retains distinct into_iter/next signatures, not one Call.
-            if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. }) {
+            if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. })
+                || self.erased_source_not(*node)?
+            {
                 continue;
             }
             any = true;
@@ -224,7 +226,9 @@ impl Checker<'_> {
             }
         }
         for (node, term) in &self.state.calls {
-            if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. }) {
+            if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. })
+                || self.erased_source_not(*node)?
+            {
                 continue;
             }
             let key = self.key(*node);
