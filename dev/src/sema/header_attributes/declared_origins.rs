@@ -1,5 +1,5 @@
 //! The existing owner/declaration pass records positive source completion.
-use super::{ContractKnowledge, ContractOrigin, HeaderAttributeView, Ledger};
+use super::{ContractKnowledge, ContractOrigin, HeaderAttributeView, Ledger, SourceImage};
 use crate::{
     resolve::{
         expansion::Report,
@@ -8,14 +8,13 @@ use crate::{
         unit::NodeKey,
     },
     sema::model::Declarations,
-    support::{hash::HashMap, retained, source::OriginalImage},
+    support::{hash::HashMap, retained},
     syntax::{ast::Kind, item::ItemKind},
 };
-use std::{cell::Cell, sync::Arc};
+use std::cell::Cell;
 
 struct Header {
-    image: Arc<OriginalImage>,
-    syntax: Kind,
+    source: SourceImage,
     owners: Vec<Owner>,
 }
 struct Owner {
@@ -57,8 +56,14 @@ pub(in crate::sema) fn observe_owner(
     owner: NodeKey,
     declaration: NodeKey,
 ) -> Result<(), Error> {
-    if report.package.source_core().is_none() || !admitted(report, declaration) {
+    if report.package.source_core().is_none() {
         return Ok(());
+    }
+    if !admitted(report, declaration) {
+        reserve_source_contracts(facts, 3, 0)?;
+        if !pointee_role_site(report, declaration) {
+            return Ok(());
+        }
     }
     let bytes =
         retained::new_map::<NodeKey, Header>(1) + size_of::<Header>() + 4 * size_of::<Owner>();
@@ -68,8 +73,7 @@ pub(in crate::sema) fn observe_owner(
         .declarations
         .entry(declaration)
         .or_insert_with(|| Header {
-            image: Arc::clone(unit.source.original_image()),
-            syntax: unit.configured.ast.node(declaration.node).kind,
+            source: SourceImage::capture(unit, declaration.node),
             owners: Vec::new(),
         });
     let index = unit
@@ -104,8 +108,7 @@ pub(in crate::sema) fn bind_definition(
         .declarations
         .entry(declaration)
         .or_insert_with(|| Header {
-            image: Arc::clone(unit.source.original_image()),
-            syntax: unit.configured.ast.node(declaration.node).kind,
+            source: SourceImage::capture(unit, declaration.node),
             owners: Vec::new(),
         });
     if headers
@@ -211,49 +214,14 @@ fn validate_header(
     key: NodeKey,
     header: &Header,
 ) -> Result<(), Error> {
-    let unit = report.package.unit(key.file);
-    let node = unit.configured.ast.node(key.node);
-    if !admitted(report, key)
-        || !Arc::ptr_eq(&header.image, unit.source.original_image())
-        || header.syntax != node.kind
-        || unit.configured.active.get(key.node.get() as usize) != Some(&true)
-    {
+    if !admitted(report, key) {
         return Err(Error::at(
             key.file,
             0,
             "source header completion incarnation changed",
         ));
     }
-    for owner in &header.owners {
-        let actual = unit
-            .owner_indices
-            .get(owner.key.node.get() as usize)
-            .copied()
-            .flatten()
-            .and_then(|index| unit.configured.owners.get(index.get() as usize - 1));
-        if actual.is_none_or(|actual| {
-            !actual.enabled || actual.node != owner.key.node || actual.attributes != owner.effects
-        }) || unit
-            .configured
-            .ast
-            .nodes
-            .get(owner.key.node.get() as usize)
-            .is_none_or(|node| node.kind != owner.syntax)
-        {
-            return Err(Error::at(
-                owner.key.file,
-                0,
-                "source header configured owner changed",
-            ));
-        }
-        if !owner.effects.is_empty() {
-            report
-                .lint_producer()
-                .ok_or_else(|| Error::at(owner.key.file, 0, "source header owner has no producer"))?
-                .validate_owner(&report.package, owner.key)
-                .map_err(Error::from)?;
-        }
-    }
+    validate_source(facts, report, key, header)?;
     match report.resolution.definitions[definition.0 as usize].kind {
         DefKind::Function => {
             if facts
@@ -292,4 +260,197 @@ fn validate_header(
         }
     }
     Ok(())
+}
+
+/// Local role consumers share the existing source-header producer budget.
+pub(in crate::sema) fn reserve_source_contracts(
+    facts: &mut Declarations,
+    steps: usize,
+    bytes: usize,
+) -> Result<(), Error> {
+    let headers = &ledger(facts, bytes)?.local;
+    charge_query(headers, steps)
+}
+pub(in crate::sema) fn charge_source_contract_query(
+    facts: &Declarations,
+    steps: usize,
+) -> Result<(), Error> {
+    let headers = facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .map(|ledger| &ledger.local)
+        .ok_or_else(|| Error::unlocated("source contract query lacks its producer budget"))?;
+    charge_query(headers, steps)
+}
+fn charge_query(headers: &Headers, steps: usize) -> Result<(), Error> {
+    headers.steps.set(headers.steps.get().saturating_add(steps));
+    if headers.steps.get() > crate::support::crates::MAX_COMPONENTS {
+        return Err(Error::unlocated(
+            "source header contract query work exceeds profile limit",
+        ));
+    }
+    Ok(())
+}
+
+/// Reuse the genuine completed header's image witness without widening admission.
+pub(in crate::sema) fn completed_source_image(
+    facts: &Declarations,
+    report: &Report,
+    definition: DefId,
+) -> Result<SourceImage, Error> {
+    let view = query(facts, report, definition)?;
+    if matches!(view.must_use, ContractKnowledge::Unknown)
+        || matches!(view.inline, ContractKnowledge::Unknown)
+    {
+        return Err(Error::unlocated(
+            "source role requires its positive completed header",
+        ));
+    }
+    let site = view
+        .origin
+        .source()
+        .ok_or_else(|| Error::unlocated("source role has no local header origin"))?;
+    facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .and_then(|ledger| ledger.local.declarations.get(&site.declaration))
+        .map(|header| header.source.clone())
+        .ok_or_else(|| Error::unlocated("source role lost its completed header witness"))
+}
+
+fn validate_source(
+    facts: &Declarations,
+    report: &Report,
+    key: NodeKey,
+    header: &Header,
+) -> Result<(), Error> {
+    let unit = report.package.unit(key.file);
+    if !header.source.current(unit, key.node)
+        || unit.configured.active.get(key.node.get() as usize) != Some(&true)
+    {
+        return Err(Error::at(
+            key.file,
+            0,
+            "source header completion incarnation changed",
+        ));
+    }
+    charge_source_contract_query(facts, header.owners.len())?;
+    for owner in &header.owners {
+        let actual = unit
+            .owner_indices
+            .get(owner.key.node.get() as usize)
+            .copied()
+            .flatten()
+            .and_then(|index| unit.configured.owners.get(index.get() as usize - 1));
+        if actual.is_none_or(|actual| {
+            !actual.enabled || actual.node != owner.key.node || actual.attributes != owner.effects
+        }) || unit
+            .configured
+            .ast
+            .nodes
+            .get(owner.key.node.get() as usize)
+            .is_none_or(|node| node.kind != owner.syntax)
+        {
+            return Err(Error::at(
+                owner.key.file,
+                0,
+                "source header configured owner changed",
+            ));
+        }
+        if !owner.effects.is_empty() {
+            report
+                .lint_producer()
+                .ok_or_else(|| Error::at(owner.key.file, 0, "source header owner has no producer"))?
+                .validate_owner(&report.package, owner.key)
+                .map_err(Error::from)?;
+        }
+    }
+    Ok(())
+}
+fn pointee_role_site(report: &Report, key: NodeKey) -> bool {
+    use crate::support::bindings::LangItem;
+    report
+        .resolution
+        .source_bindings
+        .as_deref()
+        .is_some_and(|reserved| {
+            [
+                LangItem::PointeeTrait,
+                LangItem::MetadataType,
+                LangItem::DynMetadata,
+            ]
+            .into_iter()
+            .any(|role| {
+                reserved
+                    .language(role)
+                    .is_some_and(|declaration| declaration.origin == key)
+            })
+        })
+}
+/// Associated/nominal role witnesses do not enter attribute completion admission.
+pub(in crate::sema) fn pointee_source_image(
+    facts: &Declarations,
+    report: &Report,
+    declaration: crate::resolve::bindings::Declaration,
+) -> Result<SourceImage, Error> {
+    charge_source_contract_query(facts, 4)?;
+    let actual = report
+        .resolution
+        .definitions
+        .get(declaration.definition.0 as usize)
+        .ok_or_else(|| Error::unlocated("source Pointee role lost its actual definition"))?;
+    use crate::support::bindings::LangItem;
+    let authenticated = report
+        .resolution
+        .source_bindings
+        .as_deref()
+        .is_some_and(|reserved| {
+            [
+                (LangItem::PointeeTrait, DefKind::Trait),
+                (LangItem::MetadataType, DefKind::TypeAlias),
+                (LangItem::DynMetadata, DefKind::Struct),
+            ]
+            .into_iter()
+            .any(|(role, kind)| reserved.language(role) == Some(declaration) && actual.kind == kind)
+        });
+    if actual.node != Some(declaration.origin) || !authenticated {
+        return Err(Error::unlocated(
+            "source Pointee witness has a different actual definition, role or kind",
+        ));
+    }
+    let header = facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .filter(|ledger| ledger.local.complete)
+        .and_then(|ledger| ledger.local.declarations.get(&declaration.origin))
+        .ok_or_else(|| Error::unlocated("source Pointee role lacks its retained owner witness"))?;
+    validate_source(facts, report, declaration.origin, header)?;
+    Ok(header.source.clone())
+}
+
+#[cfg(test)]
+pub(in crate::sema) fn source_contract_storage(
+    facts: &Declarations,
+) -> Option<(usize, usize, usize, usize, usize, usize)> {
+    let headers = &facts
+        .must_use_contracts
+        .as_deref()?
+        .headers
+        .as_deref()?
+        .local;
+    Some((
+        headers.steps.get(),
+        headers.bytes,
+        headers.declarations.len(),
+        headers.declarations.capacity(),
+        headers
+            .declarations
+            .values()
+            .map(|header| header.owners.capacity())
+            .sum(),
+        size_of::<Header>(),
+    ))
 }

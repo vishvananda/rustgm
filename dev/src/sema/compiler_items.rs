@@ -17,6 +17,7 @@ mod abort_declaration;
 mod intrinsic_contracts;
 mod layout;
 mod needs_drop;
+pub(in crate::sema) mod pointee;
 mod runtime_checks;
 pub(crate) use runtime_checks::RuntimeCheckSelection;
 mod select_calls;
@@ -208,7 +209,12 @@ impl Catalog {
         }
     }
     pub(crate) fn forces_dyn_incompatible(&self, definition: DefId) -> Result<bool, &'static str> {
-        for role in [LangItem::Sized, LangItem::Destruct, LangItem::Unsize] {
+        for role in [
+            LangItem::Sized,
+            LangItem::Destruct,
+            LangItem::Unsize,
+            LangItem::PointeeTrait,
+        ] {
             if self
                 .role(role)?
                 .is_some_and(|declaration| declaration.definition == definition)

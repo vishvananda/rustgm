@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "phase": "new independent predictions frozen before execution; no candidate observation yet",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "metadata_only": true,
+  "runtime_programs": 0,
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--crate-type=lib",
+    "--emit=metadata",
+    "--error-format=json",
+    "--check-cfg=cfg(disabled)"
+  ],
+  "cases": [
+    {
+      "source": "pa31/tests/spec/pointee-declarations/provider.rs",
+      "sha256": "ac1cfa452cca5aa6e90ee8889a3d3d0a3389e5559a06260b8f4ec9d187589a64",
+      "rustc_status_hypothesis": 0,
+      "candidate_contract": "positive local declaration, no projection/intrinsic/transport authority"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-declarations/no-dyn-role.rs",
+      "sha256": "0a71dcc39a2ef9ec8907c34fbec119ffc6b496c488f8a5ca88d2662e04d2a100",
+      "rustc_status_hypothesis": 0,
+      "candidate_contract": "positive local declaration, no projection/intrinsic/transport authority"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-declarations/result-obligations.rs",
+      "sha256": "975436113ab78eb0feaa67217ea1f48cf2b2514c5bdc06608c6a3007603c85ba",
+      "rustc_status_hypothesis": 0,
+      "candidate_contract": "positive local declaration, no projection/intrinsic/transport authority"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-declarations/wrong-trait-kind.rs",
+      "sha256": "bddf64387775a275c95eb0ca90f5b313f3a9e54ea3427d71c0343820ac6dfd93",
+      "rustc_status_hypothesis": 1,
+      "candidate_contract": "actual kind or feature rejection"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-declarations/wrong-member-kind.rs",
+      "sha256": "18757cf33390b3786b125282b90dc08d25435cc77ddca3cbc9e93f1464f3a753",
+      "rustc_status_hypothesis": 1,
+      "candidate_contract": "actual kind or feature rejection"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-declarations/wrong-nominal-kind.rs",
+      "sha256": "727dfb0d69da85b65b18e81aabc6c325c86457751e76cbf62484c5c052fdbb65",
+      "rustc_status_hypothesis": 1,
+      "candidate_contract": "actual kind or feature rejection"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-declarations/wrong-associated-owner.rs",
+      "sha256": "4d5cd22b58fff582c7aeebdaa88b8e08780b212ce6a29a3fa4c2bd45588bde56",
+      "rustc_status_hypothesis": 0,
+      "candidate_contract": "unsupported actual Pointee/member owner profile"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-declarations/missing-feature.rs",
+      "sha256": "1f637aeb7faa555604d0e07a3aab57c0f81ac3a00625cc53b7215e6bfba2f0ab",
+      "rustc_status_hypothesis": 1,
+      "candidate_contract": "actual kind or feature rejection"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-declarations/inactive-claims.rs",
+      "sha256": "bd9c23a5129f8ced9e3ceb1bd3d58207d8d539f98fe3330d36afa1a619dec67f",
+      "rustc_status_hypothesis": 0,
+      "candidate_contract": "positive local declaration, no projection/intrinsic/transport authority"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-declarations/policy-provider.rs",
+      "sha256": "c427b78efa36feef8cc9b3d88fea007b9aa4225c4ca6a494de7927a77f934359",
+      "rustc_status_hypothesis": 0,
+      "candidate_contract": "actual retained deny-implementation and dyn-incompatible policy, no metadata normalization/transport grant"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-declarations/explicit-policy-impl.rs",
+      "sha256": "11c90f50d350d24ab645174c4704ae99fae4204aea204ac78e1a4209ef34591d",
+      "rustc_status_hypothesis": 1,
+      "candidate_contract": "actual retained deny-implementation and dyn-incompatible policy, no metadata normalization/transport grant"
+    }
+  ],
+  "disagreements": "Retain every source, initial prediction, actual status and raw diagnostic. Wrong hypotheses are not infrastructure failures. GenericRequirement::None does not imply language-level 0/0/1 counts; wider forms stay explicit profile boundaries.",
+  "previous_frozen_contract_sha256": "7043ead33fe116ef7440a56b8462cb938f2eab7c84e012cdf3e1d7a26ac1c13d",
+  "purpose": "Actual Pointee declaration/target/member/result contract and existing deny-impl/dyn policy consumption only; no metadata normalization, pointer intrinsic, runtime or transport authority."
+}

@@ -26,8 +26,9 @@ use crate::{
 pub(crate) use unsizing::{kind as unsizing_role, predicate as unsizing_predicate};
 
 pub(super) struct Validated {
-    roles: u32,
+    pub(super) roles: u32,
     pub(super) methods: [Option<DefId>; 3],
+    pub(super) pointee: Option<std::rc::Rc<super::pointee::Contracts>>,
 }
 impl Catalog {
     /// The declaration-validation ledger is complete and its retained catalog
@@ -88,6 +89,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
     let mut complete = Validated {
         roles: 0,
         methods: [None; 3],
+        pointee: None,
     };
     let mut callables = Vec::new();
     for role in [
@@ -162,9 +164,20 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         ));
     }
     let output = catalog.language(LangItem::FnOnceOutput);
+    publish(facts, complete, &callables, output)
+}
+
+/// Publish only a fully checked role ledger and its actual callable members.
+fn publish(
+    facts: &mut Declarations,
+    complete: Validated,
+    callables: &[(Declaration, CallTrait, DefId)],
+    output: Option<Declaration>,
+) -> Result<(), Error> {
+    crate::sema::header_attributes::reserve_source_contracts(facts, 1, size_of::<Validated>())?;
     facts
         .associated
-        .register_source_callables(&callables, output)
+        .register_source_callables(callables, output)
         .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
     facts
         .source_bindings
