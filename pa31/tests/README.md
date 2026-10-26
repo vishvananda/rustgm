@@ -155,3 +155,8 @@ pending implementation validation from absent Copy, and retains valid generic
 prerequisites outside the bounded early scalar profile. See the
 [readiness review](../../docs/pa31-early-copy-readiness.md). Independent outcomes
 are separate from the pending compiler qualification; PA31 remains planned.
+
+`spec/source-phantom/` freezes the actual source unit-marker and selected impl
+bodies for logical variance/ownership versus physical fieldless storage. Its
+contract records independent outcomes separately from candidate qualification;
+Location/caller tracking and the complete panic path remain required.

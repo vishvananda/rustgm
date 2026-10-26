@@ -1,0 +1,23 @@
+{
+  "source": "source-marker.rs",
+  "sha256": "7c26bb8ec7093fad15febcc39327b68fc381643996861e5173f3378b1bb9070d",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "ub_checks": false,
+    "bootstrap": true
+  },
+  "predictions": {
+    "metadata": 0,
+    "candidate_semantics": 0,
+    "native_stdout": "0 1 0 7\n"
+  },
+  "status": "independent no_core source-provider metadata pass; candidate unqualified",
+  "boundaries": [
+    "actual source trait impls required",
+    "no imported/legacy role transport",
+    "no caller_location or panic execution"
+  ],
+  "independent_source_receipt_sha256": "4bbf92d64725792a4b51546d2c7e322d7a320aafdb2e4dbb09f251180b9a93f2"
+}

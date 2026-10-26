@@ -41,7 +41,10 @@ impl Stage {
             };
             if matches!(
                 role,
-                LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata
+                LangItem::PointeeTrait
+                    | LangItem::MetadataType
+                    | LangItem::DynMetadata
+                    | LangItem::PhantomData
             ) {
                 return Err("source Pointee contract transport is not implemented");
             }

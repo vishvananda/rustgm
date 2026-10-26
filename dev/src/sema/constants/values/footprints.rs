@@ -270,7 +270,8 @@ impl<'a> Reader<'a> {
                     .get(item)
                     .ok_or("missing completed stored nominal")?;
                 let union = match definition.kind {
-                    crate::types::aggregate::Kind::Struct => false,
+                    crate::types::aggregate::Kind::Struct
+                    | crate::types::aggregate::Kind::PhantomData => false,
                     crate::types::aggregate::Kind::Union => true,
                     crate::types::aggregate::Kind::Enum => {
                         if matches!(layout.shape, Shape::Niche { .. }) {

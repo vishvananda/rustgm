@@ -598,7 +598,7 @@ impl Layouts {
         };
         if matches!(
             definition.kind,
-            aggregate::Kind::Struct | aggregate::Kind::Union
+            aggregate::Kind::Struct | aggregate::Kind::PhantomData | aggregate::Kind::Union
         ) || repr.representation == Representation::Transparent
         {
             let variant = shape.variant(0).ok_or("aggregate has no field group")?;
@@ -737,7 +737,9 @@ pub(crate) fn validate_repr(
         return Err("transparent representation requires one variant and no other modifiers");
     }
     match definition.kind {
-        aggregate::Kind::Struct | aggregate::Kind::Union if repr.tag.is_some() => {
+        aggregate::Kind::Struct | aggregate::Kind::PhantomData | aggregate::Kind::Union
+            if repr.tag.is_some() =>
+        {
             Err("integer representation requires an enum")
         }
         aggregate::Kind::Union if repr.representation == Representation::Transparent => {

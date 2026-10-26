@@ -128,11 +128,15 @@ impl Variances {
         for &(item, arguments) in parameters {
             graph.declaration(types, item, arguments)?;
         }
-        for &(item, _) in parameters {
+        for &(item, arguments) in parameters {
             let definition = definitions
                 .get(item)
                 .ok_or("missing variance aggregate definition")?;
             graph.seen.clear();
+            if definition.kind == super::aggregate::Kind::PhantomData {
+                let target = definitions.phantom_argument_from(types, item, arguments)?;
+                graph.visit(types, item, target)?;
+            }
             for (ordinal, variant) in (0..).zip(definitions.variants(definition)) {
                 graph.solver.charge()?;
                 let selected = fields(item, ordinal, variant.fields);
