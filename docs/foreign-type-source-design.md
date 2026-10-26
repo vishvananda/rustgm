@@ -3,8 +3,9 @@
 LIB-032 is the unchanged `unsafe extern "C" { type VTable; }` declaration at
 `library/core/src/ptr/metadata.rs:170`. It is an opaque external type, with no
 value layout. It must never become an empty aggregate or a type-alias fallback.
-The current producer and metadata consumer checkpoints remain separate evidence;
-this successor has no candidate qualification yet.
+The source successor has focused private qualification described below. Its
+production/CLI integration and fresh unchanged-core observation remain pending;
+the earlier producer and metadata consumer checkpoints remain separate evidence.
 
 The approved representation appends `ItemKind::ForeignType`,
 `DefKind::ForeignType` and canonical `types::Kind::Foreign(ItemId)`. The identity
@@ -60,17 +61,17 @@ implementations for raw pointers/references and PhantomData. A separately frozen
 input with that genuine raw-pointer impl passes both editions. These six new
 observations preserve all original predictions and do not repeat the first 34.
 
-Source implementation is still unqualified. It appends variants, preserving old
+The focused source implementation appends variants, preserving old
 discriminants and wire vocabulary. Six selected private groups are authored for
 actual identity/owners, unit metadata versus sizing/body proof, active/literal
 gates and invalid forms, actual source Freeze impls, unavailable value layout
 and transport, and original replay plus 8/32/128 sparse storage/hot layouts.
-Unknown numbers remain unknown until a real candidate run.
+The actual candidate measurements and their limits are recorded below.
 
 B's qualified Pattern source `44ea6bff6` and documented head `9b7c7934` supply
 the shared AST/type/inference baseline. They were normally merged on this
 successor, followed by public main `339bdffb2`. Their prior qualification is
-retained; the combined Foreign candidate remains unqualified.
+retained; Foreign's focused qualification is recorded below.
 Foreign work preserves `Pattern { base, constraint }`, shared unary canonical
 reconstruction, feature slots 22/23 and their runtime validity. The qualified
 Pointee consumer reference remains `pa31-pointee-metadata-consumers-v1` at
