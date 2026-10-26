@@ -126,7 +126,7 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
     stage = returned;
     assert_eq!(status, Demand::Ready(()));
     assert_eq!(work.retained, before);
-    let (stage, status) = stage.trait_owner(holder_declaration, &mut work)?;
+    let (mut stage, status) = stage.trait_owner(holder_declaration, &mut work)?;
     assert_eq!(status, Demand::Ready(()));
     stage = repeated_owner(stage, holder_declaration, definition, &mut work)?;
     method_headers(stage, &mut work)?;

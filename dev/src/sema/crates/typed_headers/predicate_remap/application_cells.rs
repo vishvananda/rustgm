@@ -53,6 +53,17 @@ impl Cache for Shared {
     }
 }
 impl Shared {
+    #[cfg(test)]
+    pub(in crate::sema::crates::typed_headers) fn observations(&self) -> (usize, usize, usize) {
+        (
+            self.cells.capacity(),
+            self.cells
+                .iter()
+                .filter(|cell| cell.get().is_some())
+                .count(),
+            self.retained_bytes(),
+        )
+    }
     pub(in crate::sema::crates::typed_headers) fn new(
         count: usize,
         work: &mut impl Budget,

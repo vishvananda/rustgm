@@ -12,11 +12,7 @@ use crate::{
     sema::function_context::assumption_environment as defining,
     support::constness::Constness,
     support::crates::{generics as g, owner_catalog::BodyRef},
-    types::parameters::{
-        ParameterId,
-        clauses::Clause,
-        predicates::{Bound, Predicate},
-    },
+    types::parameters::{ParameterId, clauses::Clause, predicates::Bound},
 };
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Origin {

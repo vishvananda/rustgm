@@ -263,8 +263,8 @@ impl ProvidedOwners {
         if provider != descriptor.identity() {
             return Ok(None);
         }
-        let raw = descriptor
-            .rows()
+        let rows = descriptor.rows();
+        let raw = rows
             .declarations
             .get(row.0 as usize)
             .ok_or("selected input declaration is outside its actual table")?;

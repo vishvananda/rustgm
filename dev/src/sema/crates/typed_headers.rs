@@ -163,7 +163,7 @@ impl super::Linkage {
             .ok_or("source method lacks its authenticated canonical headers")?;
         let graph = headers
             .source
-            .as_deref()
+            .as_ref()
             .ok_or("source method lacks its authenticated canonical owner graph")?;
         let catalog = self
             .origin_catalog()

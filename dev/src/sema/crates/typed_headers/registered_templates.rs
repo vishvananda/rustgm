@@ -131,6 +131,16 @@ impl Prepared {
         }
         Ok((index, scope))
     }
+    fn require(
+        &self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        owner: DeclarationRef,
+        pair: SignaturePair,
+        work: &mut ReservationWork,
+    ) -> Result<(s::FunctionHeader, ItemId, Option<Ready>), Error> {
+        self.require_in(&self.templates, view, store, owner, pair, work)
+    }
     fn require_in(
         &self,
         templates: &Templates,

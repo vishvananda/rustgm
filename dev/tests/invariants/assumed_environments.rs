@@ -71,7 +71,8 @@ fn private_defining_environments_use_real_zero_domain_assumptions() -> Result {
             return Err("actual ready environment record".into());
         };
         let declaration = owner.scopes[*scope]
-            .as_deref()
+            .get()
+            .map(Box::as_ref)
             .ok_or("actual declaration environment")?;
         assert!(Arc::ptr_eq(environment, &declaration.environment));
         assert_eq!(declaration.parameters.len(), expected.formals);
@@ -199,7 +200,8 @@ fn plain_contract() -> Result {
     };
     assert_eq!(expected.header.declaration, owner);
     let scope = environments.scopes[*scope]
-        .as_deref()
+        .get()
+        .map(Box::as_ref)
         .ok_or("actual scope")?;
     scope.require_empty(*expected)?;
     assert!(product.environment.is_neutral());
@@ -236,7 +238,8 @@ fn change_owner(
                 .as_mut()
                 .and_then(|state| state.callables.as_mut())
                 .ok_or("actual template owner")?;
-            prepared.scopes[owner.0 as usize] = None;
+            Rc::get_mut(&mut prepared.scopes).ok_or("exclusive actual scope index")?
+                [owner.0 as usize] = None;
         }
         3 => {
             work.steps = crate::support::crates::MAX_COMPONENTS;
@@ -306,8 +309,8 @@ fn change_owner(
                     _ => None,
                 })
                 .ok_or("selected actual declaration environment")?;
-            env.scopes[selected]
-                .as_mut()
+            Rc::get_mut(&mut env.scopes).ok_or("exclusive actual scope table")?[selected]
+                .get_mut()
                 .ok_or("actual selected scope")?
                 .environment = foreign;
         }
@@ -391,7 +394,9 @@ fn contract_opponents() -> Result {
                 6 => product.seal = originals::Origin::Declaration,
                 7 => product.environment = Arc::clone(&product.declaration),
                 8 => {
-                    owner.scopes[*scope] = None;
+                    Rc::get_mut(&mut owner.scopes).ok_or("exclusive actual scope table")?[*scope]
+                        .take()
+                        .ok_or("actual scope to remove")?;
                 }
                 _ => expected.header.body = foreign_body,
             }
@@ -487,11 +492,11 @@ fn private_defining_environments_bound_selected_and_warm_work() -> Result {
         let scope = env
             .scopes
             .iter()
-            .flatten()
+            .filter_map(std::cell::OnceCell::get)
             .next()
             .ok_or("actual complete scope")?;
         assert_eq!(scope.parameters.len(), width);
-        assert!(env.applications.iter().flatten().count() >= width);
+        assert!(env.applications.observations().1 >= width);
         eprintln!(
             "private defining width={width} bytes={} steps={} peak={}",
             env.retained_bytes(),
@@ -581,8 +586,8 @@ fn contract_growth() -> Result {
             environments.bodies.iter().flatten().count(),
             environments.scopes.capacity(),
             retained::vector(&environments.scopes),
-            environments.applications.capacity(),
-            retained::vector(&environments.applications)
+            environments.applications.observations().0,
+            environments.applications.observations().2
         );
     }
     Ok(())

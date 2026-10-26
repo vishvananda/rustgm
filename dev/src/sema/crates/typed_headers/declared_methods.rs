@@ -17,10 +17,7 @@ use crate::{
         lifetimes::FunctionRegions,
         model::Declarations,
     },
-    support::{
-        crates::{generics::source as s, owner_catalog::DeclarationRef},
-        retained::Growth,
-    },
+    support::{crates::owner_catalog::DeclarationRef, retained::Growth},
     types::{GenericArgs, ItemId, Kind, TypeId},
 };
 use std::{rc::Rc, sync::Arc};
@@ -87,7 +84,7 @@ pub(super) fn ready(
         || header.signature != pair.original
         || header.callable != pair.callable
         || header.body != body
-        || header.constant != raw.constant
+        || header.constant != is_constant(raw.constness)?
     {
         return Err(error(
             "installed method changed its actual sealed declaration/signature/body presence",
@@ -135,7 +132,7 @@ pub(super) fn prepare(
         if header.declaration != DeclarationOrigin::Imported(pair.declaration)
             || header.signature != pair.original
             || header.callable != pair.callable
-            || header.constant != raw.constant
+            || header.constant != is_constant(raw.constness)?
         {
             return Err(error(
                 "installed method changed its sealed declaration/signature",
@@ -236,7 +233,7 @@ fn callable(
         inputs: Arc::clone(&leaf.inputs),
         declared,
         universals: raw.regions.total,
-        constant: raw.constant,
+        constant: is_constant(raw.constness)?,
     };
     Ok(staged_headers::Callable {
         header,
@@ -355,4 +352,14 @@ fn publish(
     }
     facts.definitions[definition.0 as usize] = Some(ty);
     declarations::install_scopes(facts, scopes)
+}
+
+fn is_constant(value: crate::support::constness::Constness) -> Result<bool, Error> {
+    match value {
+        crate::support::constness::Constness::Ordinary => Ok(false),
+        crate::support::constness::Constness::Const => Ok(true),
+        crate::support::constness::Constness::Conditional => Err(error(
+            "selected callable eligibility requires its actual ordinary or const declaration",
+        )),
+    }
 }

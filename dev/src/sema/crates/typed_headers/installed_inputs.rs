@@ -13,7 +13,7 @@ pub(in crate::sema::crates::typed_headers) struct Reader {
     arena: Identity,
 }
 impl Owner {
-    pub(super) fn scope_reader(
+    pub(in crate::sema::crates::typed_headers) fn scope_reader(
         &self,
         prepared: &Prepared,
         view: &RecipeView<'_>,
@@ -33,7 +33,7 @@ impl Owner {
         result.require(view, store, work)?;
         Ok(result)
     }
-    pub(super) fn require_scope_reader(
+    pub(in crate::sema::crates::typed_headers) fn require_scope_reader(
         &self,
         prepared: &Prepared,
         reader: &Reader,

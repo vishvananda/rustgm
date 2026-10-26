@@ -172,7 +172,7 @@ fn check_scope(
     let inherited = environments
         .scopes
         .iter()
-        .flatten()
+        .filter_map(std::cell::OnceCell::get)
         .find(|scope| scope.raw.owner == holder.scope)
         .ok_or("actual trait scope")?;
     assert!(inherited.inputs.all().iter().all(|input| matches!(
@@ -350,7 +350,7 @@ fn growth() -> Result {
         let count = environments
             .scopes
             .iter()
-            .flatten()
+            .filter_map(std::cell::OnceCell::get)
             .map(|scope| scope.parameters.len())
             .max()
             .ok_or("actual full inherited scope")?;
