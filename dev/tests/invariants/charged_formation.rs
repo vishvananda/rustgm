@@ -247,29 +247,7 @@ fn structural_input_clauses(facts: &mut Declarations, leaf: DefId) -> TestResult
             .into()
         )
     );
-    let local = facts.types.intern(Kind::Reference {
-        mutable: false,
-        referent: ty,
-        region: crate::types::RegionId::bound(0, 0)?,
-    })?;
-    let parameters = facts.types.intern_list(&[local])?;
-    let callable = facts.types.intern(Kind::Function {
-        parameters,
-        result: byte,
-        bound_regions: 1,
-        unsafe_: false,
-        convention: crate::types::callable::Convention::RUST,
-    })?;
-    let values = formation_requirements_counted(
-        facts,
-        callable,
-        &mut FormationRequirements::default(),
-        &|_, _| Ok(()),
-    )?;
-    assert!(
-        values.is_empty(),
-        "callable-local lifetime cannot become a caller assumption"
-    );
+    callable_regions_stay_local(facts, ty, byte)?;
     assert_eq!(
         size_of::<FormationRequirements>(),
         size_of::<Requirements>()
@@ -392,4 +370,31 @@ fn fresh_index_retries(
         "failed partial index became cached absence"
     );
     Ok((failed_index_work, index_work.get()))
+}
+
+fn callable_regions_stay_local(facts: &mut Declarations, ty: TypeId, byte: TypeId) -> TestResult {
+    let local = facts.types.intern(Kind::Reference {
+        mutable: false,
+        referent: ty,
+        region: crate::types::RegionId::bound(0, 0)?,
+    })?;
+    let parameters = facts.types.intern_list(&[local])?;
+    let callable = facts.types.intern(Kind::Function {
+        parameters,
+        result: byte,
+        bound_regions: 1,
+        unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
+    })?;
+    let values = formation_requirements_counted(
+        facts,
+        callable,
+        &mut FormationRequirements::default(),
+        &|_, _| Ok(()),
+    )?;
+    assert!(
+        values.is_empty(),
+        "callable-local lifetime cannot become a caller assumption"
+    );
+    Ok(())
 }
