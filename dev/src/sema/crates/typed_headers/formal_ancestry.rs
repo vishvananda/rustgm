@@ -12,6 +12,12 @@ use crate::{
     types::{ItemId, Store, parameters::ParameterId},
 };
 
+/// Values already checked by the SAME actual scope/slot producer.
+pub(super) struct Formal {
+    pub binding: crate::resolve::model::DefId,
+    pub argument: crate::types::arguments::Argument,
+    pub parameter: ParameterId,
+}
 pub(super) struct Formals {
     pub owners: Vec<ItemId>,
     pub parameters: Vec<ParameterId>,
@@ -44,7 +50,7 @@ pub(super) fn collect(
         let definition = port.definition(scope.owner, work)?;
         result.owners.push(ItemId(definition.0));
         visit(&mut port, store, scope, definition, work, |parameter| {
-            result.parameters.push(parameter);
+            result.parameters.push(parameter.parameter);
         })?;
     }
     Ok(result)
@@ -99,7 +105,7 @@ pub(super) fn visit(
     scope: &s::ParameterScope,
     definition: crate::resolve::model::DefId,
     work: &mut ReservationWork,
-    mut receive: impl FnMut(ParameterId),
+    mut receive: impl FnMut(Formal),
 ) -> Result<(), Error> {
     let rows = port.rows();
     for (offset, slot) in scope
@@ -144,7 +150,11 @@ pub(super) fn visit(
                 "private callable formal changed its canonical owner or argument position",
             ));
         }
-        receive(parameter);
+        receive(Formal {
+            binding,
+            argument,
+            parameter,
+        });
     }
     Ok(())
 }

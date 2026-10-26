@@ -1,6 +1,6 @@
 //! Stage real source headers without installing roles, declarations or originals.
 mod commit_ports;
-mod contract_ports;
+pub(super) mod contract_ports;
 mod definition_cells;
 pub(super) mod environments;
 mod formal_headers;

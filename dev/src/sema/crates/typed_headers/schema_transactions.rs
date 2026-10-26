@@ -61,6 +61,21 @@ impl OwnerTransaction {
     }
 }
 
+pub(super) fn self_type(
+    owners: &Option<Box<OwnerTransaction>>,
+    index: u32,
+) -> Result<crate::types::TypeId, Error> {
+    let row = owners
+        .as_deref()
+        .and_then(|owners| owners.traits.get(index as usize));
+    match row {
+        Some(Cell::Prepared(row)) => Ok(row.schema.self_type),
+        _ => Err(error(
+            "selected trait declaration requires its actual prepared schema",
+        )),
+    }
+}
+
 pub(super) fn prepare(
     owners: &mut Option<Box<OwnerTransaction>>,
     recipes: &mut Option<Box<State>>,

@@ -47,7 +47,15 @@ pub(super) fn prepare(
         let self_type = graph.ty(header.self_type)?;
         self_bounds.push((
             scope.definition,
-            implicit_self(store, scope, header, self_type, budget)?,
+            implicit_self(
+                store,
+                scope.definition,
+                &scope.parameters,
+                scope.inputs.all(),
+                header,
+                self_type,
+                budget,
+            )?,
         ));
         let bounds = header
             .region_bounds
@@ -109,12 +117,14 @@ pub(super) fn prepare(
     Ok((contracts, self_bounds))
 }
 
-fn implicit_self(
+pub(in crate::sema::crates::typed_headers) fn implicit_self(
     store: &Store,
-    scope: &Scope,
+    definition: DefId,
+    parameters: &[crate::sema::generics::Parameter],
+    inputs: &[crate::sema::declaration_inputs::Input],
     raw: &super::s::TraitHeader,
     self_type: crate::types::TypeId,
-    budget: &mut Headers,
+    budget: &mut impl super::super::recipe_cursor::Budget,
 ) -> Result<Predicate, Error> {
     budget.charge(1)?;
     if raw.declared_inputs <= raw.canonical_inputs {
@@ -122,13 +132,9 @@ fn implicit_self(
             "source trait omitted its actual declared implicit Self input",
         ));
     }
-    let input = scope
-        .inputs
-        .all()
-        .get(raw.canonical_inputs as usize)
-        .ok_or_else(|| {
-            error("source implicit Self input is outside its full declaration assumptions")
-        })?;
+    let input = inputs.get(raw.canonical_inputs as usize).ok_or_else(|| {
+        error("source implicit Self input is outside its full declaration assumptions")
+    })?;
     let Clause::Predicate(predicate) = input.value else {
         return Err(error(
             "source implicit Self input changed its actual clause kind",
@@ -147,8 +153,8 @@ fn implicit_self(
         .ok_or_else(|| error("source implicit Self input lost its actual formal arguments"))?;
     budget.charge(arguments.len())?;
     if predicate.ty != self_type
-        || application.item != ItemId(scope.definition.0)
-        || !arguments.eq(scope.parameters.iter().map(|parameter| parameter.argument))
+        || application.item != ItemId(definition.0)
+        || !arguments.eq(parameters.iter().map(|parameter| parameter.argument))
     {
         return Err(error(
             "source implicit Self input changed its exact trait/formal application",

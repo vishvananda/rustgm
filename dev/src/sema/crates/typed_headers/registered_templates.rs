@@ -303,6 +303,44 @@ impl Session {
 
 /// The consumer lends its one real table exclusively; buffer handles move and
 /// are restored on every outcome. No second registration or table clone occurs.
+pub(super) use assumption_environments::Declaration;
+pub(super) fn declarations<'a>(
+    recipes: &mut Option<Box<State>>,
+    facts: &mut super::super::Declarations,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+    mut view: impl FnMut(&mut ReservationWork) -> Result<RecipeView<'a>, Error>,
+) -> Result<Vec<Declaration>, Error> {
+    let first = view(work)?;
+    if recipes.is_none() {
+        *recipes = Some(Box::new(State::new(&first, &mut facts.types, work)?));
+    }
+    let state = recipes
+        .as_mut()
+        .ok_or_else(|| error("declaration lost its persistent recipe state"))?;
+    state.require_mapping(&first, &facts.types, true, work)?;
+    if state.callables.is_none() {
+        state.callables = Some(Box::new(Prepared::new(&first, work)?));
+    }
+    let mut prepared = state
+        .callables
+        .take()
+        .ok_or_else(|| error("declaration lost its callable scope index"))?;
+    let result =
+        assumption_environments::declarations(first, state, facts, &mut prepared, owner, work);
+    state.callables = Some(prepared);
+    result
+}
+pub(super) fn mark_declarations(
+    recipes: &mut Option<Box<State>>,
+    rows: &[Declaration],
+) -> Result<(), Error> {
+    let prepared = recipes
+        .as_mut()
+        .and_then(|state| state.callables.as_mut())
+        .ok_or_else(|| error("installed declaration lost its actual prepared index"))?;
+    assumption_environments::mark_installed(prepared, rows)
+}
 pub(super) fn prepare<'a>(
     recipes: &mut Option<Box<State>>,
     store: &mut Store,
