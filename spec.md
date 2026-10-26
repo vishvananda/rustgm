@@ -261,6 +261,18 @@ reification, imported origins and assertion/panic construction remain independen
 contracts; the [runtime checkpoint](docs/source-abort-runtime-checkpoint.md)
 records the genuine owned-scope and native opponents.
 
+Source Transmute consumes an authenticated full call and the existing pre-monomorphization
+size relation. Runtime lowering moves through owned ABI storage without dropping
+the source; destination destruction remains ordinary. CTFE shares the existing
+byte codecs and paid reference continuation, preserving pending duties and
+original allocation provenance. Function-pointer formation preserves the genuine
+canonical target and destination pointer type; it does not require identical
+signatures or grant const invocation. The actual runtime call uses the destination
+ABI with normal unsafe and ownership checks. Do not add a parallel origin graph,
+signature-recovery cache or synthetic trampoline. The
+[formatter checkpoint](docs/formatter-pointer-erasure-checkpoint.md) records real
+const formation, borrowed-owner runtime calls and the combined integration.
+
 Share structural layout readiness and field instantiation across constant
 storage and source intrinsic consumers. A layout answer supplies physical data,
 not trait, source-call or memory-access permission. Authenticate the reached

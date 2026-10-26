@@ -37,8 +37,11 @@ inputs are verified. The newer
 [unnamed-constant checkpoint](unnamed-free-constants.md) reaches
 `mem/maybe_uninit.rs:1644`, with58 unchanged files opened. The
 [defaultness checkpoint](defaultness-checkpoint.md) advances to
-`ptr/metadata.rs:85`, with65 unchanged files opened. LIB-031 trait aliases is
-the current loading blocker; LIB-028 specialization execution remains required.
+`ptr/metadata.rs:85`, with65 unchanged files opened. The
+[formatter integration](formatter-pointer-erasure-checkpoint.md#combined-integration-and-core-frontier)
+now passes that alias syntax and reaches `ptr/metadata.rs:170`, the foreign
+`type VTable;` declaration. LIB-032 is the current loading blocker; complete
+LIB-031 alias consumers and LIB-028 specialization execution remain required.
 Earlier stops remain retained history.
 
 Current lanes after the [source-contract integration](library-contracts-integration-checkpoint.md):

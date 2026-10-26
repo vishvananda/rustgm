@@ -124,3 +124,49 @@ Own-worktree evidence:
   `93a35320283ebb9d328e54a2128b0271dec85bbd6de0964215a089364c49f40b`.
 - The precise retention proof is `candidate-v2/plan.json`; no broader source
   equivalence or earlier failed runtime result is inferred.
+
+## Combined integration and core frontier
+
+Integrated source `4a03cfb5` combines this work with main's Pointee declarations,
+alias family inputs and ordinary bootstrap diagnostic repair. Twenty focused
+controls pass in a221.25-second standard fastcheck. Five additional controls pass
+in the next batch; its sixth exposes a stale Catalog704 expectation, corrected
+to the already measured776 bytes and independently rerun successfully. The two
+stale size assertions changed no compiler behavior. Strict private checks,
+formatting and global architecture pass. A separate154.46-second batch passes
+production/CLI Clippy, all217 Python harness controls, upstream checks and the
+unoptimized CLI build. Fresh transmute and formatter source/LowIR are exactly
+equal to their previously native-qualified bytes; native execution is retained.
+
+The preceding full qualification run40363637715 passed all13 integration binaries
+and1772 library tests. Its sole library failure was the other stale Catalog704
+assertion, also corrected here. Later native/debug/independent steps were skipped
+after that failure; this is not a full qualification pass.
+
+The unchanged-core observer now uses CLI SHA
+`af93787c52f73812dc2778bfbf28a46d43b1372c68b4e8d665cb93c9742d0440`.
+It verifies all722 pinned inputs before and after execution, with the same target,
+edition and runtime profile and no source edits. It passes the former Thin alias
+syntax failure and stops at `library/core/src/ptr/metadata.rs:170`, byte6689:
+
+```text
+ERROR: file 64: 6689: item is not permitted in this owner
+```
+
+The construct is `type VTable;` inside `unsafe extern "C"`. The observer takes
+1.87seconds, opens65 original files and records no infrastructure failure.
+This is LIB-032, genuine foreign opaque types, owned by PA30 with PA22 sizing
+and PA31 source-feature integration. It is not a core artifact or completed
+semantic check. Complete alias, Pointee, imported-body and panic consumers remain.
+
+`scripts/observe_original_core.py` can now reuse the shared pinned tree under the
+ordinary resource/storage guard. Every manifest file must match, even if the
+compiler never opens it. Explicit manifests retain changed compiler/profile
+identities; old expectations are not silently replaced. No repeated source
+download or per-worker source copy is needed.
+
+Combined evidence is in `obj/parallel/source-transmute-formatter-integration-v1/`.
+The CLI/observer receipt SHA is
+`df5b87e1e1964d681a14031d200c9863c9ac5064cbd018c849087fe850620925`;
+the original-core result SHA is
+`a58af9064a56745ca454ce2978a22382499bb69b8c61b11bfcef211ed606dbe8`.
