@@ -1,6 +1,7 @@
 //! Imported contracts are remapped once; const execution still requires checked bodies.
 pub(crate) mod authored_export;
 mod export;
+#[path = "crates/checked_ownership.rs"]
 mod imported_owners;
 mod imported_records;
 mod imported_storage;
