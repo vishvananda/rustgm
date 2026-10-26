@@ -23,7 +23,9 @@ use crate::support::crates::{
     Namespace as WireNamespace, Record, Static,
 };
 use crate::support::hash::HashMap;
-pub(crate) use consumer_inputs::{ConsumerInput, ConsumerRequest, ConsumerReservation};
+pub(crate) use consumer_inputs::{
+    ConsumerInput, ConsumerRequest, ConsumerReservation, HeaderReservation,
+};
 pub(in crate::resolve) use consumer_inputs::{ReservationSeed, reserve_names};
 pub(crate) use original_declarations::Work as ReservationWork;
 use std::sync::Arc;

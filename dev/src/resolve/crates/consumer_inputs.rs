@@ -122,6 +122,68 @@ pub(crate) struct ConsumerReservation {
     definition_extent: usize,
     scope_extent: usize,
 }
+/// Consumed reservation owner, sealed only against its actual resolved Report.
+/// It keeps the SAME catalog and inventory; no semantic readiness is added.
+pub(crate) struct HeaderReservation {
+    pub(super) inventory: Arc<Dependencies>,
+    pub(super) index: u32,
+    catalog: Rc<Catalog>,
+    pub(super) root: ImportedDeclarationId,
+}
+impl HeaderReservation {
+    pub(crate) fn catalog(&self) -> &Rc<Catalog> {
+        &self.catalog
+    }
+    pub(crate) fn inventory(&self) -> &Arc<Dependencies> {
+        &self.inventory
+    }
+    pub(crate) fn index(&self) -> u32 {
+        self.index
+    }
+    pub(crate) fn root(&self) -> ImportedDeclarationId {
+        self.root
+    }
+    pub(crate) fn recipe_view(
+        &self,
+        work: &mut ReservationWork,
+    ) -> Result<super::unpaid_provided::RecipeView<'_>, Error> {
+        work.charge(5)?;
+        let definition = self
+            .catalog
+            .declaration_identity(self.root, DefKind::Module)
+            .map_err(error)?;
+        let (provider, row, edition) = self
+            .catalog
+            .declaration_coordinate(self.root)
+            .map_err(error)?;
+        let descriptor = self
+            .inventory
+            .artifacts()
+            .get(self.index as usize)
+            .and_then(crate::support::crates::Interface::source_descriptor)
+            .ok_or_else(|| error("retained header owner lost its actual descriptor"))?;
+        if provider != descriptor.identity()
+            || edition != descriptor.edition()
+            || descriptor.profile()
+                != crate::support::crates::generics::source::Profile::Source2024Provided
+            || self.catalog.definition_at(provider, row).map_err(error)? != definition
+            || descriptor
+                .rows()
+                .declarations
+                .get(row.0 as usize)
+                .is_none_or(|row| {
+                    row.definition.kind
+                        != crate::support::crates::generics::source::DefinitionKind::Module
+                        || row.definition.parent.is_some()
+                })
+        {
+            return Err(error(
+                "retained header owner changed its actual catalog/root/inventory",
+            ));
+        }
+        Ok(super::unpaid_provided::RecipeView::headers(self))
+    }
+}
 /// Kept on the staged loader's stack while genuine source declarations append.
 /// These are the actual imported ranges and SAME catalog, never semantic readiness.
 pub(in crate::resolve) struct ReservationSeed {
@@ -233,6 +295,21 @@ pub(in crate::resolve) fn reserve_names(
     Ok(Some(seed))
 }
 impl ConsumerReservation {
+    pub(crate) fn into_headers(
+        self,
+        report: &Report,
+        work: &mut ReservationWork,
+    ) -> Result<HeaderReservation, Error> {
+        self.require(report, work)?;
+        work.charge(1)?;
+        work.reserve(size_of::<HeaderReservation>())?;
+        Ok(HeaderReservation {
+            inventory: self.inventory,
+            index: self.index,
+            catalog: self.catalog,
+            root: self.root,
+        })
+    }
     pub(crate) fn recipe_view<'a>(
         &'a self,
         report: &'a Report,

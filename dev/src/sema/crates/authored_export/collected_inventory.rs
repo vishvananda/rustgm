@@ -2,7 +2,7 @@
 use super::{CollectedRows, g, s};
 use crate::{
     resolve::{
-        bindings::consumer_policy::{HeaderDataIdentity, ProviderAdmission},
+        bindings::consumer_policy::{HeaderDataIdentity, HeaderDataOwner, ProviderAdmission},
         crates::ReservationWork,
         expansion::Report,
         package::Error,
@@ -25,6 +25,29 @@ pub(crate) struct CollectedArtifact {
 pub(crate) struct CollectedReceipt {
     inventory: Arc<Dependencies>,
     data: HeaderDataIdentity,
+}
+/// Move-only ownership of an existing collector receipt and its SAME sidecar.
+/// This retains the receipt's authority; no unpaid data can construct this owner.
+pub(crate) struct BoundReceipt {
+    receipt: CollectedReceipt,
+    owner: HeaderDataOwner,
+}
+impl BoundReceipt {
+    pub(crate) fn columns<'a>(
+        &'a self,
+        inventory: &Arc<Dependencies>,
+        index: u32,
+        work: &mut ReservationWork,
+    ) -> Result<&'a s::HeaderAttributeColumns, Error> {
+        work.charge(2)?;
+        if index != 0 || !Arc::ptr_eq(inventory, &self.receipt.inventory) {
+            return Err(Error::unlocated(
+                "retained source completion changed its actual inventory",
+            ));
+        }
+        self.receipt.data.require_owner(&self.owner, work)?;
+        Ok(self.owner.columns())
+    }
 }
 impl CollectedRows {
     pub(crate) fn into_artifact(
@@ -194,6 +217,23 @@ impl CollectedArtifact {
     }
 }
 impl CollectedReceipt {
+    pub(crate) fn bind(
+        self,
+        report: &Report,
+        work: &mut ReservationWork,
+    ) -> Result<BoundReceipt, Error> {
+        self.columns(report, work)?;
+        work.reserve(size_of::<BoundReceipt>())?;
+        let policy = report
+            .package
+            .staged_consumer()
+            .ok_or_else(|| Error::unlocated("source completion lost its actual consumer"))?;
+        let owner = self.data.retain(policy, work)?;
+        Ok(BoundReceipt {
+            receipt: self,
+            owner,
+        })
+    }
     pub(crate) fn columns<'a>(
         &self,
         report: &'a Report,
