@@ -73,5 +73,16 @@
     "binding_sha256": "94aaef2cf5e6a79cb4c431c71f124770b1320c7c6d4e22b4941a7524e4b64ac5",
     "zip_sha256": "d029a15f397f6e22fac631424cf8feeb02b8dcca8693abece6101757ddfa9112",
     "candidate_status": "declared; unrun"
+  },
+  "candidate_observed": {
+    "run": 40271012369,
+    "source": "f0b79b561880f1cb254c2da77b3d510462d3bf99",
+    "native": 4,
+    "editions": [
+      "2021",
+      "2024"
+    ],
+    "statuses": "all0, empty streams",
+    "original_required_library_and_printing_inputs": "unchanged; separate requirements, no parity claim"
   }
 }

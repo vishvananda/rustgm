@@ -1,8 +1,8 @@
 # Specialization graph proposal and verifier checkpoint
 
 The initial concrete proposal below records the reviewed design from
-qualified64c9f507. The later verifier-checkpoint and correction sections describe
-the current unqualified production implementation; the full dispatch draft stays
+qualified64c9f507. The later verifier, correction and member-execution sections describe
+the qualified local function-method slice; the older full dispatch draft stays
 preserved on pa31-specialization-graph-v1. New observations40237725892 supersede
 only incorrect predictions, preserving their source bytes and raw results.
 Unmeasured sizes remain explicit; logical budgets use actual types/capacities.
@@ -614,3 +614,54 @@ actual P/Q/X values through a private generic call, and the local Clone trait in
 uses actual user methods plus real Drop/HITS and lazy failure behavior. These
 are additional selection evidence, not parity for standard Clone or size_of.
 Their candidate native results are still pending; no fake library factory is added.
+
+
+## Qualified local member execution and explicit remaining scope
+
+Run 40271012369 qualifies compiler `f0b79b56` with the existing 2021/2024 typed
+edition contexts: both affected frontend groups pass, as do strict production,
+private and frontend Clippy, metadata, formatting and the independent architecture
+audit. The helper took 137.64 seconds (mandatory CLI build separately bounded at
+100 seconds); the eleven missing/additional native programs and four negative
+CLI observations completed in 0.833 seconds. All 2,719 compiler fingerprints and
+40 frozen fixture/data hashes match the exact source snapshot. Harness/upstream
+and audit-cache checks also pass. No previous successful native case was repeated.
+The resulting CLI SHA is
+`c355fb70517929fbaa9761101d514c234a9529fca51c81bd5a79172bf883f70c`.
+The primary receipt SHA is
+`5a75952b4eb4315be8b646b22b5bc7fbb396a5c9e8faaccbeb675187beaacc88`,
+the audit receipt is
+`11dd7c8b0eecbc1eaeefd59e13809545fa86d38d0c97a85a28d8bda7ba56040b`,
+and the selected native receipt is
+`e688bcdb1a73a00e543269cc9131ed7cde754f8a98f784d2a103226f28f12869`.
+
+Together with the five retained 2024 native passes from 40268541874, sixteen
+programs execute successfully: both editions of the two chains, marker selection,
+scalar static-parent inheritance, final inherited RPIT, the reduced own-child
+observer and the two isolated selection inputs. The four negative sources reject
+in both editions; the earlier combined-RPIT 2024 result is retained with the
+explicit manual category correction described above. All seven earlier private
+consumer/verifier groups remain supported by their exact unchanged graph,
+dispatch, projection, inference, body and lowering source. Later changes add only
+the typed Config setter, its CLI caller and the affected frontend tests.
+
+The selected bodies retain actual defining impl/member/arguments and use the
+normal original/instance contract path. Both RPIT consumers retain genuine
+projection lifetime debt. No artificial scalar caller lifetime bound is added.
+The two actual unsupported standard-library inputs remain required and open:
+bootstrap Clone implementation and ordinary std::mem::size_of are not repaired
+by the local user-trait/value reductions. Printing is also a separate requirement.
+Full default-impl semantics, associated value/type specialization, imported
+marker/defaultness/graph transport and public Provided execution remain closed.
+This checkpoint does not activate an assignment or establish an upstream artifact.
+
+After the paid readiness check, the actual retained forest costs are 444 work
+steps/13,736 logical bytes for each three-vertex chain, 299/7,432 for the marker,
+and 157/5,136 for Full structural-static. Chain dispatch costs 45/48 steps and
+264 logical bytes, and exhausted work advances 10,000,467 to 10,000,468 on the
+same owner (13,896 logical bytes). Hot enclosing sizes remain Syntax 312,
+Unit 688, Report 3,040, Node 36, Item 64, Scope 32, Definition 36 and NodeFacts 80;
+Graph is 56, Registry 240 and existing cold Contracts 448. Query 912, boxed
+Normalization 520, Frame 1,312 and Node 160 are the actual selected result-path
+sizes reported earlier. Capacities and logical charges are not allocator counts
+or peak-memory observations. The edition setter introduces no field.

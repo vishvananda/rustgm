@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "state": "declared before candidate execution",
+  "state": "qualified focused sourceoption; full PA34 remains planned",
   "scope": "focused PA34 CLI option slice; no assignment activation or Rust2021 metadata publication",
   "sources": {
     "pa34/tests/spec/driver-edition/plain-provider.rs": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297",
@@ -26,5 +26,12 @@
   "profile_source_binding": {
     "path": "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
     "sha256": "554fbcf9e6b7bd55f2ea8deec5eecab53b2b802806664d0eb0419ecbe47d2297"
+  },
+  "candidate_observed": {
+    "run": 40271012369,
+    "source": "f0b79b561880f1cb254c2da77b3d510462d3bf99",
+    "frontend_groups": 2,
+    "actual_source_option_profile_controls": "all passed",
+    "cli_sha256": "c355fb70517929fbaa9761101d514c234a9529fca51c81bd5a79172bf883f70c"
   }
 }

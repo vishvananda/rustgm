@@ -68,11 +68,14 @@ syntax-aware file/architecture audit are required.
 Extend the existing `dev/rustgm --emit-lowir` view and explicit crate-build interfaces.
 Earlier views remain available. The focused driver candidate accepts explicit
 `--edition=2021` and `--edition=2024` through the existing typed source edition;
-2024 remains the default. Selecting an edition preserves already supplied cfg
+2024 remains the default. Hosted run 40271012369 qualifies its two focused
+frontend groups and actual paired specialization native consumers. Selecting an
+edition preserves already supplied cfg
 and runtime-check inputs. Source artifact profiles still require their admitted
 defining edition: accepting the option grants no Rust2021 metadata publication
 or imported specialization permission. Both token contexts and those independent
-profile denials need focused qualification before this candidate is claimed.
+profile denials passed the focused check; general crate-build/profile and
+remaining edition behavior still require this assignment's full acceptance.
 Freeze deterministic ordering, diagnostics,
 source/configuration identities and any new build-summary text contract before
 activation. Whole-library acceptance includes actual linked execution through

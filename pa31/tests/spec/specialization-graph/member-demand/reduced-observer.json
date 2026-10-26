@@ -60,5 +60,16 @@
     "infra": 0,
     "disagreements": 0,
     "candidate_support": "pending; original printing observer remains separately required"
+  },
+  "candidate_observed": {
+    "run": 40271012369,
+    "source": "f0b79b561880f1cb254c2da77b3d510462d3bf99",
+    "native": 2,
+    "editions": [
+      "2021",
+      "2024"
+    ],
+    "statuses": "all0, empty streams",
+    "original_required_library_and_printing_inputs": "unchanged; separate requirements, no parity claim"
   }
 }
