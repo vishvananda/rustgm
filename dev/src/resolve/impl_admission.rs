@@ -64,16 +64,35 @@ impl Requests {
         }
         Ok(())
     }
-    pub(crate) fn capture(
+    pub(crate) fn permits_comparison(
         &self,
         report: &Report,
         session: &mut MacroAllowanceSession<'_>,
         definition: DefId,
         mut charge: impl FnMut(usize, usize) -> Result<(), &'static str>,
-    ) -> Result<ImplPolicy, Error> {
+    ) -> Result<bool, Error> {
         self.validate(report)?;
-        let (source, syntax, span) = implementation(report, definition)?;
-        let gate = if self.minimal || self.full {
+        if self.minimal || self.full {
+            return Ok(true);
+        }
+        // No source token can authorize an imported/factory owner. This is a
+        // request check only; absent authority keeps the existing overlap error.
+        let Ok((source, _, span)) = implementation(report, definition) else {
+            return Ok(false);
+        };
+        Ok(self
+            .admission(report, session, source, span, &mut charge)?
+            .is_some())
+    }
+    fn admission(
+        &self,
+        report: &Report,
+        session: &mut MacroAllowanceSession<'_>,
+        source: NodeKey,
+        span: Span,
+        mut charge: impl FnMut(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Option<Admission>, Error> {
+        Ok(if self.minimal || self.full {
             Some(Admission::CrateRequest)
         } else {
             let mut found = None;
@@ -100,7 +119,18 @@ impl Requests {
             } else {
                 None
             }
-        };
+        })
+    }
+    pub(crate) fn capture(
+        &self,
+        report: &Report,
+        session: &mut MacroAllowanceSession<'_>,
+        definition: DefId,
+        mut charge: impl FnMut(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<ImplPolicy, Error> {
+        self.validate(report)?;
+        let (source, syntax, span) = implementation(report, definition)?;
+        let gate = self.admission(report, session, source, span, &mut charge)?;
         charge(1, size_of::<ImplPolicy>())
             .map_err(|message| Error::at(source.file, span.start, message))?;
         Ok(ImplPolicy {

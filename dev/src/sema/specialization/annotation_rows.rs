@@ -15,13 +15,12 @@ use crate::{
     },
 };
 pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    if report.package.units.iter().any(|unit| {
-        unit.configured
-            .ast
-            .defaultness
-            .as_ref()
-            .is_some_and(|rows| rows.len() != 0)
-    }) {
+    if report
+        .package
+        .units
+        .iter()
+        .any(|unit| unit.configured.ast.has_defaultness())
+    {
         store::owner(facts)?;
     }
     Ok(())

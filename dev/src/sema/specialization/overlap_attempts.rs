@@ -33,6 +33,30 @@ pub(super) fn active_graph(facts: &mut Declarations) -> Result<&mut Graph, &'sta
         .and_then(Implementations::specialization_graph_mut)
         .ok_or("specialization graph disappeared")
 }
+pub(in crate::sema) fn requested(
+    report: &Report,
+    owners: [DefId; 2],
+    steps: &mut usize,
+) -> Result<bool, String> {
+    let requests = crate::resolve::specialization_authority::Requests::new(report)
+        .map_err(|error| error.to_string())?;
+    let mut session = report.macro_allowances();
+    for owner in owners {
+        if requests
+            .permits_comparison(report, &mut session, owner, |work, _| {
+                *steps = steps.saturating_add(work);
+                if *steps > 1_000_000 {
+                    return Err("trait implementation overlap work budget exceeded");
+                }
+                Ok(())
+            })
+            .map_err(|error| error.to_string())?
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
 pub(in crate::sema) fn remembered(
     facts: &mut Declarations,
     report: &Report,
@@ -215,7 +239,17 @@ pub(in crate::sema) fn drain(facts: &mut Declarations, report: &Report) -> Resul
         .values()
         .any(|value| matches!(value, Comparison::Pending { .. } | Comparison::Running))
     {
-        return Err("specialization implication still awaits a declaration dependency".into());
+        let pending = graph
+            .building()?
+            .attempts
+            .values()
+            .find_map(|value| match value {
+                Comparison::Pending { dependency, .. } => Some(*dependency),
+                _ => None,
+            });
+        return Err(format!(
+            "specialization implication still awaits a declaration dependency: {pending:?}"
+        ));
     }
     Ok(())
 }

@@ -2,6 +2,7 @@
 mod identity;
 mod member_contracts;
 mod registry_keys;
+#[path = "implementations/coherence_owner.rs"]
 mod specialization_access;
 pub(in crate::sema) use identity::Identity;
 pub(in crate::sema) use registry_keys::EntryKey;

@@ -31,9 +31,6 @@ impl Budget {
         self.0.set(work);
         check(work)
     }
-    pub(super) fn same_owner(&self, other: &Self) -> bool {
-        Rc::ptr_eq(&self.0, &other.0)
-    }
     #[cfg(test)]
     pub(super) fn usage(&self) -> (usize, usize) {
         let work = self.0.get();

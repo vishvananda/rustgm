@@ -110,8 +110,16 @@ pub(super) fn defining(
     let pairs = schema.bounds.clone();
     for (longer, shorter) in pairs {
         let (Argument::Lifetime(longer), Argument::Lifetime(shorter)) = (
-            fold.apply_argument(&mut facts.types, Argument::Lifetime(longer))?,
-            fold.apply_argument(&mut facts.types, Argument::Lifetime(shorter))?,
+            fold.apply_argument_charged(
+                &mut facts.types,
+                Argument::Lifetime(longer),
+                &|steps, bytes| budget.charge(steps, bytes),
+            )?,
+            fold.apply_argument_charged(
+                &mut facts.types,
+                Argument::Lifetime(shorter),
+                &|steps, bytes| budget.charge(steps, bytes),
+            )?,
         ) else {
             return Err("defining region requirement changed kind");
         };

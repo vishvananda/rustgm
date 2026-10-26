@@ -299,3 +299,58 @@ and actual mode/marker/finality/storage controls. Wider quantified implication,
 projection-constrained Min parent arguments, associated-value/default-impl
 specialization and imported graph/marker transport remain explicit required
 followups rather than inferred absence or discarded goals.
+
+## First verifier component (unqualified source checkpoint)
+
+The successor `pa31-specialization-verifier-v1` keeps the full dispatch draft on
+`pa31-specialization-graph-v1`. The component connects actual coarse-head pair
+checking to the one paid comparison memo, a closed immediate-parent forest,
+crate-Min admission, conformance ordering and member finality. Omitted inherited
+members are final at their immediate boundary. No successful analyzed facts or
+artifact can escape this component: a completed graph returns the explicit
+`specialization graph execution is not implemented` diagnostic. This is a
+verifier checkpoint, not implementation of executable specialization.
+
+One optional Graph belongs to the registry. Its shared Rc budget retains failed
+work across pending queries, closure and failure. Local marker knowledge belongs
+to the existing optional semantic contracts owner; genuine publication still
+rejects present untransported markers, and imported missing metadata is Unknown.
+No syntax, item, scope, definition, Store, Requirements or Proof field is added.
+Actual enclosing sizes, graph/marker capacities and logical work/byte charges are
+printed by the selected controls and remain unmeasured until qualification.
+Logical retention accounting is not a measured allocator count.
+
+The counted nominal producer shares the existing canonical traversal. A failed
+query rolls back only its prepaid newly inserted visitation keys, preserving
+previously completed dependencies and cumulative failed work. Shared canonical
+clause caches may retain fully computed results; incomplete roots cannot become
+cached absence. The ordinary uncharged path retains its existing behavior.
+
+Minimal-specialization repetition uses one demanded canonical DAG with capped
+path multiplicities, shared with Sole's parts enumerator. Collection is
+O(V+E+R+P) logical work under the existing hashing policy, with V distinguished
+by demanded node and binder depth. Duplicate edges and roots count; a shared
+node does not cause a parameter-by-node result table or a traversal per parameter.
+
+Focused hosted plan, six exact private groups only:
+
+- `sema::specialization::component_tests::marker_authority_retains_actual_source_and_rejects_invalid_or_forwarded_requests`
+- `sema::specialization::component_tests::marker_publication_is_closed_and_imported_contracts_remain_unknown`
+- `sema::nominals::requirements::counted_tests::counted_formation_replays_real_clauses_and_rolls_back_only_failed_visitation`
+- `types::parameters::uses::multiplicities::tests::specialization_counts_shared_diamonds_many_parameters_and_failed_work`
+- `sema::declarations::specialization_tests::specialization_verifier_checks_immediate_finality_min_authority_and_closed_execution`
+- `types::parameters::uses::sole::tests::default_occurrences_share_all_growing_prefixes`
+
+Production and private strict Clippy run sequentially and both retain findings;
+architecture runs alongside. A static failure prevents build/test execution.
+The total hosted development gate stays below 300 seconds. No independent oracle
+set, broad private/native suite or source-core observer is repeated here.
+
+Executable continuation remains required: one checked SelectedMethod must feed
+method dispatch and both RPIT normalization consumers. Only the actual requested
+inherited member may demand its defining header and translated substitutions;
+ordinary own-child dispatch must not collect unused ancestor debts. The retained
+member-demand opponent confirms the own child method avoids the unused parent's
+static bound. Full obligations, regions, schemas, callable/body proof, pending
+state and source authority must be retained before execution opens. No Provided
+or graph wire transport is granted by this component.

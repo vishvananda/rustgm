@@ -208,5 +208,5 @@ fn push<T>(
 }
 
 #[cfg(test)]
-#[path = "../../../../tests/invariants/specialization_occurrences.rs"]
+#[path = "../../../../tests/invariants/capped_paths.rs"]
 mod tests;

@@ -165,6 +165,12 @@ impl Declarations {
     }
 }
 impl<L> Syntax<L> {
+    /// Parsed default sites, independent of later owner activation.
+    pub(crate) fn has_defaultness(&self) -> bool {
+        self.defaultness
+            .as_ref()
+            .is_some_and(|entries| !entries.entries.is_empty())
+    }
     #[must_use]
     pub fn defaultness(&self, item: u32) -> Option<&Declaration> {
         let entries = &self.defaultness.as_ref()?.entries;

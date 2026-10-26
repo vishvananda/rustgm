@@ -82,89 +82,143 @@ pub(super) fn parts<const SET: bool, V: Summary>(
             )?;
         }
         Node::Type(ty) => {
-            if !store
-                .contains_parameters(ty)
-                .ok_or("invalid default parameter type")?
-                && (SET
-                    || store
-                        .escaping_binders(ty)
-                        .ok_or("invalid occurrence binder summary")?
-                        <= depth)
-            {
-                return Ok(V::empty());
-            }
-            let mut dependency = |node, inside| {
-                *edges += 1;
-                child(node, inside)
-            };
-            value = match store.kind(ty).ok_or("missing default parameter type")? {
-                Kind::Parameter(id) => parameter(id)?,
-                Kind::ArrayTerm { element, length } => dependency(Node::Type(element), depth)?
-                    .merge(constant(store, length, &mut parameter)?),
-                Kind::Array { element, .. }
-                | Kind::Slice(element)
-                | Kind::Pointer {
-                    pointee: element, ..
-                } => dependency(Node::Type(element), depth)?,
-                Kind::Reference {
-                    region: value,
-                    referent,
-                    ..
-                } => region(value, depth)?.merge(dependency(Node::Type(referent), depth)?),
-                Kind::Closure {
-                    arguments,
-                    signature,
-                    environment,
-                    ..
-                } => dependency(Node::Arguments(arguments), depth)?
-                    .merge(dependency(Node::Type(signature), depth)?)
-                    .merge(dependency(Node::Type(environment), depth)?),
-                Kind::Tuple(list) => dependency(Node::Types(list), depth)?,
-                Kind::Function {
-                    parameters, result, ..
-                } => {
-                    let nested = depth
-                        .checked_add(1)
-                        .ok_or("occurrence binder depth overflow")?;
-                    dependency(Node::Types(parameters), nested)?
-                        .merge(dependency(Node::Type(result), nested)?)
-                }
-                Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
-                    dependency(Node::Arguments(arguments), depth)?
-                }
-                Kind::Dynamic {
-                    arguments,
-                    region: value,
-                    ..
-                } => region(value, depth)?.merge(dependency(
-                    Node::Arguments(arguments),
-                    depth
-                        .checked_add(1)
-                        .ok_or("occurrence binder depth overflow")?,
-                )?),
-                Kind::FunctionItem {
-                    arguments,
-                    signature,
-                    ..
-                } => {
-                    let value = dependency(Node::Arguments(arguments), depth)?;
-                    if SET {
-                        value.merge(dependency(Node::Type(signature), depth)?)
-                    } else {
-                        value
-                    }
-                }
-                Kind::Projection(application) => {
-                    dependency(Node::Type(application.subject), depth)?
-                        .merge(dependency(
-                            Node::Trait(application.trait_application),
-                            depth,
-                        )?)
-                        .merge(dependency(Node::Arguments(application.arguments), depth)?)
-                }
-                Kind::Never | Kind::Primitive(_) => V::empty(),
-            };
+            value = type_parts::<SET, V>(
+                store,
+                ty,
+                depth,
+                edges,
+                &mut parameter,
+                &mut region,
+                &mut child,
+            )?
         }
     }
     Ok(value)
+}
+
+fn edge<V>(
+    edges: &mut usize,
+    child: &mut impl FnMut(Node, u16) -> Result<V, &'static str>,
+    node: Node,
+    depth: u16,
+) -> Result<V, &'static str> {
+    *edges += 1;
+    child(node, depth)
+}
+fn type_parts<const SET: bool, V: Summary>(
+    store: &Store,
+    ty: TypeId,
+    depth: u16,
+    edges: &mut usize,
+    parameter: &mut impl FnMut(ParameterId) -> Result<V, &'static str>,
+    region: &mut impl FnMut(RegionId, u16) -> Result<V, &'static str>,
+    child: &mut impl FnMut(Node, u16) -> Result<V, &'static str>,
+) -> Result<V, &'static str> {
+    if !store
+        .contains_parameters(ty)
+        .ok_or("invalid default parameter type")?
+        && (SET
+            || store
+                .escaping_binders(ty)
+                .ok_or("invalid occurrence binder summary")?
+                <= depth)
+    {
+        return Ok(V::empty());
+    }
+    let kind = store.kind(ty).ok_or("missing default parameter type")?;
+    let value = match kind {
+        Kind::Closure { .. } | Kind::Function { .. } | Kind::FunctionItem { .. } => {
+            callable_parts::<SET, V>(kind, depth, edges, child)?
+        }
+        Kind::Parameter(id) => parameter(id)?,
+        Kind::ArrayTerm { element, length } => edge(edges, child, Node::Type(element), depth)?
+            .merge(constant(store, length, parameter)?),
+        Kind::Array { element, .. }
+        | Kind::Slice(element)
+        | Kind::Pointer {
+            pointee: element, ..
+        } => edge(edges, child, Node::Type(element), depth)?,
+        Kind::Reference {
+            region: value,
+            referent,
+            ..
+        } => region(value, depth)?.merge(edge(edges, child, Node::Type(referent), depth)?),
+        Kind::Tuple(list) => edge(edges, child, Node::Types(list), depth)?,
+        Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
+            edge(edges, child, Node::Arguments(arguments), depth)?
+        }
+        Kind::Dynamic {
+            arguments,
+            region: value,
+            ..
+        } => region(value, depth)?.merge(edge(
+            edges,
+            child,
+            Node::Arguments(arguments),
+            depth
+                .checked_add(1)
+                .ok_or("occurrence binder depth overflow")?,
+        )?),
+        Kind::Projection(application) => {
+            edge(edges, child, Node::Type(application.subject), depth)?
+                .merge(edge(
+                    edges,
+                    child,
+                    Node::Trait(application.trait_application),
+                    depth,
+                )?)
+                .merge(edge(
+                    edges,
+                    child,
+                    Node::Arguments(application.arguments),
+                    depth,
+                )?)
+        }
+        Kind::Never | Kind::Primitive(_) => V::empty(),
+    };
+    Ok(value)
+}
+fn callable_parts<const SET: bool, V: Summary>(
+    kind: Kind,
+    depth: u16,
+    edges: &mut usize,
+    child: &mut impl FnMut(Node, u16) -> Result<V, &'static str>,
+) -> Result<V, &'static str> {
+    Ok(match kind {
+        Kind::Closure {
+            arguments,
+            signature,
+            environment,
+            ..
+        } => edge(edges, child, Node::Arguments(arguments), depth)?
+            .merge(edge(edges, child, Node::Type(signature), depth)?)
+            .merge(edge(edges, child, Node::Type(environment), depth)?),
+        Kind::Function {
+            parameters, result, ..
+        } => {
+            let nested = depth
+                .checked_add(1)
+                .ok_or("occurrence binder depth overflow")?;
+            edge(edges, child, Node::Types(parameters), nested)?.merge(edge(
+                edges,
+                child,
+                Node::Type(result),
+                nested,
+            )?)
+        }
+        Kind::FunctionItem {
+            arguments,
+            signature,
+            ..
+        } => {
+            let value = edge(edges, child, Node::Arguments(arguments), depth)?;
+            if SET {
+                value.merge(edge(edges, child, Node::Type(signature), depth)?)
+            } else {
+                value
+            }
+        }
+
+        _ => return Err("canonical callable occurrence kind changed"),
+    })
 }

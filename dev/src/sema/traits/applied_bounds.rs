@@ -63,86 +63,8 @@ impl Contracts {
         if self.steps > 1_000_000 {
             return Err("trait contract work budget exceeded");
         }
-        if CHARGED {
-            let mut growth = Growth::vector::<(crate::types::parameters::ParameterId, Argument)>(
-                0,
-                0,
-                header.parameters.len().saturating_add(1),
-            );
-            growth.include(Growth::vector::<crate::types::RegionId>(
-                0,
-                0,
-                header.parameters.len(),
-            ));
-            growth.include(Growth::vector::<Clause>(
-                0,
-                0,
-                header
-                    .inputs
-                    .view()
-                    .len()
-                    .saturating_add(header.parameters.len()),
-            ));
-            growth.include(Growth::vector::<Clause>(0, 0, header.inputs.view().len()));
-            growth.include(Growth::vector::<Clause>(0, 0, header.results.len()));
-            growth.include(Growth::vector::<crate::types::TypeId>(
-                0,
-                0,
-                header.parameters.len(),
-            ));
-            growth.include(Growth::vector::<crate::types::outlives::Pair>(
-                0,
-                0,
-                header.regions.len(),
-            ));
-            charge(
-                1 + arguments.len()
-                    + header.inputs.view().len()
-                    + header.results.len()
-                    + growth.work,
-                growth.bytes,
-            )?;
-        }
-        let self_parameter = parameter_id(store, Argument::Type(header.self_type))?;
-        let mut mapping = vec![(self_parameter, Argument::Type(predicate.ty))];
-        let mut regions = Vec::new();
-        let mut result = Requirements {
-            implied: Vec::new(),
-            results: Vec::new(),
-            required: Vec::new(),
-            types: Vec::new(),
-            regions: Vec::new(),
-        };
-        for (parameter, argument) in header.parameters.iter().zip(arguments) {
-            if let (Argument::Lifetime(_), Argument::Lifetime(region)) =
-                (parameter.argument, argument)
-            {
-                regions.push(region);
-                continue;
-            }
-            let id = parameter_id(store, parameter.argument)?;
-            mapping.push((id, argument));
-            if let Argument::Type(ty) = argument {
-                result.types.push(ty);
-                if matches!(
-                    store.parameter(id).map(|p| p.kind),
-                    Some(crate::types::parameters::ParameterKind::Type { sized: true })
-                ) {
-                    result.required.push(
-                        Predicate {
-                            ty,
-                            bound: Bound::Sized,
-                        }
-                        .into(),
-                    );
-                }
-            }
-        }
-        let mut replace = if CHARGED {
-            substitute::Bound::parameters_captured_charged(store, &mapping, regions, charge)?
-        } else {
-            substitute::Bound::parameters_captured(store, &mapping, regions)?
-        };
+        let (mut replace, mut result) =
+            header.bind_application::<CHARGED>(store, predicate.ty, arguments, charge)?;
         let rows = header.instantiate_observed::<CHARGED>(
             store,
             effect,
@@ -178,6 +100,102 @@ impl Contracts {
         let result = Arc::new(result);
         self.applications.insert(predicate, Arc::clone(&result));
         Ok(result)
+    }
+}
+
+impl Header {
+    fn prepay_application(
+        &self,
+        arguments: usize,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        let mut growth = Growth::vector::<(crate::types::parameters::ParameterId, Argument)>(
+            0,
+            0,
+            self.parameters.len().saturating_add(1),
+        );
+        growth.include(Growth::vector::<crate::types::RegionId>(
+            0,
+            0,
+            self.parameters.len(),
+        ));
+        growth.include(Growth::vector::<Clause>(
+            0,
+            0,
+            self.inputs
+                .view()
+                .len()
+                .saturating_add(self.parameters.len()),
+        ));
+        growth.include(Growth::vector::<Clause>(0, 0, self.inputs.view().len()));
+        growth.include(Growth::vector::<Clause>(0, 0, self.results.len()));
+        growth.include(Growth::vector::<crate::types::TypeId>(
+            0,
+            0,
+            self.parameters.len(),
+        ));
+        growth.include(Growth::vector::<crate::types::outlives::Pair>(
+            0,
+            0,
+            self.regions.len(),
+        ));
+        charge(
+            1 + arguments + self.inputs.view().len() + self.results.len() + growth.work,
+            growth.bytes,
+        )?;
+        Ok(())
+    }
+    fn bind_application<const CHARGED: bool>(
+        &self,
+        store: &Store,
+        subject: crate::types::TypeId,
+        arguments: crate::types::arguments::Arguments<'_>,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(substitute::Bound, Requirements), &'static str> {
+        if CHARGED {
+            self.prepay_application(arguments.len(), charge)?;
+        }
+        let self_parameter = parameter_id(store, Argument::Type(self.self_type))?;
+        let mut mapping = vec![(self_parameter, Argument::Type(subject))];
+        let mut regions = Vec::new();
+        let mut result = Requirements {
+            implied: Vec::new(),
+            results: Vec::new(),
+            required: Vec::new(),
+            types: Vec::new(),
+            regions: Vec::new(),
+        };
+        for (parameter, argument) in self.parameters.iter().zip(arguments) {
+            if let (Argument::Lifetime(_), Argument::Lifetime(region)) =
+                (parameter.argument, argument)
+            {
+                regions.push(region);
+                continue;
+            }
+            let id = parameter_id(store, parameter.argument)?;
+            mapping.push((id, argument));
+            if let Argument::Type(ty) = argument {
+                result.types.push(ty);
+                if matches!(
+                    store.parameter(id).map(|p| p.kind),
+                    Some(crate::types::parameters::ParameterKind::Type { sized: true })
+                ) {
+                    result.required.push(
+                        Predicate {
+                            ty,
+                            bound: Bound::Sized,
+                        }
+                        .into(),
+                    );
+                }
+            }
+        }
+        let replace = if CHARGED {
+            substitute::Bound::parameters_captured_charged(store, &mapping, regions, charge)?
+        } else {
+            substitute::Bound::parameters_captured(store, &mapping, regions)?
+        };
+        Ok((replace, result))
     }
 }
 

@@ -174,6 +174,7 @@ pub(in crate::sema) fn immediate(
         &mut unique,
         checked,
         Some(children),
+        &mut Vec::new(),
         &|_, _| Ok(()),
     )
 }
@@ -206,9 +207,27 @@ fn requirements_inside_observed<const CHARGED: bool>(
     let mut unique = std::mem::take(&mut checked.unique);
     work.clear();
     unique.clear();
-    reserve::<_, CHARGED>(&work, 1, charge)?;
-    work.push((root, depth));
-    let result = collect::<CHARGED>(facts, &mut work, &mut unique, checked, None, charge);
+    let mut inserted = Vec::new();
+    let result = (|| {
+        reserve::<_, CHARGED>(&work, 1, charge)?;
+        work.push((root, depth));
+        collect::<CHARGED>(
+            facts,
+            &mut work,
+            &mut unique,
+            checked,
+            None,
+            &mut inserted,
+            charge,
+        )
+    })();
+    if CHARGED && result.is_err() {
+        // Each removal was prepaid before its matching insertion. A failed
+        // budget cannot interrupt rollback or erase an earlier successful key.
+        for key in inserted {
+            checked.types.remove(&key);
+        }
+    }
     work.clear();
     unique.clear();
     checked.work = work;
@@ -221,18 +240,27 @@ fn collect<const CHARGED: bool>(
     unique: &mut HashSet<Clause>,
     checked: &mut Requirements,
     mut immediate: Option<&mut Vec<(TypeId, u16)>>,
+    inserted: &mut Vec<(TypeId, u16)>,
     charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
 ) -> Result<Vec<Clause>, &'static str> {
     let mut predicates = Vec::new();
     while let Some((ty, depth)) = work.pop() {
         if CHARGED {
             charge(1, 0)?;
-            let growth = Growth::map::<(TypeId, u16), ()>(
-                checked.types.len(),
-                checked.types.capacity(),
-                usize::from(!checked.types.contains(&(ty, depth))),
-            );
-            charge(growth.work, growth.bytes)?;
+            if !checked.types.contains(&(ty, depth)) {
+                let mut growth = Growth::map::<(TypeId, u16), ()>(
+                    checked.types.len(),
+                    checked.types.capacity(),
+                    1,
+                );
+                growth.include(Growth::vector::<(TypeId, u16)>(
+                    inserted.len(),
+                    inserted.capacity(),
+                    1,
+                ));
+                charge(1 + growth.work, growth.bytes)?;
+                inserted.push((ty, depth));
+            }
         }
         if immediate.is_some() {
             checked.fold_work = checked.fold_work.saturating_add(1);
@@ -259,49 +287,16 @@ fn collect<const CHARGED: bool>(
             .ok_or("invalid nominal requirement type")?
         {
             Kind::Adt(item, arguments) => {
-                if !facts.generics.nominal_requirements.contains_key(&ty) {
-                    let mut immediate = Vec::new();
-                    instance::<CHARGED>(facts, item, arguments, &mut immediate, charge)?;
-                    if CHARGED {
-                        let growth = Growth::map::<TypeId, std::sync::Arc<[Clause]>>(
-                            facts.generics.nominal_requirements.len(),
-                            facts.generics.nominal_requirements.capacity(),
-                            1,
-                        );
-                        charge(
-                            growth.work + immediate.len(),
-                            growth
-                                .bytes
-                                .saturating_add(immediate.len().saturating_mul(size_of::<Clause>()))
-                                .saturating_add(2 * size_of::<usize>()),
-                        )?;
-                    }
-                    facts
-                        .generics
-                        .nominal_requirements
-                        .insert(ty, immediate.into());
-                }
-                let cached = std::sync::Arc::clone(&facts.generics.nominal_requirements[&ty]);
+                let cached = cached_instance::<CHARGED>(facts, ty, item, arguments, charge)?;
                 for &predicate in cached.iter() {
-                    if let Some(predicate) = checked.lift_observed::<CHARGED>(
+                    checked.append_predicate::<CHARGED>(
                         &mut facts.types,
                         predicate,
                         depth,
+                        &mut predicates,
+                        unique,
                         charge,
-                    )? {
-                        if CHARGED {
-                            let growth = Growth::map::<Clause, ()>(
-                                unique.len(),
-                                unique.capacity(),
-                                usize::from(!unique.contains(&predicate)),
-                            );
-                            charge(1 + growth.work, growth.bytes)?;
-                        }
-                        if unique.insert(predicate) {
-                            reserve::<_, CHARGED>(&predicates, 1, charge)?;
-                            predicates.push(predicate);
-                        }
-                    }
+                    )?;
                 }
                 nominal_arguments::<CHARGED>(
                     facts,
@@ -313,85 +308,159 @@ fn collect<const CHARGED: bool>(
                     charge,
                 )?;
             }
-            Kind::Tuple(list) => {
-                reserve::<_, CHARGED>(
-                    work,
-                    facts
-                        .types
-                        .list(list)
-                        .ok_or("invalid nominal requirement tuple")?
-                        .len(),
-                    charge,
-                )?;
-                work.extend(
-                    facts
-                        .types
-                        .list(list)
-                        .ok_or("invalid nominal requirement tuple")?
-                        .iter()
-                        .map(|&ty| (ty, depth)),
-                );
-            }
-            Kind::Array { element, .. }
-            | Kind::ArrayTerm { element, .. }
-            | Kind::Slice(element) => {
-                reserve::<_, CHARGED>(work, 1, charge)?;
-                work.push((element, depth));
-            }
-            Kind::Reference { referent, .. } => {
-                reserve::<_, CHARGED>(work, 1, charge)?;
-                work.push((referent, depth));
-            }
-            Kind::Pointer { pointee, .. } => {
-                reserve::<_, CHARGED>(work, 1, charge)?;
-                work.push((pointee, depth));
-            }
-            Kind::Function {
-                parameters, result, ..
-            } => {
-                let depth = depth
-                    .checked_add(1)
-                    .ok_or("nominal requirement binder depth overflow")?;
-                reserve::<_, CHARGED>(
-                    work,
-                    facts
-                        .types
-                        .list(parameters)
-                        .ok_or("invalid nominal requirement signature")?
-                        .len()
-                        .saturating_add(1),
-                    charge,
-                )?;
-                work.push((result, depth));
-                work.extend(
-                    facts
-                        .types
-                        .list(parameters)
-                        .ok_or("invalid nominal requirement signature")?
-                        .iter()
-                        .map(|&ty| (ty, depth)),
-                );
-            }
-            Kind::Closure {
-                environment,
-                arguments,
-                ..
-            } => {
-                reserve::<_, CHARGED>(work, 1, charge)?;
-                work.push((environment, depth));
-                arguments_work::<CHARGED>(facts, arguments, depth, work, charge)?;
-            }
-            Kind::FunctionItem { arguments, .. } => {
-                // The declaration already proved its signature, including local
-                // late binders. Item-use obligations validate its substitutions;
-                // replaying the template signature would capture caller lifetimes.
-                arguments_work::<CHARGED>(facts, arguments, depth, work, charge)?;
-            }
-            _ => {}
+            kind => structural_children::<CHARGED>(facts, kind, depth, work, charge)?,
         }
     }
     Ok(predicates)
 }
+fn structural_children<const CHARGED: bool>(
+    facts: &Declarations,
+    kind: Kind,
+    depth: u16,
+    work: &mut Vec<(TypeId, u16)>,
+    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    match kind {
+        Kind::Tuple(list) => {
+            reserve::<_, CHARGED>(
+                work,
+                facts
+                    .types
+                    .list(list)
+                    .ok_or("invalid nominal requirement tuple")?
+                    .len(),
+                charge,
+            )?;
+            work.extend(
+                facts
+                    .types
+                    .list(list)
+                    .ok_or("invalid nominal requirement tuple")?
+                    .iter()
+                    .map(|&ty| (ty, depth)),
+            );
+        }
+        Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } | Kind::Slice(element) => {
+            reserve::<_, CHARGED>(work, 1, charge)?;
+            work.push((element, depth));
+        }
+        Kind::Reference { referent, .. } => {
+            reserve::<_, CHARGED>(work, 1, charge)?;
+            work.push((referent, depth));
+        }
+        Kind::Pointer { pointee, .. } => {
+            reserve::<_, CHARGED>(work, 1, charge)?;
+            work.push((pointee, depth));
+        }
+        Kind::Function {
+            parameters, result, ..
+        } => {
+            let depth = depth
+                .checked_add(1)
+                .ok_or("nominal requirement binder depth overflow")?;
+            reserve::<_, CHARGED>(
+                work,
+                facts
+                    .types
+                    .list(parameters)
+                    .ok_or("invalid nominal requirement signature")?
+                    .len()
+                    .saturating_add(1),
+                charge,
+            )?;
+            work.push((result, depth));
+            work.extend(
+                facts
+                    .types
+                    .list(parameters)
+                    .ok_or("invalid nominal requirement signature")?
+                    .iter()
+                    .map(|&ty| (ty, depth)),
+            );
+        }
+        Kind::Closure {
+            environment,
+            arguments,
+            ..
+        } => {
+            reserve::<_, CHARGED>(work, 1, charge)?;
+            work.push((environment, depth));
+            arguments_work::<CHARGED>(facts, arguments, depth, work, charge)?;
+        }
+        Kind::FunctionItem { arguments, .. } => {
+            // The declaration already proved its signature, including local
+            // late binders. Item-use obligations validate its substitutions;
+            // replaying the template signature would capture caller lifetimes.
+            arguments_work::<CHARGED>(facts, arguments, depth, work, charge)?;
+        }
+        _ => {}
+    }
+    Ok(())
+}
+
+fn cached_instance<const CHARGED: bool>(
+    facts: &mut Declarations,
+    ty: TypeId,
+    item: ItemId,
+    arguments: GenericArgs,
+    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<std::sync::Arc<[Clause]>, &'static str> {
+    if !facts.generics.nominal_requirements.contains_key(&ty) {
+        let mut immediate = Vec::new();
+        instance::<CHARGED>(facts, item, arguments, &mut immediate, charge)?;
+        if CHARGED {
+            let growth = Growth::map::<TypeId, std::sync::Arc<[Clause]>>(
+                facts.generics.nominal_requirements.len(),
+                facts.generics.nominal_requirements.capacity(),
+                1,
+            );
+            charge(
+                growth.work + immediate.len(),
+                growth
+                    .bytes
+                    .saturating_add(immediate.len().saturating_mul(size_of::<Clause>()))
+                    .saturating_add(2 * size_of::<usize>()),
+            )?;
+        }
+        facts
+            .generics
+            .nominal_requirements
+            .insert(ty, immediate.into());
+    }
+    Ok(std::sync::Arc::clone(
+        &facts.generics.nominal_requirements[&ty],
+    ))
+}
+
+impl Requirements {
+    fn append_predicate<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        predicate: Clause,
+        depth: u16,
+        predicates: &mut Vec<Clause>,
+        unique: &mut HashSet<Clause>,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        if let Some(predicate) = self.lift_observed::<CHARGED>(store, predicate, depth, charge)? {
+            if CHARGED {
+                let growth = Growth::map::<Clause, ()>(
+                    unique.len(),
+                    unique.capacity(),
+                    usize::from(!unique.contains(&predicate)),
+                );
+                charge(1 + growth.work, growth.bytes)?;
+            }
+            if unique.insert(predicate) {
+                reserve::<_, CHARGED>(predicates, 1, charge)?;
+                predicates.push(predicate);
+            }
+        }
+
+        Ok(())
+    }
+}
+
 fn nominal_arguments<const CHARGED: bool>(
     facts: &Declarations,
     arguments: GenericArgs,
@@ -541,3 +610,7 @@ fn reserve<T, const CHARGED: bool>(
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/charged_formation.rs"]
+mod counted_tests;

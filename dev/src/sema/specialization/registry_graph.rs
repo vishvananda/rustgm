@@ -250,7 +250,63 @@ impl Forest {
             {
                 return Err("sealed specialization header changed");
             }
+            if let Some(edge) = vertex.parent {
+                let relation = self
+                    .parents
+                    .get(edge.index())
+                    .ok_or("sealed specialization parent edge disappeared")?;
+                let parent = self
+                    .by_entry
+                    .get(&relation.parent)
+                    .and_then(|id| self.vertices.get(id.index()))
+                    .ok_or("sealed specialization parent vertex disappeared")?;
+                if relation.child != vertex.witness.key
+                    || parent.depth.checked_add(1) != Some(vertex.depth)
+                    || parent.preorder >= vertex.preorder
+                    || vertex.subtree_end > parent.subtree_end
+                    || vertex.preorder > vertex.subtree_end
+                {
+                    return Err("sealed specialization ancestry ranks changed");
+                }
+            } else if vertex.depth != 0
+                || vertex.preorder == 0
+                || vertex.preorder > vertex.subtree_end
+            {
+                return Err("sealed specialization root ranks changed");
+            }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+pub(in crate::sema) struct Observation {
+    pub sealed: bool,
+    pub vertices: usize,
+    pub edges: usize,
+    pub depth: u32,
+    pub capacity: usize,
+    pub work: usize,
+    pub bytes: usize,
+}
+#[cfg(test)]
+impl Graph {
+    pub(in crate::sema) fn observation(&self) -> Observation {
+        let (work, bytes) = self.budget.usage();
+        let forest = match &self.state {
+            State::Conforming(forest) | State::Sealed(forest) => Some(forest),
+            State::Building(_) | State::Failed => None,
+        };
+        Observation {
+            sealed: matches!(self.state, State::Sealed(_)),
+            vertices: forest.map_or(0, |value| value.vertices.len()),
+            edges: forest.map_or(0, |value| value.parents.len()),
+            depth: forest.map_or(0, |value| {
+                value.vertices.iter().map(|v| v.depth).max().unwrap_or(0)
+            }),
+            capacity: forest.map_or(0, |value| value.vertices.capacity()),
+            work,
+            bytes,
+        }
     }
 }
