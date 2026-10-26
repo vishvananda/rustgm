@@ -19,12 +19,12 @@ pub(super) struct Formals {
 pub(super) fn collect(
     view: RecipeView<'_>,
     scopes: &[Option<usize>],
-    maps: &mut Maps,
+    maps: &Maps,
     store: &mut Store,
     owner: DeclarationRef,
     work: &mut ReservationWork,
 ) -> Result<Formals, Error> {
-    let mut port = Reserved::new(view, maps)?;
+    let mut port = Reserved::new(view, maps, store, work)?;
     let rows = port.rows();
     let actual = path(rows, scopes, owner, work)?;
     let path = actual.indices;

@@ -427,7 +427,7 @@ fn registration_boundary() -> Result {
     let formals = formal_path::collect(
         view,
         &table.scopes,
-        &mut state.maps,
+        &state.maps,
         &mut session.facts.types,
         owner,
         &mut work,
@@ -484,7 +484,7 @@ fn blocked_body_dependency() -> Result {
     let expected = Dependency::CallableTemplate(view.declaration(required, &mut work)?);
     let state = session.recipes.as_mut().ok_or("actual recipe state")?;
     let before = state.cursor.counters();
-    let mut port = Reserved::new(view, &mut state.maps)?;
+    let mut port = Reserved::new(view, &state.maps, &session.facts.types, &mut work)?;
     assert_eq!(
         state
             .cursor

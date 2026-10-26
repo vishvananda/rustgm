@@ -225,7 +225,7 @@ fn method_signature(
     current_header(report, facts, method, origin)?;
     method_syntax(report, facts, method, origin)?;
     let function = facts
-        .function_header(method)?
+        .declaration_header(method)?
         .ok_or("source Not has no completed method header")?;
     if function.declaration.source() != Some(origin)
         || function.body.is_some()

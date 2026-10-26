@@ -63,12 +63,20 @@ impl Declarations {
         else {
             return Ok(None);
         };
+        Ok(Some(self.defining_self_clause(trait_definition)?))
+    }
+
+    /// Construct the actual const trait's defining premise, without body authority.
+    pub(in crate::sema) fn defining_self_clause(
+        &self,
+        trait_definition: DefId,
+    ) -> Result<Clause, &'static str> {
         let mut predicate = self.const_self_predicate(trait_definition)?;
         let Bound::Trait(application) = predicate.bound else {
             return Err("const trait lost its ordinary implicit Self requirement");
         };
         predicate.bound = Bound::MaybeConstTrait(application);
-        Ok(Some(predicate.into()))
+        Ok(predicate.into())
     }
 
     pub(in crate::sema) fn member_use_clause(

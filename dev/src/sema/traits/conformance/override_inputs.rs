@@ -58,7 +58,7 @@ impl Method {
             .ok_or("imported method lacks its actual associated owner")?;
         facts.associated.require_imported(owner)?;
         let header = facts
-            .function_header(definition)?
+            .declaration_header(definition)?
             .ok_or("imported method lacks its authenticated completed header")?;
         if !matches!(header.declaration, DeclarationOrigin::Imported(_)) {
             return Err("imported method changed its actual declaration provenance");
@@ -72,7 +72,6 @@ impl Method {
             return Err("imported method lacks its installed declaration environment");
         }
         if scheme.total != header.universals
-            || header.environment.is_none()
             || !facts.generics.parameters.contains_key(&definition)
             || facts.generics.predicates.contains_key(&definition)
         {
@@ -82,7 +81,7 @@ impl Method {
             .crates
             .as_ref()
             .ok_or("imported method lacks its actual linkage")?;
-        linkage.require_source_method(facts, definition, scheme, steps)?;
+        linkage.require_source_declaration(facts, definition, scheme, steps)?;
         linkage.original_inputs(definition, false)?;
         Ok(Self {
             definition,

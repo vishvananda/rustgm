@@ -4,6 +4,7 @@ use crate::types::{
     Kind, TypeId,
     arguments::Argument,
     parameters::{environment::Retained, predicates::Bound},
+    traits::ApplicationId,
 };
 use crate::{sema::crates::typed_headers::recipe_cursor::Budget, support::retained::Allocation};
 use std::sync::Arc;
@@ -18,6 +19,32 @@ impl Accounting for Headers {
     }
 }
 
+pub(in crate::sema::crates::typed_headers) mod sealed {
+    pub trait Sealed {}
+}
+/// Borrowed clauses whose actual producer fixes the accepted leaf effects.
+pub(in crate::sema::crates::typed_headers) trait LeafClauses:
+    sealed::Sealed
+{
+    fn clauses(&self) -> &[Clause];
+    fn application(&self, bound: Bound) -> Result<ApplicationId, Error>;
+}
+struct Ordinary<'a>(&'a [Clause]);
+impl sealed::Sealed for Ordinary<'_> {}
+impl LeafClauses for Ordinary<'_> {
+    fn clauses(&self) -> &[Clause] {
+        self.0
+    }
+    fn application(&self, bound: Bound) -> Result<ApplicationId, Error> {
+        let Bound::Trait(id) = bound else {
+            return Err(error(
+                "source assumption is outside the ordinary actual trait profile",
+            ));
+        };
+        Ok(id)
+    }
+}
+
 pub(in crate::sema::crates::typed_headers) fn prepare(
     facts: &Declarations,
     parent: Option<&Arc<Environment>>,
@@ -27,6 +54,27 @@ pub(in crate::sema::crates::typed_headers) fn prepare(
     previous_clauses: usize,
     budget: &mut impl Accounting,
 ) -> Result<Arc<Environment>, Error> {
+    prepare_checked(
+        facts,
+        parent,
+        parameters,
+        &Ordinary(clauses),
+        previous_parameters,
+        previous_clauses,
+        budget,
+    )
+}
+
+pub(in crate::sema::crates::typed_headers) fn prepare_checked(
+    facts: &Declarations,
+    parent: Option<&Arc<Environment>>,
+    parameters: &[(ParameterId, Abilities)],
+    leaves: &impl LeafClauses,
+    previous_parameters: usize,
+    previous_clauses: usize,
+    budget: &mut impl Accounting,
+) -> Result<Arc<Environment>, Error> {
+    let clauses = leaves.clauses();
     let own = &clauses[previous_clauses..];
     if previous_parameters == parameters.len()
         && own.is_empty()
@@ -55,11 +103,7 @@ pub(in crate::sema::crates::typed_headers) fn prepare(
             ));
         };
         leaf(facts, predicate.ty)?;
-        let Bound::Trait(id) = predicate.bound else {
-            return Err(error(
-                "source assumption is outside the ordinary actual trait profile",
-            ));
-        };
+        let id = leaves.application(predicate.bound)?;
         let application = facts
             .types
             .trait_application(id)

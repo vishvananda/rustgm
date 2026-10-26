@@ -90,6 +90,45 @@ fn shared_signature_reader_binds_actual_writer_owner_arena_and_ready_shapes() ->
             .is_err()
     );
     reject_replaced_readers(&mut session, &reader, header.original.result, &mut work)?;
+    reject_replaced_maps(&mut session, &mut state, owner, &mut work)?;
+    Ok(())
+}
+fn reject_replaced_maps(
+    session: &mut Session,
+    state: &mut State,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+) -> Result {
+    let mut foreign = start(
+        "fn selected<T>(x:u8)->u8{x}fn other<U>(x:bool)->bool{x}",
+        work,
+    )?;
+    let foreign_view = foreign.inputs.recipe_view(&foreign.inventory, 0, work)?;
+    let other = State::new(&foreign_view, &mut foreign.facts.types, work)?;
+    assert_eq!(state.maps.retained_bytes(), other.maps.retained_bytes());
+    let actual = std::mem::replace(&mut state.maps, Rc::clone(&other.maps));
+    let view = session.inputs.recipe_view(&session.inventory, 0, work)?;
+    let attempted = work.steps;
+    assert!(
+        state
+            .pair(view, &mut session.facts.types, owner, work)
+            .is_err()
+    );
+    assert!(work.steps > attempted);
+    state.maps = actual;
+    let view = session.inputs.recipe_view(&session.inventory, 0, work)?;
+    let replacement = State::new(&view, &mut session.facts.types, work)?;
+    let actual = std::mem::replace(&mut state.maps, Rc::clone(&replacement.maps));
+    assert!(
+        state
+            .require_mapping(&view, &session.facts.types, false, work)
+            .is_err()
+    );
+    state.maps = actual;
+    assert!(matches!(
+        state.pair(view, &mut session.facts.types, owner, work)?,
+        Demand::Ready(_)
+    ));
     Ok(())
 }
 fn reject_replaced_readers(
@@ -159,10 +198,13 @@ fn warm(width: usize, unrelated: usize) -> Result<usize> {
     let state = session.recipes.as_ref().ok_or("actual memo state")?;
     assert!(state.reader.is_some());
     eprintln!(
-        "shared-mapping width={width} unrelated={unrelated} warm1000={delta} state={} cursor={} reader={} session={} retained={} peak={} memo_bytes={}",
+        "shared-mapping width={width} unrelated={unrelated} warm1000={delta} state={} cursor={} reader={} maps={} argument_cell={} region_cell={} session={} retained={} peak={} memo_bytes={}",
         size_of::<State>(),
         size_of::<Cursor>(),
         size_of::<MemoReader>(),
+        size_of::<Maps>(),
+        size_of::<std::cell::Cell<Option<crate::types::arguments::Argument>>>(),
+        size_of::<std::cell::Cell<Option<crate::types::RegionId>>>(),
         size_of::<Session>(),
         work.retained,
         work.peak,

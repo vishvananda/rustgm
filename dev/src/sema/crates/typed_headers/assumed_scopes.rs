@@ -25,7 +25,7 @@ use crate::{
             ParameterId,
             clauses::Clause,
             environment::{Abilities, Environment},
-            predicates::Predicate,
+            predicates::{Bound, Predicate},
         },
     },
 };
@@ -64,10 +64,10 @@ impl ScopeInputs {
             Self::Declaration(inputs) => inputs,
         }
     }
-    fn subjects(&self) -> &[bool] {
+    fn retained_subject_bytes(&self) -> usize {
         match self {
-            Self::Trait(prepared) => prepared.subjects(),
-            Self::Declaration(_) => &[],
+            Self::Trait(prepared) => prepared.subjects().len(),
+            Self::Declaration(_) => 0,
         }
     }
 }
@@ -137,16 +137,17 @@ impl Scope {
             )?;
             ScopeInputs::Declaration(inputs)
         };
+        originals::require_leaf_inputs(rows, scope_row, inputs.all(), applications, work)?;
         clauses.extend(inputs.all().iter().map(|input| input.value));
         let mut accounting = Observed {
             work,
             allocation: Allocation::default(),
         };
-        let environment = environments::prepare(
+        let environment = environments::prepare_checked(
             facts,
             inherited.map(|scope| &scope.environment),
             &parameters,
-            &clauses,
+            &ImportedLeaves(&clauses),
             previous_parameters,
             previous_clauses,
             &mut accounting,
@@ -174,7 +175,7 @@ impl Scope {
             .saturating_add(retained::vector(&self.parameters))
             .saturating_add(retained::vector(&self.clauses))
             .saturating_add(self.inputs.all().len().saturating_mul(size_of::<Input>()))
-            .saturating_add(self.inputs.subjects().len())
+            .saturating_add(self.inputs.retained_subject_bytes())
             .saturating_add(2 * size_of::<usize>())
             .saturating_add(environment)
     }
@@ -184,7 +185,7 @@ impl Scope {
             || !self.parameters.is_empty()
             || !self.clauses.is_empty()
             || !self.inputs.all().is_empty()
-            || !self.inputs.subjects().is_empty()
+            || self.inputs.retained_subject_bytes() != 0
         {
             return Err(error(
                 "empty Contract changed its complete prepared declaration inputs",
@@ -192,17 +193,77 @@ impl Scope {
         }
         Ok(())
     }
-    fn require(&self, rows: s::ValidatedView<'_>) -> Result<(), Error> {
+    fn subjects<'a>(
+        &'a self,
+        rows: s::ValidatedView<'_>,
+        facts: &'a Declarations,
+    ) -> Result<&'a [bool], Error> {
+        let (_, canonical) = originals::input_range(rows, self.raw)?;
+        match (&self.inputs, canonical) {
+            (ScopeInputs::Trait(prepared), Some(_)) => Ok(prepared.subjects()),
+            (ScopeInputs::Declaration(_), None) => Ok(&[]),
+            (ScopeInputs::Declaration(inputs), Some(prefix)) => {
+                let catalog = facts
+                    .crates
+                    .as_deref()
+                    .and_then(crate::sema::crates::Linkage::origin_catalog)
+                    .ok_or_else(|| {
+                        error("transferred trait inputs lost their actual installed catalog")
+                    })?;
+                let definition = catalog
+                    .definition_at(rows.descriptor().identity(), self.raw.owner)
+                    .map_err(error)?;
+                let header = facts
+                    .generics
+                    .traits
+                    .as_deref()
+                    .and_then(|contracts| contracts.header(crate::types::ItemId(definition.0)))
+                    .ok_or_else(|| {
+                        error("transferred trait inputs lost their actual canonical header")
+                    })?;
+                let (actual, subjects) = header
+                    .inputs
+                    .imported_parts(catalog, definition)
+                    .map_err(error)?;
+                if !Arc::ptr_eq(actual, inputs) || subjects.len() != prefix {
+                    return Err(error(
+                        "transferred trait inputs changed their actual all-input Arc or canonical prefix",
+                    ));
+                }
+                Ok(subjects)
+            }
+            _ => Err(error(
+                "private declaration environment changed its canonical input kind",
+            )),
+        }
+    }
+    fn require(&self, rows: s::ValidatedView<'_>, facts: &Declarations) -> Result<(), Error> {
         let (range, canonical) = originals::input_range(rows, self.raw)?;
-        if canonical.is_some() != matches!(&self.inputs, ScopeInputs::Trait(_))
-            || self.inputs.all().len() != range.slice(&rows.clauses).map_err(error)?.len()
-            || self.inputs.subjects().len() != canonical.unwrap_or(0)
+        if self.inputs.all().len() != range.slice(&rows.clauses).map_err(error)?.len()
+            || self.subjects(rows, facts)?.len() != canonical.unwrap_or(0)
         {
             return Err(error(
                 "private declaration environment changed its complete canonical input owner",
             ));
         }
         Ok(())
+    }
+}
+/// Created only after the current scope's raw effects and actual translated
+/// predicates agree; the inherited prefix is copied from its sealed parent.
+struct ImportedLeaves<'a>(&'a [Clause]);
+impl environments::sealed::Sealed for ImportedLeaves<'_> {}
+impl environments::LeafClauses for ImportedLeaves<'_> {
+    fn clauses(&self) -> &[Clause] {
+        self.0
+    }
+    fn application(&self, bound: Bound) -> Result<crate::types::traits::ApplicationId, Error> {
+        match bound {
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => Ok(id),
+            _ => Err(error(
+                "private leaf environment changed its checked trait effect",
+            )),
+        }
     }
 }
 struct NumberedBody {
@@ -376,7 +437,7 @@ impl Owner {
                     .ok_or_else(|| {
                         error("private defining environment lost its actual declaration scope")
                     })?;
-                declaration.require(rows)?;
+                declaration.require(rows, facts)?;
                 if declaration.raw != expected.scope.1
                     || declaration.parameters.len() != expected.formals
                     || !Arc::ptr_eq(environment, &declaration.environment)
@@ -400,7 +461,7 @@ impl Owner {
                     .get(*scope)
                     .and_then(Option::as_deref)
                     .ok_or_else(|| error("empty Contract lost its actual prepared declaration"))?;
-                declaration.require(rows)?;
+                declaration.require(rows, facts)?;
                 declaration.require_empty(expected)?;
                 if !Arc::ptr_eq(&product.declaration, &declaration.environment)
                     || Arc::ptr_eq(&product.environment, &declaration.environment)
@@ -450,7 +511,7 @@ impl Owner {
             return Ok(Demand::Blocked(dependency));
         }
         let mut port = ports::Inputs {
-            port: Reserved::new(view, &mut state.maps)?,
+            port: Reserved::new(view, &state.maps, &facts.types, work)?,
             cursor: &mut state.cursor,
         };
         let mut parent = None;
@@ -526,7 +587,7 @@ impl Owner {
             if scope.raw != raw {
                 return Err(error("private declaration scope changed its actual row"));
             }
-            scope.require(rows)?;
+            scope.require(rows, facts)?;
             if let ScopeInputs::Trait(prepared) = &scope.inputs {
                 prepared.require_declaration(port.port.declaration(raw.owner, work)?)?;
             }

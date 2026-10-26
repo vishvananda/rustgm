@@ -20,7 +20,10 @@ use crate::{
         crates::Imported,
         model::DefId,
     },
-    sema::{declaration_inputs::Input, function_headers::FunctionHeader},
+    sema::{
+        declaration_inputs::Input,
+        function_headers::{DeclarationHeader, FunctionHeader},
+    },
     support::{crates::CrateIdentity, hash::HashMap},
     types::{TypeId, parameters::environment::Environment},
 };
@@ -134,7 +137,7 @@ impl super::Linkage {
         }
         Ok(())
     }
-    pub(in crate::sema) fn require_source_method(
+    pub(in crate::sema) fn require_source_declaration(
         &self,
         facts: &Declarations,
         definition: DefId,
@@ -142,8 +145,8 @@ impl super::Linkage {
         steps: &mut usize,
     ) -> Result<(), &'static str> {
         *steps = steps.saturating_add(1);
-        self.original_header(definition)?
-            .ok_or("source method lost its actual completed original header")?;
+        self.original_declaration_header(definition)?
+            .ok_or("source method lost its actual completed declaration header")?;
         let headers = self
             .originals
             .as_deref()
@@ -156,11 +159,14 @@ impl super::Linkage {
             .origin_catalog()
             .ok_or("source method lacks its actual catalog")?;
         graph.require_method_regions(catalog, definition, scheme, steps)?;
+        // Ordinary Graph headers retain their established eager relationship.
+        // A private demanded declaration must use its own checked scope owner.
         let header = headers
             .get(definition)
             .ok_or("source method lost its actual completed original header")?;
         graph.require_method_environment(catalog, facts, definition, header, steps)
     }
+
     pub(crate) fn original_work(&self) -> Option<(usize, usize, usize, usize)> {
         self.originals
             .as_ref()
@@ -178,10 +184,7 @@ impl super::Linkage {
             .ok_or("imported original headers are absent")?
             .types(owner)
     }
-    pub(crate) fn original_header(
-        &self,
-        definition: DefId,
-    ) -> Result<Option<FunctionHeader<'_>>, &'static str> {
+    fn checked_original_header(&self, definition: DefId) -> Result<Option<&Header>, &'static str> {
         let Some(header) = self.originals.as_deref().and_then(|h| h.get(definition)) else {
             return Ok(None);
         };
@@ -210,6 +213,28 @@ impl super::Linkage {
                 return Err("imported required method lacks its authenticated source header");
             }
         }
+        Ok(Some(header))
+    }
+    pub(crate) fn original_declaration_header(
+        &self,
+        definition: DefId,
+    ) -> Result<Option<DeclarationHeader>, &'static str> {
+        Ok(self
+            .checked_original_header(definition)?
+            .map(|header| DeclarationHeader {
+                declaration: header.declaration,
+                body: header.body,
+                signature: header.signature,
+                universals: header.universals,
+            }))
+    }
+    pub(crate) fn original_header(
+        &self,
+        definition: DefId,
+    ) -> Result<Option<FunctionHeader<'_>>, &'static str> {
+        let Some(header) = self.checked_original_header(definition)? else {
+            return Ok(None);
+        };
         Ok(Some(FunctionHeader {
             declaration: header.declaration,
             body: header.body,
@@ -229,7 +254,7 @@ impl super::Linkage {
             .and_then(|h| h.applications.get(owner))
             .and_then(|v| v.get(application.0 as usize))
             .ok_or("missing canonical imported application")?;
-        self.original_header(row.target)?
+        self.original_declaration_header(row.target)?
             .ok_or("application target header disappeared")?;
         Ok(row)
     }
@@ -249,7 +274,7 @@ impl super::Linkage {
                 .declaration_inputs(catalog, definition, declared)?
                 .unwrap_or(&[]));
         };
-        self.original_header(definition)?
+        self.original_declaration_header(definition)?
             .ok_or("imported input header disappeared")?;
         Ok(if declared {
             &header.inputs[..header.declared]

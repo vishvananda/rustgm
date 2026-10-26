@@ -8,9 +8,15 @@ use crate::{
     sema::crates::typed_headers::staged_headers::rebuilt_environments::{
         ContractParts, EmptyContract,
     },
+    sema::declaration_inputs::Input,
     sema::function_context::assumption_environment as defining,
+    support::constness::Constness,
     support::crates::{generics as g, owner_catalog::BodyRef},
-    types::parameters::ParameterId,
+    types::parameters::{
+        ParameterId,
+        clauses::Clause,
+        predicates::{Bound, Predicate},
+    },
 };
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Origin {
@@ -68,6 +74,90 @@ pub(super) fn input_range(
             "private environment requires its later actual scope profile",
         )),
     }
+}
+/// Match effects against the same translator memo before the private scope can
+/// offer its clauses to the shared leaf-environment constructor.
+pub(super) fn require_leaf_inputs(
+    rows: s::ValidatedView<'_>,
+    scope: s::ParameterScope,
+    inputs: &[Input],
+    applications: &[Option<Predicate>],
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
+    let (range, _) = input_range(rows, scope)?;
+    let clauses = range.slice(&rows.clauses).map_err(error)?;
+    work.charge(clauses.len().saturating_add(1))?;
+    if inputs.len() != clauses.len() {
+        return Err(error(
+            "private leaf environment changed its complete own inputs",
+        ));
+    }
+    for (raw, input) in clauses.iter().zip(inputs) {
+        let s::Requirement::Trait {
+            application,
+            effect,
+        } = raw.requirement
+        else {
+            return Err(error(
+                "private leaf environment requires actual trait inputs",
+            ));
+        };
+        if raw.owner != scope.owner || raw.binder.is_some() {
+            return Err(error(
+                "private leaf environment changed its actual scope or binder",
+            ));
+        }
+        let mut expected = applications
+            .get(application.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or_else(|| error("private leaf environment lost its translated application"))?;
+        let Bound::Trait(actual) = expected.bound else {
+            return Err(error(
+                "private leaf environment changed its ordinary application memo",
+            ));
+        };
+        require_const_trait(rows, application, effect, work)?;
+        expected.bound = Bound::trait_application(actual, effect);
+        if input.value != Clause::Predicate(expected) {
+            return Err(error(
+                "private leaf environment changed its actual translated effect",
+            ));
+        }
+    }
+    Ok(())
+}
+fn require_const_trait(
+    rows: s::ValidatedView<'_>,
+    application: s::TraitApplicationRef,
+    effect: Constness,
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
+    work.charge(2)?;
+    let actual = rows
+        .trait_applications
+        .get(application.0 as usize)
+        .ok_or_else(|| error("private leaf environment lost its actual raw application"))?;
+    if actual.declaration.artifact != rows.policy.provider {
+        return Err(error(
+            "private leaf environment changed its actual trait provider",
+        ));
+    }
+    let Some(s::HeaderRef::Trait(index)) =
+        rows.header(actual.declaration.declaration).map_err(error)?
+    else {
+        return Err(error(
+            "private leaf environment lost its actual trait header",
+        ));
+    };
+    if effect != Constness::Ordinary
+        && rows.traits[index as usize].flags.bits() & s::TraitFlags::CONST == 0
+    {
+        return Err(error(
+            "private leaf effect requires its genuine const trait header",
+        ));
+    }
+    Ok(())
 }
 pub(super) fn leaf_path(
     rows: s::ValidatedView<'_>,

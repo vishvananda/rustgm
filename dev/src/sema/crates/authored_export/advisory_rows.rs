@@ -343,7 +343,7 @@ fn source_header(
     }
     if kind == DefKind::Function {
         let header = facts
-            .function_header(definition)
+            .declaration_header(definition)
             .map_err(Error::unlocated)?
             .ok_or_else(|| Error::unlocated("source attribute function has no semantic header"))?;
         if header.declaration.source() != Some(declaration) {

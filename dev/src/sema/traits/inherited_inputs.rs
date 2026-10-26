@@ -90,6 +90,19 @@ impl HeaderInputs {
             self_subjects,
         })
     }
+    /// Borrow only this exact installed imported declaration's canonical owner.
+    /// This exposes data correspondence, never body or selected-instance proof.
+    pub(in crate::sema) fn imported_parts(
+        &self,
+        catalog: &Catalog,
+        definition: DefId,
+    ) -> Result<(&Arc<[Input]>, &[bool]), &'static str> {
+        self.require_catalog(catalog, definition)?;
+        let Self::Imported(imported) = self else {
+            return Err("source trait inputs cannot supply an imported canonical owner");
+        };
+        Ok((&imported.inputs, &imported.self_subjects))
+    }
     pub(in crate::sema) fn require_catalog(
         &self,
         catalog: &Catalog,

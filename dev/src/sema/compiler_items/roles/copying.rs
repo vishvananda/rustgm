@@ -31,7 +31,7 @@ pub(super) fn validate(
         .language(LangItem::CloneFn)
         .ok_or_else(|| error("source Clone requires its actual clone_fn declaration"))?;
     let function = facts
-        .function_header(method.definition)
+        .declaration_header(method.definition)
         .map_err(error)?
         .ok_or_else(|| error("source clone_fn signature is not prepared"))?;
     if function.declaration != method.origin.into() {

@@ -261,7 +261,7 @@ fn header_signature_cursor_reuses_memo_and_leaves_undemanded_body_nodes() -> Res
     assert_eq!(state.retained_bytes(), bytes);
     assert_eq!(session.facts.types.interned_extent(), types);
     let expected = Demand::Blocked(dependency(rows, probe, &view, &mut work)?);
-    let mut port = Reserved::new(view, &mut state.maps)?;
+    let mut port = Reserved::new(view, &state.maps, &session.facts.types, &mut work)?;
     assert_eq!(
         state
             .cursor
@@ -348,7 +348,7 @@ fn reference_frontier(depth: usize, repeats: usize) -> Result {
     };
     let before = state.cursor.counters();
     let bytes = state.retained_bytes();
-    let mut port = Reserved::new(view, &mut state.maps)?;
+    let mut port = Reserved::new(view, &state.maps, &session.facts.types, &mut work)?;
     assert_eq!(
         state
             .cursor
@@ -376,7 +376,7 @@ fn reference_frontier(depth: usize, repeats: usize) -> Result {
         .iter()
         .position(|slot| slot.owner == owner && matches!(slot.kind, s::ParameterKind::Type { .. }))
         .ok_or("actual unused declared type formal")?;
-    assert!(state.maps.slots[unused].is_none());
+    assert_eq!(state.maps.slot(unused)?, None);
     session = ready(session.signature_pair(owner, &mut work)?)?;
     let state = session.recipes.as_ref().ok_or("actual retained memo")?;
     assert!(matches!(state.pairs[index as usize], Pair::Ready(actual) if actual == pair));
