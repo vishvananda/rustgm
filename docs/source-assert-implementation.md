@@ -1,7 +1,7 @@
 # Source Assert implementation work
 
-LIB-029 remains open. This branch starts its private typed condition transaction;
-it does not enable Assert or qualify runtime/constant assertions. The existing
+LIB-029 remains open. The private condition transaction and parsed-expression writer are qualified;
+Assert and runtime/constant assertions remain unavailable. The existing
 sixteen independent observations are in [source-assert-observations.md](source-assert-observations.md)
 and are reused without another oracle run.
 
@@ -67,3 +67,67 @@ LangItem/SourceIntrinsic/Intrinsic are each1 byte on the pinned x86-64 target.
 These are real compiled layouts, not model structs. The identical after observer
 is still required once the checked roles are appended. No representation change
 or runtime/CTFE assertion is qualified by the condition-only checkpoint.
+
+
+## Qualified private expression writer
+
+[CI40256288761](https://github.com/vishvananda/rustgm/actions/runs/40256288761)
+qualifies combined source3ab156e63cb30c2f4d5891530b156e86099836d9, including the
+public source-authority successor03d39d9a. All five exact controls pass: parsed
+messages and writer work/layout, actual owned condition/opaque forwarding,
+transactional budgets, and the existing selected-configuration transfer control.
+Metadata, formatting, the architecture audit, both strict Clippy modes and one
+private build pass. The workflow's harness/upstream checks also pass. The source
+fingerprint contains2669 entries and remains byte-identical before/after.
+
+The writer borrows the actual typed AST. It uses bounded iterative actions and
+an offline box/break document layout, with exhaustive node/item dispatch rather
+than reparsing tokens or transporting diagnostic output. Opaque inputs use the
+existing authenticated registry/relocation. The source interval, selected span,
+owned literal and origin rules of the qualified condition transaction remain in
+force. The custom-message suffix does not demand the default writer. All work,
+allocation and temporary coexistence pay before publication, including failure.
+The ordinary path never calls this private staged writer or allocates its data.
+
+The two new test groups exercise the three retained independently observed
+default messages, additional primary-derived expression spelling predictions,
+real turbofish parsing, long-expression layout/work, unrelated-function controls,
+exhausted payment and a cyclic typed-node opponent. They do not establish exact
+pretty-print compatibility for every Rust grammar form or native assertion
+execution. The genuine opaque condition/default-message control also passes.
+Actual width8/32/128 observations are respectively555/2515/13651 charged steps
+and31940/136356/567204 charged bytes. Adding unrelated functions leaves selected
+writer work equal. Temporary Action/document tokens are88/24 bytes; Package256,
+Node36 and Item64 remain unchanged. This introduces no retained hot fields.
+
+Earlier failed runs remain evidence:40253321598 stopped at a punctuation variant
+compile error;40253912002 exposed eight style findings;40255260221 passed all
+statics and four tests but failed the message test's old basic expression-parser
+setup at the turbofish token. The correction uses the same cumulative classified
+fragment parser as actual Assert preparation, checks complete consumption and
+retains every expected message. It changes no production grammar or permission.
+The successful run takes1.47/5.58/27.98/39.51/69.54 seconds for metadata, formatting,
+production Clippy, private Clippy and build; exact tests take0.008 seconds. Audit
+runs alongside the sequential Rust commands. No independent oracle was repeated.
+
+## Real panic prerequisites remain required
+
+The pinned normal panic path calls actual `panicking::panic`/`panic_fmt`, constructs
+real `PanicInfo` with `Location::caller()` and invokes the genuine panic handler.
+It cannot be replaced with immediate-abort configuration or a synthetic handler.
+The pinned Abort intrinsic is safe and non-const, takes no arguments and returns
+never; reached runtime proof must precede abnormal termination. No exact signal
+or unwind support is claimed.
+
+The actual pinned `Arguments` is two `NonNull` pointers with tagged literal-string
+encoding through transmute. `Location` contains `NonNull<str>`, line/column and
+`PhantomData<&str>`, including a filename's trailing NUL outside its visible string
+length. Even literal/default panic therefore requires real pointer refinement,
+NonNull/PhantomData, transmute/provenance and caller tracking. Simplified `&str`
+arguments or replacement location structs do not establish that source contract.
+These dependencies belong to PA9/12/22/27/28/31 alongside the PA25/26 panic and
+operator work, with actual abort termination in PA39's owning subset. Imported
+tracking/roles and wider runtime transport remain PA29 requirements. The next
+checked-role layout checkpoint must still run the identical before/after observer;
+this writer adds no language role, intrinsic, bootstrap slot, wire permission or
+executable source Assert path.
