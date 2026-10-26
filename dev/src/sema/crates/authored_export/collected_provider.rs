@@ -38,6 +38,8 @@ pub(crate) struct CollectedStage {
     provider: CrateIdentity,
     contracts: s::HeaderAttributeColumns,
     contract_bytes: usize,
+    names: s::NamespaceColumns,
+    names_bytes: usize,
     live: usize,
 }
 /// No unchecked constructor or mutable row/contract access is exposed.
@@ -47,6 +49,8 @@ pub(crate) struct CollectedRows {
     provider: CrateIdentity,
     contracts: s::HeaderAttributeColumns,
     contract_bytes: usize,
+    names: s::NamespaceColumns,
+    names_bytes: usize,
 }
 impl Stage {
     pub(crate) fn collected_scope(
@@ -120,8 +124,19 @@ impl Stage {
         let overhead = size_of::<CollectedRows>()
             .saturating_sub(size_of::<s::SourceRows>())
             .saturating_sub(size_of::<SourceWork>())
-            .saturating_sub(size_of::<s::HeaderAttributeColumns>());
-        self.reserve(overhead).map_err(Error::unlocated)?;
+            .saturating_sub(size_of::<s::HeaderAttributeColumns>())
+            .saturating_sub(size_of::<s::NamespaceColumns>());
+        self.reserve(overhead.saturating_add(size_of::<s::NamespaceColumns>()))
+            .map_err(Error::unlocated)?;
+        let names = self.namespace_columns(report).map_err(Error::unlocated)?;
+        let mut validation = g::Work {
+            steps: self.work().steps,
+            ..g::Work::default()
+        };
+        let names_bytes = names.storage_bytes(&mut validation);
+        self.charge(validation.steps.saturating_sub(self.work().steps))
+            .map_err(Error::unlocated)?;
+        let names_bytes = names_bytes.map_err(Error::unlocated)?;
         let expected = self.selected_type_slots().map_err(Error::unlocated)?;
         let mut observed = 0usize;
         let contracts =
@@ -142,11 +157,17 @@ impl Stage {
             ..g::Work::default()
         };
         let start = validation.steps;
-        let result = contracts.validate(&self.rows, before.reserved_bytes, &mut validation);
+        let result = contracts.validate(
+            &self.rows,
+            before.reserved_bytes.saturating_add(names_bytes),
+            &mut validation,
+        );
         self.charge(validation.steps.saturating_sub(start))
             .map_err(Error::unlocated)?;
         let contract_bytes = result.map_err(Error::unlocated)?;
-        let live = contract_bytes.saturating_add(overhead);
+        let live = contract_bytes
+            .saturating_add(names_bytes)
+            .saturating_add(overhead);
         if live
             > self
                 .work()
@@ -168,6 +189,8 @@ impl Stage {
             provider: provider.clone(),
             contracts,
             contract_bytes,
+            names,
+            names_bytes,
             live,
         })
     }
@@ -192,6 +215,8 @@ impl CollectedStage {
             provider: self.provider,
             contracts: self.contracts,
             contract_bytes: self.contract_bytes,
+            names: self.names,
+            names_bytes: self.names_bytes,
         };
         let minimum = size_of::<s::HeaderAttributeColumns>()
             .saturating_add(retained::vector(&collected.contracts.functions))

@@ -7,27 +7,103 @@ completion criteria and the frozen CPPGM backend boundary remain unchanged.
 
 ## Assessment
 
-Useful prerequisites are accumulating faster than end-to-end crate evidence.
-Public compiler 6dec6fbe has source Abort, alias clauses/naming, shared imported
-mapping and a Pointee declaration producer. There is still no core artifact.
-The last original-core observation stops at Thin in ptr/metadata.rs with 65 files
-opened. That is neither 65 compiled modules nor a completion percentage.
+The architecture is producing useful components, but the unit of work has been
+too small and too internal. Readiness records, source-only adapters and separate
+checkpoint documents accumulate faster than executable consumers. This is now
+the main scheduling problem. More workers or fewer semantic tests alone will
+not solve the joins between those components.
 
-The largest bottleneck is the implementation joins. PA29 still lacks genuine
-imported namespace installation before final name resolution, complete member
-conformance and demanded original/instance execution. Private Ready states do
-not establish an encoded artifact or a named imported source call.
+Public compiler d63270c4 includes source Abort, source transmute, const formatter
+pointer erasure, alias clauses/naming/default validation, shared imported mapping
+and a Pointee declaration producer. There is still no core artifact. The latest qualified
+original-core observation passes Thin syntax and stops at the foreign
+`type VTable;` declaration in ptr/metadata.rs:170. It takes 1.873 seconds, verifies
+all 722 source inputs and opens 65 files. That is neither 65 compiled modules nor
+a completion percentage. Full alias/Pointee semantics remain separate blockers.
 
-Some internal restrictions also exceed the language requirement: eager imported
+The largest bottleneck is the implementation joins. The integrator has now
+merged qualified actual imported names/receiver shapes and Pointee consumers
+at 4a23c7297. Complete PA29 member conformance, the public encoded Provided
+contract and demanded original/instance execution remain unfinished. Private
+Ready states do not establish an artifact or an imported source call.
+
+Recent work exposed restrictions beyond the language requirement: eager imported
 body-environment reconstruction, exact-original-signature recovery at transmute,
-and speculative DynMetadata field snapshots. Pinned source and independent
-observations determine the obligations of each actual consumer.
+and speculative DynMetadata field snapshots. The latter two have already been
+removed from their qualified paths. Pinned source and independent observations
+must determine the obligations of each actual consumer.
 
-Validation also needs consolidation. Run 40347068121 takes 150.13 seconds;
-its 32 tests execute in 0.215 seconds. Static checks and compilation dominate.
+Validation also needs consolidation. The latest combined nineteen-control check
+took 221.05 seconds: private Clippy 63.63 seconds, build 127.38 seconds, and
+selected execution 0.31 seconds. Removing more test cases saves little here.
+The previous 32-control check took 150.13 seconds with 0.215 seconds of execution.
+Static checks and compilation dominate.
 The normal push workflow currently selects lexer tests. Scheduled 40297261891
 later exposed ordinary bootstrap diagnostic regressions and stale assertions.
 A green narrow push is not complete qualification.
+
+The newer full run `40368263999` took 14m15s and failed: 1,779 private tests passed
+in 2.26s; two publication-replay helpers omitted newly required completed callee
+facts. Three memory controls retained obsolete numeric-pointer diagnostic text,
+and one CLI test hit a pipe race when an invalid option closed stdin early.
+These are actionable regression controls, not a reason to repeat full release
+qualification on each edit. Native/debug/independent steps were skipped, so this
+run does not qualify them. The earlier successful-step evidence remains scoped.
+
+The successor full run 40377221175 passed release/course checks but failed one
+native frontend group: the cross-edition never-fallback helper appends a parsed
+donor Unit after expansion without producing its lint-owner records. The error is
+`active lint source owner has no produced record`. Correct the fixture through
+the real producer and cover its frontend/LowIR preparation without requiring a
+native backend; do not weaken production source validation. Debug/independent
+steps were skipped. This is a concrete example of useful regression coverage
+arriving too late in the current CI arrangement.
+
+## Scheduling decisions
+
+1. Give each lane one next executable acceptance target and its exact missing
+   joins. Internal components remain commits within that task, rather than new
+   open-ended milestones. After two coherent checkpoints without an advanced
+   source/artifact consumer, review whether the work is needed for that consumer
+   before adding another preparation API. Do not discard required work.
+2. Complete the actual supported source path before broadening it. Replace a
+   blanket feature fence only with complete checking of the supported forms;
+   keep explicit diagnostics for other unsupported declarations and uses.
+   Core's actual Thin alias must not wait for unrelated const/object-alias
+   features. All required unused declarations still undergo their real checks.
+3. Keep an implementation queue and a separate PA release queue. A missing broad
+   PA25–PA30 corner case does not prevent work on core, but no partial assignment
+   becomes active. At a consumer milestone, reconcile the owning PA's remaining
+   behavior, tests/oracles and publication checks; run its release gate when
+   that checklist is actually empty. Avoid treating every historical checkpoint
+   document's old remaining-work paragraph as a current extra obligation.
+4. Keep three workers and the existing three-heavy-job limit. Shared AST/type or
+   metadata interfaces get one owner and one coherent handoff; successors merge
+   that base rather than developing competing exhaustive walkers. Integration
+   gets the next heavy slot when qualified branches are waiting. Adding workers
+   before these joins close would increase build and merge contention.
+5. Inspect the alloc/std graph now, without waiting for core or launching target
+   builds that cannot succeed. Freeze selected manifests, dependency sources,
+   build-script inputs/outputs and required runtime symbols. Original alloc
+   depends on compiler_builtins; original std has platform crates, std_detect,
+   panic_abort, unwind and other dependencies even in an abort-oriented plan.
+   Resolve the actual selected graph instead of inferring it from the panic
+   setting. PA34 orchestration and PA30 ABI/backend probes can use small real
+   providers before the original libraries compile.
+6. Broaden blocker discovery using existing phase views, configured source
+   inventories and independent source reducers. Keep observed failures separate
+   from suspected requirements. Do not bypass a failing original module or count
+   a reducer as a whole-crate pass. Refresh original core after relevant changes;
+   its current 1.873-second attempt is cheap compared with a compiler rebuild.
+
+The first sequence is: actual imported provided-method execution, genuine
+Thin/Pointee/Foreign/NonNull consumers and false-assert execution; then complete
+original core checking/export and an independently compiled consumer; then
+original alloc with allocation/drop consumers; then the selected std graph and
+platform consumers. The first three component targets proceed in parallel.
+Begin core-only real-crate acceptance immediately when its dependency graph
+works. Do not insert a broad assignment-release or performance campaign between
+these executable milestones.
 
 ## Reviewed imported-body policy
 
@@ -47,6 +123,15 @@ complete declaration inputs and authenticated body presence. It carries no
 invented body Environment or execution permission. Original/copy/materialized
 and execution paths retain the real body-context API after demand.
 
+The same demand rule applies to expensive imported header/role elaboration.
+Validate the complete structural, identity, signature, visibility and
+impl/coherence inventory at its actual boundary. Leave unrelated elaboration
+Pending only when it cannot affect lookup, coherence or the selected proof.
+Use one validated immutable owner with indexed queries instead of adding
+equivalent provenance wrappers or replaying whole-package validation on each
+query. This does not remove required original/instance checks, accept missing
+metadata as absence, or serialize a paid proof.
+
 Reuse the actual collector's namespace columns, resolved ExportBindings and
 existing namespace remapping/pending-binding producer before final resolution.
 Names alone do not establish visibility or reexports. An unpaid sidecar can
@@ -61,15 +146,25 @@ cease to block the first ordinary provided-method execution.
 
 | Owner | Immediate work | Next execution evidence |
 | --- | --- | --- |
-| A, PA29 | Checked trait/impl/member declarations, genuine namespace installation and demanded body lookup | Encode/reload the complete provider, resolve actual Holder calls in a fresh consumer, prove original and fresh instances, then native carry/borrow output 7. Unrequested defaults remain present/Pending; qualify their demanded cases afterwards. |
-| B, PA25–28/31 | Remove the unsupported signature-recovery rule and its unnecessary structural origin segment | Form the pinned formatter erasure in const code from a nonconst function, store it with a real borrowed owner and invoke it at runtime. Then actual NonNull/Location/PanicInfo/handler and assertion/formatting consumers. |
-| C, PA22/31 | Genuine Pointee readiness and one Metadata Plan through both normalizers | Real source unit/length/tail/Dyn projections with equality/opacity/region opponents, then actual Thin/metadata source use. Next address pattern_type/NonNull/PhantomData required by B. |
-| Integrator, PA19–21/29/31/32 | Repair ordinary regressions, integrate work, close alias consumers and maintain the original-source frontier | Fresh relevant core loading/semantic attempts; then a real core artifact and separately compiled executable consumer. |
+| A, PA29 | Finish selected declaration/member joins, demanded defining environment and the explicit public Provided codec | Encode/reload the complete provider, resolve actual Holder calls in a fresh consumer, prove original and fresh instances, then native carry/borrow output 7. Unrequested defaults remain present/Pending; qualify their demanded cases afterwards. |
+| B, PA25–28/31 | Join Pattern/NonNull, PhantomData, caller_location/track_caller and real panic source | Actual NonNull operations, then real Location/PanicInfo/handler and a false assertion reaching Abort. Add nonempty formatting against actual source constructors and methods. |
+| C, PA22/30/31 | Finish foreign opaque VTable declarations (LIB-032) on the shared Pattern/Pointee base | Advance unchanged-core loading past VTable; combine genuine Thin use with the integrator's alias work. Unknown Foreign value layout must coexist with correct thin pointer metadata. |
+| Integrator, PA19–21/29/31/32 | Repair regressions, integrate shared interfaces, close aliases needed by actual Thin and maintain the original-source frontier | Validate unused declaration obligations as well as actual uses; refresh core after relevant changes, then produce the real core artifact and separately compiled consumer. |
 
 Keep three implementation workers. Their tasks follow independent observed
 blockers. The integrator reserves time for the actual upstream path and joins.
 Do not create another helper-only milestone when related consumer work can be
 qualified together.
+
+The next scheduling boundary is a working consumer, not another readiness flag.
+A retains the real no-import source caller and corrected `no_core` extern-prelude
+lookup. C retains dynamic lifetime opponents through the existing body-region
+consumer, since successful type analysis alone has not proved regions.
+B preserves original NonNull attributes,
+but documentary/lint claims must not acquire invented semantic prerequisites.
+Shared source components may move between workers before the whole lane passes,
+with failed/pending checks retained; only the combined real consumers qualify
+their integration. Do not create extra build trees for that handoff.
 
 B's simplification follows pinned fmt/rt.rs and const-eval validity/call code:
 pointer formation and actual call ABI checks are distinct. Preserve original
@@ -105,6 +200,13 @@ target features, f16/f128 and assembly cannot be waived by later PA ownership.
 Record actual typed operations and backend capabilities before proposing any
 separately reviewed backend change.
 
+Develop the necessary portions of PA25–PA34 in dependency order rather than
+waiting for each broad assignment to release. Keep a separate closure checklist
+for every owning PA. A first working core path does not release an unfinished
+assignment; conversely, unrelated assignment closure must not delay testing that
+path. Reassess the allocation of three workers whenever a lane is waiting on a
+shared interface, rather than adding another competing implementation.
+
 After core, build original alloc and allocation/destruction consumers, then std
 and platform consumers. Exercise the pinned core-only crate graph as soon as
 core and separate compilation permit it. No patched sources, synthetic library
@@ -116,10 +218,25 @@ algorithms, rustc-built target libraries or false cfg substitutions qualify.
   minutes. Keep formatting, strict Clippy and placement audits. Settle interfaces
   and avoid near-limit functions before freezing a candidate. Do not duplicate
   Clippy with another full check command.
+- Select private and public consumer controls together before freezing an
+  integration, using the existing runner's mixed selections. The latest separate
+  221.05/150.55-second batches total 371.60 seconds; they are not a five-minute
+  end-to-end integration. Avoid repeated static setup and builds of the same
+  source. Retain worker checks when their exact inputs remain valid, and measure
+  the combined critical path before claiming a faster integration. Do not add
+  another test runner or drop strict Clippy to hide that cost.
 - Run the real selected source/native acceptance when behavior changes. Build a
   CLI only when invoked. Retain exact unaffected receipts and independent source
   observations with provenance; source/LowIR equality can retain unchanged native
   results. Never relabel retained execution as fresh.
+- At integration, a relevant broad CI failure can justify reusing the already
+  built private executable for its ordinary tests: the latest release private
+  run executed in 2.26s. The corresponding repaired dev-fast executable now
+  passes all 1,782 ordinary private tests in 35.39s, without rebuilding. Keep
+  this check within the same five-minute budget. This adds no release build,
+  native sweep or per-edit full-inventory
+  obligation; do not spend 14 minutes in CI to discover another cheap local
+  regression in an executable already available.
 - Add a small shared ordinary-program smoke set to push/integration checks:
   runtime hooks, CTFE, source diagnostics, generic imports and lowering. Lexer-only
   push coverage is insufficient. Full release/text/native/debug/independent checks
@@ -127,6 +244,17 @@ algorithms, rustc-built target libraries or false cfg substitutions qualify.
 - Extend one reusable qualification runner for actual consumer needs instead of
   inventing a workflow/receipt format for each helper. Preserve failures, hashes
   and exact counts. Consolidate helper documentation at semantic milestones.
+- Split frontend/LowIR preparation from backend execution in native-only tests
+  when that exposes a cheap independent regression. Keep native acceptance as
+  well. The cross-edition donor failure is the first concrete candidate. Reuse
+  built integration executables at coherent joins rather than requesting a
+  separate release build to discover frontend-only failures.
+- Check uncertain language restrictions against the pin before building a new
+  proof mechanism. The alias-default observation retained two wrong rejection
+  predictions: a default violating a bound inherited through another alias is
+  accepted when unused. Written declaration bounds still require validation.
+  Preserve the difference between language validity, representation validity,
+  optional optimization and lint-only attributes.
 - Keep changed-path algorithmic scaling and work/storage invariants. Measure
   representation changes and complete semantic checkpoints. Broad ABBA/RSS and
   release matrices run at meaningful qualification boundaries.
@@ -139,3 +267,39 @@ Report actual crate/artifact/native milestones and remaining joins. Do not deriv
 a finish date or percentage from helper/test/opened-file counts. A dependable
 estimate first needs the complete selected core frontend blocker census and an
 actual imported generic consumer.
+
+## Follow-through at this checkpoint
+
+The integrator has repaired the CI replay helpers and early-usage pipe handling,
+and updated the four stale numeric-pointer assertions without changing their
+rejection outcomes. The current code passes all 1,782 ordinary private tests
+in 35.39s using the existing dev-fast executable. Four affected memory/CLI
+integration groups also pass; two unchanged memory groups retain their actual
+passing streams from the initial batch, whose later assertion failure is kept.
+The corrected option/CLI batch passes in 31.47s, including strict production/CLI
+Clippy, formatting and architecture checks. Private strict Clippy also passes.
+
+Unused direct alias defaults now reach the existing default proof instead of
+being hidden by the early blanket execution fence. The fence remains at the
+end of declaration checking. Five frozen inputs and ten independent metadata
+observations distinguish written from inherited default bounds; the original
+two wrong predictions remain recorded. No complete alias execution, assignment
+release or original library artifact is claimed.
+
+The shared push smoke and a reusable source-observation runner still need
+implementation. The current push workflow continues to select lexer tests;
+publishing its workflow change requires credentials with workflow-write scope.
+Local work uses the existing standard fastcheck runner. New custom gate wrappers
+have already caused avoidable serialization/launcher failures, so workers now
+use standard exact private selections and share reviewed source dependencies.
+
+The subsequent local integration 4a23c7297 combines A's qualified names/receiver
+shapes with C's qualified source Pointee consumers. Nineteen exact private tests
+and private strict Clippy/global audits pass in 221.05 seconds. Three ordinary
+CLI/frontend controls then pass with production/CLI strict Clippy in 150.55
+seconds. These are two separately scoped development batches, not one combined
+five-minute run or a full native qualification. Receipts are
+`obj/qualification/fast/1793039582331443219/receipt.json` and
+`obj/qualification/fast/1793040263229452879/receipt.json` in the integrator tree.
+Full CI's native donor-record failure remains open and is queued ahead of the
+next broad qualification. No original-core advance is claimed for these joins.

@@ -1,5 +1,8 @@
 //! Trait lookup consumes final lexical bindings and shares inherited candidate lists.
 mod discovery;
+#[cfg(test)]
+#[path = "../../../tests/invariants/extern_preludes.rs"]
+mod prelude_tests;
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     resolve::{
@@ -53,18 +56,20 @@ impl Index {
                 }
             }
         }
-        for kind in crate::support::comparisons::Comparison::ALL {
-            if let Some(declaration) = report.resolution.builtin_traits.comparison(kind) {
-                index.prelude_members(declaration.definition)?;
+        if !report.package.uses_source_bindings() {
+            for kind in crate::support::comparisons::Comparison::ALL {
+                if let Some(declaration) = report.resolution.builtin_traits.comparison(kind) {
+                    index.prelude_members(declaration.definition)?;
+                }
             }
-        }
-        if let Some(iteration) = facts.iteration.as_deref() {
-            for declaration in iteration.canonical.declarations {
-                index.prelude_members(declaration.definition)?;
+            if let Some(iteration) = facts.iteration.as_deref() {
+                for declaration in iteration.canonical.declarations {
+                    index.prelude_members(declaration.definition)?;
+                }
             }
-        }
-        if let Some(cloning) = facts.cloning.as_deref() {
-            index.prelude_members(cloning.canonical.definition)?;
+            if let Some(cloning) = facts.cloning.as_deref() {
+                index.prelude_members(cloning.canonical.definition)?;
+            }
         }
         index.account(report.resolution.scopes.len())?;
         for (scope_id, namespace, binding) in report.resolution.bindings.all_bindings() {

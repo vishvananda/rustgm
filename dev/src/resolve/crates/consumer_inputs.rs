@@ -95,9 +95,13 @@ impl ConsumerInput {
         work.charge(root.source.text().len().saturating_add(1))?;
         work.reserve(size_of::<Self>())?;
         let request = Request::new(admission, config, work);
-        let report = expansion::analyze_staged(root, sources, config, context, request)?;
+        let (report, seed) = expansion::analyze_staged(root, sources, config, context, request)?;
         let report = crate::resolve::analyze_expanded(report)?;
-        let (report, reservation) = Inputs::reserve_consumer(report, work)?;
+        let (report, reservation) = if let Some(seed) = seed {
+            seed.finish(report, work)?
+        } else {
+            Inputs::reserve_consumer(report, work)?
+        };
         Ok(Self {
             report,
             reservation,
@@ -115,6 +119,118 @@ pub(crate) struct ConsumerReservation {
     pub(super) root: ImportedDeclarationId,
     definitions: Range<usize>,
     scopes: Range<usize>,
+    definition_extent: usize,
+    scope_extent: usize,
+}
+/// Kept on the staged loader's stack while genuine source declarations append.
+/// These are the actual imported ranges and SAME catalog, never semantic readiness.
+pub(in crate::resolve) struct ReservationSeed {
+    inventory: Arc<Dependencies>,
+    index: u32,
+    catalog: Rc<Catalog>,
+    root: ImportedDeclarationId,
+    definitions: Range<usize>,
+    scopes: Range<usize>,
+}
+impl ReservationSeed {
+    pub(in crate::resolve) fn finish(
+        self,
+        report: Report,
+        work: &mut ReservationWork,
+    ) -> Result<(Report, ConsumerReservation), Error> {
+        work.charge(1)?;
+        work.reserve(size_of::<ConsumerReservation>())?;
+        let reservation = ConsumerReservation {
+            inventory: self.inventory,
+            index: self.index,
+            catalog: self.catalog,
+            root: self.root,
+            definitions: self.definitions,
+            scopes: self.scopes,
+            definition_extent: report.resolution.definitions.len(),
+            scope_extent: report.resolution.scopes.len(),
+        };
+        reservation.require(&report, work)?;
+        Ok((report, reservation))
+    }
+}
+/// Called only from the genuine staged expansion engine, before its first scan.
+pub(in crate::resolve) fn reserve_names(
+    resolver: &mut super::Resolver<'_>,
+    work: &mut ReservationWork,
+) -> Result<Option<ReservationSeed>, Error> {
+    let policy = resolver
+        .package
+        .staged_consumer()
+        .cloned()
+        .ok_or_else(|| error("named reservation requires its actual staged consumer"))?;
+    policy.require_package(resolver.package).map_err(error)?;
+    let Some(names) = policy.unpaid_namespace() else {
+        return Ok(None);
+    };
+    if resolver.facts.crates.is_some() {
+        return Err(error("named reservation cannot replace an imported owner"));
+    }
+    let inventory = Arc::clone(policy.inventory());
+    let index = policy.index();
+    let artifact = inventory
+        .artifacts()
+        .get(index as usize)
+        .ok_or_else(|| error("named reservation lost its actual provider"))?;
+    let rows = artifact
+        .source_descriptor()
+        .ok_or_else(|| error("named reservation lost its source descriptor"))?
+        .rows();
+    super::unpaid_provided::reserve_resolution(
+        resolver.package,
+        resolver.facts,
+        &inventory,
+        artifact,
+        rows,
+        work,
+    )?;
+    work.charge(5)?;
+    work.reserve(size_of::<ReservationSeed>().saturating_add(size_of::<Imported>()))?;
+    let first_definition = resolver.facts.definitions.len();
+    let first_scope = resolver.facts.scopes.len();
+    let external = resolver.new_scope(None, crate::resolve::package::ModuleId(0), true)?;
+    let mut imported = Imported::new(Arc::clone(&inventory));
+    let scope = resolver.reserve_artifact_root(artifact, &mut imported)?;
+    super::original_declarations::named_unpaid(
+        resolver,
+        scope,
+        artifact,
+        &mut imported,
+        names,
+        work,
+    )?;
+    work.charge(inventory.aliases().iter().fold(1_usize, |count, alias| {
+        count.saturating_add(alias.alias().len().saturating_add(1))
+    }))?;
+    resolver.bind_crate_aliases(external, &imported)?;
+    resolver.facts.extern_scope = Some(external);
+    let catalog = imported
+        .origin_catalog()
+        .map_err(error)?
+        .ok_or_else(|| error("named reservation lost its actual completed catalog"))?;
+    work.charge(4)?;
+    let definition = catalog
+        .definition_at(artifact.identity(), names.root)
+        .map_err(error)?;
+    let root = catalog.declaration(definition).map_err(error)?;
+    catalog
+        .validate_declaration(root, definition, DefKind::Module)
+        .map_err(error)?;
+    let seed = ReservationSeed {
+        inventory,
+        index,
+        catalog,
+        root,
+        definitions: first_definition..resolver.facts.definitions.len(),
+        scopes: first_scope..resolver.facts.scopes.len(),
+    };
+    resolver.facts.crates = Some(Box::new(imported));
+    Ok(Some(seed))
 }
 impl ConsumerReservation {
     pub(crate) fn recipe_view<'a>(
@@ -125,7 +241,7 @@ impl ConsumerReservation {
         super::unpaid_provided::RecipeView::consumer(self, report, work)
     }
     pub(crate) fn require(&self, report: &Report, work: &mut ReservationWork) -> Result<(), Error> {
-        work.charge(6)?;
+        work.charge(8)?;
         let policy = report
             .package
             .staged_consumer()
@@ -151,8 +267,10 @@ impl ConsumerReservation {
                     .map_err(error)?
                     .0 as usize),
             )
-            || report.resolution.definitions.len() != self.definitions.end
-            || report.resolution.scopes.len() != self.scopes.end
+            || self.definitions.end > self.definition_extent
+            || self.scopes.end > self.scope_extent
+            || report.resolution.definitions.len() != self.definition_extent
+            || report.resolution.scopes.len() != self.scope_extent
             || !report.names_resolved
         {
             return Err(error(
@@ -206,6 +324,8 @@ pub(super) fn bind(
         root,
         definitions,
         scopes,
+        definition_extent: report.resolution.definitions.len(),
+        scope_extent: report.resolution.scopes.len(),
     };
     reservation.require(&report, work)?;
     Ok((report, reservation))

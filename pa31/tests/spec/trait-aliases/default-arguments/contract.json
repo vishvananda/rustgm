@@ -1,0 +1,26 @@
+{
+  "state": "predicted before independent execution; planned PA31, no alias execution grant",
+  "owner": "PA31 aliases; PA21 shared generic default proof",
+  "source_pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "cases": [
+    {
+      "path": "pa31/tests/spec/trait-aliases/default-arguments/invalid-transitive.rs",
+      "sha256": "c165ef635735e3a36f1589d96bd3372f0823b7b9c4e396b358700ae466c5aa7e",
+      "predicted_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/trait-aliases/default-arguments/valid-direct.rs",
+      "sha256": "cbdf6fa3c34c50cab8df73b959b8e4a5caf3be5ae579721f11ad3e8cd2173e2d",
+      "predicted_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/trait-aliases/default-arguments/valid-transitive.rs",
+      "sha256": "0e5d0738082a1e1bb81dd609efc09fbde897004940f3ebca73064e195c905446",
+      "predicted_status": 0
+    }
+  ]
+}

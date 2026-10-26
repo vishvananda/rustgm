@@ -40,6 +40,20 @@ struct Publication {
     scopes: usize,
 }
 impl Paths {
+    pub(super) fn reserve_staged_names(
+        &mut self,
+        package: &mut Package,
+        work: &mut crate::resolve::crates::ReservationWork,
+    ) -> Result<Option<crate::resolve::crates::ReservationSeed>, Error> {
+        let seed = crate::resolve::crates::reserve_names(&mut self.state.bind(package), work)?;
+        if seed.is_some() {
+            // This is still before the first scan/import observation, matching
+            // ordinary Paths::new's ordering after import_crates completes.
+            self.work = Work::new(&self.state.facts);
+            self.work.observe();
+        }
+        Ok(seed)
+    }
     pub fn invocation(
         &mut self,
         expansion: ExpansionId,
