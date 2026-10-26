@@ -147,7 +147,7 @@ fn terminal_edge_and_const_reification_opponents_remain_closed() -> Result {
                 let crate::pipeline::Analysis {
                     mut facts,
                     prepared,
-                } = crate::pipeline::analyze_source(&report)?;
+                } = crate::pipeline::analyze_source(&report).map_err(|error| error.to_string())?;
                 crate::lower::instances::build_roots_prepared(
                     &report,
                     &mut facts,
@@ -157,8 +157,12 @@ fn terminal_edge_and_const_reification_opponents_remain_closed() -> Result {
                     },
                     prepared,
                 )
+                .map_err(|error| error.to_string())
             });
-        assert!(result.is_err(), "{name} acquired source Abort permission");
+        let error = result
+            .err()
+            .ok_or_else(|| format!("{name} acquired source Abort permission"))?;
+        eprintln!("source Abort {name} rejected: {error}");
     }
     Ok(())
 }
