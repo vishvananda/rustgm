@@ -162,3 +162,45 @@ fn reconcile(
     work.retained = reserved.saturating_add(actual);
     Ok(())
 }
+
+/// A selected impl's own application uses the same canonical clause cache.
+pub(super) fn implementation_application(
+    port: &mut Inputs<'_, '_>,
+    applications: &mut impl translation::applications::Cache,
+    owner: DeclarationRef,
+    store: &mut Store,
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
+    work.charge(1)?;
+    let rows = port.port.rows();
+    let Some(s::HeaderRef::Implementation(index)) = rows.header(owner).map_err(error)? else {
+        return Ok(());
+    };
+    let raw = &rows.implementations[index as usize];
+    if raw.self_definition != owner || raw.scope != owner {
+        return Err(error(
+            "selected implementation changed its actual Self/scope owner",
+        ));
+    }
+    let application = raw.trait_application.ok_or_else(|| {
+        error("selected inherent implementation requires its actual member producer")
+    })?;
+    let predicate = translation::application(port, applications, application, store, work)?;
+    let actual = match port
+        .cursor
+        .demand(&mut port.port, store, raw.self_type, work)?
+    {
+        Demand::Ready(ty) => ty,
+        Demand::Blocked(_) => {
+            return Err(error(
+                "selected implementation requires its actual pending Self type",
+            ));
+        }
+    };
+    if predicate.ty != actual {
+        return Err(error(
+            "selected implementation changed its exact Self/application pair",
+        ));
+    }
+    Ok(())
+}

@@ -12,6 +12,10 @@ use crate::{
     types::arena::Identity,
 };
 
+#[path = "reserved_consumer.rs"]
+mod continuation;
+pub(in crate::sema) use continuation::SelectedConsumer;
+
 #[cfg(test)]
 #[path = "../../../../tests/invariants/consumer_authorities.rs"]
 mod tests;

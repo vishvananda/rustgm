@@ -184,6 +184,7 @@ struct Signature {
     convention: crate::types::callable::Convention,
 }
 struct Checker<'a> {
+    selected: Option<Box<super::crates::SelectedConsumer<'a>>>,
     trait_aliases: Option<Box<aliases::Pending>>,
     annotation_inputs: annotations::Inputs,
     call_paths: crate::support::hash::HashSet<NodeKey>,
@@ -262,6 +263,41 @@ pub fn analyze_with_executor(
     })?;
     Ok(checker.facts)
 }
+/// Resume the genuine staged consumer without reconstructing its semantic arena.
+pub(in crate::sema) fn analyze_reserved<'a>(
+    report: &'a Report,
+    facts: Declarations,
+    mut selected: Box<super::crates::SelectedConsumer<'a>>,
+) -> Result<(Declarations, Box<super::crates::SelectedConsumer<'a>>), Error> {
+    selected.begin(
+        report,
+        &facts,
+        report
+            .resolution
+            .definitions
+            .len()
+            .saturating_mul(size_of::<State>()),
+    )?;
+    #[cfg(test)]
+    eprintln!(
+        "selected-continuation checker={} service={} states={}",
+        size_of::<Checker<'_>>(),
+        size_of::<super::crates::SelectedConsumer<'_>>(),
+        report.resolution.definitions.len()
+    );
+    let mut checker = Checker::from_facts(report, facts)?;
+    checker.selected = Some(selected);
+    checker.import_states()?;
+    checker.run().map_err(|error| {
+        checker
+            .facts
+            .retain_error_warnings(report.diagnostic(error))
+    })?;
+    let selected = checker.selected.take().ok_or_else(|| {
+        Error::unlocated("staged declaration checking lost its actual selected producer")
+    })?;
+    Ok((checker.facts, selected))
+}
 impl<'a> Checker<'a> {
     fn new(report: &'a Report) -> Result<Self, Error> {
         if !report.names_resolved {
@@ -271,12 +307,20 @@ impl<'a> Checker<'a> {
                 "type checking requires completed name resolution",
             ));
         }
-        let mut facts = Declarations::new(report)?;
+        let facts = Declarations::new(report)?;
+        let mut checker = Self::from_facts(report, facts)?;
+        checker
+            .import_states()
+            .map_err(|error| checker.facts.retain_error_warnings(error))?;
+        Ok(checker)
+    }
+    fn from_facts(report: &'a Report, mut facts: Declarations) -> Result<Self, Error> {
         let linkage_sources = foreign::collect(report, &mut facts.foreign)
             .map_err(|error| facts.retain_error_warnings(error))?;
         let target_feature_sources = call_traits::target_feature_sources(report)
             .map_err(|error| facts.retain_error_warnings(error))?;
-        let mut checker = Self {
+        Ok(Self {
+            selected: None,
             trait_aliases: aliases::collect(report)?,
             annotation_inputs: annotations::Inputs::default(),
             linkage_sources,
@@ -318,11 +362,7 @@ impl<'a> Checker<'a> {
             function_binders: crate::support::hash::HashMap::default(),
             constant_binders: crate::support::hash::HashMap::default(),
             owner_binders: crate::support::hash::HashMap::default(),
-        };
-        checker
-            .import_states()
-            .map_err(|error| checker.facts.retain_error_warnings(error))?;
-        Ok(checker)
+        })
     }
 }
 impl Checker<'_> {
@@ -330,6 +370,9 @@ impl Checker<'_> {
         if let Some(imported) = &self.report.resolution.crates {
             for definition in imported.generic_definitions() {
                 let definition = definition.map_err(Error::unlocated)?;
+                if self.selected.is_some() {
+                    continue;
+                }
                 match super::crates::source_readiness(&mut self.facts, definition)? {
                     Some(super::crates::ImportedReadiness::Declaration) => {
                         self.states[definition.0 as usize] = State::Complete;
@@ -413,6 +456,11 @@ impl Checker<'_> {
                     .map_err(|_| Error::at(FileId(0), 0, "too many type declarations"))?,
             );
             if self.latent_library_definition(id) {
+                continue;
+            }
+            if let Some(selected) = self.selected.as_deref()
+                && selected.is_imported(id)?
+            {
                 continue;
             }
             if !matches!(
@@ -853,6 +901,12 @@ impl Checker<'_> {
             if let Some(contracts) = &mut self.facts.generics.traits {
                 contracts.complete_results();
             }
+            return Ok(());
+        }
+        if let Some(selected) = self.selected.as_deref_mut()
+            && selected.definition(self.report, &mut self.facts, id)?
+        {
+            self.states[id.0 as usize] = State::Complete;
             return Ok(());
         }
         let definition = &self.report.resolution.definitions[id.0 as usize];

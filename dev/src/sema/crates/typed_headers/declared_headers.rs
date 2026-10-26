@@ -5,7 +5,7 @@ use crate::{
     sema::{
         crates::typed_headers::{
             error,
-            recipe_cursor::Demand,
+            recipe_cursor::{Demand, MemoLookup},
             staged_headers::contract_ports,
             unpaid_provided::{SchemaAuthority, owner_stages},
         },
@@ -100,6 +100,90 @@ pub(super) fn prepare(
     install(facts, &mut declarations, definition, header, implicit)?;
     template_demands::mark_declarations(&mut selected.recipes, &declarations)?;
     Ok(Demand::Ready(()))
+}
+
+/// Install genuine impl declaration data before candidate/conformance demand.
+pub(super) fn implementation(
+    selected: &mut SelectedHeaders,
+    facts: &mut Declarations,
+    authority: &SchemaAuthority<'_>,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+) -> Result<Demand<()>, Error> {
+    if let Demand::Blocked(dependency) = selected.schema(facts, authority, owner, work)? {
+        return Ok(Demand::Blocked(dependency));
+    }
+    let view = authority.reservation.recipe_view(authority.report, work)?;
+    let rows = view.rows()?;
+    let Some(s::HeaderRef::Implementation(index)) = rows.header(owner).map_err(error)? else {
+        return Err(error(
+            "selected implementation changed its actual header kind",
+        ));
+    };
+    let raw = rows.implementations[index as usize];
+    let reference = raw.trait_application.ok_or_else(|| {
+        error("selected inherent implementation requires its actual member producer")
+    })?;
+    let application = rows
+        .trait_applications
+        .get(reference.0 as usize)
+        .ok_or_else(|| error("selected implementation omitted its actual trait application"))?;
+    if application.declaration.artifact != rows.policy.provider {
+        return Err(error(
+            "selected implementation requires its actual dependency trait producer",
+        ));
+    }
+    if let Demand::Blocked(dependency) =
+        selected.trait_owner(facts, authority, application.declaration.declaration, work)?
+    {
+        return Ok(Demand::Blocked(dependency));
+    }
+    if !template_demands::declaration_ready(selected.recipes.as_deref(), &view, facts, owner, work)?
+    {
+        let mut declarations =
+            template_demands::declarations(&mut selected.recipes, facts, owner, work, |work| {
+                authority.reservation.recipe_view(authority.report, work)
+            })?;
+        let definition = view.definition(owner, work)?;
+        let state = selected
+            .recipes
+            .as_deref()
+            .ok_or_else(|| error("selected implementation lost its actual recipe owner"))?;
+        let ty = match state
+            .memo()?
+            .get(&view, &facts.types, raw.self_type, work)?
+        {
+            MemoLookup::Ready(ty) => ty,
+            MemoLookup::Pending { .. } => {
+                return Err(error(
+                    "selected implementation requires its actual pending Self type",
+                ));
+            }
+        };
+        if raw.self_definition != owner
+            || raw.scope != owner
+            || facts
+                .definitions
+                .get(definition.0 as usize)
+                .is_none_or(Option::is_some)
+        {
+            return Err(error(
+                "selected implementation cannot replace its actual Self cell",
+            ));
+        }
+        preflight_scopes(facts, &declarations, work)?;
+        install_scopes(facts, &mut declarations)?;
+        facts.definitions[definition.0 as usize] = Some(ty);
+        template_demands::mark_declarations(&mut selected.recipes, &declarations)?;
+    }
+    owner_stages::install(
+        &mut selected.owners,
+        &mut selected.recipes,
+        facts,
+        authority,
+        owner,
+        work,
+    )
 }
 
 fn install(

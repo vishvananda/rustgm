@@ -49,9 +49,16 @@ impl SelectedHeaders {
                         return Ok(Demand::Blocked(dependency));
                     }
                 }
+                Some(crate::support::crates::generics::source::HeaderRef::Implementation(_)) => {
+                    if let Demand::Blocked(dependency) =
+                        self.implementation_owner(facts, authority, parent, work)?
+                    {
+                        return Ok(Demand::Blocked(dependency));
+                    }
+                }
                 _ => {
                     return Err(super::super::error(
-                        "selected implementation method requires its actual parent declaration producer",
+                        "selected callable parent lacks its actual trait/implementation header",
                     ));
                 }
             }
@@ -62,6 +69,15 @@ impl SelectedHeaders {
             return Ok(Demand::Blocked(dependency));
         }
         methods::prepare(self, facts, authority, owner, work)
+    }
+    pub(in crate::sema::crates::typed_headers) fn implementation_owner(
+        &mut self,
+        facts: &mut Declarations,
+        authority: &SchemaAuthority<'_>,
+        owner: DeclarationRef,
+        work: &mut ReservationWork,
+    ) -> Result<Demand<()>, Error> {
+        declarations::implementation(self, facts, authority, owner, work)
     }
     pub(in crate::sema::crates::typed_headers) fn trait_owner(
         &mut self,

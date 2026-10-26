@@ -129,7 +129,9 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
     let (mut stage, status) = stage.trait_owner(holder_declaration, &mut work)?;
     assert_eq!(status, Demand::Ready(()));
     stage = repeated_owner(stage, holder_declaration, definition, &mut work)?;
-    method_headers(stage, &mut work)?;
+    let stage = method_headers(stage, &mut work)?;
+    let stage = stage.analyze(&mut work)?;
+    assert!(!stage.session.authority.facts.functions.is_empty());
     owner_failed_precharge()?;
     actual_implicit_prelude_controls()?;
     Ok(())
@@ -190,7 +192,10 @@ fn repeated_owner(
     Ok(stage)
 }
 
-fn method_headers(mut stage: Box<HeaderDraft>, work: &mut ReservationWork) -> Result {
+fn method_headers(
+    mut stage: Box<HeaderDraft>,
+    work: &mut ReservationWork,
+) -> Result<Box<HeaderDraft>> {
     for name in ["carry", "borrow"] {
         let owner = named(&stage, name, work)?;
         let definition = stage
@@ -257,7 +262,7 @@ fn method_headers(mut stage: Box<HeaderDraft>, work: &mut ReservationWork) -> Re
         size_of::<Option<Arc<crate::types::parameters::environment::Environment>>>(),
         size_of::<crate::sema::crates::typed_headers::unpaid_provided::ProvidedOwners>()
     );
-    Ok(())
+    Ok(stage)
 }
 
 fn owner_failed_precharge() -> Result {

@@ -1,6 +1,7 @@
 //! Canonical imported headers retain actual catalog ownership and declared inputs.
 mod applications;
 mod consumer_sessions;
+pub(in crate::sema) use consumer_sessions::SelectedConsumer;
 mod context_queries;
 mod ingest;
 pub(super) mod mapped_source;

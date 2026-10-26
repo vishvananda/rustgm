@@ -198,6 +198,13 @@ impl Scope {
             ScopeInputs::Declaration(inputs)
         };
         originals::require_leaf_inputs(rows, scope_row, inputs.all(), applications, work)?;
+        ports::implementation_application(
+            port,
+            applications,
+            scope_row.owner,
+            &mut facts.types,
+            work,
+        )?;
         clauses.extend(inputs.all().iter().map(|input| input.value));
         let mut accounting = Observed {
             work,
