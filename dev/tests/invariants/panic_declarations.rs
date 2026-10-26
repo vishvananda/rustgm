@@ -159,9 +159,10 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert!(report.resolution.intrinsics.get(Intrinsic::Abort).is_none());
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
-    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 832);
+    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 808);
     assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 176);
     assert_eq!(size_of::<Declaration>(), 20);
+    assert_eq!(size_of::<Option<Declaration>>(), 20);
     assert_eq!(
         size_of::<crate::resolve::bindings::IntrinsicDeclaration>(),
         24
@@ -214,12 +215,13 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
         );
     }
     eprintln!(
-        "source claims Reservations={} SourceCore={} Resolution={} Package={} Declaration={} IntrinsicDeclaration={} Catalog={} bindings={:?}",
+        "source claims Reservations={} SourceCore={} Resolution={} Package={} Declaration={} OptionDeclaration={} IntrinsicDeclaration={} Catalog={} bindings={:?}",
         size_of::<crate::resolve::bindings::Reservations>(),
         size_of::<crate::resolve::bindings::SourceCore>(),
         size_of::<crate::resolve::model::Resolution>(),
         size_of::<crate::resolve::package::Package>(),
         size_of::<Declaration>(),
+        size_of::<Option<Declaration>>(),
         size_of::<crate::resolve::bindings::IntrinsicDeclaration>(),
         size_of::<Catalog>(),
         Catalog::binding_layouts()
