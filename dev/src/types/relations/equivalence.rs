@@ -92,6 +92,9 @@ impl RegionEqualities {
         }
         result
     }
+    pub(crate) fn has_equation_storage(&self) -> bool {
+        self.representatives.capacity() != 0
+    }
     pub(crate) fn is_empty(&self) -> bool {
         self.representatives.is_empty()
     }
