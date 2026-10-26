@@ -7,6 +7,7 @@ mod client;
 pub(crate) mod consumer_policy;
 #[path = "bindings/allowance_owner.rs"]
 mod macro_context;
+mod panic_claims;
 pub(in crate::resolve) mod panic_contracts;
 pub(super) mod policy;
 mod positions;

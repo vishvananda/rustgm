@@ -63,6 +63,39 @@ impl Checker<'_> {
         self.facts.lifetimes.parameters.insert(definition, declared);
         Ok(())
     }
+    /// Capturing a lexical Self schema grants no associated member or trait identity.
+    pub(super) fn lexical_self_type(
+        &mut self,
+        key: NodeKey,
+        id: DefId,
+        context: super::regions::Context,
+        target: crate::types::TypeId,
+        captures: u32,
+    ) -> Result<crate::types::TypeId, Error> {
+        if crate::sema::lifetimes::arguments(self.report, key, false)?.is_some() {
+            return Err(self.error(key, "Self cannot take lifetime arguments"));
+        }
+        let binder = self.owner_binders[&id];
+        let mut mapping = Vec::with_capacity(captures as usize);
+        for index in 0..captures {
+            let slot = u16::try_from(index)
+                .map_err(|_| self.error(key, "too many impl lifetime slots"))?;
+            mapping.push(
+                self.regions
+                    .captured_region(context.binder, binder, slot)
+                    .map_err(|e| self.error(key, e))?,
+            );
+        }
+        let args = self
+            .facts
+            .types
+            .intern_regions(&mapping)
+            .map_err(|e| self.error(key, e))?;
+        self.facts
+            .lifetimes
+            .substitute(&mut self.facts.types, args, target)
+            .map_err(|e| self.error(key, e))
+    }
 }
 
 #[cfg(test)]

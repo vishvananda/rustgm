@@ -51,7 +51,7 @@ impl Checker<'_> {
                     } => {
                         dependents.entry(parent).or_default().push(definition);
                     }
-                    Written::SourceSizing(_) | Written::Outlives(_) => {}
+                    Written::SourceSizing(_) | Written::Outlives(_) | Written::Alias { .. } => {}
                 }
             }
             promises.insert(definition, result);
