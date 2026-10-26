@@ -6,6 +6,13 @@ use crate::{
 };
 
 fn artifact(suffix: &str, work: &mut ReservationWork) -> Result<(CollectedArtifact, Identity)> {
+    artifact_with_alias(suffix, None, work)
+}
+fn artifact_with_alias(
+    suffix: &str,
+    alias: Option<&str>,
+    work: &mut ReservationWork,
+) -> Result<(CollectedArtifact, Identity)> {
     let mut source = crate::test_source::fixture(
         "pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs",
     )?;
@@ -25,10 +32,120 @@ fn artifact(suffix: &str, work: &mut ReservationWork) -> Result<(CollectedArtifa
         analysis.prepared,
     )?;
     let arena = analysis.facts.types.arena_identity();
-    let artifact =
-        inspection.into_artifact(Interface::new(provider, Vec::new(), Vec::new())?, work)?;
+    let alias = alias
+        .map(|name| crate::support::crates::Dependency::new(name.to_owned(), provider.clone()))
+        .transpose()?;
+    let base = Interface::new(provider, Vec::new(), Vec::new())?;
+    let artifact = if let Some(alias) = alias {
+        inspection.into_named_artifact(base, alias, work)?
+    } else {
+        inspection.into_artifact(base, work)?
+    };
     // Producer Report/facts retire here, before the current consumer exists.
     Ok((artifact, arena))
+}
+#[test]
+fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_preparation() -> Result
+{
+    let mut work = ReservationWork::default();
+    let (artifact, arena) = artifact_with_alias(HOLDER, Some("base"), &mut work)?;
+    let context = context(artifact.inventory())?;
+    let config = Config::default();
+    let mut sources = NoFiles;
+    let text = "#![feature(no_core)]#![no_core]fn main(){let value=<u8 as base::Holder<u8>>::carry::<u8>(7u8);let borrowed=<u8 as base::Holder<u8>>::borrow(&value);let _=*borrowed;}";
+    let request = ConsumerRequest::new(input(text)?, &mut sources, &config, &context);
+    let mut stage = ProofSession::from_collected(artifact, request, &mut work)?;
+    let authority = &stage.session.authority;
+    let view = authority
+        .reservation
+        .recipe_view(&authority.report, &mut work)?;
+    let rows = view.rows()?;
+    let holder = rows
+        .traits
+        .iter()
+        .find(|header| {
+            rows.declarations[header.declaration.0 as usize]
+                .name
+                .as_deref()
+                == Some("Holder")
+        })
+        .ok_or("actual retained Holder declaration")?;
+    let definition = view.definition(holder.declaration, &mut work)?;
+    assert!(authority.report.names_resolved);
+    assert!(authority.report.resolution.extern_scope.is_some());
+    assert_eq!(authority.report.resolution.qualified_paths.len(), 2);
+    assert!(
+        authority
+            .report
+            .resolution
+            .references
+            .iter()
+            .any(|reference| reference.target
+                == crate::resolve::model::Target::Definition(definition))
+    );
+    assert!(!authority.facts.types.has_identity(&arena));
+    assert!(authority.facts.definitions.iter().all(Option::is_none));
+    assert!(authority.facts.generics.traits.is_none());
+    assert!(authority.facts.functions.is_empty());
+    let carry = named(&stage, "carry", &mut work)?;
+    let (returned, status) = stage.callable_template(carry, &mut work)?;
+    stage = returned;
+    assert_eq!(status, Demand::Ready(()));
+    assert!(stage.session.authority.facts.generics.traits.is_none());
+    assert!(stage.session.authority.facts.functions.is_empty());
+    stage.session.authority.require(&mut work)?;
+    actual_implicit_prelude_controls()?;
+    Ok(())
+}
+fn actual_implicit_prelude_controls() -> Result {
+    for (declarations, body, accepted) in [
+        (
+            "",
+            "mod inner{pub fn f(){let _=<u8 as base::Holder<u8>>::carry::<u8>(7u8);}}fn main(){}",
+            true,
+        ),
+        (
+            "#![no_implicit_prelude]",
+            "fn main(){let _=<u8 as base::Holder<u8>>::carry::<u8>(7u8);}",
+            false,
+        ),
+        (
+            "#![no_implicit_prelude]extern crate base;",
+            "fn main(){let _=<u8 as base::Holder<u8>>::carry::<u8>(7u8);}",
+            true,
+        ),
+        (
+            "#![no_implicit_prelude]",
+            "mod inner{pub fn f(){let _=<u8 as base::Holder<u8>>::carry::<u8>(7u8);}}fn main(){}",
+            false,
+        ),
+        (
+            "",
+            "mod inner{#![no_implicit_prelude]pub fn f(){let _=<u8 as base::Holder<u8>>::carry::<u8>(7u8);}}fn main(){}",
+            false,
+        ),
+    ] {
+        let mut work = ReservationWork::default();
+        let (artifact, _) = artifact_with_alias(HOLDER, Some("base"), &mut work)?;
+        let context = context(artifact.inventory())?;
+        let config = Config::default();
+        let mut sources = NoFiles;
+        let text = format!("#![feature(no_core)]#![no_core]{declarations}{body}");
+        let request = ConsumerRequest::new(input(&text)?, &mut sources, &config, &context);
+        let result = ProofSession::from_collected(artifact, request, &mut work);
+        if accepted {
+            let stage = result?;
+            stage.session.authority.require(&mut work)?;
+            assert!(stage.session.authority.facts.functions.is_empty());
+        } else {
+            let error = result
+                .err()
+                .ok_or("no_implicit_prelude unexpectedly exposed an alias")?;
+            assert_eq!(error.message, "unresolved type name");
+            assert!(work.steps > 0);
+        }
+    }
+    Ok(())
 }
 fn context(inventory: &Arc<crate::support::crates::Dependencies>) -> Result<Context> {
     Ok(Context {

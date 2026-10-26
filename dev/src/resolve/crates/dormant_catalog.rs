@@ -12,6 +12,7 @@ use crate::{
 use std::{ops::Range, sync::Arc};
 #[path = "dormant_budget.rs"]
 mod budget;
+pub(super) use budget::reserve_resolution;
 #[cfg(test)]
 #[path = "../../../tests/invariants/dormant_domains.rs"]
 mod tests;

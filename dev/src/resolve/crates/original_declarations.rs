@@ -100,6 +100,16 @@ pub(super) fn unpaid_input(
 ) -> Result<Input, Error> {
     packet_declarations::unpaid_input(resolver, scope, artifact, imported, work)
 }
+pub(super) fn named_unpaid(
+    resolver: &mut Resolver<'_>,
+    scope: ScopeId,
+    artifact: &Interface,
+    imported: &mut Imported,
+    names: &g::source::NamespaceColumns,
+    work: &mut Work,
+) -> Result<(), Error> {
+    packet_declarations::named_unpaid(resolver, scope, artifact, imported, names, work)
+}
 pub(super) fn source_kind(kind: g::source::DefinitionKind) -> (DefKind, Namespace) {
     packet_declarations::kind(kind)
 }
