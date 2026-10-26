@@ -44,6 +44,11 @@ pub(super) fn require(
         {
             return Err(failure());
         }
+        let generated = unit
+            .source
+            .text()
+            .get(origin.generated.start as usize..origin.generated.end as usize)
+            .ok_or_else(failure)?;
         match origin.kind {
             OriginKind::Copied => {
                 source
@@ -56,10 +61,9 @@ pub(super) fn require(
                     || unit
                         .source
                         .text()
-                        .get(origin.generated.start as usize..origin.generated.end as usize)
-                        != unit.source.text().get(
-                            origin.original.span.start as usize..origin.original.span.end as usize,
-                        )
+                        .get(origin.original.span.start as usize..origin.original.span.end as usize)
+                        .ok_or_else(failure)?
+                        != generated
                 {
                     return Err(failure());
                 }

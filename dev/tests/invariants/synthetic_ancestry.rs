@@ -38,16 +38,18 @@ pub(super) fn units() -> TestResult {
             SyntaxContextId::ROOT,
         )?;
         let mut stream = Stream::default();
-        let range = stream.synthetic_image(
-            "let",
-            Location {
-                file: FileId(0),
-                span: Span { start: 3, end: 8 },
-            },
-            context,
-            ExpansionId(1),
-            definition,
-        )?;
+        let range = stream
+            .synthetic_image(
+                "let",
+                Location {
+                    file: FileId(0),
+                    span: Span { start: 3, end: 8 },
+                },
+                context,
+                ExpansionId(1),
+                definition,
+            )
+            .map_err(|e| e.message)?;
         assert!(editions::parent(&stream.origins, range).is_err());
         let base = second.source.append(&stream.source)?;
         let mut origin = stream.origins[0];
