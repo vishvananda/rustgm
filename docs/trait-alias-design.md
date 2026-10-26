@@ -6,8 +6,9 @@ byte3311, the equals sign in `pub trait Thin = Pointee<Metadata = ()> + PointeeS
 Source SHA is `90be519b27b46064f0bec607170ffce37aa9afb160a1edfab9c51641c8af15e2`.
 The [source-site foundation](trait-alias-sites-checkpoint.md) is qualified.
 The [clause requirements and shared Self producer](trait-alias-contracts-checkpoint.md)
-add typed-phase groundwork; actual alias clause expansion and a core artifact
-remain open.
+add typed-phase groundwork. The [canonical clause checkpoint](trait-alias-clauses-checkpoint.md)
+now qualifies local headers, shared dependency edges and a bounded ordinary-bound
+consumer. Complete alias semantics, imported transport and a core artifact remain open.
 
 Independent run40239493812 freezes 16 authored sources before execution, then
 observes 32 metadata compilations and six actual native executions on pinned

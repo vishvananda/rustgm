@@ -216,8 +216,15 @@ actual alias identities and lexical Self/generic scopes without ordinary trait
 owners, associated member scopes, impl entries or synthetic Self:Alias evidence.
 Typed expansion must share canonical dependency edges rather than repeatedly
 flattening nested alias diamonds. See the
-[source-site checkpoint](docs/trait-alias-sites-checkpoint.md); its active alias
-semantic and imported-transport fences stay explicit until their consumers exist.
+[source-site checkpoint](docs/trait-alias-sites-checkpoint.md) and
+[canonical clause checkpoint](docs/trait-alias-clauses-checkpoint.md). Canonical
+headers own full declared slots, direct clauses and typed dependency edges;
+seal their graph before use and distinguish unfinished, failed and empty
+contracts. Substitution-only expansion may share identical actual declaration,
+subject and full-argument applications within one Store and binder context.
+That membership is not proof evidence. Retain original/normalized inputs and
+binder identities when their consumers are implemented; incomplete consumers
+and imported transport keep explicit fences.
 
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization

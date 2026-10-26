@@ -1,6 +1,8 @@
 # Trait alias clause requirements and shared Self preparation
 
-Typed aliases remain unimplemented. This checkpoint establishes additional
+Complete typed aliases remain open. The newer [canonical clause checkpoint](trait-alias-clauses-checkpoint.md)
+qualifies actual local headers, dependency graphs and a bounded ordinary-bound
+consumer. This earlier checkpoint establishes additional
 independent semantic requirements and extracts the real rigid Self producer so
 an alias can later use it without becoming an associated trait owner. It does
 not close LIB-031 or produce a core artifact.
@@ -64,8 +66,8 @@ a nonexistent usize constant. Both lint modes were gathered and no tests ran
 after that failure. The successor uses the canonical primitive identity and
 cohesive Self/formal helpers, without audit or lint allowances.
 
-Next, install genuine per-alias canonical headers and clause dependencies under
-this producer, extend the bound worklist to multiple actual clauses, and connect
-projection/object consumers. Preserve unused declaration validation, complete
+The newer checkpoint installs genuine per-alias canonical headers and dependency
+edges under this producer and expands multiple actual clauses in ordinary bounds.
+Next, complete nested binder/region and projection/object consumers. Preserve unused declaration validation, complete
 arguments, quantifier depth, original/normalized views and cumulative budgets.
 Imported transport remains a separate required consumer of those real contracts.
