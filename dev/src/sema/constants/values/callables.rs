@@ -3,6 +3,32 @@ use super::{Constant, Evaluator, Failure, Reader, Type, TypeId, View};
 use crate::types::instance::Instance;
 
 impl Reader<'_> {
+    pub(crate) fn source_transmute(
+        self,
+        instance: Instance,
+        origin: crate::resolve::body_origin::BodyOrigin,
+    ) -> Result<Option<crate::sema::compiler_items::TransmuteSelection>, &'static str> {
+        self.facts
+            .source_bindings
+            .as_deref()
+            .map(|catalog| catalog.transmute_selection(self.facts, instance, origin))
+            .transpose()
+            .map(Option::flatten)
+    }
+
+    pub(crate) fn source_abort(
+        self,
+        instance: Instance,
+        origin: crate::resolve::body_origin::BodyOrigin,
+    ) -> Result<Option<crate::sema::compiler_items::AbortSelection>, &'static str> {
+        self.facts
+            .source_bindings
+            .as_deref()
+            .map(|catalog| catalog.abort_selection(self.facts, instance, origin))
+            .transpose()
+            .map(Option::flatten)
+    }
+
     pub(crate) fn source_runtime_check(
         self,
         instance: Instance,
@@ -49,6 +75,21 @@ impl Reader<'_> {
 }
 
 impl Evaluator<'_> {
+    pub(crate) fn checked_source_transmute(
+        &self,
+        instance: Instance,
+        origin: crate::resolve::body_origin::BodyOrigin,
+    ) -> Result<Option<crate::sema::compiler_items::TransmuteSelection>, Failure> {
+        let Some(catalog) = self.facts().source_bindings.as_deref() else {
+            return Ok(None);
+        };
+        let Some(selected) = catalog.transmute_selection(self.facts(), instance, origin)? else {
+            return Ok(None);
+        };
+        catalog.require_transmute_report(self.queries.report, self.facts(), &selected)?;
+        Ok(Some(selected))
+    }
+
     pub(crate) fn reify(&self, source: TypeId, value: Constant) -> Result<Constant, Failure> {
         match self.facts().types.kind(source) {
             Some(Type::FunctionItem { .. } | Type::Function { .. }) => {

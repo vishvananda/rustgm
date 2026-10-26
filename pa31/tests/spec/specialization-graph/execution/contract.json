@@ -1,0 +1,183 @@
+{
+  "schema": 1,
+  "state": "Independent pinned Rust observations; RustGM execution successor UNQUALIFIED and still fenced",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "batches": [
+    {
+      "run": 40261457506,
+      "plan_sha256": "868ab2a3a1b2e624069f298a1f1854a68952c3866c800e5f6bed7d4b82cb1c3c",
+      "binding_sha256": "3f7f1852ea15c24ee500ef44fa46652b19a9bc31cdde27185da7084e22a8ee3d",
+      "ci_commit": "4a6e1e7b63535da41bc1846c0d290c804dfc03c4",
+      "artifact": 12625080032,
+      "artifact_sha256": "8eca0c149ccc38db4ff87c49f98967bde0c980780594e582dc17fc6d58b3af9a",
+      "metadata": 6,
+      "native_builds": 6,
+      "native_executed": 2,
+      "prediction_disagreements": 8,
+      "infra": 0
+    },
+    {
+      "run": 40261833467,
+      "plan_sha256": "f858e3ee8c0d68bfa001f088eedc1cdbb58d2b84ca4baf97b742ddefaa32f97f",
+      "binding_sha256": "1d90f91e3ec00a06051d1dacedc750b3e36459f347d2c7f1ec1d4e41661a8483",
+      "ci_commit": "6806b10bfd6d54fed3920145cd3bfc054a2b748f",
+      "artifact": 12623629953,
+      "artifact_sha256": "aca25d4a92bb236dacef9afa9f1bbb92de8dd76a37b3e09a35b5bdbe65a32a05",
+      "metadata": 4,
+      "native_builds": 2,
+      "native_executed": 2,
+      "prediction_disagreements": 0,
+      "infra": 0
+    },
+    {
+      "run": 40262359916,
+      "plan_sha256": "84de5780f6b69dcfb354cf3f602b0dd9da38f102bb698bfa28d81533952ea4b7",
+      "binding_sha256": "4c50a376341fd106fcc8f0a7bb8eee96a122a62203f36f610cb2d8a7e34daa0d",
+      "ci_commit": "00a5198ba08dfe2fc41fd190afadfaf01154a4cb",
+      "artifact": 12625111552,
+      "artifact_sha256": "600b01b69e503e7009223df28433f43b72fec0aa3ded7114da3e668eba42c9dc",
+      "metadata": 2,
+      "native_builds": 2,
+      "native_executed": 0,
+      "prediction_disagreements": 4,
+      "infra": 0
+    }
+  ],
+  "sources": [
+    {
+      "path": "pa31/tests/spec/specialization-graph/execution/inherited-default-rpit.rs",
+      "sha256": "bee6447da40132723f42741249d61882a5b8c9616d4d3c7cff5978d807136c6e",
+      "observed_metadata_status": 1,
+      "warning_codes": [],
+      "observed_errors": [
+        "method `f` has an incompatible type for trait",
+        "associated function with return-position `impl Trait` in trait cannot be specialized",
+        "aborting due to 2 previous errors"
+      ],
+      "native_executed": 0,
+      "native_outcome": "no executable produced",
+      "frozen_prediction": {
+        "metadata_status": 0,
+        "native": {
+          "build_status": 0,
+          "exit_status": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      "run": 40261457506
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/execution/own-child-rpit-override.rs",
+      "sha256": "bb3ed6b319f0ae58e1d176c38cb4609e017cf4610620020771dfa7acf2337162",
+      "observed_metadata_status": 1,
+      "warning_codes": [],
+      "observed_errors": [
+        "method `f` has an incompatible type for trait",
+        "associated function with return-position `impl Trait` in trait cannot be specialized",
+        "aborting due to 2 previous errors"
+      ],
+      "native_executed": 0,
+      "native_outcome": "no executable produced",
+      "frozen_prediction": {
+        "metadata_status": 0,
+        "native": {
+          "build_status": 0,
+          "exit_status": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      "run": 40261457506
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/execution/inherited-static-parent-nonstatic-child.rs",
+      "sha256": "792ed57cb933d8bf9b1ebf5d83fb20e3c1fa55e3b55dc63b9f67d7b4c418be86",
+      "observed_metadata_status": 0,
+      "warning_codes": [],
+      "observed_errors": [],
+      "native_executed": 2,
+      "native_outcome": "pass",
+      "frozen_prediction": {
+        "metadata_status": 0,
+        "native": {
+          "build_status": 0,
+          "exit_status": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      "run": 40261457506
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/execution/final-rpit-inherited-across-scalar-specialization.rs",
+      "sha256": "7c4cf37129c23885611fb7f881b27d76eac92b5de053f6dd14977f82d2612e00",
+      "observed_metadata_status": 0,
+      "warning_codes": [],
+      "observed_errors": [],
+      "native_executed": 2,
+      "native_outcome": "pass",
+      "frozen_prediction": {
+        "metadata_status": 0,
+        "native": {
+          "build_status": 0,
+          "exit_status": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      "run": 40261833467
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/execution/default-rpit-with-concrete-implementation-output.rs",
+      "sha256": "a3640dcfd33a9ea4b3dd2d39f8df8f0e8e39302dde72187c1c2369b463aa6cd3",
+      "observed_metadata_status": 1,
+      "warning_codes": [],
+      "observed_errors": [
+        "method `f` has an incompatible type for trait",
+        "associated function with return-position `impl Trait` in trait cannot be specialized",
+        "aborting due to 2 previous errors"
+      ],
+      "native_executed": 0,
+      "native_outcome": "no executable produced",
+      "frozen_prediction": {
+        "metadata_status": 1,
+        "native": null
+      },
+      "run": 40261833467
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/execution/final-rpit-static-parent-nonstatic-child.rs",
+      "sha256": "e99622381a93573e40dd8f7081e105dccbafd6fb6c137b5ea6f97fd3a46431cf",
+      "observed_metadata_status": 1,
+      "warning_codes": [],
+      "observed_errors": [
+        "lifetime may not live long enough",
+        "aborting due to 1 previous error"
+      ],
+      "native_executed": 0,
+      "native_outcome": "no executable produced",
+      "frozen_prediction": {
+        "metadata_status": 0,
+        "native": {
+          "build_status": 0,
+          "exit_status": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      "run": 40262359916
+    }
+  ],
+  "semantics": [
+    "Concrete inherited scalar dispatch accepts static parent with nonstatic child and uses the actual defining original/instance context; no artificial caller static debt.",
+    "Default RPIT trait methods are rejected by actual trait declaration identity, including a concrete written implementation result.",
+    "A final RPIT method may be inherited through a family specializing another scalar member.",
+    "Final inherited RPIT normalization with the static-parent/nonstatic-child combination rejects a real caller lifetime debt; this differs from concrete scalar body dispatch."
+  ],
+  "prediction_history": "All original positive hypotheses and all twelve metadata/native-build disagreements remain unchanged in immutable CI plans and raw JSON evidence. No repeat of prior source/oracle matrices."
+}

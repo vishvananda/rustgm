@@ -419,6 +419,35 @@ impl Generics {
     ) -> Result<crate::types::parameters::clauses::Clause, &'static str> {
         self.substitution(store, owner, args)?.clause(store, clause)
     }
+    /// The same immutable substitution cache with call-scoped growth payment.
+    pub(in crate::sema) fn substitute_clause_charged(
+        &mut self,
+        store: &mut Store,
+        owner: DefId,
+        args: GenericArgs,
+        clause: crate::types::parameters::clauses::Clause,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<crate::types::parameters::clauses::Clause, &'static str> {
+        charge(1, 0)?;
+        if !self.substitutions.contains_key(&(owner, args)) {
+            let growth = crate::support::retained::Growth::map::<(DefId, GenericArgs), Bound>(
+                self.substitutions.len(),
+                self.substitutions.capacity(),
+                1,
+            );
+            charge(growth.work, growth.bytes)?;
+            let fold = Bound::joint_charged(store, ItemId(owner.0), args, charge)?;
+            self.substitutions.insert((owner, args), fold);
+        }
+        let fold = self
+            .substitutions
+            .get_mut(&(owner, args))
+            .ok_or("charged substitution cache disappeared")?;
+        let before = fold.steps;
+        let result = fold.clause_charged(store, clause, charge);
+        charge(fold.steps.saturating_sub(before), 0)?;
+        result
+    }
     /// Retain the completed append-only environment built from these exact
     /// arguments. Subsequent body expansion reuses it just like an explicit use.
     pub(super) fn retain_arguments(

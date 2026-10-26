@@ -17,6 +17,7 @@ mod subobjects;
 mod tests;
 mod transport;
 mod unions;
+mod value_reinterpretation;
 mod words;
 pub(in crate::const_eval) use transport::Snapshot;
 mod capabilities;

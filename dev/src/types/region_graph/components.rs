@@ -225,3 +225,42 @@ impl<'a> Search<'a> {
 #[cfg(test)]
 #[path = "../../../tests/invariants/assumption_components.rs"]
 mod tests;
+
+impl Graph {
+    /// Cost only for an assumptions-only equality reconstruction. No SCC is
+    /// interpreted here: source equations bound vertices and directed edges.
+    pub(crate) fn equality_mapping_bound(
+        nodes: usize,
+        edges: usize,
+    ) -> crate::support::retained::Growth {
+        use super::Kind;
+        use crate::support::retained::Growth;
+        let mut growth = Growth::vector::<Kind>(0, 0, nodes);
+        growth.include(Growth::vector::<Option<usize>>(0, 0, nodes));
+        growth.include(Growth::vector::<Option<usize>>(0, 0, nodes));
+        growth.include(Growth::vector::<Edge>(0, 0, edges));
+        // Search's fixed numbers/low/active/classes, then bounded stack,
+        // frames and component-member buffers. Ranks are absent in this mode.
+        for _ in 0..2 {
+            growth.include(Growth::vector::<usize>(0, 0, nodes));
+        }
+        growth.include(Growth::vector::<bool>(0, 0, nodes));
+        growth.include(Growth::vector::<Region>(0, 0, nodes));
+        growth.include(Growth::vector::<usize>(0, 0, nodes));
+        growth.include(Growth::vector::<Frame>(0, 0, nodes));
+        growth.include(Growth::vector::<usize>(0, 0, nodes));
+        let fills = nodes.saturating_mul(4);
+        let roots_and_entries = nodes.saturating_mul(2);
+        let traversal = nodes.saturating_mul(2).saturating_add(edges);
+        let component_members = nodes.saturating_mul(2);
+        growth.work = growth
+            .work
+            .saturating_add(fills)
+            .saturating_add(roots_and_entries)
+            .saturating_add(traversal)
+            .saturating_add(component_members)
+            .saturating_add(nodes)
+            .saturating_add(edges);
+        growth
+    }
+}

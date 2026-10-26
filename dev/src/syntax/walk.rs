@@ -328,6 +328,10 @@ impl<L> Syntax<L> {
                 visit(ty)?;
                 visit_all(value, visit)?;
             }
+            ItemKind::TraitAlias { bounds, .. } => {
+                self.children(bounds, visit)?;
+                self.children(item.where_clause, visit)?;
+            }
             ItemKind::TypeAlias { bounds, ty } => {
                 self.children(bounds, visit)?;
                 self.children(item.where_clause, visit)?;

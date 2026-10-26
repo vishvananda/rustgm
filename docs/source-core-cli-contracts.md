@@ -60,6 +60,10 @@ only extra argument pairs are cfg and crate-name; library identity arguments
 do not change source mode. Expected course status, warning stderr, LowIR and
 reference changes are therefore empty. Retain existing base/scoped receipts
 and sidecars; generate no broad replacement references for this change.
+The combined candidate's updated 8485-case inventory, including the new PA18
+argument-index fixture, also contains zero SourceCore/client-mode commands.
+Its argument inventory is verified separately under
+`obj/parallel/library-frontier-combined-v1/course-no-source-mode.json`.
 
 C9 printed cold type sizes: Ledger96, Origin40, MustUseView56, InlineView48,
 AttributeColumns48 and ValidatedRows120 bytes. C collection capacities,
