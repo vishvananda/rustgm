@@ -77,16 +77,8 @@ impl Search<'_> {
         else {
             return Err("missing source Metadata plan".into());
         };
-        let resolution = if !matches!(pending.sized, Sizing::NotRequested) {
-            Some(if matches!(pending.sized, Sizing::Proven(_)) {
-                crate::sema::header_attributes::charge_source_retention(facts, 1, 0)
-                    .map_err(|error| error.to_string())?;
-                Resolution::Type(TypeId::UNIT)
-            } else {
-                Resolution::Opaque
-            })
-        } else {
-            match pending.plan.advance(facts)? {
+        let resolution = match pending.sized {
+            Sizing::NotRequested => match pending.plan.advance(facts)? {
                 MetadataStep::Ready(ty) => Some(Resolution::Type(ty)),
                 MetadataStep::Fields(item) => {
                     return Ok(Action::Wait(super::super::Dependency::Fields(item)));
@@ -95,7 +87,13 @@ impl Search<'_> {
                     pending.needed = Some(ty);
                     return Ok(Action::Descend);
                 }
+            },
+            Sizing::Proven(_) => {
+                crate::sema::header_attributes::charge_source_retention(facts, 1, 0)
+                    .map_err(|error| error.to_string())?;
+                Some(Resolution::Type(TypeId::UNIT))
             }
+            Sizing::Opaque => Some(Resolution::Opaque),
         };
         let pending = normalization
             .inherited
@@ -183,7 +181,10 @@ impl Search<'_> {
             goal: parent.goal,
             source: parent.source.clone(),
             first: parent.first,
-            end: parent.end.max(self.query.nodes[sized].end),
+            end: parent
+                .end
+                .max(self.query.nodes[sized].end)
+                .max(self.query.allocations.end()),
             debt_free: false,
             cycle_dependent: false,
             provisional_size: false,
