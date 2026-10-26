@@ -115,6 +115,9 @@ impl UnpublishedNamespace {
     pub(crate) fn bindings(&self) -> &[ExportBinding] {
         &self.names.bindings
     }
+    pub(crate) fn namespace(&self) -> &NamespaceColumns {
+        &self.names
+    }
     pub(crate) fn modules(&self) -> &[DeclarationRef] {
         &self.names.modules
     }
@@ -157,7 +160,7 @@ impl UnpublishedNamespace {
     }
 }
 impl NamespaceColumns {
-    fn storage_bytes(&self, work: &mut Work) -> Result<usize, &'static str> {
+    pub(crate) fn storage_bytes(&self, work: &mut Work) -> Result<usize, &'static str> {
         if self.modules.len() > crates::MAX_FUNCTIONS
             || self.bindings.len() > crates::MAX_COMPONENTS
         {
@@ -174,6 +177,26 @@ impl NamespaceColumns {
                     .map(|b| b.name.capacity())
                     .fold(0, usize::saturating_add),
             ))
+    }
+    /// Cost only; the caller prepays this scratch before validation or ordering.
+    pub(crate) fn validation_scratch(&self, declarations: usize) -> usize {
+        declarations.saturating_add(self.bindings.len().saturating_mul(2 * size_of::<usize>()))
+    }
+    /// Validate against the SAME immutable artifact columns, without freezing a
+    /// second copy of their declarations, originals, or owner catalog.
+    pub(crate) fn validate_columns(
+        &mut self,
+        columns: &Columns,
+        work: &mut Work,
+    ) -> Result<NamespaceWork, &'static str> {
+        self.validate(&columns.declarations, work)?;
+        let mut observed = NamespaceWork::default();
+        self.sort(work, &mut observed)?;
+        observed.retained_bytes = self.storage_bytes(work)?;
+        observed.peak_bytes = observed
+            .retained_bytes
+            .saturating_add(self.validation_scratch(columns.declarations.len()));
+        Ok(observed)
     }
     fn validate(
         &self,

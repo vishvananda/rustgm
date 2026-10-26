@@ -55,6 +55,8 @@ pub(crate) struct ProviderAdmission {
 struct UnpaidHeaderData {
     columns: s::HeaderAttributeColumns,
     bytes: usize,
+    names: Option<Box<s::NamespaceColumns>>,
+    names_bytes: usize,
 }
 /// Allocation identity only. This carries no source-completion permission.
 pub(crate) struct HeaderDataIdentity {
@@ -79,6 +81,7 @@ impl ProviderAdmission {
     pub(crate) fn retained_bytes(&self) -> usize {
         size_of::<Self>()
             .saturating_add(self.headers.bytes)
+            .saturating_add(self.headers.names_bytes)
             .saturating_add(
                 size_of::<UnpaidHeaderData>()
                     .saturating_sub(size_of::<s::HeaderAttributeColumns>()),
@@ -106,6 +109,15 @@ impl ProviderAdmission {
         contracts: s::HeaderAttributeColumns,
         work: &mut ReservationWork,
     ) -> Result<Self, Error> {
+        Self::from_data_with_names(inventory, index, contracts, None, work)
+    }
+    pub(crate) fn from_data_with_names(
+        inventory: Arc<Dependencies>,
+        index: u32,
+        contracts: s::HeaderAttributeColumns,
+        mut names: Option<s::NamespaceColumns>,
+        work: &mut ReservationWork,
+    ) -> Result<Self, Error> {
         let artifact = inventory
             .artifacts()
             .get(index as usize)
@@ -118,6 +130,31 @@ impl ProviderAdmission {
         let result = contracts.validate_columns(&descriptor.rows(), 0, &mut validation);
         work.charge(validation.steps)?;
         let bytes = result.map_err(Error::unlocated)?;
+        let names_bytes = if let Some(names) = names.as_mut() {
+            let mut validation = Work {
+                steps: work.steps,
+                ..Work::default()
+            };
+            let start = validation.steps;
+            let size = names.storage_bytes(&mut validation);
+            work.charge(validation.steps.saturating_sub(start))?;
+            let size = size.map_err(Error::unlocated)?;
+            work.reserve(
+                size.saturating_add(names.validation_scratch(descriptor.rows().declarations.len())),
+            )?;
+            let start = validation.steps;
+            let checked = names.validate_columns(&descriptor.rows(), &mut validation);
+            work.charge(validation.steps.saturating_sub(start))?;
+            let checked = checked.map_err(Error::unlocated)?;
+            if checked.retained_bytes != size {
+                return Err(Error::unlocated(
+                    "private namespace ordering changed its actual retained capacity",
+                ));
+            }
+            size
+        } else {
+            0
+        };
         work.reserve(
             bytes
                 .saturating_add(size_of::<Self>())
@@ -133,6 +170,8 @@ impl ProviderAdmission {
             headers: Rc::new(UnpaidHeaderData {
                 columns: contracts,
                 bytes,
+                names: names.map(Box::new),
+                names_bytes,
             }),
         })
     }
@@ -177,6 +216,15 @@ impl<'a> Request<'a> {
             work,
         }
     }
+    pub(in crate::resolve) fn into_parts(
+        self,
+    ) -> (
+        ProviderAdmission,
+        RuntimeCheckConfig,
+        &'a mut ReservationWork,
+    ) {
+        (self.admission, self.runtime_checks, self.work)
+    }
 }
 pub(crate) struct StagedConsumer {
     current: CrateIdentity,
@@ -190,6 +238,9 @@ impl StagedConsumer {
     /// Borrowed data remains unpaid until a distinct semantic receipt is bound.
     pub(crate) fn unpaid_header_columns(&self) -> &s::HeaderAttributeColumns {
         &self.admission.headers.columns
+    }
+    pub(crate) fn unpaid_namespace(&self) -> Option<&s::NamespaceColumns> {
+        self.admission.headers.names.as_deref()
     }
     pub(crate) fn current(&self) -> &CrateIdentity {
         &self.current

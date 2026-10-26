@@ -8,7 +8,7 @@ use crate::{
         package::Error,
     },
     support::{
-        crates::{CrateIdentity, Dependencies, Interface},
+        crates::{CrateIdentity, Dependencies, Dependency, Interface},
         retained,
     },
 };
@@ -18,6 +18,8 @@ pub(crate) struct CollectedArtifact {
     inventory: Arc<Dependencies>,
     contracts: s::HeaderAttributeColumns,
     contract_bytes: usize,
+    names: s::NamespaceColumns,
+    names_bytes: usize,
 }
 /// Private fields prevent an unpaid caller from certifying arbitrary columns.
 pub(crate) struct CollectedReceipt {
@@ -30,7 +32,41 @@ impl CollectedRows {
         base: Interface,
         work: &mut ReservationWork,
     ) -> Result<CollectedArtifact, Error> {
+        self.into_artifact_with_alias(base, None, work)
+    }
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "private named provided consumers await complete checked headers/body demand and supported public artifact policy"
+        )
+    )]
+    pub(crate) fn into_named_artifact(
+        self,
+        base: Interface,
+        alias: Dependency,
+        work: &mut ReservationWork,
+    ) -> Result<CollectedArtifact, Error> {
+        self.into_artifact_with_alias(base, Some(alias), work)
+    }
+    fn into_artifact_with_alias(
+        self,
+        base: Interface,
+        alias: Option<Dependency>,
+        work: &mut ReservationWork,
+    ) -> Result<CollectedArtifact, Error> {
         work.charge(self.work.steps.saturating_add(8))?;
+        let alias_bytes = if let Some(alias) = &alias {
+            work.charge(alias.alias().len().saturating_add(1))?;
+            if alias.identity() != &self.provider {
+                return Err(Error::unlocated(
+                    "named source artifact alias selects another provider",
+                ));
+            }
+            alias.storage_bytes()
+        } else {
+            0
+        };
         if base.identity() != &self.provider
             || !base.dependencies().is_empty()
             || !base.functions().is_empty()
@@ -48,7 +84,8 @@ impl CollectedRows {
         let owned = size_of::<CollectedArtifact>()
             .saturating_add(size_of::<Dependencies>())
             .saturating_add(2 * size_of::<usize>())
-            .saturating_add(base.base_retained_bytes());
+            .saturating_add(base.base_retained_bytes())
+            .saturating_add(alias_bytes);
         let scratch = retained::new_map::<&CrateIdentity, usize>(1)
             .saturating_add(size_of::<Vec<usize>>())
             .saturating_add(6 * size_of::<usize>());
@@ -64,7 +101,11 @@ impl CollectedRows {
         )?;
         let tail = self
             .contract_bytes
-            .saturating_sub(size_of::<s::HeaderAttributeColumns>());
+            .saturating_sub(size_of::<s::HeaderAttributeColumns>())
+            .saturating_add(
+                self.names_bytes
+                    .saturating_sub(size_of::<s::NamespaceColumns>()),
+            );
         let metadata_base = before.saturating_add(owned).saturating_add(tail);
         let mut validation = g::Work {
             steps: work.steps,
@@ -95,14 +136,17 @@ impl CollectedRows {
         let artifact = base
             .with_generic_payload(payload)
             .map_err(Error::unlocated)?;
+        let aliases = alias.into_iter().collect();
         let inventory =
-            Arc::new(Dependencies::new(vec![artifact], Vec::new()).map_err(Error::unlocated)?);
+            Arc::new(Dependencies::new(vec![artifact], aliases).map_err(Error::unlocated)?);
         // All producer-local identities and collection scratch have retired.
         work.retained = before.saturating_add(actual);
         Ok(CollectedArtifact {
             inventory,
             contracts: self.contracts,
             contract_bytes: self.contract_bytes,
+            names: self.names,
+            names_bytes: self.names_bytes,
         })
     }
 }
@@ -115,14 +159,24 @@ impl CollectedArtifact {
         work: &mut ReservationWork,
     ) -> Result<(ProviderAdmission, CollectedReceipt), Error> {
         let before = work.retained;
-        let old_owner = size_of::<Self>().saturating_add(
-            self.contract_bytes
-                .saturating_sub(size_of::<s::HeaderAttributeColumns>()),
-        );
+        let old_owner = size_of::<Self>()
+            .saturating_add(
+                self.contract_bytes
+                    .saturating_sub(size_of::<s::HeaderAttributeColumns>()),
+            )
+            .saturating_add(
+                self.names_bytes
+                    .saturating_sub(size_of::<s::NamespaceColumns>()),
+            );
         work.charge(2)?;
         work.reserve(size_of::<CollectedReceipt>())?;
-        let admission =
-            ProviderAdmission::from_data(Arc::clone(&self.inventory), 0, self.contracts, work)?;
+        let admission = ProviderAdmission::from_data_with_names(
+            Arc::clone(&self.inventory),
+            0,
+            self.contracts,
+            Some(self.names),
+            work,
+        )?;
         let data = admission.header_identity(work)?;
         let actual = before
             .checked_sub(old_owner)

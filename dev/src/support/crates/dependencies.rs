@@ -32,6 +32,10 @@ impl Dependency {
     pub const fn identity(&self) -> &CrateIdentity {
         &self.identity
     }
+    /// Cost only for the owned alias entry; crate identities share their Arcs.
+    pub(crate) fn storage_bytes(&self) -> usize {
+        size_of::<Self>().saturating_add(self.alias.capacity())
+    }
 }
 #[derive(Debug)]
 pub struct Dependencies {

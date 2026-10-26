@@ -24,6 +24,7 @@ use crate::support::crates::{
 };
 use crate::support::hash::HashMap;
 pub(crate) use consumer_inputs::{ConsumerInput, ConsumerRequest, ConsumerReservation};
+pub(in crate::resolve) use consumer_inputs::{ReservationSeed, reserve_names};
 pub(crate) use original_declarations::Work as ReservationWork;
 use std::sync::Arc;
 
@@ -216,6 +217,13 @@ impl Resolver<'_> {
         for artifact in artifacts.artifacts() {
             self.bind_public_modules(artifact, &imported)?;
         }
+        self.bind_crate_aliases(external, &imported)?;
+        self.facts.extern_scope = Some(external);
+        imported.origins.freeze().map_err(error)?;
+        self.facts.crates = Some(Box::new(imported));
+        Ok(())
+    }
+    fn bind_crate_aliases(&mut self, external: ScopeId, imported: &Imported) -> Result<(), Error> {
         for alias in imported.dependencies.aliases() {
             let identity =
                 ExternalDef::new(alias.identity().clone(), Vec::new(), ExternalKind::Module)
@@ -241,9 +249,6 @@ impl Resolver<'_> {
                 )
                 .map_err(error)?;
         }
-        self.facts.extern_scope = Some(external);
-        imported.origins.freeze().map_err(error)?;
-        self.facts.crates = Some(Box::new(imported));
         Ok(())
     }
     fn reserve_artifact_root(
