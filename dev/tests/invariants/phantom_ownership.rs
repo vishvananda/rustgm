@@ -130,6 +130,15 @@ fn source_marker_rejects_changed_roles_formals_fields_and_lifetime_escape() -> R
         assert!(error.contains(needle), "{name}: {error}");
     }
     assert_eq!(crate::support::bindings::LangItem::ALL.len(), 32);
+    let mut all_roles = 0_u32;
+    for (index, role) in crate::support::bindings::LangItem::ALL
+        .into_iter()
+        .enumerate()
+    {
+        assert_eq!(role.index(), index);
+        all_roles |= 1_u32 << index;
+    }
+    assert_eq!(all_roles, u32::MAX);
     assert_eq!(crate::support::bindings::LangItem::PhantomData.index(), 31);
     assert_eq!(
         1_u32 << crate::support::bindings::LangItem::PhantomData.index(),
