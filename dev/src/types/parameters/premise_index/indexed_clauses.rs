@@ -1,5 +1,8 @@
 //! One canonical insertion pays actual candidate storage before publishing a clause.
-use super::*;
+use super::{
+    Clause, ClauseIndex, HashMap, Head, ItemId, Predicate, QuantifiedId, QuantifiedIndex, Store,
+    infer,
+};
 use crate::support::retained::Growth;
 enum ChargedError {
     Semantic(infer::Error),

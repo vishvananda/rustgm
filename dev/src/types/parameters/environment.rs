@@ -557,6 +557,96 @@ impl Environment {
     }
 }
 
+impl Environment {
+    fn map_abilities_observed<const CHARGED: bool>(
+        &mut self,
+        types: &mut Store,
+        fold: &mut crate::types::substitute::Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        if let Some(assumptions) = &mut self.assumptions
+            && (assumptions.region_mapping || !fold.regions_only())
+        {
+            if CHARGED {
+                prepay_abilities(assumptions, charge)?;
+            }
+            let assumptions = Arc::make_mut(assumptions);
+            // Substitution may allocate canonical types or open lifetimes. Its
+            // encounter order cannot depend on a hash table's randomized seed.
+            let mut predicates: Vec<_> = assumptions.predicates.drain().collect();
+            predicates.sort_unstable_by_key(|(ty, _)| ty.0);
+            assumptions.predicates = predicates
+                .into_iter()
+                .map(|(ty, abilities)| {
+                    Ok((mapped_type::<CHARGED>(types, fold, ty, charge)?, abilities))
+                })
+                .collect::<Result<_, &'static str>>()?;
+            let mut sized: Vec<_> = assumptions.sized.drain().collect();
+            sized.sort_unstable_by_key(|ty| ty.0);
+            assumptions.sized = sized
+                .into_iter()
+                .map(|ty| mapped_type::<CHARGED>(types, fold, ty, charge))
+                .collect::<Result<_, _>>()?;
+            assumptions.region_mapping = false;
+            for &ty in assumptions
+                .sized
+                .iter()
+                .chain(assumptions.predicates.keys())
+            {
+                assumptions.region_mapping |= types
+                    .has_free_regions(ty, 0)
+                    .ok_or("invalid mapped bound subject")?;
+            }
+        }
+        Ok(())
+    }
+}
+fn mapped_type<const CHARGED: bool>(
+    types: &mut Store,
+    fold: &mut crate::types::substitute::Bound,
+    ty: TypeId,
+    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<TypeId, &'static str> {
+    if !CHARGED {
+        return fold.apply(types, ty);
+    }
+    charge(1, 0)?;
+    match fold.apply_argument_charged(types, crate::types::arguments::Argument::Type(ty), charge)? {
+        crate::types::arguments::Argument::Type(ty) => Ok(ty),
+        _ => Err("mapped environment subject changed argument kind"),
+    }
+}
+fn prepay_abilities(
+    source: &Assumptions,
+    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    use crate::support::retained::{self, Growth};
+    let a = source.predicates.len();
+    let b = source.sized.len();
+    charge(
+        1 + a + b,
+        size_of::<Assumptions>()
+            + 2 * size_of::<usize>()
+            + retained::map(&source.predicates)
+            + source.sized.capacity().saturating_mul(size_of::<TypeId>()),
+    )?;
+    let mut growth = Growth::vector::<(TypeId, Abilities)>(0, 0, a);
+    growth.include(Growth::vector::<TypeId>(0, 0, b));
+    growth.include(Growth::map::<TypeId, Abilities>(0, 0, a));
+    growth.include(Growth::map::<TypeId, ()>(0, 0, b));
+    let ordered = a
+        .saturating_mul(a.max(1).ilog2() as usize + 1)
+        .saturating_add(b.saturating_mul(b.max(1).ilog2() as usize + 1));
+    charge(
+        growth
+            .work
+            .saturating_add(ordered)
+            .saturating_add(a)
+            .saturating_add(b),
+        growth.bytes,
+    )
+}
+
 #[cfg(test)]
 mod equality_tests {
     use super::*;
@@ -664,94 +754,4 @@ mod equality_tests {
         assert_eq!(merged.projection_clauses().count(), 1);
         Ok(())
     }
-}
-
-impl Environment {
-    fn map_abilities_observed<const CHARGED: bool>(
-        &mut self,
-        types: &mut Store,
-        fold: &mut crate::types::substitute::Bound,
-        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
-    ) -> Result<(), &'static str> {
-        if let Some(assumptions) = &mut self.assumptions
-            && (assumptions.region_mapping || !fold.regions_only())
-        {
-            if CHARGED {
-                prepay_abilities(assumptions, charge)?;
-            }
-            let assumptions = Arc::make_mut(assumptions);
-            // Substitution may allocate canonical types or open lifetimes. Its
-            // encounter order cannot depend on a hash table's randomized seed.
-            let mut predicates: Vec<_> = assumptions.predicates.drain().collect();
-            predicates.sort_unstable_by_key(|(ty, _)| ty.0);
-            assumptions.predicates = predicates
-                .into_iter()
-                .map(|(ty, abilities)| {
-                    Ok((mapped_type::<CHARGED>(types, fold, ty, charge)?, abilities))
-                })
-                .collect::<Result<_, &'static str>>()?;
-            let mut sized: Vec<_> = assumptions.sized.drain().collect();
-            sized.sort_unstable_by_key(|ty| ty.0);
-            assumptions.sized = sized
-                .into_iter()
-                .map(|ty| mapped_type::<CHARGED>(types, fold, ty, charge))
-                .collect::<Result<_, _>>()?;
-            assumptions.region_mapping = false;
-            for &ty in assumptions
-                .sized
-                .iter()
-                .chain(assumptions.predicates.keys())
-            {
-                assumptions.region_mapping |= types
-                    .has_free_regions(ty, 0)
-                    .ok_or("invalid mapped bound subject")?;
-            }
-        }
-        Ok(())
-    }
-}
-fn mapped_type<const CHARGED: bool>(
-    types: &mut Store,
-    fold: &mut crate::types::substitute::Bound,
-    ty: TypeId,
-    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
-) -> Result<TypeId, &'static str> {
-    if !CHARGED {
-        return fold.apply(types, ty);
-    }
-    charge(1, 0)?;
-    match fold.apply_argument_charged(types, crate::types::arguments::Argument::Type(ty), charge)? {
-        crate::types::arguments::Argument::Type(ty) => Ok(ty),
-        _ => Err("mapped environment subject changed argument kind"),
-    }
-}
-fn prepay_abilities(
-    source: &Assumptions,
-    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
-) -> Result<(), &'static str> {
-    use crate::support::retained::{self, Growth};
-    let a = source.predicates.len();
-    let b = source.sized.len();
-    charge(
-        1 + a + b,
-        size_of::<Assumptions>()
-            + 2 * size_of::<usize>()
-            + retained::map(&source.predicates)
-            + source.sized.capacity().saturating_mul(size_of::<TypeId>()),
-    )?;
-    let mut growth = Growth::vector::<(TypeId, Abilities)>(0, 0, a);
-    growth.include(Growth::vector::<TypeId>(0, 0, b));
-    growth.include(Growth::map::<TypeId, Abilities>(0, 0, a));
-    growth.include(Growth::map::<TypeId, ()>(0, 0, b));
-    let ordered = a
-        .saturating_mul(a.max(1).ilog2() as usize + 1)
-        .saturating_add(b.saturating_mul(b.max(1).ilog2() as usize + 1));
-    charge(
-        growth
-            .work
-            .saturating_add(ordered)
-            .saturating_add(a)
-            .saturating_add(b),
-        growth.bytes,
-    )
 }

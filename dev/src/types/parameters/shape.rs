@@ -505,6 +505,22 @@ fn argument_types(
     Ok(())
 }
 
+/// A formation edge, not a requirement on every generic argument or reference.
+/// Tuple tails and callable signature positions introduce no implicit Sized.
+pub(crate) fn requires_sized_edge(
+    kind: Kind,
+    index: usize,
+    tuple_len: usize,
+    child: TypeId,
+) -> bool {
+    match kind {
+        Kind::Closure { environment, .. } => environment == child,
+        Kind::Tuple(_) => index + 1 < tuple_len,
+        Kind::Array { .. } | Kind::ArrayTerm { .. } | Kind::Slice(_) => true,
+        _ => false,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -547,21 +563,5 @@ mod tests {
         }
         assert!(shapes.normalized(&types, tuple)?.well_formed);
         Ok(())
-    }
-}
-
-/// A formation edge, not a requirement on every generic argument or reference.
-/// Tuple tails and callable signature positions introduce no implicit Sized.
-pub(crate) fn requires_sized_edge(
-    kind: Kind,
-    index: usize,
-    tuple_len: usize,
-    child: TypeId,
-) -> bool {
-    match kind {
-        Kind::Closure { environment, .. } => environment == child,
-        Kind::Tuple(_) => index + 1 < tuple_len,
-        Kind::Array { .. } | Kind::ArrayTerm { .. } | Kind::Slice(_) => true,
-        _ => false,
     }
 }
