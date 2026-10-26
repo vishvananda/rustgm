@@ -99,7 +99,7 @@ impl Checker<'_> {
             return Ok(());
         }
         let kind =
-            if crate::sema::compiler_items::phantom::declaration(self.report, self.facts, item)? {
+            if crate::sema::compiler_items::phantom::declaration(self.report, &self.facts, item)? {
                 aggregate::Kind::PhantomData
             } else {
                 kind
