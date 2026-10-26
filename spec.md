@@ -708,6 +708,12 @@ Pair a host script with its exact compilation unit and package snapshot, retaini
 distinct compile and execution profiles. Validate every supported profile setting
 and reject unsupported ones. A script that catches a rejected compiler probe must
 still fail the outer task; probe failure is not evidence of language incapability.
+Retain actual package lint levels, priority order and check-cfg expectations in
+host compilation. An explicit per-package lint cap is a separate authenticated
+input, included in receipts and artifact keys; do not infer it from source kind
+or drop manifest policy. Unsupported tools, unresolved workspace inheritance and
+unstable manifest policy remain explicit errors. Parse the manifest once per
+package and reuse its environment and lint arguments across host units.
 Planning receipts are not compilation results. The
 [planning adapter](docs/crate-planning.md) supports frozen local path inputs and
 authenticated crates.io archive snapshots. Preserve original package bytes and

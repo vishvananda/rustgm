@@ -30,8 +30,8 @@ for host lint levels, priority overrides and custom cfg expectations. The host
 task and dependency-DAG executors retain these policies in their actual compiler
 commands; unknown tools, unresolved workspace inheritance and unstable manifest
 policy remain explicit failures. The original selected libc build script is the
-first unchanged std-graph host consumer; its 27 directive lines are independently
-predeclared, not a target libc or std compilation.
+first unchanged std-graph host consumer; its 27 directive lines are predeclared
+from the source. Target libc and std compilation remain required.
 
 Follow the [owning brief](../README.md) and
 [library bootstrap plan](../../docs/library-bootstrap-roadmap.md).
