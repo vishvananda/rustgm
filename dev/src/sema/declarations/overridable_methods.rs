@@ -1,6 +1,44 @@
-//! Nonoverlapping defaults keep the same real body and normal conformance checks.
+//! Written method policies retain their actual owner and defining body.
 use super::{Checker, DefId, Error, NodeKey};
 use crate::{sema::associated::OwnerKind, syntax::ast::NodeId};
+pub(in crate::sema) fn is_final_trait_method(
+    report: &crate::resolve::expansion::Report,
+    facts: &crate::sema::model::Declarations,
+    definition: DefId,
+) -> Result<bool, Error> {
+    let actual = report
+        .resolution
+        .definitions
+        .get(definition.0 as usize)
+        .ok_or_else(|| Error::unlocated("final method definition disappeared"))?;
+    let Some(key) = actual.node else {
+        return Ok(false);
+    };
+    let Some(modifier) = report.active_finalness(key)? else {
+        return Ok(false);
+    };
+    let owner = facts
+        .associated
+        .owner(definition)
+        .and_then(|id| facts.associated.get(id));
+    let function = facts
+        .function_indices
+        .get(&definition)
+        .and_then(|&index| facts.functions.get(index));
+    if actual.kind != crate::resolve::model::DefKind::Function
+        || owner.is_none_or(|owner| !matches!(owner.kind, OwnerKind::Trait { .. }))
+        || function.is_none_or(|function| {
+            function.definition != definition || function.node != key || function.body.is_none()
+        })
+    {
+        return Err(Error::at(
+            key.file,
+            modifier.span.start,
+            "final method lost its actual trait body",
+        ));
+    }
+    Ok(true)
+}
 impl Checker<'_> {
     pub(super) fn validate_default_function(
         &self,
@@ -8,9 +46,25 @@ impl Checker<'_> {
         definition: Option<DefId>,
         body: Option<NodeId>,
     ) -> Result<(), Error> {
-        let Some(defaultness) = self.report.active_defaultness(key)? else {
+        let Some(modifier) = self.report.active_method_modifier(key)? else {
             return Ok(());
         };
+        if modifier.kind == crate::syntax::gate_sites::Kind::FinalFunction {
+            let owner = definition
+                .and_then(|id| self.facts.associated.owner(id))
+                .and_then(|id| self.facts.associated.get(id));
+            if body.is_none()
+                || owner.is_none_or(|owner| !matches!(owner.kind, OwnerKind::Trait { .. }))
+            {
+                return Err(Error::at(
+                    key.file,
+                    modifier.span.start,
+                    "final function requires its actual trait owner and defining body",
+                ));
+            }
+            return Ok(());
+        }
+        let defaultness = modifier;
         if defaultness.node != key.node || body.is_none() {
             return Err(Error::at(
                 key.file,
@@ -31,3 +85,7 @@ impl Checker<'_> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/sealed_members.rs"]
+mod tests;

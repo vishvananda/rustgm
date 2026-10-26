@@ -2579,6 +2579,21 @@
         "status": 0,
         "default_lints": true
       }
+    },
+    {
+      "path": "tests/spec/items/final-function.rs",
+      "exit_status": 0,
+      "features": [
+        "pa5.items"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
     }
   ]
 }

@@ -234,10 +234,11 @@ impl Bases {
                 .map_err(|message| error(0, message))?;
             for entry in entries.entries() {
                 entry.validate(source)?;
-                destination.record_gate_site(
+                destination.record_typed_gate_site(
                     entry.item + self.items,
                     self.rebased(entry.node),
                     span(entry.span)?,
+                    entry.kind,
                 )?;
             }
         }

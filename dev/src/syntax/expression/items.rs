@@ -14,6 +14,11 @@ struct TraitModifiers {
     unsafe_: bool,
     constant: bool,
 }
+#[derive(Clone, Copy)]
+struct MethodModifier {
+    span: Span,
+    final_: bool,
+}
 
 /// # Errors
 /// Rejects unsupported/malformed crate syntax and excessive recursive nesting.
@@ -110,6 +115,7 @@ impl Parser<'_, '_> {
         Ok(match word {
             Word::Auto => self.cursor.peek_word(1)? == Word::Trait,
             Word::Default => self.default_item_after()?,
+            Word::Final => true,
             Word::Union => self.cursor.peek(1)?.is_some_and(|t| {
                 t.kind == TokenKind::Identifier || t.kind == TokenKind::RawIdentifier
             }),
@@ -161,14 +167,18 @@ impl Parser<'_, '_> {
         ))
     }
 
-    fn default_modifier(&mut self) -> Result<Option<Span>, LexError> {
-        if !self.cursor.at_word(Word::Default)? || !self.default_item_after()? {
+    fn method_modifier(&mut self) -> Result<Option<MethodModifier>, LexError> {
+        let final_ = self.cursor.at_word(Word::Final)?;
+        if !final_ && (!self.cursor.at_word(Word::Default)? || !self.default_item_after()?) {
             return Ok(None);
         }
         let token = self.required()?;
-        Ok(Some(Span {
-            start: token.start,
-            end: token.end,
+        Ok(Some(MethodModifier {
+            span: Span {
+                start: token.start,
+                end: token.end,
+            },
+            final_,
         }))
     }
 
@@ -267,7 +277,7 @@ impl Parser<'_, '_> {
         }
         let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
         let visibility = self.visibility()?;
-        let defaultness = self.default_modifier()?;
+        let modifier = self.method_modifier()?;
         let mut item = Item {
             name: None,
             visibility,
@@ -469,7 +479,7 @@ impl Parser<'_, '_> {
             }
         };
         self.validate_item(&item, intrinsic)?;
-        let node = self.item_node(start, item, defaultness, foreign_keyword)?;
+        let node = self.item_node(start, item, modifier, foreign_keyword)?;
         let node = self.attach(inner, node)?;
         self.attach(attrs, node)
     }
@@ -525,14 +535,23 @@ impl Parser<'_, '_> {
         &mut self,
         start: u32,
         item: Item,
-        defaultness: Option<Span>,
+        modifier: Option<MethodModifier>,
         foreign_keyword: Option<Span>,
     ) -> Result<NodeId, LexError> {
         let id = u32::try_from(self.ast.items.len()).map_err(|_| error(start, "too many items"))?;
         self.ast.items.push(item);
         let node = self.node(start, Kind::Item(id))?;
-        if let Some(keyword) = defaultness {
-            self.ast.record_defaultness(id, node, keyword)?;
+        if let Some(modifier) = modifier {
+            if modifier.final_ {
+                self.ast.record_typed_gate_site(
+                    id,
+                    node,
+                    modifier.span,
+                    crate::syntax::gate_sites::Kind::FinalFunction,
+                )?;
+            } else {
+                self.ast.record_defaultness(id, node, modifier.span)?;
+            }
         } else if let Some(keyword) = foreign_keyword {
             self.ast.record_gate_site(id, node, keyword)?;
         } else if matches!(item.kind, ItemKind::TraitAlias { .. }) {

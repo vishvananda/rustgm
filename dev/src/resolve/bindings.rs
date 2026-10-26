@@ -155,6 +155,26 @@ impl super::package::Package {
             .macro_context()?
             .is_some_and(|context| context.requested(policy::Feature::ExternTypes)))
     }
+    pub(crate) fn requested_final_functions(&self) -> Result<bool, &'static str> {
+        if let Some(source) = self.staged_consumer() {
+            source.require_package(self)?;
+            return Ok(source
+                .features
+                .has(policy::Feature::FinalAssociatedFunctions));
+        }
+        if let Some(client) = self.source_client() {
+            if client.current().name() != self.crate_name || client.current() == client.provider() {
+                return Err("final-method client identity changed");
+            }
+            client.validate_inventory()?;
+            return Ok(client
+                .features
+                .has(policy::Feature::FinalAssociatedFunctions));
+        }
+        Ok(self
+            .macro_context()?
+            .is_some_and(|context| context.requested(policy::Feature::FinalAssociatedFunctions)))
+    }
     #[must_use]
     pub fn uses_source_bindings(&self) -> bool {
         self.source.as_deref().is_some_and(Source::owns_bindings)

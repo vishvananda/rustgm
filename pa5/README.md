@@ -25,6 +25,11 @@ Implement functions and qualifiers, visibility (including restrictions), generic
 parameters/defaults, where clauses, struct/tuple/unit declarations, enums,
 unions, constants/statics, type aliases, inline/external module declarations,
 use trees and aliases, extern crates/blocks, traits and implementations.
+Retain `final fn` as a distinct sparse method modifier with its actual keyword
+span; it is not a `default` implementation modifier. The later feature and
+trait-owner/body/override checks consume that fact. Ordinary item payloads and
+functions without either modifier keep their existing representation.
+
 Associated functions/types/constants, self parameters, explicit receiver
 lifetimes, ABI strings and variadic declarations have typed records. Functions
 inside blocks use the same parser as top-level functions.

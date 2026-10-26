@@ -99,6 +99,11 @@ pub(super) fn collect(
                 contract.associated.push(member);
             }
             Some(DefKind::Function) => {
+                if crate::sema::declarations::is_final_trait_method(report, facts, member)
+                    .map_err(|error| error.to_string())?
+                {
+                    continue;
+                }
                 if method(facts, member, header.self_type, &mut uses, steps)? {
                     contract.methods.push(member);
                 }

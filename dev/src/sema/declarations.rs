@@ -17,6 +17,7 @@ mod constants;
 mod contracts;
 #[path = "declarations/overridable_methods.rs"]
 mod default_methods;
+pub(in crate::sema) use default_methods::is_final_trait_method;
 mod deferred_arguments;
 mod destructors;
 mod evaluation;

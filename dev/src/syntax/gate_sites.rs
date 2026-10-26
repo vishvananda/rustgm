@@ -15,6 +15,7 @@ pub enum Kind {
     Type,
     TraitAlias,
     ForeignType,
+    FinalFunction,
 }
 impl Kind {
     pub(crate) const fn is_defaultness(self) -> bool {
@@ -61,12 +62,20 @@ impl Declaration {
                 .items
                 .get(self.item as usize)
                 .and_then(|item| Kind::item(item.kind))
-                != Some(self.kind)
+                != Some(if self.kind == Kind::FinalFunction {
+                    Kind::Function
+                } else {
+                    self.kind
+                })
             || if self.kind == Kind::TraitAlias {
                 self.span.end <= self.span.start || self.span != node.span
             } else {
                 self.span.end.checked_sub(self.span.start)
-                    != Some(if self.kind == Kind::ForeignType { 4 } else { 7 })
+                    != Some(match self.kind {
+                        Kind::ForeignType => 4,
+                        Kind::FinalFunction => 5,
+                        _ => 7,
+                    })
             }
             || node.span.start > self.span.start
             || self.span.end > node.span.end
@@ -239,6 +248,15 @@ impl<L> Syntax<L> {
             .get(item as usize)
             .and_then(|item| Kind::item(item.kind))
             .ok_or_else(|| error(span.start, "default modifier is not permitted on this item"))?;
+        self.record_typed_gate_site(item, node, span, kind)
+    }
+    pub(crate) fn record_typed_gate_site(
+        &mut self,
+        item: u32,
+        node: NodeId,
+        span: Span,
+        kind: Kind,
+    ) -> Result<(), LexError> {
         let declaration = Declaration {
             item,
             node,
