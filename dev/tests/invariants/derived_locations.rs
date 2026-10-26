@@ -142,7 +142,9 @@ fn list_failures_and_changed_capture_image_owner_cannot_consume_derives() -> Tes
     assert!(report.expanded_derive(owner, effect).is_err());
     report.package.units[0].source = previous;
     report.expanded_derive(owner, effect)?;
-    let unit = report.package.units[0].fresh_instance()?;
+    let unit = report.package.units[0]
+        .fresh_instance()
+        .map_err(|error| error.message)?;
     assert!(
         unit.configured
             .effects
@@ -170,8 +172,11 @@ fn marker_shape_ordinary_storage_and_derive_owner_layouts_preserve_boundaries() 
             false,
         ),
     ] {
-        let result = test_source::resolve(source, true)
-            .and_then(|report| crate::pipeline::analyze_source(&report).map(|_| ()));
+        let result = test_source::resolve(source, true).and_then(|report| {
+            crate::pipeline::analyze_source(&report)
+                .map(|_| ())
+                .map_err(|error| error.to_string())
+        });
         assert_eq!(result.is_ok(), accept, "{source}: {result:?}");
     }
     for (name, source, accepted) in [
@@ -186,8 +191,11 @@ fn marker_shape_ordinary_storage_and_derive_owner_layouts_preserve_boundaries() 
             false,
         ),
     ] {
-        let result = test_source::resolve(source, true)
-            .and_then(|report| crate::pipeline::analyze_source(&report).map(|_| ()));
+        let result = test_source::resolve(source, true).and_then(|report| {
+            crate::pipeline::analyze_source(&report)
+                .map(|_| ())
+                .map_err(|error| error.to_string())
+        });
         assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
     }
     super::super::role_declarations::with_engine("fn ordinary(){}", false, |engine| {

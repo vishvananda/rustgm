@@ -27,7 +27,7 @@ pub(crate) use unsizing::{kind as unsizing_role, predicate as unsizing_predicate
 
 // Every role has an explicit stable index, checked against this cold mask width.
 const _: [(); 1] = [(); (LangItem::ALL.len() <= u64::BITS as usize) as usize];
-pub(super) const fn bit(role: LangItem) -> u64 {
+pub(in crate::sema) const fn bit(role: LangItem) -> u64 {
     1_u64 << role.index()
 }
 

@@ -201,11 +201,11 @@ impl<S: Sources> Engine<'_, S> {
         else {
             return Ok(());
         };
-        let source = self
-            .loader
-            .package
-            .source_core()
-            .ok_or_else(|| Error::unlocated("derive installation lost its provider"))?;
+        let Some(crate::resolve::bindings::Source::Core(source)) =
+            self.loader.package.source.as_deref()
+        else {
+            return Err(Error::unlocated("derive installation lost its provider"));
+        };
         source
             .macros
             .charge(

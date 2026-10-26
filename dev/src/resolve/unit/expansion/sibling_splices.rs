@@ -54,7 +54,7 @@ impl Unit {
             self.owner_indices.push(None);
         }
         for rewrite in rewrites {
-            let previous = *self.configured.ast.node(rewrite.parent);
+            let previous = self.configured.ast.node(rewrite.parent);
             let owner = self.owner_indices[rewrite.parent.get() as usize];
             self.original.save(
                 rewrite.parent,

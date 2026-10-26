@@ -170,9 +170,7 @@ impl<S: Sources> Engine<'_, S> {
                         .forest
                         .payload_bytes()
                         .saturating_mul(4)
-                    + ranges
-                        .len()
-                        .saturating_mul(4 * (size_of::<Call>() + size_of::<usize>())),
+                    + count.saturating_mul(4 * (size_of::<Call>() + size_of::<usize>())),
             )
             .map_err(|message| call.diagnostic(message))?;
         Ok(Transaction {
