@@ -20,7 +20,7 @@ impl Definition {
         facts: &Declarations,
         item: ItemId,
         family: GenericArgs,
-        source: Source,
+        source: &Source,
     ) -> Result<Self, &'static str> {
         if let Source::LanguageOperation { descriptor } = source {
             return Ok(Self {
@@ -36,17 +36,17 @@ impl Definition {
             }
             return Ok(Self {
                 id: DefId(item.0),
-                value: Value::Ready(output),
+                value: Value::Ready(*output),
             });
         }
         let Source::Implementation { owner, arguments } = source else {
             return Err("associated type requires an unambiguous validated implementation");
         };
         Ok(Self {
-            id: super::definition(facts, owner, item)?,
+            id: super::definition(facts, *owner, item)?,
             value: Value::Implementation {
-                owner,
-                arguments,
+                owner: *owner,
+                arguments: *arguments,
                 family,
                 result: None,
             },
@@ -64,7 +64,7 @@ impl Definition {
                 facts,
                 alias.associated().ok_or("missing associated alias")?.item,
                 family,
-                source,
+                &source,
             )
             .map(Some);
         };

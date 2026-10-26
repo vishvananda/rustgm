@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "phase": "frozen independent prediction; not yet executed",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "scope": "One new source/body and generic-argument selection opponent; no prior observations repeated; metadata only, no runtime authority.",
+  "cases": [
+    {
+      "source": "pa31/tests/spec/pointee-normalization/stack-selection.rs",
+      "sha256": "dad61d9692ccd687ff698556d0f45420bd882dea0f4a9101462e69e9946643b3",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "Actual Metadata projection resolves to unit as an argument of a distinct trait application; real body call consumes this normalized input."
+    }
+  ]
+}

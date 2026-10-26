@@ -10,8 +10,14 @@ input/result obligations. Their twenty metadata observations retain ten
 hypothesis disagreements, including missing Copy protocol prerequisites; the
 initial predictions and all original source bytes remain retained. Six separately
 frozen setup successors isolate those prerequisites and input formation.
-Candidate support remains unqualified; this does not repeat declaration-only
-evidence or grant pointer intrinsic, layout, runtime or transport permission.
+A separately frozen `stack-selection.rs` source directs a genuine Metadata
+result into another trait's argument and a real generic body call. Its two
+edition predictions are status zero/no warnings; it does not repeat the 38
+collected observations. Six focused candidate groups now pass with source-identical production across
+retained runs; they exercise both normalizers, body typing and real region proof.
+The stack source has not received a new independent oracle observation. This
+does not grant pointer intrinsic, foreign VTable layout, runtime or transport
+permission. See [the consumer checkpoint](../../docs/pointee-metadata-consumers.md).
 
 `spec/declarative-macros/trait-members/` retains seven independently checked
 scoped trait-method contracts for LIB-002, with fourteen metadata/object

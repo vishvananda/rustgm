@@ -245,7 +245,10 @@ fn declaration_projection_templates_restore_results_before_fresh_rebasing() -> T
             .ok_or("expected associated projection")?
             .item,
         projected.family,
-        projected.source.ok_or("missing selected implementation")?,
+        projected
+            .source
+            .as_ref()
+            .ok_or("missing selected implementation")?,
     )?;
     let ty = definition
         .result(&mut f.facts)?
@@ -336,7 +339,7 @@ fn closed_projection_fallback_keeps_assumptions_and_discarded_trials_separate() 
                 &f.facts,
                 application.item,
                 projected.family,
-                projected.source.ok_or("missing implementation")?,
+                projected.source.as_ref().ok_or("missing implementation")?,
             )?;
             let ty = definition.result(&mut f.facts)?.ok_or("missing result")?;
             assert_eq!(

@@ -189,7 +189,7 @@ impl Search<'_> {
             cycle_dependent: false,
             provisional_size: false,
             goal: proof.goal,
-            source: proof.source,
+            source: proof.source.clone(),
             children: std::mem::take(&mut formation.children),
             first: proof.first,
             end: proof.end.max(self.query.allocations.end()),

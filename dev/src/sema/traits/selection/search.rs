@@ -13,6 +13,7 @@ mod coinduction;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/fn_copying.rs"]
 mod fn_copying_tests;
+mod pointee;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/refutation_layout.rs"]
 mod refutation_layout;
@@ -647,6 +648,7 @@ impl Search<'_> {
     fn evidence(mut self, facts: &Declarations, root: usize) -> Result<Evidence, String> {
         let source = self.query.nodes[root]
             .source
+            .clone()
             .ok_or("missing selected trait evidence")?;
         let mut evidence = Evidence {
             provisional_size: self.query.nodes[root].provisional_size,
@@ -683,15 +685,15 @@ impl Search<'_> {
                 visited[index] = true;
             }
             let node = &mut self.query.nodes[index];
-            match (node.source, negative) {
+            match (node.source.as_ref(), negative) {
                 (Some(Source::Implementation { owner, arguments }), Some(expected))
-                    if (owner, arguments) == expected =>
+                    if (*owner, *arguments) == expected =>
                 {
-                    if !super::refutation::implementation_negative(facts, owner)? {
+                    if !super::refutation::implementation_negative(facts, *owner)? {
                         return Err("negative extraction lost its actual owner polarity".into());
                     }
                 }
-                _ => super::refutation::require_positive_source(facts, node.source)?,
+                _ => super::refutation::require_positive_source(facts, node.source.as_ref())?,
             }
             work.extend(std::mem::take(&mut node.children));
             if let Some(scopes) = &mut scopes {
@@ -726,15 +728,15 @@ pub(in crate::sema) const fn specialization_layouts() -> (usize, usize, usize) {
 
 #[cfg(test)]
 #[test]
-fn pointee_source_predecessor_layouts_are_observed() {
+fn pointee_source_layouts_are_observed() {
     let source = Source::Builtin;
-    let retained = source;
+    let retained = source.clone();
     assert!(matches!(
         (source, retained),
         (Source::Builtin, Source::Builtin)
     ));
     eprintln!(
-        "Pointee source predecessor Source={} SourceAlign={} OptionalSource={} Evidence={} Frame={} Node={} Normalization={} ProjectionQuery={} SearchQuery={}",
+        "Pointee source current Source={} SourceAlign={} OptionalSource={} Evidence={} Frame={} Node={} Normalization={} ProjectionQuery={} SearchQuery={}",
         size_of::<Source>(),
         align_of::<Source>(),
         size_of::<Option<Source>>(),

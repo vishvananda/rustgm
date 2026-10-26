@@ -1,6 +1,13 @@
 //! Source metadata declaration authority is independent of pointer representation.
+mod automatic;
+mod representation;
+pub(in crate::sema) use representation::{Plan as MetadataPlan, Step as MetadataStep};
 mod schemas;
 mod sealed_declarations;
+pub(in crate::sema) use automatic::{Readiness, Selection, select};
+#[cfg(test)]
+#[path = "../../../tests/invariants/pointee_consumers.rs"]
+mod consumer_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/pointee_contracts.rs"]
 mod tests;
@@ -19,29 +26,63 @@ pub(in crate::sema) struct CheckedMember {
     application: projection::Application,
 }
 impl CheckedMember {
+    pub(in crate::sema) fn current_facts(
+        &self,
+        facts: &Declarations,
+    ) -> Result<projection::Application, Error> {
+        require_owner(facts, &self.contract)?;
+        self.contract.current_facts(facts)?;
+        self.contract.application(facts, self.application)?;
+        Ok(self.application)
+    }
     pub(in crate::sema) fn current(
         &self,
         report: &Report,
         facts: &Declarations,
     ) -> Result<projection::Application, Error> {
-        header_attributes::charge_source_contract_query(facts, 1)?;
-        let actual = facts
-            .source_bindings
-            .as_deref()
-            .and_then(|c| c.traits.as_deref())
-            .and_then(|v| v.pointee.as_ref())
-            .ok_or_else(|| Error::unlocated("source Metadata use lost its actual role owner"))?;
-        if !Rc::ptr_eq(actual, &self.contract) {
-            return Err(Error::unlocated(
-                "source Metadata use belongs to another role catalog",
-            ));
-        }
-        self.contract.completed_roles(facts)?;
+        require_owner(facts, &self.contract)?;
         self.contract.current(report, facts)?;
         self.contract.application(facts, self.application)?;
         Ok(self.application)
     }
 }
+fn require_owner(facts: &Declarations, expected: &Rc<Contracts>) -> Result<(), Error> {
+    header_attributes::charge_source_contract_query(facts, 1)?;
+    let actual = facts
+        .source_bindings
+        .as_deref()
+        .and_then(|c| c.traits.as_deref())
+        .and_then(|v| v.pointee.as_ref())
+        .ok_or_else(|| Error::unlocated("source Metadata use lost its actual role owner"))?;
+    if !Rc::ptr_eq(actual, expected) {
+        return Err(Error::unlocated(
+            "source Metadata use belongs to another role catalog",
+        ));
+    }
+    expected.completed_roles(facts)
+}
+
+/// Facts-only solver replay cannot inspect a separately changed Report. Real
+/// body and publication boundaries reauthenticate the source they actually use.
+pub(in crate::sema) fn authenticate(report: &Report, facts: &Declarations) -> Result<(), Error> {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(());
+    };
+    if catalog.language(LangItem::PointeeTrait).is_none() {
+        return Ok(());
+    }
+    catalog
+        .require_provider_report(report)
+        .map_err(Error::unlocated)?;
+    let contract = catalog
+        .traits
+        .as_deref()
+        .and_then(|roles| roles.pointee.as_ref())
+        .ok_or_else(|| Error::unlocated("source Pointee declaration seal is not complete"))?;
+    contract.completed_roles(facts)?;
+    contract.current(report, facts)
+}
+
 impl Catalog {
     pub(in crate::sema) fn pointee_member(
         &self,
@@ -92,6 +133,14 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
     if !has_role {
         return Ok(());
     }
+    if facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.traits.as_deref())
+        .is_some_and(|roles| roles.pointee.is_some())
+    {
+        return authenticate(report, facts);
+    }
     header_attributes::reserve_source_contracts(facts, 3, 0)?;
     let plan = schemas::plan(report, facts)?
         .ok_or_else(|| Error::unlocated("source Pointee role disappeared during completion"))?;
@@ -135,6 +184,38 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
     }
     ledger.pointee = Some(contract);
     Ok(())
+}
+
+/// Readiness only wakes an existing continuation; every use reauthenticates.
+pub(in crate::sema) fn ready(facts: &Declarations, member: crate::resolve::model::DefId) -> bool {
+    facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.traits.as_deref())
+        .and_then(|roles| roles.pointee.as_ref())
+        .is_some_and(|contract| contract.plan.member.definition == member)
+}
+
+/// Only a completed, current source seal can identify an early prepared member.
+/// A missing contract takes the ordinary producer path rather than implying
+/// checked absence or a completed associated result.
+pub(in crate::sema) fn prepared_member(
+    report: &Report,
+    facts: &Declarations,
+    definition: crate::resolve::model::DefId,
+) -> Result<bool, Error> {
+    let Some(contract) = facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.traits.as_deref())
+        .and_then(|roles| roles.pointee.as_ref())
+        .filter(|contract| contract.plan.member.definition == definition)
+    else {
+        return Ok(false);
+    };
+    require_owner(facts, contract)?;
+    contract.current(report, facts)?;
+    Ok(true)
 }
 
 /// No existing artifact profile transports these new declaration contracts.

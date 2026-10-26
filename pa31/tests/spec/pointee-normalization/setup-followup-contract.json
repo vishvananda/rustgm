@@ -17,7 +17,7 @@
     "RUSTC_BOOTSTRAP": "1"
   },
   "provider": "Explicit authored no_core declarations reuse the qualified minimal declaration fixture; no claim that these replace pinned NonNull/VTable/PhantomData fields.",
-  "phase": "new setup successors frozen before observation; original20 observations retained unchanged",
+  "phase": "observed metadata outcomes; original frozen hypotheses and every disagreement retained",
   "scope": "12 new metadata-only observations; five genuine Copy-protocol setups and one isolated input-formation opponent; no old20/22/native repeat",
   "prior_run": 40342761935,
   "prior_binding_sha256": "df604a8a850198a5646e2ad52cffa6112e4c60cfeb8ff87568b27632269c5e3f",
@@ -30,7 +30,31 @@
       "rustc_warning_codes_hypothesis": [],
       "contract": "same original body with actual Copy/Clone/clone_fn/LegacyReceiver protocol; actual primitive/array unit and slice/str length metadata",
       "original_source": "pa31/tests/spec/pointee-normalization/concrete-results.rs",
-      "original_sha256": "fee076676047bd4561524d1a52da32b9b8112d907d3a5510c7e8e1fd4caf9c7f"
+      "original_sha256": "fee076676047bd4561524d1a52da32b9b8112d907d3a5510c7e8e1fd4caf9c7f",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/pointee-normalization/with-copy/changed-tail.rs",
@@ -40,7 +64,31 @@
       "rustc_warning_codes_hypothesis": [],
       "contract": "same original body with actual Copy/Clone/clone_fn/LegacyReceiver protocol; canonical actual generic tail projection and concrete str tail",
       "original_source": "pa31/tests/spec/pointee-normalization/changed-tail.rs",
-      "original_sha256": "0e38ab0a8545e48432980fd411c2165ea8c203b6d0e40ead83265a1dc31e881d"
+      "original_sha256": "0e38ab0a8545e48432980fd411c2165ea8c203b6d0e40ead83265a1dc31e881d",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/pointee-normalization/with-copy/sized-parameter.rs",
@@ -50,7 +98,31 @@
       "rustc_warning_codes_hypothesis": [],
       "contract": "same original body with actual Copy/Clone/clone_fn/LegacyReceiver protocol; unit normalization requires the real Sized parameter premise",
       "original_source": "pa31/tests/spec/pointee-normalization/sized-parameter.rs",
-      "original_sha256": "908613cf5c13a126fe193822d348a4b9528b306f616e89ede660bce8336a0944"
+      "original_sha256": "908613cf5c13a126fe193822d348a4b9528b306f616e89ede660bce8336a0944",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/pointee-normalization/with-copy/dynamic-region.rs",
@@ -60,7 +132,31 @@
       "rustc_warning_codes_hypothesis": [],
       "contract": "same original body with actual Copy/Clone/clone_fn/LegacyReceiver protocol; actual DynMetadata application retains the complete object region",
       "original_source": "pa31/tests/spec/pointee-normalization/dynamic-region.rs",
-      "original_sha256": "f0079572d63142602be6dda48618a4bbda429be9fd7ad84b755c7457279ae75a"
+      "original_sha256": "f0079572d63142602be6dda48618a4bbda429be9fd7ad84b755c7457279ae75a",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/pointee-normalization/with-copy/dynamic-escape.rs",
@@ -70,7 +166,37 @@
       "rustc_warning_codes_hypothesis": [],
       "contract": "same original body with actual Copy/Clone/clone_fn/LegacyReceiver protocol; the object region cannot be widened to static",
       "original_source": "pa31/tests/spec/pointee-normalization/dynamic-escape.rs",
-      "original_sha256": "3e7fad7ce7c63c2bac11b302c69424965cb20c667b01fe0e689bf289ff2d46bb"
+      "original_sha256": "3e7fad7ce7c63c2bac11b302c69424965cb20c667b01fe0e689bf289ff2d46bb",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [
+            "lifetime may not live long enough",
+            "aborting due to 1 previous error"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [
+            "lifetime may not live long enough",
+            "aborting due to 1 previous error"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/pointee-normalization/invalid-input-formation.rs",
@@ -82,7 +208,41 @@
       "rustc_warning_codes_hypothesis": [],
       "contract": "isolated unchanged nominal/projection input formation; removes the competing E0308 body mismatch",
       "original_source": "pa31/tests/spec/pointee-normalization/invalid-input.rs",
-      "original_sha256": "bc9770dbe2207f4381bcedf78f53c34e0a0f5dfdcbd52d7f6cf0581bdc4e327c"
+      "original_sha256": "bc9770dbe2207f4381bcedf78f53c34e0a0f5dfdcbd52d7f6cf0581bdc4e327c",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": true,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "disagreements": {
+            "status": true,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
     }
-  ]
+  ],
+  "initial_contract_sha256": "16fd5afb646f4caf84a20a2697e9e500c5ec469be70fb6bc2a8c692008b35287",
+  "observed_binding": {
+    "run": 40343925207,
+    "binding_sha256": "8e24113c9fad7b5230ba16e25bb345a7a945ce89ba4aa587928ada73fc57a9a3",
+    "artifact_zip_sha256": "077d2a65e333ee038c60bdea90769d69b48ce0f6f51befe18af59737d0dc060b",
+    "metadata": 12,
+    "native": 0,
+    "infrastructure_failures": 0,
+    "hypothesis_disagreements": 2
+  }
 }
