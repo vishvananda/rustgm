@@ -1,0 +1,135 @@
+{
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+  "observed": [
+    {
+      "source": "canonical-equality.rs",
+      "source_sha256": "d12ae84c39f86961f94a6adca7d818099c767fb6a46d072d6e3cbb39ac765e8a",
+      "command": [
+        "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--crate-name",
+        "naming_case",
+        "/home/runner/work/rustgm/rustgm/pa31/tests/spec/trait-aliases/naming-v1/canonical-equality.rs",
+        "-o",
+        "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/independent-naming/canonical-equality/case.rmeta"
+      ],
+      "status": 0,
+      "success": true,
+      "expected_success": true,
+      "matches_prediction": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b4ace356b006feb6042dcf0f2278e45c87ef9e28530e7f50e348da8e583b6c2b"
+    },
+    {
+      "source": "ambiguous-members.rs",
+      "source_sha256": "e56592a87f157c7727a30b3189ea4274e9c64a46742efc934e6c42213232ed4b",
+      "command": [
+        "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--crate-name",
+        "naming_case",
+        "/home/runner/work/rustgm/rustgm/pa31/tests/spec/trait-aliases/naming-v1/ambiguous-members.rs",
+        "-o",
+        "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/independent-naming/ambiguous-members/case.rmeta"
+      ],
+      "status": 1,
+      "success": false,
+      "expected_success": false,
+      "matches_prediction": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "39861759d4a0d1f73d77ecc68d2f55886604912be492cab9522ee552470af57e"
+    },
+    {
+      "source": "unrelated-subject.rs",
+      "source_sha256": "b0fc4b81d181dd0690b3e9a5fb7740a1d22a4b2ad3602eee8458f006ecdc8cec",
+      "command": [
+        "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--crate-name",
+        "naming_case",
+        "/home/runner/work/rustgm/rustgm/pa31/tests/spec/trait-aliases/naming-v1/unrelated-subject.rs",
+        "-o",
+        "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/independent-naming/unrelated-subject/case.rmeta"
+      ],
+      "status": 1,
+      "success": false,
+      "expected_success": false,
+      "matches_prediction": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "cd2e0a871d0cca0f26647630b3ebe42537cd7e35f6d9854d654d6ef3e268f433"
+    },
+    {
+      "source": "same-actual-subject.rs",
+      "source_sha256": "fcf5098c9e9daf42f85a9619af383907406fab25b809ed58406ea108db0ff9e8",
+      "command": [
+        "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--crate-name",
+        "naming_case",
+        "/home/runner/work/rustgm/rustgm/pa31/tests/spec/trait-aliases/naming-v1/same-actual-subject.rs",
+        "-o",
+        "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/independent-naming/same-actual-subject/case.rmeta"
+      ],
+      "status": 1,
+      "success": false,
+      "expected_success": true,
+      "matches_prediction": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "136bfb175ce218eb4885b5001c9a343237515e328a68df51877ad4d224bb61aa"
+    },
+    {
+      "source": "unused-binder.rs",
+      "source_sha256": "335ac011c71adaa814dd62f71412d676dcb6ff1e79ffb2d9c319ad7be65f0a5d",
+      "command": [
+        "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--crate-name",
+        "naming_case",
+        "/home/runner/work/rustgm/rustgm/pa31/tests/spec/trait-aliases/naming-v1/unused-binder.rs",
+        "-o",
+        "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/independent-naming/unused-binder/case.rmeta"
+      ],
+      "status": 0,
+      "success": true,
+      "expected_success": true,
+      "matches_prediction": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "466274790cc33ad8c397513d6da82176219457a5c36a5d1b7bb84ee3b5e6d641"
+    },
+    {
+      "source": "distinct-applications.rs",
+      "source_sha256": "14c600efac2e517439100034851970a6279ab27bd222671896c871e98d87b2b4",
+      "command": [
+        "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--crate-name",
+        "naming_case",
+        "/home/runner/work/rustgm/rustgm/pa31/tests/spec/trait-aliases/naming-v1/distinct-applications.rs",
+        "-o",
+        "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/independent-naming/distinct-applications/case.rmeta"
+      ],
+      "status": 1,
+      "success": false,
+      "expected_success": false,
+      "matches_prediction": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "338254197c42b3b2d533721bb52c13536ca0560f6fade71936ec004bc735443b"
+    }
+  ],
+  "seconds": 0.09740258799999424,
+  "commands": 6,
+  "infrastructure_failures": 0
+}
