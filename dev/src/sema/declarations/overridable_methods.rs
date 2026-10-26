@@ -12,7 +12,12 @@ pub(in crate::sema) fn is_final_trait_method(
         .get(definition.0 as usize)
         .ok_or_else(|| Error::unlocated("final method definition disappeared"))?;
     let Some(key) = actual.node else {
-        return Ok(false);
+        if crate::sema::header_attributes::bootstrap_owner(report, definition)? {
+            return Ok(false);
+        }
+        return Err(Error::unlocated(
+            "imported or missing final trait method policy is not available",
+        ));
     };
     let Some(modifier) = report.active_finalness(key)? else {
         return Ok(false);

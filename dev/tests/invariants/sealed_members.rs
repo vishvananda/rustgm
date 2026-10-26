@@ -142,14 +142,24 @@ fn final_dynamic_calls_are_static_while_ordinary_methods_retain_slots() -> Resul
         assert_eq!(contract.methods.contains(&method), name == "dyn-ordinary");
         let mut dynamic_instances = 0;
         let mut virtual_instances = 0;
-        for index in 0..analysis.facts.types.len() {
-            let ty = crate::types::TypeId(u32::try_from(index)?);
+        let callables: Vec<_> = analysis
+            .facts
+            .methods
+            .calls
+            .values()
+            .map(|call| call.callable)
+            .collect();
+        for ty in callables {
             if crate::sema::dispatch::object_method(&mut analysis.facts, ty)?
                 .is_some_and(|(actual, _)| actual == method)
             {
                 dynamic_instances += 1;
                 let instance = crate::types::instance::Instance::new(&analysis.facts.types, ty)?;
-                virtual_instances += usize::from(analysis.facts.objects.call(instance).is_some());
+                virtual_instances += usize::from(crate::sema::vtable_plans::prepare_call(
+                    &report,
+                    &mut analysis.facts,
+                    instance,
+                )?);
             }
         }
         assert!(
@@ -169,7 +179,9 @@ fn final_dynamic_calls_are_static_while_ordinary_methods_retain_slots() -> Resul
 #[test]
 fn final_policy_is_not_defaultness_or_transportable_absence() -> Result {
     let mut report = report("provided-call")?;
-    let key = report.resolution.definitions[definition(&report, "value")?.0 as usize]
+    let analysis = pipeline::analyze_source(&report)?;
+    let method = definition(&report, "value")?;
+    let key = report.resolution.definitions[method.0 as usize]
         .node
         .ok_or("actual final source")?;
     assert!(report.active_defaultness(key)?.is_none());
@@ -184,6 +196,15 @@ fn final_policy_is_not_defaultness_or_transportable_absence() -> Result {
         "source final trait method contract transport is not implemented"
     );
     assert_eq!(error.span.start, modifier.span.start);
+    report.resolution.definitions[method.0 as usize].node = None;
+    let missing = super::is_final_trait_method(&report, &analysis.facts, method)
+        .err()
+        .ok_or("missing local source became a final policy absence")?;
+    assert_eq!(
+        missing.message,
+        "imported or missing final trait method policy is not available"
+    );
+    report.resolution.definitions[method.0 as usize].node = Some(key);
     report.package.units[key.file.0 as usize].source =
         report.package.unit(key.file).source.physical_copy();
     assert!(report.active_finalness(key).is_err());
