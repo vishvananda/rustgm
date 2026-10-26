@@ -200,6 +200,7 @@ pub(in crate::resolve) fn prepare_with_admission(
                 || features.has(Feature::TraitAlias)
                 || features.has(Feature::PatternTypeMacro)
                 || features.has(Feature::PatternTypes)
+                || features.has(Feature::ExternTypes)
             {
                 Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
                     unit, features,
