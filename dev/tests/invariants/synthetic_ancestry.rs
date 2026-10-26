@@ -21,8 +21,7 @@ pub(super) fn units() -> TestResult {
     ] {
         let make = |edition| {
             Unit::parse(
-                SourceFile::new(b"fn r#gen() {} // \xce\xa9".to_vec())
-                    .map_err(|e| e.to_string())?,
+                SourceFile::new(b"fn r#gen() {} // \xce\xa9".to_vec())?,
                 &Config::in_edition(edition),
                 &mut Names::default(),
             )
