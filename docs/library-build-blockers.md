@@ -18,7 +18,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | CLI `eb644b41` passes foreign VTable loading and reaches `clone.rs:389`, byte14948, at `final fn share`. All 722 pinned inputs verify;72 original files opened;1.996 seconds; no artifact. | Implement LIB-033 final trait methods while closing LIB-031 alias and Pointee consumers, imported bodies and actual assertion/formatting. |
+| Original core loading and expansion | CLI `192bb536` passes final Share::share and reaches `default.rs:143`, byte3492, at `#[rustc_builtin_macro(Default, attributes(default))]`. All 722 pinned inputs verify;78 original files opened;1.902 seconds; no artifact. | Implement LIB-034 authenticated helper declarations while completing derive invocation, imported bodies and actual assertion/formatting. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -33,9 +33,9 @@ concrete; a private Ready state is not an executable result.
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
 | A | LIB-007/030, PA29/31 | Complete encoded provider to fresh named Holder consumer, original/instance proof and native output 7. Names/receiver shapes are merged locally; the public Provided codec and body joins remain. |
-| B | LIB-029/021, PA25–28/31 | Actual NonNull source, then Location/PanicInfo/handler and false assertion reaching Abort; follow with dynamic formatting. |
-| C | LIB-033, PA5/19/31 | Genuine final trait-method syntax, feature authority and non-overridability, with ordinary provided-method override controls; advance unchanged core past Share::share. |
-| Integrator | LIB-031/008, PA19–21/31/32 | Complete actual Thin declaration/use with Pointee, integrate qualified consumers, and advance original core through checking/export. |
+| B | LIB-029/021/034, PA25–28/31 | Source PhantomData is integrated. Complete actual Location Copy/Clone derives, caller tracking, PanicInfo/handler and false assertion reaching Abort; follow with dynamic formatting. |
+| C | LIB-034, PA8/31 | Authenticate actual builtin derive helper declarations and their typed consumer contract, starting with core Default attributes(default). Coordinate helper use with B; Provided codec remains queued. |
+| Integrator | LIB-031/008, PA19–21/31/32 | Direct Thin now executes through native7. Integrate complete consumers, keep broader alias forms explicit, and advance original core through checking/export. |
 | Integrator, queued independent preparation | LIB-009/010/011, PA30/33/34/36 | Selected alloc/std dependency/build/runtime inventory and small real ABI/build consumers; do not wait until core works to discover graph prerequisites. |
 
 Track assignment closure separately: implemented behavior, owning text fixtures,
@@ -44,37 +44,35 @@ features stay required but only enter this immediate queue when a real library
 consumer needs them or a PA is otherwise ready for release. No whole core build
 or additional PA release is implied by these targets.
 
-The Foreign handoff is integrated locally and the fresh original-core observation
-now identifies LIB-033. C takes that independent blocker; the Provided codec
-split remains queued while A finishes genuine member/body execution. A defines
-the wire rows first in the existing
-[Provided milestone](parallel/provided-method-execution.md); no new worker or
-parallel edit of A's semantic tables is needed. B stays on the actual
-PhantomData/Location/PanicInfo path. The integrator finishes its current Thin
-join and prioritizes queued integrations over another implementation workstream.
+The direct Thin, PhantomData and final-method consumers are integrated together.
+The actual Thin source prints `7` through the unchanged CPPGM object backend and
+the same C observer as pinned rustc. Fresh PhantomData LowIR is byte-identical
+to its independently qualified native `0 1 0 7` checkpoint. Final-method native
+pairs produce `7/9/7/9`, preserving the ordinary override contrast. C now owns
+helper-declaration production for LIB-034; B owns its derive-use consumer and
+actual Location path. The disjoint Provided codec stays queued while A finishes
+real member/body execution. Protect integration time rather than opening another
+long compiler workstream.
 
-The latest observer reuses the previously qualified target/profile manifest
-without changing cfg or source bytes. Its first setup attempt used the older
-default compiler-source manifest and correctly failed before reading core; that
-is retained as infrastructure evidence, not another language failure. Production
-and three frontend controls pass in 26.18 seconds. Sixteen merged private controls
-and all 230 PA5 cases subsequently pass. A cheap broad private run exposed three
-stale Pattern availability/count/size assertions; after correcting those, all 1,798
-ordinary private tests freshly pass in 127.06 seconds including private strict
-checks. The initial mixed batch passed both strict lint modes but timed out
-while building its private executable; these are separate attempts, not one
-five-minute integration. Raw records are in the integrator's
-`obj/parallel/foreign-pattern-integration-v1`.
+The combined standard check passes twenty exact private controls and one frontend
+control in 266.90 seconds, including production/CLI and private strict Clippy,
+formatting, global audit and a fresh build. Build 135.53 seconds and the two lint
+modes 44.47/58.06 seconds dominate; test execution totals 0.22 seconds. The earlier
+all 1,798 private pass belongs to 0d6db3a43, not this new binary. New scoped evidence
+is in the integrator's `obj/parallel/direct-thin-v1`; the prior integration remains
+in `obj/parallel/foreign-pattern-integration-v1`. Source and failure records remain
+retained, including the older println fixture's unsupported macro observation.
 
-The latest full CI run
-[40382875468](https://github.com/vishvananda/rustgm/actions/runs/40382875468)
-failed one old Pointee diagnostic assertion; 1,787 ordinary private tests and
-all thirteen ordinary integration binaries passed. C's 27b1712dd Foreign
-successor qualifies the exact correction and its remaining ordinary-mode group
-in 112.86 seconds; the merged integration and core observation now include it.
-Native/debug/independent checks were skipped, so they
-remain pending. The current push check still selects lexer tests; the shared
-source/const/import/LowIR smoke is an integrator task, not an implemented gate.
+The current full CI run
+[40394449016](https://github.com/vishvananda/rustgm/actions/runs/40394449016)
+on 0d6db3a43 passed fast, lint/architecture/harness, host graph, release/course,
+native and debug checks. The final independent-rustc step failed because thirteen
+PA10/PA19 diagnostic fixtures omitted their declared unstable bootstrap environment.
+The fixture bytes and predicted outcomes stay unchanged; explicit case metadata
+now supplies that environment. All 81 PA10 and 1,193 PA19 independent checks pass;
+all 39 refreshed reference streams are byte-identical to their previous versions. This CI run does
+not qualify the newer compiler integration. The push workflow still selects lexer
+tests; shared source/const/import/LowIR smoke remains an integrator task.
 
 ## Assignment closure queue
 
@@ -463,9 +461,10 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-028 | P0; local function-member execution qualified; wider specialization open | Specialization defaultness on implementation members, with actual feature authority, overlap and method selection | PA5 grammar + PA19 default members + PA20 specialization + PA31 internal features / applicable grammar and complete source providers | C | The defaultness and sealed-forest verifier checkpoints now have actual SelectedMethod dispatch with complete defining-owner arguments. Both RPIT consumers retain real parent lifetime debt; scalar inheritance imposes no invented static bound. Six merged private controls pass; component native/negative evidence remains in [the design](specialization-graph-design.md). Original std Clone/size_of and printing fixtures remain required, alongside default impl/value and imported graph/defaultness transport. The last whole-core observer remains40239001850,65 opened, no artifact. |
 | LIB-029 | P1; source Not and layout/Clone prerequisites qualified; assertion execution open | Real assertion expansion with source-owned panic, runtime and constant semantics | PA8 expansion + PA25 constants + PA26 hooks + PA27/28 memory/intrinsics + PA31 source identity / actual providers and earlier controls | B; C coordinates source contracts | Typed condition transfer and the AST writer remain qualified. [Source Not](source-not-checkpoint.md) now uses actual trait/member/caller proof and has native evidence; [source layout and nominal Clone](source-storage-contracts-checkpoint.md) retain genuine associated constants and provided bodies. Fresh combined source/LowIR equality preserves those native observations. [Source Transmute and const formatter erasure](formatter-pointer-erasure-checkpoint.md) now have actual runtime/CTFE and native evidence. Assert execution still requires real pinned Arguments/NonNull/Location/PanicInfo/handler behavior and full formatting. Genuine [source Abort](source-abort-runtime-checkpoint.md) is now runtime/native-qualified and retains exact LowIR in the combined integration; source-role claims alone do not grant execution. Imported contracts and original factory/advisory debts remain required. |
 | LIB-030 | P1; observed SourceClient library-export boundary | Republish genuine imported source trait/generic contracts from a downstream library | PA29 cross-crate generic export plus PA31 authentic source headers / complete source-provider/client cases, with ordinary PA29 controls where expressible | A + B + integrator | Run 40235770528 accepts the public sealed-bound consumer semantically, then its library helper reaches the existing legacy generic re-export rejection. Preserve that rejection until a complete source contract can be transported; a types-only control is semantic evidence only. The module/domain checkpoint still requires actual LowIR provider-impl selection. Mixed-provider generic re-exports and downstream library publication remain required for real crate graphs; no foreign owner may be retagged local. |
-| LIB-031 | P0; clauses, binders, shorthand naming and source sizing qualified; complete consumers open | Genuine trait aliases with full declared contracts and actual use-site proof | PA5/6 syntax and identity + PA19/21 bounds/projections + PA31 source features + PA29 transport / owning controls and unchanged core | Integrator; C source Pointee | Canonical typed clauses/edges and nested binders now supply actual shorthand leaf applications, equalities and preserved original inputs. [Naming](trait-alias-naming-checkpoint.md) distinguishes declaration Self from an unrelated formal even when actual substitution makes them equal; complete proof clauses stay. Source sizing distinguishes direct RHS from where/alias mediation. The [family correction](runtime-header-integration-checkpoint.md) now retains all expanded input clauses and separate projected-result aliases, including real missing-Copy rejection. Header-time names, full original/normalized formation, scoped regions, object principal multiplicity, default WF/const and imported contracts remain required. Execution/export stays fenced. The new unchanged-core observer passes Thin syntax and reaches foreign VTable at ptr/metadata.rs170 (LIB-032); this does not establish complete alias semantics. |
+| LIB-031 | Direct Thin execution qualified; broader forms/transport open | Genuine trait aliases with full declared contracts and actual use-site proof | PA5/6 syntax and identity + PA19/21 bounds/projections + PA31 source features + PA29 transport / owning controls and unchanged core | Integrator | Canonical clauses remain shared without synthetic trait owners. Direct unquantified lifetime-free aliases without explicit formals, const clauses or inherited edges now reach real original/body/ownership/instance proof and LowIR. Actual reduced source Thin native7 matches rustc; wide metadata fails with incompatible types. Unused invalid declarations still reject. Generic/quantified/edge/const/object/imported forms remain explicit and required. The older println fixture remains unsupported, with original bytes preserved. |
 | LIB-032 | Loading blocker removed; broader operations/transport remain open | Genuine foreign opaque type declarations, identity, sizing and pointer metadata | PA30 foreign interfaces + PA22 unsized types + PA31 source features / PA30 draft foreign-type controls and unchanged PA31 source | C; integrator qualification | Qualified Foreign27b1712dd and Pattern44ea6bff are integrated locally. Six Foreign controls, actual unit metadata versus unknown value layout and source Freeze impl behavior have worker evidence; root CLI eb644b41 advances original core past VTable to LIB-033. PA5's unchanged external-type input is reclassified as grammar-positive with an independently retained feature rejection. Foreign value operations and metadata transport remain explicitly unsupported; this is not a whole-core build. |
-| LIB-033 | P0; current unchanged-core loading blocker | Final trait methods, distinct from ordinary provided bodies and implementation specialization defaultness | PA5 grammar + PA19 method conformance + PA31 source feature authority; PA29 owns eventual transport / earliest expressible controls and exact source-backed Share consumer | C | CLI eb644b41 reaches `final fn share(&self) -> Self` in original core/src/clone.rs389 with `expected path segment` at byte14948. Require pinned-language parser/owner/feature checks, inherited execution and real override rejection. Ordinary provided methods remain overridable. NoDefaultModifier metadata alone cannot establish absence of an explicit final modifier; its producer/transport must remain explicit. |
+| LIB-033 | Loading blocker removed; final policy transport open | Final trait methods, distinct from ordinary provided bodies and implementation specialization defaultness | PA5 grammar + PA19 method conformance + PA31 source feature authority; PA29 owns eventual transport / exact source-backed Share consumer | C; integrator qualification | Six source controls and four actual paired native programs pass, outputs 7/9/7/9. Ordinary provided overrides remain valid; final dynamic calls use actual static bodies. No hot-field growth. CLI192bb536 passes original Share::share. Official PA5 grammar reference is generated from unchanged independently observed source. NoDefaultModifier does not establish absence of final policy; public transport remains closed. |
+| LIB-034 | P0; current unchanged-core loading blocker | Source builtin derive helper declarations and authenticated use | PA8 expansion mechanisms + PA31 source builtin declarations; helper semantics stay with the owning derive / exact Default declaration and source helper opponents | C producer; B derive consumer | CLI192bb536 reaches core/src/default.rs143 and rejects nonempty attributes(default) in the real rustc_builtin_macro declaration. Retain exact provider/declaration/token ownership and distinguish declaration acceptance from execution availability. Do not authorize helpers by macro spelling or drop the source attribute. Test helper membership, malformed/duplicate declarations, wrong macro kinds/owners and actual invocation scope. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):

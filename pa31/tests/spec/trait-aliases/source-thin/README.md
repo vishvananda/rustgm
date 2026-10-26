@@ -15,8 +15,9 @@ pointer fails with an incompatible-type diagnostic.
 `native-provider.rs` preserves the complete positive ancestor and adds a C ABI
 observer entry. `native-contract.json` freezes the source and C observer hashes
 and predicts `7\n` before execution. Pinned rustc passes object creation, linking
-and actual native execution. Candidate execution is qualified separately from
-the independent oracle. The older `thin-associated-equality.rs` program retains
+and actual native execution. The candidate now produces the same `7\n` through
+the unchanged CPPGM object backend and that exact C observer; both executions
+exit successfully with empty stderr. The older `thin-associated-equality.rs` program retains
 its original `println!` bytes and remains outside candidate execution until that
 macro path exists; it is not rewritten to make this check pass.
 

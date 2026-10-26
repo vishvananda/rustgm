@@ -1191,7 +1191,10 @@
       "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
       "warnings": [
         "unused_attributes"
-      ]
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/trait-diagnostics/diagnostic-stable-wrong-owner.rs",

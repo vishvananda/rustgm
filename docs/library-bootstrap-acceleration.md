@@ -13,13 +13,12 @@ checkpoint documents accumulate faster than executable consumers. This is now
 the main scheduling problem. More workers or fewer semantic tests alone will
 not solve the joins between those components.
 
-Public compiler d63270c4 includes source Abort, source transmute, const formatter
-pointer erasure, alias clauses/naming/default validation, shared imported mapping
-and a Pointee declaration producer. There is still no core artifact. The latest qualified
-original-core observation passes Thin syntax and stops at the foreign
-`type VTable;` declaration in ptr/metadata.rs:170. It takes 1.873 seconds, verifies
-all 722 source inputs and opens 65 files. That is neither 65 compiled modules nor
-a completion percentage. Full alias/Pointee semantics remain separate blockers.
+The combined compiler `192bb536` now executes direct source Thin, PhantomData and
+final trait methods. Original core passes VTable and Share::share and stops at
+the Default derive helper declaration in `default.rs:143`. It takes 1.902 seconds,
+verifies all 722 source inputs and opens 78 files. That is neither 78 compiled
+modules nor a completion percentage; there is still no core artifact. Broader
+alias/Pointee semantics and actual library body/metadata joins remain required.
 
 The largest bottleneck is the implementation joins. The integrator has now
 merged qualified actual imported names/receiver shapes and Pointee consumers
@@ -33,11 +32,16 @@ and speculative DynMetadata field snapshots. The latter two have already been
 removed from their qualified paths. Pinned source and independent observations
 must determine the obligations of each actual consumer.
 
-Validation also needs consolidation. The latest combined nineteen-control check
+Validation also needs consolidation. The earlier combined nineteen-control check
 took 221.05 seconds: private Clippy 63.63 seconds, build 127.38 seconds, and
 selected execution 0.31 seconds. Removing more test cases saves little here.
 The previous 32-control check took 150.13 seconds with 0.215 seconds of execution.
 Static checks and compilation dominate.
+The latest combined twenty-one-control check takes 266.90 seconds: build 135.53,
+production/CLI Clippy 44.47, private Clippy 58.06 and test execution 0.22 seconds.
+It qualifies three joined consumers in one build; native controls and the core
+observer then reuse that binary. Continue this consolidation within the unchanged
+five-minute development limit rather than repeatedly compiling isolated helpers.
 The normal push workflow currently selects lexer tests. Scheduled 40297261891
 later exposed ordinary bootstrap diagnostic regressions and stale assertions.
 A green narrow push is not complete qualification.

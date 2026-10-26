@@ -17296,7 +17296,10 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/trait-diagnostics/diagnostic-internal-selected.rs",
@@ -17310,7 +17313,10 @@
         "status": 1,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/trait-diagnostics/diagnostic-internal-unselected.rs",
@@ -17324,7 +17330,10 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/trait-diagnostics/diagnostic-stable-selected.rs",
@@ -17369,7 +17378,10 @@
       "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
       "warnings": [
         "malformed_diagnostic_attributes"
-      ]
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/trait-diagnostics/diagnostic-bare.rs",
@@ -17386,7 +17398,10 @@
       "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
       "warnings": [
         "malformed_diagnostic_attributes"
-      ]
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/trait-diagnostics/diagnostic-unknown-option.rs",
@@ -17403,7 +17418,10 @@
       "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
       "warnings": [
         "malformed_diagnostic_attributes"
-      ]
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/trait-diagnostics/diagnostic-nonstring.rs",
@@ -17420,7 +17438,10 @@
       "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
       "warnings": [
         "malformed_diagnostic_attributes"
-      ]
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/trait-diagnostics/diagnostic-unknown-format.rs",
@@ -17437,7 +17458,10 @@
       "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
       "warnings": [
         "malformed_diagnostic_format_literals"
-      ]
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/trait-diagnostics/diagnostic-duplicate.rs",
@@ -17451,7 +17475,10 @@
         "status": 1,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/trait-diagnostics/diagnostic-duplicate-option.rs",
@@ -17468,7 +17495,10 @@
       "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
       "warnings": [
         "malformed_diagnostic_attributes"
-      ]
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/trait-diagnostics/diagnostic-condition-selected.rs",
@@ -17482,7 +17512,10 @@
         "status": 1,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/trait-diagnostics/diagnostic-condition-not-selected.rs",
@@ -17496,7 +17529,10 @@
         "status": 1,
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/diagnostic_contracts.rs"
+      "maintainer_origin": "dev/tests/diagnostic_contracts.rs",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      }
     },
     {
       "path": "tests/spec/default-methods/trait-blanket.rs",
