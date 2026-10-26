@@ -130,10 +130,7 @@ impl Query {
                 if self.state.accept_selection(selected)?.is_none() {
                     return self.finish(facts, Some(Resolution::Opaque));
                 }
-                let unit = facts
-                    .types
-                    .intern(crate::types::Kind::Tuple(crate::types::ListId::EMPTY))?;
-                self.finish(facts, Some(Resolution::Type(unit)))
+                self.finish(facts, Some(Resolution::Type(TypeId::UNIT)))
             }
             selection::Progress::Inferred { .. } => {
                 Err("source Metadata Sized proof cannot refine its input")

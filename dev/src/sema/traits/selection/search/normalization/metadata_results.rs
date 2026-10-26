@@ -7,10 +7,7 @@ use crate::{
             Action, Decision, Declarations, Frame, Node, Predicate, Search, Source, inference,
         },
     },
-    types::{
-        Kind, ListId, TypeId, infer::Instantiation, parameters::predicates::Bound,
-        substitute::Resolution,
-    },
+    types::{TypeId, infer::Instantiation, parameters::predicates::Bound, substitute::Resolution},
 };
 pub(super) struct Pending {
     completed: Completion,
@@ -76,13 +73,9 @@ impl Search<'_> {
         };
         let resolution = if let Some(sized) = pending.sized {
             Some(if sized.is_some() {
-                crate::sema::header_attributes::charge_source_retention(
-                    facts,
-                    1,
-                    size_of::<Kind>(),
-                )
-                .map_err(|error| error.to_string())?;
-                Resolution::Type(facts.types.intern(Kind::Tuple(ListId::EMPTY))?)
+                crate::sema::header_attributes::charge_source_retention(facts, 1, 0)
+                    .map_err(|error| error.to_string())?;
+                Resolution::Type(TypeId::UNIT)
             } else {
                 Resolution::Opaque
             })

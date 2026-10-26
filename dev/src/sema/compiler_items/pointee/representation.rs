@@ -52,7 +52,7 @@ impl Plan {
                     self.tail = tail;
                 }
                 metadata::Step::Complete(Metadata::Thin) => {
-                    return self.ready(facts, Kind::Tuple(crate::types::ListId::EMPTY));
+                    return Ok(Step::Ready(TypeId::UNIT));
                 }
                 metadata::Step::Complete(Metadata::Length) => {
                     return self.ready(facts, Kind::Primitive(Primitive::Usize));

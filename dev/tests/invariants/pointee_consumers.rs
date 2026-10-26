@@ -73,10 +73,7 @@ fn canonical_projection_argument_search_and_real_body_use_share_source_authority
     else {
         return Err("complete declaration unexpectedly pending".into());
     };
-    let unit = analysis
-        .facts
-        .types
-        .intern(Kind::Tuple(crate::types::ListId::EMPTY))?;
+    let unit = TypeId::UNIT;
     assert_eq!(projected.resolution, Some(Resolution::Type(unit)));
     assert!(matches!(
         projected.source,
