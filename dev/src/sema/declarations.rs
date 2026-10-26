@@ -443,7 +443,8 @@ impl Checker<'_> {
                 "unfinished method applicability queries",
             ));
         }
-        self.complete_layouts()
+        self.complete_layouts()?;
+        super::specialization::reject_execution(&self.facts, self.report)
     }
     fn latent_library_definition(&self, id: DefId) -> bool {
         self.report
@@ -1714,3 +1715,7 @@ pub(super) fn array_length(report: &Report, key: NodeKey) -> Result<u64, Error> 
     }
     u64::try_from(value.magnitude).map_err(|_| error("array length overflows usize"))
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/verifier_states.rs"]
+mod specialization_tests;

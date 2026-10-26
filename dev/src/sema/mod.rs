@@ -45,6 +45,7 @@ mod safety;
 mod scalar;
 pub mod scopes;
 pub mod semantic_view;
+mod specialization;
 pub(crate) mod stored_fields;
 mod traits;
 #[cfg(test)]

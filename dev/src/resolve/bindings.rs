@@ -74,10 +74,12 @@ impl super::package::Package {
             .macro_context()?
             .is_some_and(|context| context.requested(policy::Feature::ImplRestriction)))
     }
-    pub(crate) fn requested_defaultness(&self, function: bool) -> Result<bool, &'static str> {
+    pub(crate) fn specialization_requests(&self) -> Result<(bool, bool), &'static str> {
         let requested = |features: &policy::Features| {
-            features.has(policy::Feature::Specialization)
-                || function && features.has(policy::Feature::MinSpecialization)
+            (
+                features.has(policy::Feature::MinSpecialization),
+                features.has(policy::Feature::Specialization),
+            )
         };
         if let Some(source) = self.staged_consumer() {
             source.require_package(self)?;
@@ -90,10 +92,16 @@ impl super::package::Package {
             client.validate_inventory()?;
             return Ok(requested(&client.features));
         }
-        Ok(self.macro_context()?.is_some_and(|context| {
-            context.requested(policy::Feature::Specialization)
-                || function && context.requested(policy::Feature::MinSpecialization)
+        Ok(self.macro_context()?.map_or((false, false), |context| {
+            (
+                context.requested(policy::Feature::MinSpecialization),
+                context.requested(policy::Feature::Specialization),
+            )
         }))
+    }
+    pub(crate) fn requested_defaultness(&self, function: bool) -> Result<bool, &'static str> {
+        let (minimal, full) = self.specialization_requests()?;
+        Ok(full || function && minimal)
     }
     pub(crate) fn requested_alias_feature(&self, constant: bool) -> Result<bool, &'static str> {
         let feature = if constant {
