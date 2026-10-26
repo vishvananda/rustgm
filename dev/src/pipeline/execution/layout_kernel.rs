@@ -1,8 +1,8 @@
 //! Source intrinsic kernels are reached only from a checked direct constant call.
-use super::{Declarations, Engine, Error, FileId, Kind, Report, const_eval};
+use super::{Declarations, Engine, Error, FileId, Report, const_eval};
 use crate::{
     support::bindings::{LayoutIntrinsic, SourceIntrinsic},
-    types::{Primitive, instance::Instance},
+    types::instance::Instance,
 };
 impl Engine {
     pub(super) fn source_layout(
@@ -68,16 +68,7 @@ impl Engine {
         if selected.fallback && !self.function(report, facts, instance)? {
             return Ok(false);
         }
-        if !matches!(facts.types.kind(selected.element), Some(Kind::Primitive(p)) if p != Primitive::Str)
-        {
-            return Err(error(
-                "source layout kernel currently requires a closed primitive type",
-            ));
-        }
-        facts
-            .layouts
-            .demand(&facts.types, &facts.aggregates, selected.element)
-            .map_err(|e| error(e.message))?;
+        prepare_layout(facts, selected.element).map_err(error)?;
         let layout = facts
             .layouts
             .get(selected.element)
@@ -90,3 +81,35 @@ impl Engine {
         Ok(true)
     }
 }
+
+/// The reached call supplies permission; this only prepares its closed storage.
+fn prepare_layout(
+    facts: &mut Declarations,
+    element: crate::types::TypeId,
+) -> Result<(), &'static str> {
+    let limit =
+        crate::support::crates::MAX_COMPONENTS.saturating_sub(facts.body_work.canonical_steps);
+    let mut work = 0;
+    let readiness =
+        facts
+            .layouts
+            .storage_readiness(&facts.types, &facts.aggregates, element, &mut work, limit);
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
+    readiness?;
+    let before = facts.layouts.steps;
+    let result = facts.layouts.demand_bounded(
+        &facts.types,
+        &facts.aggregates,
+        element,
+        limit.saturating_sub(work),
+    );
+    facts.body_work.canonical_steps = facts
+        .body_work
+        .canonical_steps
+        .saturating_add(facts.layouts.steps.saturating_sub(before));
+    result.map(|_| ()).map_err(|error| error.message)
+}
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/queried_storage.rs"]
+mod tests;

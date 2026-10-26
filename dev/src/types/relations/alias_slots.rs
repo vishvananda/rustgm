@@ -1,5 +1,8 @@
 //! Compiler-created body aliases retain ordered declaration slots, not proof equalities.
-use crate::{support::hash::HashMap, types::RegionId};
+use crate::{
+    support::{hash::HashMap, retained::Growth},
+    types::RegionId,
+};
 
 pub(crate) struct BodyAliases {
     ordered: Vec<RegionId>,
@@ -18,6 +21,39 @@ impl BodyAliases {
             }
         }
         Ok(Self { ordered, slots })
+    }
+
+    /// Cost only: selected clone, validation and geometric table coexistence.
+    pub(crate) fn construction_bound(count: usize) -> Result<Growth, &'static str> {
+        if count == 0 {
+            return Ok(Growth::default());
+        }
+        // The producer indexes elements, so 65536 slots are representable.
+        u16::try_from(count - 1).map_err(|_| "too many body alias slots")?;
+        let values = Growth::vector::<RegionId>(0, 0, count);
+        let map = Growth::map::<RegionId, u16>(0, 0, count);
+        let control = count.saturating_mul(4).saturating_mul(2).saturating_add(32);
+        Ok(Growth {
+            bytes: values
+                .bytes
+                .saturating_add(map.bytes.saturating_mul(2))
+                .saturating_add(control.saturating_mul(2))
+                .saturating_add(size_of::<Self>() + 2 * size_of::<usize>()),
+            work: map
+                .work
+                .saturating_mul(4)
+                .saturating_add(count.saturating_mul(4))
+                .saturating_add(16),
+        })
+    }
+    /// Conservative control/alignment allowance beyond logical entry slots.
+    pub(crate) fn control_allocation(&self) -> usize {
+        let capacity = self.slots.capacity();
+        if capacity == 0 {
+            0
+        } else {
+            capacity.saturating_mul(2).saturating_add(32)
+        }
     }
 
     pub(crate) fn len(&self) -> usize {
