@@ -30,7 +30,7 @@ pub(in crate::sema) use registry_graph::Graph;
 
 pub(in crate::sema) use graph_pairs::{compare, remembered, requested};
 
-pub(in crate::sema) use graph_closure::{prepare as prepare_graph, reject_execution, seal};
+pub(in crate::sema) use graph_closure::{prepare as prepare_graph, require_execution, seal};
 
 pub(in crate::sema) use member_paths::{conformance_order, inherited_body, prefer};
 

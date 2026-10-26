@@ -552,3 +552,30 @@ The primary receipt SHA is
 `2797bb924f3b3d54fa275accdb422a9004b7822a4c7376ebeef7b497f1c33ef5`;
 the independent audit receipt SHA is
 `ab752f2c3e9466bf37087ffa755d1554143f0d6f60ed4e51ed09d6a25feb2b80`.
+
+
+The separate execution candidate replaces the terminal unsupported diagnostic with
+a current sealed-registry check at declaration completion. That check pays for
+validating the retained forest against its actual registry. Member consumers still
+require their own selected declaration and complete defining arguments, and use
+the unchanged original/instance proof. Default implementations, associated
+values/types, imported specialization and public defaultness transport remain
+closed by their independent guards. A sealed forest does not grant those features.
+
+Before candidate execution, the bounded native plan declares seven exact providers
+in both editions: both corrected chains, actual unsafe marker selection, generic
+private parent substitution, selected clone/drop and lazy panic, inherited scalar
+static-parent/nonstatic-child, and final RPIT inherited across scalar specialization.
+All fourteen must compile with nonempty LowIR and empty compiler diagnostics,
+then pass the locked backend and execute with status zero and empty streams.
+The three actual default-RPIT declarations must reject in both editions; the
+combined inherited RPIT/static opponent must reject with real lifetime evidence.
+These eight negative observations require exit one, empty stdout and the declared
+diagnostic category. No old independent oracle is rerun. The exact println-based
+own-child observer is retained separately; no printing support is claimed.
+
+The execution gate also reruns the six affected consumer groups and the existing
+verifier finality/authority group, after both strict modes and architecture pass.
+The old verifier helper now expects genuine successful declaration completion;
+its Min, effective-finality, invalid-overlap and post-seal insertion opponents
+remain unchanged. Candidate native results and this readiness change are pending.

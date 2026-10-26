@@ -1,4 +1,4 @@
-//! Actual sealed facts exercise member consumers while whole-program execution stays fenced.
+//! Actual sealed facts exercise member consumers and unchanged original/instance proofs.
 #[path = "ancestor_dispatch/rpit_evidence.rs"]
 mod rpit_evidence;
 use super::{Checker, Declarations};
@@ -17,11 +17,7 @@ type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
 fn verified(report: &Report) -> TestResult<Declarations> {
     let mut checker = Checker::new(report)?;
-    let error = checker.run().err().ok_or("execution fence disappeared")?;
-    assert_eq!(
-        error.message,
-        "specialization graph execution is not implemented"
-    );
+    checker.run()?;
     Ok(checker.facts)
 }
 fn declaration(report: &Report, kind: DefKind, name: &str) -> TestResult<DefId> {
@@ -143,7 +139,7 @@ fn sealed_method_dispatch_selects_nearest_defining_owner_and_complete_arguments(
             "the actual concrete child has no generic inputs"
         );
         assert_ne!(actual, target);
-        assert!(specialization::reject_execution(&facts, &report).is_err());
+        specialization::require_execution(&facts)?;
         let after = facts
             .generics
             .implementations
@@ -225,7 +221,7 @@ fn inherited_scalar_dispatch_preserves_nonstatic_caller_and_actual_definition_co
     );
     proof.require(&mut constraints, &mut queries)?;
     constraints.solve()?;
-    assert!(specialization::reject_execution(&facts, &report).is_err());
+    specialization::require_execution(&facts)?;
     Ok(())
 }
 
@@ -260,7 +256,7 @@ fn default_rpit_rejection_binds_trait_declaration_and_keeps_final_inheritance() 
 }
 
 #[test]
-fn checked_defining_bodies_and_instances_keep_original_contracts_while_public_execution_stays_fenced()
+fn checked_defining_bodies_and_instances_keep_original_contracts_after_sealed_execution()
 -> TestResult {
     for path in [
         "corrected-chains/chain-and-inherited-body-explicit-middle",
@@ -281,7 +277,7 @@ fn checked_defining_bodies_and_instances_keep_original_contracts_while_public_ex
             entry,
             analysis.prepared,
         )?;
-        assert!(specialization::reject_execution(&analysis.facts, &report).is_err());
+        specialization::require_execution(&analysis.facts)?;
     }
     Ok(())
 }

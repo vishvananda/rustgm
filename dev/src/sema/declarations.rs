@@ -448,7 +448,7 @@ impl Checker<'_> {
             ));
         }
         self.complete_layouts()?;
-        super::specialization::reject_execution(&self.facts, self.report)
+        super::specialization::require_execution(&self.facts)
     }
     fn latent_library_definition(&self, id: DefId) -> bool {
         self.report
