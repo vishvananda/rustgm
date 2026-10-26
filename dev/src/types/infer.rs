@@ -76,6 +76,8 @@ pub enum Constructor {
     FunctionItem(ItemId, GenericArgs),
     /// Signature and environment tuple precede the enclosing type argument edges.
     Closure(super::closure::ClosureId, arguments::ArgumentsId),
+    Pattern(super::Constraint),
+    Foreign(ItemId),
 }
 #[derive(Clone, Copy)]
 enum Value {
@@ -296,6 +298,7 @@ impl Context {
             Constructor::Primitive(_)
             | Constructor::Parameter(_)
             | Constructor::Adt(..)
+            | Constructor::Foreign(_)
             | Constructor::Never => children.is_empty(),
             Constructor::Tuple => true,
             Constructor::Function { parameters, .. } => {
@@ -790,6 +793,7 @@ impl Context {
                 )
             }
             Kind::Never => Constructor::Never,
+            Kind::Foreign(item) => Constructor::Foreign(item),
             Kind::Opaque(id, args) => {
                 Constructor::Opaque(id, self.materialize_arguments(store, args, &mut children)?)
             }
@@ -820,6 +824,10 @@ impl Context {
             Kind::ArrayTerm { element, length } => {
                 children.push(self.known(store, element)?);
                 Constructor::ArrayTerm(length)
+            }
+            Kind::Pattern { base, constraint } => {
+                children.push(self.known(store, base)?);
+                Constructor::Pattern(constraint)
             }
             Kind::Slice(element) => {
                 children.push(self.known(store, element)?);
@@ -994,27 +1002,18 @@ fn canonical(
         Constructor::Parameter(id) => Kind::Parameter(id),
         Constructor::Adt(item, args) => Kind::Adt(item, args),
         Constructor::Never => Kind::Never,
+        Constructor::Foreign(item) => Kind::Foreign(item),
         Constructor::Tuple => {
             Kind::Tuple(store.intern_list(children).map_err(|_| Error::Overflow)?)
         }
-        Constructor::Array(length) => Kind::Array {
-            element: first()?,
-            length,
-        },
-        Constructor::ArrayTerm(length) => Kind::ArrayTerm {
-            element: first()?,
-            length,
-        },
-        Constructor::Slice => Kind::Slice(first()?),
-        Constructor::Reference { mutable, region } => Kind::Reference {
-            mutable,
-            region,
-            referent: first()?,
-        },
-        Constructor::Pointer { mutable } => Kind::Pointer {
-            mutable,
-            pointee: first()?,
-        },
+        constructor @ (Constructor::Array(_)
+        | Constructor::ArrayTerm(_)
+        | Constructor::Pattern(_)
+        | Constructor::Slice
+        | Constructor::Reference { .. }
+        | Constructor::Pointer { .. }) => {
+            unary_shape(constructor, first()?).ok_or(Error::InvalidIdentity)?
+        }
         Constructor::Function {
             bound_regions,
             parameters,
@@ -1039,4 +1038,33 @@ fn canonical(
         },
     };
     store.intern(kind).map_err(|_| Error::InvalidIdentity)
+}
+
+/// The same canonical unary constructors serve mutable and read-only completion.
+fn unary_shape(constructor: Constructor, child: TypeId) -> Option<Kind> {
+    Some(match constructor {
+        Constructor::Array(length) => Kind::Array {
+            element: child,
+            length,
+        },
+        Constructor::ArrayTerm(length) => Kind::ArrayTerm {
+            element: child,
+            length,
+        },
+        Constructor::Pattern(constraint) => Kind::Pattern {
+            base: child,
+            constraint,
+        },
+        Constructor::Slice => Kind::Slice(child),
+        Constructor::Reference { mutable, region } => Kind::Reference {
+            mutable,
+            region,
+            referent: child,
+        },
+        Constructor::Pointer { mutable } => Kind::Pointer {
+            mutable,
+            pointee: child,
+        },
+        _ => return None,
+    })
 }

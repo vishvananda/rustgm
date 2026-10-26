@@ -21,7 +21,15 @@ pub(in crate::sema) fn require_equal(
         }
         // In particular, generic identity and region-erased identity do not
         // require pretending that the parameter has a concrete byte size.
-        if source == destination {
+        if crate::abi::storage_relation::compare(
+            &mut facts.types,
+            &mut facts.aggregates,
+            &mut facts.layouts,
+            [source, destination],
+            &mut work,
+            LIMIT,
+        )? == crate::abi::storage_relation::StorageRelation::Equal
+        {
             return Ok(());
         }
         let source = size(facts, source, &mut work)?;

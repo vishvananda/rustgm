@@ -193,6 +193,7 @@ impl<'a> Privacy<'a> {
                 .ok_or("missing queued privacy type")?;
             match kind {
                 Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => {}
+                Kind::Foreign(item) => self.item(item)?,
                 Kind::Adt(item, arguments) => {
                     self.item(item)?;
                     self.arguments(arguments)?;
@@ -231,7 +232,9 @@ impl<'a> Privacy<'a> {
                             .ok_or("missing array length type")?,
                     )?;
                 }
-                Kind::Reference { referent: ty, .. } | Kind::Pointer { pointee: ty, .. } => {
+                Kind::Pattern { base: ty, .. }
+                | Kind::Reference { referent: ty, .. }
+                | Kind::Pointer { pointee: ty, .. } => {
                     self.push(ty)?;
                 }
                 Kind::Function {

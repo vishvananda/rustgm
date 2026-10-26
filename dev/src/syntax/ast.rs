@@ -115,6 +115,11 @@ pub enum MacroContext {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TypeConstraint {
+    NonNull,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
     LibraryValue {
         kind: crate::support::library_types::LibraryValue,
@@ -356,6 +361,10 @@ pub enum Kind {
     /// A parsed implementation domain, independent of the trait's visibility.
     ImplRestriction {
         path: NodeId,
+    },
+    TypePattern {
+        base: NodeId,
+        constraint: TypeConstraint,
     },
 }
 

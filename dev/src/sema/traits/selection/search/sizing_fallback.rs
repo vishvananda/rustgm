@@ -82,12 +82,14 @@ impl Search<'_> {
                 Kind::Never
                 | Kind::Primitive(_)
                 | Kind::Reference { .. }
+                | Kind::Pattern { .. }
                 | Kind::Pointer { .. }
                 | Kind::Function { .. }
                 | Kind::FunctionItem { .. }
                 | Kind::Closure { .. }
                 | Kind::Slice(_)
                 | Kind::Dynamic { .. } => true,
+                Kind::Foreign(_) => kind == LangItem::PointeeSized,
                 Kind::Array { .. } | Kind::ArrayTerm { .. } | Kind::Parameter(_) => false,
                 Kind::Projection(_) | Kind::Opaque(..) => {
                     return Err(
@@ -107,16 +109,7 @@ impl Search<'_> {
                         }
                         MetadataPreparation::Ready => {}
                     }
-                    match facts.layouts.prepared_pointer_metadata(
-                        &facts.types,
-                        &facts.aggregates,
-                        goal.ty,
-                    )? {
-                        Metadata::Thin | Metadata::Length | Metadata::VTable(_) => true,
-                        Metadata::Unknown(_) => {
-                            return Err("source sizing requires a proved metadata tail".into());
-                        }
-                    }
+                    self.source_tail_sizing(facts, frame, goal.ty, kind)?
                 }
             }
         };
@@ -135,6 +128,33 @@ impl Search<'_> {
                 Ok(Some(Action::Complete(Decision::Proven(selected))))
             }
             _ => Err("invalid source sizing fallback kind".into()),
+        }
+    }
+    /// Reuse the same actual terminal as metadata normalization. In particular,
+    /// an opaque external terminal has unit metadata without becoming `MetaSized`.
+    fn source_tail_sizing(
+        &mut self,
+        facts: &Declarations,
+        frame: &mut Frame,
+        mut tail: crate::types::TypeId,
+        requested: LangItem,
+    ) -> Result<bool, String> {
+        loop {
+            frame.inputs.context.account_work(1).map_err(inference)?;
+            self.charge(&mut frame.inputs.context)?;
+            match crate::abi::metadata::declared_step(&facts.types, &facts.aggregates, tail)? {
+                crate::abi::metadata::Step::Tail(child) => tail = child,
+                crate::abi::metadata::Step::Complete(Metadata::Thin) => {
+                    return Ok(!matches!(facts.types.kind(tail), Some(Kind::Foreign(_)))
+                        || requested == LangItem::PointeeSized);
+                }
+                crate::abi::metadata::Step::Complete(Metadata::Length | Metadata::VTable(_)) => {
+                    return Ok(true);
+                }
+                crate::abi::metadata::Step::Complete(Metadata::Unknown(_)) => {
+                    return Err("source sizing requires a proved metadata tail".into());
+                }
+            }
         }
     }
     pub(super) fn complete_source_builtin(

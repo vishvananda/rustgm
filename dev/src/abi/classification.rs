@@ -145,13 +145,11 @@ impl Plans {
         let definition = definitions
             .get(item)
             .ok_or("missing C aggregate declaration")?;
-        if let Some(niche) = layouts.niche(&layout)? {
-            if niche.owner != head {
-                return Err("nullable C ABI encoding belongs to another type");
-            }
-            return Ok(Passing::Scalar(niche.word));
+        if let Some(passing) = nullable_scalar(layouts, &layout, head)? {
+            return Ok(passing);
         }
-        if definition.repr.representation == Representation::Transparent
+        if layout.size == 8
+            && definition.repr.representation == Representation::Transparent
             && let Some(carrier) = layouts.pointer_carrier(types, definitions, head)?
         {
             return Ok(Passing::Scalar(carrier));
@@ -259,7 +257,10 @@ fn scalar(kind: Kind) -> Result<bool, &'static str> {
         matches!(kind,Kind::Primitive(p) if p!=types::Primitive::Str)
             || matches!(
                 kind,
-                Kind::Reference { .. } | Kind::Pointer { .. } | Kind::Function { .. }
+                Kind::Pattern { .. }
+                    | Kind::Reference { .. }
+                    | Kind::Pointer { .. }
+                    | Kind::Function { .. }
             ),
     )
 }
@@ -277,4 +278,21 @@ fn storage(retained: &mut usize, bytes: usize) -> Result<(), &'static str> {
         .filter(|&n| n <= 64_000_000)
         .ok_or("C ABI classification exceeds retained budget")?;
     Ok(())
+}
+
+fn nullable_scalar(
+    layouts: &Layouts,
+    layout: &crate::abi::layout::Layout,
+    owner: TypeId,
+) -> Result<Option<Passing>, &'static str> {
+    let Some(niche) = layouts.niche(layout)? else {
+        return Ok(None);
+    };
+    if niche.owner != owner {
+        return Err("nullable C ABI encoding belongs to another type");
+    }
+    if layout.size != 8 {
+        return Err("wide nullable C ABI requires its explicit aggregate profile");
+    }
+    Ok(Some(Passing::Scalar(niche.word)))
 }

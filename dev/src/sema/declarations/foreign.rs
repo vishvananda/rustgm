@@ -8,6 +8,38 @@ use crate::{
 pub(super) use linkage_attributes::{Attributes, collect};
 
 impl Checker<'_> {
+    pub(super) fn foreign_type(
+        &mut self,
+        id: DefId,
+        key: NodeKey,
+        item: Item,
+    ) -> Result<(), Error> {
+        let declaration = self
+            .report
+            .resolution
+            .definitions
+            .get(id.0 as usize)
+            .ok_or_else(|| self.error(key, "foreign type declaration disappeared"))?;
+        let block = self
+            .report
+            .resolution
+            .foreign_owners
+            .get(&id)
+            .copied()
+            .ok_or_else(|| self.error(key, "foreign type requires its actual external owner"))?;
+        if declaration.node != Some(key)
+            || declaration.kind != crate::resolve::model::DefKind::ForeignType
+            || item.kind != ItemKind::ForeignType
+            || item.generics.start != item.generics.end
+            || item.where_clause.start != item.where_clause.end
+            || !self.report.resolution.foreign_blocks.contains(&block)
+            || !matches!(self.item(block)?.kind, ItemKind::ExternBlock { .. })
+        {
+            return Err(self.error(key, "foreign type changed its actual declaration or owner"));
+        }
+        let ty = self.intern(key, crate::types::Kind::Foreign(crate::types::ItemId(id.0)))?;
+        self.complete(id, key, ty)
+    }
     pub(super) fn validate_foreign_blocks(&self) -> Result<(), Error> {
         let mut blocks: Vec<_> = self
             .report
@@ -236,3 +268,7 @@ impl Checker<'_> {
         )))
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/external_opacity.rs"]
+mod tests;

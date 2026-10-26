@@ -344,6 +344,7 @@ impl Graph {
                     let position = self.referent(position, mutable)?;
                     self.queue_type(referent, position, depth)?;
                 }
+                Kind::Pattern { base, .. } => self.queue_type(base, position, depth)?,
                 Kind::Pointer { mutable, pointee } => {
                     let position = self.referent(position, mutable)?;
                     self.queue_type(pointee, position, depth)?;
@@ -425,7 +426,7 @@ impl Graph {
                         self.invariant_arguments(types, owner, args, invariant, depth)?;
                     }
                 }
-                Kind::Never | Kind::Primitive(_) => {}
+                Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) => {}
             }
         }
         Ok(())

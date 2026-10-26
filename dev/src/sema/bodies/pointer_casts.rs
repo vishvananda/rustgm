@@ -158,6 +158,11 @@ impl Checker<'_> {
             return Ok(Some(Cast::Pointer));
         }
         let (from, to) = (self.facts.types.kind(source), self.facts.types.kind(target));
+        let from = if let Some(Type::Pattern { base, .. }) = from {
+            self.facts.types.kind(base)
+        } else {
+            from
+        };
         let kind = match (from, to) {
             (
                 Some(Type::Pointer { pointee: left, .. }),

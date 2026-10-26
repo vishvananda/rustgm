@@ -80,6 +80,7 @@ impl Uses {
                     None
                 }
                 Kind::Array { element, .. }
+                | Kind::Pattern { base: element, .. }
                 | Kind::Slice(element)
                 | Kind::Reference {
                     referent: element, ..
@@ -129,7 +130,7 @@ impl Uses {
                     self.arguments(store, application.arguments)?;
                     None
                 }
-                Kind::Never | Kind::Primitive(_) => None,
+                Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) => None,
             };
             if let Some(list) = list {
                 let children = store.list(list).ok_or("invalid parameter use list")?;

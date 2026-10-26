@@ -80,6 +80,7 @@ pub(crate) trait Compare<'t> {
                 return self.arguments(a, b, depth);
             }
             (Kind::Never, Kind::Never) => {}
+            (Kind::Foreign(a), Kind::Foreign(b)) if a == b => {}
             (Kind::Primitive(a), Kind::Primitive(b)) if a == b => {}
             (Kind::Parameter(a), Kind::Parameter(b)) if a == b => {}
             (
@@ -127,6 +128,16 @@ pub(crate) trait Compare<'t> {
                 Kind::ArrayTerm {
                     length: y,
                     element: b,
+                },
+            ) if x == y => self.child(a, b, depth)?,
+            (
+                Kind::Pattern {
+                    base: a,
+                    constraint: x,
+                },
+                Kind::Pattern {
+                    base: b,
+                    constraint: y,
                 },
             ) if x == y => self.child(a, b, depth)?,
             (Kind::Slice(a), Kind::Slice(b)) => self.child(a, b, depth)?,

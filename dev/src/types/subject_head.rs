@@ -19,6 +19,8 @@ pub(crate) enum Head {
     Slice,
     Function,
     Never,
+    Pattern(super::Constraint),
+    Foreign(ItemId),
 }
 impl Head {
     pub const fn canonical(kind: Kind) -> Self {
@@ -27,6 +29,7 @@ impl Head {
             Kind::Parameter(id) => Self::Parameter(id),
             Kind::Projection(application) => Self::Projection(application.item),
             Kind::Adt(item, _) => Self::Nominal(item),
+            Kind::Foreign(item) => Self::Foreign(item),
             Kind::Opaque(id, _) => Self::Opaque(id),
             Kind::Dynamic { shape, .. } => Self::Dynamic(shape),
             Kind::FunctionItem { item, .. } => Self::FunctionItem(item),
@@ -38,6 +41,7 @@ impl Head {
             Kind::Slice(_) => Self::Slice,
             Kind::Function { .. } => Self::Function,
             Kind::Never => Self::Never,
+            Kind::Pattern { constraint, .. } => Self::Pattern(constraint),
         }
     }
 }

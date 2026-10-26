@@ -136,6 +136,8 @@ pub enum ItemKind {
         capture: u32,
     },
     MacroInvocation(NodeId),
+    /// Opaque declaration owned by an actual external block.
+    ForeignType,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

@@ -406,6 +406,22 @@ impl Unit {
         config: &crate::expand::config::Config,
         charge: &crate::expand::builtin::choice::Charge<'_>,
     ) -> Result<PreparedChoice, LexError> {
+        self.prepare_builtin_syntax(site, input, registry, other, config, charge, false)
+    }
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "both typed builtin producers share the same actual source/registry/configuration transaction"
+    )]
+    pub(crate) fn prepare_builtin_syntax<'a>(
+        &self,
+        site: crate::expand::builtin::choice::Site,
+        input: &crate::expand::macros::input::Input,
+        registry: &crate::expand::registry::Registry,
+        other: impl Fn(super::FileId) -> Option<&'a Unit>,
+        config: &crate::expand::config::Config,
+        charge: &crate::expand::builtin::choice::Charge<'_>,
+        pattern: bool,
+    ) -> Result<PreparedChoice, LexError> {
         let actual = self
             .configured
             .ast
@@ -438,14 +454,24 @@ impl Unit {
             span,
             parser_calls,
             cfg_uses,
-        } = crate::expand::builtin::choice::select(
-            source,
-            input,
-            config,
-            site.grammar,
-            &inputs,
-            charge,
-        )?;
+        } = if pattern {
+            crate::expand::builtin::refined_type::select(
+                source,
+                input,
+                site.grammar,
+                &inputs,
+                charge,
+            )?
+        } else {
+            crate::expand::builtin::choice::select(
+                source,
+                input,
+                config,
+                site.grammar,
+                &inputs,
+                charge,
+            )?
+        };
         let (ast, configuration) = Configuration::take(
             crate::expand::crate_syntax::configure_with_inputs(source, ast, config, &inputs)?,
         );

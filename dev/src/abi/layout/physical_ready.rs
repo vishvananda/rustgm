@@ -52,9 +52,16 @@ impl Layouts {
             }
             let fields = match types.kind(next).ok_or("missing storage type")? {
                 Kind::Tuple(fields) => Some(fields),
+                Kind::Pattern { base, .. } => {
+                    pending.push(base);
+                    None
+                }
                 Kind::Opaque(..) => {
                     pending.push(types.storage_head(next)?);
                     None
+                }
+                Kind::Foreign(_) => {
+                    return Err("foreign type has unknown value size and alignment");
                 }
                 Kind::Parameter(_) | Kind::Projection(_) | Kind::ArrayTerm { .. } => {
                     return Err("constant storage layout requires a closed normalized type");

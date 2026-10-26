@@ -51,7 +51,9 @@ impl Consumer {
             | "rustc_specialization_trait"
             | "rustc_coinductive"
             | "rustc_dyn_incompatible_trait"
-            | "rustc_trivial_field_reads" => Self::SourceBindings,
+            | "rustc_trivial_field_reads"
+            | "rustc_nonnull_optimization_guaranteed"
+            | "rustc_never_returns_null_ptr" => Self::SourceBindings,
             "stable"
             | "unstable"
             | "rustc_const_stable"

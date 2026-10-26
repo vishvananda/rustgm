@@ -238,6 +238,7 @@ impl<'a> Reader<'a> {
                 }
                 Ok(StoredShape::Scalar)
             }
+            Kind::Pattern { base, .. } => self.storage_shape(base),
             Kind::Reference { .. } | Kind::Pointer { .. } | Kind::Function { .. } => {
                 self.word_shape(ty)?;
                 Ok(StoredShape::Word)

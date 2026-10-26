@@ -97,6 +97,11 @@ pub struct Layouts {
     pub steps: usize,
 }
 impl Layouts {
+    pub(crate) fn metadata_steps(&self) -> usize {
+        self.metadata
+            .as_deref()
+            .map_or(0, |metadata| metadata.steps)
+    }
     /// Classify a prepared referent's physical pointer metadata. A missing
     /// canonical Sized proof does not by itself imply a wide pointer.
     /// # Errors
@@ -372,6 +377,7 @@ impl Layouts {
         self.states[ty.0 as usize] = State::Active;
         self.work.push((ty, true));
         match kind {
+            Kind::Pattern { base, .. } => self.work.push((base, false)),
             Kind::Opaque(..) => self.work.push((types.storage_head(ty)?, false)),
             Kind::Closure { environment, .. } => self.work.push((environment, false)),
             Kind::Tuple(fields) => self.dependencies(types, fields)?,
@@ -405,6 +411,10 @@ impl Layouts {
         budget: &mut Budget,
     ) -> Result<Layout, &'static str> {
         match kind {
+            Kind::Pattern { base, .. } => {
+                self.get(base).copied().ok_or("missing pattern base layout")
+            }
+            Kind::Foreign(_) => Err("foreign type has unknown value size and alignment"),
             Kind::Parameter(_) => Err("generic type parameter has no concrete layout"),
             Kind::Projection(_) => Err("associated type layout requires normalization"),
             Kind::Opaque(..) => self

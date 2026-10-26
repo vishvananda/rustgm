@@ -165,7 +165,8 @@ fn partial<S: BuildHasher>(
 ) -> Possible {
     let mut value = Possible::UNKNOWN;
     match kind {
-        Constructor::Primitive(Primitive::Str)
+        Constructor::Foreign(_)
+        | Constructor::Primitive(Primitive::Str)
         | Constructor::Slice
         | Constructor::Dynamic { .. } => {
             value.sized = false;
@@ -177,7 +178,8 @@ fn partial<S: BuildHasher>(
                 value.abilities = environment.abilities;
             }
         }
-        Constructor::Tuple
+        Constructor::Pattern(_)
+        | Constructor::Tuple
         | Constructor::Array(_)
         | Constructor::ArrayTerm(_)
         | Constructor::ArrayInfer(_) => {

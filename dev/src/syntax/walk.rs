@@ -66,6 +66,7 @@ impl<L> Syntax<L> {
             | Kind::TraitType { bounds: list, .. }
             | Kind::Path { segments: list, .. } => self.children(list, visit)?,
             Kind::Attributed { value, .. }
+            | Kind::TypePattern { base: value, .. }
             | Kind::Group(value)
             | Kind::Statement(value)
             | Kind::Unary { operand: value, .. }
@@ -347,7 +348,8 @@ impl<L> Syntax<L> {
                 visit_all(abi, visit)?;
                 self.children(items, visit)?;
             }
-            ItemKind::ExternCrate { .. }
+            ItemKind::ForeignType
+            | ItemKind::ExternCrate { .. }
             | ItemKind::MacroRules { .. }
             | ItemKind::DeclarativeMacro { .. } => {}
         }

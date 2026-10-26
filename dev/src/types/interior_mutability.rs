@@ -136,13 +136,20 @@ impl<'a> Query<'a> {
             | Kind::Reference { .. }
             | Kind::Function { .. }
             | Kind::FunctionItem { .. } => return Ok(Some(Answer::Ordinary)),
-            Kind::Parameter(_) | Kind::Projection(_) | Kind::Opaque(..) | Kind::Dynamic { .. } => {
+            Kind::Foreign(_)
+            | Kind::Parameter(_)
+            | Kind::Projection(_)
+            | Kind::Opaque(..)
+            | Kind::Dynamic { .. } => {
                 return Ok(Some(Answer::Unresolved));
             }
             Kind::Array { element, .. }
             | Kind::ArrayTerm { element, .. }
             | Kind::Slice(element) => self.child(element)?,
-            Kind::Closure { environment, .. } => self.child(environment)?,
+            Kind::Pattern {
+                base: environment, ..
+            }
+            | Kind::Closure { environment, .. } => self.child(environment)?,
             Kind::Tuple(fields) => self.fields(fields)?,
             Kind::Adt(item, _) => match self.definitions.shared_mutation(item) {
                 None => return Ok(Some(Answer::Unresolved)),

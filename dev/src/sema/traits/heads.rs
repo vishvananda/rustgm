@@ -61,9 +61,11 @@ impl Head {
             Constructor::Array(_) | Constructor::ArrayTerm(_) | Constructor::ArrayInfer(_) => {
                 Self::Array
             }
+            Constructor::Pattern(constraint) => Self::Pattern(constraint),
             Constructor::Slice => Self::Slice,
             Constructor::Function { .. } => Self::Function,
             Constructor::Never => Self::Never,
+            Constructor::Foreign(item) => Self::Foreign(item),
         }
     }
 }

@@ -193,6 +193,7 @@ pub(super) fn child<L>(
         | Kind::RestPattern
         | Kind::Pattern { .. }
         | Kind::ReferencePattern { .. }
+        | Kind::TypePattern { .. }
         | Kind::Type { .. }
         | Kind::InferType
         | Kind::NeverType
@@ -225,6 +226,7 @@ fn item(kind: ItemKind, child: NodeId) -> Position {
         | ItemKind::TraitAlias { .. }
         | ItemKind::Impl { .. }
         | ItemKind::TypeAlias { .. }
+        | ItemKind::ForeignType
         | ItemKind::Module { .. }
         | ItemKind::Use(_)
         | ItemKind::ExternCrate { .. }

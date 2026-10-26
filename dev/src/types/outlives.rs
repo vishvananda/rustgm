@@ -153,7 +153,9 @@ fn children(
             }));
         }
         Kind::Reference { referent, .. } => work.push((referent, depth)),
-        Kind::Pointer { pointee, .. } => work.push((pointee, depth)),
+        Kind::Pattern { base: pointee, .. } | Kind::Pointer { pointee, .. } => {
+            work.push((pointee, depth));
+        }
         Kind::Slice(element) | Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => {
             work.push((element, depth));
         }
@@ -217,7 +219,7 @@ fn children(
                 _ => None,
             }));
         }
-        Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => {}
+        Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) | Kind::Parameter(_) => {}
         Kind::Projection(_) => {
             return Err("associated type outlives checking requires normalization");
         }

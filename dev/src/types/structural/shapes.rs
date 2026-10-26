@@ -186,6 +186,7 @@ impl Shapes {
             }
 
             Kind::Never => {}
+            Kind::Foreign(item) => item.hash(hash),
             Kind::Primitive(value) => value.hash(hash),
             Kind::Parameter(value) => value.hash(hash),
             Kind::Reference {
@@ -197,6 +198,10 @@ impl Shapes {
             Kind::Pointer { mutable, pointee } => {
                 mutable.hash(hash);
                 self.child::<CHARGED, E>(Key::Type(pointee), finish, hash, charge)?;
+            }
+            Kind::Pattern { base, constraint } => {
+                constraint.hash(hash);
+                self.child::<CHARGED, E>(Key::Type(base), finish, hash, charge)?;
             }
             Kind::Slice(element) => {
                 self.child::<CHARGED, E>(Key::Type(element), finish, hash, charge)?;

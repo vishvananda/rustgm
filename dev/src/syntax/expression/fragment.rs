@@ -477,3 +477,49 @@ pub fn parse_include_in_edition<'s>(
     parser.ast.lookahead_high_water = parser.cursor.high_water;
     Ok(parser.ast)
 }
+
+/// Parse the actual compiler `pattern_type` input once, including opaque bases.
+/// # Errors
+/// Rejects malformed syntax and currently unsupported range/or constraints.
+pub(crate) fn type_pattern_with_inputs<'s>(
+    source: &'s str,
+    tokens: &'s [Token],
+    inputs: &dyn crate::syntax::interpolation::Inputs,
+) -> Result<Ast<'s>, LexError> {
+    let mut parser = Parser::with_cursor(
+        Cursor::from_position(source, tokens, TokenPosition::default())?,
+        true,
+    );
+    parser.inputs = inputs;
+    parser.has_opaque = !inputs.is_empty();
+    let base = parser.ty()?;
+    let start = parser.ast.node(base).span.start;
+    let separator = parser.required()?;
+    if source.get(separator.start as usize..separator.end as usize) != Some("is") {
+        return Err(crate::syntax::token_tree::error(
+            separator.start,
+            "expected is in pattern type",
+        ));
+    }
+    parser.expect(P::Bang)?;
+    let null = parser.required()?;
+    if source.get(null.start as usize..null.end as usize) != Some("null") {
+        return Err(crate::syntax::token_tree::error(
+            null.start,
+            "pattern type constraint is not implemented",
+        ));
+    }
+    if parser.cursor.peek(0)?.is_some() {
+        return Err(parser.error("unexpected token after pattern type")?);
+    }
+    let root = parser.node(
+        start,
+        Kind::TypePattern {
+            base,
+            constraint: crate::syntax::ast::TypeConstraint::NonNull,
+        },
+    )?;
+    parser.ast.root = root;
+    parser.ast.lookahead_high_water = parser.cursor.high_water;
+    Ok(parser.ast)
+}

@@ -129,6 +129,13 @@ impl Niches {
                 .get(ty)
                 .ok_or("nullable carrier lacks its completed layout")?;
             match types.kind(ty).ok_or("missing nullable carrier type")? {
+                Kind::Pattern { .. }
+                    if matches!(layout.shape, Shape::Scalar | Shape::WidePointer)
+                        && matches!(layout.size, 8 | 16)
+                        && layout.align == 8 =>
+                {
+                    break Some(ty);
+                }
                 Kind::Reference { .. } | Kind::Function { .. }
                     if matches!(layout.shape, Shape::Scalar)
                         && layout.size == 8
@@ -276,7 +283,7 @@ impl Layouts {
             return Ok(None);
         };
         let layout = *self.get(*ty).ok_or("missing nullable payload storage")?;
-        if layout.size != 8 || layout.align != 8 {
+        if !matches!(layout.size, 8 | 16) || layout.align != 8 {
             return Err("nullable payload differs from pointer storage");
         }
         let variants = Range {

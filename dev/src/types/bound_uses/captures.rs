@@ -327,6 +327,7 @@ impl<Q: Query> Occurrences<Q> {
             }
             Kind::Array { element, .. }
             | Kind::ArrayTerm { element, .. }
+            | Kind::Pattern { base: element, .. }
             | Kind::Slice(element)
             | Kind::Pointer {
                 pointee: element, ..
@@ -399,7 +400,7 @@ impl<Q: Query> Occurrences<Q> {
                 );
                 None
             }
-            Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => None,
+            Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) | Kind::Parameter(_) => None,
         };
         if let Some((list, depth)) = list {
             found = Q::merge(found, self.list(store, list, depth, finish, charge)?);

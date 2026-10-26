@@ -113,6 +113,7 @@ fn needs(store: &Store, kind: Kind) -> Result<Needs, &'static str> {
         | Kind::ArrayTerm { .. }
         | Kind::Slice(_)
         | Kind::Reference { .. }
+        | Kind::Pattern { .. }
         | Kind::Pointer { .. } => {
             result.edges = 1;
             None
@@ -139,7 +140,7 @@ fn needs(store: &Store, kind: Kind) -> Result<Needs, &'static str> {
             result.arguments = args(parent.arguments)?.saturating_add(args(application.arguments)?);
             None
         }
-        Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => None,
+        Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) | Kind::Parameter(_) => None,
     };
     if let Some(list) = list {
         result.list = store.list(list).ok_or("invalid bounded shape list")?.len();

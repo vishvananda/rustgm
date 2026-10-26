@@ -160,6 +160,7 @@ impl Resolver<'_> {
                 self.visit(c, value, Namespace::Value)?;
                 self.visit(c, ty, Namespace::Type)
             }
+            Kind::TypePattern { base, .. } => self.visit(c, base, Namespace::Type),
             Kind::Type { flavor, elements } => {
                 for offset in elements.start..elements.end {
                     let child = self.package.unit(c.file).configured.ast.edges[offset as usize];
@@ -392,7 +393,8 @@ impl Resolver<'_> {
         self.visit_list(c, item.generics, Namespace::Type)?;
         self.visit_list(c, item.where_clause, Namespace::Type)?;
         match item.kind {
-            ItemKind::Module { .. }
+            ItemKind::ForeignType
+            | ItemKind::Module { .. }
             | ItemKind::Use(_)
             | ItemKind::ExternCrate { .. }
             | ItemKind::MacroRules { .. } => Ok(()),

@@ -308,7 +308,8 @@ impl Copies {
                 .copied()
                 .unwrap_or_default()
                 .properties(),
-            Kind::Primitive(Primitive::Str)
+            Kind::Foreign(_)
+            | Kind::Primitive(Primitive::Str)
             | Kind::Slice(_)
             | Kind::Dynamic { .. }
             | Kind::Reference { mutable: true, .. } => Properties::default(),
