@@ -169,9 +169,7 @@ pub(in crate::sema::crates::typed_headers) fn application<'rows, B: Budget>(
 ) -> Result<Predicate, Error> {
     budget.charge(1)?;
     let index = reference.0 as usize;
-    let cached = cache
-        .entry(index)
-        .ok_or_else(|| error("source clause has an unknown trait application"))?;
+    let cached = cache.entry(index)?;
     if let Some(predicate) = cached {
         return Ok(predicate);
     }

@@ -45,9 +45,8 @@ pub(super) fn ready(
         .recipes
         .as_deref()
         .ok_or_else(|| error("selected method lost its actual signature producer"))?;
-    let mapping = match facts.associated.imported_owner() {
-        Some(ImportedOwners::Provided(mapping)) => mapping,
-        _ => return Err(error("selected method lost its actual indexed owner")),
+    let Some(ImportedOwners::Provided(mapping)) = facts.associated.imported_owner() else {
+        return Err(error("selected method lost its actual indexed owner"));
     };
     mapping.require_source(authority, state, &facts.types, work)?;
     let actual_owner = facts
@@ -284,17 +283,14 @@ fn publish(
         .crates
         .as_deref_mut()
         .ok_or_else(|| error("selected method lost its current linkage"))?;
-    if let Some(headers) = linkage.originals.as_deref() {
-        if headers
-            .source
-            .as_ref()
-            .is_none_or(|actual| !actual.same_owner(&ImportedOwners::Provided(Rc::clone(&mapping))))
-            || headers.entries.contains_key(&definition)
-        {
-            return Err(error(
-                "selected method changed its actual header owner/index",
-            ));
-        }
+    if let Some(headers) = linkage.originals.as_deref()
+        && (headers.source.as_ref().is_none_or(|actual| {
+            !actual.same_owner(&ImportedOwners::Provided(Rc::clone(&mapping)))
+        }) || headers.entries.contains_key(&definition))
+    {
+        return Err(error(
+            "selected method changed its actual header owner/index",
+        ));
     }
     let mut growth = Growth::map::<DefId, FunctionRegions>(
         facts.lifetimes.functions.len(),

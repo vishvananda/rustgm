@@ -104,8 +104,7 @@ pub(super) fn require_leaf_inputs(
             ));
         }
         let mut expected = applications
-            .entry(application.0 as usize)
-            .flatten()
+            .entry(application.0 as usize)?
             .ok_or_else(|| error("private leaf environment lost its translated application"))?;
         let Bound::Trait(actual) = expected.bound else {
             return Err(error(

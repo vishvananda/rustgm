@@ -14,13 +14,15 @@ mod sealed {
 pub(in crate::sema::crates::typed_headers) trait Cache:
     sealed::Sealed
 {
-    fn entry(&self, index: usize) -> Option<Option<Predicate>>;
+    fn entry(&self, index: usize) -> Result<Option<Predicate>, Error>;
     fn publish(&mut self, index: usize, value: Predicate) -> Result<(), Error>;
 }
 impl sealed::Sealed for Vec<Option<Predicate>> {}
 impl Cache for Vec<Option<Predicate>> {
-    fn entry(&self, index: usize) -> Option<Option<Predicate>> {
-        self.get(index).copied()
+    fn entry(&self, index: usize) -> Result<Option<Predicate>, Error> {
+        self.get(index)
+            .copied()
+            .ok_or_else(|| error("source clause has an unknown trait application"))
     }
     fn publish(&mut self, index: usize, value: Predicate) -> Result<(), Error> {
         let cell = self
@@ -35,8 +37,11 @@ pub(in crate::sema::crates::typed_headers) struct Shared {
 }
 impl sealed::Sealed for Shared {}
 impl Cache for Shared {
-    fn entry(&self, index: usize) -> Option<Option<Predicate>> {
-        self.cells.get(index).map(Cell::get)
+    fn entry(&self, index: usize) -> Result<Option<Predicate>, Error> {
+        self.cells
+            .get(index)
+            .map(Cell::get)
+            .ok_or_else(|| error("source clause has an unknown trait application"))
     }
     fn publish(&mut self, index: usize, value: Predicate) -> Result<(), Error> {
         let cell = self

@@ -492,8 +492,7 @@ fn private_defining_environments_bound_selected_and_warm_work() -> Result {
         let scope = env
             .scopes
             .iter()
-            .filter_map(std::cell::OnceCell::get)
-            .next()
+            .find_map(std::cell::OnceCell::get)
             .ok_or("actual complete scope")?;
         assert_eq!(scope.parameters.len(), width);
         assert!(env.applications.observations().1 >= width);

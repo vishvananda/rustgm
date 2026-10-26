@@ -116,7 +116,7 @@ impl Headers {
     }
 }
 
-pub(super) fn symbol(
+fn symbol(
     identity: &crate::support::crates::ExternalDef,
     budget: &mut impl recipe_cursor::Budget,
 ) -> Result<String, Error> {
