@@ -128,15 +128,13 @@ fn inspect(
                     tail(types, fields)?
                 }
             }
-            Kind::Parameter(_) | Kind::Projection(_) | Kind::Opaque(..) => {
-                Step::Complete(if matches!(fields, Fields::Physical)
-                    && types.is_sized(ty) == Some(true)
-                {
+            Kind::Parameter(_) | Kind::Projection(_) | Kind::Opaque(..) => Step::Complete(
+                if matches!(fields, Fields::Physical) && types.is_sized(ty) == Some(true) {
                     Metadata::Thin
                 } else {
                     Metadata::Unknown(ty)
-                })
-            }
+                },
+            ),
             Kind::Never
             | Kind::Primitive(_)
             | Kind::Array { .. }

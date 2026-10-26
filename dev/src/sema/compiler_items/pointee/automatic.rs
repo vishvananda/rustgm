@@ -31,7 +31,10 @@ pub(in crate::sema) fn select(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(Readiness::Unrelated);
     };
-    let Some(role) = catalog.role(LangItem::PointeeTrait).map_err(Error::unlocated)? else {
+    let Some(role) = catalog
+        .role(LangItem::PointeeTrait)
+        .map_err(Error::unlocated)?
+    else {
         return Ok(Readiness::Unrelated);
     };
     if application.item.0 != role.definition.0 {
@@ -39,14 +42,22 @@ pub(in crate::sema) fn select(
     }
     header_attributes::charge_source_contract_query(facts, 1)?;
     if matches!(role.origin, DeclarationOrigin::Imported(_)) {
-        return Err(Error::unlocated("imported Pointee selection contracts are not implemented"));
+        return Err(Error::unlocated(
+            "imported Pointee selection contracts are not implemented",
+        ));
     }
     if effect != Constness::Ordinary
-        || facts.types.arguments(application.arguments).is_none_or(|a| a.len() != 0)
+        || facts
+            .types
+            .arguments(application.arguments)
+            .is_none_or(|a| a.len() != 0)
     {
-        return Err(Error::unlocated("source Pointee requires its complete ordinary application"));
+        return Err(Error::unlocated(
+            "source Pointee requires its complete ordinary application",
+        ));
     }
-    let member = catalog.language(LangItem::MetadataType)
+    let member = catalog
+        .language(LangItem::MetadataType)
         .ok_or_else(|| Error::unlocated("source Pointee lost its actual Metadata member"))?;
     let Some(contract) = catalog.traits.as_deref().and_then(|v| v.pointee.as_ref()) else {
         return Ok(Readiness::Pending(member.definition));
