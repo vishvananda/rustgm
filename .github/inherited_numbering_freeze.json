@@ -1,5 +1,5 @@
 {
-  "source_commit": "ccd760c2355ad1b3f90cb3dde167088fa0d34c0e",
+  "source_commit": "eef24e84c629e02f806813842d39fd311d7c7d35",
   "public_base": "52bb6dda",
   "sources": {
     "dev/bin/crates.rs": "efbab4e37ff93eb8c4affdbc721a01d33017da46a0c4472ce6dfcee80905340b",
@@ -2172,7 +2172,7 @@
     "dev/tests/invariants/ordinary_original_probe.rs": "cd7825fadf370bcd1c7743876d0908ddd0212fb8a1472e73eda1e368b91b8e60",
     "dev/tests/invariants/origin_integrity.rs": "4b09db75827295e54f8b6f5abc2ce3f2e30809b556c66fc76b05913d9c3ed70a",
     "dev/tests/invariants/origin_layouts.rs": "9493c0fc77ed8809a927b858b2abf9fb2befa5ba42df23d57df84713b0f56a9a",
-    "dev/tests/invariants/origin_relationships.rs": "2a80c14c9a52775af7bb4df186f40f34bb7c83add6d44f0414b4417b99498efd",
+    "dev/tests/invariants/origin_relationships.rs": "8191a5b54b5d8535c86698c84f1a05e38988270a1524ffb65949679d225bce47",
     "dev/tests/invariants/original_contexts.rs": "c9d440026ba7624f46d6d45984e3279a3650181f8c0cf139bceff127560cb24a",
     "dev/tests/invariants/original_rows.rs": "56125d712918e88c9660e7782bf552abf35c1d236bfc2280a92215fa90490118",
     "dev/tests/invariants/outlives_maps.rs": "c370f33836b021b5285cd4e8be523be888ef882c830b34e131687f8ad7a5c27b",
@@ -2722,7 +2722,7 @@
     "pa8/tests/manifest.json": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
     "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
   },
-  "source_sha256": "b76dd3bb90b9e0d9356a40bfc7fe79145c97e18b4101a4c7896128bd05e40ff1",
+  "source_sha256": "3e8e2767cf405333346f32b3779d60e1776f6a0d443a70bf2009c7f8a3465f6a",
   "selected": [
     "sema::crates::typed_headers::unpaid_provided::template_demands::assumption_environments::input_tests::shared_trait_input_producer_seals_actual_fresh_catalog_and_canonical_prefix",
     "sema::crates::typed_headers::origin_tests::imported_method_environment_validation_preserves_actual_contract_origin",

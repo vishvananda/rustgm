@@ -47,7 +47,7 @@ def worker(started):
         if files[path].replace('../../../tests/invariants/environment_origins.rs','../../../tests/invariants/origin_relationships.rs')!=(ROOT/path).read_text():raise ValueError('cfg(test) path-only proof changed')
         path='dev/tests/invariants/remapped_inputs.rs'
         if files[path].replace('let actual = crate::unpaid_cases::trait_extended(inherited_tests::HOLDER)?;','let mut actual = crate::unpaid_cases::trait_extended(inherited_tests::HOLDER)?;')!=(ROOT/path).read_text():raise ValueError('actual owner mutability proof changed')
-        if files['dev/tests/invariants/environment_origins.rs']!=(ROOT/'dev/tests/invariants/origin_relationships.rs').read_text():raise ValueError('renamed origin test changed')
+        if '#[cfg(test)]\n#[path = "../../../tests/invariants/origin_relationships.rs"]\nmod origin_tests;' not in (ROOT/'dev/src/sema/crates/typed_headers.rs').read_text():raise ValueError('changed origin module is not test-only')
         if retained['receipt']['sources']!=previous or retained['lint']['sources']!=previous or retained['receipt']['candidate']!=retained['source_commit']:raise ValueError('retained actual receipt source mismatch')
         if next(x for x in retained['receipt']['steps'] if x['name']=='metadata')['status']!=0 or next(x for x in retained['lint']['steps'] if x['name']=='clippy-production')['status']!=0:raise ValueError('retained successful static step missing')
         if cli_sha!=retained['compiler_sha256'] or cli_sha!=retained['receipt']['compiler_sha256']:raise ValueError('actual mandatory CLI does not match retained production source')
