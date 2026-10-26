@@ -165,14 +165,14 @@ impl Checker<'_> {
         self.state.method_environment.clone_from(&environment);
         self.state.prepare_parameter_queries();
         if self.facts.source_bindings.is_some() {
-            self.prepare_source_copy_context(node, &environment)?;
+            self.prepare_source_copy_context(node, environment)?;
         }
         Ok(())
     }
     fn prepare_source_copy_context(
         &mut self,
         node: NodeId,
-        environment: &Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
+        environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     ) -> Result<(), Error> {
         let catalog = self.facts.source_bindings.as_deref().ok_or_else(|| {
             self.error(node, "source Copy requirements lost their actual catalog")
@@ -195,7 +195,7 @@ impl Checker<'_> {
                 predicates: Vec::new(),
                 source_copy: None,
             });
-        requirements.environment.clone_from(environment);
+        requirements.environment.clone_from(&environment);
         requirements.source_copy = Some(std::sync::Arc::new(
             crate::sema::model::SourceCopyRequirements {
                 declaration,
