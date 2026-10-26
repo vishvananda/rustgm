@@ -270,5 +270,5 @@ impl Checker<'_> {
 }
 
 #[cfg(test)]
-#[path = "../../../tests/invariants/foreign_source.rs"]
+#[path = "../../../tests/invariants/external_opacity.rs"]
 mod tests;
