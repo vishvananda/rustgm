@@ -29,6 +29,9 @@ fn error(message: &'static str) -> Error {
     Error::unlocated(message)
 }
 #[cfg(test)]
+#[path = "../../../tests/invariants/environment_origins.rs"]
+mod origin_tests;
+#[cfg(test)]
 #[path = "../../../tests/invariants/header_reservations.rs"]
 mod tests;
 
@@ -133,6 +136,7 @@ impl super::Linkage {
     }
     pub(in crate::sema) fn require_source_method(
         &self,
+        facts: &Declarations,
         definition: DefId,
         scheme: &crate::sema::lifetimes::FunctionRegions,
         steps: &mut usize,
@@ -140,15 +144,22 @@ impl super::Linkage {
         *steps = steps.saturating_add(1);
         self.original_header(definition)?
             .ok_or("source method lost its actual completed original header")?;
-        let graph = self
+        let headers = self
             .originals
             .as_deref()
-            .and_then(|h| h.source.as_deref())
+            .ok_or("source method lacks its authenticated canonical headers")?;
+        let graph = headers
+            .source
+            .as_deref()
             .ok_or("source method lacks its authenticated canonical owner graph")?;
         let catalog = self
             .origin_catalog()
             .ok_or("source method lacks its actual catalog")?;
-        graph.require_method_regions(catalog, definition, scheme, steps)
+        graph.require_method_regions(catalog, definition, scheme, steps)?;
+        let header = headers
+            .get(definition)
+            .ok_or("source method lost its actual completed original header")?;
+        graph.require_method_environment(catalog, facts, definition, header, steps)
     }
     pub(crate) fn original_work(&self) -> Option<(usize, usize, usize, usize)> {
         self.originals

@@ -36,6 +36,20 @@ impl Prepared {
     pub(super) fn all(&self) -> &Arc<[Input]> {
         &self.inputs
     }
+    pub(super) fn subjects(&self) -> &[bool] {
+        &self.self_subjects
+    }
+    pub(super) fn require_declaration(
+        &self,
+        declaration: ImportedDeclarationId,
+    ) -> Result<(), Error> {
+        if self.declaration != declaration {
+            return Err(error(
+                "source trait inputs changed their actual imported declaration",
+            ));
+        }
+        Ok(())
+    }
     pub(in crate::sema) fn into_parts(self) -> (ImportedDeclarationId, Arc<[Input]>, Box<[bool]>) {
         (self.declaration, self.inputs, self.self_subjects)
     }
@@ -107,36 +121,23 @@ impl<'a> Context<'a> {
                 "source trait input remap has a foreign catalog/descriptor owner",
             ));
         }
-        let rows = self.descriptor.rows();
-        let Some(s::HeaderRef::Trait(index)) = rows.header(ordinal).map_err(error)? else {
-            return Err(error(
-                "source trait input remap lacks its actual trait header",
-            ));
-        };
-        let header = &rows.traits[index as usize];
-        let raw = header.inputs.slice(&rows.clauses).map_err(error)?;
-        let canonical = header.canonical_inputs as usize;
         let mut port = self.port(Some((ordinal, declaration)));
-        let (inputs, self_subjects) = translation::inputs(
-            &mut port,
-            &mut self.applications,
-            ordinal,
-            header.inputs,
-            Some(canonical),
-            store,
-            budget,
-        )?;
+        let prepared =
+            translation::trait_inputs(&mut port, &mut self.applications, ordinal, store, budget)?;
         budget.observed.add(
-            raw.len()
+            prepared
+                .inputs
+                .len()
                 .saturating_mul(size_of::<Input>())
                 .saturating_add(2 * size_of::<usize>())
-                .saturating_add(self_subjects.len().saturating_mul(size_of::<bool>())),
+                .saturating_add(
+                    prepared
+                        .self_subjects
+                        .len()
+                        .saturating_mul(size_of::<bool>()),
+                ),
         );
-        Ok(Prepared {
-            declaration,
-            inputs,
-            self_subjects,
-        })
+        Ok(prepared)
     }
     pub(super) fn declaration_inputs(
         &mut self,

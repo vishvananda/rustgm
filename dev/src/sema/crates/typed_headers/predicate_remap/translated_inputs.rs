@@ -28,6 +28,11 @@ pub(in crate::sema::crates::typed_headers) trait Mapping<'rows, B: Budget>:
 {
     fn rows(&self) -> s::ValidatedView<'rows>;
     fn trait_definition(&self, row: DeclarationRef, budget: &mut B) -> Result<DefId, Error>;
+    fn trait_declaration(
+        &self,
+        row: DeclarationRef,
+        budget: &mut B,
+    ) -> Result<ImportedDeclarationId, Error>;
     fn site(&self, owner: DeclarationRef, site: u32, budget: &mut B) -> Result<ProofSite, Error>;
     fn ty(&mut self, store: &mut Store, ty: g::TypeRef, budget: &mut B) -> Result<TypeId, Error>;
     fn region(&mut self, region: s::RegionRef, budget: &mut B) -> Result<RegionId, Error>;
@@ -68,6 +73,18 @@ impl<'rows> Mapping<'rows, Headers> for Ordinary<'rows> {
             .map_err(error)?;
         Ok(definition)
     }
+    fn trait_declaration(
+        &self,
+        row: DeclarationRef,
+        _: &mut Headers,
+    ) -> Result<ImportedDeclarationId, Error> {
+        // Context::trait_inputs authenticated this exact catalog/descriptor
+        // correspondence before constructing the ordinary port.
+        self.site_owner
+            .filter(|(owner, _)| *owner == row)
+            .map(|(_, declaration)| declaration)
+            .ok_or_else(|| error("source trait inputs changed their authenticated declaration"))
+    }
     fn site(&self, owner: DeclarationRef, index: u32, _: &mut Headers) -> Result<ProofSite, Error> {
         let (actual, declaration) = self
             .site_owner
@@ -107,6 +124,37 @@ impl<'rows> Mapping<'rows, Headers> for Ordinary<'rows> {
     ) -> Result<crate::types::traits::ApplicationId, Error> {
         store.intern_trait_application(application).map_err(error)
     }
+}
+
+pub(in crate::sema::crates::typed_headers) fn trait_inputs<'rows, B: Budget>(
+    port: &mut impl Mapping<'rows, B>,
+    cache: &mut [Option<Predicate>],
+    owner: DeclarationRef,
+    store: &mut Store,
+    budget: &mut B,
+) -> Result<super::Prepared, Error> {
+    let rows = port.rows();
+    let Some(s::HeaderRef::Trait(index)) = rows.header(owner).map_err(error)? else {
+        return Err(error(
+            "source trait input remap lacks its actual trait header",
+        ));
+    };
+    let header = &rows.traits[index as usize];
+    let declaration = port.trait_declaration(owner, budget)?;
+    let (inputs, self_subjects) = inputs(
+        port,
+        cache,
+        owner,
+        header.inputs,
+        Some(header.canonical_inputs as usize),
+        store,
+        budget,
+    )?;
+    Ok(super::Prepared {
+        declaration,
+        inputs,
+        self_subjects,
+    })
 }
 
 pub(in crate::sema::crates::typed_headers) fn application<'rows, B: Budget>(

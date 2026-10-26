@@ -8,7 +8,7 @@ use crate::{
     sema::{
         crates::typed_headers::{
             error,
-            predicate_remap::translation,
+            predicate_remap::{self, translation},
             recipe_cursor::{Budget, Demand, Dependency, Port, Reserved},
             staged_headers::environments::{self, Accounting},
         },
@@ -33,6 +33,9 @@ use std::sync::Arc;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/inherited_environments.rs"]
 mod inherited_tests;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/remapped_inputs.rs"]
+mod input_tests;
 #[path = "neutral_definitions.rs"]
 mod numbered;
 #[path = "assumed_originals.rs"]
@@ -45,11 +48,28 @@ mod tests;
 
 struct Scope {
     raw: s::ParameterScope,
-    inputs: Arc<[Input]>,
-    subjects: Box<[bool]>,
+    inputs: ScopeInputs,
     parameters: Vec<(ParameterId, Abilities)>,
     clauses: Vec<Clause>,
     environment: Arc<Environment>,
+}
+enum ScopeInputs {
+    Trait(predicate_remap::Prepared),
+    Declaration(Arc<[Input]>),
+}
+impl ScopeInputs {
+    fn all(&self) -> &Arc<[Input]> {
+        match self {
+            Self::Trait(prepared) => prepared.all(),
+            Self::Declaration(inputs) => inputs,
+        }
+    }
+    fn subjects(&self) -> &[bool] {
+        match self {
+            Self::Trait(prepared) => prepared.subjects(),
+            Self::Declaration(_) => &[],
+        }
+    }
 }
 impl Scope {
     fn prepare(
@@ -97,16 +117,27 @@ impl Scope {
             work,
             |parameter| parameters.push((parameter, Abilities::default())),
         )?;
-        let (inputs, subjects) = translation::inputs(
-            port,
-            applications,
-            scope_row.owner,
-            range,
-            canonical,
-            &mut facts.types,
-            work,
-        )?;
-        clauses.extend(inputs.iter().map(|input| input.value));
+        let inputs = if canonical.is_some() {
+            ScopeInputs::Trait(translation::trait_inputs(
+                port,
+                applications,
+                scope_row.owner,
+                &mut facts.types,
+                work,
+            )?)
+        } else {
+            let (inputs, _) = translation::inputs(
+                port,
+                applications,
+                scope_row.owner,
+                range,
+                None,
+                &mut facts.types,
+                work,
+            )?;
+            ScopeInputs::Declaration(inputs)
+        };
+        clauses.extend(inputs.all().iter().map(|input| input.value));
         let mut accounting = Observed {
             work,
             allocation: Allocation::default(),
@@ -123,7 +154,6 @@ impl Scope {
         let scope = Scope {
             raw: scope_row,
             inputs,
-            subjects,
             parameters,
             clauses,
             environment,
@@ -143,8 +173,8 @@ impl Scope {
         size_of::<Self>()
             .saturating_add(retained::vector(&self.parameters))
             .saturating_add(retained::vector(&self.clauses))
-            .saturating_add(self.inputs.len().saturating_mul(size_of::<Input>()))
-            .saturating_add(self.subjects.len())
+            .saturating_add(self.inputs.all().len().saturating_mul(size_of::<Input>()))
+            .saturating_add(self.inputs.subjects().len())
             .saturating_add(2 * size_of::<usize>())
             .saturating_add(environment)
     }
@@ -153,8 +183,8 @@ impl Scope {
             || self.raw.parent.is_some()
             || !self.parameters.is_empty()
             || !self.clauses.is_empty()
-            || !self.inputs.is_empty()
-            || !self.subjects.is_empty()
+            || !self.inputs.all().is_empty()
+            || !self.inputs.subjects().is_empty()
         {
             return Err(error(
                 "empty Contract changed its complete prepared declaration inputs",
@@ -164,8 +194,9 @@ impl Scope {
     }
     fn require(&self, rows: s::ValidatedView<'_>) -> Result<(), Error> {
         let (range, canonical) = originals::input_range(rows, self.raw)?;
-        if self.inputs.len() != range.slice(&rows.clauses).map_err(error)?.len()
-            || self.subjects.len() != canonical.unwrap_or(0)
+        if canonical.is_some() != matches!(&self.inputs, ScopeInputs::Trait(_))
+            || self.inputs.all().len() != range.slice(&rows.clauses).map_err(error)?.len()
+            || self.inputs.subjects().len() != canonical.unwrap_or(0)
         {
             return Err(error(
                 "private declaration environment changed its complete canonical input owner",
@@ -496,6 +527,9 @@ impl Owner {
                 return Err(error("private declaration scope changed its actual row"));
             }
             scope.require(rows)?;
+            if let ScopeInputs::Trait(prepared) = &scope.inputs {
+                prepared.require_declaration(port.port.declaration(raw.owner, work)?)?;
+            }
             return Ok(());
         }
         let inherited = parent

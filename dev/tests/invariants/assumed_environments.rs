@@ -78,6 +78,7 @@ fn private_defining_environments_use_real_zero_domain_assumptions() -> Result {
         assert!(
             declaration
                 .inputs
+                .all()
                 .iter()
                 .all(|input| matches!(input.value, Clause::Predicate(_)))
         );
