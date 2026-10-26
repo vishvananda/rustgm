@@ -9,7 +9,9 @@ use super::{
     schema_mapping::{Authority, Borrowed},
 };
 use crate::{
-    resolve::{crates::ReservationWork, package::Error},
+    resolve::{
+        bindings::consumer_policy::HeaderDataOwner, crates::ReservationWork, package::Error,
+    },
     sema::{
         associated::{ImportedOwner, Owner, OwnerKind, Schema},
         model::Declarations,
@@ -29,9 +31,14 @@ pub(super) struct OwnerTransaction {
     traits: Vec<Cell>,
     implementations: Vec<Cell>,
     bytes: usize,
+    data: HeaderDataOwner,
 }
 impl OwnerTransaction {
-    fn new(rows: s::ValidatedView<'_>, work: &mut ReservationWork) -> Result<Box<Self>, Error> {
+    fn new(
+        rows: s::ValidatedView<'_>,
+        data: HeaderDataOwner,
+        work: &mut ReservationWork,
+    ) -> Result<Box<Self>, Error> {
         let count = rows.traits.len().saturating_add(rows.implementations.len());
         work.charge(count.saturating_add(1))?;
         work.reserve(size_of::<Self>().saturating_add(count.saturating_mul(size_of::<Cell>())))?;
@@ -46,6 +53,7 @@ impl OwnerTransaction {
             traits,
             implementations,
             bytes,
+            data,
         }))
     }
     fn retained_bytes(&self) -> usize {
@@ -86,7 +94,7 @@ pub(super) fn prepare(
 ) -> Result<Demand<()>, Error> {
     authority.reservation.require(authority.report, work)?;
     authority.completion.columns(authority.report, work)?;
-    let view = authority.reservation.recipe_view(authority.report, work)?;
+    let view = authority.reservation.retained_recipe_view(work)?;
     let rows = view.rows()?;
     let header = rows
         .header(owner)
@@ -105,11 +113,21 @@ pub(super) fn prepare(
         .ok_or_else(|| error("private schema lost its persistent recipe state"))?;
     state.require_mapping(&view, &facts.types, true, work)?;
     if owners.is_none() {
-        *owners = Some(OwnerTransaction::new(rows, work)?);
+        *owners = Some(OwnerTransaction::new(
+            rows,
+            authority.completion.retain_data(authority.report, work)?,
+            work,
+        )?);
     }
     let transaction = owners
         .as_mut()
         .ok_or_else(|| error("private schema transaction disappeared"))?;
+    authority.completion.retained_columns(
+        authority.reservation.inventory(),
+        &transaction.data,
+        authority.reservation.index(),
+        work,
+    )?;
     work.charge(1)?;
     let retained = transaction.retained_bytes();
     let cell = transaction.cell(header)?;

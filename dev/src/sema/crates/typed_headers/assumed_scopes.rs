@@ -46,7 +46,7 @@ mod ports;
 #[path = "../../../../tests/invariants/assumed_environments.rs"]
 mod tests;
 
-pub(super) struct Declaration {
+pub(in crate::sema::crates::typed_headers) struct Declaration {
     pub index: usize,
     pub definition: crate::resolve::model::DefId,
     pub parent: Option<crate::resolve::model::DefId>,

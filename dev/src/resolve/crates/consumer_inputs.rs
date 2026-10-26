@@ -233,6 +233,12 @@ pub(in crate::resolve) fn reserve_names(
     Ok(Some(seed))
 }
 impl ConsumerReservation {
+    pub(crate) fn inventory(&self) -> &Arc<Dependencies> {
+        &self.inventory
+    }
+    pub(crate) fn index(&self) -> u32 {
+        self.index
+    }
     pub(crate) fn retained_recipe_view(
         &self,
         work: &mut ReservationWork,
