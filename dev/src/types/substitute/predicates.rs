@@ -26,6 +26,26 @@ impl Applications {
         total
     }
 
+    fn insertion_growth(&self, depth: u16) -> crate::support::retained::Growth {
+        use crate::support::retained::Growth;
+        if depth == 0 {
+            return Growth::map::<ApplicationId, ApplicationId>(
+                self.root.len(),
+                self.root.capacity(),
+                1,
+            );
+        }
+        if let Some(scoped) = &self.scoped {
+            Growth::map::<(ApplicationId, u16), ApplicationId>(scoped.len(), scoped.capacity(), 1)
+        } else {
+            let mut growth = Growth::map::<(ApplicationId, u16), ApplicationId>(0, 0, 1);
+            growth.bytes = growth
+                .bytes
+                .saturating_add(size_of::<HashMap<(ApplicationId, u16), ApplicationId>>());
+            growth
+        }
+    }
+
     fn planned_insert(&self, depth: u16) -> usize {
         if depth == 0 {
             crate::support::retained::new_map::<ApplicationId, ApplicationId>(
@@ -60,18 +80,50 @@ impl Applications {
 }
 
 impl Bound {
+    pub(crate) fn predicate_charged(
+        &mut self,
+        store: &mut Store,
+        predicate: Predicate,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Predicate, &'static str> {
+        self.predicate_observed::<true>(store, predicate, 0, charge)
+    }
     /// Substitute enclosing arguments without opening a clause's own quantifier.
     /// Both the subject and every requirement input retain the same binder depth.
     /// Opening that quantifier is a separate scoped proof operation.
     /// # Errors
     /// Reports malformed clauses and the same argument/work failures as `predicate`.
     pub fn clause(&mut self, store: &mut Store, clause: Clause) -> Result<Clause, &'static str> {
+        self.clause_observed::<false>(store, clause, &|_, _| Ok(()))
+    }
+    pub(crate) fn clause_charged(
+        &mut self,
+        store: &mut Store,
+        clause: Clause,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Clause, &'static str> {
+        self.clause_observed::<true>(store, clause, charge)
+    }
+    fn clause_observed<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        clause: Clause,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Clause, &'static str> {
         Ok(match clause {
-            Clause::Predicate(predicate) => Clause::Predicate(self.predicate(store, predicate)?),
+            Clause::Predicate(predicate) => {
+                Clause::Predicate(self.predicate_observed::<CHARGED>(store, predicate, 0, charge)?)
+            }
             Clause::ForAll(id) => {
                 let value = store.quantified(id).ok_or("invalid quantified predicate")?;
-                let predicate = self.predicate_inside(store, value.predicate, 1)?;
-                Clause::ForAll(store.intern_quantified(Quantified { predicate, ..value })?)
+                let predicate =
+                    self.predicate_observed::<CHARGED>(store, value.predicate, 1, charge)?;
+                let value = Quantified { predicate, ..value };
+                Clause::ForAll(if CHARGED {
+                    store.intern_quantified_charged(value, charge)?
+                } else {
+                    store.intern_quantified(value)?
+                })
             }
         })
     }
@@ -93,7 +145,16 @@ impl Bound {
         predicate: Predicate,
         depth: u16,
     ) -> Result<Predicate, &'static str> {
-        let ty = self.apply_inside(store, predicate.ty, depth)?;
+        self.predicate_observed::<false>(store, predicate, depth, &|_, _| Ok(()))
+    }
+    fn predicate_observed<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        predicate: Predicate,
+        depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Predicate, &'static str> {
+        let ty = self.apply_inside_observed::<CHARGED>(store, predicate.ty, depth, charge)?;
         let bound = match predicate.bound {
             Requirement::Trait(id)
             | Requirement::ConstTrait(id)
@@ -103,14 +164,14 @@ impl Bound {
                     .trait_parts()
                     .ok_or("missing trait qualification")?;
                 Requirement::trait_application(
-                    self.trait_application_inside(store, id, depth)?,
+                    self.trait_application_observed::<CHARGED>(store, id, depth, charge)?,
                     constness,
                 )
             }
             Requirement::Outlives(region) => Requirement::Outlives(self.region(region, depth)?),
-            Requirement::ProjectionEqual(result) => {
-                Requirement::ProjectionEqual(self.apply_inside(store, result, depth)?)
-            }
+            Requirement::ProjectionEqual(result) => Requirement::ProjectionEqual(
+                self.apply_inside_observed::<CHARGED>(store, result, depth, charge)?,
+            ),
             bound => bound,
         };
         Ok(Predicate { ty, bound })
@@ -132,6 +193,18 @@ impl Bound {
         id: ApplicationId,
         depth: u16,
     ) -> Result<ApplicationId, &'static str> {
+        self.trait_application_observed::<false>(store, id, depth, &|_, _| Ok(()))
+    }
+    fn trait_application_observed<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        id: ApplicationId,
+        depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<ApplicationId, &'static str> {
+        if CHARGED {
+            charge(1, 0)?;
+        }
         let depth = self.cache_depth(depth);
         self.region_work(1)?;
         if let Some(result) = self
@@ -148,6 +221,18 @@ impl Bound {
             .arguments(application.arguments)
             .ok_or("invalid substituted trait arguments")?;
         let length = arguments.len();
+        if CHARGED {
+            let mut growth = crate::support::retained::Growth::vector::<
+                crate::types::arguments::Argument,
+            >(0, 0, length);
+            if let Some(cache) = &self.applications {
+                growth.include(cache.insertion_growth(depth));
+            } else {
+                growth.bytes = growth.bytes.saturating_add(size_of::<Applications>());
+                growth.include(Applications::default().insertion_growth(depth));
+            }
+            charge(growth.work, growth.bytes)?;
+        }
         self.account_arguments(length.saturating_add(1))?;
         let cache = self.applications.as_ref().map_or_else(
             || {
@@ -163,7 +248,8 @@ impl Bound {
         let mut arguments = arguments.collect::<Vec<_>>();
         let result = (|| {
             for argument in &mut arguments {
-                *argument = self.apply_argument_inside(store, *argument, depth)?;
+                *argument =
+                    self.apply_argument_observed::<CHARGED>(store, *argument, depth, charge)?;
             }
             let arguments = store.intern_arguments(&arguments)?;
             let result = store.intern_trait_application(Application {

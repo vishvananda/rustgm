@@ -25,6 +25,7 @@ pub enum Intrinsic {
     WriteBytes,
     ConstPointerAdd,
     MutPointerAdd,
+    Abort,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Safety {
@@ -42,7 +43,8 @@ pub struct Descriptor {
     pub constant: ConstPermission,
 }
 impl Intrinsic {
-    pub const ALL: [Self; 24] = [
+    /// Frozen ordinary intrinsic inventory; source-only identities have no factory.
+    pub const BOOTSTRAP: [Self; 24] = [
         Self::ReadVolatile,
         Self::WriteVolatile,
         Self::AtomicLoad,
@@ -67,6 +69,33 @@ impl Intrinsic {
         Self::WriteBytes,
         Self::ConstPointerAdd,
         Self::MutPointerAdd,
+    ];
+    pub const ALL: [Self; 25] = [
+        Self::ReadVolatile,
+        Self::WriteVolatile,
+        Self::AtomicLoad,
+        Self::AtomicStore,
+        Self::AtomicSwap,
+        Self::AtomicFetchAdd,
+        Self::AtomicCompareExchange,
+        Self::AtomicCompareExchangeWeak,
+        Self::AtomicFetchSub,
+        Self::AtomicFetchAnd,
+        Self::AtomicFetchOr,
+        Self::AtomicFetchXor,
+        Self::AtomicFetchNand,
+        Self::Read,
+        Self::Write,
+        Self::AtomicFetchMin,
+        Self::AtomicFetchMax,
+        Self::ReadUnaligned,
+        Self::WriteUnaligned,
+        Self::CopyNonoverlapping,
+        Self::Copy,
+        Self::WriteBytes,
+        Self::ConstPointerAdd,
+        Self::MutPointerAdd,
+        Self::Abort,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -95,6 +124,7 @@ impl Intrinsic {
             Self::WriteBytes => 21,
             Self::ConstPointerAdd => 22,
             Self::MutPointerAdd => 23,
+            Self::Abort => 24,
         }
     }
     #[must_use]
@@ -123,6 +153,7 @@ impl Intrinsic {
             Self::Copy => "copy",
             Self::WriteBytes => "write_bytes",
             Self::ConstPointerAdd | Self::MutPointerAdd => "add",
+            Self::Abort => "abort",
         }
     }
     #[must_use]
@@ -218,7 +249,8 @@ impl Intrinsic {
             | Self::Copy
             | Self::WriteBytes
             | Self::ConstPointerAdd
-            | Self::MutPointerAdd => false,
+            | Self::MutPointerAdd
+            | Self::Abort => false,
         }
     }
     #[must_use]

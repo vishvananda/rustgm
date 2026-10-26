@@ -4,6 +4,8 @@ mod binder_opening;
 mod equalities;
 mod owned_payload;
 pub(crate) use owned_payload::Retained;
+#[cfg(test)]
+pub(crate) use owned_payload::alias_tests;
 mod instantiation;
 mod opening_summary;
 mod permissions;
@@ -107,53 +109,70 @@ impl Environment {
         types: &mut Store,
         fold: &mut crate::types::substitute::Bound,
     ) -> Result<Self, &'static str> {
-        let mut result = self.clone();
-        if let Some(assumptions) = &mut result.assumptions
-            && (assumptions.region_mapping || !fold.regions_only())
-        {
-            let assumptions = Arc::make_mut(assumptions);
-            // Substitution may allocate canonical types or open lifetimes. Its
-            // encounter order cannot depend on a hash table's randomized seed.
-            let mut predicates: Vec<_> = assumptions.predicates.drain().collect();
-            predicates.sort_unstable_by_key(|(ty, _)| ty.0);
-            assumptions.predicates = predicates
-                .into_iter()
-                .map(|(ty, abilities)| Ok((fold.apply(types, ty)?, abilities)))
-                .collect::<Result<_, &'static str>>()?;
-            let mut sized: Vec<_> = assumptions.sized.drain().collect();
-            sized.sort_unstable_by_key(|ty| ty.0);
-            assumptions.sized = sized
-                .into_iter()
-                .map(|ty| fold.apply(types, ty))
-                .collect::<Result<_, _>>()?;
-            assumptions.region_mapping = false;
-            for &ty in assumptions
-                .sized
-                .iter()
-                .chain(assumptions.predicates.keys())
-            {
-                assumptions.region_mapping |= types
-                    .has_free_regions(ty, 0)
-                    .ok_or("invalid mapped bound subject")?;
-            }
+        self.substitute_regions_observed::<false>(types, fold, &|_, _| Ok(()))
+    }
+    /// The declaration consumer opens captured lifetimes only. It accounts the
+    /// supplied folder's cumulative steps separately, including failed attempts.
+    pub(crate) fn substitute_declared_regions_charged(
+        &self,
+        types: &mut Store,
+        fold: &mut crate::types::substitute::Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        charge(1, 0)?;
+        if !fold.regions_only() {
+            return Err("charged declaration environment requires a lifetime-only folder");
         }
+        self.substitute_regions_observed::<true>(types, fold, charge)
+    }
+    fn substitute_regions_observed<const CHARGED: bool>(
+        &self,
+        types: &mut Store,
+        fold: &mut crate::types::substitute::Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        let mut result = self.clone();
+        result.map_abilities_observed::<CHARGED>(types, fold, charge)?;
         if let Some(traits) = &mut result.traits
             && (traits.region_mapping || !fold.regions_only())
         {
-            Arc::make_mut(traits).substitute(types, fold)?;
+            if CHARGED {
+                traits.prepay_clone(charge)?;
+                Arc::make_mut(traits).substitute_charged(types, fold, charge)?;
+            } else {
+                Arc::make_mut(traits).substitute(types, fold)?;
+            }
         }
         if let Some(builtins) = &result.builtins
             && (builtins.region_mapping || !fold.regions_only())
         {
-            result.builtins = Some(Arc::new(builtins.substitute(types, fold)?));
+            result.builtins = Some(Arc::new(if CHARGED {
+                charge(1, size_of::<permissions::Index>() + 2 * size_of::<usize>())?;
+                builtins.substitute_charged(types, fold, charge)?
+            } else {
+                builtins.substitute(types, fold)?
+            }));
         }
         if let Some(regions) = &result.regions {
-            result.regions = Some(Arc::new(regions.substitute(fold)?));
+            result.regions = Some(Arc::new(if CHARGED {
+                charge(
+                    1,
+                    size_of::<crate::types::relations::RegionEqualities>() + 2 * size_of::<usize>(),
+                )?;
+                regions.substitute_charged(fold, charge)?
+            } else {
+                regions.substitute(fold)?
+            }));
         }
         if let Some(equalities) = &mut result.equalities
             && (equalities.region_mapping || !fold.regions_only())
         {
-            Arc::make_mut(equalities).substitute(types, fold)?;
+            if CHARGED {
+                equalities.prepay_clone(charge)?;
+                Arc::make_mut(equalities).substitute_charged(types, fold, charge)?;
+            } else {
+                Arc::make_mut(equalities).substitute(types, fold)?;
+            }
         }
         result.region_mapping = result.mapped_regions();
         Ok(result)
@@ -428,6 +447,19 @@ impl Environment {
             })
     }
 
+    pub(crate) fn trait_index_charged(
+        &self,
+        types: &Store,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Option<Arc<super::premise_index::ClauseIndex>>, &'static str> {
+        charge(1, 0)?;
+        self.traits
+            .as_ref()
+            .filter(|traits| !traits.is_empty())
+            .map(|traits| traits.index_charged(types, charge))
+            .transpose()
+    }
+
     /// Exact retained clauses, in declaration order. No implicit binder opening
     /// or filtering can turn a quantified assumption into ordinary evidence.
     /// # Errors
@@ -523,6 +555,96 @@ impl Environment {
     pub fn abilities(&self, parameter: ParameterId) -> Option<Abilities> {
         self.parameters.get(&parameter).copied()
     }
+}
+
+impl Environment {
+    fn map_abilities_observed<const CHARGED: bool>(
+        &mut self,
+        types: &mut Store,
+        fold: &mut crate::types::substitute::Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        if let Some(assumptions) = &mut self.assumptions
+            && (assumptions.region_mapping || !fold.regions_only())
+        {
+            if CHARGED {
+                prepay_abilities(assumptions, charge)?;
+            }
+            let assumptions = Arc::make_mut(assumptions);
+            // Substitution may allocate canonical types or open lifetimes. Its
+            // encounter order cannot depend on a hash table's randomized seed.
+            let mut predicates: Vec<_> = assumptions.predicates.drain().collect();
+            predicates.sort_unstable_by_key(|(ty, _)| ty.0);
+            assumptions.predicates = predicates
+                .into_iter()
+                .map(|(ty, abilities)| {
+                    Ok((mapped_type::<CHARGED>(types, fold, ty, charge)?, abilities))
+                })
+                .collect::<Result<_, &'static str>>()?;
+            let mut sized: Vec<_> = assumptions.sized.drain().collect();
+            sized.sort_unstable_by_key(|ty| ty.0);
+            assumptions.sized = sized
+                .into_iter()
+                .map(|ty| mapped_type::<CHARGED>(types, fold, ty, charge))
+                .collect::<Result<_, _>>()?;
+            assumptions.region_mapping = false;
+            for &ty in assumptions
+                .sized
+                .iter()
+                .chain(assumptions.predicates.keys())
+            {
+                assumptions.region_mapping |= types
+                    .has_free_regions(ty, 0)
+                    .ok_or("invalid mapped bound subject")?;
+            }
+        }
+        Ok(())
+    }
+}
+fn mapped_type<const CHARGED: bool>(
+    types: &mut Store,
+    fold: &mut crate::types::substitute::Bound,
+    ty: TypeId,
+    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<TypeId, &'static str> {
+    if !CHARGED {
+        return fold.apply(types, ty);
+    }
+    charge(1, 0)?;
+    match fold.apply_argument_charged(types, crate::types::arguments::Argument::Type(ty), charge)? {
+        crate::types::arguments::Argument::Type(ty) => Ok(ty),
+        _ => Err("mapped environment subject changed argument kind"),
+    }
+}
+fn prepay_abilities(
+    source: &Assumptions,
+    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    use crate::support::retained::{self, Growth};
+    let a = source.predicates.len();
+    let b = source.sized.len();
+    charge(
+        1 + a + b,
+        size_of::<Assumptions>()
+            + 2 * size_of::<usize>()
+            + retained::map(&source.predicates)
+            + source.sized.capacity().saturating_mul(size_of::<TypeId>()),
+    )?;
+    let mut growth = Growth::vector::<(TypeId, Abilities)>(0, 0, a);
+    growth.include(Growth::vector::<TypeId>(0, 0, b));
+    growth.include(Growth::map::<TypeId, Abilities>(0, 0, a));
+    growth.include(Growth::map::<TypeId, ()>(0, 0, b));
+    let ordered = a
+        .saturating_mul(a.max(1).ilog2() as usize + 1)
+        .saturating_add(b.saturating_mul(b.max(1).ilog2() as usize + 1));
+    charge(
+        growth
+            .work
+            .saturating_add(ordered)
+            .saturating_add(a)
+            .saturating_add(b),
+        growth.bytes,
+    )
 }
 
 #[cfg(test)]

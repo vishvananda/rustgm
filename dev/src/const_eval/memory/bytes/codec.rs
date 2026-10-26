@@ -788,3 +788,8 @@ impl Machine<'_, '_> {
         )?)
     }
 }
+
+#[cfg(test)]
+pub(super) fn decoder_layout() -> (usize, usize) {
+    (size_of::<Decoder>(), std::mem::align_of::<Decoder>())
+}

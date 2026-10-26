@@ -28,10 +28,24 @@ impl Checker<'_> {
             {
                 self.facts.body_work.canonical_steps =
                     self.facts.body_work.canonical_steps.saturating_add(1);
-                self.facts
+                let domain = self
+                    .facts
                     .associated
-                    .require_imported_unrestricted_domain(definition)
+                    .imported_implementation_domain(definition)
                     .map_err(|message| self.error(owner.source, message))?;
+                if let crate::support::crates::generics::source::ImplementationDomain::RestrictedTo{..}=domain {
+                    let client=self.report.package.source_client().ok_or_else(||self.error(owner.source,"imported implementation domain requires its actual source client"))?;
+                    let catalog=self.report.resolution.crates.as_ref()
+                        .ok_or_else(||self.error(owner.source,"imported implementation catalog is missing"))?
+                        .origin_catalog().map_err(|e|self.error(owner.source,e))?
+                        .ok_or_else(||self.error(owner.source,"imported implementation catalog is incomplete"))?;
+                    let id=catalog.declaration(definition).map_err(|e|self.error(owner.source,e))?;
+                    let (provider,_,_)=catalog.declaration_coordinate(id).map_err(|e|self.error(owner.source,e))?;
+                    if client.provider()!=provider ||client.current()==provider {
+                        return Err(self.error(owner.source,"imported trait domain changed its actual provider/current identity"));
+                    }
+                    return Err(self.error(owner.source,"trait cannot be implemented outside its restricted module"));
+                }
             }
             return Ok(());
         };

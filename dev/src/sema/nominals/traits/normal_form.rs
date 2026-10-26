@@ -1,6 +1,7 @@
 //! Canonical projections retain opened lifetimes and selection across header dependencies.
 mod application_anchors;
 mod opening;
+mod origin_results;
 use super::{
     Assumptions, Availability, Declarations, Environment, Instantiation, Obligations, Predicate,
     Projected, State, selection,
@@ -28,6 +29,7 @@ pub(in crate::sema) struct Query {
     goal: Goal,
     assumptions: Option<Arc<Assumptions>>,
     pending: Option<Box<selection::Pending>>,
+    inherited: Option<Box<crate::sema::specialization::ProjectionRequirements>>,
     source: Option<selection::Source>,
     closed: bool,
     frontier: u32,
@@ -112,6 +114,7 @@ pub(in crate::sema) fn begin_reusing(
         goal,
         assumptions: None,
         pending: None,
+        inherited: None,
         source: None,
         closed: false,
         frontier,
@@ -135,12 +138,16 @@ impl Query {
 
     /// This includes a live child's IDs without claiming them in the parent proof.
     pub fn allocation_end(&self) -> u32 {
-        self.pending
+        let first = self
+            .pending
             .as_ref()
             .map_or(self.state.obligations.regions.end, |pending| {
                 pending.allocation_end()
             })
-            .max(self.frontier)
+            .max(self.frontier);
+        self.inherited
+            .as_ref()
+            .map_or(first, |requirements| requirements.allocation_end(first))
     }
 
     pub fn resume(
@@ -148,7 +155,7 @@ impl Query {
         facts: &mut Declarations,
         first: u32,
     ) -> Result<Progress, &'static str> {
-        if self.pending.is_none() || first < self.allocation_end() {
+        if (self.pending.is_none() && self.inherited.is_none()) || first < self.allocation_end() {
             return Err("projection selection allocation frontier moved backwards");
         }
         self.frontier = first;
@@ -160,6 +167,9 @@ impl Query {
         facts: &mut Declarations,
         mut reuse: Option<&mut selection::Reuse>,
     ) -> Result<Progress, &'static str> {
+        if self.inherited.is_some() {
+            return self.advance_inherited(facts);
+        }
         loop {
             let selected = match self.select(facts, reuse.as_deref_mut())? {
                 selection::Progress::Inferred { .. } => {
@@ -189,6 +199,12 @@ impl Query {
                 .ok_or("callable evidence has no associated output")?;
                 let result = definition.result(facts)?.ok_or("missing callable output")?;
                 return self.finish(facts, Some(Resolution::Type(result)));
+            }
+            self.source = selected;
+            if let Some(source) = selected
+                && self.prepare_inherited(facts, source)?
+            {
+                return self.advance_inherited(facts);
             }
             if self.closed {
                 return if matches!(selected, Some(selection::Source::Implementation { .. })) {

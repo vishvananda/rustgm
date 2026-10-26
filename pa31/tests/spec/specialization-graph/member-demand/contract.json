@@ -1,0 +1,201 @@
+{
+  "schema": 1,
+  "purpose": "ONE NEW member-demand opponent: Full own child method must not inherit unused parent body obligations; no prior observations repeated",
+  "baseline": "a598b799",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "metadata_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "native_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Cdebug-assertions=no",
+    "-Coverflow-checks=no",
+    "-Copt-level=2",
+    "-Ccodegen-units=1",
+    "-Clto=off",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "runtime_observer": "Exact parent-requested actual stdout2 newline checks own child selection for a nonstatic caller input; no RustGM support claim",
+  "cases": [
+    {
+      "name": "own-child-does-not-demand-unused-static-parent",
+      "source": "pa31/tests/spec/specialization-graph/member-demand/own-child-does-not-demand-unused-static-parent.rs",
+      "sha256": "83b5d112caf818518d660d024c46058efe92890908002ca51a1a30abaa30a7a8",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "2\n",
+        "stderr": ""
+      },
+      "prediction_note": "Prediction frozen before execution: pinned rustc accepts Full structural specialization without proving unused parent T:static for an actually selected own child method."
+    }
+  ],
+  "planned_metadata_observations": 2,
+  "planned_native_programs": 2,
+  "source_prediction_disagreements": "Retain all actual raw observations and wrong predictions; disagreements are data, not automatic infrastructure failures.",
+  "observed_binding": {
+    "run": 40245869391,
+    "artifact": 12617824460,
+    "zip_sha256": "a0bf4c60e859eb355b203b33596173058c3365a668d139bbdbc97ad8d2956d67",
+    "binding_sha256": "4bfd4f102843928062ac1948a3afc25f092b6e4b12adce4f3d0b71048d39014d",
+    "metadata": 2,
+    "actual_native": 2,
+    "commands": 6,
+    "infra": 0,
+    "disagreements": 0,
+    "actual_commands": [
+      {
+        "name": "own-child-does-not-demand-unused-static-parent-2021",
+        "phase": "metadata",
+        "command": [
+          "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2021",
+          "--target=x86_64-unknown-linux-gnu",
+          "-Cpanic=abort",
+          "--emit=metadata",
+          "--error-format=json",
+          "--crate-name=specialization_probe",
+          ".github/graph_sources/own-child-does-not-demand-unused-static-parent.rs",
+          "-o",
+          "obj/parallel/all-attribute-selected-output-v1/own-child-does-not-demand-unused-static-parent-2021.rmeta"
+        ],
+        "source_sha256": "83b5d112caf818518d660d024c46058efe92890908002ca51a1a30abaa30a7a8",
+        "status": 0,
+        "expected_status": 0,
+        "warning_codes": [],
+        "errors": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "disagreement": false
+      },
+      {
+        "name": "own-child-does-not-demand-unused-static-parent-2021",
+        "phase": "native-build",
+        "command": [
+          "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2021",
+          "--target=x86_64-unknown-linux-gnu",
+          "-Cpanic=abort",
+          "-Cdebug-assertions=no",
+          "-Coverflow-checks=no",
+          "-Copt-level=2",
+          "-Ccodegen-units=1",
+          "-Clto=off",
+          "--error-format=json",
+          "--crate-name=specialization_probe",
+          ".github/graph_sources/own-child-does-not-demand-unused-static-parent.rs",
+          "-o",
+          "obj/parallel/all-attribute-selected-output-v1/own-child-does-not-demand-unused-static-parent-2021.native"
+        ],
+        "source_sha256": "83b5d112caf818518d660d024c46058efe92890908002ca51a1a30abaa30a7a8",
+        "status": 0,
+        "expected_status": 0,
+        "warning_codes": [],
+        "errors": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "disagreement": false
+      },
+      {
+        "name": "own-child-does-not-demand-unused-static-parent-2021",
+        "phase": "native",
+        "command": [
+          "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/own-child-does-not-demand-unused-static-parent-2021.native"
+        ],
+        "source_sha256": "83b5d112caf818518d660d024c46058efe92890908002ca51a1a30abaa30a7a8",
+        "status": 0,
+        "expected_status": 0,
+        "warning_codes": [],
+        "errors": [],
+        "stdout_sha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "disagreement": false
+      },
+      {
+        "name": "own-child-does-not-demand-unused-static-parent-2024",
+        "phase": "metadata",
+        "command": [
+          "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2024",
+          "--target=x86_64-unknown-linux-gnu",
+          "-Cpanic=abort",
+          "--emit=metadata",
+          "--error-format=json",
+          "--crate-name=specialization_probe",
+          ".github/graph_sources/own-child-does-not-demand-unused-static-parent.rs",
+          "-o",
+          "obj/parallel/all-attribute-selected-output-v1/own-child-does-not-demand-unused-static-parent-2024.rmeta"
+        ],
+        "source_sha256": "83b5d112caf818518d660d024c46058efe92890908002ca51a1a30abaa30a7a8",
+        "status": 0,
+        "expected_status": 0,
+        "warning_codes": [],
+        "errors": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "disagreement": false
+      },
+      {
+        "name": "own-child-does-not-demand-unused-static-parent-2024",
+        "phase": "native-build",
+        "command": [
+          "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2024",
+          "--target=x86_64-unknown-linux-gnu",
+          "-Cpanic=abort",
+          "-Cdebug-assertions=no",
+          "-Coverflow-checks=no",
+          "-Copt-level=2",
+          "-Ccodegen-units=1",
+          "-Clto=off",
+          "--error-format=json",
+          "--crate-name=specialization_probe",
+          ".github/graph_sources/own-child-does-not-demand-unused-static-parent.rs",
+          "-o",
+          "obj/parallel/all-attribute-selected-output-v1/own-child-does-not-demand-unused-static-parent-2024.native"
+        ],
+        "source_sha256": "83b5d112caf818518d660d024c46058efe92890908002ca51a1a30abaa30a7a8",
+        "status": 0,
+        "expected_status": 0,
+        "warning_codes": [],
+        "errors": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "disagreement": false
+      },
+      {
+        "name": "own-child-does-not-demand-unused-static-parent-2024",
+        "phase": "native",
+        "command": [
+          "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/own-child-does-not-demand-unused-static-parent-2024.native"
+        ],
+        "source_sha256": "83b5d112caf818518d660d024c46058efe92890908002ca51a1a30abaa30a7a8",
+        "status": 0,
+        "expected_status": 0,
+        "warning_codes": [],
+        "errors": [],
+        "stdout_sha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "disagreement": false
+      }
+    ],
+    "seconds": 0.15155272600000558
+  },
+  "source_sha256": "83b5d112caf818518d660d024c46058efe92890908002ca51a1a30abaa30a7a8",
+  "candidate_support": false
+}

@@ -205,6 +205,11 @@ impl Checker<'_> {
         {
             return self.associated_self_type(key, id, context);
         }
+        if let Some(schema) = self.alias_self_schema(id)? {
+            let target = schema.self_type;
+            let captures = schema.captures;
+            return self.lexical_self_type(key, id, context, target, captures);
+        }
         if self.facts.generics.parameters.contains_key(&id) {
             return self.generic_path(key, id, context);
         }

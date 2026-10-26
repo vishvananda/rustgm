@@ -31,27 +31,41 @@ as the current frontier; wider macro execution and import remain open.
 
 The [wide-literal successor](wide-literals-checkpoint.md) advances the original
 root to `num/nonzero.rs:34`, with 42 unchanged files opened. All 722 source
-inputs are verified. LIB-026 implementation restrictions are now the loading
-frontier; the earlier observations remain retained history, not current stops.
+inputs are verified. The newer
+[domain checkpoint](implementation-domains-core-checkpoint.md) now reaches
+`mem/alignment.rs:26`, with 56 unchanged files opened. The
+[unnamed-constant checkpoint](unnamed-free-constants.md) reaches
+`mem/maybe_uninit.rs:1644`, with58 unchanged files opened. The
+[defaultness checkpoint](defaultness-checkpoint.md) advances to
+`ptr/metadata.rs:85`, with65 unchanged files opened. LIB-031 trait aliases is
+the current loading blocker; LIB-028 specialization execution remains required.
+Earlier stops remain retained history.
 
-Current lanes:
+Current lanes after the [source-contract integration](library-contracts-integration-checkpoint.md):
 
-- A: anonymous Function recipes and the genuine function argument-index repair
-  pass the selected private/declaration gates. All 8485 paired text cases and
-  122 reviewed stdout changes are qualified. Continue actual callback-bearing
-  executable consumers, followed by private Provided template preparation;
-  public Provided execution and type-alias transport remain separate work.
-- B: LIB-024's exact wide literal/feature/type slice is public and qualified.
-  Implement LIB-026's actual syntax, feature authority and module implementation
-  domains. Seventy-four independent observations pass; candidate typing, Clippy
-  and functional checks are in progress. Restricted policy transport remains open.
-- C: LIB-025's versioned library attribute transport passes nine exact controls
-  with strict Clippy/audit/build in 131.84 seconds. Implement its SourceCore CLI
-  selection and qualify fresh client warnings/native behavior; preserve explicit
-  legacy API bytes, imported Unknown and the closed Provided profile.
-- Integrator: focused integration/main pushes, periodic CI follow-up and fresh
-  original-source observations. Local primitive ownership is qualified. Keep
-  CPPGM and upstream sources unchanged.
+- A owns actual PA29 imported headers and provided bodies. Collected source
+  admission, selected callable registration and shared ordinary/private input
+  kernels are qualified. Continue complete trait/schema/member validation on the
+  same fresh consumer and one demand memo, then actual original/instance and
+  borrow proof toward the [native7 milestone](parallel/provided-method-execution.md).
+  Private preparation does not grant public Provided execution.
+- B owns actual source language/intrinsic consumers. Source Not and closed layout
+  queries, nominal Clone and provided clone_from have qualified native evidence.
+  Continue genuine reached runtime Abort and the real panic/format/constant
+  pipeline. Use supported LowIR operations; preserve ordinary source algorithms,
+  const restrictions and imported transport requirements.
+- C owns actual source sizing/Pointee contracts after qualified local specialization
+  method execution and both projected-result consumers. Source alias Self sizing
+  is the next isolated checkpoint. Proposed Pointee/Metadata/DynMetadata roles
+  require genuine source/member/nominal validators; representation metadata grants
+  no semantic or runtime intrinsic authority. Coordinate central role/bit changes
+  with B before editing.
+- The integrator owns complete aliases, qualification and direct-main publication.
+  Canonical clauses, nested binders, shorthand naming and source Self-sizing
+  are qualified. Continue header-time naming, complete original/normalized
+  formation, associated-family input prefixes, scoped regions, objects, complete
+  unused/default/const and imported consumers. Alias execution/export stays fenced while incomplete.
+  Do not change CPPGM or pinned upstream sources.
 
 Development validation uses `make fastcheck` with exact affected controls and
 captured outputs within five minutes. A new private binary does not require a
@@ -79,9 +93,10 @@ oracles, assignment activation and public pushes to main.
 The integrator's closed record, array and stored-value metadata checkpoints are
 integrated on main. The isolated `rustgm-pa29-work` checkout remains available
 for the next generic transport work, coordinated with Worker A's PA25 caller
-transport. Generic body transport is still unimplemented; its
-[owner/contract proposal](pa29-generic-transport-proposal.md) defines the shared
-prerequisite and does not grant execution permission. Worker B may prepare
+transport. The narrow executable-generic profile is implemented; complete upstream
+source contracts and provided/generic body transport remain required. The
+[owner/contract proposal](pa29-generic-transport-proposal.md) and actual execution
+milestone retain that scope; preparatory readiness grants no execution permission. Worker B may prepare
 and independently qualify PA30 source fixtures while a coherent PA26 checkpoint
 awaits integration. This preparation uses the same resource limits and does not
 activate either assignment or change the backend contract.
@@ -302,6 +317,19 @@ release/native sweep before each development push. Existing independent observat
 can be cited for identical frozen inputs/toolchain/profile; candidate execution
 and candidate-specific proofs must still be checked after integration. Do not
 turn an object-only rustc observation into executable or runtime qualification.
+
+Custom private-source checkpoint gates must qualify production Clippy as well
+as harness-mode Clippy: test compilation changes unused-import and wildcard
+lint behavior. A production build alone does not qualify those lints. Reuse
+unchanged authenticated passes; otherwise run production and private Rust
+commands sequentially. An independent Python architecture audit may run beside
+that sequence, with separate receipts and a joined failure result. This keeps
+one Rust compiler command active and does not extend the five-minute budget.
+Collect findings from both sequential lint modes when the deadline permits,
+even if the first mode fails; test compilation changes which findings appear.
+Join those failures with the audit result before deciding whether to build or
+execute tests. No failed static mode is a pass, and no tests run after a failed
+static phase. Keep a live source-frozen job intact when changing future helpers.
 
 For hot-path changes, apply the frontend performance precedent in `spec.md`:
 identify repeated work removed, cache and ownership boundaries, and dimensions

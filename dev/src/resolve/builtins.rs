@@ -452,7 +452,9 @@ fn builtin_spelling(spelling: &str) -> bool {
             .iter()
             .any(|kind| kind.name() == spelling || kind.method().name() == spelling)
         || AutoTrait::ALL.iter().any(|kind| kind.name() == spelling)
-        || Intrinsic::ALL.iter().any(|kind| kind.name() == spelling)
+        || Intrinsic::BOOTSTRAP
+            .iter()
+            .any(|kind| kind.name() == spelling)
         || LibraryType::ALL.iter().any(|kind| {
             kind.name() == spelling
                 || kind.module() == spelling

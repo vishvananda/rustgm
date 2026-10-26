@@ -285,7 +285,7 @@ impl Cursor {
             .map(|node| node.ok_or_else(|| error("source canonical graph is incomplete")))
             .collect()
     }
-    fn child(&self, reference: g::TypeRef) -> Result<TypeId, Error> {
+    pub(super) fn child(&self, reference: g::TypeRef) -> Result<TypeId, Error> {
         self.nodes
             .get(reference.0 as usize)
             .copied()

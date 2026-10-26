@@ -1,0 +1,218 @@
+{
+  "state": "frozen-initial-hypotheses-UNRUN",
+  "rust_commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "crate_type": "lib",
+  "panic": "abort",
+  "flags": "default opt/overflow/debug/UB; error-format=json; bootstrap1 only actual internal source declarations",
+  "observations": 28,
+  "modes": [
+    "metadata",
+    "obj"
+  ],
+  "cases": [
+    {
+      "name": "positive-owned-native",
+      "source": "sources/positive-owned-native.rs",
+      "sha256": "2363aff5a8c24bef2427d84853ee08851808b256cfd8de9de5a7a71510231c91",
+      "prediction": {
+        "accept": true,
+        "diagnostic_codes": [],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "unequal-unused",
+      "source": "sources/unequal-unused.rs",
+      "sha256": "8162b33c29a1e85240faa1922f88df83cb808116b5e1b1dfc81e1cf3b44f76d2",
+      "prediction": {
+        "accept": false,
+        "diagnostic_codes": [
+          "E0512"
+        ],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "unknown-generic-unused",
+      "source": "sources/unknown-generic-unused.rs",
+      "sha256": "21ea9102969ac8d52478d74f9f9e868f39695f5c6970761793571ddf75b5a796",
+      "prediction": {
+        "accept": false,
+        "diagnostic_codes": [
+          "E0512"
+        ],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "missing-unsafe",
+      "source": "sources/missing-unsafe.rs",
+      "sha256": "03269db9b6f596cc131b241ea8faa68bafcd61dea384590357ad8e71bb4ccb72",
+      "prediction": {
+        "accept": false,
+        "diagnostic_codes": [
+          "E0133"
+        ],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "invalid-bool",
+      "source": "sources/invalid-bool.rs",
+      "sha256": "1ae6e33a2260efd03115ed6c851aeca185b9afde2bc8572415213c988529453f",
+      "prediction": {
+        "accept": false,
+        "diagnostic_codes": [
+          "E0080"
+        ],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "invalid-char",
+      "source": "sources/invalid-char.rs",
+      "sha256": "e1d7ccfcc50a3dce29ee08588fc6c2d9f3dbbe09a45cbcbe29c723649c3c506e",
+      "prediction": {
+        "accept": false,
+        "diagnostic_codes": [
+          "E0080"
+        ],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "padding-integer-bytes",
+      "source": "sources/padding-integer-bytes.rs",
+      "sha256": "eda44e95ae06f72e1a2828702565c8ac9746d331583890a7d7e7947e5ebf2924",
+      "prediction": {
+        "accept": false,
+        "diagnostic_codes": [
+          "E0080"
+        ],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "symbolic-pointer-integer",
+      "source": "sources/symbolic-pointer-integer.rs",
+      "sha256": "7f6418af8e932d764448d2c42f453544ae1f40c2197ca4a5f5b8a00428b3608f",
+      "prediction": {
+        "accept": false,
+        "diagnostic_codes": [
+          "E0080"
+        ],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "symbolic-pointer-byte-array",
+      "source": "sources/symbolic-pointer-byte-array.rs",
+      "sha256": "3649bcdc9dcc80b7594b67cc4c20b8afbdf386afc07ab4e95605451865afd4c6",
+      "prediction": {
+        "accept": false,
+        "diagnostic_codes": [
+          "E0080"
+        ],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "numeric-pointer-reference",
+      "source": "sources/numeric-pointer-reference.rs",
+      "sha256": "9770c441df4c220d7a5d6e0e508fea39e96eef54dcc386b54f63d8fcb6d0f18a",
+      "prediction": {
+        "accept": false,
+        "diagnostic_codes": [
+          "E0080"
+        ],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "malformed-declaration",
+      "source": "sources/malformed-declaration.rs",
+      "sha256": "cd0f67862ec7101c419e5441bacc09d65ee90aca5147c0366d61afda8e8757f7",
+      "prediction": {
+        "accept": false,
+        "diagnostic_codes": [
+          "E0093"
+        ]
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "numeric-zst-reference",
+      "source": "sources/numeric-zst-reference.rs",
+      "sha256": "94ced2eb3f85290c3b78e5424a28be8df2defe8ac611f1253bfbcf1584eb9d08",
+      "prediction": {
+        "accept": true,
+        "diagnostic_codes": [],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "function-signature-erasure",
+      "source": "sources/function-signature-erasure.rs",
+      "sha256": "ded9a5ea183cc713cb15d4f9a20df6c03a0d73df2091070e820da57be9addf5c",
+      "prediction": {
+        "accept": true,
+        "diagnostic_codes": [],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "source-provider",
+      "bootstrap": true
+    },
+    {
+      "name": "actual-maybe-uninit-symbolic",
+      "source": "sources/actual-maybe-uninit-symbolic.rs",
+      "sha256": "4fa54b35575bd8a27829ff3b9ab92da7113af65c9c9f61d4da9b3bb3995ccc73",
+      "prediction": {
+        "accept": true,
+        "diagnostic_codes": [],
+        "scope": "actual pinned Rust contract only; no candidate permission from metadata success"
+      },
+      "profile": "std-contract",
+      "bootstrap": false
+    }
+  ],
+  "foundation_sha256": "1eadd5e238a13743e96b14c62312b48cd4c13e67a9b521541e2aa66d70ec2eb4",
+  "observer_sha256": "4cfb499fa3f49f846f74b17d8c7e93cc4f061a61b83a68e97ebe052699ebc8a4",
+  "native_prediction": {
+    "source": "positive-owned-native",
+    "compile": "reuse its actual obj observation; no second Rust object compile",
+    "expected_stdout": "destination_drop\n3f800000 ffffffff 3f800000 13 9 7 19 7 21\n",
+    "status": 0,
+    "scope": "actual scalar/const/numeric/raw/function same-signature/by-value move kernel, NOT NonNull/Arguments/Location or changed function ABI"
+  },
+  "required_candidate_boundaries": [
+    "numeric ZST reference remains unsupported until real validity proof even if Rust accepts",
+    "formatter function signature erasure remains unsupported pending exact ABI/call proof",
+    "actual MaybeUninit/union validity distinct from integer byte-array strictness; no fake core structs"
+  ]
+}

@@ -5,16 +5,27 @@ use crate::types::{
     arguments::Argument,
     parameters::{environment::Retained, predicates::Bound},
 };
+use crate::{sema::crates::typed_headers::recipe_cursor::Budget, support::retained::Allocation};
 use std::sync::Arc;
+pub(in crate::sema::crates::typed_headers) trait Accounting:
+    Budget
+{
+    fn observe(&mut self, allocation: Allocation);
+}
+impl Accounting for Headers {
+    fn observe(&mut self, allocation: Allocation) {
+        self.observed.include(allocation);
+    }
+}
 
-pub(super) fn prepare(
+pub(in crate::sema::crates::typed_headers) fn prepare(
     facts: &Declarations,
     parent: Option<&Arc<Environment>>,
     parameters: &[(ParameterId, Abilities)],
     clauses: &[Clause],
     previous_parameters: usize,
     previous_clauses: usize,
-    budget: &mut Headers,
+    budget: &mut impl Accounting,
 ) -> Result<Arc<Environment>, Error> {
     let own = &clauses[previous_clauses..];
     if previous_parameters == parameters.len()
@@ -91,8 +102,11 @@ pub(super) fn prepare(
         environment.retain_owned_from(&empty, &mut Retained::default())
     };
     budget.charge(retained.visits)?;
-    budget.observed.include(retained);
-    budget.observed.add(2 * size_of::<usize>());
+    budget.observe(retained);
+    budget.observe(Allocation {
+        bytes: 2 * size_of::<usize>(),
+        visits: 1,
+    });
     Ok(environment)
 }
 fn leaf(facts: &Declarations, ty: TypeId) -> Result<(), Error> {
