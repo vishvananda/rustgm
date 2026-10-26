@@ -257,6 +257,7 @@ fn alias_cycles_arity_and_unfinished_binder_consumers_fail_without_empty_success
             "invalid unused alias header succeeded: {source}"
         );
     }
+    failed_graph_cannot_restart_as_an_empty_contract()?;
     let report = report(
         "#![feature(trait_alias)]trait P<'a>{}trait A=for<'a>P<'a>;trait B=for<'b>A;trait Empty=;fn main(){}",
     )?;
@@ -281,6 +282,19 @@ fn alias_cycles_arity_and_unfinished_binder_consumers_fail_without_empty_success
     );
     let empty = edge(&checker, "Empty", a.subject, GenericArgs::EMPTY)?;
     assert!(checker.expand_alias_edge(empty)?.is_empty());
+    Ok(())
+}
+
+fn failed_graph_cannot_restart_as_an_empty_contract() -> TestResult {
+    let report = report("#![feature(trait_alias)]trait A=B;trait B=A;fn main(){}")?;
+    let mut checker = Checker::new(&report)?;
+    let error = checker.prepare_trait_owners(&mut 0, 1_000_000).err().ok_or("cycle was accepted")?;
+    assert!(error.message.contains("cycle in trait alias"));
+    assert!(!checker.trait_aliases.as_ref().ok_or("retained failed owner")?.closed);
+    let request = edge(&checker, "A", TypeId::primitive(Primitive::U8), GenericArgs::EMPTY)?;
+    assert!(checker.expand_alias_edge(request).is_err());
+    let error = checker.complete_alias_headers(&mut 0, 1_000_000).err().ok_or("failed canonical graph restarted")?;
+    assert!(error.message.contains("cannot restart"));
     Ok(())
 }
 #[test]

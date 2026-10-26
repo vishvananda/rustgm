@@ -68,12 +68,15 @@ impl Checker<'_> {
             .as_ref()
             .map_or(0, |table| table.headers.len());
         for index in 0..count {
-            let owner = self
+            let header = &mut self
                 .trait_aliases
-                .as_ref()
+                .as_mut()
                 .ok_or_else(|| Error::unlocated("missing alias contract owner"))?
-                .headers[index]
-                .owner;
+                .headers[index];
+            if std::mem::replace(&mut header.started, true) {
+                return Err(Error::unlocated("trait alias contract preparation cannot restart"));
+            }
+            let owner = header.owner;
             let context = regions::Context {
                 binder: Some(self.owner_binders[&owner.self_definition]),
                 position: regions::Position::Output,

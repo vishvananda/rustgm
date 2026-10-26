@@ -32,6 +32,7 @@ pub(super) struct Edge {
 }
 struct Header {
     owner: Owner,
+    started: bool,
     schema: Option<Schema>,
     clauses: Option<Vec<Predicate>>,
     edges: Vec<Edge>,
@@ -99,7 +100,9 @@ pub(super) fn collect(report: &Report) -> Result<Option<Box<Pending>>, Error> {
         if pending.is_none() {
             pending = Some(Pending::new().map_err(error)?);
         }
-        let table = pending.as_mut().ok_or_else(|| error("missing allocated alias table"))?;
+        let table = pending
+            .as_mut()
+            .ok_or_else(|| error("missing allocated alias table"))?;
         table.insert(owner).map_err(error)?;
     }
     Ok(pending)
@@ -108,7 +111,12 @@ impl Pending {
     fn new() -> Result<Box<Self>, &'static str> {
         let budget = Budget::default();
         budget.charge(1, size_of::<Self>())?;
-        Ok(Box::new(Self { headers: Vec::new(), index: HashMap::default(), budget, closed: false }))
+        Ok(Box::new(Self {
+            headers: Vec::new(),
+            index: HashMap::default(),
+            budget,
+            closed: false,
+        }))
     }
     fn insert(&mut self, owner: Owner) -> Result<(), &'static str> {
         self.budget.grow(Growth::vector::<Header>(
@@ -130,6 +138,7 @@ impl Pending {
         }
         self.headers.push(Header {
             owner,
+            started: false,
             schema: None,
             clauses: None,
             edges: Vec::new(),
