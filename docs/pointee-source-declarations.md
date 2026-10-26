@@ -40,7 +40,10 @@ source Header. There is no second source pass or guessed outer attribute owner.
 One optional Rc in existing cold roles::Validated owns the sealed declaration
 snapshots and arena identity. Checked member handles share that allocation and
 authenticate its current catalog, source incarnation, role/DefId/kind, owner,
-complete application and retained input/result/field contracts. Logical payload
+complete application and retained input/result/field contracts. Declaration
+predicates use the existing declared_predicates prefix, not the mutable suffix
+of derived environment consequences. Full canonical trait inputs/results/regions
+and actual TypeContract promises remain separately retained. Logical payload
 and Rc bookkeeping are prepaid using the existing HeaderLedger budget. Failed
 attempts and warm queries remain charged. This is declaration authority, not an
 implementation or body proof.
@@ -71,8 +74,25 @@ and consumed no CLI. Receipt SHA:
 Artifact ZIP SHA:
 `0d4b78159db07179b91b33049d3ce654056685400077d053bba573426afa7d52`.
 
-After sizes, retained map/vector capacities and successful/failed work remain
-pending actual candidate qualification. The optional pointer affects every
+Candidate run 40288630947 passed metadata, formatting, global architecture,
+both strict lint modes and private build. Five of six controls passed; the
+result-bound positive exposed a premature full-predicate snapshot. Existing
+validate_associated_type_bounds calls complete_environment, whose shared
+elaborate_trait_bounds producer records the declared prefix and appends implied
+consequences. The correction uses that actual prefix and retains a mutation
+opponent; it does not ignore declaration changes or move completion earlier.
+Full candidate qualification remains pending.
+
+Actual after observations from that run are Catalog 776 (+72), Reservations
+872 (+64), Validated 40 (+12), Contracts 928, State 224, CheckedMember 24 and
+SourceImage 40 bytes. Package 256, Declarations 7048, Unit 688, Node 36, Scope 32,
+Definition 36, Body 448 and Store 472 remain unchanged. The new provider's
+existing budget grows from 90 to 2394 steps over 32 checked queries while charged
+bytes stay 7824; source declaration rows stay 6, map capacity 7 and total owner
+vector capacity 24. The actual contract vector capacities are
+[0,2,0,0,0,0,1,1,1,1,0,0,0,0,1]. Warm queries retain the same Rc owner/capacities;
+failed work is cumulative. These are observations of the bounded failed
+checkpoint, not whole producer qualification. The optional pointer affects every
 allocated Validated; the three extra array slots affect source Catalog and
 Reservations even when these roles are absent. No allocator measurement or
 unobserved enclosing-size delta is claimed. Ordinary bootstrap has no source

@@ -55,7 +55,7 @@ fn actual_member_nominal_and_result_obligations_remain_bound_to_the_provider() -
         "policy-provider",
     ] {
         let report = provider(name)?;
-        let facts = declarations::analyze(&report)?;
+        let mut facts = declarations::analyze(&report)?;
         let application = actual_application(&facts)?;
         check(&report, &facts, application)?;
         let catalog = facts.source_bindings.as_deref().ok_or("catalog")?;
@@ -116,6 +116,17 @@ fn actual_member_nominal_and_result_obligations_remain_bound_to_the_provider() -
         };
         assert!(catalog.pointee_member(&report, &facts, wrong).is_err());
         if name == "result-obligations" {
+            let declared = facts.generics.declared_predicates(member.definition).len();
+            let actual = facts
+                .generics
+                .predicates
+                .get(&member.definition)
+                .ok_or("actual result environment")?
+                .len();
+            assert!(
+                actual > declared,
+                "actual trait elaboration did not produce the opposing environment tail"
+            );
             let actual = report
                 .resolution
                 .definitions
@@ -145,6 +156,19 @@ fn actual_member_nominal_and_result_obligations_remain_bound_to_the_provider() -
                         })
                     })
             );
+            let first = facts
+                .generics
+                .predicates
+                .get_mut(&member.definition)
+                .and_then(|rows| rows.first_mut())
+                .ok_or("actual declared prefix")?;
+            let crate::types::parameters::clauses::Clause::Predicate(mut predicate) = first.value
+            else {
+                return Err("actual ordinary declared result predicate".into());
+            };
+            predicate.ty = crate::types::TypeId::primitive(crate::types::Primitive::U16);
+            first.value = predicate.into();
+            assert!(check(&report, &facts, application).is_err());
         }
     }
     Ok(())

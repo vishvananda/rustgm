@@ -84,11 +84,9 @@ fn parameters(facts: &Declarations, declaration: Declaration) -> &[Parameter] {
         .map_or(&[], Vec::as_slice)
 }
 fn clauses(facts: &Declarations, declaration: Declaration) -> &[Predicate] {
-    facts
-        .generics
-        .predicates
-        .get(&declaration.definition)
-        .map_or(&[], Vec::as_slice)
+    // The producer preserves this prefix when it appends derived environment
+    // consequences. Those cache rows are not additional declaration inputs.
+    facts.generics.declared_predicates(declaration.definition)
 }
 fn fields(facts: &Declarations, declaration: Declaration) -> Result<&[Field], Error> {
     let variants = facts.members.variants(ItemId(declaration.definition.0));
