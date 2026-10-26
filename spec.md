@@ -292,6 +292,17 @@ assumptions do not pay substituted instance obligations. Retain a single cold
 owner for immutable imported templates/contracts, with exact owner validation
 at every borrowed view and ordinary per-instance proof on execution.
 
+The defining crate checks every required source body before export. Retain the
+complete family and raw body contracts, but reconstruct imported defining
+environments and original proof on actual body demand. Unrequested bodies remain
+explicitly Pending, never empty or proved. Reuse completed original proof only
+under the same immutable body, Store and environment; concrete instances retain
+their fresh ordinary obligations. Declaration conformance and genuine namespace
+installation use declaration facts independently of body readiness. Imported
+names alone grant no semantic or execution permission. The
+[execution plan](docs/library-bootstrap-acceleration.md) records this reviewed
+policy and the unchanged complete default/const transport requirements.
+
 Private callable preparation consumes the actual reserved declared/callable
 signature pair and complete outer-to-inner formal scope, including unused
 parameters and inherited Self. Share the ordinary callable registration kernel;

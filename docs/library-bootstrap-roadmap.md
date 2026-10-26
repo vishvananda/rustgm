@@ -14,6 +14,11 @@ their owning assignments, tests and workers. The next implementation priority is
 the observed unchanged-core blocker; independent later prerequisites can proceed
 in parallel. A passing internal checkpoint is not a crate-build milestone.
 
+The [2026-10-26 execution plan](library-bootstrap-acceleration.md) is the current
+operational priority and reviewed imported-body preparation policy. It supersedes
+historical immediate-task descriptions below while preserving this document's
+full upstream acceptance ladder and assignment ownership.
+
 ## What we compile and what the compiler supplies
 
 Compile pinned upstream `core`, `alloc` and `std` from their original sources.
