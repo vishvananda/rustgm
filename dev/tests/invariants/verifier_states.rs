@@ -46,7 +46,7 @@ fn verified(name: &str, source: &str, expected_vertices: usize, depth: u32) -> T
     assert!(after.work < 100_000);
     assert!(after.bytes < 4 * 1024 * 1024);
     eprintln!(
-        "verified forest vertices={} edges={} depth={} capacity={} work={} logical_bytes={} Graph={} Registry={}",
+        "verified forest {name} vertices={} edges={} depth={} capacity={} work={} logical_bytes={} Graph={} Registry={}",
         after.vertices,
         after.edges,
         after.depth,
