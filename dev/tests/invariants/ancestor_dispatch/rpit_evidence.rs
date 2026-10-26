@@ -43,27 +43,27 @@ fn projected(
         return Err("actual trait RPIT did not request normalization".into());
     };
     let normal_form::Progress::Ready(projected) =
-        normal_form::begin(facts, None, request, 1, false, Availability::Validated)?
+        normal_form::begin(facts, None, request, 1, false, Availability::Validated)
+            .map_err(|error| format!("outer canonical projection: {error}"))?
     else {
         return Err("completed source headers unexpectedly pending".into());
     };
     Ok((request, projected))
 }
-fn search_result(
-    facts: &mut Declarations,
-    root: TypeId,
-    result: TypeId,
-) -> TestResult<Obligations> {
+fn search_result(facts: &mut Declarations, root: TypeId) -> TestResult<Obligations> {
     let mut context = Context::default();
-    let mut substitution = Instantiation::new(&mut context, &facts.types, &[])?;
-    let goal = context.instantiate_predicate(
-        &mut facts.types,
-        Predicate {
-            ty: root,
-            bound: Bound::ProjectionEqual(result),
-        },
-        &mut substitution,
-    )?;
+    let mut substitution = Instantiation::new(&mut context, &facts.types, &[])
+        .map_err(|error| format!("search inference scope: {error}"))?;
+    let goal = context
+        .instantiate_predicate(
+            &mut facts.types,
+            Predicate {
+                ty: root,
+                bound: Bound::Sized,
+            },
+            &mut substitution,
+        )
+        .map_err(|error| format!("search goal formation: {error}"))?;
     let empty = Assumptions::default();
     let caller = selection::Caller {
         assumptions: &empty,
@@ -72,7 +72,8 @@ fn search_result(
         retain_sized: false,
     };
     let selection::Selection::Proven(evidence) =
-        selection::select_available(facts, &mut context, &goal, caller, Availability::Validated)?
+        selection::select_available(facts, &mut context, &goal, caller, Availability::Validated)
+            .map_err(|error| format!("search normalization: {error}"))?
     else {
         return Err("search did not retain an actual normalization proof".into());
     };
@@ -117,7 +118,8 @@ fn both_rpit_consumers_keep_final_inherited_identity_and_real_parent_lifetime_de
         let arguments = facts.types.intern_arguments(&[Argument::Type(subject)])?;
         let root = facts.types.intern(Kind::Opaque(opaque, arguments))?;
         let capture = selection::copy_trace::Capture::new()?;
-        let (request, projected) = projected(&mut facts, root)?;
+        let (request, projected) = projected(&mut facts, root)
+            .map_err(|error| format!("{name}: {error}; trace={:?}", capture.rows()))?;
         assert_eq!(
             valid(&facts, &projected.proof, u32::from(restricted))?,
             !restricted,
@@ -128,7 +130,8 @@ fn both_rpit_consumers_keep_final_inherited_identity_and_real_parent_lifetime_de
             request.alias,
             projected.family,
             projected.source.ok_or("actual selected source")?,
-        )?
+        )
+        .map_err(|error| format!("{name}: defining target: {error}"))?
         .ok_or("actual inherited implementation result")?;
         let result = definition
             .result(&mut facts)?
@@ -137,7 +140,22 @@ fn both_rpit_consumers_keep_final_inherited_identity_and_real_parent_lifetime_de
             .proof
             .restoration()?
             .apply(&mut facts.types, result)?;
-        let proof = search_result(&mut facts, root, result)?;
+        let Some(Kind::Opaque(id, _)) = facts.types.kind(result) else {
+            return Err("selected defining result lost its actual opaque declaration".into());
+        };
+        assert_eq!(
+            facts
+                .opaques
+                .declarations
+                .get(&id)
+                .ok_or("actual defining opaque owner")?
+                .owner,
+            definition.id
+        );
+        // Sized is the genuine implicit formation obligation of these RPITs.
+        // A bare ProjectionEqual with an Opaque subject is not a valid query.
+        let proof = search_result(&mut facts, root)
+            .map_err(|error| format!("{name}: {error}; trace={:?}", capture.rows()))?;
         assert_eq!(
             valid(&facts, &proof, u32::from(restricted))?,
             !restricted,
