@@ -23,7 +23,9 @@ impl Checker<'_> {
         }
         let clauses = self.expand_alias_edge(edge)?;
         self.charge_alias_growth(crate::support::retained::Growth::vector::<Predicate>(
-            completed.len(), completed.capacity(), clauses.len(),
+            completed.len(),
+            completed.capacity(),
+            clauses.len(),
         ))?;
         completed.extend(clauses);
         Ok(())

@@ -70,9 +70,12 @@ fn alias_family_inputs_preserve_every_clause_without_result_promise_leakage() ->
         .associated
         .type_contract(item)
         .ok_or("actual result contract")?;
-    assert_eq!(result.bounds.len(), 1);
+    assert_eq!(result.bounds.len(), 2);
     assert!(
-        matches!(result.bounds[0], Clause::Predicate(p) if p.ty == result.projection && p.bound == Bound::Clone)
+        result.bounds.iter().any(|clause| matches!(clause, Clause::Predicate(p) if p.ty == result.projection && p.bound == Bound::Clone))
+    );
+    assert!(
+        result.bounds.iter().any(|clause| matches!(clause, Clause::Predicate(p) if p.ty == result.projection && p.bound == Bound::Sized))
     );
     assert!(checker.reject_alias_execution().is_err());
     Ok(())
@@ -93,7 +96,7 @@ fn alias_family_input_copy_is_proved_at_the_real_projection_use() -> TestResult 
         assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
         if let Err(error) = result {
             assert!(
-                error.message.contains("trait obligation"),
+                error.message == "associated type requires an unambiguous implementation",
                 "{name}: {error}"
             );
         }
@@ -122,8 +125,10 @@ fn alias_family_result_expansion_does_not_extend_the_input_prefix() -> TestResul
         .associated
         .type_contract(item)
         .ok_or("actual result")?;
-    assert_eq!(result.bounds.len(), 3);
+    assert_eq!(result.bounds.len(), 4);
     assert!(result.bounds.iter().any(|clause| matches!(clause, Clause::Predicate(p) if p.ty == result.projection && p.bound == Bound::Copy)));
+    assert!(result.bounds.iter().any(|clause| matches!(clause, Clause::Predicate(p) if matches!(p.bound, Bound::Trait(_)) && p.ty == result.projection)));
+    assert!(result.bounds.iter().any(|clause| matches!(clause, Clause::Predicate(p) if matches!(p.bound, Bound::ProjectionEqual(value) if value == TypeId::primitive(Primitive::U8)) && matches!(checker.facts.types.kind(p.ty), Some(Type::Projection(application)) if application.subject == result.projection))));
     assert!(
         !required
             .iter()
