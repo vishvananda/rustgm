@@ -145,7 +145,7 @@ impl crate::resolve::expansion::Report {
             context
                 .contracts()
                 .charge(
-                    crate::support::attribute_catalog::comparison_work(helper.name()),
+                    crate::support::helper_collisions::comparison_work(helper.name()),
                     0,
                 )
                 .map_err(error)?;

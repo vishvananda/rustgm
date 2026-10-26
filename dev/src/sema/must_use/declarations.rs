@@ -176,7 +176,7 @@ fn bind_definitions(
                             .map_err(|_| Error::unlocated("too many source macro definitions"))?,
                     ),
                     |owner, name, span, introduction| {
-                        if crate::support::attribute_catalog::helper_collision(name) {
+                        if crate::support::helper_collisions::helper_collision(name) {
                             facts.reserve_must_use_source(owner, span)?;
                             facts.must_use_diagnostic_in(
                                 report,

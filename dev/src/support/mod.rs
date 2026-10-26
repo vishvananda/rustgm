@@ -23,4 +23,4 @@ pub mod source;
 
 pub mod diagnostics;
 
-pub(crate) mod attribute_catalog;
+pub(crate) mod helper_collisions;
