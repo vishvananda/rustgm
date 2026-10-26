@@ -128,7 +128,25 @@ and six exact passes in 112.04 seconds. Receipt:
 Earlier architecture, typing, lint, formatting and owner/registration failures
 remain retained under the handoff; none is counted as a pass.
 
-Production/CLI qualification and a fresh unchanged-core observation belong to the
-combined integration. Actual selected derive invocation and helper-use scope stay
-with B; Default execution, foreign macro transport and proc-macro hosting remain
-closed. PA31 remains planned and no generated references are introduced.
+## Combined integration
+
+The integrator authenticated all 2,789 worker receipt fingerprints against the
+qualified Git source, then merged production `eb77e5d72` and its evidence.
+Nineteen shared smoke controls pass with production/CLI strict Clippy, formatting
+and the global audit. Receipt `obj/qualification/fast/1793053266966357658/receipt.json`
+has SHA-256 `231288fc5972482635d296f803a3c9706dfee761dad2215b78ef80088648c1f8`;
+its recorded step times total 101.22 seconds. The same six private controls pass
+on the combined source with private strict Clippy in 158.39 seconds, receipt
+`obj/qualification/fast/1793053516762751777/receipt.json`.
+
+CLI SHA-256 `6ef90dd3b59da0dc72e092b032b85406bbf1cfb173731653abea4014d2834234`
+passes the unchanged Default helper declaration. The fresh observer verifies all
+722 original inputs and opens 94 files, up from 78, in 1.881 seconds. Its next
+error is `expected path segment` at `ops/index_range.rs:172`, byte5482, the real
+`try { accum }` block. Inputs, compiler and producer binding remain unchanged;
+raw evidence is under the integrator's
+`obj/parallel/helper-declaration-integration-v1/original-core/`.
+
+Actual selected derive invocation and helper-use scope stay with B; Default
+execution, foreign macro transport and proc-macro hosting remain closed.
+PA31 remains planned and no core artifact or generated references are introduced.

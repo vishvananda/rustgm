@@ -14,9 +14,10 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current original-core observer passes final Share::share and reaches
-`default.rs:143`, the source `attributes(default)` helper declaration (LIB-034).
-All 722 pinned inputs verify, 78 files are opened, and no artifact exists. The
+The current original-core observer passes final Share::share and Default's
+helper declaration and reaches `ops/index_range.rs:172`, the source
+`try { accum }` block (LIB-036). All 722 pinned inputs verify, 94 files are opened,
+and no artifact exists. The
 [formatter integration](formatter-pointer-erasure-checkpoint.md#combined-integration-and-core-frontier)
 records the earlier VTable boundary; the live tracker owns the newer result.
 
@@ -31,9 +32,12 @@ records the earlier VTable boundary; the live tracker owns the newer result.
   a false assertion reaching the real handler/Abort. Formatting follows through
   source constructors and selected methods. Reuse the same Pointee metadata
   classifier and source-owned obligations rather than new library algorithms.
-- C: actual source derive helper-declaration producer, beginning with Default's
-  `attributes(default)`. Coordinate typed helper authority with B's invocation
-  consumer. Final methods and their native override controls are integrated;
+- C: actual source try blocks and question-mark execution through genuine
+  Try/FromResidual declarations. Land grammar and exact feature authority first
+  to expose independent loading blockers, retaining explicit unsupported semantic
+  boundaries until the real source consumer works. Helper declarations are
+  integrated; coordinate their typed authority with B's invocation consumer.
+  Final methods and their native override controls are integrated;
   public final policy transport remains required. Keep the disjoint Provided
   codec task queued until this newly observed blocker is covered.
 - Integrator: direct Thin now reaches actual native execution. Continue consumer
@@ -48,8 +52,8 @@ reconcile the owning PA's remaining implementation and release checklist.
 
 Keep at most one qualified handoff queued per worker; the integrator takes shared
 bases before adding an unrelated implementation task. Combined Thin/PhantomData/
-final-method integration advances original core; C now owns the newly observed
-helper-declaration blocker. A's disjoint Provided codec remains
+final-method/helper-declaration integration advances original core; C now owns
+the newly observed try-block blocker. A's disjoint Provided codec remains
 queued with its exact wire rows in the existing milestone, while A retains
 member/body semantics. The integrator
 protects integration/observation time rather
