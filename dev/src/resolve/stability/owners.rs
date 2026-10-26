@@ -107,7 +107,10 @@ fn declaration_rows(
             definition
                 .members
                 .and_then(|id| scopes[id.0 as usize].regular)
-        } else if definition.kind.is_local() && definition.kind != DefKind::SelfType {
+        } else if definition.node.is_none()
+            || (definition.kind.is_local() && definition.kind != DefKind::SelfType)
+            || (definition.kind == DefKind::SelfType && scope.is_none())
+        {
             None
         } else {
             definition
