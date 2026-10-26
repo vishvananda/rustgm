@@ -1,0 +1,162 @@
+{
+  "schema": 1,
+  "state": "DECLARED BEFORE CANDIDATE EXECUTION",
+  "component_source": "4b195c578a35d98c8308fb265bc5d1ec88ee802d",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "target": "x86_64-unknown-linux-gnu",
+  "backend_lock_sha256": "6d300e6addfcd7050afef7940e8511f946f8113ad91e82901ab3f499c61757aa",
+  "backend_distribution_sha256": "c12c61ceef26b88c4d3278be6edcac7f41ccecc3fe685ad86b32813fcf246ddc",
+  "backend": {
+    "schema": 1,
+    "repository": "https://github.com/vishvananda/cppgm-extended",
+    "commit": "905bd7e4412a2d77d88694fe6abc7f3e1c27bce1",
+    "target": "x86_64-linux",
+    "sha256": {
+      "lowir": "2acc7cefeecc3752c4a15da4ddb1e65c9cb2b88e0032a23d1eca7ff36a005882",
+      "lowir2native": "57f2c1156168eac7e653a4a193f27f124b635413e07de29940daf34a0b831fec"
+    },
+    "optional": {
+      "object": {
+        "commit": "3438f5aea24d8fcc9a0113316f7e27c890cd5ac6",
+        "target": "x86_64-linux",
+        "object_format": "elf64-x86-64",
+        "capabilities": [
+          "lowir-to-object"
+        ],
+        "sha256": {
+          "cppgm++": "ded1b6800ce1bdaeaad45cd28c2903d7c96de7cdc29261f6834869a6eaf525fc"
+        }
+      }
+    }
+  },
+  "candidate_mode": "actual CLI --emit-lowir; exit0 and nonempty LowIR with exact empty stderr for every declared positive",
+  "native": [
+    {
+      "path": "pa31/tests/spec/specialization-graph/corrected-chains/chain-and-inherited-body-explicit-middle.rs",
+      "sha256": "87166f9bf6e69d5b9e34dcdc253cec085e1586b3aa30d5a189d4f5562b1b0676",
+      "compiler_status": 0,
+      "compiler_stderr": "",
+      "exit_status": 0,
+      "stdout": "",
+      "stderr": "",
+      "editions": [
+        "2021"
+      ]
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/corrected-chains/reverse-chain-order-explicit-middle.rs",
+      "sha256": "f4b971dbb3f9c77c20c0096faec8534635adcb4a85f5db53ed0c5ecdb09de776",
+      "compiler_status": 0,
+      "compiler_stderr": "",
+      "exit_status": 0,
+      "stdout": "",
+      "stderr": "",
+      "editions": [
+        "2021"
+      ]
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/initial/actual-unsafe-marker-selection.rs",
+      "sha256": "f31945c1f11832c98cb5e125069364d6525fb0987e5b84eee632970474d052fa",
+      "compiler_status": 0,
+      "compiler_stderr": "",
+      "exit_status": 0,
+      "stdout": "",
+      "stderr": "",
+      "editions": [
+        "2021"
+      ]
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/execution/inherited-static-parent-nonstatic-child.rs",
+      "sha256": "792ed57cb933d8bf9b1ebf5d83fb20e3c1fa55e3b55dc63b9f67d7b4c418be86",
+      "compiler_status": 0,
+      "compiler_stderr": "",
+      "exit_status": 0,
+      "stdout": "",
+      "stderr": "",
+      "editions": [
+        "2021"
+      ]
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/execution/final-rpit-inherited-across-scalar-specialization.rs",
+      "sha256": "7c4cf37129c23885611fb7f881b27d76eac92b5de053f6dd14977f82d2612e00",
+      "compiler_status": 0,
+      "compiler_stderr": "",
+      "exit_status": 0,
+      "stdout": "",
+      "stderr": "",
+      "editions": [
+        "2021"
+      ]
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/member-demand/own-child-nonstatic-reduced-observer.rs",
+      "sha256": "71f57663e98019ebd3baa16b2cc423ce9a7292d9cc790a5873436baad824ce62",
+      "compiler_status": 0,
+      "compiler_stderr": "",
+      "exit_status": 0,
+      "stdout": "",
+      "stderr": "",
+      "editions": [
+        "2021",
+        "2024"
+      ]
+    }
+  ],
+  "negative": [
+    {
+      "path": "pa31/tests/spec/specialization-graph/execution/inherited-default-rpit.rs",
+      "sha256": "bee6447da40132723f42741249d61882a5b8c9616d4d3c7cff5978d807136c6e",
+      "compiler_status": 1,
+      "compiler_stdout": "",
+      "diagnostic_category": "actual trait RPIT cannot be specialized",
+      "editions": [
+        "2021"
+      ]
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/execution/own-child-rpit-override.rs",
+      "sha256": "bb3ed6b319f0ae58e1d176c38cb4609e017cf4610620020771dfa7acf2337162",
+      "compiler_status": 1,
+      "compiler_stdout": "",
+      "diagnostic_category": "actual trait RPIT cannot be specialized",
+      "editions": [
+        "2021"
+      ]
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/execution/default-rpit-with-concrete-implementation-output.rs",
+      "sha256": "a3640dcfd33a9ea4b3dd2d39f8df8f0e8e39302dde72187c1c2369b463aa6cd3",
+      "compiler_status": 1,
+      "compiler_stdout": "",
+      "diagnostic_category": "actual trait RPIT cannot be specialized",
+      "editions": [
+        "2021"
+      ]
+    },
+    {
+      "path": "pa31/tests/spec/specialization-graph/execution/final-rpit-static-parent-nonstatic-child.rs",
+      "sha256": "e99622381a93573e40dd8f7081e105dccbafd6fb6c137b5ea6f97fd3a46431cf",
+      "compiler_status": 1,
+      "compiler_stdout": "",
+      "diagnostic_category": "real inherited RPIT lifetime failure",
+      "editions": [
+        "2021"
+      ]
+    }
+  ],
+  "scope": "ONLY missing2021 five positives+four negatives andnew reducedownchildpair. Keep prior2024five native passes/three defaultRPIT rejects plus independently reclassified real lifetime rejection; no repeats. Required stdClone/size_of originals stay pendingB.",
+  "pending": [
+    "new exact candidate source+CLI fingerprint binding",
+    "actual locked prebuilt tools authentication",
+    "all candidate CLI/LowIR/backend/native results"
+  ],
+  "ordinary_observer_boundary": "Exact own-child static-parent oracle using std::println stays retained separately; no spelling rewrite or printing support inferred. Typed own-child selection and current chain-native controls retain this requirement.",
+  "prior_native_run": 40268541874,
+  "prior_cli_sha256": "5ceeac4ec9b83d4bf11c837783d57069bddc07317849c8b6e5c698e04e80c681"
+}
