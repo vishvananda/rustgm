@@ -579,3 +579,38 @@ verifier finality/authority group, after both strict modes and architecture pass
 The old verifier helper now expects genuine successful declaration completion;
 its Min, effective-finality, invalid-overlap and post-seal insertion opponents
 remain unchanged. Candidate native results and this readiness change are pending.
+
+
+The first executable candidate (run 40268541874, source `2f676ece`) passes all
+seven affected private groups, both strict compiler modes, formatting and global
+architecture. Five edition-2024 programs actually passed the locked backend and
+native execution: both chains, marker selection, scalar static-parent inheritance
+and final inherited RPIT. Three default-RPIT negatives matched their declared
+error. The combined RPIT/static input correctly rejected with `required lifetime
+does not outlive its target`; the runner had incorrectly classified its category
+by the substring RPIT. That failed runner and its exact raw output remain retained.
+No blanket success is claimed: all eleven 2021 attempts stopped at unsupported
+CLI options, and two original required 2024 sources exposed ordinary library
+prerequisites. Explicit bootstrap Clone implementation rejects at byte 159;
+`std::mem::size_of` is unresolved at byte 253. B owns their genuine source-backed
+follow-up; their sources and independent expected outcomes remain unchanged.
+
+A separate PA34 option candidate selects the already-existing typed edition
+without changing cfg/runtime state or artifact-profile permissions. Its actual
+argument controls include last option, retained cfg, unknown 2020, and genuine
+SourceCore admission followed by the existing Rust2024 export denial. The first
+profile test omitted no_core and correctly failed earlier admission; its retained
+source/prediction are replaced only by the exact previously qualified minimal
+provider bytes for the intended later boundary. Candidate option qualification
+remains pending. No prior successful native case is repeated.
+
+The separately authored own-child reduced observer passes two metadata and two
+native predictions in independent run 40268587039 (six commands, no disagreements).
+It replaces only printing with a real check/failure observer. The original println
+input stays intact and printing remains a distinct requirement. Two additional
+source selection reductions pass four metadata/four native predictions in run
+40270500409 (twelve commands, no disagreements). The generic/private input carries
+actual P/Q/X values through a private generic call, and the local Clone trait input
+uses actual user methods plus real Drop/HITS and lazy failure behavior. These
+are additional selection evidence, not parity for standard Clone or size_of.
+Their candidate native results are still pending; no fake library factory is added.

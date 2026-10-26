@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "metadata_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "native_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Cdebug-assertions=no",
+    "-Coverflow-checks=no",
+    "-Copt-level=2",
+    "-Ccodegen-units=1",
+    "-Clto=off",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "source_prediction_disagreements": "Retain all actual raw observations and wrong predictions; disagreements are data, not automatic infrastructure failures.",
+  "baseline": "52bb6dda",
+  "candidate_execution": false,
+  "runtime_observer": "Exact check predicates call a real dynamic division-by-zero failure path on wrong result; success is exit0 with empty stdout/stderr. RPIT controls call the returned actual Get implementation.",
+  "purpose": "TWO NEW explicitly authored specialization selection reductions, not replacements/parity for frozen required stdClone/size_of sources (B owns those). Real generic values prove parent argument order/private callee; actual local user Clone methods plus canonical Drop prove selected call/effect paths. No library factories.",
+  "planned_metadata_observations": 4,
+  "planned_native_programs": 4,
+  "cases": [
+    {
+      "name": "generic-private-values",
+      "source": "pa31/tests/spec/specialization-graph/isolated-selection/generic-private-values.rs",
+      "sha256": "cd2b9ace9e27d7a18405f6ea4bf27294025fc679f257d0c5558d8deb9c5e5d6a",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "Frozen before observation; these independent sources test selected source bodies, actual arguments and real runtime effects."
+    },
+    {
+      "name": "local-clone-drop-effects",
+      "source": "pa31/tests/spec/specialization-graph/isolated-selection/local-clone-drop-effects.rs",
+      "sha256": "c44b96c1d1d1087406265f6394aa7b109aa295bab264c9c1ff165bf4b083dd70",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "Frozen before observation; these independent sources test selected source bodies, actual arguments and real runtime effects."
+    }
+  ],
+  "observed": {
+    "run": 40270500409,
+    "commands": 12,
+    "metadata": 4,
+    "actual_native": 4,
+    "infra": 0,
+    "disagreements": 0,
+    "binding_sha256": "94aaef2cf5e6a79cb4c431c71f124770b1320c7c6d4e22b4941a7524e4b64ac5",
+    "zip_sha256": "d029a15f397f6e22fac631424cf8feeb02b8dcca8693abece6101757ddfa9112",
+    "candidate_status": "declared; unrun"
+  }
+}
