@@ -70,8 +70,11 @@ Current lanes:
   [v2 module/domain/advisory artifact](pa29-module-contracts-v2.md) now qualifies
   fresh namespace/domain consumers and provider-owned implementation selection
   through actual LowIR. Keep the default v1 bytes and real trait/catalog identity
-  distinct from function linker identity. Continue LIB-029 source assertion
-  expansion, with wider imported contracts and Provided execution still required.
+  distinct from function linker identity. The private
+  [Assert condition transaction](source-assert-implementation.md) now qualifies
+  one parse and owned transfer with authentic opaque provenance. Continue its
+  expression writer and genuine source operator/panic/runtime/constant paths;
+  Assert execution, wider imported contracts and Provided execution remain open.
 - C: SourceCore CLI contract publication and fresh native consumers are qualified.
   LIB-027 unnamed constants and the [LIB-028 modifier checkpoint](defaultness-checkpoint.md)
   pass focused controls and reviewed text qualification. Implement the actual

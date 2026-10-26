@@ -1,4 +1,5 @@
 //! Copy parsed fragments by typed facts, rebasing dense IDs and source provenance.
+mod span_preflight;
 use super::{
     ast::{Kind, List, NodeId, Syntax},
     attribute,
@@ -6,6 +7,7 @@ use super::{
     token_tree::{Span, error},
 };
 use crate::lex::token::LexError;
+pub(crate) use span_preflight::validate as validate_spans;
 
 /// Original arena bounds require no speculative AST copy. A later module
 /// instance copies only these typed facts, excluding prior generated syntax.
