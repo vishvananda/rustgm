@@ -48,11 +48,11 @@ fn visibility_source_failures_keep_primary_errors_and_policy_costs_are_measured(
     let (nodes, capacity, outer) = affected.facts.retained_policy_storage();
     assert_eq!(nodes, affected.facts.safety_work().retained_nodes);
     assert!(nodes > 0 && capacity >= nodes);
-    assert_eq!(size_of::<Policy>(), 11);
+    assert_eq!(size_of::<Policy>(), 12);
     println!(
-        "unused visibility policy nodes={nodes} capacity={capacity} payload={} prior10bytepayload={} aggregateincrease={} outerbytes={outer}",
+        "unused visibility policy nodes={nodes} capacity={capacity} payload={} prior11bytepayload={} aggregateincrease={} outerbytes={outer}",
         capacity * size_of::<Policy>(),
-        capacity * 10,
+        capacity * 11,
         capacity
     );
     println!(

@@ -78,6 +78,13 @@ impl Resolver<'_> {
             if summary.node != key {
                 return Err(self.error(context, node, "scoped header names another declaration"));
             }
+            if let Some(role) = summary.builtin
+                && role.kind() == crate::expand::builtin::BuiltinKind::Derive
+            {
+                // Publishing a derive requires positively produced helper data,
+                // including a genuine checked-empty list, never a missing row.
+                checked.derive_helpers(role)?;
+            }
             if summary.builtin.is_some_and(|role| {
                 role != crate::expand::builtin::Builtin::CfgSelect
                     && role.kind() == crate::expand::builtin::BuiltinKind::Bang

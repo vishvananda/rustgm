@@ -14,13 +14,21 @@ use crate::{
         token_tree::{Delimiter, Forest, TreeKind},
     },
 };
+pub(super) struct Claim {
+    pub role: Builtin,
+    pub helpers: std::ops::Range<u32>,
+}
+struct Arguments<'source> {
+    name: Option<&'source str>,
+    helpers: std::ops::Range<u32>,
+}
 
 pub(super) fn parse(
     package: &Package,
     key: NodeKey,
     attribute: Attribute,
     forest: &Forest,
-) -> Result<Builtin, Error> {
+) -> Result<Claim, Error> {
     let unit = package.unit(key.file);
     let error = |message| Error::at(key.file, attribute.span.start, message);
     if attribute.unsafe_wrapper {
@@ -42,8 +50,9 @@ pub(super) fn parse(
     let declared = unit
         .spelling(span)
         .map_err(|e| Error::at(key.file, e.offset, e.message))?;
-    let name = argument(unit.source.text(), forest, attribute)
-        .map_err(&error)?
+    let arguments = argument(unit.source.text(), forest, attribute).map_err(&error)?;
+    let name = arguments
+        .name
         .unwrap_or_else(|| declared.strip_prefix("r#").unwrap_or(declared));
     let role = Builtin::ALL
         .into_iter()
@@ -59,16 +68,22 @@ pub(super) fn parse(
             "builtin macro binding requires its supported declaration kind",
         ));
     }
-    Ok(role)
+    Ok(Claim {
+        role,
+        helpers: arguments.helpers,
+    })
 }
 
 fn argument<'a>(
     text: &'a str,
     forest: &Forest,
     attribute: Attribute,
-) -> Result<Option<&'a str>, &'static str> {
+) -> Result<Arguments<'a>, &'static str> {
     if attribute.input == Input::Empty {
-        return Ok(None);
+        return Ok(Arguments {
+            name: None,
+            helpers: 0..0,
+        });
     }
     let error = "invalid source builtin macro arguments";
     let Input::Delimited(group) = attribute.input else {
@@ -88,6 +103,7 @@ fn argument<'a>(
     let range = forest.children(group).ok_or(error)?;
     let name = forest.name(text, range.start).ok_or(error)?;
     let mut cursor = range.start + 1;
+    let mut helpers = 0..0;
     if cursor < range.end {
         if !forest.punctuation(cursor, Punctuation::Comma) {
             return Err(error);
@@ -99,7 +115,7 @@ fn argument<'a>(
             return Err(error);
         }
         cursor += 1;
-        let helpers = forest.children(cursor).ok_or(error)?;
+        helpers = forest.children(cursor).ok_or(error)?;
         if !forest.tree(cursor).is_some_and(|tree| {
             matches!(
                 tree.kind,
@@ -111,9 +127,6 @@ fn argument<'a>(
         }) {
             return Err(error);
         }
-        if helpers.start != helpers.end {
-            return Err("source builtin macro helper attributes are not implemented");
-        }
         cursor = forest.after(cursor);
         if cursor < range.end && forest.punctuation(cursor, Punctuation::Comma) {
             cursor += 1;
@@ -122,7 +135,10 @@ fn argument<'a>(
     if cursor != range.end {
         return Err(error);
     }
-    Ok(Some(name))
+    Ok(Arguments {
+        name: Some(name),
+        helpers,
+    })
 }
 
 #[cfg(test)]

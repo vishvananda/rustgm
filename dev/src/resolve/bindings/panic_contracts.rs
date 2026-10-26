@@ -1,6 +1,7 @@
 //! Source-owned macro claims and the one implemented internal edition permission.
 use super::KnownFeature;
 mod grants;
+mod helpers;
 mod lists;
 mod witness;
 use crate::{
@@ -18,7 +19,7 @@ use crate::{
     },
 };
 use grants::Entry;
-pub(in crate::resolve) use grants::{CheckedHeader, HeaderData};
+pub(in crate::resolve) use grants::{CheckedHeader, HeaderData, HelperAttribute};
 use std::{cell::RefCell, rc::Rc};
 use witness::{Node as WitnessNode, Witness};
 
@@ -260,6 +261,7 @@ pub(in crate::resolve) fn published(
         || current.node != declaration.node
         || (current.attributes.start, current.attributes.end) != declaration.attributes
         || !is_macro(current.unit, current.node)
+        || expected.is_some_and(|data| !data.image_matches(current.unit))
     {
         return Err(error("published macro owner or attribute range changed"));
     }

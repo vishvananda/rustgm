@@ -22,3 +22,5 @@ pub mod runtime_checks;
 pub mod source;
 
 pub mod diagnostics;
+
+pub(crate) mod attribute_catalog;

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "frozen independent predictions before observation",
+  "phase": "observed outcomes bind qualification; initial hypotheses retained",
   "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
   "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
   "editions": [
@@ -25,7 +25,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "real declaration-owner allow policy"
+      "contract": "real declaration-owner allow policy",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/collision-warn.rs",
@@ -35,7 +57,33 @@
       "rustc_warning_codes_hypothesis": [
         "ambiguous_derive_helpers"
       ],
-      "contract": "real declaration-owner warn policy"
+      "contract": "real declaration-owner warn policy",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/collision-deny.rs",
@@ -45,7 +93,33 @@
         "ambiguous_derive_helpers"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "real declaration-owner deny policy"
+      "contract": "real declaration-owner deny policy",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/collision-forbid.rs",
@@ -55,7 +129,33 @@
         "ambiguous_derive_helpers"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "real declaration-owner forbid policy"
+      "contract": "real declaration-owner forbid policy",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/collision-nested-allow.rs",
@@ -63,7 +163,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "actual nested declaration owner may allow inherited deny"
+      "contract": "actual nested declaration owner may allow inherited deny",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/collision-forbid-weaken.rs",
@@ -73,7 +195,33 @@
         "E0453"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "forbid cannot be weakened by a nested declaration owner"
+      "contract": "forbid cannot be weakened by a nested declaration owner",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0453"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0453"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/collision-macro-allow.rs",
@@ -81,7 +229,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "macro-introduced actual declaration owner retains its local allow"
+      "contract": "macro-introduced actual declaration owner retains its local allow",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/collision-macro-warn.rs",
@@ -91,7 +261,33 @@
       "rustc_warning_codes_hypothesis": [
         "ambiguous_derive_helpers"
       ],
-      "contract": "actual macro-introduced helper retains warning origin"
+      "contract": "actual macro-introduced helper retains warning origin",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/collision-with-type-error.rs",
@@ -103,7 +299,37 @@
       "rustc_warning_codes_hypothesis": [
         "ambiguous_derive_helpers"
       ],
-      "contract": "semantic failure retains the already-produced warning exactly once"
+      "contract": "semantic failure retains the already-produced warning exactly once",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/collision-future-group.rs",
@@ -113,7 +339,37 @@
         "ambiguous_derive_helpers"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "actual future_incompatible lint group contains this lint"
+      "contract": "actual future_incompatible lint group contains this lint",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     }
-  ]
+  ],
+  "initial_contract_sha256": "f75a853768608f04bd761fa6a0b1553645b4ae0d2703021ec8562c586c4b1007",
+  "observation_binding_sha256": "2454dff0ccd0ac02e754e2e4dc716fc714954e0ce5d0f1119bc147c75806a904",
+  "observation_count": 20,
+  "hypothesis_disagreements": 0
 }

@@ -17,6 +17,7 @@ use super::{
     package::ModuleId,
     unit::{FileId, NodeKey},
 };
+pub(crate) use crate::expand::marks::ExpansionId;
 pub use crate::expand::marks::ItemContext;
 use crate::support::hash::HashMap;
 use crate::syntax::ast::NodeId;

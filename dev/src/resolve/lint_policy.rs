@@ -24,6 +24,7 @@ pub(crate) struct Policy {
     pub(crate) unused_attributes: Level,
     pub(crate) unused_visibilities: Level,
     pub(crate) duplicate_macro_attributes: Level,
+    pub(crate) ambiguous_derive_helpers: Level,
     pub(crate) diagnostic_attributes: [Level; 3],
 }
 impl Default for Policy {
@@ -37,6 +38,7 @@ impl Default for Policy {
             unused_attributes: Level::Warn,
             unused_visibilities: Level::Warn,
             duplicate_macro_attributes: Level::Warn,
+            ambiguous_derive_helpers: Level::Warn,
             diagnostic_attributes: [Level::Warn; 3],
         }
     }
@@ -51,6 +53,7 @@ pub(crate) enum Lint {
     UnusedAttributes,
     UnusedVisibilities,
     DuplicateMacroAttributes,
+    AmbiguousDeriveHelpers,
     DiagnosticAttributes(u8),
 }
 pub(crate) struct Change {
@@ -81,6 +84,7 @@ impl Policy {
             Lint::UnusedAttributes => &mut self.unused_attributes,
             Lint::UnusedVisibilities => &mut self.unused_visibilities,
             Lint::DuplicateMacroAttributes => &mut self.duplicate_macro_attributes,
+            Lint::AmbiguousDeriveHelpers => &mut self.ambiguous_derive_helpers,
             Lint::DiagnosticAttributes(index) => {
                 &mut self.diagnostic_attributes[usize::from(index)]
             }
@@ -104,6 +108,9 @@ impl Policy {
                         }
                         Lint::DuplicateMacroAttributes => {
                             "forbidden duplicate_macro_attributes lint cannot be weakened"
+                        }
+                        Lint::AmbiguousDeriveHelpers => {
+                            "forbidden ambiguous_derive_helpers lint cannot be weakened"
                         }
                         Lint::DiagnosticAttributes(_) => {
                             "forbidden diagnostic attribute lint cannot be weakened"

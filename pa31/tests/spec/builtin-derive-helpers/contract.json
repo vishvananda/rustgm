@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "frozen independent predictions before observation",
+  "phase": "observed outcomes bind qualification; initial hypotheses retained",
   "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
   "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
   "editions": [
@@ -25,7 +25,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "actual core Default claim with a nonempty helper list"
+      "contract": "actual core Default claim with a nonempty helper list",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/empty-helpers.rs",
@@ -33,7 +55,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "explicit empty helper list retains no helper payload"
+      "contract": "explicit empty helper list retains no helper payload",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/implicit-empty.rs",
@@ -41,7 +85,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "implicit actual builtin role has no declared helpers"
+      "contract": "implicit actual builtin role has no declared helpers",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/alias-role.rs",
@@ -49,7 +115,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "actual explicit builtin role is independent of declared macro spelling"
+      "contract": "actual explicit builtin role is independent of declared macro spelling",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/raw-identifiers.rs",
@@ -57,7 +145,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "raw helper names retain canonical identifier identity and original spans"
+      "contract": "raw helper names retain canonical identifier identity and original spans",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/duplicate-helpers.rs",
@@ -65,7 +175,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "helper order and duplicates remain retained declaration data"
+      "contract": "helper order and duplicates remain retained declaration data",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/unicode-helpers.rs",
@@ -73,7 +205,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "NFC-equivalent identifiers retain distinct source spans but shared canonical identity"
+      "contract": "NFC-equivalent identifiers retain distinct source spans but shared canonical identity",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/keyword-helper.rs",
@@ -81,7 +235,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "helper identifier can_be_raw semantics permit non-path strict keywords"
+      "contract": "helper identifier can_be_raw semantics permit non-path strict keywords",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": true,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": true,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/bang-helper-data.rs",
@@ -89,7 +265,33 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "non-derive claim helper data does not grant derive/helper permission"
+      "contract": "non-derive claim helper data does not grant derive/helper permission",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "unused_features"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": true
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "unused_features"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": true
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/helper-not-global.rs",
@@ -97,7 +299,29 @@
       "rustc_status_hypothesis": 1,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "declaring a helper does not place it in unrelated attribute scope"
+      "contract": "declaring a helper does not place it in unrelated attribute scope",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/missing-rustc-gate.rs",
@@ -107,7 +331,33 @@
         "E0658"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "real rustc_attrs request is mandatory"
+      "contract": "real rustc_attrs request is mandatory",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/wrong-owner.rs",
@@ -115,7 +365,29 @@
       "rustc_status_hypothesis": 1,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "builtin claim requires its actual macro declaration owner"
+      "contract": "builtin claim requires its actual macro declaration owner",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/literal-helper.rs",
@@ -123,7 +395,33 @@
       "rustc_status_hypothesis": 1,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "helper elements are identifiers rather than literals"
+      "contract": "helper elements are identifiers rather than literals",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/path-helper.rs",
@@ -131,7 +429,33 @@
       "rustc_status_hypothesis": 1,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "qualified helper paths are not identifier declarations"
+      "contract": "qualified helper paths are not identifier declarations",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/argument-helper.rs",
@@ -139,7 +463,33 @@
       "rustc_status_hypothesis": 1,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "helper declarations have no arguments"
+      "contract": "helper declarations have no arguments",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/path-keyword-helper.rs",
@@ -147,7 +497,33 @@
       "rustc_status_hypothesis": 1,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "path segment keywords cannot be raw helper identifiers"
+      "contract": "path segment keywords cannot be raw helper identifiers",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/missing-comma.rs",
@@ -155,7 +531,29 @@
       "rustc_status_hypothesis": 1,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "helper separators must follow metadata grammar"
+      "contract": "helper separators must follow metadata grammar",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/extra-input.rs",
@@ -163,7 +561,33 @@
       "rustc_status_hypothesis": 1,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "extra top-level claim input is rejected"
+      "contract": "extra top-level claim input is rejected",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/builtin-derive-helpers/builtin-collision.rs",
@@ -173,7 +597,37 @@
       "rustc_warning_codes_hypothesis": [
         "ambiguous_derive_helpers"
       ],
-      "contract": "builtin attribute collision requires its actual lint diagnostic, not blanket helper admission"
+      "contract": "builtin attribute collision requires its actual lint diagnostic, not blanket helper admission",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     }
-  ]
+  ],
+  "initial_contract_sha256": "1ae626abda718cf3dfd4d16e16a189a5b12431cec2177d4db79d4556dc141b63",
+  "observation_binding_sha256": "7f2b97037eaece442729239c8a177a915a76e588a831a1dd2b838dce35ac731c",
+  "observation_count": 38,
+  "hypothesis_disagreements": 14
 }
