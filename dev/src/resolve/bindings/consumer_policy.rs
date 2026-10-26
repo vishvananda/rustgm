@@ -19,7 +19,10 @@ use crate::{
         source::OriginalImage,
     },
 };
-use std::{rc::Rc, sync::Arc};
+use std::{
+    rc::{Rc, Weak},
+    sync::Arc,
+};
 
 #[cfg(test)]
 pub(crate) const fn layouts() -> (usize, usize) {
@@ -46,14 +49,42 @@ pub(crate) fn configuration_opponent(package: &mut Package) -> Result<(), &'stat
 pub(crate) struct ProviderAdmission {
     inventory: Arc<Dependencies>,
     index: u32,
-    headers: UnpaidHeaderData,
+    headers: Rc<UnpaidHeaderData>,
 }
 /// Structural rows do not certify source completion, absence or defaultness.
 struct UnpaidHeaderData {
     columns: s::HeaderAttributeColumns,
     bytes: usize,
 }
+/// Allocation identity only. This carries no source-completion permission.
+pub(crate) struct HeaderDataIdentity {
+    owner: Weak<UnpaidHeaderData>,
+}
+impl HeaderDataIdentity {
+    pub(crate) fn require(
+        &self,
+        consumer: &StagedConsumer,
+        work: &mut ReservationWork,
+    ) -> Result<(), Error> {
+        work.charge(2)?;
+        if !Weak::ptr_eq(&self.owner, &Rc::downgrade(&consumer.admission.headers)) {
+            return Err(Error::unlocated(
+                "private consumer changed its actual header-data allocation",
+            ));
+        }
+        Ok(())
+    }
+}
 impl ProviderAdmission {
+    pub(crate) fn retained_bytes(&self) -> usize {
+        size_of::<Self>()
+            .saturating_add(self.headers.bytes)
+            .saturating_add(
+                size_of::<UnpaidHeaderData>()
+                    .saturating_sub(size_of::<s::HeaderAttributeColumns>()),
+            )
+            .saturating_add(2 * size_of::<usize>())
+    }
     #[cfg_attr(
         not(test),
         expect(
@@ -67,6 +98,14 @@ impl ProviderAdmission {
         work: &mut ReservationWork,
     ) -> Result<Self, Error> {
         let (inventory, index) = inputs.into_provider(work)?;
+        Self::from_data(inventory, index, contracts, work)
+    }
+    pub(crate) fn from_data(
+        inventory: Arc<Dependencies>,
+        index: u32,
+        contracts: s::HeaderAttributeColumns,
+        work: &mut ReservationWork,
+    ) -> Result<Self, Error> {
         let artifact = inventory
             .artifacts()
             .get(index as usize)
@@ -79,14 +118,31 @@ impl ProviderAdmission {
         let result = contracts.validate_columns(&descriptor.rows(), 0, &mut validation);
         work.charge(validation.steps)?;
         let bytes = result.map_err(Error::unlocated)?;
-        work.reserve(bytes.saturating_add(size_of::<Self>()))?;
+        work.reserve(
+            bytes
+                .saturating_add(size_of::<Self>())
+                .saturating_add(
+                    size_of::<UnpaidHeaderData>()
+                        .saturating_sub(size_of::<s::HeaderAttributeColumns>()),
+                )
+                .saturating_add(2 * size_of::<usize>()),
+        )?;
         Ok(Self {
             inventory,
             index,
-            headers: UnpaidHeaderData {
+            headers: Rc::new(UnpaidHeaderData {
                 columns: contracts,
                 bytes,
-            },
+            }),
+        })
+    }
+    pub(crate) fn header_identity(
+        &self,
+        work: &mut ReservationWork,
+    ) -> Result<HeaderDataIdentity, Error> {
+        work.charge(1)?;
+        Ok(HeaderDataIdentity {
+            owner: Rc::downgrade(&self.headers),
         })
     }
     pub(crate) fn inventory(&self) -> &Arc<Dependencies> {
@@ -131,6 +187,10 @@ pub(crate) struct StagedConsumer {
     pub(super) features: Features,
 }
 impl StagedConsumer {
+    /// Borrowed data remains unpaid until a distinct semantic receipt is bound.
+    pub(crate) fn unpaid_header_columns(&self) -> &s::HeaderAttributeColumns {
+        &self.admission.headers.columns
+    }
     pub(crate) fn current(&self) -> &CrateIdentity {
         &self.current
     }
@@ -208,11 +268,9 @@ pub(super) fn prepare(
         size_of::<StagedConsumer>()
             + 2 * size_of::<usize>()
             + size_of::<Source>()
-            + request
-                .admission
-                .headers
-                .bytes
-                .saturating_sub(size_of::<s::HeaderAttributeColumns>()),
+            + request.admission.headers.bytes
+            + size_of::<UnpaidHeaderData>().saturating_sub(size_of::<s::HeaderAttributeColumns>())
+            + 2 * size_of::<usize>(),
     )?;
     let macros = features.macros();
     let consumer = StagedConsumer {

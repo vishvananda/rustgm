@@ -1,6 +1,11 @@
 //! The unpaid owner maps only actual canonical inputs, with selected growth costs.
 use crate::{
-    resolve::{body_origin::ProofSite, crates::ReservationWork, model::DefId, package::Error},
+    resolve::{
+        body_origin::{ImportedDeclarationId, ProofSite},
+        crates::ReservationWork,
+        model::DefId,
+        package::Error,
+    },
     sema::crates::typed_headers::{
         error,
         predicate_remap::translation::{self, Mapping},
@@ -44,6 +49,13 @@ impl<'rows> Mapping<'rows, ReservationWork> for Inputs<'rows, '_> {
             ));
         }
         self.port.definition(owner, work)
+    }
+    fn trait_declaration(
+        &self,
+        owner: DeclarationRef,
+        work: &mut ReservationWork,
+    ) -> Result<ImportedDeclarationId, Error> {
+        self.port.declaration(owner, work)
     }
     fn site(
         &self,

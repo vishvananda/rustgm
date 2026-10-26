@@ -1,7 +1,9 @@
 //! Source headers reserve genuine declarations before any body row is published.
+mod advisory_rows;
 mod authored_functions;
 mod authored_traits;
 mod canonical_nodes;
+mod collected_provider;
 mod contract_rows;
 mod exposed_bindings;
 mod implementation_headers;
@@ -20,7 +22,11 @@ use crate::{
         owner_catalog::DeclarationRef,
     },
 };
+pub(crate) use advisory_rows::require_defaultness_transport;
 pub(crate) use canonical_nodes::Context;
+pub(crate) use collected_provider::{
+    CollectedArtifact, CollectedReceipt, CollectedRows, validate_collected_rows,
+};
 
 /// Observation of producer work, not proof or accepted metadata authority.
 #[derive(Clone, Copy, Debug, Default)]

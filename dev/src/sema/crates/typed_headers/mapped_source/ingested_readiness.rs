@@ -270,6 +270,44 @@ impl Graph {
         Self::scope_ready(facts, definition)
     }
 
+    pub(in crate::sema::crates::typed_headers) fn require_method_environment(
+        &self,
+        catalog: &Catalog,
+        facts: &Declarations,
+        definition: DefId,
+        header: &super::super::Header,
+        steps: &mut usize,
+    ) -> Result<(), &'static str> {
+        *steps = steps.saturating_add(9);
+        self.require_store(&facts.types)?;
+        let descriptor = self.descriptor(catalog)?;
+        let declaration = catalog.declaration(definition)?;
+        catalog.validate_declaration(
+            declaration,
+            definition,
+            crate::resolve::model::DefKind::Function,
+        )?;
+        let (owner, row, _) = catalog.declaration_coordinate(declaration)?;
+        if owner != descriptor.identity()
+            || header.declaration
+                != crate::resolve::body_origin::DeclarationOrigin::Imported(declaration)
+            || !self.function(catalog, definition, header.body, header.universals)?
+        {
+            return Err("imported method environment changed its actual declaration/body owner");
+        }
+        let rows = descriptor.rows();
+        let Some(s::HeaderRef::Function(index)) = rows.header(row)? else {
+            return Err("imported method environment lacks its actual function row");
+        };
+        Self::environment_ready(
+            facts,
+            definition,
+            header,
+            &rows.functions[index as usize],
+            rows,
+        )
+    }
+
     fn environment_ready(
         facts: &Declarations,
         definition: DefId,

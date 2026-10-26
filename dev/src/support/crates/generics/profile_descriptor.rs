@@ -100,6 +100,23 @@ impl ValidatedRows {
     ) -> Result<Self, &'static str> {
         Self::stage_profile(owner, rows, base, work, Profile::Source2024Provided)
     }
+    /// Cost observation cannot alter metadata validation or grant permission.
+    pub(crate) fn stage_provided_observed(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        base: usize,
+        work: &mut Work,
+        observe: &mut impl FnMut(usize, usize),
+    ) -> Result<Self, &'static str> {
+        Self::stage_profile_observed(
+            owner,
+            rows,
+            base,
+            work,
+            Profile::Source2024Provided,
+            observe,
+        )
+    }
     pub(crate) fn stage_contracts(
         owner: &CrateIdentity,
         rows: SourceRows,
@@ -185,6 +202,16 @@ impl ValidatedRows {
         work: &mut Work,
         profile: Profile,
     ) -> Result<Self, &'static str> {
+        Self::stage_profile_observed(owner, rows, base, work, profile, &mut |_, _| {})
+    }
+    fn stage_profile_observed(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        base: usize,
+        work: &mut Work,
+        profile: Profile,
+        observe: &mut impl FnMut(usize, usize),
+    ) -> Result<Self, &'static str> {
         let start = work.steps;
         let indexed = HeaderIndex::new(&rows, base, work)?;
         let numbering_peak = match profile {
@@ -207,7 +234,7 @@ impl ValidatedRows {
         drop(domains);
         let indexed = indexed.into_header_rows()?;
         let (owners, columns, headers, mut budget) =
-            freeze_columns(owner, rows, indexed, base, previous_peak, work)?;
+            freeze_columns_observed(owner, rows, indexed, base, previous_peak, work, observe)?;
         budget.atoms = work.steps.saturating_sub(start);
         Ok(Self {
             owners,
@@ -247,8 +274,35 @@ fn freeze_columns(
     previous_peak: usize,
     work: &mut Work,
 ) -> Result<FrozenColumns, &'static str> {
+    freeze_columns_observed(
+        owner,
+        rows,
+        indexed,
+        base,
+        previous_peak,
+        work,
+        &mut |_, _| {},
+    )
+}
+fn freeze_columns_observed(
+    owner: &CrateIdentity,
+    rows: SourceRows,
+    indexed: (Vec<Option<super::HeaderRef>>, usize),
+    base: usize,
+    previous_peak: usize,
+    work: &mut Work,
+    observe: &mut impl FnMut(usize, usize),
+) -> Result<FrozenColumns, &'static str> {
     let (headers, raw_bytes) = indexed;
-    let mut budget = freeze_budget(&rows, &headers, raw_bytes, base, previous_peak, work)?;
+    let mut budget = freeze_budget(
+        &rows,
+        &headers,
+        raw_bytes,
+        base,
+        previous_peak,
+        work,
+        observe,
+    )?;
     let mut kinds = Vec::with_capacity(rows.declarations.len());
     let mut names = 0_usize;
     for declaration in &rows.declarations {
@@ -285,6 +339,7 @@ fn freeze_budget(
     base: usize,
     previous_peak: usize,
     work: &mut Work,
+    observe: &mut impl FnMut(usize, usize),
 ) -> Result<Budget, &'static str> {
     work.charge(1)?;
     let owner_bytes = rows
@@ -324,6 +379,9 @@ fn freeze_budget(
                 .saturating_mul(size_of::<Option<super::HeaderRef>>()),
         );
     let combined_peak = previous_peak.max(transfer).max(base.saturating_add(bytes));
+    // Report the owning preflight before either rejection or allocation. The
+    // observer cannot change these bounds or the mandatory validation result.
+    observe(base.saturating_add(bytes), combined_peak);
     if combined_peak > crate::support::crates::MAX_BYTES {
         return Err("source freeze exceeds combined retained and transfer budget");
     }
