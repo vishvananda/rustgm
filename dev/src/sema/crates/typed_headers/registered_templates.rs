@@ -305,13 +305,13 @@ impl Session {
 /// are restored on every outcome. No second registration or table clone occurs.
 pub(super) use assumption_environments::Declaration;
 pub(super) fn declaration_ready(
-    recipes: &Option<Box<State>>,
+    recipes: Option<&State>,
     view: &RecipeView<'_>,
     facts: &super::super::Declarations,
     owner: DeclarationRef,
     work: &mut ReservationWork,
 ) -> Result<bool, Error> {
-    let Some(state) = recipes.as_deref() else {
+    let Some(state) = recipes else {
         return Ok(false);
     };
     assumption_environments::declaration_ready(view, state, facts, owner, work)

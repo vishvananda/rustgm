@@ -70,12 +70,10 @@ impl OwnerTransaction {
 }
 
 pub(super) fn self_type(
-    owners: &Option<Box<OwnerTransaction>>,
+    owners: Option<&OwnerTransaction>,
     index: u32,
 ) -> Result<crate::types::TypeId, Error> {
-    let row = owners
-        .as_deref()
-        .and_then(|owners| owners.traits.get(index as usize));
+    let row = owners.and_then(|owners| owners.traits.get(index as usize));
     match row {
         Some(Cell::Prepared(row)) => Ok(row.schema.self_type),
         _ => Err(error(
