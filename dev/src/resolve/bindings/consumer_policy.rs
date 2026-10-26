@@ -67,6 +67,12 @@ pub(crate) struct HeaderDataOwner {
     data: Rc<UnpaidHeaderData>,
 }
 impl HeaderDataOwner {
+    pub(crate) fn identity(&self, work: &mut ReservationWork) -> Result<HeaderDataIdentity, Error> {
+        work.charge(1)?;
+        Ok(HeaderDataIdentity {
+            owner: Rc::downgrade(&self.data),
+        })
+    }
     pub(crate) fn columns(&self) -> &s::HeaderAttributeColumns {
         &self.data.columns
     }

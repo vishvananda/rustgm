@@ -12,7 +12,7 @@ mod signature_shapes;
 mod staged_headers;
 mod staged_ingest;
 #[path = "typed_headers/dormant_session.rs"]
-mod unpaid_provided;
+pub(super) mod unpaid_provided;
 use super::{Declarations, Error};
 use crate::{
     resolve::{

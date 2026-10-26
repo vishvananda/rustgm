@@ -19,6 +19,27 @@ pub(in crate::sema::crates::typed_headers) struct SelectedHeaders {
     owners: Option<Box<owner_stages::OwnerTransaction>>,
 }
 impl SelectedHeaders {
+    pub(in crate::sema::crates::typed_headers) fn trait_owner(
+        &mut self,
+        facts: &mut Declarations,
+        authority: &SchemaAuthority<'_>,
+        owner: DeclarationRef,
+        work: &mut ReservationWork,
+    ) -> Result<Demand<()>, Error> {
+        if let Demand::Blocked(dependency) =
+            declarations::prepare(self, facts, authority, owner, work)?
+        {
+            return Ok(Demand::Blocked(dependency));
+        }
+        owner_stages::install(
+            &mut self.owners,
+            &mut self.recipes,
+            facts,
+            authority,
+            owner,
+            work,
+        )
+    }
     pub(in crate::sema::crates::typed_headers) fn trait_declaration(
         &mut self,
         facts: &mut Declarations,

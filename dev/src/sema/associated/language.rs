@@ -6,7 +6,7 @@ use crate::support::language_hooks::Hook;
 
 #[derive(Default)]
 pub(super) struct Declarations {
-    pub imported: Option<std::rc::Rc<crate::sema::crates::ImportedOwners>>,
+    pub imported: Option<crate::sema::crates::ImportedOwners>,
     pub schemas: HashMap<DefId, Schema>,
     pub members: HashMap<DefId, DefId>,
     pub inherent_members: HashMap<DefId, DefId>,

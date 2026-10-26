@@ -63,7 +63,7 @@ impl Stage {
         let mut work = budget.work;
         let installed = facts.associated.install_imported(
             &facts.types,
-            Rc::clone(&self.graph),
+            crate::sema::crates::ImportedOwners::Ordinary(Rc::clone(&self.graph)),
             owners,
             &mut work,
         );

@@ -262,12 +262,26 @@ impl Inputs {
 }
 impl<'a> RecipeView<'a> {
     pub(super) fn retained(reservation: &'a super::ConsumerReservation) -> Self {
+        Self::retained_parts(
+            &reservation.inventory,
+            reservation.index,
+            reservation.catalog(),
+            reservation.root,
+        )
+    }
+    /// Borrow immutable reserved data; this grants no completion or proof.
+    pub(crate) fn retained_parts(
+        inventory: &'a Dependencies,
+        provider_index: u32,
+        catalog: &'a Catalog,
+        root: crate::resolve::body_origin::ImportedDeclarationId,
+    ) -> Self {
         Self {
             owner: RecipeOwner {
-                inventory: &reservation.inventory,
-                provider_index: reservation.index,
-                catalog: reservation.catalog(),
-                root: reservation.root,
+                inventory,
+                provider_index,
+                catalog,
+                root,
             },
         }
     }

@@ -156,6 +156,37 @@ impl HeaderDraft {
         not(test),
         expect(
             dead_code,
+            reason = "the selected owner transaction awaits its real method and demanded body continuation"
+        )
+    )]
+    pub(super) fn trait_owner(
+        mut self: Box<Self>,
+        owner: DeclarationRef,
+        work: &mut ReservationWork,
+    ) -> Result<HeaderProgress, Error> {
+        self.session.authority.require(work)?;
+        let completion = self
+            .completion
+            .as_deref()
+            .ok_or_else(|| Error::unlocated("selected owner lacks actual source completion"))?;
+        let ConsumerAuthority {
+            facts,
+            report,
+            reservation,
+            ..
+        } = &mut self.session.authority;
+        let authority = super::unpaid_provided::SchemaAuthority {
+            report,
+            reservation,
+            completion,
+        };
+        let result = self.selected.trait_owner(facts, &authority, owner, work)?;
+        Ok((self, result))
+    }
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
             reason = "selected declaration installation remains internal until complete owner/conformance and demanded body proof"
         )
     )]

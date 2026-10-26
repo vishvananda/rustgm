@@ -87,7 +87,7 @@ pub(super) fn prepare(
         .last_mut()
         .filter(|leaf| leaf.definition == definition)
         .ok_or_else(|| error("selected trait lost its exact own declaration scope"))?;
-    let self_type = owner_stages::self_type(selected.owners.as_deref(), index)?;
+    let self_type = owner_stages::self_type(selected.owners.as_deref(), index, facts)?;
     let (header, implicit) = contract(
         &facts.types,
         authority.reservation.catalog(),

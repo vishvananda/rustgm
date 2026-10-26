@@ -1,6 +1,7 @@
 //! Imported contracts are remapped once; const execution still requires checked bodies.
 pub(crate) mod authored_export;
 mod export;
+mod imported_owners;
 mod imported_records;
 mod imported_storage;
 mod imported_values;
@@ -19,7 +20,7 @@ use crate::{
 };
 pub use export::{Exports, export};
 pub(crate) use export::{GenericRequest, export_with_originals, scalar as export_scalar};
-pub(in crate::sema) use typed_headers::mapped_source::Graph as ImportedOwners;
+pub(in crate::sema) use imported_owners::ImportedOwners;
 pub(in crate::sema) use typed_headers::predicate_remap::Prepared as PreparedSourceInputs;
 pub(super) use typed_headers::{
     charge_source_headers, mapped_source::Readiness as ImportedReadiness, source_readiness,

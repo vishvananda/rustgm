@@ -133,13 +133,87 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
             .is_none()
     );
     let before = work.retained;
-    let (stage, status) = stage.trait_declaration(holder_declaration, &mut work)?;
+    let (returned, status) = stage.trait_declaration(holder_declaration, &mut work)?;
+    stage = returned;
     assert_eq!(status, Demand::Ready(()));
     assert_eq!(work.retained, before);
-    assert!(stage.session.authority.facts.functions.is_empty());
+    let (stage, status) = stage.trait_owner(holder_declaration, &mut work)?;
+    assert_eq!(status, Demand::Ready(()));
+    repeated_owner(stage, holder_declaration, definition, &mut work)?;
+    owner_failed_precharge()?;
     actual_implicit_prelude_controls()?;
     Ok(())
 }
+
+fn repeated_owner(
+    mut stage: Box<HeaderDraft>,
+    owner: DeclarationRef,
+    definition: crate::resolve::model::DefId,
+    work: &mut ReservationWork,
+) -> Result {
+    let facts = &stage.session.authority.facts;
+    let id = facts
+        .associated
+        .owner(definition)
+        .ok_or("actual selected installed owner")?;
+    let actual = *facts
+        .associated
+        .get(id)
+        .ok_or("actual selected owner cell")?;
+    let members = facts
+        .associated
+        .owner_members(id)
+        .ok_or("actual selected members")?;
+    assert_eq!(members.len(), 2);
+    facts.associated.require_imported(actual)?;
+    assert!(
+        facts
+            .associated
+            .imported_owner()
+            .ok_or("actual mapping")?
+            .require_store(&crate::types::Store::default())
+            .is_err()
+    );
+    let before = work.retained;
+    let count = facts.associated.owners().len();
+    for _ in 0..1000 {
+        let (returned, status) = stage.trait_owner(owner, work)?;
+        stage = returned;
+        assert_eq!(status, Demand::Ready(()));
+    }
+    assert_eq!(work.retained, before);
+    let facts = &stage.session.authority.facts;
+    assert_eq!(facts.associated.owners().len(), count);
+    assert_eq!(facts.associated.owner(definition), Some(id));
+    assert!(facts.functions.is_empty());
+    eprintln!(
+        "selected-owner sum={} language-field={} selected={} inventory={} language={} draft={} warm1000-retained={} work={}",
+        size_of::<crate::sema::crates::ImportedOwners>(),
+        size_of::<Option<crate::sema::crates::ImportedOwners>>(),
+        size_of::<crate::sema::crates::typed_headers::unpaid_provided::ProvidedOwners>(),
+        size_of::<crate::sema::associated::Inventory>(),
+        crate::sema::associated::imported_layouts().0,
+        size_of::<HeaderDraft>(),
+        work.retained.saturating_sub(before),
+        work.steps
+    );
+    Ok(())
+}
+
+fn owner_failed_precharge() -> Result {
+    let mut work = ReservationWork::default();
+    let (stage, _) = start(HOLDER, &mut work)?;
+    let owner = named(&stage, "Holder", &mut work)?;
+    let (stage, status) = stage.trait_declaration(owner, &mut work)?;
+    assert_eq!(status, Demand::Ready(()));
+    work.retained = crate::support::crates::MAX_BYTES;
+    let before = work.steps;
+    assert!(stage.trait_owner(owner, &mut work).is_err());
+    assert!(work.steps > before);
+    assert!(work.peak > crate::support::crates::MAX_BYTES);
+    Ok(())
+}
+
 fn repeated_schema(
     mut stage: Box<HeaderDraft>,
     owner: DeclarationRef,

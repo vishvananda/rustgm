@@ -26,6 +26,7 @@ enum Cell {
     Empty,
     Pending(Dependency),
     Prepared(ImportedOwner),
+    Installed(crate::sema::associated::OwnerId),
 }
 pub(super) struct OwnerTransaction {
     traits: Vec<Cell>,
@@ -72,10 +73,22 @@ impl OwnerTransaction {
 pub(super) fn self_type(
     owners: Option<&OwnerTransaction>,
     index: u32,
+    facts: &Declarations,
 ) -> Result<crate::types::TypeId, Error> {
     let row = owners.and_then(|owners| owners.traits.get(index as usize));
     match row {
         Some(Cell::Prepared(row)) => Ok(row.schema.self_type),
+        Some(Cell::Installed(id)) => {
+            let owner = facts
+                .associated
+                .get(*id)
+                .ok_or_else(|| error("selected schema lost its installed actual owner"))?;
+            facts
+                .associated
+                .schema(owner.self_definition)
+                .map(|schema| schema.self_type)
+                .ok_or_else(|| error("selected schema lost its installed actual Self"))
+        }
         _ => Err(error(
             "selected trait declaration requires its actual prepared schema",
         )),
@@ -130,7 +143,9 @@ pub(super) fn prepare(
     let retained = transaction.retained_bytes();
     let cell = transaction.cell(header)?;
     match cell {
-        Cell::Prepared(actual) => {
+        Cell::Pending(dependency) => return Ok(Demand::Blocked(*dependency)),
+        Cell::Empty => {}
+        Cell::Prepared(_) | Cell::Installed(_) => {
             let mut mapped = Borrowed::new(
                 authority,
                 &view,
@@ -139,21 +154,9 @@ pub(super) fn prepare(
                 &facts.types,
                 work,
             )?;
-            mapped.require_owner(actual.owner).map_err(error)?;
-            let (self_type, captures, bounds) = shape(rows, header)?;
-            if mapped.ty(self_type).map_err(error)? != actual.schema.self_type
-                || captures != actual.schema.captures
-                || bounds.slice(&rows.region_bounds).map_err(error)?.len()
-                    != actual.schema.bounds.len()
-            {
-                return Err(error(
-                    "private schema cache changed its actual Self/domain shape",
-                ));
-            }
+            cached(cell, &mut mapped, rows, header, facts)?;
             return Ok(Demand::Ready(()));
         }
-        Cell::Pending(dependency) => return Ok(Demand::Blocked(*dependency)),
-        Cell::Empty => {}
     }
     let self_type = match demand(state, facts, view, header, work)? {
         Demand::Ready(ty) => ty,
@@ -186,6 +189,147 @@ pub(super) fn prepare(
 
     Ok(Demand::Ready(()))
 }
+
+fn cached(
+    cell: &Cell,
+    mapped: &mut Borrowed<'_, '_, '_>,
+    rows: s::ValidatedView<'_>,
+    header: s::HeaderRef,
+    facts: &Declarations,
+) -> Result<(), Error> {
+    let (owner, schema) = match cell {
+        Cell::Prepared(row) => (row.owner, &row.schema),
+        Cell::Installed(id) => {
+            let owner = facts
+                .associated
+                .get(*id)
+                .copied()
+                .ok_or_else(|| error("selected schema lost its installed owner"))?;
+            let schema = facts
+                .associated
+                .schema(owner.self_definition)
+                .ok_or_else(|| error("selected schema lost its installed schema"))?;
+            (owner, schema)
+        }
+        _ => return Err(error("selected cached schema is not actually prepared")),
+    };
+    mapped.require_owner(owner).map_err(error)?;
+    let (self_type, captures, bounds) = shape(rows, header)?;
+    if mapped.ty(self_type).map_err(error)? != schema.self_type
+        || captures != schema.captures
+        || bounds.slice(&rows.region_bounds).map_err(error)?.len() != schema.bounds.len()
+    {
+        return Err(error(
+            "private schema cache changed its actual Self/domain shape",
+        ));
+    }
+    Ok(())
+}
+
+pub(super) fn install(
+    owners: &mut Option<Box<OwnerTransaction>>,
+    recipes: &mut Option<Box<State>>,
+    facts: &mut Declarations,
+    authority: &Authority<'_>,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+) -> Result<Demand<()>, Error> {
+    authority.reservation.require(authority.report, work)?;
+    let view = authority.reservation.retained_recipe_view(work)?;
+    let rows = view.rows()?;
+    let header = rows
+        .header(owner)
+        .map_err(error)?
+        .ok_or_else(|| error("selected owner lost its actual header"))?;
+    let state = recipes
+        .as_mut()
+        .ok_or_else(|| error("selected owner lacks its actual persistent recipe state"))?;
+    state.require_mapping(&view, &facts.types, false, work)?;
+    let transaction = owners
+        .as_mut()
+        .ok_or_else(|| error("selected owner lacks its actual schema transaction"))?;
+    authority.completion.retained_columns(
+        authority.reservation.inventory(),
+        &transaction.data,
+        authority.reservation.index(),
+        work,
+    )?;
+    let mapping = match facts.associated.imported_owner() {
+        Some(crate::sema::crates::ImportedOwners::Provided(actual)) => {
+            actual.require_source(authority, state, &facts.types, work)?;
+            work.charge(1)?;
+            std::rc::Rc::clone(actual)
+        }
+        Some(crate::sema::crates::ImportedOwners::Ordinary(_)) => {
+            return Err(error(
+                "selected owner cannot replace ordinary imported authority",
+            ));
+        }
+        None => super::ProvidedOwners::new(authority, state, &facts.types, work)?,
+    };
+    publish(transaction, header, facts, mapping, &view, work)
+}
+
+fn publish(
+    transaction: &mut OwnerTransaction,
+    header: s::HeaderRef,
+    facts: &mut Declarations,
+    mapping: std::rc::Rc<super::ProvidedOwners>,
+    view: &crate::resolve::crates::unpaid_provided::RecipeView<'_>,
+    work: &mut ReservationWork,
+) -> Result<Demand<()>, Error> {
+    match transaction.cell(header)? {
+        Cell::Installed(id) => {
+            let actual = facts
+                .associated
+                .get(*id)
+                .copied()
+                .ok_or_else(|| error("selected owner lost its installed identity"))?;
+            let expected = source_owner(view, header, work)?;
+            if actual != expected {
+                return Err(error("selected owner changed its installed actual row"));
+            }
+            return Ok(Demand::Ready(()));
+        }
+        Cell::Pending(dependency) => return Ok(Demand::Blocked(*dependency)),
+        Cell::Empty => return Err(error("selected owner requires its actual prepared schema")),
+        Cell::Prepared(_) => {}
+    }
+    let cell = transaction.cell(header)?;
+    let Cell::Prepared(row) = cell else {
+        return Err(error("selected owner lost its actual prepared row"));
+    };
+    work.charge(
+        row.members
+            .len()
+            .saturating_add(row.schema.bounds.len())
+            .saturating_add(1),
+    )?;
+    let growth = facts
+        .associated
+        .selected_allocation_bound(row.members.len());
+    work.charge(growth.work)?;
+    work.reserve(growth.bytes)?;
+    let Cell::Prepared(row) = std::mem::replace(cell, Cell::Empty) else {
+        return Err(error(
+            "selected owner changed during exclusive installation",
+        ));
+    };
+    let moved = retained::vector(&row.members).saturating_add(retained::vector(&row.schema.bounds));
+    let mut steps = work.steps;
+    let result = facts.associated.append_selected(
+        &facts.types,
+        crate::sema::crates::ImportedOwners::Provided(mapping),
+        row,
+        &mut steps,
+    );
+    work.steps = steps;
+    let id = result.map_err(error)?;
+    *cell = Cell::Installed(id);
+    transaction.bytes = transaction.bytes.saturating_sub(moved);
+    Ok(Demand::Ready(()))
+}
+
 fn shape(
     rows: s::ValidatedView<'_>,
     header: s::HeaderRef,

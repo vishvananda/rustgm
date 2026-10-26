@@ -102,7 +102,7 @@ impl Inventory {
         let eligible = self
             .language
             .as_ref()
-            .and_then(|l| l.imported.as_deref())
+            .and_then(|l| l.imported.as_ref())
             .ok_or("imported trait conformance lacks its canonical source graph")?
             .empty_module_trait(owner)?;
         if eligible
@@ -122,7 +122,7 @@ impl Inventory {
         let owner = self.imported_trait_owner(definition)?;
         self.language
             .as_ref()
-            .and_then(|l| l.imported.as_deref())
+            .and_then(|l| l.imported.as_ref())
             .ok_or("imported implementation policy lacks its canonical source graph")?
             .denies_implementation(owner)
     }
@@ -133,7 +133,7 @@ impl Inventory {
         let owner = self.imported_trait_owner(definition)?;
         self.language
             .as_ref()
-            .and_then(|l| l.imported.as_deref())
+            .and_then(|l| l.imported.as_ref())
             .ok_or("imported implementation domain lacks its canonical source graph")?
             .implementation_domain(owner)
     }
@@ -153,7 +153,7 @@ impl Inventory {
         }
         self.language
             .as_ref()
-            .and_then(|l| l.imported.as_deref())
+            .and_then(|l| l.imported.as_ref())
             .ok_or("imported candidate request lacks its exact canonical graph")?
             .implementation_request(store, owner)
     }
@@ -161,11 +161,15 @@ impl Inventory {
         &self,
         role: crate::sema::compiler_items::Role,
     ) -> Result<(), &'static str> {
-        self.language
+        let imported = self
+            .language
             .as_ref()
-            .and_then(|l| l.imported.as_deref())
-            .ok_or("imported role lacks its exact canonical header graph")?
-            .role_origin(role)
+            .and_then(|l| l.imported.as_ref())
+            .ok_or("imported role lacks its exact canonical header graph")?;
+        if imported.selected() {
+            self.imported_trait_owner(role.definition)?;
+        }
+        imported.role_origin(role)
     }
     /// Source-only consumers (including early conformance) fail explicitly for
     /// imported owners instead of treating absence as a source identity.
@@ -195,11 +199,23 @@ impl Inventory {
     }
 
     pub(in crate::sema) fn require_imported(&self, owner: Owner) -> Result<(), &'static str> {
-        self.language
+        let imported = self
+            .language
             .as_ref()
-            .and_then(|l| l.imported.as_deref())
-            .ok_or("imported associated owner lacks its authenticated canonical headers")?
-            .owner(owner)
+            .and_then(|l| l.imported.as_ref())
+            .ok_or("imported associated owner lacks its authenticated canonical headers")?;
+        if imported.selected()
+            && self
+                .owner(owner.self_definition)
+                .and_then(|id| self.get(id))
+                .copied()
+                != Some(owner)
+        {
+            return Err(
+                "selected imported owner requires its actual pending inventory installation",
+            );
+        }
+        imported.owner(owner)
     }
     pub(in crate::sema) fn imported_implementation(
         &self,
@@ -209,7 +225,7 @@ impl Inventory {
     ) -> Result<(bool, bool), &'static str> {
         self.language
             .as_ref()
-            .and_then(|l| l.imported.as_deref())
+            .and_then(|l| l.imported.as_ref())
             .ok_or("imported implementation lacks its exact canonical owner graph")?
             .implementation(store, owner, predicate)
     }

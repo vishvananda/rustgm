@@ -198,6 +198,19 @@ impl State {
         *memo = Pair::Ready(pair);
         Ok(Demand::Ready(pair))
     }
+    pub(super) fn retained_reader(
+        &self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        work: &mut ReservationWork,
+    ) -> Result<MemoReader, Error> {
+        let reader = self
+            .reader
+            .as_ref()
+            .ok_or_else(|| error("selected owner lost its shared reader"))?;
+        reader.require(self, view, store, work)?;
+        self.cursor.reader(view, store, work)
+    }
     pub(super) fn memo(&self) -> Result<&MemoReader, Error> {
         self.reader
             .as_ref()
