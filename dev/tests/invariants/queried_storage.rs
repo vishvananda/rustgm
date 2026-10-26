@@ -103,6 +103,7 @@ fn actual_layout_initializers_and_nominal_clone_bodies_prepare_native_roots() ->
 }
 #[test]
 fn structural_readiness_preserves_pending_fields_closedness_and_failed_work() -> Result {
+    pending_field_publication()?;
     let mut types = crate::types::Store::default();
     let mut definitions = Definitions::default();
     let mut layouts = crate::abi::layout::Layouts::default();
@@ -141,6 +142,11 @@ fn structural_readiness_preserves_pending_fields_closedness_and_failed_work() ->
     layouts.storage_readiness(&types, &definitions, ty, &mut work, 1)?;
     assert_eq!(work, 1);
     assert_eq!(layouts.steps, cold);
+    types.intern(crate::types::Kind::Array {
+        element: TypeId::primitive(crate::types::Primitive::U8),
+        length: 37,
+    })?;
+    assert_eq!(layouts.pending_state_work(&types, ty), 0);
     let prepared = layouts.len();
     work = 0;
     assert!(
@@ -175,5 +181,52 @@ fn structural_readiness_preserves_pending_fields_closedness_and_failed_work() ->
     eprintln!(
         "source layout cold_steps={cold} warm_readiness=1 failed_attempt=1 actual_size=4 align=2"
     );
+    Ok(())
+}
+
+fn pending_field_publication() -> Result {
+    let mut types = crate::types::Store::default();
+    let mut definitions = Definitions::default();
+    let parent = ItemId(681);
+    let child = ItemId(682);
+    let child_type = types.intern(crate::types::Kind::Adt(child, GenericArgs::EMPTY))?;
+    let root = types.intern(crate::types::Kind::Adt(parent, GenericArgs::EMPTY))?;
+    let fields = types.intern_list(&[child_type])?;
+    definitions.insert(
+        parent,
+        Aggregate::Struct,
+        Repr::default(),
+        &[Variant {
+            fields,
+            discriminant: 0,
+        }],
+    )?;
+    let before = definitions.instantiation_steps();
+    assert!(definitions.prepare(&mut types, root).is_err());
+    assert!(
+        definitions
+            .prepare_storage_fields(&mut types, root)
+            .is_err()
+    );
+    assert!(definitions.instantiation_steps() > before);
+    let fields = types.intern_list(&[TypeId::primitive(crate::types::Primitive::U16)])?;
+    definitions.insert(
+        child,
+        Aggregate::Struct,
+        Repr::default(),
+        &[Variant {
+            fields,
+            discriminant: 0,
+        }],
+    )?;
+    assert!(definitions.prepare(&mut types, root).is_err());
+    definitions.prepare_storage_fields(&mut types, root)?;
+    definitions.prepare(&mut types, root)?;
+    let mut layouts = crate::abi::layout::Layouts::default();
+    assert_eq!(layouts.pending_state_work(&types, root), types.len());
+    let mut work = 0;
+    layouts.storage_readiness(&types, &definitions, root, &mut work, 100)?;
+    let id = layouts.demand_bounded(&types, &definitions, root, 100)?;
+    assert_eq!(layouts.at(id).ok_or("prepared child layout")?.size, 2);
     Ok(())
 }

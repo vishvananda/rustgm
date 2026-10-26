@@ -59,6 +59,22 @@ impl Prepared {
     }
 }
 impl Instances {
+    /// Source storage completion prepays its dense success rows before publication.
+    pub(super) fn prepare_success_rows(&mut self, count: usize) -> Result<(), &'static str> {
+        let length = self.prepared.ready.len();
+        let capacity = self.prepared.ready.capacity();
+        let copying = if count > capacity { capacity } else { 0 };
+        self.charge(count.saturating_sub(length).saturating_add(copying))?;
+        self.retain(count.saturating_sub(capacity))?;
+        self.prepared
+            .ready
+            .try_reserve_exact(count.saturating_sub(length))
+            .map_err(|_| "aggregate prepared-row allocation failed")?;
+        if count > length {
+            self.prepared.ready.resize(count, 0);
+        }
+        Ok(())
+    }
     pub(super) fn has_projections(&self, ty: TypeId) -> bool {
         self.projections.contains(&ty)
     }

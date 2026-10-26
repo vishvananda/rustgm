@@ -8,6 +8,21 @@ use crate::{
     },
 };
 impl Layouts {
+    /// Prepay dense-state initialization and possible existing-buffer copying.
+    /// A prepared layout needs neither this setup nor another ABI demand.
+    pub(crate) fn pending_state_work(&self, types: &Store, ty: TypeId) -> usize {
+        if self.get(ty).is_some() {
+            return 0;
+        }
+        types
+            .len()
+            .saturating_sub(self.states.len())
+            .saturating_add(if types.len() > self.states.capacity() {
+                self.states.capacity()
+            } else {
+                0
+            })
+    }
     /// Check prepared fields before querying the stable ABI cache. Pending
     /// declarations must not become permanent failed-layout cache entries.
     /// The caller owns the counter, including a failed attempt's actual work.
@@ -94,7 +109,10 @@ impl Layouts {
     }
 }
 fn charge(work: &mut usize, limit: usize) -> Result<(), &'static str> {
-    *work = work.saturating_add(1);
+    let Some(next) = work.checked_add(1) else {
+        return Err("constant storage layout work budget exceeded");
+    };
+    *work = next;
     if *work > limit {
         return Err("constant storage layout work budget exceeded");
     }

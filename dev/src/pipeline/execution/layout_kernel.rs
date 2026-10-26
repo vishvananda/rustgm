@@ -87,8 +87,30 @@ fn prepare_layout(
     facts: &mut Declarations,
     element: crate::types::TypeId,
 ) -> Result<(), &'static str> {
-    let limit =
-        crate::support::crates::MAX_COMPONENTS.saturating_sub(facts.body_work.canonical_steps);
+    let limit = crate::support::crates::MAX_COMPONENTS;
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
+    if facts.body_work.canonical_steps > limit {
+        return Err("source layout field preparation work budget exceeded");
+    }
+    let before = facts.aggregates.instantiation_steps();
+    let fields = facts
+        .aggregates
+        .prepare_storage_fields(&mut facts.types, element);
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(
+        facts
+            .aggregates
+            .instantiation_steps()
+            .saturating_sub(before),
+    );
+    fields?;
+    facts.body_work.canonical_steps = facts
+        .body_work
+        .canonical_steps
+        .saturating_add(facts.layouts.pending_state_work(&facts.types, element));
+    if facts.body_work.canonical_steps > limit {
+        return Err("source layout state preparation work budget exceeded");
+    }
+    let limit = limit.saturating_sub(facts.body_work.canonical_steps);
     let mut work = 0;
     let readiness =
         facts
@@ -96,6 +118,9 @@ fn prepare_layout(
             .storage_readiness(&facts.types, &facts.aggregates, element, &mut work, limit);
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
     readiness?;
+    if facts.layouts.get(element).is_some() {
+        return Ok(());
+    }
     let before = facts.layouts.steps;
     let result = facts.layouts.demand_bounded(
         &facts.types,
