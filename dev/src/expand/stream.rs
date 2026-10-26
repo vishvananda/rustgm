@@ -10,7 +10,7 @@ use super::macros::{
 use super::marks::{ExpansionId, SyntaxContextId};
 use crate::{
     lex::token::{Kind, LexError, Token},
-    support::source::FileId,
+    support::{edition::Edition, source::FileId},
     syntax::{
         cursor::TokenPosition,
         interpolation::Splice,
@@ -22,6 +22,13 @@ pub struct Location {
     pub file: FileId,
     pub span: Span,
 }
+/// Copied intervals preserve byte offsets; synthesized vocabulary has a real
+/// source anchor and its producer's edition, without claiming copied bytes.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum OriginKind {
+    Copied,
+    Synthetic(Edition),
+}
 #[derive(Clone, Copy, Debug)]
 pub struct Origin {
     pub generated: Span,
@@ -32,6 +39,7 @@ pub struct Origin {
     pub introduction: ExpansionId,
     /// Synthetic tokens can specify spacing independently of their physical origin.
     pub joint: Option<bool>,
+    pub kind: OriginKind,
 }
 #[derive(Clone, Copy)]
 pub struct Source<'a> {
@@ -256,9 +264,37 @@ impl Stream {
             context,
             introduction,
             joint: None,
+            kind: OriginKind::Copied,
         });
         self.source.push(' ');
         Ok(generated)
+    }
+    /// An authenticated compiler-generated expansion supplies its actual selected
+    /// source definition's edition. This data never grants macro allowances.
+    pub(crate) fn synthetic_image(
+        &mut self,
+        spelling: &str,
+        anchor: Location,
+        context: SyntaxContextId,
+        introduction: ExpansionId,
+        edition: Edition,
+    ) -> Result<Span, LexError> {
+        if self.registered
+            || context == SyntaxContextId::ROOT
+            || introduction.0 == 0
+            || anchor.span.start >= anchor.span.end
+        {
+            return Err(error(
+                anchor.span.start,
+                "synthetic vocabulary requires its actual source introduction",
+            ));
+        }
+        let span = self.image(spelling, anchor, Some(context), introduction)?;
+        self.origins
+            .last_mut()
+            .ok_or_else(|| error(anchor.span.start, "missing synthetic origin"))?
+            .kind = OriginKind::Synthetic(edition);
+        Ok(span)
     }
     /// Forward actual classified input without matching or manufacturing captures.
     pub(crate) fn forward_input(
@@ -425,3 +461,5 @@ fn captured_span(
         end: last,
     })
 }
+
+const _: () = assert!(size_of::<Origin>() == 32);

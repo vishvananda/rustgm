@@ -11,8 +11,28 @@ pub(super) fn validate(
     declaration: Declaration,
     role: LangItem,
 ) -> Result<(), Error> {
+    if matches!(role, LangItem::PanicLocation | LangItem::PanicInfo) {
+        let ast = &package.unit(declaration.origin.file).configured.ast;
+        let Kind::Item(index) = ast.node(declaration.origin.node).kind else {
+            return Err(error(
+                package,
+                declaration.origin,
+                "source panic nominal has no actual item",
+            ));
+        };
+        if declaration.parent.is_some()
+            || !matches!(ast.items[index as usize].kind, ItemKind::Struct { .. })
+        {
+            return Err(error(
+                package,
+                declaration.origin,
+                "source panic nominal requires an actual module structure",
+            ));
+        }
+        return Ok(());
+    }
     let function = match role {
-        LangItem::Not => false,
+        LangItem::Not | LangItem::TrivialClone => false,
         LangItem::Panic
         | LangItem::PanicFmt
         | LangItem::PanicImpl
@@ -41,7 +61,7 @@ pub(super) fn validate(
         return Err(error(
             package,
             declaration.origin,
-            "source Not role requires an actual trait",
+            "source language operator or cloning marker requires an actual trait",
         ));
     }
     Ok(())

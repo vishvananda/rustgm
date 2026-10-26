@@ -10,7 +10,7 @@ pub(super) mod admitted_headers;
 mod invocation;
 pub(crate) use invocation::definition as callable_role;
 mod unsizing;
-use super::Catalog;
+use super::{Catalog, role_bit};
 use crate::{
     resolve::{
         bindings::Declaration,
@@ -25,8 +25,14 @@ use crate::{
 };
 pub(crate) use unsizing::{kind as unsizing_role, predicate as unsizing_predicate};
 
+// Every role has an explicit stable index, checked against this cold mask width.
+const _: [(); 1] = [(); (LangItem::ALL.len() <= u64::BITS as usize) as usize];
+pub(in crate::sema) const fn bit(role: LangItem) -> u64 {
+    1_u64 << role.index()
+}
+
 pub(super) struct Validated {
-    pub(super) roles: u32,
+    pub(super) roles: u64,
     pub(super) methods: [Option<DefId>; 3],
     pub(super) pointee: Option<std::rc::Rc<super::pointee::Contracts>>,
 }
@@ -53,7 +59,7 @@ impl Catalog {
         } else if self
             .traits
             .as_ref()
-            .is_none_or(|v| v.roles & (1 << role.index()) == 0)
+            .is_none_or(|v| v.roles & (role_bit(role)) == 0)
         {
             return Err("source trait role requires completed declaration validation");
         }
@@ -71,7 +77,7 @@ impl Catalog {
         if self
             .traits
             .as_ref()
-            .is_none_or(|v| v.roles & (1 << role.index()) == 0)
+            .is_none_or(|v| v.roles & (role_bit(role)) == 0)
         {
             return Err("source trait role requires completed declaration validation");
         }
@@ -96,6 +102,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         LangItem::Clone,
         LangItem::Copy,
         LangItem::LegacyReceiver,
+        LangItem::TrivialClone,
         LangItem::Tuple,
         LangItem::FnOnce,
         LangItem::FnMut,
@@ -121,6 +128,8 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
                 &header,
                 &mut complete.roles,
             )?,
+            LangItem::TrivialClone => copying::validate_trivial(facts, catalog, &header)
+                .map_err(|message| Declarations::error(report, declaration.origin, message))?,
             LangItem::Tuple => validate_marker(report, facts, declaration)?,
             LangItem::Freeze => freezing::validate(report, facts, declaration)?,
             LangItem::Unsize | LangItem::CoerceUnsized => {
@@ -134,7 +143,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
                     invocation::validate(report, facts, catalog, declaration, role, self_type)?;
                 complete.methods[kind as usize] = Some(method);
                 if kind == CallTrait::FnOnce {
-                    complete.roles |= 1 << LangItem::FnOnceOutput.index();
+                    complete.roles |= role_bit(LangItem::FnOnceOutput);
                 }
                 callables.push((declaration, kind, method));
             }
@@ -146,11 +155,11 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
                 ));
             }
         }
-        complete.roles |= 1 << role.index();
+        complete.roles |= role_bit(role);
     }
     if let Some(declaration) = catalog.language(LangItem::DropGlue) {
         glue::validate(report, facts, catalog, declaration, complete.roles)?;
-        complete.roles |= 1 << LangItem::DropGlue.index();
+        complete.roles |= role_bit(LangItem::DropGlue);
     }
     validate_owned_members(report, catalog, complete.roles)?;
     if complete.roles == 0 {
@@ -167,16 +176,16 @@ fn require_distinct_pointee(
     report: &Report,
     facts: &Declarations,
     catalog: &Catalog,
-    roles: u32,
+    roles: u64,
 ) -> Result<(), Error> {
     crate::sema::header_attributes::charge_source_contract_query(facts, 1)?;
     let Some(prior) = catalog.traits.as_deref() else {
         return Ok(());
     };
-    let expected = (1 << LangItem::PointeeTrait.index())
-        | (1 << LangItem::MetadataType.index())
+    let expected = (role_bit(LangItem::PointeeTrait))
+        | (role_bit(LangItem::MetadataType))
         | if catalog.language(LangItem::DynMetadata).is_some() {
-            1 << LangItem::DynMetadata.index()
+            role_bit(LangItem::DynMetadata)
         } else {
             0
         };
@@ -226,10 +235,10 @@ fn publish(
     Ok(())
 }
 
-fn validate_owned_members(report: &Report, catalog: &Catalog, roles: u32) -> Result<(), Error> {
+fn validate_owned_members(report: &Report, catalog: &Catalog, roles: u64) -> Result<(), Error> {
     for role in [LangItem::CloneFn, LangItem::FnOnceOutput] {
         if let Some(declaration) = catalog.language(role)
-            && roles & (1 << role.index()) == 0
+            && roles & (role_bit(role)) == 0
         {
             return Err(Declarations::error(
                 report,
@@ -256,7 +265,12 @@ fn header<'a>(
     } else {
         matches!(
             role,
-            LangItem::FnOnce | LangItem::FnMut | LangItem::Fn | LangItem::Drop | LangItem::Destruct
+            LangItem::FnOnce
+                | LangItem::FnMut
+                | LangItem::Fn
+                | LangItem::Drop
+                | LangItem::Destruct
+                | LangItem::TrivialClone
         )
     };
     let expected = usize::from(matches!(
@@ -271,7 +285,7 @@ fn header<'a>(
         .profile(
             &facts.types,
             super::headers::Flags {
-                unsafe_: role == LangItem::Freeze,
+                unsafe_: matches!(role, LangItem::Freeze | LangItem::TrivialClone),
                 constant,
                 auto_: role == LangItem::Freeze,
             },
@@ -336,4 +350,56 @@ fn validate_marker(
         ));
     }
     Ok(())
+}
+
+/// Append only checked nominal declaration facts to the existing cold ledger.
+/// This records no callable, intrinsic, constructor or field-access permission.
+pub(super) fn complete_nominal(
+    facts: &mut Declarations,
+    role: LangItem,
+    declaration: Declaration,
+) -> Result<(), Error> {
+    if !matches!(
+        role,
+        LangItem::PhantomData | LangItem::PanicLocation | LangItem::PanicInfo
+    ) {
+        return Err(Error::unlocated("invalid completed nominal role"));
+    }
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| Error::unlocated("source nominal catalog disappeared"))?;
+    if catalog.language(role) != Some(declaration) {
+        return Err(Error::unlocated(
+            "completed nominal role belongs to another declaration",
+        ));
+    }
+    let fresh = catalog.traits.is_none();
+    crate::sema::header_attributes::reserve_source_contracts(
+        facts,
+        1,
+        usize::from(fresh) * size_of::<Validated>(),
+    )?;
+    let catalog = facts
+        .source_bindings
+        .as_deref_mut()
+        .ok_or_else(|| Error::unlocated("source nominal catalog disappeared"))?;
+    let ledger = catalog.traits.get_or_insert_with(|| {
+        Box::new(Validated {
+            roles: 0,
+            methods: [None; 3],
+            pointee: None,
+        })
+    });
+    let bit = role_bit(role);
+    if ledger.roles & bit != 0 {
+        return Err(Error::unlocated("source nominal role was completed twice"));
+    }
+    ledger.roles |= bit;
+    Ok(())
+}
+
+#[cfg(test)]
+pub(super) const fn layout_bytes() -> usize {
+    size_of::<Validated>()
 }

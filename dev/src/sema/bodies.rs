@@ -2,6 +2,7 @@
 mod aggregates;
 mod alignment;
 mod annotations;
+mod api_stability;
 mod atomic_ordering;
 mod bounds;
 mod callee_inputs;

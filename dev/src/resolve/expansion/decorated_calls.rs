@@ -165,6 +165,23 @@ pub(super) fn validate(
     facts: &crate::resolve::model::Resolution,
     call: &Call,
 ) -> Result<(), Error> {
+    validate_effect(package, facts, call, false)
+}
+
+pub(super) fn validate_derived(
+    package: &Package,
+    facts: &crate::resolve::model::Resolution,
+    call: &Call,
+) -> Result<(), Error> {
+    validate_effect(package, facts, call, true)
+}
+
+fn validate_effect(
+    package: &Package,
+    facts: &crate::resolve::model::Resolution,
+    call: &Call,
+    expanded: bool,
+) -> Result<(), Error> {
     let error = |message| call.diagnostic(message);
     charge(package, call.file, call.offset, 1, 0)?;
     if package
@@ -198,7 +215,12 @@ pub(super) fn validate(
     if owner.enabled != active
         || owner.node != call.visit.node
         || !owner.attributes.contains(&index)
-        || effect.attribute.effect != Effect::Keep
+        || effect.attribute.effect
+            != if expanded {
+                Effect::ExpandedDerive
+            } else {
+                Effect::Keep
+            }
         || effect.attribute.attribute.span.start != call.offset
         || unit.configured.active.get(call.visit.node.get() as usize) != Some(&active)
     {
@@ -212,11 +234,23 @@ fn attribute_path(
     file: FileId,
     index: usize,
 ) -> Result<(bool, Buffer), Error> {
+    let range = package.units[file.0 as usize].configured.effects[index]
+        .attribute
+        .attribute
+        .path;
+    path_range(package, file, index, range)
+}
+
+pub(super) fn path_range(
+    package: &mut Package,
+    file: FileId,
+    index: usize,
+    range: crate::syntax::token_tree::TreeRange,
+) -> Result<(bool, Buffer), Error> {
     let unit = &package.units[file.0 as usize];
     let effect = &unit.configured.effects[index];
     let attribute = effect.attribute.attribute;
     let forest = &unit.configured.ast.attributes[effect.capture as usize].forest;
-    let range = attribute.path;
     let offset = attribute.span.start;
     let count = range
         .end

@@ -231,6 +231,9 @@ impl Stage {
 }
 
 fn flags(header: &Trait<'_>, reserved: &Reservations) -> Result<s::TraitFlags, &'static str> {
+    if header.attributes.contains(HeaderAttribute::Marker) {
+        return Err("source marker trait contract transport is not implemented");
+    }
     let mut bits = (u16::from(header.flags.unsafe_) * s::TraitFlags::UNSAFE)
         | (u16::from(header.flags.constant) * s::TraitFlags::CONST)
         | (u16::from(header.flags.auto_) * s::TraitFlags::AUTO)

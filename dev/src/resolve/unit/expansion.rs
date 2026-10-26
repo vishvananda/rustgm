@@ -1,4 +1,5 @@
 //! Install only newly configured expansion facts into a file's stable syntax arenas.
+mod sibling_splices;
 use super::Unit;
 use crate::{
     expand::{
@@ -119,7 +120,7 @@ impl Unit {
     ) -> Result<Span, LexError> {
         let (ast, configuration) = Configuration::take(generated);
         self.install(
-            target,
+            Some(target),
             source,
             &ast,
             configuration,
@@ -131,6 +132,7 @@ impl Unit {
                     .map_err(|e| error(0, e))
             },
         )
+        .map(|(span, _)| span)
     }
     /// Install cached included syntax by borrowing its arenas and copying only demanded facts.
     ///
@@ -144,7 +146,7 @@ impl Unit {
     ) -> Result<Span, LexError> {
         let source = included.source.text();
         self.install(
-            target,
+            Some(target),
             source,
             &included.configured.ast,
             Configuration::copy(&included.configured),
@@ -155,33 +157,70 @@ impl Unit {
                     .map_err(|e| error(0, e))
             },
         )
+        .map(|(span, _)| span)
+    }
+    /// Append one already parsed derive output; its source owner remains intact.
+    pub(crate) fn append_derived(
+        &mut self,
+        source: &str,
+        generated: ConfiguredCrate<'_>,
+        origins: &[Origin],
+    ) -> Result<(Span, NodeId), LexError> {
+        let (ast, configuration) = Configuration::take(generated);
+        self.install(
+            None,
+            source,
+            &ast,
+            configuration,
+            origins,
+            |storage, value, base| {
+                storage
+                    .store(source, value)
+                    .and_then(|value| value.offset_source(base))
+                    .map_err(|message| error(0, message))
+            },
+        )
     }
     fn install<L>(
         &mut self,
-        target: NodeId,
+        target: Option<NodeId>,
         source: &str,
         ast: &Syntax<L>,
         mut configuration: Configuration,
         origins: &[Origin],
         mut literal: impl FnMut(&mut Storage, &L, u32) -> Result<StoredValue, LexError>,
-    ) -> Result<Span, LexError> {
-        let target_node = self
-            .configured
-            .ast
-            .nodes
-            .get(target.get() as usize)
-            .ok_or_else(|| error(0, "missing expansion target"))?;
-        if !matches!(target_node.kind, Kind::Macro { .. })
-            || !self.configured.active[target.get() as usize]
-        {
-            return Err(error(
-                target_node.span.start,
-                "expansion target is not an active macro",
-            ));
+    ) -> Result<(Span, NodeId), LexError> {
+        if let Some(target) = target {
+            let target_node = self
+                .configured
+                .ast
+                .nodes
+                .get(target.get() as usize)
+                .ok_or_else(|| error(0, "missing expansion target"))?;
+            if !matches!(target_node.kind, Kind::Macro { .. })
+                || !self.configured.active[target.get() as usize]
+            {
+                return Err(error(
+                    target_node.span.start,
+                    "expansion target is not an active macro",
+                ));
+            }
         }
+        let root = NodeId::checked(
+            u32::try_from(self.configured.ast.nodes.len())
+                .ok()
+                .and_then(|base| base.checked_add(ast.root.get()))
+                .ok_or_else(|| error(0, "derived expansion root overflow"))?,
+        )
+        .ok_or_else(|| error(0, "derived expansion root overflow"))?;
         let base = self.source.append_offset(source).map_err(|e| error(0, e))?;
-        let indices =
-            self.expansion_metadata(target, ast, &mut configuration, base, source.len())?;
+        let indices = self.expansion_metadata(
+            target.unwrap_or(root),
+            ast,
+            &mut configuration,
+            base,
+            source.len(),
+        )?;
         reserve_cfg_uses(
             &mut self.configured.cfg_uses,
             configuration.cfg_uses.as_deref(),
@@ -213,19 +252,29 @@ impl Unit {
         };
         // All ranges were validated above; this is the transaction's commit point.
         self.source.append(source).map_err(|e| error(0, e))?;
-        self.replace_syntax(target, new_root, configuration, indices);
+        if let Some(target) = target {
+            self.replace_syntax(target, new_root, configuration, indices);
+        } else {
+            self.retain_configuration(configuration, indices);
+            self.configured
+                .ast
+                .commit_gate_sites_source(self.source.original_image());
+        }
         self.origins
             .extend(origins.iter().copied().map(|mut origin| {
                 origin.generated.start += base;
                 origin.generated.end += base;
                 origin
             }));
-        Ok(Span {
-            start: base,
-            end: base
-                + u32::try_from(source.len())
-                    .map_err(|_| error(base, "invalid expansion source length"))?,
-        })
+        Ok((
+            Span {
+                start: base,
+                end: base
+                    + u32::try_from(source.len())
+                        .map_err(|_| error(base, "invalid expansion source length"))?,
+            },
+            target.unwrap_or(new_root),
+        ))
     }
     /// Commit only a fully prepared replacement; original node IDs remain diagnostic keys.
     fn replace_syntax(

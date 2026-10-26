@@ -65,6 +65,7 @@ pub(in crate::resolve) fn complete(
         policies: draft.policies,
         declarations: owners.declarations,
         imports: owners.imports,
+        consts: owners.consts,
         steps: draft.steps,
     }))
 }
@@ -74,28 +75,20 @@ fn validate_type_boundary(
     facts: &Resolution,
     draft: &mut Draft,
 ) -> Result<(), Error> {
-    // Nominal signature exposure needs the semantic type graph. Until that
-    // consumer exists, reject nominal/trait use explicitly, including bootstrap
-    // types, instead of silently missing a public stability requirement.
+    // Local declarations are checked in the same scope inventory. Merely naming
+    // an in-crate API is not a cross-crate unstable-feature use (rustc stability.rs).
+    // Dependencies remain closed above and at both artifact publication ports.
     for reference in &facts.references {
         draft.charge(1, 0)?;
         let definition = match reference.target {
             Target::Definition(id) | Target::Associated(id) => &facts.definitions[id.0 as usize],
             _ => continue,
         };
-        if matches!(
-            definition.kind,
-            DefKind::Struct
-                | DefKind::Enum
-                | DefKind::Trait
-                | DefKind::BuiltinTrait
-                | DefKind::TypeAlias
-                | DefKind::ExternCrate
-        ) {
+        if definition.kind == DefKind::ExternCrate {
             return Err(owners::error(
                 package,
                 reference.node,
-                "nominal and external library stability reachability is not implemented",
+                "external library stability contracts are not implemented",
             ));
         }
     }

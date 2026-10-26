@@ -38,7 +38,7 @@ impl<'a> FrameView<'a> {
                     && actual.edition_panic == frame.skip
             })
     }
-    fn executed(&self, context: ExpansionId, definition: &Definition) -> bool {
+    pub(super) fn executed(&self, context: ExpansionId, definition: &Definition) -> bool {
         let scope = if let Some(node) = definition.node {
             self.facts.node_scopes.get(&(definition.module, node.node))
         } else {

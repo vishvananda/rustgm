@@ -3,6 +3,8 @@ pub(crate) mod assertion;
 pub(crate) mod bytes_concat;
 pub(crate) mod choice;
 pub(crate) mod delegation;
+pub(crate) mod derive_output;
+mod derive_types;
 pub(crate) mod format_literal;
 mod library;
 use super::{

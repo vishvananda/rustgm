@@ -10,7 +10,7 @@ pub(super) fn validate(
     declaration: Declaration,
     role: LangItem,
     header: &Trait<'_>,
-    complete: &mut u32,
+    complete: &mut u64,
 ) -> Result<(), Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
     let expected = match role {
@@ -52,7 +52,7 @@ pub(super) fn validate(
         },
     )
     .map_err(error)?;
-    *complete |= 1 << LangItem::CloneFn.index();
+    *complete |= crate::sema::compiler_items::role_bit(LangItem::CloneFn);
     Ok(())
 }
 
@@ -98,4 +98,26 @@ pub(super) fn require_header_super(
         return Err("source role is missing its exact typed prerequisite");
     }
     Ok(())
+}
+
+/// This checked declaration carries a library safety contract, not a Clone implementation.
+pub(super) fn validate_trivial(
+    facts: &Declarations,
+    catalog: &Catalog,
+    header: &Trait<'_>,
+) -> Result<(), &'static str> {
+    if !header.members.is_empty()
+        || !header
+            .attributes
+            .contains(crate::resolve::bindings::HeaderAttribute::Marker)
+    {
+        return Err("source TrivialClone requires its actual empty marker trait");
+    }
+    require_header_super(
+        facts,
+        catalog,
+        header,
+        LangItem::Clone,
+        Constness::Conditional,
+    )
 }

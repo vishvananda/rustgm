@@ -178,9 +178,10 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             pointee: None,
         })
     });
-    ledger.roles |= (1 << LangItem::PointeeTrait.index()) | (1 << LangItem::MetadataType.index());
+    ledger.roles |= (crate::sema::compiler_items::role_bit(LangItem::PointeeTrait))
+        | (crate::sema::compiler_items::role_bit(LangItem::MetadataType));
     if plan.nominal.is_some() {
-        ledger.roles |= 1 << LangItem::DynMetadata.index();
+        ledger.roles |= crate::sema::compiler_items::role_bit(LangItem::DynMetadata);
     }
     ledger.pointee = Some(contract);
     Ok(())

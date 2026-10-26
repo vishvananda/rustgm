@@ -517,3 +517,36 @@ pub(in crate::sema) fn source_contract_storage(
         size_of::<Header>(),
     ))
 }
+
+/// Read the actual checked local owners; absence never authenticates an import.
+pub(in crate::sema) fn marker_trait(
+    facts: &Declarations,
+    report: &Report,
+    definition: DefId,
+) -> Result<bool, Error> {
+    let key = report
+        .resolution
+        .definitions
+        .get(definition.0 as usize)
+        .filter(|definition| definition.kind == DefKind::Trait)
+        .and_then(|definition| definition.node)
+        .ok_or_else(|| Error::unlocated("marker query requires an actual source trait"))?;
+    let header = facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .filter(|ledger| ledger.local.complete)
+        .and_then(|ledger| ledger.local.declarations.get(&key))
+        .ok_or_else(|| Error::unlocated("marker query lacks its completed source header"))?;
+    validate_header(report, facts, definition, key, header)?;
+    let unit = report.package.unit(key.file);
+    for owner in &header.owners {
+        charge_source_contract_query(facts, owner.effects.len())?;
+        for (attribute, forest) in unit.retained_attributes(owner.effects.clone()) {
+            if attribute.name(forest, unit.source.text()) == Some("marker") {
+                return Ok(true);
+            }
+        }
+    }
+    Ok(false)
+}

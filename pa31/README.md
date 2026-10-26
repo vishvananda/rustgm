@@ -32,8 +32,11 @@ declarations. Implement their inventory, regular/const API checks and macro
 allowance provenance; a compiler feature whitelist cannot replace them. The
 [stability investigation](../docs/pa31-library-stability.md) supplies independently
 qualified seed cases. The [local stability candidate](../docs/pa31-local-stability.md)
-implements ordinary function/module ownership and feature inventory; dependency,
-const/default-body and macro-use contracts remain required.
+implements local declaration ownership, feature inventory and separate regular/
+const policy for the selected source Location consumer. Dependency/default-body,
+complete public effective visibility and foreign policy transport remain required.
+Actual declaration/const/origin sizes and native scope are recorded in the
+[source assertion milestone](../docs/source-assert-implementation.md#source-location-derive-consumer).
 
 Define explicit source-sysroot selection and crate identity. Replace bootstrap
 library factories with real declarations without duplicate identities or a
