@@ -263,7 +263,7 @@ pub fn analyze_with_context(
 ) -> Result<Report, Error> {
     finish_analysis(Engine::create(root, sources, config, context)?)
 }
-pub(crate) fn analyze_staged(
+pub(in crate::resolve) fn analyze_staged(
     root: InputFile,
     sources: &mut impl Sources,
     config: &Config,
