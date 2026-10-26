@@ -106,7 +106,6 @@ fn inspect(
             Kind::Pattern { base, .. } => Step::Tail(base),
             Kind::Slice(_) | Kind::Primitive(Primitive::Str) => Step::Complete(Metadata::Length),
             Kind::Dynamic { .. } => Step::Complete(Metadata::VTable(ty)),
-            Kind::Foreign(_) => Step::Complete(Metadata::Thin),
             Kind::Tuple(fields) => tail(types, fields)?,
             Kind::Adt(item, _) => {
                 let definition = definitions
@@ -138,6 +137,7 @@ fn inspect(
                 },
             ),
             Kind::Never
+            | Kind::Foreign(_)
             | Kind::Primitive(_)
             | Kind::Array { .. }
             | Kind::ArrayTerm { .. }

@@ -10,6 +10,7 @@ use crate::{
     syntax::{ast::Kind as NodeKind, gate_sites, item::ItemKind},
     types::{ItemId, Kind},
 };
+use std::fmt::Write;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn source(name: &str) -> TestResult<String> {
     Ok(crate::test_source::fixture(&format!(
@@ -255,7 +256,6 @@ fn foreign_replay_width_and_hot_layouts_use_only_the_existing_sparse_owner() -> 
     replay_foreign_sites()?;
     for width in [8, 32, 128] {
         let mut input = String::from("#![feature(extern_types)]unsafe extern \"C\"{");
-        use std::fmt::Write;
         for i in 0..width {
             write!(input, "type F{i};")?;
         }

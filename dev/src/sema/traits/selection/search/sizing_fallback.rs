@@ -131,7 +131,7 @@ impl Search<'_> {
         }
     }
     /// Reuse the same actual terminal as metadata normalization. In particular,
-    /// an opaque external terminal has unit metadata without becoming MetaSized.
+    /// an opaque external terminal has unit metadata without becoming `MetaSized`.
     fn source_tail_sizing(
         &mut self,
         facts: &Declarations,
