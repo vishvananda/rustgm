@@ -22,14 +22,68 @@ pub(crate) struct ConsumerInput {
     report: Report,
     reservation: ConsumerReservation,
 }
-impl ConsumerInput {
+/// Parsing stays at its actual resolver boundary; semantic callers hold no Config.
+pub(crate) struct ConsumerRequest<'a, S> {
+    root: InputFile,
+    sources: &'a mut S,
+    config: &'a Config,
+    context: &'a Context,
+}
+impl<'a, S: Sources> ConsumerRequest<'a, S> {
     #[cfg_attr(
         not(test),
         expect(
             dead_code,
-            reason = "the next selected header consumer must use this genuine opaque input; public Provided entry remains closed"
+            reason = "the actual private consumer request awaits selected role/header and original-body admission"
         )
     )]
+    pub(crate) fn new(
+        root: InputFile,
+        sources: &'a mut S,
+        config: &'a Config,
+        context: &'a Context,
+    ) -> Self {
+        Self {
+            root,
+            sources,
+            config,
+            context,
+        }
+    }
+    pub(crate) fn require_inventory(
+        &self,
+        inventory: &Arc<Dependencies>,
+        work: &mut ReservationWork,
+    ) -> Result<(), Error> {
+        work.charge(1)?;
+        if self
+            .context
+            .dependencies
+            .as_ref()
+            .is_none_or(|actual| !Arc::ptr_eq(actual, inventory))
+        {
+            return Err(error(
+                "collected provider request changed its actual inventory",
+            ));
+        }
+        Ok(())
+    }
+    pub(crate) fn admit(
+        self,
+        admission: ProviderAdmission,
+        work: &mut ReservationWork,
+    ) -> Result<ConsumerInput, Error> {
+        ConsumerInput::new(
+            self.root,
+            self.sources,
+            self.config,
+            self.context,
+            admission,
+            work,
+        )
+    }
+}
+impl ConsumerInput {
     pub(crate) fn new(
         root: InputFile,
         sources: &mut impl Sources,
