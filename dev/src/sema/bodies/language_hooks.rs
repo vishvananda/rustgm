@@ -1,5 +1,6 @@
 //! Operators select explicit library identities through ordinary trait obligations.
 mod mutation;
+mod source_not;
 use super::{Checker, Constructor, Error, NodeId, TermId, Type};
 use crate::{
     support::language_hooks::Hook,

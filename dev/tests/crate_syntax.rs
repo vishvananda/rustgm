@@ -8,6 +8,93 @@ use rustgm::{
 };
 
 #[test]
+fn trait_aliases_retain_real_bounds_parameters_and_post_bounds_where_clauses() -> Result<(), String>
+{
+    let source = "pub trait Thin = Pointee<Metadata=()> + PointeeSized; \
+                  trait Alias<'a,T> = Other<T> + 'a where T:Copy; trait Any=; const trait ConstAlias=Other;";
+    let ast = parse_crate(source).map_err(|error| format!("{error:?}"))?;
+    assert_eq!(ast.items.len(), 4);
+    let mut aliases = Vec::new();
+    for (index, item) in ast.items.iter().enumerate() {
+        let ItemKind::TraitAlias { constant, bounds } = item.kind else {
+            return Err("alias became an ordinary trait or type alias".into());
+        };
+        let node = ast
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(node, value)| {
+                matches!(value.kind, Kind::Item(item) if item as usize == index).then_some(node)
+            })
+            .ok_or("actual alias item node")?;
+        let mut children = Vec::new();
+        ast.push_children(
+            NodeId::new(u32::try_from(node).map_err(|e| e.to_string())?),
+            &mut children,
+        );
+        for &child in ast.list(bounds).iter().chain(ast.list(item.where_clause)) {
+            assert!(children.contains(&child));
+        }
+        assert_eq!(constant, index == 3);
+        aliases.push((
+            ast.list(bounds).len(),
+            ast.list(item.generics).len(),
+            ast.list(item.where_clause).len(),
+        ));
+    }
+    assert_eq!(aliases, [(2, 0, 0), (2, 2, 1), (0, 0, 0), (1, 0, 0)]);
+    assert!(
+        ast.nodes
+            .iter()
+            .any(|node| matches!(node.kind, Kind::Constraint { value: Some(_), .. }))
+    );
+    assert!(ast.lookahead_high_water <= 3);
+    Ok(())
+}
+
+#[test]
+fn trait_alias_grammar_rejects_qualifiers_and_where_before_equals() {
+    for source in [
+        "unsafe trait Alias=A;",
+        "auto trait Alias=A;",
+        "trait Alias<T> where T:Copy = Read<T>;",
+        "trait Alias:A=B;",
+        "trait Alias=A{}",
+        "trait Alias=A",
+    ] {
+        assert!(parse_crate(source).is_err(), "accepted {source}");
+    }
+}
+
+#[test]
+fn configured_aliases_keep_their_actual_disabled_children() -> Result<(), String> {
+    let source = "#[cfg(false)] trait Gone<T>=Missing<T> where T:Other; trait Live=Present;";
+    let report =
+        crate_syntax::analyze(source, &Config::default()).map_err(|error| format!("{error:?}"))?;
+    let mut checked = 0;
+    for (index, node) in report.ast.nodes.iter().enumerate() {
+        let Kind::Item(item) = node.kind else {
+            continue;
+        };
+        let ItemKind::TraitAlias { bounds, .. } = report.ast.items[item as usize].kind else {
+            continue;
+        };
+        let active = item == 1;
+        assert_eq!(report.active[index], active);
+        for &child in report.ast.list(bounds).iter().chain(
+            report
+                .ast
+                .list(report.ast.items[item as usize].where_clause),
+        ) {
+            assert_eq!(report.active[child.get() as usize], active);
+        }
+        checked += 1;
+    }
+    assert_eq!(checked, 2);
+    Ok(())
+}
+
+#[test]
 fn closure_parameters_own_attributes_and_configuration() -> Result<(), String> {
     let source =
         "fn f(){let c=|#[cfg(false)] gone:Missing, #[allow(unused)] (x,y):(u8,u8)|x+y;c((1,2));}";

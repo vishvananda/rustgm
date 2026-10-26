@@ -106,7 +106,7 @@ impl<'a> MacroContext<'a> {
 }
 impl Source {
     pub(in crate::resolve) const fn owns_bindings(&self) -> bool {
-        matches!(self, Self::Core(_) | Self::Client(_))
+        matches!(self, Self::Core(_) | Self::Client(_) | Self::Staged(_))
     }
 }
 impl Package {
@@ -124,7 +124,7 @@ impl Package {
                 local.validate(self)?;
                 Some(MacroContext::Local(local))
             }
-            Some(Source::Client(_)) | None => None,
+            Some(Source::Client(_) | Source::Staged(_)) | None => None,
         })
     }
 }

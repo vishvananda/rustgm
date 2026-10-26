@@ -4,6 +4,8 @@ mod binder_opening;
 mod equalities;
 mod owned_payload;
 pub(crate) use owned_payload::Retained;
+#[cfg(test)]
+pub(crate) use owned_payload::alias_tests;
 mod instantiation;
 mod opening_summary;
 mod permissions;

@@ -296,6 +296,21 @@ impl Default for Store {
     }
 }
 impl Store {
+    /// Only the real default kind/property/index tables allocate at startup.
+    pub(crate) fn initialization_allocation_bound() -> usize {
+        let count = Primitive::ALL.len().saturating_add(2);
+        count
+            .saturating_mul(4 * (size_of::<Kind>() + size_of::<Properties>()))
+            .saturating_add(crate::support::retained::new_map::<Kind, TypeId>(count))
+    }
+    /// Actual capacity payload of only the kind/property/index tables.
+    pub(crate) fn node_table_allocation(&self) -> crate::support::retained::Allocation {
+        let mut allocation = crate::support::retained::Allocation::default();
+        allocation.vector(&self.kinds);
+        allocation.vector(&self.properties);
+        allocation.map(&self.index);
+        allocation
+    }
     /// Conservative kind/property-vector and intern-index growth before new
     /// canonical nodes are allocated. Child/argument payloads are charged by
     /// their producers separately; private Properties stays encapsulated.

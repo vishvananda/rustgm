@@ -547,6 +547,12 @@ impl Declarations {
         )
     }
     fn collect_declaration_attributes(&mut self, report: &Report) -> Result<(), Error> {
+        for (key, warning) in report.unused_visibility_warnings()? {
+            self.retain_source_warning(key, warning)?;
+        }
+        for (key, warning) in report.pre_expansion_warnings()? {
+            self.retain_source_warning(key, warning)?;
+        }
         super::must_use::collect(report, self)?;
         super::inlining::collect(report, self)?;
         super::parentheses::collect(report, self)?;
@@ -554,15 +560,94 @@ impl Declarations {
         super::header_attributes::finish(report, self)
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
-        let mut value = Self {
+        let catalog = super::compiler_items::Catalog::reserve(report)?;
+        let policies = super::safety::Policies::analyze(report)?;
+        let associated = super::associated::collect(report)?;
+        let mut value = Self::initialize(report, catalog, policies, associated);
+        value
+            .prepare_resolution(report)
+            .map_err(|error| value.retain_error_warnings(error))?;
+        Ok(value)
+    }
+    pub(super) fn new_staged(
+        report: &Report,
+        work: &mut crate::resolve::crates::ReservationWork,
+    ) -> Result<Self, Error> {
+        work.charge(report.package.units.len().saturating_add(1))?;
+        let nodes = report
+            .package
+            .units
+            .iter()
+            .try_fold(0_usize, |count, unit| {
+                work.charge(1)?;
+                Ok::<_, Error>(count.saturating_add(if unit.include_context.is_none() {
+                    unit.configured.ast.nodes.len()
+                } else {
+                    0
+                }))
+            })?;
+        work.charge(nodes.saturating_add(report.resolution.definitions.len()))?;
+        let bound = size_of::<Self>()
+            .saturating_add(super::crates::staged_linkage_allocation())
+            .saturating_add(Store::initialization_allocation_bound())
+            .saturating_add(nodes.saturating_mul(4 * size_of::<NodeFacts>()))
+            .saturating_add(
+                report
+                    .package
+                    .units
+                    .len()
+                    .saturating_mul(4 * size_of::<Vec<NodeFacts>>()),
+            )
+            .saturating_add(
+                report
+                    .resolution
+                    .definitions
+                    .len()
+                    .saturating_mul(4 * size_of::<Option<TypeId>>()),
+            );
+        work.reserve(bound)?;
+        let catalog = super::compiler_items::Catalog::reserve_staged(report, work)?;
+        let mut value = Self::initialize(
+            report,
+            Some(catalog),
+            super::safety::Policies::default(),
+            super::associated::Inventory::default(),
+        );
+        super::crates::reserve_staged(report, &mut value)?;
+        work.charge(value.nodes.len().saturating_add(4))?;
+        let mut actual = value.types.node_table_allocation();
+        actual.vector(&value.definitions);
+        actual.vector(&value.nodes);
+        for nodes in &value.nodes {
+            actual.vector(nodes);
+        }
+        if actual
+            .bytes
+            .saturating_add(size_of::<Self>())
+            .saturating_add(super::crates::staged_linkage_allocation())
+            > bound
+        {
+            return Err(Error::unlocated(
+                "private consumer initialization exceeded its actual allocation prepayment",
+            ));
+        }
+        Ok(value)
+    }
+    fn initialize(
+        report: &Report,
+        catalog: Option<Box<super::compiler_items::Catalog>>,
+        policies: super::safety::Policies,
+        associated: super::associated::Inventory,
+    ) -> Self {
+        Self {
             must_use_contracts: None,
-            source_bindings: super::compiler_items::Catalog::reserve(report)?,
+            source_bindings: catalog,
             source_computations: None,
             crates: None,
             foreign: None,
             intrinsics: report.resolution.intrinsics,
             union_work: UnionWork::default(),
-            safety_policies: super::safety::Policies::analyze(report)?,
+            safety_policies: policies,
             mutable_statics: None,
             constant_functions: crate::support::hash::HashSet::default(),
             target_feature_functions: crate::support::hash::HashSet::default(),
@@ -588,7 +673,7 @@ impl Declarations {
             constant_dependencies: crate::support::hash::HashMap::default(),
             constant_uses: crate::support::hash::HashMap::default(),
             constant_instances: crate::support::hash::HashMap::default(),
-            associated: super::associated::collect(report)?,
+            associated,
             stored_fields: None,
             methods: super::methods::Methods::default(),
             invocations: crate::support::hash::HashMap::default(),
@@ -648,11 +733,7 @@ impl Declarations {
                 })
                 .collect(),
             functions: Vec::new(),
-        };
-        value
-            .prepare_resolution(report)
-            .map_err(|error| value.retain_error_warnings(error))?;
-        Ok(value)
+        }
     }
     fn prepare_resolution(&mut self, report: &Report) -> Result<(), Error> {
         self.import_resolution(report)?;
