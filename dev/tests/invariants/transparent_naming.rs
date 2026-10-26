@@ -132,16 +132,33 @@ fn alias_shorthand_filters_other_subjects_before_opening_their_contracts() -> Te
     );
     let report = super::report(&source("same-actual-subject")?)?;
     let mut checker = headers(&report)?;
-    let error = signature(&mut checker).err().ok_or("substitution changed a naming subject")?;
-    assert!(error.to_string().contains("no associated type in the parameter's declared bounds"));
+    let error = signature(&mut checker)
+        .err()
+        .ok_or("substitution changed a naming subject")?;
+    assert!(
+        error
+            .to_string()
+            .contains("no associated type in the parameter's declared bounds")
+    );
     let t = definition(&report, "T", DefKind::Generic)?;
     let ty = checker.facts.definitions[t.0 as usize].ok_or("actual consumer type")?;
-    let arguments = checker.facts.types.intern_arguments(&[Argument::Type(ty)])?;
+    let arguments = checker
+        .facts
+        .types
+        .intern_arguments(&[Argument::Type(ty)])?;
     let request = edge(&checker, "A", ty, arguments)?;
     let full = checker.expand_alias_edge(request)?;
     let named = checker.expand_alias_naming_edge(request)?;
-    assert_eq!(full.len(), 2, "proof still retains the other-formal requirement");
-    assert_eq!(named.len(), 1, "naming follows declaration Self before substitution");
+    assert_eq!(
+        full.len(),
+        2,
+        "proof still retains the other-formal requirement"
+    );
+    assert_eq!(
+        named.len(),
+        1,
+        "naming follows declaration Self before substitution"
+    );
     let report = super::report(&source("where-self")?)?;
     let mut checker = headers(&report)?;
     signature(&mut checker)?;

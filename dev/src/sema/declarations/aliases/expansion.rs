@@ -66,7 +66,13 @@ impl Checker<'_> {
             .as_ref()
             .ok_or_else(|| Error::unlocated("missing alias expansion owner"))?;
         pending
-            .expand(&mut self.facts.types, &self.facts.generics, &self.facts.unreduced, edge, self_only)
+            .expand(
+                &mut self.facts.types,
+                &self.facts.generics,
+                &self.facts.unreduced,
+                edge,
+                self_only,
+            )
             .map_err(|e| crate::sema::model::Declarations::error(self.report, edge.source, e))
     }
 }
@@ -115,7 +121,11 @@ impl Expansion<'_> {
                 continue;
             }
             let header = owner.header(frame.edge.target)?;
-            let self_type = header.schema.as_ref().ok_or("unfinished alias naming schema")?.self_type;
+            let self_type = header
+                .schema
+                .as_ref()
+                .ok_or("unfinished alias naming schema")?
+                .self_type;
             let mut fold = owner.mapping(store, generics, frame.edge)?;
             let charge = |steps, bytes| owner.budget.charge(steps, bytes);
             for clause in header
@@ -144,18 +154,28 @@ impl Expansion<'_> {
         self_type: TypeId,
         clause: &Predicate,
     ) -> Result<bool, &'static str> {
-        let original = self.originals.predicate(clause.source).unwrap_or(clause.value);
+        let original = self
+            .originals
+            .predicate(clause.source)
+            .unwrap_or(clause.value);
         let predicate = match original {
             Clause::Predicate(predicate) => predicate,
-            Clause::ForAll(id) => store.quantified(id).ok_or("missing alias naming clause")?.predicate,
+            Clause::ForAll(id) => {
+                store
+                    .quantified(id)
+                    .ok_or("missing alias naming clause")?
+                    .predicate
+            }
         };
         // Compare in the declaring alias, before actual arguments can make an
         // unrelated formal identical to Self. This is naming, not proof.
         let subject = match predicate.bound {
-            crate::types::parameters::predicates::Bound::ProjectionEqual(_) => match store.kind(predicate.ty) {
-                Some(crate::types::Kind::Projection(application)) => application.subject,
-                _ => return Err("alias naming equality lost its original projection"),
-            },
+            crate::types::parameters::predicates::Bound::ProjectionEqual(_) => {
+                match store.kind(predicate.ty) {
+                    Some(crate::types::Kind::Projection(application)) => application.subject,
+                    _ => return Err("alias naming equality lost its original projection"),
+                }
+            }
             _ => predicate.ty,
         };
         Ok(subject == self_type)
