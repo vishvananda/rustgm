@@ -5,6 +5,8 @@ mod binders;
 mod defaults;
 #[path = "transparent_families.rs"]
 mod families;
+#[path = "transparent_formation.rs"]
+mod formation;
 #[path = "transparent_naming.rs"]
 mod naming;
 use super::*;
@@ -125,15 +127,19 @@ fn alias_headers_retain_full_formals_equality_and_distinct_unsized_self() -> Tes
             .is_none()
     );
     assert!(!checker.facts.generics.trait_self_bounds.contains_key(&a));
-    let clauses = a_header
-        .clauses
-        .as_deref()
+    assert!(a_header.completed);
+    let clauses = checker
+        .facts
+        .generics
+        .predicates
+        .get(&a)
         .ok_or("complete canonical clauses")?;
     assert!(clauses.iter().any(|clause| matches!(clause.value, Clause::Predicate(p) if matches!(p.bound, Bound::ProjectionEqual(_)))));
     let b = pending.header(definition(&report, "B", DefKind::TraitAlias)?)?;
     assert_eq!(b.edges.len(), 1);
     assert_eq!(b.edges[0].target, a);
-    assert!(b.clauses.as_ref().is_some_and(Vec::is_empty));
+    assert!(b.completed);
+    assert!(checker.facts.generics.predicates[&b.owner.definition].is_empty());
     assert!(
         checker.reject_alias_execution().is_err(),
         "partial headers cannot publish executable facts"

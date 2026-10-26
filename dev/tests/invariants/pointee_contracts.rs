@@ -313,7 +313,7 @@ fn actual_kinds_features_and_active_owners_are_checked_without_spelling_fallback
         .ok_or("actual owner mismatch must fail")?;
     assert_eq!(
         error.message,
-        "source Metadata role ownership is outside the supported Pointee declaration profile"
+        "source Metadata changed its genuine trait owner"
     );
     let prohibited = provider("explicit-policy-impl")?;
     let prohibited_error = declarations::analyze(&prohibited)

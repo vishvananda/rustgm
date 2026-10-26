@@ -82,6 +82,7 @@ pub enum DefKind {
     ExternCrate,
     Label,
     Lifetime,
+    ForeignType,
 }
 impl DefKind {
     #[must_use]
@@ -99,6 +100,7 @@ impl DefKind {
             Self::Trait => "trait",
             Self::TraitAlias => "trait-alias",
             Self::TypeAlias => "alias",
+            Self::ForeignType => "foreign-type",
             Self::Const => "const",
             Self::Static => "static",
             Self::Generic => "generic",

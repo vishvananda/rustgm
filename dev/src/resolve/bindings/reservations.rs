@@ -42,7 +42,7 @@ pub struct Reservations {
     denied_implementations: HashSet<DefId>,
     pub(super) header_attributes: [HeaderAttributes; LangItem::ALL.len()],
     pub(super) trivial_field_reads: Option<DefId>,
-    pub(super) diagnostics: [Option<Declaration>; 5],
+    pub(super) diagnostics: [Option<Declaration>; 6],
     pub steps: usize,
 }
 impl Reservations {
@@ -89,6 +89,8 @@ pub(super) enum Claim {
     BuiltinMacro(crate::expand::builtin::Builtin),
     Header(HeaderAttribute),
     TrivialFieldReads,
+    NonNullDocumentation,
+    NeverNullLint,
     DiagnosticItem(super::annotations::DiagnosticItem),
 }
 
@@ -155,7 +157,7 @@ fn reserve_all(
         denied_implementations: HashSet::default(),
         header_attributes: [HeaderAttributes::EMPTY; LangItem::ALL.len()],
         trivial_field_reads: None,
-        diagnostics: [None; 5],
+        diagnostics: [None; 6],
         steps: 0,
     };
     let parents = parents(package, facts);
@@ -230,6 +232,8 @@ fn reserve(
         Claim::BuiltinMacro(_)
         | Claim::Header(_)
         | Claim::TrivialFieldReads
+        | Claim::NonNullDocumentation
+        | Claim::NeverNullLint
         | Claim::DiagnosticItem(_) => {}
         Claim::DenyImplementations => {
             if !source.features.has(Feature::RustcAttributes) {

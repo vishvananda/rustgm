@@ -97,6 +97,7 @@ impl Context {
                 Constructor::Primitive(_)
                 | Constructor::Parameter(_)
                 | Constructor::Never
+                | Constructor::Foreign(_)
                 | Constructor::Closure(..),
             ) => true,
             Value::Construct(Constructor::Adt(_, args) | Constructor::FunctionItem(_, args)) => {

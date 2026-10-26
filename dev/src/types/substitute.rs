@@ -326,6 +326,7 @@ impl Bound {
             | Kind::ArrayTerm { element: ty, .. }
             | Kind::Slice(ty)
             | Kind::Reference { referent: ty, .. }
+            | Kind::Pattern { base: ty, .. }
             | Kind::Pointer { pointee: ty, .. } => {
                 self.queue(ty, depth)?;
                 None
@@ -367,7 +368,7 @@ impl Bound {
                 self.argument_dependencies(store, application.arguments, depth)?;
                 None
             }
-            Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => None,
+            Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) | Kind::Parameter(_) => None,
         };
         if let Some((list, depth)) = list {
             for ty in store.list(list).ok_or("invalid substitution child list")? {

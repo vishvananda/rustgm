@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "phase": "observed metadata source contract; frozen hypotheses retained",
+  "scope": "two new metadata observations; real source raw-pointer Freeze impl from core_marker.rs910-918, no preceding4 repeat",
+  "cases": [
+    {
+      "source": "pa31/tests/spec/foreign-types/pointer-freeze-source-impl.rs",
+      "sha256": "0d87de0ce511d3a117f88ff1133a5e4c351b9bbc58e613388c27306e41784d99",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "actual source unsafe Freeze implementation authorizes raw-pointer proof independently of unknown Foreign pointee",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    }
+  ],
+  "initial_contract_sha256": "5ee2f9708f6e6038c03efeb4c71c1a4827996f1dc8333b3ad163f72e76a6f22f",
+  "observed_binding": {
+    "sha256": "678838fbe31d9830c20e7209eab5c2c3e7023f17095fcac8329eefe0fbfd3360",
+    "source": "eda72e53a30269245b02149884593db6a8260909",
+    "metadata": 2,
+    "native": 0,
+    "infrastructure_failures": 0,
+    "hypothesis_disagreements": 0,
+    "seconds": 0.06925417110323906
+  }
+}

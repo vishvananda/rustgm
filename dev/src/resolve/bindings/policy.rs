@@ -36,11 +36,16 @@ pub(in crate::resolve) enum Feature {
     MinSpecialization,
     Specialization,
     TraitAlias,
+    PatternTypeMacro,
+    PatternTypes,
+    ExternTypes = 24,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
 enum Request {
     Capability(Feature),
+    /// A requested library instability still requires its actual declaration inventory.
+    Library(Feature),
     /// This target-independent request grants no assembly binding or lowering.
     NoCapability,
 }
@@ -69,6 +74,9 @@ impl Request {
             "min_specialization" => Self::Capability(Feature::MinSpecialization),
             "specialization" => Self::Capability(Feature::Specialization),
             "trait_alias" => Self::Capability(Feature::TraitAlias),
+            "extern_types" => Self::Capability(Feature::ExternTypes),
+            "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
+            "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.
             "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
             _ => return None,
@@ -190,6 +198,9 @@ pub(in crate::resolve) fn prepare_with_admission(
                 || features.has(Feature::MinSpecialization)
                 || features.has(Feature::Specialization)
                 || features.has(Feature::TraitAlias)
+                || features.has(Feature::PatternTypeMacro)
+                || features.has(Feature::PatternTypes)
+                || features.has(Feature::ExternTypes)
             {
                 Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
                     unit, features,
@@ -270,6 +281,13 @@ fn features(unit: &Unit) -> Result<(Features, Option<Box<Library>>), Error> {
                 .ok_or_else(failure)?;
             match Request::named(name) {
                 Some(Request::Capability(feature)) => result.insert(feature),
+                Some(Request::Library(feature)) => {
+                    result.insert(feature);
+                    library
+                        .get_or_insert_with(|| Box::new(Library::default()))
+                        .request(name)
+                        .map_err(|message| Error::at(FileId(0), attribute.span.start, message))?;
+                }
                 Some(Request::NoCapability) => {}
                 None => {
                     library

@@ -8,7 +8,7 @@ use crate::{
     },
 };
 
-fn source_callable_role(facts: &Declarations, goal: &Goal) -> Result<bool, String> {
+pub(super) fn source_copying_role(facts: &Declarations, goal: &Goal) -> Result<bool, String> {
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(false);
     };
@@ -47,7 +47,7 @@ impl Search<'_> {
         facts: &Declarations,
         frame: &mut Frame,
     ) -> Result<bool, String> {
-        if !source_callable_role(facts, &frame.goal)? {
+        if !source_copying_role(facts, &frame.goal)? {
             return Ok(false);
         }
         let head = match frame

@@ -212,6 +212,10 @@ impl<'a> Writer<'a> {
                 };
                 self.named_header(view, item, prefix)?;
             }
+            ItemKind::ForeignType => {
+                self.enqueue(&[W(";")])?;
+                self.named_header(view, item, "type ")?;
+            }
             ItemKind::TypeAlias { bounds, ty } => {
                 self.enqueue(&[W(";")])?;
                 if let Some(ty) = ty {

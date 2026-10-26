@@ -33,7 +33,7 @@ impl Checker<'_> {
             self.validate_bounds(definition, &mut proof)?;
             self.retain_trait_proof(definition, owner.source, &mut proof);
         }
-        Ok(())
+        self.validate_alias_declarations()
     }
     pub(super) fn validate_signatures(&mut self) -> Result<(), Error> {
         for index in 0..self.facts.functions.len() {

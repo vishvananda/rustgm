@@ -18,7 +18,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Qualified CLI `af93787c` passes Thin syntax and reaches `ptr/metadata.rs:170`, byte6689, at foreign `type VTable;`. All722 pinned inputs verify;65 original files opened; no artifact. | Implement LIB-032 foreign opaque types while closing LIB-031 alias and Pointee consumers, imported bodies and actual assertion/formatting. |
+| Original core loading and expansion | CLI `eb644b41` passes foreign VTable loading and reaches `clone.rs:389`, byte14948, at `final fn share`. All 722 pinned inputs verify;72 original files opened;1.996 seconds; no artifact. | Implement LIB-033 final trait methods while closing LIB-031 alias and Pointee consumers, imported bodies and actual assertion/formatting. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -34,7 +34,7 @@ concrete; a private Ready state is not an executable result.
 | --- | --- | --- |
 | A | LIB-007/030, PA29/31 | Complete encoded provider to fresh named Holder consumer, original/instance proof and native output 7. Names/receiver shapes are merged locally; the public Provided codec and body joins remain. |
 | B | LIB-029/021, PA25–28/31 | Actual NonNull source, then Location/PanicInfo/handler and false assertion reaching Abort; follow with dynamic formatting. |
-| C | LIB-032, PA22/30/31 | Real Foreign VTable identity and metadata, then an unchanged-core attempt past the current declaration. Share Pattern/Pointee representation with B. |
+| C | LIB-033, PA5/19/31 | Genuine final trait-method syntax, feature authority and non-overridability, with ordinary provided-method override controls; advance unchanged core past Share::share. |
 | Integrator | LIB-031/008, PA19–21/31/32 | Complete actual Thin declaration/use with Pointee, integrate qualified consumers, and advance original core through checking/export. |
 | Integrator, queued independent preparation | LIB-009/010/011, PA30/33/34/36 | Selected alloc/std dependency/build/runtime inventory and small real ABI/build consumers; do not wait until core works to discover graph prerequisites. |
 
@@ -44,22 +44,34 @@ features stay required but only enter this immediate queue when a real library
 consumer needs them or a PA is otherwise ready for release. No whole core build
 or additional PA release is implied by these targets.
 
-The next scheduling boundary is the Foreign handoff and a fresh original-core
-observation. Integrate that independently useful change without waiting for
-all alias/panic work. If the next blocker is already assigned, C can take A's
-separate Provided namespace/advisory/defaultness codec while A finishes genuine
-member/body execution. A defines the wire rows first in the existing
+The Foreign handoff is integrated locally and the fresh original-core observation
+now identifies LIB-033. C takes that independent blocker; the Provided codec
+split remains queued while A finishes genuine member/body execution. A defines
+the wire rows first in the existing
 [Provided milestone](parallel/provided-method-execution.md); no new worker or
 parallel edit of A's semantic tables is needed. B stays on the actual
 PhantomData/Location/PanicInfo path. The integrator finishes its current Thin
 join and prioritizes queued integrations over another implementation workstream.
+
+The latest observer reuses the previously qualified target/profile manifest
+without changing cfg or source bytes. Its first setup attempt used the older
+default compiler-source manifest and correctly failed before reading core; that
+is retained as infrastructure evidence, not another language failure. Production
+and three frontend controls pass in 26.18 seconds. Sixteen merged private controls
+and all 230 PA5 cases subsequently pass. A cheap broad private run exposed three
+stale Pattern availability/count/size assertions; after correcting those, all 1,798
+ordinary private tests freshly pass in 127.06 seconds including private strict
+checks. The initial mixed batch passed both strict lint modes but timed out
+while building its private executable; these are separate attempts, not one
+five-minute integration. Raw records are in the integrator's
+`obj/parallel/foreign-pattern-integration-v1`.
 
 The latest full CI run
 [40382875468](https://github.com/vishvananda/rustgm/actions/runs/40382875468)
 failed one old Pointee diagnostic assertion; 1,787 ordinary private tests and
 all thirteen ordinary integration binaries passed. C's 27b1712dd Foreign
 successor qualifies the exact correction and its remaining ordinary-mode group
-in 112.86 seconds; root integration/CLI/core observation are pending.
+in 112.86 seconds; the merged integration and core observation now include it.
 Native/debug/independent checks were skipped, so they
 remain pending. The current push check still selects lexer tests; the shared
 source/const/import/LowIR smoke is an integrator task, not an implemented gate.
@@ -198,7 +210,7 @@ The [formatter/transmute integration](formatter-pointer-erasure-checkpoint.md#co
 qualifies actual const pointer formation and runtime calls, all26 selected controls
 and217 harness checks. A fresh unchanged-core observation passes Thin syntax and
 reaches the foreign `type VTable;` declaration at ptr/metadata.rs170 (LIB-032).
-All722 pinned inputs verify,65 files are opened and no artifact is produced.
+All 722 pinned inputs verify,65 files are opened and no artifact is produced.
 
 The preceding published probe uses immutable compiler `9793c30f2d29a99196687032f88960c317c28c47a3f4f6973ba681bb09698ac4`
 from integration `1df52349` (production `91113764`). It exits 1 with
@@ -452,7 +464,8 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-029 | P1; source Not and layout/Clone prerequisites qualified; assertion execution open | Real assertion expansion with source-owned panic, runtime and constant semantics | PA8 expansion + PA25 constants + PA26 hooks + PA27/28 memory/intrinsics + PA31 source identity / actual providers and earlier controls | B; C coordinates source contracts | Typed condition transfer and the AST writer remain qualified. [Source Not](source-not-checkpoint.md) now uses actual trait/member/caller proof and has native evidence; [source layout and nominal Clone](source-storage-contracts-checkpoint.md) retain genuine associated constants and provided bodies. Fresh combined source/LowIR equality preserves those native observations. [Source Transmute and const formatter erasure](formatter-pointer-erasure-checkpoint.md) now have actual runtime/CTFE and native evidence. Assert execution still requires real pinned Arguments/NonNull/Location/PanicInfo/handler behavior and full formatting. Genuine [source Abort](source-abort-runtime-checkpoint.md) is now runtime/native-qualified and retains exact LowIR in the combined integration; source-role claims alone do not grant execution. Imported contracts and original factory/advisory debts remain required. |
 | LIB-030 | P1; observed SourceClient library-export boundary | Republish genuine imported source trait/generic contracts from a downstream library | PA29 cross-crate generic export plus PA31 authentic source headers / complete source-provider/client cases, with ordinary PA29 controls where expressible | A + B + integrator | Run 40235770528 accepts the public sealed-bound consumer semantically, then its library helper reaches the existing legacy generic re-export rejection. Preserve that rejection until a complete source contract can be transported; a types-only control is semantic evidence only. The module/domain checkpoint still requires actual LowIR provider-impl selection. Mixed-provider generic re-exports and downstream library publication remain required for real crate graphs; no foreign owner may be retagged local. |
 | LIB-031 | P0; clauses, binders, shorthand naming and source sizing qualified; complete consumers open | Genuine trait aliases with full declared contracts and actual use-site proof | PA5/6 syntax and identity + PA19/21 bounds/projections + PA31 source features + PA29 transport / owning controls and unchanged core | Integrator; C source Pointee | Canonical typed clauses/edges and nested binders now supply actual shorthand leaf applications, equalities and preserved original inputs. [Naming](trait-alias-naming-checkpoint.md) distinguishes declaration Self from an unrelated formal even when actual substitution makes them equal; complete proof clauses stay. Source sizing distinguishes direct RHS from where/alias mediation. The [family correction](runtime-header-integration-checkpoint.md) now retains all expanded input clauses and separate projected-result aliases, including real missing-Copy rejection. Header-time names, full original/normalized formation, scoped regions, object principal multiplicity, default WF/const and imported contracts remain required. Execution/export stays fenced. The new unchanged-core observer passes Thin syntax and reaches foreign VTable at ptr/metadata.rs170 (LIB-032); this does not establish complete alias semantics. |
-| LIB-032 | P0; current unchanged-core loading blocker | Genuine foreign opaque type declarations, identity, sizing and pointer metadata | PA30 foreign interfaces + PA22 unsized types + PA31 source features / PA30 draft foreign-type controls and unchanged PA31 source | C after Pointee consumers | Qualified CLI af93787c reaches `unsafe extern "C" { type VTable; }` in original ptr/metadata.rs170, byte6689, with item-owner rejection. Require actual feature/owner/identity validation, PointeeSized versus MetaSized/Sized behavior, unknown layout and genuine pointer metadata. Never model VTable as an empty ADT. Actual reducers and independent outcomes remain to be developed. |
+| LIB-032 | Loading blocker removed; broader operations/transport remain open | Genuine foreign opaque type declarations, identity, sizing and pointer metadata | PA30 foreign interfaces + PA22 unsized types + PA31 source features / PA30 draft foreign-type controls and unchanged PA31 source | C; integrator qualification | Qualified Foreign27b1712dd and Pattern44ea6bff are integrated locally. Six Foreign controls, actual unit metadata versus unknown value layout and source Freeze impl behavior have worker evidence; root CLI eb644b41 advances original core past VTable to LIB-033. PA5's unchanged external-type input is reclassified as grammar-positive with an independently retained feature rejection. Foreign value operations and metadata transport remain explicitly unsupported; this is not a whole-core build. |
+| LIB-033 | P0; current unchanged-core loading blocker | Final trait methods, distinct from ordinary provided bodies and implementation specialization defaultness | PA5 grammar + PA19 method conformance + PA31 source feature authority; PA29 owns eventual transport / earliest expressible controls and exact source-backed Share consumer | C | CLI eb644b41 reaches `final fn share(&self) -> Self` in original core/src/clone.rs389 with `expected path segment` at byte14948. Require pinned-language parser/owner/feature checks, inherited execution and real override rejection. Ordinary provided methods remain overridable. NoDefaultModifier metadata alone cannot establish absence of an explicit final modifier; its producer/transport must remain explicit. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):

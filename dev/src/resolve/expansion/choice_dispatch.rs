@@ -19,6 +19,27 @@ impl<S: Sources> Engine<'_, S> {
         context: ExpansionId,
         input: &Input,
     ) -> Result<ExpansionId, Error> {
+        self.invoke_typed_builtin(visit, grammar, definition, context, input, false)
+    }
+    pub(super) fn invoke_pattern(
+        &mut self,
+        visit: Visit,
+        grammar: MacroContext,
+        definition: usize,
+        context: ExpansionId,
+        input: &Input,
+    ) -> Result<ExpansionId, Error> {
+        self.invoke_typed_builtin(visit, grammar, definition, context, input, true)
+    }
+    fn invoke_typed_builtin(
+        &mut self,
+        visit: Visit,
+        grammar: MacroContext,
+        definition: usize,
+        context: ExpansionId,
+        input: &Input,
+        pattern: bool,
+    ) -> Result<ExpansionId, Error> {
         let file = self
             .loader
             .package
@@ -40,6 +61,11 @@ impl<S: Sources> Engine<'_, S> {
             &self.paths,
             &self.definitions,
             definition,
+            if pattern {
+                Builtin::PatternType
+            } else {
+                Builtin::CfgSelect
+            },
         )?;
         check_invocation(
             &self.paths,
@@ -70,7 +96,7 @@ impl<S: Sources> Engine<'_, S> {
             .split_first_mut()
             .ok_or_else(|| failure("missing cfg_select unit"))?;
         let prepared = unit
-            .prepare_choice(
+            .prepare_builtin_syntax(
                 choice::Site {
                     file,
                     target: visit.node,
@@ -88,8 +114,12 @@ impl<S: Sources> Engine<'_, S> {
                 },
                 self.config,
                 &charge,
+                pattern,
             )
             .map_err(|error| Error::at(file, error.offset, error.message))?;
+        if pattern {
+            self.check_pattern_gates(file, original)?;
+        }
         self.check_cfg_uses(file, prepared.cfg_uses())?;
         let installed = self.loader.package.units[file.0 as usize]
             .install_prepared_choice(prepared)
@@ -116,23 +146,60 @@ impl<S: Sources> Engine<'_, S> {
     }
 }
 
+impl<S: Sources> Engine<'_, S> {
+    fn check_pattern_gates(
+        &mut self,
+        file: super::FileId,
+        span: crate::syntax::token_tree::Span,
+    ) -> Result<(), Error> {
+        let package = &self.loader.package;
+        let view = super::permission_frames::FrameView {
+            package,
+            definitions: &self.definitions,
+            invocations: &self.invocations,
+            facts: &self.paths.state.facts,
+        };
+        let mut query = super::permission_session::Query {
+            view,
+            memo: &mut self.cfg_memo,
+        };
+        if !package
+            .requested_pattern_feature(true)
+            .map_err(Error::unlocated)?
+            && !query.allows(
+                super::Location { file, span },
+                &crate::resolve::bindings::FeatureName::new("pattern_types")
+                    .map_err(Error::unlocated)?,
+            )?
+        {
+            return Err(Error::at(
+                file,
+                span.start,
+                "pattern types require pattern_types or actual literal allowance",
+            ));
+        }
+        Ok(())
+    }
+}
+
 fn checked_contract(
     package: &super::Package,
     paths: &super::paths::Paths,
     definitions: &[super::Definition],
     index: usize,
+    role: Builtin,
 ) -> Result<NodeKey, Error> {
     let failure = |message: &'static str| Error::unlocated(message);
     let entry = definitions
         .get(index)
         .ok_or_else(|| failure("unknown cfg_select definition"))?;
-    if !matches!(entry.body, Body::Builtin(Builtin::CfgSelect)) {
+    if !matches!(entry.body, Body::Builtin(actual) if actual == role) {
         return Err(failure("cfg_select changed its actual selected role"));
     }
     let owner = paths.checked_source_macro(index, entry).map_err(failure)?;
     let contract = panic_contracts::published(package, owner, entry.header.as_ref(), 1)?;
     if contract.node != owner
-        || contract.builtin != Some(Builtin::CfgSelect)
+        || contract.builtin != Some(role)
         || contract.edition != entry.edition
         || contract.allows(crate::resolve::bindings::KnownFeature::EditionPanic)
             != entry.edition_panic

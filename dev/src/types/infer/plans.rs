@@ -75,6 +75,7 @@ impl Plans {
                     referent: child, ..
                 }
                 | Kind::Pointer { pointee: child, .. }
+                | Kind::Pattern { base: child, .. }
                 | Kind::Slice(child)
                 | Kind::Array { element: child, .. } => work.push((child, depth, false)),
                 Kind::Tuple(list) => {
@@ -122,6 +123,9 @@ impl Plans {
                 mutable, region, ..
             } => Step::Construct(Constructor::Reference { mutable, region }, 1),
             Kind::Pointer { mutable, .. } => Step::Construct(Constructor::Pointer { mutable }, 1),
+            Kind::Pattern { constraint, .. } => {
+                Step::Construct(Constructor::Pattern(constraint), 1)
+            }
             Kind::Slice(_) => Step::Construct(Constructor::Slice, 1),
             Kind::Array { length, .. } => Step::Construct(Constructor::Array(length), 1),
             Kind::Tuple(list) => Step::Construct(

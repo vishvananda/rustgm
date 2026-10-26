@@ -1,0 +1,25 @@
+{
+  "state": "predicted before independent execution",
+  "source_pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "ancestor": {
+    "path": "pa31/tests/spec/pointee-normalization/with-copy/concrete-results.rs",
+    "sha256": "f14e09a69c2e29fd671c517d08eb23151f6fcad6ce54eed0d939c6503426bb9d"
+  },
+  "scope": "Actual Thin declaration and source Pointee equality consumer; reduced Metadata:Sized provider, not the full upstream Metadata bound family or a core build.",
+  "cases": [
+    {
+      "path": "pa31/tests/spec/trait-aliases/source-thin/thin-unit.rs",
+      "sha256": "eeb8ee0466a79e2b6c96345f76bc552a0bede6bd9ae5bf92435096ae99b739e9",
+      "predicted_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/trait-aliases/source-thin/thin-wide.rs",
+      "sha256": "6ecf654afd56b645f1cc2ef789ea37844041822228fd41d21c05798308ed2b3f",
+      "predicted_status": 1
+    }
+  ]
+}

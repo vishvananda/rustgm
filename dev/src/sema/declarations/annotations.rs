@@ -117,7 +117,9 @@ impl Checker<'_> {
         self.work.push(Work::Node(key, true, context));
         match kind {
             Kind::NeverType => {}
-            Kind::Group(node) | Kind::Attributed { value: node, .. } => {
+            Kind::TypePattern { base: node, .. }
+            | Kind::Group(node)
+            | Kind::Attributed { value: node, .. } => {
                 self.node_work(key.file, node, context);
             }
             Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(..) => {
@@ -163,7 +165,9 @@ impl Checker<'_> {
                 .contains_key(&NodeKey { node, ..key })
         };
         match self.kind(key) {
-            Kind::Group(node) | Kind::Attributed { value: node, .. } => partial(node),
+            Kind::TypePattern { base: node, .. }
+            | Kind::Group(node)
+            | Kind::Attributed { value: node, .. } => partial(node),
             Kind::Type { flavor, elements } => {
                 let children = self
                     .report

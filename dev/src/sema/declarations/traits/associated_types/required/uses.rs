@@ -64,6 +64,7 @@ impl Collector {
                 Kind::Reference {
                     referent: child, ..
                 }
+                | Kind::Pattern { base: child, .. }
                 | Kind::Pointer { pointee: child, .. }
                 | Kind::Slice(child)
                 | Kind::Array { element: child, .. }
@@ -111,7 +112,7 @@ impl Collector {
                     self.arguments(types, arguments, depth)?;
                     None
                 }
-                Kind::Parameter(_) | Kind::Primitive(_) | Kind::Never => None,
+                Kind::Foreign(_) | Kind::Parameter(_) | Kind::Primitive(_) | Kind::Never => None,
             };
             if let Some((list, depth)) = list {
                 let children = types.list(list).ok_or("invalid required-bound type list")?;

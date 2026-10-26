@@ -128,9 +128,9 @@ impl Expansion<'_> {
                 .self_type;
             let mut fold = owner.mapping(store, generics, frame.edge)?;
             let charge = |steps, bytes| owner.budget.charge(steps, bytes);
-            for clause in header
-                .clauses
-                .as_deref()
+            for clause in generics
+                .predicates
+                .get(&frame.edge.target)
                 .ok_or("unfinished alias clauses")?
             {
                 if self.self_only && !self.names_self(store, self_type, clause)? {

@@ -15,10 +15,12 @@ impl Query {
             | Kind::Primitive(_)
             | Kind::Function { .. }
             | Kind::FunctionItem { .. } => {}
+            Kind::Foreign(_) => self.nodes[self.cursor].value = false,
             Kind::Parameter(_) | Kind::Projection(_) | Kind::Opaque(..) | Kind::Dynamic { .. } => {
                 self.waiting = Some(obligation);
                 return Ok(Some(Step::Proof(obligation)));
             }
+            Kind::Pattern { base, .. } => self.dependency(Obligation { ty: base, marker })?,
             Kind::Closure { environment, .. } => {
                 self.dependency(Obligation {
                     ty: environment,

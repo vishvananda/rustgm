@@ -1395,6 +1395,9 @@ impl<'a, S: Sources> Engine<'a, S> {
                 .map_err(|_| Error::at(file, 0, "too many expansion contexts"))?,
         );
         if let Body::Builtin(builtin) = self.definitions[definition].body {
+            if builtin == Builtin::PatternType {
+                return self.invoke_pattern(visit, grammar, definition, context, &input);
+            }
             if builtin == Builtin::CfgSelect {
                 return self.invoke_choice(visit, grammar, definition, context, &input);
             }

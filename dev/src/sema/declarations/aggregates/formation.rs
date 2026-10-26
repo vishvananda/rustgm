@@ -62,50 +62,52 @@ impl Checker<'_> {
                 self.constant_argument_contracts(arguments)?;
             }
             Type::Tuple(list) => {
-                let fields = self
-                    .facts
-                    .types
-                    .list(list)
-                    .ok_or_else(|| error("missing constant tuple types"))?;
-                self.work.extend(
-                    fields
-                        .iter()
-                        .rev()
-                        .map(|&ty| Work::ValueContract(ty, false)),
-                );
+                self.constant_type_children(list, "missing constant tuple types")?;
             }
             Type::Array { element, .. }
             | Type::ArrayTerm { element, .. }
             | Type::Slice(element) => {
                 self.work.push(Work::ValueContract(element, false));
             }
-            Type::Reference { referent, .. } => {
-                self.work.push(Work::ValueContract(referent, false));
+            Type::Reference {
+                referent: pointee, ..
             }
-            Type::Pointer { pointee, .. } => self.work.push(Work::ValueContract(pointee, false)),
+            | Type::Pattern { base: pointee, .. }
+            | Type::Pointer { pointee, .. } => {
+                self.work.push(Work::ValueContract(pointee, false));
+            }
             Type::Function {
                 parameters, result, ..
             } => {
                 self.work.push(Work::ValueContract(result, false));
-                let parameters = self
-                    .facts
-                    .types
-                    .list(parameters)
-                    .ok_or_else(|| error("missing constant callable types"))?;
-                self.work.extend(
-                    parameters
-                        .iter()
-                        .rev()
-                        .map(|&ty| Work::ValueContract(ty, false)),
-                );
+                self.constant_type_children(parameters, "missing constant callable types")?;
             }
             Type::FunctionItem { arguments, .. }
             | Type::Opaque(_, arguments)
             | Type::Dynamic { arguments, .. } => {
                 self.constant_argument_contracts(arguments)?;
             }
-            Type::Never | Type::Primitive(_) | Type::Parameter(_) => {}
+            Type::Never | Type::Foreign(_) | Type::Primitive(_) | Type::Parameter(_) => {}
         }
+        Ok(())
+    }
+
+    fn constant_type_children(
+        &mut self,
+        list: crate::types::ListId,
+        message: &'static str,
+    ) -> Result<(), Error> {
+        let children = self
+            .facts
+            .types
+            .list(list)
+            .ok_or_else(|| Error::at(FileId(0), 0, message))?;
+        self.work.extend(
+            children
+                .iter()
+                .rev()
+                .map(|&ty| Work::ValueContract(ty, false)),
+        );
         Ok(())
     }
 

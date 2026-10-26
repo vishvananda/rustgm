@@ -370,6 +370,7 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
             generic_arguments(store, arguments, out)
         }
         Kind::Never => write!(out, "never"),
+        Kind::Foreign(item) => write!(out, "foreign def={}", item.0),
         Kind::Primitive(p) => write!(out, "primitive {}", p.name()),
         Kind::Parameter(id) => {
             let parameter = store
@@ -424,6 +425,7 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
                 element.0, parameter.owner.0, parameter.index
             )
         }
+        Kind::Pattern { base, .. } => write!(out, "pattern base={} constraint=nonnull", base.0),
         Kind::Slice(element) => write!(out, "slice element={}", element.0),
         Kind::Pointer { mutable, pointee } => {
             write!(out, "pointer mutable={mutable} pointee={}", pointee.0)

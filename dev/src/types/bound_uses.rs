@@ -219,6 +219,7 @@ impl Uses {
                 Kind::Array { element: ty, .. }
                 | Kind::ArrayTerm { element: ty, .. }
                 | Kind::Slice(ty)
+                | Kind::Pattern { base: ty, .. }
                 | Kind::Pointer { pointee: ty, .. } => self.push(ty, depth)?,
                 Kind::FunctionItem {
                     signature,
@@ -242,7 +243,7 @@ impl Uses {
                     }
                     self.push(result, depth)?;
                 }
-                Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => {}
+                Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) | Kind::Parameter(_) => {}
             }
         }
         Ok(())

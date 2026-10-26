@@ -26,7 +26,7 @@ pub(super) fn rebuild<F: Folder>(folder: &mut F, kind: Kind, depth: u16) -> Resu
             signature: folder.child(signature, depth)?,
             environment: folder.child(environment, depth)?,
         },
-        Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => kind,
+        Kind::Never | Kind::Foreign(_) | Kind::Primitive(_) | Kind::Parameter(_) => kind,
         Kind::Adt(item, args) => Kind::Adt(item, folder.arguments(args, depth)?),
         Kind::Opaque(id, args) => Kind::Opaque(id, folder.arguments(args, depth)?),
         Kind::Dynamic {
@@ -57,6 +57,10 @@ pub(super) fn rebuild<F: Folder>(folder: &mut F, kind: Kind, depth: u16) -> Resu
         Kind::ArrayTerm { element, length } => Kind::ArrayTerm {
             element: folder.child(element, depth)?,
             length: folder.constant(length)?,
+        },
+        Kind::Pattern { base, constraint } => Kind::Pattern {
+            base: folder.child(base, depth)?,
+            constraint,
         },
         Kind::Slice(element) => Kind::Slice(folder.child(element, depth)?),
         Kind::Reference {
