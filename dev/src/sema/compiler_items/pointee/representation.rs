@@ -79,7 +79,7 @@ impl Plan {
                 {
                     // The caller's existing normalizer handles this genuine
                     // nested projection and its input, equality and region proof.
-                    return self.ready(
+                    return Self::ready(
                         facts,
                         Kind::Projection(projection::Application {
                             subject: tail,
