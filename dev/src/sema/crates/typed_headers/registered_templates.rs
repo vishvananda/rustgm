@@ -304,6 +304,18 @@ impl Session {
 /// The consumer lends its one real table exclusively; buffer handles move and
 /// are restored on every outcome. No second registration or table clone occurs.
 pub(super) use assumption_environments::Declaration;
+pub(super) fn declaration_ready(
+    recipes: &Option<Box<State>>,
+    view: &RecipeView<'_>,
+    facts: &super::super::Declarations,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+) -> Result<bool, Error> {
+    let Some(state) = recipes.as_deref() else {
+        return Ok(false);
+    };
+    assumption_environments::declaration_ready(view, state, facts, owner, work)
+}
 pub(super) fn declarations<'a>(
     recipes: &mut Option<Box<State>>,
     facts: &mut super::super::Declarations,

@@ -122,21 +122,14 @@ impl Scope {
             clauses.extend_from_slice(&parent.clauses);
         }
         let definition = port.port.definition(scope_row.owner, work)?;
-        formal_path::visit(
-            &mut port.port,
+        declared_formals(
+            port,
             &mut facts.types,
             &scope_row,
             definition,
             work,
-            |parameter| {
-                parameters.push((parameter.parameter, Abilities::default()));
-                declared.push(crate::sema::generics::Parameter {
-                    binding: parameter.binding,
-                    anonymous: false,
-                    argument: parameter.argument,
-                    default: None,
-                });
-            },
+            &mut parameters,
+            &mut declared,
         )?;
         let inputs = if canonical.is_some() {
             ScopeInputs::Trait(translation::trait_inputs(
@@ -736,6 +729,50 @@ impl Owner {
         Ok(())
     }
 }
+pub(super) fn declaration_ready(
+    view: &RecipeView<'_>,
+    state: &State,
+    facts: &Declarations,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+) -> Result<bool, Error> {
+    work.charge(6)?;
+    let rows = view.rows()?;
+    let Some(prepared) = state.callables.as_deref() else {
+        return Ok(false);
+    };
+    let (index, raw) = prepared.scope(rows, owner)?;
+    let Some(scope) = prepared
+        .environments
+        .as_deref()
+        .and_then(|owner| owner.scopes.get(index))
+        .and_then(Option::as_deref)
+    else {
+        return Ok(false);
+    };
+    if !scope.installed {
+        return Ok(false);
+    }
+    scope.require(rows, facts)?;
+    let definition = view.definition(owner, work)?;
+    if scope.raw != raw
+        || facts
+            .generics
+            .parameters
+            .get(&definition)
+            .is_none_or(|parameters| parameters.len() != scope.declared.len())
+        || facts
+            .generics
+            .environments
+            .get(&definition)
+            .is_none_or(|environment| !Arc::ptr_eq(environment, &scope.environment))
+    {
+        return Err(error(
+            "installed declaration changed its actual scope/formal/environment owner",
+        ));
+    }
+    Ok(true)
+}
 pub(super) fn declarations(
     view: RecipeView<'_>,
     state: &mut State,
@@ -815,6 +852,32 @@ pub(super) fn mark_installed(prepared: &mut Prepared, rows: &[Declaration]) -> R
         scope.installed = true;
     }
     Ok(())
+}
+fn declared_formals(
+    port: &mut ports::Inputs<'_, '_>,
+    store: &mut crate::types::Store,
+    scope: &s::ParameterScope,
+    definition: crate::resolve::model::DefId,
+    work: &mut ReservationWork,
+    parameters: &mut Vec<(ParameterId, Abilities)>,
+    declared: &mut Vec<crate::sema::generics::Parameter>,
+) -> Result<(), Error> {
+    formal_path::visit(
+        &mut port.port,
+        store,
+        scope,
+        definition,
+        work,
+        |parameter| {
+            parameters.push((parameter.parameter, Abilities::default()));
+            declared.push(crate::sema::generics::Parameter {
+                binding: parameter.binding,
+                anonymous: false,
+                argument: parameter.argument,
+                default: None,
+            });
+        },
+    )
 }
 struct Observed<'a> {
     work: &'a mut ReservationWork,

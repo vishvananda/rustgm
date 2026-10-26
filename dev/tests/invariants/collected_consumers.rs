@@ -108,7 +108,35 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
             .is_none()
     );
     assert!(stage.session.authority.facts.generics.traits.is_none());
-    repeated_schema(stage, holder_declaration, &mut work)?;
+    stage = repeated_schema(stage, holder_declaration, &mut work)?;
+    let (returned, status) = stage.trait_declaration(holder_declaration, &mut work)?;
+    stage = returned;
+    assert_eq!(status, Demand::Ready(()));
+    assert!(
+        stage
+            .session
+            .authority
+            .facts
+            .generics
+            .traits
+            .as_deref()
+            .and_then(|contracts| contracts.header(crate::types::ItemId(definition.0)))
+            .is_some()
+    );
+    assert!(
+        stage
+            .session
+            .authority
+            .facts
+            .associated
+            .owner(definition)
+            .is_none()
+    );
+    let before = work.retained;
+    let (stage, status) = stage.trait_declaration(holder_declaration, &mut work)?;
+    assert_eq!(status, Demand::Ready(()));
+    assert_eq!(work.retained, before);
+    assert!(stage.session.authority.facts.functions.is_empty());
     actual_implicit_prelude_controls()?;
     Ok(())
 }
@@ -116,7 +144,7 @@ fn repeated_schema(
     mut stage: Box<HeaderDraft>,
     owner: DeclarationRef,
     work: &mut ReservationWork,
-) -> Result {
+) -> Result<Box<HeaderDraft>> {
     let before = (
         work.retained,
         stage
@@ -154,7 +182,7 @@ fn repeated_schema(
         size_of::<HeaderDraft>(),
         size_of::<SelectedHeaders>()
     );
-    Ok(())
+    Ok(stage)
 }
 fn actual_implicit_prelude_controls() -> Result {
     for (declarations, body, accepted) in [

@@ -55,6 +55,9 @@ pub(super) fn prepare(
             "selected trait region/result contracts require their explicit wider producer",
         ));
     }
+    if template_demands::declaration_ready(&selected.recipes, &view, facts, owner, work)? {
+        return Ok(Demand::Ready(()));
+    }
     let mut declarations =
         template_demands::declarations(&mut selected.recipes, facts, owner, work, |work| {
             authority.reservation.recipe_view(authority.report, work)
