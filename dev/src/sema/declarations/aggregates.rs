@@ -98,6 +98,12 @@ impl Checker<'_> {
             self.work.push(Work::NominalContract(item, false));
             return Ok(());
         }
+        let kind =
+            if crate::sema::compiler_items::phantom::declaration(self.report, &self.facts, item)? {
+                aggregate::Kind::PhantomData
+            } else {
+                kind
+            };
         let tag = repr.tag.unwrap_or(Primitive::Isize);
         let mut previous = None;
         let mut variants = Vec::with_capacity(self.nominals.entries[index].groups.len());
@@ -177,7 +183,7 @@ impl Checker<'_> {
                 .mark_discriminants_pending(item)
                 .map_err(|e| self.error(key, e))?,
             aggregate::Kind::Union => self.register_union(item, key)?,
-            aggregate::Kind::Struct => {}
+            aggregate::Kind::Struct | aggregate::Kind::PhantomData => {}
         }
         Ok(())
     }

@@ -66,6 +66,12 @@ const parameters remain rigid during conformance. An impl method cannot require
 stronger conditions than the trait promises, except requirements already proved
 from the impl environment or other applicable impls.
 
+A source trait function marked `final` must have its real provided body and
+cannot be overridden by an implementation. An ordinary provided trait method
+remains overridable. The actual keyword requires PA31 feature authority; this
+restriction is separate from impl-specialization finality. Final methods use
+their provided body for dynamic Self and consume no virtual slot.
+
 Check overlapping same-trait applications and same-name inherent methods against
 complete headers. Distinct type/const applications may coexist. Lifetimes cannot
 make otherwise overlapping headers disjoint. Reject duplicates and overlaps

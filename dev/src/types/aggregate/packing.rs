@@ -30,7 +30,10 @@ impl Definitions {
         let mut work = Vec::new();
         let mut steps = 0_usize;
         for definition in &self.entries {
-            if !matches!(definition.kind, Kind::Struct | Kind::Union) {
+            if !matches!(
+                definition.kind,
+                Kind::Struct | Kind::PhantomData | Kind::Union
+            ) {
                 continue;
             }
             if definition.repr.align.is_some() {
@@ -47,7 +50,7 @@ impl Definitions {
                         let field = self
                             .get(item)
                             .ok_or((definition.item, "missing packed nominal field"))?;
-                        if matches!(field.kind, Kind::Struct | Kind::Union) {
+                        if matches!(field.kind, Kind::Struct | Kind::PhantomData | Kind::Union) {
                             reverse.entry(item).or_default().push(definition.item);
                         }
                     }

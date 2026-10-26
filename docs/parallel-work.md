@@ -14,9 +14,9 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current original-core observer passes foreign VTable and reaches
-`clone.rs:389`, the `final fn share` declaration (LIB-033). All 722 pinned inputs
-verify, 72 files are opened, and no artifact exists. The
+The current original-core observer passes final Share::share and reaches
+`default.rs:143`, the source `attributes(default)` helper declaration (LIB-034).
+All 722 pinned inputs verify, 78 files are opened, and no artifact exists. The
 [formatter integration](formatter-pointer-erasure-checkpoint.md#combined-integration-and-core-frontier)
 records the earlier VTable boundary; the live tracker owns the newer result.
 
@@ -26,18 +26,18 @@ records the earlier VTable boundary; the live tracker owns the newer result.
   Next exit is the [encoded/native7 consumer](parallel/provided-method-execution.md).
   Complete source checking and structural/coherence inventory remain mandatory;
   unrelated imported elaboration and bodies may remain Pending until needed.
-- B: actual Pattern/NonNull, then PhantomData/Location/track_caller/PanicInfo and
+- B: Pattern/NonNull and PhantomData are integrated. Complete actual source
+  Location derives, track_caller/PanicInfo and
   a false assertion reaching the real handler/Abort. Formatting follows through
   source constructors and selected methods. Reuse the same Pointee metadata
   classifier and source-owned obligations rather than new library algorithms.
-- C: final trait-method grammar, source feature authority and override behavior
-  against the actual Share::share source. Foreign VTable and Pattern are now
-  integrated locally and advance original loading. Ordinary provided overrides
-  and impl-specialization defaultness remain distinct contracts; coordinate their
-  eventual metadata with A. Keep the disjoint Provided codec task queued until
-  this newly observed blocker is covered.
-- Integrator: actual Thin alias semantics, consumer joins, original core
-  checking/export and publication. Prioritize complete supported declarations
+- C: actual source derive helper-declaration producer, beginning with Default's
+  `attributes(default)`. Coordinate typed helper authority with B's invocation
+  consumer. Final methods and their native override controls are integrated;
+  public final policy transport remains required. Keep the disjoint Provided
+  codec task queued until this newly observed blocker is covered.
+- Integrator: direct Thin now reaches actual native execution. Continue consumer
+  joins, original core checking/export and publication. Prioritize supported declarations
   and uses over unrelated alias breadth; preserve explicit unsupported forms.
   Prepare the selected alloc/std dependency/runtime graph and PA34 orchestration
   before core completion. Do not change CPPGM or pinned upstream sources.
@@ -47,12 +47,12 @@ that task, not an endlessly expanding replacement milestone. At consumer exits,
 reconcile the owning PA's remaining implementation and release checklist.
 
 Keep at most one qualified handoff queued per worker; the integrator takes shared
-bases before adding an unrelated implementation task. Foreign integration has
-advanced original core without waiting for all Thin/panic semantics; C now owns
-the newly observed final-method blocker. A's disjoint Provided codec remains
+bases before adding an unrelated implementation task. Combined Thin/PhantomData/
+final-method integration advances original core; C now owns the newly observed
+helper-declaration blocker. A's disjoint Provided codec remains
 queued with its exact wire rows in the existing milestone, while A retains
 member/body semantics. The integrator
-finishes its current Thin join, then protects integration/observation time rather
+protects integration/observation time rather
 than opening a fourth long compiler workstream. Keep three workers; shared
 TypeKind/ABI/proof edits are not an opportunity for more concurrent owners.
 

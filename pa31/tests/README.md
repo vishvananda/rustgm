@@ -167,3 +167,15 @@ pending implementation validation from absent Copy, and retains valid generic
 prerequisites outside the bounded early scalar profile. See the
 [readiness review](../../docs/pa31-early-copy-readiness.md). Independent outcomes
 are separate from the pending compiler qualification; PA31 remains planned.
+
+`spec/source-phantom/` freezes the actual source unit-marker and selected impl
+bodies for logical variance/ownership versus physical fieldless storage. Its
+contract records independent outcomes separately from candidate qualification;
+Location/caller tracking and the complete panic path remain required.
+
+`spec/final-methods/` freezes eighteen new final-associated-function sources
+with separate metadata predictions in both editions and four still-unrun native
+outcomes. They distinguish final trait bodies/override prohibition, ordinary
+provided overrides, dynamic static-versus-virtual calls, actual source Share,
+exact keyword authority and inactive syntax. The initial contract is retained
+even when observations disprove a prediction. This does not activate PA31.

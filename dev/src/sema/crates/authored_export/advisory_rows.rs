@@ -362,6 +362,13 @@ pub(crate) fn require_defaultness_transport(
     report: &Report,
     declaration: NodeKey,
 ) -> Result<(), Error> {
+    if let Some(modifier) = report.active_finalness(declaration)? {
+        return Err(report.diagnostic(Error::at(
+            declaration.file,
+            modifier.span.start,
+            "source final trait method contract transport is not implemented",
+        )));
+    }
     let Some(defaultness) = report.active_defaultness(declaration)? else {
         return Ok(());
     };

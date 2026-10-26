@@ -205,6 +205,13 @@ impl Checker<'_> {
         actual: Function,
         definitions: &conformance::Definitions,
     ) -> Result<(), Error> {
+        if crate::sema::declarations::is_final_trait_method(
+            self.report,
+            &self.facts,
+            expected.definition,
+        )? {
+            return Err(self.error(actual.node, "cannot override final trait method"));
+        }
         self.trait_override(actual)?;
         self.reject_specializable_result(expected.definition, actual)?;
         if self

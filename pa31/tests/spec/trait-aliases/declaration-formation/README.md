@@ -9,9 +9,10 @@ required accepted programs; an implementation restriction is not their oracle.
 
 The maintainer checks written clauses through the ordinary declaration and
 region machinery. Canonical alias edges remain separate, without copying
-inherited predicates into every header. The current private regression reaches
-the explicit execution restriction for valid aliases; it does not qualify their
-body execution or export. Broader quantified edge formation remains required.
+inherited predicates into every header. Direct lifetime-free aliases now pass declaration checking, and the ordinary
+Copy consumer reaches real body/ownership/instance lowering. The valid lifetime
+case retains an explicit execution restriction. Broader quantified edge formation
+and public alias transport remain required.
 
 Raw observations and the source binding are retained in the integrator's
 `obj/parallel/alias-formation-v1`. No PA31 text manifest or assignment release is
