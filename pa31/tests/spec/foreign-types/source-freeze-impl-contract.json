@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "phase": "two new source-path predictions frozen before observation",
+  "scope": "two new metadata observations; real source raw-pointer Freeze impl from core_marker.rs910-918, no preceding4 repeat",
+  "cases": [
+    {
+      "source": "pa31/tests/spec/foreign-types/pointer-freeze-source-impl.rs",
+      "sha256": "0d87de0ce511d3a117f88ff1133a5e4c351b9bbc58e613388c27306e41784d99",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "actual source unsafe Freeze implementation authorizes raw-pointer proof independently of unknown Foreign pointee"
+    }
+  ]
+}
