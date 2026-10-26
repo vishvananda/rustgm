@@ -139,10 +139,9 @@ fn actual_alias_feature_frames_and_unconditional_disabled_diagnostics_match_obse
         assert!(error.message.contains("trait_alias"), "{name}: {error}");
     }
     let literal = report(&fixture("literal-alias-allowance")?)?;
-    assert!(
-        pipeline::analyze_source(&literal).is_err(),
-        "allowance cannot grant contract implementation"
-    );
+    // The literal definition grants its actual syntax allowance. This direct
+    // contract now has complete local consumers independently of that grant.
+    pipeline::analyze_source(&literal)?;
     for prefix in [
         "",
         "#![allow(unstable_syntax_pre_expansion)]",
