@@ -337,8 +337,9 @@ fn members(
             .len()
             .saturating_mul(size_of::<crate::resolve::model::DefId>()),
     )?;
-    members
-        .iter()
-        .map(|&row| view.definition(row, work))
-        .collect()
+    let mut actual = Vec::with_capacity(members.len());
+    for &row in members {
+        actual.push(view.definition(row, work)?);
+    }
+    Ok(actual)
 }
