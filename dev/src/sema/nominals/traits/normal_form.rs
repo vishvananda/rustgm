@@ -1,6 +1,6 @@
 //! Canonical projections retain opened lifetimes and selection across header dependencies.
 mod application_anchors;
-mod metadata_results;
+mod data_result;
 mod opening;
 mod origin_results;
 use super::{

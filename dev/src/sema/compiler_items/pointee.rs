@@ -1,7 +1,7 @@
 //! Source metadata declaration authority is independent of pointer representation.
 mod automatic;
-mod metadata_plan;
-pub(in crate::sema) use metadata_plan::{Plan as MetadataPlan, Step as MetadataStep};
+mod representation;
+pub(in crate::sema) use representation::{Plan as MetadataPlan, Step as MetadataStep};
 mod schemas;
 mod sealed_declarations;
 pub(in crate::sema) use automatic::{Readiness, Selection, select};

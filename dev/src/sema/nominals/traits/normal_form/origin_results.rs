@@ -7,7 +7,7 @@ use crate::sema::{
 
 pub(super) enum Continuation {
     Inherited(ProjectionRequirements),
-    Metadata(super::metadata_results::Pending),
+    Metadata(super::data_result::Pending),
 }
 impl Continuation {
     pub(super) fn allocation_end(&self, first: u32) -> u32 {
