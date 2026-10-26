@@ -97,6 +97,18 @@ pub(super) fn prepare(
         work,
     )?;
     preflight(facts, &declarations, work)?;
+    install(facts, &mut declarations, definition, header, implicit)?;
+    template_demands::mark_declarations(&mut selected.recipes, &declarations)?;
+    Ok(Demand::Ready(()))
+}
+
+fn install(
+    facts: &mut Declarations,
+    declarations: &mut [template_demands::Declaration],
+    definition: DefId,
+    header: Header,
+    implicit: Predicate,
+) -> Result<(), Error> {
     // All state belongs to this consumed private draft. A fatal failure disposes
     // of the draft, preserving attempted work; no public header/proof escapes.
     facts
@@ -109,7 +121,7 @@ pub(super) fn prepare(
         .generics
         .trait_self_bounds
         .insert(definition, implicit);
-    for declaration in &mut declarations {
+    for declaration in declarations {
         if let Some(parent) = declaration.parent {
             facts
                 .generics
@@ -133,8 +145,7 @@ pub(super) fn prepare(
             .environments
             .insert(declaration.definition, Arc::clone(&declaration.environment));
     }
-    template_demands::mark_declarations(&mut selected.recipes, &declarations)?;
-    Ok(Demand::Ready(()))
+    Ok(())
 }
 
 fn contract(
