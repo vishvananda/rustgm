@@ -23,3 +23,10 @@ settings, plus panic=abort. The draft course manifest has its own declared sessi
 settings and is not an executed public suite; do not equate those future commands
 with the retained independent commands. Internal-source cases alone request
 RUSTC_BOOTSTRAP; the actual standard-library MaybeUninit control does not.
+
+The formatter-pointer successor qualifies runtime signature erasure and genuine
+CTFE function-target formation, using four new reducers (eight commands) and an
+actual const-constructor→runtime native observer. The original incompatible ABI
+pointer is only formed, never called. Exact source and permission boundaries are
+in docs/formatter-pointer-erasure-checkpoint.md. Full Arguments/NonNull/PanicInfo
+is still required; CTFE pointer invocation remains rejected.
