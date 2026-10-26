@@ -155,6 +155,7 @@ fn structural_readiness_preserves_pending_fields_closedness_and_failed_work() ->
         index: 0,
         kind: crate::types::parameters::ParameterKind::Type { sized: true },
     })?;
+    let parameter = types.intern(crate::types::Kind::Parameter(parameter))?;
     work = 0;
     let open = layouts
         .storage_readiness(&types, &definitions, parameter, &mut work, 100)
@@ -162,14 +163,15 @@ fn structural_readiness_preserves_pending_fields_closedness_and_failed_work() ->
         .ok_or("open type accepted")?;
     assert!(open.contains("closed normalized type"));
     let report = crate::test_source::source_provider(&source("")?, "source_storage_budget")?;
-    let mut facts = Declarations::new(&report)?;
+    let mut facts = crate::sema::declarations::analyze(&report)?;
+    let layouts_before = facts.layouts.len();
     facts.body_work.canonical_steps = crate::support::crates::MAX_COMPONENTS;
     assert!(prepare_layout(&mut facts, TypeId::primitive(crate::types::Primitive::U16)).is_err());
     assert_eq!(
         facts.body_work.canonical_steps,
         crate::support::crates::MAX_COMPONENTS + 1
     );
-    assert!(facts.layouts.is_empty());
+    assert_eq!(facts.layouts.len(), layouts_before);
     eprintln!(
         "source layout cold_steps={cold} warm_readiness=1 failed_attempt=1 actual_size=4 align=2"
     );
