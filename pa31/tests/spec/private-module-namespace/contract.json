@@ -1,0 +1,26 @@
+{
+  "state": "privatecandidate-unqualified",
+  "fixtures": {
+    "nested-aliases.rs": "d9374c03800aa3ab35872104e85f14d0509ff40b6de8dea07e26e06471a8a4f5",
+    "restricted-stays-closed.rs": "aa46b489762d447fad6c4e46dc4812e5cae5d4b36d3d7965757ab8ae3bf04cea",
+    "nonzero-names.rs": "30fff2e7c86761aaed0fa3b505dfa0c9b28a8c8a1caf66ccecb7f3f2805d8db5",
+    "root-trait.rs": "617a10fffae9101ac0cfa4735eacb0c1bdb38523eb2423a43ff24da1a466797f",
+    "homonyms.rs": "421349b71ab89818ffd4e28bc95cf626364f1ce26b7235cbdad8f34b1926932b"
+  },
+  "owning": "PA29 typed namespace/catalog viaPA31sourceprovider; noassignmentactivation",
+  "independent": {
+    "run": 40221183139,
+    "results_sha256": "868870c88d4ce9438d9a098ecc37d94c75fc6f0cf04606f8e02e5b61ecd92dac",
+    "observations": 40,
+    "sources": "19frozenreducers;16providerretained+24freshclients,7metadatareconstructionsallbyteequal",
+    "claim": "metadata/object only; native/runtime unclaimed"
+  },
+  "candidate_expected": {
+    "root-trait": "private snapshotaccepted; publicsourceStage staysclosed",
+    "nested-aliases": "private snapshot/catalog accepted; actualhiddenmodule survivespublicalias; publicprofileclosed",
+    "homonyms": "actualtrait/function same-spelling distinct namespaces",
+    "nonzero-names": "actualprivate num::nonzero module identity survivespublic num::ZeroablePrimitive alias; namespaceonlyreduction, unsafe/results/restrictionunclaimed",
+    "restricted-stays-closed": "bothprivate-first-snapshot/currentpublicproducer reject restricted policy transport"
+  },
+  "guard": "no new profile/tag/wire/Interface/SourceClient/CTFE/Provided permission"
+}

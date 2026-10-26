@@ -1,4 +1,0 @@
-sema::compiler_items::intrinsic_contracts::tests::native::source_layout_provider_const_wrapper_reaches_native_code: test
-support::crates::codec::packet_envelope::tests::source_function_artifact_executes_fresh_native_client_seven: test
-
-2 tests, 0 benchmarks

@@ -1,6 +1,15 @@
 //! External metadata keeps its origin while local scopes receive canonical IDs.
 mod original_declarations;
 mod public_names;
+#[cfg_attr(
+    not(test),
+    expect(
+        unused_imports,
+        reason = "private namespace transaction awaits qualified module-contract publication; public profile guards remain closed"
+    )
+)]
+pub(crate) use original_declarations::{OwnedNamespaceCatalog, PendingNamespace};
+mod consumer_inputs;
 #[path = "crates/dormant_catalog.rs"]
 pub(crate) mod unpaid_provided;
 use super::{
@@ -14,6 +23,7 @@ use crate::support::crates::{
     Namespace as WireNamespace, Record, Static,
 };
 use crate::support::hash::HashMap;
+pub(crate) use consumer_inputs::{ConsumerInput, ConsumerReservation};
 pub(crate) use original_declarations::Work as ReservationWork;
 use std::sync::Arc;
 

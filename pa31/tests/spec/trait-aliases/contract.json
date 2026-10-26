@@ -1,0 +1,1481 @@
+{
+  "schema": 1,
+  "state": "planned; no RustGM trait-alias implementation qualification",
+  "owner": "PA5 grammar; PA21 bound algorithms; PA31 unstable feature and complete source providers",
+  "source_plan_sha256": "d38fe6af6ab66c04552b53f40c0dec3234ed7e5413cc8e20b891eb095c5acbff",
+  "independent": {
+    "run": 40239493812,
+    "artifact": 12616985245,
+    "artifact_sha256": "bd43c957290e0db79a70f91b0e3fadd962c132eaad1a710df34834fc3e966664",
+    "binding_sha256": "31ff693149ace5095ad49ae86e6d2809969879294adabf10bee34c0830dfd17d",
+    "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "metadata_observations": 32,
+    "native_executions": 6,
+    "commands": 44,
+    "infrastructure_failures": 0,
+    "seconds": 0.7477817299999998,
+    "prediction_disagreements": [
+      {
+        "name": "thin-associated-equality-2021",
+        "phase": "metadata",
+        "command": [
+          "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2021",
+          "--target=x86_64-unknown-linux-gnu",
+          "-Cpanic=abort",
+          "--emit=metadata",
+          "--error-format=json",
+          "--crate-name=trait_alias_probe",
+          ".github/graph_sources/thin-associated-equality.rs",
+          "-o",
+          "obj/parallel/all-attribute-selected-output-v1/thin-associated-equality-2021.rmeta"
+        ],
+        "source_sha256": "4977cba74f230521acb0ae1d8f580afb37cad35319d9c8dc7a054bcbb62e4305",
+        "status": 0,
+        "expected_status": 0,
+        "warning_codes": [
+          "private_bounds",
+          "private_bounds",
+          null
+        ],
+        "errors": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "edf06e41f779f0ba4b83ffa88aaed64b03e20f30096cba7b141668114fc69c83",
+        "disagreement": true
+      },
+      {
+        "name": "thin-associated-equality-2021",
+        "phase": "native-build",
+        "command": [
+          "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2021",
+          "--target=x86_64-unknown-linux-gnu",
+          "-Cpanic=abort",
+          "-Copt-level=0",
+          "-Cdebuginfo=0",
+          "--error-format=json",
+          "--crate-name=trait_alias_probe",
+          ".github/graph_sources/thin-associated-equality.rs",
+          "-o",
+          "obj/parallel/all-attribute-selected-output-v1/thin-associated-equality-2021.native"
+        ],
+        "source_sha256": "4977cba74f230521acb0ae1d8f580afb37cad35319d9c8dc7a054bcbb62e4305",
+        "status": 0,
+        "expected_status": 0,
+        "warning_codes": [
+          "private_bounds",
+          "private_bounds",
+          null
+        ],
+        "errors": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "edf06e41f779f0ba4b83ffa88aaed64b03e20f30096cba7b141668114fc69c83",
+        "disagreement": true
+      },
+      {
+        "name": "thin-associated-equality-2024",
+        "phase": "metadata",
+        "command": [
+          "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2024",
+          "--target=x86_64-unknown-linux-gnu",
+          "-Cpanic=abort",
+          "--emit=metadata",
+          "--error-format=json",
+          "--crate-name=trait_alias_probe",
+          ".github/graph_sources/thin-associated-equality.rs",
+          "-o",
+          "obj/parallel/all-attribute-selected-output-v1/thin-associated-equality-2024.rmeta"
+        ],
+        "source_sha256": "4977cba74f230521acb0ae1d8f580afb37cad35319d9c8dc7a054bcbb62e4305",
+        "status": 0,
+        "expected_status": 0,
+        "warning_codes": [
+          "private_bounds",
+          "private_bounds",
+          null
+        ],
+        "errors": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "edf06e41f779f0ba4b83ffa88aaed64b03e20f30096cba7b141668114fc69c83",
+        "disagreement": true
+      },
+      {
+        "name": "thin-associated-equality-2024",
+        "phase": "native-build",
+        "command": [
+          "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2024",
+          "--target=x86_64-unknown-linux-gnu",
+          "-Cpanic=abort",
+          "-Copt-level=0",
+          "-Cdebuginfo=0",
+          "--error-format=json",
+          "--crate-name=trait_alias_probe",
+          ".github/graph_sources/thin-associated-equality.rs",
+          "-o",
+          "obj/parallel/all-attribute-selected-output-v1/thin-associated-equality-2024.native"
+        ],
+        "source_sha256": "4977cba74f230521acb0ae1d8f580afb37cad35319d9c8dc7a054bcbb62e4305",
+        "status": 0,
+        "expected_status": 0,
+        "warning_codes": [
+          "private_bounds",
+          "private_bounds",
+          null
+        ],
+        "errors": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "edf06e41f779f0ba4b83ffa88aaed64b03e20f30096cba7b141668114fc69c83",
+        "disagreement": true
+      },
+      {
+        "name": "generic-where-before-equals-2021",
+        "phase": "metadata",
+        "command": [
+          "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2021",
+          "--target=x86_64-unknown-linux-gnu",
+          "-Cpanic=abort",
+          "--emit=metadata",
+          "--error-format=json",
+          "--crate-name=trait_alias_probe",
+          ".github/graph_sources/generic-where-before-equals.rs",
+          "-o",
+          "obj/parallel/all-attribute-selected-output-v1/generic-where-before-equals-2021.rmeta"
+        ],
+        "source_sha256": "fadf922b5ba9e758867d534b0011e5fa61abadb839a909f06f060ad2814aab64",
+        "status": 1,
+        "expected_status": 0,
+        "warning_codes": [],
+        "errors": [
+          "expected one of `(`, `+`, `,`, `::`, `<`, or `{`, found `=`",
+          "aborting due to 1 previous error"
+        ],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "41a2a9c4507609c915d710737341f304cd2c5215d96c2687adef33cb44466f40",
+        "disagreement": true
+      },
+      {
+        "name": "generic-where-before-equals-2024",
+        "phase": "metadata",
+        "command": [
+          "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2024",
+          "--target=x86_64-unknown-linux-gnu",
+          "-Cpanic=abort",
+          "--emit=metadata",
+          "--error-format=json",
+          "--crate-name=trait_alias_probe",
+          ".github/graph_sources/generic-where-before-equals.rs",
+          "-o",
+          "obj/parallel/all-attribute-selected-output-v1/generic-where-before-equals-2024.rmeta"
+        ],
+        "source_sha256": "fadf922b5ba9e758867d534b0011e5fa61abadb839a909f06f060ad2814aab64",
+        "status": 1,
+        "expected_status": 0,
+        "warning_codes": [],
+        "errors": [
+          "expected one of `(`, `+`, `,`, `::`, `<`, or `{`, found `=`",
+          "aborting due to 1 previous error"
+        ],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "41a2a9c4507609c915d710737341f304cd2c5215d96c2687adef33cb44466f40",
+        "disagreement": true
+      },
+      {
+        "name": "inactive-missing-feature-2021",
+        "phase": "metadata",
+        "command": [
+          "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2021",
+          "--target=x86_64-unknown-linux-gnu",
+          "-Cpanic=abort",
+          "--emit=metadata",
+          "--error-format=json",
+          "--crate-name=trait_alias_probe",
+          ".github/graph_sources/inactive-missing-feature.rs",
+          "-o",
+          "obj/parallel/all-attribute-selected-output-v1/inactive-missing-feature-2021.rmeta"
+        ],
+        "source_sha256": "e3935131d35a01ca4a47dceb1ceda013212440940164a27293df0a7e1f6ca3d5",
+        "status": 0,
+        "expected_status": 0,
+        "warning_codes": [
+          "unstable_syntax_pre_expansion",
+          null
+        ],
+        "errors": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "309b52e68f3bd29b8cf824f658ba3ec5b629084d6ea9d4ff510498d96cc2b5c5",
+        "disagreement": true
+      },
+      {
+        "name": "inactive-missing-feature-2024",
+        "phase": "metadata",
+        "command": [
+          "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2024",
+          "--target=x86_64-unknown-linux-gnu",
+          "-Cpanic=abort",
+          "--emit=metadata",
+          "--error-format=json",
+          "--crate-name=trait_alias_probe",
+          ".github/graph_sources/inactive-missing-feature.rs",
+          "-o",
+          "obj/parallel/all-attribute-selected-output-v1/inactive-missing-feature-2024.rmeta"
+        ],
+        "source_sha256": "e3935131d35a01ca4a47dceb1ceda013212440940164a27293df0a7e1f6ca3d5",
+        "status": 0,
+        "expected_status": 0,
+        "warning_codes": [
+          "unstable_syntax_pre_expansion",
+          null
+        ],
+        "errors": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "309b52e68f3bd29b8cf824f658ba3ec5b629084d6ea9d4ff510498d96cc2b5c5",
+        "disagreement": true
+      }
+    ]
+  },
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "metadata_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name=trait_alias_probe"
+  ],
+  "native_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Copt-level=0",
+    "-Cdebuginfo=0",
+    "--error-format=json",
+    "--crate-name=trait_alias_probe"
+  ],
+  "cases": [
+    {
+      "name": "thin-associated-equality",
+      "sha256": "4977cba74f230521acb0ae1d8f580afb37cad35319d9c8dc7a054bcbb62e4305",
+      "expected_metadata_status": 0,
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "7\n",
+        "stderr": ""
+      },
+      "observed": [
+        {
+          "name": "thin-associated-equality-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/thin-associated-equality.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/thin-associated-equality-2021.rmeta"
+          ],
+          "source_sha256": "4977cba74f230521acb0ae1d8f580afb37cad35319d9c8dc7a054bcbb62e4305",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [
+            "private_bounds",
+            "private_bounds",
+            null
+          ],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "edf06e41f779f0ba4b83ffa88aaed64b03e20f30096cba7b141668114fc69c83",
+          "disagreement": true
+        },
+        {
+          "name": "thin-associated-equality-2021",
+          "phase": "native-build",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "-Copt-level=0",
+            "-Cdebuginfo=0",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/thin-associated-equality.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/thin-associated-equality-2021.native"
+          ],
+          "source_sha256": "4977cba74f230521acb0ae1d8f580afb37cad35319d9c8dc7a054bcbb62e4305",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [
+            "private_bounds",
+            "private_bounds",
+            null
+          ],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "edf06e41f779f0ba4b83ffa88aaed64b03e20f30096cba7b141668114fc69c83",
+          "disagreement": true
+        },
+        {
+          "name": "thin-associated-equality-2021",
+          "phase": "native",
+          "command": [
+            "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/thin-associated-equality-2021.native"
+          ],
+          "source_sha256": "4977cba74f230521acb0ae1d8f580afb37cad35319d9c8dc7a054bcbb62e4305",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "thin-associated-equality-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/thin-associated-equality.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/thin-associated-equality-2024.rmeta"
+          ],
+          "source_sha256": "4977cba74f230521acb0ae1d8f580afb37cad35319d9c8dc7a054bcbb62e4305",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [
+            "private_bounds",
+            "private_bounds",
+            null
+          ],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "edf06e41f779f0ba4b83ffa88aaed64b03e20f30096cba7b141668114fc69c83",
+          "disagreement": true
+        },
+        {
+          "name": "thin-associated-equality-2024",
+          "phase": "native-build",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "-Copt-level=0",
+            "-Cdebuginfo=0",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/thin-associated-equality.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/thin-associated-equality-2024.native"
+          ],
+          "source_sha256": "4977cba74f230521acb0ae1d8f580afb37cad35319d9c8dc7a054bcbb62e4305",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [
+            "private_bounds",
+            "private_bounds",
+            null
+          ],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "edf06e41f779f0ba4b83ffa88aaed64b03e20f30096cba7b141668114fc69c83",
+          "disagreement": true
+        },
+        {
+          "name": "thin-associated-equality-2024",
+          "phase": "native",
+          "command": [
+            "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/thin-associated-equality-2024.native"
+          ],
+          "source_sha256": "4977cba74f230521acb0ae1d8f580afb37cad35319d9c8dc7a054bcbb62e4305",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "thin-wrong-associated-result",
+      "sha256": "bb95ea15636730b2d937db13c41eabd5647e8ff869ffbd6b20b9a2495b207250",
+      "expected_metadata_status": 1,
+      "native": null,
+      "observed": [
+        {
+          "name": "thin-wrong-associated-result-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/thin-wrong-associated-result.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/thin-wrong-associated-result-2021.rmeta"
+          ],
+          "source_sha256": "bb95ea15636730b2d937db13c41eabd5647e8ff869ffbd6b20b9a2495b207250",
+          "status": 1,
+          "expected_status": 1,
+          "warning_codes": [],
+          "errors": [
+            "type mismatch resolving `<u8 as Pointee>::Metadata == ()`",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "232a37f127440052cc1fbb8ead38a92836fba7456086a84f03b36d04080a1421",
+          "disagreement": false
+        },
+        {
+          "name": "thin-wrong-associated-result-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/thin-wrong-associated-result.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/thin-wrong-associated-result-2024.rmeta"
+          ],
+          "source_sha256": "bb95ea15636730b2d937db13c41eabd5647e8ff869ffbd6b20b9a2495b207250",
+          "status": 1,
+          "expected_status": 1,
+          "warning_codes": [],
+          "errors": [
+            "type mismatch resolving `<u8 as Pointee>::Metadata == ()`",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "232a37f127440052cc1fbb8ead38a92836fba7456086a84f03b36d04080a1421",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "generic-lifetime-alias",
+      "sha256": "d35ec1292367225a613b910b759bbc650070dccd37619a2cc0a24a06b5523db3",
+      "expected_metadata_status": 0,
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "7\n",
+        "stderr": ""
+      },
+      "observed": [
+        {
+          "name": "generic-lifetime-alias-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/generic-lifetime-alias.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/generic-lifetime-alias-2021.rmeta"
+          ],
+          "source_sha256": "d35ec1292367225a613b910b759bbc650070dccd37619a2cc0a24a06b5523db3",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "generic-lifetime-alias-2021",
+          "phase": "native-build",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "-Copt-level=0",
+            "-Cdebuginfo=0",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/generic-lifetime-alias.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/generic-lifetime-alias-2021.native"
+          ],
+          "source_sha256": "d35ec1292367225a613b910b759bbc650070dccd37619a2cc0a24a06b5523db3",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "generic-lifetime-alias-2021",
+          "phase": "native",
+          "command": [
+            "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/generic-lifetime-alias-2021.native"
+          ],
+          "source_sha256": "d35ec1292367225a613b910b759bbc650070dccd37619a2cc0a24a06b5523db3",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "generic-lifetime-alias-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/generic-lifetime-alias.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/generic-lifetime-alias-2024.rmeta"
+          ],
+          "source_sha256": "d35ec1292367225a613b910b759bbc650070dccd37619a2cc0a24a06b5523db3",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "generic-lifetime-alias-2024",
+          "phase": "native-build",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "-Copt-level=0",
+            "-Cdebuginfo=0",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/generic-lifetime-alias.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/generic-lifetime-alias-2024.native"
+          ],
+          "source_sha256": "d35ec1292367225a613b910b759bbc650070dccd37619a2cc0a24a06b5523db3",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "generic-lifetime-alias-2024",
+          "phase": "native",
+          "command": [
+            "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/generic-lifetime-alias-2024.native"
+          ],
+          "source_sha256": "d35ec1292367225a613b910b759bbc650070dccd37619a2cc0a24a06b5523db3",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "two-regular-traits-bound",
+      "sha256": "f277d1f37157ee0f143eaa4f2700084bc7d7f3c86e45dbc4976cd1431acbd9d8",
+      "expected_metadata_status": 0,
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "7\n",
+        "stderr": ""
+      },
+      "observed": [
+        {
+          "name": "two-regular-traits-bound-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/two-regular-traits-bound.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/two-regular-traits-bound-2021.rmeta"
+          ],
+          "source_sha256": "f277d1f37157ee0f143eaa4f2700084bc7d7f3c86e45dbc4976cd1431acbd9d8",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "two-regular-traits-bound-2021",
+          "phase": "native-build",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "-Copt-level=0",
+            "-Cdebuginfo=0",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/two-regular-traits-bound.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/two-regular-traits-bound-2021.native"
+          ],
+          "source_sha256": "f277d1f37157ee0f143eaa4f2700084bc7d7f3c86e45dbc4976cd1431acbd9d8",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "two-regular-traits-bound-2021",
+          "phase": "native",
+          "command": [
+            "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/two-regular-traits-bound-2021.native"
+          ],
+          "source_sha256": "f277d1f37157ee0f143eaa4f2700084bc7d7f3c86e45dbc4976cd1431acbd9d8",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "two-regular-traits-bound-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/two-regular-traits-bound.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/two-regular-traits-bound-2024.rmeta"
+          ],
+          "source_sha256": "f277d1f37157ee0f143eaa4f2700084bc7d7f3c86e45dbc4976cd1431acbd9d8",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "two-regular-traits-bound-2024",
+          "phase": "native-build",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "-Copt-level=0",
+            "-Cdebuginfo=0",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/two-regular-traits-bound.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/two-regular-traits-bound-2024.native"
+          ],
+          "source_sha256": "f277d1f37157ee0f143eaa4f2700084bc7d7f3c86e45dbc4976cd1431acbd9d8",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "two-regular-traits-bound-2024",
+          "phase": "native",
+          "command": [
+            "/home/runner/work/rustgm/rustgm/obj/parallel/all-attribute-selected-output-v1/two-regular-traits-bound-2024.native"
+          ],
+          "source_sha256": "f277d1f37157ee0f143eaa4f2700084bc7d7f3c86e45dbc4976cd1431acbd9d8",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "where-self-alias",
+      "sha256": "082e1f67236512263c6638ba270e4c80bba4858ced587f3ad3321fbc4226e0ad",
+      "expected_metadata_status": 0,
+      "native": null,
+      "observed": [
+        {
+          "name": "where-self-alias-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/where-self-alias.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/where-self-alias-2021.rmeta"
+          ],
+          "source_sha256": "082e1f67236512263c6638ba270e4c80bba4858ced587f3ad3321fbc4226e0ad",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "where-self-alias-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/where-self-alias.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/where-self-alias-2024.rmeta"
+          ],
+          "source_sha256": "082e1f67236512263c6638ba270e4c80bba4858ced587f3ad3321fbc4226e0ad",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "generic-where-before-equals",
+      "sha256": "fadf922b5ba9e758867d534b0011e5fa61abadb839a909f06f060ad2814aab64",
+      "expected_metadata_status": 0,
+      "native": null,
+      "observed": [
+        {
+          "name": "generic-where-before-equals-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/generic-where-before-equals.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/generic-where-before-equals-2021.rmeta"
+          ],
+          "source_sha256": "fadf922b5ba9e758867d534b0011e5fa61abadb839a909f06f060ad2814aab64",
+          "status": 1,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [
+            "expected one of `(`, `+`, `,`, `::`, `<`, or `{`, found `=`",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "41a2a9c4507609c915d710737341f304cd2c5215d96c2687adef33cb44466f40",
+          "disagreement": true
+        },
+        {
+          "name": "generic-where-before-equals-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/generic-where-before-equals.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/generic-where-before-equals-2024.rmeta"
+          ],
+          "source_sha256": "fadf922b5ba9e758867d534b0011e5fa61abadb839a909f06f060ad2814aab64",
+          "status": 1,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [
+            "expected one of `(`, `+`, `,`, `::`, `<`, or `{`, found `=`",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "41a2a9c4507609c915d710737341f304cd2c5215d96c2687adef33cb44466f40",
+          "disagreement": true
+        }
+      ]
+    },
+    {
+      "name": "generic-where-after-bounds",
+      "sha256": "1771d4fa6780cef3788048bee5b0558f68558f62f2f72b4607ee298bc43677c9",
+      "expected_metadata_status": 0,
+      "native": null,
+      "observed": [
+        {
+          "name": "generic-where-after-bounds-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/generic-where-after-bounds.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/generic-where-after-bounds-2021.rmeta"
+          ],
+          "source_sha256": "1771d4fa6780cef3788048bee5b0558f68558f62f2f72b4607ee298bc43677c9",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "generic-where-after-bounds-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/generic-where-after-bounds.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/generic-where-after-bounds-2024.rmeta"
+          ],
+          "source_sha256": "1771d4fa6780cef3788048bee5b0558f68558f62f2f72b4607ee298bc43677c9",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "recursive-alias-cycle",
+      "sha256": "220ac606af265bdacaffee1b257fde40379780040f702e6d936e8dbb0527eab6",
+      "expected_metadata_status": 1,
+      "native": null,
+      "observed": [
+        {
+          "name": "recursive-alias-cycle-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/recursive-alias-cycle.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/recursive-alias-cycle-2021.rmeta"
+          ],
+          "source_sha256": "220ac606af265bdacaffee1b257fde40379780040f702e6d936e8dbb0527eab6",
+          "status": 1,
+          "expected_status": 1,
+          "warning_codes": [],
+          "errors": [
+            "cycle detected when computing the implied predicates of `A`",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2cf4bbb1da9ae1e0bf725960657022df19065707b5a9e9cf74e6aaa49520fa77",
+          "disagreement": false
+        },
+        {
+          "name": "recursive-alias-cycle-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/recursive-alias-cycle.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/recursive-alias-cycle-2024.rmeta"
+          ],
+          "source_sha256": "220ac606af265bdacaffee1b257fde40379780040f702e6d936e8dbb0527eab6",
+          "status": 1,
+          "expected_status": 1,
+          "warning_codes": [],
+          "errors": [
+            "cycle detected when computing the implied predicates of `A`",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "2cf4bbb1da9ae1e0bf725960657022df19065707b5a9e9cf74e6aaa49520fa77",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "alias-is-not-impl-owner",
+      "sha256": "65aa71023a77791a1b242843db1c5f1ea210d13cd554ba6a62bfb42079b015a5",
+      "expected_metadata_status": 1,
+      "native": null,
+      "observed": [
+        {
+          "name": "alias-is-not-impl-owner-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/alias-is-not-impl-owner.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/alias-is-not-impl-owner-2021.rmeta"
+          ],
+          "source_sha256": "65aa71023a77791a1b242843db1c5f1ea210d13cd554ba6a62bfb42079b015a5",
+          "status": 1,
+          "expected_status": 1,
+          "warning_codes": [],
+          "errors": [
+            "expected trait, found trait alias `Alias`",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c7da7cd5666b0674b4fc86df9ca6fd0fd8e8905bbea951e75cd22111eb7d2271",
+          "disagreement": false
+        },
+        {
+          "name": "alias-is-not-impl-owner-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/alias-is-not-impl-owner.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/alias-is-not-impl-owner-2024.rmeta"
+          ],
+          "source_sha256": "65aa71023a77791a1b242843db1c5f1ea210d13cd554ba6a62bfb42079b015a5",
+          "status": 1,
+          "expected_status": 1,
+          "warning_codes": [],
+          "errors": [
+            "expected trait, found trait alias `Alias`",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "c7da7cd5666b0674b4fc86df9ca6fd0fd8e8905bbea951e75cd22111eb7d2271",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "dyn-single-expanded-trait",
+      "sha256": "518a3aab9e9b56f8e17e148e3e511826414ee5ce16aa5d112ebd116aa5d83223",
+      "expected_metadata_status": 0,
+      "native": null,
+      "observed": [
+        {
+          "name": "dyn-single-expanded-trait-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/dyn-single-expanded-trait.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/dyn-single-expanded-trait-2021.rmeta"
+          ],
+          "source_sha256": "518a3aab9e9b56f8e17e148e3e511826414ee5ce16aa5d112ebd116aa5d83223",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "dyn-single-expanded-trait-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/dyn-single-expanded-trait.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/dyn-single-expanded-trait-2024.rmeta"
+          ],
+          "source_sha256": "518a3aab9e9b56f8e17e148e3e511826414ee5ce16aa5d112ebd116aa5d83223",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "dyn-two-regular-traits",
+      "sha256": "ac4dec5f3735e221b7a4600e5876102cfe21185a87f6ff209f78b7737f8dfc3d",
+      "expected_metadata_status": 1,
+      "native": null,
+      "observed": [
+        {
+          "name": "dyn-two-regular-traits-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/dyn-two-regular-traits.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/dyn-two-regular-traits-2021.rmeta"
+          ],
+          "source_sha256": "ac4dec5f3735e221b7a4600e5876102cfe21185a87f6ff209f78b7737f8dfc3d",
+          "status": 1,
+          "expected_status": 1,
+          "warning_codes": [],
+          "errors": [
+            "only auto traits can be used as additional traits in a trait object",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f73116cd9a8123f5af1be23add2add63d9cb8f3ce3b6a9d196ea8dc040503eaa",
+          "disagreement": false
+        },
+        {
+          "name": "dyn-two-regular-traits-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/dyn-two-regular-traits.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/dyn-two-regular-traits-2024.rmeta"
+          ],
+          "source_sha256": "ac4dec5f3735e221b7a4600e5876102cfe21185a87f6ff209f78b7737f8dfc3d",
+          "status": 1,
+          "expected_status": 1,
+          "warning_codes": [],
+          "errors": [
+            "only auto traits can be used as additional traits in a trait object",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "f73116cd9a8123f5af1be23add2add63d9cb8f3ce3b6a9d196ea8dc040503eaa",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "active-missing-feature",
+      "sha256": "893488740c438a4f32b5b43cb82654d1daa614555c1c7dc8287d2f8a1f0b32bd",
+      "expected_metadata_status": 1,
+      "native": null,
+      "observed": [
+        {
+          "name": "active-missing-feature-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/active-missing-feature.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/active-missing-feature-2021.rmeta"
+          ],
+          "source_sha256": "893488740c438a4f32b5b43cb82654d1daa614555c1c7dc8287d2f8a1f0b32bd",
+          "status": 1,
+          "expected_status": 1,
+          "warning_codes": [],
+          "errors": [
+            "trait aliases are experimental",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a1c1701b80b380179c6e35ea2e73938991c2f94e581a4b092221b155604f27cc",
+          "disagreement": false
+        },
+        {
+          "name": "active-missing-feature-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/active-missing-feature.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/active-missing-feature-2024.rmeta"
+          ],
+          "source_sha256": "893488740c438a4f32b5b43cb82654d1daa614555c1c7dc8287d2f8a1f0b32bd",
+          "status": 1,
+          "expected_status": 1,
+          "warning_codes": [],
+          "errors": [
+            "trait aliases are experimental",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a1c1701b80b380179c6e35ea2e73938991c2f94e581a4b092221b155604f27cc",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "inactive-missing-feature",
+      "sha256": "e3935131d35a01ca4a47dceb1ceda013212440940164a27293df0a7e1f6ca3d5",
+      "expected_metadata_status": 0,
+      "native": null,
+      "observed": [
+        {
+          "name": "inactive-missing-feature-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/inactive-missing-feature.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/inactive-missing-feature-2021.rmeta"
+          ],
+          "source_sha256": "e3935131d35a01ca4a47dceb1ceda013212440940164a27293df0a7e1f6ca3d5",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [
+            "unstable_syntax_pre_expansion",
+            null
+          ],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "309b52e68f3bd29b8cf824f658ba3ec5b629084d6ea9d4ff510498d96cc2b5c5",
+          "disagreement": true
+        },
+        {
+          "name": "inactive-missing-feature-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/inactive-missing-feature.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/inactive-missing-feature-2024.rmeta"
+          ],
+          "source_sha256": "e3935131d35a01ca4a47dceb1ceda013212440940164a27293df0a7e1f6ca3d5",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [
+            "unstable_syntax_pre_expansion",
+            null
+          ],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "309b52e68f3bd29b8cf824f658ba3ec5b629084d6ea9d4ff510498d96cc2b5c5",
+          "disagreement": true
+        }
+      ]
+    },
+    {
+      "name": "empty-alias",
+      "sha256": "76361dd0ed6d3c65157244d7b756cddfea9a2f0e5bacdc6090a3a99c945b6b0b",
+      "expected_metadata_status": 0,
+      "native": null,
+      "observed": [
+        {
+          "name": "empty-alias-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/empty-alias.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/empty-alias-2021.rmeta"
+          ],
+          "source_sha256": "76361dd0ed6d3c65157244d7b756cddfea9a2f0e5bacdc6090a3a99c945b6b0b",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "empty-alias-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/empty-alias.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/empty-alias-2024.rmeta"
+          ],
+          "source_sha256": "76361dd0ed6d3c65157244d7b756cddfea9a2f0e5bacdc6090a3a99c945b6b0b",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "literal-alias-allowance",
+      "sha256": "d0eec121545caad1cb6af3e15457603dbfc9fc5b02db6f56272713d499741c24",
+      "expected_metadata_status": 0,
+      "native": null,
+      "observed": [
+        {
+          "name": "literal-alias-allowance-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/literal-alias-allowance.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/literal-alias-allowance-2021.rmeta"
+          ],
+          "source_sha256": "d0eec121545caad1cb6af3e15457603dbfc9fc5b02db6f56272713d499741c24",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        },
+        {
+          "name": "literal-alias-allowance-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/literal-alias-allowance.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/literal-alias-allowance-2024.rmeta"
+          ],
+          "source_sha256": "d0eec121545caad1cb6af3e15457603dbfc9fc5b02db6f56272713d499741c24",
+          "status": 0,
+          "expected_status": 0,
+          "warning_codes": [],
+          "errors": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "disagreement": false
+        }
+      ]
+    },
+    {
+      "name": "forwarded-alias-allowance",
+      "sha256": "95d5a03f7cd44db9562b2667a109ca723801f7a9ec5be4c9148021a2e5df2c92",
+      "expected_metadata_status": 1,
+      "native": null,
+      "observed": [
+        {
+          "name": "forwarded-alias-allowance-2021",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/forwarded-alias-allowance.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/forwarded-alias-allowance-2021.rmeta"
+          ],
+          "source_sha256": "95d5a03f7cd44db9562b2667a109ca723801f7a9ec5be4c9148021a2e5df2c92",
+          "status": 1,
+          "expected_status": 1,
+          "warning_codes": [],
+          "errors": [
+            "trait aliases are experimental",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "84e745b292cac46b91a69bb0235f2312f931b630ea76487b6992de4980c21412",
+          "disagreement": false
+        },
+        {
+          "name": "forwarded-alias-allowance-2024",
+          "phase": "metadata",
+          "command": [
+            "/home/runner/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "-Cpanic=abort",
+            "--emit=metadata",
+            "--error-format=json",
+            "--crate-name=trait_alias_probe",
+            ".github/graph_sources/forwarded-alias-allowance.rs",
+            "-o",
+            "obj/parallel/all-attribute-selected-output-v1/forwarded-alias-allowance-2024.rmeta"
+          ],
+          "source_sha256": "95d5a03f7cd44db9562b2667a109ca723801f7a9ec5be4c9148021a2e5df2c92",
+          "status": 1,
+          "expected_status": 1,
+          "warning_codes": [],
+          "errors": [
+            "trait aliases are experimental",
+            "aborting due to 1 previous error"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "84e745b292cac46b91a69bb0235f2312f931b630ea76487b6992de4980c21412",
+          "disagreement": false
+        }
+      ]
+    }
+  ]
+}
