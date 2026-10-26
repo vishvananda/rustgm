@@ -96,7 +96,6 @@ impl Checker<'_> {
             .substitute(&mut self.facts.types, args, target)
             .map_err(|e| self.error(key, e))
     }
-
 }
 
 #[cfg(test)]
