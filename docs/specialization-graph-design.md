@@ -530,3 +530,25 @@ Both strict compiler modes and the independent architecture audit precede any
 build/test execution. No prior oracle, full private inventory or native matrix
 is repeated in this checkpoint. Actual cold layouts and changed-path costs will
 be retained from the selected controls; they are not yet measured.
+
+
+The member-consumer checkpoint `4b195c57` is qualified by hosted run
+40267493521: all six nonignored groups passed, with strict production and private
+Clippy, metadata, formatting, architecture and the private build. Both receipts
+match all 2,719 frozen compiler inputs and all 31 declared fixture/data hashes.
+The helper completed in 150.41 seconds; no candidate native execution occurred.
+The terminal execution fence remains present in that qualified source.
+
+Actual cold sizes are Query 912, boxed Search Normalization 520, Frame 1,312,
+Node 160, SelectedMethod 32 and ProjectionRequirements 144 bytes. The inherited
+RPIT controls retain clause capacity 4, region capacity 0 and Search capacities
+(4, 0, 1). Chain and reverse-chain dispatch consume 42 and 45 charged work
+steps respectively, each with 264 logical retained bytes; failed work advances
+10,000,464 to 10,000,465 on the same budget owner (13,896 logical bytes).
+These are type sizes, capacities and logical budget charges, not allocator counts
+or peak-memory measurements. The CLI SHA is
+`5d608942f7b52bec94e455d5c5d6023bf0c244de6edea4129acf941a736609a9`.
+The primary receipt SHA is
+`2797bb924f3b3d54fa275accdb422a9004b7822a4c7376ebeef7b497f1c33ef5`;
+the independent audit receipt SHA is
+`ab752f2c3e9466bf37087ffa755d1554143f0d6f60ed4e51ed09d6a25feb2b80`.
