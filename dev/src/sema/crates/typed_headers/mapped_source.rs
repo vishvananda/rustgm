@@ -1,4 +1,5 @@
 //! One private canonical graph is sealed to an actual immutable source inventory.
+pub(super) mod checked_rows;
 mod dag_recipes;
 mod decoded_original;
 pub(crate) use decoded_original::Original as SourceOriginal;

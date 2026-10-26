@@ -18,7 +18,7 @@ fn semantic_form(
 ) -> Result<(), Error> {
     let message = match declaration.kind {
         Kind::Function => return Ok(()),
-        Kind::TraitAlias | Kind::ForeignType => {
+        Kind::TraitAlias | Kind::ForeignType | Kind::FinalFunction => {
             return Err(Error::at(
                 file,
                 declaration.span.start,
@@ -129,6 +129,24 @@ pub(super) fn validate_plain(package: &Package) -> Result<(), Error> {
 impl Report {
     /// A local active header's parsed modifier, authenticated before semantic use.
     pub(crate) fn active_defaultness(&self, key: NodeKey) -> Result<Option<Declaration>, Error> {
+        Ok(self
+            .active_gate_site(key)?
+            .filter(|site| site.kind.is_defaultness()))
+    }
+    pub(crate) fn active_finalness(&self, key: NodeKey) -> Result<Option<Declaration>, Error> {
+        Ok(self
+            .active_gate_site(key)?
+            .filter(|site| site.kind == Kind::FinalFunction))
+    }
+    pub(crate) fn active_method_modifier(
+        &self,
+        key: NodeKey,
+    ) -> Result<Option<Declaration>, Error> {
+        Ok(self
+            .active_gate_site(key)?
+            .filter(|site| site.kind.is_defaultness() || site.kind == Kind::FinalFunction))
+    }
+    fn active_gate_site(&self, key: NodeKey) -> Result<Option<Declaration>, Error> {
         let invalid = || {
             Error::at(
                 key.file,
@@ -158,7 +176,7 @@ impl Report {
                 .charge(1 + entries.len().checked_ilog2().unwrap_or(0) as usize, 0)
                 .map_err(|message| Error::at(key.file, node.span.start, message))?;
         }
-        let Some(declaration) = unit.configured.ast.defaultness(index).copied() else {
+        let Some(declaration) = unit.configured.ast.gate_site(index).copied() else {
             return Ok(None);
         };
         checked(&self.package, key, &declaration)?;

@@ -53,7 +53,7 @@ impl Environment {
         Ok(retained)
     }
 
-    /// Accounting only for already validated ordinary trait predicates whose
+    /// Accounting only for already validated trait predicates whose
     /// subject/arguments are rigid parameters or scalar leaves. Wider clauses
     /// must use an explicit wider estimator before any environment allocation.
     pub(crate) fn trait_leaf_allocation_bound(

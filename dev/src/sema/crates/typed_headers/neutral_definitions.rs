@@ -146,7 +146,7 @@ impl Owner {
             .get(*scope)
             .and_then(Option::as_deref)
             .ok_or_else(|| error("neutral numbered body lost its actual declaration"))?;
-        declaration.require(rows)?;
+        declaration.require(rows, facts)?;
         if *expected != demand.expected
             || declaration.raw != expected.scope.1
             || declaration.parameters.len() != expected.formals

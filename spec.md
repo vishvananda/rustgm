@@ -236,8 +236,12 @@ Typed expansion must share canonical dependency edges rather than repeatedly
 flattening nested alias diamonds. See the
 [source-site checkpoint](docs/trait-alias-sites-checkpoint.md) and
 [canonical clause checkpoint](docs/trait-alias-clauses-checkpoint.md). Canonical
-headers own full declared slots, direct clauses and typed dependency edges;
-seal their graph before use and distinguish unfinished, failed and empty
+headers own full declared slots and typed dependency edges. Store written clauses
+once in the ordinary generic predicate table under the actual alias owner;
+expansion, default checks and unused-declaration formation borrow those same
+clauses. Feed the actual alias schema to ordinary scoped-region validation.
+Inherited edges stay separate instead of copying their clauses into each default
+or header. Seal the graph before use and distinguish unfinished, failed and empty
 contracts. Substitution-only expansion may share identical actual declaration,
 subject and full-argument applications within one Store and binder context.
 That membership is not proof evidence. Compose nested universal alias edges
@@ -247,6 +251,15 @@ of copying its ancestor path; the [binder checkpoint](docs/trait-alias-binders-c
 records changed-path scaling. Retain original/normalized inputs and
 binder identities when their consumers are implemented; incomplete consumers
 and imported transport keep explicit fences.
+
+Direct aliases without explicit formals, lifetime-bearing or quantified clauses,
+const requirements or inherited alias edges feed their canonical predicates into
+ordinary body, ownership and instance checking. Declaration formation remains
+mandatory even when unused. This local execution boundary creates no alias trait
+owner, object principal or metadata identity. Public aliases still reject through
+the existing export profile; wider forms retain their explicit execution fence.
+The actual reduced source `Thin` consumer checks unit metadata through full
+lowering and rejects the slice metadata mismatch.
 
 Alias naming consumes the declaration-Self view, while proof retains the complete
 contract. Filter original typed subjects before actual substitution or result

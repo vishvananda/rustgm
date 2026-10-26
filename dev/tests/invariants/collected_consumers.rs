@@ -70,7 +70,8 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
                 == Some("Holder")
         })
         .ok_or("actual retained Holder declaration")?;
-    let definition = view.definition(holder.declaration, &mut work)?;
+    let holder_declaration = holder.declaration;
+    let definition = view.definition(holder_declaration, &mut work)?;
     assert!(authority.report.names_resolved);
     assert!(authority.report.resolution.extern_scope.is_some());
     assert_eq!(authority.report.resolution.qualified_paths.len(), 2);
@@ -94,7 +95,65 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
     assert!(stage.session.authority.facts.generics.traits.is_none());
     assert!(stage.session.authority.facts.functions.is_empty());
     stage.session.authority.require(&mut work)?;
+    let (returned, status) = stage.schema(holder_declaration, &mut work)?;
+    stage = returned;
+    assert_eq!(status, Demand::Ready(()));
+    assert!(
+        stage
+            .session
+            .authority
+            .facts
+            .associated
+            .owner(definition)
+            .is_none()
+    );
+    assert!(stage.session.authority.facts.generics.traits.is_none());
+    repeated_schema(stage, holder_declaration, &mut work)?;
     actual_implicit_prelude_controls()?;
+    Ok(())
+}
+fn repeated_schema(
+    mut stage: Box<HeaderDraft>,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+) -> Result {
+    let before = (
+        work.retained,
+        stage
+            .session
+            .authority
+            .facts
+            .types
+            .node_table_allocation()
+            .bytes,
+    );
+    let steps = work.steps;
+    for _ in 0..1000 {
+        let (returned, status) = stage.schema(owner, work)?;
+        stage = returned;
+        assert_eq!(status, Demand::Ready(()));
+    }
+    assert_eq!(
+        before,
+        (
+            work.retained,
+            stage
+                .session
+                .authority
+                .facts
+                .types
+                .node_table_allocation()
+                .bytes
+        )
+    );
+    assert!(stage.session.authority.facts.generics.traits.is_none());
+    eprintln!(
+        "schema actual warm1000={} reserved={} draft={} selected={}",
+        work.steps - steps,
+        work.retained,
+        size_of::<HeaderDraft>(),
+        size_of::<SelectedHeaders>()
+    );
     Ok(())
 }
 fn actual_implicit_prelude_controls() -> Result {

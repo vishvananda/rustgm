@@ -113,7 +113,7 @@ impl Members {
         }
         let method = conformance::Method::imported(facts, definition)?;
         let body = facts
-            .function_header(definition)?
+            .declaration_header(definition)?
             .ok_or("imported conformance lost its required method header")?
             .body
             .is_some();
@@ -205,6 +205,13 @@ impl Checker<'_> {
         actual: Function,
         definitions: &conformance::Definitions,
     ) -> Result<(), Error> {
+        if crate::sema::declarations::is_final_trait_method(
+            self.report,
+            &self.facts,
+            expected.definition,
+        )? {
+            return Err(self.error(actual.node, "cannot override final trait method"));
+        }
         self.trait_override(actual)?;
         self.reject_specializable_result(expected.definition, actual)?;
         if self

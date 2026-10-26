@@ -157,7 +157,7 @@ fn clone_member(
         .role(LangItem::CloneFn)?
         .ok_or("source Clone requires its actual clone_fn declaration")?;
     let function = facts
-        .function_header(method.definition)?
+        .declaration_header(method.definition)?
         .ok_or("source clone_fn signature is not prepared")?;
     if function.declaration != method.origin || function.body.is_some() {
         return Err("imported required clone_fn changed its actual declaration or body absence");

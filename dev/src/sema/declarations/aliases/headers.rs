@@ -114,17 +114,18 @@ impl Checker<'_> {
             };
             self.schedule_bounds(owner.definition, context)?;
             self.drain(steps, limit)?;
-            let clauses: Vec<Predicate> = self
-                .facts
+            // The ordinary declaration table owns the written clauses. Alias
+            // expansion borrows them; inherited edges remain shared separately.
+            self.facts
                 .generics
                 .predicates
-                .remove(&owner.definition)
-                .unwrap_or_default();
+                .entry(owner.definition)
+                .or_default();
             self.trait_aliases
                 .as_mut()
                 .ok_or_else(|| Error::unlocated("missing alias contract table"))?
                 .headers[index]
-                .clauses = Some(clauses);
+                .completed = true;
         }
         if let Some(pending) = &mut self.trait_aliases {
             pending.close().map_err(Error::unlocated)?;

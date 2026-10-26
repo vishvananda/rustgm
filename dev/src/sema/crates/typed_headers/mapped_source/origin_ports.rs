@@ -20,64 +20,7 @@ impl Graph {
         Ok(())
     }
     pub(in crate::sema) fn owner(&self, owner: Owner) -> Result<(), &'static str> {
-        if owner.source.is_some() {
-            return Err("imported owner authentication cannot accept source syntax provenance");
-        }
-        let descriptor = self.descriptor(&self.origins)?;
-        let rows = descriptor.rows();
-        match owner.kind {
-            OwnerKind::Trait {
-                definition,
-                auto_,
-                unsafe_,
-                constant,
-            } => {
-                let id = self.origins.declaration(definition)?;
-                self.origins
-                    .validate_declaration(id, definition, DefKind::Trait)?;
-                let (artifact, row, _) = self.origins.declaration_coordinate(id)?;
-                if artifact != descriptor.identity() {
-                    return Err("imported trait owner belongs to another actual artifact");
-                }
-                let Some(s::HeaderRef::Trait(index)) = rows.header(row)? else {
-                    return Err("imported trait owner lacks its exact completed header");
-                };
-                let header = &rows.traits[index as usize];
-                let flags = header.flags.bits();
-                if header.declaration != row
-                    || self
-                        .origins
-                        .definition_at(artifact, header.self_definition)?
-                        != owner.self_definition
-                    || auto_ != (flags & s::TraitFlags::AUTO != 0)
-                    || unsafe_ != (flags & s::TraitFlags::UNSAFE != 0)
-                    || constant != (flags & s::TraitFlags::CONST != 0)
-                {
-                    return Err("imported trait changed its actual Self/flags/owner mapping");
-                }
-                let id = self.origins.declaration(owner.self_definition)?;
-                self.origins
-                    .validate_declaration(id, owner.self_definition, DefKind::SelfType)?;
-            }
-            OwnerKind::ImportedImpl(id) => {
-                let definition = self.origins.declaration_identity(id, DefKind::SelfType)?;
-                let (artifact, row, _) = self.origins.declaration_coordinate(id)?;
-                if definition != owner.self_definition || artifact != descriptor.identity() {
-                    return Err("imported impl owner changed its exact Self/catalog mapping");
-                }
-                let Some(s::HeaderRef::Implementation(index)) = rows.header(row)? else {
-                    return Err("imported impl has no actual completed header");
-                };
-                let header = &rows.implementations[index as usize];
-                if header.self_definition != row || header.scope != row {
-                    return Err("imported impl changed its actual declaration/header scope");
-                }
-            }
-            OwnerKind::Impl { .. } => {
-                return Err("imported impl cannot carry source syntax targets");
-            }
-        }
-        Ok(())
+        super::checked_rows::Mapping::require_owner(&super::checked_rows::Ordinary(self), owner)
     }
 
     pub(in crate::sema) fn implementation(

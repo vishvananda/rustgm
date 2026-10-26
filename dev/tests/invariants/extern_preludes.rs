@@ -46,6 +46,14 @@ fn source_lang_trait_is_not_a_method_prelude_without_actual_import() -> Result {
         .facts
         .function_header(method.definition)?
         .ok_or("actual imported method header")?;
+    let declaration = facts
+        .facts
+        .declaration_header(method.definition)?
+        .ok_or("actual imported declaration")?;
+    assert_eq!(declaration.declaration, header.declaration);
+    assert_eq!(declaration.body, header.body);
+    assert_eq!(declaration.signature, header.signature);
+    assert_eq!(declaration.universals, header.universals);
     let Some(crate::types::Kind::Function { parameters, .. }) =
         facts.facts.types.kind(header.signature)
     else {

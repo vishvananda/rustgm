@@ -43,7 +43,7 @@ impl Checker<'_> {
             let item = self.nominals.entries[index].item;
             let key = self.nominals.entries[index].key;
             let mut proof = self.declaration_proof(DefId(item.0), None);
-            self.parameter_defaults(DefId(item.0), key, &mut proof, None)?;
+            self.parameter_defaults(DefId(item.0), key, &mut proof)?;
             self.retain_trait_proof(DefId(item.0), key, &mut proof);
         }
         Ok(())

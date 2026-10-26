@@ -112,6 +112,18 @@ impl std::ops::Deref for ValidatedView<'_> {
     }
 }
 impl<'a> ValidatedView<'a> {
+    pub(crate) fn declared_members(
+        self,
+        range: crate::support::crates::generics::Range,
+    ) -> Result<&'a [DeclarationRef], &'static str> {
+        range.slice(&self.source.columns.members)
+    }
+    pub(crate) fn implementation_members(
+        self,
+        range: crate::support::crates::generics::Range,
+    ) -> Result<&'a [MemberLink], &'static str> {
+        range.slice(&self.source.columns.member_links)
+    }
     #[must_use]
     pub fn descriptor(self) -> super::Descriptor<'a> {
         self.source.descriptor()

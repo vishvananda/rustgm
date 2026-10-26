@@ -13,13 +13,12 @@ checkpoint documents accumulate faster than executable consumers. This is now
 the main scheduling problem. More workers or fewer semantic tests alone will
 not solve the joins between those components.
 
-Public compiler d63270c4 includes source Abort, source transmute, const formatter
-pointer erasure, alias clauses/naming/default validation, shared imported mapping
-and a Pointee declaration producer. There is still no core artifact. The latest qualified
-original-core observation passes Thin syntax and stops at the foreign
-`type VTable;` declaration in ptr/metadata.rs:170. It takes 1.873 seconds, verifies
-all 722 source inputs and opens 65 files. That is neither 65 compiled modules nor
-a completion percentage. Full alias/Pointee semantics remain separate blockers.
+The combined compiler `192bb536` now executes direct source Thin, PhantomData and
+final trait methods. Original core passes VTable and Share::share and stops at
+the Default derive helper declaration in `default.rs:143`. It takes 1.902 seconds,
+verifies all 722 source inputs and opens 78 files. That is neither 78 compiled
+modules nor a completion percentage; there is still no core artifact. Broader
+alias/Pointee semantics and actual library body/metadata joins remain required.
 
 The largest bottleneck is the implementation joins. The integrator has now
 merged qualified actual imported names/receiver shapes and Pointee consumers
@@ -33,11 +32,16 @@ and speculative DynMetadata field snapshots. The latter two have already been
 removed from their qualified paths. Pinned source and independent observations
 must determine the obligations of each actual consumer.
 
-Validation also needs consolidation. The latest combined nineteen-control check
+Validation also needs consolidation. The earlier combined nineteen-control check
 took 221.05 seconds: private Clippy 63.63 seconds, build 127.38 seconds, and
 selected execution 0.31 seconds. Removing more test cases saves little here.
 The previous 32-control check took 150.13 seconds with 0.215 seconds of execution.
 Static checks and compilation dominate.
+The latest combined twenty-one-control check takes 266.90 seconds: build 135.53,
+production/CLI Clippy 44.47, private Clippy 58.06 and test execution 0.22 seconds.
+It qualifies three joined consumers in one build; native controls and the core
+observer then reuse that binary. Continue this consolidation within the unchanged
+five-minute development limit rather than repeatedly compiling isolated helpers.
 The normal push workflow currently selects lexer tests. Scheduled 40297261891
 later exposed ordinary bootstrap diagnostic regressions and stale assertions.
 A green narrow push is not complete qualification.
@@ -53,13 +57,17 @@ run does not qualify them. The earlier successful-step evidence remains scoped.
 The successor full run 40377221175 passed release/course checks but failed one
 native frontend group: the cross-edition never-fallback helper appends a parsed
 donor Unit after expansion without producing its lint-owner records. The error is
-`active lint source owner has no produced record`. Correct the fixture through
-the real producer and cover its frontend/LowIR preparation without requiring a
-native backend; do not weaken production source validation. Debug/independent
+`active lint source owner has no produced record`. The fixture is now corrected
+through the existing provenance-template parser, retaining only the actual
+macro definition, and both ordinary LowIR and native controls pass. Production
+source validation is unchanged. Debug/independent
 steps were skipped. This is a concrete example of useful regression coverage
 arriving too late in the current CI arrangement.
 
 ## Scheduling decisions
+
+The review below makes these decisions operational. Existing source checkpoints
+remain evidence; they do not create another scheduling queue.
 
 1. Give each lane one next executable acceptance target and its exact missing
    joins. Internal components remain commits within that task, rather than new
@@ -104,6 +112,96 @@ platform consumers. The first three component targets proceed in parallel.
 Begin core-only real-crate acceptance immediately when its dependency graph
 works. Do not insert a broad assignment-release or performance campaign between
 these executable milestones.
+
+## Execution review and next decisions
+
+The latest review still finds implementation joins and repeated compilation to
+be the limiting work. It does not justify more concurrent compiler workers.
+The four most recent standard receipts in each active checkout include repeated
+static or assertion failures before a consumer advances. For example, B's
+qualified Pattern checkpoint spent 80.63 seconds in private Clippy and 130.00
+seconds building, versus 0.17 seconds executing its selected tests. C's Foreign
+attempt spent 75.69/145.06 seconds in those compilation steps and 0.06 seconds
+executing: five semantic groups passed and the ordinary feature-retention group
+found a real production bug. These checks are useful; shrinking their test
+selection further would not recover meaningful time.
+
+Full CI [40382875468](https://github.com/vishvananda/rustgm/actions/runs/40382875468)
+on b6acf4f1a found one stale Pointee diagnostic assertion: 1,787 ordinary private
+tests passed, one failed and two were ignored in 2.38 seconds. All thirteen
+ordinary integration binaries passed; the combined release step still failed,
+so native/debug/independent qualification did not run. C's Foreign successor
+27b1712dd now passes that assertion and the affected feature-retention group in
+112.86 seconds, with five unchanged source-mode groups retained from the earlier
+attempt. Root integration and a production CLI/core observation remain pending.
+The earlier never-edition repair remains
+locally qualified, not newly native-qualified by this failed run.
+
+Apply the following rules at the next handoffs:
+
+- Keep one active consumer per worker and at most one qualified handoff waiting
+  for integration. A dependent successor can continue in source, but the
+  integrator takes a queued shared base before starting another unrelated
+  compiler task. Finish the integrator's current Thin join, then reserve that
+  lane for integration, actual crate observations and release preparation.
+- Integrate independently useful Foreign/NonNull changes when their controls
+  pass. Do not wait for the entire Thin or panic chain before observing original
+  core again. Loading and semantic milestones remain separate; an earlier
+  phase can discover the next independent blocker without claiming a compile.
+- Keep a real failing consumer in each lane from the start. Internal header or
+  proof tests accompany it, but cannot replace it. After two preparation
+  checkpoints without progress through that consumer, review and remove
+  duplicated adapters or unnecessary prerequisites before adding more states.
+  This is a design review trigger, not permission to skip Rust obligations.
+- A continues installed member/body checking. A also specifies the exact
+  Provided namespace/advisory/defaultness wire rows in the existing milestone.
+  After Foreign integration and the next core observation, C can implement that
+  codec independently if the newly observed core blocker is already owned.
+  Keep codec ownership separate from A's semantic tables; do not introduce
+  another metadata owner, proof token or handoff format. This overlaps two
+  serial PA29 requirements using the existing three workers.
+- At a coherent integration that already builds the private executable, run
+  its ordinary tests when they fit the remaining five-minute budget. The
+  existing dev-fast complete run took 35.39 seconds; budget that observation,
+  not the 2.38-second release timing. Otherwise select a shared smoke set from
+  that same binary. Do not rebuild a release executable for this purpose.
+  Include the actual changed declaration family and promote escaped regressions
+  into that selection. Private and public/CLI controls share one standard batch
+  where needed; avoid repeating static work just to change selectors.
+- Implement the pending shared push smoke using the existing runner. Cover
+  source roles/Pointee, const execution, a generic import and frontend-to-LowIR
+  execution; keep ordinary lexer coverage. Workflow publication remains pending
+  until the workflow change can actually be pushed. Do not report the current
+  lexer-only push as that smoke gate.
+- Update the live tracker and the owning handout at a consumer milestone.
+  Preserve raw evidence in obj and existing checkpoint records, but stop
+  creating a separate narrative document for every private adapter. Historical
+  remaining-work paragraphs are not independently authoritative backlogs.
+
+No completion multiplier or calendar estimate is established by these changes.
+Measure the next three integrated consumers: elapsed time to acceptance,
+compilation/validation time, queued handoff age and the actual original-crate
+phase reached. More workers become useful only when the tracker has another
+independent observed blocker with disjoint interfaces and no integration queue.
+The three-job limit, CPU/RAM caps, scoped cleanup and 150-GiB reserve stay in force.
+
+## Assignment closure without blocking the library path
+
+PA25 through PA31 currently have no published tests/manifest.json. They also
+retain real semantic gaps; generating a manifest alone would not complete them.
+At each consumer exit, reconcile the owning assignment's existing declared
+outcomes against the current implementation into four categories: supported
+behavior, independently rejected input, Rust-valid unsupported behavior, and
+missing oracle/release evidence. Retain the original expected outcomes and
+source bytes. Resolve historical superseded gaps rather than counting them twice.
+
+The [tracker's closure queue](library-build-blockers.md#assignment-closure-queue)
+owns the next review for each PA. Reuse existing independent inputs for reviewed
+text references. Keep an unfinished assignment planned and its ordinary target
+failing; do not activate partial contracts. Publication preparation can overlap
+implementation, while the complete cumulative release gate runs only when the
+actual behavior and required reference inventory are ready. This keeps broad
+assignment closure finite without making it a prerequisite for testing core.
 
 ## Reviewed imported-body policy
 
@@ -301,5 +399,10 @@ seconds. These are two separately scoped development batches, not one combined
 five-minute run or a full native qualification. Receipts are
 `obj/qualification/fast/1793039582331443219/receipt.json` and
 `obj/qualification/fast/1793040263229452879/receipt.json` in the integrator tree.
-Full CI's native donor-record failure remains open and is queued ahead of the
-next broad qualification. No original-core advance is claimed for these joins.
+Full CI's native donor-record failure is subsequently repaired and verified by
+ordinary and native focused checks; see the
+[never-fallback record](pa34-never-editions.md). The execution review above
+records the subsequent full run's distinct Pointee assertion failure and its
+qualified worker correction. Previously skipped full native/debug/independent
+steps still need qualification. No original-core advance is claimed for these
+joins.

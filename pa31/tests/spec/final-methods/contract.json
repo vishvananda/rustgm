@@ -1,0 +1,612 @@
+{
+  "schema": 1,
+  "phase": "observed outcomes bind candidate qualification; original hypotheses retained",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "scope": "36 new metadata-only observations, no old matrices; native predictions separate and unrun",
+  "native_predictions": {
+    "provided-call": "7\n",
+    "ordinary-override": "9\n",
+    "dyn-final": "7\n",
+    "dyn-ordinary": "9\n"
+  },
+  "cases": [
+    {
+      "source": "pa31/tests/spec/final-methods/provided-call.rs",
+      "sha256": "c30e1a5542b4d1490e457873ff22400ab511816524907e297b464f9872aba15a",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "final provided method executes its actual trait body; native entry returns 7",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/ordinary-override.rs",
+      "sha256": "3a057e6553a96ed529c0f8c3dab734e29ba9e6f448f3cb3ece2cf8bbfbba7e29",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "ordinary provided body remains overridable; native entry returns 9",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/final-override.rs",
+      "sha256": "b1a2ea037127feb212c2a72d09ac3fecf46b02708cf5af5c957775b6b602f521",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "actual final trait member cannot be overridden",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/missing-feature.rs",
+      "sha256": "1105fc2c0133fb5c74a129a75f2b7a3277dbcc323d7b8c1a50e8b5ba1ac22206",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0658"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "actual final keyword needs its exact feature",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/default-is-distinct.rs",
+      "sha256": "6775a8bb4136c1e8235a7e397542a76eec1535f77dce4be1b120381732e28e36",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0658"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "specialization request is not final-associated authority",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/body-required.rs",
+      "sha256": "86c7bfe2403a834fb26588f11f1254a833b5e8a8a6524a77810b14d14010239c",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "final method requires a real defining body",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/free-owner.rs",
+      "sha256": "36bd0f6f3d6e28b43ee64313021f78bd1500dfd4d6687bc4d9889fd289a4819a",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "free final fn is forbidden",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/inherent-owner.rs",
+      "sha256": "1bbad546947d9b1bbe96e58f7a8727c6fb459539a123a41d47af2ed86878b741",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "inherent final fn is forbidden",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/impl-owner.rs",
+      "sha256": "46dbaf91eed7c85a0bd17806b47335d6447d44076e86f98276a2be38f9b89104",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "final is not an impl specialization modifier",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/unused-invalid-body.rs",
+      "sha256": "04a973d08bef60ab6d315e3b5a15acdf937a36ddbe983f14b105831fbd4c1079",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0308"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "unused provided body is still checked",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/disabled-missing-feature.rs",
+      "sha256": "050b12f865fffee21bad1404f68f94e1a292ef0b213dc8093dc8270b19357d50",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [
+        "unstable_syntax_pre_expansion"
+      ],
+      "contract": "parsed inactive final keyword emits pre-expansion feature warning; body not demanded",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": true,
+            "error_codes": true,
+            "warning_codes": true
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": true,
+            "error_codes": true,
+            "warning_codes": true
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/dyn-final.rs",
+      "sha256": "dd63be6a5a7269fbf5c8adbf6f575d184e8ed0d34e6fd835a3f3dfa5fafc6075",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "final dynamic-Self call uses actual provided body without virtual slot; native entry returns 7",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/dyn-ordinary.rs",
+      "sha256": "66ed813582c11f43407b74d6dfc8378ab6b86aa0250a1122777b29b78221304c",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "ordinary dynamic call keeps genuine virtual override; native entry returns 9",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/dyn-generic-final.rs",
+      "sha256": "9da24ee65dbcb881031a70fcb395529a683ded708bac04969a85e39689663cca",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "final generic method does not break dyn compatibility and is called statically",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/dyn-generic-ordinary.rs",
+      "sha256": "5fb0d4ab732ac83b3b01244059f654da4127d7fa55aac854c9e2ed66e566efd3",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0038"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "ordinary generic method still prevents dyn compatibility",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0038"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0038"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/literal-allowance.rs",
+      "sha256": "f84c422074903e0554c5757cf3a76274214b85e8c1316b87326d8ee2b4cf43c9",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "actual macro-introduced final token receives its allowed feature",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/forwarded-allowance.rs",
+      "sha256": "ff286aa1b47eab9301821ecd0dcd8dba6ec78291bfda72f4f3c27cd731af31e7",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0658"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "forwarded caller final token cannot borrow wrapper allowance",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/final-methods/source-share.rs",
+      "sha256": "8389d04d79c7e04aac83a52fd4820be82c9d0a4f451fb53851290c08c38548de",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "source-backed Share reducer retains actual Clone supertrait/member and provided call",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    }
+  ],
+  "initial_contract_sha256": "c14041b6195dfc4465f4016d32e7a425fc97efacba0354687e07e9a80c8c638b",
+  "observations": {
+    "metadata": 36,
+    "infrastructure": 0,
+    "hypothesis_disagreements": 2,
+    "binding_sha256": "403e85f777866aaaaa2b0e903a03bfa9a26b093188284ee2337e71780dd0bb79"
+  }
+}

@@ -98,8 +98,8 @@ impl<'a> Writer<'a> {
                     .items()
                     .get(index as usize)
                     .ok_or_else(|| error(node.span.start, "writer item row is missing"))?;
-                let default = self.defaultness(view, node, index)?;
-                self.item(view, item, default)
+                let modifier = self.modifier(view, node, index)?;
+                self.item(view, item, modifier)
             }
             Kind::Crate(items) => self.enqueue(&[view.sequence(items, " ")]),
             Kind::Expansion { children, tail } => {
@@ -150,7 +150,12 @@ impl<'a> Writer<'a> {
         clippy::too_many_lines,
         reason = "exhaustive parsed item spelling dispatch"
     )]
-    fn item(&mut self, view: View<'a>, item: Item, default: bool) -> Result<(), LexError> {
+    fn item(
+        &mut self,
+        view: View<'a>,
+        item: Item,
+        modifier: Option<&'static str>,
+    ) -> Result<(), LexError> {
         use Action::Word as W;
         match item.kind {
             ItemKind::Function {
@@ -320,12 +325,17 @@ impl<'a> Writer<'a> {
                 self.enqueue(&[W(if unsafe_ { "unsafe impl " } else { "impl " })])?;
             }
         }
-        if default {
-            self.enqueue(&[W("default ")])?;
+        if let Some(modifier) = modifier {
+            self.enqueue(&[W(modifier), W(" ")])?;
         }
         self.visibility(view, item.visibility)
     }
-    fn defaultness(&mut self, view: View<'_>, node: Node, index: u32) -> Result<bool, LexError> {
+    fn modifier(
+        &mut self,
+        view: View<'_>,
+        node: Node,
+        index: u32,
+    ) -> Result<Option<&'static str>, LexError> {
         let mut width = view.arena.site_count();
         while width > 0 {
             // Pay this bounded-width step and the upcoming search comparison.
@@ -333,8 +343,15 @@ impl<'a> Writer<'a> {
             width >>= 1;
         }
         self.pay(1, 0)?;
-        let Some(actual) = view.arena.defaultness(index).copied() else {
-            return Ok(false);
+        let Some(actual) = view.arena.gate_site(index).copied() else {
+            return Ok(None);
+        };
+        let keyword = if actual.kind.is_defaultness() {
+            "default"
+        } else if actual.kind == crate::syntax::gate_sites::Kind::FinalFunction {
+            "final"
+        } else {
+            return Ok(None);
         };
         if actual.span.start < node.span.start
             || actual.span.end > node.span.end
@@ -342,14 +359,14 @@ impl<'a> Writer<'a> {
             || view
                 .source
                 .get(actual.span.start as usize..actual.span.end as usize)
-                != Some("default")
+                != Some(keyword)
         {
             return Err(error(
                 actual.span.start,
                 "expression writer defaultness owner changed",
             ));
         }
-        Ok(true)
+        Ok(Some(keyword))
     }
     pub(super) fn visibility(
         &mut self,

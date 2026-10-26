@@ -15,7 +15,7 @@ pub(super) trait Arena {
     fn attributes(&self) -> &[AttributeCapture];
     fn captures(&self) -> &[Forest];
     fn site_count(&self) -> usize;
-    fn defaultness(&self, item: u32) -> Option<&crate::syntax::gate_sites::Declaration>;
+    fn gate_site(&self, item: u32) -> Option<&crate::syntax::gate_sites::Declaration>;
 }
 impl<L> Arena for Syntax<L> {
     fn nodes(&self) -> &[Node] {
@@ -48,7 +48,7 @@ impl<L> Arena for Syntax<L> {
     fn site_count(&self) -> usize {
         self.gate_sites.as_ref().map_or(0, |entries| entries.len())
     }
-    fn defaultness(&self, item: u32) -> Option<&crate::syntax::gate_sites::Declaration> {
-        Syntax::defaultness(self, item)
+    fn gate_site(&self, item: u32) -> Option<&crate::syntax::gate_sites::Declaration> {
+        Syntax::gate_site(self, item)
     }
 }

@@ -4,6 +4,7 @@ mod dependency_cycles;
 mod expansion;
 mod headers;
 mod mapping;
+mod unused_contracts;
 use super::{Checker, DefId, Error, NodeKey, regions};
 use crate::{
     resolve::{
@@ -36,7 +37,7 @@ struct Header {
     owner: Owner,
     started: bool,
     schema: Option<Schema>,
-    clauses: Option<Vec<Predicate>>,
+    completed: bool,
     edges: Vec<Edge>,
 }
 pub(super) struct Pending {
@@ -142,7 +143,7 @@ impl Pending {
             owner,
             started: false,
             schema: None,
-            clauses: None,
+            completed: false,
             edges: Vec::new(),
         });
         Ok(())
@@ -156,6 +157,12 @@ impl Pending {
     }
 }
 impl Checker<'_> {
+    pub(super) fn alias_schema(&self, owner: DefId) -> Option<&Schema> {
+        let pending = self.trait_aliases.as_ref()?;
+        let index = *pending.index.get(&owner)?;
+        pending.headers[index].schema.as_ref()
+    }
+
     pub(super) fn charge_alias_growth(&self, growth: Growth) -> Result<(), Error> {
         self.trait_aliases
             .as_ref()
@@ -264,17 +271,19 @@ impl Checker<'_> {
         })
     }
     pub(super) fn reject_alias_execution(&self) -> Result<(), Error> {
-        if let Some(pending) = &self.trait_aliases {
-            let source = pending
-                .headers
-                .first()
-                .ok_or_else(|| Error::unlocated("empty allocated alias inventory"))?
-                .owner
-                .source;
-            return Err(self.error(
-                source,
-                "trait alias contract expansion is not implemented for all consumers and export",
-            ));
+        let Some(pending) = &self.trait_aliases else {
+            return Ok(());
+        };
+        for header in &pending.headers {
+            if !pending.closed || !header.completed {
+                return Err(self.error(header.owner.source, "alias declaration is not complete"));
+            }
+            if !self.direct_alias_execution(header)? {
+                return Err(self.error(
+                    header.owner.source,
+                    "trait alias contract expansion is not implemented for all consumers and export",
+                ));
+            }
         }
         Ok(())
     }

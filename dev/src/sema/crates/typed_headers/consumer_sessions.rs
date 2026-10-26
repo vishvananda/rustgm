@@ -156,6 +156,36 @@ impl HeaderDraft {
         not(test),
         expect(
             dead_code,
+            reason = "the selected schema transaction is private until full role/member and demanded-original proof commit"
+        )
+    )]
+    pub(super) fn schema(
+        mut self: Box<Self>,
+        owner: DeclarationRef,
+        work: &mut ReservationWork,
+    ) -> Result<HeaderProgress, Error> {
+        self.session.authority.require(work)?;
+        let completion = self.completion.as_deref().ok_or_else(|| {
+            Error::unlocated("selected schema lacks its actual collector completion")
+        })?;
+        let ConsumerAuthority {
+            facts,
+            report,
+            reservation,
+            ..
+        } = &mut self.session.authority;
+        let authority = super::unpaid_provided::SchemaAuthority {
+            report,
+            reservation,
+            completion,
+        };
+        let result = self.selected.schema(facts, &authority, owner, work)?;
+        Ok((self, result))
+    }
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
             reason = "selected callable registration grants no header/role/body completion; the genuine retained family still requires conformance"
         )
     )]

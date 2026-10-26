@@ -386,6 +386,15 @@ pub fn write_syntax<L, W: Write>(
                     "default {} {} ",
                     defaultness.span.start, defaultness.span.end
                 )?;
+            } else if let Some(finalness) = ast
+                .gate_site(index)
+                .filter(|site| site.kind == crate::syntax::gate_sites::Kind::FinalFunction)
+            {
+                write!(
+                    output,
+                    "final {} {} ",
+                    finalness.span.start, finalness.span.end
+                )?;
             }
             item::item(source, ast, &ast.items[index as usize], output)?;
             writeln!(output)?;

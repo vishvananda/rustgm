@@ -1,5 +1,5 @@
 //! Selected consumer signatures use one persistent cursor and actual table.
-use super::{header_demands::State, template_demands};
+use super::{SchemaAuthority, header_demands::State, owner_stages, template_demands};
 use crate::{
     resolve::{
         crates::{ReservationWork, unpaid_provided::RecipeView},
@@ -13,8 +13,25 @@ use crate::{
 #[derive(Default)]
 pub(in crate::sema::crates::typed_headers) struct SelectedHeaders {
     recipes: Option<Box<State>>,
+    owners: Option<Box<owner_stages::OwnerTransaction>>,
 }
 impl SelectedHeaders {
+    pub(in crate::sema::crates::typed_headers) fn schema(
+        &mut self,
+        facts: &mut Declarations,
+        authority: &SchemaAuthority<'_>,
+        owner: DeclarationRef,
+        work: &mut ReservationWork,
+    ) -> Result<Demand<()>, Error> {
+        owner_stages::prepare(
+            &mut self.owners,
+            &mut self.recipes,
+            facts,
+            authority,
+            owner,
+            work,
+        )
+    }
     pub(in crate::sema::crates::typed_headers) fn callable<'a>(
         &mut self,
         facts: &mut Declarations,

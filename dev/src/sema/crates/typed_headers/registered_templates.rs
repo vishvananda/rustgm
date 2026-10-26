@@ -205,8 +205,7 @@ impl Prepared {
         let before_bytes = self.retained_bytes();
         let before_budget = work.retained;
         let rows = view.rows()?;
-        let formals =
-            formal_path::collect(view, &self.scopes, &mut state.maps, store, owner, work)?;
+        let formals = formal_path::collect(view, &self.scopes, &state.maps, store, owner, work)?;
         if formals.owners.last() != Some(&item) || store.escaping_binders(pair.callable) != Some(0)
         {
             return Err(error(

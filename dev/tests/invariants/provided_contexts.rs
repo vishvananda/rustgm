@@ -33,6 +33,33 @@ fn actual_default_context_keeps_nested_runtime_and_rejects_mismatched_bodies() -
         if facts.associated.constant_trait(trait_definition) == Some(true))
     );
     assert!(!facts.is_const_function(provided.definition));
+    actual_abstract_self_clause(&facts, provided, nested)?;
+    assert_eq!(
+        facts.function_context(nested.definition, nested.body.ok_or("nested body")?)?,
+        FunctionContext::Runtime
+    );
+    assert_eq!(
+        facts.function_context(constant.definition, constant.body.ok_or("const body")?)?,
+        FunctionContext::ConstFunction
+    );
+    assert!(facts.function_context(nested.definition, source).is_err());
+    let index = facts
+        .function_indices
+        .remove(&provided.definition)
+        .ok_or("index")?;
+    assert!(facts.function_context(provided.definition, source).is_err());
+    facts.function_indices.insert(provided.definition, index);
+    facts.functions[index].definition = nested.definition;
+    assert!(facts.function_context(provided.definition, source).is_err());
+    Ok(())
+}
+
+fn actual_abstract_self_clause(
+    facts: &crate::sema::model::Declarations,
+    provided: crate::sema::model::Function,
+    nested: crate::sema::model::Function,
+) -> Result {
+    let source = provided.body.ok_or("actual provided body")?;
     let trait_definition = facts
         .associated
         .trait_owner(provided.definition)
@@ -43,6 +70,24 @@ fn actual_default_context_keeps_nested_runtime_and_rejects_mismatched_bodies() -
         .and_then(|owner| facts.associated.get(owner))
         .ok_or("trait owner")?;
     let ordinary = facts.generics.trait_self_bounds[&trait_definition];
+    let defining = facts.defining_self_clause(trait_definition)?;
+    assert_eq!(
+        facts.default_self_clause(provided.definition, source)?,
+        Some(defining)
+    );
+    assert!(matches!(
+        defining,
+        Clause::Predicate(Predicate {
+            ty,
+            bound: Bound::MaybeConstTrait(application),
+        }) if ty == ordinary.ty && ordinary.bound == Bound::Trait(application)
+    ));
+    assert!(facts.defining_self_clause(nested.definition).is_err());
+    assert!(
+        facts
+            .default_self_clause(nested.definition, source)
+            .is_err()
+    );
     let input = crate::sema::declaration_inputs::Input {
         source: trait_owner.source_owner()?.source.into(),
         value: ordinary.into(),
@@ -75,23 +120,6 @@ fn actual_default_context_keeps_nested_runtime_and_rejects_mismatched_bodies() -
         facts.generics.trait_self_bounds[&trait_definition],
         ordinary
     );
-    assert_eq!(
-        facts.function_context(nested.definition, nested.body.ok_or("nested body")?)?,
-        FunctionContext::Runtime
-    );
-    assert_eq!(
-        facts.function_context(constant.definition, constant.body.ok_or("const body")?)?,
-        FunctionContext::ConstFunction
-    );
-    assert!(facts.function_context(nested.definition, source).is_err());
-    let index = facts
-        .function_indices
-        .remove(&provided.definition)
-        .ok_or("index")?;
-    assert!(facts.function_context(provided.definition, source).is_err());
-    facts.function_indices.insert(provided.definition, index);
-    facts.functions[index].definition = nested.definition;
-    assert!(facts.function_context(provided.definition, source).is_err());
     Ok(())
 }
 

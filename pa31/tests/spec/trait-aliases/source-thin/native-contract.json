@@ -1,0 +1,17 @@
+{
+  "state": "predicted before independent execution",
+  "scope": "Same reduced source Thin provider and concrete call, observed from C; full Metadata bounds and formatting remain separate.",
+  "ancestor_sha256": "eeb8ee0466a79e2b6c96345f76bc552a0bede6bd9ae5bf92435096ae99b739e9",
+  "sources": {
+    "pa31/tests/spec/trait-aliases/source-thin/native-provider.rs": "57cf31d9dce1460573bb103041b9f566c708883bfd98b9ecab4fc31177b437e9",
+    "pa31/tests/spec/trait-aliases/source-thin/native-observer.c": "31742351ecdc97a99dab0bf5a37108e7a24de3a36daf84b7cbf5b56c497382e2"
+  },
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "predicted_object_status": 0,
+  "predicted_link_status": 0,
+  "predicted_execute_status": 0,
+  "predicted_stdout": "7\n",
+  "predicted_stderr": ""
+}

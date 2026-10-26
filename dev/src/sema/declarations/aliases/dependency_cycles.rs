@@ -20,7 +20,7 @@ impl Pending {
             while let Some((index, next)) = stack.last_mut() {
                 self.budget.charge(1, 0)?;
                 let header = &self.headers[*index];
-                if header.schema.is_none() || header.clauses.is_none() {
+                if header.schema.is_none() || !header.completed {
                     return Err("trait alias graph contains an unfinished declaration");
                 }
                 let Some(edge) = header.edges.get(*next) else {

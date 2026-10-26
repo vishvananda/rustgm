@@ -57,6 +57,7 @@ fn generated_from_other_edition(source: &str, edition: Edition) -> Result<Vec<u8
         expand::config::Config,
         resolve::unit::{FileId, Unit},
         support::source::SourceFile,
+        syntax::{ast::MacroContext, item::ItemContext},
     };
     let mut report = crate::edition_packages::analyze(
         source,
@@ -67,20 +68,44 @@ fn generated_from_other_edition(source: &str, edition: Edition) -> Result<Vec<u8
         Edition::Rust2021 => Edition::Rust2024,
         Edition::Rust2024 => Edition::Rust2021,
     };
-    let donor = Unit::parse(
-        SourceFile::new(source.as_bytes().to_vec())?,
+    let definition = report
+        .definitions
+        .iter()
+        .find_map(|definition| definition.node)
+        .ok_or("missing source macro definition")?;
+    assert_eq!(definition.file, FileId(0));
+    let span = report.package.units[0]
+        .configured
+        .ast
+        .node(definition.node)
+        .span;
+    let original = source
+        .get(span.start as usize..span.end as usize)
+        .ok_or("macro definition exceeds its source")?;
+    // This unit is retained provenance, not another installed crate/module.
+    // Parse the actual macro fragment through the ordinary include-template API.
+    let donor = Unit::parse_include(
+        SourceFile::new(original.as_bytes().to_vec())?,
         &Config::in_edition(other),
+        MacroContext::Items(ItemContext::Module),
         &mut report.package.names,
     )
     .map_err(|error| format!("{error:?}"))?;
     let unit = &mut report.package.units[0];
     assert!(!unit.origins.is_empty());
-    let physical = source.len();
+    let mut redirected = 0;
     for origin in &mut unit.origins {
-        if origin.original.file == FileId(0) && origin.original.span.end as usize <= physical {
+        if origin.original.file == FileId(0)
+            && origin.original.span.start >= span.start
+            && origin.original.span.end <= span.end
+        {
             origin.original.file = FileId(1);
+            origin.original.span.start -= span.start;
+            origin.original.span.end -= span.start;
+            redirected += 1;
         }
     }
+    assert!(redirected > 0);
     report.package.units.push(donor);
     report.package.file_paths.push("/crate/donor.rs".into());
     let rustgm::pipeline::Analysis {
@@ -92,6 +117,16 @@ fn generated_from_other_edition(source: &str, edition: Edition) -> Result<Vec<u8
     let mut bytes = Vec::new();
     rustgm::lowir::writer::write(&program, &mut bytes)?;
     Ok(bytes)
+}
+
+#[test]
+fn opposite_token_origins_reach_source_validation_and_lowir() -> Result {
+    for &(edition, suffix) in EDITIONS {
+        assert!(
+            !generated_from_other_edition(&source("native-macro", suffix)?, edition)?.is_empty()
+        );
+    }
+    Ok(())
 }
 
 #[test]

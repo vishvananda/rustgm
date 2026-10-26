@@ -9,17 +9,86 @@ use crate::{
         package::Error,
     },
     support::crates::{generics::source as s, owner_catalog::DeclarationRef},
-    types::{RegionId, Store, arguments::Argument},
+    types::{RegionId, Store, arena::Identity, arguments::Argument},
 };
+use std::{cell::Cell, rc::Rc};
 
 pub(in crate::sema::crates::typed_headers) struct Maps {
-    pub slots: Vec<Option<Argument>>,
-    pub regions: Vec<Option<RegionId>>,
+    root: ImportedDeclarationId,
+    arena: Identity,
+    slots: Vec<Cell<Option<Argument>>>,
+    regions: Vec<Cell<Option<RegionId>>>,
+}
+impl Maps {
+    pub(in crate::sema::crates::typed_headers) fn allocation_bound(
+        slots: usize,
+        regions: usize,
+    ) -> usize {
+        size_of::<Self>()
+            .saturating_add(2 * size_of::<usize>())
+            .saturating_add(slots.saturating_mul(size_of::<Cell<Option<Argument>>>()))
+            .saturating_add(regions.saturating_mul(size_of::<Cell<Option<RegionId>>>()))
+    }
+    pub(in crate::sema::crates::typed_headers) fn prepaid(
+        view: &RecipeView<'_>,
+        store: &Store,
+    ) -> Result<Rc<Self>, Error> {
+        let rows = view.rows()?;
+        let arena = store
+            .existing_arena_identity()
+            .ok_or_else(|| error("reserved maps require their actual current type arena"))?;
+        Ok(Rc::new(Self {
+            root: view.root(),
+            arena: arena.clone(),
+            slots: (0..rows.slots.len()).map(|_| Cell::new(None)).collect(),
+            regions: (0..rows.regions.len()).map(|_| Cell::new(None)).collect(),
+        }))
+    }
+    pub(in crate::sema::crates::typed_headers) fn retained_bytes(&self) -> usize {
+        Self::allocation_bound(self.slots.capacity(), self.regions.capacity())
+    }
+    pub(in crate::sema::crates::typed_headers) fn require(
+        &self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        work: &mut ReservationWork,
+    ) -> Result<(), Error> {
+        work.charge(5)?;
+        let rows = view.rows()?;
+        if self.root != view.root()
+            || !store.has_identity(&self.arena)
+            || self.slots.len() != rows.slots.len()
+            || self.regions.len() != rows.regions.len()
+        {
+            return Err(error(
+                "reserved maps changed their actual root, arena or dense extent",
+            ));
+        }
+        Ok(())
+    }
+    pub(in crate::sema::crates::typed_headers) fn slot(
+        &self,
+        index: usize,
+    ) -> Result<Option<Argument>, &'static str> {
+        self.slots
+            .get(index)
+            .map(Cell::get)
+            .ok_or("reserved formal index is outside its actual map")
+    }
+    pub(in crate::sema::crates::typed_headers) fn region(
+        &self,
+        index: usize,
+    ) -> Result<Option<RegionId>, &'static str> {
+        self.regions
+            .get(index)
+            .map(Cell::get)
+            .ok_or("reserved region index is outside its actual map")
+    }
 }
 pub(in crate::sema::crates::typed_headers) struct Reserved<'rows, 'maps> {
     view: RecipeView<'rows>,
     rows: s::ValidatedView<'rows>,
-    maps: &'maps mut Maps,
+    maps: &'maps Maps,
 }
 impl<'rows, 'maps> Reserved<'rows, 'maps> {
     pub(in crate::sema::crates::typed_headers) fn recipe_view(&self) -> &RecipeView<'rows> {
@@ -35,8 +104,11 @@ impl<'rows, 'maps> Reserved<'rows, 'maps> {
     }
     pub(in crate::sema::crates::typed_headers) fn new(
         view: RecipeView<'rows>,
-        maps: &'maps mut Maps,
+        maps: &'maps Maps,
+        store: &Store,
+        work: &mut ReservationWork,
     ) -> Result<Self, Error> {
+        maps.require(&view, store, work)?;
         let rows = view.rows()?;
         Ok(Self { view, rows, maps })
     }
@@ -79,13 +151,14 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
         reference: s::SlotRef,
         budget: &mut ReservationWork,
     ) -> Result<Argument, Error> {
+        self.maps.require(&self.view, store, budget)?;
         budget.charge(1)?;
         let memo = self
             .maps
             .slots
-            .get_mut(reference.0 as usize)
+            .get(reference.0 as usize)
             .ok_or_else(|| error("reserved recipe has an unknown formal slot"))?;
-        if let Some(argument) = *memo {
+        if let Some(argument) = memo.get() {
             return Ok(argument);
         }
         let slot = self
@@ -119,7 +192,7 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
             self.view.definition(address.declaration, budget)?;
         }
         let argument = slot_bindings::intern_type(store, owner, slot.index, sized.is_some())?;
-        *memo = Some(argument);
+        publish(memo, argument)?;
         Ok(argument)
     }
     fn region(
@@ -131,9 +204,9 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
         let memo = self
             .maps
             .regions
-            .get_mut(reference.0 as usize)
+            .get(reference.0 as usize)
             .ok_or_else(|| error("reserved recipe has an unknown declared region"))?;
-        if let Some(region) = *memo {
+        if let Some(region) = memo.get() {
             return Ok(Demand::Ready(region));
         }
         let region = match *self
@@ -174,7 +247,7 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
                     .map(|owner| Demand::Blocked(Dependency::DeclaredLifetime(owner)));
             }
         };
-        *memo = Some(region);
+        publish(memo, region)?;
         Ok(Demand::Ready(region))
     }
     fn application(
@@ -197,4 +270,13 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
             .declaration(row.declaration.declaration, budget)
             .map(Dependency::CallableTemplate)
     }
+}
+fn publish<T: Copy>(cell: &Cell<Option<T>>, value: T) -> Result<(), Error> {
+    if cell.get().is_some() {
+        return Err(error(
+            "reserved mapping attempted a conflicting canonical publication",
+        ));
+    }
+    cell.set(Some(value));
+    Ok(())
 }
