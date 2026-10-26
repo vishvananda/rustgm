@@ -20,12 +20,16 @@ pub(in crate::sema) struct Conditions {
     pub clauses: Vec<Clause>,
     pub outlives: Vec<Pair>,
 }
-pub(super) fn defining(
+pub(super) struct Mapping {
+    pub fold: Counted<substitute::Bound>,
+    parameters: Vec<crate::types::parameters::ParameterId>,
+}
+pub(super) fn mapping(
     facts: &mut Declarations,
     owner: DefId,
     arguments: GenericArgs,
     budget: &Budget,
-) -> Result<Conditions, &'static str> {
+) -> Result<Mapping, &'static str> {
     let schema = facts
         .associated
         .schema(owner)
@@ -43,8 +47,7 @@ pub(super) fn defining(
             .saturating_mul(4 * size_of::<Argument>())
             .saturating_add(
                 parameters.saturating_mul(4 * size_of::<crate::types::parameters::ParameterId>()),
-            )
-            .saturating_add(schema.bounds.len().saturating_mul(2 * size_of::<Pair>())),
+            ),
     )?;
     let values: Vec<_> = facts
         .types
@@ -67,7 +70,7 @@ pub(super) fn defining(
         .copied()
         .zip(values[captures..].iter().copied())
         .collect();
-    let mut fold = Counted::new(
+    let fold = Counted::new(
         substitute::Bound::parameters_captured_charged(
             &facts.types,
             &bindings,
@@ -75,6 +78,29 @@ pub(super) fn defining(
             &|steps, bytes| budget.charge(steps, bytes),
         )?,
         budget,
+    )?;
+    Ok(Mapping {
+        fold,
+        parameters: ids,
+    })
+}
+pub(super) fn defining(
+    facts: &mut Declarations,
+    owner: DefId,
+    arguments: GenericArgs,
+    budget: &Budget,
+) -> Result<Conditions, &'static str> {
+    let Mapping {
+        mut fold,
+        parameters: ids,
+    } = mapping(facts, owner, arguments, budget)?;
+    let schema = facts
+        .associated
+        .schema(owner)
+        .ok_or("defining implementation schema is missing")?;
+    budget.charge(
+        schema.bounds.len(),
+        schema.bounds.len().saturating_mul(2 * size_of::<Pair>()),
     )?;
     let mut result = Conditions {
         clauses: Vec::new(),

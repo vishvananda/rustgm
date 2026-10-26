@@ -12,7 +12,7 @@ use crate::{
     types::parameters::predicates::Predicate,
 };
 type Header = (DefId, Option<NodeKey>, Predicate);
-fn checked<'a>(
+pub(super) fn checked<'a>(
     forest: &'a Forest,
     registry: &Implementations,
     key: EntryKey,

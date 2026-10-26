@@ -69,6 +69,14 @@ impl Bound {
         self.work.clear();
         result
     }
+    pub(crate) fn apply_argument_charged(
+        &mut self,
+        store: &mut Store,
+        argument: Argument,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Argument, &'static str> {
+        self.apply_argument_observed::<true>(store, argument, 0, charge)
+    }
     pub(super) fn apply_argument_observed<const CHARGED: bool>(
         &mut self,
         store: &mut Store,
