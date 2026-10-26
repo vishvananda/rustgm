@@ -226,15 +226,13 @@ fn space(previous: Option<TokenKind>, current: TokenKind) -> bool {
     use TokenKind::Punctuation as Q;
     if matches!(
         current,
-        Q(
-            P::Comma
-                | P::Semi
-                | P::Dot
-                | P::ColonColon
-                | P::Colon
-                | P::CloseParen
-                | P::CloseBracket
-        )
+        Q(P::Comma
+            | P::Semicolon
+            | P::Dot
+            | P::ColonColon
+            | P::Colon
+            | P::CloseParen
+            | P::CloseBracket)
     ) || matches!(
         previous,
         Q(P::Dot | P::ColonColon | P::OpenParen | P::OpenBracket | P::Bang | P::Pound)
