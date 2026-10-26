@@ -39,8 +39,13 @@ impl Graph {
             .ok_or("source readiness declaration is outside its semantic cells")?;
         match raw.definition.kind {
             s::DefinitionKind::Module => {
-                if cell.is_some() || rows.header(row)?.is_some() || row != self.root_row {
-                    return Err("source module readiness requires its actual typeless root");
+                if cell.is_some() || rows.header(row)?.is_some() {
+                    return Err("source module readiness requires its actual typeless module");
+                }
+                if descriptor.profile() == s::Profile::Source2024ModuleContracts {
+                    descriptor.module_contracts()?.require_module(row)?;
+                } else if row != self.root_row {
+                    return Err("legacy source module readiness requires its actual root");
                 }
             }
             s::DefinitionKind::Trait => {

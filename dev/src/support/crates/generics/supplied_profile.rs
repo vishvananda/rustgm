@@ -16,6 +16,12 @@ pub(super) fn validate(
         return Err("provided source data requires its own Rust2024 provider profile");
     }
     functions::bindings(rows, headers, work, true)?;
+    for header in &rows.traits {
+        work.charge(1)?;
+        if header.flags.bits() & s::TraitFlags::RESTRICTED_IMPL != 0 {
+            return Err("restricted trait domains are unavailable in the Provided profile");
+        }
+    }
     for declaration in &rows.declarations {
         work.charge(1)?;
         if declaration.definition.kind == s::DefinitionKind::Module

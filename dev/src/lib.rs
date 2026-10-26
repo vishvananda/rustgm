@@ -22,6 +22,9 @@ pub mod syntax;
 pub mod types;
 
 #[cfg(test)]
+#[path = "../tests/helpers/domain_cases.rs"]
+mod module_packets;
+#[cfg(test)]
 #[path = "../tests/helpers/packet_flow.rs"]
 mod source_packets;
 #[cfg(test)]

@@ -1,0 +1,28 @@
+configured 13 true
+attribute-effect 13 0 0 root keep
+attribute-effect 13 1 1 root keep
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13]
+node 0 118 120 name "u8"
+node 1 110 121 item 0
+item 0 "C" private [] [] const 0 -
+node 2 102 122 item 1
+item 1 "T" private [] [] trait false [] [1]
+node 3 128 129 generic Type "X" - [] -
+node 4 130 131 name "T"
+node 5 136 137 name "X"
+node 6 154 156 name "u8"
+node 7 157 158 literal 0
+value 0 integer 157 158 infer 1
+node 8 138 159 item 2
+item 2 default 138 145 "C" private [] [] const 6 7
+node 9 123 160 item 3
+item 3 - private [3] [] impl false false 4 5 [8]
+node 10 170 172 block Plain [] -
+node 11 161 172 item 4
+item 4 "main" private [] [] function false false false false - [] - 10
+node 12 0 172 crate [2,9,11]
+node 13 0 172 attributed 0 2 12
+attribute-capture 0 inner 0 73 "#![allow(dead_code,unused_imports,incomplete_features,internal_features)]"
+attribute-capture 1 inner 74 101 "#![feature(specialization)]"
+root 13
+eof 173

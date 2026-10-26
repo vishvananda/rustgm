@@ -31,26 +31,64 @@ as the current frontier; wider macro execution and import remain open.
 
 The [wide-literal successor](wide-literals-checkpoint.md) advances the original
 root to `num/nonzero.rs:34`, with 42 unchanged files opened. All 722 source
-inputs are verified. LIB-026 implementation restrictions are now the loading
-frontier; the earlier observations remain retained history, not current stops.
+inputs are verified. The newer
+[domain checkpoint](implementation-domains-core-checkpoint.md) now reaches
+`mem/alignment.rs:26`, with 56 unchanged files opened. The
+[unnamed-constant checkpoint](unnamed-free-constants.md) reaches
+`mem/maybe_uninit.rs:1644`, with58 unchanged files opened. The
+[defaultness checkpoint](defaultness-checkpoint.md) advances to
+`ptr/metadata.rs:85`, with65 unchanged files opened. LIB-031 trait aliases is
+the current loading blocker; LIB-028 specialization execution remains required.
+Earlier stops remain retained history.
 
 Current lanes:
 
 - A: anonymous Function recipes and the genuine function argument-index repair
   pass the selected private/declaration gates. All 8485 paired text cases and
-  122 reviewed stdout changes are qualified. Continue actual callback-bearing
-  executable consumers, followed by private Provided template preparation;
-  public Provided execution and type-alias transport remain separate work.
-- B: LIB-024's exact wide literal/feature/type slice is public and qualified.
-  Implement LIB-026's actual syntax, feature authority and module implementation
-  domains. Seventy-four independent observations pass; candidate typing, Clippy
-  and functional checks are in progress. Restricted policy transport remains open.
-- C: LIB-025's versioned library attribute transport passes nine exact controls
-  with strict Clippy/audit/build in 131.84 seconds. Implement its SourceCore CLI
-  selection and qualify fresh client warnings/native behavior; preserve explicit
-  legacy API bytes, imported Unknown and the closed Provided profile.
-- Integrator: focused integration/main pushes, periodic CI follow-up and fresh
-  original-source observations. Local primitive ownership is qualified. Keep
+  122 reviewed stdout changes are qualified. Actual callback-bearing executable
+  consumers now pass three focused controls. Private Provided callable-template
+  preparation now passes six focused controls; see the
+  [checkpoint](private-callable-template-checkpoint.md). Private zero-domain
+  Declaration environments now have six qualified controls; see the
+  [environment checkpoint](private-defining-environments-checkpoint.md).
+  The [empty Contract adapter](private-empty-contracts-checkpoint.md) now passes
+  six focused controls and exact first-encoded old v0/v1 bytes. The
+  [numbered trait-input successor](private-numbered-trait-inputs.md) now qualifies
+  actual inherited Self/V/U preparation and body-owned numbering records with
+  six focused controls. The
+  [neutral nonzero successor](private-neutral-numbered-environments.md) now
+  prepares genuine Declaration bodies with nonzero signatures while keeping
+  regional inputs and body type availability closed. Continue the actual body
+  and instance proof bridge toward the concrete
+  [provided-method execution milestone](parallel/provided-method-execution.md).
+  Public Provided execution and type-alias transport remain required.
+  The [fresh consumer constructor](private-consumer-authority-checkpoint.md) now
+  qualifies a separate real Report/Store and one Catalog reservation. Continue
+  selected append and genuine role/member validation on that same consumer;
+  reserved construction does not establish checked header or body availability.
+- B: local LIB-026 implementation domains and their version-one imported
+  unrestricted-profile control are qualified, with 74 independent observations.
+  The private declaration-coordinate namespace and ordinary-trait producer
+  prerequisite now has five qualified controls; see the
+  [namespace checkpoint](pa29-module-namespace-inspection.md). The explicit
+  [v2 module/domain/advisory artifact](pa29-module-contracts-v2.md) now qualifies
+  fresh namespace/domain consumers and provider-owned implementation selection
+  through actual LowIR. Keep the default v1 bytes and real trait/catalog identity
+  distinct from function linker identity. The private
+  [Assert condition transaction](source-assert-implementation.md) now qualifies
+  one parse and owned transfer with authentic opaque provenance. Continue its
+  expression writer and genuine source operator/panic/runtime/constant paths;
+  Assert execution, wider imported contracts and Provided execution remain open.
+- C: SourceCore CLI contract publication and fresh native consumers are qualified.
+  LIB-027 unnamed constants and the [LIB-028 modifier checkpoint](defaultness-checkpoint.md)
+  pass focused controls and reviewed text qualification. Implement the actual
+  specialization graph, effective finality, inherited dispatch and Min checks.
+  B takes LIB-029 assertion expansion after module-contract v2 qualification;
+  coordinate its source/panic authority with C.
+- Integrator: the [trait alias source-site checkpoint](trait-alias-sites-checkpoint.md)
+  qualifies grammar, distinct identity and whole-item authority with shared sparse
+  storage. Continue real typed alias contracts and their bound consumers. Handle
+  focused integration/main pushes, periodic CI follow-up and original-source observations. Local primitive ownership is qualified. Keep
   CPPGM and upstream sources unchanged.
 
 Development validation uses `make fastcheck` with exact affected controls and
@@ -302,6 +340,19 @@ release/native sweep before each development push. Existing independent observat
 can be cited for identical frozen inputs/toolchain/profile; candidate execution
 and candidate-specific proofs must still be checked after integration. Do not
 turn an object-only rustc observation into executable or runtime qualification.
+
+Custom private-source checkpoint gates must qualify production Clippy as well
+as harness-mode Clippy: test compilation changes unused-import and wildcard
+lint behavior. A production build alone does not qualify those lints. Reuse
+unchanged authenticated passes; otherwise run production and private Rust
+commands sequentially. An independent Python architecture audit may run beside
+that sequence, with separate receipts and a joined failure result. This keeps
+one Rust compiler command active and does not extend the five-minute budget.
+Collect findings from both sequential lint modes when the deadline permits,
+even if the first mode fails; test compilation changes which findings appear.
+Join those failures with the audit result before deciding whether to build or
+execute tests. No failed static mode is a pass, and no tests run after a failed
+static phase. Keep a live source-frozen job intact when changing future helpers.
 
 For hot-path changes, apply the frontend performance precedent in `spec.md`:
 identify repeated work removed, cache and ownership boundaries, and dimensions
