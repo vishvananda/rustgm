@@ -46,6 +46,7 @@ mod slice_methods;
 mod slice_paths;
 mod structural_owners;
 mod trait_paths;
+mod aliases;
 mod trait_regions;
 mod traits;
 mod unreduced;
@@ -175,6 +176,7 @@ struct Signature {
     convention: crate::types::callable::Convention,
 }
 struct Checker<'a> {
+    trait_aliases: Option<Box<aliases::Pending>>,
     annotation_inputs: annotations::Inputs,
     call_paths: crate::support::hash::HashSet<NodeKey>,
     linkage_sources: crate::support::hash::HashMap<NodeKey, foreign::Attributes>,
@@ -267,6 +269,7 @@ impl<'a> Checker<'a> {
         let target_feature_sources = call_traits::target_feature_sources(report)
             .map_err(|error| facts.retain_error_warnings(error))?;
         let mut checker = Self {
+            trait_aliases: aliases::collect(report)?,
             annotation_inputs: annotations::Inputs::default(),
             linkage_sources,
             call_paths: crate::support::hash::HashSet::default(),
@@ -384,6 +387,7 @@ impl Checker<'_> {
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
         self.prepare_trait_owners(&mut steps, work_limit)?;
+        self.reject_alias_execution()?;
         self.prepare_source_call_contracts(&mut steps, work_limit)?;
         self.prepare_destructors(destructors, &mut steps, work_limit)?;
         self.prepare_trait_implementations(&mut steps, work_limit)?;

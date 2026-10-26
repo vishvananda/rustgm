@@ -5,6 +5,14 @@ use crate::{
     types::{Store, TypeId, arguments::Argument, parameters::ParameterId},
 };
 impl Bound {
+    pub(crate) fn arguments_charged(
+        &mut self,
+        store: &mut Store,
+        arguments: crate::types::GenericArgs,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<crate::types::GenericArgs, &'static str> {
+        self.apply_arguments_observed::<true>(store, arguments, charge)
+    }
     pub(crate) fn parameters_captured_charged(
         store: &Store,
         arguments: &[(ParameterId, Argument)],

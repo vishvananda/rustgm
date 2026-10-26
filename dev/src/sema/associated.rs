@@ -306,6 +306,15 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
         let source = definition
             .node
             .ok_or_else(|| Error::at(FileId(0), 0, "associated Self definition has no source"))?;
+        let ast = &report.package.unit(source.file).configured.ast;
+        if matches!(ast.node(source.node).kind, Kind::Item(index)
+            if matches!(ast.items[index as usize].kind, ItemKind::TraitAlias { .. }))
+        {
+            // Alias Self belongs to the separate clause owner, never to this
+            // member/implementation inventory. Declaration analysis keeps the
+            // alias execution/export boundary closed until all consumers exist.
+            continue;
+        }
         let owner = OwnerId(u32::try_from(result.owners.len()).map_err(|_| {
             super::model::Declarations::error(report, source, "too many associated owners")
         })?);
