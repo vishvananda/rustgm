@@ -1,0 +1,27 @@
+{
+  "source": "source-marker.rs",
+  "sha256": "7c26bb8ec7093fad15febcc39327b68fc381643996861e5173f3378b1bb9070d",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "ub_checks": false,
+    "bootstrap": true
+  },
+  "predictions": {
+    "metadata": 0,
+    "candidate_semantics": 0,
+    "native_stdout": "0 1 0 7\n"
+  },
+  "status": "qualified-reduced-local-source-const-ownership-native",
+  "boundaries": [
+    "actual source trait impls required",
+    "no imported/legacy role transport",
+    "no caller_location or panic execution"
+  ],
+  "independent_source_receipt_sha256": "4bbf92d64725792a4b51546d2c7e322d7a320aafdb2e4dbb09f251180b9a93f2",
+  "candidate_source": "79b46b8c2bf9e18edb83edded36059062e617b3d",
+  "candidate_receipt_sha256": "2b87e0d7a696d91ed477703d8825c01f6c0e4dd69edc3b3a542a1ed9928b5d21",
+  "native_receipt_sha256": "5e03f305ba14eb5069a6284f3f6bdc5e2216fb7432fa6e416caf9e8c612e7891",
+  "independent_native_receipt_sha256": "ffdc87266c79893a2a75f9741c2aca270c344507a44e9f6f804f8c53ca4b7a09"
+}

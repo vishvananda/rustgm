@@ -271,17 +271,19 @@ impl Checker<'_> {
         })
     }
     pub(super) fn reject_alias_execution(&self) -> Result<(), Error> {
-        if let Some(pending) = &self.trait_aliases {
-            let source = pending
-                .headers
-                .first()
-                .ok_or_else(|| Error::unlocated("empty allocated alias inventory"))?
-                .owner
-                .source;
-            return Err(self.error(
-                source,
-                "trait alias contract expansion is not implemented for all consumers and export",
-            ));
+        let Some(pending) = &self.trait_aliases else {
+            return Ok(());
+        };
+        for header in &pending.headers {
+            if !pending.closed || !header.completed {
+                return Err(self.error(header.owner.source, "alias declaration is not complete"));
+            }
+            if !self.direct_alias_execution(header)? {
+                return Err(self.error(
+                    header.owner.source,
+                    "trait alias contract expansion is not implemented for all consumers and export",
+                ));
+            }
         }
         Ok(())
     }

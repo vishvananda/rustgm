@@ -6,6 +6,7 @@ mod metadata;
 mod nullable;
 pub(crate) use nullable::NullableEnum;
 mod packing;
+mod phantom;
 mod preparation;
 use super::{ItemId, ListId, Primitive, Store, TypeId};
 pub use instances::Shape;
@@ -31,6 +32,8 @@ pub enum Kind {
     Struct,
     Enum,
     Union,
+    /// Checked source `PhantomData`: physical fields stay empty; the argument is logical ownership.
+    PhantomData,
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Representation {
@@ -260,7 +263,7 @@ impl Definitions {
         if self.index.contains_key(&item) {
             return Err("aggregate definition already complete");
         }
-        if matches!(kind, Kind::Struct | Kind::Union) && variants.len() != 1 {
+        if matches!(kind, Kind::Struct | Kind::Union | Kind::PhantomData) && variants.len() != 1 {
             return Err("a struct or union has exactly one field group");
         }
         let id = u32::try_from(self.entries.len()).map_err(|_| "too many aggregate definitions")?;

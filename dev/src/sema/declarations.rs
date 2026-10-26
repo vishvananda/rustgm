@@ -431,6 +431,7 @@ impl Checker<'_> {
         }
         self.complete_deferred_declarations(&mut steps, work_limit)?;
         self.complete_nominals(&mut steps, work_limit)?;
+        super::compiler_items::phantom::complete(self.report, &mut self.facts)?;
         super::compiler_items::pointee::prepare(self.report, &mut self.facts)?;
         super::traits::results::prepare_opaque_outlives(&mut self.facts)
             .map_err(|e| Error::at(FileId(0), 0, e))?;
