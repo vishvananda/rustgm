@@ -90,6 +90,10 @@ pub enum ItemKind {
         bounds: List,
         items: List,
     },
+    TraitAlias {
+        constant: bool,
+        bounds: List,
+    },
     Impl {
         unsafe_: bool,
         constant: bool,

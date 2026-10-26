@@ -89,6 +89,23 @@ impl Payload {
         )?;
         Ok(Self::from(staged))
     }
+    pub(crate) fn from_source_provided_observed(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        base: usize,
+        work: &mut Work,
+        observe: &mut impl FnMut(usize, usize),
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        let staged = source::ValidatedRows::stage_provided_observed(
+            owner,
+            rows,
+            base.saturating_add(overhead),
+            work,
+            observe,
+        )?;
+        Ok(Self::from(staged))
+    }
     /// Validate complete ordinary header contracts without granting body proof.
     /// # Errors
     /// Rejects malformed/incomplete facts and combined storage/work limits.
@@ -104,6 +121,27 @@ impl Payload {
             owner,
             rows,
             attributes,
+            base.saturating_add(overhead),
+            work,
+        )?))
+    }
+    /// Validate complete module/domain/advisory rows, without transporting paid proof.
+    /// # Errors
+    /// Rejects incomplete policy, unsupported forms and combined budgets.
+    pub fn from_source_module_contracts(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        attributes: source::HeaderAttributeColumns,
+        modules: source::ModuleContractRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        Ok(Self::from(source::ValidatedRows::stage_module_contracts(
+            owner,
+            rows,
+            attributes,
+            modules,
             base.saturating_add(overhead),
             work,
         )?))

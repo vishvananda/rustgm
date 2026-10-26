@@ -33,6 +33,7 @@ mod sizing_fallback;
 mod tuple_role;
 mod unsizing;
 pub(in crate::sema) use completed_proofs::Reuse;
+mod bound_frames;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/erased_formation.rs"]
 mod callable_tests;
@@ -102,8 +103,9 @@ mod wf_graph_work;
 #[path = "../../../../tests/invariants/wf_scope_cache.rs"]
 mod wf_scope_cache;
 pub(in crate::sema) use suspension::{
-    Pending, Progress, begin, begin_canonical, begin_executable_counted, begin_normalized,
-    begin_projection, begin_refining, begin_refining_untouched, begin_scoped_refining,
+    Pending, Progress, begin, begin_canonical, begin_canonical_counted, begin_declaration_counted,
+    begin_executable_counted, begin_normalized, begin_projection, begin_refining,
+    begin_refining_untouched, begin_scoped_refining,
 };
 #[cfg(test)]
 #[path = "../../../../tests/invariants/universal_premises.rs"]
@@ -711,4 +713,13 @@ impl Search<'_> {
 #[cfg(test)]
 pub(in crate::sema) const fn callable_layouts() -> (usize, usize) {
     (size_of::<Frame>(), size_of::<mechanical::Pending>())
+}
+
+#[cfg(test)]
+pub(in crate::sema) const fn specialization_layouts() -> (usize, usize, usize) {
+    (
+        size_of::<Frame>(),
+        size_of::<Node>(),
+        size_of::<normalization::Normalization>(),
+    )
 }

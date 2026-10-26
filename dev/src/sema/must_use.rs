@@ -47,6 +47,7 @@ pub struct Work {
 #[derive(Default)]
 pub(super) struct Contracts {
     pub(in crate::sema) headers: Option<Box<super::header_attributes::Ledger>>,
+    pub(in crate::sema) specialization: Option<Box<super::specialization::LocalMarkers>>,
     pub(in crate::sema) non_exhaustive: Option<Box<super::non_exhaustive::Contracts>>,
     pub(in crate::sema) inline: Option<Box<super::inlining::Contracts>>,
     pub(in crate::sema) parentheses: Option<Box<super::parentheses::Contracts>>,
@@ -71,6 +72,16 @@ pub(super) struct Contracts {
     pub(in crate::sema) work: Work,
 }
 impl Declarations {
+    pub(in crate::sema) fn retain_source_warning(
+        &mut self,
+        key: NodeKey,
+        warning: Warning,
+    ) -> Result<(), Error> {
+        let offset = warning.diagnostic.span.start;
+        self.must_use_contracts
+            .get_or_insert_default()
+            .record_warning(key, offset, 0, warning.code, warning.diagnostic)
+    }
     /// Read retained warnings without draining them or repeating semantic work.
     pub fn warnings(&self) -> impl Iterator<Item = &Warning> {
         self.must_use_contracts
@@ -201,6 +212,8 @@ impl Declarations {
         let level = match code {
             WarningCode::UnusedMustUse => self.safety_policies.must_use(key),
             WarningCode::UnusedAttributes => self.safety_policies.unused_attributes(key),
+            WarningCode::UnusedVisibilities => self.safety_policies.unused_visibilities(key),
+            WarningCode::UnstableSyntaxPreExpansion => Level::Warn,
             WarningCode::DuplicateMacroAttributes => {
                 self.safety_policies.duplicate_macro_attributes(key)
             }
