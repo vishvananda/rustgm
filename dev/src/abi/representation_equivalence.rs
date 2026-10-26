@@ -147,5 +147,5 @@ fn metadata(
 }
 
 #[cfg(test)]
-#[path = "../../tests/invariants/pointer_patterns.rs"]
+#[path = "../../tests/invariants/nonnull_types.rs"]
 mod tests;
