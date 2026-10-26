@@ -30,6 +30,17 @@ mod numbered_tests;
 #[path = "../../../../tests/invariants/transport_domains.rs"]
 mod tests;
 
+// Called only by the frozen Provided view, whose complete unit/permutation
+// validation already passed. This shares the existing inverse producer.
+pub(super) fn frozen_ordinals<'rows>(
+    unit: &'rows super::BodyUnit,
+    base: usize,
+    extra: usize,
+    work: &mut Work,
+) -> Result<AllocationOrdinals<'rows>, &'static str> {
+    allocation_ordinals::build(unit, base, extra, work)
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum HeaderRef {
     Trait(u32),

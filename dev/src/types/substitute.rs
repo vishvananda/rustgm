@@ -1,6 +1,7 @@
 //! Substitute a template binder and its parameters without capturing nested binders.
 mod allocation;
 mod bounded;
+mod charged;
 mod equation_closure;
 mod formal_opening;
 pub(crate) use equation_closure::RegionEquations;
@@ -255,6 +256,15 @@ impl Bound {
         store: &mut Store,
         budget: &bounded::Budget,
     ) -> Result<(), &'static str> {
+        self.drain_observed::<BOUNDED, false>(store, budget, &|_, _| Ok(()))
+    }
+
+    fn drain_observed<const BOUNDED: bool, const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        budget: &bounded::Budget,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
         while let Some((key, finish)) = self.work.pop() {
             self.steps += 1;
             if BOUNDED {
@@ -267,6 +277,9 @@ impl Bound {
                 continue;
             }
             let kind = store.kind(key.0).ok_or("invalid substitution type")?;
+            if CHARGED {
+                bounded::charge_prepare(self, store, kind, finish, charge)?;
+            }
             if BOUNDED {
                 budget.prepare(self, store, kind, finish)?;
             }
@@ -274,7 +287,8 @@ impl Bound {
                 continue;
             }
             if let Kind::Parameter(id) = kind
-                && let Some(replacement) = self.parameter(store, id, key.1)?
+                && let Some(replacement) =
+                    self.parameter_observed::<CHARGED>(store, id, key.1, charge)?
             {
                 self.completed.insert(key, replacement);
                 continue;

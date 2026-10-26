@@ -56,7 +56,10 @@ pub(super) fn validate(
         frame,
         position,
         target,
-        (selection.definition, Primitive::Bool),
+        (
+            selection.definition,
+            crate::types::TypeId::primitive(Primitive::Bool),
+        ),
     )?;
     Ok(Some(Call {
         instance: target,

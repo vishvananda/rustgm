@@ -7,6 +7,7 @@ use super::{
 use crate::support::hash::{HashMap, HashSet};
 use crate::types::{ItemId, Store, infer, subject_head::Head};
 use std::sync::OnceLock;
+mod indexed_clauses;
 mod opening;
 pub(crate) use opening::Opening;
 use std::sync::Arc;
@@ -145,61 +146,6 @@ impl ClauseIndex {
             .map_or(&[], Vec::as_slice)
     }
     pub fn insert_clause(&mut self, store: &Store, clause: Clause) -> Result<(), infer::Error> {
-        if self.view.is_some() {
-            return Err(infer::Error::InvalidIdentity);
-        }
-        let predicate = match clause {
-            Clause::Predicate(predicate) => predicate,
-            Clause::ForAll(id) => {
-                store
-                    .quantified(id)
-                    .ok_or(infer::Error::InvalidIdentity)?
-                    .predicate
-            }
-        };
-        let Some((id, _)) = predicate.bound.trait_parts() else {
-            return Err(infer::Error::InvalidIdentity);
-        };
-        let application = store
-            .trait_application(id)
-            .ok_or(infer::Error::InvalidIdentity)?;
-        if self
-            .seen
-            .len()
-            .saturating_add(self.quantified.as_ref().map_or(0, |index| index.seen.len()))
-            >= 1_000_000
-        {
-            return Err(infer::Error::Budget);
-        }
-        if let Clause::ForAll(id) = clause {
-            let head = Head::canonical(
-                store
-                    .kind(predicate.ty)
-                    .ok_or(infer::Error::InvalidIdentity)?,
-            );
-            let index = self.quantified.get_or_insert_with(Default::default);
-            if index.seen.insert(id) {
-                self.parameter_traits.take();
-                index
-                    .candidates
-                    .entry((application.item, head))
-                    .or_default()
-                    .push(id);
-            }
-            return Ok(());
-        }
-        if self.seen.insert(predicate) {
-            self.parameter_traits.take();
-            let head = Head::canonical(
-                store
-                    .kind(predicate.ty)
-                    .ok_or(infer::Error::InvalidIdentity)?,
-            );
-            self.candidates
-                .entry((application.item, head))
-                .or_default()
-                .push(predicate);
-        }
-        Ok(())
+        self.insert_observed::<false, infer::Error>(store, clause, &|_, _| Ok(()))
     }
 }

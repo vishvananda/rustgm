@@ -32,6 +32,10 @@ pub(in super::super) enum Written {
         definition: DefId,
         constness: crate::support::constness::Constness,
     },
+    Alias {
+        path: NodeKey,
+        definition: DefId,
+    },
     SourceSizing(DefId),
     Outlives(NodeKey),
 }
@@ -65,14 +69,19 @@ impl Checker<'_> {
                 &mut syntax,
             )?;
         }
-        if let crate::syntax::item::ItemKind::Trait { bounds, .. } = item.kind {
+        if let crate::syntax::item::ItemKind::Trait { bounds, .. }
+        | crate::syntax::item::ItemKind::TraitAlias { bounds, .. } = item.kind
+        {
             let self_definition = self
-                .facts
-                .associated
-                .owner(owner)
-                .and_then(|id| self.facts.associated.get(id))
-                .ok_or_else(|| self.error(key, "missing trait Self declaration"))?
-                .self_definition;
+                .alias_self(owner)
+                .or_else(|| {
+                    self.facts
+                        .associated
+                        .owner(owner)
+                        .and_then(|id| self.facts.associated.get(id))
+                        .map(|owner| owner.self_definition)
+                })
+                .ok_or_else(|| self.error(key, "missing bound owner Self declaration"))?;
             self.bound_list(
                 key,
                 Subject::Parameter(self_definition),
@@ -149,7 +158,8 @@ impl Checker<'_> {
                 Some(subject),
                 Written::User {
                     path, definition, ..
-                },
+                }
+                | Written::Alias { path, definition },
             ) = (subject, bound.bound)
             {
                 self.retain_projection_bound(
@@ -383,6 +393,14 @@ impl Checker<'_> {
                         Err(self.error(key, "missing call-trait syntax"))
                     }
                     None if self.report.resolution.definitions[id.0 as usize].kind
+                        == crate::resolve::model::DefKind::TraitAlias =>
+                    {
+                        Ok(Written::Alias {
+                            path: key,
+                            definition: id,
+                        })
+                    }
+                    None if self.report.resolution.definitions[id.0 as usize].kind
                         == crate::resolve::model::DefKind::Trait =>
                     {
                         if crate::sema::lifetimes::call_arguments(self.report, key)?.is_some() {
@@ -417,7 +435,8 @@ impl Checker<'_> {
             let bound_context = bound.context(context);
             if let Written::User {
                 path, definition, ..
-            } = bound.bound
+            }
+            | Written::Alias { path, definition } = bound.bound
             {
                 self.bound_subject_lifetimes(path, owner)?;
                 self.schedule_associated_bindings(path, bound_context)?;
@@ -528,6 +547,7 @@ impl Checker<'_> {
         let mut input_count = 0;
         let work_start = self.work.len();
         let mut pending_bindings = false;
+        let mut alias_edges = Vec::new();
         for &bound in &bounds {
             let ty = match bound.subject {
                 Subject::Parameter(id) | Subject::Associated(id) => self.facts.definitions
@@ -541,6 +561,28 @@ impl Checker<'_> {
             };
             let ty = self.bound_subject(bound.source, bound.scope, ty)?;
             let original_ty = self.bound_subject(bound.source, bound.scope, original_ty)?;
+            if let Written::Alias { path, definition } = bound.bound {
+                let edge = self.canonical_alias_edge(
+                    path,
+                    definition,
+                    ty,
+                    original_ty,
+                    bound.context(context),
+                    self.alias_scope_count(bound.scope),
+                )?;
+                if self.alias_self(owner).is_some() {
+                    self.push_alias_edge(&mut alias_edges, edge)?;
+                } else {
+                    if original_ty != ty || self.facts.unreduced.arguments(path).is_some() {
+                        return Err(self.error(
+                            path,
+                            "unreduced alias inputs require complete projection consumers",
+                        ));
+                    }
+                    completed.extend(self.expand_alias_edge(edge)?);
+                }
+                continue;
+            }
             let (value, original_bound) =
                 self.bound_values(bound.bound, ty, original_ty, bound.context(context))?;
             if matches!(bound.subject, Subject::Parameter(_))
@@ -596,6 +638,7 @@ impl Checker<'_> {
             family.requirements = Some(completed[..input_count].iter().map(|p| p.value).collect());
         }
         self.facts.generics.predicates.insert(owner, completed);
+        self.retain_alias_edges(owner, alias_edges)?;
         self.retain_raw_bounds(owner, bounds, context)?;
         Ok(())
     }
@@ -608,6 +651,9 @@ impl Checker<'_> {
         context: regions::Context,
     ) -> Result<(Bound, Bound), Error> {
         let value = match written {
+            Written::Alias { path, .. } => {
+                return Err(self.error(path, "trait aliases require a complete clause consumer"));
+            }
             Written::Trait(bound) => bound,
             Written::SourceSizing(definition) => {
                 let application = self
@@ -701,7 +747,10 @@ impl Syntax {
             Written::User {
                 path, definition, ..
             } => Some((path, definition)),
-            Written::Trait(_) | Written::SourceSizing(_) | Written::Outlives(_) => None,
+            Written::Trait(_)
+            | Written::SourceSizing(_)
+            | Written::Outlives(_)
+            | Written::Alias { .. } => None,
         }
     }
     pub(in super::super) fn subject(self) -> Option<NodeKey> {

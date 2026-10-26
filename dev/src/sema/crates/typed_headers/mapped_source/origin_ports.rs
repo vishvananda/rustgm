@@ -127,10 +127,17 @@ impl Graph {
         if descriptor.identity() != owner
             || row != self.root_row
             || descriptor.edition() != edition
-            || !descriptor.profile().ordinary_functions()
             || catalog.definition_at(owner, row)? != definition
         {
             return Err("source header changed its actual inventory/catalog root");
+        }
+        if !descriptor.profile().ordinary_functions() {
+            match descriptor.profile() {
+                s::Profile::Source2024ModuleContracts => {
+                    descriptor.module_contracts()?;
+                }
+                _ => return Err("source header profile is unsupported"),
+            }
         }
         Ok(descriptor)
     }

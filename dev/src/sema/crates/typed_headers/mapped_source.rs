@@ -83,12 +83,22 @@ impl Context<'_> {
                 "source graph belongs to another immutable artifact descriptor",
             ));
         }
-        if !actual.profile().ordinary_functions()
-            || actual.edition() != crate::support::edition::Edition::Rust2024
-        {
+        if actual.edition() != crate::support::edition::Edition::Rust2024 {
             return Err(error(
                 "canonical source graph requires its explicit supported defining profile",
             ));
+        }
+        if !actual.profile().ordinary_functions() {
+            match actual.profile() {
+                s::Profile::Source2024ModuleContracts => {
+                    actual.module_contracts().map_err(error)?;
+                }
+                _ => {
+                    return Err(error(
+                        "canonical source graph requires its supported defining profile",
+                    ));
+                }
+            }
         }
         Ok(())
     }

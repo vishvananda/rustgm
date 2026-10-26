@@ -3,6 +3,7 @@ mod headers;
 use super::{Checker, DefId, Error, NodeKey, Work, regions};
 use crate::sema::declarations::generics::bounds::lexical::Scope;
 use crate::support::hash::{HashMap, HashSet};
+use crate::support::retained::Growth;
 use crate::types::{
     parameters::{
         clauses::Clause,
@@ -21,6 +22,28 @@ pub(in super::super) struct Seed {
     scope: Option<Scope>,
 }
 
+pub(in crate::sema::declarations) enum Inputs {
+    Single(Clause),
+    Alias(Vec<crate::sema::generics::Predicate>),
+}
+impl Inputs {
+    fn len(&self) -> usize {
+        match self {
+            Self::Single(_) => 1,
+            Self::Alias(clauses) => clauses.len(),
+        }
+    }
+    fn clause(&self, index: usize) -> Option<Clause> {
+        match self {
+            Self::Single(clause) => (index == 0).then_some(*clause),
+            Self::Alias(clauses) => clauses.get(index).map(|clause| clause.value),
+        }
+    }
+    fn clauses(&self) -> impl Iterator<Item = Clause> + '_ {
+        (0..self.len()).filter_map(|index| self.clause(index))
+    }
+}
+
 #[derive(Default)]
 pub(super) struct Pending {
     headers: Option<Box<headers::Headers>>,
@@ -29,7 +52,7 @@ pub(super) struct Pending {
         Option<crate::types::projection::Application>,
     >,
     bounds: HashMap<(DefId, DefId), Vec<Seed>>,
-    typed: HashMap<NodeKey, Clause>,
+    typed: HashMap<NodeKey, Inputs>,
     active: HashSet<NodeKey>,
     queries: HashMap<NodeKey, Vec<Seed>>,
 }
@@ -88,7 +111,11 @@ impl Checker<'_> {
         }
         if let Some(headers) = &mut self.projections.lookup.headers {
             headers.reach(name).map_err(|e| Error::at(key.file, 0, e))?;
-            seeds.retain(|seed| headers.reachable[&name].contains(&seed.definition));
+            seeds.retain(|seed| {
+                self.report.resolution.definitions[seed.definition.0 as usize].kind
+                    == crate::resolve::model::DefKind::TraitAlias
+                    || headers.reachable[&name].contains(&seed.definition)
+            });
         }
         for seed in seeds.iter().rev() {
             self.work.push(Work::ProjectionBound(*seed, false));
@@ -119,6 +146,21 @@ impl Checker<'_> {
             ));
             return Ok(());
         }
+        let inputs = self.projection_seed_inputs(seed)?;
+        if matches!(inputs, Inputs::Alias(_)) {
+            let table = &self.projections.lookup.typed;
+            self.charge_alias_lookup(Growth::map::<NodeKey, Inputs>(
+                table.len(),
+                table.capacity(),
+                1,
+            ))?;
+        }
+        self.projections.lookup.typed.insert(seed.path, inputs);
+        self.projections.lookup.active.remove(&seed.path);
+        Ok(())
+    }
+
+    fn projection_seed_inputs(&mut self, seed: Seed) -> Result<Inputs, Error> {
         let subject = self.facts.definitions[seed.subject.0 as usize]
             .ok_or_else(|| self.error(seed.path, "missing shorthand bound subject"))?;
         let subject = if seed.scope.is_some() {
@@ -126,6 +168,17 @@ impl Checker<'_> {
         } else {
             subject
         };
+        if self.alias_self(seed.definition).is_some() {
+            let edge = self.canonical_alias_edge(
+                seed.path,
+                seed.definition,
+                subject,
+                subject,
+                seed.context,
+                self.alias_scope_count(seed.scope),
+            )?;
+            return self.expand_alias_naming_edge(edge).map(Inputs::Alias);
+        }
         let arguments = self.application_arguments(seed.path, seed.definition, seed.context)?;
         let application = self.applied_trait(seed.path, seed.definition, subject, arguments)?;
         let clause = self.bound_clause(
@@ -136,9 +189,7 @@ impl Checker<'_> {
                 bound: Bound::Trait(application),
             },
         )?;
-        self.projections.lookup.typed.insert(seed.path, clause);
-        self.projections.lookup.active.remove(&seed.path);
-        Ok(())
+        Ok(Inputs::Single(clause))
     }
 
     pub(super) fn projection_bound_candidates(
@@ -155,34 +206,86 @@ impl Checker<'_> {
         let mut result = Vec::with_capacity(seeds.len());
         let mut opened = HashMap::default();
         for seed in seeds {
-            let predicate = *self
+            let alias = self.alias_self(seed.definition).is_some();
+            let count = self
                 .projections
                 .lookup
                 .typed
                 .get(&seed.path)
-                .ok_or_else(|| self.error(key, "unfinished shorthand bound inputs"))?;
-            let source = if seed.scope.is_some() {
-                seed.context
-                    .binder
-                    .and_then(|binder| self.regions.parent(binder))
-            } else {
-                seed.context.binder
-            };
-            let predicate = if matches!(predicate, Clause::ForAll(_)) {
-                let identity = (predicate, source);
-                if let Some(&value) = opened.get(&identity) {
-                    value
-                } else {
-                    let value = self.projection_naming_predicate(key, predicate, Some(context))?;
-                    opened.insert(identity, value);
-                    value
+                .ok_or_else(|| self.error(key, "unfinished shorthand bound inputs"))?
+                .len();
+            for index in 0..count {
+                // Copy one clause before the mutable binder operation. The
+                // canonical expanded vector stays owned by this written seed.
+                let clause = self.projections.lookup.typed[&seed.path]
+                    .clause(index)
+                    .ok_or_else(|| self.error(key, "missing shorthand alias clause"))?;
+                if alias && !self.alias_projection_subject(key, seed.subject, clause)? {
+                    continue;
                 }
-            } else {
-                predicate.ordinary().map_err(|e| self.error(key, e))?
-            };
-            result.push(self.capture_projection_predicate(key, predicate, source, context)?);
+                let predicate =
+                    self.open_projection_seed(key, seed, clause, context, &mut opened)?;
+                if alias {
+                    self.charge_alias_lookup(Growth::vector::<Predicate>(
+                        result.len(),
+                        result.capacity(),
+                        1,
+                    ))?;
+                }
+                result.push(predicate);
+            }
         }
         Ok(result)
+    }
+
+    fn alias_projection_subject(
+        &self,
+        key: NodeKey,
+        subject: DefId,
+        clause: Clause,
+    ) -> Result<bool, Error> {
+        let predicate = match clause {
+            Clause::Predicate(predicate) => predicate,
+            Clause::ForAll(id) => {
+                self.facts
+                    .types
+                    .quantified(id)
+                    .ok_or_else(|| self.error(key, "missing alias naming quantifier"))?
+                    .predicate
+            }
+        };
+        Ok(predicate.bound.trait_parts().is_some()
+            && self.facts.definitions[subject.0 as usize] == Some(predicate.ty))
+    }
+
+    fn open_projection_seed(
+        &mut self,
+        key: NodeKey,
+        seed: Seed,
+        clause: Clause,
+        context: regions::Context,
+        opened: &mut HashMap<(Clause, Option<regions::BinderId>), Predicate>,
+    ) -> Result<Predicate, Error> {
+        let source = if seed.scope.is_some() {
+            seed.context
+                .binder
+                .and_then(|binder| self.regions.parent(binder))
+        } else {
+            seed.context.binder
+        };
+        let predicate = if matches!(clause, Clause::ForAll(_)) {
+            let identity = (clause, source);
+            if let Some(&value) = opened.get(&identity) {
+                value
+            } else {
+                let value = self.projection_naming_predicate(key, clause, Some(context))?;
+                opened.insert(identity, value);
+                value
+            }
+        } else {
+            clause.ordinary().map_err(|e| self.error(key, e))?
+        };
+        self.capture_projection_predicate(key, predicate, source, context)
     }
 
     /// Local annotations may infer an application of a quantified bound. Item

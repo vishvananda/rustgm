@@ -1,0 +1,253 @@
+{
+  "schema": 1,
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "metadata_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name=specialization_probe",
+    "--crate-type=lib"
+  ],
+  "native_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Cdebug-assertions=no",
+    "-Coverflow-checks=no",
+    "-Copt-level=2",
+    "-Ccodegen-units=1",
+    "-Clto=off",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "source_prediction_disagreements": "Retain all actual raw observations and wrong predictions; disagreements are data, not automatic infrastructure failures.",
+  "baseline": "52bb6dda",
+  "candidate_execution": false,
+  "runtime_observer": "none; metadata-only hypothesis set",
+  "purpose": "NEW alias Self source-sizing defaults only: direct RHS vs where vs alias-mediated roles, ?Sized placement and unused generic formals. Metadata-only; no previous cases repeated; no candidate alias execution/export claim.",
+  "planned_metadata_observations": 22,
+  "planned_native_programs": 0,
+  "cases": [
+    {
+      "name": "rhs-pointee-extern",
+      "source": "pa31/tests/spec/alias-self-sizing/independent/rhs-pointee-extern.rs",
+      "sha256": "c77d8408eef4b0772ac38dca6d955e3e766fbbbe83b9e8c90694d29bd9aa520f",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Frozen before observation; wrong hypotheses retained, never infrastructure or weakened control.",
+      "initial_prediction_status": 0,
+      "observed_statuses": [
+        0,
+        0
+      ],
+      "observed_errors": [],
+      "observed_warnings": []
+    },
+    {
+      "name": "where-pointee-extern",
+      "source": "pa31/tests/spec/alias-self-sizing/independent/where-pointee-extern.rs",
+      "sha256": "81e5659e13074f83b00f86b44734d59b64b91151501b5bfb1b4030966b6e52df",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Frozen before observation; wrong hypotheses retained, never infrastructure or weakened control.",
+      "initial_prediction_status": 1,
+      "observed_statuses": [
+        1,
+        1
+      ],
+      "observed_errors": [
+        "the trait bound `Opaque: A` is not satisfied",
+        "aborting due to 1 previous error"
+      ],
+      "observed_warnings": []
+    },
+    {
+      "name": "via-pointee-extern",
+      "source": "pa31/tests/spec/alias-self-sizing/independent/via-pointee-extern.rs",
+      "sha256": "7e8a101ef0062e162f1d0c0321b3f63f4771f3828042aed59abcb036196bff62",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Frozen before observation; wrong hypotheses retained, never infrastructure or weakened control.",
+      "initial_prediction_status": 1,
+      "observed_statuses": [
+        1,
+        1
+      ],
+      "observed_errors": [
+        "the trait bound `Opaque: A` is not satisfied",
+        "aborting due to 1 previous error"
+      ],
+      "observed_warnings": []
+    },
+    {
+      "name": "rhs-meta-slice",
+      "source": "pa31/tests/spec/alias-self-sizing/independent/rhs-meta-slice.rs",
+      "sha256": "790b6e4382cffe02ffd10f9a1582ff302b51e977ff7b2badb224ddc6ac53e7cd",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Frozen before observation; wrong hypotheses retained, never infrastructure or weakened control.",
+      "initial_prediction_status": 0,
+      "observed_statuses": [
+        0,
+        0
+      ],
+      "observed_errors": [],
+      "observed_warnings": []
+    },
+    {
+      "name": "rhs-sized-slice",
+      "source": "pa31/tests/spec/alias-self-sizing/independent/rhs-sized-slice.rs",
+      "sha256": "4423fb9f7cddba3f87f80245c377bbddb78cc6fb8f680c6c8698d1148043e60e",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Frozen before observation; wrong hypotheses retained, never infrastructure or weakened control.",
+      "initial_prediction_status": 1,
+      "observed_statuses": [
+        1,
+        1
+      ],
+      "observed_errors": [
+        "the trait bound `[u8]: A` is not satisfied",
+        "aborting due to 1 previous error"
+      ],
+      "observed_warnings": []
+    },
+    {
+      "name": "rhs-optional-slice",
+      "source": "pa31/tests/spec/alias-self-sizing/independent/rhs-optional-slice.rs",
+      "sha256": "8a09ba4cce1ad90332f4614d71193a82d0b070aafbb449301dbbd21b4764fae5",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Frozen before observation; wrong hypotheses retained, never infrastructure or weakened control.",
+      "initial_prediction_status": 0,
+      "observed_statuses": [
+        1,
+        1
+      ],
+      "observed_errors": [
+        "relaxed bounds are not permitted in trait alias bounds",
+        "aborting due to 1 previous error"
+      ],
+      "observed_warnings": []
+    },
+    {
+      "name": "rhs-optional-extern",
+      "source": "pa31/tests/spec/alias-self-sizing/independent/rhs-optional-extern.rs",
+      "sha256": "768b8e96e89c585daa3cee9abec68ccc3c6621fe9ac57f91f07c9778929e888d",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Frozen before observation; wrong hypotheses retained, never infrastructure or weakened control.",
+      "initial_prediction_status": 1,
+      "observed_statuses": [
+        1,
+        1
+      ],
+      "observed_errors": [
+        "relaxed bounds are not permitted in trait alias bounds",
+        "the trait bound `Opaque: A` is not satisfied",
+        "aborting due to 2 previous errors"
+      ],
+      "observed_warnings": []
+    },
+    {
+      "name": "where-optional-extern",
+      "source": "pa31/tests/spec/alias-self-sizing/independent/where-optional-extern.rs",
+      "sha256": "d06d806ede943ba90d5904dd4f467bb348783e62ca15bb6ab7ecec9bc76f1115",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Frozen before observation; wrong hypotheses retained, never infrastructure or weakened control.",
+      "initial_prediction_status": 0,
+      "observed_statuses": [
+        1,
+        1
+      ],
+      "observed_errors": [
+        "this relaxed bound is not permitted here",
+        "aborting due to 1 previous error"
+      ],
+      "observed_warnings": []
+    },
+    {
+      "name": "unused-formal-default-extern",
+      "source": "pa31/tests/spec/alias-self-sizing/independent/unused-formal-default-extern.rs",
+      "sha256": "ff2575e1b5f5cf07f072d3e31bd2514ee634ecd0c40f643bbf160646def0e65d",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Frozen before observation; wrong hypotheses retained, never infrastructure or weakened control.",
+      "initial_prediction_status": 1,
+      "observed_statuses": [
+        1,
+        1
+      ],
+      "observed_errors": [
+        "the trait bound `Opaque: Sized` is not satisfied",
+        "the trait bound `Opaque: Sized` is not satisfied",
+        "aborting due to 2 previous errors"
+      ],
+      "observed_warnings": []
+    },
+    {
+      "name": "unused-formal-where-extern",
+      "source": "pa31/tests/spec/alias-self-sizing/independent/unused-formal-where-extern.rs",
+      "sha256": "58303da1b0f67dd05afae184ec36372ece8e5f45f5c0f1b8667c3d6a16243a40",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Frozen before observation; wrong hypotheses retained, never infrastructure or weakened control.",
+      "initial_prediction_status": 0,
+      "observed_statuses": [
+        0,
+        0
+      ],
+      "observed_errors": [],
+      "observed_warnings": []
+    },
+    {
+      "name": "ordinary-trait-relaxed-self",
+      "source": "pa31/tests/spec/alias-self-sizing/independent/ordinary-trait-relaxed-self.rs",
+      "sha256": "3edca3c2ca91f630b5593318785e7b0f9ea2a9f8a55328fc805199c837e2294a",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Frozen before observation; wrong hypotheses retained, never infrastructure or weakened control.",
+      "initial_prediction_status": 1,
+      "observed_statuses": [
+        1,
+        1
+      ],
+      "observed_errors": [
+        "relaxed bounds are not permitted in supertrait bounds",
+        "aborting due to 1 previous error"
+      ],
+      "observed_warnings": []
+    }
+  ],
+  "state": "actual22metadata-only observations; no candidate alias execution/export grant",
+  "observed_binding": {
+    "run": 40273407166,
+    "artifact": 12629077647,
+    "binding_sha256": "98d4ed4b908382cb49baa5e9a16ae0a3f4d77835ea44495e20b903d2a8c6c159",
+    "zip_sha256": "c3e4fffd28b64ff1609d4d7ea9ae25caffd9f0d4b66c7e5506aa518547d85f2c",
+    "commands": 22,
+    "native": 0,
+    "infra": 0,
+    "wrong_status_predictions": 4,
+    "additional_semantic_cause_correction": "rhs-optional-extern predictedreject, but actual adds hard-invalid relaxed alias bound; no ?Sized alias support inferred from generic lowering helper"
+  }
+}

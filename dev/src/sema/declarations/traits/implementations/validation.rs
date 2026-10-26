@@ -32,7 +32,7 @@ impl Checker<'_> {
             return self.finish_constant_contracts();
         };
         let pairs = registry.take_overlap_pairs();
-        let headers = registry
+        let mut headers = registry
             .headers()
             .map(|header| (header.owner, header.source, header.predicate))
             .collect::<Vec<_>>();
@@ -59,6 +59,10 @@ impl Checker<'_> {
                 self.validate_impl_pair(key, (a, owner_a), (b, owner_b), &mut steps)?;
             }
         }
+        crate::sema::specialization::prepare_graph(&mut self.facts, self.report)
+            .map_err(|error| self.implementation_error(None, error))?;
+        crate::sema::specialization::conformance_order(&self.facts, &mut headers)
+            .map_err(|error| self.implementation_error(None, error))?;
         let members = Members::new(self.report, &self.facts);
         let types = super::super::associated_types::Members::new(self.report, &self.facts);
         let mut constants = self.constant_members.take_members(self.report, &self.facts);
@@ -93,7 +97,9 @@ impl Checker<'_> {
                 )
             })?
             .finish_validation()
-            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))
+            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+        crate::sema::specialization::seal(&mut self.facts, self.report)
+            .map_err(|error| self.implementation_error(None, error))
     }
 
     pub(super) fn validate_impl_owner(
@@ -179,6 +185,15 @@ impl Checker<'_> {
         second: (Predicate, DefId),
         steps: &mut usize,
     ) -> Result<(), Error> {
+        if crate::sema::specialization::remembered(
+            &mut self.facts,
+            self.report,
+            [first.1, second.1],
+        )
+        .map_err(|error| self.implementation_error(key, error))?
+        {
+            return Ok(());
+        }
         let (possible, work) = overlap::possible(&mut self.facts, first, second)
             .map_err(|e| self.implementation_error(key, e))?;
         *steps = steps.saturating_add(work);
@@ -194,6 +209,17 @@ impl Checker<'_> {
             return Err(
                 self.implementation_error(key, "trait implementation overlap work budget exceeded")
             );
+        }
+        if possible
+            && crate::sema::specialization::requested(self.report, [first.1, second.1], steps)
+                .map_err(|error| self.implementation_error(key, error))?
+        {
+            return crate::sema::specialization::compare(
+                &mut self.facts,
+                self.report,
+                [first.1, second.1],
+            )
+            .map_err(|error| self.implementation_error(key, error));
         }
         if possible {
             return Err(self.implementation_error(
