@@ -1,5 +1,6 @@
 //! Canonical projections retain opened lifetimes and selection across header dependencies.
 mod application_anchors;
+mod metadata_results;
 mod opening;
 mod origin_results;
 use super::{
@@ -29,7 +30,7 @@ pub(in crate::sema) struct Query {
     goal: Goal,
     assumptions: Option<Arc<Assumptions>>,
     pending: Option<Box<selection::Pending>>,
-    inherited: Option<Box<crate::sema::specialization::ProjectionRequirements>>,
+    inherited: Option<Box<origin_results::Continuation>>,
     source: Option<selection::Source>,
     closed: bool,
     frontier: u32,
@@ -168,7 +169,14 @@ impl Query {
         mut reuse: Option<&mut selection::Reuse>,
     ) -> Result<Progress, &'static str> {
         if self.inherited.is_some() {
-            return self.advance_inherited(facts);
+            return if matches!(
+                self.inherited.as_deref(),
+                Some(origin_results::Continuation::Metadata(_))
+            ) {
+                self.advance_metadata(facts)
+            } else {
+                self.advance_inherited(facts)
+            };
         }
         loop {
             let selected = match self.select(facts, reuse.as_deref_mut())? {
@@ -189,7 +197,7 @@ impl Query {
                     .resume_at(self.frontier.max(self.state.obligations.regions.end))?;
             }
             if let Some(source @ selection::Source::Callable { .. }) = selected {
-                self.source = Some(source);
+                self.source = Some(source.clone());
                 let definition = crate::sema::projections::Definition::alias(
                     facts,
                     self.alias,
@@ -205,21 +213,25 @@ impl Query {
                 // that already proved this opaque projection's parent.
                 return self.finish(facts, Some(Resolution::Opaque));
             }
-            self.source = selected;
-            if let Some(source) = selected
+            self.source = selected.clone();
+            if let Some(selection::Source::Pointee(selected)) = selected.as_ref() {
+                self.prepare_metadata(facts, selected)?;
+                return self.advance_metadata(facts);
+            }
+            if let Some(source) = selected.clone()
                 && self.prepare_inherited(facts, source)?
             {
                 return self.advance_inherited(facts);
             }
             if self.closed {
                 return if matches!(selected, Some(selection::Source::Implementation { .. })) {
-                    self.source = selected;
+                    self.source = selected.clone();
                     self.finish(facts, None)
                 } else {
                     self.finish(facts, Some(Resolution::Opaque))
                 };
             }
-            self.source = selected;
+            self.source = selected.clone();
             if !matches!(
                 selected,
                 Some(

@@ -20,6 +20,7 @@ pub(in crate::sema) enum Requirement {
     ImplementationValidated(DefId),
     Fields(ItemId),
     Opaque(crate::types::opaque::OpaqueId),
+    PointeeContracts(DefId),
 }
 impl From<crate::sema::traits::selection::Dependency> for Requirement {
     fn from(dependency: crate::sema::traits::selection::Dependency) -> Self {
@@ -29,6 +30,7 @@ impl From<crate::sema::traits::selection::Dependency> for Requirement {
             Dependency::ImplementationValidated(owner) => Self::ImplementationValidated(owner),
             Dependency::Fields(item) => Self::Fields(item),
             Dependency::Opaque(id) => Self::Opaque(id),
+            Dependency::PointeeContracts(id) => Self::PointeeContracts(id),
         }
     }
 }
@@ -184,6 +186,7 @@ impl Checker<'_> {
                 Requirement::ImplementationValidated(_) => "missing validated implementation",
                 Requirement::Fields(_) => "missing nominal field declarations",
                 Requirement::Opaque(_) => "missing completed opaque hidden type",
+                Requirement::PointeeContracts(_) => "missing checked source Pointee contracts",
             };
             return Err(self.error(dependency.source.node, message));
         }

@@ -220,6 +220,7 @@ impl Cursor {
     ) -> Result<Option<Resolution>, &'static str> {
         let source = projected
             .source
+            .clone()
             .ok_or("associated type requires an unambiguous validated implementation")?;
         if let Some(resolution) = projected.resolution {
             return Ok(Some(resolution));

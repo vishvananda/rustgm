@@ -1,5 +1,5 @@
 //! Requested inherited results retain defining conditions on the existing search stack.
-use super::{Completion, Normalization};
+use super::{Completion, Normalization, ResultContinuation};
 use crate::{
     sema::{
         projections::Definition,
@@ -29,6 +29,7 @@ impl Search<'_> {
     ) -> Result<Option<Completion>, String> {
         let source = self.query.nodes[completed.node]
             .source
+            .clone()
             .ok_or("missing selected result proof")?;
         let Some(method) = Definition::method(facts, completed.opened.application, source)? else {
             return Ok(Some(completed));
@@ -36,19 +37,25 @@ impl Search<'_> {
         let Some(conditions) = method.projection_conditions(facts)? else {
             return Ok(Some(completed));
         };
-        method.charge(1, size_of::<Inherited>() + size_of::<usize>())?;
+        method.charge(1, size_of::<ResultContinuation>() + size_of::<usize>())?;
         let children = vec![completed.node];
-        normalization.inherited = Some(Box::new(Inherited {
+        normalization.inherited = Some(Box::new(ResultContinuation::Inherited(Inherited {
             completed,
             method,
             conditions,
             children,
             cursor: 0,
             universes: HashMap::default(),
-        }));
+        })));
         #[cfg(test)]
         crate::sema::traits::selection::copy_trace::record(|| {
-            let pending = normalization.inherited.as_deref();
+            let pending = normalization
+                .inherited
+                .as_deref()
+                .and_then(|value| match value {
+                    ResultContinuation::Inherited(value) => Some(value),
+                    ResultContinuation::Metadata(_) => None,
+                });
             format!(
                 "specialization-rpit-search capacities={:?}",
                 pending.map(|value| (
@@ -69,10 +76,10 @@ impl Search<'_> {
             .normalization
             .as_mut()
             .ok_or("missing inherited normalization")?;
-        let pending = normalization
-            .inherited
-            .as_ref()
-            .ok_or("missing defining result conditions")?;
+        let Some(ResultContinuation::Inherited(pending)) = normalization.inherited.as_deref()
+        else {
+            return Err("missing defining result conditions".into());
+        };
         pending.method.current(facts)?;
         pending.method.charge(1, 0)?;
         if pending.cursor < pending.conditions.clauses.len() {
@@ -82,6 +89,9 @@ impl Search<'_> {
             .inherited
             .take()
             .ok_or("missing completed inherited result")?;
+        let ResultContinuation::Inherited(pending) = *pending else {
+            return Err("metadata continuation used inherited result".into());
+        };
         let completed = pending.finish(&mut self.query, normalization.scope)?;
         self.finish_normalization(facts, frame, completed)?;
         Ok(Action::Continue)
@@ -94,7 +104,8 @@ impl Search<'_> {
         let Some(normalization) = frame.normalization.as_mut() else {
             return Ok(None);
         };
-        let Some(pending) = normalization.inherited.as_mut() else {
+        let Some(ResultContinuation::Inherited(pending)) = normalization.inherited.as_deref_mut()
+        else {
             return Ok(None);
         };
         let clause = *pending
@@ -118,10 +129,10 @@ impl Search<'_> {
         normalization: &mut Normalization,
         decision: Decision,
     ) -> Result<(), String> {
-        let pending = normalization
-            .inherited
-            .as_mut()
-            .ok_or("missing inherited result condition owner")?;
+        let Some(ResultContinuation::Inherited(pending)) = normalization.inherited.as_deref_mut()
+        else {
+            return Err("missing inherited result condition owner".into());
+        };
         match decision {
             Decision::Proven(node) => {
                 let growth =
@@ -153,7 +164,7 @@ impl Inherited {
             cycle_dependent: false,
             provisional_size: false,
             goal: parent.goal,
-            source: parent.source,
+            source: parent.source.clone(),
             first: parent.first,
             end: parent.end.max(query.allocations.end()),
             children: self.children,

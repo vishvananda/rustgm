@@ -27,7 +27,7 @@ pub(super) struct Headers {
     declarations: HashMap<NodeKey, Header>,
     definitions: HashMap<DefId, NodeKey>,
     complete: bool,
-    bytes: usize,
+    bytes: Cell<usize>,
     pub(super) steps: Cell<usize>,
 }
 fn ledger(facts: &mut Declarations, bytes: usize) -> Result<&mut Ledger, Error> {
@@ -40,8 +40,11 @@ fn ledger(facts: &mut Declarations, bytes: usize) -> Result<&mut Ledger, Error> 
         .local
         .steps
         .set(ledger.local.steps.get().saturating_add(1));
-    ledger.local.bytes = ledger.local.bytes.saturating_add(bytes);
-    if ledger.local.bytes > crate::support::crates::MAX_BYTES
+    ledger
+        .local
+        .bytes
+        .set(ledger.local.bytes.get().saturating_add(bytes));
+    if ledger.local.bytes.get() > crate::support::crates::MAX_BYTES
         || ledger.local.steps.get() > crate::support::crates::MAX_COMPONENTS
     {
         return Err(Error::unlocated(
@@ -283,6 +286,45 @@ pub(in crate::sema) fn charge_source_contract_query(
         .ok_or_else(|| Error::unlocated("source contract query lacks its producer budget"))?;
     charge_query(headers, steps)
 }
+
+/// Counted semantic producers retain against the same already authenticated
+/// local owner. This adapter cannot create a ledger or borrow imported budgets.
+pub(in crate::sema) fn charge_source_retention(
+    facts: &Declarations,
+    steps: usize,
+    bytes: usize,
+) -> Result<(), Error> {
+    source_payments(facts.must_use_contracts.as_deref())?
+        .charge(steps, bytes)
+        .map_err(Error::unlocated)
+}
+
+/// A disjoint accounting borrow, not permission to read or publish a header.
+pub(in crate::sema) struct Payments<'a>(&'a Headers);
+pub(in crate::sema) fn source_payments(
+    contracts: Option<&crate::sema::must_use::Contracts>,
+) -> Result<Payments<'_>, Error> {
+    let headers = contracts
+        .and_then(|owner| owner.headers.as_deref())
+        .filter(|ledger| ledger.local.complete)
+        .map(|ledger| &ledger.local)
+        .ok_or_else(|| Error::unlocated("source retention lacks its completed local producer"))?;
+    let payments = Payments(headers);
+    payments.charge(1, 0).map_err(Error::unlocated)?;
+    Ok(payments)
+}
+impl Payments<'_> {
+    pub(in crate::sema) fn charge(&self, steps: usize, bytes: usize) -> Result<(), &'static str> {
+        self.0.steps.set(self.0.steps.get().saturating_add(steps));
+        self.0.bytes.set(self.0.bytes.get().saturating_add(bytes));
+        if self.0.steps.get() > crate::support::crates::MAX_COMPONENTS
+            || self.0.bytes.get() > crate::support::crates::MAX_BYTES
+        {
+            return Err("source contract work or retention exceeds profile limit");
+        }
+        Ok(())
+    }
+}
 fn charge_query(headers: &Headers, steps: usize) -> Result<(), Error> {
     headers.steps.set(headers.steps.get().saturating_add(steps));
     if headers.steps.get() > crate::support::crates::MAX_COMPONENTS {
@@ -429,6 +471,29 @@ pub(in crate::sema) fn pointee_source_image(
     Ok(header.source.clone())
 }
 
+/// Replay an already Report-authenticated source seal while the declaration
+/// owner holds that Report immutably. This cannot inspect a different Report.
+pub(in crate::sema) fn require_recorded_pointee_image(
+    facts: &Declarations,
+    declaration: crate::resolve::bindings::Declaration,
+    expected: &SourceImage,
+) -> Result<(), Error> {
+    charge_source_contract_query(facts, 1)?;
+    let actual = facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .filter(|ledger| ledger.local.complete)
+        .and_then(|ledger| ledger.local.declarations.get(&declaration.origin))
+        .ok_or_else(|| Error::unlocated("source Pointee lost its recorded image witness"))?;
+    if !expected.same(&actual.source) {
+        return Err(Error::unlocated(
+            "source Pointee recorded image belongs to another incarnation",
+        ));
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 pub(in crate::sema) fn source_contract_storage(
     facts: &Declarations,
@@ -441,7 +506,7 @@ pub(in crate::sema) fn source_contract_storage(
         .local;
     Some((
         headers.steps.get(),
-        headers.bytes,
+        headers.bytes.get(),
         headers.declarations.len(),
         headers.declarations.capacity(),
         headers

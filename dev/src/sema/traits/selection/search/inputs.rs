@@ -237,7 +237,7 @@ impl Search<'_> {
                 .resolved_predicate(&mut facts.types, inputs.plan.original())
                 .map_err(inference)?
         };
-        let source = self.query.nodes[selected].source;
+        let source = self.query.nodes[selected].source.clone();
         let end = normalization.end.max(self.query.nodes[selected].end);
         let children = normalization.proof.into_iter().chain([selected]).collect();
         let index = self.query.push(
@@ -272,7 +272,7 @@ impl Search<'_> {
         let node = &self.query.nodes[selected];
         let first = node.first.min(self.query.nodes[prefix].first);
         let end = node.end.max(self.query.nodes[prefix].end);
-        let (goal, source) = (node.goal, node.source);
+        let (goal, source) = (node.goal, node.source.clone());
         let scope = self.query.node_scope(selected);
         let index = self.query.push(
             Node {

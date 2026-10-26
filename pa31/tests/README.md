@@ -10,7 +10,10 @@ input/result obligations. Their twenty metadata observations retain ten
 hypothesis disagreements, including missing Copy protocol prerequisites; the
 initial predictions and all original source bytes remain retained. Six separately
 frozen setup successors isolate those prerequisites and input formation.
-Candidate support remains unqualified; this does not repeat declaration-only
+A separately frozen `stack-selection.rs` source directs a genuine Metadata
+result into another trait's argument and a real generic body call. Its two
+edition predictions are status zero/no warnings; it does not repeat the 38
+collected observations. Candidate support remains unqualified; this does not repeat declaration-only
 evidence or grant pointer intrinsic, layout, runtime or transport permission.
 
 `spec/declarative-macros/trait-members/` retains seven independently checked

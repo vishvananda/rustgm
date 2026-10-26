@@ -36,17 +36,17 @@ impl ProjectionRequirements {
     pub(in crate::sema) fn new(
         facts: &mut Declarations,
         method: SelectedMethod,
-    ) -> Result<Option<Box<Self>>, &'static str> {
+    ) -> Result<Option<Self>, &'static str> {
         let Some(conditions) = method.projection_conditions(facts)? else {
             return Ok(None);
         };
         method.charge(1, size_of::<Self>())?;
-        Ok(Some(Box::new(Self {
+        Ok(Some(Self {
             method,
             conditions,
             cursor: 0,
             active: None,
-        })))
+        }))
     }
     pub(in crate::sema) fn allocation_end(&self, first: u32) -> u32 {
         self.active

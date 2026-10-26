@@ -413,6 +413,9 @@ impl Opened {
         if self.pending_inputs(facts).map_err(inference)? {
             return Ok(Attempt::NestedInputs);
         }
+        if let Some(selected) = self.metadata_request(facts)? {
+            return Ok(Attempt::Selected(selected));
+        }
         let assumptions = caller_assumptions(facts, &mut self.context, self.environment.as_ref())?;
         let caller = Caller {
             assumptions: &assumptions,
@@ -431,7 +434,7 @@ impl Opened {
         let Selection::Proven(evidence) = selected else {
             return Ok(Attempt::Retry(None));
         };
-        let source = evidence.source;
+        let source = evidence.source.clone();
         let assumed = if matches!(
             source,
             Source::Assumption(_)
@@ -509,6 +512,58 @@ impl Opened {
             .account_work(restoration.steps)
             .map_err(inference)?;
         Ok(Attempt::Selected(Selected { predicate, result }))
+    }
+
+    /// This fast path supplies only the real request. Cursor owns all source
+    /// parent, equality, metadata and result-region proof on the normal path.
+    fn metadata_request(&mut self, facts: &mut Declarations) -> Result<Option<Selected>, String> {
+        let Some(catalog) = facts.source_bindings.as_deref() else {
+            return Ok(None);
+        };
+        let Some(member) = catalog.role(crate::support::bindings::LangItem::MetadataType)? else {
+            return Ok(None);
+        };
+        if member.definition.0 != self.application.item.0 || !self.application.arguments.is_empty()
+        {
+            return Ok(None);
+        }
+        let predicate = match self
+            .context
+            .resolved_predicate(&mut facts.types, &self.application.predicate)
+        {
+            Ok(predicate) => predicate,
+            Err(
+                crate::types::infer::Error::Unresolved | crate::types::infer::Error::Normalization,
+            ) => return Ok(None),
+            Err(error) => return Err(inference(error)),
+        };
+        let mut restoration = self.proof.body_restoration()?;
+        let predicate = restoration.predicate(&mut facts.types, predicate)?;
+        let (trait_application, _) = predicate
+            .bound
+            .trait_parts()
+            .ok_or("source Metadata request has no real parent")?;
+        crate::sema::header_attributes::charge_source_retention(
+            facts,
+            1,
+            size_of::<crate::types::Kind>(),
+        )
+        .map_err(|error| error.to_string())?;
+        let ty = facts.types.intern(crate::types::Kind::Projection(
+            crate::types::projection::Application {
+                item: self.application.item,
+                subject: predicate.ty,
+                trait_application,
+                arguments: GenericArgs::EMPTY,
+            },
+        ))?;
+        self.context
+            .account_work(restoration.steps)
+            .map_err(inference)?;
+        Ok(Some(Selected {
+            predicate,
+            result: ResultType::Type(ty),
+        }))
     }
 
     // Nested input projections need their own normalization before selection can

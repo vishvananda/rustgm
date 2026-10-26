@@ -12,7 +12,7 @@ use crate::{
     sema::{associated::OwnerKind, model::Function},
     syntax::item::{ItemKind, Safety, Visibility},
 };
-pub(super) use associated_types::Bounds as AssociatedBounds;
+pub(super) use associated_types::{Bounds as AssociatedBounds, MetadataPhase};
 
 impl Checker<'_> {
     pub(super) fn prepare_trait_owners(
@@ -110,6 +110,7 @@ impl Checker<'_> {
         crate::sema::compiler_items::validate_sizing(self.report, &mut self.facts)?;
         self.complete_trait_contracts()?;
         self.retain_header_projection_requirements()?;
+        self.prepare_pointee_member(steps, limit)?;
         self.complete_alias_headers(steps, limit)?;
         Ok(())
     }

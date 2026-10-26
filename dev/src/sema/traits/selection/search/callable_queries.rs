@@ -278,7 +278,7 @@ impl Query {
                 cycle_dependent: false,
                 provisional_size: false,
                 goal: selected.goal,
-                source: selected.source,
+                source: selected.source.clone(),
                 children: vec![node],
                 first,
                 end,

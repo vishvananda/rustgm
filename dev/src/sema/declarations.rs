@@ -117,6 +117,7 @@ enum Work {
     NominalContract(ItemId, bool),
     Fields(ItemId, bool),
     OpaqueHidden(crate::types::opaque::OpaqueId),
+    PointeeContracts(DefId, traits::MetadataPhase),
     Constructor(DefId),
     SelfConstructor(NodeKey, DefId, regions::Context),
     PrepareConstructor(DefId),
@@ -153,6 +154,9 @@ impl Work {
             }
             Requirement::Fields(item) => Self::Fields(item, false),
             Requirement::Opaque(id) => Self::OpaqueHidden(id),
+            Requirement::PointeeContracts(id) => {
+                Self::PointeeContracts(id, traits::MetadataPhase::Begin)
+            }
         }
     }
     fn selection_dependency(dependency: super::traits::selection::Dependency) -> Self {
@@ -165,6 +169,9 @@ impl Work {
             }
             super::traits::selection::Dependency::Fields(item) => Self::Fields(item, false),
             super::traits::selection::Dependency::Opaque(id) => Self::OpaqueHidden(id),
+            super::traits::selection::Dependency::PointeeContracts(id) => {
+                Self::PointeeContracts(id, traits::MetadataPhase::Begin)
+            }
         }
     }
 }
@@ -550,6 +557,7 @@ impl Checker<'_> {
                 }
                 Work::NominalContract(item, finish) => self.nominal_contract(item, finish)?,
                 Work::Fields(item, finish) => self.nominal_fields(item, finish)?,
+                Work::PointeeContracts(id, phase) => self.pointee_member_work(id, phase)?,
                 Work::OpaqueHidden(id) => {
                     let declaration = self
                         .facts

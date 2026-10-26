@@ -5,7 +5,6 @@ use crate::{
         declaration_inputs::Input,
         generics::{Parameter, Predicate},
         header_attributes::{self, SourceImage},
-        members::Field,
     },
     syntax::{ast::Kind as Syntax, item::Item},
     types::{ItemId, arena, outlives::Pair, parameters::clauses::Clause, projection},
@@ -49,7 +48,6 @@ struct State {
     item: Item,
     parameters: Vec<Parameter>,
     clauses: Vec<Predicate>,
-    fields: Vec<Field>,
 }
 pub(in crate::sema::compiler_items) struct Contracts {
     pub(super) arena: arena::Identity,
@@ -88,31 +86,10 @@ fn clauses(facts: &Declarations, declaration: Declaration) -> &[Predicate] {
     // consequences. Those cache rows are not additional declaration inputs.
     facts.generics.declared_predicates(declaration.definition)
 }
-fn fields(facts: &Declarations, declaration: Declaration) -> Result<&[Field], Error> {
-    let variants = facts.members.variants(ItemId(declaration.definition.0));
-    let [variant] = variants else {
-        return Err(Error::unlocated(
-            "source DynMetadata requires its one actual field owner",
-        ));
-    };
-    facts
-        .members
-        .fields(*variant)
-        .ok_or_else(|| Error::unlocated("source DynMetadata fields are not complete"))
-}
 impl State {
-    fn bytes(
-        facts: &Declarations,
-        declaration: Declaration,
-        nominal: bool,
-    ) -> Result<usize, Error> {
-        Ok(size_of_val(parameters(facts, declaration))
+    fn bytes(facts: &Declarations, declaration: Declaration) -> usize {
+        size_of_val(parameters(facts, declaration))
             .saturating_add(size_of_val(clauses(facts, declaration)))
-            .saturating_add(if nominal {
-                size_of_val(fields(facts, declaration)?)
-            } else {
-                0
-            }))
     }
     fn capture(
         report: &Report,
@@ -139,30 +116,34 @@ impl State {
             item: item(report, declaration)?,
             parameters: parameters(facts, declaration).to_vec(),
             clauses: clauses(facts, declaration).to_vec(),
-            fields: if nominal {
-                fields(facts, declaration)?.to_vec()
-            } else {
-                Vec::new()
-            },
         })
     }
-    fn current(&self, report: &Report, facts: &Declarations, nominal: bool) -> Result<(), Error> {
+    fn current(&self, report: &Report, facts: &Declarations) -> Result<(), Error> {
         let declaration = self.declaration;
         let unit = report.package.unit(declaration.origin.file);
+        header_attributes::pointee_source_image(facts, report, declaration)?;
+        if Row::read(report, declaration)? != self.row
+            || !self.image.current(unit, declaration.origin.node)
+            || item(report, declaration)? != self.item
+        {
+            return Err(Error::unlocated(
+                "source Pointee retained declaration changed",
+            ));
+        }
+        self.current_facts(facts)
+    }
+    fn current_facts(&self, facts: &Declarations) -> Result<(), Error> {
+        let declaration = self.declaration;
         let steps = self
             .parameters
             .len()
             .saturating_add(self.clauses.len())
-            .saturating_add(self.fields.len())
             .saturating_add(1);
         header_attributes::charge_source_contract_query(facts, steps)?;
-        header_attributes::pointee_source_image(facts, report, declaration)?;
+        header_attributes::require_recorded_pointee_image(facts, declaration, &self.image)?;
         let params = parameters(facts, declaration);
         let conditions = clauses(facts, declaration);
-        if Row::read(report, declaration)? != self.row
-            || !self.image.current(unit, declaration.origin.node)
-            || item(report, declaration)? != self.item
-            || params.len() != self.parameters.len()
+        if params.len() != self.parameters.len()
             || conditions.len() != self.clauses.len()
             || !params.iter().zip(&self.parameters).all(|(a, b)| {
                 a.binding == b.binding
@@ -178,18 +159,6 @@ impl State {
             return Err(Error::unlocated(
                 "source Pointee retained declaration changed",
             ));
-        }
-        if nominal {
-            let actual = fields(facts, declaration)?;
-            if actual.len() != self.fields.len()
-                || !actual.iter().zip(&self.fields).all(|(a, b)| {
-                    a.origin == b.origin && a.name == b.name && a.ty == b.ty && a.access == b.access
-                })
-            {
-                return Err(Error::unlocated(
-                    "source DynMetadata actual field contract changed",
-                ));
-            }
         }
         Ok(())
     }
@@ -240,19 +209,12 @@ impl Contracts {
             .bounds;
         let mut bytes = size_of::<Self>().saturating_add(2 * size_of::<usize>());
         let mut steps = 1usize;
-        for (declaration, nominal) in [
-            (Some(plan.trait_), false),
-            (Some(plan.member), false),
-            (plan.nominal, true),
-        ] {
+        for declaration in [Some(plan.trait_), Some(plan.member), plan.nominal] {
             if let Some(declaration) = declaration {
-                bytes = bytes.saturating_add(State::bytes(facts, declaration, nominal)?);
+                bytes = bytes.saturating_add(State::bytes(facts, declaration));
                 steps = steps
                     .saturating_add(parameters(facts, declaration).len())
                     .saturating_add(clauses(facts, declaration).len());
-                if nominal {
-                    steps = steps.saturating_add(fields(facts, declaration)?.len());
-                }
             }
         }
         bytes = bytes
@@ -340,22 +302,44 @@ impl Contracts {
             ));
         }
         for state in &self.states {
-            state.current(report, facts, false)?;
+            state.current(report, facts)?;
         }
         if let Some(nominal) = &self.nominal {
-            nominal.current(report, facts, true)?;
+            nominal.current(report, facts)?;
         }
+        self.current_typed(facts)
+    }
+    /// This replay belongs to the immutable Report phase authenticated by
+    /// capture/current; it does not claim access to a separately changed Report.
+    pub(super) fn current_facts(&self, facts: &Declarations) -> Result<(), Error> {
+        header_attributes::charge_source_contract_query(facts, 1)?;
+        if !facts.types.has_identity(&self.arena) {
+            return Err(Error::unlocated(
+                "source Pointee contract belongs to another type arena",
+            ));
+        }
+        self.completed_roles(facts)?;
+        for state in &self.states {
+            state.current_facts(facts)?;
+        }
+        if let Some(nominal) = &self.nominal {
+            nominal.current_facts(facts)?;
+        }
+        self.current_typed(facts)
+    }
+    fn current_typed(&self, facts: &Declarations) -> Result<(), Error> {
+        let plan = self.plan;
         let header = trait_header(facts, plan)?;
         let FamilyInputs {
             identity: family_identity,
             requirements,
             regions,
         } = family_inputs(facts, plan)?;
-        let results = &facts
+        let contract = facts
             .associated
             .require_projection_header(plan.member.definition)
-            .map_err(Error::unlocated)?
-            .bounds;
+            .map_err(Error::unlocated)?;
+        let results = &contract.bounds;
         header_attributes::charge_source_contract_query(
             facts,
             self.inputs
@@ -366,7 +350,14 @@ impl Contracts {
                 .saturating_add(self.regions.len())
                 .saturating_add(self.results.len()),
         )?;
-        if header.inputs.view().len() != self.inputs.len()
+        if header.self_type != plan.self_type
+            || facts.types.kind(contract.projection)
+                != Some(crate::types::Kind::Projection(plan.projection))
+            || facts
+                .types
+                .projection_schema(crate::types::ItemId(plan.member.definition.0))
+                != Some(plan.schema)
+            || header.inputs.view().len() != self.inputs.len()
             || !header
                 .inputs
                 .view()
@@ -397,6 +388,15 @@ impl Contracts {
             .source_bindings
             .as_deref()
             .ok_or_else(|| Error::unlocated("source Pointee role catalog disappeared"))?;
+        if catalog
+            .neutral_attributes(super::super::Role::from(self.plan.trait_))
+            .map_err(Error::unlocated)?
+            != self.plan.attributes
+        {
+            return Err(Error::unlocated(
+                "source Pointee role changed its retained header attributes",
+            ));
+        }
         for (role, expected) in [
             (LangItem::PointeeTrait, Some(self.plan.trait_)),
             (LangItem::MetadataType, Some(self.plan.member)),
@@ -445,12 +445,15 @@ impl Contracts {
             .as_chunks_mut::<3>()
             .0
             .iter_mut()
-            .zip(self.states.iter().chain(self.nominal.iter()))
+            .zip(&self.states)
         {
-            slot.copy_from_slice(&[
-                state.parameters.capacity(),
-                state.clauses.capacity(),
-                state.fields.capacity(),
+            slot.copy_from_slice(&[state.parameters.capacity(), state.clauses.capacity(), 0]);
+        }
+        if let Some(nominal) = &self.nominal {
+            result[6..9].copy_from_slice(&[
+                nominal.parameters.capacity(),
+                nominal.clauses.capacity(),
+                0,
             ]);
         }
         result[9..].copy_from_slice(&[
