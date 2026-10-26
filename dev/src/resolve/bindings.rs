@@ -4,6 +4,7 @@ mod allowances;
 mod annotations;
 mod claim_tokens;
 mod client;
+pub(crate) mod consumer_policy;
 #[path = "bindings/allowance_owner.rs"]
 mod macro_context;
 pub(in crate::resolve) mod panic_contracts;
@@ -31,6 +32,7 @@ use std::sync::Arc;
 pub(in crate::resolve) enum Source {
     Core(SourceCore),
     Client(SourceClient),
+    Staged(std::rc::Rc<consumer_policy::StagedConsumer>),
     LocalMacros(LocalMacros),
 }
 
@@ -50,7 +52,17 @@ pub struct SourceCore {
     pub(in crate::resolve) macros: panic_contracts::Contracts,
 }
 impl super::package::Package {
+    pub(crate) fn staged_consumer(&self) -> Option<&std::rc::Rc<consumer_policy::StagedConsumer>> {
+        match self.source.as_deref()? {
+            Source::Staged(consumer) => Some(consumer),
+            Source::Core(_) | Source::Client(_) | Source::LocalMacros(_) => None,
+        }
+    }
     pub(crate) fn requested_impl_restriction(&self) -> Result<bool, &'static str> {
+        if let Some(source) = self.staged_consumer() {
+            source.require_package(self)?;
+            return Ok(source.features.has(policy::Feature::ImplRestriction));
+        }
         if let Some(Source::Client(client)) = self.source.as_deref() {
             if client.current().name() != self.crate_name || client.current() == client.provider() {
                 return Err("implementation restriction client identity changed");
@@ -69,6 +81,10 @@ impl super::package::Package {
                 features.has(policy::Feature::Specialization),
             )
         };
+        if let Some(source) = self.staged_consumer() {
+            source.require_package(self)?;
+            return Ok(requested(&source.features));
+        }
         if let Some(client) = self.source_client() {
             if client.current().name() != self.crate_name || client.current() == client.provider() {
                 return Err("specialization client identity changed");
@@ -113,13 +129,13 @@ impl super::package::Package {
     pub fn source_core(&self) -> Option<&SourceCore> {
         match self.source.as_deref()? {
             Source::Core(source) => Some(source),
-            Source::Client(_) | Source::LocalMacros(_) => None,
+            Source::Client(_) | Source::Staged(_) | Source::LocalMacros(_) => None,
         }
     }
     #[must_use]
     pub fn source_client(&self) -> Option<&SourceClient> {
         match self.source.as_deref()? {
-            Source::Core(_) | Source::LocalMacros(_) => None,
+            Source::Core(_) | Source::Staged(_) | Source::LocalMacros(_) => None,
             Source::Client(source) => Some(source),
         }
     }
@@ -127,6 +143,7 @@ impl super::package::Package {
         Some(match self.source.as_deref()? {
             Source::Core(source) => &source.features,
             Source::Client(source) => &source.features,
+            Source::Staged(source) => &source.features,
             Source::LocalMacros(_) => return None,
         })
     }
