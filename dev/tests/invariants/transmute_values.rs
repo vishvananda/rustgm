@@ -1,9 +1,9 @@
 //! Value decoding rejects invalid targets without laundering symbolic storage.
 use super::*;
 use crate::const_eval::memory::Read;
-fn take(read: Read<Constant>) -> Result<Constant, Failure> {
+fn take(read: &Read<Constant>) -> Result<Constant, Failure> {
     match read {
-        Read::Value(value) => Ok(value),
+        Read::Value(value) => Ok(*value),
         Read::Pending => Err("unexpected pending scalar transmute".into()),
     }
 }
@@ -24,17 +24,17 @@ fn strict_transmute_values_preserve_bits_numeric_addresses_and_reject_invalid_or
             let boolean = TypeId::primitive(Primitive::Bool);
             for bits in [0, 1, 13, u64::MAX] {
                 let address =
-                    take(machine.transmute_value(usize_, pointer, scalar(u128::from(bits)))?)?;
+                    take(&machine.transmute_value(usize_, pointer, scalar(u128::from(bits)))?)?;
                 assert!(
                     matches!(Reader::new(machine.evaluator.facts()).view(address)?,crate::sema::values::View::Address {bits:actual} if actual==bits)
                 );
                 assert!(
-                    take(machine.transmute_value(pointer, usize_, address)?)?
+                    take(&machine.transmute_value(pointer, usize_, address)?)?
                         == scalar(u128::from(bits))
                 );
             }
             assert!(
-                take(machine.transmute_value(u8_, boolean, scalar(1))?)?
+                take(&machine.transmute_value(u8_, boolean, scalar(1))?)?
                     == Constant::scalar(Scalar::Boolean(true))
             );
             assert!(machine.transmute_value(u8_, boolean, scalar(2)).is_err());
@@ -110,7 +110,7 @@ fn transmute_reference_duties_park_without_reencoding_or_expiring_original_roots
                     .complete_definition(definition, scalar(index as u128 + 11));
             }
             machine.waiting = None;
-            let result = take(machine.transmute_value(raw, ty, input)?)?;
+            let result = take(&machine.transmute_value(raw, ty, input)?)?;
             assert_eq!(Some(machine.memory.bytes.decoded), decoded);
             assert_eq!(machine.memory.bytes.paid_duties, width);
             for (index, original) in values.iter().enumerate() {

@@ -142,7 +142,7 @@ impl Discovered {
             Some(SourceIntrinsic::ConstEvalSelect) => {
                 self.selectors.push(crate::body::ir::ValueId(
                     u32::try_from(index).map_err(|_| "too many source selector values")?,
-                ))
+                ));
             }
             Some(
                 SourceIntrinsic::UbChecks | SourceIntrinsic::Abort | SourceIntrinsic::Transmute,
