@@ -165,26 +165,43 @@ impl Checker<'_> {
         self.state.method_environment.clone_from(&environment);
         self.state.prepare_parameter_queries();
         if self.facts.source_bindings.is_some() {
-            let declaration = crate::sema::compiler_items::copy_declaration(self.facts)
-                .map_err(|e| self.error(node, e))?;
-            let requirements = self
-                .facts
-                .generics
-                .builtin_requirements
-                .entry(self.state.body)
-                .or_insert_with(|| crate::sema::model::BuiltinRequirements {
-                    environment: environment.clone(),
-                    predicates: Vec::new(),
-                    source_copy: None,
-                });
-            requirements.environment.clone_from(&environment);
-            requirements.source_copy = Some(std::sync::Arc::new(
-                crate::sema::model::SourceCopyRequirements {
-                    declaration,
-                    goals: Vec::new(),
-                },
-            ));
+            self.prepare_source_copy_context(node, &environment)?;
         }
+        Ok(())
+    }
+    fn prepare_source_copy_context(
+        &mut self,
+        node: NodeId,
+        environment: &Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
+    ) -> Result<(), Error> {
+        let catalog = self.facts.source_bindings.as_deref().ok_or_else(|| {
+            self.error(node, "source Copy requirements lost their actual catalog")
+        })?;
+        // This empty set retains an unpaid identity, not a Copy decision.
+        // Actual reads still require the completed role and caller proof.
+        let declaration = catalog
+            .role(crate::support::bindings::LangItem::Copy)
+            .map_err(|e| self.error(node, e))?
+            .map(|role| role.definition);
+        self.facts.body_work.canonical_steps =
+            self.facts.body_work.canonical_steps.saturating_add(1);
+        let requirements = self
+            .facts
+            .generics
+            .builtin_requirements
+            .entry(self.state.body)
+            .or_insert_with(|| crate::sema::model::BuiltinRequirements {
+                environment: environment.clone(),
+                predicates: Vec::new(),
+                source_copy: None,
+            });
+        requirements.environment.clone_from(environment);
+        requirements.source_copy = Some(std::sync::Arc::new(
+            crate::sema::model::SourceCopyRequirements {
+                declaration,
+                goals: Vec::new(),
+            },
+        ));
         Ok(())
     }
     pub(super) fn body_shape(&mut self, node: NodeId, ty: TypeId) -> Result<Properties, Error> {

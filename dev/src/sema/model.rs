@@ -268,7 +268,8 @@ pub struct BodyRegion {
 /// the body's lifetime graph can establish identity of inferred arguments.
 #[derive(Clone)]
 pub struct SourceCopyRequirements {
-    /// None is a source policy with no Copy declaration, not bootstrap mode.
+    /// Unpaid identity only; None is genuine catalog absence, not pending
+    /// validation or bootstrap mode. Decisions require completed role/proof data.
     pub(crate) declaration: Option<crate::resolve::model::DefId>,
     pub(crate) goals: Vec<crate::types::parameters::predicates::Predicate>,
 }
