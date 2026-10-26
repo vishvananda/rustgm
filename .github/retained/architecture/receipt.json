@@ -1,0 +1,21 @@
+{
+  "profile": "dev-fast",
+  "state": "failed",
+  "steps": [
+    {
+      "name": "architecture",
+      "command": [
+        "/home/runner/work/rustgm/rustgm/obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        ".",
+        "--cache",
+        "obj/fast-audit.json"
+      ],
+      "seconds": 31.038623955999995,
+      "status": 1,
+      "environment": {}
+    }
+  ],
+  "error": "architecture failed with status 1"
+}

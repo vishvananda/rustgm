@@ -21,10 +21,11 @@ impl DomainIndex<'_, '_> {
             return Err("source original omitted unused type parameter identities");
         }
         for (index, &parameter) in input.parameters.iter().enumerate() {
-            if self
-                .headers
-                .scopes()
-                .type_argument_position(context.owner, parameter, work)? as usize
+            if self.headers.scopes().original_type_parameter_position(
+                context.owner,
+                parameter,
+                work,
+            )? as usize
                 != index
             {
                 return Err(

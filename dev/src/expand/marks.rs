@@ -10,6 +10,9 @@ pub struct ExpansionId(pub u32);
 pub struct SyntaxContextId(std::num::NonZeroU32);
 impl SyntaxContextId {
     pub const ROOT: Self = Self(std::num::NonZeroU32::MIN);
+    pub(crate) const fn key(self) -> std::num::NonZeroU32 {
+        self.0
+    }
 }
 /// Only the mark arena can construct an item-normalized context.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
