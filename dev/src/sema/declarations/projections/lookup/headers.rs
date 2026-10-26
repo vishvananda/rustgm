@@ -241,8 +241,7 @@ impl Checker<'_> {
         {
             if reached.contains(&seed.definition) {
                 templates.extend(
-                    self
-                        .projections
+                    self.projections
                         .lookup
                         .typed
                         .get(&seed.path)

@@ -150,7 +150,9 @@ impl Checker<'_> {
         if matches!(inputs, Inputs::Alias(_)) {
             let table = &self.projections.lookup.typed;
             self.charge_alias_lookup(Growth::map::<NodeKey, Inputs>(
-                table.len(), table.capacity(), 1,
+                table.len(),
+                table.capacity(),
+                1,
             ))?;
         }
         self.projections.lookup.typed.insert(seed.path, inputs);
@@ -171,10 +173,11 @@ impl Checker<'_> {
                 seed.path,
                 seed.definition,
                 subject,
+                subject,
                 seed.context,
                 self.alias_scope_count(seed.scope),
             )?;
-            return self.expand_alias_edge(edge).map(Inputs::Alias);
+            return self.expand_alias_naming_edge(edge).map(Inputs::Alias);
         }
         let arguments = self.application_arguments(seed.path, seed.definition, seed.context)?;
         let application = self.applied_trait(seed.path, seed.definition, subject, arguments)?;
@@ -220,10 +223,13 @@ impl Checker<'_> {
                 if alias && !self.alias_projection_subject(key, seed.subject, clause)? {
                     continue;
                 }
-                let predicate = self.open_projection_seed(key, seed, clause, context, &mut opened)?;
+                let predicate =
+                    self.open_projection_seed(key, seed, clause, context, &mut opened)?;
                 if alias {
                     self.charge_alias_lookup(Growth::vector::<Predicate>(
-                        result.len(), result.capacity(), 1,
+                        result.len(),
+                        result.capacity(),
+                        1,
                     ))?;
                 }
                 result.push(predicate);
@@ -240,8 +246,13 @@ impl Checker<'_> {
     ) -> Result<bool, Error> {
         let predicate = match clause {
             Clause::Predicate(predicate) => predicate,
-            Clause::ForAll(id) => self.facts.types.quantified(id)
-                .ok_or_else(|| self.error(key, "missing alias naming quantifier"))?.predicate,
+            Clause::ForAll(id) => {
+                self.facts
+                    .types
+                    .quantified(id)
+                    .ok_or_else(|| self.error(key, "missing alias naming quantifier"))?
+                    .predicate
+            }
         };
         Ok(predicate.bound.trait_parts().is_some()
             && self.facts.definitions[subject.0 as usize] == Some(predicate.ty))
@@ -256,7 +267,9 @@ impl Checker<'_> {
         opened: &mut HashMap<(Clause, Option<regions::BinderId>), Predicate>,
     ) -> Result<Predicate, Error> {
         let source = if seed.scope.is_some() {
-            seed.context.binder.and_then(|binder| self.regions.parent(binder))
+            seed.context
+                .binder
+                .and_then(|binder| self.regions.parent(binder))
         } else {
             seed.context.binder
         };

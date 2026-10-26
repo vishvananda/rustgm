@@ -1,30 +1,85 @@
 {
-  "state": "frozen hypotheses awaiting pinned Rust observation; assignment planned",
+  "state": "observed pinned Rust 88d9e12a in 40278863399; original predictions retained",
   "scope": "trait alias shorthand associated type naming, not alias execution/export completion",
   "cases": [
     {
       "source": "canonical-equality.rs",
-      "rustc_success": true
+      "rustc_success": true,
+      "original_prediction": true,
+      "observation": {
+        "run": 40278863399,
+        "status": 0,
+        "source_sha256": "d12ae84c39f86961f94a6adca7d818099c767fb6a46d072d6e3cbb39ac765e8a",
+        "stderr_sha256": "b4ace356b006feb6042dcf0f2278e45c87ef9e28530e7f50e348da8e583b6c2b"
+      }
     },
     {
       "source": "ambiguous-members.rs",
-      "rustc_success": false
+      "rustc_success": false,
+      "original_prediction": false,
+      "observation": {
+        "run": 40278863399,
+        "status": 1,
+        "source_sha256": "e56592a87f157c7727a30b3189ea4274e9c64a46742efc934e6c42213232ed4b",
+        "stderr_sha256": "39861759d4a0d1f73d77ecc68d2f55886604912be492cab9522ee552470af57e"
+      }
     },
     {
       "source": "unrelated-subject.rs",
-      "rustc_success": false
+      "rustc_success": false,
+      "original_prediction": false,
+      "observation": {
+        "run": 40278863399,
+        "status": 1,
+        "source_sha256": "b0fc4b81d181dd0690b3e9a5fb7740a1d22a4b2ad3602eee8458f006ecdc8cec",
+        "stderr_sha256": "cd2e0a871d0cca0f26647630b3ebe42537cd7e35f6d9854d654d6ef3e268f433"
+      }
     },
     {
       "source": "same-actual-subject.rs",
-      "rustc_success": true
+      "rustc_success": false,
+      "original_prediction": true,
+      "observation": {
+        "run": 40278863399,
+        "status": 1,
+        "source_sha256": "fcf5098c9e9daf42f85a9619af383907406fab25b809ed58406ea108db0ff9e8",
+        "stderr_sha256": "136bfb175ce218eb4885b5001c9a343237515e328a68df51877ad4d224bb61aa"
+      }
     },
     {
       "source": "unused-binder.rs",
-      "rustc_success": true
+      "rustc_success": true,
+      "original_prediction": true,
+      "observation": {
+        "run": 40278863399,
+        "status": 0,
+        "source_sha256": "335ac011c71adaa814dd62f71412d676dcb6ff1e79ffb2d9c319ad7be65f0a5d",
+        "stderr_sha256": "466274790cc33ad8c397513d6da82176219457a5c36a5d1b7bb84ee3b5e6d641"
+      }
     },
     {
       "source": "distinct-applications.rs",
-      "rustc_success": false
+      "rustc_success": false,
+      "original_prediction": false,
+      "observation": {
+        "run": 40278863399,
+        "status": 1,
+        "source_sha256": "14c600efac2e517439100034851970a6279ab27bd222671896c871e98d87b2b4",
+        "stderr_sha256": "338254197c42b3b2d533721bb52c13536ca0560f6fade71936ec004bc735443b"
+      }
+    },
+    {
+      "source": "where-self.rs",
+      "rustc_success": true,
+      "original_prediction": true,
+      "state": "new hypothesis; observe once"
+    },
+    {
+      "source": "erased-projection-subject.rs",
+      "rustc_success": false,
+      "original_prediction": false,
+      "state": "new hypothesis; observe once"
     }
-  ]
+  ],
+  "naming_contract": "explicit_super_predicates_of uses SelfOnly in declaring alias, before actual substitution; full predicates remain available to proof"
 }

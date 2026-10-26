@@ -27,6 +27,7 @@ pub(super) struct Edge {
     source: NodeKey,
     target: DefId,
     subject: TypeId,
+    original_subject: TypeId,
     arguments: GenericArgs,
     quantified: Option<u32>,
 }
@@ -247,6 +248,7 @@ impl Checker<'_> {
         path: NodeKey,
         target: DefId,
         subject: TypeId,
+        original_subject: TypeId,
         context: regions::Context,
         quantified: Option<u32>,
     ) -> Result<Edge, Error> {
@@ -255,6 +257,7 @@ impl Checker<'_> {
             source: path,
             target,
             subject,
+            original_subject,
             arguments,
             quantified,
         })

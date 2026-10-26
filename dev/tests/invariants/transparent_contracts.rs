@@ -69,6 +69,7 @@ fn edge(
         source: header.owner.source,
         target,
         subject,
+        original_subject: subject,
         arguments,
         quantified: None,
     })

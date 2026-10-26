@@ -566,6 +566,7 @@ impl Checker<'_> {
                     path,
                     definition,
                     ty,
+                    original_ty,
                     bound.context(context),
                     self.alias_scope_count(bound.scope),
                 )?;
