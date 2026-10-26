@@ -14,6 +14,7 @@ pub(super) use calls::record as record_call_effects;
 pub(in crate::sema) use explicit_cleanup::explicit_drop_member;
 pub(crate) use glue_calls::{DropGlueSelection, check_const_drop_glue, source_drop_glue};
 mod abort_declaration;
+pub(crate) use abort_declaration::AbortSelection;
 mod intrinsic_contracts;
 mod layout;
 mod needs_drop;

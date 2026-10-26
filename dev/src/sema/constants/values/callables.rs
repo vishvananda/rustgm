@@ -3,6 +3,19 @@ use super::{Constant, Evaluator, Failure, Reader, Type, TypeId, View};
 use crate::types::instance::Instance;
 
 impl Reader<'_> {
+    pub(crate) fn source_abort(
+        self,
+        instance: Instance,
+        origin: crate::resolve::body_origin::BodyOrigin,
+    ) -> Result<Option<crate::sema::compiler_items::AbortSelection>, &'static str> {
+        self.facts
+            .source_bindings
+            .as_deref()
+            .map(|catalog| catalog.abort_selection(self.facts, instance, origin))
+            .transpose()
+            .map(Option::flatten)
+    }
+
     pub(crate) fn source_runtime_check(
         self,
         instance: Instance,
