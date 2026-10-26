@@ -118,19 +118,28 @@ fn collect(
                 continue;
             }
             let message = if declaration.kind == Kind::TraitAlias {
-                let feature = FeatureName::new("trait_alias").map_err(|message| Failure::Origin(Error::unlocated(message)))?;
-                if package.requested_alias_feature(false).map_err(|message| failure(entries, Error::at(file, declaration.span.start, message)))?
-                    || allows(file, declaration.span, &feature).map_err(|error| failure(entries, error))? {
+                let feature = FeatureName::new("trait_alias")
+                    .map_err(|message| Failure::Origin(Error::unlocated(message)))?;
+                if package.requested_alias_feature(false).map_err(|message| {
+                    failure(entries, Error::at(file, declaration.span.start, message))
+                })? || allows(file, declaration.span, &feature)
+                    .map_err(|error| failure(entries, error))?
+                {
                     continue;
                 }
                 ALIAS_MESSAGE
             } else {
                 if package
                     .requested_defaultness(declaration.kind == Kind::Function)
-                    .map_err(|message| failure(entries, Error::at(file, declaration.span.start, message)))?
-                    || allows(file, declaration.span, &full).map_err(|error| failure(entries, error))?
+                    .map_err(|message| {
+                        failure(entries, Error::at(file, declaration.span.start, message))
+                    })?
+                    || allows(file, declaration.span, &full)
+                        .map_err(|error| failure(entries, error))?
                     || declaration.kind == Kind::Function
-                        && allows(file, declaration.span, &minimal).map_err(|error| failure(entries, error))? {
+                        && allows(file, declaration.span, &minimal)
+                            .map_err(|error| failure(entries, error))?
+                {
                     continue;
                 }
                 MESSAGE

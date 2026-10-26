@@ -22,12 +22,12 @@ pub mod load;
 mod lookup;
 pub mod model;
 pub use crate::support::names;
+#[path = "unstable_aliases.rs"]
+mod alias_gates;
 #[path = "specialization_forms.rs"]
 mod default_items;
 mod float_features;
 mod gate_provenance;
-#[path = "unstable_aliases.rs"]
-mod alias_gates;
 pub mod package;
 mod paths;
 mod patterns;

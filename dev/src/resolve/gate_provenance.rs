@@ -1,5 +1,8 @@
 //! Actual sparse sites retain one source incarnation and a sealed token context.
-use super::{package::{Error, Package}, unit::{FileId, NodeKey}};
+use super::{
+    package::{Error, Package},
+    unit::{FileId, NodeKey},
+};
 use crate::syntax::gate_sites::{Declaration, Kind};
 
 fn parsed<'a>(
@@ -135,4 +138,3 @@ pub(super) fn prepare_plain(package: &mut Package) -> Result<(), Error> {
     }
     Ok(())
 }
-

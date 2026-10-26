@@ -401,8 +401,11 @@ impl Checker<'_> {
                     .map_err(|_| Error::at(FileId(0), 0, "too many type declarations"))?,
             );
             if self.report.resolution.definitions[index].kind == DefKind::TraitAlias {
-                let key = self.report.resolution.definitions[index].node
-                    .ok_or_else(|| Error::at(FileId(0), 0, "trait alias lacks its actual source owner"))?;
+                let key = self.report.resolution.definitions[index]
+                    .node
+                    .ok_or_else(|| {
+                        Error::at(FileId(0), 0, "trait alias lacks its actual source owner")
+                    })?;
                 return Err(self.error(key, "trait alias contract expansion is not implemented"));
             }
             if self.latent_library_definition(id) {

@@ -662,7 +662,10 @@ impl Resolver<'_> {
             foreign: c.foreign_children(node, item.kind),
             ..c
         };
-        if matches!(item.kind, ItemKind::Trait { .. } | ItemKind::TraitAlias { .. } | ItemKind::Impl { .. }) {
+        if matches!(
+            item.kind,
+            ItemKind::Trait { .. } | ItemKind::TraitAlias { .. } | ItemKind::Impl { .. }
+        ) {
             let name = self
                 .package
                 .names

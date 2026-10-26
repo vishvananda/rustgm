@@ -179,7 +179,10 @@ impl<L> Syntax<L> {
     #[must_use]
     pub(crate) fn has_defaultness(&self) -> bool {
         self.gate_sites.as_ref().is_some_and(|entries| {
-            entries.entries.iter().any(|site| site.kind != Kind::TraitAlias)
+            entries
+                .entries
+                .iter()
+                .any(|site| site.kind != Kind::TraitAlias)
         })
     }
     pub(crate) fn gate_site(&self, item: u32) -> Option<&Declaration> {
@@ -195,8 +198,14 @@ impl<L> Syntax<L> {
         node: NodeId,
         span: Span,
     ) -> Result<(), LexError> {
-        if matches!(self.items.get(item as usize).map(|item| item.kind), Some(ItemKind::TraitAlias { .. })) {
-            return Err(error(span.start, "default modifier is not permitted on this item"));
+        if matches!(
+            self.items.get(item as usize).map(|item| item.kind),
+            Some(ItemKind::TraitAlias { .. })
+        ) {
+            return Err(error(
+                span.start,
+                "default modifier is not permitted on this item",
+            ));
         }
         self.record_gate_site(item, node, span)
     }
@@ -220,12 +229,7 @@ impl<L> Syntax<L> {
             .items
             .get(item as usize)
             .and_then(|item| Kind::item(item.kind))
-            .ok_or_else(|| {
-                error(
-                    span.start,
-                    "default modifier is not permitted on this item",
-                )
-            })?;
+            .ok_or_else(|| error(span.start, "default modifier is not permitted on this item"))?;
         let declaration = Declaration {
             item,
             node,

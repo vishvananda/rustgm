@@ -18,7 +18,13 @@ fn semantic_form(
 ) -> Result<(), Error> {
     let message = match declaration.kind {
         Kind::Function => return Ok(()),
-        Kind::TraitAlias => return Err(Error::at(file, declaration.span.start, "alias site is not a default modifier")),
+        Kind::TraitAlias => {
+            return Err(Error::at(
+                file,
+                declaration.span.start,
+                "alias site is not a default modifier",
+            ));
+        }
         Kind::Implementation => {
             if !matches!(
                 item.kind,
@@ -79,7 +85,11 @@ fn walk(
             u32::try_from(file)
                 .map_err(|_| Error::unlocated("defaultness file identity overflow"))?,
         );
-        for declaration in entries.entries().iter().filter(|site| site.kind != Kind::TraitAlias) {
+        for declaration in entries
+            .entries()
+            .iter()
+            .filter(|site| site.kind != Kind::TraitAlias)
+        {
             let key = NodeKey {
                 file,
                 node: declaration.node,
