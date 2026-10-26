@@ -347,10 +347,7 @@ fn closed_projection_fallback_keeps_assumptions_and_discarded_trials_separate() 
                 f.expected
             );
         } else {
-            let Some(Source::Assumption(premise)) = &projected.source else {
-                return Err("failed closed search lost its original caller premise".into());
-            };
-            assert_eq!(*premise, root);
+            assert!(matches!(projected.source, Some(Source::Assumption(p)) if p == root));
             assert_eq!(projected.resolution, Some(Resolution::Opaque));
         }
         if template {
