@@ -3,9 +3,9 @@
 LIB-032 is the unchanged `unsafe extern "C" { type VTable; }` declaration at
 `library/core/src/ptr/metadata.rs:170`. It is an opaque external type, with no
 value layout. It must never become an empty aggregate or a type-alias fallback.
-The source successor has focused private qualification described below. Its
-production/CLI integration and fresh unchanged-core observation remain pending;
-the earlier producer and metadata consumer checkpoints remain separate evidence.
+The source successor has merged private and CLI qualification and advances
+unchanged core loading beyond VTable, as recorded below. Complete Thin semantics,
+broader Foreign operations and transported declarations remain required.
 
 The approved representation appends `ItemKind::ForeignType`,
 `DefKind::ForeignType` and canonical `types::Kind::Foreign(ItemId)`. The identity
@@ -123,5 +123,51 @@ The existing active PA5 `tests/spec/reject/external-type.rs` is now a grammar
 positive. Its exact source bytes must remain unchanged while the owning case is
 reclassified and its text sidecars officially regenerated. Its independent
 whole-program Rust rejection without the feature is distinct from PA5 syntax.
-This reference work, production/CLI integration, actual Thin consumer and the
-fresh unchanged-core observer belong to the integrator and remain pending.
+The following integration completes that reference change and CLI/core
+observation. Actual Thin consumers and broader Foreign transport remain required.
+
+## Integration and unchanged-core loading
+
+The integrator merged Foreign/Pattern and the qualified selected-header component
+with canonical alias declaration checking. Both strict lint modes passed; the
+first combined build timed out while compiling the private harness. Its completed
+CLI and frontend target were then reused by the standard runner: three actual
+frontend/LowIR controls plus production strict checks passed in 26.18 seconds.
+Merged private execution subsequently passes sixteen exact controls with strict
+checks and all 230 PA5 text cases in 27.20 seconds using the completed build. An
+initial selector typo referred to a filename instead of the actual storage_relation
+module; the runner rejected it before test execution. That failed receipt is
+retained, and corrected selectors came from the actual executable inventory.
+
+A no-build broad ordinary run then found three stale Pattern expectations:
+the candidate availability table still closed pattern_type, the unavailable-frame
+count remained 39 instead of 38, and the cold Reservations assertion remained 872
+instead of the measured 888. Only those expectations and their explanatory
+fixture documentation changed. The complete 1,798 ordinary private tests now
+freshly pass with private strict checks in 127.06 seconds, receipt
+`obj/qualification/fast/1793045013398412869/receipt.json`. The preceding 1,795-pass/
+3-failure output is retained. Production sources are unchanged from the qualified
+CLI/frontend run. These separate attempts are not one five-minute integration.
+
+The actual NonNull source and emitted LowIR also match the worker's native-qualified
+bytes exactly (source 86ab25bc, LowIR be70bf2e); its native `19 23 119 1` observation
+is retained, not presented as a fresh native execution. No full CI or native
+sweep is implied by the ordinary private result.
+
+CLI SHA-256 `eb644b412597aa77a1d2d8accc539a802e6009e05a940d5ada6e0bfb87d8839a`
+passes original VTable loading and reaches `core/src/clone.rs:389`, byte14948,
+at `final fn share`. The observer verifies all 722 unchanged inputs, opens 72 files
+and takes 1.996 seconds. This advances loading from 65 opened files; it does not
+establish complete semantics, an artifact, or a compile percentage. The same
+previously qualified target/profile manifest is reused. A preceding attempt with
+the older default compiler-source manifest failed setup before source execution;
+both records are retained in `obj/parallel/foreign-pattern-integration-v1`.
+
+The official selected PA5 generator replaces only the unchanged external-type
+fixture's sidecars after moving it to `tests/spec/syntax-only/`. Its source bytes
+still independently reject in pinned rustc for the missing feature; the manifest
+now explains that later semantic boundary. The reviewed grammar output has one
+ForeignType item under its actual external block, empty stderr and status0.
+All 230 stage comparisons pass. The 217 harness tests, all 383 maintainer-suite
+registrations, assignment layout/reference provenance and upstream verification
+also pass. No whole-core artifact or new assignment release is claimed.

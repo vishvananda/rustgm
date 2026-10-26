@@ -22,7 +22,7 @@ role_20	log_syntax	Bang	0
 role_21	module_path	Bang	1
 role_22	naked_asm	Bang	0
 role_23	option_env	Bang	1
-role_24	pattern_type	Bang	0
+role_24	pattern_type	Bang	1
 role_25	std_panic	Bang	1
 role_26	stringify	Bang	1
 role_27	trace_macros	Bang	0
