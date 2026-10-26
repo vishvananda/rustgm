@@ -455,20 +455,7 @@ impl<'source> Parser<'source, '_> {
                     self.closure(true, false, token.start)
                 }
                 Word::Async => self.async_expression(),
-                Word::Try => {
-                    self.cursor.take()?;
-                    let body = self.block(BlockFlavor::Plain)?;
-                    let gate = self.ast.next_expression_gate()?;
-                    let node = self.node(token.start, Kind::TryBlock { body, gate })?;
-                    self.ast.record_expression_gate(
-                        node,
-                        Span {
-                            start: token.start,
-                            end: token.end,
-                        },
-                    )?;
-                    Ok(node)
-                }
+                Word::Try => self.try_block(),
                 Word::Unsafe | Word::Const => {
                     self.cursor.take()?;
                     let flavor = if word == Word::Unsafe {

@@ -82,7 +82,7 @@ impl Declarations {
             .expressions
             .get(..count as usize)
             .ok_or_else(|| error(0, "invalid original expression-gate prefix"))?;
-        self.charge(count as usize, entries.len() * size_of::<Expression>())
+        self.charge(count as usize, std::mem::size_of_val(entries))
             .map_err(|message| error(0, message))?;
         to.expressions
             .try_reserve_exact(entries.len())

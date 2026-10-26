@@ -7,6 +7,20 @@ use super::{
 use super::fragment::FragmentKind as F;
 
 impl Parser<'_, '_> {
+    pub(super) fn try_block(&mut self) -> Result<NodeId, LexError> {
+        let token = self.required()?;
+        let body = self.block(BlockFlavor::Plain)?;
+        let gate = self.ast.next_expression_gate()?;
+        let node = self.node(token.start, Kind::TryBlock { body, gate })?;
+        self.ast.record_expression_gate(
+            node,
+            Span {
+                start: token.start,
+                end: token.end,
+            },
+        )?;
+        Ok(node)
+    }
     pub(super) fn block(&mut self, flavor: BlockFlavor) -> Result<NodeId, LexError> {
         if let Some(node) = self.interpolated(&[F::Block])? {
             return Ok(node);
