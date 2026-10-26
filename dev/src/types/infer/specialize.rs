@@ -207,6 +207,7 @@ fn source_children(store: &Store, ty: TypeId, children: &mut Vec<TypeId>) -> Res
         }
         Kind::Array { element, .. }
         | Kind::ArrayTerm { element, .. }
+        | Kind::Pattern { base: element, .. }
         | Kind::Slice(element)
         | Kind::Reference {
             referent: element, ..

@@ -76,6 +76,7 @@ pub enum Constructor {
     FunctionItem(ItemId, GenericArgs),
     /// Signature and environment tuple precede the enclosing type argument edges.
     Closure(super::closure::ClosureId, arguments::ArgumentsId),
+    Pattern(super::Constraint),
 }
 #[derive(Clone, Copy)]
 enum Value {
@@ -821,6 +822,10 @@ impl Context {
                 children.push(self.known(store, element)?);
                 Constructor::ArrayTerm(length)
             }
+            Kind::Pattern { base, constraint } => {
+                children.push(self.known(store, base)?);
+                Constructor::Pattern(constraint)
+            }
             Kind::Slice(element) => {
                 children.push(self.known(store, element)?);
                 Constructor::Slice
@@ -997,24 +1002,14 @@ fn canonical(
         Constructor::Tuple => {
             Kind::Tuple(store.intern_list(children).map_err(|_| Error::Overflow)?)
         }
-        Constructor::Array(length) => Kind::Array {
-            element: first()?,
-            length,
-        },
-        Constructor::ArrayTerm(length) => Kind::ArrayTerm {
-            element: first()?,
-            length,
-        },
-        Constructor::Slice => Kind::Slice(first()?),
-        Constructor::Reference { mutable, region } => Kind::Reference {
-            mutable,
-            region,
-            referent: first()?,
-        },
-        Constructor::Pointer { mutable } => Kind::Pointer {
-            mutable,
-            pointee: first()?,
-        },
+        constructor @ (Constructor::Array(_)
+        | Constructor::ArrayTerm(_)
+        | Constructor::Pattern(_)
+        | Constructor::Slice
+        | Constructor::Reference { .. }
+        | Constructor::Pointer { .. }) => {
+            unary_shape(constructor, first()?).ok_or(Error::InvalidIdentity)?
+        }
         Constructor::Function {
             bound_regions,
             parameters,
@@ -1039,4 +1034,33 @@ fn canonical(
         },
     };
     store.intern(kind).map_err(|_| Error::InvalidIdentity)
+}
+
+/// The same canonical unary constructors serve mutable and read-only completion.
+fn unary_shape(constructor: Constructor, child: TypeId) -> Option<Kind> {
+    Some(match constructor {
+        Constructor::Array(length) => Kind::Array {
+            element: child,
+            length,
+        },
+        Constructor::ArrayTerm(length) => Kind::ArrayTerm {
+            element: child,
+            length,
+        },
+        Constructor::Pattern(constraint) => Kind::Pattern {
+            base: child,
+            constraint,
+        },
+        Constructor::Slice => Kind::Slice(child),
+        Constructor::Reference { mutable, region } => Kind::Reference {
+            mutable,
+            region,
+            referent: child,
+        },
+        Constructor::Pointer { mutable } => Kind::Pointer {
+            mutable,
+            pointee: child,
+        },
+        _ => return None,
+    })
 }

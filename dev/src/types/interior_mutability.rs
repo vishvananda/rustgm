@@ -142,7 +142,10 @@ impl<'a> Query<'a> {
             Kind::Array { element, .. }
             | Kind::ArrayTerm { element, .. }
             | Kind::Slice(element) => self.child(element)?,
-            Kind::Closure { environment, .. } => self.child(environment)?,
+            Kind::Pattern {
+                base: environment, ..
+            }
+            | Kind::Closure { environment, .. } => self.child(environment)?,
             Kind::Tuple(fields) => self.fields(fields)?,
             Kind::Adt(item, _) => match self.definitions.shared_mutation(item) {
                 None => return Ok(Some(Answer::Unresolved)),

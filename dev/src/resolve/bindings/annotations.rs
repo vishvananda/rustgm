@@ -21,6 +21,7 @@ pub(super) enum DiagnosticItem {
     Identity,
     CfgSelect,
     FormatArgsMacro,
+    NonNull,
 }
 impl DiagnosticItem {
     const fn index(self) -> usize {
@@ -55,6 +56,7 @@ pub(super) fn parse(
         b"convert_identity" => Ok(DiagnosticItem::Identity),
         b"cfg_select" => Ok(DiagnosticItem::CfgSelect),
         b"format_args_macro" => Ok(DiagnosticItem::FormatArgsMacro),
+        b"NonNull" => Ok(DiagnosticItem::NonNull),
         _ => Err(error("unsupported source diagnostic identity")),
     }
 }
@@ -78,7 +80,8 @@ pub(super) fn validate(
             DiagnosticItem::Copy => Some(LangItem::Copy),
             DiagnosticItem::Identity
             | DiagnosticItem::CfgSelect
-            | DiagnosticItem::FormatArgsMacro => None,
+            | DiagnosticItem::FormatArgsMacro
+            | DiagnosticItem::NonNull => None,
         };
         if let Some(expected) = expected {
             if !claims
@@ -107,6 +110,15 @@ pub(super) fn validate(
                 } else {
                     "format_args diagnostic identity requires its actual builtin role"
                 }));
+            }
+        } else if matches!(item, DiagnosticItem::NonNull) {
+            // A diagnostic identity is not a language role, layout marker or naming requirement.
+            let unit = package.unit(declaration.origin.file);
+            if !matches!(unit.configured.ast.node(declaration.origin.node).kind, Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind, ItemKind::Struct { .. }))
+            {
+                return Err(error(
+                    "NonNull diagnostic item requires its nominal declaration profile",
+                ));
             }
         } else {
             let unit = package.unit(declaration.origin.file);

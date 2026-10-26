@@ -238,6 +238,7 @@ where
                 | Kind::Array { .. }
                 | Kind::ArrayTerm { .. }
                 | Kind::Reference { .. }
+                | Kind::Pattern { .. }
                 | Kind::Pointer { .. }
                 | Kind::Function { .. }
                 | Kind::FunctionItem { .. }

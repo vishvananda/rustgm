@@ -153,6 +153,7 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
         Kind::Path { absolute, segments } => {
             write!(output, "path {absolute} {}", Children(ast, segments))
         }
+        Kind::TypePattern { base, .. } => write!(output, "type-pattern {} !null", base.get()),
         Kind::Group(value) => write!(output, "group {}", value.get()),
         Kind::Tuple(list) => write!(output, "tuple {}", Children(ast, list)),
         Kind::Array(list) => write!(output, "array {}", Children(ast, list)),

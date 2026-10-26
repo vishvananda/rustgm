@@ -231,7 +231,9 @@ impl<'a> Privacy<'a> {
                             .ok_or("missing array length type")?,
                     )?;
                 }
-                Kind::Reference { referent: ty, .. } | Kind::Pointer { pointee: ty, .. } => {
+                Kind::Pattern { base: ty, .. }
+                | Kind::Reference { referent: ty, .. }
+                | Kind::Pointer { pointee: ty, .. } => {
                     self.push(ty)?;
                 }
                 Kind::Function {

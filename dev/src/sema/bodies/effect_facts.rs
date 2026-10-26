@@ -137,10 +137,11 @@ impl Checker<'_> {
         let mut existing = None;
         let mut unpublished = false;
         let mut any = false;
-        for (node, term) in &self.state.calls {
+        for index in 0..self.state.calls.len() {
+            let (node, term) = self.state.calls[index];
             charge(&mut self.state.steps, 1)
                 .map_err(|e| Declarations::error(self.report, self.state.body, e))?;
-            let key = self.key(*node);
+            let key = self.key(node);
             let operation = self
                 .facts
                 .node(key)
@@ -149,8 +150,8 @@ impl Checker<'_> {
                 })?
                 .operation;
             // ForPlan retains distinct into_iter/next signatures, not one Call.
-            if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. })
-                || self.erased_source_not(*node)?
+            if matches!(self.kind(node), crate::syntax::ast::Kind::For { .. })
+                || self.erased_source_not(node)?
             {
                 continue;
             }
@@ -158,6 +159,7 @@ impl Checker<'_> {
             let signature = solved.types.get(term.0 as usize).ok_or_else(|| {
                 Declarations::error(self.report, key, "invalid completed call signature")
             })?;
+            self.check_transmute_size(node, solved)?;
             if let Some(crate::sema::model::Operation::Call {
                 source_use: Some(source),
                 signature: existing_signature,
@@ -190,6 +192,50 @@ impl Checker<'_> {
             ));
         }
         Ok((any, existing))
+    }
+    fn check_transmute_size(
+        &mut self,
+        node: crate::syntax::ast::NodeId,
+        solved: &Solved,
+    ) -> Result<(), Error> {
+        let crate::syntax::ast::Kind::Call { callee, .. } = self.kind(node) else {
+            return Ok(());
+        };
+        let term = self.term(callee)?;
+        let ty = *solved
+            .types
+            .get(term.0 as usize)
+            .ok_or_else(|| self.error(node, "source transmute lost its solved callee"))?;
+        if !matches!(
+            self.facts.types.kind(ty),
+            Some(crate::types::Kind::FunctionItem { .. })
+        ) {
+            return Ok(());
+        }
+        let instance = crate::types::instance::Instance::new(&self.facts.types, ty)
+            .map_err(|e| self.error(node, e))?;
+        let selected = self
+            .facts
+            .source_bindings
+            .as_deref()
+            .ok_or_else(|| self.error(node, "source call catalog disappeared"))?
+            .transmute_selection(self.facts, instance, self.state.body.into())
+            .map_err(|e| self.error(node, e))?;
+        if let Some(selected) = selected {
+            self.facts
+                .source_bindings
+                .as_deref()
+                .ok_or_else(|| self.error(node, "source transmute catalog disappeared"))?
+                .require_transmute_report(self.report, self.facts, &selected)
+                .map_err(|e| self.error(node, e))?;
+            crate::sema::compiler_items::require_transmute_size(
+                self.facts,
+                selected.source,
+                selected.destination,
+            )
+            .map_err(|e| self.error(node, e))?;
+        }
+        Ok(())
     }
     pub(super) fn publish_calls(&mut self, solved: &Solved) -> Result<(), Error> {
         if self.facts.source_bindings.is_none() {

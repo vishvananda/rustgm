@@ -570,16 +570,9 @@ impl Checker<'_> {
                     bound.context(context),
                     self.alias_scope_count(bound.scope),
                 )?;
-                if self.alias_self(owner).is_some() {
-                    self.push_alias_edge(&mut alias_edges, edge)?;
-                } else {
-                    if original_ty != ty || self.facts.unreduced.arguments(path).is_some() {
-                        return Err(self.error(
-                            path,
-                            "unreduced alias inputs require complete projection consumers",
-                        ));
-                    }
-                    completed.extend(self.expand_alias_edge(edge)?);
+                self.complete_alias_bound(owner, edge, &mut completed, &mut alias_edges)?;
+                if !matches!(bound.subject, Subject::Associated(_)) {
+                    input_count = completed.len();
                 }
                 continue;
             }

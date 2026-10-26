@@ -19,6 +19,7 @@ pub(crate) enum Head {
     Slice,
     Function,
     Never,
+    Pattern(super::Constraint),
 }
 impl Head {
     pub const fn canonical(kind: Kind) -> Self {
@@ -38,6 +39,7 @@ impl Head {
             Kind::Slice(_) => Self::Slice,
             Kind::Function { .. } => Self::Function,
             Kind::Never => Self::Never,
+            Kind::Pattern { constraint, .. } => Self::Pattern(constraint),
         }
     }
 }

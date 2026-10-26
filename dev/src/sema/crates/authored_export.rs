@@ -3,6 +3,7 @@ mod advisory_rows;
 mod authored_functions;
 mod authored_traits;
 mod canonical_nodes;
+mod collected_formals;
 mod collected_provider;
 mod contract_rows;
 mod exposed_bindings;

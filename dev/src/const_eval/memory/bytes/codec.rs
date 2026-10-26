@@ -1,5 +1,5 @@
 //! Typed views touch only their selected footprint; raw transport does not decode.
-use super::continuations::{Duty, Key, Source};
+use super::continuations::{Duty, Key, ReadInput, Source};
 use super::{Backing, Constant, Failure, Id, Machine, Read, Reader, TypeId};
 use crate::const_eval::static_reads::ReadPurpose;
 use crate::sema::values::StoredShape;
@@ -21,6 +21,7 @@ enum Encode {
     },
 }
 enum Decode {
+    NonNull,
     Value {
         ty: TypeId,
         offset: u64,
@@ -36,6 +37,7 @@ struct Decoder {
     values: Vec<Constant>,
     duties: Vec<Duty>,
     purpose: ReadPurpose,
+    strict_value: bool,
     base_slots: usize,
     temporary: usize,
 }
@@ -112,7 +114,20 @@ impl Machine<'_, '_> {
             self.charge(1)?;
             match work {
                 Encode::Value { ty, offset, value } => {
-                    self.encode_byte_value(backing, offset, ty, value, &mut pending)?;
+                    let physical = Reader::new(self.evaluator.facts()).storage_type(ty)?;
+                    if let Some(Kind::Pattern { base, .. }) =
+                        self.evaluator.facts().types.kind(physical)
+                    {
+                        self.footprint(ty)?;
+                        self.reserve_cells(pending.len().saturating_add(1).saturating_mul(4))?;
+                        pending.push(Encode::Value {
+                            ty: base,
+                            offset,
+                            value,
+                        });
+                    } else {
+                        self.encode_byte_value(backing, offset, ty, value, &mut pending)?;
+                    }
                 }
                 Encode::Repeat {
                     offset,
@@ -368,7 +383,7 @@ impl Machine<'_, '_> {
         purpose: ReadPurpose,
     ) -> Result<Read<Constant>, Failure> {
         let key = Key {
-            source,
+            input: ReadInput::Storage(source),
             offset,
             ty,
             length: None,
@@ -389,7 +404,7 @@ impl Machine<'_, '_> {
         purpose: ReadPurpose,
     ) -> Result<(Constant, Vec<Duty>), Failure> {
         self.reserve_cells(16)?;
-        self.decode_byte_work(source, vec![Decode::Value { ty, offset }], purpose)
+        self.decode_byte_work(source, vec![Decode::Value { ty, offset }], purpose, false)
     }
     pub(super) fn decode_byte_range(
         &mut self,
@@ -432,7 +447,7 @@ impl Machine<'_, '_> {
             )
             .ok_or("byte range offset overflow")?;
         let key = Key {
-            source,
+            input: ReadInput::Storage(source),
             offset,
             ty,
             length: Some(range.length),
@@ -498,7 +513,7 @@ impl Machine<'_, '_> {
                     .ok_or("byte range offset overflow")?,
             });
         }
-        let (value, duties) = self.decode_byte_work(source, pending, purpose)?;
+        let (value, duties) = self.decode_byte_work(source, pending, purpose, false)?;
         self.complete_byte_read(key, value, duties)
     }
     fn decode_byte_work(
@@ -506,12 +521,14 @@ impl Machine<'_, '_> {
         source: Source,
         pending: Vec<Decode>,
         purpose: ReadPurpose,
+        strict_value: bool,
     ) -> Result<(Constant, Vec<Duty>), Failure> {
         let mut state = Decoder {
             pending,
             values: Vec::new(),
             duties: Vec::new(),
             purpose,
+            strict_value,
             base_slots: self.slots,
             temporary: 0,
         };
@@ -524,6 +541,10 @@ impl Machine<'_, '_> {
                 self.reserve_cells(0)?;
                 self.charge(1)?;
                 match work {
+                    Decode::NonNull => {
+                        let value = *state.values.last().ok_or("missing pattern base value")?;
+                        self.require_nonnull_pattern(value)?;
+                    }
                     Decode::Product { start, variant } => {
                         self.reserve_cells(state.values.len().saturating_sub(start))?;
                         let fields = state.values.split_off(start);
@@ -611,6 +632,12 @@ impl Machine<'_, '_> {
         }
         let layout = self.footprint(ty)?;
         let ty = Reader::new(self.evaluator.facts()).storage_type(ty)?;
+        if let Some(Kind::Pattern { base, .. }) = self.evaluator.facts().types.kind(ty) {
+            self.reserve_decode(state, 0, 2, 0)?;
+            state.pending.push(Decode::NonNull);
+            state.pending.push(Decode::Value { ty: base, offset });
+            return Ok(());
+        }
         let start = usize::try_from(offset).map_err(|_| "byte read exceeds host size")?;
         let end = offset
             .checked_add(layout.size)
@@ -645,6 +672,7 @@ impl Machine<'_, '_> {
             state.values.push(value);
         } else if self.byte_union(ty)
             || (state.purpose == ReadPurpose::Value
+                && !state.strict_value
                 && matches!(self.evaluator.facts().types.kind(ty), Some(Kind::Array { element, .. }) if element == TypeId::primitive(crate::types::Primitive::U8))
                 && self.source_has_fragments(source, offset, layout.size)?)
         {
@@ -786,5 +814,26 @@ impl Machine<'_, '_> {
             &bits[..width],
             &[initialized],
         )?)
+    }
+}
+
+#[cfg(test)]
+pub(super) fn decoder_layout() -> (usize, usize) {
+    (size_of::<Decoder>(), std::mem::align_of::<Decoder>())
+}
+
+impl Machine<'_, '_> {
+    pub(super) fn decode_strict_value(
+        &mut self,
+        source: Source,
+        ty: TypeId,
+    ) -> Result<(Constant, Vec<Duty>), Failure> {
+        self.reserve_cells(16)?;
+        self.decode_byte_work(
+            source,
+            vec![Decode::Value { ty, offset: 0 }],
+            ReadPurpose::Value,
+            true,
+        )
     }
 }

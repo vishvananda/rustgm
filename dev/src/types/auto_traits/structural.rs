@@ -19,6 +19,7 @@ impl Query {
                 self.waiting = Some(obligation);
                 return Ok(Some(Step::Proof(obligation)));
             }
+            Kind::Pattern { base, .. } => self.dependency(Obligation { ty: base, marker })?,
             Kind::Closure { environment, .. } => {
                 self.dependency(Obligation {
                     ty: environment,

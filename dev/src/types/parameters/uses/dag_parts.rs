@@ -134,6 +134,7 @@ fn type_parts<const SET: bool, V: Summary>(
         Kind::ArrayTerm { element, length } => edge(edges, child, Node::Type(element), depth)?
             .merge(constant(store, length, parameter)?),
         Kind::Array { element, .. }
+        | Kind::Pattern { base: element, .. }
         | Kind::Slice(element)
         | Kind::Pointer {
             pointee: element, ..

@@ -1078,6 +1078,24 @@ impl Checker<'_> {
                 }
                 ty
             }
+            Kind::TypePattern {
+                base,
+                constraint: crate::syntax::ast::TypeConstraint::NonNull,
+            } => {
+                let base = self.ty(NodeKey { node: base, ..key })?;
+                if !matches!(self.facts.types.kind(base), Some(Type::Pointer { .. })) {
+                    return Err(
+                        self.error(key, "non-pointer pattern types require their wider profile")
+                    );
+                }
+                self.facts
+                    .types
+                    .intern(Type::Pattern {
+                        base,
+                        constraint: crate::types::Constraint::NonNull,
+                    })
+                    .map_err(|message| self.error(key, message))?
+            }
             Kind::Type { flavor, elements } => self.compound(key, flavor, elements)?,
             _ => return Err(self.error(key, "invalid completed annotation")),
         };

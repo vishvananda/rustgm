@@ -137,6 +137,10 @@ impl<'a> Writer<'a> {
                     self.enqueue(&[view.span(name), W(": "), view.n(value)])
                 }
             }
+            Kind::TypePattern { .. } => Err(error(
+                node.span.start,
+                "pattern type source expression printing requires its explicit macro syntax",
+            )),
             Kind::Type { flavor, elements } => self.type_shape(view, flavor, elements),
             Kind::Applied {
                 base,

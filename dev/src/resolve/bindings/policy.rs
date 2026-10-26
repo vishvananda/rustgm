@@ -36,6 +36,8 @@ pub(in crate::resolve) enum Feature {
     MinSpecialization,
     Specialization,
     TraitAlias,
+    PatternTypeMacro,
+    PatternTypes,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -69,6 +71,8 @@ impl Request {
             "min_specialization" => Self::Capability(Feature::MinSpecialization),
             "specialization" => Self::Capability(Feature::Specialization),
             "trait_alias" => Self::Capability(Feature::TraitAlias),
+            "pattern_type_macro" => Self::Capability(Feature::PatternTypeMacro),
+            "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.
             "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
             _ => return None,
@@ -190,6 +194,8 @@ pub(in crate::resolve) fn prepare_with_admission(
                 || features.has(Feature::MinSpecialization)
                 || features.has(Feature::Specialization)
                 || features.has(Feature::TraitAlias)
+                || features.has(Feature::PatternTypeMacro)
+                || features.has(Feature::PatternTypes)
             {
                 Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
                     unit, features,

@@ -177,7 +177,8 @@ fn partial<S: BuildHasher>(
                 value.abilities = environment.abilities;
             }
         }
-        Constructor::Tuple
+        Constructor::Pattern(_)
+        | Constructor::Tuple
         | Constructor::Array(_)
         | Constructor::ArrayTerm(_)
         | Constructor::ArrayInfer(_) => {

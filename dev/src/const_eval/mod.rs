@@ -23,6 +23,7 @@ mod runtime_checks;
 mod selector_sites;
 mod static_reads;
 mod transfers;
+mod transmute_calls;
 mod values;
 
 use crate::sema::values::execution::{Progress, Requirement};

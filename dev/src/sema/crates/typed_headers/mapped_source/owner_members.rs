@@ -95,8 +95,10 @@ impl Graph {
     }
     pub(in crate::sema) fn implementation_request(
         &self,
+        store: &crate::types::Store,
         owner: Owner,
     ) -> Result<crate::types::parameters::predicates::Predicate, &'static str> {
+        self.require_store(store)?;
         self.owner(owner)?;
         let OwnerKind::ImportedImpl(id) = owner.kind else {
             return Err("imported candidate reservation requires its actual impl owner");
@@ -111,7 +113,7 @@ impl Graph {
             .trait_application
             .ok_or("imported inherent reservation requires its wider candidate profile")?;
         let predicate = self.application(application)?;
-        self.implementation(owner, predicate)?;
+        self.implementation(store, owner, predicate)?;
         Ok(predicate)
     }
     pub(in crate::sema) fn associated_count(&self) -> Result<usize, &'static str> {
@@ -120,12 +122,14 @@ impl Graph {
     }
     pub(in crate::sema) fn associated_row(
         &self,
+        store: &crate::types::Store,
         owner: Owner,
         schema: &Schema,
         members: &[DefId],
         steps: &mut usize,
     ) -> Result<(), &'static str> {
         *steps = steps.saturating_add(1);
+        self.require_store(store)?;
         self.owner(owner)?;
         let descriptor = self.descriptor(&self.origins)?;
         let rows = descriptor.rows();

@@ -126,7 +126,9 @@ impl Declarations {
             })?;
         if actual.node.is_none() {
             use super::header_attributes::ContractKnowledge;
-            if super::header_attributes::local_crate_owner(report, definition)? {
+            if super::header_attributes::local_crate_owner(report, definition)?
+                || super::header_attributes::bootstrap_owner(report, definition)?
+            {
                 return Ok(None);
             }
             if super::header_attributes::has_imported(self, definition) {

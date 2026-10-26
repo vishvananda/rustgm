@@ -110,23 +110,23 @@ fn actual() -> Result<(
 #[test]
 fn selected_builtin_requires_exact_canonical_item_header_role_and_provider() -> Result {
     let (package, mut paths, mut definitions) = actual()?;
-    let owner = checked_contract(&package, &paths, &definitions, 0)?;
+    let owner = checked_contract(&package, &paths, &definitions, 0, Builtin::CfgSelect)?;
     assert_eq!(definitions[0].node, Some(owner));
-    assert!(checked_contract(&package, &paths, &definitions, 1).is_err());
+    assert!(checked_contract(&package, &paths, &definitions, 1, Builtin::CfgSelect).is_err());
     definitions[0].body = Body::Builtin(Builtin::CorePanic);
-    assert!(checked_contract(&package, &paths, &definitions, 0).is_err());
+    assert!(checked_contract(&package, &paths, &definitions, 0, Builtin::CfgSelect).is_err());
     definitions[0].body = Body::Builtin(Builtin::CfgSelect);
     let header = definitions[0].header.take();
-    assert!(checked_contract(&package, &paths, &definitions, 0).is_err());
+    assert!(checked_contract(&package, &paths, &definitions, 0, Builtin::CfgSelect).is_err());
     definitions[0].header = header;
     let (foreign, _, mut foreign_definitions) = actual()?;
-    assert!(checked_contract(&foreign, &paths, &definitions, 0).is_err());
+    assert!(checked_contract(&foreign, &paths, &definitions, 0, Builtin::CfgSelect).is_err());
     let foreign_header = foreign_definitions[0].header.take();
     let header = std::mem::replace(&mut definitions[0].header, foreign_header);
-    assert!(checked_contract(&package, &paths, &definitions, 0).is_err());
+    assert!(checked_contract(&package, &paths, &definitions, 0, Builtin::CfgSelect).is_err());
     definitions[0].header = header;
     let node = definitions[0].node.take();
-    assert!(checked_contract(&package, &paths, &definitions, 0).is_err());
+    assert!(checked_contract(&package, &paths, &definitions, 0, Builtin::CfgSelect).is_err());
     definitions[0].node = node;
     let scope = *paths
         .state
@@ -139,17 +139,17 @@ fn selected_builtin_requires_exact_canonical_item_header_role_and_provider() -> 
         .facts
         .node_scopes
         .insert(ModuleId(0), owner.file, owner.node, ScopeId(u32::MAX));
-    assert!(checked_contract(&package, &paths, &definitions, 0).is_err());
+    assert!(checked_contract(&package, &paths, &definitions, 0, Builtin::CfgSelect).is_err());
     paths
         .state
         .facts
         .node_scopes
         .insert(ModuleId(0), owner.file, owner.node, scope);
-    checked_contract(&package, &paths, &definitions, 0)?;
+    checked_contract(&package, &paths, &definitions, 0, Builtin::CfgSelect)?;
     let source = package.source_core().ok_or("source owner")?;
     assert!(source.macros.charge(1_000_001, 0).is_err());
     assert!(
-        checked_contract(&package, &paths, &definitions, 0).is_err(),
+        checked_contract(&package, &paths, &definitions, 0, Builtin::CfgSelect).is_err(),
         "warm identity cannot bypass global failed work"
     );
     Ok(())

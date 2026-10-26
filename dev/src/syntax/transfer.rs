@@ -406,7 +406,8 @@ impl Bases {
                 self.optional(start);
                 self.optional(end);
             }
-            Kind::Group(node)
+            Kind::TypePattern { base: node, .. }
+            | Kind::Group(node)
             | Kind::Statement(node)
             | Kind::Unary { operand: node, .. }
             | Kind::Loop { body: node }

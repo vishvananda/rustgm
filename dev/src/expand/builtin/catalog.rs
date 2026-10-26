@@ -246,6 +246,7 @@ impl Builtin {
                 | Self::Unreachable
                 | Self::ConcatBytes
                 | Self::Test
+                | Self::PatternType
         )
     }
     #[must_use]

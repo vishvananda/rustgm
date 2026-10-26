@@ -373,6 +373,7 @@ impl<'a> Writer<'a> {
             | Kind::PatternField { .. }
             | Kind::Struct { .. }
             | Kind::FieldInit { .. }
+            | Kind::TypePattern { .. }
             | Kind::Type { .. }
             | Kind::Applied { .. }
             | Kind::Qualified { .. }

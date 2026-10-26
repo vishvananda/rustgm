@@ -10,6 +10,9 @@ impl Context<'_> {
         ty: TypeId,
         layout: &Layout,
     ) -> Result<bool, &'static str> {
+        if layout.size != 8 {
+            return Ok(false);
+        }
         if matches!(layout.shape, Shape::Niche { .. }) {
             let encoding = self
                 .layouts

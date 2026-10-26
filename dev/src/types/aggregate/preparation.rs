@@ -128,6 +128,7 @@ impl Definitions {
                         }
                     }
                 }
+                Kind::Pattern { base, .. } => work.push(base),
                 Kind::Closure { environment, .. } => work.push(environment),
                 Kind::Tuple(list) => {
                     let count = types

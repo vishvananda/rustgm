@@ -197,9 +197,11 @@ impl Prepared {
         work: &mut ReservationWork,
     ) -> Result<(), Error> {
         let (header, item, ready) = self.require(&view, store, owner, pair, work)?;
+        state.require_mapping(&view, store, ready.is_none(), work)?;
         if ready.is_some() {
             return Ok(());
         }
+        state.require_signatures(&view, store, header, pair, work)?;
         let before_bytes = self.retained_bytes();
         let before_budget = work.retained;
         let rows = view.rows()?;

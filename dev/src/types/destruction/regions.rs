@@ -407,6 +407,7 @@ fn dependencies(
             Kind::Array { length: 0, .. } => {}
             Kind::Array { element, .. }
             | Kind::ArrayTerm { element, .. }
+            | Kind::Pattern { base: element, .. }
             | Kind::Slice(element) => visit(Key::Type(element))?,
             Kind::Tuple(list) => {
                 for &ty in types.list(list).ok_or("invalid drop region tuple")? {

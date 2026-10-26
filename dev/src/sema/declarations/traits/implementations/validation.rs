@@ -254,7 +254,7 @@ impl Checker<'_> {
             .implementations
             .as_ref()
             .ok_or_else(|| self.error(source, "missing implementation registry"))?
-            .polarity(&self.facts.associated, owner)
+            .polarity(&self.facts.types, &self.facts.associated, owner)
             .map_err(|e| self.error(source, e))?
             == crate::sema::traits::implementations::Polarity::Negative;
         if negative {

@@ -139,7 +139,10 @@ impl Inspection<'_> {
                     self.array(element, length, value)?;
                 }
                 Kind::Tuple(fields) => self.fields(fields, value)?,
-                Kind::Closure { environment, .. } => self.push(environment, value)?,
+                Kind::Pattern {
+                    base: environment, ..
+                }
+                | Kind::Closure { environment, .. } => self.push(environment, value)?,
                 Kind::Reference { .. } if self.references => match self.reference(value)? {
                     Answer::Interior => return Ok(Answer::Interior),
                     Answer::Unresolved => unresolved = true,

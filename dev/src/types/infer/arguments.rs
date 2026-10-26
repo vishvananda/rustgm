@@ -315,24 +315,14 @@ impl Context {
                 };
                 Kind::Tuple(list)
             }
-            Constructor::Array(length) => Kind::Array {
-                element: first()?,
-                length,
-            },
-            Constructor::ArrayTerm(length) => Kind::ArrayTerm {
-                element: first()?,
-                length,
-            },
-            Constructor::Slice => Kind::Slice(first()?),
-            Constructor::Reference { mutable, region } => Kind::Reference {
-                mutable,
-                region,
-                referent: first()?,
-            },
-            Constructor::Pointer { mutable } => Kind::Pointer {
-                mutable,
-                pointee: first()?,
-            },
+            constructor @ (Constructor::Array(_)
+            | Constructor::ArrayTerm(_)
+            | Constructor::Pattern(_)
+            | Constructor::Slice
+            | Constructor::Reference { .. }
+            | Constructor::Pointer { .. }) => {
+                super::unary_shape(constructor, first()?).ok_or(Error::InvalidIdentity)?
+            }
             Constructor::Function {
                 bound_regions,
                 parameters,

@@ -6,6 +6,7 @@ impl Stage {
     pub(super) fn associated_rows(
         &mut self,
         context: &mapped_source::Context<'_>,
+        store: &crate::types::Store,
         budget: &mut Headers,
     ) -> Result<Vec<ImportedOwner>, Error> {
         self.graph.require(
@@ -36,6 +37,7 @@ impl Stage {
             match rows.header(raw.owner).map_err(error)? {
                 Some(s::HeaderRef::Implementation(index)) => result.push(receiver_owner(
                     &self.graph,
+                    store,
                     scope,
                     &rows.implementations[index as usize],
                 )?),
@@ -62,6 +64,7 @@ impl Stage {
 
 fn receiver_owner(
     graph: &mapped_source::Graph,
+    store: &crate::types::Store,
     scope: &mut Scope,
     raw: &s::ImplHeader,
 ) -> Result<ImportedOwner, Error> {
@@ -79,7 +82,7 @@ fn receiver_owner(
         kind: OwnerKind::ImportedImpl(prepared.owner),
     };
     graph
-        .implementation(owner, prepared.predicate)
+        .implementation(store, owner, prepared.predicate)
         .map_err(error)?;
     Ok(ImportedOwner {
         owner,

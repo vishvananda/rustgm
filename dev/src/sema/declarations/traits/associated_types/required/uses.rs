@@ -64,6 +64,7 @@ impl Collector {
                 Kind::Reference {
                     referent: child, ..
                 }
+                | Kind::Pattern { base: child, .. }
                 | Kind::Pointer { pointee: child, .. }
                 | Kind::Slice(child)
                 | Kind::Array { element: child, .. }

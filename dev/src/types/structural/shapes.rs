@@ -198,6 +198,10 @@ impl Shapes {
                 mutable.hash(hash);
                 self.child::<CHARGED, E>(Key::Type(pointee), finish, hash, charge)?;
             }
+            Kind::Pattern { base, constraint } => {
+                constraint.hash(hash);
+                self.child::<CHARGED, E>(Key::Type(base), finish, hash, charge)?;
+            }
             Kind::Slice(element) => {
                 self.child::<CHARGED, E>(Key::Type(element), finish, hash, charge)?;
             }

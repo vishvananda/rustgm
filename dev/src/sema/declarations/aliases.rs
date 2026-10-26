@@ -155,7 +155,7 @@ impl Pending {
     }
 }
 impl Checker<'_> {
-    pub(super) fn charge_alias_lookup(&self, growth: Growth) -> Result<(), Error> {
+    pub(super) fn charge_alias_growth(&self, growth: Growth) -> Result<(), Error> {
         self.trait_aliases
             .as_ref()
             .ok_or_else(|| Error::unlocated("missing alias lookup owner"))?

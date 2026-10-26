@@ -244,6 +244,70 @@ impl Templates {
         self.states.insert(ty, State::Complete(properties));
         Ok(())
     }
+    /// Expose a real transparent field using the same side-field proof as declarations.
+    pub(crate) fn storage_field(
+        &mut self,
+        types: &mut Store,
+        definitions: &mut Definitions,
+        layouts: &mut Layouts,
+        ty: TypeId,
+    ) -> Result<Option<TypeId>, &'static str> {
+        self.steps = self.steps.saturating_add(1);
+        if self.steps > 1_000_000 {
+            return Err("template representation work budget exceeded");
+        }
+        let Some(Kind::Adt(item, _)) = types.kind(ty) else {
+            return Ok(None);
+        };
+        let declaration = definitions
+            .get(item)
+            .ok_or("transparent storage requires completed fields")?;
+        if declaration.kind != aggregate::Kind::Struct
+            || declaration.repr.representation != Representation::Transparent
+        {
+            return Ok(None);
+        }
+        definitions.instantiate(types, ty)?;
+        let fields = {
+            let shape = definitions.raw_shape(types, ty)?;
+            validate_repr(shape.definition, shape.variants().len())?;
+            let mut variants = shape.variants();
+            let fields = variants
+                .next()
+                .ok_or("transparent storage requires one variant")?
+                .fields;
+            if variants.next().is_some() {
+                return Err("transparent storage requires one variant");
+            }
+            fields
+        };
+        let count = types
+            .list(fields)
+            .ok_or("missing transparent storage fields")?
+            .len();
+        self.steps = self.steps.saturating_add(count);
+        if self.steps > 1_000_000 {
+            return Err("template representation work budget exceeded");
+        }
+        if count == 1 {
+            return Ok(types
+                .list(fields)
+                .and_then(|fields| fields.first())
+                .copied());
+        }
+        let mut selected = None;
+        for index in 0..count {
+            let field = types
+                .list(fields)
+                .ok_or("missing transparent storage fields")?[index];
+            self.demand(types, definitions, layouts, field)
+                .map_err(|error| error.message)?;
+            if !self.trivial(layouts, field)? && selected.replace(field).is_some() {
+                return Err("transparent aggregate has more than one nontrivial field");
+            }
+        }
+        Ok(selected)
+    }
     fn transparent(
         &self,
         types: &Store,
@@ -282,6 +346,7 @@ fn children(
         .kind(ty)
         .ok_or("invalid template representation type")?
     {
+        Kind::Pattern { base, .. } => visit(base)?,
         Kind::Closure { environment, .. } => visit(environment)?,
         Kind::Opaque(..) => visit(types.storage_head(ty)?)?,
         Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } | Kind::Slice(element) => {

@@ -238,8 +238,40 @@ do not manufacture a trait identity or clone a second flattened graph. Preserve
 written edge subjects and existing unreduced clause facts. The
 [naming checkpoint](docs/trait-alias-naming-checkpoint.md) records the independent
 counterexample, actual consumer and selected-table cost. Associated-family input
-prefixes must include every emitted alias requirement; object principal
-multiplicity is separate from deduplicated proof/naming clauses.
+prefixes include every emitted alias requirement, including equalities and
+builtin clauses. Associated-result aliases use the same bound worklist and
+canonical expander, but their promises stay outside that input prefix. Preserve
+implicit result Sized separately. Object principal multiplicity is separate
+from deduplicated proof/naming clauses. The
+[combined checkpoint](docs/runtime-header-integration-checkpoint.md) records
+actual projection-use opponents and unchanged alias execution/export fences.
+
+Legacy bootstrap diagnostic compatibility authenticates declarations against the
+existing fixed canonical registries, actual kind/public binding and nonimported
+identity. A missing node is insufficient. This compatibility creates no completed
+source/imported header, KnownAbsent attribute or execution permission; genuine
+source and artifact contracts keep their own producer/Unknown rules.
+
+Source Abort requires the actual current attributed header, complete call
+instance and reached caller proof. Consume a transient witness for the final
+Evaluate and original Unreachable edge before emitting the existing terminator;
+stop subsequent cleanup only on that path. Do not fabricate a return value or
+use an interposable library abort symbol for this intrinsic. Const calls,
+reification, imported origins and assertion/panic construction remain independent
+contracts; the [runtime checkpoint](docs/source-abort-runtime-checkpoint.md)
+records the genuine owned-scope and native opponents.
+
+Source Transmute consumes an authenticated full call and the existing pre-monomorphization
+size relation. Runtime lowering moves through owned ABI storage without dropping
+the source; destination destruction remains ordinary. CTFE shares the existing
+byte codecs and paid reference continuation, preserving pending duties and
+original allocation provenance. Function-pointer formation preserves the genuine
+canonical target and destination pointer type; it does not require identical
+signatures or grant const invocation. The actual runtime call uses the destination
+ABI with normal unsafe and ownership checks. Do not add a parallel origin graph,
+signature-recovery cache or synthetic trampoline. The
+[formatter checkpoint](docs/formatter-pointer-erasure-checkpoint.md) records real
+const formation, borrowed-owner runtime calls and the combined integration.
 
 Share structural layout readiness and field instantiation across constant
 storage and source intrinsic consumers. A layout answer supplies physical data,
@@ -261,6 +293,13 @@ Keep this state in fixed cold provider tables and preserve real provided bodies
 and conditional Environment clauses. The [capability checkpoint](docs/pa29-provider-capability-checkpoint.md)
 records actual checked originals and containing layouts.
 
+Pointee declaration production seals the actual trait, Metadata member and
+DynMetadata nominal contracts in one cold shared owner. Retain their real
+source-incarnation witnesses and completed declared prefixes; a derived
+environment suffix may grow without changing the declaration. The
+[declaration checkpoint](docs/pointee-source-declarations.md) supplies no
+automatic implementation, metadata normal form or imported execution permission.
+
 Imported executable originals have authenticated external declaration/body/site
 coordinates. Install their complete canonical header graph before original
 proof, without inventing source AST nodes or marking body proof complete when
@@ -270,6 +309,17 @@ formal, including unused parameters; preserve explicit `?Sized`. Original
 assumptions do not pay substituted instance obligations. Retain a single cold
 owner for immutable imported templates/contracts, with exact owner validation
 at every borrowed view and ordinary per-instance proof on execution.
+
+The defining crate checks every required source body before export. Retain the
+complete family and raw body contracts, but reconstruct imported defining
+environments and original proof on actual body demand. Unrequested bodies remain
+explicitly Pending, never empty or proved. Reuse completed original proof only
+under the same immutable body, Store and environment; concrete instances retain
+their fresh ordinary obligations. Declaration conformance and genuine namespace
+installation use declaration facts independently of body readiness. Imported
+names alone grant no semantic or execution permission. The
+[execution plan](docs/library-bootstrap-acceleration.md) records this reviewed
+policy and the unchanged complete default/const transport requirements.
 
 Private callable preparation consumes the actual reserved declared/callable
 signature pair and complete outer-to-inner formal scope, including unused
@@ -283,6 +333,14 @@ the entire type store are not per-call allocation bounds. Failed attempts retain
 their charged work and peak, and cannot publish partial readiness. This private
 structural preparation grants no defining Environment, original body proof,
 call-instance proof or wider metadata-profile permission.
+
+Private selected recipes use one fixed shared memo with a sole publishing
+worklist; readers authenticate its actual root, Store arena and allocation.
+Reuse the ordinary signature checker and preserve explicit missing/pending/ready
+states. Certify real named type formals and inherited impl Self during the same
+collector walk, without guessing prefixes or cloning a second type table. The
+[mapping checkpoint](docs/private-signature-mapping-checkpoint.md) records cold
+storage, constant warm work and remaining owner/body proof obligations.
 
 Raw original Contract parameters retain the source iterator's inner-to-outer
 scope order. Callable applications retain their separate outer-to-inner formal

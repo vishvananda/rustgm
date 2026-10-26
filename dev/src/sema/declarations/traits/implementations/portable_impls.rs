@@ -32,7 +32,7 @@ impl Checker<'_> {
         }
         self.facts
             .associated
-            .imported_implementation(owner, predicate)
+            .imported_implementation(&self.facts.types, owner, predicate)
             .map_err(Error::unlocated)?;
         let Bound::Trait(application) = predicate.bound else {
             return Err(Error::unlocated(
@@ -60,7 +60,7 @@ impl Checker<'_> {
             .as_deref()
             .ok_or_else(|| Error::unlocated("imported conformance has no unpaid registry entry"))?;
         if registry
-            .polarity(&self.facts.associated, definition)
+            .polarity(&self.facts.types, &self.facts.associated, definition)
             .map_err(Error::unlocated)?
             != Polarity::Positive
         {

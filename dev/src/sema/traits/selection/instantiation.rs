@@ -135,7 +135,7 @@ fn capability(
         .implementations
         .as_ref()
         .ok_or("missing selected impl registry")?;
-    registry.polarity(&facts.associated, owner)?;
+    registry.polarity(&facts.types, &facts.associated, owner)?;
     let mut predicate = registry
         .header(owner)
         .ok_or("missing selected impl header")?

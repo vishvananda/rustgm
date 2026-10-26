@@ -196,7 +196,11 @@ fn header_polarity_status_preserves_entry_layout_and_rejects_missing_factory_own
     registry.prepare(&mut store, ItemId(1), header)?;
     assert!(
         registry
-            .polarity(&crate::sema::associated::Inventory::default(), owner)
+            .polarity(
+                &store,
+                &crate::sema::associated::Inventory::default(),
+                owner
+            )
             .is_err()
     );
     Ok(())
@@ -415,14 +419,14 @@ fn unavailable_negative_header_preserves_polarity_and_normal_completion()
     assert!(registry.early_unavailable(&facts.types, definition)?);
     assert!(!registry.is_validated(definition));
     assert!(matches!(
-        registry.polarity(&facts.associated, definition)?,
+        registry.polarity(&facts.types, &facts.associated, definition)?,
         super::Polarity::Negative
     ));
     registry.complete(definition, Vec::new(), Vec::new(), Vec::new())?;
     assert!(!registry.early_unavailable(&facts.types, definition)?);
     assert!(registry.is_validated(definition));
     assert!(matches!(
-        registry.polarity(&facts.associated, definition)?,
+        registry.polarity(&facts.types, &facts.associated, definition)?,
         super::Polarity::Negative
     ));
     println!(

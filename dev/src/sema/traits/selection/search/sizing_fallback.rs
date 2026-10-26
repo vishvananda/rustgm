@@ -82,6 +82,7 @@ impl Search<'_> {
                 Kind::Never
                 | Kind::Primitive(_)
                 | Kind::Reference { .. }
+                | Kind::Pattern { .. }
                 | Kind::Pointer { .. }
                 | Kind::Function { .. }
                 | Kind::FunctionItem { .. }
