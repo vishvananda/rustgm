@@ -1,5 +1,5 @@
 //! Install only newly configured expansion facts into a file's stable syntax arenas.
-mod item_splices;
+mod sibling_splices;
 use super::Unit;
 use crate::{
     expand::{

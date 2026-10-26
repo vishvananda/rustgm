@@ -22,7 +22,7 @@ use crate::{
 };
 
 pub(crate) struct Site<'a> {
-    pub file: crate::resolve::unit::FileId,
+    pub file: crate::support::source::FileId,
     pub source: &'a str,
     pub ast: &'a Syntax<StoredValue>,
     pub active: &'a [bool],

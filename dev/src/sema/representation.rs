@@ -86,7 +86,7 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Erro
         };
         let range = parentheses(forest, group).map_err(error)?;
         if name == Some("derive") {
-            if effect.attribute.effect == crate::expand::configured::Effect::ExpandedDerive {
+            if unit.derive_is_expanded(index) {
                 report.expanded_derive(
                     NodeKey {
                         file: key.file,

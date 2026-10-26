@@ -110,6 +110,31 @@ fn list_failures_and_changed_capture_image_owner_cannot_consume_derives() -> Tes
     assert!(report.expanded_derive(owner, effect).is_err());
     report.package.units[0].configured.effects[effect].capture = capture;
     report.expanded_derive(owner, effect)?;
+    let owner_index = report.package.units[0].owner_indices[owner.node.get() as usize]
+        .ok_or("actual owner index")?
+        .get() as usize
+        - 1;
+    report.package.units[0].configured.owners[owner_index].enabled = false;
+    assert!(report.expanded_derive(owner, effect).is_err());
+    report.package.units[0].configured.owners[owner_index].enabled = true;
+    report.expanded_derive(owner, effect)?;
+    let member = report
+        .attribute_effects
+        .as_deref()
+        .and_then(|effects| effects.derives.as_deref())
+        .ok_or("actual transaction")?
+        .entries[0]
+        .contexts
+        .start;
+    let definition = report.invocations[member].definition;
+    let original_role = match report.definitions[definition].body {
+        Body::Builtin(role) => role,
+        _ => return Err("actual source role".into()),
+    };
+    report.definitions[definition].body = Body::Builtin(Builtin::Line);
+    assert!(report.expanded_derive(owner, effect).is_err());
+    report.definitions[definition].body = Body::Builtin(original_role);
+    report.expanded_derive(owner, effect)?;
     let fresh = crate::support::source::SourceFile::new(
         report.package.units[0].source.text().as_bytes().to_vec(),
     )?;

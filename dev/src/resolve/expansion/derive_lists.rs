@@ -1,5 +1,5 @@
 //! One cold transaction owns each demanded list until all actual members resolve.
-mod output;
+mod impl_emission;
 mod receipt;
 #[cfg(test)]
 #[path = "../../../tests/invariants/derived_locations.rs"]

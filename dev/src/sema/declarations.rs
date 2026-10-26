@@ -433,7 +433,7 @@ impl Checker<'_> {
         self.complete_nominals(&mut steps, work_limit)?;
         super::compiler_items::phantom::complete(self.report, &mut self.facts)?;
         super::compiler_items::pointee::prepare(self.report, &mut self.facts)?;
-        super::compiler_items::panic_nominals::complete(self.report, &mut self.facts)?;
+        super::compiler_items::site_records::complete(self.report, &mut self.facts)?;
         super::traits::results::prepare_opaque_outlives(&mut self.facts)
             .map_err(|e| Error::at(FileId(0), 0, e))?;
         self.trait_defaults()?;
