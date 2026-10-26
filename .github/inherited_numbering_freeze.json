@@ -1,5 +1,5 @@
 {
-  "source_commit": "56317f893cc60592f8141600ded7daa3ba0ee676",
+  "source_commit": "3487146604932ddd56cd8e803fca63564bea3ea8",
   "public_base": "0acddbc2",
   "sources": {
     "dev/bin/crates.rs": "efbab4e37ff93eb8c4affdbc721a01d33017da46a0c4472ce6dfcee80905340b",
@@ -379,7 +379,7 @@
     "dev/src/lower/transported_source/cfg_rows/lexical_rows.rs": "b16ecafed37ec7c34e8101099d6311994444ae8bbaf902da1b7829d353d2fe87",
     "dev/src/lower/transported_source/cfg_rows/value_rows.rs": "0e445991c428054a1aaabf550f9a0772bb03f25dcabf77e0ccdeb67d0ca0ed9b",
     "dev/src/lower/transported_source/cfg_rows.rs": "d9abec01699c338000ca2d76601d25520465439bbccaae47b0f66f2a342a2c34",
-    "dev/src/lower/transported_source/collected_headers.rs": "08a62e318b5bf687f99b2de4d02b9ace243e107d04ef0f6ca25061b40bf4b790",
+    "dev/src/lower/transported_source/collected_headers.rs": "d324f8ce3818ce97db0d6ef0a0621598419ac416c63638b7216aff9feaf4c507",
     "dev/src/lower/transported_source/collector_origin.rs": "640bc6bc67d57e29a9b78627a58c011c50d685f293535a5dad039fd421cd059e",
     "dev/src/lower/transported_source/locations.rs": "abec00ed89f8b4c4cf399142ead9386c3b34f216015a5faa217c0926b4774e49",
     "dev/src/lower/transported_source/numbered_inputs.rs": "ede299e6082fb6e399d3473c6cf508444ebafa9a679841da41b95e85066e7ff1",
@@ -2711,7 +2711,7 @@
     "pa8/tests/manifest.json": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
     "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
   },
-  "source_sha256": "585fe55283adcd87152963c619eac3df8502221daf9084f800bdec240a23d363",
+  "source_sha256": "a3227ffe9421ae7152da3bd4347eb7c0ee80e9dc969ad7cca90aa1ade4090612",
   "selected": [
     "sema::crates::typed_headers::consumer_sessions::tests::completed::collected_source_headers_bind_full_family_to_fresh_actual_consumer",
     "sema::crates::typed_headers::consumer_sessions::tests::completed::collected_source_headers_reject_unpaid_swapped_and_foreign_sidecars",

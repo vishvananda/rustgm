@@ -1,7 +1,7 @@
 //! Complete source inspection retains a sealed joint row/contract owner.
-#[cfg(test)]
-use super::g;
 use super::{Declarations, Report, Source, SourceInspection, s};
+#[cfg(test)]
+use super::{g, retained};
 use crate::{
     resolve::package::Error,
     sema::crates::authored_export::{CollectedRows, SourceWork, validate_collected_rows},
