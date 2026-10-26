@@ -84,10 +84,7 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
-    Execution(
-        crate::sema::values::execution::Requirement,
-        execution::Phase,
-    ),
+    Execution(execution::Request, execution::Phase),
     ClosureAnnotation(NodeKey, regions::Context, Option<usize>),
     CallTraitInputs(BinderId),
     CallTraitOutput(NodeKey, regions::Context),
@@ -293,10 +290,12 @@ pub(in crate::sema) fn analyze_reserved<'a>(
             .facts
             .retain_error_warnings(report.diagnostic(error))
     })?;
+    checker.selected_bodies()?;
     let selected = checker.selected.take().ok_or_else(|| {
         Error::unlocated("staged declaration checking lost its actual selected producer")
     })?;
-    Ok((checker.facts, selected))
+    let facts = super::bodies::analyze(report, checker.facts)?;
+    Ok((facts, selected))
 }
 impl<'a> Checker<'a> {
     fn new(report: &'a Report) -> Result<Self, Error> {
@@ -408,6 +407,18 @@ impl Checker<'_> {
         }
         Ok(())
     }
+    fn work_limit(&self) -> usize {
+        self.report
+            .package
+            .units
+            .iter()
+            .fold(self.states.len(), |count, unit| {
+                count
+                    .saturating_add(unit.configured.ast.nodes.len())
+                    .saturating_add(unit.configured.ast.edges.len())
+            })
+            .saturating_mul(16)
+    }
     fn run(&mut self) -> Result<(), Error> {
         self.validate_foreign_blocks()?;
         self.reserve_member_parents()?;
@@ -419,17 +430,7 @@ impl Checker<'_> {
         let mut steps = 0_usize;
         // Linear declaration work is bounded by the input graph, not by a fixed
         // whole-crate size. Alias states diagnose cycles independently.
-        let work_limit = self
-            .report
-            .package
-            .units
-            .iter()
-            .fold(self.states.len(), |count, unit| {
-                count
-                    .saturating_add(unit.configured.ast.nodes.len())
-                    .saturating_add(unit.configured.ast.edges.len())
-            })
-            .saturating_mul(16);
+        let work_limit = self.work_limit();
         self.prepare_call_contracts()?;
         self.prepare_language_contracts()?;
         self.prepare_comparison_contracts()?;

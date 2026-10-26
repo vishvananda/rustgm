@@ -131,7 +131,15 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
     stage = repeated_owner(stage, holder_declaration, definition, &mut work)?;
     let stage = method_headers(stage, &mut work)?;
     let stage = (*stage).analyze(&mut work)?;
-    assert!(!stage.session.authority.facts.functions.is_empty());
+    let facts = &stage.session.authority.facts;
+    assert!(!facts.functions.is_empty());
+    assert!(
+        facts
+            .functions
+            .iter()
+            .filter(|function| function.body.is_some())
+            .all(|function| facts.typed_function_bodies.contains(&function.definition))
+    );
     owner_failed_precharge()?;
     actual_implicit_prelude_controls()?;
     Ok(())

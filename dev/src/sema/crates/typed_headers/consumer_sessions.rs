@@ -85,6 +85,11 @@ impl ProofSession {
     }
     fn require(&self, work: &mut ReservationWork) -> Result<(), Error> {
         self.authority.require(work)?;
+        if !self.authority.facts.functions.is_empty() {
+            return Err(Error::unlocated(
+                "reserved consumer already contains checked source functions",
+            ));
+        }
         if !self.authority.facts.lifetimes.callables.is_empty() {
             return Err(Error::unlocated(
                 "reserved consumer already contains callable registrations",
@@ -153,7 +158,6 @@ impl ConsumerAuthority {
             .map_err(Error::unlocated)?;
         if !facts.types.has_identity(arena)
             || facts.definitions.len() != report.resolution.definitions.len()
-            || !facts.functions.is_empty()
             || facts
                 .crates
                 .as_deref()
