@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "metadata_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "native_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Cdebug-assertions=no",
+    "-Coverflow-checks=no",
+    "-Copt-level=2",
+    "-Ccodegen-units=1",
+    "-Clto=off",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "source_prediction_disagreements": "Retain all actual raw observations and wrong predictions; disagreements are data, not automatic infrastructure failures.",
+  "baseline": "0acddbc20e07d645ea7b0fa33e4403943a3ce5c0",
+  "candidate_execution": false,
+  "runtime_observer": "Exact check predicates call a real dynamic division-by-zero failure path on wrong result; success is exit0 with empty stdout/stderr. RPIT controls call the returned actual Get implementation.",
+  "purpose": "Two NEW applicability boundaries after observed default-RPIT hard rejection: final inherited RPIT on scalar-specialized family; default method with concrete written result still bound to actual trait RPIT declaration. No prior source is rerun.",
+  "planned_metadata_observations": 4,
+  "planned_native_programs": 2,
+  "cases": [
+    {
+      "name": "final-rpit-inherited-across-scalar-specialization",
+      "source": "obj/parallel/pa31/specialization-graph-v1/execution-oracles-v2/sources/final-rpit-inherited-across-scalar-specialization.rs",
+      "sha256": "7c4cf37129c23885611fb7f881b27d76eac92b5de053f6dd14977f82d2612e00",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "expected_error_substrings": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "Frozen new hypothesis before execution; retain all disagreements; no inference from v1 rejection to final inherited RPIT."
+    },
+    {
+      "name": "default-rpit-with-concrete-implementation-output",
+      "source": "obj/parallel/pa31/specialization-graph-v1/execution-oracles-v2/sources/default-rpit-with-concrete-implementation-output.rs",
+      "sha256": "a3640dcfd33a9ea4b3dd2d39f8df8f0e8e39302dde72187c1c2369b463aa6cd3",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "expected_error_substrings": [
+        "return-position `impl Trait` in trait cannot be specialized"
+      ],
+      "native": null,
+      "prediction_note": "Frozen new hypothesis before execution; retain all disagreements; no inference from v1 rejection to final inherited RPIT."
+    }
+  ]
+}
