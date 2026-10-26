@@ -178,3 +178,8 @@ outcomes. They distinguish final trait bodies/override prohibition, ordinary
 provided overrides, dynamic static-versus-virtual calls, actual source Share,
 exact keyword authority and inactive syntax. The initial contract is retained
 even when observations disprove a prediction. This does not activate PA31.
+
+`spec/builtin-derive-helpers/` freezes nineteen new source builtin helper-list
+declarations and opposing owner/form/gate/scope inputs, with 38 independent
+metadata predictions. Declaration data grants neither derive execution nor
+helper use; actual selected-derive ownership is a separate consumer requirement.
