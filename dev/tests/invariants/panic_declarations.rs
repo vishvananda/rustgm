@@ -126,11 +126,40 @@ fn source_abort_signature_is_safe_nonconst_and_supplies_no_layout_or_const_permi
         mut facts,
         prepared,
     } = crate::pipeline::analyze_source(&reached)?;
+    let function = facts
+        .functions
+        .iter()
+        .find(|function| {
+            let actual = &reached.resolution.definitions[function.definition.0 as usize];
+            reached.package.names.get(actual.name) == "reached"
+        })
+        .ok_or("actual reached caller")?
+        .definition;
+    let roots = [function];
+    let error = crate::lower::instances::build_roots_prepared(
+        &reached,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &roots,
+        },
+        prepared,
+    )
+    .err()
+    .ok_or("source abort acquired runtime permission from its declaration")?;
+    assert!(error.message.contains("source abort"), "{}", error.message);
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&reached)?;
     let error =
         crate::lower::instances::build_library_prepared(&reached, &mut facts, owner, prepared)
             .err()
-            .ok_or("source abort acquired runtime permission from its declaration")?;
-    assert!(error.message.contains("source abort"), "{}", error.message);
+            .ok_or("source abort acquired artifact permission from its declaration")?;
+    assert_eq!(
+        error.message,
+        "source type form requires an explicitly supported transport row"
+    );
     assert_eq!(Intrinsic::Abort.descriptor().safety, Safety::Safe);
     assert_eq!(
         Intrinsic::Abort.descriptor().constant,
