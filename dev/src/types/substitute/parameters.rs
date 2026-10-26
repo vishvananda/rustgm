@@ -141,16 +141,27 @@ impl Bound {
         store: &mut Store,
         args: GenericArgs,
     ) -> Result<GenericArgs, &'static str> {
+        self.apply_arguments_observed::<false>(store, args, &|_, _| Ok(()))
+    }
+    pub(super) fn apply_arguments_observed<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        args: GenericArgs,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<GenericArgs, &'static str> {
         let source = store
             .arguments(args)
             .ok_or("invalid substituted arguments")?;
         let length = source.len();
+        if CHARGED {
+            charge(length, length.saturating_mul(size_of::<Argument>()))?;
+        }
         self.account_arguments(length)?;
         let scratch = self.reserve_region_scratch(super::bounded::growth::<Argument>(length))?;
         let mut arguments: Vec<_> = source.collect();
         let result = (|| {
             for argument in &mut arguments {
-                *argument = self.apply_argument(store, *argument)?;
+                *argument = self.apply_argument_observed::<CHARGED>(store, *argument, 0, charge)?;
             }
             store.intern_arguments(&arguments)
         })();

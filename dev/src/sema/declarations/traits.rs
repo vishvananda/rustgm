@@ -20,6 +20,7 @@ impl Checker<'_> {
         steps: &mut usize,
         limit: usize,
     ) -> Result<(), Error> {
+        self.reserve_alias_owners()?;
         // Reserve every trait Self before elaborating references to other trait headers.
         for index in 0..self.facts.associated.owners().len() {
             let Some(owner) = self
@@ -59,6 +60,7 @@ impl Checker<'_> {
                 .or_default();
             self.drain(steps, limit)?;
         }
+        self.prepare_alias_parameters(steps, limit)?;
         self.reserve_family_parameters(true, steps, limit)?;
         self.reserve_associated_type_bounds()?;
         self.begin_header_names()?;
@@ -108,6 +110,7 @@ impl Checker<'_> {
         crate::sema::compiler_items::validate_sizing(self.report, &mut self.facts)?;
         self.complete_trait_contracts()?;
         self.retain_header_projection_requirements()?;
+        self.complete_alias_headers(steps, limit)?;
         Ok(())
     }
 

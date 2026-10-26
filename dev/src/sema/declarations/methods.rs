@@ -163,34 +163,11 @@ impl Checker<'_> {
         id: DefId,
         context: regions::Context,
     ) -> Result<TypeId, Error> {
-        if crate::sema::lifetimes::arguments(self.report, key, false)?.is_some() {
-            return Err(self.error(key, "Self cannot take lifetime arguments"));
-        }
         let schema = self
             .facts
             .associated
             .schema(id)
             .ok_or_else(|| self.error(key, "missing associated Self type"))?;
-        let target = schema.self_type;
-        let binder = self.owner_binders[&id];
-        let mut mapping = Vec::with_capacity(schema.captures as usize);
-        for index in 0..schema.captures {
-            let slot = u16::try_from(index)
-                .map_err(|_| self.error(key, "too many impl lifetime slots"))?;
-            mapping.push(
-                self.regions
-                    .captured_region(context.binder, binder, slot)
-                    .map_err(|e| self.error(key, e))?,
-            );
-        }
-        let args = self
-            .facts
-            .types
-            .intern_regions(&mapping)
-            .map_err(|e| self.error(key, e))?;
-        self.facts
-            .lifetimes
-            .substitute(&mut self.facts.types, args, target)
-            .map_err(|e| self.error(key, e))
+        self.lexical_self_type(key, id, context, schema.self_type, schema.captures)
     }
 }

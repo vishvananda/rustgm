@@ -174,7 +174,7 @@ fn check_scope(
         .flatten()
         .find(|scope| scope.raw.owner == holder.scope)
         .ok_or("actual trait scope")?;
-    assert!(inherited.inputs.iter().all(|input| matches!(
+    assert!(inherited.inputs.all().iter().all(|input| matches!(
         input.source,
         crate::resolve::body_origin::ProofSite::Imported(_)
     )));
