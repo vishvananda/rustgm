@@ -55,14 +55,21 @@ impl ConsumerInput {
 }
 
 pub(crate) struct ConsumerReservation {
-    inventory: Arc<Dependencies>,
-    index: u32,
+    pub(super) inventory: Arc<Dependencies>,
+    pub(super) index: u32,
     catalog: Rc<Catalog>,
-    root: ImportedDeclarationId,
+    pub(super) root: ImportedDeclarationId,
     definitions: Range<usize>,
     scopes: Range<usize>,
 }
 impl ConsumerReservation {
+    pub(crate) fn recipe_view<'a>(
+        &'a self,
+        report: &'a Report,
+        work: &mut ReservationWork,
+    ) -> Result<super::unpaid_provided::RecipeView<'a>, Error> {
+        super::unpaid_provided::RecipeView::consumer(self, report, work)
+    }
     pub(crate) fn require(&self, report: &Report, work: &mut ReservationWork) -> Result<(), Error> {
         work.charge(6)?;
         let policy = report
