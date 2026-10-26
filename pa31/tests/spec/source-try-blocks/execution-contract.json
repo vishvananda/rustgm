@@ -1,0 +1,81 @@
+{
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": [
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-protocol.rs",
+      "sha256": "60c1a47abf47045822180c81f2c6dfd23570c41db6a843f52e233454b94b934a",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "native_stdout": "7 23 31 17 23 43 19\n"
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-without-try-role.rs",
+      "sha256": "9409e2efddd7a3a03634ca8a4d40f3c74dc50744881ceb43a850a503da2480d0",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": null,
+      "rustc_warning_codes_hypothesis": []
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-unused-type-error.rs",
+      "sha256": "f455c2f07f3952f074604ed0ff9adda7f5add60cabc1c1c2ccf7d71575d2991d",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0308"
+      ],
+      "rustc_warning_codes_hypothesis": []
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-closure-boundary.rs",
+      "sha256": "8a33886b06610ce1b0982c6f0a4f40b3af807b00d5310dbe93ed0229cfa372a9",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0277"
+      ],
+      "rustc_warning_codes_hypothesis": []
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-borrow-escape.rs",
+      "sha256": "fa1df955f58d56d38c93c0a412865208740febfab6d19a30ec5451c1b4bad35b",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0515"
+      ],
+      "rustc_warning_codes_hypothesis": []
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-moved-output.rs",
+      "sha256": "471458692c30da7bef90a11865f4541fc23139fa4ab0ed73ef5b51a594b2eadb",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0382"
+      ],
+      "rustc_warning_codes_hypothesis": []
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-drop-exit.rs",
+      "sha256": "0aa1b4c2abef2e98a7db6a6e6a1deac9dd0b1d2b2eb403a0e080e4c8bddd811a",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "native_stdout": "21\n"
+    }
+  ],
+  "state": "unobserved hypotheses; native predictions separate from metadata",
+  "compiler_profile": "actual source-core minicore@try_protocol, no std/bootstrap Try factory",
+  "note": "from_residual intentionally returns23 and Weird::from_output43: normal source body calls must execute; no law-based compiler shortcut. Original38 grammar observations stay unchanged. Existing qualified callable declarations are retained for genuine closure-boundary checking."
+}
