@@ -1,5 +1,5 @@
 {
-  "source_commit": "362e79a332293cbbde05f4e52c727a10c94f4519",
+  "source_commit": "b9e8a52c3ae255a0d6bc208205b7505db21a028f",
   "public_base": "d249fd21adb29d394ff1a8be58afece02e049656",
   "sources": {
     "dev/bin/crates.rs": "efbab4e37ff93eb8c4affdbc721a01d33017da46a0c4472ce6dfcee80905340b",
@@ -802,7 +802,7 @@
     "dev/src/sema/crates/typed_headers/mapped_source/origin_ports.rs": "43938260a5ff2ff273afb09759d0ba181ce3b9172086ed1992a53106bbba0278",
     "dev/src/sema/crates/typed_headers/mapped_source/owner_members.rs": "387278f1432e78cc3fe99beca374d141a53dca5b9867d1f962544ded0a0fbed2",
     "dev/src/sema/crates/typed_headers/mapped_source/role_headers.rs": "caadb5f3e4c3d816bea724fd29ef7df205e8d5c0aece216e0b0b380ac023f78b",
-    "dev/src/sema/crates/typed_headers/mapped_source/scheme_inputs.rs": "891df2d2f204c9cb95267de9522d6b02eb0abf6b008a5a36d7ae769de9bc8f3c",
+    "dev/src/sema/crates/typed_headers/mapped_source/scheme_inputs.rs": "68dd4feace4925b4c3f37e508f0c762773f9e5e9b3960278ef550a4f4d792e53",
     "dev/src/sema/crates/typed_headers/mapped_source/scope_inputs.rs": "c0847232ae5b944515dea1dc775ad62876b043f0fa82dbfc0e3f05386b7df807",
     "dev/src/sema/crates/typed_headers/mapped_source/slot_bindings.rs": "55e85b6a65ab4adc246502a0434164c43c15b4ee41540ec1e4808439dfdb7be1",
     "dev/src/sema/crates/typed_headers/mapped_source.rs": "71ba394f8782003e5aa1e3c65e8be7fbb3c16227c0b81f87e5c661908f1987dc",
@@ -888,7 +888,7 @@
     "dev/src/sema/declarations/generics.rs": "74cb07dc4570245372ef3e616c595fe4a7ed8dae404cb7596926a344097df664",
     "dev/src/sema/declarations/heads.rs": "84843529cfb1f482b68551d85619792b897c66473408e076a6f4a748142dde15",
     "dev/src/sema/declarations/impl_headers/continuation.rs": "8e5424381e5a0664fc2ece4c49656ef435bc04051f10c03ee3cf39650faa9f83",
-    "dev/src/sema/declarations/impl_headers.rs": "0fd17c2d147cd1e4b180f948c0c9e6c16295514eb7dcf4e7354a6b147d20ff3d",
+    "dev/src/sema/declarations/impl_headers.rs": "e63e9572f17a3e54a39c1fbdbfce12d0e7e432835a001e5e50a46be30d7a8dd0",
     "dev/src/sema/declarations/implicit_methods.rs": "c3fd9019300770d9bd77e17a28d9e0d2880090918574cec0f8fb4583d4b1bb8c",
     "dev/src/sema/declarations/inherent_headers.rs": "2fe9e54570d1f79a92bc40657423166b6f7e8a084e8aca335b35b8dc97b65b9f",
     "dev/src/sema/declarations/intrinsics/atomic.rs": "d335b3cf65b0a7996af6daf266a5222ad5e6aa005e953f1dc968fdd8a1b4f256",
@@ -2742,7 +2742,7 @@
     "pa8/tests/manifest.json": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
     "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
   },
-  "source_sha256": "366c202b32b067c8b6f595f5a1c76c0689a36ce468b736c7cecd3c1a8fe45368",
+  "source_sha256": "b45fb347755bc71c02dc5b9ecdde63cc452ef19cada403525c24ff6ecf96d0e9",
   "selected": [
     "sema::crates::typed_headers::unpaid_provided::header_demands::mapping_tests::shared_signature_reader_binds_actual_writer_owner_arena_and_ready_shapes",
     "sema::crates::typed_headers::unpaid_provided::header_demands::mapping_tests::shared_signature_mapping_bounds_warm_width_unrelated_and_failed_precharge",
