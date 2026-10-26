@@ -46,14 +46,17 @@ pub(in crate::sema) fn prefer(
     let State::Sealed(forest) = &graph.state else {
         return Ok(None);
     };
+    graph.budget.charge(2, 0)?;
     let a = registry.entry_key(previous)?;
     let b = registry.entry_key(next)?;
     let (Some(a), Some(b)) = (checked(forest, registry, a)?, checked(forest, registry, b)?) else {
         return Ok(None);
     };
+    graph.budget.charge(1, 0)?;
     if a.preorder < b.preorder && b.preorder <= a.subtree_end {
         return Ok(Some(next));
     }
+    graph.budget.charge(1, 0)?;
     if b.preorder < a.preorder && a.preorder <= b.subtree_end {
         return Ok(Some(previous));
     }

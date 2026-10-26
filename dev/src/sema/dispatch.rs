@@ -6,6 +6,7 @@ mod dependencies;
 mod observed_constants;
 pub(in crate::sema) use observed_constants::{ConstantDecision, ConstantProof};
 mod implementation;
+mod invoked_headers;
 mod objects;
 mod reservations;
 mod tables;
@@ -206,18 +207,19 @@ impl Dispatcher {
                     return Ok(ty);
                 }
             };
-        let target = facts
-            .generics
-            .implementations
-            .as_ref()
-            .and_then(|registry| registry.method(owner, method))
-            .ok_or("selected implementation lacks the trait method")?;
+        let selected =
+            super::specialization::selected_method(facts, owner, implementation, method)?;
+        let target = selected.definition();
+        let implementation = selected.implementation();
+        self.extend_evidence(evidence)?;
+        self.prove_inherited(facts, selected)?;
         let mut result = if target == method {
             ty
         } else {
+            let (owner, implementation) = implementation
+                .ok_or("selected override lacks its actual defining implementation")?;
             arguments.target(facts, owner, implementation, target)?
         };
-        self.extend_evidence(evidence)?;
         if facts.types.contains_projections(result) == Some(true) {
             // Selecting an override can introduce its written projections after
             // the original operand was normalized. Keep their formation debts

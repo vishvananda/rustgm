@@ -13,6 +13,7 @@ mod header_conditions;
 #[path = "specialization/inherited_paths.rs"]
 mod member_paths;
 mod minimal_admission;
+mod obligation_chain;
 mod predicate_basis;
 #[path = "specialization/implication_steps.rs"]
 mod proof_attempt;
@@ -20,7 +21,7 @@ mod proof_attempt;
 mod proof_inputs;
 mod registry_graph;
 mod retention_work;
-#[path = "specialization/inherited_target.rs"]
+#[path = "specialization/ancestor_target.rs"]
 mod selected_member;
 pub(in crate::sema) use annotation_reads::marker;
 pub(in crate::sema) use annotation_rows::{bind_trait, consume, finish, observe_owner, prepare};
@@ -33,6 +34,7 @@ pub(in crate::sema) use graph_closure::{prepare as prepare_graph, reject_executi
 
 pub(in crate::sema) use member_paths::{conformance_order, inherited_body, prefer};
 
+pub(in crate::sema) use obligation_chain::{BodyRequirements, ProofInputs};
 pub(in crate::sema) use selected_member::{SelectedMethod, resolve as selected_method};
 
 pub(in crate::sema) use header_conditions::Conditions as DefiningConditions;

@@ -1,12 +1,9 @@
 //! Associated member input conditions remain on the parent's proof stack.
-use super::{Action, Context, Decision, Declarations, Frame, Node, Search, inference};
+use super::{Action, Decision, Declarations, Frame, Node, Search, inference};
 use crate::support::hash::HashMap;
 use crate::{
     sema::projections::families,
-    types::{
-        infer::Instantiation, lifetime_proof::ScopeId, parameters::clauses::Clause,
-        projection::Application,
-    },
+    types::{lifetime_proof::ScopeId, projection::Application},
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -230,53 +227,17 @@ impl Search<'_> {
             .clauses
             .get(formation.cursor)
             .ok_or("missing family condition")?;
-        let mut first = self.query.allocations.reserve_scoped();
-        let (predicate, scope) = match clause {
-            Clause::Predicate(predicate) => (predicate, frame.scope),
-            Clause::ForAll(id) => {
-                if self.caller.retain_sized {
-                    return Err(
-                        "quantified family conditions require scoped sized requirements".into(),
-                    );
-                }
-                let value = facts
-                    .types
-                    .quantified(id)
-                    .ok_or("missing family condition binder")?;
-                let scopes = self.query.scopes.get_or_insert_with(Default::default);
-                let scope = if let Some(&scope) = formation.universes.get(&value.bound_regions) {
-                    scope
-                } else {
-                    frame
-                        .inputs
-                        .context
-                        .account_work(value.bound_regions as usize)
-                        .map_err(inference)?;
-                    let scope = scopes.introduce(frame.scope, value.bound_regions, first)?;
-                    formation.universes.insert(value.bound_regions, scope);
-                    scope
-                };
-                let (predicate, next, work) = scopes.open(facts, scope, value.predicate, first)?;
-                frame.inputs.context.account_work(work).map_err(inference)?;
-                first = next;
-                self.query.allocations.record(next);
-                (predicate, scope)
-            }
-        };
-        let mut context = Context::default();
-        let mut substitution =
-            Instantiation::new(&mut context, &facts.types, &[]).map_err(inference)?;
-        let goal = context
-            .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
-            .map_err(inference)?;
-        let mut child = Frame::new(facts, &mut context, &goal, first)?;
-        frame
-            .inputs
-            .context
-            .account_work(context.steps)
-            .map_err(inference)?;
-        child.scope = scope;
-        Ok(Some(child))
+        self.clause_frame::<false>(
+            facts,
+            &mut frame.inputs.context,
+            super::bound_frames::ClauseRequest {
+                clause,
+                scope: frame.scope,
+            },
+            &mut formation.universes,
+            &|_, _| Ok(()),
+        )
+        .map(Some)
     }
 
     pub(super) fn accept_formation(frame: &mut Frame, decision: Decision) -> Result<(), String> {

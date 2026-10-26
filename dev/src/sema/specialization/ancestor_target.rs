@@ -30,6 +30,16 @@ impl SelectedMethod {
         let Some(budget) = &self.inherited else {
             return Ok(None);
         };
+        self.current(facts)?;
+        let (owner, arguments) = self
+            .implementation
+            .ok_or("inherited member has no actual defining implementation")?;
+        header_conditions::defining(facts, owner, arguments, budget).map(Some)
+    }
+    pub(in crate::sema) fn current(&self, facts: &Declarations) -> Result<(), &'static str> {
+        let Some(budget) = &self.inherited else {
+            return Ok(());
+        };
         let registry = graph_pairs::registry(facts)?;
         let graph = registry
             .specialization_graph()
@@ -38,7 +48,7 @@ impl SelectedMethod {
         if !matches!(graph.state, State::Sealed(_)) || !budget.same_owner(&graph.budget) {
             return Err("inherited member proof belongs to another or unfinished graph");
         }
-        let (owner, arguments) = self
+        let (owner, _) = self
             .implementation
             .ok_or("inherited member has no actual defining implementation")?;
         let State::Sealed(forest) = &graph.state else {
@@ -51,7 +61,7 @@ impl SelectedMethod {
         {
             return Err("inherited member defining declaration changed");
         }
-        header_conditions::defining(facts, owner, arguments, budget).map(Some)
+        Ok(())
     }
     pub(in crate::sema) fn charge(&self, steps: usize, bytes: usize) -> Result<(), &'static str> {
         self.inherited
@@ -86,6 +96,25 @@ pub(in crate::sema) fn resolve(
         return ordinary(registry, owner, arguments, declaration);
     }
     let budget = graph.budget.alias()?;
+    let header = registry.checked_entry(key)?;
+    let (application, _) = header
+        .predicate
+        .bound
+        .trait_parts()
+        .ok_or("selected method owner has no actual trait application")?;
+    let trait_owner = facts
+        .types
+        .trait_application(application)
+        .ok_or("selected method trait application disappeared")?
+        .item;
+    if facts.associated.trait_owner(declaration) != Some(DefId(trait_owner.0)) {
+        return Err("requested method is not a declaration of the selected trait");
+    }
+    // Validate the complete source schema even when the child supplies its own
+    // body. This does not collect or prove any unused ancestor conditions.
+    header_conditions::mapping(facts, owner, arguments, &budget)?
+        .fold
+        .pay()?;
     let mut current = key;
     let mut arguments = arguments;
     loop {

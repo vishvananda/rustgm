@@ -460,3 +460,31 @@ The compiled CLI hash is 3ae4b3c6127a962328454d5e0c13b140e7fe3b79e58936aa35725ba
 no executable was hydrated locally. The explicit execution fence remains in
 place until selected methods, actual defining-header conditions, dispatch and
 both RPIT continuations are complete and independently qualified.
+
+### Execution successor source draft
+
+The separate execution successor preserves the qualified verifier and its
+terminal execution fence. Its new consumer code is uncompiled and unqualified.
+`SelectedMethod` authenticates the actual requested trait member and complete
+selected implementation arguments, walks only sealed immediate-parent edges,
+and returns the actual defining member, implementation and translated arguments.
+The defining-header producer remains shared with verifier admission. A child
+which supplies the requested method collects no unused ancestor conditions.
+
+Concrete dispatch and outer projection normalization share one counted canonical
+condition continuation. Search normalization descends the same producer's clauses
+on its existing iterative stack, then retains a composite of the selected trait
+proof, actual defining-header children and schema outlives debts. Family formation
+and inherited-result children share one binder-opening kernel; its ordinary mode
+uses the original uncharged operations. No blanket ancestor predicates are added
+to Trial. Actual region debts still reach the existing body/scope proof joins.
+
+New persistent storage is limited to one optional pointer on the cold outer
+projection Query and one on the already-boxed search Normalization. New body-proof
+owners, suspension shells and condition collection growth use the existing shared
+graph budget. No source, item, scope, definition, Frame, Node, body, Store or ordinary
+Requirements field is added. Layouts and actual changed-path charges remain
+unmeasured. Complete source-incarnation/mapped-body authority, failure and replay
+controls, quantified proof joins, both normalization consumers and actual native
+selection must qualify before removing the fence. Existing marker/defaultness
+publication guards and every imported/Provided execution boundary remain closed.
