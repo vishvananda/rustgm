@@ -155,7 +155,12 @@ fn lower_named_caller(stage: Box<HeaderDraft>, work: &mut ReservationWork) -> Re
         entry,
         crate::pipeline::Prepared::default(),
     )?;
-    assert!(!program.functions.is_empty());
+    assert!(
+        program
+            .symbols
+            .iter()
+            .any(|symbol| symbol.entry && symbol.body.is_some())
+    );
     Ok(())
 }
 
