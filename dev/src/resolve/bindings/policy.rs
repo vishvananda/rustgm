@@ -147,12 +147,26 @@ pub(in crate::resolve) struct Prepared {
 }
 
 pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prepared, Error> {
+    prepare_with_admission(unit, context, None)
+}
+
+pub(in crate::resolve) fn prepare_with_admission(
+    unit: &Unit,
+    context: &Context,
+    admission: Option<super::consumer_policy::Request<'_>>,
+) -> Result<Prepared, Error> {
     let root = unit.configured.ast.root;
     let no_core = unit
         .word_attribute(Some(root), "no_core")
         .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
     let (features, library) = features(unit)?;
     let options = super::root_options::prepare(unit, features.has(Feature::RustcAttributes))?;
+    if let Some(request) = admission {
+        let mut prepared =
+            super::consumer_policy::prepare(unit, context, no_core, features, library, request)?;
+        prepared.macros = prepared.macros.with_options(options);
+        return Ok(prepared);
+    }
     if let Mode::SourceClient { provider } = &context.mode {
         let mut prepared =
             super::client::prepare(unit, context, provider, no_core, features, library)?;

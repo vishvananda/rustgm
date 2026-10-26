@@ -261,7 +261,24 @@ pub fn analyze_with_context(
     config: &Config,
     context: &super::bindings::Context,
 ) -> Result<Report, Error> {
-    let mut engine = Engine::create(root, sources, config, context)?;
+    finish_analysis(Engine::create(root, sources, config, context)?)
+}
+pub(crate) fn analyze_staged(
+    root: InputFile,
+    sources: &mut impl Sources,
+    config: &Config,
+    context: &super::bindings::Context,
+    request: super::bindings::consumer_policy::Request<'_>,
+) -> Result<Report, Error> {
+    finish_analysis(Engine::create_with_admission(
+        root,
+        sources,
+        config,
+        context,
+        Some(request),
+    )?)
+}
+fn finish_analysis<S: Sources>(mut engine: Engine<'_, S>) -> Result<Report, Error> {
     let result = engine.run();
     result.map_err(|error| engine.retain_expansion_warnings(engine.diagnostic(error)))?;
     super::bindings::validate_features(&engine.loader.package)
@@ -311,7 +328,16 @@ impl<'a, S: Sources> Engine<'a, S> {
         config: &'a Config,
         context: &super::bindings::Context,
     ) -> Result<Self, Error> {
-        let mut loader = Loader::with_context(root, sources, config, context)?;
+        Self::create_with_admission(root, sources, config, context, None)
+    }
+    fn create_with_admission(
+        root: InputFile,
+        sources: &'a mut S,
+        config: &'a Config,
+        context: &super::bindings::Context,
+        admission: Option<super::bindings::consumer_policy::Request<'_>>,
+    ) -> Result<Self, Error> {
+        let mut loader = Loader::with_admission(root, sources, config, context, admission)?;
         if !loader.package.uses_source_bindings() {
             loader.package.crate_name =
                 attributes::crate_name(&loader.package, context.crate_name.as_deref())?;
@@ -319,7 +345,12 @@ impl<'a, S: Sources> Engine<'a, S> {
         loader.isolate_expansions();
         let root = loader.package.modules[0].root;
         let recursion_limit = attributes::recursion_limit(&loader.package)?;
-        let paths = paths::Paths::new(&mut loader.package, context.dependencies.clone())?;
+        let dependencies = if loader.package.staged_consumer().is_some() {
+            None
+        } else {
+            context.dependencies.clone()
+        };
+        let paths = paths::Paths::new(&mut loader.package, dependencies)?;
         let mut engine = Self {
             loader,
             config,
