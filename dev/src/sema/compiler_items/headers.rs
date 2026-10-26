@@ -122,19 +122,7 @@ impl Trait<'_> {
     }
 
     pub(in crate::sema) fn validate_self(&self, store: &Store) -> Result<(), &'static str> {
-        let Some(Kind::Parameter(id)) = store.kind(self.self_type) else {
-            return Err("trait header has no exact Self parameter");
-        };
-        if store.parameter(id)
-            != Some(crate::types::parameters::Parameter {
-                owner: ItemId(self.self_definition.0),
-                index: 0,
-                kind: ParameterKind::Type { sized: false },
-            })
-        {
-            return Err("trait header Self parameter belongs to another owner or slot");
-        }
-        Ok(())
+        require_self(store, self.self_type, self.self_definition)
     }
 
     pub(super) fn requires(
@@ -168,6 +156,27 @@ impl Trait<'_> {
             })
         })
     }
+}
+
+/// Authenticate the actual rigid Self declaration; this establishes no trait proof.
+pub(in crate::sema) fn require_self(
+    store: &Store,
+    self_type: TypeId,
+    self_definition: DefId,
+) -> Result<(), &'static str> {
+    let Some(Kind::Parameter(id)) = store.kind(self_type) else {
+        return Err("trait header has no exact Self parameter");
+    };
+    if store.parameter(id)
+        != Some(crate::types::parameters::Parameter {
+            owner: ItemId(self_definition.0),
+            index: 0,
+            kind: ParameterKind::Type { sized: false },
+        })
+    {
+        return Err("trait header Self parameter belongs to another owner or slot");
+    }
+    Ok(())
 }
 
 #[cfg(test)]

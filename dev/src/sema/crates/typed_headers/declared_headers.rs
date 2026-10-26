@@ -171,7 +171,29 @@ fn contract(
         results: Vec::new(),
         regions: Vec::new(),
     };
-    header.validate_self(store).map_err(error)?;
+    work.charge(4)?;
+    let declaration = catalog.declaration(leaf.definition).map_err(error)?;
+    catalog
+        .validate_declaration(
+            declaration,
+            leaf.definition,
+            crate::resolve::model::DefKind::Trait,
+        )
+        .map_err(error)?;
+    let (provider, _, _) = catalog.declaration_coordinate(declaration).map_err(error)?;
+    let self_definition = catalog
+        .definition_at(provider, raw.self_definition)
+        .map_err(error)?;
+    let actual = catalog.declaration(self_definition).map_err(error)?;
+    catalog
+        .validate_declaration(
+            actual,
+            self_definition,
+            crate::resolve::model::DefKind::SelfType,
+        )
+        .map_err(error)?;
+    crate::sema::compiler_items::headers::require_self(store, header.self_type, self_definition)
+        .map_err(error)?;
     Ok((header, implicit))
 }
 
