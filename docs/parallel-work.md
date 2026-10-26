@@ -81,8 +81,9 @@ Current lanes:
   Assert execution, wider imported contracts and Provided execution remain open.
 - C: SourceCore CLI contract publication and fresh native consumers are qualified.
   LIB-027 unnamed constants and the [LIB-028 modifier checkpoint](defaultness-checkpoint.md)
-  pass focused controls and reviewed text qualification. Implement the actual
-  specialization graph, effective finality, inherited dispatch and Min checks.
+  pass focused controls and reviewed text qualification. The [integrated verifier](frontend-components-integration.md) now qualifies
+  the real forest, Min checks and effective finality. Continue actual member-specific
+  dispatch, both RPIT consumers and native behavior; execution stays fenced.
   B takes LIB-029 assertion expansion after module-contract v2 qualification;
   coordinate its source/panic authority with C.
 - Integrator: the [trait alias source-site checkpoint](trait-alias-sites-checkpoint.md)
