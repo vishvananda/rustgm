@@ -272,6 +272,12 @@ impl Checker<'_> {
             let key = self.key(*node);
             let actual = solved.types[pending.actual.0 as usize];
             let expected = solved.types[pending.expected.0 as usize];
+            if self.source_scalar_not_type(*node, actual) {
+                // Its actual source clauses were checked by the ordinary solver;
+                // emitting the primitive operation must not call its own body.
+                self.state.checks.push(*node);
+                continue;
+            }
             self.facts.methods.calls.insert(
                 key,
                 Call {

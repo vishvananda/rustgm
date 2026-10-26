@@ -158,7 +158,8 @@ impl Checker<'_> {
                 Some(subject),
                 Written::User {
                     path, definition, ..
-                },
+                }
+                | Written::Alias { path, definition },
             ) = (subject, bound.bound)
             {
                 self.retain_projection_bound(
@@ -565,6 +566,7 @@ impl Checker<'_> {
                     path,
                     definition,
                     ty,
+                    original_ty,
                     bound.context(context),
                     self.alias_scope_count(bound.scope),
                 )?;

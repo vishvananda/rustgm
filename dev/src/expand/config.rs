@@ -63,6 +63,12 @@ impl Config {
         self.edition
     }
 
+    /// Select source-token semantics without resetting cfg or runtime inputs.
+    /// Source publication profiles retain their own independent edition checks.
+    pub fn set_edition(&mut self, edition: crate::support::edition::Edition) {
+        self.edition = edition;
+    }
+
     #[must_use]
     pub const fn runtime_checks(&self) -> crate::support::runtime_checks::RuntimeCheckConfig {
         self.runtime_checks

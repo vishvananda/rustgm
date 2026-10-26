@@ -113,6 +113,32 @@ impl Slots {
     }
 }
 impl<Q: Query> Occurrences<Q> {
+    pub(crate) fn predicate_charged(
+        &mut self,
+        store: &Store,
+        value: Predicate,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Q::Value, &'static str> {
+        self.predicate_inside(store, value, 0, charge)
+    }
+    pub(crate) fn collect_charged(
+        &mut self,
+        store: &Store,
+        ty: TypeId,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Q::Value, &'static str> {
+        self.collect_inside_observed(store, ty, 0, charge)
+    }
+    pub(crate) fn arguments_charged(
+        &mut self,
+        store: &Store,
+        arguments: GenericArgs,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Q::Value, &'static str> {
+        self.arguments(store, arguments, 0, false, charge)?;
+        self.drain(store, charge)?;
+        self.arguments(store, arguments, 0, true, charge)
+    }
     fn query(query: Q) -> Self {
         Self {
             query,

@@ -28,6 +28,7 @@ pub(crate) use roles::callable_role;
 pub(crate) use roles::{destruct_predicate, drop_glue_member, freeze_predicate};
 pub(crate) use roles::{unsizing_predicate, unsizing_role};
 mod sizing;
+mod unary_contract;
 use crate::{
     resolve::{
         bindings::Declaration, expansion::Report, model::DefId, package::Error, unit::FileId,
@@ -40,6 +41,7 @@ pub(super) use layout::validate_member as validate_layout_member;
 pub(crate) use needs_drop::NeedsDropSelection;
 pub(super) use roles::validate as validate_traits;
 pub(super) use sizing::validate as validate_sizing;
+pub(in crate::sema) use unary_contract::source_not;
 #[cfg(test)]
 #[path = "../../tests/invariants/panic_declarations.rs"]
 mod panic_declarations;

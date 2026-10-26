@@ -2,6 +2,8 @@
 
 This qualified partial maintainer checkpoint implements actual
 local canonical alias headers and a bounded ordinary-bound clause consumer.
+The newer [binder checkpoint](trait-alias-binders-checkpoint.md) also qualifies
+nested universal scopes through the same typed folders.
 Complete trait alias semantics, LIB-031, and the original core artifact remain
 open. The public declaration pipeline still rejects alias execution/export.
 
@@ -51,9 +53,8 @@ or executing tests. No generated references or upstream files are changed.
 
 The following consumers remain closed or incomplete:
 
-- Nested alias applications beneath their own quantifiers need full binder
-  composition. Direct quantified leaf clauses are retained; nested binders are
-  rejected rather than discarded.
+- The newer binder checkpoint implements nested alias quantifier composition;
+  complete scoped region and projection consumers remain required.
 - Lifetime-to-lifetime schema relations need a scoped region consumer. Complete
   original/normalized projection views, shorthand associated lookup, object
   principal selection, and associated constraints on alias uses remain required.

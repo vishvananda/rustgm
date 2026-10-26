@@ -1,4 +1,8 @@
 //! Actual resolved aliases exercise canonical slots, equality clauses and shared dependencies.
+#[path = "transparent_binders.rs"]
+mod binders;
+#[path = "transparent_naming.rs"]
+mod naming;
 use super::*;
 use crate::{
     expand::config::Config,
@@ -65,6 +69,7 @@ fn edge(
         source: header.owner.source,
         target,
         subject,
+        original_subject: subject,
         arguments,
         quantified: None,
     })
@@ -329,9 +334,24 @@ fn alias_cycles_arity_and_unfinished_binder_consumers_fail_without_empty_success
         }]
     ));
     let b = edge(&checker, "B", a.subject, GenericArgs::EMPTY)?;
-    assert!(
-        checker.expand_alias_edge(b).is_err(),
-        "nested binders cannot be silently dropped"
+    let clauses = checker.expand_alias_edge(b)?;
+    let [
+        Predicate {
+            value: Clause::ForAll(id),
+            ..
+        },
+    ] = clauses.as_slice()
+    else {
+        return Err("nested alias lost its complete quantifier".into());
+    };
+    let quantified = checker
+        .facts
+        .types
+        .quantified(*id)
+        .ok_or("actual composed alias")?;
+    assert_eq!(
+        quantified.bound_regions, 2,
+        "unused outer lifetime remains a declared slot"
     );
     let empty = edge(&checker, "Empty", a.subject, GenericArgs::EMPTY)?;
     assert!(checker.expand_alias_edge(empty)?.is_empty());

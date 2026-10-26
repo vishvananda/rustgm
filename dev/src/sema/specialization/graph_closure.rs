@@ -196,10 +196,9 @@ fn finality(
     Ok(())
 }
 
-/// Verification alone never produces executable analyzed facts or a usable artifact.
-pub(in crate::sema) fn reject_execution(
+/// Executable member consumers require the same current, immutable registry seal.
+pub(in crate::sema) fn require_execution(
     facts: &Declarations,
-    report: &Report,
 ) -> Result<(), crate::resolve::package::Error> {
     use crate::resolve::package::Error;
     let Some(registry) = facts.generics.implementations.as_deref() else {
@@ -214,23 +213,9 @@ pub(in crate::sema) fn reject_execution(
             "specialization verification is unfinished",
         ));
     };
-    let source = forest
-        .vertices
-        .first()
-        .ok_or_else(|| Error::unlocated("specialization verifier has no authenticated source"))?
-        .witness
-        .policy
-        .source;
-    Err(Error::at(
-        source.file,
-        report
-            .package
-            .unit(source.file)
-            .configured
-            .ast
-            .node(source.node)
-            .span
-            .start,
-        "specialization graph execution is not implemented",
-    ))
+    graph
+        .budget
+        .charge(forest.vertices.len(), 0)
+        .map_err(Error::unlocated)?;
+    forest.validate_seal(registry).map_err(Error::unlocated)
 }

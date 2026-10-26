@@ -204,3 +204,16 @@ Real Not, PanicInfo/Location/caller tracking, tagged Arguments/NonNull/PhantomDa
 transmute/provenance, nounwind/stability/handler attributes, CTFE instance redirect,
 dynamic formatting and native abort consumers remain required. Source Assert is
 still unavailable and CPPGM is unchanged.
+
+
+## Source operator and layout successors
+
+The [source Not checkpoint](source-not-checkpoint.md) now completes genuine
+local trait/member/caller proof and native scalar/overload/constant behavior.
+The [source storage checkpoint](source-storage-contracts-checkpoint.md) adds
+real associated SIZE/ALIGN evaluation and nominal Clone/provided clone_from.
+Their actual source and LowIR remain byte-identical in the
+[combined integration](library-contracts-integration-checkpoint.md). These later
+observations supersede the earlier Not prerequisite only. Actual Abort,
+panic/format/runtime/constant consumers and imported contracts remain open;
+Source Assert is still not executable.
