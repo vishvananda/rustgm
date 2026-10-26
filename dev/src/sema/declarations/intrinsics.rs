@@ -15,7 +15,7 @@ use crate::{
 };
 impl Checker<'_> {
     pub(super) fn prepare_intrinsics(&mut self) -> Result<(), Error> {
-        for kind in Intrinsic::ALL {
+        for kind in Intrinsic::BOOTSTRAP {
             let latent_read = kind == Intrinsic::Read
                 && self
                     .report

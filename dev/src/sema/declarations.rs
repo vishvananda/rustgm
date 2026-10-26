@@ -14,6 +14,8 @@ mod comparisons;
 pub(in crate::sema) use comparisons::prepare as prepare_comparison;
 mod constants;
 mod contracts;
+#[path = "declarations/overridable_methods.rs"]
+mod default_methods;
 mod deferred_arguments;
 mod destructors;
 mod evaluation;
@@ -1164,11 +1166,13 @@ impl Checker<'_> {
             flags,
             parameters,
             result,
+            body,
             ..
         } = item.kind
         else {
             return Err(self.error(key, "expected function signature"));
         };
+        self.validate_default_function(key, owner, body)?;
         if flags.asynchronous {
             return Err(self.error(
                 key,

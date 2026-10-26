@@ -1,12 +1,27 @@
 //! Demand concrete CFGs from checked templates before ordinary executable lowering.
 mod demand;
 mod dependencies;
+mod namespace_snapshot;
 mod proof;
 mod staged_originals;
+#[cfg_attr(
+    not(test),
+    expect(
+        unused_imports,
+        reason = "private namespace transaction awaits qualified module-contract publication; public profile guards remain closed"
+    )
+)]
+pub(crate) use namespace_snapshot::inspect_source_namespace;
+#[cfg(test)]
+#[path = "../../tests/invariants/module_snapshot_fixture.rs"]
+mod namespace_fixtures;
+#[cfg(test)]
+pub(crate) use namespace_fixtures::namespace_fixture;
 #[cfg(test)]
 #[path = "../../tests/invariants/upstream_originals.rs"]
 mod upstream_originals;
 pub use super::transported_source::SourceInspection;
+pub(crate) use super::transported_source::TraitInspection;
 pub use crate::sema::crates::authored_export::SourceWork;
 use crate::{
     body::{self, regions::Contracts},
@@ -50,17 +65,69 @@ fn inspect_source_rows(
     prepared: crate::pipeline::Prepared,
     numbered: bool,
 ) -> Result<SourceInspection, Error> {
+    collect_source(
+        report,
+        facts,
+        prepared,
+        |facts, checked| {
+            if numbered {
+                super::transported_source::Source::begin_numbered(report, facts, checked, identity)
+            } else {
+                super::transported_source::Source::begin(report, facts, checked, identity)
+            }
+            .map_err(|e| diagnostic(report, None, e.into()))
+        },
+        |source, _| {
+            source
+                .complete()
+                .map_err(|e| diagnostic(report, None, e.into()))
+        },
+    )
+}
+
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "private numbered trait inputs await semantic body domains and complete Provided original/instance proof; public guards stay closed"
+    )
+)]
+pub(crate) fn inspect_source_trait_inputs_with_numbering(
+    report: &Report,
+    facts: &mut Declarations,
+    identity: &crate::support::crates::CrateIdentity,
+    prepared: crate::pipeline::Prepared,
+) -> Result<TraitInspection, Error> {
+    collect_source(
+        report,
+        facts,
+        prepared,
+        |facts, checked| {
+            super::transported_source::Source::begin_trait_numbered(
+                report, facts, checked, identity,
+            )
+            .map_err(|e| diagnostic(report, None, e.into()))
+        },
+        |source, facts| source.complete_trait_numbered(report, facts),
+    )
+}
+
+fn collect_source<R>(
+    report: &Report,
+    facts: &mut Declarations,
+    prepared: crate::pipeline::Prepared,
+    begin: impl FnOnce(
+        &mut Declarations,
+        &borrow::templates::Checked<'_>,
+    ) -> Result<super::transported_source::Source, Error>,
+    complete: impl FnOnce(super::transported_source::Source, &mut Declarations) -> Result<R, Error>,
+) -> Result<R, Error> {
     inspect_staged(
         report,
         facts,
         prepared,
         |facts, checked| {
-            let source = if numbered {
-                super::transported_source::Source::begin_numbered(report, facts, checked, identity)
-            } else {
-                super::transported_source::Source::begin(report, facts, checked, identity)
-            }
-            .map_err(|e| diagnostic(report, None, e.into()))?;
+            let source = begin(facts, checked)?;
             let exports = super::roots::exports(facts, &[])
                 .map_err(|e| diagnostic(report, None, e.into()))?;
             Ok((None, exports, source))
@@ -73,9 +140,7 @@ fn inspect_source_rows(
         |facts, assembled, roots, source| {
             super::build_assembled(facts, assembled, roots)
                 .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
-            source
-                .complete()
-                .map_err(|e| diagnostic(report, None, e.into()))
+            complete(source, facts)
         },
     )?
 }
@@ -176,6 +241,7 @@ pub fn build_library_prepared(
 pub enum SourcePublication {
     LegacyFunctions,
     FunctionContracts,
+    ModuleContracts,
 }
 
 /// Publish only an explicitly selected ordinary source row profile.
@@ -206,9 +272,10 @@ pub fn build_source_library_profile(
         facts,
         prepared,
         |facts, checked| {
-            let source =
-                super::transported_source::Source::begin(report, facts, checked, &identity)
-                    .map_err(|e| diagnostic(report, None, e.into()))?;
+            let (source, modules) = super::transported_source::Source::begin_publication(
+                report, facts, checked, &identity, profile,
+            )
+            .map_err(|e| diagnostic(report, None, e.into()))?;
             let mut dependencies =
                 report
                     .resolution
@@ -234,14 +301,14 @@ pub fn build_source_library_profile(
                 .map_err(|e| diagnostic(report, None, e.into()))?;
             let roots = super::roots::exports(facts, &[])
                 .map_err(|e| diagnostic(report, None, e.into()))?;
-            Ok((None, roots, (source, base)))
+            Ok((None, roots, (source, base, modules)))
         },
-        |(source, _), facts, proved, input| {
+        |(source, _, _), facts, proved, input| {
             source
                 .collect(facts, proved, input)
                 .map_err(|e| diagnostic(report, None, e.into()))
         },
-        |facts, assembled, roots, (source, base)| {
+        |facts, assembled, roots, (source, base, modules)| {
             let program = super::build_assembled(facts, assembled, roots)
                 .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
             let interface = match profile {
@@ -249,6 +316,18 @@ pub fn build_source_library_profile(
                 SourcePublication::FunctionContracts => {
                     source.complete_contract_payload(report, facts, base)
                 }
+                SourcePublication::ModuleContracts => source.complete_module_contract_payload(
+                    modules.ok_or_else(|| {
+                        diagnostic(
+                            report,
+                            None,
+                            "module namespace/domain collection is absent".into(),
+                        )
+                    })?,
+                    report,
+                    facts,
+                    base,
+                ),
             }
             .map_err(|error| facts.retain_error_warnings(error))?;
             Ok((program, interface))

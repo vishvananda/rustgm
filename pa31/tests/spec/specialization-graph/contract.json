@@ -1,0 +1,1139 @@
+{
+  "state": "SOURCE-ONLY future specialization graph contracts; independently observed; candidate graph unimplemented",
+  "qualified_prior": "64c9f5070b1707fe6e0d215c38d66c94b9d493e5",
+  "oracle_tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "batches": [
+    {
+      "run": 40237725892,
+      "label": "initial",
+      "plan_sha256": "6696758ce2a9369188154eab9ccb0bd805edc2ee6a0f43cab5cb93bbc01c6456",
+      "artifact": 12615787404,
+      "artifact_sha256": "a994121142ea6b22921e34132d3adb6efde41bcef17dfd50b187f61f5d2e8c8d",
+      "binding_sha256": "267962244bccad077fe89777d017b8913c35d4f0c723d56ebf3fa30d594c7e97",
+      "metadata": 36,
+      "native_executed": 6,
+      "infra": 0,
+      "prediction_disagreements": 8,
+      "seconds": 0.8161065580000013
+    },
+    {
+      "run": 40238113218,
+      "label": "corrected-chains",
+      "plan_sha256": "735e2ffa4f0e2a21117c704f5651a58cf7dcea6e95e0a0b7f019de1437c2a310",
+      "artifact": 12615039127,
+      "artifact_sha256": "3b36bfcf744687e80bfac2dc1ee7bc0ee1558a440c168bc2114fe6f21db7910f",
+      "binding_sha256": "607a481755633dfcf653733854bb912f6944a5a79ed6c80fed2730828cf90546",
+      "metadata": 4,
+      "native_executed": 4,
+      "infra": 0,
+      "prediction_disagreements": 0,
+      "seconds": 0.23245403299998202
+    }
+  ],
+  "sources": {
+    "chain-and-inherited-body": {
+      "name": "chain-and-inherited-body",
+      "source": null,
+      "sha256": "9a5c1c783c2e7846570bcd569917c4d19f72ddb27fc4cc17421b75f2842a339b",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/chain-and-inherited-body.rs"
+    },
+    "reverse-chain-order": {
+      "name": "reverse-chain-order",
+      "source": null,
+      "sha256": "7785baa1bb554f4aee3acf60ce6ba75916538f6fd318c684ef1be5aad5887a28",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/reverse-chain-order.rs"
+    },
+    "parent-substitution-generic-private": {
+      "name": "parent-substitution-generic-private",
+      "source": null,
+      "sha256": "e3ace28917919748b302d70ab196023c9b7ab69253d227e10c85ef63762d12d5",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/parent-substitution-generic-private.rs"
+    },
+    "actual-unsafe-marker-selection": {
+      "name": "actual-unsafe-marker-selection",
+      "source": null,
+      "sha256": "f31945c1f11832c98cb5e125069364d6525fb0987e5b84eee632970474d052fa",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/actual-unsafe-marker-selection.rs"
+    },
+    "selected-clone-drop-and-lazy-panic": {
+      "name": "selected-clone-drop-and-lazy-panic",
+      "source": null,
+      "sha256": "c0ef0b3304fa6208501d30c6725f1f7dd6475ef02996fba56e76fdeec1b73dc5",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/selected-clone-drop-and-lazy-panic.rs"
+    },
+    "full-static-structured-self": {
+      "name": "full-static-structured-self",
+      "source": null,
+      "sha256": "3ae05e2c8993a5836a81c43aea3bf597b547f6932ec404129fb2fb6ea8c4f044",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Predict full-only accepts this strict structural Self specialization; all ordinary region/implication rules still apply.",
+      "path": "pa31/tests/spec/specialization-graph/initial/full-static-structured-self.rs"
+    },
+    "full-plus-min-static": {
+      "name": "full-plus-min-static",
+      "source": null,
+      "sha256": "9d6e0df4878aab9704a6b56ed6558530f84610eafe3359b37e93380ab03218ac",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Both feature flags retain min always-applicability checks (pinned impl_wf_check.rs71).",
+      "path": "pa31/tests/spec/specialization-graph/initial/full-plus-min-static.rs"
+    },
+    "min-literal-full-static": {
+      "name": "min-literal-full-static",
+      "source": null,
+      "sha256": "5cd7738bd0175f2f8a56c2f2500f1138b0f4a8d8e5ab164202324c730b5ce91c",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Literal Full allowance does not disable crate-requested min checks.",
+      "path": "pa31/tests/spec/specialization-graph/initial/min-literal-full-static.rs"
+    },
+    "full-lifetime-only-order": {
+      "name": "full-lifetime-only-order",
+      "source": null,
+      "sha256": "8864c21f3854c1684fbca7309c7d6ed22ce6a7ba01b0d2fb836f1d695951a031",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Conservative hypothesis: lifetime-only order may be equivalent under graph relation; actual observation decides, never assume all Full lifetime cases pass.",
+      "path": "pa31/tests/spec/specialization-graph/initial/full-lifetime-only-order.rs"
+    },
+    "literal-impl-graph-allowance": {
+      "name": "literal-impl-graph-allowance",
+      "source": null,
+      "sha256": "7176f15b097967daef443e66608e4369dac7b7812e735553c8cd0a7eca2ec6b2",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/literal-impl-graph-allowance.rs"
+    },
+    "forwarded-impl-graph-allowance": {
+      "name": "forwarded-impl-graph-allowance",
+      "source": null,
+      "sha256": "2a006841e932d77450c849c09baf669fed0a3a60906152591216c622b5f10085",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/forwarded-impl-graph-allowance.rs"
+    },
+    "unmarked-name-has-no-authority": {
+      "name": "unmarked-name-has-no-authority",
+      "source": null,
+      "sha256": "500d503bd4af97de3ba1d459244d1f6f5a43644e661d43a98214f67014db4aad",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/unmarked-name-has-no-authority.rs"
+    },
+    "distinct-marker-identity": {
+      "name": "distinct-marker-identity",
+      "source": null,
+      "sha256": "e7292219959b4039d3078a7de834636cefd87fa61738b5b632aa71ba82c58eaf",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/distinct-marker-identity.rs"
+    },
+    "marker-invalid-owner": {
+      "name": "marker-invalid-owner",
+      "source": null,
+      "sha256": "fa2a8b332a68759f1f1fa24da8d09a8477ac98268db476a1e35d985cc66650c1",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "Owner severity is an independent hypothesis; retain actual warnings/errors.",
+      "path": "pa31/tests/spec/specialization-graph/initial/marker-invalid-owner.rs"
+    },
+    "marker-malformed-form": {
+      "name": "marker-malformed-form",
+      "source": null,
+      "sha256": "5664036d01f061eaeab15483b3ef92dde6d07ff24315bb44c9275f4d98fbee06",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/marker-malformed-form.rs"
+    },
+    "marker-missing-feature": {
+      "name": "marker-missing-feature",
+      "source": null,
+      "sha256": "a7016f7e2cde2a2dbe07fc4758776fc139b3a57e65fb8029722c73207e19bcf0",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/marker-missing-feature.rs"
+    },
+    "marker-literal-allowance": {
+      "name": "marker-literal-allowance",
+      "source": null,
+      "sha256": "f9b4fed650e976a69ee30270669f247d0346b9a37bdc7c546cf90d829b49cbe0",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/marker-literal-allowance.rs"
+    },
+    "marker-forwarded-allowance": {
+      "name": "marker-forwarded-allowance",
+      "source": null,
+      "sha256": "574155eb59ce4239d44b549570ff8041aecca2396229b1713dd8fbeada308df5",
+      "expected_metadata_status": 1,
+      "expected_warning_codes": [],
+      "native": null,
+      "prediction_note": "",
+      "path": "pa31/tests/spec/specialization-graph/initial/marker-forwarded-allowance.rs"
+    },
+    "chain-and-inherited-body-explicit-middle": {
+      "name": "chain-and-inherited-body-explicit-middle",
+      "source": null,
+      "sha256": "87166f9bf6e69d5b9e34dcdc253cec085e1586b3aa30d5a189d4f5562b1b0676",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "New exact positive after observed intermediate omission finalizes member: middle explicitly reopens f as default. Original two rejected sources/predictions remain immutable.",
+      "path": "pa31/tests/spec/specialization-graph/corrected-chains/chain-and-inherited-body-explicit-middle.rs"
+    },
+    "reverse-chain-order-explicit-middle": {
+      "name": "reverse-chain-order-explicit-middle",
+      "source": null,
+      "sha256": "f4b971dbb3f9c77c20c0096faec8534635adcb4a85f5db53ed0c5ecdb09de776",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "New exact positive after observed intermediate omission finalizes member: middle explicitly reopens f as default. Original two rejected sources/predictions remain immutable.",
+      "path": "pa31/tests/spec/specialization-graph/corrected-chains/reverse-chain-order-explicit-middle.rs"
+    }
+  },
+  "observations": [
+    {
+      "name": "chain-and-inherited-body-2021",
+      "phase": "metadata",
+      "source_sha256": "9a5c1c783c2e7846570bcd569917c4d19f72ddb27fc4cc17421b75f2842a339b",
+      "status": 1,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [
+        "`f` specializes an item from a parent `impl`, but that item is not marked `default`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "58a1942ef0a008b33ec47bf92ba021ed3aa8760aeb1fe6ca2ce0cda0dcbb4e31",
+      "disagreement": true
+    },
+    {
+      "name": "chain-and-inherited-body-2021",
+      "phase": "native-build",
+      "source_sha256": "9a5c1c783c2e7846570bcd569917c4d19f72ddb27fc4cc17421b75f2842a339b",
+      "status": 1,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [
+        "`f` specializes an item from a parent `impl`, but that item is not marked `default`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "58a1942ef0a008b33ec47bf92ba021ed3aa8760aeb1fe6ca2ce0cda0dcbb4e31",
+      "disagreement": true
+    },
+    {
+      "name": "chain-and-inherited-body-2024",
+      "phase": "metadata",
+      "source_sha256": "9a5c1c783c2e7846570bcd569917c4d19f72ddb27fc4cc17421b75f2842a339b",
+      "status": 1,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [
+        "`f` specializes an item from a parent `impl`, but that item is not marked `default`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "58a1942ef0a008b33ec47bf92ba021ed3aa8760aeb1fe6ca2ce0cda0dcbb4e31",
+      "disagreement": true
+    },
+    {
+      "name": "chain-and-inherited-body-2024",
+      "phase": "native-build",
+      "source_sha256": "9a5c1c783c2e7846570bcd569917c4d19f72ddb27fc4cc17421b75f2842a339b",
+      "status": 1,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [
+        "`f` specializes an item from a parent `impl`, but that item is not marked `default`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "58a1942ef0a008b33ec47bf92ba021ed3aa8760aeb1fe6ca2ce0cda0dcbb4e31",
+      "disagreement": true
+    },
+    {
+      "name": "reverse-chain-order-2021",
+      "phase": "metadata",
+      "source_sha256": "7785baa1bb554f4aee3acf60ce6ba75916538f6fd318c684ef1be5aad5887a28",
+      "status": 1,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [
+        "`f` specializes an item from a parent `impl`, but that item is not marked `default`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "29bafc14de9340d212d8d36df793092666cbac2a5997ac8009c7c012e0e2b49f",
+      "disagreement": true
+    },
+    {
+      "name": "reverse-chain-order-2021",
+      "phase": "native-build",
+      "source_sha256": "7785baa1bb554f4aee3acf60ce6ba75916538f6fd318c684ef1be5aad5887a28",
+      "status": 1,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [
+        "`f` specializes an item from a parent `impl`, but that item is not marked `default`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "29bafc14de9340d212d8d36df793092666cbac2a5997ac8009c7c012e0e2b49f",
+      "disagreement": true
+    },
+    {
+      "name": "reverse-chain-order-2024",
+      "phase": "metadata",
+      "source_sha256": "7785baa1bb554f4aee3acf60ce6ba75916538f6fd318c684ef1be5aad5887a28",
+      "status": 1,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [
+        "`f` specializes an item from a parent `impl`, but that item is not marked `default`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "29bafc14de9340d212d8d36df793092666cbac2a5997ac8009c7c012e0e2b49f",
+      "disagreement": true
+    },
+    {
+      "name": "reverse-chain-order-2024",
+      "phase": "native-build",
+      "source_sha256": "7785baa1bb554f4aee3acf60ce6ba75916538f6fd318c684ef1be5aad5887a28",
+      "status": 1,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [
+        "`f` specializes an item from a parent `impl`, but that item is not marked `default`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "29bafc14de9340d212d8d36df793092666cbac2a5997ac8009c7c012e0e2b49f",
+      "disagreement": true
+    },
+    {
+      "name": "parent-substitution-generic-private-2021",
+      "phase": "metadata",
+      "source_sha256": "e3ace28917919748b302d70ab196023c9b7ab69253d227e10c85ef63762d12d5",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "parent-substitution-generic-private-2021",
+      "phase": "native-build",
+      "source_sha256": "e3ace28917919748b302d70ab196023c9b7ab69253d227e10c85ef63762d12d5",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "parent-substitution-generic-private-2021",
+      "phase": "native",
+      "source_sha256": "e3ace28917919748b302d70ab196023c9b7ab69253d227e10c85ef63762d12d5",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "parent-substitution-generic-private-2024",
+      "phase": "metadata",
+      "source_sha256": "e3ace28917919748b302d70ab196023c9b7ab69253d227e10c85ef63762d12d5",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "parent-substitution-generic-private-2024",
+      "phase": "native-build",
+      "source_sha256": "e3ace28917919748b302d70ab196023c9b7ab69253d227e10c85ef63762d12d5",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "parent-substitution-generic-private-2024",
+      "phase": "native",
+      "source_sha256": "e3ace28917919748b302d70ab196023c9b7ab69253d227e10c85ef63762d12d5",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "actual-unsafe-marker-selection-2021",
+      "phase": "metadata",
+      "source_sha256": "f31945c1f11832c98cb5e125069364d6525fb0987e5b84eee632970474d052fa",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "actual-unsafe-marker-selection-2021",
+      "phase": "native-build",
+      "source_sha256": "f31945c1f11832c98cb5e125069364d6525fb0987e5b84eee632970474d052fa",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "actual-unsafe-marker-selection-2021",
+      "phase": "native",
+      "source_sha256": "f31945c1f11832c98cb5e125069364d6525fb0987e5b84eee632970474d052fa",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "actual-unsafe-marker-selection-2024",
+      "phase": "metadata",
+      "source_sha256": "f31945c1f11832c98cb5e125069364d6525fb0987e5b84eee632970474d052fa",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "actual-unsafe-marker-selection-2024",
+      "phase": "native-build",
+      "source_sha256": "f31945c1f11832c98cb5e125069364d6525fb0987e5b84eee632970474d052fa",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "actual-unsafe-marker-selection-2024",
+      "phase": "native",
+      "source_sha256": "f31945c1f11832c98cb5e125069364d6525fb0987e5b84eee632970474d052fa",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "selected-clone-drop-and-lazy-panic-2021",
+      "phase": "metadata",
+      "source_sha256": "c0ef0b3304fa6208501d30c6725f1f7dd6475ef02996fba56e76fdeec1b73dc5",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "selected-clone-drop-and-lazy-panic-2021",
+      "phase": "native-build",
+      "source_sha256": "c0ef0b3304fa6208501d30c6725f1f7dd6475ef02996fba56e76fdeec1b73dc5",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "selected-clone-drop-and-lazy-panic-2021",
+      "phase": "native",
+      "source_sha256": "c0ef0b3304fa6208501d30c6725f1f7dd6475ef02996fba56e76fdeec1b73dc5",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "selected-clone-drop-and-lazy-panic-2024",
+      "phase": "metadata",
+      "source_sha256": "c0ef0b3304fa6208501d30c6725f1f7dd6475ef02996fba56e76fdeec1b73dc5",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "selected-clone-drop-and-lazy-panic-2024",
+      "phase": "native-build",
+      "source_sha256": "c0ef0b3304fa6208501d30c6725f1f7dd6475ef02996fba56e76fdeec1b73dc5",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "selected-clone-drop-and-lazy-panic-2024",
+      "phase": "native",
+      "source_sha256": "c0ef0b3304fa6208501d30c6725f1f7dd6475ef02996fba56e76fdeec1b73dc5",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "full-static-structured-self-2021",
+      "phase": "metadata",
+      "source_sha256": "3ae05e2c8993a5836a81c43aea3bf597b547f6932ec404129fb2fb6ea8c4f044",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "full-static-structured-self-2024",
+      "phase": "metadata",
+      "source_sha256": "3ae05e2c8993a5836a81c43aea3bf597b547f6932ec404129fb2fb6ea8c4f044",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "full-plus-min-static-2021",
+      "phase": "metadata",
+      "source_sha256": "9d6e0df4878aab9704a6b56ed6558530f84610eafe3359b37e93380ab03218ac",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "cannot specialize on `'static` lifetime",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0df5ce2f2f33aa2651ed1bf0b6e87bcfe50b1f7e317d0ca48531b07217c59e85",
+      "disagreement": false
+    },
+    {
+      "name": "full-plus-min-static-2024",
+      "phase": "metadata",
+      "source_sha256": "9d6e0df4878aab9704a6b56ed6558530f84610eafe3359b37e93380ab03218ac",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "cannot specialize on `'static` lifetime",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0df5ce2f2f33aa2651ed1bf0b6e87bcfe50b1f7e317d0ca48531b07217c59e85",
+      "disagreement": false
+    },
+    {
+      "name": "min-literal-full-static-2021",
+      "phase": "metadata",
+      "source_sha256": "5cd7738bd0175f2f8a56c2f2500f1138b0f4a8d8e5ab164202324c730b5ce91c",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "cannot specialize on `'static` lifetime",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3e31ac7de2b48ebcbd997bc55d822281ec11d1a216cd334c90896be9ff62e2a7",
+      "disagreement": false
+    },
+    {
+      "name": "min-literal-full-static-2024",
+      "phase": "metadata",
+      "source_sha256": "5cd7738bd0175f2f8a56c2f2500f1138b0f4a8d8e5ab164202324c730b5ce91c",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "cannot specialize on `'static` lifetime",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3e31ac7de2b48ebcbd997bc55d822281ec11d1a216cd334c90896be9ff62e2a7",
+      "disagreement": false
+    },
+    {
+      "name": "full-lifetime-only-order-2021",
+      "phase": "metadata",
+      "source_sha256": "8864c21f3854c1684fbca7309c7d6ed22ce6a7ba01b0d2fb836f1d695951a031",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "conflicting implementations of trait `V` for type `&_`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "dae2970841d64fb02c3bd989ac22b4f3224147e71f9966dbe66bdd7688b76c5a",
+      "disagreement": false
+    },
+    {
+      "name": "full-lifetime-only-order-2024",
+      "phase": "metadata",
+      "source_sha256": "8864c21f3854c1684fbca7309c7d6ed22ce6a7ba01b0d2fb836f1d695951a031",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "conflicting implementations of trait `V` for type `&_`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "dae2970841d64fb02c3bd989ac22b4f3224147e71f9966dbe66bdd7688b76c5a",
+      "disagreement": false
+    },
+    {
+      "name": "literal-impl-graph-allowance-2021",
+      "phase": "metadata",
+      "source_sha256": "7176f15b097967daef443e66608e4369dac7b7812e735553c8cd0a7eca2ec6b2",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "literal-impl-graph-allowance-2024",
+      "phase": "metadata",
+      "source_sha256": "7176f15b097967daef443e66608e4369dac7b7812e735553c8cd0a7eca2ec6b2",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "forwarded-impl-graph-allowance-2021",
+      "phase": "metadata",
+      "source_sha256": "2a006841e932d77450c849c09baf669fed0a3a60906152591216c622b5f10085",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "conflicting implementations of trait `V` for type `u8`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "be5d2b91aa38e33a0cafb164a215d8b775da42c242389cc0a788276d9e79037d",
+      "disagreement": false
+    },
+    {
+      "name": "forwarded-impl-graph-allowance-2024",
+      "phase": "metadata",
+      "source_sha256": "2a006841e932d77450c849c09baf669fed0a3a60906152591216c622b5f10085",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "conflicting implementations of trait `V` for type `u8`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "be5d2b91aa38e33a0cafb164a215d8b775da42c242389cc0a788276d9e79037d",
+      "disagreement": false
+    },
+    {
+      "name": "unmarked-name-has-no-authority-2021",
+      "phase": "metadata",
+      "source_sha256": "500d503bd4af97de3ba1d459244d1f6f5a43644e661d43a98214f67014db4aad",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "cannot specialize on trait `Fast`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d5a43d84bbf21935d10c1b6623d04876a7289a549332c6a3694f96f185b726d7",
+      "disagreement": false
+    },
+    {
+      "name": "unmarked-name-has-no-authority-2024",
+      "phase": "metadata",
+      "source_sha256": "500d503bd4af97de3ba1d459244d1f6f5a43644e661d43a98214f67014db4aad",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "cannot specialize on trait `Fast`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d5a43d84bbf21935d10c1b6623d04876a7289a549332c6a3694f96f185b726d7",
+      "disagreement": false
+    },
+    {
+      "name": "distinct-marker-identity-2021",
+      "phase": "metadata",
+      "source_sha256": "e7292219959b4039d3078a7de834636cefd87fa61738b5b632aa71ba82c58eaf",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "cannot specialize on trait `b::Fast`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9f08d0171ddaf67d0068bb8beb0e9583f143ddfe7725bae7df82b78af1ee293c",
+      "disagreement": false
+    },
+    {
+      "name": "distinct-marker-identity-2024",
+      "phase": "metadata",
+      "source_sha256": "e7292219959b4039d3078a7de834636cefd87fa61738b5b632aa71ba82c58eaf",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "cannot specialize on trait `b::Fast`",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9f08d0171ddaf67d0068bb8beb0e9583f143ddfe7725bae7df82b78af1ee293c",
+      "disagreement": false
+    },
+    {
+      "name": "marker-invalid-owner-2021",
+      "phase": "metadata",
+      "source_sha256": "fa2a8b332a68759f1f1fa24da8d09a8477ac98268db476a1e35d985cc66650c1",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "`#[rustc_unsafe_specialization_marker]` attribute cannot be used on structs",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "559346725bc8d482251ea530d6542887a88e3ebaabbb68fd434750a936defb28",
+      "disagreement": false
+    },
+    {
+      "name": "marker-invalid-owner-2024",
+      "phase": "metadata",
+      "source_sha256": "fa2a8b332a68759f1f1fa24da8d09a8477ac98268db476a1e35d985cc66650c1",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "`#[rustc_unsafe_specialization_marker]` attribute cannot be used on structs",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "559346725bc8d482251ea530d6542887a88e3ebaabbb68fd434750a936defb28",
+      "disagreement": false
+    },
+    {
+      "name": "marker-malformed-form-2021",
+      "phase": "metadata",
+      "source_sha256": "5664036d01f061eaeab15483b3ef92dde6d07ff24315bb44c9275f4d98fbee06",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "malformed `rustc_unsafe_specialization_marker` attribute input",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4619a667510b16a0dba2728faf5240b9e0f5625d0364bfbb096a4ab8df23d190",
+      "disagreement": false
+    },
+    {
+      "name": "marker-malformed-form-2024",
+      "phase": "metadata",
+      "source_sha256": "5664036d01f061eaeab15483b3ef92dde6d07ff24315bb44c9275f4d98fbee06",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "malformed `rustc_unsafe_specialization_marker` attribute input",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4619a667510b16a0dba2728faf5240b9e0f5625d0364bfbb096a4ab8df23d190",
+      "disagreement": false
+    },
+    {
+      "name": "marker-missing-feature-2021",
+      "phase": "metadata",
+      "source_sha256": "a7016f7e2cde2a2dbe07fc4758776fc139b3a57e65fb8029722c73207e19bcf0",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "use of an internal attribute",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c33dfcd8ebe663db1075539e20b7bdc05d96359a05b5b3c8a4b2ccff2e6d5f98",
+      "disagreement": false
+    },
+    {
+      "name": "marker-missing-feature-2024",
+      "phase": "metadata",
+      "source_sha256": "a7016f7e2cde2a2dbe07fc4758776fc139b3a57e65fb8029722c73207e19bcf0",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "use of an internal attribute",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c33dfcd8ebe663db1075539e20b7bdc05d96359a05b5b3c8a4b2ccff2e6d5f98",
+      "disagreement": false
+    },
+    {
+      "name": "marker-literal-allowance-2021",
+      "phase": "metadata",
+      "source_sha256": "f9b4fed650e976a69ee30270669f247d0346b9a37bdc7c546cf90d829b49cbe0",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "marker-literal-allowance-2024",
+      "phase": "metadata",
+      "source_sha256": "f9b4fed650e976a69ee30270669f247d0346b9a37bdc7c546cf90d829b49cbe0",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "marker-forwarded-allowance-2021",
+      "phase": "metadata",
+      "source_sha256": "574155eb59ce4239d44b549570ff8041aecca2396229b1713dd8fbeada308df5",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "use of an internal attribute",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "1e933dc7e001702bdabd9efd1a3c1d1c110adbe800b85ce01388a73eff6991a8",
+      "disagreement": false
+    },
+    {
+      "name": "marker-forwarded-allowance-2024",
+      "phase": "metadata",
+      "source_sha256": "574155eb59ce4239d44b549570ff8041aecca2396229b1713dd8fbeada308df5",
+      "status": 1,
+      "expected_status": 1,
+      "warning_codes": [],
+      "errors": [
+        "use of an internal attribute",
+        "aborting due to 1 previous error"
+      ],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "1e933dc7e001702bdabd9efd1a3c1d1c110adbe800b85ce01388a73eff6991a8",
+      "disagreement": false
+    },
+    {
+      "name": "chain-and-inherited-body-explicit-middle-2021",
+      "phase": "metadata",
+      "source_sha256": "87166f9bf6e69d5b9e34dcdc253cec085e1586b3aa30d5a189d4f5562b1b0676",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "chain-and-inherited-body-explicit-middle-2021",
+      "phase": "native-build",
+      "source_sha256": "87166f9bf6e69d5b9e34dcdc253cec085e1586b3aa30d5a189d4f5562b1b0676",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "chain-and-inherited-body-explicit-middle-2021",
+      "phase": "native",
+      "source_sha256": "87166f9bf6e69d5b9e34dcdc253cec085e1586b3aa30d5a189d4f5562b1b0676",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "chain-and-inherited-body-explicit-middle-2024",
+      "phase": "metadata",
+      "source_sha256": "87166f9bf6e69d5b9e34dcdc253cec085e1586b3aa30d5a189d4f5562b1b0676",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "chain-and-inherited-body-explicit-middle-2024",
+      "phase": "native-build",
+      "source_sha256": "87166f9bf6e69d5b9e34dcdc253cec085e1586b3aa30d5a189d4f5562b1b0676",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "chain-and-inherited-body-explicit-middle-2024",
+      "phase": "native",
+      "source_sha256": "87166f9bf6e69d5b9e34dcdc253cec085e1586b3aa30d5a189d4f5562b1b0676",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "reverse-chain-order-explicit-middle-2021",
+      "phase": "metadata",
+      "source_sha256": "f4b971dbb3f9c77c20c0096faec8534635adcb4a85f5db53ed0c5ecdb09de776",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "reverse-chain-order-explicit-middle-2021",
+      "phase": "native-build",
+      "source_sha256": "f4b971dbb3f9c77c20c0096faec8534635adcb4a85f5db53ed0c5ecdb09de776",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "reverse-chain-order-explicit-middle-2021",
+      "phase": "native",
+      "source_sha256": "f4b971dbb3f9c77c20c0096faec8534635adcb4a85f5db53ed0c5ecdb09de776",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "reverse-chain-order-explicit-middle-2024",
+      "phase": "metadata",
+      "source_sha256": "f4b971dbb3f9c77c20c0096faec8534635adcb4a85f5db53ed0c5ecdb09de776",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "reverse-chain-order-explicit-middle-2024",
+      "phase": "native-build",
+      "source_sha256": "f4b971dbb3f9c77c20c0096faec8534635adcb4a85f5db53ed0c5ecdb09de776",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    },
+    {
+      "name": "reverse-chain-order-explicit-middle-2024",
+      "phase": "native",
+      "source_sha256": "f4b971dbb3f9c77c20c0096faec8534635adcb4a85f5db53ed0c5ecdb09de776",
+      "status": 0,
+      "expected_status": 0,
+      "warning_codes": [],
+      "errors": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disagreement": false
+    }
+  ],
+  "actual_total": {
+    "metadata": 40,
+    "native_programs": 10,
+    "commands": 64,
+    "infra": 0,
+    "retained_wrong_predictions": 8
+  },
+  "corrected_semantics": [
+    "A normal intermediate impl which omits an inherited member can finalize it; do not inherit the broad written default flag blindly. Both corrected positive chains explicitly reopen f as default.",
+    "Graph admission via crate min/full or actual specializing impl allowance is distinct from crate min always-applicability flag. Full+Min and Min+literalFull retain min checks.",
+    "Full-only structural static example accepts; lifetime-only Full ordering conflicts. Ordinary lifetime/region/header obligations remain.",
+    "Unsafe specialization marker must bind actual trait identity; wrong owner/form/gate and forwarded caller attribute reject; literal defining allowance accepts.",
+    "All10 actual native programs execute selected numeric values/checks, generic/private parent substitution, inherited bodies/order, actual marker and Clone/Drop/lazy-panic; metadata is not runtime proof."
+  ],
+  "candidate_requirements": "Real registry graph, strict rigid-child/fresh-parent proof, parent obligations/regions, effective per-impl finality, canonical defining_impl/arguments dispatch shared with RPIT, authenticated sparse local marker and explicit imported Unknown; no export/profile permission."
+}

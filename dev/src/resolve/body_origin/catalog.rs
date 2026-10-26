@@ -157,6 +157,17 @@ impl CatalogSlot {
     }
 }
 impl Catalog {
+    pub(crate) fn into_slot(mut self) -> Result<CatalogSlot, &'static str> {
+        self.charge(1)?;
+        if !self.frozen {
+            return Err("private consumer catalog must be frozen before adoption");
+        }
+        self.bytes = self.bytes.saturating_add(2 * size_of::<usize>());
+        if self.bytes > self.limits.bytes {
+            return Err("private consumer catalog shared header exceeds storage budget");
+        }
+        Ok(CatalogSlot(Some(Rc::new(self))))
+    }
     /// A private transaction can finish its uniquely owned catalog without
     /// installing it into a resolver inventory or sharing a mutable owner.
     pub(crate) fn freeze_owned(&mut self) -> Result<(), &'static str> {
