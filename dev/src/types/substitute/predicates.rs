@@ -80,6 +80,14 @@ impl Applications {
 }
 
 impl Bound {
+    pub(crate) fn predicate_charged(
+        &mut self,
+        store: &mut Store,
+        predicate: Predicate,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Predicate, &'static str> {
+        self.predicate_observed::<true>(store, predicate, 0, charge)
+    }
     /// Substitute enclosing arguments without opening a clause's own quantifier.
     /// Both the subject and every requirement input retain the same binder depth.
     /// Opening that quantifier is a separate scoped proof operation.
@@ -110,7 +118,12 @@ impl Bound {
                 let value = store.quantified(id).ok_or("invalid quantified predicate")?;
                 let predicate =
                     self.predicate_observed::<CHARGED>(store, value.predicate, 1, charge)?;
-                Clause::ForAll(store.intern_quantified(Quantified { predicate, ..value })?)
+                let value = Quantified { predicate, ..value };
+                Clause::ForAll(if CHARGED {
+                    store.intern_quantified_charged(value, charge)?
+                } else {
+                    store.intern_quantified(value)?
+                })
             }
         })
     }

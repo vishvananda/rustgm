@@ -230,6 +230,21 @@ impl Store {
     /// Rejects unknown children, unbound locals, exhausted occurrence work and
     /// counts or identities outside the compact representation.
     pub fn intern_quantified(&mut self, value: Quantified) -> Result<QuantifiedId, &'static str> {
+        self.intern_quantified_observed::<false>(value, &|_, _| Ok(()))
+    }
+    pub(crate) fn intern_quantified_charged(
+        &mut self,
+        value: Quantified,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<QuantifiedId, &'static str> {
+        self.intern_quantified_observed::<true>(value, charge)
+    }
+    fn intern_quantified_observed<const CHARGED: bool>(
+        &mut self,
+        value: Quantified,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<QuantifiedId, &'static str> {
+        if CHARGED { charge(1, 0)?; }
         if let Some(&id) = self
             .arguments
             .as_ref()
@@ -241,7 +256,7 @@ impl Store {
         if value.bound_regions > u32::from(u16::MAX) + 1 {
             return Err("too many quantified lifetime slots");
         }
-        let (required, _) = self.clause_local_slots(value.predicate)?;
+        let (required, _) = self.clause_local_slots_observed::<CHARGED>(value.predicate, charge)?;
         if required > value.bound_regions {
             return Err("quantified predicate references an unbound lifetime");
         }
@@ -253,6 +268,12 @@ impl Store {
         let id = QuantifiedId(
             u32::try_from(storage.values.len()).map_err(|_| "too many quantified predicates")?,
         );
+        if CHARGED {
+            use crate::support::retained::Growth;
+            let mut growth = Growth::vector::<Quantified>(storage.values.len(), storage.values.capacity(), 1);
+            growth.include(Growth::map::<Quantified, QuantifiedId>(storage.index.len(), storage.index.capacity(), 1));
+            charge(growth.work, growth.bytes)?;
+        }
         storage.values.push(value);
         storage.index.insert(value, id);
         Ok(id)
@@ -264,20 +285,36 @@ impl Store {
         &mut self,
         predicate: Predicate,
     ) -> Result<(u32, usize), &'static str> {
+        self.clause_local_slots_observed::<false>(predicate, &|_, _| Ok(()))
+    }
+    fn clause_local_slots_observed<const CHARGED: bool>(
+        &mut self,
+        predicate: Predicate,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(u32, usize), &'static str> {
+        if CHARGED {
+            let arguments = self.arguments.as_ref();
+            let bytes = if arguments.is_none() { size_of::<crate::types::arguments::Storage>() } else { 0 };
+            let clauses = if arguments.is_none_or(|storage| storage.clauses.is_none()) { size_of::<Storage>() } else { 0 };
+            charge(1, bytes.saturating_add(clauses))?;
+        }
         let mut slots = self
             .arguments
             .as_mut()
             .and_then(|storage| storage.clauses.as_mut())
             .map_or_else(Slots::default, |storage| std::mem::take(&mut storage.slots));
         let before = slots.steps;
-        let required = slots.predicate(self, predicate);
+        let required = if CHARGED { slots.predicate_charged(self, predicate, charge) } else { slots.predicate(self, predicate) };
         let work = slots.steps.saturating_sub(before).saturating_add(1);
+        let paid = if CHARGED { charge(work, 0) } else { Ok(()) };
         let storage = self
             .arguments
             .get_or_insert_with(Default::default)
             .clauses
             .get_or_insert_with(Default::default);
         storage.slots = slots;
-        required.map(|required| (required, work))
+        let required = required?;
+        paid?;
+        Ok((required, work))
     }
 }

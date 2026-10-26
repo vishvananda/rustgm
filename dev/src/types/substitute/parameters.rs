@@ -141,12 +141,13 @@ impl Bound {
         store: &mut Store,
         args: GenericArgs,
     ) -> Result<GenericArgs, &'static str> {
-        self.apply_arguments_observed::<false>(store, args, &|_, _| Ok(()))
+        self.apply_arguments_observed::<false>(store, args, 0, &|_, _| Ok(()))
     }
     pub(super) fn apply_arguments_observed<const CHARGED: bool>(
         &mut self,
         store: &mut Store,
         args: GenericArgs,
+        depth: u16,
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<GenericArgs, &'static str> {
         let source = store
@@ -161,7 +162,7 @@ impl Bound {
         let mut arguments: Vec<_> = source.collect();
         let result = (|| {
             for argument in &mut arguments {
-                *argument = self.apply_argument_observed::<CHARGED>(store, *argument, 0, charge)?;
+                *argument = self.apply_argument_observed::<CHARGED>(store, *argument, depth, charge)?;
             }
             store.intern_arguments(&arguments)
         })();
