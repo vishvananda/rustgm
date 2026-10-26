@@ -174,12 +174,12 @@ impl Prepared {
                 || store.kind(pair.callable) != Some(ready.callable)
                 || self
                     .templates
-                    .get(item)
-                    .is_none_or(|t| t.signature != pair.callable || t.parameters != 0)
-                || self
-                    .templates
-                    .generic_parameters(item)
-                    .is_none_or(|p| p.len() != ready.formals))
+                    .registration(item)
+                    .is_none_or(|(template, parameters)| {
+                        template.signature != pair.callable
+                            || template.parameters != 0
+                            || parameters.len() != ready.formals
+                    }))
         {
             return Err(error(
                 "private callable readiness changed its sealed owner or signature",
