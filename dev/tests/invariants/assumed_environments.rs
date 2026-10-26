@@ -260,7 +260,9 @@ fn change_owner(
                 .ok_or("actual defining record")?;
             let scope = match record.as_mut() {
                 Body::Ready { scope, .. } | Body::Contract { scope, .. } => scope,
-                Body::Blocked { .. } => return Err("actual ready record".into()),
+                Body::Blocked { .. } | Body::Numbered { .. } => {
+                    return Err("actual zero-domain ready record".into());
+                }
             };
             *scope = usize::MAX;
         }

@@ -1,5 +1,5 @@
 //! Private declaration assumptions share canonical clauses and Environment indexes.
-use super::{Prepared, Progress, Ready, Session, State, formal_path};
+use super::{Prepared, Progress, Ready, Session, State, formal_path, numbering_records};
 use crate::{
     resolve::{
         crates::{ReservationWork, unpaid_provided::RecipeView},
@@ -33,6 +33,8 @@ use std::sync::Arc;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/inherited_environments.rs"]
 mod inherited_tests;
+#[path = "neutral_definitions.rs"]
+mod numbered;
 #[path = "assumed_originals.rs"]
 mod originals;
 #[path = "assumption_ports.rs"]
@@ -172,12 +174,22 @@ impl Scope {
         Ok(())
     }
 }
+struct NumberedBody {
+    recording: numbering_records::Key,
+    declaration: Arc<Environment>,
+    environment: Arc<Environment>,
+}
 struct ContractBody {
     seal: originals::Origin,
     declaration: Arc<Environment>,
     environment: Arc<Environment>,
 }
 enum Body {
+    Numbered {
+        expected: Ready,
+        scope: usize,
+        product: Box<NumberedBody>,
+    },
     Contract {
         expected: Ready,
         scope: usize,
@@ -192,6 +204,60 @@ enum Body {
         expected: Ready,
         dependency: Dependency,
     },
+}
+impl Body {
+    fn completed(
+        origin: originals::Origin,
+        expected: Ready,
+        index: usize,
+        finished: originals::Finished,
+        scope: &Scope,
+        work: &mut ReservationWork,
+    ) -> Result<(Self, usize), Error> {
+        let environment = finished.environment;
+        match origin {
+            originals::Origin::Declaration => Ok((
+                Self::Ready {
+                    expected,
+                    scope: index,
+                    environment,
+                },
+                0,
+            )),
+            originals::Origin::Contract(_) => {
+                work.reserve(size_of::<ContractBody>())?;
+                Ok((
+                    Self::Contract {
+                        expected,
+                        scope: index,
+                        product: Box::new(ContractBody {
+                            seal: origin,
+                            declaration: Arc::clone(&scope.environment),
+                            environment,
+                        }),
+                    },
+                    size_of::<ContractBody>(),
+                ))
+            }
+            originals::Origin::Numbered => {
+                work.reserve(size_of::<NumberedBody>())?;
+                Ok((
+                    Self::Numbered {
+                        expected,
+                        scope: index,
+                        product: Box::new(NumberedBody {
+                            recording: finished.recording.ok_or_else(|| {
+                                error("neutral body lost its checked recording key")
+                            })?,
+                            declaration: Arc::clone(&scope.environment),
+                            environment,
+                        }),
+                    },
+                    size_of::<NumberedBody>(),
+                ))
+            }
+        }
+    }
 }
 pub(super) struct Owner {
     scopes: Vec<Option<Box<Scope>>>,
@@ -240,11 +306,14 @@ impl Owner {
     }
     fn cached(
         &self,
-        rows: s::ValidatedView<'_>,
-        expected: Ready,
-        origin: originals::Origin,
+        view: &RecipeView<'_>,
+        facts: &Declarations,
+        prepared: &Prepared,
+        demand: &originals::BodyDemand,
         work: &mut ReservationWork,
     ) -> Result<Option<Demand<()>>, Error> {
+        let originals::BodyDemand { expected, origin } = *demand;
+        let rows = view.rows()?;
         work.charge(2)?;
         let entry = self
             .bodies
@@ -256,6 +325,14 @@ impl Owner {
                 expected: actual,
                 dependency,
             }) if *actual == expected => Ok(Some(Demand::Blocked(*dependency))),
+            Some(
+                body @ Body::Numbered {
+                    expected: actual, ..
+                },
+            ) if *actual == expected && origin == originals::Origin::Numbered => {
+                self.cached_numbered(body, view, facts, prepared, demand, work)?;
+                Ok(Some(Demand::Ready(())))
+            }
             Some(Body::Ready {
                 expected: actual,
                 scope,
@@ -320,7 +397,7 @@ impl Owner {
     ) -> Result<Demand<()>, Error> {
         let originals::BodyDemand { expected, origin } = *demand;
         let rows = view.rows()?;
-        if let Some(status) = self.cached(rows, expected, origin, work)? {
+        if let Some(status) = self.cached(&view, facts, prepared, demand, work)? {
             return Ok(status);
         }
         let path = formal_path::path(rows, &prepared.scopes, expected.header.scope, work)?;
@@ -355,32 +432,24 @@ impl Owner {
         let scope = self.scopes[index]
             .as_deref()
             .ok_or_else(|| error("private defining declaration scope disappeared"))?;
-        let (environment, bytes) =
-            originals::finish(facts, prepared, rows, &mut port, self, demand, work)?;
-        let body = match origin {
-            originals::Origin::Declaration => Body::Ready {
-                expected,
-                scope: index,
-                environment,
-            },
-            originals::Origin::Contract(_) => {
-                work.reserve(size_of::<ContractBody>())?;
-                Body::Contract {
+        if origin == originals::Origin::Numbered {
+            work.charge(2)?;
+            if scope.environment.neutral_alias_finish_bound(0).is_err() {
+                self.publish(
                     expected,
-                    scope: index,
-                    product: Box::new(ContractBody {
-                        seal: origin,
-                        declaration: Arc::clone(&scope.environment),
-                        environment,
-                    }),
-                }
+                    Body::Blocked {
+                        expected,
+                        dependency,
+                    },
+                    work,
+                )?;
+                return Ok(Demand::Blocked(dependency));
             }
-        };
-        let product_bytes = if matches!(origin, originals::Origin::Contract(_)) {
-            size_of::<ContractBody>()
-        } else {
-            0
-        };
+        }
+        let finished = originals::finish(facts, prepared, rows, &mut port, self, demand, work)?;
+        let bytes = finished.bytes;
+        let (body, product_bytes) =
+            Body::completed(origin, expected, index, finished, scope, work)?;
         self.publish(expected, body, work)?;
         self.bytes = self
             .bytes

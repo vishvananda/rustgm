@@ -2,7 +2,7 @@
 use super::{
     Allocation, Arc, Argument, DeclarationRef, Declarations, Demand, Dependency, Environment,
     Error, Observed, Owner, Port, Prepared, Progress, Ready, RecipeView, ReservationWork, Scope,
-    Session, State, error, ports, s,
+    Session, State, error, numbered, numbering_records, ports, s,
 };
 use crate::{
     sema::crates::typed_headers::staged_headers::rebuilt_environments::{
@@ -15,6 +15,7 @@ use crate::{
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Origin {
     Declaration,
+    Numbered,
     Contract(EmptyContract),
 }
 #[derive(Clone, Copy)]
@@ -117,7 +118,7 @@ pub(super) fn leaf_path(
     }
     Ok(true)
 }
-fn zero_body(
+fn body_origin(
     rows: s::ValidatedView<'_>,
     expected: Ready,
     work: &mut ReservationWork,
@@ -151,12 +152,16 @@ fn zero_body(
             "private defining environment changed its actual header/body/domain identity",
         ));
     }
-    let origin = if unit.universals != 0
-        || expected.header.regions.total != 0
-        || !input.assumptions.is_empty()
-        || !input.type_assumptions.is_empty()
-    {
+    let origin = if !input.assumptions.is_empty() || !input.type_assumptions.is_empty() {
         None
+    } else if unit.universals != 0 {
+        if input.environment == s::EnvironmentOrigin::Declaration(expected.header.declaration)
+            && numbered::signature(rows, expected, work)?
+        {
+            Some(Origin::Numbered)
+        } else {
+            None
+        }
     } else {
         match input.environment {
             s::EnvironmentOrigin::Declaration(owner) if owner == expected.header.declaration => {
@@ -183,7 +188,7 @@ fn body_environment(
     work: &mut ReservationWork,
 ) -> Result<(Arc<Environment>, usize), Error> {
     match demand.origin {
-        Origin::Declaration => Ok((Arc::clone(&scope.environment), 0)),
+        Origin::Declaration | Origin::Numbered => Ok((Arc::clone(&scope.environment), 0)),
         Origin::Contract(actual) => {
             scope.require_empty(demand.expected)?;
             let mut accounting = Observed {
@@ -201,6 +206,11 @@ fn body_environment(
     }
 }
 
+pub(super) struct Finished {
+    pub environment: Arc<Environment>,
+    pub bytes: usize,
+    pub recording: Option<numbering_records::Key>,
+}
 pub(super) fn finish(
     facts: &mut Declarations,
     prepared: &Prepared,
@@ -209,14 +219,14 @@ pub(super) fn finish(
     owner: &Owner,
     demand: &BodyDemand,
     work: &mut ReservationWork,
-) -> Result<(Arc<Environment>, usize), Error> {
+) -> Result<Finished, Error> {
     let BodyDemand { expected, origin } = *demand;
     let scope = owner
         .scopes
         .get(expected.scope.0)
         .and_then(Option::as_deref)
         .ok_or_else(|| error("private original lost its actual prepared scope"))?;
-    let (body, actual) = zero_body(rows, expected, work)?;
+    let (body, actual) = body_origin(rows, expected, work)?;
     if actual != Some(origin)
         || scope.parameters.len() != expected.formals
         || scope.environment.has_region_builtins()
@@ -242,7 +252,7 @@ pub(super) fn finish(
         }
         arguments.push(argument);
     }
-    let prepared = defining::Prepared::begin(
+    let kernel = defining::Prepared::begin(
         defining::Context {
             types: &mut facts.types,
             requirements: &mut facts.lifetimes.nominal_requirements,
@@ -251,7 +261,11 @@ pub(super) fn finish(
         },
         defining::Scope {
             signature: Some(expected.pair.original),
-            universals: 0,
+            universals: if origin == Origin::Numbered {
+                expected.header.regions.total
+            } else {
+                0
+            },
             parameters: arguments.into_iter(),
             bounds: &[],
             clauses: scope.clauses.iter().copied(),
@@ -260,12 +274,21 @@ pub(super) fn finish(
         &[],
     )
     .map_err(Error::unlocated)?;
-    if prepared.needs_aliases() {
+    if origin == Origin::Numbered {
+        let completed = owner.finish_numbered(port, facts, prepared, demand, kernel, work)?;
+        work.retained = before.saturating_add(completed.bytes);
+        return Ok(Finished {
+            environment: completed.environment,
+            bytes: completed.bytes,
+            recording: Some(completed.key),
+        });
+    }
+    if kernel.needs_aliases() {
         return Err(error(
             "private zero-domain defining environment unexpectedly requires aliases",
         ));
     }
-    let completed = prepared.finish(0, Vec::new()).map_err(Error::unlocated)?;
+    let completed = kernel.finish(0, Vec::new()).map_err(Error::unlocated)?;
     let environment = completed.environment.ok_or_else(|| {
         error("private defining environment lost its actual declaration assumptions")
     })?;
@@ -280,7 +303,11 @@ pub(super) fn finish(
         ));
     }
     work.retained = before.saturating_add(bytes);
-    Ok((environment, bytes))
+    Ok(Finished {
+        environment,
+        bytes,
+        recording: None,
+    })
 }
 impl Prepared {
     fn defining(
@@ -305,7 +332,18 @@ impl Prepared {
                 error("private defining demand lacks its actual prepared named callable")
             })?;
         self.require(&view, &facts.types, owner, expected.pair, work)?;
-        let (_, origin) = zero_body(rows, expected, work)?;
+        let numbered = expected.header.regions.total != 0
+            && self
+                .environments
+                .as_deref()
+                .map(|owner| owner.numbered_hint(expected, work))
+                .transpose()?
+                .unwrap_or(false);
+        let origin = if numbered {
+            Some(Origin::Numbered)
+        } else {
+            body_origin(rows, expected, work)?.1
+        };
         let Some(origin) = origin else {
             return Ok(Demand::Blocked(Dependency::OwnedBodyDomain(
                 expected.pair.body.ok_or_else(|| {
@@ -313,6 +351,9 @@ impl Prepared {
                 })?,
             )));
         };
+        if origin == Origin::Numbered {
+            self.record_selected(&view, &facts.types, &expected, work)?;
+        }
         let mut environments = if let Some(owner) = self.environments.take() {
             owner
         } else {

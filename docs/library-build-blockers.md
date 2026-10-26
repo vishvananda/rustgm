@@ -30,6 +30,14 @@ authenticate actual body ownership without granting defining-environment proof.
 Seven original v0/v1 first-encoding files remain byte-identical. Nonzero binding,
 original/instance proof and public Provided execution remain required.
 
+The [neutral numbered-environment successor](private-neutral-numbered-environments.md)
+qualifies actual nonzero Declaration signatures with empty regional inputs and
+positively absent builtin/region payloads. Six controls and strict static checks
+pass in a153.01-second helper. Warm work is constant across1/8/32 actual
+universals. Genuine Holder::borrow has no alias ledger; the separate real-ledger
+cost utility does not qualify a present-ledger body. Actual body/availability
+ports, regional proof, substituted instances and public execution remain open.
+
 The [provided-method execution milestone](parallel/provided-method-execution.md)
 keeps the next acceptance target concrete: the complete source family plus a
 real non-role provided method, actual encoded artifact, fresh imported original
