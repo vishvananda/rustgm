@@ -243,7 +243,7 @@ copied origins. Generated impl/member bodies undergo ordinary trait, field-WF,
 ownership, lifetime and lowering proof. Consumed configuration is replayed through
 the existing cold effect index and authenticates the current source image, owner,
 list, members and introductions. It is not trait or call permission. Ordinary
-bootstrap derives keep their existing route and24 intrinsic slots. No new field
+bootstrap derives keep their existing route and 24 intrinsic slots. No new field
 was added to Call, Visit, Node, Body, Engine, Report, Package or Context.
 
 The first profile is module structs with lifetime-only unbounded formals and
@@ -253,8 +253,8 @@ attribute gates use the actual name token: captured caller metadata does not
 inherit a definition's allowance. Non-Bang allowance frames stay closed. No
 feature/const/optimization permission follows merely from the empty marker.
 
-PanicLocation32, PanicInfo33 and TrivialClone34 append old-stable language ordinals.
-The same cold mask becomesu64 with a compile-time64-role bound. Actual nominal
+PanicLocation (32), PanicInfo (33) and TrivialClone (34) append old-stable language ordinals.
+The same cold mask becomes u64 with a compile-time 64-role bound. Actual nominal
 claim completion uses real fields/lifetimes; it grants neither caller tracking,
 PanicInfo construction nor handler permission. Existing wire/profile guards reject
 untransported roles, markers and stability; original v0/v1/v2 admission is closed.
@@ -264,17 +264,17 @@ Origin record. Its actual checked definition edition agrees with pinned rustc's
 `deriving/mod.rs:54–56` def-site context. Producer/replay bind the actual generated
 interval, anchor, member introduction, header and exact opaque mark. Copied names/
 field types remain byte-exact; editions::parent never clamps or accepts synthetic
-bytes as copies. Opposing2021/2024 parsed Unit controls and live foreign-introduction,
+bytes as copies. Opposing 2021/2024 parsed Unit controls and live foreign-introduction,
 changed-edition/context/kind and invalid UTF-8 opponents pass. This supplies no
 macro feature allowance or new foreign macro profile.
 
-Actual measurements: Origin32 (alignment4), OriginKind1, Stream104, Unit688,
-Package256, Report3040, Engine4088, Call168, Body96, Definition136 and Validated40
-remain unchanged. Effects grows368→376 for its one optional transaction owner;
-Transaction/Transactions are176/56. Reservations grows912→976 and Catalog792→856
-for the three cold source role slots. The initial984-byte Reservations prediction
-failed and remains recorded. Library/Inventory grow120→128 and80→88 with one
-optional24-byte const-policy owner; Policy48/Level24 remain unchanged. Ordinary
+Actual measurements: Origin 32 (alignment 4), OriginKind 1, Stream 104, Unit 688,
+Package 256, Report 3040, Engine 4088, Call 168, Body 96, Definition 136 and Validated 40
+remain unchanged. Effects grows 368→376 for its one optional transaction owner;
+Transaction/Transactions are 176/56. Reservations grows 912→976 and Catalog 792→856
+for the three cold source role slots. The initial 984-byte Reservations prediction
+failed and remains recorded. Library/Inventory grow 120→128 and 80→88 with one
+optional 24-byte const-policy owner; Policy 48/Level 24 remain unchanged. Ordinary
 sources allocate no derive transaction or library policy. Source storage/work
 charges include attempted allocations; this is not a whole-heap measurement.
 
@@ -282,13 +282,13 @@ The provider source SHA-256 is
 `27d396405a174743ebecbaa3b4818642062ed409b23c5db3bf7f449c10e16dfd`;
 its actual LowIR SHA-256 is
 `9ca1b09ae3f4395a561d37b21b2394ccf30c93a56e5d0ab332f58ae3cc740e6c`.
-The pinned CPPGM object backend and independently fixed C observer produce exit0,
+The pinned CPPGM object backend and independently fixed C observer produce exit 0,
 stdout `31 7\n`, empty stderr. Native receipt is
 `obj/parallel/pa31/source-location-claims-v1/native-v1/receipt.json`; source/tool/
 observer/LowIR hashes match before and after. Successful disposable object and
 executable outputs were scoped-pruned, preserving all raw streams and hashes.
 
-The final handoff changes two old test-only Catalog assertions792→856 to the
+The final handoff changes two old test-only Catalog assertions 792→856 to the
 actual observed cold size; those two old cases await root integration execution.
 No production delta follows the qualified source above. Actual Debug demand,
 caller_location/track_caller, PanicInfo, source panic handler/CTFE redirect,

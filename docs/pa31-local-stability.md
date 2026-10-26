@@ -146,8 +146,8 @@ The actual selected Location source, including its original regular/const policy
 and macro allowance attributes, passes source checking, lowering and a native C
 observer returning `31 7`. See the [source assertion milestone](source-assert-implementation.md#source-location-derive-consumer)
 for exact source/LowIR hashes and the remaining caller-tracking/panic requirements.
-The cold Inventory grows80→88 bytes and embedded Library120→128. One optional
+The cold Inventory grows 80→88 bytes and embedded Library 120→128. One optional
 24-byte ConstPolicies owner holds direct declaration IDs only when needed; the
-Policy/Level sizes remain48/24. No-const and ordinary no-library controls pass.
+Policy/Level sizes remain 48/24. No-const and ordinary no-library controls pass.
 Both policy axes share the existing parent-first scope walk and bounded work/
 storage charges. No Node, Body, Context, Package or Report field was added.
