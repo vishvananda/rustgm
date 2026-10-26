@@ -71,22 +71,24 @@ impl Search<'_> {
             }
         };
         let mut child_context = Context::default();
-        let mut substitution =
-            Instantiation::new(&mut child_context, &facts.types, &[]).map_err(inference)?;
-        let goal = child_context
-            .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
-            .map_err(inference)?;
         if CHARGED {
             charge(1, size_of::<Frame>())?;
         }
-        let child = Frame::new(facts, &mut child_context, &goal, first);
-        context
-            .account_work(child_context.steps)
-            .map_err(inference)?;
+        let child = (|| {
+            let mut substitution =
+                Instantiation::new(&mut child_context, &facts.types, &[]).map_err(inference)?;
+            let goal = child_context
+                .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
+                .map_err(inference)?;
+            Frame::new(facts, &mut child_context, &goal, first)
+        })();
         if CHARGED {
             charge(child_context.steps, 0)?;
         }
         let mut child = child?;
+        context
+            .account_work(child_context.steps)
+            .map_err(inference)?;
         child.scope = scope;
         Ok(child)
     }

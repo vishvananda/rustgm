@@ -1719,3 +1719,7 @@ pub(super) fn array_length(report: &Report, key: NodeKey) -> Result<u64, Error> 
 #[cfg(test)]
 #[path = "../../tests/invariants/verifier_states.rs"]
 mod specialization_tests;
+
+#[cfg(test)]
+#[path = "../../tests/invariants/ancestor_dispatch.rs"]
+mod member_execution_tests;

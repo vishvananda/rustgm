@@ -23,7 +23,7 @@ impl SelectedMethod {
     pub(in crate::sema) const fn implementation(&self) -> Option<(DefId, GenericArgs)> {
         self.implementation
     }
-    pub(in crate::sema) fn conditions(
+    pub(in crate::sema) fn projection_conditions(
         &self,
         facts: &mut Declarations,
     ) -> Result<Option<Conditions>, &'static str> {

@@ -29,7 +29,7 @@ pub(in crate::sema) struct Query {
     goal: Goal,
     assumptions: Option<Arc<Assumptions>>,
     pending: Option<Box<selection::Pending>>,
-    inherited: Option<Box<crate::sema::specialization::BodyRequirements>>,
+    inherited: Option<Box<crate::sema::specialization::ProjectionRequirements>>,
     source: Option<selection::Source>,
     closed: bool,
     frontier: u32,

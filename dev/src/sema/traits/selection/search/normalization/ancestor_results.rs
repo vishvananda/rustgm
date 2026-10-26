@@ -33,7 +33,7 @@ impl Search<'_> {
         let Some(method) = Definition::method(facts, completed.opened.application, source)? else {
             return Ok(Some(completed));
         };
-        let Some(conditions) = method.conditions(facts)? else {
+        let Some(conditions) = method.projection_conditions(facts)? else {
             return Ok(Some(completed));
         };
         method.charge(1, size_of::<Inherited>() + size_of::<usize>())?;
@@ -46,6 +46,18 @@ impl Search<'_> {
             cursor: 0,
             universes: HashMap::default(),
         }));
+        #[cfg(test)]
+        crate::sema::traits::selection::copy_trace::record(|| {
+            let pending = normalization.inherited.as_deref();
+            format!(
+                "specialization-rpit-search capacities={:?}",
+                pending.map(|value| (
+                    value.conditions.clauses.capacity(),
+                    value.conditions.outlives.capacity(),
+                    value.children.capacity()
+                ))
+            )
+        });
         Ok(None)
     }
     pub(super) fn advance_inherited_result(

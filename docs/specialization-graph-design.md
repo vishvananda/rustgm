@@ -471,13 +471,16 @@ and returns the actual defining member, implementation and translated arguments.
 The defining-header producer remains shared with verifier admission. A child
 which supplies the requested method collects no unused ancestor conditions.
 
-Concrete dispatch and outer projection normalization share one counted canonical
-condition continuation. Search normalization descends the same producer's clauses
-on its existing iterative stack, then retains a composite of the selected trait
-proof, actual defining-header children and schema outlives debts. Family formation
-and inherited-result children share one binder-opening kernel; its ordinary mode
-uses the original uncharged operations. No blanket ancestor predicates are added
-to Trial. Actual region debts still reach the existing body/scope proof joins.
+Concrete dispatch retains the actual defining callable arguments and uses the
+unchanged checked original/instance Contract path. It does not append the defining
+impl's lifetime bounds as new caller requirements. Outer projection normalization
+has a counted canonical condition continuation. Search normalization descends the
+same producer's clauses on its existing iterative stack, then retains a composite
+of the selected trait proof, actual defining-header children and schema outlives
+debts. Family formation and inherited-result children share one binder-opening
+kernel; its ordinary mode uses the original uncharged operations. No blanket
+ancestor predicates are added to Trial. Projection region debts still reach the
+existing body/scope proof joins.
 
 New persistent storage is limited to one optional pointer on the cold outer
 projection Query and one on the already-boxed search Normalization. New body-proof
@@ -488,3 +491,42 @@ unmeasured. Complete source-incarnation/mapped-body authority, failure and repla
 controls, quantified proof joins, both normalization consumers and actual native
 selection must qualify before removing the fence. Existing marker/defaultness
 publication guards and every imported/Provided execution boundary remain closed.
+
+The [six new independent sources](../pa31/tests/spec/specialization-graph/execution/contract.json)
+resolve a phase distinction which the original draft did not model correctly.
+All 26 commands, four actual native executions and twelve wrong positive
+metadata/build predictions are retained. Scalar dispatch accepts an inherited
+static-parent method with a nonstatic child. A final inherited RPIT method is
+accepted across specialization of a different scalar member, but the combined
+RPIT/static-parent/nonstatic-child source is rejected for a real lifetime debt.
+An actual default RPIT method is rejected even if the impl writes a concrete
+return type; the conformance check must bind the actual trait result declaration.
+
+Pinned [instance resolution](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ty_utils/src/instance.rs#L17-L30)
+normalizes instance inputs erasing regions, chooses the actual leaf definition,
+translates its arguments under the post-analysis environment and erases the
+result's regions. By contrast, [associated projection](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_trait_selection/src/traits/project.rs#L1958-L1976)
+translates under the projection's actual parameter environment and retains the
+associated item's own obligations. In RustGM, concrete demand already passes the
+exact selected Instance, Template and original Contract through
+`from_checked_caller`; no specialization-wide lifetime exemption or extra body
+field is introduced. Source-incarnation and original/instance proof remain
+mandatory. The new candidate tests and all candidate native executions are pending.
+
+The first consumer checkpoint keeps public execution fenced and selects six
+private groups. Each uses real sealed Checker facts after asserting the terminal
+fence; no test-only production permission or fabricated implementation is added.
+The body/instance group uses the unchanged pipeline and lowering proof and drops
+the resulting program. That is consumer proof, not native execution or publication.
+
+- `sema::declarations::member_execution_tests::sealed_method_dispatch_selects_nearest_defining_owner_and_complete_arguments`
+- `sema::declarations::member_execution_tests::inherited_scalar_dispatch_preserves_nonstatic_caller_and_actual_definition_context`
+- `sema::declarations::member_execution_tests::default_rpit_rejection_binds_trait_declaration_and_keeps_final_inheritance`
+- `sema::declarations::member_execution_tests::checked_defining_bodies_and_instances_keep_original_contracts_while_public_execution_stays_fenced`
+- `sema::declarations::member_execution_tests::selected_member_rejects_wrong_trait_arguments_arena_and_graph_owner_and_keeps_failed_work`
+- `sema::declarations::member_execution_tests::rpit_evidence::both_rpit_consumers_keep_final_inherited_identity_and_real_parent_lifetime_debt`
+
+Both strict compiler modes and the independent architecture audit precede any
+build/test execution. No prior oracle, full private inventory or native matrix
+is repeated in this checkpoint. Actual cold layouts and changed-path costs will
+be retained from the selected controls; they are not yet measured.

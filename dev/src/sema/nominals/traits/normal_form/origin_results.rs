@@ -2,7 +2,7 @@
 use super::{Declarations, Progress, Query, selection};
 use crate::sema::{
     projections::Definition,
-    specialization::{BodyRequirements, ProofInputs},
+    specialization::{ProjectionRequirements, ProofInputs},
 };
 
 impl Query {
@@ -14,7 +14,18 @@ impl Query {
         let Some(method) = Definition::method(facts, self.alias, source)? else {
             return Ok(false);
         };
-        self.inherited = BodyRequirements::new(facts, method)?;
+        #[cfg(test)]
+        let definition = method.definition();
+        self.inherited = ProjectionRequirements::new(facts, method)?;
+        #[cfg(test)]
+        if let Some(requirements) = &self.inherited {
+            crate::sema::traits::selection::copy_trace::record(|| {
+                let (clauses, regions) = requirements.storage_capacities();
+                format!(
+                    "specialization-rpit-outer defining={definition:?} clauses_capacity={clauses} regions_capacity={regions}"
+                )
+            });
+        }
         Ok(self.inherited.is_some())
     }
     pub(super) fn advance_inherited(

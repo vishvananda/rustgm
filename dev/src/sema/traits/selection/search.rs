@@ -714,3 +714,12 @@ impl Search<'_> {
 pub(in crate::sema) const fn callable_layouts() -> (usize, usize) {
     (size_of::<Frame>(), size_of::<mechanical::Pending>())
 }
+
+#[cfg(test)]
+pub(in crate::sema) const fn specialization_layouts() -> (usize, usize, usize) {
+    (
+        size_of::<Frame>(),
+        size_of::<Node>(),
+        size_of::<normalization::Normalization>(),
+    )
+}

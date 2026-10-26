@@ -6,7 +6,6 @@ mod dependencies;
 mod observed_constants;
 pub(in crate::sema) use observed_constants::{ConstantDecision, ConstantProof};
 mod implementation;
-mod invoked_headers;
 mod objects;
 mod reservations;
 mod tables;
@@ -212,7 +211,6 @@ impl Dispatcher {
         let target = selected.definition();
         let implementation = selected.implementation();
         self.extend_evidence(evidence)?;
-        self.prove_inherited(facts, selected)?;
         let mut result = if target == method {
             ty
         } else {

@@ -1,4 +1,4 @@
-//! Member-specific executable proof uses the existing counted suspension engine.
+//! Member-specific projection proof uses the existing counted suspension engine.
 use super::{SelectedMethod, header_conditions::Conditions};
 use crate::{
     sema::{
@@ -12,7 +12,7 @@ use crate::{
     },
 };
 
-pub(in crate::sema) struct BodyRequirements {
+pub(in crate::sema) struct ProjectionRequirements {
     method: SelectedMethod,
     conditions: Conditions,
     cursor: usize,
@@ -32,12 +32,12 @@ pub(in crate::sema) struct ProofInputs<'a> {
     pub availability: Availability,
     pub frontier: u32,
 }
-impl BodyRequirements {
+impl ProjectionRequirements {
     pub(in crate::sema) fn new(
         facts: &mut Declarations,
         method: SelectedMethod,
     ) -> Result<Option<Box<Self>>, &'static str> {
-        let Some(conditions) = method.conditions(facts)? else {
+        let Some(conditions) = method.projection_conditions(facts)? else {
             return Ok(None);
         };
         method.charge(1, size_of::<Self>())?;
@@ -56,6 +56,13 @@ impl BodyRequirements {
     }
     pub(in crate::sema) fn charge(&self, steps: usize, bytes: usize) -> Result<(), &'static str> {
         self.method.charge(steps, bytes)
+    }
+    #[cfg(test)]
+    pub(in crate::sema) fn storage_capacities(&self) -> (usize, usize) {
+        (
+            self.conditions.clauses.capacity(),
+            self.conditions.outlives.capacity(),
+        )
     }
     pub(in crate::sema) fn advance(
         &mut self,
@@ -79,7 +86,9 @@ impl BodyRequirements {
                 }
                 selection::Progress::Ready(selection::Selection::Proven(evidence)) => {
                     if evidence.provisional_size || !evidence.sized.is_empty() {
-                        return Err("inherited body requires finalized formation contracts".into());
+                        return Err(
+                            "inherited result requires finalized formation contracts".into()
+                        );
                     }
                     let allocation = evidence.proof.retained_allocation();
                     let growth = join_growth(inputs.proof, &evidence.proof);
@@ -99,7 +108,7 @@ impl BodyRequirements {
                     selection::Selection::Absent | selection::Selection::Deferred,
                 ) => return Err("inherited method defining-header condition is not proven".into()),
                 selection::Progress::Inferred { .. } => {
-                    return Err("inherited body proof cannot refine the selected member".into());
+                    return Err("inherited result proof cannot refine the selected member".into());
                 }
             }
         }

@@ -34,7 +34,7 @@ pub(in crate::sema) use graph_closure::{prepare as prepare_graph, reject_executi
 
 pub(in crate::sema) use member_paths::{conformance_order, inherited_body, prefer};
 
-pub(in crate::sema) use obligation_chain::{BodyRequirements, ProofInputs};
+pub(in crate::sema) use obligation_chain::{ProjectionRequirements, ProofInputs};
 pub(in crate::sema) use selected_member::{SelectedMethod, resolve as selected_method};
 
 pub(in crate::sema) use header_conditions::Conditions as DefiningConditions;

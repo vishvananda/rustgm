@@ -37,6 +37,8 @@ pub(in crate::sema) use search::callable_layouts;
 #[cfg(test)]
 pub(crate) use search::copy_trace;
 pub(in crate::sema) use search::may_overlap;
+#[cfg(test)]
+pub(in crate::sema) use search::specialization_layouts;
 pub(in crate::sema) use search::{
     Pending, Progress, Reuse, begin, begin_canonical, begin_canonical_counted,
     begin_declaration_counted, begin_executable_counted, begin_normalized, begin_projection,
