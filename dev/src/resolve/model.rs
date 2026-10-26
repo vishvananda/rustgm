@@ -72,7 +72,6 @@ pub enum DefKind {
     Trait,
     TraitAlias,
     TypeAlias,
-    ForeignType,
     Const,
     Static,
     Generic,
@@ -83,6 +82,7 @@ pub enum DefKind {
     ExternCrate,
     Label,
     Lifetime,
+    ForeignType,
 }
 impl DefKind {
     #[must_use]

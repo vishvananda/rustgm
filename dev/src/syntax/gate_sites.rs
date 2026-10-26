@@ -18,7 +18,10 @@ pub enum Kind {
 }
 impl Kind {
     pub(crate) const fn is_defaultness(self) -> bool {
-        matches!(self, Self::Function | Self::Implementation | Self::Constant | Self::Type)
+        matches!(
+            self,
+            Self::Function | Self::Implementation | Self::Constant | Self::Type
+        )
     }
     fn item(item: ItemKind) -> Option<Self> {
         Some(match item {
@@ -62,7 +65,8 @@ impl Declaration {
             || if self.kind == Kind::TraitAlias {
                 self.span.end <= self.span.start || self.span != node.span
             } else {
-                self.span.end.checked_sub(self.span.start) != Some(if self.kind == Kind::ForeignType { 4 } else { 7 })
+                self.span.end.checked_sub(self.span.start)
+                    != Some(if self.kind == Kind::ForeignType { 4 } else { 7 })
             }
             || node.span.start > self.span.start
             || self.span.end > node.span.end

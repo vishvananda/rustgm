@@ -151,7 +151,9 @@ impl super::package::Package {
             client.validate_inventory()?;
             return Ok(client.features.has(policy::Feature::ExternTypes));
         }
-        Ok(self.macro_context()?.is_some_and(|context| context.requested(policy::Feature::ExternTypes)))
+        Ok(self
+            .macro_context()?
+            .is_some_and(|context| context.requested(policy::Feature::ExternTypes)))
     }
     #[must_use]
     pub fn uses_source_bindings(&self) -> bool {

@@ -35,14 +35,32 @@ fn walk(
             }
             let requests = match item.kind {
                 ItemKind::TraitAlias { constant, .. } => [
-                    Some(("trait_alias", Some(false),
-                        "trait alias requires trait_alias or exact item allowance")),
-                    constant.then_some(("const_trait_impl", Some(true),
-                        "const trait alias requires const_trait_impl or exact item allowance")),
+                    Some((
+                        "trait_alias",
+                        Some(false),
+                        "trait alias requires trait_alias or exact item allowance",
+                    )),
+                    constant.then_some((
+                        "const_trait_impl",
+                        Some(true),
+                        "const trait alias requires const_trait_impl or exact item allowance",
+                    )),
                 ],
-                ItemKind::ForeignType => [Some(("extern_types", None,
-                    "foreign type requires extern_types or exact token allowance")), None],
-                _ => return Err(Error::at(file, site.span.start, "unstable site changed its actual item")),
+                ItemKind::ForeignType => [
+                    Some((
+                        "extern_types",
+                        None,
+                        "foreign type requires extern_types or exact token allowance",
+                    )),
+                    None,
+                ],
+                _ => {
+                    return Err(Error::at(
+                        file,
+                        site.span.start,
+                        "unstable site changed its actual item",
+                    ));
+                }
             };
             for (name, alias_const, message) in requests.into_iter().flatten() {
                 let requested = if let Some(constant) = alias_const {

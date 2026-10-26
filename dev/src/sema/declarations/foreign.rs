@@ -8,10 +8,24 @@ use crate::{
 pub(super) use linkage_attributes::{Attributes, collect};
 
 impl Checker<'_> {
-    pub(super) fn foreign_type(&mut self, id: DefId, key: NodeKey, item: Item) -> Result<(), Error> {
-        let declaration = self.report.resolution.definitions.get(id.0 as usize)
+    pub(super) fn foreign_type(
+        &mut self,
+        id: DefId,
+        key: NodeKey,
+        item: Item,
+    ) -> Result<(), Error> {
+        let declaration = self
+            .report
+            .resolution
+            .definitions
+            .get(id.0 as usize)
             .ok_or_else(|| self.error(key, "foreign type declaration disappeared"))?;
-        let block = self.report.resolution.foreign_owners.get(&id).copied()
+        let block = self
+            .report
+            .resolution
+            .foreign_owners
+            .get(&id)
+            .copied()
             .ok_or_else(|| self.error(key, "foreign type requires its actual external owner"))?;
         if declaration.node != Some(key)
             || declaration.kind != crate::resolve::model::DefKind::ForeignType
@@ -254,3 +268,7 @@ impl Checker<'_> {
         )))
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/foreign_source.rs"]
+mod tests;

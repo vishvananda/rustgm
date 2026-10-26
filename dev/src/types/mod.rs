@@ -187,8 +187,6 @@ pub enum Kind {
     Parameter(parameters::ParameterId),
     /// Nominal identity; field definitions and by-value cycles are checked separately.
     Adt(ItemId, GenericArgs),
-    /// An actual external type declaration; value size and alignment are unknown.
-    Foreign(ItemId),
     /// An associated type application is not injective in Self or its arguments.
     Projection(projection::Application),
     /// Declaration identity and captured inputs; representation is private to its body.
@@ -243,6 +241,8 @@ pub enum Kind {
         base: TypeId,
         constraint: Constraint,
     },
+    /// An actual external type declaration; value size and alignment are unknown.
+    Foreign(ItemId),
 }
 /// Child lists occupy one shared arena. Hash collisions compare their typed slices.
 /// Type/list IDs are valid only in the store that produced them.

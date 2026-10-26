@@ -16,7 +16,7 @@
   "environment": {
     "RUSTC_BOOTSTRAP": "1"
   },
-  "phase": "two new source-path predictions frozen before observation",
+  "phase": "observed metadata source contract; frozen hypotheses retained",
   "scope": "four metadata-only observations; no prior34 repeat; distinct Freeze vs Send/Sync",
   "cases": [
     {
@@ -27,7 +27,33 @@
         "E0277"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "actual Foreign structural auto trait remains absent"
+      "contract": "actual Foreign structural auto trait remains absent",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/pointer-freeze.rs",
@@ -35,7 +61,43 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "actual raw pointer Freeze is independent of unknown foreign pointee contents; no Send/Sync grant"
+      "contract": "actual raw pointer Freeze is independent of unknown foreign pointee contents; no Send/Sync grant",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": true,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": true,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
     }
-  ]
+  ],
+  "initial_contract_sha256": "004dd7005ab52a6cbda591b0f1b5e86b1278accabfab28154f955eb2bfaa0c24",
+  "observed_binding": {
+    "sha256": "321709bc35369a351d30ae9058c48b1608d7890250414465d26437c8507076f0",
+    "source": "11496b1c480334286009b04ef6f85da6fe3a4787",
+    "metadata": 4,
+    "native": 0,
+    "infrastructure_failures": 0,
+    "hypothesis_disagreements": 2,
+    "seconds": 0.13618929823860526
+  }
 }

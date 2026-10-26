@@ -290,7 +290,10 @@ impl Shapes {
                     .ok_or("shape parameter is outside its environment")?;
                 value.sized = types.is_sized(ty) == Some(true) || abilities.clone_;
             }
-            Kind::Foreign(_) | Kind::Slice(_) | Kind::Primitive(Primitive::Str) | Kind::Dynamic { .. } => {
+            Kind::Foreign(_)
+            | Kind::Slice(_)
+            | Kind::Primitive(Primitive::Str)
+            | Kind::Dynamic { .. } => {
                 value.sized = false;
             }
             Kind::Projection(application) => {

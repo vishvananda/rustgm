@@ -8,7 +8,6 @@ pub(crate) enum Head {
     Parameter(crate::types::parameters::ParameterId),
     Projection(ItemId),
     Nominal(ItemId),
-    Foreign(ItemId),
     Opaque(super::opaque::OpaqueId),
     Dynamic(super::dynamic::ShapeId),
     FunctionItem(ItemId),
@@ -21,6 +20,7 @@ pub(crate) enum Head {
     Function,
     Never,
     Pattern(super::Constraint),
+    Foreign(ItemId),
 }
 impl Head {
     pub const fn canonical(kind: Kind) -> Self {

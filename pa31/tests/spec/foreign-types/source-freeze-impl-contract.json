@@ -16,7 +16,7 @@
   "environment": {
     "RUSTC_BOOTSTRAP": "1"
   },
-  "phase": "two new source-path predictions frozen before observation",
+  "phase": "observed metadata source contract; frozen hypotheses retained",
   "scope": "two new metadata observations; real source raw-pointer Freeze impl from core_marker.rs910-918, no preceding4 repeat",
   "cases": [
     {
@@ -25,7 +25,39 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "actual source unsafe Freeze implementation authorizes raw-pointer proof independently of unknown Foreign pointee"
+      "contract": "actual source unsafe Freeze implementation authorizes raw-pointer proof independently of unknown Foreign pointee",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     }
-  ]
+  ],
+  "initial_contract_sha256": "5ee2f9708f6e6038c03efeb4c71c1a4827996f1dc8333b3ad163f72e76a6f22f",
+  "observed_binding": {
+    "sha256": "678838fbe31d9830c20e7209eab5c2c3e7023f17095fcac8329eefe0fbfd3360",
+    "source": "eda72e53a30269245b02149884593db6a8260909",
+    "metadata": 2,
+    "native": 0,
+    "infrastructure_failures": 0,
+    "hypothesis_disagreements": 0,
+    "seconds": 0.06925417110323906
+  }
 }

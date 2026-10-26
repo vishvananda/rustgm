@@ -136,7 +136,11 @@ impl<'a> Query<'a> {
             | Kind::Reference { .. }
             | Kind::Function { .. }
             | Kind::FunctionItem { .. } => return Ok(Some(Answer::Ordinary)),
-            Kind::Foreign(_) | Kind::Parameter(_) | Kind::Projection(_) | Kind::Opaque(..) | Kind::Dynamic { .. } => {
+            Kind::Foreign(_)
+            | Kind::Parameter(_)
+            | Kind::Projection(_)
+            | Kind::Opaque(..)
+            | Kind::Dynamic { .. } => {
                 return Ok(Some(Answer::Unresolved));
             }
             Kind::Array { element, .. }

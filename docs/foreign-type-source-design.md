@@ -51,6 +51,22 @@ MetaSized/Sized negatives, invalid by-value use, identities/privacy/duplicates,
 forms and literal-versus-forwarded allowance matched the predictions. These are
 metadata observations, without runtime or full core acceptance claims.
 
+Two additional source Freeze inputs then produced four observations. Direct
+Foreign and raw pointers without the genuine source impl both reject E0277;
+the pointer-positive hypothesis was wrong in both editions. This does not
+justify changing the structural pointer rule from an optimization-property
+shortcut. Pinned core_marker.rs910–918 provides actual explicit source Freeze
+implementations for raw pointers/references and PhantomData. A separately frozen
+input with that genuine raw-pointer impl passes both editions. These six new
+observations preserve all original predictions and do not repeat the first 34.
+
+Source implementation is still unqualified. It appends variants, preserving old
+discriminants and wire vocabulary. Six selected private groups are authored for
+actual identity/owners, unit metadata versus sizing/body proof, active/literal
+gates and invalid forms, actual source Freeze impls, unavailable value layout
+and transport, and original replay plus 8/32/128 sparse storage/hot layouts.
+Unknown numbers remain unknown until a real candidate run.
+
 B's Pattern source `c5fa74bc` supplies the shared AST/type/inference baseline.
 It was normally merged on this successor; its separate qualification is pending.
 Foreign work preserves `Pattern { base, constraint }`, shared unary canonical

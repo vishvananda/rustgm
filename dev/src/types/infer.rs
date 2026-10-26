@@ -45,7 +45,6 @@ pub enum Constructor {
     Primitive(Primitive),
     Parameter(super::parameters::ParameterId),
     Adt(ItemId, GenericArgs),
-    Foreign(ItemId),
     Never,
     Tuple,
     Array(u64),
@@ -78,6 +77,7 @@ pub enum Constructor {
     /// Signature and environment tuple precede the enclosing type argument edges.
     Closure(super::closure::ClosureId, arguments::ArgumentsId),
     Pattern(super::Constraint),
+    Foreign(ItemId),
 }
 #[derive(Clone, Copy)]
 enum Value {

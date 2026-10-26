@@ -148,7 +148,9 @@ impl Search<'_> {
                     return Ok(!matches!(facts.types.kind(tail), Some(Kind::Foreign(_)))
                         || requested == LangItem::PointeeSized);
                 }
-                crate::abi::metadata::Step::Complete(Metadata::Length | Metadata::VTable(_)) => return Ok(true),
+                crate::abi::metadata::Step::Complete(Metadata::Length | Metadata::VTable(_)) => {
+                    return Ok(true);
+                }
                 crate::abi::metadata::Step::Complete(Metadata::Unknown(_)) => {
                     return Err("source sizing requires a proved metadata tail".into());
                 }

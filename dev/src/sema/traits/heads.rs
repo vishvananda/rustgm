@@ -65,6 +65,7 @@ impl Head {
             Constructor::Slice => Self::Slice,
             Constructor::Function { .. } => Self::Function,
             Constructor::Never => Self::Never,
+            Constructor::Foreign(item) => Self::Foreign(item),
         }
     }
 }

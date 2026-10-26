@@ -112,8 +112,6 @@ pub enum ItemKind {
         ty: NodeId,
         value: Option<NodeId>,
     },
-    /// Opaque declaration owned by an actual external block.
-    ForeignType,
     TypeAlias {
         bounds: List,
         ty: Option<NodeId>,
@@ -138,6 +136,8 @@ pub enum ItemKind {
         capture: u32,
     },
     MacroInvocation(NodeId),
+    /// Opaque declaration owned by an actual external block.
+    ForeignType,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
