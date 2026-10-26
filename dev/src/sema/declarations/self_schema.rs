@@ -2,7 +2,10 @@
 use super::{Checker, DefId, Error, ItemId, NodeKey, Type};
 use crate::{
     sema::{associated::Schema, generics::Parameter, model::Declarations},
-    types::{arguments::Argument, parameters::{Parameter as TypeParameter, ParameterKind}},
+    types::{
+        arguments::Argument,
+        parameters::{Parameter as TypeParameter, ParameterKind},
+    },
 };
 impl Checker<'_> {
     /// The actual declaration owner installs its schema before Self becomes complete.
@@ -46,11 +49,15 @@ impl Checker<'_> {
             .generics
             .parents
             .insert(definition, self_definition);
-        install(&mut self.facts, Schema {
-            self_type,
-            captures: self.regions.count(binder),
-            bounds,
-        }).map_err(|e| self.error(key, e))?;
+        install(
+            &mut self.facts,
+            Schema {
+                self_type,
+                captures: self.regions.count(binder),
+                bounds,
+            },
+        )
+        .map_err(|e| self.error(key, e))?;
         self.owner_binders.insert(self_definition, binder);
         self.complete(self_definition, key, self_type)?;
         self.facts.lifetimes.parameters.insert(definition, declared);
@@ -59,5 +66,5 @@ impl Checker<'_> {
 }
 
 #[cfg(test)]
-#[path = "../../../tests/invariants/lexical_parameters.rs"]
+#[path = "../../../tests/invariants/self_formals.rs"]
 mod tests;

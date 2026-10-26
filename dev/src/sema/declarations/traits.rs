@@ -154,8 +154,12 @@ impl Checker<'_> {
         owner: crate::sema::associated::SourceOwner,
         definition: crate::resolve::model::DefId,
     ) -> Result<(), Error> {
-        self.reserve_lexical_self(owner.source, definition, owner.self_definition,
-            |facts, schema| facts.associated.declare(owner.self_definition, schema))
+        self.reserve_lexical_self(
+            owner.source,
+            definition,
+            owner.self_definition,
+            |facts, schema| facts.associated.declare(owner.self_definition, schema),
+        )
     }
     fn implicit_trait_bound(
         &mut self,
