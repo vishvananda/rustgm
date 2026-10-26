@@ -1,5 +1,5 @@
 //! Consumed configuration is authenticated data, never an implementation proof.
-use super::*;
+use super::{Arc, Body, Builtin, Effect, Error, NodeKey, Transaction, panic_contracts};
 use crate::resolve::expansion::Report;
 
 pub(super) fn current(
