@@ -1,0 +1,20 @@
+{
+  "profile": "dev-fast",
+  "state": "passed",
+  "steps": [
+    {
+      "name": "architecture",
+      "command": [
+        "/home/runner/work/rustgm/rustgm/obj/audit-venv/bin/python",
+        "scripts/rust_audit.py",
+        "--root",
+        ".",
+        "--cache",
+        "obj/fast-audit.json"
+      ],
+      "seconds": 4.0752018230000004,
+      "status": 0,
+      "environment": {}
+    }
+  ]
+}
