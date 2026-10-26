@@ -130,8 +130,16 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
     assert_eq!(status, Demand::Ready(()));
     stage = repeated_owner(stage, holder_declaration, definition, &mut work)?;
     let stage = method_headers(stage, &mut work)?;
-    let stage = (*stage).analyze(&mut work)?;
-    let facts = &stage.session.authority.facts;
+    lower_named_caller(stage, &mut work)?;
+    owner_failed_precharge()?;
+    actual_implicit_prelude_controls()?;
+    Ok(())
+}
+
+fn lower_named_caller(stage: Box<HeaderDraft>, work: &mut ReservationWork) -> Result {
+    let mut stage = (*stage).analyze(work)?;
+    let authority = &mut stage.session.authority;
+    let facts = &mut authority.facts;
     assert!(!facts.functions.is_empty());
     assert!(
         facts
@@ -140,8 +148,14 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
             .filter(|function| function.body.is_some())
             .all(|function| facts.typed_function_bodies.contains(&function.definition))
     );
-    owner_failed_precharge()?;
-    actual_implicit_prelude_controls()?;
+    let entry = crate::sema::entry::select(&mut authority.report, facts)?;
+    let program = crate::lower::instances::build_prepared(
+        &authority.report,
+        facts,
+        entry,
+        crate::pipeline::Prepared::default(),
+    )?;
+    assert!(!program.functions.is_empty());
     Ok(())
 }
 
