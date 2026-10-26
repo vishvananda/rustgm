@@ -25,15 +25,7 @@ fn unused_alias_declarations_check_argument_equality_and_region_formation() -> T
             "trait argument lifetime requirement is not satisfied",
         ),
         (
-            "valid-trait-argument",
-            "trait alias contract expansion is not implemented for all consumers and export",
-        ),
-        (
             "valid-lifetime-bound",
-            "trait alias contract expansion is not implemented for all consumers and export",
-        ),
-        (
-            "local-copy-consumer",
             "trait alias contract expansion is not implemented for all consumers and export",
         ),
     ] {
@@ -45,6 +37,12 @@ fn unused_alias_declarations_check_argument_equality_and_region_formation() -> T
             .err()
             .ok_or("alias validation unexpectedly passed its retained execution fence")?;
         assert!(error.message.contains(expected), "{name}: {error}");
+    }
+    for name in ["valid-trait-argument", "local-copy-consumer"] {
+        let source = crate::test_source::fixture(&format!(
+            "pa31/tests/spec/trait-aliases/declaration-formation/{name}.rs"
+        ))?;
+        crate::pipeline::analyze_source(&report(&source)?)?;
     }
     Ok(())
 }

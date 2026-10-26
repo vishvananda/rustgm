@@ -252,6 +252,15 @@ records changed-path scaling. Retain original/normalized inputs and
 binder identities when their consumers are implemented; incomplete consumers
 and imported transport keep explicit fences.
 
+Direct aliases without explicit formals, lifetime-bearing or quantified clauses,
+const requirements or inherited alias edges feed their canonical predicates into
+ordinary body, ownership and instance checking. Declaration formation remains
+mandatory even when unused. This local execution boundary creates no alias trait
+owner, object principal or metadata identity. Public aliases still reject through
+the existing export profile; wider forms retain their explicit execution fence.
+The actual reduced source `Thin` consumer checks unit metadata through full
+lowering and rejects the slice metadata mismatch.
+
 Alias naming consumes the declaration-Self view, while proof retains the complete
 contract. Filter original typed subjects before actual substitution or result
 normalization can make another formal or associated result equal Self. Reuse the
