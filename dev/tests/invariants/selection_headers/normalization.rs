@@ -347,7 +347,7 @@ fn closed_projection_fallback_keeps_assumptions_and_discarded_trials_separate() 
                 f.expected
             );
         } else {
-            assert!(matches!(projected.source, Some(Source::Assumption(_))));
+            assert!(matches!(projected.source, Some(Source::Assumption(p)) if p == root));
             assert_eq!(projected.resolution, Some(Resolution::Opaque));
         }
         if template {

@@ -168,45 +168,35 @@ impl Reader<'_> {
         let super::View::Function(instance) = self.view(value)? else {
             return Err("function pointer word lacks canonical callable identity");
         };
-        let Some(
-            crate::types::Kind::FunctionItem {
-                signature: actual, ..
-            }
-            | crate::types::Kind::Closure {
-                signature: actual, ..
-            },
-        ) = self.facts.types.kind(instance.ty())
-        else {
-            return Err("symbolic function word has an invalid instance");
+        let types = &self.facts.types;
+        let (canonical, signature) = match types.kind(instance.ty()) {
+            Some(crate::types::Kind::FunctionItem { signature, .. }) => (
+                crate::types::instance::Instance::new(types, instance.ty())?,
+                signature,
+            ),
+            Some(crate::types::Kind::Closure { signature, .. }) => (
+                crate::types::instance::Instance::closure(types, instance.ty())?,
+                signature,
+            ),
+            _ => return Err("symbolic function word has an invalid instance"),
         };
-        let Some(crate::types::Kind::Function {
-            bound_regions: a_bound,
-            parameters: a_parameters,
-            result: a_result,
-            unsafe_: a_unsafe,
-            convention: a_convention,
-        }) = self.facts.types.kind(actual)
-        else {
-            return Err("symbolic function word lacks an ordinary signature");
-        };
-        let Some(crate::types::Kind::Function {
-            bound_regions,
-            parameters,
-            result,
-            unsafe_,
-            convention,
-        }) = self.facts.types.kind(expected)
-        else {
-            return Err("symbolic function demand lacks a function type");
-        };
-        if a_bound != bound_regions
-            || a_parameters != parameters
-            || a_result != result
-            || a_convention != convention
-            || (a_unsafe && !unsafe_)
+        if canonical != instance
+            || !matches!(
+                types.kind(signature),
+                Some(crate::types::Kind::Function { .. })
+            )
         {
-            return Err("symbolic function word signature reinterpretation is not implemented");
+            return Err("symbolic function word lacks its canonical ordinary signature");
         }
+        if !matches!(
+            types.kind(expected),
+            Some(crate::types::Kind::Function { .. })
+        ) {
+            return Err("symbolic function demand lacks a function type");
+        }
+        // A function word retains its genuine original target. Its typed slot
+        // supplies the destination signature; forming it does not call it or
+        // establish compatibility/const/unsafe permission for an eventual call.
         Ok(Constant::function(instance))
     }
 }

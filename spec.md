@@ -93,6 +93,14 @@ includes declaration and owning crate; familiar names are not implementation
 evidence. Transport checked generic/const bodies and their retained contracts
 through deterministic crate metadata with indexed external-to-local remapping.
 
+Implement obligations required by the pinned language and actual consumer.
+Keep declaration checking, value validity, optional optimization and advisory
+lint claims distinct. A documented niche guarantee does not invent a field
+proof requirement, and a lint-only pointer-return annotation does not grant
+runtime pointer validity. Before adding a stricter prerequisite or another
+proof/state graph, verify the real Rust rule and reuse its existing typed
+producer/consumer. Preserve uncertain cases as explicit unsupported behavior.
+
 Header diagnostic and advisory contracts use complete versioned cold columns.
 Authenticate local declaration, configured owner and retained source incarnation;
 join imported declarations to their actual catalog coordinates once. Reuse the
@@ -246,6 +254,12 @@ from deduplicated proof/naming clauses. The
 [combined checkpoint](docs/runtime-header-integration-checkpoint.md) records
 actual projection-use opponents and unchanged alias execution/export fences.
 
+Legacy bootstrap diagnostic compatibility authenticates declarations against the
+existing fixed canonical registries, actual kind/public binding and nonimported
+identity. A missing node is insufficient. This compatibility creates no completed
+source/imported header, KnownAbsent attribute or execution permission; genuine
+source and artifact contracts keep their own producer/Unknown rules.
+
 Source Abort requires the actual current attributed header, complete call
 instance and reached caller proof. Consume a transient witness for the final
 Evaluate and original Unreachable edge before emitting the existing terminator;
@@ -254,6 +268,18 @@ use an interposable library abort symbol for this intrinsic. Const calls,
 reification, imported origins and assertion/panic construction remain independent
 contracts; the [runtime checkpoint](docs/source-abort-runtime-checkpoint.md)
 records the genuine owned-scope and native opponents.
+
+Source Transmute consumes an authenticated full call and the existing pre-monomorphization
+size relation. Runtime lowering moves through owned ABI storage without dropping
+the source; destination destruction remains ordinary. CTFE shares the existing
+byte codecs and paid reference continuation, preserving pending duties and
+original allocation provenance. Function-pointer formation preserves the genuine
+canonical target and destination pointer type; it does not require identical
+signatures or grant const invocation. The actual runtime call uses the destination
+ABI with normal unsafe and ownership checks. Do not add a parallel origin graph,
+signature-recovery cache or synthetic trampoline. The
+[formatter checkpoint](docs/formatter-pointer-erasure-checkpoint.md) records real
+const formation, borrowed-owner runtime calls and the combined integration.
 
 Share structural layout readiness and field instantiation across constant
 storage and source intrinsic consumers. A layout answer supplies physical data,
@@ -291,6 +317,17 @@ formal, including unused parameters; preserve explicit `?Sized`. Original
 assumptions do not pay substituted instance obligations. Retain a single cold
 owner for immutable imported templates/contracts, with exact owner validation
 at every borrowed view and ordinary per-instance proof on execution.
+
+The defining crate checks every required source body before export. Retain the
+complete family and raw body contracts, but reconstruct imported defining
+environments and original proof on actual body demand. Unrequested bodies remain
+explicitly Pending, never empty or proved. Reuse completed original proof only
+under the same immutable body, Store and environment; concrete instances retain
+their fresh ordinary obligations. Declaration conformance and genuine namespace
+installation use declaration facts independently of body readiness. Imported
+names alone grant no semantic or execution permission. The
+[execution plan](docs/library-bootstrap-acceleration.md) records this reviewed
+policy and the unchanged complete default/const transport requirements.
 
 Private callable preparation consumes the actual reserved declared/callable
 signature pair and complete outer-to-inner formal scope, including unused
@@ -1451,6 +1488,14 @@ registered derive contracts before fields finish, but final derive validation is
 mandatory. Check retained type formation even if an outer alias erases the result
 and the lifetime proof is empty; completing that check does not overwrite the
 actual annotation's type.
+
+Unused trait-alias defaults validate their directly written closed bounds through
+the ordinary parameter-default proof. Preserve the alias's canonical clauses;
+do not recursively expand inherited alias edges into extra default obligations.
+The pinned compiler accepts an unused default that violates such an inherited
+bound. Aliases without defaults need neither graph expansion nor temporary
+clause storage for this pass. The broader alias execution/export boundary remains
+explicit until its consumers are complete.
 
 Retain the implicit Sized premises of selected implementations and their recursive
 conditions when alias normalization removes the original inputs. Alias parameters

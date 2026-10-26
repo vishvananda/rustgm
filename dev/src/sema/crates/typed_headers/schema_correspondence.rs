@@ -113,9 +113,9 @@ impl<'rows> Mapping<'rows> for Borrowed<'rows, '_, '_> {
                         .charge(1)
                         .map_err(|_| "private slot read work exceeded")?;
                     match self.maps.slot(slot.0 as usize) {
-                        Some(Some(crate::types::arguments::Argument::Type(actual)))
+                        Ok(Some(crate::types::arguments::Argument::Type(actual)))
                             if actual == ty => {}
-                        Some(None) => {
+                        Ok(None) => {
                             return Err("private schema requires its actual pending formal slot");
                         }
                         _ => return Err("private schema changed its actual canonical formal slot"),
@@ -135,12 +135,10 @@ impl<'rows> Mapping<'rows> for Borrowed<'rows, '_, '_> {
     ) -> Result<MemberRows<'rows>, &'static str> {
         match header {
             s::HeaderRef::Trait(index) => Ok(MemberRows::Declared(
-                rows.traits[index as usize].members.slice(&rows.members)?,
+                rows.declared_members(rows.traits[index as usize].members)?,
             )),
             s::HeaderRef::Implementation(index) => Ok(MemberRows::Implementation(
-                rows.implementations[index as usize]
-                    .members
-                    .slice(&rows.member_links)?,
+                rows.implementation_members(rows.implementations[index as usize].members)?,
             )),
             s::HeaderRef::Function(_) => {
                 Err("private schema requires its actual trait or implementation")
@@ -158,9 +156,9 @@ impl<'rows> Mapping<'rows> for Borrowed<'rows, '_, '_> {
             return Err("private schema needs its actual body-owned regional producer");
         }
         match self.maps.region(root.0 as usize) {
-            Some(Some(region)) => Ok(region),
-            Some(None) => Err("private schema requires its actual pending regional input"),
-            None => Err("private schema region is outside its actual dense map"),
+            Ok(Some(region)) => Ok(region),
+            Ok(None) => Err("private schema requires its actual pending regional input"),
+            Err(message) => Err(message),
         }
     }
 }

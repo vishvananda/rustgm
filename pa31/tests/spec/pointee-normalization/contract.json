@@ -1,0 +1,420 @@
+{
+  "schema": 1,
+  "phase": "initial hypotheses observed with retained disagreements; source consumers unqualified",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "scope": "20 new metadata observations only; no runtime/intrinsic/transport authority; retain every disagreement",
+  "provider": "Explicit authored no_core declarations reuse the qualified minimal declaration fixture; no claim that these replace pinned NonNull/VTable/PhantomData fields.",
+  "cases": [
+    {
+      "source": "pa31/tests/spec/pointee-normalization/concrete-results.rs",
+      "sha256": "fee076676047bd4561524d1a52da32b9b8112d907d3a5510c7e8e1fd4caf9c7f",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "actual primitive/array unit and slice/str length metadata",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": true,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": true,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/changed-tail.rs",
+      "sha256": "0e38ab0a8545e48432980fd411c2165ea8c203b6d0e40ead83265a1dc31e881d",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "canonical actual generic tail projection and concrete str tail",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": true,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": true,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/sized-parameter.rs",
+      "sha256": "908613cf5c13a126fe193822d348a4b9528b306f616e89ede660bce8336a0944",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "unit normalization requires the real Sized parameter premise",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": true,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": true,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/universal-parameter.rs",
+      "sha256": "b08b3d3569afe2e476ef427012f0125592340d32bb41e12533c81ececb8b9bc3",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "Pointee selection is universal without a Sized premise or normalized result",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "hypothesis_disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "hypothesis_disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/unknown-result.rs",
+      "sha256": "6c390b1d5d22f2b2308415d1511c1d0ee49a9ecdaf862a8031aa946766801ff9",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0308"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "unresolved metadata cannot become unit",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [],
+          "messages": [
+            "mismatched types",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [],
+          "messages": [
+            "mismatched types",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/dynamic-region.rs",
+      "sha256": "f0079572d63142602be6dda48618a4bbda429be9fd7ad84b755c7457279ae75a",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "actual DynMetadata application retains the complete object region",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": true,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": true,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/dynamic-escape.rs",
+      "sha256": "3e7fad7ce7c63c2bac11b302c69424965cb20c667b01fe0e689bf289ff2d46bb",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "the object region cannot be widened to static",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [
+            "requires `copy` lang_item",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/invalid-input.rs",
+      "sha256": "bc9770dbe2207f4381bcedf78f53c34e0a0f5dfdcbd52d7f6cf0581bdc4e327c",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0277"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "universal Pointee evidence cannot waive actual nominal input formation",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [],
+          "messages": [
+            "mismatched types",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [],
+          "messages": [
+            "mismatched types",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/result-obligation-positive.rs",
+      "sha256": "10b02423f3e1c9c8855e7a407c258f9dcb59a75d9f747a927e67f408ec035fd7",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "actual normalized unit has its required ordinary Actual implementation",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "hypothesis_disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "messages": [],
+          "hypothesis_disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/result-obligation-negative.rs",
+      "sha256": "ea0be68d3251982dd41746c2d30fefbcd85aebbd83891a9dc2dbcfe6ca6d3298",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0277"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "normalization does not invent an implementation of the source result bound",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "messages": [
+            "the trait bound `(): Actual` is not satisfied",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "messages": [
+            "the trait bound `(): Actual` is not satisfied",
+            "aborting due to 1 previous error"
+          ],
+          "hypothesis_disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    }
+  ],
+  "initial_contract_sha256": "920d9b7f3f0763323a74be7e5a1150356df343a0dc1ff0e284058c21ae95a994",
+  "observed_binding": {
+    "run": 40342761935,
+    "binding_sha256": "df604a8a850198a5646e2ad52cffa6112e4c60cfeb8ff87568b27632269c5e3f",
+    "artifact_zip_sha256": "95af310f0c1ebc3139b74f905e6b5ffb0831abecd837cfabd14dc721a7cf3b9d",
+    "metadata": 20,
+    "native": 0,
+    "infrastructure_failures": 0,
+    "hypothesis_disagreements": 10
+  }
+}

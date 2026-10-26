@@ -28,6 +28,7 @@ enum Cell {
 pub(super) struct OwnerTransaction {
     traits: Vec<Cell>,
     implementations: Vec<Cell>,
+    bytes: usize,
 }
 impl OwnerTransaction {
     fn new(rows: s::ValidatedView<'_>, work: &mut ReservationWork) -> Result<Box<Self>, Error> {
@@ -38,23 +39,17 @@ impl OwnerTransaction {
         let mut implementations = Vec::with_capacity(rows.implementations.len());
         traits.resize_with(rows.traits.len(), || Cell::Empty);
         implementations.resize_with(rows.implementations.len(), || Cell::Empty);
+        let bytes = size_of::<Self>()
+            .saturating_add(retained::vector(&traits))
+            .saturating_add(retained::vector(&implementations));
         Ok(Box::new(Self {
             traits,
             implementations,
+            bytes,
         }))
     }
-    pub(super) fn retained_bytes(&self) -> usize {
-        let mut bytes = size_of::<Self>()
-            + retained::vector(&self.traits)
-            + retained::vector(&self.implementations);
-        for cell in self.traits.iter().chain(&self.implementations) {
-            if let Cell::Prepared(row) = cell {
-                bytes = bytes
-                    .saturating_add(retained::vector(&row.members))
-                    .saturating_add(retained::vector(&row.schema.bounds));
-            }
-        }
-        bytes
+    fn retained_bytes(&self) -> usize {
+        self.bytes
     }
     fn cell(&mut self, header: s::HeaderRef) -> Result<&mut Cell, Error> {
         let cell = match header {
@@ -100,6 +95,8 @@ pub(super) fn prepare(
     let transaction = owners
         .as_mut()
         .ok_or_else(|| error("private schema transaction disappeared"))?;
+    work.charge(1)?;
+    let retained = transaction.retained_bytes();
     let cell = transaction.cell(header)?;
     match cell {
         Cell::Prepared(actual) => {
@@ -135,9 +132,27 @@ pub(super) fn prepare(
         }
     };
     let view = authority.reservation.recipe_view(authority.report, work)?;
-    *cell = Cell::Prepared(materialize(
-        authority, &view, state, facts, header, self_type, work,
-    )?);
+    let before = work.retained;
+    let row = materialize(authority, &view, state, facts, header, self_type, work)?;
+    work.charge(2)?;
+    let bytes = retained::vector(&row.members).saturating_add(retained::vector(&row.schema.bounds));
+    if bytes > work.retained.saturating_sub(before) {
+        return Err(error(
+            "private schema exceeded its actual selected allocation preflight",
+        ));
+    }
+    *cell = Cell::Prepared(row);
+    transaction.bytes = retained.saturating_add(bytes);
+    #[cfg(test)]
+    eprintln!(
+        "schema-owner layout={} cell={} retained={} peak={} work={}",
+        size_of::<OwnerTransaction>(),
+        size_of::<Cell>(),
+        transaction.retained_bytes(),
+        work.peak,
+        work.steps
+    );
+
     Ok(Demand::Ready(()))
 }
 fn shape(
@@ -322,8 +337,9 @@ fn members(
             .len()
             .saturating_mul(size_of::<crate::resolve::model::DefId>()),
     )?;
-    members
-        .iter()
-        .map(|&row| view.definition(row, work))
-        .collect()
+    let mut actual = Vec::with_capacity(members.len());
+    for &row in members {
+        actual.push(view.definition(row, work)?);
+    }
+    Ok(actual)
 }

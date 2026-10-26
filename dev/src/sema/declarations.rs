@@ -387,7 +387,6 @@ impl Checker<'_> {
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
         self.prepare_trait_owners(&mut steps, work_limit)?;
-        self.reject_alias_execution()?;
         self.prepare_source_call_contracts(&mut steps, work_limit)?;
         self.prepare_destructors(destructors, &mut steps, work_limit)?;
         self.prepare_trait_implementations(&mut steps, work_limit)?;
@@ -449,6 +448,7 @@ impl Checker<'_> {
             ));
         }
         self.complete_layouts()?;
+        self.reject_alias_execution()?;
         super::specialization::require_execution(&self.facts)
     }
     fn latent_library_definition(&self, id: DefId) -> bool {

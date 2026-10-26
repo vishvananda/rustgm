@@ -93,3 +93,36 @@ transmute/panic/formatting prerequisites and actual imported provided bodies.
 The last unchanged-core observer still stops at Thin in ptr/metadata.rs with
 65 files opened and all 722 pinned inputs verified. There is no core artifact;
 opened files are not compiled units.
+
+## Scheduled-regression successor
+
+The next repair addresses scheduled run 40297261891's ordinary bootstrap calls
+and closed projection fallback. Nodeless compiler-owned declarations now retain
+the legacy diagnostic profile only after matching existing bounded canonical
+registries, actual kind/public binding and nonimported identity. No field, map,
+source header or KnownAbsent fact is added. Genuine imported Unknown, missing
+producer and forged local-root opponents still reject.
+
+A failed closed implementation trial now preserves the already-proved caller
+premise when returning an opaque projection. Ambiguous/refuted/error outcomes
+retain their previous handling and proof debts. Three old descriptor/flag
+assertions and specialization expectations now check the actual supported
+profile, named flags and precise invalid-family boundaries.
+
+Exactly 14 focused controls pass, including the original failing private
+primitive/union/enum paths, imported diagnostic opponents, exact original caller
+premise and the real alias-family projection use. The remaining build/runtime
+batch takes 146.52 seconds: build 143.85, actual tests 1.12 seconds. All 2,750
+compiler/test/tool fingerprints match before and after. Production strict
+Clippy, private strict Clippy, formatting, metadata and architecture are retained
+successful steps from identical-source predecessors; only the concise exact
+premise assertion changed after production checking. A cold combined gate had
+passed all static checks but exhausted its deadline in build. No deadline was
+extended or failed observation relabeled. The final bounded batch completes
+only the missing build/execution. All 215 harness checks, suite/layout discovery
+and upstream/reference provenance also pass.
+
+Evidence is under obj/parallel/bootstrap-diagnostic-regressions-v1 and its
+referenced obj/qualification/fast receipts. This repairs ordinary regressions;
+it does not establish full scheduled qualification, imported provided execution
+or an original library artifact.

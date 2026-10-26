@@ -108,7 +108,52 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
             .is_none()
     );
     assert!(stage.session.authority.facts.generics.traits.is_none());
+    repeated_schema(stage, holder_declaration, &mut work)?;
     actual_implicit_prelude_controls()?;
+    Ok(())
+}
+fn repeated_schema(
+    mut stage: Box<HeaderDraft>,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+) -> Result {
+    let before = (
+        work.retained,
+        stage
+            .session
+            .authority
+            .facts
+            .types
+            .node_table_allocation()
+            .bytes,
+    );
+    let steps = work.steps;
+    for _ in 0..1000 {
+        let (returned, status) = stage.schema(owner, work)?;
+        stage = returned;
+        assert_eq!(status, Demand::Ready(()));
+    }
+    assert_eq!(
+        before,
+        (
+            work.retained,
+            stage
+                .session
+                .authority
+                .facts
+                .types
+                .node_table_allocation()
+                .bytes
+        )
+    );
+    assert!(stage.session.authority.facts.generics.traits.is_none());
+    eprintln!(
+        "schema actual warm1000={} reserved={} draft={} selected={}",
+        work.steps - steps,
+        work.retained,
+        size_of::<HeaderDraft>(),
+        size_of::<SelectedHeaders>()
+    );
     Ok(())
 }
 fn actual_implicit_prelude_controls() -> Result {
