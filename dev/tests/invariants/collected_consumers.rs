@@ -52,7 +52,7 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
     let context = context(artifact.inventory())?;
     let config = Config::default();
     let mut sources = NoFiles;
-    let text = "#![feature(no_core)]#![no_core]fn main(){let value=<u8 as base::Holder<u8>>::carry::<u8>(7u8);let borrowed=<u8 as base::Holder<u8>>::borrow(&value);let _=*borrowed;}";
+    let text = "#![feature(no_core)]#![no_core]extern crate base;fn main(){let value=<u8 as base::Holder<u8>>::carry::<u8>(7u8);let borrowed=<u8 as base::Holder<u8>>::borrow(&value);let _=*borrowed;}";
     let request = ConsumerRequest::new(input(text)?, &mut sources, &config, &context);
     let mut stage = ProofSession::from_collected(artifact, request, &mut work)?;
     let authority = &stage.session.authority;
