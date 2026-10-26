@@ -1,15 +1,58 @@
 //! A fresh consumer retains its own real reservation and one immutable catalog.
 use super::{Imported, ReservationWork, error, unpaid_provided::Inputs};
 use crate::{
+    expand::config::Config,
     resolve::{
+        bindings::{
+            Context,
+            consumer_policy::{ProviderAdmission, Request},
+        },
         body_origin::{Catalog, ImportedDeclarationId},
-        expansion::Report,
+        expansion::{self, Report},
+        load::{InputFile, Sources},
         model::DefKind,
         package::Error,
     },
     support::crates::Dependencies,
 };
 use std::{ops::Range, rc::Rc, sync::Arc};
+
+/// The only source-to-reservation handoff; neither report nor facts are public.
+pub(crate) struct ConsumerInput {
+    report: Report,
+    reservation: ConsumerReservation,
+}
+impl ConsumerInput {
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "the next selected header consumer must use this genuine opaque input; public Provided entry remains closed"
+        )
+    )]
+    pub(crate) fn new(
+        root: InputFile,
+        sources: &mut impl Sources,
+        config: &Config,
+        context: &Context,
+        admission: ProviderAdmission,
+        work: &mut ReservationWork,
+    ) -> Result<Self, Error> {
+        work.charge(root.source.text().len().saturating_add(1))?;
+        work.reserve(size_of::<Self>())?;
+        let request = Request::new(admission, config, work);
+        let report = expansion::analyze_staged(root, sources, config, context, request)?;
+        let report = crate::resolve::analyze_expanded(report)?;
+        let (report, reservation) = Inputs::reserve_consumer(report, work)?;
+        Ok(Self {
+            report,
+            reservation,
+        })
+    }
+    pub(crate) fn into_parts(self) -> (Report, ConsumerReservation) {
+        (self.report, self.reservation)
+    }
+}
 
 pub(crate) struct ConsumerReservation {
     inventory: Arc<Dependencies>,

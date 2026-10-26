@@ -560,11 +560,14 @@ impl Declarations {
         super::header_attributes::finish(report, self)
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
-        Self::with_catalog(
-            report,
-            super::compiler_items::Catalog::reserve(report)?,
-            true,
-        )
+        let catalog = super::compiler_items::Catalog::reserve(report)?;
+        let policies = super::safety::Policies::analyze(report)?;
+        let associated = super::associated::collect(report)?;
+        let mut value = Self::initialize(report, catalog, policies, associated);
+        value
+            .prepare_resolution(report)
+            .map_err(|error| value.retain_error_warnings(error))?;
+        Ok(value)
     }
     pub(super) fn new_staged(
         report: &Report,
@@ -604,7 +607,13 @@ impl Declarations {
             );
         work.reserve(bound)?;
         let catalog = super::compiler_items::Catalog::reserve_staged(report, work)?;
-        let value = Self::with_catalog(report, Some(catalog), false)?;
+        let mut value = Self::initialize(
+            report,
+            Some(catalog),
+            super::safety::Policies::default(),
+            super::associated::Inventory::default(),
+        );
+        super::crates::reserve_staged(report, &mut value)?;
         work.charge(value.nodes.len().saturating_add(4))?;
         let mut actual = value.types.node_table_allocation();
         actual.vector(&value.definitions);
@@ -624,12 +633,13 @@ impl Declarations {
         }
         Ok(value)
     }
-    fn with_catalog(
+    fn initialize(
         report: &Report,
         catalog: Option<Box<super::compiler_items::Catalog>>,
-        complete: bool,
-    ) -> Result<Self, Error> {
-        let mut value = Self {
+        policies: super::safety::Policies,
+        associated: super::associated::Inventory,
+    ) -> Self {
+        Self {
             must_use_contracts: None,
             source_bindings: catalog,
             source_computations: None,
@@ -637,11 +647,7 @@ impl Declarations {
             foreign: None,
             intrinsics: report.resolution.intrinsics,
             union_work: UnionWork::default(),
-            safety_policies: if complete {
-                super::safety::Policies::analyze(report)?
-            } else {
-                super::safety::Policies::default()
-            },
+            safety_policies: policies,
             mutable_statics: None,
             constant_functions: crate::support::hash::HashSet::default(),
             target_feature_functions: crate::support::hash::HashSet::default(),
@@ -667,11 +673,7 @@ impl Declarations {
             constant_dependencies: crate::support::hash::HashMap::default(),
             constant_uses: crate::support::hash::HashMap::default(),
             constant_instances: crate::support::hash::HashMap::default(),
-            associated: if complete {
-                super::associated::collect(report)?
-            } else {
-                super::associated::Inventory::default()
-            },
+            associated,
             stored_fields: None,
             methods: super::methods::Methods::default(),
             invocations: crate::support::hash::HashMap::default(),
@@ -731,15 +733,7 @@ impl Declarations {
                 })
                 .collect(),
             functions: Vec::new(),
-        };
-        if complete {
-            value
-                .prepare_resolution(report)
-                .map_err(|error| value.retain_error_warnings(error))?;
-        } else {
-            super::crates::reserve_staged(report, &mut value)?;
         }
-        Ok(value)
     }
     fn prepare_resolution(&mut self, report: &Report) -> Result<(), Error> {
         self.import_resolution(report)?;

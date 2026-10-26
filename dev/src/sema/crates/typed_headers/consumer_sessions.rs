@@ -1,14 +1,8 @@
 //! Actual fresh consumer reservation is opaque and cannot expose checked facts.
 use crate::{
-    expand::config::Config,
     resolve::{
-        bindings::{
-            Context,
-            consumer_policy::{ProviderAdmission, Request},
-        },
-        crates::{ConsumerReservation, ReservationWork, unpaid_provided::Inputs},
-        expansion::{self, Report},
-        load::{InputFile, Sources},
+        crates::{ConsumerInput, ConsumerReservation, ReservationWork},
+        expansion::Report,
         package::Error,
     },
     sema::model::Declarations,
@@ -38,19 +32,12 @@ impl ProofSession {
         )
     )]
     pub(crate) fn new(
-        root: InputFile,
-        sources: &mut impl Sources,
-        config: &Config,
-        context: &Context,
-        admission: ProviderAdmission,
+        input: ConsumerInput,
         work: &mut ReservationWork,
     ) -> Result<Box<Self>, Error> {
-        work.charge(root.source.text().len().saturating_add(1))?;
+        work.charge(1)?;
         work.reserve(size_of::<Self>().saturating_add(Identity::allocation_bytes()))?;
-        let request = Request::new(admission, config, work);
-        let report = expansion::analyze_staged(root, sources, config, context, request)?;
-        let report = crate::resolve::analyze_expanded(report)?;
-        let (report, reservation) = Inputs::reserve_consumer(report, work)?;
+        let (report, reservation) = input.into_parts();
         let mut facts = Declarations::new_staged(&report, work)?;
         work.charge(facts.definitions.len())?;
         if facts.definitions.iter().any(Option::is_some) {

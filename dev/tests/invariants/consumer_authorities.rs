@@ -1,18 +1,22 @@
 //! Fresh consumer construction preserves actual owners while all proof stays unpaid.
 use super::*;
 use crate::{
+    expand::config::Config,
     resolve::{
+        bindings::{Context, consumer_policy::ProviderAdmission},
         body_origin::{DeclarationOrigin, ImportedDeclarationId},
-        unit::FileId,
+        crates::unpaid_provided::Inputs,
+        expansion,
+        load::{InputFile, Sources},
     },
     support::{
         bindings::{LangItem, Mode},
-        crates::{CrateIdentity, Dependencies},
+        crates::CrateIdentity,
         source::SourceFile,
     },
     unpaid_cases::Result,
 };
-use std::{path::Path, sync::Arc};
+use std::{fmt::Write as _, path::Path, sync::Arc};
 
 struct NoFiles;
 impl Sources for NoFiles {
@@ -64,6 +68,17 @@ fn input(text: &str) -> Result<InputFile> {
         source: SourceFile::new(text.as_bytes().to_vec())?,
     })
 }
+fn construct(
+    root: InputFile,
+    sources: &mut impl Sources,
+    config: &Config,
+    context: &Context,
+    admission: ProviderAdmission,
+    work: &mut ReservationWork,
+) -> std::result::Result<Box<ProofSession>, Error> {
+    let input = ConsumerInput::new(root, sources, config, context, admission, work)?;
+    ProofSession::new(input, work)
+}
 const MAIN: &str = "#![feature(no_core)]#![no_core]fn main(){}";
 const HOLDER: &str = "pub trait Holder<V>{fn carry<U>(value:U)->U{value}fn borrow(value:&V)->&V{value}}impl Holder<u8> for u8{}";
 
@@ -82,7 +97,7 @@ fn fresh_consumer_owns_actual_report_catalog_store_and_reserved_role_origins() -
     let root = input(MAIN)?;
     let image = Arc::clone(root.source.original_image());
     let mut work = ReservationWork::default();
-    let session = ProofSession::new(
+    let session = construct(
         root,
         &mut NoFiles,
         &config,
@@ -154,6 +169,10 @@ fn fresh_consumer_owns_actual_report_catalog_store_and_reserved_role_origins() -
 
 #[test]
 fn fresh_consumer_rejects_foreign_identity_inventory_source_configuration_and_catalog() -> Result {
+    rejected_requests()?;
+    replaced_owners()
+}
+fn rejected_requests() -> Result {
     let actual = fixture(HOLDER)?;
     let mut context = actual.context;
     context.current = match &context.mode {
@@ -166,7 +185,7 @@ fn fresh_consumer_rejects_foreign_identity_inventory_source_configuration_and_ca
         .map(|identity| identity.name().to_owned());
     let mut work = ReservationWork::default();
     assert!(
-        ProofSession::new(
+        construct(
             input(MAIN)?,
             &mut NoFiles,
             &Config::default(),
@@ -178,7 +197,7 @@ fn fresh_consumer_rejects_foreign_identity_inventory_source_configuration_and_ca
     );
     assert!(work.steps > 0);
     let actual = fixture(HOLDER)?;
-    let error = ProofSession::new(
+    let error = construct(
         input("#![feature(no_core)]#![no_core]fn main(){minicore::identity(7u8);}")?,
         &mut NoFiles,
         &Config::default(),
@@ -195,7 +214,7 @@ fn fresh_consumer_rejects_foreign_identity_inventory_source_configuration_and_ca
         provider: CrateIdentity::new("foreign", "other_provider")?,
     };
     assert!(
-        ProofSession::new(
+        construct(
             input(MAIN)?,
             &mut NoFiles,
             &Config::default(),
@@ -207,17 +226,18 @@ fn fresh_consumer_rejects_foreign_identity_inventory_source_configuration_and_ca
     );
     let actual = fixture(HOLDER)?;
     let mut context = actual.context;
-    context.dependencies = Some(Arc::new(Dependencies::new(
-        context
+    let other = fixture(HOLDER)?;
+    assert!(!Arc::ptr_eq(
+        context.dependencies.as_ref().ok_or("actual inventory")?,
+        other
+            .context
             .dependencies
             .as_ref()
-            .ok_or("inventory")?
-            .artifacts()
-            .to_vec(),
-        Vec::new(),
-    )?));
+            .ok_or("foreign inventory")?
+    ));
+    context.dependencies = other.context.dependencies;
     assert!(
-        ProofSession::new(
+        construct(
             input(MAIN)?,
             &mut NoFiles,
             &Config::default(),
@@ -227,8 +247,12 @@ fn fresh_consumer_rejects_foreign_identity_inventory_source_configuration_and_ca
         )
         .is_err()
     );
+    Ok(())
+}
+fn replaced_owners() -> Result {
+    let mut work = ReservationWork::default();
     let actual = fixture(HOLDER)?;
-    let mut first = ProofSession::new(
+    let mut first = construct(
         input(MAIN)?,
         &mut NoFiles,
         &Config::default(),
@@ -237,7 +261,7 @@ fn fresh_consumer_rejects_foreign_identity_inventory_source_configuration_and_ca
         &mut work,
     )?;
     let actual = fixture(HOLDER)?;
-    let mut second = ProofSession::new(
+    let mut second = construct(
         input(MAIN)?,
         &mut NoFiles,
         &Config::default(),
@@ -263,18 +287,17 @@ fn fresh_consumer_rejects_foreign_identity_inventory_source_configuration_and_ca
         &mut first.authority.facts.types,
         &mut second.authority.facts.types,
     );
-    first.authority.report.package.runtime_checks =
-        crate::support::runtime_checks::RuntimeCheckConfig::with_ub_checks(true);
-    assert!(first.require(&mut work).is_err());
-    first.authority.report.package.runtime_checks = Config::default().runtime_checks();
-    let unit = &mut first.authority.report.package.units[FileId(0).0 as usize];
+    crate::resolve::bindings::consumer_policy::configuration_opponent(
+        &mut first.authority.report.package,
+    )?;
+    first.require(&mut work)?;
+    let unit = &mut first.authority.report.package.units[0];
     unit.source = unit.source.physical_copy();
     assert!(first.require(&mut work).is_err());
     Ok(())
 }
 
-#[test]
-fn fresh_consumer_bounds_single_reservation_warm_work_and_failed_initialization() -> Result {
+fn unpaid_initialization_opponents() -> Result {
     let actual = fixture_data(HOLDER, |columns| {
         // Structurally valid unpaid data is not a positive source-completion receipt.
         for row in &mut columns.functions {
@@ -282,7 +305,7 @@ fn fresh_consumer_bounds_single_reservation_warm_work_and_failed_initialization(
         }
     })?;
     let mut work = ReservationWork::default();
-    let session = ProofSession::new(
+    let session = construct(
         input(MAIN)?,
         &mut NoFiles,
         &Config::default(),
@@ -317,48 +340,57 @@ fn fresh_consumer_bounds_single_reservation_warm_work_and_failed_initialization(
     assert!(Declarations::new_staged(&session.authority.report, &mut initialization).is_err());
     assert!(initialization.steps > 0 && initialization.peak > crate::support::crates::MAX_BYTES);
     assert_eq!(session.authority.facts.types.interned_extent(), extent);
-    let mut warm = None;
-    for count in [1, 8, 32] {
-        let mut source = HOLDER.to_owned();
-        for index in 0..count {
-            source.push_str(&format!("pub fn unrelated_{index}<T>(value:T)->T{{value}}"));
-        }
-        let actual = fixture(&source)?;
-        let mut work = ReservationWork::default();
-        let session = ProofSession::new(
-            input(MAIN)?,
-            &mut NoFiles,
-            &Config::default(),
-            &actual.context,
-            actual.admission,
-            &mut work,
-        )?;
-        let state = (
+    Ok(())
+}
+fn warm_reservation(count: usize) -> Result<usize> {
+    let mut source = HOLDER.to_owned();
+    for index in 0..count {
+        write!(source, "pub fn unrelated_{index}<T>(value:T)->T{{value}}")?;
+    }
+    let actual = fixture(&source)?;
+    let mut work = ReservationWork::default();
+    let session = construct(
+        input(MAIN)?,
+        &mut NoFiles,
+        &Config::default(),
+        &actual.context,
+        actual.admission,
+        &mut work,
+    )?;
+    let state = (
+        session.authority.facts.types.len(),
+        work.retained,
+        work.peak,
+    );
+    let before = work.steps;
+    for _ in 0..1000 {
+        session.require(&mut work)?;
+    }
+    let delta = work.steps - before;
+    assert_eq!(
+        state,
+        (
             session.authority.facts.types.len(),
             work.retained,
-            work.peak,
-        );
-        let before = work.steps;
-        for _ in 0..1000 {
-            session.require(&mut work)?;
-        }
-        let delta = work.steps - before;
-        assert_eq!(
-            state,
-            (
-                session.authority.facts.types.len(),
-                work.retained,
-                work.peak
-            )
-        );
+            work.peak
+        )
+    );
+    eprintln!(
+        "consumer-warm unrelated={count} steps={delta} retained={} peak={}",
+        work.retained, work.peak
+    );
+    Ok(delta)
+}
+#[test]
+fn fresh_consumer_bounds_single_reservation_warm_work_and_failed_initialization() -> Result {
+    unpaid_initialization_opponents()?;
+    let mut warm = None;
+    for count in [1, 8, 32] {
+        let delta = warm_reservation(count)?;
         if let Some(previous) = warm {
             assert_eq!(delta, previous);
         }
         warm = Some(delta);
-        eprintln!(
-            "consumer-warm unrelated={count} steps={delta} retained={} peak={}",
-            work.retained, work.peak
-        );
     }
     let actual = fixture(HOLDER)?;
     let mut storage = ReservationWork {
@@ -366,7 +398,7 @@ fn fresh_consumer_bounds_single_reservation_warm_work_and_failed_initialization(
         ..ReservationWork::default()
     };
     assert!(
-        ProofSession::new(
+        construct(
             input(MAIN)?,
             &mut NoFiles,
             &Config::default(),
@@ -383,7 +415,7 @@ fn fresh_consumer_bounds_single_reservation_warm_work_and_failed_initialization(
         ..ReservationWork::default()
     };
     assert!(
-        ProofSession::new(
+        construct(
             input(MAIN)?,
             &mut NoFiles,
             &Config::default(),
