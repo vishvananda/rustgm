@@ -22,6 +22,9 @@ pub(in crate::sema::crates::typed_headers) struct Reserved<'rows, 'maps> {
     maps: &'maps mut Maps,
 }
 impl<'rows, 'maps> Reserved<'rows, 'maps> {
+    pub(in crate::sema::crates::typed_headers) fn recipe_view(&self) -> &RecipeView<'rows> {
+        &self.view
+    }
     pub(in crate::sema::crates::typed_headers) fn input_site(
         &self,
         owner: DeclarationRef,

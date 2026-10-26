@@ -1,6 +1,6 @@
 # Library build blocker tracker
 
-Updated 2026-10-25. This is the work queue for compiling the original pinned
+Updated 2026-10-26. This is the work queue for compiling the original pinned
 `core`, `alloc` and `std`, not a count of completed internal checkpoints.
 PA1–PA24 remain implemented drafts; PA25–PA44 remain planned. No additional
 assignment or whole upstream library has been completed.
@@ -30,11 +30,28 @@ authenticate actual body ownership without granting defining-environment proof.
 Seven original v0/v1 first-encoding files remain byte-identical. Nonzero binding,
 original/instance proof and public Provided execution remain required.
 
+The [neutral numbered-environment successor](private-neutral-numbered-environments.md)
+qualifies actual nonzero Declaration signatures with empty regional inputs and
+positively absent builtin/region payloads. Six controls and strict static checks
+pass in a153.01-second helper. Warm work is constant across1/8/32 actual
+universals. Genuine Holder::borrow has no alias ledger; the separate real-ledger
+cost utility does not qualify a present-ledger body. Actual body/availability
+ports, regional proof, substituted instances and public execution remain open.
+
 The [provided-method execution milestone](parallel/provided-method-execution.md)
 keeps the next acceptance target concrete: the complete source family plus a
 real non-role provided method, actual encoded artifact, fresh imported original
 and instance proof, and a linked consumer printing `7\n`. Private producer and
 Environment checkpoints are prerequisites to that target, not its replacement.
+
+The [Assert condition checkpoint](source-assert-implementation.md) qualifies
+single parsing and owned typed transfer, including real opaque-fragment
+provenance, failed-attempt accounting and an existing configuration sentinel.
+Its three focused controls pass; Assert execution stays closed while the exact
+expression writer and source Not/panic/abort/format/constant paths are built.
+Integration retains the component evidence after checking its ten compiler/test
+files are disjoint from the fifteen neutral-environment files. This is not a
+fresh combined execution or completion of LIB-029.
 
 ## Observable crate milestones
 
