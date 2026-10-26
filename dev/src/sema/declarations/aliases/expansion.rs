@@ -38,6 +38,8 @@ impl Frame {
 }
 struct Expansion<'a> {
     owner: &'a Pending,
+    originals: &'a crate::sema::unreduced::Types,
+    self_only: bool,
     source: NodeKey,
     stack: Vec<Frame>,
     visited: HashSet<Application>,
@@ -50,12 +52,27 @@ impl Checker<'_> {
         &mut self,
         edge: Edge,
     ) -> Result<Vec<Predicate>, Error> {
+        self.expand_alias_for(edge, false)
+    }
+    pub(in crate::sema::declarations) fn expand_alias_naming_edge(
+        &mut self,
+        edge: Edge,
+    ) -> Result<Vec<Predicate>, Error> {
+        self.expand_alias_for(edge, true)
+    }
+    fn expand_alias_for(&mut self, edge: Edge, self_only: bool) -> Result<Vec<Predicate>, Error> {
         let pending = self
             .trait_aliases
             .as_ref()
             .ok_or_else(|| Error::unlocated("missing alias expansion owner"))?;
         pending
-            .expand(&mut self.facts.types, &self.facts.generics, edge)
+            .expand(
+                &mut self.facts.types,
+                &self.facts.generics,
+                &self.facts.unreduced,
+                edge,
+                self_only,
+            )
             .map_err(|e| crate::sema::model::Declarations::error(self.report, edge.source, e))
     }
 }
@@ -64,13 +81,17 @@ impl Pending {
         &self,
         store: &mut Store,
         generics: &Generics,
+        originals: &crate::sema::unreduced::Types,
         root: Edge,
+        self_only: bool,
     ) -> Result<Vec<Predicate>, &'static str> {
         if !self.closed {
             return Err("trait alias clauses require a closed canonical graph");
         }
         let mut query = Expansion {
             owner: self,
+            originals,
+            self_only,
             source: root.source,
             stack: Vec::new(),
             visited: HashSet::default(),
@@ -100,6 +121,11 @@ impl Expansion<'_> {
                 continue;
             }
             let header = owner.header(frame.edge.target)?;
+            let self_type = header
+                .schema
+                .as_ref()
+                .ok_or("unfinished alias naming schema")?
+                .self_type;
             let mut fold = owner.mapping(store, generics, frame.edge)?;
             let charge = |steps, bytes| owner.budget.charge(steps, bytes);
             for clause in header
@@ -107,14 +133,52 @@ impl Expansion<'_> {
                 .as_deref()
                 .ok_or("unfinished alias clauses")?
             {
+                if self.self_only && !self.names_self(store, self_type, clause)? {
+                    continue;
+                }
                 let clause = fold.clause_charged(store, clause.value, &charge)?;
                 self.emit(store, frame.surrounding, clause)?;
             }
             for &dependency in &header.edges {
+                if self.self_only && dependency.original_subject != self_type {
+                    continue;
+                }
                 self.dependency(store, &mut fold, frame.surrounding, dependency)?;
             }
         }
         Ok(())
+    }
+    fn names_self(
+        &self,
+        store: &Store,
+        self_type: TypeId,
+        clause: &Predicate,
+    ) -> Result<bool, &'static str> {
+        let original = self
+            .originals
+            .predicate(clause.source)
+            .unwrap_or(clause.value);
+        let predicate = match original {
+            Clause::Predicate(predicate) => predicate,
+            Clause::ForAll(id) => {
+                store
+                    .quantified(id)
+                    .ok_or("missing alias naming clause")?
+                    .predicate
+            }
+        };
+        // Compare in the declaring alias, before actual arguments can make an
+        // unrelated formal identical to Self. This is naming, not proof.
+        let subject = match predicate.bound {
+            crate::types::parameters::predicates::Bound::ProjectionEqual(_) => {
+                match store.kind(predicate.ty) {
+                    Some(crate::types::Kind::Projection(application)) => application.subject,
+                    _ => return Err("alias naming equality lost its original projection"),
+                }
+            }
+            _ => predicate.ty,
+        };
+        Ok(subject == self_type)
     }
     fn dependency(
         &mut self,
