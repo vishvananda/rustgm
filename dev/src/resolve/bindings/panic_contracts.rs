@@ -296,7 +296,11 @@ pub(in crate::resolve) fn checked_definition(
             .map_err(|message| Error::at(key.file, 0, message))?;
         let declaration = state.declarations.get(&key).map(Entry::declaration);
         if declaration.is_some_and(|declaration| declaration.node != key) {
-            return Err(Error::at(key.file, 0, "source macro declaration key changed"));
+            return Err(Error::at(
+                key.file,
+                0,
+                "source macro declaration key changed",
+            ));
         }
         declaration.map(|declaration| declaration.owner)
     };

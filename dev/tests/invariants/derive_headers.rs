@@ -161,6 +161,17 @@ fn malformed_helpers_global_use_wrong_roles_and_reincarnated_headers_reject() ->
     assert!(panic_contracts::checked_definition(&captured.package, summary.node).is_err());
     let ordinary = crate::test_source::resolve("macro_rules! user{()=>{}}", true)?;
     assert!(panic_contracts::checked(&ordinary.package, key(&ordinary, "user")?)?.is_none());
+    let ordinary = crate::test_source::resolve(
+        "#[must_use]fn marked()->u8{1}macro_rules! user{()=>{}}",
+        true,
+    )?;
+    assert_eq!(
+        crate::pipeline::analyze_source(&ordinary)?
+            .facts
+            .warnings()
+            .count(),
+        0
+    );
     Ok(())
 }
 #[test]

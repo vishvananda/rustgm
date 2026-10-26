@@ -96,6 +96,9 @@ impl crate::resolve::expansion::Report {
             .node
             .ok_or_else(|| Error::unlocated("helper diagnostic requires an actual source macro"))?;
         let error = |message| Error::at(key.file, 0, message);
+        let Some(context) = self.package.macro_context().map_err(error)? else {
+            return Ok(());
+        };
         let scope = self
             .resolution
             .scopes
@@ -129,11 +132,6 @@ impl crate::resolve::expansion::Report {
         let data = header
             .into_data()
             .ok_or_else(|| error("builtin helper declaration data is missing"))?;
-        let context = self
-            .package
-            .macro_context()
-            .map_err(error)?
-            .ok_or_else(|| error("builtin helper provider is missing"))?;
         let introduction = self
             .resolution
             .introductions
