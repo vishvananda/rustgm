@@ -6,9 +6,9 @@ inputs and stops at `library/core/src/clone.rs:389`, byte 14948, the actual
 `fd3467602106e2a2ec416485d8d058b6d2b434ceac7689b4e2f4c792079e500f`.
 The observed CLI SHA-256 is
 `eb644b412597aa77a1d2d8accc539a802e6009e05a940d5ada6e0bfb87d8839a`.
-The six focused source/body/dispatch controls are qualified. Production/CLI
-integration, the separately frozen native observations and the next unchanged-core
-observer remain pending.
+The six focused source/body/dispatch controls and four paired native programs
+are qualified, including the combined production/CLI integration. The next
+unchanged-core observer remains a separate integrator observation.
 
 ## Pinned compiler contract
 
@@ -58,10 +58,10 @@ Eighteen source files produce 36 new pinned metadata observations in editions
 Two initial predictions were wrong: a disabled final owner still produces hard
 E0658 without the feature, rather than an unstable-syntax warning. Both raw
 hypotheses and actual streams remain retained; no older oracle matrix was rerun.
-Four native predictions remain separate and unrun: actual provided/final dynamic
-bodies return 7; ordinary static/virtual overrides return 9. Their frozen executable
-wrappers append only main plus a declared C observer to the immutable metadata
-inputs. The common locked object backend is used without rebuilding CPPGM.
+Four native programs now match pinned rustc exactly: actual provided/final
+dynamic bodies return 7; ordinary static/virtual overrides return 9. Their frozen
+executable wrappers append only main plus a declared C observer to the immutable
+metadata inputs. The common locked object backend is used without rebuilding CPPGM.
 
 Six private groups cover actual provided and source Share bodies, override and
 owner/body errors, exact gate tokens and disabled owners, real dynamic static vs
@@ -86,5 +86,30 @@ Scope32, Report3040; the shared row24 and owner56 remain unchanged. The ordinary
 no-modifier path retains no sparse owner. Actual sparse `(rows, capacity, steps,
 prepaid bytes)` observations are `(8,8,266,824)`, `(32,32,1314,3128)` and
 `(128,128,6274,12344)`. These are existing source-owner accounting observations,
-not allocator counts. No allocation count, full native parity, public final
-transport or whole-core acceptance is claimed.
+not allocator counts. No allocation count, full native parity beyond these four
+programs, public final transport or whole-core acceptance is claimed.
+
+## Combined CLI and native execution
+
+The integrator's combined source `62f54ec7c` passes 20 exact private controls and
+one frontend control, production/CLI and private strict Clippy, format, architecture
+and unoptimized builds in 266.90 seconds. Producer receipt SHA-256 is
+`22e88784db4888e515332a5f9f88f2038497d411806a1113fd0f54c84be25f11`.
+All 2,786 source fingerprints were verified at that integration boundary.
+
+Actual immutable CLI SHA-256:
+`192bb5369a2512de5f0945b4c0544d2d1524439ee6fccc4ebdd4c680633afe17`.
+Producer binding SHA-256:
+`85bbe12f2b602cf4e755565f37eef09cbb4d30e9618b99f843dbe3f1ef5a6cfa`.
+The frozen native plan SHA-256 is
+`b1dd6c7f454818ea5060a3591b806a083e58fc03ddc2f26b8980c6823d368aea`.
+All four candidate/rustc comparisons pass under the unchanged C12 resource and
+storage guards in 0.922 seconds, with exact stdout `7\n`, `9\n`, `7\n`, `9\n`,
+status zero and empty stderr. Native binding SHA-256:
+`72a618b3f2629746a17e5e12676f99534773246c6d355d75b6fb7cd2a172d219`.
+The candidate hash stayed unchanged; disposable executables and objects were
+removed after each case. All raw streams, commands, sources, producer fingerprints
+and output hashes remain under
+`obj/parallel/pa31/final-trait-methods-v1/native-observed-v1`.
+The pending PA5 reference and public transport requirements remain independent.
+
