@@ -9,6 +9,8 @@ impl Machine<'_, '_> {
         destination: TypeId,
         value: Constant,
     ) -> Result<Read<Constant>, Failure> {
+        // Charge the demanded operation before even a failed layout/cache lookup.
+        self.charge(1)?;
         let key = Key {
             input: ReadInput::Transmute { source, value },
             offset: 0,

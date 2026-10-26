@@ -95,12 +95,12 @@ fn source_transmute_authenticates_full_call_header_instance_and_pre_mono_size_re
 fn pre_mono_opponents() -> Result {
     for (name, tail, message) in [
         (
-            "unused-size",
+            "unused_size",
             "fn unused(x:u8)->u16{unsafe{intrinsics::transmute(x)}}",
             "equal source and destination sizes",
         ),
         (
-            "generic-size",
+            "generic_size",
             "unsafe fn unused<T,U>(x:T)->U{unsafe{intrinsics::transmute(x)}}",
             "closed normalized type",
         ),
