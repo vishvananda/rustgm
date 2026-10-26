@@ -213,7 +213,7 @@ impl Query {
                 // that already proved this opaque projection's parent.
                 return self.finish(facts, Some(Resolution::Opaque));
             }
-            self.source = selected.clone();
+            self.source.clone_from(&selected);
             if let Some(selection::Source::Pointee(selected)) = selected.as_ref() {
                 self.prepare_metadata(facts, selected)?;
                 return self.advance_metadata(facts);
@@ -225,13 +225,13 @@ impl Query {
             }
             if self.closed {
                 return if matches!(selected, Some(selection::Source::Implementation { .. })) {
-                    self.source = selected.clone();
+                    self.source.clone_from(&selected);
                     self.finish(facts, None)
                 } else {
                     self.finish(facts, Some(Resolution::Opaque))
                 };
             }
-            self.source = selected.clone();
+            self.source.clone_from(&selected);
             if !matches!(
                 selected,
                 Some(

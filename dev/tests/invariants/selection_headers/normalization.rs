@@ -245,7 +245,10 @@ fn declaration_projection_templates_restore_results_before_fresh_rebasing() -> T
             .ok_or("expected associated projection")?
             .item,
         projected.family,
-        projected.source.ok_or("missing selected implementation")?,
+        projected
+            .source
+            .as_ref()
+            .ok_or("missing selected implementation")?,
     )?;
     let ty = definition
         .result(&mut f.facts)?
@@ -336,7 +339,7 @@ fn closed_projection_fallback_keeps_assumptions_and_discarded_trials_separate() 
                 &f.facts,
                 application.item,
                 projected.family,
-                projected.source.ok_or("missing implementation")?,
+                projected.source.as_ref().ok_or("missing implementation")?,
             )?;
             let ty = definition.result(&mut f.facts)?.ok_or("missing result")?;
             assert_eq!(
@@ -347,10 +350,7 @@ fn closed_projection_fallback_keeps_assumptions_and_discarded_trials_separate() 
                 f.expected
             );
         } else {
-            let Some(Source::Assumption(premise)) = &projected.source else {
-                return Err("failed closed search lost its original caller premise".into());
-            };
-            assert_eq!(*premise, root);
+            assert!(matches!(projected.source, Some(Source::Assumption(p)) if p == root));
             assert_eq!(projected.resolution, Some(Resolution::Opaque));
         }
         if template {

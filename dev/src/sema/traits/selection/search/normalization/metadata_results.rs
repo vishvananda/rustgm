@@ -13,7 +13,13 @@ pub(super) struct Pending {
     completed: Completion,
     plan: MetadataPlan,
     needed: Option<TypeId>,
-    sized: Option<Option<usize>>,
+    sized: Sizing,
+}
+#[derive(Clone, Copy)]
+enum Sizing {
+    NotRequested,
+    Proven(usize),
+    Opaque,
 }
 impl Search<'_> {
     pub(super) fn stage_metadata_result(
@@ -54,7 +60,7 @@ impl Search<'_> {
             completed,
             plan,
             needed: None,
-            sized: None,
+            sized: Sizing::NotRequested,
         })));
         Ok(None)
     }
@@ -71,8 +77,8 @@ impl Search<'_> {
         else {
             return Err("missing source Metadata plan".into());
         };
-        let resolution = if let Some(sized) = pending.sized {
-            Some(if sized.is_some() {
+        let resolution = if !matches!(pending.sized, Sizing::NotRequested) {
+            Some(if matches!(pending.sized, Sizing::Proven(_)) {
                 crate::sema::header_attributes::charge_source_retention(facts, 1, 0)
                     .map_err(|error| error.to_string())?;
                 Resolution::Type(TypeId::UNIT)
@@ -99,7 +105,7 @@ impl Search<'_> {
             return Err("inherited result used source metadata publication".into());
         };
         let equations_start = pending.completed.equations_start;
-        let node = self.complete_metadata_proof(facts, pending, normalization.scope)?;
+        let node = self.complete_metadata_proof(facts, &pending, normalization.scope)?;
         self.publish_normalization(facts, frame, equations_start, resolution, node)?;
         Ok(Action::Continue)
     }
@@ -147,22 +153,22 @@ impl Search<'_> {
             .needed
             .take()
             .ok_or("missing requested Metadata Sized input")?;
-        pending.sized = Some(match decision {
-            Decision::Proven(node) => Some(node),
-            Decision::Absent | Decision::Deferred => None,
+        pending.sized = match decision {
+            Decision::Proven(node) => Sizing::Proven(node),
+            Decision::Absent | Decision::Deferred => Sizing::Opaque,
             Decision::Refuted(_) => {
                 return Err("negative Metadata Sized child was not classified".into());
             }
-        });
+        };
         Ok(())
     }
     fn complete_metadata_proof(
         &mut self,
         facts: &Declarations,
-        pending: Pending,
+        pending: &Pending,
         scope: crate::types::lifetime_proof::ScopeId,
     ) -> Result<usize, String> {
-        let Some(Some(sized)) = pending.sized else {
+        let Sizing::Proven(sized) = pending.sized else {
             return Ok(pending.completed.node);
         };
         let growth = self.query.node_growth();

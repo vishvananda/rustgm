@@ -416,6 +416,14 @@ impl Opened {
         if let Some(selected) = self.metadata_request(facts)? {
             return Ok(Attempt::Selected(selected));
         }
+        self.select_member_result(facts, availability)
+    }
+
+    fn select_member_result(
+        &mut self,
+        facts: &mut Declarations,
+        availability: crate::sema::traits::implementations::Availability,
+    ) -> Result<Attempt, String> {
         let assumptions = caller_assumptions(facts, &mut self.context, self.environment.as_ref())?;
         let caller = Caller {
             assumptions: &assumptions,
@@ -491,7 +499,7 @@ impl Opened {
                 facts,
                 self.application.item,
                 crate::types::GenericArgs::EMPTY,
-                source,
+                &source,
             )?;
             if let Some(ty) = definition.result(facts)? {
                 ResultType::Type(restoration.apply(&mut facts.types, ty)?)

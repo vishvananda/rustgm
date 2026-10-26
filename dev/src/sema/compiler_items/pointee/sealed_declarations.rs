@@ -209,13 +209,14 @@ impl Contracts {
             .bounds;
         let mut bytes = size_of::<Self>().saturating_add(2 * size_of::<usize>());
         let mut steps = 1usize;
-        for declaration in [Some(plan.trait_), Some(plan.member), plan.nominal] {
-            if let Some(declaration) = declaration {
-                bytes = bytes.saturating_add(State::bytes(facts, declaration));
-                steps = steps
-                    .saturating_add(parameters(facts, declaration).len())
-                    .saturating_add(clauses(facts, declaration).len());
-            }
+        for declaration in [Some(plan.trait_), Some(plan.member), plan.nominal]
+            .into_iter()
+            .flatten()
+        {
+            bytes = bytes.saturating_add(State::bytes(facts, declaration));
+            steps = steps
+                .saturating_add(parameters(facts, declaration).len())
+                .saturating_add(clauses(facts, declaration).len());
         }
         bytes = bytes
             .saturating_add(

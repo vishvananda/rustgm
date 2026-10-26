@@ -12,11 +12,11 @@ use crate::{
 pub(super) struct Pending {
     plan: MetadataPlan,
     goal: Option<Goal>,
-    pending: Option<Box<selection::Pending>>,
+    selection: Option<Box<selection::Pending>>,
 }
 impl Pending {
     pub(super) fn allocation_end(&self, first: u32) -> u32 {
-        self.pending
+        self.selection
             .as_ref()
             .map_or(first, |pending| first.max(pending.allocation_end()))
     }
@@ -55,7 +55,7 @@ impl Query {
         self.inherited = Some(Box::new(Continuation::Metadata(Pending {
             plan,
             goal: None,
-            pending: None,
+            selection: None,
         })));
         Ok(())
     }
@@ -99,7 +99,7 @@ impl Query {
             .goal
             .as_ref()
             .ok_or("missing source Metadata Sized goal")?;
-        let progress = if let Some(query) = pending.pending.take() {
+        let progress = if let Some(query) = pending.selection.take() {
             query.resume(facts, &mut self.state.context, goal, self.frontier)
         } else {
             crate::sema::header_attributes::charge_source_retention(
@@ -123,7 +123,7 @@ impl Query {
         .map_err(|_| "invalid or exhausted source Metadata Sized proof")?;
         match progress {
             selection::Progress::Pending(dependency, query) => {
-                pending.pending = Some(query);
+                pending.selection = Some(query);
                 self.wait_metadata(facts, dependency)
             }
             selection::Progress::Ready(selected) => {

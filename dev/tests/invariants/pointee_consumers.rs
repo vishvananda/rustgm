@@ -199,15 +199,15 @@ fn dynamic_regions_and_failed_retention_replays_keep_the_actual_source_owner() -
     let report = provider("with-copy/concrete-results")?;
     let mut facts = declarations::analyze(&report)?;
     let application = application(&mut facts, TypeId::primitive(Primitive::U8))?;
-    let selected = match super::select(
+    let super::Readiness::Ready(selected) = super::select(
         &mut facts,
         Predicate {
             ty: application.subject,
             bound: Bound::Trait(application.trait_application),
         },
-    )? {
-        super::Readiness::Ready(selected) => selected,
-        _ => return Err("complete source Pointee not ready".into()),
+    )?
+    else {
+        return Err("complete source Pointee not ready".into());
     };
     let mut plan = MetadataPlan::new(&mut facts, &selected, application)?;
     assert!(matches!(plan.advance(&mut facts)?, MetadataStep::Ready(_)));

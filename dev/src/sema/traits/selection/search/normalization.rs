@@ -389,7 +389,7 @@ impl Search<'_> {
     ) -> Result<(Option<Resolution>, usize), String> {
         let Completion {
             opened,
-            mut node,
+            node,
             equations_start,
         } = completed;
         let source = self.query.nodes[node]
@@ -404,7 +404,7 @@ impl Search<'_> {
                     Resolution::Type(crate::sema::projections::implementation_result(
                         facts,
                         application,
-                        source,
+                        &source,
                     )?)
                 } else if let Some(definition) = Definition::alias(
                     facts,
@@ -425,68 +425,94 @@ impl Search<'_> {
             | Source::ResultBound(_)
             | Source::QuantifiedAssumption { .. }
             | Source::QuantifiedResultBound { .. } => {
-                let Some(application) = opened.application.associated() else {
-                    return Ok((Some(Resolution::Opaque), node));
-                };
-                let application = Application {
-                    item: application.item,
-                    predicate: opened.goal,
-                    arguments: context
-                        .known_arguments(&facts.types, opened.application.arguments())
-                        .map_err(inference)?,
-                };
-                match equalities::for_projection(
+                return self.resolve_premise_result(
                     facts,
                     context,
-                    &application,
-                    self.caller.environment.map(AsRef::as_ref),
-                    self.query.nodes[node]
-                        .end
-                        .max(equality.end)
-                        .max(self.query.allocations.floor()),
-                )? {
-                    equalities::Selection::Proven(evidence) => {
-                        let ty = evidence.ty;
-                        let mut equations = context.region_equalities.split_off(equations_start);
-                        node = self.query.equality_use(
-                            node,
-                            equality.scope,
-                            evidence,
-                            &mut equations,
-                        )?;
-                        context.region_equalities.extend(equations);
-                        Resolution::Type(ty)
-                    }
-                    equalities::Selection::Absent => {
-                        #[cfg(test)]
-                        super::copy_trace::record(|| {
-                            format!(
-                                "opaque-associated-equality-absent query={:p} scope={:?} node={node} node_scope={:?} node_goal={:?} application={:?} assumption={} result_bound={} quantified={}",
-                                &self.query,
-                                equality.scope,
-                                self.query.node_scope(node),
-                                self.query.nodes[node].goal,
-                                opened.application.associated(),
-                                matches!(source, Source::Assumption(_)),
-                                matches!(source, Source::ResultBound(_)),
-                                matches!(
-                                    source,
-                                    Source::QuantifiedAssumption { .. }
-                                        | Source::QuantifiedResultBound { .. }
-                                )
-                            )
-                        });
-                        Resolution::Opaque
-                    }
-                    equalities::Selection::Ambiguous => {
-                        return Ok((None, node));
-                    }
-                }
+                    equality,
+                    Completion {
+                        opened,
+                        node,
+                        equations_start,
+                    },
+                );
             }
             Source::Equality => return Err("equality evidence cannot prove a trait premise".into()),
             Source::Builtin => return Err("builtin evidence cannot prove a trait premise".into()),
             Source::Pointee(_) => {
                 return Err("source Metadata bypassed its checked result plan".into());
+            }
+        };
+        Ok((Some(resolution), node))
+    }
+    /// Written result equalities keep their original proved parent and scope.
+    fn resolve_premise_result(
+        &mut self,
+        facts: &mut Declarations,
+        context: &mut super::Context,
+        equality: &Normalization,
+        completed: Completion,
+    ) -> Result<(Option<Resolution>, usize), String> {
+        let Completion {
+            opened,
+            mut node,
+            equations_start,
+        } = completed;
+
+        let Some(application) = opened.application.associated() else {
+            return Ok((Some(Resolution::Opaque), node));
+        };
+        let application = Application {
+            item: application.item,
+            predicate: opened.goal,
+            arguments: context
+                .known_arguments(&facts.types, opened.application.arguments())
+                .map_err(inference)?,
+        };
+        let resolution = match equalities::for_projection(
+            facts,
+            context,
+            &application,
+            self.caller.environment.map(AsRef::as_ref),
+            self.query.nodes[node]
+                .end
+                .max(equality.end)
+                .max(self.query.allocations.floor()),
+        )? {
+            equalities::Selection::Proven(evidence) => {
+                let ty = evidence.ty;
+                let mut equations = context.region_equalities.split_off(equations_start);
+                node = self
+                    .query
+                    .equality_use(node, equality.scope, evidence, &mut equations)?;
+                context.region_equalities.extend(equations);
+                Resolution::Type(ty)
+            }
+            equalities::Selection::Absent => {
+                #[cfg(test)]
+                super::copy_trace::record(|| {
+                    let source = self.query.nodes[node].source.as_ref();
+                    format!(
+                        "opaque-associated-equality-absent query={:p} scope={:?} node={node} node_scope={:?} node_goal={:?} application={:?} assumption={} result_bound={} quantified={}",
+                        &self.query,
+                        equality.scope,
+                        self.query.node_scope(node),
+                        self.query.nodes[node].goal,
+                        opened.application.associated(),
+                        matches!(source, Some(Source::Assumption(_))),
+                        matches!(source, Some(Source::ResultBound(_))),
+                        matches!(
+                            source,
+                            Some(
+                                Source::QuantifiedAssumption { .. }
+                                    | Source::QuantifiedResultBound { .. }
+                            )
+                        )
+                    )
+                });
+                Resolution::Opaque
+            }
+            equalities::Selection::Ambiguous => {
+                return Ok((None, node));
             }
         };
         Ok((Some(resolution), node))

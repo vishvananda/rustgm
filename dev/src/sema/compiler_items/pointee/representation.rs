@@ -55,7 +55,7 @@ impl Plan {
                     return Ok(Step::Ready(TypeId::UNIT));
                 }
                 metadata::Step::Complete(Metadata::Length) => {
-                    return self.ready(facts, Kind::Primitive(Primitive::Usize));
+                    return Self::ready(facts, Kind::Primitive(Primitive::Usize));
                 }
                 metadata::Step::Complete(Metadata::VTable(tail)) => {
                     let nominal = self
@@ -72,7 +72,7 @@ impl Plan {
                     )
                     .map_err(|error| error.to_string())?;
                     let arguments = facts.types.intern_arguments(&[Argument::Type(tail)])?;
-                    return self.ready(facts, Kind::Adt(ItemId(nominal.definition.0), arguments));
+                    return Self::ready(facts, Kind::Adt(ItemId(nominal.definition.0), arguments));
                 }
                 metadata::Step::Complete(Metadata::Unknown(tail))
                     if tail != application.subject =>
@@ -91,7 +91,7 @@ impl Plan {
             }
         }
     }
-    fn ready(&self, facts: &mut Declarations, kind: Kind) -> Result<Step, String> {
+    fn ready(facts: &mut Declarations, kind: Kind) -> Result<Step, String> {
         header_attributes::charge_source_retention(facts, 1, size_of::<Kind>())
             .map_err(|error| error.to_string())?;
         Ok(Step::Ready(facts.types.intern(kind)?))
