@@ -1,4 +1,4 @@
-"""Exact six shared input kernels and unchanged source controls; static audit overlaps one sequential Rust lane."""
+"""Exact six shared signature mapping and collected formal controls; static audit overlaps one sequential Rust lane."""
 from concurrent.futures import ThreadPoolExecutor
 import hashlib,json,os,re,signal,subprocess,sys,time
 from pathlib import Path
@@ -15,7 +15,7 @@ def worker(started):
     freeze=json.loads((ROOT/'.github/inherited_numbering_freeze.json').read_text())
     sources=fingerprint(ROOT)
     if sources!=freeze['sources']:raise ValueError('frozen source changed')
-    out=ROOT/f'obj/qualification/fast/{time.time_ns()}-shared-input-kernels'
+    out=ROOT/f'obj/qualification/fast/{time.time_ns()}-shared-header-mapping'
     deadline=started+185
     steps=Steps(ROOT,SimpleNamespace(deadline=deadline,evidence_root=out,prune_under=[]))
     cases=freeze['selected']
@@ -36,26 +36,11 @@ def worker(started):
             branch.receipt.update(state='failed',error=str(error));raise
         finally:branch.save()
     try:
-        retained=json.loads((ROOT/'.github/shared_kernel_retained.json').read_text())
-        previous=retained['sources']
-        changed={p for p in sources.keys()|previous.keys() if sources.get(p)!=previous.get(p)}
-        if changed!=set(retained['changed']):raise ValueError('retained source changes escaped exact test-only delta')
-        files=retained['old_files']
-        for path,data in files.items():
-            if hashlib.sha256(data.encode()).hexdigest()!=previous[path]:raise ValueError('retained old source binding changed')
-        path='dev/src/sema/crates/typed_headers.rs'
-        if files[path].replace('../../../tests/invariants/environment_origins.rs','../../../tests/invariants/origin_relationships.rs')!=(ROOT/path).read_text():raise ValueError('cfg(test) path-only proof changed')
-        path='dev/tests/invariants/remapped_inputs.rs'
-        if files[path].replace('let actual = crate::unpaid_cases::trait_extended(inherited_tests::HOLDER)?;','let mut actual = crate::unpaid_cases::trait_extended(inherited_tests::HOLDER)?;')!=(ROOT/path).read_text():raise ValueError('actual owner mutability proof changed')
-        if '#[cfg(test)]\n#[path = "../../../tests/invariants/origin_relationships.rs"]\nmod origin_tests;' not in (ROOT/'dev/src/sema/crates/typed_headers.rs').read_text():raise ValueError('changed origin module is not test-only')
-        if retained['receipt']['sources']!=previous or retained['lint']['sources']!=previous or retained['receipt']['candidate']!=retained['source_commit']:raise ValueError('retained actual receipt source mismatch')
-        if next(x for x in retained['receipt']['steps'] if x['name']=='metadata')['status']!=0 or next(x for x in retained['lint']['steps'] if x['name']=='clippy-production')['status']!=0:raise ValueError('retained successful static step missing')
-        if cli_sha!=retained['compiler_sha256'] or cli_sha!=retained['receipt']['compiler_sha256']:raise ValueError('actual mandatory CLI does not match retained production source')
-        steps.receipt['retained_static']=freeze['retained_static'];steps.save()
+        steps.run('metadata',[sys.executable,'scripts/assignment_metadata.py'])
         steps.run('format',['cargo','fmt','--manifest-path','dev/Cargo.toml','--all','--','--check'])
         common=['--manifest-path','dev/Cargo.toml','--locked','--profile','dev-fast']
         audit=[('architecture',[ROOT/'obj/audit-venv/bin/python','scripts/rust_audit.py','--root','.','--cache','obj/fast-audit.json'],{})]
-        lint=[('clippy-private',['cargo','clippy',*common,'--lib','--','--test','-D','warnings'],{'CARGO_TARGET_DIR':str(ROOT/'obj/rust/private-lint')})]
+        lint=[('clippy-production',['cargo','clippy',*common,'--lib','--bin','rustgm','--','-D','warnings'],{}),('clippy-private',['cargo','clippy',*common,'--lib','--','--test','-D','warnings'],{'CARGO_TARGET_DIR':str(ROOT/'obj/rust/private-lint')})]
         failures=[];start=time.monotonic()
         with ThreadPoolExecutor(max_workers=2) as executor:
             futures=[executor.submit(independent,'audit',audit),executor.submit(independent,'lint',lint)]
@@ -107,6 +92,6 @@ def main():
         if status:
             try:os.killpg(process.pid,signal.SIGKILL)
             except ProcessLookupError:pass
-        print(f'Shared input kernel gate total: {time.monotonic()-start:.2f}s status={status}',flush=True)
+        print(f'Shared header mapping gate total: {time.monotonic()-start:.2f}s status={status}',flush=True)
 
 if __name__=='__main__':sys.exit(main())

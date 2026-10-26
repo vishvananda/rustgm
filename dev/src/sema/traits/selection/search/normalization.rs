@@ -1,4 +1,5 @@
 //! Normalization requests descend on the existing proof stack and retain their evidence.
+mod ancestor_results;
 use super::{Action, Decision, Declarations, Frame, Goal, Search, Source, inference};
 use crate::sema::{projections::Definition, traits::equalities};
 use crate::types::{
@@ -22,6 +23,7 @@ pub(super) struct Normalization {
     pub stopped: Option<Decision>,
     pub scope: ScopeId,
     pub scoped: Option<Box<super::callable_queries::Scoped>>,
+    inherited: Option<Box<ancestor_results::Inherited>>,
 }
 struct Opened {
     goal: Goal,
@@ -59,6 +61,7 @@ impl Normalization {
             stopped: None,
             scope: frame.scope,
             scoped: None,
+            inherited: None,
         })
     }
 }
@@ -156,6 +159,9 @@ impl Search<'_> {
         if let Some(decision) = normalization.stopped {
             return Ok(Action::Complete(decision));
         }
+        if normalization.inherited.is_some() {
+            return self.advance_inherited_result(facts, frame);
+        }
         let value = match normalization.step {
             Step::Complete(value) => value,
             Step::Resolve(request) => {
@@ -242,7 +248,10 @@ impl Search<'_> {
             .normalization
             .as_mut()
             .ok_or("missing parent normalization")?;
-        let Decision::Proven(mut node) = decision else {
+        if equality.inherited.is_some() {
+            return Self::accept_inherited_result(equality, decision);
+        }
+        let Decision::Proven(node) = decision else {
             #[cfg(test)]
             super::copy_trace::record(|| {
                 format!(
@@ -257,9 +266,6 @@ impl Search<'_> {
             equality.stopped = Some(decision);
             return Ok(());
         };
-        let Step::Resolve(request) = equality.step else {
-            return Err("missing pending equality normalization".into());
-        };
         let opened = equality
             .opened
             .take()
@@ -270,21 +276,41 @@ impl Search<'_> {
             .context
             .equate_trait_predicate(&mut facts.types, &opened.goal, self.query.nodes[node].goal)
             .map_err(inference)?;
-        let (resolution, selected) = self.resolve_normalization(
+        let Some(completed) = self.stage_inherited_result(
             facts,
-            &mut frame.inputs.context,
             equality,
             Completion {
                 opened,
                 node,
                 equations_start,
             },
-        )?;
+        )?
+        else {
+            return Ok(());
+        };
+        self.finish_normalization(facts, frame, completed)
+    }
+    fn finish_normalization(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+        completed: Completion,
+    ) -> Result<(), String> {
+        let equality = frame
+            .normalization
+            .as_mut()
+            .ok_or("missing parent normalization")?;
+        let Step::Resolve(request) = equality.step else {
+            return Err("missing pending equality normalization".into());
+        };
+        let equations_start = completed.equations_start;
+        let (resolution, selected) =
+            self.resolve_normalization(facts, &mut frame.inputs.context, equality, completed)?;
         let Some(mut resolution) = resolution else {
             equality.stopped = Some(Decision::Deferred);
             return Ok(());
         };
-        node = selected;
+        let mut node = selected;
         if equality.scope != frame.scope {
             let equations = frame
                 .inputs

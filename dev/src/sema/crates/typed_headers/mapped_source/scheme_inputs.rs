@@ -65,12 +65,7 @@ impl Graph {
     }
 }
 
-#[derive(Clone, Copy)]
-pub(super) struct SignaturePort {
-    pub owner: crate::support::crates::owner_catalog::DeclarationRef,
-    pub kind: s::BinderKind,
-    pub raw: crate::support::crates::generics::Signature,
-}
+pub(super) use super::super::signature_shapes::SignaturePort;
 
 impl Graph {
     pub(super) fn require_signature(
@@ -84,52 +79,8 @@ impl Graph {
         *steps = steps.saturating_add(1);
         self.require_store(store)?;
         let rows = self.descriptor(catalog)?.rows();
-        let SignaturePort { owner, kind, raw } = expected;
-        let frame = rows
-            .binders
-            .get(raw.binder.0 as usize)
-            .ok_or("imported callable signature lacks its actual binder frame")?;
-        let Some(crate::types::Kind::Function {
-            bound_regions,
-            parameters,
-            result,
-            unsafe_,
-            convention,
-        }) = store.kind(actual)
-        else {
-            return Err("imported callable signature is not an actual function type");
-        };
-        if frame.owner != owner
-            || frame.kind != kind
-            || bound_regions != frame.count
-            || unsafe_ != raw.unsafe_
-            || raw.variadic
-            || raw.convention != crate::support::crates::generics::Convention::Rust
-            || convention != crate::types::callable::Convention::RUST
-            || self
-                .ty(raw.result)
-                .map_err(|_| "missing actual source result type")?
-                != result
-        {
-            return Err("imported callable changed its full actual binder/signature contract");
-        }
-        let expected = raw.parameters.slice(&rows.roots)?;
-        let actual = store
-            .list(parameters)
-            .ok_or("imported callable omitted its actual inputs")?;
-        if actual.len() != expected.len() {
-            return Err("imported callable signature omitted actual inputs");
-        }
-        for (&actual, &expected) in actual.iter().zip(expected) {
-            *steps = steps.saturating_add(1);
-            if actual
-                != self
-                    .ty(expected)
-                    .map_err(|_| "missing actual source input type")?
-            {
-                return Err("imported callable changed an actual full parameter type");
-            }
-        }
-        Ok(())
+        super::super::signature_shapes::require(rows, store, expected, actual, steps, |reference| {
+            self.ty(reference)
+        })
     }
 }

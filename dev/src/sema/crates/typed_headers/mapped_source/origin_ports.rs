@@ -82,9 +82,11 @@ impl Graph {
 
     pub(in crate::sema) fn implementation(
         &self,
+        store: &crate::types::Store,
         owner: Owner,
         predicate: crate::types::parameters::predicates::Predicate,
     ) -> Result<(bool, bool), &'static str> {
+        self.require_store(store)?;
         self.owner(owner)?;
         let OwnerKind::ImportedImpl(id) = owner.kind else {
             return Err("imported conformance requires its actual imported impl owner");

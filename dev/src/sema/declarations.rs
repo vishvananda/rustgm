@@ -448,7 +448,7 @@ impl Checker<'_> {
             ));
         }
         self.complete_layouts()?;
-        super::specialization::reject_execution(&self.facts, self.report)
+        super::specialization::require_execution(&self.facts)
     }
     fn latent_library_definition(&self, id: DefId) -> bool {
         self.report
@@ -1727,3 +1727,7 @@ pub(super) fn array_length(report: &Report, key: NodeKey) -> Result<u64, Error> 
 #[cfg(test)]
 #[path = "../../tests/invariants/verifier_states.rs"]
 mod specialization_tests;
+
+#[cfg(test)]
+#[path = "../../tests/invariants/ancestor_dispatch.rs"]
+mod member_execution_tests;

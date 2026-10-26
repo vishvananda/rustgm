@@ -189,6 +189,8 @@ impl<'a> Search<'a> {
                         child
                     } else if let Some(child) = self.language_child(facts, frame)? {
                         child
+                    } else if let Some(child) = self.inherited_result_child(facts, frame)? {
+                        child
                     } else if let Some(child) = self.condition_child(facts, frame)? {
                         child
                     } else {

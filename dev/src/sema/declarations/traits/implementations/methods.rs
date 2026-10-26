@@ -206,6 +206,7 @@ impl Checker<'_> {
         definitions: &conformance::Definitions,
     ) -> Result<(), Error> {
         self.trait_override(actual)?;
+        self.reject_specializable_result(expected.definition, actual)?;
         if self
             .facts
             .methods
