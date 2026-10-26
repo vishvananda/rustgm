@@ -1,0 +1,12 @@
+#![feature(const_trait_impl)]
+#![feature(no_core,lang_items)]
+#![no_core]
+#![allow(internal_features,dead_code)]
+#[lang="pointee_sized"]pub trait PointeeSized{}
+#[lang="meta_sized"]pub trait MetaSized:PointeeSized{}
+#[lang="sized"]pub trait Sized:MetaSized{}
+#[lang="destruct"]pub const trait Destruct:PointeeSized{}
+#[lang="not"]pub const trait OperatorNot{type Output;fn not(self)->Self::Output;}
+impl OperatorNot for bool{type Output=bool;fn not(self)->bool{!self}}
+#[unsafe(no_mangle)]pub static ANSWER:bool=!false;
+

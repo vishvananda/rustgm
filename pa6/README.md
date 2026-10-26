@@ -41,6 +41,14 @@ the match can see them. Guard bindings can shadow the arm's pattern bindings.
 Or-patterns must agree on binding names/modes. Constants and constructors in
 patterns are references rather than invented local variables.
 
+A free `const _` retains a distinct declaration, item key and initializer scope,
+but contributes no binding named `_`. Repeated module/block declarations and
+macro-generated copies remain separate items. Associated constants require a
+name. The ordinary type and constant-evaluation phases still check every
+retained initializer, including within unused functions. Public visibility does
+not give an unnamed constant an export name; its semantic lint is
+`unused_visibilities`. See [the checkpoint contract](../docs/unnamed-free-constants.md).
+
 Associated functions, constants and type aliases require qualified paths; they
 do not shadow bare lexical items of the same name. Ordinary items nested inside
 a method still introduce lexical bindings in that body. Method-call syntax is

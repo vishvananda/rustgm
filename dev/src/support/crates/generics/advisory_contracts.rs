@@ -45,21 +45,51 @@ pub struct HeaderAttributeColumns {
     pub traits: Vec<HeaderContract>,
 }
 impl HeaderAttributeColumns {
-    pub(super) fn validate(
+    pub(crate) fn validate(
         &self,
         rows: &SourceRows,
         base: usize,
         work: &mut Work,
     ) -> Result<usize, &'static str> {
+        self.validate_headers(
+            &rows.declarations,
+            &rows.functions,
+            &rows.traits,
+            base,
+            work,
+        )
+    }
+    pub(crate) fn validate_columns(
+        &self,
+        rows: &super::Columns,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<usize, &'static str> {
+        self.validate_headers(
+            &rows.declarations,
+            &rows.functions,
+            &rows.traits,
+            base,
+            work,
+        )
+    }
+    fn validate_headers(
+        &self,
+        declarations: &[super::Declaration],
+        functions: &[super::FunctionHeader],
+        traits: &[super::TraitHeader],
+        base: usize,
+        work: &mut Work,
+    ) -> Result<usize, &'static str> {
         work.charge(self.functions.len().saturating_add(self.traits.len()))?;
-        if self.functions.len() != rows.functions.len() || self.traits.len() != rows.traits.len() {
+        if self.functions.len() != functions.len() || self.traits.len() != traits.len() {
             return Err("source header attribute columns are incomplete");
         }
         let mut bytes = size_of::<Self>()
             .saturating_add(retained::vector(&self.functions))
             .saturating_add(retained::vector(&self.traits));
-        for (contract, header) in self.functions.iter().zip(&rows.functions) {
-            Self::check_row(contract, header.declaration, rows, &mut bytes, work)?;
+        for (contract, header) in self.functions.iter().zip(functions) {
+            Self::check_row(contract, header.declaration, declarations, &mut bytes, work)?;
             if contract.inline.is_some_and(|inline| {
                 (inline.applicability == InlineApplicability::FunctionBody)
                     != matches!(header.body, super::FunctionBody::Original(_))
@@ -67,8 +97,8 @@ impl HeaderAttributeColumns {
                 return Err("source inline applicability differs from its actual function body");
             }
         }
-        for (contract, header) in self.traits.iter().zip(&rows.traits) {
-            Self::check_row(contract, header.declaration, rows, &mut bytes, work)?;
+        for (contract, header) in self.traits.iter().zip(traits) {
+            Self::check_row(contract, header.declaration, declarations, &mut bytes, work)?;
             if contract.inline.is_some() {
                 return Err("source trait header cannot carry an effective inline hint");
             }
@@ -81,13 +111,12 @@ impl HeaderAttributeColumns {
     fn check_row(
         contract: &HeaderContract,
         expected: DeclarationRef,
-        rows: &SourceRows,
+        declarations: &[super::Declaration],
         bytes: &mut usize,
         work: &mut Work,
     ) -> Result<(), &'static str> {
         work.charge(1)?;
-        let declaration = rows
-            .declarations
+        let declaration = declarations
             .get(expected.0 as usize)
             .ok_or("source attribute header declaration is absent")?;
         if contract.declaration != expected || contract.declaration_site >= declaration.sites {
