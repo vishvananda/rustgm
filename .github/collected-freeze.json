@@ -1,6 +1,5 @@
 {
-  "source_commit": "3487146604932ddd56cd8e803fca63564bea3ea8",
-  "public_base": "0acddbc2",
+  "source_commit": "1dba70eeb6ecae344c4cbdf3f8ce54b0bd4efa0c",
   "sources": {
     "dev/bin/crates.rs": "efbab4e37ff93eb8c4affdbc721a01d33017da46a0c4472ce6dfcee80905340b",
     "dev/bin/modules.rs": "09615d5bb742fc41ec100196e341e2e2ca842a9b00ca6058f77b6f065019d2e6",
@@ -1939,7 +1938,7 @@
     "dev/tests/invariants/coercion_evidence.rs": "2ffb9bf47f82e129594582605f20b31826fb311c1d1613538291d40a1cccd207",
     "dev/tests/invariants/coercion_formation.rs": "5812ee8818b0584dc2574fb0b72617518b4686842708ed622fb2dba310b9ce67",
     "dev/tests/invariants/coercion_frontier.rs": "3574e693f28e69063db3247961fb219f77fce63d4c5c9f95cb7ad723d3267525",
-    "dev/tests/invariants/collected_consumers.rs": "af06f542fb52b857fd4f29a413ce12bebf05add09c3608813e0c98497a5e0a9c",
+    "dev/tests/invariants/collected_consumers.rs": "7779159b56e54b229f22d7f2aae5a9a9b6672ac1a857e4c5e700e5f4bc31de4a",
     "dev/tests/invariants/collection_declarations.rs": "17985028d421f286f6771159e3e0090e0f7e633ca3f992ad1df7f0f0194f9357",
     "dev/tests/invariants/collection_witnesses.rs": "1b508a21294e44b4840b6cb8d45f4b60572f0c383eeaf5cff8e19663fd1935d9",
     "dev/tests/invariants/completed_body_requirements.rs": "e5bc0ccb2d254b9edda3ffe619a5c393cf1a0d83ceb4cb6ccc35d33c53219e15",
@@ -2711,15 +2710,32 @@
     "pa8/tests/manifest.json": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
     "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
   },
-  "source_sha256": "a3227ffe9421ae7152da3bd4347eb7c0ee80e9dc969ad7cca90aa1ade4090612",
+  "source_sha256": "cfa9ffc53771a82092f912b39092be5569dbfbbba882d4865c457f8acfbdbf74",
   "selected": [
-    "sema::crates::typed_headers::consumer_sessions::tests::completed::collected_source_headers_bind_full_family_to_fresh_actual_consumer",
+    "sema::crates::typed_headers::consumer_sessions::tests::completed::collected_source_headers_bind_full_family_to_fresh_actual_consumer"
+  ],
+  "retained": [
     "sema::crates::typed_headers::consumer_sessions::tests::completed::collected_source_headers_reject_unpaid_swapped_and_foreign_sidecars",
     "sema::crates::typed_headers::consumer_sessions::tests::completed::collected_source_headers_bound_failed_work_and_warm_storage",
     "lower::transported_source::trait_inputs::tests::numbered_trait_inputs_retain_full_family_and_actual_contract_capacity",
     "lower::transported_source::trait_inputs::tests::numbered_trait_inputs_preserve_defaultness_fences_and_failed_work",
     "support::crates::codec::packet_envelope::tests::ordinary_source_profiles_capture_plain_contract_bytes_before_adapter"
   ],
+  "retained_run": 40265276583,
+  "changed_file": "dev/tests/invariants/collected_consumers.rs",
+  "allowed_functions": [
+    "collected_source_headers_bind_full_family_to_fresh_actual_consumer",
+    "check_member_contracts"
+  ],
+  "proof_files": {
+    "old-source.rs": "af06f542fb52b857fd4f29a413ce12bebf05add09c3608813e0c98497a5e0a9c",
+    "retained-receipt.json": "0f45dd39e20c587e51d2e2b7a5fbdc7c4bace94eb892438da425217c28d9bb1c",
+    "retained-lint.json": "e0b5545b047719b3eee0e5c9a35bc436eff66646574f7fbeafbea6324fad4abf",
+    "retained-audit.json": "73c5575f71c88f6228a73f792526cf0e24b88c869aff3adad28a48e5e855eb43",
+    "retained-lib.stdout": "84f640b05480a075d9fa86b8f504f83b789d2aeececbcdc3dedff12b0bc8f78e",
+    "retained-raw.zip": "12f7c78b071269fe1dec13b5b5275491a894aa698c270ccaa3eb1d8ecc2d3ce0"
+  },
+  "expected_cli_sha256": "2696a2b473f328ae3e0202b8e1b16ed3c7c411f0a4e7a4872f75bfae41ce0248",
   "baseline": {
     "status": "actual pre-adapter artifacts captured; no adapter edits at capture",
     "run": 40229239110,
@@ -2765,20 +2781,11 @@
     "dev/src/sema/crates/typed_headers/mapped_source/origin_ports.rs": "8d219ccd63831efb60e83886848bb676ce2757efaee234c672be98e5fcc51f41",
     "dev/src/resolve/bindings/client.rs": "460b1feca957d623433813f06989051ff4605a5f7720a4b2d04f94d9cfce60e1"
   },
-  "retained_client_guard_sha256": "391a55dc0c0bb8e2e16de027816f83563e719d7326a9a77d667ac2e6f6b1b685",
-  "required_static": [
-    "metadata",
-    "format",
-    "architecture",
-    "clippy-production",
-    "clippy-private",
-    "build"
-  ],
   "bounds": {
     "mandatory_cli_max_seconds": 100,
     "helper_absolute_seconds": 190,
     "cargo_jobs": 2,
     "test_threads": 2
   },
-  "scope": "genuine collector-owned row/contract seal through one immutable inventory and fresh real private consumer, exact sidecar identity and producer incarnation; no canonical role/member/original/instance/public Provided permission"
+  "attribution": "actual five prior passes/production Clippy/metadata retained by full source+AST+same actualCLI proof; changed format/global audit/private Clippy/build/one positive rerun"
 }

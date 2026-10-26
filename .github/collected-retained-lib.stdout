@@ -1,0 +1,16 @@
+
+running 6 tests
+test lower::transported_source::trait_inputs::tests::numbered_trait_inputs_retain_full_family_and_actual_contract_capacity ... ok
+test sema::crates::typed_headers::consumer_sessions::tests::completed::collected_source_headers_bind_full_family_to_fresh_actual_consumer ... FAILED
+test lower::transported_source::trait_inputs::tests::numbered_trait_inputs_preserve_defaultness_fences_and_failed_work ... ok
+test sema::crates::typed_headers::consumer_sessions::tests::completed::collected_source_headers_reject_unpaid_swapped_and_foreign_sidecars ... ok
+test sema::crates::typed_headers::consumer_sessions::tests::completed::collected_source_headers_bound_failed_work_and_warm_storage ... ok
+test support::crates::codec::packet_envelope::tests::ordinary_source_profiles_capture_plain_contract_bytes_before_adapter ... ok
+
+failures:
+
+failures:
+    sema::crates::typed_headers::consumer_sessions::tests::completed::collected_source_headers_bind_full_family_to_fresh_actual_consumer
+
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 1718 filtered out; finished in 0.13s
+
