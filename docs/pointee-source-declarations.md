@@ -5,7 +5,12 @@ PointeeTrait, MetadataType and DynMetadata source roles at indices 28–30. The
 existing u32 role ledger has one remaining slot. B's source Transmute work adds
 no language role and is separate. No pointer-metadata intrinsic, automatic
 Pointee implementation, normalized Metadata equality or artifact permission is
-provided by this checkpoint.
+provided by this checkpoint. Actual explicit Pointee implementations without
+an active deny flag also meet an explicit unsupported-selection fence, so the
+ordinary implementation resolver cannot accidentally normalize Metadata from a
+user body before the real compiler protocol exists. The actual deny flag keeps
+its earlier existing diagnostic. A separate authored boundary source exercises
+this fence without a Rust language-rejection claim.
 
 The producer validates a safe ordinary Pointee trait, its actual direct
 PointeeSized requirement and required owned Metadata type. Completed projection

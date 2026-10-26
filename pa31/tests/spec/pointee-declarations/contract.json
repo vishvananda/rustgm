@@ -271,5 +271,14 @@
     "native_programs": 0,
     "infrastructure_failures": 0,
     "status_disagreements": 0
-  }
+  },
+  "candidate_only_boundaries": [
+    {
+      "source": "pa31/tests/spec/pointee-declarations/implicit-protocol-impl.rs",
+      "sha256": "ba2676e92d9de403db1a3371538e6fa587d8ac98c02282a9ea6a34ea06b660d5",
+      "expected": "explicit unsupported implementation/selection profile before successful facts can escape; no new ordinary-impl fallback for actual source Pointee",
+      "rustc_status_prediction": null,
+      "independent_followup": "actual builtin Pointee selection/metadata consumer stage; no additional oracle observation or language rejection claim in this producer checkpoint"
+    }
+  ]
 }

@@ -290,6 +290,14 @@ fn actual_kinds_features_and_active_owners_are_checked_without_spelling_fallback
             .contains("explicit implementation is prohibited by its source trait declaration"),
         "{prohibited_error}"
     );
+    let implicit = provider("implicit-protocol-impl")?;
+    let implicit_error = declarations::analyze(&implicit)
+        .err()
+        .ok_or("actual builtin selection remains closed")?;
+    assert_eq!(
+        implicit_error.message,
+        "explicit source Pointee implementation selection is not implemented"
+    );
     let inactive = provider("inactive-claims")?;
     let facts = declarations::analyze(&inactive)?;
     let catalog = facts.source_bindings.as_deref().ok_or("catalog")?;
