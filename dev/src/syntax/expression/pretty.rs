@@ -1,6 +1,6 @@
 //! Bounded Rust-syntax spelling from actual parsed expressions, never diagnostics.
 mod arena;
-mod declaration_text;
+mod embedded_items;
 mod flow;
 mod layout;
 mod operands;

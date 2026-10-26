@@ -223,6 +223,10 @@ impl<'a> Writer<'a> {
                 }
                 self.named_header(view, item, "type ")?;
             }
+            ItemKind::TraitAlias { constant, bounds } => {
+                self.enqueue(&[W(" = "), view.ty().sequence(bounds, " + "), W(";")])?;
+                self.named_header(view, item, if constant { "const trait " } else { "trait " })?;
+            }
             ItemKind::Module { items } => {
                 if let Some(items) = items {
                     self.enqueue(&[W(" { "), view.sequence(items, " "), W(" }")])?;
@@ -318,28 +322,26 @@ impl<'a> Writer<'a> {
         self.visibility(view, item.visibility)
     }
     fn defaultness(&mut self, view: View<'_>, node: Node, index: u32) -> Result<bool, LexError> {
-        let defaults = view.arena.defaults();
-        let mut width = defaults.len();
+        let mut width = view.arena.site_count();
         while width > 0 {
             // Pay this bounded-width step and the upcoming search comparison.
             self.pay(2, 0)?;
             width >>= 1;
         }
         self.pay(1, 0)?;
-        let Ok(found) = defaults.binary_search_by_key(&index, |entry| entry.item) else {
+        let Some(actual) = view.arena.defaultness(index).copied() else {
             return Ok(false);
         };
-        let actual = defaults[found];
-        if actual.keyword.start < node.span.start
-            || actual.keyword.end > node.span.end
+        if actual.span.start < node.span.start
+            || actual.span.end > node.span.end
             || view.arena.nodes().get(actual.node.get() as usize) != Some(&node)
             || view
                 .source
-                .get(actual.keyword.start as usize..actual.keyword.end as usize)
+                .get(actual.span.start as usize..actual.span.end as usize)
                 != Some("default")
         {
             return Err(error(
-                actual.keyword.start,
+                actual.span.start,
                 "expression writer defaultness owner changed",
             ));
         }
