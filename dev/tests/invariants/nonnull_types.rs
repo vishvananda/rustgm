@@ -157,19 +157,16 @@ fn actual_feature_origins_null_values_and_documentary_markers_grant_no_permissio
         ),
         (
             "syntax_gate",
-            source.replace(
-                "intrinsics,pattern_type_macro,pattern_types",
-                "intrinsics,pattern_type_macro",
-            ),
+            source.replace("intrinsics,pattern_types", "intrinsics"),
             "pattern_types",
         ),
         (
-            "macro_gate",
+            "unknown_library_feature",
             source.replace(
-                "intrinsics,pattern_type_macro,pattern_types",
                 "intrinsics,pattern_types",
+                "intrinsics,pattern_type_macro,pattern_types",
             ),
-            "pattern_type_macro",
+            "feature",
         ),
         (
             "unsafe",
@@ -191,8 +188,8 @@ fn actual_feature_origins_null_values_and_documentary_markers_grant_no_permissio
         .next()
         .ok_or("provider prefix")?
         .replace(
-            "intrinsics,pattern_type_macro,pattern_types",
-            "intrinsics,pattern_type_macro,allow_internal_unstable",
+            "intrinsics,pattern_types",
+            "intrinsics,allow_internal_unstable",
         );
     for (name, body, accepted) in [
         (
@@ -229,6 +226,12 @@ fn actual_feature_origins_null_values_and_documentary_markers_grant_no_permissio
             });
         assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
     }
+    let missing = source.replace("impl<T:PointeeSized> Copy for *const T {}", "");
+    let report = test_source::source_provider(&missing, "missing_actual_base_copy")?;
+    let error = crate::pipeline::analyze_source(&report)
+        .err()
+        .ok_or("missing base Copy unexpectedly granted")?;
+    assert!(error.to_string().contains("Copy"), "{error}");
     let ordinary = test_source::resolve(
         "fn main(){let value=1u8;let pointer=&value as *const u8;}",
         true,

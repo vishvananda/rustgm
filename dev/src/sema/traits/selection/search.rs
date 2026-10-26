@@ -14,6 +14,7 @@ mod coinduction;
 #[path = "../../../../tests/invariants/fn_copying.rs"]
 mod fn_copying_tests;
 mod pointee;
+mod refined_markers;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/refutation_layout.rs"]
 mod refutation_layout;

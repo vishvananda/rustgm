@@ -103,14 +103,25 @@ impl Search<'_> {
         Ok(Some(Action::Descend))
     }
 
+    pub(super) fn start_refinement(frame: &mut Frame, prerequisite: Goal) -> Action {
+        Self::start_requirement(frame, prerequisite, None)
+    }
+
     pub(super) fn start_comparison(
         frame: &mut Frame,
         descriptor: crate::sema::primitive_methods::Descriptor,
         prerequisite: Goal,
     ) -> Action {
+        Self::start_requirement(frame, prerequisite, Some(descriptor))
+    }
+    fn start_requirement(
+        frame: &mut Frame,
+        goal: Goal,
+        operation: Option<crate::sema::primitive_methods::Descriptor>,
+    ) -> Action {
         frame.language = Some(Box::new(Callable::Forward(Pending {
-            goal: prerequisite,
-            operation: Some(descriptor),
+            goal,
+            operation,
             selected: None,
             stopped: None,
             suspended: None,
@@ -220,7 +231,8 @@ impl Search<'_> {
             return Ok(Action::Descend);
         };
         let operation = pending.operation;
-        if operation.is_some()
+        let refinement = Self::source_refinement_marker_goal(facts, frame)?;
+        if (operation.is_some() || refinement)
             && (frame.selected.is_some() || frame.deferred || frame.partial.is_some())
         {
             return Ok(Action::Complete(Decision::Deferred));
@@ -241,6 +253,9 @@ impl Search<'_> {
         };
         let source = if let Some(descriptor) = operation {
             Source::LanguageOperation { descriptor }
+        } else if refinement {
+            // Marker proof has no callable output or invented implementation/method target.
+            Source::Builtin
         } else {
             Source::Callable {
                 output: self.forwarded_output(facts, child)?,
