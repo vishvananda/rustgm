@@ -114,7 +114,20 @@ impl Machine<'_, '_> {
             self.charge(1)?;
             match work {
                 Encode::Value { ty, offset, value } => {
-                    self.encode_byte_value(backing, offset, ty, value, &mut pending)?;
+                    let physical = Reader::new(self.evaluator.facts()).storage_type(ty)?;
+                    if let Some(Kind::Pattern { base, .. }) =
+                        self.evaluator.facts().types.kind(physical)
+                    {
+                        self.footprint(ty)?;
+                        self.reserve_cells(pending.len().saturating_add(1).saturating_mul(4))?;
+                        pending.push(Encode::Value {
+                            ty: base,
+                            offset,
+                            value,
+                        });
+                    } else {
+                        self.encode_byte_value(backing, offset, ty, value, &mut pending)?;
+                    }
                 }
                 Encode::Repeat {
                     offset,
@@ -135,15 +148,6 @@ impl Machine<'_, '_> {
     ) -> Result<(), Failure> {
         let layout = self.footprint(ty)?;
         let ty = Reader::new(self.evaluator.facts()).storage_type(ty)?;
-        if let Some(Kind::Pattern { base, .. }) = self.evaluator.facts().types.kind(ty) {
-            self.reserve_cells(pending.len().saturating_add(1).saturating_mul(4))?;
-            pending.push(Encode::Value {
-                ty: base,
-                offset,
-                value,
-            });
-            return Ok(());
-        }
         let start = usize::try_from(offset).map_err(|_| "byte offset exceeds host size")?;
         let end = offset
             .checked_add(layout.size)

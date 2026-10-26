@@ -95,7 +95,7 @@ impl Occurrences {
             }
             Kind::Reference { referent, .. } => children.push(referent),
             Kind::Pattern { base: pointee, .. } | Kind::Pointer { pointee, .. } => {
-                children.push(pointee)
+                children.push(pointee);
             }
             Kind::Array { element, .. }
             | Kind::ArrayTerm { element, .. }

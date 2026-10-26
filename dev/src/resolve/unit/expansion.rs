@@ -455,31 +455,13 @@ impl Unit {
             parser_calls,
             cfg_uses,
         } = if pattern {
-            if site.grammar != crate::syntax::ast::MacroContext::Type {
-                return Err(error(
-                    site.original.start,
-                    "pattern_type requires a type context",
-                ));
-            }
-            charge(
-                1 + input.tokens.len(),
-                input.tokens.len().saturating_mul(256),
-            )?;
-            let ast = crate::syntax::expression::fragment::type_pattern_with_inputs(
+            crate::expand::builtin::refined_type::select(
                 source,
-                &input.tokens,
-                &crate::expand::builtin::choice::Counted {
-                    inputs: &inputs,
-                    charge,
-                },
-            )?;
-            let span = ast.node(ast.root).span;
-            crate::expand::builtin::choice::Selected {
-                ast,
-                span,
-                parser_calls: 1,
-                cfg_uses: Vec::new(),
-            }
+                input,
+                site.grammar,
+                &inputs,
+                charge,
+            )?
         } else {
             crate::expand::builtin::choice::select(
                 source,

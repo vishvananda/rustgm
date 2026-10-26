@@ -181,7 +181,7 @@ fn actual_feature_origins_null_values_and_documentary_markers_grant_no_permissio
             Ok(report) => crate::pipeline::analyze_source(&report)
                 .err()
                 .map(|error| error.to_string()),
-            Err(error) => Some(error.to_string()),
+            Err(error) => Some(error),
         }
         .ok_or_else(|| format!("{name} unexpectedly accepted"))?;
         assert!(error.contains(needle), "{name}: {error}");
@@ -221,9 +221,8 @@ fn actual_feature_origins_null_values_and_documentary_markers_grant_no_permissio
             false,
         ),
     ] {
-        let result = test_source::source_provider(&format!("{prefix}{body}"), name)
-            .map_err(|error| error.to_string())
-            .and_then(|report| {
+        let result =
+            test_source::source_provider(&format!("{prefix}{body}"), name).and_then(|report| {
                 crate::pipeline::analyze_source(&report)
                     .map(|_| ())
                     .map_err(|error| error.to_string())

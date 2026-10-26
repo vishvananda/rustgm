@@ -97,34 +97,7 @@ pub(super) fn validate(
     claims: &[Claim],
 ) -> Result<(), Error> {
     let error = |message| super::reservations::error(package, declaration.origin, message);
-    for claim in claims {
-        if !matches!(claim, Claim::NonNullDocumentation | Claim::NeverNullLint) {
-            continue;
-        }
-        if !source.features.has(Feature::RustcAttributes) {
-            return Err(error("non-null source attribute requires rustc_attrs"));
-        }
-        let unit = package.unit(declaration.origin.file);
-        let crate::syntax::ast::Kind::Item(index) =
-            unit.configured.ast.node(declaration.origin.node).kind
-        else {
-            return Err(error("non-null source attribute requires an item"));
-        };
-        let kind = unit.configured.ast.items[index as usize].kind;
-        let valid = match claim {
-            Claim::NonNullDocumentation => {
-                matches!(kind, crate::syntax::item::ItemKind::Struct { .. })
-            }
-            Claim::NeverNullLint => matches!(kind, crate::syntax::item::ItemKind::Function { .. }),
-            _ => false,
-        };
-        if !valid {
-            return Err(error("non-null source attribute has the wrong item target"));
-        }
-        // Rust88d9: the former is documentary; the latter supplies ptr_nulls lint metadata.
-        // Neither changes scalar validity, layout, call effects or const eligibility.
-        reserved.steps = reserved.steps.saturating_add(1);
-    }
+    validate_nonnull_claims(package, source, reserved, declaration, claims)?;
     let mut flags = HeaderAttributes::EMPTY;
     let mut roles = claims.iter().filter_map(|claim| {
         if let Claim::Language(role) = claim {
@@ -242,4 +215,43 @@ pub(super) fn primary(
         | (ItemKind::MacroRules { .. }, DefKind::Macro) => true,
         _ => false,
     }
+}
+
+fn validate_nonnull_claims(
+    package: &Package,
+    source: &SourceCore,
+    reserved: &mut Reservations,
+    declaration: Declaration,
+    claims: &[Claim],
+) -> Result<(), Error> {
+    let error = |message| super::reservations::error(package, declaration.origin, message);
+    for claim in claims {
+        if !matches!(claim, Claim::NonNullDocumentation | Claim::NeverNullLint) {
+            continue;
+        }
+        if !source.features.has(Feature::RustcAttributes) {
+            return Err(error("non-null source attribute requires rustc_attrs"));
+        }
+        let unit = package.unit(declaration.origin.file);
+        let crate::syntax::ast::Kind::Item(index) =
+            unit.configured.ast.node(declaration.origin.node).kind
+        else {
+            return Err(error("non-null source attribute requires an item"));
+        };
+        let kind = unit.configured.ast.items[index as usize].kind;
+        let valid = match claim {
+            Claim::NonNullDocumentation => {
+                matches!(kind, crate::syntax::item::ItemKind::Struct { .. })
+            }
+            Claim::NeverNullLint => matches!(kind, crate::syntax::item::ItemKind::Function { .. }),
+            _ => false,
+        };
+        if !valid {
+            return Err(error("non-null source attribute has the wrong item target"));
+        }
+        // Rust88d9: the former is documentary; the latter supplies ptr_nulls lint metadata.
+        // Neither changes scalar validity, layout, call effects or const eligibility.
+        reserved.steps = reserved.steps.saturating_add(1);
+    }
+    Ok(())
 }
