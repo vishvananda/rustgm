@@ -21,6 +21,13 @@ fn source_headers_borrow_actual_signature_universals_and_environment() -> Result
     assert_eq!(header.declaration.source(), Some(function.node));
     assert_eq!(header.body, function.body.map(BodyOrigin::Source));
     assert_eq!(header.signature, function.signature);
+    let declaration = facts
+        .declaration_header(function.definition)?
+        .ok_or("source declaration header")?;
+    assert_eq!(declaration.declaration, header.declaration);
+    assert_eq!(declaration.body, header.body);
+    assert_eq!(declaration.signature, header.signature);
+    assert_eq!(declaration.universals, header.universals);
     assert_eq!(
         header.universals,
         facts.lifetimes.functions[&function.definition].total
@@ -57,8 +64,10 @@ fn header_lookup_rejects_stale_and_foreign_owner_indices() -> Result {
         .function_indices
         .insert(first, facts.function_indices[&second]);
     assert!(facts.function_header(first).is_err());
+    assert!(facts.declaration_header(first).is_err());
     facts.function_indices.insert(first, usize::MAX);
     assert!(facts.function_header(first).is_err());
+    assert!(facts.declaration_header(first).is_err());
     Ok(())
 }
 

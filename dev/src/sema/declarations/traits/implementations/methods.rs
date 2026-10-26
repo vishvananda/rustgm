@@ -113,7 +113,7 @@ impl Members {
         }
         let method = conformance::Method::imported(facts, definition)?;
         let body = facts
-            .function_header(definition)?
+            .declaration_header(definition)?
             .ok_or("imported conformance lost its required method header")?
             .body
             .is_some();

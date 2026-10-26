@@ -225,7 +225,7 @@ fn validate_header(
     match report.resolution.definitions[definition.0 as usize].kind {
         DefKind::Function => {
             if facts
-                .function_header(definition)
+                .declaration_header(definition)
                 .map_err(Error::unlocated)?
                 .is_none_or(|header| header.declaration.source() != Some(key))
             {
