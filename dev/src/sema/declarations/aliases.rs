@@ -154,6 +154,23 @@ impl Pending {
     }
 }
 impl Checker<'_> {
+    pub(super) fn alias_self_schema(&self, id: DefId) -> Result<Option<&Schema>, Error> {
+        let Some(pending) = &self.trait_aliases else { return Ok(None) };
+        pending.budget.charge(4, 0).map_err(Error::unlocated)?;
+        let definition = &self.report.resolution.definitions[id.0 as usize];
+        if definition.kind != DefKind::SelfType { return Ok(None) }
+        let Some(source) = definition.node else { return Ok(None) };
+        let module = self.report.resolution.scopes[definition.scope.0 as usize].module;
+        let Some(owner) = self.report.resolution.item_definitions.get(&(module, source.node, Namespace::Type)) else { return Ok(None) };
+        let Some(&index) = pending.index.get(owner) else { return Ok(None) };
+        let header = &pending.headers[index];
+        if header.owner.self_definition != id { return Err(self.error(source, "alias lexical Self has a different canonical owner")) }
+        let schema = header.schema.as_ref().ok_or_else(|| self.error(source, "alias Self schema is not prepared"))?;
+        if self.facts.definitions[id.0 as usize] != Some(schema.self_type) {
+            return Err(self.error(source, "alias lexical Self is not complete"));
+        }
+        Ok(Some(schema))
+    }
     pub(super) fn push_alias_edge(&self, edges: &mut Vec<Edge>, edge: Edge) -> Result<(), Error> {
         let pending = self
             .trait_aliases

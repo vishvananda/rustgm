@@ -1101,7 +1101,9 @@ impl Checker<'_> {
                 | DefKind::Struct
                 | DefKind::Enum
                 | DefKind::Generic
-        ) || (kind == DefKind::SelfType && self.facts.associated.schema(id).is_some()))
+        ) || (kind == DefKind::SelfType
+            && (self.facts.associated.schema(id).is_some()
+                || self.alias_self_schema(id)?.is_some())))
         {
             return Err(self.error(
                 key,

@@ -71,7 +71,7 @@ fn edge(
 }
 #[test]
 fn alias_headers_retain_full_formals_equality_and_distinct_unsized_self() -> TestResult {
-    let source = "#![feature(trait_alias)]trait P<'a,T,const N:usize>{type Out;}trait A<'unused,'a,U,const M:usize>=P<'a,U,M,Out=u8> where U:Copy;trait B<'b,V,const K:usize>=A<'static,'b,V,K>;fn main(){}";
+    let source = "#![feature(trait_alias)]trait P<'a,T,const N:usize>{type Out;}trait A<'unused,'a,U,const M:usize>=P<'a,U,M,Out=u8> where Self:P<'a,U,M>,U:Copy;trait B<'b,V,const K:usize>=A<'static,'b,V,K>;fn main(){}";
     let report = report(source)?;
     let checker = headers(&report)?;
     let a = definition(&report, "A", DefKind::TraitAlias)?;
@@ -134,7 +134,7 @@ fn alias_headers_retain_full_formals_equality_and_distinct_unsized_self() -> Tes
 #[test]
 fn alias_applications_substitute_all_slots_and_preserve_real_leaf_equalities() -> TestResult {
     let report = report(
-        "#![feature(trait_alias)]trait P<'a,T,const N:usize>{type Out;}trait A<'unused,'a,U,const M:usize>=P<'a,U,M,Out=u8> where U:Copy;trait B<'b,V,const K:usize>=A<'static,'b,V,K>;fn main(){}",
+        "#![feature(trait_alias)]trait P<'a,T,const N:usize>{type Out;}trait A<'unused,'a,U,const M:usize>=P<'a,U,M,Out=u8> where Self:P<'a,U,M>,U:Copy;trait B<'b,V,const K:usize>=A<'static,'b,V,K>;fn main(){}",
     )?;
     let mut checker = headers(&report)?;
     let ty = TypeId::primitive(Primitive::U8);
@@ -195,27 +195,60 @@ fn alias_applications_substitute_all_slots_and_preserve_real_leaf_equalities() -
 }
 
 fn distinct_applications_keep_both_argument_environments() -> TestResult {
-    let report = report("#![feature(trait_alias)]trait P<T>{}trait A<T>=P<T>;trait Both=A<u8>+A<u16>;fn main(){}")?;
+    let report = report(
+        "#![feature(trait_alias)]trait P<T>{}trait A<T>=P<T>;trait Both=A<u8>+A<u16>;fn main(){}",
+    )?;
     let mut checker = headers(&report)?;
-    let request = edge(&checker, "Both", TypeId::primitive(Primitive::U32), GenericArgs::EMPTY)?;
+    let request = edge(
+        &checker,
+        "Both",
+        TypeId::primitive(Primitive::U32),
+        GenericArgs::EMPTY,
+    )?;
     let clauses = checker.expand_alias_edge(request)?;
-    assert_eq!(clauses.len(), 2, "different actual arguments cannot share an application key");
+    assert_eq!(
+        clauses.len(),
+        2,
+        "different actual arguments cannot share an application key"
+    );
     let mut arguments = crate::support::hash::HashSet::default();
     for clause in clauses {
         let predicate = clause.value.ordinary()?;
-        let (id, _) = predicate.bound.trait_parts().ok_or("actual leaf trait application")?;
-        let application = checker.facts.types.trait_application(id).ok_or("actual leaf")?;
-        let values = checker.facts.types.arguments(application.arguments).ok_or("actual leaf arguments")?.collect::<Vec<_>>();
-        let [Argument::Type(ty)] = values.as_slice() else { return Err("wrong leaf environment".into()) };
+        let (id, _) = predicate
+            .bound
+            .trait_parts()
+            .ok_or("actual leaf trait application")?;
+        let application = checker
+            .facts
+            .types
+            .trait_application(id)
+            .ok_or("actual leaf")?;
+        let values = checker
+            .facts
+            .types
+            .arguments(application.arguments)
+            .ok_or("actual leaf arguments")?
+            .collect::<Vec<_>>();
+        let [Argument::Type(ty)] = values.as_slice() else {
+            return Err("wrong leaf environment".into());
+        };
         arguments.insert(*ty);
     }
-    assert_eq!(arguments, [TypeId::primitive(Primitive::U8), TypeId::primitive(Primitive::U16)].into_iter().collect());
+    assert_eq!(
+        arguments,
+        [
+            TypeId::primitive(Primitive::U8),
+            TypeId::primitive(Primitive::U16)
+        ]
+        .into_iter()
+        .collect()
+    );
     Ok(())
 }
 #[test]
 fn alias_bound_worklist_publishes_only_real_trait_and_equality_clauses() -> TestResult {
     let report = report(
-        "#![feature(trait_alias)]trait P<T>{type Out;}trait A<T>=P<T,Out=u8>;fn consumer<U:A<u16>>(){}fn main(){}",
+        "#![feature(trait_alias)]trait P<T>{type Out;}trait A<T>=P<T,Out=u8> where Self:P<T>;fn consumer<U:A<u16>>(){}fn main(){}",
     )?;
     let mut checker = headers(&report)?;
     let consumer = definition(&report, "consumer", DefKind::Function)?;
