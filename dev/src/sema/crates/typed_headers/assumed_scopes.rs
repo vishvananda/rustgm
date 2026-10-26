@@ -393,54 +393,6 @@ impl Owner {
             bytes,
         })
     }
-    fn take_trait_inputs(
-        &mut self,
-        view: &RecipeView<'_>,
-        index: usize,
-        work: &mut ReservationWork,
-    ) -> Result<predicate_remap::Prepared, Error> {
-        work.charge(4)?;
-        let rows = view.rows()?;
-        let raw = *rows
-            .scopes
-            .get(index)
-            .ok_or_else(|| error("trait input transfer lost its actual dense scope row"))?;
-        let scope = self
-            .scopes
-            .get_mut(index)
-            .and_then(Option::as_deref_mut)
-            .ok_or_else(|| error("trait input transfer requires its actual prepared scope"))?;
-        let Some(s::HeaderRef::Trait(header)) = rows.header(raw.owner).map_err(error)? else {
-            return Err(error(
-                "trait input transfer requires its actual trait header",
-            ));
-        };
-        let header = &rows.traits[header as usize];
-        let ScopeInputs::Trait(prepared) = &scope.inputs else {
-            return Err(error(
-                "trait input ownership was already transferred or never prepared",
-            ));
-        };
-        if scope.raw != raw
-            || header.scope != raw.owner
-            || raw.parent != Some(header.self_definition)
-            || prepared.all().len() != header.inputs.slice(&rows.clauses).map_err(error)?.len()
-            || prepared.subjects().len() != header.canonical_inputs as usize
-        {
-            return Err(error(
-                "trait input transfer changed its exact header/scope/prefix identity",
-            ));
-        }
-        prepared.require_declaration(view.declaration(header.declaration, work)?)?;
-        work.charge(1)?;
-        let all = Arc::clone(prepared.all());
-        let ScopeInputs::Trait(prepared) =
-            std::mem::replace(&mut scope.inputs, ScopeInputs::Declaration(all))
-        else {
-            return Err(error("trait input owner changed during exclusive transfer"));
-        };
-        Ok(prepared)
-    }
     pub(super) fn retained_bytes(&self) -> usize {
         self.bytes
     }

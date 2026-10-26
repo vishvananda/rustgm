@@ -376,7 +376,7 @@ fn reference_frontier(depth: usize, repeats: usize) -> Result {
         .iter()
         .position(|slot| slot.owner == owner && matches!(slot.kind, s::ParameterKind::Type { .. }))
         .ok_or("actual unused declared type formal")?;
-    assert_eq!(state.maps.slot(unused), Some(None));
+    assert_eq!(state.maps.slot(unused)?, None);
     session = ready(session.signature_pair(owner, &mut work)?)?;
     let state = session.recipes.as_ref().ok_or("actual retained memo")?;
     assert!(matches!(state.pairs[index as usize], Pair::Ready(actual) if actual == pair));

@@ -120,7 +120,9 @@ pub(in crate::sema::crates::typed_headers) trait Mapping<'rows>:
                 let raw = &rows.implementations[index as usize];
                 (raw.self_type, raw.region_captures, raw.region_bounds)
             }
-            _ => return Err("imported associated inventory lacks its actual owner header"),
+            s::HeaderRef::Function(_) => {
+                return Err("imported associated inventory lacks its actual owner header");
+            }
         };
         let expected_members = self.members(rows, header)?;
         if artifact != descriptor.identity()

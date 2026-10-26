@@ -69,14 +69,20 @@ impl Maps {
     pub(in crate::sema::crates::typed_headers) fn slot(
         &self,
         index: usize,
-    ) -> Option<Option<Argument>> {
-        self.slots.get(index).map(Cell::get)
+    ) -> Result<Option<Argument>, &'static str> {
+        self.slots
+            .get(index)
+            .map(Cell::get)
+            .ok_or("reserved formal index is outside its actual map")
     }
     pub(in crate::sema::crates::typed_headers) fn region(
         &self,
         index: usize,
-    ) -> Option<Option<RegionId>> {
-        self.regions.get(index).map(Cell::get)
+    ) -> Result<Option<RegionId>, &'static str> {
+        self.regions
+            .get(index)
+            .map(Cell::get)
+            .ok_or("reserved region index is outside its actual map")
     }
 }
 pub(in crate::sema::crates::typed_headers) struct Reserved<'rows, 'maps> {
