@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "independent predictions frozen before observation; candidate support not claimed",
+  "phase": "observed outcomes bind qualification; original hypotheses and four differences retained",
   "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
   "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
   "editions": [
@@ -26,7 +26,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "genuine opaque identity permits thin pointer transport and actual PointeeSized argument"
+      "contract": "genuine opaque identity permits thin pointer transport and actual PointeeSized argument",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/metadata-unit.rs",
@@ -34,7 +56,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "actual Foreign Metadata is canonical unit, without a Sized premise"
+      "contract": "actual Foreign Metadata is canonical unit, without a Sized premise",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/metadata-struct-tail.rs",
@@ -42,7 +86,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "actual substituted foreign struct tail retains thin metadata and unknown value layout"
+      "contract": "actual substituted foreign struct tail retains thin metadata and unknown value layout",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/sized-rejected.rs",
@@ -52,7 +118,33 @@
         "E0277"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "Foreign is not Sized"
+      "contract": "Foreign is not Sized",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/meta-sized-rejected.rs",
@@ -62,7 +154,33 @@
         "E0277"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "Foreign is not MetaSized despite unit metadata"
+      "contract": "Foreign is not MetaSized despite unit metadata",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/tail-meta-sized-rejected.rs",
@@ -72,7 +190,33 @@
         "E0277"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "Foreign terminal tail prevents MetaSized; representation Thin is insufficient"
+      "contract": "Foreign terminal tail prevents MetaSized; representation Thin is insufficient",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/by-value-rejected.rs",
@@ -82,7 +226,33 @@
         "E0277"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "unknown value layout cannot become a sized by-value parameter"
+      "contract": "unknown value layout cannot become a sized by-value parameter",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/distinct-identities.rs",
@@ -92,7 +262,33 @@
         "E0308"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "distinct genuine declaration identities remain unequal through pointer types"
+      "contract": "distinct genuine declaration identities remain unequal through pointer types",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/privacy.rs",
@@ -102,7 +298,33 @@
         "E0603"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "ordinary private type namespace ownership applies"
+      "contract": "ordinary private type namespace ownership applies",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0603"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0603"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/duplicate-name.rs",
@@ -112,7 +334,33 @@
         "E0428"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "foreign declarations retain ordinary duplicate type-name rejection"
+      "contract": "foreign declarations retain ordinary duplicate type-name rejection",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0428"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0428"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/generic-form.rs",
@@ -122,7 +370,29 @@
         "E0044"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "foreign type declarations cannot own generic formals"
+      "contract": "foreign type declarations cannot own generic formals",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/bound-form.rs",
@@ -130,7 +400,29 @@
       "rustc_status_hypothesis": 1,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "foreign type declaration does not invent associated-type bounds"
+      "contract": "foreign type declaration does not invent associated-type bounds",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/definition-form.rs",
@@ -138,7 +430,29 @@
       "rustc_status_hypothesis": 1,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "foreign type declaration cannot become an alias definition"
+      "contract": "foreign type declaration cannot become an alias definition",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/missing-feature.rs",
@@ -148,7 +462,33 @@
         "E0658"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "active source foreign declaration requires actual extern_types authority"
+      "contract": "active source foreign declaration requires actual extern_types authority",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/disabled-missing-feature.rs",
@@ -158,7 +498,29 @@
       "rustc_warning_codes_hypothesis": [
         "unstable_syntax_pre_expansion"
       ],
-      "contract": "inactive parsed declaration creates no semantic identity; pre-expansion gate outcome independently observed"
+      "contract": "inactive parsed declaration creates no semantic identity; pre-expansion gate outcome independently observed",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": true
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": true
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/literal-allowance.rs",
@@ -166,7 +528,29 @@
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "literal definition-origin type token may consume exact authenticated allowance"
+      "contract": "literal definition-origin type token may consume exact authenticated allowance",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/foreign-types/forwarded-allowance.rs",
@@ -176,7 +560,43 @@
         "E0658"
       ],
       "rustc_warning_codes_hypothesis": [],
-      "contract": "forwarded caller declaration token cannot borrow definition allowance"
+      "contract": "forwarded caller declaration token cannot borrow definition allowance",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     }
-  ]
+  ],
+  "initial_contract_sha256": "bc2a2d61f28a9019267935bccda4f27f6b6c63af547c94f1e915263d29748258",
+  "observed_binding": {
+    "sha256": "ea03b271d4d766c90db1cc967830ac51b3f8a927bc11fa44be9d36299d18d570",
+    "source": "90a20aa3b17da6735f45cdb1b6ec7c7db3c2e900",
+    "metadata": 34,
+    "native": 0,
+    "infrastructure_failures": 0,
+    "hypothesis_disagreements": 4,
+    "seconds": 0.8781217066571116
+  }
 }
