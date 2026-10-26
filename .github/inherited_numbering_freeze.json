@@ -1,5 +1,5 @@
 {
-  "source_commit": "edea2321b2f5e55083ec70a6803b722376a8ae55",
+  "source_commit": "b638c96e327ced7cc2aceb4ba4d2a095916b7611",
   "public_base": "6ba9cfaa",
   "sources": {
     "dev/bin/crates.rs": "efbab4e37ff93eb8c4affdbc721a01d33017da46a0c4472ce6dfcee80905340b",
@@ -777,11 +777,12 @@
     "dev/src/sema/crates/typed_headers/assumed_scopes.rs": "02eee10e675e8931cbc959f6b7b2be14153fa02dd1d3fb47cd15f8a5a9c6de31",
     "dev/src/sema/crates/typed_headers/assumption_ports.rs": "8f5b9e705a5af935aea2d4b4a85fc46ce926721a8c7fb9bd3b417eaaf7c7c9ba",
     "dev/src/sema/crates/typed_headers/consumer_sessions.rs": "0bf4a055b983e1cc125f32596dcfaa4fe09390d9c31176015373e131ae01b662",
+    "dev/src/sema/crates/typed_headers/consumer_templates.rs": "beef4674f1fab73dafdf4adab9516262fbafb6c22adaec33ed01845efc963bf3",
     "dev/src/sema/crates/typed_headers/demanded_headers.rs": "781b700c840214740a9933578c7d3170818d8d00d7f78021a34ca15db94f1687",
     "dev/src/sema/crates/typed_headers/demanded_ports.rs": "6eb4b57958f31ac4008825c42196735d4d43f1ffd1ffcb1ce6e46facc7e0de2e",
     "dev/src/sema/crates/typed_headers/demanded_signatures.rs": "ff7de36a6cb9b126c820af5755251646f161d966c1a6e8b6bf8671ed3b205f77",
     "dev/src/sema/crates/typed_headers/demanded_types.rs": "d8b3a35242d21e6b177372c0a7107e0570f6c3e8f37c7bce29791c27e93c701b",
-    "dev/src/sema/crates/typed_headers/dormant_session.rs": "7d36ce55fb7fc38504e48b45f5691515df6ddb0568a794dcf567db6e0a74fad1",
+    "dev/src/sema/crates/typed_headers/dormant_session.rs": "6656a4ae04b291cc85f0ccbf8f5f9e6617d7bb436f96bd0804cd72d17b2ecef4",
     "dev/src/sema/crates/typed_headers/formal_ancestry.rs": "b147aba1304142db65af7a366375fcd55fdf24f88a1fa4f036c391999222eef5",
     "dev/src/sema/crates/typed_headers/ingest.rs": "641e70612c27ce9a4091ca8443a178ce066174ad370f154e8733fd1d89f55e61",
     "dev/src/sema/crates/typed_headers/mapped_source/dag_recipes.rs": "3d9e4894c5f9d96efab03a2666b07d19a60556984e954d9b138e0a6fe238cfb9",
@@ -803,7 +804,6 @@
     "dev/src/sema/crates/typed_headers/regional_occurrences.rs": "ada5250014ac8b735fcd310a3ee0281a6caff550d0c48496a57871a2005d2320",
     "dev/src/sema/crates/typed_headers/registered_templates.rs": "0c6c06bd0de7f80b204e9b61fc4197f3bd12f1e04f29cc9cc302c2e353ef484d",
     "dev/src/sema/crates/typed_headers/roots.rs": "5245a9d37505c61011f419eb7ac24a5903de8c8801d8a635883fb43e7c40aba3",
-    "dev/src/sema/crates/typed_headers/selected_headers.rs": "beef4674f1fab73dafdf4adab9516262fbafb6c22adaec33ed01845efc963bf3",
     "dev/src/sema/crates/typed_headers/staged_headers/commit_ports.rs": "e5a93fb01ea1ccda43324fa1a117f9569df95d13fa104b44fcf3a5a164523302",
     "dev/src/sema/crates/typed_headers/staged_headers/contract_ports.rs": "d7869a19bd383fb36f7d4a064939250b649fd5118cca98b7069359e9e7a7d94d",
     "dev/src/sema/crates/typed_headers/staged_headers/definition_cells.rs": "02348081aff22805956e01e54c2569947c86eec2aeef5ed943b755721e9b40ee",
@@ -2667,7 +2667,7 @@
     "pa8/tests/manifest.json": "906f57e1c2dee593b9377f76f550308a0e6753db7d8cfddcbc3c1e6cfafe7033",
     "pa9/tests/manifest.json": "4bb585cd1bed2838cf9737d5c67dcd5d763c253d485c6660327f1c04d0e80146"
   },
-  "source_sha256": "ccdd9ac3884de0fcf6e069dc7a0e63629c9d1eb3188cb18e9691a66ca1c61763",
+  "source_sha256": "8871fdc750f93bcf246e56ad21f21328cf1ab8fc7529b7dc645e73d62e495a1f",
   "selected": [
     "sema::crates::typed_headers::consumer_sessions::tests::selected::selected_templates_append_full_family_to_actual_consumer_table",
     "sema::crates::typed_headers::consumer_sessions::tests::selected::selected_templates_reject_replaced_warm_authority_and_registration",
