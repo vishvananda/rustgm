@@ -14,11 +14,11 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The qualified original-core observer reaches `ptr/metadata.rs:170`, the foreign
-`type VTable;` declaration (LIB-032). All 722 pinned inputs verify, 65 files are
-opened, and no artifact exists. The
+The current original-core observer passes foreign VTable and reaches
+`clone.rs:389`, the `final fn share` declaration (LIB-033). All 722 pinned inputs
+verify, 72 files are opened, and no artifact exists. The
 [formatter integration](formatter-pointer-erasure-checkpoint.md#combined-integration-and-core-frontier)
-records that boundary; the tracker retains earlier observations separately.
+records the earlier VTable boundary; the live tracker owns the newer result.
 
 - A: complete actual imported Provided execution. Names and receiver shapes now
   pass combined checks. Join selected checked headers, defining environments,
@@ -30,10 +30,12 @@ records that boundary; the tracker retains earlier observations separately.
   a false assertion reaching the real handler/Abort. Formatting follows through
   source constructors and selected methods. Reuse the same Pointee metadata
   classifier and source-owned obligations rather than new library algorithms.
-- C: genuine Foreign VTable identity, sizing and pointer metadata on B's shared
-  Pattern base. Actual Pointee consumers are integrated locally. Next exit is
-  unchanged core past VTable, plus actual Thin use with the integrator. Unknown
-  value layout does not prevent correct pointer metadata.
+- C: final trait-method grammar, source feature authority and override behavior
+  against the actual Share::share source. Foreign VTable and Pattern are now
+  integrated locally and advance original loading. Ordinary provided overrides
+  and impl-specialization defaultness remain distinct contracts; coordinate their
+  eventual metadata with A. Keep the disjoint Provided codec task queued until
+  this newly observed blocker is covered.
 - Integrator: actual Thin alias semantics, consumer joins, original core
   checking/export and publication. Prioritize complete supported declarations
   and uses over unrelated alias breadth; preserve explicit unsupported forms.
@@ -45,11 +47,11 @@ that task, not an endlessly expanding replacement milestone. At consumer exits,
 reconcile the owning PA's remaining implementation and release checklist.
 
 Keep at most one qualified handoff queued per worker; the integrator takes shared
-bases before adding an unrelated implementation task. Integrate Foreign and
-observe the next original-core boundary without waiting for all Thin/panic
-semantics. After that observation, C may take A's disjoint Provided codec if the
-new core blocker already has an owner. A first defines the exact wire rows in
-the existing Provided milestone and retains member/body semantics. The integrator
+bases before adding an unrelated implementation task. Foreign integration has
+advanced original core without waiting for all Thin/panic semantics; C now owns
+the newly observed final-method blocker. A's disjoint Provided codec remains
+queued with its exact wire rows in the existing milestone, while A retains
+member/body semantics. The integrator
 finishes its current Thin join, then protects integration/observation time rather
 than opening a fourth long compiler workstream. Keep three workers; shared
 TypeKind/ABI/proof edits are not an opportunity for more concurrent owners.

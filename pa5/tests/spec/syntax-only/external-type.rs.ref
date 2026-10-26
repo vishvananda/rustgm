@@ -1,0 +1,10 @@
+active [0,1,2,3]
+node 0 14 17 literal 0
+value 0 string 14 17 1 "C"
+node 1 19 26 item 0
+item 0 "X" private [] [] foreign-type
+node 2 0 27 item 1
+item 1 - private [] [] extern-block true 0 [1]
+node 3 0 27 crate [2]
+root 3
+eof 28

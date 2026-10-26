@@ -1606,14 +1606,15 @@
       }
     },
     {
-      "path": "tests/spec/reject/external-type.rs",
-      "exit_status": 1,
+      "path": "tests/spec/syntax-only/external-type.rs",
+      "exit_status": 0,
       "features": [
-        "pa5.reject"
+        "pa5.syntax-only"
       ],
       "rustc": {
         "kind": "program",
-        "status": 1
+        "status": 1,
+        "reason": "PA5 records an opaque external type declaration; feature permission and crate entry requirements are later semantic checks."
       }
     },
     {

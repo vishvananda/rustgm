@@ -397,6 +397,7 @@ impl Unit {
         Ok(root)
     }
 
+    #[cfg(test)]
     pub(crate) fn prepare_choice<'a>(
         &self,
         site: crate::expand::builtin::choice::Site,
