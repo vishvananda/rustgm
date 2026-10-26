@@ -3,6 +3,8 @@
 mod binders;
 #[path = "transparent_naming.rs"]
 mod naming;
+#[path = "transparent_families.rs"]
+mod families;
 use super::*;
 use crate::{
     expand::config::Config,

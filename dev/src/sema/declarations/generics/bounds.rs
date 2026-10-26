@@ -581,6 +581,9 @@ impl Checker<'_> {
                     }
                     completed.extend(self.expand_alias_edge(edge)?);
                 }
+                if !matches!(bound.subject, Subject::Associated(_)) {
+                    input_count = completed.len();
+                }
                 continue;
             }
             let (value, original_bound) =

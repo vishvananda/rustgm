@@ -1,0 +1,18 @@
+{
+  "state": "frozen hypotheses for pinned Rust; no assignment activation",
+  "scope": "GAT alias input prefix versus projected-result promises",
+  "cases": [
+    {
+      "source": "accepted-input.rs",
+      "rustc_success": true
+    },
+    {
+      "source": "missing-copy.rs",
+      "rustc_success": false
+    },
+    {
+      "source": "alias-result.rs",
+      "rustc_success": true
+    }
+  ]
+}
