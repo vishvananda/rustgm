@@ -409,14 +409,14 @@ Sized assumptions and callable-local lifetime escape. The successor remains an e
 and observed costs are recorded below.
 
 
-### Qualified verifier source9147a49a
+### Qualified verifier source `9147a49a`
 
-Hosted40256578419 is GREEN on source9147a49a07af941991b84601492d64c8c2082fef,
-CI-onlyee0dd17aab0ff72428bac7b27b09936ea7163bfa. All2689 frozen fingerprints
+Hosted run 40256578419 is GREEN on source `9147a49a07af941991b84601492d64c8c2082fef`,
+CI commit `ee0dd17aab0ff72428bac7b27b09936ea7163bfa`. All 2,689 frozen fingerprints
 and all independent-fixture hashes match. Metadata, formatting, global
 architecture, strict production and private Clippy, CLI/private builds and the
-same exact six groups pass; six selected tests execute in0.05seconds. The helper
-used175.8seconds within its180second work budget. Downstream harness, audit-cache
+same exact six groups pass; six selected tests execute in 0.05 seconds. The helper
+used 175.8 seconds within its 180 second work budget. Downstream harness, audit-cache
 and upstream checks also pass. No reference, oracle, native or full-suite repeat
 was used. Earlier failures remain retained and this checkpoint claims no native
 specialization behavior.
@@ -428,15 +428,15 @@ Actual nocapture figures on that exact source:
 | Graph / registry / Budget | 56 / 240 / 8 bytes |
 | LocalMarkers / existing cold Contracts | 88 / 448 bytes |
 | Environment / Requirements / FormationRequirements | 64 / 128 / 128 bytes |
-| three-vertex chain, either declaration order | 2edges, depth2, capacity3; work441, logicalbytes13736 |
-| actual unsafe-marker two-vertex family | 1edge, depth1, capacity2; work297, logicalbytes7432 |
-| Full structural-static two-vertex family | work155, logicalbytes5136 |
-| literal Full-authorized family | work177, logicalbytes4896 |
-| mapped captured caller | retained owned payload1372; cumulative logical charge3272; work145/folder18; failed index13, retry total26 |
-| nominal rollback/retry | prior completed2, final visited6; failed work4, total41; logicalbytes208 |
+| three-vertex chain, either declaration order | 2 edges, depth 2, capacity 3; work 441, logical bytes 13,736 |
+| actual unsafe-marker two-vertex family | 1 edge, depth 1, capacity 2; work 297, logical bytes 7,432 |
+| Full structural-static two-vertex family | work 155, logical bytes 5,136 |
+| literal Full-authorized family | work 177, logical bytes 4,896 |
+| mapped captured caller | retained owned payload 1,372; cumulative logical charge 3,272; work 145/folder 18; failed index 13, retry total 26 |
+| nominal rollback/retry | prior completed 2, final visited 6; failed work 4, total 41; logical bytes 208 |
 
-Marker and DAG width8/32/128 figures above are reproduced exactly by this run.
-Ordinary Sole's growing-prefix counts16/128/1024/4096 are115/899/7171/28675.
+Marker and DAG width 8/32/128 figures above are reproduced exactly by this run.
+Ordinary Sole's growing-prefix counts 16/128/1024/4096 are 115/899/7171/28675.
 Ordinary declarations retain no Graph; no-marker/no-default declarations retain
 no LocalMarkers owner. Source-forgery, missing/forwarded authority, malformed
 markers, actual v2 publication rejection and imported Unknown opponents pass.
@@ -444,8 +444,8 @@ Closed-forest insertion rejection and every immediate-boundary finality/Min
 opponent pass. Failed budget aliases and partial lazy-index failures keep their
 charges and cannot turn into checked absence.
 
-The measured unchanged enclosing sizes are Syntax312, Unit688, Report3040,
-Node36, Item64, Scope32, resolver Definition36 and NodeFacts80. No hot field or
+The measured unchanged enclosing sizes are Syntax 312, Unit 688, Report 3040,
+Node 36, Item 64, Scope 32, resolver Definition 36 and NodeFacts 80. No hot field or
 persistent counter was added. Graph and LocalMarkers are the approved optional
 cold owners. These are Rust type sizes, actual capacities and logical work/
 payload accounting; they are not allocator-call counts, peak heap measurements
@@ -453,10 +453,10 @@ or a replacement for later performance qualification.
 
 Metadata-only retained evidence lives in Worker C
 obj/parallel/pa31/specialization-graph-v1/qualified-verifier-40256578419.
-Fastcheck artifact12622213761 (297438bytes) has ZIP SHA256
+Fastcheck artifact 12622213761 (297,438 bytes) has ZIP SHA-256
 f17aeae43761df6223cd5e5c9e07ecbd3093ea7a140a0ee9ae132e5fc67f0369;
-its binding SHA256 isa26272f768485cdb9659e223b30122319c9436a01bc2b41f048838f1081dc31a.
-The compiled CLI hash is3ae4b3c6127a962328454d5e0c13b140e7fe3b79e58936aa35725ba630237f47;
+its binding SHA-256 is a26272f768485cdb9659e223b30122319c9436a01bc2b41f048838f1081dc31a.
+The compiled CLI hash is 3ae4b3c6127a962328454d5e0c13b140e7fe3b79e58936aa35725ba630237f47;
 no executable was hydrated locally. The explicit execution fence remains in
 place until selected methods, actual defining-header conditions, dispatch and
 both RPIT continuations are complete and independently qualified.
