@@ -131,8 +131,9 @@ impl Prepared {
         }
         Ok((index, scope))
     }
-    fn require(
+    fn require_in(
         &self,
+        templates: &Templates,
         view: &RecipeView<'_>,
         store: &Store,
         owner: DeclarationRef,
@@ -176,8 +177,7 @@ impl Prepared {
                 || ready.item != item
                 || store.kind(pair.original) != Some(ready.original)
                 || store.kind(pair.callable) != Some(ready.callable)
-                || self
-                    .templates
+                || templates
                     .registration(item)
                     .is_none_or(|(template, parameters)| {
                         template.signature != pair.callable
@@ -200,7 +200,8 @@ impl Prepared {
         pair: SignaturePair,
         work: &mut ReservationWork,
     ) -> Result<(), Error> {
-        let (header, item, ready) = self.require(&view, store, owner, pair, work)?;
+        let (header, item, ready) =
+            self.require_in(&self.templates, &view, store, owner, pair, work)?;
         state.require_mapping(&view, store, ready.is_none(), work)?;
         if ready.is_some() {
             return Ok(());
@@ -303,6 +304,37 @@ impl Session {
         )?;
         Ok((self, result))
     }
+}
+
+pub(super) fn registered_pair(
+    state: &State,
+    view: &RecipeView<'_>,
+    facts: &crate::sema::model::Declarations,
+    owner: DeclarationRef,
+    pair: SignaturePair,
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
+    let prepared = state
+        .callables
+        .as_deref()
+        .ok_or_else(|| error("selected method lost its actual callable registration owner"))?;
+    if prepared
+        .require_in(
+            &facts.lifetimes.callables,
+            view,
+            &facts.types,
+            owner,
+            pair,
+            work,
+        )?
+        .2
+        .is_none()
+    {
+        return Err(error(
+            "selected method requires its actual pending callable registration",
+        ));
+    }
+    Ok(())
 }
 
 pub(super) fn scope_reader(

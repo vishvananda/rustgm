@@ -128,7 +128,8 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
     assert_eq!(work.retained, before);
     let (stage, status) = stage.trait_owner(holder_declaration, &mut work)?;
     assert_eq!(status, Demand::Ready(()));
-    repeated_owner(stage, holder_declaration, definition, &mut work)?;
+    stage = repeated_owner(stage, holder_declaration, definition, &mut work)?;
+    method_headers(stage, &mut work)?;
     owner_failed_precharge()?;
     actual_implicit_prelude_controls()?;
     Ok(())
@@ -139,7 +140,7 @@ fn repeated_owner(
     owner: DeclarationRef,
     definition: crate::resolve::model::DefId,
     work: &mut ReservationWork,
-) -> Result {
+) -> Result<Box<HeaderDraft>> {
     let facts = &stage.session.authority.facts;
     let id = facts
         .associated
@@ -185,6 +186,76 @@ fn repeated_owner(
         size_of::<HeaderDraft>(),
         work.retained.saturating_sub(before),
         work.steps
+    );
+    Ok(stage)
+}
+
+fn method_headers(mut stage: Box<HeaderDraft>, work: &mut ReservationWork) -> Result {
+    for name in ["carry", "borrow"] {
+        let owner = named(&stage, name, work)?;
+        let definition = stage
+            .session
+            .authority
+            .reservation
+            .recipe_view(&stage.session.authority.report, work)?
+            .definition(owner, work)?;
+        let (returned, status) = stage.method_declaration(owner, work)?;
+        stage = returned;
+        assert_eq!(status, Demand::Ready(()));
+        let facts = &stage.session.authority.facts;
+        let linkage = facts.crates.as_deref().ok_or("actual method linkage")?;
+        let declaration = linkage
+            .original_declaration_header(definition)?
+            .ok_or("actual selected declaration header")?;
+        assert!(declaration.body.is_some());
+        assert!(
+            linkage.original_header(definition).is_err(),
+            "body Environment remains genuinely pending"
+        );
+        linkage.original_inputs(&facts.generics, definition, false)?;
+        let template = facts
+            .lifetimes
+            .callables
+            .registration(crate::types::ItemId(definition.0))
+            .ok_or("actual registered callable")?;
+        assert_eq!(
+            template.1.len(),
+            if name == "carry" { 3 } else { 2 },
+            "actual Self/V and own U remain complete"
+        );
+        let holder = named_trait(&stage, "Holder", work)?;
+        let holder = stage
+            .session
+            .authority
+            .reservation
+            .recipe_view(&stage.session.authority.report, work)?
+            .definition(holder, work)?;
+        let inputs = linkage.original_inputs(&facts.generics, holder, false)?;
+        let header = facts
+            .generics
+            .traits
+            .as_deref()
+            .and_then(|contracts| contracts.header(crate::types::ItemId(holder.0)))
+            .ok_or("actual Holder input owner")?;
+        let (all, _) = header.inputs.imported_parts(
+            linkage.origin_catalog().ok_or("actual current catalog")?,
+            holder,
+        )?;
+        assert!(std::ptr::eq(all.as_ref(), inputs));
+        let before = work.retained;
+        for _ in 0..1000 {
+            let (returned, status) = stage.method_declaration(owner, work)?;
+            stage = returned;
+            assert_eq!(status, Demand::Ready(()));
+        }
+        assert_eq!(work.retained, before);
+    }
+    eprintln!(
+        "method-header layout={} headers={} pending-env={} selected-owner={}",
+        size_of::<crate::sema::crates::typed_headers::Header>(),
+        size_of::<crate::sema::crates::typed_headers::Headers>(),
+        size_of::<Option<Arc<crate::types::parameters::environment::Environment>>>(),
+        size_of::<crate::sema::crates::typed_headers::unpaid_provided::ProvidedOwners>()
     );
     Ok(())
 }

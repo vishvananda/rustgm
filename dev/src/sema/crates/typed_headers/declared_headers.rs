@@ -121,6 +121,12 @@ fn install(
         .generics
         .trait_self_bounds
         .insert(definition, implicit);
+    install_scopes(facts, declarations)
+}
+pub(super) fn install_scopes(
+    facts: &mut Declarations,
+    declarations: &mut [template_demands::Declaration],
+) -> Result<(), Error> {
     for declaration in declarations {
         if let Some(parent) = declaration.parent {
             facts
@@ -214,6 +220,26 @@ fn preflight(
     declarations: &[template_demands::Declaration],
     work: &mut ReservationWork,
 ) -> Result<(), Error> {
+    preflight_scopes(facts, declarations, work)?;
+    let mut growth = Growth::map::<DefId, Predicate>(
+        facts.generics.trait_self_bounds.len(),
+        facts.generics.trait_self_bounds.capacity(),
+        1,
+    );
+    if let Some(contracts) = facts.generics.traits.as_deref() {
+        growth.include(contracts.declaration_growth());
+    } else {
+        growth.bytes = growth.bytes.saturating_add(size_of::<Contracts>());
+        growth.include(Contracts::default().declaration_growth());
+    }
+    work.charge(growth.work)?;
+    work.reserve(growth.bytes)
+}
+pub(super) fn preflight_scopes(
+    facts: &Declarations,
+    declarations: &[template_demands::Declaration],
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
     work.charge(declarations.len().saturating_mul(3).saturating_add(1))?;
     let parents = declarations
         .iter()
@@ -234,17 +260,6 @@ fn preflight(
         facts.generics.parents.capacity(),
         parents,
     ));
-    growth.include(Growth::map::<DefId, Predicate>(
-        facts.generics.trait_self_bounds.len(),
-        facts.generics.trait_self_bounds.capacity(),
-        1,
-    ));
-    if let Some(contracts) = facts.generics.traits.as_deref() {
-        growth.include(contracts.declaration_growth());
-    } else {
-        growth.bytes = growth.bytes.saturating_add(size_of::<Contracts>());
-        growth.include(Contracts::default().declaration_growth());
-    }
     work.charge(growth.work)?;
     work.reserve(growth.bytes)?;
     for row in declarations {

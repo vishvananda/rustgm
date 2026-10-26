@@ -5,7 +5,7 @@ use crate::types::{
     parameters::{Parameter, ParameterKind},
 };
 
-pub(super) fn kind(kind: s::DefinitionKind) -> DefKind {
+pub(in crate::sema::crates::typed_headers) fn kind(kind: s::DefinitionKind) -> DefKind {
     match kind {
         s::DefinitionKind::Module => DefKind::Module,
         s::DefinitionKind::Trait => DefKind::Trait,

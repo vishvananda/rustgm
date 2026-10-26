@@ -44,7 +44,7 @@ fn actual_origins(
     linkage
         .originals
         .as_deref()
-        .and_then(|headers| headers.source.as_deref())
+        .and_then(|headers| headers.source.as_ref())
         .ok_or("actual canonical graph")?;
     let catalog = linkage.origin_catalog().ok_or("actual catalog")?;
     let descriptor = report

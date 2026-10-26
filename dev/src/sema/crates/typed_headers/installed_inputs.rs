@@ -78,9 +78,8 @@ impl Reader {
         catalog: &Catalog,
         generics: &Generics,
         owner: DeclarationRef,
-        declared: bool,
         work: &mut ReservationWork,
-    ) -> Result<&'a [Input], Error> {
+    ) -> Result<(&'a Arc<[Input]>, usize), Error> {
         work.charge(8)?;
         if self.root != view.root() {
             return Err(error("scope inputs changed their actual catalog root"));
@@ -109,6 +108,13 @@ impl Reader {
         }
         scope.require_data(rows, generics, Some(catalog))?;
         let definition = view.definition(owner, work)?;
+        let parent = raw
+            .parent
+            .map(|parent| view.definition(parent, work))
+            .transpose()?;
+        if generics.parents.get(&definition).copied() != parent {
+            return Err(error("scope inputs changed their actual normalized parent"));
+        }
         if generics
             .environments
             .get(&definition)
@@ -143,11 +149,9 @@ impl Reader {
             }
         };
         let all = scope.inputs.all();
-        if declared {
-            all.get(..prefix)
-                .ok_or_else(|| error("scope inputs truncated their actual declared prefix"))
-        } else {
-            Ok(all)
+        if prefix > all.len() {
+            return Err(error("scope inputs truncated their actual declared prefix"));
         }
+        Ok((all, prefix))
     }
 }

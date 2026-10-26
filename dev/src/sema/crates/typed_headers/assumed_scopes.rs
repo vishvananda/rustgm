@@ -858,6 +858,15 @@ pub(super) fn declaration_ready(
     }
     scope.require(rows, facts)?;
     let definition = view.definition(owner, work)?;
+    let parent = raw
+        .parent
+        .map(|parent| view.definition(parent, work))
+        .transpose()?;
+    if facts.generics.parents.get(&definition).copied() != parent {
+        return Err(error(
+            "installed declaration changed its actual normalized parent",
+        ));
+    }
     if scope.raw != raw
         || facts
             .generics

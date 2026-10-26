@@ -11,6 +11,8 @@ use crate::{
 
 #[path = "declared_headers.rs"]
 mod declarations;
+#[path = "declared_methods.rs"]
+mod methods;
 
 /// A private append cursor, with no completed header, role or body authority.
 #[derive(Default)]
@@ -19,6 +21,48 @@ pub(in crate::sema::crates::typed_headers) struct SelectedHeaders {
     owners: Option<Box<owner_stages::OwnerTransaction>>,
 }
 impl SelectedHeaders {
+    pub(in crate::sema::crates::typed_headers) fn method_declaration(
+        &mut self,
+        facts: &mut Declarations,
+        authority: &SchemaAuthority<'_>,
+        owner: DeclarationRef,
+        work: &mut ReservationWork,
+    ) -> Result<Demand<()>, Error> {
+        if methods::ready(self, facts, authority, owner, work)? {
+            return Ok(Demand::Ready(()));
+        }
+        let view = authority.reservation.recipe_view(authority.report, work)?;
+        let rows = view.rows()?;
+        let Some(crate::support::crates::generics::source::HeaderRef::Function(index)) =
+            rows.header(owner).map_err(super::super::error)?
+        else {
+            return Err(super::super::error(
+                "selected method requires its actual callable declaration",
+            ));
+        };
+        if let Some(parent) = rows.functions[index as usize].parent {
+            match rows.header(parent).map_err(super::super::error)? {
+                Some(crate::support::crates::generics::source::HeaderRef::Trait(_)) => {
+                    if let Demand::Blocked(dependency) =
+                        self.trait_owner(facts, authority, parent, work)?
+                    {
+                        return Ok(Demand::Blocked(dependency));
+                    }
+                }
+                _ => {
+                    return Err(super::super::error(
+                        "selected implementation method requires its actual parent declaration producer",
+                    ));
+                }
+            }
+        }
+        if let Demand::Blocked(dependency) = self.callable(facts, owner, work, |work| {
+            authority.reservation.recipe_view(authority.report, work)
+        })? {
+            return Ok(Demand::Blocked(dependency));
+        }
+        methods::prepare(self, facts, authority, owner, work)
+    }
     pub(in crate::sema::crates::typed_headers) fn trait_owner(
         &mut self,
         facts: &mut Declarations,

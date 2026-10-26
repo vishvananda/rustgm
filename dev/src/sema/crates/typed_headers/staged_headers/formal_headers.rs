@@ -8,7 +8,7 @@ use crate::{
 };
 use std::sync::Arc;
 
-pub(super) struct Callable {
+pub(in crate::sema::crates::typed_headers) struct Callable {
     pub header: Header,
     pub regions: crate::sema::lifetimes::FunctionRegions,
     pub receiver: Option<(crate::types::TypeId, u32)>,

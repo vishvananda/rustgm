@@ -132,6 +132,15 @@ fn symbol(
     definition: DefId,
     budget: &mut Headers,
 ) -> Result<String, Error> {
+    let symbol = symbol_from(context, definition, budget)?;
+    budget.observed.add(symbol.capacity());
+    Ok(symbol)
+}
+pub(in crate::sema::crates::typed_headers) fn symbol_from(
+    context: &mapped_source::Context<'_>,
+    definition: DefId,
+    budget: &mut impl super::super::recipe_cursor::Budget,
+) -> Result<String, Error> {
     let id = context.catalog.declaration(definition).map_err(error)?;
     let (owner, row, _) = context.catalog.declaration_coordinate(id).map_err(error)?;
     let rows = context.descriptor.rows();
@@ -155,15 +164,13 @@ fn symbol(
             "source callable changed its actual reserved external identity",
         ));
     }
-    let symbol = budget.symbol(&identity)?;
-    budget.observed.add(symbol.capacity());
-    Ok(symbol)
+    super::super::symbol(&identity, budget)
 }
 
 fn legacy_callable_path(
     rows: &s::Columns,
     row: crate::support::crates::owner_catalog::DeclarationRef,
-    budget: &mut Headers,
+    budget: &mut impl super::super::recipe_cursor::Budget,
 ) -> Result<Vec<String>, Error> {
     let raw = &rows.declarations[row.0 as usize];
     let parent = raw

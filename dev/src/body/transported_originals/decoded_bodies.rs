@@ -80,7 +80,14 @@ fn build(
             rebuilt_operations::build(&view, work).map_err(|e| report.body_error(source, e))?;
         let contract = rebuilt_inputs::build(facts, &view, &body, work)
             .map_err(|e| report.body_error(source, e))?;
-        (body, contract, Arc::clone(view.environment()?))
+        (
+            body,
+            contract,
+            Arc::clone(
+                view.environment()
+                    .map_err(|e| report.body_error(source, e))?,
+            ),
+        )
     };
     let source = body.source;
     let needed = crate::types::destruction::NeedsDrop::new(

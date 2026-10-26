@@ -82,7 +82,7 @@ impl Method {
             .as_ref()
             .ok_or("imported method lacks its actual linkage")?;
         linkage.require_source_declaration(facts, definition, scheme, steps)?;
-        linkage.original_inputs(definition, false)?;
+        linkage.original_inputs(&facts.generics, definition, false)?;
         Ok(Self {
             definition,
             signature: header.signature,

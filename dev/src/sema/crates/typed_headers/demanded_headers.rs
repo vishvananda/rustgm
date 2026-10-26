@@ -119,6 +119,28 @@ impl State {
         }
         Ok(state)
     }
+    pub(super) fn ready_pair(
+        &self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        owner: DeclarationRef,
+        work: &mut ReservationWork,
+    ) -> Result<Option<SignaturePair>, Error> {
+        let reader = self
+            .reader
+            .as_ref()
+            .ok_or_else(|| error("selected method lost its actual shared signature reader"))?;
+        reader.require(self, view, store, work)?;
+        work.charge(1)?;
+        let Some(s::HeaderRef::Function(index)) = view.rows()?.header(owner).map_err(error)? else {
+            return Err(error("selected method changed its actual function row"));
+        };
+        match self.pairs.get(index as usize) {
+            Some(Pair::Ready(pair)) => Ok(Some(*pair)),
+            Some(Pair::Empty | Pair::Blocked(_)) => Ok(None),
+            None => Err(error("selected method lost its actual signature slot")),
+        }
+    }
     pub(super) fn pair(
         &mut self,
         view: RecipeView<'_>,

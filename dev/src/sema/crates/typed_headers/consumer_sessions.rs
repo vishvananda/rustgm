@@ -103,6 +103,35 @@ impl ProofSession {
     }
 }
 impl ConsumerAuthority {
+    fn synchronize(&mut self, work: &mut ReservationWork) -> Result<(), Error> {
+        let Some(headers) = self
+            .facts
+            .crates
+            .as_deref_mut()
+            .and_then(|linkage| linkage.originals.as_deref_mut())
+        else {
+            return Ok(());
+        };
+        if !matches!(
+            headers.source,
+            Some(crate::sema::crates::ImportedOwners::Provided(_))
+        ) {
+            return Err(Error::unlocated(
+                "private consumer cannot synchronize an ordinary import budget",
+            ));
+        }
+        work.steps = work.steps.max(headers.work);
+        work.charge(1)?;
+        headers.work = work.steps;
+        work.reserve(
+            headers
+                .base
+                .saturating_add(headers.bytes)
+                .saturating_sub(work.retained),
+        )?;
+        headers.bytes = work.retained.saturating_sub(headers.base);
+        Ok(())
+    }
     fn require(&self, work: &mut ReservationWork) -> Result<(), Error> {
         let ConsumerAuthority {
             facts,
@@ -140,6 +169,7 @@ impl HeaderDraft {
         receipt: CollectedReceipt,
         work: &mut ReservationWork,
     ) -> Result<Box<Self>, Error> {
+        self.session.authority.synchronize(work)?;
         self.session.authority.require(work)?;
         work.charge(1)?;
         if self.completion.is_some() {
@@ -156,6 +186,40 @@ impl HeaderDraft {
         not(test),
         expect(
             dead_code,
+            reason = "selected method data awaits actual demanded original/instance execution"
+        )
+    )]
+    pub(super) fn method_declaration(
+        mut self: Box<Self>,
+        owner: DeclarationRef,
+        work: &mut ReservationWork,
+    ) -> Result<HeaderProgress, Error> {
+        self.session.authority.synchronize(work)?;
+        self.session.authority.require(work)?;
+        let completion = self.completion.as_deref().ok_or_else(|| {
+            Error::unlocated("selected method omitted its actual collector completion")
+        })?;
+        let ConsumerAuthority {
+            facts,
+            report,
+            reservation,
+            ..
+        } = &mut self.session.authority;
+        let authority = super::unpaid_provided::SchemaAuthority {
+            report,
+            reservation,
+            completion,
+        };
+        let result = self
+            .selected
+            .method_declaration(facts, &authority, owner, work)?;
+        self.session.authority.synchronize(work)?;
+        Ok((self, result))
+    }
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
             reason = "the selected owner transaction awaits its real method and demanded body continuation"
         )
     )]
@@ -164,6 +228,7 @@ impl HeaderDraft {
         owner: DeclarationRef,
         work: &mut ReservationWork,
     ) -> Result<HeaderProgress, Error> {
+        self.session.authority.synchronize(work)?;
         self.session.authority.require(work)?;
         let completion = self
             .completion
@@ -181,6 +246,7 @@ impl HeaderDraft {
             completion,
         };
         let result = self.selected.trait_owner(facts, &authority, owner, work)?;
+        self.session.authority.synchronize(work)?;
         Ok((self, result))
     }
     #[cfg_attr(
@@ -195,6 +261,7 @@ impl HeaderDraft {
         owner: DeclarationRef,
         work: &mut ReservationWork,
     ) -> Result<HeaderProgress, Error> {
+        self.session.authority.synchronize(work)?;
         self.session.authority.require(work)?;
         let completion = self.completion.as_deref().ok_or_else(|| {
             Error::unlocated("selected declaration lacks its actual collector completion")
@@ -213,6 +280,7 @@ impl HeaderDraft {
         let result = self
             .selected
             .trait_declaration(facts, &authority, owner, work)?;
+        self.session.authority.synchronize(work)?;
         Ok((self, result))
     }
     #[cfg_attr(
@@ -227,6 +295,7 @@ impl HeaderDraft {
         owner: DeclarationRef,
         work: &mut ReservationWork,
     ) -> Result<HeaderProgress, Error> {
+        self.session.authority.synchronize(work)?;
         self.session.authority.require(work)?;
         let completion = self.completion.as_deref().ok_or_else(|| {
             Error::unlocated("selected schema lacks its actual collector completion")
@@ -243,6 +312,7 @@ impl HeaderDraft {
             completion,
         };
         let result = self.selected.schema(facts, &authority, owner, work)?;
+        self.session.authority.synchronize(work)?;
         Ok((self, result))
     }
     #[cfg_attr(
@@ -257,6 +327,7 @@ impl HeaderDraft {
         owner: DeclarationRef,
         work: &mut ReservationWork,
     ) -> Result<HeaderProgress, Error> {
+        self.session.authority.synchronize(work)?;
         self.session.authority.require(work)?;
         if let Some(completion) = self.completion.as_deref() {
             completion.columns(&self.session.authority.report, work)?;
@@ -270,6 +341,7 @@ impl HeaderDraft {
         let result = self.selected.callable(facts, owner, work, |work| {
             reservation.recipe_view(report, work)
         })?;
+        self.session.authority.synchronize(work)?;
         Ok((self, result))
     }
 }

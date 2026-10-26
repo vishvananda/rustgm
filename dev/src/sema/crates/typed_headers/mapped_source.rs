@@ -6,6 +6,7 @@ pub(crate) use decoded_original::Original as SourceOriginal;
 mod ingested_readiness;
 pub(in crate::sema) use ingested_readiness::Readiness;
 mod origin_ports;
+pub(in crate::sema::crates::typed_headers) use origin_ports::require_function;
 mod owner_members;
 mod role_headers;
 mod scheme_inputs;

@@ -212,7 +212,75 @@ impl ProvidedOwners {
         }
         Ok(())
     }
-    fn implementation_header(&self, owner: Owner) -> Result<&s::ImplHeader, &'static str> {
+    pub(in crate::sema::crates::typed_headers) fn function(
+        &self,
+        catalog: &Catalog,
+        definition: crate::resolve::model::DefId,
+        body: Option<crate::resolve::body_origin::BodyOrigin>,
+        universals: u32,
+    ) -> Result<bool, &'static str> {
+        if !std::ptr::eq(catalog, self.catalog.as_ref()) {
+            return Err("selected function changed its actual current catalog");
+        }
+        super::super::mapped_source::require_function(
+            catalog,
+            self.descriptor()?,
+            definition,
+            body,
+            universals,
+        )
+    }
+    pub(in crate::sema::crates::typed_headers) fn owns_original(
+        &self,
+        catalog: &Catalog,
+        definition: crate::resolve::model::DefId,
+        steps: &mut usize,
+    ) -> Result<bool, &'static str> {
+        *steps = steps.saturating_add(1);
+        if !std::ptr::eq(catalog, self.catalog.as_ref()) {
+            return Err("selected original changed its actual current catalog");
+        }
+        let id = catalog.declaration(definition)?;
+        catalog.validate_declaration(id, definition, DefKind::Function)?;
+        let (provider, _, _) = catalog.declaration_coordinate(id)?;
+        Ok(provider == self.descriptor()?.identity())
+    }
+    pub(in crate::sema::crates::typed_headers) fn declaration_inputs<'a>(
+        &'a self,
+        catalog: &Catalog,
+        generics: &crate::sema::generics::Generics,
+        definition: crate::resolve::model::DefId,
+        declared: bool,
+    ) -> Result<Option<&'a [crate::sema::declaration_inputs::Input]>, &'static str> {
+        if !std::ptr::eq(catalog, self.catalog.as_ref()) {
+            return Err("selected inputs changed their actual catalog allocation");
+        }
+        let Some(id) = catalog.declaration_if_imported(definition)? else {
+            return Ok(None);
+        };
+        let (provider, row, _) = catalog.declaration_coordinate(id)?;
+        let descriptor = self.descriptor()?;
+        if provider != descriptor.identity() {
+            return Ok(None);
+        }
+        let raw = descriptor
+            .rows()
+            .declarations
+            .get(row.0 as usize)
+            .ok_or("selected input declaration is outside its actual table")?;
+        catalog.validate_declaration(
+            id,
+            definition,
+            super::super::mapped_source::slot_bindings::kind(raw.definition.kind),
+        )?;
+        let mut work = ReservationWork::default();
+        let (all, prefix) = self
+            .scopes
+            .inputs(&self.view(), catalog, generics, row, &mut work)
+            .map_err(|_| "selected inputs require their actual pending installed scope")?;
+        Ok(Some(if declared { &all[..prefix] } else { all }))
+    }
+    fn implementation_header(&self, owner: Owner) -> Result<s::ImplHeader, &'static str> {
         self.owner(owner)?;
         let OwnerKind::ImportedImpl(id) = owner.kind else {
             return Err("selected implementation requires its actual imported impl owner");
@@ -226,6 +294,7 @@ impl ProvidedOwners {
             .rows()
             .implementations
             .get(index as usize)
+            .copied()
             .ok_or("selected implementation is outside its actual table")
     }
     pub(in crate::sema) fn implementation_request(
