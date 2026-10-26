@@ -62,17 +62,7 @@ impl Checker<'_> {
                 self.constant_argument_contracts(arguments)?;
             }
             Type::Tuple(list) => {
-                let fields = self
-                    .facts
-                    .types
-                    .list(list)
-                    .ok_or_else(|| error("missing constant tuple types"))?;
-                self.work.extend(
-                    fields
-                        .iter()
-                        .rev()
-                        .map(|&ty| Work::ValueContract(ty, false)),
-                );
+                self.constant_type_children(list, "missing constant tuple types")?
             }
             Type::Array { element, .. }
             | Type::ArrayTerm { element, .. }
@@ -90,17 +80,7 @@ impl Checker<'_> {
                 parameters, result, ..
             } => {
                 self.work.push(Work::ValueContract(result, false));
-                let parameters = self
-                    .facts
-                    .types
-                    .list(parameters)
-                    .ok_or_else(|| error("missing constant callable types"))?;
-                self.work.extend(
-                    parameters
-                        .iter()
-                        .rev()
-                        .map(|&ty| Work::ValueContract(ty, false)),
-                );
+                self.constant_type_children(parameters, "missing constant callable types")?;
             }
             Type::FunctionItem { arguments, .. }
             | Type::Opaque(_, arguments)
@@ -109,6 +89,25 @@ impl Checker<'_> {
             }
             Type::Never | Type::Primitive(_) | Type::Parameter(_) => {}
         }
+        Ok(())
+    }
+
+    fn constant_type_children(
+        &mut self,
+        list: crate::types::ListId,
+        message: &'static str,
+    ) -> Result<(), Error> {
+        let children = self
+            .facts
+            .types
+            .list(list)
+            .ok_or_else(|| Error::at(FileId(0), 0, message))?;
+        self.work.extend(
+            children
+                .iter()
+                .rev()
+                .map(|&ty| Work::ValueContract(ty, false)),
+        );
         Ok(())
     }
 

@@ -1,4 +1,4 @@
-//! The source pattern_type producer consumes one real typed base fragment.
+//! The source `pattern_type` producer consumes one real typed base fragment.
 use super::choice::{Charge, Counted, Selected};
 use crate::{
     expand::macros::input::Input,
