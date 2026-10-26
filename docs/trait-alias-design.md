@@ -12,6 +12,12 @@ consumer. Its [binder successor](trait-alias-binders-checkpoint.md) now composes
 nested universal scopes without ancestor-path copies. Complete alias semantics,
 imported transport and a core artifact remain open.
 
+The [naming/source-sizing successor](trait-alias-naming-checkpoint.md) now supplies
+real shorthand member inputs and distinguishes declaration-Self naming from full
+proof requirements. Preserve original subjects before substitution: an unrelated
+formal cannot become a naming path merely because its actual type equals Self.
+Complete header/object/region/default/const/imported consumers remain required.
+
 Independent run40239493812 freezes 16 authored sources before execution, then
 observes 32 metadata compilations and six actual native executions on pinned
 rustc 1.98.0 in editions 2021/2024. Its 44 commands take 0.75 seconds, with zero

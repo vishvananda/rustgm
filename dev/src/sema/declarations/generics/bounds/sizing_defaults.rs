@@ -49,8 +49,93 @@ impl Checker<'_> {
         parameters: &[NodeKey],
         syntax: &mut Vec<Syntax>,
     ) -> Result<(), Error> {
-        let Some(bindings) = self.facts.source_bindings.as_deref() else {
+        let Some((meta, pointee)) = self.source_sizing_roles(key)? else {
             return Ok(());
+        };
+        let alias_self = self.source_alias_self(owner, key)?;
+        let mut alias_level = 0;
+        let mut levels: HashMap<DefId, u8> = HashMap::default();
+        for bound in syntax.iter() {
+            let binding = match bound.subject {
+                Subject::Parameter(id) => Some(id),
+                Subject::Type(key) => self.bound_parameter(key, false),
+                Subject::Associated(_) => None,
+            };
+            let level = match bound.bound {
+                Written::Trait(Bound::Sized) => SIZED,
+                Written::User { definition, .. } if definition == meta => META,
+                Written::User { definition, .. } if definition == pointee => POINTEE,
+                _ => continue,
+            };
+            if let Some(binding) = binding {
+                *levels.entry(binding).or_default() |= level;
+                // TraitDef defaults inspect direct RHS bounds. A where-clause
+                // has Subject::Type even when it names this same actual Self.
+                if alias_self == Some(binding) && matches!(bound.subject, Subject::Parameter(_)) {
+                    alias_level |= level;
+                }
+            }
+        }
+        for &key in parameters {
+            if self.generic_syntax(key)?.flavor == GenericFlavor::Type {
+                let binding = self.generic_binding(key)?;
+                self.source_parameter_default(
+                    binding,
+                    key,
+                    levels.get(&binding).copied().unwrap_or(0),
+                    meta,
+                    syntax,
+                );
+            }
+        }
+        if let Some(binding) = alias_self {
+            if alias_level & SIZED == 0 {
+                self.source_parameter_default(binding, key, alias_level, meta, syntax);
+            } else {
+                self.relaxed.remove(&binding);
+            }
+        } else if matches!(self.item(key)?.kind, ItemKind::Trait { .. }) && owner != pointee {
+            let binding = self
+                .facts
+                .associated
+                .owner(owner)
+                .and_then(|id| self.facts.associated.get(id))
+                .ok_or_else(|| self.error(key, "source trait has no Self declaration"))?
+                .self_definition;
+            self.source_parameter_default(
+                binding,
+                key,
+                levels.get(&binding).copied().unwrap_or(0),
+                meta,
+                syntax,
+            );
+        }
+        Ok(())
+    }
+    fn source_alias_self(&self, owner: DefId, key: NodeKey) -> Result<Option<DefId>, Error> {
+        if !matches!(self.item(key)?.kind, ItemKind::TraitAlias { .. }) {
+            return Ok(None);
+        }
+        let binding = self
+            .alias_self(owner)
+            .ok_or_else(|| self.error(key, "source alias has no actual Self declaration"))?;
+        let actual = self
+            .report
+            .resolution
+            .definitions
+            .get(owner.0 as usize)
+            .filter(|definition| {
+                definition.kind == crate::resolve::model::DefKind::TraitAlias
+                    && definition.node == Some(key)
+            });
+        if actual.is_none() || self.alias_self_schema(binding)?.is_none() {
+            return Err(self.error(key, "source alias Self belongs to another declaration"));
+        }
+        Ok(Some(binding))
+    }
+    fn source_sizing_roles(&self, key: NodeKey) -> Result<Option<(DefId, DefId)>, Error> {
+        let Some(bindings) = self.facts.source_bindings.as_deref() else {
+            return Ok(None);
         };
         let meta = bindings
             .role(LangItem::MetaSized)
@@ -71,51 +156,16 @@ impl Checker<'_> {
                     .map_err(|e| self.error(key, e))?;
             }
         }
-        let (meta, pointee) = (meta.definition, pointee.definition);
-        let mut levels: HashMap<DefId, u8> = HashMap::default();
-        for bound in syntax.iter() {
-            let binding = match bound.subject {
-                Subject::Parameter(id) => Some(id),
-                Subject::Type(key) => self.bound_parameter(key, false),
-                Subject::Associated(_) => None,
-            };
-            let level = match bound.bound {
-                Written::Trait(Bound::Sized) => SIZED,
-                Written::User { definition, .. } if definition == meta => META,
-                Written::User { definition, .. } if definition == pointee => POINTEE,
-                _ => continue,
-            };
-            if let Some(binding) = binding {
-                *levels.entry(binding).or_default() |= level;
-            }
-        }
-        for &key in parameters {
-            if self.generic_syntax(key)?.flavor == GenericFlavor::Type {
-                let binding = self.generic_binding(key)?;
-                self.source_parameter_default(binding, key, &levels, meta, syntax);
-            }
-        }
-        if matches!(self.item(key)?.kind, ItemKind::Trait { .. }) && owner != pointee {
-            let binding = self
-                .facts
-                .associated
-                .owner(owner)
-                .and_then(|id| self.facts.associated.get(id))
-                .ok_or_else(|| self.error(key, "source trait has no Self declaration"))?
-                .self_definition;
-            self.source_parameter_default(binding, key, &levels, meta, syntax);
-        }
-        Ok(())
+        Ok(Some((meta.definition, pointee.definition)))
     }
     fn source_parameter_default(
         &mut self,
         binding: DefId,
         key: NodeKey,
-        levels: &HashMap<DefId, u8>,
+        level: u8,
         meta: DefId,
         syntax: &mut Vec<Syntax>,
     ) {
-        let level = levels.get(&binding).copied().unwrap_or(0);
         if level & (META | POINTEE) != 0 {
             if level & SIZED == 0 {
                 self.relaxed.insert(binding);
@@ -132,3 +182,7 @@ impl Checker<'_> {
         });
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/sizing_alias_contracts.rs"]
+mod tests;
