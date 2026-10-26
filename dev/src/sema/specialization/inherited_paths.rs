@@ -33,6 +33,32 @@ pub(super) fn checked<'a>(
     }
     Ok(Some(vertex))
 }
+pub(in crate::sema) fn prefer(
+    facts: &Declarations,
+    previous: DefId,
+    next: DefId,
+) -> Result<Option<DefId>, &'static str> {
+    let registry = graph_pairs::registry(facts)?;
+    let Some(graph) = registry.specialization_graph() else {
+        return Ok(None);
+    };
+    graph.current(facts)?;
+    let State::Sealed(forest) = &graph.state else {
+        return Ok(None);
+    };
+    let a = registry.entry_key(previous)?;
+    let b = registry.entry_key(next)?;
+    let (Some(a), Some(b)) = (checked(forest, registry, a)?, checked(forest, registry, b)?) else {
+        return Ok(None);
+    };
+    if a.preorder < b.preorder && b.preorder <= a.subtree_end {
+        return Ok(Some(next));
+    }
+    if b.preorder < a.preorder && a.preorder <= b.subtree_end {
+        return Ok(Some(previous));
+    }
+    Ok(None)
+}
 pub(in crate::sema) fn conformance_order(
     facts: &Declarations,
     headers: &mut [Header],
