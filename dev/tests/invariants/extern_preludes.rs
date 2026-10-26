@@ -16,7 +16,7 @@ fn source_lang_trait_is_not_a_method_prelude_without_actual_import() -> Result {
         .err()
         .ok_or("source Clone leaked into an implicit method prelude")?;
     assert!(error.to_string().contains("method"), "{error}");
-    let (_, facts, _) = source_packets::client_analysis(
+    let (report, facts, _) = source_packets::client_analysis(
         crates::decode(&bytes)?,
         &format!("{declarations}use base::Clone;{body}"),
     )?;
@@ -50,6 +50,12 @@ fn source_lang_trait_is_not_a_method_prelude_without_actual_import() -> Result {
         .facts
         .declaration_header(method.definition)?
         .ok_or("actual imported declaration")?;
+    assert!(declaration.body.is_none());
+    assert!(!crate::sema::declarations::is_final_trait_method(
+        &report,
+        &facts.facts,
+        method.definition,
+    )?);
     assert_eq!(declaration.declaration, header.declaration);
     assert_eq!(declaration.body, header.body);
     assert_eq!(declaration.signature, header.signature);

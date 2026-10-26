@@ -29,8 +29,8 @@ jobs:
             dev-fast-${{ runner.os }}-rust-1.98-${{ hashFiles('dev/Cargo.lock', 'dev/Cargo.toml') }}-
       - name: Audit setup
         run: make setup-audit
-      - name: Five-minute development check
-        run: make fastcheck FAST_ARGS='lexer'
+      - name: Five-minute compiler smoke
+        run: make smoke
       - name: Harness, audit cache and upstream contracts
         run: make test-harness test-upstream && obj/audit-venv/bin/python -m unittest discover -s scripts/audit_tests -v
       - name: Retain focused evidence
