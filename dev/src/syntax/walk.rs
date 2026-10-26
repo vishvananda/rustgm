@@ -68,6 +68,7 @@ impl<L> Syntax<L> {
             Kind::Attributed { value, .. }
             | Kind::TypePattern { base: value, .. }
             | Kind::Group(value)
+            | Kind::TryBlock { body: value, .. }
             | Kind::Statement(value)
             | Kind::Unary { operand: value, .. }
             | Kind::Field { value, .. }

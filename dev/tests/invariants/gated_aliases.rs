@@ -237,7 +237,7 @@ fn alias_sites_share_bounded_storage_replay_and_reject_changed_images_and_spans(
         assert!(error.message.contains("defaultness"), "{error}");
     }
     assert_eq!(size_of::<gate_sites::Declaration>(), 24);
-    assert_eq!(size_of::<gate_sites::Declarations>(), 56);
+    assert_eq!(size_of::<gate_sites::Declarations>(), 88);
     assert_eq!(size_of::<crate::syntax::item::ItemKind>(), 28);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     Ok(())

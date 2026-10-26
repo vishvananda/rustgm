@@ -32,6 +32,7 @@ impl<'a> Writer<'a> {
             Kind::Literal(_) | Kind::DeferredLiteral(_) => self.enqueue(&[view.span(node.span)]),
             Kind::CrateRoot(_) => self.text("$crate"),
             Kind::Group(value) => self.enqueue(&[W("("), view.expr().n(value), W(")")]),
+            Kind::TryBlock { body, .. } => self.enqueue(&[W("try "), view.expr().n(body)]),
             Kind::Tuple(list) => self.enqueue(&[
                 W("("),
                 view.expr().sequence(list, ", "),

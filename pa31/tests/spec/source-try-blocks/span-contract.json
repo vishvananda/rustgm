@@ -20,7 +20,34 @@
       "sha256": "53ec4714b39c07c7600829d91ea0e8f09467e434ccb97ea04ab6dc75caca3f8f",
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
-      "rustc_warning_codes_hypothesis": []
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 0,
+        "rustc_error_codes_hypothesis": [],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/source-try-blocks/forwarded-both.rs",
@@ -29,14 +56,74 @@
       "rustc_error_codes_hypothesis": [
         "E0658"
       ],
-      "rustc_warning_codes_hypothesis": []
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": [
+          "E0658"
+        ],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     },
     {
       "source": "pa31/tests/spec/source-try-blocks/nested-forwarded-keyword.rs",
       "sha256": "bc7bc882d3a911a6a18e4b8868fa0b0f1dc59daf9b85895bb34cde8948c4b062",
       "rustc_status_hypothesis": 0,
       "rustc_error_codes_hypothesis": [],
-      "rustc_warning_codes_hypothesis": []
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 0,
+        "rustc_error_codes_hypothesis": [],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
     }
   ],
   "pending": [
@@ -48,5 +135,7 @@
     "offset": 5482,
     "actual": "try { accum }"
   },
-  "note": "Three NEW actual endpoint-composition opponents; primary rustc_span::Span::prepare_to_combine and parser try_span.to(body.span). No repeated observations."
+  "note": "Three NEW actual endpoint-composition opponents; primary rustc_span::Span::prepare_to_combine and parser try_span.to(body.span). No repeated observations.",
+  "initial_contract_sha256": "12876add833624cf3d41dfc59ad1510ac90a9c21026bca1f7cc4e106a3eb0ef9",
+  "observed_binding_sha256": "b09dec7492aabcc436e8c28ad3d0720ae3cf24fdf3cb021c7ed5e3d33513eb2f"
 }

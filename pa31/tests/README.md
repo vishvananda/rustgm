@@ -184,3 +184,14 @@ even when observations disprove a prediction. This does not activate PA31.
 declarations and opposing owner/form/gate/scope inputs, with 38 independent
 metadata predictions. Declaration data grants neither derive execution nor
 helper use; actual selected-derive ownership is a separate consumer requirement.
+
+`spec/source-try-blocks/` freezes genuine source feature/endpoint and residual
+opponents for the original `ops/index_range.rs` try blocks. The pinned checks
+collected 38 metadata observations, zero infrastructure failures; four initial
+predictions disagreed and remain bound to raw diagnostics. A forwarded keyword
+with a definition-owned block accepts, while whole-expression and both-endpoint
+caller captures retain caller gating. Homogeneous try-block residuals differ from
+function-level conversion. The first grammar checkpoint retains explicit semantic
+unsupported at active TryBlock/`?` checking; real Try/FromResidual/branch/from_output,
+residual reconstruction, ownership and native execution remain required PA26/31
+work. No Default derive or assignment activation follows from this syntax work.

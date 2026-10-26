@@ -1546,6 +1546,10 @@ impl Checker<'_> {
             Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {
                 self.term(value)
             }
+            Kind::TryBlock { .. } | Kind::Unary { op: Unary::Try, .. } => Err(self.error(
+                node,
+                "source Try control-flow semantics are not implemented",
+            )),
             Kind::Block {
                 flavor: BlockFlavor::Plain | BlockFlavor::Unsafe | BlockFlavor::Const,
                 statements,

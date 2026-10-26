@@ -2174,6 +2174,29 @@
         "prefix": "struct S{n:u8} fn main(){let _=",
         "suffix": ";}"
       }
+    },
+    {
+      "path": "tests/spec/control/try-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control",
+        "pa4.syntax-only"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/control/try-needs-block.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
     }
   ]
 }

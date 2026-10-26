@@ -16,7 +16,7 @@ pub(crate) fn validate<L>(
         literals: 0,
         captures: 0,
         items: 0,
-        gate_sites: 0,
+        gate_sites: crate::syntax::gate_sites::Prefix::default(),
         variants: 0,
         use_trees: 0,
         generics: 0,
@@ -42,6 +42,13 @@ pub(crate) fn validate<L>(
         for entry in entries.entries() {
             entry.validate(source)?;
             span(entry.span)?;
+        }
+        for (ordinal, entry) in entries.expressions().iter().enumerate() {
+            entry.validate(
+                source,
+                u32::try_from(ordinal).map_err(|_| error(0, "expression-gate ordinal overflow"))?,
+            )?;
+            span(entry.keyword)?;
         }
     }
     for variant in &source.variants {

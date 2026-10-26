@@ -1,5 +1,6 @@
 //! Copy parsed fragments by typed facts, rebasing dense IDs and source provenance.
 mod span_preflight;
+use super::gate_sites::Prefix;
 use super::{
     ast::{Kind, List, NodeId, Syntax},
     attribute,
@@ -15,7 +16,7 @@ pub(crate) use span_preflight::validate as validate_spans;
 pub(crate) struct Extent {
     pub nodes: usize,
     items: usize,
-    gate_sites: usize,
+    gate_sites: Prefix,
     variants: usize,
     use_trees: usize,
     generics: usize,
@@ -32,7 +33,7 @@ impl Extent {
         Self {
             nodes: ast.nodes.len(),
             items: ast.items.len(),
-            gate_sites: ast.gate_sites.as_ref().map_or(0, |entries| entries.len()),
+            gate_sites: ast.gate_extent(),
             variants: ast.variants.len(),
             use_trees: ast.use_trees.len(),
             generics: ast.generics.len(),
@@ -77,7 +78,7 @@ struct Bases {
     literals: u32,
     captures: u32,
     items: u32,
-    gate_sites: usize,
+    gate_sites: Prefix,
     variants: u32,
     use_trees: u32,
     generics: u32,
@@ -99,10 +100,16 @@ impl Bases {
             literals: base(destination.literals.len(), source.literals.len())?,
             captures: base(destination.captures.len(), source.captures.len())?,
             items: base(destination.items.len(), source.items.len())?,
-            gate_sites: destination
-                .gate_sites
-                .as_ref()
-                .map_or(0, |entries| entries.len()),
+            gate_sites: Prefix {
+                items: base(
+                    destination.gate_extent().items as usize,
+                    source.gate_extent().items as usize,
+                )?,
+                expressions: base(
+                    destination.gate_extent().expressions as usize,
+                    source.gate_extent().expressions as usize,
+                )?,
+            },
             variants: base(destination.variants.len(), source.variants.len())?,
             use_trees: base(destination.use_trees.len(), source.use_trees.len())?,
             generics: base(destination.generics.len(), source.generics.len())?,
@@ -230,7 +237,10 @@ impl Bases {
         }
         if let Some(entries) = &source.gate_sites {
             entries
-                .charge(1 + entries.len(), source.gate_sites_bytes())
+                .charge(
+                    1 + entries.len() + entries.expressions().len(),
+                    source.gate_sites_bytes(),
+                )
                 .map_err(|message| error(0, message))?;
             for entry in entries.entries() {
                 entry.validate(source)?;
@@ -240,6 +250,15 @@ impl Bases {
                     span(entry.span)?,
                     entry.kind,
                 )?;
+            }
+            for (ordinal, entry) in entries.expressions().iter().enumerate() {
+                entry.validate(
+                    source,
+                    u32::try_from(ordinal)
+                        .map_err(|_| error(0, "expression-gate ordinal overflow"))?,
+                )?;
+                destination
+                    .record_expression_gate(self.rebased(entry.node), span(entry.keyword)?)?;
             }
         }
         for variant in &source.variants {
@@ -296,6 +315,10 @@ impl Bases {
         span: &mut impl FnMut(Span) -> Result<Span, LexError>,
     ) -> Result<(), LexError> {
         match kind {
+            Kind::TryBlock { body, gate } => {
+                self.node(body);
+                *gate += self.gate_sites.expressions;
+            }
             Kind::Receiver { name, lifetime, .. } => {
                 *name = span(*name)?;
                 *lifetime = span(*lifetime)?;

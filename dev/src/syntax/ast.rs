@@ -269,6 +269,10 @@ pub enum Kind {
         statements: List,
         tail: Option<NodeId>,
     },
+    TryBlock {
+        body: NodeId,
+        gate: u32,
+    },
     EmptyStatement,
     Statement(NodeId),
     Let {

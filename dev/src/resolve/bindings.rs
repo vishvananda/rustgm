@@ -156,24 +156,36 @@ impl super::package::Package {
             .is_some_and(|context| context.requested(policy::Feature::ExternTypes)))
     }
     pub(crate) fn requested_final_functions(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::FinalAssociatedFunctions,
+            "final-method client identity changed",
+        )
+    }
+    pub(crate) fn requested_try_blocks(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::TryBlocks,
+            "try-block client identity changed",
+        )
+    }
+    fn requested_expression_feature(
+        &self,
+        feature: policy::Feature,
+        changed: &'static str,
+    ) -> Result<bool, &'static str> {
         if let Some(source) = self.staged_consumer() {
             source.require_package(self)?;
-            return Ok(source
-                .features
-                .has(policy::Feature::FinalAssociatedFunctions));
+            return Ok(source.features.has(feature));
         }
         if let Some(client) = self.source_client() {
             if client.current().name() != self.crate_name || client.current() == client.provider() {
-                return Err("final-method client identity changed");
+                return Err(changed);
             }
             client.validate_inventory()?;
-            return Ok(client
-                .features
-                .has(policy::Feature::FinalAssociatedFunctions));
+            return Ok(client.features.has(feature));
         }
         Ok(self
             .macro_context()?
-            .is_some_and(|context| context.requested(policy::Feature::FinalAssociatedFunctions)))
+            .is_some_and(|context| context.requested(feature)))
     }
     #[must_use]
     pub fn uses_source_bindings(&self) -> bool {

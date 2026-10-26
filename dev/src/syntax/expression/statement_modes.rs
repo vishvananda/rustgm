@@ -38,6 +38,7 @@ pub(crate) fn statement_expression<'s>(
             flavor: BlockFlavor::Plain | BlockFlavor::Unsafe | BlockFlavor::Const,
             ..
         } | Kind::If { .. }
+            | Kind::TryBlock { .. }
             | Kind::Match { .. }
             | Kind::While { .. }
             | Kind::Loop { .. }

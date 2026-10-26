@@ -309,7 +309,7 @@ fn foreign_replay_width_and_hot_layouts_use_only_the_existing_sparse_owner() -> 
     assert_eq!(size_of::<Kind>(), 24);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<gate_sites::Declaration>(), 24);
-    assert_eq!(size_of::<gate_sites::Declarations>(), 56);
+    assert_eq!(size_of::<gate_sites::Declarations>(), 88);
     println!(
         "Foreign layouts ItemKind={} Item={} TypeKind={} AST={} Node={} Constructor={} Store={} Unit={} Package={} Report={} Definition={} Scope={}",
         size_of::<ItemKind>(),

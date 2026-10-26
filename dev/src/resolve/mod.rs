@@ -28,6 +28,7 @@ mod alias_gates;
 mod default_items;
 mod float_features;
 mod gate_provenance;
+mod try_blocks;
 pub mod package;
 mod paths;
 mod patterns;
@@ -52,6 +53,7 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     float_features::validate_plain(package, &state.facts)?;
     default_items::validate_plain(package)?;
     alias_gates::validate_plain(package)?;
+    try_blocks::validate_plain(package)?;
     Ok(state.facts)
 }
 pub mod render;
