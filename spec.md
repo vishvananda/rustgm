@@ -238,8 +238,22 @@ do not manufacture a trait identity or clone a second flattened graph. Preserve
 written edge subjects and existing unreduced clause facts. The
 [naming checkpoint](docs/trait-alias-naming-checkpoint.md) records the independent
 counterexample, actual consumer and selected-table cost. Associated-family input
-prefixes must include every emitted alias requirement; object principal
-multiplicity is separate from deduplicated proof/naming clauses.
+prefixes include every emitted alias requirement, including equalities and
+builtin clauses. Associated-result aliases use the same bound worklist and
+canonical expander, but their promises stay outside that input prefix. Preserve
+implicit result Sized separately. Object principal multiplicity is separate
+from deduplicated proof/naming clauses. The
+[combined checkpoint](docs/runtime-header-integration-checkpoint.md) records
+actual projection-use opponents and unchanged alias execution/export fences.
+
+Source Abort requires the actual current attributed header, complete call
+instance and reached caller proof. Consume a transient witness for the final
+Evaluate and original Unreachable edge before emitting the existing terminator;
+stop subsequent cleanup only on that path. Do not fabricate a return value or
+use an interposable library abort symbol for this intrinsic. Const calls,
+reification, imported origins and assertion/panic construction remain independent
+contracts; the [runtime checkpoint](docs/source-abort-runtime-checkpoint.md)
+records the genuine owned-scope and native opponents.
 
 Share structural layout readiness and field instantiation across constant
 storage and source intrinsic consumers. A layout answer supplies physical data,
@@ -260,6 +274,13 @@ diagnostic identities and field-read hints grant no move or body permission.
 Keep this state in fixed cold provider tables and preserve real provided bodies
 and conditional Environment clauses. The [capability checkpoint](docs/pa29-provider-capability-checkpoint.md)
 records actual checked originals and containing layouts.
+
+Pointee declaration production seals the actual trait, Metadata member and
+DynMetadata nominal contracts in one cold shared owner. Retain their real
+source-incarnation witnesses and completed declared prefixes; a derived
+environment suffix may grow without changing the declaration. The
+[declaration checkpoint](docs/pointee-source-declarations.md) supplies no
+automatic implementation, metadata normal form or imported execution permission.
 
 Imported executable originals have authenticated external declaration/body/site
 coordinates. Install their complete canonical header graph before original
@@ -283,6 +304,14 @@ the entire type store are not per-call allocation bounds. Failed attempts retain
 their charged work and peak, and cannot publish partial readiness. This private
 structural preparation grants no defining Environment, original body proof,
 call-instance proof or wider metadata-profile permission.
+
+Private selected recipes use one fixed shared memo with a sole publishing
+worklist; readers authenticate its actual root, Store arena and allocation.
+Reuse the ordinary signature checker and preserve explicit missing/pending/ready
+states. Certify real named type formals and inherited impl Self during the same
+collector walk, without guessing prefixes or cloning a second type table. The
+[mapping checkpoint](docs/private-signature-mapping-checkpoint.md) records cold
+storage, constant warm work and remaining owner/body proof obligations.
 
 Raw original Contract parameters retain the source iterator's inner-to-outer
 scope order. Callable applications retain their separate outer-to-inner formal

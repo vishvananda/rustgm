@@ -48,23 +48,29 @@ Current lanes after the [source-contract integration](library-contracts-integrat
   kernels are qualified. Continue complete trait/schema/member validation on the
   same fresh consumer and one demand memo, then actual original/instance and
   borrow proof toward the [native7 milestone](parallel/provided-method-execution.md).
+  The fixed shared mapping and actual named-formal certificate now pass combined
+  qualification. Complete trait/impl headers, default-Self/Contract environments
+  and actual body proof remain required.
   Private preparation does not grant public Provided execution.
-- B owns actual source language/intrinsic consumers. Source Not and closed layout
-  queries, nominal Clone and provided clone_from have qualified native evidence.
-  Continue genuine reached runtime Abort and the real panic/format/constant
-  pipeline. Use supported LowIR operations; preserve ordinary source algorithms,
+- B owns actual source language/intrinsic consumers. Source Not, closed layout,
+  nominal Clone/provided clone_from and genuine reached source Abort have
+  qualified native evidence and combined source/LowIR equality. Continue source
+  Transmute and the real panic/format/constant pipeline. Use supported LowIR
+  operations; preserve ordinary source algorithms,
   const restrictions and imported transport requirements.
-- C owns actual source sizing/Pointee contracts after qualified local specialization
-  method execution and both projected-result consumers. Source alias Self sizing
-  is the next isolated checkpoint. Proposed Pointee/Metadata/DynMetadata roles
-  require genuine source/member/nominal validators; representation metadata grants
-  no semantic or runtime intrinsic authority. Coordinate central role/bit changes
+- C owns actual source sizing/Pointee contracts after qualified local specialization,
+  source alias Self sizing and the sealed Pointee/Metadata/DynMetadata declaration
+  producer. Continue automatic Pointee proof and actual metadata normalization
+  through both existing normalizers. Representation metadata grants no source
+  proof or runtime intrinsic authority. Coordinate central role/bit changes
   with B before editing.
 - The integrator owns complete aliases, qualification and direct-main publication.
   Canonical clauses, nested binders, shorthand naming and source Self-sizing
   are qualified. Continue header-time naming, complete original/normalized
-  formation, associated-family input prefixes, scoped regions, objects, complete
+  formation, scoped regions, objects, complete
   unused/default/const and imported consumers. Alias execution/export stays fenced while incomplete.
+  The combined runtime/header checkpoint fixes associated-family alias input
+  prefixes and admits associated-result aliases through the same bound worklist.
   Do not change CPPGM or pinned upstream sources.
 
 Development validation uses `make fastcheck` with exact affected controls and
