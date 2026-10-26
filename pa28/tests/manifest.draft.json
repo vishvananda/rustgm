@@ -1086,15 +1086,14 @@
     },
     {
       "path": "tests/spec/source-transmute/function-signature-erasure.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa28.source-transmute"
       ],
       "rustc": {
         "kind": "library",
         "status": 0,
-        "emit": "obj",
-        "reason": "Valid Rust profile remains explicitly unsupported until its actual value-validity or function-ABI consumer is implemented."
+        "emit": "obj"
       },
       "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
       "environment": {
@@ -1104,7 +1103,11 @@
         "crate_name": "transmute_contract",
         "disambiguator": "source_transmute_v1"
       },
-      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant.",
+      "native": {
+        "kind": "object",
+        "reason": "Function-pointer formation preserves the original target and destination typed ABI; actual runtime formatter invocation is qualified by the new exact observer."
+      }
     },
     {
       "path": "tests/spec/source-transmute/actual-maybe-uninit-symbolic.rs",
