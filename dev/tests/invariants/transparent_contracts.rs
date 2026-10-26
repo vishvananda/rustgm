@@ -190,6 +190,26 @@ fn alias_applications_substitute_all_slots_and_preserve_real_leaf_equalities() -
             })
             .is_err()
     );
+    distinct_applications_keep_both_argument_environments()?;
+    Ok(())
+}
+
+fn distinct_applications_keep_both_argument_environments() -> TestResult {
+    let report = report("#![feature(trait_alias)]trait P<T>{}trait A<T>=P<T>;trait Both=A<u8>+A<u16>;fn main(){}")?;
+    let mut checker = headers(&report)?;
+    let request = edge(&checker, "Both", TypeId::primitive(Primitive::U32), GenericArgs::EMPTY)?;
+    let clauses = checker.expand_alias_edge(request)?;
+    assert_eq!(clauses.len(), 2, "different actual arguments cannot share an application key");
+    let mut arguments = crate::support::hash::HashSet::default();
+    for clause in clauses {
+        let predicate = clause.value.ordinary()?;
+        let (id, _) = predicate.bound.trait_parts().ok_or("actual leaf trait application")?;
+        let application = checker.facts.types.trait_application(id).ok_or("actual leaf")?;
+        let values = checker.facts.types.arguments(application.arguments).ok_or("actual leaf arguments")?.collect::<Vec<_>>();
+        let [Argument::Type(ty)] = values.as_slice() else { return Err("wrong leaf environment".into()) };
+        arguments.insert(*ty);
+    }
+    assert_eq!(arguments, [TypeId::primitive(Primitive::U8), TypeId::primitive(Primitive::U16)].into_iter().collect());
     Ok(())
 }
 #[test]
@@ -288,12 +308,29 @@ fn alias_cycles_arity_and_unfinished_binder_consumers_fail_without_empty_success
 fn failed_graph_cannot_restart_as_an_empty_contract() -> TestResult {
     let report = report("#![feature(trait_alias)]trait A=B;trait B=A;fn main(){}")?;
     let mut checker = Checker::new(&report)?;
-    let error = checker.prepare_trait_owners(&mut 0, 1_000_000).err().ok_or("cycle was accepted")?;
+    let error = checker
+        .prepare_trait_owners(&mut 0, 1_000_000)
+        .err()
+        .ok_or("cycle was accepted")?;
     assert!(error.message.contains("cycle in trait alias"));
-    assert!(!checker.trait_aliases.as_ref().ok_or("retained failed owner")?.closed);
-    let request = edge(&checker, "A", TypeId::primitive(Primitive::U8), GenericArgs::EMPTY)?;
+    assert!(
+        !checker
+            .trait_aliases
+            .as_ref()
+            .ok_or("retained failed owner")?
+            .closed
+    );
+    let request = edge(
+        &checker,
+        "A",
+        TypeId::primitive(Primitive::U8),
+        GenericArgs::EMPTY,
+    )?;
     assert!(checker.expand_alias_edge(request).is_err());
-    let error = checker.complete_alias_headers(&mut 0, 1_000_000).err().ok_or("failed canonical graph restarted")?;
+    let error = checker
+        .complete_alias_headers(&mut 0, 1_000_000)
+        .err()
+        .ok_or("failed canonical graph restarted")?;
     assert!(error.message.contains("cannot restart"));
     Ok(())
 }

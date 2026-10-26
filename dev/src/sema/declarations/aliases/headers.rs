@@ -74,7 +74,9 @@ impl Checker<'_> {
                 .ok_or_else(|| Error::unlocated("missing alias contract owner"))?
                 .headers[index];
             if std::mem::replace(&mut header.started, true) {
-                return Err(Error::unlocated("trait alias contract preparation cannot restart"));
+                return Err(Error::unlocated(
+                    "trait alias contract preparation cannot restart",
+                ));
             }
             let owner = header.owner;
             let context = regions::Context {

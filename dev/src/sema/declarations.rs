@@ -1224,6 +1224,7 @@ impl Checker<'_> {
                         | ItemKind::Union { .. }
                         | ItemKind::Impl { .. }
                         | ItemKind::Trait { .. }
+                        | ItemKind::TraitAlias { .. }
                 )
             {
                 continue;
@@ -1238,7 +1239,8 @@ impl Checker<'_> {
                             | ItemKind::Enum { .. }
                             | ItemKind::Union { .. }
                             | ItemKind::Impl { .. }
-                            | ItemKind::Trait { .. })
+                            | ItemKind::Trait { .. }
+                            | ItemKind::TraitAlias { .. })
                     ))
             {
                 let message = match self.item(key).map(|item| item.kind) {
