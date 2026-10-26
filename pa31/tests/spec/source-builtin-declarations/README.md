@@ -22,3 +22,10 @@ This does not implement assertion expansion, tracing, attribute rewriting,
 derive output, allocator glue, contracts, EII, assembly, proc-macro hosting or
 foreign macro transport. Each execution family remains required at its owning
 assignment. Ordinary supported derives keep their current real consumer.
+
+Nonempty `attributes(...)` lists now have a separately authored typed declaration
+producer and exact checked-header API. It retains canonical identifiers/spans on
+the existing cold header, preserving role/provider/source identity and checked
+empty versus missing state. It grants no derive execution or global helper scope.
+See [the helper declaration checkpoint](../../../../docs/source-builtin-helper-declarations.md)
+for independent hypotheses, actual lint outcomes and qualification status.

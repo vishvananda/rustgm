@@ -1,0 +1,633 @@
+{
+  "schema": 1,
+  "phase": "observed outcomes bind qualification; initial hypotheses retained",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "scope": "38 new metadata-only observations; no Default invocation/native permission or previous matrix repeat",
+  "cases": [
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/default-helper.rs",
+      "sha256": "98a3a47bf08b39ce9961d7836dcd3a0a517d798b8d6900c73b7f617003f2fbe7",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "actual core Default claim with a nonempty helper list",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/empty-helpers.rs",
+      "sha256": "547b1bc9213407a37459a1a671b37d94c1e8ec2603fce357fa2239e06c5d17a8",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "explicit empty helper list retains no helper payload",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/implicit-empty.rs",
+      "sha256": "bc16f4ffb9a348b4887a7ec051bb8d87130f027347994db8f627cff1a80553e8",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "implicit actual builtin role has no declared helpers",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/alias-role.rs",
+      "sha256": "f54a156f0fdb1eaccf6652039e3fe3555afd1f2693ab3d8ea0d0db19b060ed1b",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "actual explicit builtin role is independent of declared macro spelling",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/raw-identifiers.rs",
+      "sha256": "59d2c65d5c416c39bfd0fa8b669e9215fc084adeb7e9e30b8458e0ba1f48a80f",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "raw helper names retain canonical identifier identity and original spans",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/duplicate-helpers.rs",
+      "sha256": "687fe3dcb328a16986ae6898c25ce61b8c58d985adfc77e7476ca6526d6958eb",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "helper order and duplicates remain retained declaration data",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/unicode-helpers.rs",
+      "sha256": "776f0c6172a1e29eb9c648b90b67834a8429a79c317c0fd28150ba5795cf7275",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "NFC-equivalent identifiers retain distinct source spans but shared canonical identity",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/keyword-helper.rs",
+      "sha256": "0f9bcf81ce6b3eee84eed6af41c077d661c94e7badaacbbce721804e217b1405",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "helper identifier can_be_raw semantics permit non-path strict keywords",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": true,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": true,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/bang-helper-data.rs",
+      "sha256": "d2cd4314e01ca8dab5f9208c3da12d32520a280e42f014946dabd1b5f435844e",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "non-derive claim helper data does not grant derive/helper permission",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "unused_features"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": true
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "unused_features"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": true
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/helper-not-global.rs",
+      "sha256": "c07ded2975fa8224b4696ddb485458abe75707bf7402aabaa5e73a42ac1fbf5c",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "declaring a helper does not place it in unrelated attribute scope",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/missing-rustc-gate.rs",
+      "sha256": "e48129278646c8fe7c28707ce2f423511ff3bf135e37f1d342d9359f146b5554",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0658"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "real rustc_attrs request is mandatory",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/wrong-owner.rs",
+      "sha256": "3b5f3622f969565eb50fcdda016638caae8e4cbf5e904fa74c24910c264248e0",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "builtin claim requires its actual macro declaration owner",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/literal-helper.rs",
+      "sha256": "8341efcacb80220f19a27e9bcba2a0fcddbd2ffa4408310867e499547788efb3",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "helper elements are identifiers rather than literals",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/path-helper.rs",
+      "sha256": "eee92b19c4cfe1fe8cfe3c7a5c8b0a7633447a6ba1184aaeaaf10e89881a0b85",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "qualified helper paths are not identifier declarations",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/argument-helper.rs",
+      "sha256": "7d6e7fd2d1056c9565532679cb2a97aec3af3d153c0d30f8e95f98d413c318dd",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "helper declarations have no arguments",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/path-keyword-helper.rs",
+      "sha256": "9d130fd2ff0341da14b7d3eb9d3cc168a7d76fd3a508cc5d2c29a065d017114b",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "path segment keywords cannot be raw helper identifiers",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/missing-comma.rs",
+      "sha256": "6feea49b8af159b9546575b5b9d472c8e68dd0f3b38514067c076199fa440dee",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "helper separators must follow metadata grammar",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/extra-input.rs",
+      "sha256": "2e931a53b0085c9ffa9d39e2ab0edf90813723070c663775dcc953d4d07cdcd5",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "extra top-level claim input is rejected",
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0565"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/builtin-collision.rs",
+      "sha256": "23cfbd3096f3c15ff9207b4db1336bbe999be9387bf03e8b6a0b387cf4e004ef",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [
+        "ambiguous_derive_helpers"
+      ],
+      "contract": "builtin attribute collision requires its actual lint diagnostic, not blanket helper admission",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "ambiguous_derive_helpers"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    }
+  ],
+  "initial_contract_sha256": "1ae626abda718cf3dfd4d16e16a189a5b12431cec2177d4db79d4556dc141b63",
+  "observation_binding_sha256": "7f2b97037eaece442729239c8a177a915a76e588a831a1dd2b838dce35ac731c",
+  "observation_count": 38,
+  "hypothesis_disagreements": 14
+}

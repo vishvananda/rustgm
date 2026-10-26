@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "phase": "observed outcomes bind qualification; initial hypotheses retained",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "scope": "two new metadata-only setup observations, no repeat of previous38",
+  "cases": [
+    {
+      "source": "pa31/tests/spec/builtin-derive-helpers/bang-helper-without-decl-gate.rs",
+      "sha256": "375d4fb326b9d983d5c0c54d6d6b08d920eae572c478e0cb4964e35f2fddc852",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "separate setup successor removes unused decl_macro request; original warning-bearing Bang source remains unchanged",
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    }
+  ],
+  "initial_contract_sha256": "be1b8319d305d9530d5b7f5488cf7b2991fe5c61ace0b305f2b24835f00eba5e",
+  "observation_binding_sha256": "3b3a1731a490f93bdeedc1ca69e8531746382f2c7c0277cc07c7d0b3bd65ee86",
+  "observation_count": 2,
+  "hypothesis_disagreements": 0
+}

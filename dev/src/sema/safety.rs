@@ -190,6 +190,9 @@ impl Policies {
     pub(super) fn duplicate_macro_attributes(&self, key: NodeKey) -> Level {
         self.at(key).duplicate_macro_attributes
     }
+    pub(super) fn ambiguous_derive_helpers(&self, key: NodeKey) -> Level {
+        self.at(key).ambiguous_derive_helpers
+    }
     pub(super) fn diagnostic_attributes(&self, key: NodeKey, index: usize) -> Level {
         self.at(key).diagnostic_attributes[index]
     }
