@@ -80,7 +80,7 @@ impl Graph {
         self.require_store(store)?;
         let rows = self.descriptor(catalog)?.rows();
         super::super::signature_shapes::require(rows, store, expected, actual, steps, |reference| {
-            self.ty(reference)
+            self.ty(reference).map_err(|_| "missing actual source type")
         })
     }
 }

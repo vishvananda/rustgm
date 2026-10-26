@@ -129,7 +129,7 @@ impl Checker<'_> {
             facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
             let predicate = facts
                 .associated
-                .imported_impl_request(&self.facts.types, owner)
+                .imported_impl_request(&facts.types, owner)
                 .map_err(Error::unlocated)?;
             let Some((application, _)) = predicate.bound.trait_parts() else {
                 return Err(Error::unlocated(
