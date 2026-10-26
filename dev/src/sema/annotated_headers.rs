@@ -139,8 +139,9 @@ pub(super) use bootstrap::owner as bootstrap_owner;
 pub(super) use imported::prepare as prepare_imported;
 pub(super) use local::{bind_definition, finish, observe_owner};
 pub(in crate::sema) use local::{
-    charge_source_contract_query, completed_source_image, pointee_source_image,
-    reserve_source_contracts,
+    charge_source_contract_query, charge_source_retention, completed_source_image,
+    pointee_source_image, require_recorded_pointee_image, reserve_source_contracts,
+    source_payments,
 };
 pub(super) fn has_imported(facts: &Declarations, definition: DefId) -> bool {
     facts

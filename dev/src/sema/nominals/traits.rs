@@ -406,7 +406,7 @@ impl State {
     ) -> Result<Option<selection::Source>, &'static str> {
         match selected {
             selection::Selection::Proven(mut evidence) => {
-                let source = evidence.source;
+                let source = evidence.source.clone();
                 self.provisional_size |= evidence.provisional_size;
                 self.sized.append(&mut evidence.sized);
                 self.obligations.append(evidence)?;

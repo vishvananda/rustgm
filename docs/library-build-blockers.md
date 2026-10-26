@@ -24,7 +24,71 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
 | Original std and consumer | Not reached; depends on the preceding crate graph and platform contracts. | Build unchanged std and execute a default-std consumer. |
 
-## Checkpoint evidence
+## Current execution queue
+
+The [execution plan](library-bootstrap-acceleration.md#scheduling-decisions)
+supersedes historical immediate tasks in checkpoint records. Keep these exits
+concrete; a private Ready state is not an executable result.
+
+| Owner | Issues and owning assignments | Next observable exit |
+| --- | --- | --- |
+| A | LIB-007/030, PA29/31 | Complete encoded provider to fresh named Holder consumer, original/instance proof and native output 7. Names/receiver shapes are merged locally; the public Provided codec and body joins remain. |
+| B | LIB-029/021, PA25–28/31 | Actual NonNull source, then Location/PanicInfo/handler and false assertion reaching Abort; follow with dynamic formatting. |
+| C | LIB-032, PA22/30/31 | Real Foreign VTable identity and metadata, then an unchanged-core attempt past the current declaration. Share Pattern/Pointee representation with B. |
+| Integrator | LIB-031/008, PA19–21/31/32 | Complete actual Thin declaration/use with Pointee, integrate qualified consumers, and advance original core through checking/export. |
+| Integrator, queued independent preparation | LIB-009/010/011, PA30/33/34/36 | Selected alloc/std dependency/build/runtime inventory and small real ABI/build consumers; do not wait until core works to discover graph prerequisites. |
+
+Track assignment closure separately: implemented behavior, owning text fixtures,
+independent/native evidence and publication/release checks. Broad remaining
+features stay required but only enter this immediate queue when a real library
+consumer needs them or a PA is otherwise ready for release. No whole core build
+or additional PA release is implied by these targets.
+
+The next scheduling boundary is the Foreign handoff and a fresh original-core
+observation. Integrate that independently useful change without waiting for
+all alias/panic work. If the next blocker is already assigned, C can take A's
+separate Provided namespace/advisory/defaultness codec while A finishes genuine
+member/body execution. A defines the wire rows first in the existing
+[Provided milestone](parallel/provided-method-execution.md); no new worker or
+parallel edit of A's semantic tables is needed. B stays on the actual
+PhantomData/Location/PanicInfo path. The integrator finishes its current Thin
+join and prioritizes queued integrations over another implementation workstream.
+
+The latest full CI run
+[40382875468](https://github.com/vishvananda/rustgm/actions/runs/40382875468)
+failed one old Pointee diagnostic assertion; 1,787 ordinary private tests and
+all thirteen ordinary integration binaries passed. C's 27b1712dd Foreign
+successor qualifies the exact correction and its remaining ordinary-mode group
+in 112.86 seconds; root integration/CLI/core observation are pending.
+Native/debug/independent checks were skipped, so they
+remain pending. The current push check still selects lexer tests; the shared
+source/const/import/LowIR smoke is an integrator task, not an implemented gate.
+
+## Assignment closure queue
+
+All rows below remain open. This queue identifies the next reconciliation, not
+an exhaustive fresh audit of every historical unsupported case. PA25–PA31 have
+no published text-test manifest. Preserve complete handout requirements and
+independent outcomes; missing release packaging and missing semantics are
+different debts. Reconcile existing fixtures at consumer exits instead of
+creating another parallel test corpus or repeatedly running every PA.
+
+| Owning PA | Library-critical work first | Closure review at the next consumer exit |
+| --- | --- | --- |
+| PA25 | Source const operations and imported const/generic calls required by the actual core path | Reconcile constants-view, provenance/promotion and sequence outcomes; identify remaining valid unsupported inputs, then review the text vocabulary and references. |
+| PA26 | Source-owned operators/desugaring and actual panic/format constructors | Reconcile iteration, question-mark, derive and formatting contracts against source-library execution. Do not count a bootstrap factory as compiling its upstream implementation. |
+| PA27 | Actual core pointer/storage validity and layout consumers | Reconcile existing raw/reference/union/byte-storage outcomes and live unsupported backing families. Keep runtime unsafe permission distinct from CTFE validity. |
+| PA28 | Source-used memory/numeric/atomic intrinsics and metadata operations | Match active source declarations to implemented operations and backend evidence; retain other required intrinsic/atomic families in the release inventory. |
+| PA29 | Encoded provided/generic bodies, fresh consumers and downstream republication | Audit generic/lifetime/trait/default/const transport and deterministic public metadata, then generate the complete text/export reference set. The first native Holder call alone does not close this PA. |
+| PA30 | Foreign VTable now; genuine allocator/platform ABI and linkage consumers next | Reconcile remaining representations, callable/static/linkage contracts and native interoperability evidence with the handout. |
+| PA31/32 | Actual bindings, then unchanged whole core through checking/export/object/consumer | Reconcile active source features and bindings against the complete configured crate. Reducer/header successes remain prerequisites, not whole-core acceptance. |
+
+The integrator owns publication reconciliation; each worker updates the existing
+owning handout and declared outcomes as its consumer passes. Reuse independent
+evidence whose inputs remain identical. Full cumulative release qualification
+starts once semantic and reference debts are closed, not at every helper commit.
+
+## Historical checkpoint evidence
 
 The [private environment/namespace integration](private-environment-namespace-integration.md)
 passes eleven focused controls plus production/private Clippy and global audits
@@ -631,10 +695,7 @@ still work in the current consumer slice. Neither success nor complete
 Keep the three existing GPT-6.1-Sol/high workers. A worker can carry multiple
 independent issues, but keeps coherent commits and an explicit handoff for each.
 Agree shared APIs before concurrent edits; use separate worktrees. Current
-primary lanes are A: LIB-007 provided/default body and environment transport;
-B: LIB-021 UB policy, cfg-demand and owned source cache identity; C: LIB-019 actual
-attribute consumers, lint/error transport and shared inhabitation correctness;
-integrator: LIB-020 primitive coherence, LIB-008/009/012 and combined qualification.
+primary lanes and next executable exits are in the current execution queue above.
 These are independent blockers; keep three implementation workers while giving
 integration/qualification priority for heavy slots, without increasing concurrency.
 
@@ -642,8 +703,9 @@ Source work proceeds concurrently. Heavy jobs use the existing 150-GiB reserve,
 50-GiB/worktree ceiling and CPU/RAM limits. After the qualified schema-2 tooling
 is installed at an idle boundary, admit up to three jobs with explicit smaller
 absolute caps and measured headroom. Keep measurements exclusive.
-Use focused batched checks during a fix and one combined release gate
-for a coherent integration. Reuse unchanged qualification and independent
+Use focused batched checks during a fix and combined focused checks at integration.
+Long release qualification runs in scheduled/manual CI and at actual assignment
+release, not after each integration. Reuse unchanged qualification and independent
 observations with exact source/tool bindings; retain failures and clean outputs.
 
 Update this tracker at each handoff/integration and each original crate attempt.

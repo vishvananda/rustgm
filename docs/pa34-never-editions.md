@@ -46,3 +46,21 @@ audit, harness, upstream and independent results are retained separately from
 that recovery. The inference-root tests retain their `development-v2` result;
 no full-suite pass is claimed here. Combined release and performance checks
 remain the next integration checkpoint. No record or cache size changes.
+
+The later full CI run 40377221175 exposed stale test setup: the opposite-edition
+helper appended an entire parsed crate without passing its attribute owners
+through expansion. Production lint-owner validation correctly rejected it.
+The helper now takes the actual macro-definition span, parses those unchanged
+bytes through `Unit::parse_include`, and retains that unit only as a provenance
+template. Redirected token spans are rebased into that exact fragment; the
+compiling crate's feature/lint owners and physical edition remain unchanged.
+This still tests the provenance consumer, not imported-macro transport.
+
+An ordinary test now exercises both opposite-edition sources through validation
+and LowIR, so this frontend failure does not require native qualification to
+discover. Two ordinary test groups pass in 35.13 seconds including strict
+Clippy, formatting and architecture checks. The existing native group then
+passes all fourteen executions in a cached 27.30-second batch, including both
+opposite-origin cases; generated executables are cleaned. Receipts in the
+integrator tree are `1793041100110258225` and `1793041148102147156` under
+`obj/qualification/fast/`. No compiler validation was weakened.

@@ -68,8 +68,10 @@ completion requirements below remain unchanged.
 | [43](pa43/README.md) | Async ownership | planned |
 | [44](pa44/README.md) | Frontend acceptance | planned |
 
-Implementation priority is PA25–PA30 closure, generic cross-crate transport and
-source-declared compiler bindings. Develop the Rust 2021/build pipeline alongside
+Implementation priority is the portions of PA25–PA31 needed by actual upstream
+consumers, especially generic cross-crate transport and source-declared compiler
+bindings. Track full PA25–PA30 closure separately and release each assignment
+when its complete contract passes. Develop the Rust 2021/build pipeline alongside
 core; exercise itoa/serde_core as soon as their core-only graph works. Then build
 alloc and serde_json, followed by std and procedural derives. Develop
 independent prerequisites in parallel while keeping cumulative releases honest.

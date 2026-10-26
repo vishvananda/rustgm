@@ -100,7 +100,11 @@ fn actual_const_impl_uses_preserve_canonical_capability_and_effect_cache_keys() 
             let mut ordinary_only = Reuse::default();
             ordinary_only.completed.insert(
                 ordinary,
-                *reuse.completed.get(&ordinary).ok_or("ordinary source")?,
+                reuse
+                    .completed
+                    .get(&ordinary)
+                    .ok_or("ordinary source")?
+                    .clone(),
             );
             assert!(ordinary_only.selection(&facts, required, 1)?.is_none());
             let (application, _) = ordinary.bound.trait_parts().ok_or("application")?;

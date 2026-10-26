@@ -42,8 +42,44 @@ impl Store {
         captures: u32,
         regions: &[RegionId],
     ) -> Result<(), &'static str> {
+        self.declare_projection_outlives_observed::<false>(item, captures, regions, &|_, _| Ok(()))
+    }
+    pub(crate) fn declare_projection_outlives_counted(
+        &mut self,
+        item: ItemId,
+        captures: u32,
+        regions: &[RegionId],
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        self.declare_projection_outlives_observed::<true>(item, captures, regions, charge)
+    }
+    fn declare_projection_outlives_observed<const CHARGED: bool>(
+        &mut self,
+        item: ItemId,
+        captures: u32,
+        regions: &[RegionId],
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        if CHARGED {
+            charge(1, 0)?;
+        }
         if regions.is_empty() {
             return Ok(());
+        }
+        if CHARGED {
+            use crate::support::retained::Growth;
+            let prior = self
+                .arguments
+                .as_ref()
+                .and_then(|arguments| arguments.projections.as_ref())
+                .and_then(|storage| storage.outlives.as_ref());
+            let mut growth = Growth::vector::<Promise>(0, 0, regions.len());
+            growth.include(Growth::map::<ItemId, Box<[Promise]>>(
+                prior.map_or(0, std::collections::HashMap::len),
+                prior.map_or(0, std::collections::HashMap::capacity),
+                usize::from(prior.is_none_or(|values| !values.contains_key(&item))),
+            ));
+            charge(regions.len().saturating_add(growth.work), growth.bytes)?;
         }
         let promises: Box<[_]> = regions
             .iter()

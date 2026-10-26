@@ -169,12 +169,14 @@ and a 51-input performance matrix. These checkpoints preserve explicit
 boundaries for dependency stability, const/default-body APIs and imported source
 roles. No original whole core, alloc or std build passes.
 
-The last recorded original-core loading probe reached `pub macro assert_matches`
-in `core/src/macros/mod.rs`; scoped declarative macro syntax and hygiene are the
-next loading/expansion requirement. Parallel work also continues on authenticated
-source-client metadata, const-trait default defining contexts and reference-bearing
-CTFE callbacks. These are separate unpublished drafts, and each must satisfy
-its actual source/proof contract before entering the combined checkpoint.
+The [live tracker](library-build-blockers.md#observable-crate-milestones) owns
+the current original-source frontier and worker queue. Later observations have
+advanced beyond the historical macro/const checkpoints above to foreign VTable
+loading, with alias/Pointee, actual source panic and imported provided bodies
+still being joined. No whole upstream library artifact is qualified. Use the
+[execution review](library-bootstrap-acceleration.md#execution-review-and-next-decisions)
+for current scheduling and the tracker's separate assignment closure queue;
+historical checkpoint summaries do not define additional immediate work.
 
 ## Acceptance ladder
 
