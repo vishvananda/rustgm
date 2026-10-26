@@ -1,0 +1,36 @@
+configured 21 true
+attribute-effect 21 0 0 root keep
+attribute-effect 21 1 1 root keep
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
+node 0 123 125 name "u8"
+node 1 115 126 item 0
+item 0 "f" private [] [] function false false false false - [] 0 -
+node 2 106 127 item 1
+item 1 "T" private [] [] trait false [] [1]
+node 3 133 134 generic Type "X" - [] -
+node 4 136 137 name "T"
+node 5 142 143 name "X"
+node 6 161 163 name "u8"
+node 7 164 165 literal 0
+value 0 integer 164 165 infer 1
+node 8 163 166 block Plain [] 7
+node 9 145 166 item 2
+item 2 default 145 152 "f" private [] [] function false false false false - [] 6 8
+node 10 128 167 item 3
+item 3 - private [3] [] impl false false 4 5 [9]
+node 11 182 183 wildcard
+node 12 185 187 name "u8"
+node 13 191 192 name "T"
+node 14 195 196 name "f"
+node 15 184 196 qualified 12 13 14
+node 16 184 198 call 15 []
+node 17 178 199 let 11 - 16 -
+node 18 177 200 block Plain [17] -
+node 19 168 200 item 4
+item 4 "main" private [] [] function false false false false - [] - 18
+node 20 0 200 crate [2,10,19]
+node 21 0 200 attributed 0 2 20
+attribute-capture 0 inner 0 73 "#![allow(dead_code,unused_imports,incomplete_features,internal_features)]"
+attribute-capture 1 inner 74 105 "#![feature(min_specialization)]"
+root 21
+eof 201
