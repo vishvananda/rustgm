@@ -51,6 +51,9 @@ Current lanes after the [source-contract integration](library-contracts-integrat
   The fixed shared mapping and actual named-formal certificate now pass combined
   qualification. Complete trait/impl headers, default-Self/Contract environments
   and actual body proof remain required.
+  Follow the [reviewed demand policy](library-bootstrap-acceleration.md): source
+  bodies remain checked at export; imported unrequested bodies stay Pending.
+  Prioritize genuine early namespace installation and named artifact consumers.
   Private preparation does not grant public Provided execution.
 - B owns actual source language/intrinsic consumers. Source Not, closed layout,
   nominal Clone/provided clone_from and genuine reached source Abort have

@@ -16,6 +16,11 @@ current crate boundary, prioritized issues, owning assignments, required tests
 and parallel worker assignments. Use it to choose implementation work and report
 crate progress separately from internal checkpoint counts.
 
+The [2026-10-26 execution plan](docs/library-bootstrap-acceleration.md) prioritizes
+real crate/artifact consumers, separates imported declaration readiness from
+demanded body proof and consolidates validation. All assignment and upstream
+completion requirements below remain unchanged.
+
 | PA | Assignment | Status |
 | --- | --- | --- |
 | [1](pa1/README.md) | Source and tokens | implemented-draft |

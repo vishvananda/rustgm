@@ -31,6 +31,14 @@ fail at their actual semantic or proof boundary. Keep Clone, clone_from, their
 ordinary/conditional const contexts and all original declarations in the source
 family. Ordinary u8 Clone gains no const-call permission.
 
+The [reviewed demand policy](../library-bootstrap-acceleration.md) separates this
+first execution from unrelated imported body preparation. The defining provider
+still checks all required source bodies and the artifact retains the complete
+family. Decode all structural/header/visibility contracts. Unrequested imported
+default bodies stay explicitly Pending; the first actual demand must construct
+the genuine defining environment and prove the original before fresh instance
+proof. Their complete demanded cases remain PA29/upstream requirements.
+
 ## Required implementation path
 
 | Boundary | Required result |
@@ -40,14 +48,16 @@ family. Ordinary u8 Clone gains no const-call permission.
 | Selected nonzero domain | Seal one owned allocation domain to actual Catalog/inventory/arena/body, signature pair, binders and BodyUnit. Reuse the existing inverse and semantic issuance kernels; no cloned SourceRows, fake NodeKey or semantic IDs computed from wire slots. |
 | Regional Environment | Consume actual allocation order and normalization intervals, complete bounds and defining assumptions. Preserve Bound/Variable/Parameter distinctions, nested units and caller-local proof suffixes. An empty alias map is not proof that aliases are unnecessary. |
 | Budgeted shared kernel | Prepay selected region-equality/query/bounds work and capacities, observe actual attempted work including failures, and preserve ordinary construction order. No whole-Store bound or repeated whole-catalog replay on warm demand. |
-| Complete default family | Construct the actual ConstTraitDefault environment and original proof for clone_from, including its MaybeConst Self/Destruct context. Do not skip an otherwise required body merely to reach Holder. A demand-only policy would need separate review. |
+| Complete family and body demand | Retain every actual default body and contract. When demanded, construct clone_from's genuine ConstTraitDefault environment and original proof, including MaybeConst Self/Destruct, or the implementation's actual Contract context. Unrequested bodies stay Pending and cannot grant permission. Do not remove bodies to reach Holder; complete default/const execution remains required. |
 | Original and Required | Rebuild immutable original IR and raw Contract in the checked domain, retaining operation, formation, builtin, Copy, obligation, normalization, layout, region and loan debts. Preserve genuine ImportedBodyId origins. |
 | Fresh implementation instance | Select actual trait/impl/member conformance and the provided body, substitute complete Self/V/U/lifetimes, and prove each demanded instance afresh. No caller-proof reuse or paid proof on wire. |
 | Supported public contract | Review the actual advisory/defaultness/UB and other semantic contracts and an explicit supported profile/codec/driver extension. Old v0/v1 bytes remain exact; missing old fields grant no policy. |
 | Acceptance | Actual artifact → fresh main/instances/proofs, the single native `7\n` transaction, negative controls and selected cold/warm/failure scaling all pass. |
 
-The immediate approved step is the genuine numbered ordinary-trait collector
-and its owned positive header sidecar. It may land as a private prerequisite.
+The numbered ordinary-trait collector and shared mapping are qualified private
+prerequisites. Current work joins complete checked declarations/member conformance,
+genuine imported namespace installation and demanded original/instance execution.
+The next acceptance remains actual encoded artifact and named source execution.
 Its gate must include the actually qualified selected-header defaultness check
 and whole-package default impl/value gate. An ordinary trait provided body has
 no `default` keyword; these are distinct language facts.

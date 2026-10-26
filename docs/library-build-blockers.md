@@ -5,6 +5,10 @@ Updated 2026-10-26. This is the work queue for compiling the original pinned
 PA1–PA24 remain implemented drafts; PA25–PA44 remain planned. No additional
 assignment or whole upstream library has been completed.
 
+Use the [current execution plan](library-bootstrap-acceleration.md) to choose work:
+real artifact/source consumers, demanded imported-body proof and consolidated
+qualification. The existing complete assignment and upstream gates remain required.
+
 The source pin is Rust `88d9e12ae178fab0fb5cc050a94da85685d449ea`, edition 2024,
 x86-64 Linux, panic abort. Use the existing immutable shared source tree and
 record target configuration, compiler identity and opened-file hashes on each
