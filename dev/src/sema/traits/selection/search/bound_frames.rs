@@ -5,6 +5,7 @@ use crate::{
     types::{infer::Instantiation, lifetime_proof::ScopeId, parameters::clauses::Clause},
 };
 
+#[derive(Clone, Copy)]
 pub(super) struct ClauseRequest {
     pub clause: Clause,
     pub scope: ScopeId,

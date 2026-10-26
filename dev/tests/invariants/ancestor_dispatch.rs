@@ -43,8 +43,7 @@ fn method(facts: &Declarations, report: &Report, owner: DefId, name: &str) -> Te
             row.kind == DefKind::Function
                 && report.package.names.get(row.name) == name
                 && u32::try_from(index)
-                    .ok()
-                    .is_some_and(|index| facts.associated.trait_owner(DefId(index)) == Some(owner))
+                    .is_ok_and(|index| facts.associated.trait_owner(DefId(index)) == Some(owner))
         })
         .map(|(index, _)| u32::try_from(index))
         .transpose()?
