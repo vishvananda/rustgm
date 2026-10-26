@@ -200,7 +200,7 @@ fn expanded_cli_diagnoses_non_unicode_environment_values() -> std::io::Result<()
 #[test]
 fn source_edition_options_retain_configuration_and_keep_metadata_profile_closed()
 -> Result<(), Box<dyn std::error::Error>> {
-    let keyword = include_str!("../../pa34/tests/spec/driver-edition/keyword.rs");
+    let keyword = edition_fixture("keyword")?;
     for (args, accepted) in [
         (vec!["--edition=2021"], true),
         (vec![], false),
@@ -208,21 +208,21 @@ fn source_edition_options_retain_configuration_and_keep_metadata_profile_closed(
         (vec!["--edition=2024", "--edition=2021"], true),
         (vec!["--edition=2021", "--edition=2024"], false),
     ] {
-        let output = run_args("--emit-types", keyword, &args)?;
+        let output = run_args("--emit-types", &keyword, &args)?;
         assert_eq!(output.status.code(), Some(i32::from(!accepted)));
         assert_eq!(output.stdout.is_empty(), !accepted);
         assert_eq!(output.stderr.is_empty(), accepted);
     }
-    let configured = include_str!("../../pa34/tests/spec/driver-edition/configured.rs");
+    let configured = edition_fixture("configured")?;
     for args in [
         vec!["--cfg", "selected", "--edition=2021"],
         vec!["--edition=2021", "--cfg", "selected"],
     ] {
-        let output = run_args("--emit-lowir", configured, &args)?;
+        let output = run_args("--emit-lowir", &configured, &args)?;
         assert!(output.status.success());
         assert!(!output.stdout.is_empty() && output.stderr.is_empty());
     }
-    let invalid = run_args("--emit-types", keyword, &["--edition=2020"])?;
+    let invalid = run_args("--emit-types", &keyword, &["--edition=2020"])?;
     assert_eq!(invalid.status.code(), Some(2));
     assert!(invalid.stdout.is_empty());
     assert_eq!(invalid.stderr, b"USAGE: unknown option: --edition=2020\n");
@@ -235,7 +235,7 @@ fn source_edition_options_retain_configuration_and_keep_metadata_profile_closed(
     let path = metadata.to_str().ok_or("metadata path is not UTF-8")?;
     let output = run_args(
         "--emit-lowir",
-        include_str!("../../pa34/tests/spec/driver-edition/plain-provider.rs"),
+        &edition_fixture("plain-provider")?,
         &[
             "--edition=2021",
             "--source-core",
@@ -257,4 +257,11 @@ fn source_edition_options_retain_configuration_and_keep_metadata_profile_closed(
     );
     std::fs::remove_dir(&folder)?;
     Ok(())
+}
+
+fn edition_fixture(name: &str) -> std::io::Result<String> {
+    std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join(format!("../pa34/tests/spec/driver-edition/{name}.rs")),
+    )
 }
