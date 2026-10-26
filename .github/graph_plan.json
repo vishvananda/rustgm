@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "metadata_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "native_flags": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Cdebug-assertions=no",
+    "-Coverflow-checks=no",
+    "-Copt-level=2",
+    "-Ccodegen-units=1",
+    "-Clto=off",
+    "--error-format=json",
+    "--crate-name=specialization_probe"
+  ],
+  "source_prediction_disagreements": "Retain all actual raw observations and wrong predictions; disagreements are data, not automatic infrastructure failures.",
+  "baseline": "0acddbc20e07d645ea7b0fa33e4403943a3ce5c0",
+  "candidate_execution": false,
+  "runtime_observer": "Exact check predicates call a real dynamic division-by-zero failure path on wrong result; success is exit0 with empty stdout/stderr. RPIT controls call the returned actual Get implementation.",
+  "purpose": "ONE NEW combined applicability boundary: final inherited RPIT through scalar specialization with static parent and nonstatic child; phases differ in pinned projection vs instance region-erasure timing. No previous source rerun.",
+  "planned_metadata_observations": 2,
+  "planned_native_programs": 2,
+  "cases": [
+    {
+      "name": "final-rpit-static-parent-nonstatic-child",
+      "source": "obj/parallel/pa31/specialization-graph-v1/execution-oracles-v3/sources/final-rpit-static-parent-nonstatic-child.rs",
+      "sha256": "e99622381a93573e40dd8f7081e105dccbafd6fb6c137b5ea6f97fd3a46431cf",
+      "expected_metadata_status": 0,
+      "expected_warning_codes": [],
+      "native": {
+        "build_status": 0,
+        "exit_status": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "prediction_note": "Frozen positive combined hypothesis before observation; all actual region/phase differences retained."
+    }
+  ]
+}
