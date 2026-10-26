@@ -397,6 +397,10 @@ fn dependencies(
                     definitions.shape(types, ty)?;
                 }
                 if !custom.contains(&item) {
+                    if let Some(target) = definitions.phantom_argument(types, ty)? {
+                        visit(Key::Type(target))?;
+                        return Ok(());
+                    }
                     if types.region_args(args).is_some() {
                         visit(Key::Nominal(item))?;
                     } else {

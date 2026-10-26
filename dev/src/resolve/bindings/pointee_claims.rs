@@ -13,7 +13,10 @@ pub(super) fn validate(
 ) -> Result<(), Error> {
     if !matches!(
         role,
-        LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata
+        LangItem::PointeeTrait
+            | LangItem::MetadataType
+            | LangItem::DynMetadata
+            | LangItem::PhantomData
     ) {
         return Ok(());
     }
@@ -31,7 +34,7 @@ pub(super) fn validate(
         LangItem::MetadataType => {
             declaration.parent.is_some() && matches!(actual, ItemKind::TypeAlias { .. })
         }
-        LangItem::DynMetadata => matches!(actual, ItemKind::Struct { .. }),
+        LangItem::DynMetadata | LangItem::PhantomData => matches!(actual, ItemKind::Struct { .. }),
         _ => false,
     };
     if !valid {

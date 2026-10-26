@@ -40,6 +40,10 @@ impl Query {
                 if definitions.get(item).is_none() {
                     return Ok(Some(Step::Fields(item)));
                 }
+                if let Some(target) = definitions.phantom_argument(types, ty)? {
+                    self.dependency(Obligation { ty: target, marker })?;
+                    return Ok(None);
+                }
                 let before = definitions.instantiation_steps();
                 definitions.instantiate(types, ty)?;
                 self.charge(definitions.instantiation_steps() - before)?;
