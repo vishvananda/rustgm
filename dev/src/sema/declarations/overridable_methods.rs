@@ -15,6 +15,31 @@ pub(in crate::sema) fn is_final_trait_method(
         if crate::sema::header_attributes::bootstrap_owner(report, definition)? {
             return Ok(false);
         }
+        if let Some(catalog) = facts
+            .crates
+            .as_ref()
+            .and_then(|linkage| linkage.origin_catalog())
+            && let Some(imported) = catalog
+                .declaration_if_imported(definition)
+                .map_err(Error::unlocated)?
+        {
+            let header = facts
+                .declaration_header(definition)
+                .map_err(Error::unlocated)?
+                .ok_or_else(|| Error::unlocated("imported method lost its declaration header"))?;
+            if header.declaration
+                != crate::resolve::body_origin::DeclarationOrigin::Imported(imported)
+            {
+                return Err(Error::unlocated(
+                    "final policy changed its imported declaration",
+                ));
+            }
+            // An authenticated required declaration cannot have a final body.
+            // A provided body still needs its explicit transported policy.
+            if header.body.is_none() {
+                return Ok(false);
+            }
+        }
         return Err(Error::unlocated(
             "imported or missing final trait method policy is not available",
         ));

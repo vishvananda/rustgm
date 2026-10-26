@@ -222,6 +222,29 @@ fn source_copy_policy_is_demanded_and_never_inferred_from_primitive_shape() -> T
 }
 
 #[test]
+fn source_pointee_thin_alias_checks_concrete_calls_before_lowir() -> TestResult {
+    let folder =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../pa31/tests/spec/trait-aliases/source-thin");
+    let source = std::fs::read_to_string(folder.join("native-provider.rs"))?;
+    let program = lower(&source)?;
+    assert!(
+        program
+            .symbols
+            .iter()
+            .any(|symbol| { symbol.name == "source_thin_result" && symbol.body.is_some() })
+    );
+    let mut output = Vec::new();
+    rustgm::lowir::writer::write(&program, &mut output)?;
+    assert!(!output.is_empty());
+    let wide = std::fs::read_to_string(folder.join("thin-wide.rs"))?;
+    let error = lower(&wide)
+        .err()
+        .ok_or("wide pointer acquired the Thin associated equality")?;
+    assert!(error.to_string().ends_with("incompatible types"), "{error}");
+    Ok(())
+}
+
+#[test]
 fn source_conditional_calls_preserve_runtime_and_const_opposites() -> TestResult {
     lower(cases::UNUSED_CONDITIONAL_RUNTIME)?;
     for source in [

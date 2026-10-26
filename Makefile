@@ -15,6 +15,18 @@ all:
 # Example: make fastcheck FAST_ARGS='lexer --lib-case full::private::test'
 fastcheck:
 	$(PYTHON) scripts/fastcheck.py $(FAST_ARGS)
+.PHONY: smoke
+SMOKE_CASES := lexer \
+	provider_traits::source_copy_clone_and_callable_bodies_pass_ordinary_original_and_instance_proofs \
+	provider_traits::source_roles_reject_wrong_owners_and_unsupported_header_profiles \
+	provider_traits::source_pointee_thin_alias_checks_concrete_calls_before_lowir \
+	ctfe_selector::source_ctfe_selector_uses_owned_tuple_and_actual_callback_without_placeholder \
+	ctfe_selector::source_ctfe_selector_keeps_reached_fault_and_argument_ownership \
+	crate_linking::instantiable::actual_generic_originals_execute_runtime_and_constant_instances_after_roundtrip \
+	never_editions::opposite_token_origins_reach_source_validation_and_lowir \
+	expanded_cli::source_edition_options_retain_configuration_and_keep_metadata_profile_closed
+smoke:
+	$(PYTHON) scripts/fastcheck.py $(SMOKE_CASES) $(SMOKE_ARGS)
 .PHONY: tidy-archive
 tidy-archive:
 	$(PYTHON) scripts/resources.py run --wait-seconds 0 $(ARCHIVE_RESOURCE_ARGS) -- $(PYTHON) scripts/archive_scratch.py $(ARCHIVE_ARGS)

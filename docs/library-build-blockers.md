@@ -70,9 +70,17 @@ native and debug checks. The final independent-rustc step failed because thirtee
 PA10/PA19 diagnostic fixtures omitted their declared unstable bootstrap environment.
 The fixture bytes and predicted outcomes stay unchanged; explicit case metadata
 now supplies that environment. All 81 PA10 and 1,193 PA19 independent checks pass;
-all 39 refreshed reference streams are byte-identical to their previous versions. This CI run does
-not qualify the newer compiler integration. The push workflow still selects lexer
-tests; shared source/const/import/LowIR smoke remains an integrator task.
+all 39 refreshed reference streams are byte-identical to their previous versions.
+Successor full CI 40398676778 on 8d8857718 exposed five regressions: two old alias/
+layout expectations and three imported required-method conformance failures.
+The source fix authenticates the actual imported declaration and its explicit
+body absence before concluding the method cannot be final; provided-body policy
+stays explicit. All 1,810 ordinary private tests plus the shared eighteen smoke
+controls now pass in 148.08 seconds with production/CLI and private strict checks.
+
+The shared push workflow invokes `make smoke`; CI 40399959751 passes its eighteen
+exact lexer/source/CTFE/generic-import/LowIR controls in 33.25 seconds. Long
+release/native/debug/independent qualification remains scheduled/manual.
 
 ## Assignment closure queue
 
