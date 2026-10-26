@@ -30,6 +30,20 @@ fn alias_shorthand_uses_real_leaf_arguments_equalities_and_shared_seed() -> Test
     let mut checker = headers(&report)?;
     let consumer = signature(&mut checker)?;
     byte_signature(&checker, consumer)?;
+    original_leaf_arguments(&checker, &report)?;
+    for alias in ["A", "Both"] {
+        let alias = definition(&report, alias, DefKind::TraitAlias)?;
+        assert!(checker.facts.associated.owner(alias).is_none());
+        assert!(!checker.facts.generics.trait_self_bounds.contains_key(&alias));
+    }
+    assert!(checker.reject_alias_execution().is_err());
+    eprintln!("alias naming Inputs={} legacyClause={} Checker={}",
+        size_of::<super::super::super::projections::lookup::Inputs>(),
+        size_of::<Clause>(), size_of::<Checker<'_>>());
+    Ok(())
+}
+
+fn original_leaf_arguments(checker: &Checker<'_>, report: &Report) -> TestResult {
     let leaf = definition(&report, "Leaf", DefKind::Trait)?;
     let mut original = 0;
     for (_, ty) in checker.facts.unreduced.node_entries() {
@@ -42,15 +56,6 @@ fn alias_shorthand_uses_real_leaf_arguments_equalities_and_shared_seed() -> Test
         original += 1;
     }
     assert!(original >= 2, "both written projections retain their original real inputs");
-    for alias in ["A", "Both"] {
-        let alias = definition(&report, alias, DefKind::TraitAlias)?;
-        assert!(checker.facts.associated.owner(alias).is_none());
-        assert!(!checker.facts.generics.trait_self_bounds.contains_key(&alias));
-    }
-    assert!(checker.reject_alias_execution().is_err());
-    eprintln!("alias naming Inputs={} legacyClause={} Checker={}",
-        size_of::<super::super::super::projections::lookup::Inputs>(),
-        size_of::<Clause>(), size_of::<Checker<'_>>());
     Ok(())
 }
 

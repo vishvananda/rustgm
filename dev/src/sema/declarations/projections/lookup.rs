@@ -146,6 +146,19 @@ impl Checker<'_> {
             ));
             return Ok(());
         }
+        let inputs = self.projection_seed_inputs(seed)?;
+        if matches!(inputs, Inputs::Alias(_)) {
+            let table = &self.projections.lookup.typed;
+            self.charge_alias_lookup(Growth::map::<NodeKey, Inputs>(
+                table.len(), table.capacity(), 1,
+            ))?;
+        }
+        self.projections.lookup.typed.insert(seed.path, inputs);
+        self.projections.lookup.active.remove(&seed.path);
+        Ok(())
+    }
+
+    fn projection_seed_inputs(&mut self, seed: Seed) -> Result<Inputs, Error> {
         let subject = self.facts.definitions[seed.subject.0 as usize]
             .ok_or_else(|| self.error(seed.path, "missing shorthand bound subject"))?;
         let subject = if seed.scope.is_some() {
@@ -153,7 +166,6 @@ impl Checker<'_> {
         } else {
             subject
         };
-        let arguments = self.application_arguments(seed.path, seed.definition, seed.context)?;
         if self.alias_self(seed.definition).is_some() {
             let edge = self.canonical_alias_edge(
                 seed.path,
@@ -162,15 +174,9 @@ impl Checker<'_> {
                 seed.context,
                 self.alias_scope_count(seed.scope),
             )?;
-            let clauses = self.expand_alias_edge(edge)?;
-            let table = &self.projections.lookup.typed;
-            self.charge_alias_lookup(Growth::map::<NodeKey, Inputs>(
-                table.len(), table.capacity(), 1,
-            ))?;
-            self.projections.lookup.typed.insert(seed.path, Inputs::Alias(clauses));
-            self.projections.lookup.active.remove(&seed.path);
-            return Ok(());
+            return self.expand_alias_edge(edge).map(Inputs::Alias);
         }
+        let arguments = self.application_arguments(seed.path, seed.definition, seed.context)?;
         let application = self.applied_trait(seed.path, seed.definition, subject, arguments)?;
         let clause = self.bound_clause(
             seed.path,
@@ -180,9 +186,7 @@ impl Checker<'_> {
                 bound: Bound::Trait(application),
             },
         )?;
-        self.projections.lookup.typed.insert(seed.path, Inputs::Single(clause));
-        self.projections.lookup.active.remove(&seed.path);
-        Ok(())
+        Ok(Inputs::Single(clause))
     }
 
     pub(super) fn projection_bound_candidates(
