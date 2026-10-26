@@ -18,9 +18,25 @@ enum State {
     Active,
     Complete(Result<Metadata, &'static str>),
 }
-enum Step {
+pub(crate) enum Step {
     Tail(TypeId),
     Complete(Metadata),
+}
+#[derive(Clone, Copy)]
+enum Fields {
+    Physical,
+    Declared,
+}
+
+/// Declaration data only: callers must prepare the real aggregate instance and
+/// retain semantic normalization/formation proof separately. A sized hint on a
+/// rigid tail is not a caller's scoped Sized evidence.
+pub(crate) fn declared_step(
+    types: &Store,
+    definitions: &aggregate::Definitions,
+    ty: TypeId,
+) -> Result<Step, &'static str> {
+    inspect(types, definitions, ty, Fields::Declared)
 }
 
 /// One query belongs to stable completed definitions and prepared field instances.
@@ -71,7 +87,7 @@ impl Queries {
             }
             self.states.insert(ty, State::Active);
             self.work.push(ty);
-            match inspect(types, definitions, ty)? {
+            match inspect(types, definitions, ty, Fields::Physical)? {
                 Step::Tail(tail) => ty = tail,
                 Step::Complete(metadata) => return Ok(metadata),
             }
@@ -83,6 +99,7 @@ fn inspect(
     types: &Store,
     definitions: &aggregate::Definitions,
     ty: TypeId,
+    fields: Fields,
 ) -> Result<Step, &'static str> {
     Ok(
         match types.kind(ty).ok_or("invalid pointer metadata type")? {
@@ -93,10 +110,16 @@ fn inspect(
                 let definition = definitions
                     .get(item)
                     .ok_or("missing pointer metadata definition")?;
-                if definition.kind == aggregate::Kind::Enum {
+                if definition.kind == aggregate::Kind::Enum
+                    || matches!(fields, Fields::Declared)
+                        && definition.kind != aggregate::Kind::Struct
+                {
                     Step::Complete(Metadata::Thin)
                 } else {
-                    let shape = definitions.shape(types, ty)?;
+                    let shape = match fields {
+                        Fields::Physical => definitions.shape(types, ty)?,
+                        Fields::Declared => definitions.raw_shape(types, ty)?,
+                    };
                     let fields = shape
                         .variants()
                         .next()
@@ -105,13 +128,13 @@ fn inspect(
                     tail(types, fields)?
                 }
             }
-            Kind::Parameter(_) | Kind::Projection(_) | Kind::Opaque(..) => {
-                Step::Complete(if types.is_sized(ty) == Some(true) {
+            Kind::Parameter(_) | Kind::Projection(_) | Kind::Opaque(..) => Step::Complete(
+                if matches!(fields, Fields::Physical) && types.is_sized(ty) == Some(true) {
                     Metadata::Thin
                 } else {
                     Metadata::Unknown(ty)
-                })
-            }
+                },
+            ),
             Kind::Never
             | Kind::Primitive(_)
             | Kind::Array { .. }
