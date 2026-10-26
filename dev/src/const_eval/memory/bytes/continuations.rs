@@ -248,3 +248,7 @@ impl Machine<'_, '_> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/transmute_layouts.rs"]
+mod transmute_layout_tests;
