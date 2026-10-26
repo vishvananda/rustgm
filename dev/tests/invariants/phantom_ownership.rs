@@ -132,8 +132,8 @@ fn source_marker_rejects_changed_roles_formals_fields_and_lifetime_escape() -> R
             Ok(report) => crate::pipeline::analyze_source(&report)
                 .map_err(|error| error.to_string())
                 .and_then(|analysis| {
-                    let contracts = crate::body::regions::collect(&analysis.facts)
-                        .map_err(|error| error.to_string())?;
+                    let contracts =
+                        crate::body::regions::collect(&analysis.facts).map_err(str::to_owned)?;
                     crate::borrow::regions::check(
                         &analysis.facts.types,
                         &analysis.facts.lifetimes.variances,
