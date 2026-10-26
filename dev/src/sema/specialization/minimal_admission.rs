@@ -237,11 +237,13 @@ fn well_formed(
                 }),
         );
     }
-    let mut checked = nominals::Requirements::default();
+    let mut checked = nominals::FormationRequirements::default();
     for ty in roots {
-        for clause in nominals::requirements_counted(facts, ty, &mut checked, &|steps, bytes| {
-            budget.charge(steps, bytes)
-        })? {
+        for clause in
+            nominals::formation_requirements_counted(facts, ty, &mut checked, &|steps, bytes| {
+                budget.charge(steps, bytes)
+            })?
+        {
             permitted.insert(clause, budget)?;
         }
     }

@@ -23,6 +23,14 @@ fn nominal(facts: &mut Declarations, owner: DefId, argument: TypeId) -> TestResu
     let arguments = facts.types.intern_arguments(&[Argument::Type(argument)])?;
     Ok(facts.types.intern(Kind::Adt(ItemId(owner.0), arguments))?)
 }
+fn nominal_counted(
+    facts: &mut Declarations,
+    root: TypeId,
+    checked: &mut Requirements,
+    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<Vec<Clause>, &'static str> {
+    requirements_inside_observed::<true, false>(facts, root, 0, checked, charge)
+}
 #[test]
 fn counted_formation_replays_real_clauses_and_rolls_back_only_failed_visitation() -> TestResult {
     let report = crate::test_source::resolve(
@@ -39,11 +47,11 @@ fn counted_formation_replays_real_clauses_and_rolls_back_only_failed_visitation(
     let tuple = facts.types.intern(Kind::Tuple(tuple))?;
     let root = nominal(&mut facts, owner(&report, "Hold")?, tuple)?;
     let mut checked = Requirements::default();
-    assert!(!requirements_counted(&mut facts, complete, &mut checked, &|_, _| Ok(()))?.is_empty());
+    assert!(!nominal_counted(&mut facts, complete, &mut checked, &|_, _| Ok(()))?.is_empty());
     let prior = checked.types.clone();
     let calls = Cell::new(0_usize);
     let attempted = Cell::new(0_usize);
-    let failed = requirements_counted(&mut facts, root, &mut checked, &|steps, _| {
+    let failed = nominal_counted(&mut facts, root, &mut checked, &|steps, _| {
         calls.set(calls.get() + 1);
         attempted.set(attempted.get().saturating_add(steps));
         if calls.get() == 5 {
@@ -64,7 +72,7 @@ fn counted_formation_replays_real_clauses_and_rolls_back_only_failed_visitation(
     requirements(&mut facts, complete, &mut ordinary)?;
     let expected = requirements(&mut facts, root, &mut ordinary)?;
     let bytes = Cell::new(0_usize);
-    let actual = requirements_counted(&mut facts, root, &mut checked, &|steps, retained| {
+    let actual = nominal_counted(&mut facts, root, &mut checked, &|steps, retained| {
         attempted.set(attempted.get().saturating_add(steps));
         bytes.set(bytes.get().saturating_add(retained));
         Ok(())
@@ -74,13 +82,15 @@ fn counted_formation_replays_real_clauses_and_rolls_back_only_failed_visitation(
     assert!(attempted.get() > failed_work);
     assert!(prior.is_subset(&checked.types));
     assert!(
-        requirements_counted(&mut facts, root, &mut checked, &|_, retained| {
+        nominal_counted(&mut facts, root, &mut checked, &|_, retained| {
             assert_eq!(retained, 0, "warm visitation unexpectedly allocated");
             Ok(())
         })?
         .is_empty()
     );
     substitution_and_trait_cache(&mut facts, &report, leaf, byte, word)?;
+    structural_input_clauses(&mut facts, leaf)?;
+    mapped_environment_failure_and_index_retry()?;
     eprintln!(
         "counted formation completed={} retained={} failed_work={failed_work} total_work={} logical_bytes={} Requirements={}",
         prior.len(),
@@ -154,4 +164,232 @@ fn substitution_and_trait_cache(
     let cached = contracts.requirements(&mut facts.types, predicate)?;
     assert!(std::sync::Arc::ptr_eq(&retried, &cached));
     Ok(())
+}
+
+fn structural_input_clauses(facts: &mut Declarations, leaf: DefId) -> TestResult {
+    let parameter = facts.generics.parameters[&leaf][0].argument;
+    let Argument::Type(ty) = parameter else {
+        return Err("actual Leaf type parameter".into());
+    };
+    let byte = TypeId::primitive(Primitive::U8);
+    let sized: Clause = Predicate {
+        ty,
+        bound: Bound::Sized,
+    }
+    .into();
+    let mut roots = vec![(ty, false)];
+    for kind in [
+        Kind::Array {
+            element: ty,
+            length: 1,
+        },
+        Kind::Slice(ty),
+    ] {
+        roots.push((facts.types.intern(kind)?, true));
+    }
+    for (elements, required) in [
+        (&[ty, byte][..], true),
+        (&[byte, ty][..], false),
+        (&[ty][..], false),
+    ] {
+        let list = facts.types.intern_list(elements)?;
+        roots.push((facts.types.intern(Kind::Tuple(list))?, required));
+    }
+    let parameters = facts.types.intern_list(&[ty])?;
+    roots.push((
+        facts.types.intern(Kind::Function {
+            parameters,
+            result: ty,
+            bound_regions: 0,
+            unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
+        })?,
+        false,
+    ));
+    roots.push((
+        facts.types.intern(Kind::Pointer {
+            mutable: false,
+            pointee: ty,
+        })?,
+        false,
+    ));
+    for (root, required) in roots {
+        let values = formation_requirements_counted(
+            facts,
+            root,
+            &mut FormationRequirements::default(),
+            &|_, _| Ok(()),
+        )?;
+        assert_eq!(
+            values.contains(&sized),
+            required,
+            "actual formation root {root:?}"
+        );
+    }
+    let reference = facts.types.intern(Kind::Reference {
+        mutable: false,
+        referent: ty,
+        region: crate::types::RegionId::STATIC,
+    })?;
+    let values = formation_requirements_counted(
+        facts,
+        reference,
+        &mut FormationRequirements::default(),
+        &|_, _| Ok(()),
+    )?;
+    assert!(!values.contains(&sized));
+    assert!(
+        values.contains(
+            &Predicate {
+                ty,
+                bound: Bound::Outlives(crate::types::RegionId::STATIC)
+            }
+            .into()
+        )
+    );
+    let local = facts.types.intern(Kind::Reference {
+        mutable: false,
+        referent: ty,
+        region: crate::types::RegionId::bound(0, 0)?,
+    })?;
+    let parameters = facts.types.intern_list(&[local])?;
+    let callable = facts.types.intern(Kind::Function {
+        parameters,
+        result: byte,
+        bound_regions: 1,
+        unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
+    })?;
+    let values = formation_requirements_counted(
+        facts,
+        callable,
+        &mut FormationRequirements::default(),
+        &|_, _| Ok(()),
+    )?;
+    assert!(
+        values.is_empty(),
+        "callable-local lifetime cannot become a caller assumption"
+    );
+    assert_eq!(
+        size_of::<FormationRequirements>(),
+        size_of::<Requirements>()
+    );
+    Ok(())
+}
+
+fn mapped_environment_failure_and_index_retry() -> TestResult {
+    use crate::types::{RegionId, parameters::environment::Retained};
+    let report = crate::test_source::resolve(
+        "trait A<U>{}trait B<U>{}fn held<'a,T:A<&'a u8>+B<&'a u16>>(_: &'a T)where for<'b>fn(&'b &'a u8):Copy{}fn main(){}",
+        true,
+    )?;
+    let mut facts = crate::sema::declarations::analyze(&report)?;
+    let definition = report
+        .resolution
+        .definitions
+        .iter()
+        .enumerate()
+        .find(|(_, row)| {
+            row.kind == DefKind::Function && report.package.names.get(row.name) == "held"
+        })
+        .map(|(index, _)| u32::try_from(index).map(DefId))
+        .transpose()?
+        .ok_or("actual held function")?;
+    let environment = std::sync::Arc::clone(
+        facts
+            .generics
+            .environments
+            .get(&definition)
+            .ok_or("actual declared caller")?,
+    );
+    let original: Vec<_> = environment.trait_clauses()?.collect();
+    let mut ordinary_fold = substitute::Bound::new(vec![RegionId(1)]);
+    let expected = environment.substitute_regions(&mut facts.types, &mut ordinary_fold)?;
+    let calls = Cell::new(0_usize);
+    let work = Cell::new(0_usize);
+    let bytes = Cell::new(0_usize);
+    let failing = Cell::new(true);
+    let charge = |steps, retained| {
+        calls.set(calls.get() + 1);
+        work.set(work.get().saturating_add(steps));
+        bytes.set(bytes.get().saturating_add(retained));
+        if failing.get() && calls.get() == 4 {
+            Err("frozen environment allocation failure")
+        } else {
+            Ok(())
+        }
+    };
+    let mut fold = substitute::Bound::new(vec![RegionId(1)]);
+    assert!(
+        environment
+            .substitute_declared_regions_charged(&mut facts.types, &mut fold, &charge)
+            .is_err()
+    );
+    let failed = work.get();
+    let failed_fold = fold.steps;
+    assert_eq!(environment.trait_clauses()?.collect::<Vec<_>>(), original);
+    failing.set(false);
+    let mapped =
+        environment.substitute_declared_regions_charged(&mut facts.types, &mut fold, &charge)?;
+    assert_eq!(
+        mapped.trait_clauses()?.collect::<Vec<_>>(),
+        expected.trait_clauses()?.collect::<Vec<_>>()
+    );
+    assert!(work.get() > failed);
+    assert!(fold.steps >= failed_fold);
+    let (failed_index_work, index_work) = fresh_index_retries(&facts.types, &mapped, &bytes)?;
+    let retained = mapped.retain_owned_from(&environment, &mut Retained::default());
+    assert!(bytes.get() >= retained.bytes);
+    eprintln!(
+        "mapped environment Environment={} retained={} logical_bytes={} work={} fold_work={} failed_index_work={} index_work={}",
+        size_of::<crate::types::parameters::environment::Environment>(),
+        retained.bytes,
+        bytes.get(),
+        work.get(),
+        fold.steps,
+        failed_index_work,
+        index_work
+    );
+    Ok(())
+}
+
+fn fresh_index_retries(
+    types: &Store,
+    mapped: &crate::types::parameters::environment::Environment,
+    bytes: &Cell<usize>,
+) -> TestResult<(usize, usize)> {
+    let attempts = Cell::new(0_usize);
+    let index_work = Cell::new(0_usize);
+    let failed_index = mapped.trait_index_charged(types, &|steps, _| {
+        attempts.set(attempts.get() + 1);
+        index_work.set(index_work.get().saturating_add(steps));
+        if attempts.get() == 6 {
+            Err("frozen caller index failure")
+        } else {
+            Ok(())
+        }
+    });
+    assert!(failed_index.is_err());
+    let failed_index_work = index_work.get();
+    let index = mapped
+        .trait_index_charged(types, &|steps, retained| {
+            index_work.set(index_work.get().saturating_add(steps));
+            bytes.set(bytes.get().saturating_add(retained));
+            Ok(())
+        })?
+        .ok_or("completed mapped trait index")?;
+    assert!(index_work.get() > failed_index_work);
+    let warm = mapped
+        .trait_index_charged(types, &|_, retained| {
+            assert_eq!(retained, 0);
+            Ok(())
+        })?
+        .ok_or("warm mapped trait index")?;
+    assert!(std::sync::Arc::ptr_eq(&index, &warm));
+    assert_eq!(
+        index.seen.len(),
+        2,
+        "failed partial index became cached absence"
+    );
+    Ok((failed_index_work, index_work.get()))
 }

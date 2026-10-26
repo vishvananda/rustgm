@@ -48,10 +48,7 @@ impl Inputs {
         let regions = Regions::prepare(facts, child, parent, budget)?;
         let ids = facts.generics.parameter_ids(&facts.types, parent.owner())?;
         let mut context = Counted::new(Context::default(), budget)?;
-        let mut child_fold = Counted::new(
-            substitute::Bound::parameters_captured(&facts.types, &[], regions.child.clone())?,
-            budget,
-        )?;
+        let mut child_fold = Counted::new(substitute::Bound::new(regions.child.clone()), budget)?;
         let child_header = child_fold.predicate(&mut facts.types, child_header)?;
         let mut child_substitution = Instantiation::new(&mut context, &facts.types, &[])
             .map_err(|error| error.to_string())?;
@@ -67,10 +64,7 @@ impl Inputs {
                     .map_err(|error| error.to_string())?,
             ));
         }
-        let mut parent_fold = Counted::new(
-            substitute::Bound::parameters_captured(&facts.types, &[], regions.parent.clone())?,
-            budget,
-        )?;
+        let mut parent_fold = Counted::new(substitute::Bound::new(regions.parent.clone()), budget)?;
         let parent_header = parent_fold.predicate(&mut facts.types, parent_header)?;
         let mut parent_substitution =
             Instantiation::new(&mut context, &facts.types, &parent_bindings)
@@ -102,19 +96,21 @@ impl Inputs {
             .environments
             .get(&child.owner())
             .map(|environment| {
+                budget.charge(1, size_of::<Environment>() + 2 * size_of::<usize>())?;
                 environment
-                    .substitute_regions(&mut facts.types, &mut child_fold)
+                    .substitute_declared_regions_charged(
+                        &mut facts.types,
+                        &mut child_fold,
+                        &|steps, bytes| budget.charge(steps, bytes),
+                    )
                     .map(Arc::new)
             })
             .transpose()?;
-        let mut premise_work = 0;
-        let assumptions = Assumptions::from_environment_counted(
+        let assumptions = Assumptions::from_environment_charged(
             &facts.types,
             environment.as_deref(),
-            &mut premise_work,
-        );
-        budget.charge(premise_work, 0)?;
-        let assumptions = assumptions?;
+            &|steps, bytes| budget.charge(steps, bytes),
+        )?;
         context.pay()?;
         child_fold.pay()?;
         parent_fold.pay()?;

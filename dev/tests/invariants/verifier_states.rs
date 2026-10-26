@@ -7,7 +7,7 @@ fn frozen(lane: &str, name: &str) -> TestResult<String> {
         "pa31/tests/spec/specialization-graph/{lane}/{name}.rs"
     ))?)
 }
-fn verified(source: &str, expected_vertices: usize, depth: u32) -> TestResult {
+fn verified(name: &str, source: &str, expected_vertices: usize, depth: u32) -> TestResult {
     let report = crate::test_source::resolve(source, true)?;
     let mut checker = Checker::new(&report)?;
     let error = checker
@@ -16,7 +16,7 @@ fn verified(source: &str, expected_vertices: usize, depth: u32) -> TestResult {
         .ok_or("verifier escaped its execution fence")?;
     assert_eq!(
         error.message, "specialization graph execution is not implemented",
-        "{error}"
+        "{name}: {error}"
     );
     let registry = checker
         .facts
@@ -63,11 +63,10 @@ fn verified(source: &str, expected_vertices: usize, depth: u32) -> TestResult {
         size_of::<specialization::Graph>(),
         size_of::<Implementations>()
     );
-    compatible_insertion_is_closed(&checker.facts)?;
+    compatible_insertion_is_closed(&checker.facts, after.root.ok_or("actual graph root")?)?;
     Ok(())
 }
-fn compatible_insertion_is_closed(facts: &Declarations) -> TestResult {
-    let root = registry_root(facts)?;
+fn compatible_insertion_is_closed(facts: &Declarations, root: DefId) -> TestResult {
     let registry = facts
         .generics
         .implementations
@@ -95,17 +94,6 @@ fn compatible_insertion_is_closed(facts: &Declarations) -> TestResult {
     );
     Ok(())
 }
-fn registry_root(facts: &Declarations) -> TestResult<DefId> {
-    Ok(facts
-        .generics
-        .implementations
-        .as_deref()
-        .ok_or("registry")?
-        .headers()
-        .next()
-        .ok_or("real header")?
-        .owner)
-}
 fn rejected(source: &str, expected: &str) -> TestResult {
     let report = crate::test_source::resolve(source, true)?;
     let error = crate::sema::declarations::analyze(&report)
@@ -124,14 +112,14 @@ fn specialization_verifier_checks_immediate_finality_min_authority_and_closed_ex
         "chain-and-inherited-body-explicit-middle",
         "reverse-chain-order-explicit-middle",
     ] {
-        verified(&frozen("corrected-chains", name)?, 3, 2)?;
+        verified(name, &frozen("corrected-chains", name)?, 3, 2)?;
     }
     for name in [
         "actual-unsafe-marker-selection",
         "full-static-structured-self",
         "literal-impl-graph-allowance",
     ] {
-        verified(&frozen("initial", name)?, 2, 1)?;
+        verified(name, &frozen("initial", name)?, 2, 1)?;
     }
     for (name, message) in [
         ("chain-and-inherited-body", "final inherited member"),

@@ -147,14 +147,16 @@ pub(in crate::sema) fn requirements(
     requirements_inside(facts, root, 0, checked)
 }
 
-/// Same immutable formation cache; actual growth is paid before mutation.
-pub(in crate::sema) fn requirements_counted(
+/// A distinct query mode/cache: nominal-only visitation cannot imply structural completion.
+#[derive(Default)]
+pub(in crate::sema) struct FormationRequirements(Requirements);
+pub(in crate::sema) fn formation_requirements_counted(
     facts: &mut Declarations,
     root: TypeId,
-    checked: &mut Requirements,
+    checked: &mut FormationRequirements,
     charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
 ) -> Result<Vec<Clause>, &'static str> {
-    requirements_inside_observed::<true>(facts, root, 0, checked, charge)
+    requirements_inside_observed::<true, true>(facts, root, 0, &mut checked.0, charge)
 }
 
 /// Stop at nominal argument edges. The caller retains each edge as a separate
@@ -168,7 +170,7 @@ pub(in crate::sema) fn immediate(
 ) -> Result<Vec<Clause>, &'static str> {
     let mut work = vec![(root, depth)];
     let mut unique = HashSet::default();
-    collect::<false>(
+    collect::<false, false>(
         facts,
         &mut work,
         &mut unique,
@@ -186,9 +188,9 @@ pub(super) fn requirements_inside(
     depth: u16,
     checked: &mut Requirements,
 ) -> Result<Vec<Clause>, &'static str> {
-    requirements_inside_observed::<false>(facts, root, depth, checked, &|_, _| Ok(()))
+    requirements_inside_observed::<false, false>(facts, root, depth, checked, &|_, _| Ok(()))
 }
-fn requirements_inside_observed<const CHARGED: bool>(
+fn requirements_inside_observed<const CHARGED: bool, const STRUCTURAL: bool>(
     facts: &mut Declarations,
     root: TypeId,
     depth: u16,
@@ -200,7 +202,7 @@ fn requirements_inside_observed<const CHARGED: bool>(
     }
     // Only nominal instances contribute requirements, and the structural
     // property covers every edge followed below.
-    if facts.types.contains_nominals(root) == Some(false) {
+    if !STRUCTURAL && facts.types.contains_nominals(root) == Some(false) {
         return Ok(Vec::new());
     }
     let mut work = std::mem::take(&mut checked.work);
@@ -211,7 +213,7 @@ fn requirements_inside_observed<const CHARGED: bool>(
     let result = (|| {
         reserve::<_, CHARGED>(&work, 1, charge)?;
         work.push((root, depth));
-        collect::<CHARGED>(
+        collect::<CHARGED, STRUCTURAL>(
             facts,
             &mut work,
             &mut unique,
@@ -234,7 +236,7 @@ fn requirements_inside_observed<const CHARGED: bool>(
     checked.unique = unique;
     result
 }
-fn collect<const CHARGED: bool>(
+fn collect<const CHARGED: bool, const STRUCTURAL: bool>(
     facts: &mut Declarations,
     work: &mut Vec<(TypeId, u16)>,
     unique: &mut HashSet<Clause>,
@@ -281,11 +283,25 @@ fn collect<const CHARGED: bool>(
         {
             return Err("nominal requirement work budget exceeded");
         }
-        match facts
+        let kind = facts
             .types
             .kind(ty)
-            .ok_or("invalid nominal requirement type")?
-        {
+            .ok_or("invalid nominal requirement type")?;
+        if STRUCTURAL {
+            structural_clauses::<CHARGED>(
+                facts,
+                ty,
+                kind,
+                depth,
+                checked,
+                ClauseOutput {
+                    values: &mut predicates,
+                    unique: &mut *unique,
+                },
+                charge,
+            )?;
+        }
+        match kind {
             Kind::Adt(item, arguments) => {
                 let cached = cached_instance::<CHARGED>(facts, ty, item, arguments, charge)?;
                 for &predicate in cached.iter() {
@@ -614,3 +630,96 @@ fn reserve<T, const CHARGED: bool>(
 #[cfg(test)]
 #[path = "../../../tests/invariants/charged_formation.rs"]
 mod counted_tests;
+
+struct ClauseOutput<'a> {
+    values: &'a mut Vec<Clause>,
+    unique: &'a mut HashSet<Clause>,
+}
+fn structural_clauses<const CHARGED: bool>(
+    facts: &mut Declarations,
+    ty: TypeId,
+    kind: Kind,
+    depth: u16,
+    checked: &mut Requirements,
+    output: ClauseOutput<'_>,
+    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    use crate::types::parameters::shape::requires_sized_edge;
+    let ClauseOutput {
+        values: predicates,
+        unique,
+    } = output;
+    match kind {
+        Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } | Kind::Slice(element) => {
+            if matches!(kind, Kind::ArrayTerm { .. }) {
+                crate::types::length::Length::of(&facts.types, ty)?;
+            }
+            if requires_sized_edge(kind, 0, 0, element) {
+                checked.append_predicate::<CHARGED>(
+                    &mut facts.types,
+                    Predicate {
+                        ty: element,
+                        bound: Bound::Sized,
+                    }
+                    .into(),
+                    depth,
+                    predicates,
+                    unique,
+                    charge,
+                )?;
+            }
+        }
+        Kind::Tuple(list) => {
+            let count = facts
+                .types
+                .list(list)
+                .ok_or("invalid formation tuple")?
+                .len();
+            for index in 0..count {
+                if CHARGED {
+                    charge(1, 0)?;
+                }
+                let child = facts.types.list(list).ok_or("missing formation tuple")?[index];
+                if requires_sized_edge(kind, index, count, child) {
+                    checked.append_predicate::<CHARGED>(
+                        &mut facts.types,
+                        Predicate {
+                            ty: child,
+                            bound: Bound::Sized,
+                        }
+                        .into(),
+                        depth,
+                        predicates,
+                        unique,
+                        charge,
+                    )?;
+                }
+            }
+        }
+        Kind::Reference {
+            referent, region, ..
+        } => {
+            checked.append_predicate::<CHARGED>(
+                &mut facts.types,
+                Predicate {
+                    ty: referent,
+                    bound: Bound::Outlives(region),
+                }
+                .into(),
+                depth,
+                predicates,
+                unique,
+                charge,
+            )?;
+        }
+        Kind::Projection(_)
+        | Kind::Dynamic { .. }
+        | Kind::Opaque(_, _)
+        | Kind::Closure { .. }
+        | Kind::FunctionItem { .. } => {
+            return Err("wider structural specialization formation is not implemented");
+        }
+        _ => {}
+    }
+    Ok(())
+}

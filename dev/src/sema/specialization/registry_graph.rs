@@ -282,6 +282,7 @@ impl Forest {
 #[cfg(test)]
 pub(in crate::sema) struct Observation {
     pub sealed: bool,
+    pub root: Option<crate::resolve::model::DefId>,
     pub vertices: usize,
     pub edges: usize,
     pub depth: u32,
@@ -299,6 +300,13 @@ impl Graph {
         };
         Observation {
             sealed: matches!(self.state, State::Sealed(_)),
+            root: forest.and_then(|forest| {
+                forest
+                    .vertices
+                    .iter()
+                    .find(|v| v.parent.is_none())
+                    .map(|v| v.witness.key.owner())
+            }),
             vertices: forest.map_or(0, |value| value.vertices.len()),
             edges: forest.map_or(0, |value| value.parents.len()),
             depth: forest.map_or(0, |value| {

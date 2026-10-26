@@ -354,3 +354,54 @@ member-demand opponent confirms the own child method avoids the unused parent's
 static bound. Full obligations, regions, schemas, callable/body proof, pending
 state and source authority must be retained before execution opens. No Provided
 or graph wire transport is granted by this component.
+
+### Retained verifier observations and correction
+
+Hosted40252035090, source b3b21245, passed metadata, format, global architecture,
+production and private strict Clippy, CLI/private builds, and five of the six
+selected controls. The actual verifier group failed its first corrected chain:
+Min admission omitted structural WF clauses and rejected the implicit child
+Sized obligation. This is a real producer deficiency, not a revised language
+expectation. No graph/native/executable qualification follows from that run.
+The independent graph/member-demand source bytes and all disagreements remain
+unchanged; this correction runs no independent oracle again.
+
+Observed logical costs from that exact source (not allocator counts):
+
+| owner/control | widths or state | actual values |
+| --- | --- | --- |
+| LocalMarkers / Contracts | bytes | 88 / 448 |
+| marker rows | 8 / 32 / 128 | capacity14/56/224; work194/846/3406; logicalbytes7912/33704/134088 |
+| demanded DAG | widths8/32/128 | nodes18/66/258; edges27/99/387; work331/1311/5207; logicalbytes11984/48016/190032 |
+| ordinary Sole / Requirements | bytes | 64 / 128 |
+| shared Budget | bytes | 8; failed alias work10000002 then retry10000004, same owner |
+
+The correction uses a distinct FormationRequirements wrapper around the same
+Requirements state and traversal, preventing nominal-only visitation from
+implying structural completion. Its shared Shape predicate emits Sized only on
+array/slice element edges and non-tail tuple edges. Reference referent-outlives
+clauses retain their actual binder. Bare parameters, pointers and callable
+signature positions gain no blanket Sized. Wider dynamic/projection/closure/item
+formation remains explicit. Pinned rustc wf.rs750–850/917 supplies these rules
+(SHA2560f0f029b52e543386ba875d931dc8ea4e3ba3759a7c191923a51e0bdeff20a3d).
+
+Before integration, dynamic environment and clause-index storage must also be
+prepaid. The successor's nonbreaking charged adapters share the original field
+mapping, structural fingerprint and canonical clause insertion algorithms.
+They pay actual Arc copies, map/set/vector and bucket growth before allocation;
+region equality reconstruction derives its bound from actual equation counts,
+typed graph/SCC buffers and output maps. Failed callbacks remain charged.
+The declaration adapter requires a lifetime-only folder and rejects an already
+opened caller rather than materializing unpaid body/import opening state.
+Ordinary adapters retain their original general behavior. No fields are added
+to Environment, Shapes, ClauseIndex, Requirements, Proof, Store or hot nodes.
+
+A budget failure during lazy ClauseIndex construction never installs a semantic
+Err/empty result into the immutable source's OnceLock. Success alone publishes
+the complete index. The same counted group now contains an actual captured
+source caller with two real trait bounds and a quantified builtin: failed
+mapping preserves the original; retry shares cumulative work; a partially built
+index fails, retries both real rows and then reuses the same warm Arc. Structural
+formation controls explicitly oppose arbitrary generic/reference/pointer/fn
+Sized assumptions and callable-local lifetime escape. All successor costs and
+its whole verifier status remain unqualified until the next focused gate.
