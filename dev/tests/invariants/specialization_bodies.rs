@@ -1,4 +1,4 @@
-//! A real method body is selected without relaxing the existing overlap rules.
+//! Real method bodies keep specialization acceptance and admission boundaries.
 use super::*;
 fn selected_impl_body() -> TestResult {
     let report = resolved("oracle-v1", "single-default-method")?;
@@ -52,24 +52,38 @@ fn selected_impl_body() -> TestResult {
     ));
     Ok(())
 }
-fn unsupported_families_stay_closed() -> TestResult {
-    for name in [
-        "child-overrides",
-        "inherited-impl-not-trait-body",
-        "final-sibling-cannot-override",
-        "new-copy-predicate",
-        "repeated-child-input",
-        "static-specialization",
-        "ordinary-overlap-still-rejected",
+fn specialization_family_boundaries() -> TestResult {
+    for name in ["child-overrides", "inherited-impl-not-trait-body"] {
+        let found = resolved("oracle-v1", name)?;
+        pipeline::analyze_source(&found)?;
+    }
+    for (name, diagnostic) in [
+        (
+            "final-sibling-cannot-override",
+            "specializing method overrides a final parent member",
+        ),
+        (
+            "new-copy-predicate",
+            "minimal specialization introduces a non-marker predicate",
+        ),
+        (
+            "repeated-child-input",
+            "minimal specializing implementation repeats a parameter",
+        ),
+        (
+            "static-specialization",
+            "minimal specialization introduces a static lifetime",
+        ),
+        (
+            "ordinary-overlap-still-rejected",
+            "specializing method overrides a final parent member",
+        ),
     ] {
         let found = resolved("oracle-v1", name)?;
         let error = pipeline::analyze_source(&found)
             .err()
-            .ok_or("overlapping family gained an unproved ordering")?;
-        assert!(
-            error.message.contains("overlapping trait implementation"),
-            "{name}: {error}"
-        );
+            .ok_or("invalid specializing family passed its admission boundary")?;
+        assert!(error.message.contains(diagnostic), "{name}: {error}");
     }
     for name in [
         "partial-impl-not-obligation",
@@ -120,6 +134,6 @@ fn nonoverlap_keeps_real_bodies_and_unsupported_specialization_stays_explicit() 
             .iter()
             .all(|unit| unit.configured.ast.gate_sites.is_none())
     );
-    unsupported_families_stay_closed()?;
+    specialization_family_boundaries()?;
     Ok(())
 }

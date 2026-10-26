@@ -130,3 +130,72 @@ fn forged_crate_root_kind_scope_and_package_origin_do_not_waive_contract_queries
     );
     Ok(())
 }
+
+fn bootstrap_case() -> Result<(Report, pipeline::Analysis, DefId, DefId, DefId)> {
+    use crate::support::{language_hooks::Hook, library_types::LibraryType};
+    let report = crate::test_source::resolve(
+        "fn main(){let mut n=1u8;<u8 as core::ops::AddAssign>::add_assign(&mut n,2);let _x:Option<u8>=None;}",
+        true,
+    )?;
+    let analysis = pipeline::analyze_source(&report)?;
+    let method = report
+        .resolution
+        .builtin_traits
+        .language(Hook::AddAssign)
+        .ok_or("actual bootstrap operator")?;
+    let nominal = report
+        .resolution
+        .library_types
+        .get(LibraryType::Option)
+        .ok_or("actual bootstrap Option")?
+        .definition;
+    Ok((report, analysis, method.method, method.definition, nominal))
+}
+
+#[test]
+fn actual_bootstrap_owners_keep_legacy_diagnostics_without_completed_source_headers() -> Result {
+    let (report, analysis, method, trait_, nominal) = bootstrap_case()?;
+    for definition in [method, trait_, nominal] {
+        for _ in 0..32 {
+            assert!(
+                analysis
+                    .facts
+                    .must_use_contract(&report, definition)?
+                    .is_none()
+            );
+            assert!(
+                analysis
+                    .facts
+                    .inline_hint_for_definition(&report, definition)?
+                    .is_none()
+            );
+        }
+        assert!(
+            analysis
+                .facts
+                .header_attribute_contracts(&report, definition)
+                .is_err()
+        );
+    }
+    assert_eq!(analysis.facts.warnings().count(), 0);
+    Ok(())
+}
+
+#[test]
+fn missing_or_changed_bootstrap_owners_cannot_waive_unknown_contracts() -> Result {
+    let (mut report, analysis, method, _, _) = bootstrap_case()?;
+    report.resolution.definitions[method.0 as usize].kind = DefKind::Static;
+    rejected(&report, &analysis.facts, method);
+    report.resolution.definitions[method.0 as usize].kind = DefKind::Function;
+    report.resolution.builtin_traits = crate::resolve::model::BuiltinTraits::default();
+    rejected(&report, &analysis.facts, method);
+    let main = report
+        .resolution
+        .definitions
+        .iter()
+        .position(|definition| definition.kind == DefKind::Function && definition.node.is_some())
+        .ok_or("actual source main")?;
+    report.resolution.definitions[main].node = None;
+    rejected(&report, &analysis.facts, DefId(u32::try_from(main)?));
+    Ok(())
+}

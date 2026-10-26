@@ -61,7 +61,10 @@ pub(super) fn validate(
         frame,
         position,
         target,
-        (selection.definition, Primitive::Usize),
+        (
+            selection.definition,
+            crate::types::TypeId::primitive(Primitive::Usize),
+        ),
     )?;
     Ok(Some(Call {
         instance: target,
@@ -76,7 +79,7 @@ pub(super) fn checked_call(
     frame: &Frame,
     position: u32,
     target: Instance,
-    contract: (crate::resolve::model::DefId, Primitive),
+    contract: (crate::resolve::model::DefId, crate::types::TypeId),
 ) -> Result<(), &'static str> {
     checked_direct_call(facts, body, frame, position, target, contract)?;
     facts
@@ -93,7 +96,7 @@ pub(super) fn checked_direct_call(
     frame: &Frame,
     position: u32,
     target: Instance,
-    contract: (crate::resolve::model::DefId, Primitive),
+    contract: (crate::resolve::model::DefId, crate::types::TypeId),
 ) -> Result<(), &'static str> {
     let arguments = checked_call_arguments(facts, body, frame, position, target, contract)?;
     if !body
@@ -113,7 +116,7 @@ pub(super) fn checked_call_arguments(
     frame: &Frame,
     position: u32,
     target: Instance,
-    contract: (crate::resolve::model::DefId, Primitive),
+    contract: (crate::resolve::model::DefId, crate::types::TypeId),
 ) -> Result<crate::body::ir::ValueList, &'static str> {
     let block = body
         .blocks
@@ -149,7 +152,7 @@ pub(super) fn checked_call_arguments(
     if !body.const_context
         || !facts.is_const_function(contract.0)
         || signature != selected_signature
-        || value.ty != crate::types::TypeId::primitive(contract.1)
+        || value.ty != contract.1
         || body
             .values
             .get(callee.0 as usize)

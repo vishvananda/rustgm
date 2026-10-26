@@ -55,6 +55,30 @@ impl Machine<'_, '_> {
         } else {
             value
         };
+        if let crate::sema::values::View::Address { bits } =
+            Reader::new(self.evaluator.facts()).view(value)?
+        {
+            if !matches!(
+                shape,
+                WordShape::Data {
+                    reference: None,
+                    metadata: MetadataShape::Thin,
+                    ..
+                }
+            ) || value.metadata().is_some()
+            {
+                return Err(
+                    "numeric reference or wide-pointer words require a supported validity profile"
+                        .into(),
+                );
+            }
+            return self.encode_bytes(
+                backing,
+                offset,
+                TypeId::primitive(crate::types::Primitive::Usize),
+                Constant::scalar(crate::sema::model::Scalar::Integer(u128::from(bits))),
+            );
+        }
         let (target, metadata) = self.evaluator.pointer_words(value)?;
         match shape {
             WordShape::Function => {
@@ -64,9 +88,16 @@ impl Machine<'_, '_> {
                 }
             }
             WordShape::Data {
-                metadata: expected, ..
+                reference,
+                metadata: expected,
+                ..
             } => {
-                if !matches!(target, WordTarget::Value(value) if value.location().is_some()) {
+                let function = matches!(target,WordTarget::Value(value) if value.as_function().is_some())
+                    && reference.is_none()
+                    && matches!(expected, MetadataShape::Thin);
+                if !function
+                    && !matches!(target, WordTarget::Value(value) if value.location().is_some())
+                {
                     return Err("data pointer word has no allocation provenance".into());
                 }
                 match (expected, metadata) {
@@ -126,6 +157,32 @@ impl Machine<'_, '_> {
         ty: TypeId,
     ) -> Result<(Constant, Option<super::continuations::Duty>), Failure> {
         let shape = Reader::new(self.evaluator.facts()).word_shape(ty)?;
+        if !self.source_has_fragments(source, offset, 8)? {
+            if !matches!(
+                shape,
+                WordShape::Data {
+                    reference: None,
+                    metadata: MetadataShape::Thin,
+                    ..
+                }
+            ) {
+                return Err("numeric references, function or wide-pointer words require supported validity proof".into());
+            }
+            let start =
+                usize::try_from(offset).map_err(|_| "numeric pointer word offset overflow")?;
+            let end = start
+                .checked_add(8)
+                .ok_or("numeric pointer word extent overflow")?;
+            let scalar = self.decode_byte_scalar(
+                source,
+                start,
+                end,
+                TypeId::primitive(crate::types::Primitive::Usize),
+            )?;
+            let bits = u64::try_from(crate::const_eval::values::integer(scalar)?)
+                .map_err(|_| "numeric pointer exceeds target width")?;
+            return Ok((Constant::raw_address(bits), None));
+        }
         let word = self.read_symbolic_word(source, offset)?;
         match shape {
             WordShape::Function => Ok((
@@ -137,58 +194,26 @@ impl Machine<'_, '_> {
                 reference,
                 metadata,
             } => {
+                let target = self.word_target(word)?;
+                if let WordTarget::Value(value) = target
+                    && value.as_function().is_some()
+                {
+                    if reference.is_some() || !matches!(metadata, MetadataShape::Thin) {
+                        return Err(
+                            "function words as data references require supported provenance".into(),
+                        );
+                    }
+                    return Ok((value, None));
+                }
                 let address = self.word_address(word)?;
-                let (value, physical) = match metadata {
-                    MetadataShape::Thin => (self.reconstruct_word(address, pointee)?, pointee),
-                    MetadataShape::Length => {
-                        let next = offset
-                            .checked_add(8)
-                            .ok_or("slice metadata offset overflow")?;
-                        let start = usize::try_from(next)
-                            .map_err(|_| "slice metadata offset exceeds host size")?;
-                        let end = start
-                            .checked_add(8)
-                            .ok_or("slice metadata extent overflow")?;
-                        let length = self.decode_byte_scalar(
-                            source,
-                            start,
-                            end,
-                            TypeId::primitive(crate::types::Primitive::Usize),
-                        )?;
-                        let length = u64::try_from(crate::const_eval::values::integer(length)?)
-                            .map_err(|_| "slice metadata exceeds usize")?;
-                        (
-                            self.reconstruct_sequence_word(
-                                address,
-                                pointee,
-                                length,
-                                reference.is_some(),
-                            )?,
-                            pointee,
-                        )
-                    }
-                    MetadataShape::Object => {
-                        let next = offset
-                            .checked_add(8)
-                            .ok_or("vtable metadata offset overflow")?;
-                        let vtable = self.read_symbolic_word(source, next)?;
-                        let WordTarget::Vtable { concrete, target } = self.word_target(vtable)?
-                        else {
-                            return Err("object metadata is not a symbolic vtable word".into());
-                        };
-                        if self.erased_word_type(target)? != self.erased_word_type(pointee)? {
-                            return Err(
-                                "object vtable differs from the demanded dynamic type".into()
-                            );
-                        }
-                        let (value, concrete) = self.reconstruct_object_word(address, concrete)?;
-                        let value = value.with_metadata(Metadata::Object {
-                            concrete,
-                            target: pointee,
-                        })?;
-                        (value, concrete)
-                    }
-                };
+                let (value, physical) = self.decode_data_address(
+                    source,
+                    offset,
+                    address,
+                    pointee,
+                    reference.is_some(),
+                    metadata,
+                )?;
                 if let Some(mutable) = reference {
                     if mutable
                         && value.write_permission()
@@ -217,6 +242,59 @@ impl Machine<'_, '_> {
                 }
             }
         }
+    }
+    fn decode_data_address(
+        &mut self,
+        source: Source,
+        offset: u64,
+        address: crate::sema::values::WordAddress,
+        pointee: TypeId,
+        reference: bool,
+        metadata: MetadataShape,
+    ) -> Result<(Constant, TypeId), Failure> {
+        Ok(match metadata {
+            MetadataShape::Thin => (self.reconstruct_word(address, pointee)?, pointee),
+            MetadataShape::Length => {
+                let next = offset
+                    .checked_add(8)
+                    .ok_or("slice metadata offset overflow")?;
+                let start =
+                    usize::try_from(next).map_err(|_| "slice metadata offset exceeds host size")?;
+                let end = start
+                    .checked_add(8)
+                    .ok_or("slice metadata extent overflow")?;
+                let length = self.decode_byte_scalar(
+                    source,
+                    start,
+                    end,
+                    TypeId::primitive(crate::types::Primitive::Usize),
+                )?;
+                let length = u64::try_from(crate::const_eval::values::integer(length)?)
+                    .map_err(|_| "slice metadata exceeds usize")?;
+                (
+                    self.reconstruct_sequence_word(address, pointee, length, reference)?,
+                    pointee,
+                )
+            }
+            MetadataShape::Object => {
+                let next = offset
+                    .checked_add(8)
+                    .ok_or("vtable metadata offset overflow")?;
+                let vtable = self.read_symbolic_word(source, next)?;
+                let WordTarget::Vtable { concrete, target } = self.word_target(vtable)? else {
+                    return Err("object metadata is not a symbolic vtable word".into());
+                };
+                if self.erased_word_type(target)? != self.erased_word_type(pointee)? {
+                    return Err("object vtable differs from the demanded dynamic type".into());
+                }
+                let (value, concrete) = self.reconstruct_object_word(address, concrete)?;
+                let value = value.with_metadata(Metadata::Object {
+                    concrete,
+                    target: pointee,
+                })?;
+                (value, concrete)
+            }
+        })
     }
     pub(super) fn reconstruct_sequence_word(
         &mut self,

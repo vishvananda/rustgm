@@ -252,6 +252,23 @@ fn replay<'a>(
     checker.state.body = owner;
     checker.state.file = owner.file;
     checker.state.calls = calls;
+    checker
+        .state
+        .terms
+        .prepare(owner.file, checker.facts.nodes[owner.file.0 as usize].len());
+    for &(node, _) in &checker.state.calls {
+        if let crate::syntax::ast::Kind::Call { callee, .. } = checker.kind(node) {
+            let key = checker.key(callee);
+            let ty = checker
+                .facts
+                .node(key)
+                .and_then(|facts| facts.ty)
+                .ok_or("replayed call has no completed callee type")?;
+            let term = crate::types::infer::TermId(u32::try_from(types.len())?);
+            types.push(ty);
+            checker.state.terms.insert(key, term);
+        }
+    }
     Ok((
         checker,
         Solved {

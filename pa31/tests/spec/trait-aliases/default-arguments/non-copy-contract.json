@@ -1,0 +1,20 @@
+{
+  "state": "predicted before independent execution; local non-Copy declaration controls",
+  "source_pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "cases": [
+    {
+      "path": "pa31/tests/spec/trait-aliases/default-arguments/no-copy-direct.rs",
+      "sha256": "a17fdf1463d777a6e57f6ed51b7e5c52ff50afdb96a2f36ec1a581f5c4315132",
+      "predicted_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/trait-aliases/default-arguments/no-copy-transitive.rs",
+      "sha256": "c1dc26128c7ec3d1a0626b94bbf5ca030a8cf3d29380a81e15cd6f129db5ef82",
+      "predicted_status": 0
+    }
+  ]
+}

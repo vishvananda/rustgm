@@ -200,6 +200,11 @@ impl Query {
                 let result = definition.result(facts)?.ok_or("missing callable output")?;
                 return self.finish(facts, Some(Resolution::Type(result)));
             }
+            if self.closed && selected.is_none() {
+                // The failed closed trial cannot replace the caller premise
+                // that already proved this opaque projection's parent.
+                return self.finish(facts, Some(Resolution::Opaque));
+            }
             self.source = selected;
             if let Some(source) = selected
                 && self.prepare_inherited(facts, source)?

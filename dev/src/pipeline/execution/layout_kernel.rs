@@ -12,6 +12,19 @@ impl Engine {
         instance: Instance,
         state: Option<&const_eval::State>,
     ) -> Result<bool, Error> {
+        if let Some(call) = state
+            .map(|state| state.source_transmute_call(report, facts, &self.catalog, instance))
+            .transpose()
+            .map_err(|error| Error::at(FileId(0), 0, error))?
+            .flatten()
+        {
+            let selected = call.selection();
+            prepare_layout(facts, selected.source)
+                .map_err(|error| Error::at(FileId(0), 0, error))?;
+            prepare_layout(facts, selected.destination)
+                .map_err(|error| Error::at(FileId(0), 0, error))?;
+            return Ok(true);
+        }
         if let Some(selection) = facts
             .source_bindings
             .as_deref()

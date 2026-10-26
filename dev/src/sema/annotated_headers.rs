@@ -1,4 +1,6 @@
 //! Checked source and canonical imported header facts share diagnostic consumers.
+#[path = "header_attributes/bootstrap_owners.rs"]
+mod bootstrap;
 #[path = "header_attributes/metadata_contracts.rs"]
 mod imported;
 #[path = "header_attributes/incarnations.rs"]
@@ -133,6 +135,7 @@ impl Declarations {
         local::query(self, report, definition)
     }
 }
+pub(super) use bootstrap::owner as bootstrap_owner;
 pub(super) use imported::prepare as prepare_imported;
 pub(super) use local::{bind_definition, finish, observe_owner};
 pub(in crate::sema) use local::{

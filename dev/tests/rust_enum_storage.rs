@@ -160,7 +160,7 @@ const CASES: &[(&str, &str, i32, i32, bool, &str)] = &[
         1,
         1,
         false,
-        "symbolic pointer read requires one complete provenance word",
+        "numeric references, function or wide-pointer words require supported validity proof",
     ),
     (
         "slice-payload",
