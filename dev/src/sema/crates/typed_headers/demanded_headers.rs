@@ -189,6 +189,11 @@ impl State {
         *memo = Pair::Ready(pair);
         Ok(Demand::Ready(pair))
     }
+    pub(super) fn memo(&self) -> Result<&MemoReader, Error> {
+        self.reader
+            .as_ref()
+            .ok_or_else(|| error("private selected mapping lacks its actual shared memo reader"))
+    }
     pub(super) fn require_mapping(
         &mut self,
         view: &RecipeView<'_>,

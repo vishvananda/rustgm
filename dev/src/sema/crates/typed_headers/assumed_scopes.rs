@@ -64,10 +64,10 @@ impl ScopeInputs {
             Self::Declaration(inputs) => inputs,
         }
     }
-    fn subjects(&self) -> &[bool] {
+    fn retained_subject_bytes(&self) -> usize {
         match self {
-            Self::Trait(prepared) => prepared.subjects(),
-            Self::Declaration(_) => &[],
+            Self::Trait(prepared) => prepared.subjects().len(),
+            Self::Declaration(_) => 0,
         }
     }
 }
@@ -174,7 +174,7 @@ impl Scope {
             .saturating_add(retained::vector(&self.parameters))
             .saturating_add(retained::vector(&self.clauses))
             .saturating_add(self.inputs.all().len().saturating_mul(size_of::<Input>()))
-            .saturating_add(self.inputs.subjects().len())
+            .saturating_add(self.inputs.retained_subject_bytes())
             .saturating_add(2 * size_of::<usize>())
             .saturating_add(environment)
     }
@@ -184,7 +184,7 @@ impl Scope {
             || !self.parameters.is_empty()
             || !self.clauses.is_empty()
             || !self.inputs.all().is_empty()
-            || !self.inputs.subjects().is_empty()
+            || self.inputs.retained_subject_bytes() != 0
         {
             return Err(error(
                 "empty Contract changed its complete prepared declaration inputs",
@@ -192,11 +192,54 @@ impl Scope {
         }
         Ok(())
     }
-    fn require(&self, rows: s::ValidatedView<'_>) -> Result<(), Error> {
+    fn subjects<'a>(
+        &'a self,
+        rows: s::ValidatedView<'_>,
+        facts: &'a Declarations,
+    ) -> Result<&'a [bool], Error> {
+        let (_, canonical) = originals::input_range(rows, self.raw)?;
+        match (&self.inputs, canonical) {
+            (ScopeInputs::Trait(prepared), Some(_)) => Ok(prepared.subjects()),
+            (ScopeInputs::Declaration(_), None) => Ok(&[]),
+            (ScopeInputs::Declaration(inputs), Some(prefix)) => {
+                let catalog = facts
+                    .crates
+                    .as_deref()
+                    .and_then(crate::sema::crates::Linkage::origin_catalog)
+                    .ok_or_else(|| {
+                        error("transferred trait inputs lost their actual installed catalog")
+                    })?;
+                let definition = catalog
+                    .definition_at(rows.descriptor().identity(), self.raw.owner)
+                    .map_err(error)?;
+                let header = facts
+                    .generics
+                    .traits
+                    .as_deref()
+                    .and_then(|contracts| contracts.header(crate::types::ItemId(definition.0)))
+                    .ok_or_else(|| {
+                        error("transferred trait inputs lost their actual canonical header")
+                    })?;
+                let (actual, subjects) = header
+                    .inputs
+                    .imported_parts(catalog, definition)
+                    .map_err(error)?;
+                if !Arc::ptr_eq(actual, inputs) || subjects.len() != prefix {
+                    return Err(error(
+                        "transferred trait inputs changed their actual all-input Arc or canonical prefix",
+                    ));
+                }
+                Ok(subjects)
+            }
+            _ => Err(error(
+                "private declaration environment changed its canonical input kind",
+            )),
+        }
+    }
+    fn require(&self, rows: s::ValidatedView<'_>, facts: &Declarations) -> Result<(), Error> {
         let (range, canonical) = originals::input_range(rows, self.raw)?;
-        if canonical.is_some() != matches!(&self.inputs, ScopeInputs::Trait(_))
-            || self.inputs.all().len() != range.slice(&rows.clauses).map_err(error)?.len()
-            || self.inputs.subjects().len() != canonical.unwrap_or(0)
+        if self.inputs.all().len() != range.slice(&rows.clauses).map_err(error)?.len()
+            || self.subjects(rows, facts)?.len() != canonical.unwrap_or(0)
         {
             return Err(error(
                 "private declaration environment changed its complete canonical input owner",
@@ -332,6 +375,54 @@ impl Owner {
             bytes,
         })
     }
+    fn take_trait_inputs(
+        &mut self,
+        view: &RecipeView<'_>,
+        index: usize,
+        work: &mut ReservationWork,
+    ) -> Result<predicate_remap::Prepared, Error> {
+        work.charge(4)?;
+        let rows = view.rows()?;
+        let raw = *rows
+            .scopes
+            .get(index)
+            .ok_or_else(|| error("trait input transfer lost its actual dense scope row"))?;
+        let scope = self
+            .scopes
+            .get_mut(index)
+            .and_then(Option::as_deref_mut)
+            .ok_or_else(|| error("trait input transfer requires its actual prepared scope"))?;
+        let Some(s::HeaderRef::Trait(header)) = rows.header(raw.owner).map_err(error)? else {
+            return Err(error(
+                "trait input transfer requires its actual trait header",
+            ));
+        };
+        let header = &rows.traits[header as usize];
+        let ScopeInputs::Trait(prepared) = &scope.inputs else {
+            return Err(error(
+                "trait input ownership was already transferred or never prepared",
+            ));
+        };
+        if scope.raw != raw
+            || header.scope != raw.owner
+            || raw.parent != Some(header.self_definition)
+            || prepared.all().len() != header.inputs.slice(&rows.clauses).map_err(error)?.len()
+            || prepared.subjects().len() != header.canonical_inputs as usize
+        {
+            return Err(error(
+                "trait input transfer changed its exact header/scope/prefix identity",
+            ));
+        }
+        prepared.require_declaration(view.declaration(header.declaration, work)?)?;
+        work.charge(1)?;
+        let all = Arc::clone(prepared.all());
+        let ScopeInputs::Trait(prepared) =
+            std::mem::replace(&mut scope.inputs, ScopeInputs::Declaration(all))
+        else {
+            return Err(error("trait input owner changed during exclusive transfer"));
+        };
+        Ok(prepared)
+    }
     pub(super) fn retained_bytes(&self) -> usize {
         self.bytes
     }
@@ -376,7 +467,7 @@ impl Owner {
                     .ok_or_else(|| {
                         error("private defining environment lost its actual declaration scope")
                     })?;
-                declaration.require(rows)?;
+                declaration.require(rows, facts)?;
                 if declaration.raw != expected.scope.1
                     || declaration.parameters.len() != expected.formals
                     || !Arc::ptr_eq(environment, &declaration.environment)
@@ -400,7 +491,7 @@ impl Owner {
                     .get(*scope)
                     .and_then(Option::as_deref)
                     .ok_or_else(|| error("empty Contract lost its actual prepared declaration"))?;
-                declaration.require(rows)?;
+                declaration.require(rows, facts)?;
                 declaration.require_empty(expected)?;
                 if !Arc::ptr_eq(&product.declaration, &declaration.environment)
                     || Arc::ptr_eq(&product.environment, &declaration.environment)
@@ -526,7 +617,7 @@ impl Owner {
             if scope.raw != raw {
                 return Err(error("private declaration scope changed its actual row"));
             }
-            scope.require(rows)?;
+            scope.require(rows, facts)?;
             if let ScopeInputs::Trait(prepared) = &scope.inputs {
                 prepared.require_declaration(port.port.declaration(raw.owner, work)?)?;
             }

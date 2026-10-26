@@ -93,6 +93,8 @@ pub(super) enum Dependency {
     OwnedBodyDomain(ImportedBodyId),
     CallableTemplate(ImportedDeclarationId),
     DeclaredLifetime(ImportedDeclarationId),
+    AssociatedConformance(ImportedDeclarationId),
+    DefiningEnvironment(ImportedBodyId),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Demand<T> {

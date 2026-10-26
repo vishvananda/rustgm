@@ -12,6 +12,11 @@ use crate::{
 use std::sync::Arc;
 #[path = "demanded_headers.rs"]
 mod header_demands;
+#[path = "selected_schemas.rs"]
+mod owner_stages;
+#[path = "borrowed_schemas.rs"]
+mod schema_mapping;
+pub(super) use schema_mapping::Authority as SchemaAuthority;
 #[path = "consumer_templates.rs"]
 mod selected;
 #[path = "registered_templates.rs"]
