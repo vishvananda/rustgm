@@ -36,6 +36,7 @@ impl Pending {
                 .ensure()
                 .map_err(error)?
                 .install(&resolver.facts.definitions, input)
+                .map(|_| ())
                 .map_err(error)
         })
     }
@@ -63,7 +64,7 @@ impl Pending {
                 .install_charged(&resolver.facts.definitions, input, |peak| {
                     work.reserve_raw(peak)
                 })
-                .and_then(|()| catalog.freeze_owned());
+                .and_then(|_| catalog.freeze_owned());
             work.charge(catalog.work())?;
             result.map_err(error)?;
             imported.origins = catalog.into_slot().map_err(error)?;

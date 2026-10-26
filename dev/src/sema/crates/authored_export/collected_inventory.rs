@@ -34,13 +34,6 @@ impl CollectedRows {
     ) -> Result<CollectedArtifact, Error> {
         self.into_artifact_with_alias(base, None, work)
     }
-    #[cfg_attr(
-        not(test),
-        expect(
-            dead_code,
-            reason = "private named provided consumers await complete checked headers/body demand and supported public artifact policy"
-        )
-    )]
     pub(crate) fn into_named_artifact(
         self,
         base: Interface,
