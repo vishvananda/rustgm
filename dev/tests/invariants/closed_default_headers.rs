@@ -26,7 +26,7 @@ pub(super) fn reject_untransported_defaultness() -> Result {
         error.message,
         "source defaultness contract transport is not implemented"
     );
-    assert_eq!(error.span.start, modifier.keyword.start);
+    assert_eq!(error.span.start, modifier.span.start);
     let mut forged = report;
     forged.package.units[key.file.0 as usize].source =
         forged.package.unit(key.file).source.physical_copy();

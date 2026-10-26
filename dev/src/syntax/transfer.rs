@@ -15,7 +15,7 @@ pub(crate) use span_preflight::validate as validate_spans;
 pub(crate) struct Extent {
     pub nodes: usize,
     items: usize,
-    defaultness: usize,
+    gate_sites: usize,
     variants: usize,
     use_trees: usize,
     generics: usize,
@@ -32,7 +32,7 @@ impl Extent {
         Self {
             nodes: ast.nodes.len(),
             items: ast.items.len(),
-            defaultness: ast.defaultness.as_ref().map_or(0, |entries| entries.len()),
+            gate_sites: ast.gate_sites.as_ref().map_or(0, |entries| entries.len()),
             variants: ast.variants.len(),
             use_trees: ast.use_trees.len(),
             generics: ast.generics.len(),
@@ -49,7 +49,7 @@ impl Extent {
         Ok(Syntax {
             nodes: prefix(&ast.nodes, self.nodes)?,
             items: prefix(&ast.items, self.items)?,
-            defaultness: ast.defaultness_prefix(self.defaultness)?,
+            gate_sites: ast.gate_sites_prefix(self.gate_sites)?,
             variants: prefix(&ast.variants, self.variants)?,
             use_trees: prefix(&ast.use_trees, self.use_trees)?,
             generics: prefix(&ast.generics, self.generics)?,
@@ -77,7 +77,7 @@ struct Bases {
     literals: u32,
     captures: u32,
     items: u32,
-    defaultness: usize,
+    gate_sites: usize,
     variants: u32,
     use_trees: u32,
     generics: u32,
@@ -99,8 +99,8 @@ impl Bases {
             literals: base(destination.literals.len(), source.literals.len())?,
             captures: base(destination.captures.len(), source.captures.len())?,
             items: base(destination.items.len(), source.items.len())?,
-            defaultness: destination
-                .defaultness
+            gate_sites: destination
+                .gate_sites
                 .as_ref()
                 .map_or(0, |entries| entries.len()),
             variants: base(destination.variants.len(), source.variants.len())?,
@@ -139,7 +139,7 @@ impl Bases {
         destination.literals.truncate(self.literals as usize);
         destination.captures.truncate(self.captures as usize);
         destination.items.truncate(self.items as usize);
-        destination.truncate_defaultness(self.defaultness);
+        destination.truncate_gate_sites(self.gate_sites);
         destination.variants.truncate(self.variants as usize);
         destination.use_trees.truncate(self.use_trees as usize);
         destination.generics.truncate(self.generics as usize);
@@ -228,16 +228,16 @@ impl Bases {
             self.item(&mut item.kind, span)?;
             destination.items.push(item);
         }
-        if let Some(entries) = &source.defaultness {
+        if let Some(entries) = &source.gate_sites {
             entries
-                .charge(1 + entries.len(), source.defaultness_bytes())
+                .charge(1 + entries.len(), source.gate_sites_bytes())
                 .map_err(|message| error(0, message))?;
             for entry in entries.entries() {
                 entry.validate(source)?;
-                destination.record_defaultness(
+                destination.record_gate_site(
                     entry.item + self.items,
                     self.rebased(entry.node),
-                    span(entry.keyword)?,
+                    span(entry.span)?,
                 )?;
             }
         }

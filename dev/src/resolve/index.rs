@@ -580,6 +580,7 @@ impl Resolver<'_> {
                 | ItemKind::Enum { .. }
                 | ItemKind::Union { .. }
                 | ItemKind::Trait { .. }
+                | ItemKind::TraitAlias { .. }
                 | ItemKind::Impl { .. }
                 | ItemKind::TypeAlias { .. }
                 | ItemKind::Const { .. }
@@ -609,9 +610,7 @@ impl Resolver<'_> {
             ItemKind::Struct { .. } | ItemKind::Union { .. } => (Namespace::Type, DefKind::Struct),
             ItemKind::Enum { .. } => (Namespace::Type, DefKind::Enum),
             ItemKind::Trait { .. } => (Namespace::Type, DefKind::Trait),
-            ItemKind::TraitAlias { .. } => {
-                return Err(self.error(c, node, "trait alias semantics are not implemented"));
-            }
+            ItemKind::TraitAlias { .. } => (Namespace::Type, DefKind::TraitAlias),
             ItemKind::Const { .. } => (Namespace::Value, DefKind::Const),
             ItemKind::Static { .. } => (Namespace::Value, DefKind::Static),
             ItemKind::TypeAlias { .. } => (Namespace::Type, DefKind::TypeAlias),
@@ -663,7 +662,7 @@ impl Resolver<'_> {
             foreign: c.foreign_children(node, item.kind),
             ..c
         };
-        if matches!(item.kind, ItemKind::Trait { .. } | ItemKind::Impl { .. }) {
+        if matches!(item.kind, ItemKind::Trait { .. } | ItemKind::TraitAlias { .. } | ItemKind::Impl { .. }) {
             let name = self
                 .package
                 .names
@@ -677,7 +676,7 @@ impl Resolver<'_> {
                     scope: body,
                     node: Some(NodeKey { file: c.file, node }),
                     access: Access::Within(c.module),
-                    members: Some(body),
+                    members: (!matches!(item.kind, ItemKind::TraitAlias { .. })).then_some(body),
                 },
                 false,
             )?;

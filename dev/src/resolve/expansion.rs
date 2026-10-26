@@ -293,6 +293,9 @@ pub fn analyze_with_context(
             super::default_items::validate(&report).map_err(|error| report.diagnostic(error))
         })
         .and_then(|()| {
+            super::alias_gates::validate(&report).map_err(|error| report.diagnostic(error))
+        })
+        .and_then(|()| {
             super::impl_restrictions::validate(&report).map_err(|error| report.diagnostic(error))
         })
         .and_then(|()| {

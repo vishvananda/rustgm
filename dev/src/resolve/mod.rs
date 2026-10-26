@@ -25,6 +25,9 @@ pub use crate::support::names;
 #[path = "specialization_forms.rs"]
 mod default_items;
 mod float_features;
+mod gate_provenance;
+#[path = "unstable_aliases.rs"]
+mod alias_gates;
 pub mod package;
 mod paths;
 mod patterns;
@@ -46,6 +49,7 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     impl_restrictions::validate_plain(package)?;
     float_features::validate_plain(package, &state.facts)?;
     default_items::validate_plain(package)?;
+    alias_gates::validate_plain(package)?;
     Ok(state.facts)
 }
 pub mod render;

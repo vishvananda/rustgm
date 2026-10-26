@@ -493,6 +493,8 @@ impl Parser<'_, '_> {
         let node = self.node(start, Kind::Item(id))?;
         if let Some(keyword) = defaultness {
             self.ast.record_defaultness(id, node, keyword)?;
+        } else if matches!(item.kind, ItemKind::TraitAlias { .. }) {
+            self.ast.record_gate_site(id, node, self.ast.node(node).span)?;
         }
         Ok(node)
     }

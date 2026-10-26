@@ -12,7 +12,7 @@ use crate::{
     support::source::SourceFile,
     syntax::{
         ast::{NodeId, Syntax},
-        defaultness::Kind as DefaultKind,
+        gate_sites::Kind as DefaultKind,
         item::ItemKind,
     },
 };
