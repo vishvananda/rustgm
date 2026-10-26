@@ -230,6 +230,17 @@ records changed-path scaling. Retain original/normalized inputs and
 binder identities when their consumers are implemented; incomplete consumers
 and imported transport keep explicit fences.
 
+Share structural layout readiness and field instantiation across constant
+storage and source intrinsic consumers. A layout answer supplies physical data,
+not trait, source-call or memory-access permission. Authenticate the reached
+source call before demanding layout. Retain pending declarations distinctly from
+completed failures, and reuse the existing substitution graph rather than
+implementing a second layout or field walker. Charge actual cold dense-row
+initialization, graph work and failed attempts; completed warm queries must avoid
+rebuilding the dependency graph. The
+[source storage checkpoint](docs/source-storage-contracts-checkpoint.md) records
+the genuine associated-constant wrappers and native evidence.
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle

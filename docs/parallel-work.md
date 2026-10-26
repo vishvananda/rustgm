@@ -41,58 +41,30 @@ inputs are verified. The newer
 the current loading blocker; LIB-028 specialization execution remains required.
 Earlier stops remain retained history.
 
-Current lanes:
+Current lanes after the [source-contract integration](library-contracts-integration-checkpoint.md):
 
-- A: anonymous Function recipes and the genuine function argument-index repair
-  pass the selected private/declaration gates. All 8485 paired text cases and
-  122 reviewed stdout changes are qualified. Actual callback-bearing executable
-  consumers now pass three focused controls. Private Provided callable-template
-  preparation now passes six focused controls; see the
-  [checkpoint](private-callable-template-checkpoint.md). Private zero-domain
-  Declaration environments now have six qualified controls; see the
-  [environment checkpoint](private-defining-environments-checkpoint.md).
-  The [empty Contract adapter](private-empty-contracts-checkpoint.md) now passes
-  six focused controls and exact first-encoded old v0/v1 bytes. The
-  [numbered trait-input successor](private-numbered-trait-inputs.md) now qualifies
-  actual inherited Self/V/U preparation and body-owned numbering records with
-  six focused controls. The
-  [neutral nonzero successor](private-neutral-numbered-environments.md) now
-  prepares genuine Declaration bodies with nonzero signatures while keeping
-  regional inputs and body type availability closed. Continue the actual body
-  and instance proof bridge toward the concrete
-  [provided-method execution milestone](parallel/provided-method-execution.md).
-  Public Provided execution and type-alias transport remain required.
-  The [fresh consumer constructor](private-consumer-authority-checkpoint.md) now
-  qualifies a separate real Report/Store and one Catalog reservation. The [selected registration checkpoint](private-selected-callables-checkpoint.md)
-  now appends actual callable templates on that same consumer and passes the
-  [fresh combined controls](trait-alias-clauses-checkpoint.md). Continue genuine
-  collected-header completion, role/member validation and original/instance proof;
-  registration does not establish checked header or body availability.
-- B: local LIB-026 implementation domains and their version-one imported
-  unrestricted-profile control are qualified, with 74 independent observations.
-  The private declaration-coordinate namespace and ordinary-trait producer
-  prerequisite now has five qualified controls; see the
-  [namespace checkpoint](pa29-module-namespace-inspection.md). The explicit
-  [v2 module/domain/advisory artifact](pa29-module-contracts-v2.md) now qualifies
-  fresh namespace/domain consumers and provider-owned implementation selection
-  through actual LowIR. Keep the default v1 bytes and real trait/catalog identity
-  distinct from function linker identity. The private
-  [Assert condition transaction](source-assert-implementation.md) now qualifies
-  one parse and owned transfer with authentic opaque provenance. Continue its
-  expression writer and genuine source operator/panic/runtime/constant paths;
-  Assert execution, wider imported contracts and Provided execution remain open.
-- C: SourceCore CLI contract publication and fresh native consumers are qualified.
-  LIB-027 unnamed constants and the [LIB-028 modifier checkpoint](defaultness-checkpoint.md)
-  pass focused controls and reviewed text qualification. The [integrated verifier](frontend-components-integration.md) now qualifies
-  the real forest, Min checks and effective finality. Continue actual member-specific
-  dispatch, both RPIT consumers and native behavior; execution stays fenced.
-  B takes LIB-029 assertion expansion after module-contract v2 qualification;
-  coordinate its source/panic authority with C.
-- Integrator: the [trait alias source-site checkpoint](trait-alias-sites-checkpoint.md)
-  qualifies grammar, distinct identity and whole-item authority with shared sparse
-  storage. The [canonical clause successor](trait-alias-clauses-checkpoint.md) now qualifies actual local schemas, shared dependency edges and a bounded ordinary-bound consumer. Continue nested binder/region, projection/object, full declaration and imported consumers. Handle
-  focused integration/main pushes, periodic CI follow-up and original-source observations. Local primitive ownership is qualified. Keep
-  CPPGM and upstream sources unchanged.
+- A owns actual PA29 imported headers and provided bodies. Collected source
+  admission, selected callable registration and shared ordinary/private input
+  kernels are qualified. Continue complete trait/schema/member validation on the
+  same fresh consumer and one demand memo, then actual original/instance and
+  borrow proof toward the [native7 milestone](parallel/provided-method-execution.md).
+  Private preparation does not grant public Provided execution.
+- B owns actual source language/intrinsic consumers. Source Not and closed layout
+  queries, nominal Clone and provided clone_from have qualified native evidence.
+  Continue genuine reached runtime Abort and the real panic/format/constant
+  pipeline. Use supported LowIR operations; preserve ordinary source algorithms,
+  const restrictions and imported transport requirements.
+- C owns actual source sizing/Pointee contracts after qualified local specialization
+  method execution and both projected-result consumers. Source alias Self sizing
+  is the next isolated checkpoint. Proposed Pointee/Metadata/DynMetadata roles
+  require genuine source/member/nominal validators; representation metadata grants
+  no semantic or runtime intrinsic authority. Coordinate central role/bit changes
+  with B before editing.
+- The integrator owns complete aliases, qualification and direct-main publication.
+  Canonical clauses and nested binders are integrated. Continue scoped region,
+  original/normalized projection, object, complete unused/default/const and
+  imported consumers. Alias execution/export stays fenced while incomplete.
+  Do not change CPPGM or pinned upstream sources.
 
 Development validation uses `make fastcheck` with exact affected controls and
 captured outputs within five minutes. A new private binary does not require a
@@ -120,9 +92,10 @@ oracles, assignment activation and public pushes to main.
 The integrator's closed record, array and stored-value metadata checkpoints are
 integrated on main. The isolated `rustgm-pa29-work` checkout remains available
 for the next generic transport work, coordinated with Worker A's PA25 caller
-transport. Generic body transport is still unimplemented; its
-[owner/contract proposal](pa29-generic-transport-proposal.md) defines the shared
-prerequisite and does not grant execution permission. Worker B may prepare
+transport. The narrow executable-generic profile is implemented; complete upstream
+source contracts and provided/generic body transport remain required. The
+[owner/contract proposal](pa29-generic-transport-proposal.md) and actual execution
+milestone retain that scope; preparatory readiness grants no execution permission. Worker B may prepare
 and independently qualify PA30 source fixtures while a coherent PA26 checkpoint
 awaits integration. This preparation uses the same resource limits and does not
 activate either assignment or change the backend contract.
