@@ -25,6 +25,22 @@ use std::{rc::Rc, sync::Arc};
 pub(crate) const fn layouts() -> (usize, usize) {
     (size_of::<StagedConsumer>(), size_of::<Source>())
 }
+#[cfg(test)]
+pub(crate) fn configuration_opponent(package: &mut Package) -> Result<(), &'static str> {
+    let actual = package
+        .staged_consumer()
+        .cloned()
+        .ok_or("configuration opponent requires its actual private consumer")?;
+    let original = package.runtime_checks;
+    package.runtime_checks = RuntimeCheckConfig::with_ub_checks(!original.ub_checks());
+    let rejected = actual.require_package(package).is_err();
+    package.runtime_checks = original;
+    if rejected {
+        Ok(())
+    } else {
+        Err("private consumer accepted a replaced configuration")
+    }
+}
 
 /// Moved immutable data only. No producer-local arena or catalog survives here.
 pub(crate) struct ProviderAdmission {
