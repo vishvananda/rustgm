@@ -2,6 +2,17 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/pointee-normalization/` freezes ten new source-provider hypotheses for
+actual Pointee selection and Metadata normalization, with separate 2021/2024
+metadata expectations. The sources cover unit/length results, generic tails,
+unresolved versus Sized parameters, real DynMetadata applications/regions and
+input/result obligations. Their twenty metadata observations retain ten
+hypothesis disagreements, including missing Copy protocol prerequisites; the
+initial predictions and all original source bytes remain retained. Six separately
+frozen setup successors isolate those prerequisites and input formation.
+Candidate support remains unqualified; this does not repeat declaration-only
+evidence or grant pointer intrinsic, layout, runtime or transport permission.
+
 `spec/declarative-macros/trait-members/` retains seven independently checked
 scoped trait-method contracts for LIB-002, with fourteen metadata/object
 observations and five native programs. They separate opaque trait discovery,

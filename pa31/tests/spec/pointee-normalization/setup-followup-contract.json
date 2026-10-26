@@ -1,0 +1,88 @@
+{
+  "schema": 1,
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "provider": "Explicit authored no_core declarations reuse the qualified minimal declaration fixture; no claim that these replace pinned NonNull/VTable/PhantomData fields.",
+  "phase": "new setup successors frozen before observation; original20 observations retained unchanged",
+  "scope": "12 new metadata-only observations; five genuine Copy-protocol setups and one isolated input-formation opponent; no old20/22/native repeat",
+  "prior_run": 40342761935,
+  "prior_binding_sha256": "df604a8a850198a5646e2ad52cffa6112e4c60cfeb8ff87568b27632269c5e3f",
+  "cases": [
+    {
+      "source": "pa31/tests/spec/pointee-normalization/with-copy/concrete-results.rs",
+      "sha256": "f14e09a69c2e29fd671c517d08eb23151f6fcad6ce54eed0d939c6503426bb9d",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "same original body with actual Copy/Clone/clone_fn/LegacyReceiver protocol; actual primitive/array unit and slice/str length metadata",
+      "original_source": "pa31/tests/spec/pointee-normalization/concrete-results.rs",
+      "original_sha256": "fee076676047bd4561524d1a52da32b9b8112d907d3a5510c7e8e1fd4caf9c7f"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/with-copy/changed-tail.rs",
+      "sha256": "dd628ab874d122790f3f8dd4e4b49f642209f19de28231d69099baa86e0fc956",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "same original body with actual Copy/Clone/clone_fn/LegacyReceiver protocol; canonical actual generic tail projection and concrete str tail",
+      "original_source": "pa31/tests/spec/pointee-normalization/changed-tail.rs",
+      "original_sha256": "0e38ab0a8545e48432980fd411c2165ea8c203b6d0e40ead83265a1dc31e881d"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/with-copy/sized-parameter.rs",
+      "sha256": "3ee81273461454686abc30a8cfe7a4c95e91ba3ce5a8944d565c2e1af877f235",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "same original body with actual Copy/Clone/clone_fn/LegacyReceiver protocol; unit normalization requires the real Sized parameter premise",
+      "original_source": "pa31/tests/spec/pointee-normalization/sized-parameter.rs",
+      "original_sha256": "908613cf5c13a126fe193822d348a4b9528b306f616e89ede660bce8336a0944"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/with-copy/dynamic-region.rs",
+      "sha256": "e8c9f568c6caf667344b03981848c62e6921cfffd8b22b02b86ba098f2901229",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "same original body with actual Copy/Clone/clone_fn/LegacyReceiver protocol; actual DynMetadata application retains the complete object region",
+      "original_source": "pa31/tests/spec/pointee-normalization/dynamic-region.rs",
+      "original_sha256": "f0079572d63142602be6dda48618a4bbda429be9fd7ad84b755c7457279ae75a"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/with-copy/dynamic-escape.rs",
+      "sha256": "a000e856186cd1a98b9617e20c5664c8954b44259053b390f53ed5152a79e4a4",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "same original body with actual Copy/Clone/clone_fn/LegacyReceiver protocol; the object region cannot be widened to static",
+      "original_source": "pa31/tests/spec/pointee-normalization/dynamic-escape.rs",
+      "original_sha256": "3e7fad7ce7c63c2bac11b302c69424965cb20c667b01fe0e689bf289ff2d46bb"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/invalid-input-formation.rs",
+      "sha256": "8344b7dc783530dc1872dea1d802fd55ad85caa452bfaceca037d9680cc9ed2a",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0277"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "isolated unchanged nominal/projection input formation; removes the competing E0308 body mismatch",
+      "original_source": "pa31/tests/spec/pointee-normalization/invalid-input.rs",
+      "original_sha256": "bc9770dbe2207f4381bcedf78f53c34e0a0f5dfdcbd52d7f6cf0581bdc4e327c"
+    }
+  ]
+}

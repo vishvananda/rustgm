@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "provider": "Explicit authored no_core declarations reuse the qualified minimal declaration fixture; no claim that these replace pinned NonNull/VTable/PhantomData fields.",
+  "phase": "three genuinely new source/caller edge predictions frozen before observation",
+  "scope": "six new metadata-only observations; assumed-parent/Sized, explicit equality and projected tail/prefix; no old20/12/22 repeat or native claim",
+  "cases": [
+    {
+      "source": "pa31/tests/spec/pointee-normalization/assumed-parent.rs",
+      "sha256": "21850d19e639ed228f5ab29b559370a3d536adf7f0b68b68b2db1be953846c4b",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "actual assumed Pointee parent without an equality still permits caller-scoped Sized fallback"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/explicit-equality.rs",
+      "sha256": "b81a90d04e295feb68534bcd9450f0df07f6c6c1a66278c39ef76501e5cd286a",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "explicit associated equality priority in a generic environment; contradiction behavior is independently observed"
+    },
+    {
+      "source": "pa31/tests/spec/pointee-normalization/projected-tail-and-prefix.rs",
+      "sha256": "ce71b62a1561bd0cde73de577e3fa82766776bcd5aaa41eef981880e3a2aca84",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "contract": "actual last projected tail with an unrelated projected prefix; no prefix projection proof for metadata"
+    }
+  ]
+}
