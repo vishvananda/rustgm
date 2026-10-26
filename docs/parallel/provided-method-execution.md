@@ -48,12 +48,12 @@ not public admission or a completed transport claim.
 
 | Cold record | Exact content and authority boundary |
 | --- | --- |
-| `ProvidedContractRows` | Existing complete Provided columns plus `NamespaceColumns`, `HeaderAttributeColumns` and `FinalityColumns`. Keep `SourceRows`, `FunctionHeader` and `TraitHeader` unchanged; retain the raw full family and numbering. |
+| Tag 11 / version 1 envelope | Existing complete Provided columns plus namespace and modifier records below. Store advisory rows in the SINGLE existing `ValidatedRows.attributes`; do not copy them into another wrapper. Keep `SourceRows`, `FunctionHeader` and `TraitHeader` unchanged; retain the raw full family and numbering. |
 | `NamespaceColumns` | Reuse the actual root/module/binding rows from the same `Stage::namespace_columns` / `ExportBindings` producer and existing pending-binding/module-remap validator. Consumer supplies its real validated `Dependency` alias. Missing columns grant no names. The first executable target requires only the genuine root-public Holder family; unsupported domain/reexport breadth stays explicit. |
 | `HeaderAttributeColumns` | Reuse complete parallel function/trait rows, actual declaration/site, `must_use` presence and optional reason, and inline hint plus applicability. New complete rows give checked absence/presence; older omitted columns remain Unknown. Existing shared marker/defaultness/publication fences still run. |
-| `FinalityColumns` | Complete parallel function, trait and implementation rows. Each `FinalDeclaration { declaration: DeclarationRef, site: u32, contract: Final }` binds the exact header; an implementation uses its existing actual `ImplHeader.self_definition` coordinate. `Final` is an explicit wire value, never inferred from a missing row. No specialization/default graph is admitted. A normal trait-provided body is still a Final declaration. |
+| `DefaultModifierColumns` | Complete parallel function, trait and implementation rows. Each `ModifierRecord { declaration: DeclarationRef, site: u32, modifier: NoDefaultModifier }` binds the exact header; an implementation uses its existing actual `ImplHeader.self_definition` coordinate. The no-modifier value is explicit, never inferred from a missing row. It says ONLY that no `default` modifier was written; it neither supplies effective specialization finality nor forbids an ordinary impl from overriding a provided trait method. No specialization/default graph is admitted. |
 
-Produce finality from the actual authenticated local owner and C's typed
+Produce modifier records from the actual authenticated local owner and C's typed
 `active_defaultness` query during the existing selected collector walk, including
 real impl-owner scopes. Preserve the whole-package default impl/associated-value
 gates. Const/type declarations outside this profile remain unsupported rather
@@ -64,7 +64,10 @@ fail. No NodeKey, TypeId, RegionId, Environment or paid proof goes on wire.
 
 The descriptor may expose a borrowed `provided_contracts()` view over these
 validated data columns. Actual namespace installation, metadata-contract queries
-and finality consumers must reuse their current Catalog/owner/site validators.
+and modifier consumers must reuse their current Catalog/owner/site validators.
+Update `metadata_contracts::prepare`/Catalog profile routing and `column_storage`
+explicitly; a new profile must not accidentally bypass their ordinary admission.
+Include a genuine ordinary override of a provided trait method as a control.
 Keep the four public Provided guards closed while this data codec is qualified.
 A's installed owner, demanded original/instance and runtime checks must consume
 the reloaded records before the explicit public constructor/driver gate opens.
