@@ -3,13 +3,34 @@ use super::*;
 use crate::{
     expand::{builtin::assertion, macros::input::Input, stream::Source},
     support::source::FileId,
-    syntax::{expression, interpolation::EMPTY_INPUTS, token_tree::Forest},
+    syntax::{
+        cursor::TokenPosition,
+        expression::{self, fragment},
+        interpolation::EMPTY_INPUTS,
+        token_tree::Forest,
+    },
 };
 use std::{cell::Cell, fmt::Write};
 type TestResult = Result<(), LexError>;
 fn write(source: &str) -> Result<String, LexError> {
-    let ast = expression::parse(source)?;
-    expression(source, &ast, ast.root, &EMPTY_INPUTS, &|_, _| Ok(()))
+    let forest = Forest::parse(source)?;
+    let input = Input::from_forest(&forest, forest.roots())?;
+    let parsed = fragment::parse_with_inputs(
+        source,
+        &input.tokens,
+        fragment::FragmentKind::Expression,
+        TokenPosition::default(),
+        &EMPTY_INPUTS,
+    )?;
+    assert_eq!(parsed.position.index, input.tokens.len(), "source={source}");
+    assert_eq!(parsed.position.offset, 0, "source={source}");
+    expression(
+        source,
+        &parsed.ast,
+        parsed.ast.root,
+        &EMPTY_INPUTS,
+        &|_, _| Ok(()),
+    )
 }
 #[test]
 fn parsed_expression_messages_follow_the_actual_ast_and_forwarded_condition() -> TestResult {
@@ -31,7 +52,9 @@ fn parsed_expression_messages_follow_the_actual_ast_and_forwarded_condition() ->
         ("(x as u8)<2", "(x as u8) < 2"),
         ("f::<u8>(1)", "f::<u8>(1)"),
     ] {
-        assert_eq!(write(source)?, expected, "source={source}");
+        let actual = write(source);
+        assert!(actual.is_ok(), "source={source} error={actual:?}");
+        assert_eq!(actual?, expected, "source={source}");
     }
     let source = "2usize == 3usize,";
     let forest = Forest::parse(source)?;
