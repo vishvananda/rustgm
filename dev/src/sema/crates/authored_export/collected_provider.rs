@@ -6,7 +6,7 @@ use crate::{
 };
 #[path = "collected_inventory.rs"]
 mod inventory;
-pub(crate) use inventory::{BoundReceipt, CollectedArtifact, CollectedReceipt};
+pub(crate) use inventory::{CollectedArtifact, CollectedReceipt};
 
 pub(crate) struct CollectedScope {
     definition: DefId,

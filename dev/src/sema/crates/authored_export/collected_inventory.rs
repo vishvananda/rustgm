@@ -26,29 +26,6 @@ pub(crate) struct CollectedReceipt {
     inventory: Arc<Dependencies>,
     data: HeaderDataIdentity,
 }
-/// Move-only ownership of an existing collector receipt and its SAME sidecar.
-/// This retains the receipt's authority; no unpaid data can construct this owner.
-pub(crate) struct BoundReceipt {
-    receipt: CollectedReceipt,
-    owner: HeaderDataOwner,
-}
-impl BoundReceipt {
-    pub(crate) fn columns<'a>(
-        &'a self,
-        inventory: &Arc<Dependencies>,
-        index: u32,
-        work: &mut ReservationWork,
-    ) -> Result<&'a s::HeaderAttributeColumns, Error> {
-        work.charge(2)?;
-        if index != 0 || !Arc::ptr_eq(inventory, &self.receipt.inventory) {
-            return Err(Error::unlocated(
-                "retained source completion changed its actual inventory",
-            ));
-        }
-        self.receipt.data.require_owner(&self.owner, work)?;
-        Ok(self.owner.columns())
-    }
-}
 impl CollectedRows {
     pub(crate) fn into_artifact(
         self,
@@ -217,22 +194,33 @@ impl CollectedArtifact {
     }
 }
 impl CollectedReceipt {
-    pub(crate) fn bind(
-        self,
+    pub(crate) fn retain_data(
+        &self,
         report: &Report,
         work: &mut ReservationWork,
-    ) -> Result<BoundReceipt, Error> {
+    ) -> Result<HeaderDataOwner, Error> {
         self.columns(report, work)?;
-        work.reserve(size_of::<BoundReceipt>())?;
         let policy = report
             .package
             .staged_consumer()
             .ok_or_else(|| Error::unlocated("source completion lost its actual consumer"))?;
-        let owner = self.data.retain(policy, work)?;
-        Ok(BoundReceipt {
-            receipt: self,
-            owner,
-        })
+        self.data.retain(policy, work)
+    }
+    pub(crate) fn retained_columns<'a>(
+        &'a self,
+        inventory: &Arc<Dependencies>,
+        owner: &'a HeaderDataOwner,
+        index: u32,
+        work: &mut ReservationWork,
+    ) -> Result<&'a s::HeaderAttributeColumns, Error> {
+        work.charge(2)?;
+        if index != 0 || !Arc::ptr_eq(inventory, &self.inventory) {
+            return Err(Error::unlocated(
+                "retained source completion changed its actual inventory",
+            ));
+        }
+        self.data.require_owner(owner, work)?;
+        Ok(owner.columns())
     }
     pub(crate) fn columns<'a>(
         &self,

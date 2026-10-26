@@ -26,7 +26,7 @@ use crate::{
 pub(crate) use advisory_rows::require_defaultness_transport;
 pub(crate) use canonical_nodes::Context;
 pub(crate) use collected_provider::{
-    BoundReceipt, CollectedArtifact, CollectedReceipt, CollectedRows, validate_collected_rows,
+    CollectedArtifact, CollectedReceipt, CollectedRows, validate_collected_rows,
 };
 
 /// Observation of producer work, not proof or accepted metadata authority.

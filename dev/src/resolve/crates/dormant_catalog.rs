@@ -261,13 +261,13 @@ impl Inputs {
     }
 }
 impl<'a> RecipeView<'a> {
-    pub(super) fn headers(reservation: &'a super::consumer_inputs::HeaderReservation) -> Self {
+    pub(super) fn retained(reservation: &'a super::ConsumerReservation) -> Self {
         Self {
             owner: RecipeOwner {
-                inventory: reservation.inventory(),
-                provider_index: reservation.index(),
+                inventory: &reservation.inventory,
+                provider_index: reservation.index,
                 catalog: reservation.catalog(),
-                root: reservation.root(),
+                root: reservation.root,
             },
         }
     }
