@@ -1,9 +1,11 @@
-# Concrete private graph, mode and marker proposal (source only)
+# Specialization graph proposal and verifier checkpoint
 
-Successor branch pa31-specialization-graph-v1, still at qualified64c9f507.
-No production graph/schema edits. New observations40237725892 supersede ONLY
-incorrect predictions, not source bytes. All numeric new type sizes below are
-UNMEASURED; budgets explicitly use size_of/capacity instead of guessed sizes.
+The initial concrete proposal below records the reviewed design from
+qualified64c9f507. The later verifier-checkpoint and correction sections describe
+the current unqualified production implementation; the full dispatch draft stays
+preserved on pa31-specialization-graph-v1. New observations40237725892 supersede
+only incorrect predictions, preserving their source bytes and raw results.
+Unmeasured sizes remain explicit; logical budgets use actual types/capacities.
 
 ## Private types and ownership
 
