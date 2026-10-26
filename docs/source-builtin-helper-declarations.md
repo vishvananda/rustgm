@@ -1,7 +1,8 @@
 # Source builtin derive helper declarations
 
-Status: source implementation and controls authored; focused candidate qualification
-is pending. This producer slice does not enable Default derive invocation, helper
+Status: focused producer qualification passed all six selected controls at source
+`eb77e5d729d835902b58826c21ab3490d8a40699`.
+This producer slice does not enable Default derive invocation, helper
 use, proc-macro hosting or foreign macro transport.
 
 The actual unchanged-core observer now opens 78 of the 722 unchanged pinned inputs
@@ -21,6 +22,16 @@ existing witness trees still verify exact effect/capture/token data. One actual
 `OriginalImage` Arc on that same owner seals its source incarnation; cached checked
 and published views reject changed images. No second header owner or map is added.
 Empty helper lists retain vector capacity zero. Ordinary Plain rows are unchanged.
+
+Actual declaration queries reuse the existing cached declaration-to-source-owner
+route through `checked_definition`: the dense owner index stores attributed
+wrappers, while resolver Macro DefIds name their unwrapped items. The lookup checks
+the actual declaration key, then reuses the same wrapper, image and witness checks.
+Scoped builtin declarations retain their exact item mapping. Legacy `macro_rules!`
+declarations use their actual Macro namespace and scope registration; the existing
+legacy producer intentionally does not publish a scoped item-table row. Checked
+non-builtin rows contribute no helper diagnostics. Ordinary crates without a macro
+contract owner retain their existing behavior.
 
 `CheckedHeader::derive_helpers(expected_role)` requires the actual derive role and
 positive owned header data, including checked empty data. The read-only same-Rc
@@ -69,11 +80,55 @@ qualified C binary reports Effects368, Producer280, Owner104, Witness72, Frame8,
 Call40, Site36, Tail4, Policy11 and Work64. The before bindings are
 `040955f5ad1197b62a010c88ac7495437f82fc0a7146cfa4112ef074a3c0d965` and
 `e3308fec0186b39d55f0e32bd0cb51e16c2e2b4cbd8721e015140a61da0249b6`.
-After layouts, payload capacities and attempted work are pending actual execution;
-no allocator count or inferred alignment delta is claimed.
+The passing focused run measures the following bytes. HeaderData's increase
+applies to every existing Owned header, including allowance-only headers; Plain
+entries retain their existing representation. The policy increase applies to each
+retained node in the existing optional dense table.
+
+| Record | Before | After |
+| --- | ---: | ---: |
+| Declaration | 40 | 40 |
+| HeaderData | 112 | 144 |
+| HelperAttribute | absent | 24 |
+| SourceCore / session | 176 / 16 | 176 / 16 |
+| Policy | 11 | 12 |
+| Effects / Producer | 368 / 280 | 368 / 280 |
+
+Current `Result<Policy, Violation>` is 32 bytes and its composition row is 40;
+their predecessors were not measured. The ordinary no-policy control retains no
+dense policy storage. The one-lint control retains four nodes/capacity four:
+48 payload bytes, versus 44 at the old element width, plus the existing 24-byte
+outer allocation. The affected visibility control independently measures seven
+nodes/capacity seven: 84 bytes versus 77. Empty helper vectors have capacity zero;
+warm queries increase attempted work without increasing retained bytes. Exhausted
+work remains failed on both subsequent retries.
+
+| Helpers | Capacity | Helper bytes | Header payload | Steps | Attempted bytes |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 8 | 8 | 192 | 1696 | 1027 | 6240 |
+| 32 | 32 | 768 | 4790 | 3623 | 19702 |
+| 128 | 128 | 3072 | 17202 | 14367 | 73010 |
+
+Item64, Node36, Scope32, resolution Definition36, macro Body96, macro
+Definition136 and Report3040 remain unchanged. The existing carrier control also
+reports ErrorData128, one-byte RetentionNote and Engine4088. These are measured
+type sizes, capacities and conservative accounting totals, not allocator counts.
 
 Four new private groups cover metadata/canonical names/empty lists, exact source
 and header opposition, actual lint scope/origin/carrier and cold/dense/budget costs.
 Two existing affected policy/layout controls remain selected with the reviewed
-12-byte expectation. Qualification uses only this six-group scope. PA31 remains
-planned and no generated references are introduced.
+12-byte expectation. The warning group also covers the pinned-primary-backed Bang
+collision path. Qualification used only this six-group scope: metadata, full
+formatting, global architecture audit, private strict Clippy, fresh private build
+and six exact passes in 112.04 seconds. Receipt:
+`obj/qualification/fast/1793052933296743618/receipt.json`, SHA-256
+`04dc3ff3cb16bfa49f6987a609b446cf6a894ae53e625cbf460f5715f30a1211`;
+2789 current source/configuration fingerprints, private binary SHA-256
+`6b895c323efba8dbee3a8312f4e2e4c89038e9d87d80946ad08d86943f6bcd17`.
+Earlier architecture, typing, lint, formatting and owner/registration failures
+remain retained under the handoff; none is counted as a pass.
+
+Production/CLI qualification and a fresh unchanged-core observation belong to the
+combined integration. Actual selected derive invocation and helper-use scope stay
+with B; Default execution, foreign macro transport and proc-macro hosting remain
+closed. PA31 remains planned and no generated references are introduced.
