@@ -152,6 +152,15 @@ impl<'a, S: Sources> Loader<'a, S> {
         config: &'a Config,
         context: &super::bindings::Context,
     ) -> Result<Self, Error> {
+        Self::with_admission(root, sources, config, context, None)
+    }
+    pub(crate) fn with_admission(
+        root: InputFile,
+        sources: &'a mut S,
+        config: &'a Config,
+        context: &super::bindings::Context,
+        admission: Option<super::bindings::consumer_policy::Request<'_>>,
+    ) -> Result<Self, Error> {
         let mut names = Names::default();
         let name = names
             .intern("crate")
@@ -162,7 +171,12 @@ impl<'a, S: Sources> Loader<'a, S> {
         let no_std = unit
             .word_attribute(Some(root_node), "no_std")
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
-        let prepared = super::bindings::policy::prepare(&unit, context)?;
+        let prepared = match admission {
+            Some(request) => {
+                super::bindings::policy::prepare_with_admission(&unit, context, Some(request))?
+            }
+            None => super::bindings::policy::prepare(&unit, context)?,
+        };
         let source = prepared.source;
         let library = prepared.library;
         let implicit_prelude = !unit

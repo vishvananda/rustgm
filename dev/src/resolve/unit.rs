@@ -145,7 +145,7 @@ impl Unit {
                 .store(source.text(), &value)
                 .map_err(|message| error(0, message))
         })?;
-        let configured = ConfiguredSyntax {
+        let mut configured = ConfiguredSyntax {
             ast,
             owners: report.owners,
             active: report.active,
@@ -161,6 +161,9 @@ impl Unit {
                 .ok_or_else(|| error(0, "too many attribute owners"))?;
             owner_indices[owner.node.get() as usize] = Some(index);
         }
+        configured
+            .ast
+            .bind_gate_sites_source(source.original_image())?;
         let original = original::Original::new(&configured, &literals);
         Ok(Self {
             source,
