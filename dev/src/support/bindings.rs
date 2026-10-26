@@ -49,9 +49,10 @@ pub enum LangItem {
     PhantomData,
     PanicLocation,
     PanicInfo,
+    TrivialClone,
 }
 impl LangItem {
-    pub const ALL: [Self; 34] = [
+    pub const ALL: [Self; 35] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -86,6 +87,7 @@ impl LangItem {
         Self::PhantomData,
         Self::PanicLocation,
         Self::PanicInfo,
+        Self::TrivialClone,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -124,6 +126,7 @@ impl LangItem {
             Self::PhantomData => 31,
             Self::PanicLocation => 32,
             Self::PanicInfo => 33,
+            Self::TrivialClone => 34,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -164,6 +167,7 @@ impl LangItem {
             "phantom_data" => Some(Self::PhantomData),
             "panic_location" => Some(Self::PanicLocation),
             "panic_info" => Some(Self::PanicInfo),
+            "trivial_clone" => Some(Self::TrivialClone),
             _ => None,
         }
     }

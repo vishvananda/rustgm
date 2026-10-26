@@ -7,6 +7,18 @@ pub(super) fn current(
     entry: &Transaction,
     expanded: bool,
 ) -> Result<(), Error> {
+    if let Some(source) = package.source_core() {
+        source
+            .macros
+            .charge(1 + entry.trees.len() + entry.spelling.len(), 0)
+            .map_err(|message| {
+                Error::at(
+                    entry.owner.file,
+                    entry.attribute.attribute.span.start,
+                    message,
+                )
+            })?;
+    }
     let failure = || {
         Error::at(
             entry.owner.file,
@@ -75,17 +87,12 @@ impl Report {
         let source = self.package.source_core().ok_or_else(failure)?;
         source
             .macros
-            .charge(
-                1 + transactions.entries.len().checked_ilog2().unwrap_or(0) as usize,
-                0,
-            )
+            .charge(1, 0)
             .map_err(|message| Error::at(owner.file, 0, message))?;
-        let position = transactions
-            .entries
-            .binary_search_by_key(&(owner.file.0, effect), |entry| {
-                (entry.owner.file.0, entry.effect)
-            })
-            .map_err(|_| failure())?;
+        let position = *transactions
+            .index
+            .get(&(owner.file, effect))
+            .ok_or_else(failure)?;
         let entry = &transactions.entries[position];
         current(&self.package, entry, true)?;
         if entry.owner != owner || entry.output.is_none() {
@@ -127,14 +134,23 @@ impl Report {
                 invocations: &self.invocations,
                 facts: &self.resolution,
             };
-            let definition = view.definition(member.definition)?;
-            if !matches!(
-                definition.body,
-                Body::Builtin(Builtin::Copy | Builtin::Clone)
-            ) {
+            let definition = self
+                .definitions
+                .get(member.definition)
+                .ok_or_else(failure)?;
+            let Body::Builtin(role @ (Builtin::Copy | Builtin::Clone)) = definition.body else {
+                return Err(failure());
+            };
+            let node = definition.node.ok_or_else(failure)?;
+            let header =
+                panic_contracts::published(&self.package, node, definition.header.as_ref(), 1)?;
+            if header.builtin != Some(role)
+                || header.edition != definition.edition
+                || !view.executed(member.context, definition)
+            {
                 return Err(failure());
             }
-            view.frame(member.context)?;
+            // No non-Bang allowance frame or feature grant is created here.
         }
         Ok(())
     }

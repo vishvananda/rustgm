@@ -96,9 +96,9 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Erro
                 )?;
                 continue;
             }
-            if report.package.source_core().is_some() {
+            if report.package.uses_source_bindings() {
                 return Err(error(
-                    "source derive requires its actual completed expansion",
+                    "source derive requires its actual completed local expansion",
                 ));
             }
             derive(

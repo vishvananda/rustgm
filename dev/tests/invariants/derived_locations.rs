@@ -61,6 +61,7 @@ fn actual_location_derives_reach_source_clone_field_obligations_and_lowering() -
 
 #[test]
 fn list_failures_and_changed_capture_image_owner_cannot_consume_derives() -> TestResult {
+    client_derive_is_closed()?;
     let source = test_source::fixture(PROVIDER)?;
     for (name, mutated) in [
         (
@@ -95,7 +96,8 @@ fn list_failures_and_changed_capture_image_owner_cannot_consume_derives() -> Tes
             Ok(())
         })?;
     }
-    let mut report = test_source::source_provider(&source, "location_replay")?;
+    let mut report = expanded_provider(&source, "location_replay")?;
+    assert!(!report.names_resolved);
     let (owner, effect, capture) = {
         let entry = &report
             .attribute_effects
@@ -127,9 +129,8 @@ fn list_failures_and_changed_capture_image_owner_cannot_consume_derives() -> Tes
         .contexts
         .start;
     let definition = report.invocations[member].definition;
-    let original_role = match report.definitions[definition].body {
-        Body::Builtin(role) => role,
-        _ => return Err("actual source role".into()),
+    let Body::Builtin(original_role) = report.definitions[definition].body else {
+        return Err("actual source role".into());
     };
     report.definitions[definition].body = Body::Builtin(Builtin::Line);
     assert!(report.expanded_derive(owner, effect).is_err());
@@ -157,6 +158,7 @@ fn list_failures_and_changed_capture_image_owner_cannot_consume_derives() -> Tes
 
 #[test]
 fn marker_shape_ordinary_storage_and_derive_owner_layouts_preserve_boundaries() -> TestResult {
+    trivial_role_headers()?;
     for (source, accept) in [
         (
             "#![feature(marker_trait_attr)]#[marker]trait M<'a>{}impl<'a>M<'a>for u8{}",
@@ -232,5 +234,133 @@ fn marker_shape_ordinary_storage_and_derive_owner_layouts_preserve_boundaries() 
         assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
         Ok(())
     })?;
+    Ok(())
+}
+
+fn client_derive_is_closed() -> TestResult {
+    use crate::{
+        resolve,
+        support::{
+            bindings::Mode,
+            crates::{self, CrateIdentity, Dependencies, Dependency},
+        },
+    };
+    let text =
+        test_source::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?;
+    let provider = test_source::source_provider(&text, "derive_provider")?;
+    let identity = provider
+        .package
+        .source_core()
+        .ok_or("actual provider")?
+        .provider
+        .clone();
+    let mut analysis = crate::pipeline::analyze_source(&provider)?;
+    let (_, interface) = crate::lower::instances::build_library_prepared(
+        &provider,
+        &mut analysis.facts,
+        identity.clone(),
+        analysis.prepared,
+    )?;
+    let interface = crates::decode(&crates::encode(&interface)?)?;
+    let dependencies = Arc::new(Dependencies::new(
+        vec![interface],
+        vec![Dependency::new("base".into(), identity.clone())?],
+    )?);
+    let context = resolve::bindings::Context {
+        crate_name: Some("derive_client".into()),
+        current: Some(CrateIdentity::new("derive_client", "v1")?),
+        dependencies: Some(dependencies),
+        mode: Mode::SourceClient { provider: identity },
+    };
+    let source = "#![feature(no_core)]#![no_core]extern crate base;#[derive(Copy,Clone)]struct D;";
+    let expanded = resolve::expansion::analyze_with_context(
+        resolve::load::InputFile {
+            identity: "derive-client.rs".into(),
+            path: "derive-client.rs".into(),
+            source: crate::support::source::SourceFile::new(source.as_bytes().to_vec())?,
+        },
+        &mut super::super::role_declarations::NoFiles,
+        &crate::expand::config::Config::default(),
+        &context,
+    )?;
+    let report = resolve::analyze_expanded(expanded)?;
+    assert!(report.package.source_client().is_some());
+    let error = crate::pipeline::analyze_source(&report)
+        .err()
+        .ok_or("foreign derive used bootstrap properties")?;
+    assert!(
+        error
+            .message
+            .contains("source derive requires its actual completed local expansion"),
+        "{error}"
+    );
+    Ok(())
+}
+
+fn expanded_provider(source: &str, tag: &str) -> TestResult<super::super::Report> {
+    use crate::{
+        resolve,
+        support::{bindings::Mode, crates::CrateIdentity, source::SourceFile},
+    };
+    let identity = CrateIdentity::new("minicore", tag)?;
+    let context = resolve::bindings::Context {
+        crate_name: Some("minicore".into()),
+        current: Some(identity.clone()),
+        mode: Mode::Source { provider: identity },
+        ..Default::default()
+    };
+    Ok(resolve::expansion::analyze_with_context(
+        resolve::load::InputFile {
+            identity: "location-expansion.rs".into(),
+            path: "location-expansion.rs".into(),
+            source: SourceFile::new(source.as_bytes().to_vec())?,
+        },
+        &mut super::super::role_declarations::NoFiles,
+        &crate::expand::config::Config::default(),
+        &context,
+    )?)
+}
+
+fn trivial_role_headers() -> TestResult {
+    let prefix = test_source::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?
+        .replace("#![feature(no_core,lang_items,rustc_attrs,fundamental)]", "#![feature(no_core,lang_items,rustc_attrs,fundamental,const_trait_impl,marker_trait_attr)]")
+        .replace("pub trait Clone: Sized", "pub const trait Clone: Sized");
+    // Authored header reducers isolate structural role validation. The complete
+    // Location source above retains all original stability attributes and its
+    // required execution control is never replaced with these header checks.
+    let declaration =
+        "#[lang=\"trivial_clone\"]#[marker]pub const unsafe trait Renamed:[const]Clone{}";
+    let report = test_source::source_provider(&(prefix.clone() + declaration), "trivial_header")?;
+    let facts = crate::sema::declarations::analyze(&report)?;
+    let claimed = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("catalog")?
+        .validated_language(LangItem::TrivialClone)?
+        .ok_or("actual TrivialClone role")?;
+    assert_eq!(
+        report
+            .package
+            .names
+            .get(report.resolution.definitions[claimed.definition.0 as usize].name),
+        "Renamed"
+    );
+    assert_eq!(LangItem::TrivialClone.index(), 34);
+    assert_eq!(
+        crate::sema::compiler_items::role_bit(LangItem::TrivialClone),
+        1_u64 << 34
+    );
+    for malformed in [
+        declaration.replace("unsafe trait", "trait"),
+        declaration.replace("const unsafe", "unsafe"),
+        declaration.replace("#[marker]", ""),
+        declaration.replace("[const]Clone", "Clone"),
+    ] {
+        let report = test_source::source_provider(&(prefix.clone() + &malformed), "wrong_trivial")?;
+        assert!(
+            crate::sema::declarations::analyze(&report).is_err(),
+            "{malformed}"
+        );
+    }
     Ok(())
 }

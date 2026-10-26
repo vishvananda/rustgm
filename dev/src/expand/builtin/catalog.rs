@@ -180,8 +180,7 @@ impl Builtin {
         }
     }
     pub(crate) const fn frame_eligible(self) -> bool {
-        (matches!(self.kind(), BuiltinKind::Bang) || matches!(self, Self::Copy | Self::Clone))
-            && self.executable()
+        matches!(self.kind(), BuiltinKind::Bang) && self.executable()
     }
     #[must_use]
     pub const fn kind(self) -> BuiltinKind {

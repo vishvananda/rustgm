@@ -3,7 +3,7 @@ use super::*;
 use crate::support::{bindings::Mode, crates::CrateIdentity, source::SourceFile};
 use std::path::Path;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
-struct NoFiles;
+pub(super) struct NoFiles;
 impl Sources for NoFiles {
     fn read(&mut self, _: &Path) -> Result<Option<InputFile>, String> {
         Ok(None)

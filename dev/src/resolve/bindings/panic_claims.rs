@@ -32,7 +32,7 @@ pub(super) fn validate(
         return Ok(());
     }
     let function = match role {
-        LangItem::Not => false,
+        LangItem::Not | LangItem::TrivialClone => false,
         LangItem::Panic
         | LangItem::PanicFmt
         | LangItem::PanicImpl
@@ -61,7 +61,7 @@ pub(super) fn validate(
         return Err(error(
             package,
             declaration.origin,
-            "source Not role requires an actual trait",
+            "source language operator or cloning marker requires an actual trait",
         ));
     }
     Ok(())

@@ -102,6 +102,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         LangItem::Clone,
         LangItem::Copy,
         LangItem::LegacyReceiver,
+        LangItem::TrivialClone,
         LangItem::Tuple,
         LangItem::FnOnce,
         LangItem::FnMut,
@@ -127,6 +128,8 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
                 &header,
                 &mut complete.roles,
             )?,
+            LangItem::TrivialClone => copying::validate_trivial(facts, catalog, &header)
+                .map_err(|message| Declarations::error(report, declaration.origin, message))?,
             LangItem::Tuple => validate_marker(report, facts, declaration)?,
             LangItem::Freeze => freezing::validate(report, facts, declaration)?,
             LangItem::Unsize | LangItem::CoerceUnsized => {
@@ -262,7 +265,12 @@ fn header<'a>(
     } else {
         matches!(
             role,
-            LangItem::FnOnce | LangItem::FnMut | LangItem::Fn | LangItem::Drop | LangItem::Destruct
+            LangItem::FnOnce
+                | LangItem::FnMut
+                | LangItem::Fn
+                | LangItem::Drop
+                | LangItem::Destruct
+                | LangItem::TrivialClone
         )
     };
     let expected = usize::from(matches!(
@@ -277,7 +285,7 @@ fn header<'a>(
         .profile(
             &facts.types,
             super::headers::Flags {
-                unsafe_: role == LangItem::Freeze,
+                unsafe_: matches!(role, LangItem::Freeze | LangItem::TrivialClone),
                 constant,
                 auto_: role == LangItem::Freeze,
             },

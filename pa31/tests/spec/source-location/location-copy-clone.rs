@@ -1,4 +1,5 @@
-#![feature(intrinsics,pattern_types,decl_macro,marker_trait_attr,freeze_impls)]
+#![feature(intrinsics,pattern_types,decl_macro,marker_trait_attr,freeze_impls,allow_internal_unstable,staged_api)]
+#![unstable(feature="location_fixture",issue="none")]
 #![rustc_coherence_is_core]#![feature(no_core,lang_items,rustc_attrs,const_trait_impl,const_destruct,fundamental,auto_traits)]
 #![no_core]
 #![allow(internal_features,dead_code,unused_variables)]
@@ -53,6 +54,8 @@ pub trait LegacyReceiver: PointeeSized {
 impl<T: PointeeSized> LegacyReceiver for &T {}
 
 impl<T: PointeeSized> LegacyReceiver for &mut T {}
+#[unstable(feature = "const_destruct", issue = "133214")]
+#[rustc_const_unstable(feature = "const_destruct", issue = "133214")]
 #[lang = "destruct"]
 #[diagnostic::on_unimplemented(message = "can't drop `{Self}`")]
 #[rustc_deny_explicit_impl]
@@ -60,9 +63,11 @@ impl<T: PointeeSized> LegacyReceiver for &mut T {}
 pub const trait Destruct: PointeeSized {}
 #[lang = "freeze"]
 pub unsafe auto trait Freeze {}
+#[stable(feature = "rust1", since = "1.0.0")]
 #[lang = "clone"]
 #[rustc_diagnostic_item = "Clone"]
 #[rustc_trivial_field_reads]
+#[rustc_const_unstable(feature = "const_clone", issue = "142757")]
 pub const trait Clone: Sized {
     /// Returns a duplicate of the value.
     ///
@@ -103,6 +108,7 @@ pub const trait Clone: Sized {
     #[must_use = "cloning is often expensive and is not expected to have side effects"]
     // Clone::clone is special because the compiler generates MIR to implement it for some types.
     // See InstanceKind::CloneShim.
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[lang = "clone_fn"]
     fn clone(&self) -> Self;
 
@@ -112,6 +118,7 @@ pub const trait Clone: Sized {
     /// but can be overridden to reuse the resources of `a` to avoid unnecessary
     /// allocations.
     #[inline]
+    #[stable(feature = "rust1", since = "1.0.0")]
     fn clone_from(&mut self, source: &Self)
     where
         Self: [const] Destruct,
@@ -119,6 +126,7 @@ pub const trait Clone: Sized {
         *self = source.clone()
     }
 }
+#[stable(feature = "rust1", since = "1.0.0")]
 #[lang = "copy"]
 #[rustc_diagnostic_item = "Copy"]
 pub trait Copy: Clone {
@@ -135,12 +143,20 @@ pub const fn identity<T>(x: T) -> T {
 #[lang="drop_glue"]pub(crate) const unsafe fn drop_glue<T:PointeeSized>(_:&mut T)where T:[const]Destruct{}
 
 
-pub mod intrinsics { #[rustc_intrinsic]pub const unsafe fn transmute<Src,Dst>(src:Src)->Dst; }
+pub mod intrinsics {
+    #[stable(feature = "rust1", since = "1.0.0")]
+    #[rustc_const_stable(feature = "const_transmute", since = "1.56.0")]
+    #[rustc_intrinsic]pub const unsafe fn transmute<Src,Dst>(src:Src)->Dst;
+}
 
 
 // Actual source raw-pointer copying declarations (core marker.rs/clone.rs).
+#[stable(feature = "rust1", since = "1.0.0")]
+#[rustc_const_unstable(feature = "const_clone", issue = "142757")]
 const impl<T:PointeeSized> Clone for *const T { fn clone(&self)->Self { *self } }
 impl<T:PointeeSized> Copy for *const T {}
+#[stable(feature = "rust1", since = "1.0.0")]
+#[rustc_const_unstable(feature = "const_clone", issue = "142757")]
 const impl<T:PointeeSized> Clone for *mut T { fn clone(&self)->Self { *self } }
 impl<T:PointeeSized> Copy for *mut T {}
 // Authored reduced real Pointee/Metadata owner, independently qualified by C;
@@ -208,22 +224,34 @@ impl Clone for u32 { fn clone(&self)->Self { *self } }
 impl Copy for u32 {}
 
 // Genuine source compiler declarations; placeholder macro bodies are never run.
+#[stable(feature = "rust1", since = "1.0.0")]
 #[rustc_builtin_macro]
 pub macro derive($item:item) {}
 pub mod marker {
     pub use crate::{Copy, PhantomData};
     #[rustc_builtin_macro]
+    #[stable(feature = "builtin_macro_prelude", since = "1.38.0")]
+    #[allow_internal_unstable(core_intrinsics, derive_clone_copy_internals)]
     pub macro Copy($item:item) {}
 }
 pub mod clone {
     use crate::PointeeSized;
     pub use crate::Clone;
+    #[unstable(feature = "trivial_clone", reason = "this isn't part of any API guarantee", issue = "none")]
+    #[rustc_const_unstable(feature = "const_clone", issue = "142757")]
+    #[lang = "trivial_clone"]
+    #[rustc_unsafe_specialization_marker]
     #[marker]
     pub const unsafe trait TrivialClone: [const] Clone {}
+    #[doc(hidden)]
+    #[allow(missing_debug_implementations)]
+    #[unstable(feature = "derive_clone_copy_internals", reason = "deriving hack, should not be public", issue = "none")]
     pub struct AssertParamIsClone<T: Clone + PointeeSized> {
         _field: crate::marker::PhantomData<T>,
     }
     #[rustc_builtin_macro]
+    #[stable(feature = "builtin_macro_prelude", since = "1.38.0")]
+    #[allow_internal_unstable(core_intrinsics, derive_clone_copy_internals, trivial_clone)]
     pub macro Clone($item:item) {}
 }
 pub mod location {
@@ -233,6 +261,7 @@ pub mod location {
     // Selected pinned panic/location.rs38-46 declaration and derive list.
     #[lang = "panic_location"]
     #[derive(Copy, Clone)]
+    #[stable(feature = "panic_hooks", since = "1.10.0")]
     pub struct Location<'a> {
         filename: NonNull<str>,
         line: u32,

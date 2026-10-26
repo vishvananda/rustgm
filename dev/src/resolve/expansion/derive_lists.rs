@@ -11,8 +11,8 @@ use super::{
 use crate::{
     expand::configured::{ConfiguredAttribute, Effect},
     lex::token::Punctuation,
-    resolve::bindings::panic_contracts,
-    support::source::OriginalImage,
+    resolve::{bindings::panic_contracts, unit::FileId},
+    support::{hash::HashMap, source::OriginalImage},
     syntax::{
         attribute::Input,
         token_tree::{Tree, TreeRange},
@@ -23,6 +23,7 @@ use std::{ops::Range, sync::Arc};
 #[derive(Default)]
 pub(super) struct Transactions {
     entries: Vec<Transaction>,
+    index: HashMap<(FileId, usize), usize>,
 }
 struct Transaction {
     outer: usize,
@@ -44,13 +45,14 @@ impl<S: Sources> Engine<'_, S> {
         self.derive_position(index).is_some()
     }
     fn derive_position(&self, index: usize) -> Option<usize> {
-        self.attribute_effects
-            .as_deref()?
-            .derives
-            .as_deref()?
+        let call = self.calls.get(index)?;
+        let owner = self.attribute_effects.as_deref()?.derives.as_deref()?;
+        let position = *owner.index.get(&(call.file, call.capture as usize))?;
+        owner
             .entries
-            .binary_search_by_key(&index, |entry| entry.outer)
-            .ok()
+            .get(position)
+            .filter(|entry| entry.outer == index)
+            .map(|_| position)
     }
     fn derive_entry(&self, index: usize) -> Result<&Transaction, Error> {
         let position = self
@@ -125,12 +127,26 @@ impl<S: Sources> Engine<'_, S> {
             self.queue_derive_member(index, context, range)?;
         }
         transaction.children = first..self.calls.len();
-        self.attribute_effects
+        let owner = self
+            .attribute_effects
             .get_or_insert_default()
             .derives
-            .get_or_insert_default()
-            .entries
-            .push(transaction);
+            .get_or_insert_default();
+        owner
+            .index
+            .try_reserve(1)
+            .map_err(|_| Error::unlocated("derive effect index allocation failed"))?;
+        if owner
+            .index
+            .insert(
+                (transaction.owner.file, transaction.effect),
+                owner.entries.len(),
+            )
+            .is_some()
+        {
+            return Err(Error::unlocated("duplicate derive effect transaction"));
+        }
+        owner.entries.push(transaction);
         self.calls[index].selected = Some(definition);
         self.calls[index].state = State::InProgress;
         if first == self.calls.len() {
@@ -158,6 +174,7 @@ impl<S: Sources> Engine<'_, S> {
                 size_of::<Transactions>()
                     + size_of::<super::attribute_effects::Effects>()
                     + 4 * size_of::<Transaction>()
+                    + crate::support::retained::new_map::<(FileId, usize), usize>(1)
                     + (actual
                         .attribute
                         .attribute

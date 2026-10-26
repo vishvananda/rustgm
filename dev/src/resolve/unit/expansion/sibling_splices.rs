@@ -224,7 +224,7 @@ impl Plan {
             .iter()
             .map(Vec::len)
             .chain(rewrites.iter().map(|rewrite| rewrite.children.len()))
-            .try_fold(0_usize, |total, next| total.checked_add(next))
+            .try_fold(0_usize, usize::checked_add)
             .ok_or_else(|| error(0, "derive splice edge overflow"))?;
         if ast
             .edges
@@ -257,7 +257,7 @@ fn group_outputs(
 ) -> Result<(Vec<NodeId>, Vec<Vec<NodeId>>), LexError> {
     let mut owners = Vec::new();
     let mut groups = Vec::new();
-    for &(owner, generated) in outputs.iter() {
+    for &(owner, generated) in outputs {
         if owners.last() != Some(&owner) {
             owners.push(owner);
             groups.push(vec![owner]);

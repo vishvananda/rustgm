@@ -36,15 +36,9 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                 super::removed_owners::collect(report, facts, owner_key)?;
                 continue;
             }
-            let mut node = owner.node;
-            while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
-                node = value;
-            }
-            let key = NodeKey { file, node };
+            let (key, supported) = declaration(unit, owner_key);
             crate::sema::header_attributes::observe_owner(report, facts, owner_key, key)?;
             crate::sema::specialization::observe_owner(report, facts, owner_key, key)?;
-            let supported = matches!(unit.configured.ast.node(node).kind, Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
-                ItemKind::Function { .. } | ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. } | ItemKind::Trait { .. }));
             for effect in owner.attributes.clone() {
                 let Some((attribute, forest)) = unit.retained_attributes(effect..effect + 1).next()
                 else {
@@ -124,6 +118,16 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
     bind_definitions(report, facts, &by_source)?;
     crate::sema::specialization::finish(facts)?;
     complete_imports(report, facts)
+}
+fn declaration(unit: &crate::resolve::unit::Unit, owner: NodeKey) -> (NodeKey, bool) {
+    let mut node = owner.node;
+    while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
+        node = value;
+    }
+    let key = NodeKey { node, ..owner };
+    let supported = matches!(unit.configured.ast.node(node).kind, Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
+                ItemKind::Function { .. } | ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. } | ItemKind::Trait { .. }));
+    (key, supported)
 }
 fn complete_imports(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     crate::sema::header_attributes::prepare_imported(report, facts)?;

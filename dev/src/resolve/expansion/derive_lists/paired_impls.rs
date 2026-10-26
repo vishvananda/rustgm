@@ -66,12 +66,11 @@ impl<S: Sources> Engine<'_, S> {
             let definition = self.calls[child].selected.ok_or_else(|| {
                 self.calls[child].diagnostic("derive member has no actual selected definition")
             })?;
-            let role = match self.definitions[definition].body {
-                Body::Builtin(role @ (Builtin::Copy | Builtin::Clone)) => role,
-                _ => {
-                    return Err(self.calls[child]
-                        .diagnostic("this source derive has no executable member consumer"));
-                }
+            let Body::Builtin(role @ (Builtin::Copy | Builtin::Clone)) =
+                self.definitions[definition].body
+            else {
+                return Err(self.calls[child]
+                    .diagnostic("this source derive has no executable member consumer"));
             };
             self.checked_derive_definition(definition, role)?;
             let slot = usize::from(role == Builtin::Clone);
@@ -254,15 +253,6 @@ impl<S: Sources> Engine<'_, S> {
                 .attach_derived(&mut items, &charge)
                 .map_err(|failure| Error::at(file, failure.offset, failure.message))?;
             start = end;
-        }
-        if let Some(transactions) = self
-            .attribute_effects
-            .as_deref_mut()
-            .and_then(|effects| effects.derives.as_deref_mut())
-        {
-            transactions
-                .entries
-                .sort_unstable_by_key(|entry| (entry.owner.file.0, entry.effect));
         }
         Ok(())
     }
