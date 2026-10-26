@@ -102,8 +102,9 @@ mod wf_graph_work;
 #[path = "../../../../tests/invariants/wf_scope_cache.rs"]
 mod wf_scope_cache;
 pub(in crate::sema) use suspension::{
-    Pending, Progress, begin, begin_canonical, begin_executable_counted, begin_normalized,
-    begin_projection, begin_refining, begin_refining_untouched, begin_scoped_refining,
+    Pending, Progress, begin, begin_canonical, begin_declaration_counted, begin_executable_counted,
+    begin_normalized, begin_projection, begin_refining, begin_refining_untouched,
+    begin_scoped_refining,
 };
 #[cfg(test)]
 #[path = "../../../../tests/invariants/universal_premises.rs"]

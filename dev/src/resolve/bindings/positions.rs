@@ -222,6 +222,7 @@ fn item(kind: ItemKind, child: NodeId) -> Position {
         | ItemKind::Enum { .. }
         | ItemKind::Union { .. }
         | ItemKind::Trait { .. }
+        | ItemKind::TraitAlias { .. }
         | ItemKind::Impl { .. }
         | ItemKind::TypeAlias { .. }
         | ItemKind::Module { .. }

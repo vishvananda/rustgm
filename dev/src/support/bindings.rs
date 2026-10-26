@@ -37,9 +37,15 @@ pub enum LangItem {
     CoerceUnsized,
     FormatArguments,
     FormatArgument,
+    Not,
+    Panic,
+    PanicFmt,
+    PanicImpl,
+    PanicDisplay,
+    ConstPanicFmt,
 }
 impl LangItem {
-    pub const ALL: [Self; 22] = [
+    pub const ALL: [Self; 28] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -62,6 +68,12 @@ impl LangItem {
         Self::CoerceUnsized,
         Self::FormatArguments,
         Self::FormatArgument,
+        Self::Not,
+        Self::Panic,
+        Self::PanicFmt,
+        Self::PanicImpl,
+        Self::PanicDisplay,
+        Self::ConstPanicFmt,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -88,6 +100,12 @@ impl LangItem {
             Self::CoerceUnsized => 19,
             Self::FormatArguments => 20,
             Self::FormatArgument => 21,
+            Self::Not => 22,
+            Self::Panic => 23,
+            Self::PanicFmt => 24,
+            Self::PanicImpl => 25,
+            Self::PanicDisplay => 26,
+            Self::ConstPanicFmt => 27,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -116,6 +134,12 @@ impl LangItem {
             "coerce_unsized" => Some(Self::CoerceUnsized),
             "format_arguments" => Some(Self::FormatArguments),
             "format_argument" => Some(Self::FormatArgument),
+            "not" => Some(Self::Not),
+            "panic" => Some(Self::Panic),
+            "panic_fmt" => Some(Self::PanicFmt),
+            "panic_impl" => Some(Self::PanicImpl),
+            "panic_display" => Some(Self::PanicDisplay),
+            "const_panic_fmt" => Some(Self::ConstPanicFmt),
             _ => None,
         }
     }
@@ -146,12 +170,15 @@ pub enum SourceIntrinsic {
     NeedsDrop,
     ConstEvalSelect,
     UbChecks,
+    Abort,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
-        if name == "const_eval_select" {
+        if name == "abort" {
+            Some(Self::Abort)
+        } else if name == "const_eval_select" {
             Some(Self::ConstEvalSelect)
         } else if name == "needs_drop" {
             Some(Self::NeedsDrop)
