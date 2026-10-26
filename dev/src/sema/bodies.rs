@@ -2,6 +2,7 @@
 mod aggregates;
 mod alignment;
 mod annotations;
+mod api_stability;
 mod atomic_ordering;
 mod bounds;
 mod callee_inputs;
@@ -16,7 +17,6 @@ mod discarded_results;
 mod divergence;
 mod dot_calls;
 mod effect_facts;
-mod library_policy;
 pub(super) use effect_facts::CallContexts;
 pub use effect_facts::SourceCallUse;
 mod environment_values;

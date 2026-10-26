@@ -1,7 +1,7 @@
 //! Scope and import ownership comes from the resolved graph, never name spelling.
 use super::{
     Draft, PolicyId,
-    const_policies::{ConstPolicies, Frame, Role},
+    constness::{ConstPolicies, Frame, Role},
 };
 use crate::{
     resolve::{
