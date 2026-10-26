@@ -178,6 +178,12 @@ impl Checker<'_> {
                 self.trait_override_contract(owner, predicate, expected, actual, definitions)?;
                 result.push((expected.definition, Some(actual.definition)));
             } else if has_body
+                || crate::sema::specialization::inherited_body(
+                    &self.facts,
+                    owner,
+                    expected.definition,
+                )
+                .map_err(|error| self.error(source, error))?
                 || self
                     .facts
                     .associated
@@ -200,6 +206,7 @@ impl Checker<'_> {
         definitions: &conformance::Definitions,
     ) -> Result<(), Error> {
         self.trait_override(actual)?;
+        self.reject_specializable_result(expected.definition, actual)?;
         if self
             .facts
             .methods

@@ -93,6 +93,9 @@ impl Ordinary {
                         crate::support::bindings::SourceIntrinsic::ConstEvalSelect => {
                             "source callback selection requires its proved reached runtime operation"
                         }
+                        crate::support::bindings::SourceIntrinsic::Abort => {
+                            "source abort requires its proved reached runtime operation"
+                        }
                         crate::support::bindings::SourceIntrinsic::UbChecks => {
                             "source ub_checks requires its proved direct runtime operation"
                         }

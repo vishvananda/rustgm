@@ -463,7 +463,9 @@ fn emit_lowir(
                 &mut facts,
                 identity,
                 prepared,
-                rustgm::lower::instances::SourcePublication::FunctionContracts,
+                crates
+                    .source_profile
+                    .unwrap_or(rustgm::lower::instances::SourcePublication::FunctionContracts),
             )
         } else {
             rustgm::lower::instances::build_library_prepared(

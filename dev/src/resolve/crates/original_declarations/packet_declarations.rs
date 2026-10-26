@@ -1,5 +1,6 @@
 //! Genuine source declarations are staged before any role or catalog publication.
 mod installed_bindings;
+mod namespace_catalog;
 mod scope_rows;
 use super::{Error, Imported, Interface, Resolver, ScopeId, Work, error, g};
 use crate::{
@@ -10,6 +11,7 @@ use crate::{
     },
     support::crates::{ExternalDef, ExternalKind, generics::source as s},
 };
+pub(crate) use namespace_catalog::{OwnedNamespaceCatalog, PendingNamespace};
 
 #[derive(Clone, Copy)]
 pub(super) struct Reservation<'a> {
@@ -83,8 +85,8 @@ fn catalog_input(
     work: &mut Work,
 ) -> Result<Input, Error> {
     let rows = context.rows;
-    let (declarations, declaration_labels) = declaration_sites(rows, work)?;
-    let (bindings, labels) = body_sites(rows, work)?;
+    let (declarations, declaration_labels) = declaration_sites(&rows, work)?;
+    let (bindings, labels) = body_sites(&rows, rows.body_owners().len(), work)?;
     Ok(Input {
         owners: context.payload.owners().clone(),
         edition: rows.policy.edition,
@@ -105,8 +107,12 @@ fn reserve_definitions(
     work: &mut Work,
 ) -> Result<Vec<DefId>, Error> {
     let (definitions, owners) = declarations(resolver, scope, artifact, rows, imported, work)?;
-    let body_scopes = scope_rows::bodies(resolver, rows, &owners, work)?;
-    scope_rows::assign(resolver, rows, &definitions, &owners, &body_scopes, work)?;
+    let body_scopes = scope_rows::bodies(resolver, &rows, &owners, rows.body_owners().len(), work)?;
+    if rows.descriptor().profile() == s::Profile::Source2024ModuleContracts {
+        scope_rows::namespace_assign(resolver, &rows, &definitions, &owners, &body_scopes, work)?;
+    } else {
+        scope_rows::assign(resolver, &rows, &definitions, &owners, &body_scopes, work)?;
+    }
     Ok(definitions)
 }
 pub(super) fn unpaid_input(
@@ -179,7 +185,9 @@ fn declarations(
             definitions.push(root);
             continue;
         }
-        if row.definition.kind == s::DefinitionKind::Module {
+        if row.definition.kind == s::DefinitionKind::Module
+            && rows.descriptor().profile() != s::Profile::Source2024ModuleContracts
+        {
             return Err(error(
                 "nested source modules require a wider source namespace profile",
             ));
@@ -209,7 +217,12 @@ fn declarations(
         });
         definitions.push(definition);
     }
-    let owners = scope_rows::owners(resolver, scope, root_index, rows, work)?;
+    let owners = if rows.descriptor().profile() == s::Profile::Source2024ModuleContracts {
+        rows.module_contracts().map_err(error)?;
+        scope_rows::namespace_owners(resolver, scope, root_index, &rows, work)?
+    } else {
+        scope_rows::owners(resolver, scope, root_index, &rows, work)?
+    };
     Ok((definitions, owners))
 }
 pub(super) fn kind(kind: s::DefinitionKind) -> (DefKind, Namespace) {
@@ -291,7 +304,7 @@ fn preflight(
     Ok(())
 }
 fn declaration_sites(
-    rows: s::ValidatedView<'_>,
+    rows: &s::Columns,
     work: &mut Work,
 ) -> Result<(Vec<DeclarationBinding>, Vec<Option<Label>>), Error> {
     let mut bindings = Vec::with_capacity(rows.declarations.len());
@@ -312,10 +325,11 @@ fn declaration_sites(
     Ok((bindings, labels))
 }
 fn body_sites(
-    rows: s::ValidatedView<'_>,
+    rows: &s::Columns,
+    body_count: usize,
     work: &mut Work,
 ) -> Result<(Vec<BodyBinding>, Vec<Option<Label>>), Error> {
-    let mut counts = vec![None; rows.body_owners().len()];
+    let mut counts = vec![None; body_count];
     for body in &rows.originals {
         work.charge(1)?;
         let slot = counts

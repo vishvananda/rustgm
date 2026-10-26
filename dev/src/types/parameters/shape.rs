@@ -245,22 +245,16 @@ impl Shapes {
                 .cached(child, cache_depth(types, child, depth))
                 .ok_or("missing child shape")?;
             value.well_formed &= properties.well_formed;
-            match kind {
-                Kind::Closure { environment, .. } if child == environment => {
-                    value.well_formed &= properties.sized;
-                }
-                Kind::Tuple(_) => {
-                    value.sized &= properties.sized;
-                    value.well_formed &= properties.sized
-                        || index + 1 == tuple_len
-                        || self.defers_sized(types, child, depth)?;
-                }
-                Kind::Array { .. } | Kind::ArrayTerm { .. } | Kind::Slice(_) => {
-                    value.sized &= properties.sized;
-                    value.well_formed &=
-                        properties.sized || self.defers_sized(types, child, depth)?;
-                }
-                _ => {}
+            if matches!(
+                kind,
+                Kind::Tuple(_) | Kind::Array { .. } | Kind::ArrayTerm { .. } | Kind::Slice(_)
+            ) {
+                value.sized &= properties.sized;
+            }
+            if requires_sized_edge(kind, index, tuple_len, child) {
+                value.well_formed &= properties.sized
+                    || (!matches!(kind, Kind::Closure { .. })
+                        && self.defers_sized(types, child, depth)?);
             }
             index += 1;
             Ok(())
@@ -509,6 +503,22 @@ fn argument_types(
         }
     }
     Ok(())
+}
+
+/// A formation edge, not a requirement on every generic argument or reference.
+/// Tuple tails and callable signature positions introduce no implicit Sized.
+pub(crate) fn requires_sized_edge(
+    kind: Kind,
+    index: usize,
+    tuple_len: usize,
+    child: TypeId,
+) -> bool {
+    match kind {
+        Kind::Closure { environment, .. } => environment == child,
+        Kind::Tuple(_) => index + 1 < tuple_len,
+        Kind::Array { .. } | Kind::ArrayTerm { .. } | Kind::Slice(_) => true,
+        _ => false,
+    }
 }
 
 #[cfg(test)]

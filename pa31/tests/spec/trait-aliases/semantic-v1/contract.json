@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "state": "frozen hypotheses before execution; no RustGM typed-alias claim",
+  "owner": "PA21 typed clauses/substitution; PA31 trait aliases/source semantics",
+  "source_pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "cases": [
+    {
+      "name": "where-parameter-implied",
+      "path": "pa31/tests/spec/trait-aliases/semantic-v1/where-parameter-implied.rs",
+      "sha256": "59e9d2a921cd6bd7577d7b003fa5d57b9dc52301a7f6a120ff8aa2b1487b3c05",
+      "predicted_status": 0,
+      "native": true,
+      "native_stdout": "7\n"
+    },
+    {
+      "name": "where-parameter-rejected",
+      "path": "pa31/tests/spec/trait-aliases/semantic-v1/where-parameter-rejected.rs",
+      "sha256": "488cae82823f33eed9ed2d70a4de32b4994e7fe2fe0d42c637e60673e4c5174a",
+      "predicted_status": 1,
+      "native": false,
+      "native_stdout": null
+    },
+    {
+      "name": "unused-missing-argument",
+      "path": "pa31/tests/spec/trait-aliases/semantic-v1/unused-missing-argument.rs",
+      "sha256": "36501538d4fec77b93a4cc283007349abb3df41b8b8b145a861749557445beb1",
+      "predicted_status": 1,
+      "native": false,
+      "native_stdout": null
+    },
+    {
+      "name": "unused-invalid-default",
+      "path": "pa31/tests/spec/trait-aliases/semantic-v1/unused-invalid-default.rs",
+      "sha256": "38037a022d3ae44b039fc7260038bb9066a50ae9b461a0a77f75519f0ba5b8b7",
+      "predicted_status": 1,
+      "native": false,
+      "native_stdout": null
+    },
+    {
+      "name": "quantified-alias",
+      "path": "pa31/tests/spec/trait-aliases/semantic-v1/quantified-alias.rs",
+      "sha256": "70b4f39546747263f7e1a19029f7b5b7f20d39471ff426c9149d6441934df76d",
+      "predicted_status": 0,
+      "native": true,
+      "native_stdout": "7\n"
+    },
+    {
+      "name": "nested-quantified-alias",
+      "path": "pa31/tests/spec/trait-aliases/semantic-v1/nested-quantified-alias.rs",
+      "sha256": "730a208e7d68f9d3c25b9ad490d5a37397eee9b7c2d003108fe43bee141adc09",
+      "predicted_status": 0,
+      "native": true,
+      "native_stdout": "7\n"
+    },
+    {
+      "name": "where-lifetime-implied",
+      "path": "pa31/tests/spec/trait-aliases/semantic-v1/where-lifetime-implied.rs",
+      "sha256": "542f65cc67fcd0c5f224cdc9393d8582591c4720de860ae88b98e418fc32aef6",
+      "predicted_status": 0,
+      "native": false,
+      "native_stdout": null
+    },
+    {
+      "name": "empty-unsized-self",
+      "path": "pa31/tests/spec/trait-aliases/semantic-v1/empty-unsized-self.rs",
+      "sha256": "bc8758d2a71f3d4705907f27fadc5b2ca1b2f03a5db5fcbfdc7a076001a312e0",
+      "predicted_status": 0,
+      "native": false,
+      "native_stdout": null
+    },
+    {
+      "name": "implicit-sized-argument",
+      "path": "pa31/tests/spec/trait-aliases/semantic-v1/implicit-sized-argument.rs",
+      "sha256": "c1b8acbbc22a376fef9e0830b78c73cce135b64be287b22d78c6ce09e98db66c",
+      "predicted_status": 1,
+      "native": false,
+      "native_stdout": null
+    },
+    {
+      "name": "relaxed-unsized-argument",
+      "path": "pa31/tests/spec/trait-aliases/semantic-v1/relaxed-unsized-argument.rs",
+      "sha256": "850827ed71f4d698697f2c30952e51f4174b1e24d286f6843ff71e330def88c6",
+      "predicted_status": 0,
+      "native": false,
+      "native_stdout": null
+    },
+    {
+      "name": "shared-diamond",
+      "path": "pa31/tests/spec/trait-aliases/semantic-v1/shared-diamond.rs",
+      "sha256": "b93df775ae7826ae6703363666e6b1a51776a051db332cebb2521159c05b4130",
+      "predicted_status": 0,
+      "native": true,
+      "native_stdout": "7\n"
+    },
+    {
+      "name": "static-alias-short-reference",
+      "path": "pa31/tests/spec/trait-aliases/semantic-v1/static-alias-short-reference.rs",
+      "sha256": "c11934352d8288872ccf4b51cf338059495806a954a5bf7fd65cd46ce06caf85",
+      "predicted_status": 1,
+      "native": false,
+      "native_stdout": null
+    }
+  ],
+  "metadata_commands": 24,
+  "native_build_commands": 8,
+  "native_executions": 8,
+  "total_commands": 40,
+  "reuse_existing_seed_observations": true
+}

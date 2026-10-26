@@ -39,8 +39,13 @@ impl Graph {
             .ok_or("source readiness declaration is outside its semantic cells")?;
         match raw.definition.kind {
             s::DefinitionKind::Module => {
-                if cell.is_some() || rows.header(row)?.is_some() || row != self.root_row {
-                    return Err("source module readiness requires its actual typeless root");
+                if cell.is_some() || rows.header(row)?.is_some() {
+                    return Err("source module readiness requires its actual typeless module");
+                }
+                if descriptor.profile() == s::Profile::Source2024ModuleContracts {
+                    descriptor.module_contracts()?.require_module(row)?;
+                } else if row != self.root_row {
+                    return Err("legacy source module readiness requires its actual root");
                 }
             }
             s::DefinitionKind::Trait => {
@@ -263,6 +268,44 @@ impl Graph {
         self.require_method_regions(catalog, definition, scheme, steps)?;
         Self::environment_ready(facts, definition, header, raw, rows)?;
         Self::scope_ready(facts, definition)
+    }
+
+    pub(in crate::sema::crates::typed_headers) fn require_method_environment(
+        &self,
+        catalog: &Catalog,
+        facts: &Declarations,
+        definition: DefId,
+        header: &super::super::Header,
+        steps: &mut usize,
+    ) -> Result<(), &'static str> {
+        *steps = steps.saturating_add(9);
+        self.require_store(&facts.types)?;
+        let descriptor = self.descriptor(catalog)?;
+        let declaration = catalog.declaration(definition)?;
+        catalog.validate_declaration(
+            declaration,
+            definition,
+            crate::resolve::model::DefKind::Function,
+        )?;
+        let (owner, row, _) = catalog.declaration_coordinate(declaration)?;
+        if owner != descriptor.identity()
+            || header.declaration
+                != crate::resolve::body_origin::DeclarationOrigin::Imported(declaration)
+            || !self.function(catalog, definition, header.body, header.universals)?
+        {
+            return Err("imported method environment changed its actual declaration/body owner");
+        }
+        let rows = descriptor.rows();
+        let Some(s::HeaderRef::Function(index)) = rows.header(row)? else {
+            return Err("imported method environment lacks its actual function row");
+        };
+        Self::environment_ready(
+            facts,
+            definition,
+            header,
+            &rows.functions[index as usize],
+            rows,
+        )
     }
 
     fn environment_ready(

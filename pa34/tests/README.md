@@ -36,3 +36,10 @@ programs. The candidate has matching source/lowering outcomes and native results
 its macro controls install exact token origins without claiming external macro
 metadata transport. See the [return capture development record](../../docs/pa34-return-editions.md).
 Full release and performance qualification remain pending; PA34 stays planned.
+
+`driver-edition-outcomes.json` records the focused explicit 2021/2024 source-option
+checkpoint, qualified in 40271012369. The existing typed edition preserves cfg
+and UB inputs; option order and unknown editions have actual CLI controls. A
+genuine no_core provider still fails the existing Rust2024 metadata-profile guard
+under 2021 without writing an artifact. This source option does not activate
+PA34, general edition orchestration or Rust2021 source metadata publication.
