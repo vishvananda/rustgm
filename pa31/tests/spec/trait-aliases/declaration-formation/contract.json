@@ -1,0 +1,50 @@
+{
+  "state": "predictions frozen before independent execution",
+  "source_pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "cases": [
+    {
+      "path": "pa31/tests/spec/trait-aliases/declaration-formation/invalid-trait-argument.rs",
+      "sha256": "61a1243b574cceecbbbe2d45d4087fdbb92c25c65b69c837494dd4eb4dc60d25",
+      "predicted_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/trait-aliases/declaration-formation/invalid-equality-result.rs",
+      "sha256": "428845bbbb7243f9ce70f9a4581a4fd9462ff9d50268c32dfde16326bd1d3e7e",
+      "predicted_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/trait-aliases/declaration-formation/invalid-inherited-argument.rs",
+      "sha256": "0a08ba08273d55e65869a0a5a76e1ba05652531d221e8f0e237faf6709a0771e",
+      "predicted_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/trait-aliases/declaration-formation/closed-missing-trait.rs",
+      "sha256": "15e8654e83b650139a705b4f49274699dd0ee778360dd4267a0d3e86b38633e1",
+      "predicted_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/trait-aliases/declaration-formation/valid-trait-argument.rs",
+      "sha256": "6269b98d8a2161f56dc594a8012f4375f497bb61f71bb1b1a7bd74f02b89f0ea",
+      "predicted_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/trait-aliases/declaration-formation/missing-lifetime-bound.rs",
+      "sha256": "cf2e3d7f0970248ffaa5d98c9cae09cc191d11365d3e6aeb19c7dc972e540ad2",
+      "predicted_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/trait-aliases/declaration-formation/valid-lifetime-bound.rs",
+      "sha256": "296e6e85e8ec0f92a865015455d95b12b6f60c96fc7fdb79b59cdd9c8c1e51ee",
+      "predicted_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/trait-aliases/declaration-formation/local-copy-consumer.rs",
+      "sha256": "328cdb48d124647b5398e9c23fee8aabecf451c8dfa4b7d1437727098daef726",
+      "predicted_status": 0
+    }
+  ]
+}

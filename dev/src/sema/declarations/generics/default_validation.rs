@@ -27,7 +27,7 @@ impl Checker<'_> {
             };
             if let crate::sema::associated::OwnerKind::Trait { definition, .. } = owner.kind {
                 let mut proof = self.declaration_proof(definition, None);
-                self.parameter_defaults(definition, owner.source, &mut proof, None)?;
+                self.parameter_defaults(definition, owner.source, &mut proof)?;
                 self.retain_trait_proof(definition, owner.source, &mut proof);
             }
         }
@@ -38,7 +38,6 @@ impl Checker<'_> {
         owner: DefId,
         key: NodeKey,
         proof: &mut Proof,
-        clauses: Option<&[crate::sema::generics::Predicate]>,
     ) -> Result<(), Error> {
         let parameters = self
             .facts
@@ -51,7 +50,7 @@ impl Checker<'_> {
         }
         let count = parameters.len();
         let subjects = self
-            .default_bound_subjects(owner, clauses)
+            .default_bound_subjects(owner)
             .map_err(|e| self.error(key, e))?;
         for index in 0..count {
             let parameter = self.facts.generics.parameters[&owner][index];
@@ -67,10 +66,7 @@ impl Checker<'_> {
             let mut replace = substitute::Bound::parameter_only(&self.facts.types, id, default)
                 .map_err(|e| self.error(source, e))?;
             for &index in subjects.get(&id).into_iter().flatten() {
-                let predicate = clauses.map_or_else(
-                    || self.facts.generics.predicates[&owner][index],
-                    |clauses| clauses[index],
-                );
+                let predicate = self.facts.generics.predicates[&owner][index];
                 let bound = replace
                     .clause(&mut self.facts.types, predicate.value)
                     .map_err(|e| self.error(source, e))?;
@@ -135,18 +131,16 @@ impl Checker<'_> {
     fn default_bound_subjects(
         &self,
         owner: DefId,
-        clauses: Option<&[crate::sema::generics::Predicate]>,
     ) -> Result<HashMap<ParameterId, Vec<usize>>, &'static str> {
         let mut result: HashMap<ParameterId, Vec<usize>> = HashMap::default();
         let mut subjects = HashMap::default();
         let mut uses = Sole::default();
-        let clauses = clauses.unwrap_or_else(|| {
-            self.facts
-                .generics
-                .predicates
-                .get(&owner)
-                .map_or(&[], Vec::as_slice)
-        });
+        let clauses = self
+            .facts
+            .generics
+            .predicates
+            .get(&owner)
+            .map_or(&[][..], Vec::as_slice);
         for (index, predicate) in clauses.iter().enumerate() {
             let original = self
                 .facts

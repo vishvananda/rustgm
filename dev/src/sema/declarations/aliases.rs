@@ -4,6 +4,7 @@ mod dependency_cycles;
 mod expansion;
 mod headers;
 mod mapping;
+mod unused_contracts;
 use super::{Checker, DefId, Error, NodeKey, regions};
 use crate::{
     resolve::{
@@ -36,7 +37,7 @@ struct Header {
     owner: Owner,
     started: bool,
     schema: Option<Schema>,
-    clauses: Option<Vec<Predicate>>,
+    completed: bool,
     edges: Vec<Edge>,
 }
 pub(super) struct Pending {
@@ -142,7 +143,7 @@ impl Pending {
             owner,
             started: false,
             schema: None,
-            clauses: None,
+            completed: false,
             edges: Vec::new(),
         });
         Ok(())
@@ -156,6 +157,12 @@ impl Pending {
     }
 }
 impl Checker<'_> {
+    pub(super) fn alias_schema(&self, owner: DefId) -> Option<&Schema> {
+        let pending = self.trait_aliases.as_ref()?;
+        let index = *pending.index.get(&owner)?;
+        pending.headers[index].schema.as_ref()
+    }
+
     pub(super) fn charge_alias_growth(&self, growth: Growth) -> Result<(), Error> {
         self.trait_aliases
             .as_ref()

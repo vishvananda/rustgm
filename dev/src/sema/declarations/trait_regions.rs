@@ -185,7 +185,11 @@ impl Checker<'_> {
         imply_signature: bool,
     ) -> Result<Constraints<'_>, String> {
         let function = self.facts.lifetimes.functions.get(&owner);
-        let schema = self.facts.associated.schema(owner);
+        let schema = self
+            .facts
+            .associated
+            .schema(owner)
+            .or_else(|| self.alias_schema(owner));
         let mut constraints = Constraints::new(
             &self.facts.types,
             &self.facts.lifetimes.variances,
@@ -242,6 +246,7 @@ impl Checker<'_> {
             .map(|f| f.total)
             .or_else(|| self.facts.associated.families.get(&owner).map(|f| f.total))
             .or_else(|| self.facts.associated.schema(owner).map(|s| s.captures))
+            .or_else(|| self.alias_schema(owner).map(|s| s.captures))
             .unwrap_or_else(|| {
                 self.nominal_regions
                     .get(&ItemId(owner.0))
