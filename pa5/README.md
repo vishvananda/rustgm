@@ -30,8 +30,11 @@ lifetimes, ABI strings and variadic declarations have typed records. Functions
 inside blocks use the same parser as top-level functions.
 
 An owner determines which item grammar is legal. Trait/impl bodies accept
-associated items and macro invocations. External blocks accept function/static
-declarations and macro invocations. Free and impl definitions require their
+associated items and macro invocations. External blocks accept function/static declarations, opaque `type NAME;`
+declarations and macro invocations. Opaque external types have a distinct typed
+item kind, accept no generics/bounds/where clause or definition, and retain the
+actual `type` token for the later `extern_types` gate. They are not an omitted
+type-alias definition. Free and impl definitions require their
 bodies or values; trait declarations may omit them; external declarations may
 not contain definitions. Name/type validity and context-dependent language
 restrictions beyond those grammar rules remain later responsibilities.

@@ -4,7 +4,10 @@ Planned: no graded manifest or generated reference outputs yet.
 
 `spec/foreign-types/` freezes 17 new no_core provider inputs for genuine extern
 type identity, pointer metadata, direct/tail sizing, privacy/forms and exact
-feature-token authority. The contract separates 34 metadata predictions from
+feature-token authority. Three separate source Freeze opponents bring the actual
+independent total to 40 metadata observations, retaining six prediction
+differences and genuine explicit raw-pointer impl authority. The contracts separate
+metadata observations from
 candidate support, layout and runtime permission; no opaque type is modeled as
 an empty aggregate.
 

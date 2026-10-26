@@ -67,8 +67,10 @@ gates and invalid forms, actual source Freeze impls, unavailable value layout
 and transport, and original replay plus 8/32/128 sparse storage/hot layouts.
 Unknown numbers remain unknown until a real candidate run.
 
-B's Pattern source `c5fa74bc` supplies the shared AST/type/inference baseline.
-It was normally merged on this successor; its separate qualification is pending.
+B's qualified Pattern source `44ea6bff6` and documented head `9b7c7934` supply
+the shared AST/type/inference baseline. They were normally merged on this
+successor, followed by public main `339bdffb2`. Their prior qualification is
+retained; the combined Foreign candidate remains unqualified.
 Foreign work preserves `Pattern { base, constraint }`, shared unary canonical
 reconstruction, feature slots 22/23 and their runtime validity. The qualified
 Pointee consumer reference remains `pa31-pointee-metadata-consumers-v1` at

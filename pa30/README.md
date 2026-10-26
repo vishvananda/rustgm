@@ -8,6 +8,14 @@ Prerequisite: PA29. The common source profile is Rust 1.98.0, initially edition
 
 C ABI, repr attributes, linkage and imported/exported declarations.
 
+Opaque external types require genuine declaration identity and exact
+`extern_types` feature/token authority. Their value size and alignment remain
+unknown. Thin pointer metadata does not make the pointee Sized or MetaSized;
+PointeeSized and metadata normalization are distinct source contracts. Do not
+substitute an empty struct, fabricate fields or publish an unsupported foreign
+type through an older metadata profile. See [the source design](../docs/foreign-type-source-design.md)
+for the unqualified successor and independently observed contracts.
+
 The maintainer callable checkpoint retains `Abi::{Rust,C}` and a variadic bit
 independently of function safety and constant eligibility. Omitted `extern`
 remains distinct syntax and selects C. Fixed-arity scalar C definitions and
