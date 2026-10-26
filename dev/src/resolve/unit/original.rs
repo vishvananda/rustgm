@@ -137,7 +137,7 @@ impl Unit {
                 saved.owner;
         }
         let source = self.source.physical_copy();
-        ast.fresh_defaultness_source(self.source.original_image(), source.original_image())?;
+        ast.fresh_gate_sites_source(self.source.original_image(), source.original_image())?;
         let configured = ConfiguredSyntax {
             ast,
             cfg_uses: self.configured.cfg_uses.as_ref().and_then(|uses| {

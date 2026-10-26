@@ -412,6 +412,7 @@ impl Resolver<'_> {
                 self.visit(c, ty, Namespace::Type)?;
                 self.optional(c, value, Namespace::Value)
             }
+            ItemKind::TraitAlias { bounds, .. } => self.visit_list(c, bounds, Namespace::Type),
             ItemKind::TypeAlias { bounds, ty } => {
                 self.visit_list(c, bounds, Namespace::Type)?;
                 self.optional(c, ty, Namespace::Type)

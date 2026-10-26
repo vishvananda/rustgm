@@ -81,8 +81,10 @@ Current lanes:
   specialization graph, effective finality, inherited dispatch and Min checks.
   B takes LIB-029 assertion expansion after module-contract v2 qualification;
   coordinate its source/panic authority with C.
-- Integrator: focused integration/main pushes, periodic CI follow-up and fresh
-  original-source observations. Local primitive ownership is qualified. Keep
+- Integrator: the [trait alias source-site checkpoint](trait-alias-sites-checkpoint.md)
+  qualifies grammar, distinct identity and whole-item authority with shared sparse
+  storage. Continue real typed alias contracts and their bound consumers. Handle
+  focused integration/main pushes, periodic CI follow-up and original-source observations. Local primitive ownership is qualified. Keep
   CPPGM and upstream sources unchanged.
 
 Development validation uses `make fastcheck` with exact affected controls and

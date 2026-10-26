@@ -16,7 +16,7 @@ pub(crate) fn validate<L>(
         literals: 0,
         captures: 0,
         items: 0,
-        defaultness: 0,
+        gate_sites: 0,
         variants: 0,
         use_trees: 0,
         generics: 0,
@@ -38,10 +38,10 @@ pub(crate) fn validate<L>(
         let mut kind = item.kind;
         bases.item(&mut kind, &mut span)?;
     }
-    if let Some(entries) = &source.defaultness {
+    if let Some(entries) = &source.gate_sites {
         for entry in entries.entries() {
             entry.validate(source)?;
-            span(entry.keyword)?;
+            span(entry.span)?;
         }
     }
     for variant in &source.variants {

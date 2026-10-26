@@ -118,7 +118,7 @@ fn nonoverlap_keeps_real_bodies_and_unsupported_specialization_stays_explicit() 
             .package
             .units
             .iter()
-            .all(|unit| unit.configured.ast.defaultness.is_none())
+            .all(|unit| unit.configured.ast.gate_sites.is_none())
     );
     unsupported_families_stay_closed()?;
     Ok(())
