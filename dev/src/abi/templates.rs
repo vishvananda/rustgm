@@ -268,16 +268,19 @@ impl Templates {
             return Ok(None);
         }
         definitions.instantiate(types, ty)?;
-        let shape = definitions.raw_shape(types, ty)?;
-        validate_repr(shape.definition, shape.variants().len())?;
-        let mut variants = shape.variants();
-        let fields = variants
-            .next()
-            .ok_or("transparent storage requires one variant")?
-            .fields;
-        if variants.next().is_some() {
-            return Err("transparent storage requires one variant");
-        }
+        let fields = {
+            let shape = definitions.raw_shape(types, ty)?;
+            validate_repr(shape.definition, shape.variants().len())?;
+            let mut variants = shape.variants();
+            let fields = variants
+                .next()
+                .ok_or("transparent storage requires one variant")?
+                .fields;
+            if variants.next().is_some() {
+                return Err("transparent storage requires one variant");
+            }
+            fields
+        };
         let count = types
             .list(fields)
             .ok_or("missing transparent storage fields")?

@@ -193,6 +193,7 @@ pub(super) fn child<L>(
         | Kind::RestPattern
         | Kind::Pattern { .. }
         | Kind::ReferencePattern { .. }
+        | Kind::TypePattern { .. }
         | Kind::Type { .. }
         | Kind::InferType
         | Kind::NeverType

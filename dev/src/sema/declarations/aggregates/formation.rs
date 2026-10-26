@@ -82,7 +82,9 @@ impl Checker<'_> {
             Type::Reference { referent, .. } => {
                 self.work.push(Work::ValueContract(referent, false));
             }
-            Type::Pointer { pointee, .. } => self.work.push(Work::ValueContract(pointee, false)),
+            Type::Pattern { base: pointee, .. } | Type::Pointer { pointee, .. } => {
+                self.work.push(Work::ValueContract(pointee, false))
+            }
             Type::Function {
                 parameters, result, ..
             } => {
