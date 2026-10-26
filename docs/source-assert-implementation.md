@@ -217,3 +217,80 @@ Their actual source and LowIR remain byte-identical in the
 observations supersede the earlier Not prerequisite only. Actual Abort,
 panic/format/runtime/constant consumers and imported contracts remain open;
 Source Assert is still not executable.
+
+## Source Location derive consumer
+
+Production source `2c0df1c518f3aa44bff47f402d8e4ba4a8689019` passes the six
+focused controls in local fastcheck `1793056083311073081` (243.16 seconds).
+Metadata, formatting, architecture audit, strict private Clippy, fresh private
+build and all six tests pass. Root integration owns production/CLI Clippy; this
+receipt is private-mode qualification. Earlier failed syntax, lint, policy and
+edition observations remain retained under `obj/parallel/pa31/source-location-claims-v1/`.
+No previous independent observation was repeated.
+
+The authored selected-source provider retains Location's four real fields,
+NonNull/PhantomData declarations, Copy/Clone derive list, TrivialClone's real
+lang/unsafe/const/marker/conditional Clone contract, and the selected regular/
+const stability and allow_internal_unstable attributes. Its Pointee declaration
+is the explicitly reduced independently qualified family, not a replacement for
+the complete upstream Metadata bounds. A test helper constructs the genuine
+private Location representation with filename `loc` and its extra trailing NUL;
+it does not implement caller_location or replace a library constructor.
+
+The complete list resolves actual source derive headers before one composite
+parse/install. Parsed field types are forwarded as opaque occurrences with exact
+copied origins. Generated impl/member bodies undergo ordinary trait, field-WF,
+ownership, lifetime and lowering proof. Consumed configuration is replayed through
+the existing cold effect index and authenticates the current source image, owner,
+list, members and introductions. It is not trait or call permission. Ordinary
+bootstrap derives keep their existing route and 24 intrinsic slots. No new field
+was added to Call, Visit, Node, Body, Engine, Report, Package or Context.
+
+The first profile is module structs with lifetime-only unbounded formals and
+paired Copy/simple Clone. Fieldwise/type-parameter/enum/union/other derive profiles,
+marker overlap arbitration and imported derive execution remain required. Marker
+attribute gates use the actual name token: captured caller metadata does not
+inherit a definition's allowance. Non-Bang allowance frames stay closed. No
+feature/const/optimization permission follows merely from the empty marker.
+
+PanicLocation (32), PanicInfo (33) and TrivialClone (34) append old-stable language ordinals.
+The same cold mask becomes u64 with a compile-time 64-role bound. Actual nominal
+claim completion uses real fields/lifetimes; it grants neither caller tracking,
+PanicInfo construction nor handler permission. Existing wire/profile guards reject
+untransported roles, markers and stability; original v0/v1/v2 admission is closed.
+
+Synthetic vocabulary has an explicit `OriginKind::Synthetic(Edition)` in the same
+Origin record. Its actual checked definition edition agrees with pinned rustc's
+`deriving/mod.rs:54–56` def-site context. Producer/replay bind the actual generated
+interval, anchor, member introduction, header and exact opaque mark. Copied names/
+field types remain byte-exact; editions::parent never clamps or accepts synthetic
+bytes as copies. Opposing 2021/2024 parsed Unit controls and live foreign-introduction,
+changed-edition/context/kind and invalid UTF-8 opponents pass. This supplies no
+macro feature allowance or new foreign macro profile.
+
+Actual measurements: Origin 32 (alignment 4), OriginKind 1, Stream 104, Unit 688,
+Package 256, Report 3040, Engine 4088, Call 168, Body 96, Definition 136 and Validated 40
+remain unchanged. Effects grows 368→376 for its one optional transaction owner;
+Transaction/Transactions are 176/56. Reservations grows 912→976 and Catalog 792→856
+for the three cold source role slots. The initial 984-byte Reservations prediction
+failed and remains recorded. Library/Inventory grow 120→128 and 80→88 with one
+optional 24-byte const-policy owner; Policy 48/Level 24 remain unchanged. Ordinary
+sources allocate no derive transaction or library policy. Source storage/work
+charges include attempted allocations; this is not a whole-heap measurement.
+
+The provider source SHA-256 is
+`27d396405a174743ebecbaa3b4818642062ed409b23c5db3bf7f449c10e16dfd`;
+its actual LowIR SHA-256 is
+`9ca1b09ae3f4395a561d37b21b2394ccf30c93a56e5d0ab332f58ae3cc740e6c`.
+The pinned CPPGM object backend and independently fixed C observer produce exit 0,
+stdout `31 7\n`, empty stderr. Native receipt is
+`obj/parallel/pa31/source-location-claims-v1/native-v1/receipt.json`; source/tool/
+observer/LowIR hashes match before and after. Successful disposable object and
+executable outputs were scoped-pruned, preserving all raw streams and hashes.
+
+The final handoff changes two old test-only Catalog assertions 792→856 to the
+actual observed cold size; those two old cases await root integration execution.
+No production delta follows the qualified source above. Actual Debug demand,
+caller_location/track_caller, PanicInfo, source panic handler/CTFE redirect,
+formatting constructors and false Assert execution remain required. CPPGM and
+pinned upstream source bytes are unchanged. PA26/PA31 remain planned.

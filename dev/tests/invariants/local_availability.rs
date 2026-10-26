@@ -196,3 +196,130 @@ fn failed_library_publication_preserves_requests_and_cannot_fall_back() -> Resul
     }
     Ok(())
 }
+
+#[test]
+fn const_policy_axes_validate_local_owners_and_keep_execution_distinct() -> Result {
+    let source = format!(
+        "{ROOT}#[unstable(feature=\"api\",issue=\"none\")]pub struct Local;#[unstable(feature=\"api\",issue=\"none\")]pub const fn local()->u8{{7}}fn use_local()->u8{{local()}}"
+    );
+    let report = crate::test_source::resolve(&source, true)?;
+    crate::pipeline::analyze_source(&report)?;
+    let inventory = report
+        .package
+        .library_policy()
+        .and_then(Library::inventory)
+        .ok_or("inventory")?;
+    let (index, _) = report
+        .resolution
+        .definitions
+        .iter()
+        .enumerate()
+        .find(|(_, d)| report.package.names.get(d.name) == "local")
+        .ok_or("actual local")?;
+    let local = DefId(u32::try_from(index)?);
+    assert_eq!(
+        inventory
+            .declaration(local)
+            .ok_or("regular")?
+            .feature
+            .as_ref(),
+        "api"
+    );
+    assert_eq!(
+        inventory
+            .const_declaration(local)
+            .ok_or("const")?
+            .feature
+            .as_ref(),
+        "api"
+    );
+    let ordinary = crate::test_source::resolve(&format!("{ROOT}pub fn ordinary(){{}}"), true);
+    assert!(
+        ordinary.is_err(),
+        "stable crate does not annotate its public children"
+    );
+    let no_const = crate::test_source::resolve(&format!("{ROOT}fn ordinary(){{}}"), true)?;
+    assert!(
+        no_const
+            .package
+            .library_policy()
+            .and_then(Library::inventory)
+            .ok_or("ordinary inventory")?
+            .consts
+            .is_none()
+    );
+    invalid_const_attributes()?;
+    for (target, accepted) in [
+        (
+            "#[rustc_const_stable(feature=\"target\",since=\"1.0\")]",
+            true,
+        ),
+        (
+            "#[rustc_const_unstable(feature=\"target\",issue=\"none\")]",
+            false,
+        ),
+    ] {
+        let source = format!(
+            "{ROOT}#[stable(feature=\"root\",since=\"1.0\")]{target}const fn target()->u8{{7}}#[stable(feature=\"root\",since=\"1.0\")]#[rustc_const_stable(feature=\"caller\",since=\"1.0\")]const fn caller()->u8{{target()}}"
+        );
+        let report = crate::test_source::resolve(&source, true)?;
+        let result = crate::pipeline::analyze_source(&report);
+        assert_eq!(
+            result.is_ok(),
+            accepted,
+            "stable body: {:?}",
+            result.err().map(|e| e.to_string())
+        );
+    }
+    assert_eq!(size_of::<Library>(), 128);
+    assert_eq!(size_of::<Inventory>(), 88);
+    assert_eq!(size_of::<super::constness::ConstPolicies>(), 24);
+    assert_eq!(size_of::<Policy>(), 48);
+    eprintln!(
+        "stability layouts Library={} Inventory={} ConstPolicies={} Policy={} Level={} Package={} Report={}",
+        size_of::<Library>(),
+        size_of::<Inventory>(),
+        size_of::<super::constness::ConstPolicies>(),
+        size_of::<Policy>(),
+        size_of::<Level>(),
+        size_of::<crate::resolve::package::Package>(),
+        size_of::<crate::resolve::expansion::Report>()
+    );
+    Ok(())
+}
+
+fn invalid_const_attributes() -> Result {
+    for (name, suffix, expected) in [
+        (
+            "missing staged",
+            "#[rustc_const_stable(feature=\"c\",since=\"1.0\")]const fn f(){}",
+            "requires staged_api",
+        ),
+        (
+            "wrong target",
+            "#[rustc_const_stable(feature=\"c\",since=\"1.0\")]struct X;",
+            "requires a const function",
+        ),
+        (
+            "malformed",
+            "#[rustc_const_stable(feature=\"c\",since=\"bad\")]const fn f(){}",
+            "invalid stable library version",
+        ),
+        (
+            "conflicting",
+            "#[rustc_const_stable(feature=\"c\",since=\"1.0\")]#[rustc_const_unstable(feature=\"u\",issue=\"none\")]const fn f(){}",
+            "duplicate or conflicting",
+        ),
+    ] {
+        let text = if name == "missing staged" {
+            suffix.to_owned()
+        } else {
+            format!("{ROOT}{suffix}")
+        };
+        let error = crate::test_source::resolve(&text, true)
+            .err()
+            .ok_or("invalid const policy accepted")?;
+        assert!(error.contains(expected), "{name}: {error}");
+    }
+    Ok(())
+}

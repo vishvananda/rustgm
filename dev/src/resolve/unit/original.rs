@@ -153,7 +153,16 @@ impl Unit {
                 .effects
                 .get(..original.effects)
                 .ok_or_else(|| error(0, "invalid original attribute-effect prefix"))?
-                .to_vec(),
+                .iter()
+                .cloned()
+                .map(|mut effect| {
+                    if effect.attribute.effect == crate::expand::configured::Effect::ExpandedDerive
+                    {
+                        effect.attribute.effect = crate::expand::configured::Effect::Keep;
+                    }
+                    effect
+                })
+                .collect(),
         };
         let literals = self
             .literals

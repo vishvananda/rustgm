@@ -47,6 +47,12 @@ impl Unit {
         self.edition
     }
 
+    /// Phase-owned configured state is data; callers must authenticate its receipt.
+    pub(crate) fn derive_is_expanded(&self, index: usize) -> bool {
+        self.configured.effects.get(index).is_some_and(|effect| {
+            effect.attribute.effect == crate::expand::configured::Effect::ExpandedDerive
+        })
+    }
     /// Configured attributes cross the resolution boundary as retained syntax.
     pub(crate) fn retained_attributes(
         &self,
@@ -66,7 +72,12 @@ impl Unit {
     ) -> impl Iterator<Item = (usize, Attribute, &crate::syntax::token_tree::Forest)> {
         attributes.filter_map(|index| {
             let effect = &self.configured.effects[index];
-            (effect.attribute.effect == crate::expand::configured::Effect::Keep).then(|| {
+            matches!(
+                effect.attribute.effect,
+                crate::expand::configured::Effect::Keep
+                    | crate::expand::configured::Effect::ExpandedDerive
+            )
+            .then(|| {
                 (
                     index,
                     effect.attribute.attribute,

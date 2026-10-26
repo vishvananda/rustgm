@@ -1,0 +1,30 @@
+{
+  "source": "location-copy-clone.rs",
+  "sha256": "27d396405a174743ebecbaa3b4818642062ed409b23c5db3bf7f449c10e16dfd",
+  "state": "independent-native-qualified-candidate-pending",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "ub_checks": false,
+    "bootstrap": true
+  },
+  "predictions": {
+    "metadata": 0,
+    "object": 0,
+    "native_stdout": "31 7\n",
+    "candidate_actual_source_consumer": "required to pass; const-stability currently an explicit known unsupported boundary"
+  },
+  "independent_receipt_sha256": "a802ff1061cd1dde123821b10ef3bbebcf8fdaabce8e651c702035cc6b44a9f6",
+  "source_identities": [
+    "actual Location fields and Copy/Clone list",
+    "actual TrivialClone lang/const/unsafe/marker/conditional Clone contract",
+    "original selected regular/const stability and macro allowance attrs"
+  ],
+  "required": [
+    "const stability producer and const API use separate from const eligibility",
+    "actual candidate source Clone body and field WF proof",
+    "marker overlap arbitration remains closed",
+    "no imported builtin execution, caller_location, PanicInfo Debug or false Assert claim"
+  ]
+}

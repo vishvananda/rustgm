@@ -13,6 +13,8 @@ pub enum Effect {
     Keep,
     Cfg(bool),
     CfgAttr(bool),
+    /// This exact list installed all of its real source derive expansions.
+    ExpandedDerive,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

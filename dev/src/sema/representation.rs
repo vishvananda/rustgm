@@ -86,6 +86,21 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Erro
         };
         let range = parentheses(forest, group).map_err(error)?;
         if name == Some("derive") {
+            if unit.derive_is_expanded(index) {
+                report.expanded_derive(
+                    NodeKey {
+                        file: key.file,
+                        node: owner.node,
+                    },
+                    index,
+                )?;
+                continue;
+            }
+            if report.package.uses_source_bindings() {
+                return Err(error(
+                    "source derive requires its actual completed local expansion",
+                ));
+            }
             derive(
                 forest,
                 unit.source.text(),

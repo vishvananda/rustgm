@@ -366,3 +366,13 @@ The next source-declared binding work must allow pinned upstream core to supply
 the actual traits, impls and bodies. PA26 still owns its compiler hooks and
 remaining iteration/derive/question-mark/formatting behavior. No assignment
 release or source-sysroot completeness is claimed by this checkpoint.
+
+## Selected source Location derives
+
+The [source assertion milestone](../docs/source-assert-implementation.md#source-location-derive-consumer)
+records real source Copy/Clone expansion for Location, with actual field/WF,
+const-policy, ownership and native `31 7` evidence. This bounded module-struct
+profile preserves source language/header identities and once-parsed opaque
+field types; it does not provide fieldwise/generic/enum derives, marker overlap,
+Debug/formatting, caller tracking, PanicInfo or executable Assert. Assignment
+status stays planned.

@@ -1,5 +1,6 @@
 //! Local library availability is distinct from language and const-call permission.
 mod attributes;
+mod constness;
 mod inventory;
 mod owners;
 use super::{
@@ -84,6 +85,7 @@ pub struct Inventory {
     policies: Vec<Policy>,
     declarations: Vec<Option<PolicyId>>,
     imports: Vec<Option<PolicyId>>,
+    consts: Option<Box<constness::ConstPolicies>>,
     steps: usize,
 }
 impl Inventory {
@@ -108,6 +110,7 @@ pub(super) struct Draft {
     policies: Vec<Policy>,
     attributes: HashMap<NodeKey, PolicyId>,
     import_attributes: HashMap<NodeKey, PolicyId>,
+    const_attributes: HashMap<NodeKey, PolicyId>,
     steps: usize,
     bytes: usize,
 }

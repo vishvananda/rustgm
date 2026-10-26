@@ -19,6 +19,7 @@ use crate::{
 pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     crate::sema::specialization::prepare(report, facts)?;
     let mut by_source = HashMap::default();
+    let mut allowances = report.macro_allowances();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
             continue;
@@ -35,21 +36,30 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                 super::removed_owners::collect(report, facts, owner_key)?;
                 continue;
             }
-            let mut node = owner.node;
-            while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
-                node = value;
-            }
-            let key = NodeKey { file, node };
+            let (key, supported) = declaration(unit, owner_key);
             crate::sema::header_attributes::observe_owner(report, facts, owner_key, key)?;
             crate::sema::specialization::observe_owner(report, facts, owner_key, key)?;
-            let supported = matches!(unit.configured.ast.node(node).kind, Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
-                ItemKind::Function { .. } | ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. } | ItemKind::Trait { .. }));
             for effect in owner.attributes.clone() {
                 let Some((attribute, forest)) = unit.retained_attributes(effect..effect + 1).next()
                 else {
                     continue;
                 };
+                if unit.derive_is_expanded(effect) {
+                    report.expanded_derive(owner_key, effect)?;
+                    continue;
+                }
                 let name = attribute.name(forest, unit.source.text());
+                if name.and_then(Consumer::named) == Some(Consumer::MarkerTrait) {
+                    crate::sema::marker_traits::consume(
+                        report,
+                        facts,
+                        key,
+                        attribute,
+                        forest,
+                        &mut allowances,
+                    )?;
+                    continue;
+                }
                 if consume_other(
                     report,
                     facts,
@@ -86,26 +96,17 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                     )?;
                     continue;
                 }
-                let contracts = facts.must_use_contracts.get_or_insert_default();
-                if contracts.sources.len() >= 1_000_000 {
-                    return Err(Error::at(
-                        file,
-                        attribute.span.start,
-                        "must_use contract budget exceeded",
-                    ));
-                }
-                let index = contracts.sources.len();
-                contracts.work.attributes += 1;
-                contracts.work.retained_contracts += 1;
-                contracts.work.retained_reasons += reason.as_ref().map_or(0, |reason| reason.len());
-                contracts.sources.push(Contract {
-                    image: std::sync::Arc::clone(unit.source.original_image()),
-                    owner: owner_key,
-                    declaration: key,
-                    span: attribute.span,
-                    effect,
-                    reason,
-                });
+                let index = retain(
+                    facts,
+                    Contract {
+                        image: std::sync::Arc::clone(unit.source.original_image()),
+                        owner: owner_key,
+                        declaration: key,
+                        span: attribute.span,
+                        effect,
+                        reason,
+                    },
+                )?;
                 by_source.insert(key, index);
             }
         }
@@ -113,6 +114,32 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
     bind_definitions(report, facts, &by_source)?;
     crate::sema::specialization::finish(facts)?;
     complete_imports(report, facts)
+}
+fn retain(facts: &mut Declarations, contract: Contract) -> Result<usize, Error> {
+    let contracts = facts.must_use_contracts.get_or_insert_default();
+    if contracts.sources.len() >= 1_000_000 {
+        return Err(Error::at(
+            contract.owner.file,
+            contract.span.start,
+            "must_use contract budget exceeded",
+        ));
+    }
+    let index = contracts.sources.len();
+    contracts.work.attributes += 1;
+    contracts.work.retained_contracts += 1;
+    contracts.work.retained_reasons += contract.reason.as_ref().map_or(0, |reason| reason.len());
+    contracts.sources.push(contract);
+    Ok(index)
+}
+fn declaration(unit: &crate::resolve::unit::Unit, owner: NodeKey) -> (NodeKey, bool) {
+    let mut node = owner.node;
+    while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
+        node = value;
+    }
+    let key = NodeKey { node, ..owner };
+    let supported = matches!(unit.configured.ast.node(node).kind, Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
+                ItemKind::Function { .. } | ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. } | ItemKind::Trait { .. }));
+    (key, supported)
 }
 fn complete_imports(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     crate::sema::header_attributes::prepare_imported(report, facts)?;
@@ -137,6 +164,9 @@ fn consume_other(
     consumer: Option<Consumer>,
 ) -> Result<bool, Error> {
     match consumer {
+        Some(Consumer::DerivedImplementation) => {
+            crate::sema::marker_traits::derived_impl(report, facts, declaration, attribute)?;
+        }
         Some(Consumer::NonExhaustive) => {
             non_exhaustive::consume(report, facts, owner, declaration, attribute, effect)?;
         }

@@ -21,6 +21,8 @@ pub(crate) enum Consumer {
     InherentPolicy,
     NonExhaustive,
     UnsafeSpecialization,
+    MarkerTrait,
+    DerivedImplementation,
 }
 impl Consumer {
     pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
@@ -69,6 +71,8 @@ impl Consumer {
             "must_use" => Self::MustUse,
             "inline" => Self::Inlining,
             "non_exhaustive" => Self::NonExhaustive,
+            "marker" => Self::MarkerTrait,
+            "automatically_derived" => Self::DerivedImplementation,
             "rustc_unsafe_specialization_marker" => Self::UnsafeSpecialization,
             "rustc_paren_sugar" => Self::TraitParentheses,
             "rustc_coherence_is_core" | "rustc_preserve_ub_checks" => Self::CrateOptions,

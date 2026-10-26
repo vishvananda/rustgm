@@ -24,6 +24,16 @@ pub(in crate::sema) fn declaration(
     let Some(declaration) = catalog.language(role) else {
         return Ok(None);
     };
+    require_lifetime_nominal(report, facts, declaration)?;
+    Ok(Some(declaration))
+}
+
+/// Shared actual source module-owned, single-lifetime structure schema.
+pub(super) fn require_lifetime_nominal(
+    report: &Report,
+    facts: &Declarations,
+    declaration: Declaration,
+) -> Result<(), &'static str> {
     require_shape(report, declaration)?;
     let parameters = facts
         .lifetimes
@@ -63,7 +73,7 @@ pub(in crate::sema) fn declaration(
     {
         return Err("formatting nominal has a different actual shape owner");
     }
-    Ok(Some(declaration))
+    Ok(())
 }
 
 pub(super) fn require_shape(report: &Report, declaration: Declaration) -> Result<(), &'static str> {

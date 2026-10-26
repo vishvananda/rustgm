@@ -12,7 +12,7 @@ pub(super) fn validate(
     facts: &Declarations,
     catalog: &Catalog,
     declaration: Declaration,
-    completed: u32,
+    completed: u64,
 ) -> Result<(), Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
     let definition = &report.resolution.definitions[declaration.definition.0 as usize];
@@ -77,11 +77,13 @@ fn requirements(
     facts: &Declarations,
     catalog: &Catalog,
     declaration: Declaration,
-    completed: u32,
+    completed: u64,
     element: TypeId,
 ) -> Result<(), Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
-    if completed & (1 << LangItem::Destruct.index()) == 0 || catalog.sizing.is_none() {
+    if completed & (crate::sema::compiler_items::role_bit(LangItem::Destruct)) == 0
+        || catalog.sizing.is_none()
+    {
         return Err(error(
             "source drop_glue requires completed actual sizing and Destruct declarations",
         ));

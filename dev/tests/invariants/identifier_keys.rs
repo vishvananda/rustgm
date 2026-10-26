@@ -83,6 +83,7 @@ fn package_with_source(physical: &str, generated: &str) -> TestResult<Package> {
             context: Some(SyntaxContextId::ROOT),
             introduction: ExpansionId(1),
             joint: None,
+            kind: crate::expand::stream::OriginKind::Copied,
         })
         .collect::<Vec<_>>();
     package.units[0]

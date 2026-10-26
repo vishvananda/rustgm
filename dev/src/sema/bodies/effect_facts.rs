@@ -159,6 +159,7 @@ impl Checker<'_> {
             let signature = solved.types.get(term.0 as usize).ok_or_else(|| {
                 Declarations::error(self.report, key, "invalid completed call signature")
             })?;
+            self.check_const_library_call(node, solved)?;
             self.check_transmute_size(node, solved)?;
             if let Some(crate::sema::model::Operation::Call {
                 source_use: Some(source),
@@ -289,11 +290,13 @@ impl Checker<'_> {
         Ok(())
     }
     fn publish_ordinary_calls(&mut self, solved: &Solved) -> Result<(), Error> {
-        for (node, term) in &self.state.calls {
-            if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. }) {
+        for index in 0..self.state.calls.len() {
+            let (node, term) = self.state.calls[index];
+            self.check_const_library_call(node, solved)?;
+            if matches!(self.kind(node), crate::syntax::ast::Kind::For { .. }) {
                 continue;
             }
-            let key = self.key(*node);
+            let key = self.key(node);
             self.facts
                 .node_mut(key)
                 .ok_or_else(|| Declarations::error(self.report, key, "invalid call node"))?

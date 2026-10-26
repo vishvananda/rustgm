@@ -247,6 +247,9 @@ impl Builtin {
                 | Self::ConcatBytes
                 | Self::Test
                 | Self::PatternType
+                | Self::Derive
+                | Self::Copy
+                | Self::Clone
         )
     }
     #[must_use]

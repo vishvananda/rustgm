@@ -40,6 +40,7 @@ mod cfg_gates;
 mod decorated_calls;
 #[path = "expansion/unvisited_syntax.rs"]
 mod default_warnings;
+mod derive_lists;
 mod diagnostics;
 mod eager;
 pub(crate) mod removed_functions;
@@ -428,6 +429,7 @@ impl<'a, S: Sources> Engine<'a, S> {
         if let Some(error) = self.paths.take_error() {
             return Err(error);
         }
+        self.attach_derives()?;
         Ok(())
     }
     fn wake(&mut self, index: usize) {
@@ -624,6 +626,9 @@ impl<'a, S: Sources> Engine<'a, S> {
         }
         if let Some(previous) = self.calls[index].selected {
             if found == Some(previous) {
+                if self.derive_outer(index) {
+                    return self.finish_derive(index);
+                }
                 if self.calls[index].state == State::Removed {
                     return Ok(());
                 }
@@ -647,6 +652,16 @@ impl<'a, S: Sources> Engine<'a, S> {
             self.calls[index].state = State::Waiting;
             return Ok(());
         };
+        if matches!(self.calls[index].grammar, CallGrammar::Derive) {
+            self.calls[index].selected = Some(definition);
+            return self.completed(index);
+        }
+        if matches!(
+            self.definitions[definition].body,
+            Body::Builtin(Builtin::Derive)
+        ) {
+            return self.begin_derive(index, definition);
+        }
         if matches!(
             self.definitions[definition].body,
             Body::Builtin(Builtin::Test)
@@ -1059,8 +1074,16 @@ impl<'a, S: Sources> Engine<'a, S> {
     }
     fn lookup_call(&mut self, index: usize) -> Result<Option<usize>, Error> {
         let call = &self.calls[index];
-        if matches!(call.grammar, CallGrammar::Attribute) {
-            decorated_calls::validate(&self.loader.package, &self.paths.state.facts, call)?;
+        if matches!(call.grammar, CallGrammar::Attribute | CallGrammar::Derive) {
+            if self.derive_consumed(index)? {
+                decorated_calls::validate_derived(
+                    &self.loader.package,
+                    &self.paths.state.facts,
+                    call,
+                )?;
+            } else {
+                decorated_calls::validate(&self.loader.package, &self.paths.state.facts, call)?;
+            }
         }
         if call.absolute {
             return Err(call.diagnostic("external macro paths require external metadata"));
@@ -1189,6 +1212,7 @@ impl<'a, S: Sources> Engine<'a, S> {
                     context: None,
                     introduction: ExpansionId(0),
                     joint: origin.joint,
+                    kind: crate::expand::stream::OriginKind::Copied,
                 }));
             Some(mapped)
         } else {
@@ -1363,6 +1387,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             context: Some(syntax),
             introduction: context,
             joint: None,
+            kind: crate::expand::stream::OriginKind::Copied,
         }];
         let generated = self.loader.package.units[file.0 as usize]
             .install_expansion(target, &generated.source, generated.syntax, &origins)

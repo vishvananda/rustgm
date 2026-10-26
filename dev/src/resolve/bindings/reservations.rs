@@ -77,6 +77,10 @@ impl Reservations {
     pub fn denies_implementation(&self, definition: DefId) -> bool {
         self.denied_implementations.contains(&definition)
     }
+    /// Checked diagnostic declaration data only; no layout or nonnull proof.
+    pub(crate) fn nonnull_declaration(&self) -> Option<Declaration> {
+        self.diagnostics[super::annotations::DiagnosticItem::NonNull.index()]
+    }
     pub(crate) fn role_attributes(&self, role: LangItem) -> HeaderAttributes {
         self.header_attributes[role.index()]
     }

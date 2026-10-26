@@ -95,7 +95,7 @@ fn trait_headers(
     report: &Report,
     facts: &Declarations,
     steps: &mut usize,
-) -> Result<u32, &'static str> {
+) -> Result<u64, &'static str> {
     let catalog = catalog(report, facts)?;
     if catalog.traits.is_some() {
         return Err("source roles were validated twice");
@@ -128,18 +128,18 @@ fn trait_headers(
                 )?;
                 if role == LangItem::Clone {
                     clone_member(facts, catalog, &header, steps)?;
-                    complete |= 1 << LangItem::CloneFn.index();
+                    complete |= crate::sema::compiler_items::role_bit(LangItem::CloneFn);
                 } else if !header.members.is_empty() {
                     return Err("source copying marker must not declare members");
                 }
-                complete |= 1 << role.index();
+                complete |= crate::sema::compiler_items::role_bit(role);
             }
             LangItem::CloneFn => {}
             _ => return Err("imported source role requires its wider explicit header profile"),
         }
     }
     if catalog.role(LangItem::CloneFn)?.is_some()
-        && complete & (1 << LangItem::CloneFn.index()) == 0
+        && complete & (crate::sema::compiler_items::role_bit(LangItem::CloneFn)) == 0
     {
         return Err("source language member has no validated actual trait owner");
     }

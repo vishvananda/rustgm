@@ -125,6 +125,7 @@ fn root_replacement_and_originals() -> TestResult {
         context: Some(crate::expand::marks::SyntaxContextId::ROOT),
         introduction: crate::expand::marks::ExpansionId(0),
         joint: None,
+        kind: crate::expand::stream::OriginKind::Copied,
     };
     unit.install_expansion(target, text, generated, &[origin])
         .map_err(|error| error.message)?;
