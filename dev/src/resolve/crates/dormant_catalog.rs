@@ -17,20 +17,27 @@ mod budget;
 mod tests;
 
 pub(crate) struct Inputs {
-    report: Report,
-    inventory: Arc<Dependencies>,
-    provider_index: u32,
-    catalog: Catalog,
-    root: crate::resolve::body_origin::ImportedDeclarationId,
+    pub(super) report: Report,
+    pub(super) inventory: Arc<Dependencies>,
+    pub(super) provider_index: u32,
+    pub(super) catalog: Catalog,
+    pub(super) root: crate::resolve::body_origin::ImportedDeclarationId,
     root_definition: crate::resolve::model::DefId,
-    definitions: Range<usize>,
-    scopes: Range<usize>,
+    pub(super) definitions: Range<usize>,
+    pub(super) scopes: Range<usize>,
 }
 /// Borrowed reserved schema only. It exposes no semantic type, Graph or proof.
 pub(crate) struct RecipeView<'a> {
     owner: &'a Inputs,
 }
 impl Inputs {
+    pub(crate) fn into_provider(
+        self,
+        work: &mut ReservationWork,
+    ) -> Result<(Arc<Dependencies>, u32), Error> {
+        self.require(&self.inventory, self.provider_index, work)?;
+        Ok((self.inventory, self.provider_index))
+    }
     pub(crate) fn recipe_view<'a>(
         &'a self,
         inventory: &Dependencies,
@@ -41,11 +48,34 @@ impl Inputs {
         Ok(RecipeView { owner: self })
     }
     pub(crate) fn reserve(
-        mut report: Report,
+        report: Report,
         inventory: Arc<Dependencies>,
         provider_index: u32,
         work: &mut ReservationWork,
     ) -> Result<Self, Error> {
+        Self::reserve_owned(report, inventory, provider_index, work).map(|(inputs, _)| inputs)
+    }
+    pub(crate) fn reserve_consumer(
+        report: Report,
+        work: &mut ReservationWork,
+    ) -> Result<(Report, super::ConsumerReservation), Error> {
+        let source = report
+            .package
+            .staged_consumer()
+            .ok_or_else(|| error("private reservation requires its actual staged consumer"))?;
+        source.require_package(&report.package).map_err(error)?;
+        work.charge(1)?;
+        let inventory = Arc::clone(source.inventory());
+        let index = source.index();
+        let (inputs, imported) = Self::reserve_owned(report, inventory, index, work)?;
+        super::consumer_inputs::bind(inputs, imported, work)
+    }
+    fn reserve_owned(
+        mut report: Report,
+        inventory: Arc<Dependencies>,
+        provider_index: u32,
+        work: &mut ReservationWork,
+    ) -> Result<(Self, Imported), Error> {
         work.charge(1)?;
         let artifact = inventory
             .artifacts()
@@ -115,7 +145,7 @@ impl Inputs {
         };
         result.require(&result.inventory, provider_index, work)?;
         result.check_cells(work)?;
-        Ok(result)
+        Ok((result, imported))
     }
     pub(crate) fn definitions_len(&self) -> usize {
         self.report.resolution.definitions.len()

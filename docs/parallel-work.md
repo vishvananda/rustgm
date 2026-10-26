@@ -55,7 +55,11 @@ Current lanes:
   six focused controls and exact first-encoded old v0/v1 bytes. The
   [numbered trait-input successor](private-numbered-trait-inputs.md) now qualifies
   actual inherited Self/V/U preparation and body-owned numbering records with
-  six focused controls. Continue nonzero regional environments toward the concrete
+  six focused controls. The
+  [neutral nonzero successor](private-neutral-numbered-environments.md) now
+  prepares genuine Declaration bodies with nonzero signatures while keeping
+  regional inputs and body type availability closed. Continue the actual body
+  and instance proof bridge toward the concrete
   [provided-method execution milestone](parallel/provided-method-execution.md).
   Public Provided execution and type-alias transport remain required.
 - B: local LIB-026 implementation domains and their version-one imported
@@ -66,16 +70,21 @@ Current lanes:
   [v2 module/domain/advisory artifact](pa29-module-contracts-v2.md) now qualifies
   fresh namespace/domain consumers and provider-owned implementation selection
   through actual LowIR. Keep the default v1 bytes and real trait/catalog identity
-  distinct from function linker identity. Continue LIB-029 source assertion
-  expansion, with wider imported contracts and Provided execution still required.
+  distinct from function linker identity. The private
+  [Assert condition transaction](source-assert-implementation.md) now qualifies
+  one parse and owned transfer with authentic opaque provenance. Continue its
+  expression writer and genuine source operator/panic/runtime/constant paths;
+  Assert execution, wider imported contracts and Provided execution remain open.
 - C: SourceCore CLI contract publication and fresh native consumers are qualified.
   LIB-027 unnamed constants and the [LIB-028 modifier checkpoint](defaultness-checkpoint.md)
   pass focused controls and reviewed text qualification. Implement the actual
   specialization graph, effective finality, inherited dispatch and Min checks.
   B takes LIB-029 assertion expansion after module-contract v2 qualification;
   coordinate its source/panic authority with C.
-- Integrator: focused integration/main pushes, periodic CI follow-up and fresh
-  original-source observations. Local primitive ownership is qualified. Keep
+- Integrator: the [trait alias source-site checkpoint](trait-alias-sites-checkpoint.md)
+  qualifies grammar, distinct identity and whole-item authority with shared sparse
+  storage. Continue real typed alias contracts and their bound consumers. Handle
+  focused integration/main pushes, periodic CI follow-up and original-source observations. Local primitive ownership is qualified. Keep
   CPPGM and upstream sources unchanged.
 
 Development validation uses `make fastcheck` with exact affected controls and

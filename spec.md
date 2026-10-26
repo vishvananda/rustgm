@@ -207,6 +207,18 @@ bindings from API inheritance. Stability-bearing metadata must reject until its
 transport and use consumers exist; regular policy cannot grant const-callability.
 
 Source-role semantic attributes are validated claims on exact declarations.
+Sparse item feature sites share one source-incarnation witness, transaction and
+monotonic retention envelope across default modifiers and trait aliases. Keep
+whole alias-item spans distinct from default keyword spans; neither source copies
+nor macro root replacement may erase their token authority. Defaultness queries
+must filter alias rows, so aliases cannot allocate specialization state. Retain
+actual alias identities and lexical Self/generic scopes without ordinary trait
+owners, associated member scopes, impl entries or synthetic Self:Alias evidence.
+Typed expansion must share canonical dependency edges rather than repeatedly
+flattening nested alias diamonds. See the
+[source-site checkpoint](docs/trait-alias-sites-checkpoint.md); its active alias
+semantic and imported-transport fences stay explicit until their consumers exist.
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle
@@ -256,6 +268,18 @@ capacity costs and absent versus present-empty ledgers. Recorded readiness
 does not bind a defining regional Environment or change reservation availability.
 Separate body/availability-owned regional ports and their actual proof remain
 required before original or substituted-instance execution.
+
+A nonzero signature may use the same defining-environment kernel only after
+the actual Declaration origin, empty regional inputs and supported frames are
+authenticated and both preexisting builtin and region payloads are absent.
+Absent and present-empty payloads are distinct. Prepay real alias vectors, map
+growth/coexistence and Arc storage before the shared finish kernel; reconcile
+fresh owned payload without charging shared declaration tables again. Bind the
+completed body memo to both its actual immutable recording and Environment
+allocations, retaining allocation charges while weak keys survive. Full ledger
+scans stay cold; warm checks authenticate the complete owner/signature/scope and
+both identities in constant work. This grants no body Variable or declared
+lifetime availability, original proof, instance proof or public execution.
 
 Private defining-environment preparation reuses the canonical predicate
 translator and Environment producer through sealed ordinary and reservation

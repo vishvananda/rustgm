@@ -1,4 +1,4 @@
-"""Exact six neutral nonzero and unchanged source controls; static audit overlaps one sequential Rust lane."""
+"""Exact six private consumer constructor and unchanged source controls; static audit overlaps one sequential Rust lane."""
 from concurrent.futures import ThreadPoolExecutor
 import hashlib,json,os,re,signal,subprocess,sys,time
 from pathlib import Path
@@ -15,7 +15,7 @@ def worker(started):
     freeze=json.loads((ROOT/'.github/inherited_numbering_freeze.json').read_text())
     sources=fingerprint(ROOT)
     if sources!=freeze['sources']:raise ValueError('frozen source changed')
-    out=ROOT/f'obj/qualification/fast/{time.time_ns()}-neutral-numbered'
+    out=ROOT/f'obj/qualification/fast/{time.time_ns()}-consumer-authority'
     deadline=started+185
     steps=Steps(ROOT,SimpleNamespace(deadline=deadline,evidence_root=out,prune_under=[]))
     cases=freeze['selected']
@@ -60,7 +60,7 @@ def worker(started):
         if re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',output)!=[('6','0','0')]:raise ValueError('actual six count changed')
         capture=ROOT/'obj/parallel/all-attribute-selected-output-v1/empty-contract-baseline'
         baseline=freeze['baseline']['files']
-        for name in ('provider.rs','v0.rgcrate','v1.rgcrate','v0.binding.txt','v1.binding.txt'):
+        for name in baseline:
             path=capture/name
             if path.stat().st_size!=baseline[name]['bytes'] or sha(path)!=baseline[name]['sha256']:raise ValueError('actual first encoding differs from pre-adapter raw baseline: '+name)
         captured={path.name:{'sha256':sha(path),'bytes':path.stat().st_size} for path in capture.iterdir() if path.is_file() and not path.name.startswith('.')}
@@ -92,6 +92,6 @@ def main():
         if status:
             try:os.killpg(process.pid,signal.SIGKILL)
             except ProcessLookupError:pass
-        print(f'Neutral numbered gate total: {time.monotonic()-start:.2f}s status={status}',flush=True)
+        print(f'Private consumer gate total: {time.monotonic()-start:.2f}s status={status}',flush=True)
 
 if __name__=='__main__':sys.exit(main())
