@@ -43,6 +43,24 @@ fn actual_default_context_keeps_nested_runtime_and_rejects_mismatched_bodies() -
         .and_then(|owner| facts.associated.get(owner))
         .ok_or("trait owner")?;
     let ordinary = facts.generics.trait_self_bounds[&trait_definition];
+    let defining = facts.defining_self_clause(trait_definition)?;
+    assert_eq!(
+        facts.default_self_clause(provided.definition, source)?,
+        Some(defining)
+    );
+    assert!(matches!(
+        defining,
+        Clause::Predicate(Predicate {
+            ty,
+            bound: Bound::MaybeConstTrait(application),
+        }) if ty == ordinary.ty && ordinary.bound == Bound::Trait(application)
+    ));
+    assert!(facts.defining_self_clause(nested.definition).is_err());
+    assert!(
+        facts
+            .default_self_clause(nested.definition, source)
+            .is_err()
+    );
     let input = crate::sema::declaration_inputs::Input {
         source: trait_owner.source_owner()?.source.into(),
         value: ordinary.into(),

@@ -25,7 +25,7 @@ use crate::{
             ParameterId,
             clauses::Clause,
             environment::{Abilities, Environment},
-            predicates::Predicate,
+            predicates::{Bound, Predicate},
         },
     },
 };
@@ -137,16 +137,17 @@ impl Scope {
             )?;
             ScopeInputs::Declaration(inputs)
         };
+        originals::require_leaf_inputs(rows, scope_row, inputs.all(), applications, work)?;
         clauses.extend(inputs.all().iter().map(|input| input.value));
         let mut accounting = Observed {
             work,
             allocation: Allocation::default(),
         };
-        let environment = environments::prepare(
+        let environment = environments::prepare_checked(
             facts,
             inherited.map(|scope| &scope.environment),
             &parameters,
-            &clauses,
+            &ImportedLeaves(&clauses),
             previous_parameters,
             previous_clauses,
             &mut accounting,
@@ -246,6 +247,23 @@ impl Scope {
             ));
         }
         Ok(())
+    }
+}
+/// Created only after the current scope's raw effects and actual translated
+/// predicates agree; the inherited prefix is copied from its sealed parent.
+struct ImportedLeaves<'a>(&'a [Clause]);
+impl environments::sealed::Sealed for ImportedLeaves<'_> {}
+impl environments::LeafClauses for ImportedLeaves<'_> {
+    fn clauses(&self) -> &[Clause] {
+        self.0
+    }
+    fn application(&self, bound: Bound) -> Result<crate::types::traits::ApplicationId, Error> {
+        match bound {
+            Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => Ok(id),
+            _ => Err(error(
+                "private leaf environment changed its checked trait effect",
+            )),
+        }
     }
 }
 struct NumberedBody {
@@ -541,7 +559,7 @@ impl Owner {
             return Ok(Demand::Blocked(dependency));
         }
         let mut port = ports::Inputs {
-            port: Reserved::new(view, &mut state.maps)?,
+            port: Reserved::new(view, &state.maps, &facts.types, work)?,
             cursor: &mut state.cursor,
         };
         let mut parent = None;

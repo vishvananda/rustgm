@@ -20,9 +20,9 @@ use crate::{
         generics::{self as g, source as s},
         owner_catalog::DeclarationRef,
     },
-    types::{RegionId, Store, TypeId, arguments::Argument},
+    types::{Store, TypeId},
 };
-use std::sync::Arc;
+use std::{rc::Rc, sync::Arc};
 #[cfg(test)]
 #[path = "../../../../tests/invariants/mapped_signature_controls.rs"]
 mod mapping_tests;
@@ -46,10 +46,31 @@ enum Pair {
 }
 pub(super) struct State {
     pub cursor: Cursor,
-    pub maps: Maps,
+    pub maps: Rc<Maps>,
     pairs: Vec<Pair>,
-    reader: Option<MemoReader>,
+    reader: Option<ReadMapping>,
     pub(super) callables: Option<Box<super::template_demands::Prepared>>,
+}
+struct ReadMapping {
+    types: MemoReader,
+    maps: Rc<Maps>,
+}
+impl ReadMapping {
+    fn require(
+        &self,
+        state: &State,
+        view: &RecipeView<'_>,
+        store: &Store,
+        work: &mut ReservationWork,
+    ) -> Result<(), Error> {
+        work.charge(1)?;
+        if !Rc::ptr_eq(&self.maps, &state.maps) {
+            return Err(error(
+                "private mapping changed its actual shared slot/region allocation",
+            ));
+        }
+        state.cursor.require_reader(&self.types, view, store, work)
+    }
 }
 pub(super) type Progress = (Box<Session>, Demand<()>);
 
@@ -67,21 +88,12 @@ impl State {
                 .saturating_add(rows.slots.len())
                 .saturating_add(rows.regions.len())
                 .saturating_add(rows.functions.len())
-                .saturating_add(2),
+                .saturating_add(6),
         )?;
         let growth = size_of::<Self>()
             .saturating_add(Cursor::scratch_bytes(rows.types.len()))
             .saturating_sub(size_of::<Cursor>())
-            .saturating_add(
-                rows.slots
-                    .len()
-                    .saturating_mul(size_of::<Option<Argument>>()),
-            )
-            .saturating_add(
-                rows.regions
-                    .len()
-                    .saturating_mul(size_of::<Option<RegionId>>()),
-            )
+            .saturating_add(Maps::allocation_bound(rows.slots.len(), rows.regions.len()))
             .saturating_add(rows.functions.len().saturating_mul(size_of::<Pair>()))
             .saturating_add(
                 store.node_allocation_bound(rows.types.len().saturating_add(rows.slots.len())),
@@ -95,10 +107,7 @@ impl State {
                 store.arena_identity(),
                 view.root(),
             ),
-            maps: Maps {
-                slots: vec![None; rows.slots.len()],
-                regions: vec![None; rows.regions.len()],
-            },
+            maps: Maps::prepaid(view, store)?,
             pairs: vec![Pair::Empty; rows.functions.len()],
             reader: None,
             callables: None,
@@ -118,9 +127,9 @@ impl State {
         work: &mut ReservationWork,
     ) -> Result<Demand<SignaturePair>, Error> {
         if let Some(reader) = &self.reader {
-            self.cursor.require_reader(reader, &view, store, work)?;
+            reader.require(self, &view, store, work)?;
         }
-        let mut port = Reserved::new(view, &mut self.maps)?;
+        let mut port = Reserved::new(view, &self.maps, store, work)?;
         self.cursor.require_owner(&port, store, work)?;
         work.charge(1)?;
         let rows = port.rows();
@@ -192,6 +201,7 @@ impl State {
     pub(super) fn memo(&self) -> Result<&MemoReader, Error> {
         self.reader
             .as_ref()
+            .map(|reader| &reader.types)
             .ok_or_else(|| error("private selected mapping lacks its actual shared memo reader"))
     }
     pub(super) fn require_mapping(
@@ -201,14 +211,20 @@ impl State {
         cold: bool,
         work: &mut ReservationWork,
     ) -> Result<(), Error> {
+        self.maps.require(view, store, work)?;
         if self.reader.is_none() && cold {
-            self.reader = Some(self.cursor.reader(view, store, work)?);
+            let types = self.cursor.reader(view, store, work)?;
+            work.charge(1)?;
+            self.reader = Some(ReadMapping {
+                types,
+                maps: Rc::clone(&self.maps),
+            });
         }
         let reader = self
             .reader
             .as_ref()
             .ok_or_else(|| error("private callable readiness lost its actual memo reader"))?;
-        self.cursor.require_reader(reader, view, store, work)
+        reader.require(self, view, store, work)
     }
     pub(super) fn require_signatures(
         &self,
@@ -222,6 +238,7 @@ impl State {
             .reader
             .as_ref()
             .ok_or_else(|| error("private callable signature lacks its actual memo reader"))?;
+        reader.require(self, view, store, work)?;
         let rows = view.rows()?;
         for (raw, kind, actual) in [
             (
@@ -254,7 +271,7 @@ impl State {
                 },
                 actual,
                 &mut steps,
-                |reference| match reader.get(view, store, reference, work) {
+                |reference| match reader.types.get(view, store, reference, work) {
                     Ok(MemoLookup::Ready(ty)) => Ok(ty),
                     Ok(MemoLookup::Pending {
                         owner: pending_owner,
@@ -279,8 +296,7 @@ impl State {
                 .cursor
                 .retained_bytes()
                 .saturating_sub(size_of::<Cursor>())
-            + crate::support::retained::vector(&self.maps.slots)
-            + crate::support::retained::vector(&self.maps.regions)
+            + self.maps.retained_bytes()
             + crate::support::retained::vector(&self.pairs)
             + self
                 .callables

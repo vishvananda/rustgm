@@ -176,7 +176,7 @@ fn demand(
     let (self_type, _, bounds) = shape(rows, header)?;
     let bounds = bounds.slice(&rows.region_bounds).map_err(error)?;
     work.charge(bounds.len().saturating_add(1))?;
-    let mut port = Reserved::new(view, &mut state.maps)?;
+    let mut port = Reserved::new(view, &state.maps, &facts.types, work)?;
     let self_type = match state
         .cursor
         .demand(&mut port, &mut facts.types, self_type, work)?

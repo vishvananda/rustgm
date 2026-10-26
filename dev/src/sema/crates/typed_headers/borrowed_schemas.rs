@@ -47,6 +47,7 @@ impl<'rows, 'memo, 'work> Borrowed<'rows, 'memo, 'work> {
         authority.reservation.require(authority.report, work)?;
         authority.completion.columns(authority.report, work)?;
         reader.require(view, store, work)?;
+        maps.require(view, store, work)?;
         // Fixed selected-root/catalog and common owner comparisons. Variable
         // members/bounds are prepaid by their selected producer before entry.
         work.charge(12)?;
@@ -104,7 +105,24 @@ impl<'rows> Mapping<'rows> for Borrowed<'rows, '_, '_> {
             .get(self.view, self.store, root, self.work)
             .map_err(|_| "private schema lost its actual canonical memo")?
         {
-            MemoLookup::Ready(ty) => Ok(ty),
+            MemoLookup::Ready(ty) => {
+                if let Some(s::Type::Parameter(slot)) =
+                    self.descriptor.rows().types.get(root.0 as usize)
+                {
+                    self.work
+                        .charge(1)
+                        .map_err(|_| "private slot read work exceeded")?;
+                    match self.maps.slot(slot.0 as usize) {
+                        Some(Some(crate::types::arguments::Argument::Type(actual)))
+                            if actual == ty => {}
+                        Some(None) => {
+                            return Err("private schema requires its actual pending formal slot");
+                        }
+                        _ => return Err("private schema changed its actual canonical formal slot"),
+                    }
+                }
+                Ok(ty)
+            }
             MemoLookup::Pending { .. } => {
                 Err("private schema requires its actual pending type producer")
             }
@@ -139,11 +157,10 @@ impl<'rows> Mapping<'rows> for Borrowed<'rows, '_, '_> {
         ) {
             return Err("private schema needs its actual body-owned regional producer");
         }
-        self.maps
-            .regions
-            .get(root.0 as usize)
-            .copied()
-            .flatten()
-            .ok_or("private schema omitted its actual prepared regional input")
+        match self.maps.region(root.0 as usize) {
+            Some(Some(region)) => Ok(region),
+            Some(None) => Err("private schema requires its actual pending regional input"),
+            None => Err("private schema region is outside its actual dense map"),
+        }
     }
 }

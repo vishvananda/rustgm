@@ -67,12 +67,21 @@ fn prepare_scope(
                 == Some("Holder")
         })
         .ok_or("actual retained nonrole Holder")?;
+    prepare_owner_scope(view, facts, holder.scope, work)
+}
+fn prepare_owner_scope(
+    view: RecipeView<'_>,
+    facts: &mut Declarations,
+    declaration: DeclarationRef,
+    work: &mut ReservationWork,
+) -> Result<(State, Owner, usize)> {
+    let rows = view.rows()?;
     let mut state = State::new(&view, &mut facts.types, work)?;
     let table = Prepared::new(&view, work)?;
-    let path = formal_path::path(rows, &table.scopes, holder.scope, work)?;
+    let path = formal_path::path(rows, &table.scopes, declaration, work)?;
     let mut owner = Owner::new(rows, work)?;
     let mut port = ports::Inputs {
-        port: Reserved::new(view, &mut state.maps)?,
+        port: Reserved::new(view, &state.maps, &facts.types, work)?,
         cursor: &mut state.cursor,
     };
     let mut parent = None;
@@ -142,6 +151,7 @@ fn shared_trait_input_producer_seals_actual_fresh_catalog_and_canonical_prefix()
     assert!(facts.definitions.iter().all(Option::is_none));
     assert!(facts.functions.is_empty());
     assert!(facts.generics.traits.is_none());
+    actual_const_leaf_inputs()?;
     eprintln!(
         "shared-input-layout scope={} inputs={} prepared={} owner={} session={} state={} retained={} peak={} steps={}",
         size_of::<Scope>(),
@@ -153,6 +163,59 @@ fn shared_trait_input_producer_seals_actual_fresh_catalog_and_canonical_prefix()
         work.retained,
         work.peak,
         work.steps
+    );
+    Ok(())
+}
+
+fn actual_const_leaf_inputs() -> Result {
+    let mut work = ReservationWork::default();
+    let (report, reservation, mut facts) = fresh(&mut work)?;
+    let view = reservation.recipe_view(&report, &mut work)?;
+    let rows = view.rows()?;
+    let header = rows
+        .functions
+        .iter()
+        .find(|header| {
+            rows.declarations[header.declaration.0 as usize]
+                .name
+                .as_deref()
+                == Some("clone_from")
+        })
+        .ok_or("actual const trait default member")?;
+    let (_, owner, index) = prepare_owner_scope(view, &mut facts, header.scope, &mut work)?;
+    let scope = owner.scopes[index]
+        .as_deref()
+        .ok_or("actual const leaf scope")?;
+    let mut inputs = scope.inputs.all().to_vec();
+    let input = inputs
+        .iter_mut()
+        .find(|input| {
+            matches!(
+                input.value,
+                Clause::Predicate(Predicate {
+                    bound: Bound::MaybeConstTrait(_) | Bound::ConstTrait(_),
+                    ..
+                })
+            )
+        })
+        .ok_or("actual effect-qualified source input")?;
+    let Clause::Predicate(predicate) = &mut input.value else {
+        return Err("actual ordinary const leaf predicate".into());
+    };
+    let (application, effect) = predicate.bound.trait_parts().ok_or("actual trait effect")?;
+    assert_ne!(effect, crate::support::constness::Constness::Ordinary);
+    predicate.bound = Bound::Trait(application);
+    let attempted = work.steps;
+    assert!(
+        originals::require_leaf_inputs(rows, scope.raw, &inputs, &owner.applications, &mut work)
+            .is_err()
+    );
+    assert!(work.steps > attempted);
+    assert!(facts.definitions.iter().all(Option::is_none));
+    assert!(facts.generics.traits.is_none());
+    assert!(
+        owner.bodies.iter().all(Option::is_none),
+        "scope construction cannot imply body completion"
     );
     Ok(())
 }
@@ -202,7 +265,7 @@ fn foreign_warm_inputs(
     let view = reservation.recipe_view(report, work)?;
     let rows = view.rows()?;
     let mut port = ports::Inputs {
-        port: Reserved::new(view, &mut state.maps)?,
+        port: Reserved::new(view, &state.maps, &facts.types, work)?,
         cursor: &mut state.cursor,
     };
     let before = work.steps;
