@@ -6,8 +6,9 @@ inputs and stops at `library/core/src/clone.rs:389`, byte 14948, the actual
 `fd3467602106e2a2ec416485d8d058b6d2b434ceac7689b4e2f4c792079e500f`.
 The observed CLI SHA-256 is
 `eb644b412597aa77a1d2d8accc539a802e6009e05a940d5ada6e0bfb87d8839a`.
-This checkpoint is unqualified until its focused source/body/dispatch controls
-and separately frozen native observations actually execute.
+The six focused source/body/dispatch controls are qualified. Production/CLI
+integration, the separately frozen native observations and the next unchanged-core
+observer remain pending.
 
 ## Pinned compiler contract
 
@@ -58,12 +59,32 @@ Two initial predictions were wrong: a disabled final owner still produces hard
 E0658 without the feature, rather than an unstable-syntax warning. Both raw
 hypotheses and actual streams remain retained; no older oracle matrix was rerun.
 Four native predictions remain separate and unrun: actual provided/final dynamic
-bodies return 7; ordinary static/virtual overrides return 9.
+bodies return 7; ordinary static/virtual overrides return 9. Their frozen executable
+wrappers append only main plus a declared C observer to the immutable metadata
+inputs. The common locked object backend is used without rebuilding CPPGM.
 
 Six private groups cover actual provided and source Share bodies, override and
 owner/body errors, exact gate tokens and disabled owners, real dynamic static vs
 virtual calls, transport/origin opponents and sparse original replay/width/layout.
 The PA5 grammar fixture is byte-identical to independently accepted provided-call;
 its generated references remain pending official generation after source review.
-No assignment is activated. Actual after-layout/storage observations are pending;
-no allocation count or whole-core acceptance is claimed.
+No assignment is activated. The final source is the clean normal merge
+`c6947a844a0ad5fe2bc0bb86558b047578cb4b3b` over public `0d6db3a43`.
+
+The successful standard C12 gate is
+`obj/qualification/fast/1793046023987938929`, receipt SHA-256
+`a0c27bbf4a4f0bd404a18a519ff05562642a866ac78f221eb0030a0203174429`.
+Metadata, formatting, architecture, strict private Clippy, fresh unoptimized
+build and all six exact groups pass in 114.29 seconds with 2,782 fingerprinted
+inputs. The retained earlier runs expose one conversion error, one Clippy arm
+finding and a test observer that incorrectly queried uninstantiated function
+prototypes. The corrected observer uses actual retained callables and real
+vtable planning after full lowering. No oracle outcome was changed for it.
+
+Actual layouts remain Item64, Function32, Syntax312, Unit688, Definition36,
+Scope32, Report3040; the shared row24 and owner56 remain unchanged. The ordinary
+no-modifier path retains no sparse owner. Actual sparse `(rows, capacity, steps,
+prepaid bytes)` observations are `(8,8,266,824)`, `(32,32,1314,3128)` and
+`(128,128,6274,12344)`. These are existing source-owner accounting observations,
+not allocator counts. No allocation count, full native parity, public final
+transport or whole-core acceptance is claimed.
