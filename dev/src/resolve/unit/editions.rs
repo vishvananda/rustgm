@@ -1,7 +1,7 @@
 //! Lexical editions follow bounded, exact parent spans in retained source maps.
 use super::Unit;
 use crate::{
-    expand::stream::{Location, Origin},
+    expand::stream::{Location, Origin, OriginKind},
     lex::token::{LexError, Token},
     support::{edition::Edition, source::FileId},
     syntax::token_tree::{Span, error},
@@ -67,8 +67,32 @@ pub(crate) fn at<'a>(
         if span.end as usize <= source.source.physical_len() {
             return Ok(source.edition);
         }
-        location =
-            parent(&source.origins, span).map_err(|failure| LexError { offset, ..failure })?;
+        let origin =
+            covering(&source.origins, span).map_err(|failure| LexError { offset, ..failure })?;
+        if let OriginKind::Synthetic(edition) = origin.kind {
+            let anchor = unit(origin.original.file)
+                .ok_or_else(|| error(offset, "missing synthetic edition anchor source"))?;
+            if origin.introduction.0 == 0
+                || origin
+                    .context
+                    .is_none_or(|c| c == crate::expand::marks::SyntaxContextId::ROOT)
+                || origin.original.span.start >= origin.original.span.end
+                || anchor
+                    .source
+                    .text()
+                    .get(origin.original.span.start as usize..origin.original.span.end as usize)
+                    .is_none()
+                || source
+                    .source
+                    .text()
+                    .get(origin.generated.start as usize..origin.generated.end as usize)
+                    .is_none()
+            {
+                return Err(error(offset, "invalid synthetic token edition origin"));
+            }
+            return Ok(edition);
+        }
+        location = copied(origin, span).map_err(|failure| LexError { offset, ..failure })?;
     }
     Err(error(offset, "token edition origin chain exceeds 4096"))
 }
@@ -76,18 +100,27 @@ pub(crate) fn at<'a>(
 /// A token inside a copied opaque slice retains its exact subrange. Never clamp
 /// an invalid range to its neighbor or infer source identity from hygiene.
 pub(crate) fn parent(origins: &[Origin], span: Span) -> Result<Location, LexError> {
+    copied(covering(origins, span)?, span)
+}
+fn covering(origins: &[Origin], span: Span) -> Result<&Origin, LexError> {
     let index = origins.partition_point(|origin| origin.generated.end <= span.start);
-    let origin = origins
+    origins
         .get(index)
         .filter(|origin| {
             origin.generated.start <= span.start
                 && span.start < span.end
                 && span.end <= origin.generated.end
-                && origin.original.span.start <= origin.original.span.end
-                && origin.generated.end - origin.generated.start
-                    == origin.original.span.end - origin.original.span.start
         })
-        .ok_or_else(|| error(span.start, "missing exact token edition origin"))?;
+        .ok_or_else(|| error(span.start, "missing exact token edition origin"))
+}
+fn copied(origin: &Origin, span: Span) -> Result<Location, LexError> {
+    if origin.kind != OriginKind::Copied
+        || origin.original.span.start > origin.original.span.end
+        || origin.generated.end - origin.generated.start
+            != origin.original.span.end - origin.original.span.start
+    {
+        return Err(error(span.start, "missing exact token edition origin"));
+    }
     let start = origin.original.span.start + (span.start - origin.generated.start);
     Ok(Location {
         file: origin.original.file,

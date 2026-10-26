@@ -4,6 +4,7 @@ mod receipt;
 #[cfg(test)]
 #[path = "../../../tests/invariants/derived_locations.rs"]
 mod tests;
+mod vocabulary;
 use super::{
     Body, Builtin, Call, CallGrammar, Engine, Error, ExpansionId, Invocation, NodeKey, Sources,
     State,

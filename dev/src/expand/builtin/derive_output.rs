@@ -30,6 +30,8 @@ pub(crate) struct Site<'a> {
     pub original: Span,
     pub copy_context: (SyntaxContextId, ExpansionId),
     pub clone_context: (SyntaxContextId, ExpansionId),
+    pub copy_edition: crate::support::edition::Edition,
+    pub clone_edition: crate::support::edition::Edition,
 }
 struct Field {
     parsed: ParsedSyntax,
@@ -42,6 +44,7 @@ struct Output<'a> {
     fields: Vec<Field>,
     charge: &'a Charge<'a>,
     context: (SyntaxContextId, ExpansionId),
+    edition: crate::support::edition::Edition,
 }
 
 pub(crate) fn build(
@@ -69,6 +72,7 @@ pub(crate) fn build(
         fields: Vec::new(),
         charge,
         context: site.copy_context,
+        edition: site.copy_edition,
     };
     if copy {
         output.header("crate::marker::Copy", false)?;
@@ -76,6 +80,7 @@ pub(crate) fn build(
     }
     if clone {
         output.context = site.clone_context;
+        output.edition = site.clone_edition;
         output.header("crate::clone::TrivialClone", true)?;
         output.text("{}")?;
         output.header("crate::clone::Clone", false)?;
@@ -100,6 +105,7 @@ pub(crate) fn build(
         }
         output.text("*self } }")?;
     }
+    output.validate_origins()?;
     let splices: Vec<_> = output
         .fields
         .iter()
@@ -137,19 +143,76 @@ pub(crate) fn build(
 }
 
 impl Output<'_> {
+    fn validate_origins(&self) -> Result<(), LexError> {
+        use crate::expand::stream::OriginKind;
+        (self.charge)(self.stream.origins.len(), 0)?;
+        for origin in &self.stream.origins {
+            let generated = self
+                .stream
+                .source
+                .get(origin.generated.start as usize..origin.generated.end as usize)
+                .ok_or_else(|| {
+                    error(
+                        self.site.original.start,
+                        "derived origin exceeds its produced image",
+                    )
+                })?;
+            match origin.kind {
+                OriginKind::Copied => {
+                    (self.charge)(generated.len(), 0)?;
+                    if origin.context.is_some()
+                        || origin.introduction.0 != 0
+                        || origin.original.file != self.site.file
+                        || self.site.source.get(
+                            origin.original.span.start as usize..origin.original.span.end as usize,
+                        ) != Some(generated)
+                    {
+                        return Err(error(
+                            self.site.original.start,
+                            "derived copied origin changed its actual bytes",
+                        ));
+                    }
+                }
+                OriginKind::Synthetic(edition) => {
+                    let expected = [
+                        (self.site.copy_context, self.site.copy_edition),
+                        (self.site.clone_context, self.site.clone_edition),
+                    ];
+                    if origin.original
+                        != (Location {
+                            file: self.site.file,
+                            span: self.site.original,
+                        })
+                        || !expected.iter().any(|&(context, expected)| {
+                            origin.context == Some(context.0)
+                                && origin.introduction == context.1
+                                && edition == expected
+                        })
+                    {
+                        return Err(error(
+                            self.site.original.start,
+                            "derived vocabulary changed its selected source introduction",
+                        ));
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
     fn text(&mut self, text: &str) -> Result<(), LexError> {
         (self.charge)(
             text.len(),
             text.len().saturating_mul(4 * (size_of::<Token>() + 64)),
         )?;
-        let span = self.stream.image(
+        let span = self.stream.synthetic_image(
             text,
             Location {
                 file: self.site.file,
                 span: self.site.original,
             },
-            Some(self.context.0),
+            self.context.0,
             self.context.1,
+            self.edition,
         )?;
         let mut lexer = Lexer::new(text)?;
         while let Some(mut token) = lexer.next_token()? {

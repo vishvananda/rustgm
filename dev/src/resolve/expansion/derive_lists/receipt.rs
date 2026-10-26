@@ -152,6 +152,7 @@ impl Report {
             }
             // No non-Bang allowance frame or feature grant is created here.
         }
+        super::vocabulary::require(self, entry, invocation)?;
         Ok(())
     }
 }

@@ -2,6 +2,8 @@
 use super::*;
 use crate::{support::bindings::LangItem, test_source};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+#[path = "synthetic_ancestry.rs"]
+mod synthetic_ancestry;
 const PROVIDER: &str = "pa31/tests/spec/source-location/location-copy-clone.rs";
 
 #[test]
@@ -128,6 +130,7 @@ fn list_failures_and_changed_capture_image_owner_cannot_consume_derives() -> Tes
         (entry.owner, entry.effect, entry.capture)
     };
     report.expanded_derive(owner, effect)?;
+    synthetic_ancestry::replay(&mut report, owner, effect)?;
     report.package.units[0].configured.effects[effect].capture = capture + 1;
     assert!(report.expanded_derive(owner, effect).is_err());
     report.package.units[0].configured.effects[effect].capture = capture;
@@ -178,6 +181,7 @@ fn list_failures_and_changed_capture_image_owner_cannot_consume_derives() -> Tes
 
 #[test]
 fn marker_shape_ordinary_storage_and_derive_owner_layouts_preserve_boundaries() -> TestResult {
+    synthetic_ancestry::units()?;
     trivial_role_headers()?;
     for (source, accept) in [
         (

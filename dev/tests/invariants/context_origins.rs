@@ -30,6 +30,7 @@ fn origin(generated: Span, parent: Span, context: Option<SyntaxContextId>) -> Or
         context,
         introduction: ExpansionId(2),
         joint: None,
+        kind: crate::expand::stream::OriginKind::Copied,
     }
 }
 

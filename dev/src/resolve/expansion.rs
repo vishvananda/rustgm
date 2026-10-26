@@ -1209,6 +1209,7 @@ impl<'a, S: Sources> Engine<'a, S> {
                     context: None,
                     introduction: ExpansionId(0),
                     joint: origin.joint,
+                    kind: crate::expand::stream::OriginKind::Copied,
                 }));
             Some(mapped)
         } else {
@@ -1383,6 +1384,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             context: Some(syntax),
             introduction: context,
             joint: None,
+            kind: crate::expand::stream::OriginKind::Copied,
         }];
         let generated = self.loader.package.units[file.0 as usize]
             .install_expansion(target, &generated.source, generated.syntax, &origins)

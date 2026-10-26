@@ -151,6 +151,12 @@ impl<S: Sources> Engine<'_, S> {
                 original,
                 copy_context: contexts[0],
                 clone_context: contexts[1],
+                copy_edition: selected[0].map_or(unit.edition(), |(_, definition)| {
+                    self.definitions[definition].edition
+                }),
+                clone_edition: selected[1].map_or(unit.edition(), |(_, definition)| {
+                    self.definitions[definition].edition
+                }),
             },
             selected[0].is_some(),
             selected[1].is_some(),

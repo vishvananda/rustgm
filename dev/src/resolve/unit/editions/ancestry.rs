@@ -19,6 +19,7 @@ fn origin(generated: Span, file: FileId, span: Span) -> Origin {
         context: None,
         introduction: crate::expand::marks::ExpansionId(0),
         joint: None,
+        kind: crate::expand::stream::OriginKind::Copied,
     }
 }
 
