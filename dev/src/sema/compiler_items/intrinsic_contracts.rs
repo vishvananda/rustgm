@@ -73,6 +73,9 @@ fn signature(
     if kind == SourceIntrinsic::UbChecks {
         return super::runtime_checks::validate(facts, function);
     }
+    if kind == SourceIntrinsic::Transmute {
+        return super::transmute_contract::validate(facts, function);
+    }
     if kind == SourceIntrinsic::Abort {
         return super::abort_declaration::validate(facts, function);
     }
@@ -211,7 +214,10 @@ impl Catalog {
             .ok_or("source intrinsic declaration is not validated")?;
         if matches!(
             entry.kind,
-            SourceIntrinsic::ConstEvalSelect | SourceIntrinsic::UbChecks | SourceIntrinsic::Abort
+            SourceIntrinsic::ConstEvalSelect
+                | SourceIntrinsic::UbChecks
+                | SourceIntrinsic::Abort
+                | SourceIntrinsic::Transmute
         ) {
             // These contracts have dedicated descriptors, without a layout element.
             return Ok(None);
@@ -236,6 +242,9 @@ impl Catalog {
                 }
                 SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
                 SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
+                SourceIntrinsic::Transmute => {
+                    "source transmute requires its own checked call descriptor"
+                }
             });
         };
         if arguments.next().is_some()
@@ -254,6 +263,9 @@ impl Catalog {
                 }
                 SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
                 SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
+                SourceIntrinsic::Transmute => {
+                    "source transmute requires its own checked call descriptor"
+                }
             });
         }
         let function = facts

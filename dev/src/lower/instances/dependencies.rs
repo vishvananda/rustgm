@@ -83,6 +83,29 @@ fn source_call(
             }
             Ok(Some(SourceIntrinsic::UbChecks))
         }
+        Some(SourceIntrinsic::Transmute) => {
+            let selected = Reader::new(facts)
+                .source_transmute(Instance::new(&facts.types, ty)?, body.source)?
+                .ok_or("source transmute lost its dependency descriptor")?;
+            catalog.require_transmute_report(report, facts, &selected)?;
+            let [input] = body
+                .arguments
+                .get(arguments.start as usize..arguments.end as usize)
+                .ok_or("source transmute lost its actual argument range")?
+            else {
+                return Err("source transmute requires one direct value argument");
+            };
+            if signature != selected.signature
+                || value.ty != selected.destination
+                || body
+                    .values
+                    .get(input.0 as usize)
+                    .is_none_or(|v| v.ty != selected.source)
+            {
+                return Err("source transmute dependency differs from its complete direct Call");
+            }
+            Ok(Some(SourceIntrinsic::Transmute))
+        }
         Some(SourceIntrinsic::Abort) => {
             let selection = Reader::new(facts)
                 .source_abort(Instance::new(&facts.types, ty)?, body.source)?
@@ -105,6 +128,32 @@ fn source_call(
 }
 
 impl Discovered {
+    fn callable_operand(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &Declarations,
+        body: &Body,
+        index: usize,
+        value: &crate::body::ir::Value,
+        ty: TypeId,
+    ) -> Result<(), &'static str> {
+        use crate::support::bindings::SourceIntrinsic;
+        match source_call(report, facts, body, value, ty)? {
+            Some(SourceIntrinsic::ConstEvalSelect) => {
+                self.selectors.push(crate::body::ir::ValueId(
+                    u32::try_from(index).map_err(|_| "too many source selector values")?,
+                ));
+            }
+            Some(
+                SourceIntrinsic::UbChecks | SourceIntrinsic::Abort | SourceIntrinsic::Transmute,
+            ) => {
+                // Only this authenticated direct Call omits callable-body demand.
+                // Lowering still proves and consumes its reached operation.
+            }
+            _ => self.callable(&facts.types, ty)?,
+        }
+        Ok(())
+    }
     fn conversion(
         &mut self,
         body: &Body,
@@ -350,21 +399,7 @@ impl Dependencies {
                     .get(id.0 as usize)
                     .ok_or("invalid callable operand")?
                     .ty;
-                match source_call(report, facts, body, value, ty)? {
-                    Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect) => {
-                        result.selectors.push(crate::body::ir::ValueId(
-                            u32::try_from(index).map_err(|_| "too many source selector values")?,
-                        ));
-                    }
-                    Some(
-                        crate::support::bindings::SourceIntrinsic::UbChecks
-                        | crate::support::bindings::SourceIntrinsic::Abort,
-                    ) => {
-                        // Lowering still proves the actual body/call and its
-                        // evaluated callee before emitting an existing bool.
-                    }
-                    _ => result.callable(&facts.types, ty)?,
-                }
+                result.callable_operand(report, facts, body, index, value, ty)?;
             }
         }
         for (id, static_) in body::constants::references(body) {
@@ -618,3 +653,7 @@ mod ub_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/abort_dependencies.rs"]
 mod abort_tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/transmute_dependencies.rs"]
+mod transmute_tests;

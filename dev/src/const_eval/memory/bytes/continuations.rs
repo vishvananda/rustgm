@@ -11,8 +11,13 @@ pub(super) enum Source {
     Image(Constant),
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum ReadInput {
+    Storage(Source),
+    Transmute { source: TypeId, value: Constant },
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) struct Key {
-    pub source: Source,
+    pub input: ReadInput,
     pub offset: u64,
     pub ty: TypeId,
     pub length: Option<u64>,
@@ -60,7 +65,7 @@ impl super::Storage {
     pub(in crate::const_eval::memory) fn abandon_reads(&mut self) {
         if let Some(reads) = self.reads.as_mut() {
             for (_, state) in reads.entries.drain() {
-                if let Source::Backing(id) = state.key.source
+                if let ReadInput::Storage(Source::Backing(id)) = state.key.input
                     && let Some(root) = self.roots.get_mut(id.0 as usize)
                 {
                     root.pending_reads = root.pending_reads.saturating_sub(1);
@@ -89,7 +94,7 @@ impl Machine<'_, '_> {
             .checked_sub(state.retained_slots())
             .ok_or("pending byte read retention underflow")?;
         if state.key != key {
-            self.unpin_byte_read(state.key.source)?;
+            self.unpin_byte_read(state.key.input)?;
             return Err("pending typed byte read resumed at a different source or context".into());
         }
         self.run_byte_duties(operation, state, true).map(Some)
@@ -127,7 +132,7 @@ impl Machine<'_, '_> {
         let previous = self.slots;
         if let Err(error) = self.reserve_cells(retained) {
             if pinned {
-                self.unpin_byte_read(state.key.source)?;
+                self.unpin_byte_read(state.key.input)?;
             }
             return Err(error);
         }
@@ -165,7 +170,7 @@ impl Machine<'_, '_> {
         self.slots = previous;
         match checked {
             Ok(false) => {
-                let source = state.key.source;
+                let source = state.key.input;
                 let result = self.park_byte_read(operation, state, pinned);
                 if result.is_err() && pinned {
                     self.unpin_byte_read(source)?;
@@ -174,7 +179,7 @@ impl Machine<'_, '_> {
             }
             result => {
                 if pinned {
-                    self.unpin_byte_read(state.key.source)?;
+                    self.unpin_byte_read(state.key.input)?;
                 }
                 result.map(|_| Read::Value(state.value))
             }
@@ -216,7 +221,7 @@ impl Machine<'_, '_> {
             .retained
             .checked_add(state.retained_slots())
             .ok_or("typed byte continuation retention overflow")?;
-        if !pinned && let Source::Backing(id) = state.key.source {
+        if !pinned && let ReadInput::Storage(Source::Backing(id)) = state.key.input {
             let backing = self
                 .memory
                 .bytes
@@ -232,8 +237,8 @@ impl Machine<'_, '_> {
         reads.entries.insert(operation, state);
         Ok(())
     }
-    fn unpin_byte_read(&mut self, source: Source) -> Result<(), Failure> {
-        if let Source::Backing(id) = source {
+    fn unpin_byte_read(&mut self, source: ReadInput) -> Result<(), Failure> {
+        if let ReadInput::Storage(Source::Backing(id)) = source {
             let backing = self
                 .memory
                 .bytes
@@ -248,3 +253,7 @@ impl Machine<'_, '_> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/transmute_layouts.rs"]
+mod transmute_layout_tests;

@@ -826,6 +826,398 @@
         "reason": "Checks retained unused volatile accesses and one reified shim per canonical instance; this fixture makes no runtime result claim."
       },
       "maintainer_origin": "dev/tests/volatile_intrinsics.rs:unused_volatile_reads_and_reified_shims_remain_explicit"
+    },
+    {
+      "path": "tests/spec/source-transmute/positive-owned-native.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "native": {
+        "kind": "object",
+        "reason": "Runtime and strict CTFE transport are qualified separately; source acceptance alone grants no execution."
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+    },
+    {
+      "path": "tests/spec/source-transmute/unequal-unused.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+    },
+    {
+      "path": "tests/spec/source-transmute/unknown-generic-unused.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+    },
+    {
+      "path": "tests/spec/source-transmute/missing-unsafe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+    },
+    {
+      "path": "tests/spec/source-transmute/invalid-bool.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+    },
+    {
+      "path": "tests/spec/source-transmute/invalid-char.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+    },
+    {
+      "path": "tests/spec/source-transmute/padding-integer-bytes.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+    },
+    {
+      "path": "tests/spec/source-transmute/symbolic-pointer-integer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+    },
+    {
+      "path": "tests/spec/source-transmute/symbolic-pointer-byte-array.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+    },
+    {
+      "path": "tests/spec/source-transmute/numeric-pointer-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+    },
+    {
+      "path": "tests/spec/source-transmute/malformed-declaration.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+    },
+    {
+      "path": "tests/spec/source-transmute/numeric-zst-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "reason": "Valid Rust profile remains explicitly unsupported until its actual value-validity or function-ABI consumer is implemented."
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant."
+    },
+    {
+      "path": "tests/spec/source-transmute/function-signature-erasure.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual authenticated SourceCore provider; draft profile has no public foreign intrinsic grant.",
+      "native": {
+        "kind": "object",
+        "reason": "Function-pointer formation preserves the original target and destination typed ABI; actual runtime formatter invocation is qualified by the new exact observer."
+      }
+    },
+    {
+      "path": "tests/spec/source-transmute/actual-maybe-uninit-symbolic.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "reason": "Valid Rust profile remains explicitly unsupported until its actual value-validity or function-ABI consumer is implemented."
+      },
+      "maintainer_origin": "source-transmute independent plan b53bb314; actual CI40339618063",
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "library": {
+        "crate_name": "transmute_contract",
+        "disambiguator": "source_transmute_v1"
+      },
+      "maintainer_profile": "Actual standard-library MaybeUninit source contract; current source-provider transport remains unsupported."
+    },
+    {
+      "path": "tests/spec/source-transmute/formatter-formation-and-runtime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa28.source-transmute-function-word"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "erased_formatter",
+        "disambiguator": "erased_formatter_v1"
+      },
+      "maintainer_origin": "transmute-function-abi-v1 frozen80fe606a; actual new eight observations once",
+      "maintainer_profile": "Actual authenticated SourceCore provider; no public imported source operation grant",
+      "native": {
+        "kind": "object",
+        "reason": "Actual const formation and erased runtime invocation qualified separately by the exact native observer."
+      }
+    },
+    {
+      "path": "tests/spec/source-transmute/borrowed-owner-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute-function-word"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "erased_formatter",
+        "disambiguator": "erased_formatter_v1"
+      },
+      "maintainer_origin": "transmute-function-abi-v1 frozen80fe606a; actual new eight observations once",
+      "maintainer_profile": "Actual authenticated SourceCore provider; no public imported source operation grant"
+    },
+    {
+      "path": "tests/spec/source-transmute/erased-unsafe-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute-function-word"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "erased_formatter",
+        "disambiguator": "erased_formatter_v1"
+      },
+      "maintainer_origin": "transmute-function-abi-v1 frozen80fe606a; actual new eight observations once",
+      "maintainer_profile": "Actual authenticated SourceCore provider; no public imported source operation grant"
+    },
+    {
+      "path": "tests/spec/source-transmute/erased-const-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa28.source-transmute-function-word"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "erased_formatter",
+        "disambiguator": "erased_formatter_v1"
+      },
+      "maintainer_origin": "transmute-function-abi-v1 frozen80fe606a; actual new eight observations once",
+      "maintainer_profile": "Actual authenticated SourceCore provider; no public imported source operation grant"
     }
   ]
 }
