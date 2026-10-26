@@ -120,10 +120,10 @@ fn bits(checker: &Checker<'_>, clauses: &[Predicate], subject: TypeId) -> TestRe
                 .ok_or("actual trait arguments")?
                 .item;
             if item == ItemId(meta.0) {
-                result |= META
+                result |= META;
             }
             if item == ItemId(pointee.0) {
-                result |= POINTEE
+                result |= POINTEE;
             }
         }
     }
