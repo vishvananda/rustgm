@@ -28,7 +28,13 @@ pub(crate) struct Inputs {
 }
 /// Borrowed reserved schema only. It exposes no semantic type, Graph or proof.
 pub(crate) struct RecipeView<'a> {
-    owner: &'a Inputs,
+    owner: RecipeOwner<'a>,
+}
+struct RecipeOwner<'a> {
+    inventory: &'a Dependencies,
+    provider_index: u32,
+    catalog: &'a Catalog,
+    root: crate::resolve::body_origin::ImportedDeclarationId,
 }
 impl Inputs {
     pub(crate) fn into_provider(
@@ -45,7 +51,14 @@ impl Inputs {
         work: &mut ReservationWork,
     ) -> Result<RecipeView<'a>, Error> {
         self.require(inventory, provider_index, work)?;
-        Ok(RecipeView { owner: self })
+        Ok(RecipeView {
+            owner: RecipeOwner {
+                inventory: &self.inventory,
+                provider_index: self.provider_index,
+                catalog: &self.catalog,
+                root: self.root,
+            },
+        })
     }
     pub(crate) fn reserve(
         report: Report,
@@ -247,6 +260,21 @@ impl Inputs {
     }
 }
 impl<'a> RecipeView<'a> {
+    pub(super) fn consumer(
+        reservation: &'a super::ConsumerReservation,
+        report: &'a Report,
+        work: &mut ReservationWork,
+    ) -> Result<Self, Error> {
+        reservation.require(report, work)?;
+        Ok(Self {
+            owner: RecipeOwner {
+                inventory: &reservation.inventory,
+                provider_index: reservation.index,
+                catalog: reservation.catalog(),
+                root: reservation.root,
+            },
+        })
+    }
     pub(crate) fn input_site(
         &self,
         owner: crate::support::crates::owner_catalog::DeclarationRef,

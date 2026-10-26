@@ -285,32 +285,66 @@ impl Session {
         work: &mut ReservationWork,
     ) -> Result<Progress, Error> {
         self.require_owner(work)?;
-        let view = self
-            .inputs
-            .recipe_view(&self.inventory, self.provider_index, work)?;
-        if self.recipes.is_none() {
-            self.recipes = Some(Box::new(State::new(&view, &mut self.facts.types, work)?));
-        }
-        let state = self
-            .recipes
-            .as_mut()
-            .ok_or_else(|| error("private callable recipe state disappeared"))?;
-        let pair = match state.pair(view, &mut self.facts.types, owner, work)? {
-            Demand::Ready(pair) => pair,
-            Demand::Blocked(dependency) => return Ok((self, Demand::Blocked(dependency))),
-        };
-        let view = self
-            .inputs
-            .recipe_view(&self.inventory, self.provider_index, work)?;
-        if state.callables.is_none() {
-            state.callables = Some(Box::new(Prepared::new(&view, work)?));
-        }
-        let mut prepared = state
-            .callables
-            .take()
-            .ok_or_else(|| error("private callable preparation disappeared"))?;
-        prepared.register(view, state, &mut self.facts.types, owner, pair, work)?;
-        state.callables = Some(prepared);
-        Ok((self, Demand::Ready(())))
+        let result = prepare(
+            &mut self.recipes,
+            &mut self.facts.types,
+            None,
+            owner,
+            work,
+            |work| {
+                self.inputs
+                    .recipe_view(&self.inventory, self.provider_index, work)
+            },
+        )?;
+        Ok((self, result))
     }
+}
+
+/// The consumer lends its one real table exclusively; buffer handles move and
+/// are restored on every outcome. No second registration or table clone occurs.
+pub(super) fn prepare<'a>(
+    recipes: &mut Option<Box<State>>,
+    store: &mut Store,
+    target: Option<&mut Templates>,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+    mut view: impl FnMut(&mut ReservationWork) -> Result<RecipeView<'a>, Error>,
+) -> Result<Demand<()>, Error> {
+    let first = view(work)?;
+    if recipes.is_none() {
+        *recipes = Some(Box::new(State::new(&first, store, work)?));
+    }
+    let state = recipes
+        .as_mut()
+        .ok_or_else(|| error("private callable recipe state disappeared"))?;
+    let pair = match state.pair(first, store, owner, work)? {
+        Demand::Ready(pair) => pair,
+        Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
+    };
+    let second = view(work)?;
+    if state.callables.is_none() {
+        state.callables = Some(Box::new(Prepared::new(&second, work)?));
+    }
+    let mut prepared = state
+        .callables
+        .take()
+        .ok_or_else(|| error("private callable preparation disappeared"))?;
+    let result = if let Some(target) = target {
+        work.charge(4)?;
+        if !prepared.templates.is_empty() {
+            state.callables = Some(prepared);
+            return Err(error(
+                "selected callable retained a second registration table",
+            ));
+        }
+        std::mem::swap(target, &mut prepared.templates);
+        let result = prepared.register(second, state, store, owner, pair, work);
+        std::mem::swap(target, &mut prepared.templates);
+        result
+    } else {
+        prepared.register(second, state, store, owner, pair, work)
+    };
+    state.callables = Some(prepared);
+    result?;
+    Ok(Demand::Ready(()))
 }
