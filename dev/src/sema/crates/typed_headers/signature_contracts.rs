@@ -83,7 +83,9 @@ impl ProvidedOwners {
                 Constness::Ordinary => false,
                 Constness::Const => true,
                 Constness::Conditional => {
-                    return Err("selected callable requires its actual declaration-effect producer");
+                    return Err(
+                        "selected callable requires its actual declaration-effect producer",
+                    );
                 }
             };
             let (all, prefix) = self
