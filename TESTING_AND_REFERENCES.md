@@ -76,6 +76,7 @@ make setup-audit  # once per checkout
 make fastcheck FAST_ARGS='lexer'
 make fastcheck FAST_ARGS='constant_patterns --lib-case complete::private::test_path'
 make fastcheck FAST_ARGS='lexer --pa pa1'
+make smoke
 ```
 
 Replace the private path with a real complete test name. Select the smallest
@@ -84,6 +85,12 @@ The default is the lexer smoke suite, not a claim to cover arbitrary changes.
 Use repeated `--pa paN` options for affected text-oracle assignments. The runner
 builds/passes the debug CLI explicitly, avoiding `make test-paN`'s release build.
 Planned assignments still fail and are never reported as empty passing suites.
+`make smoke` uses that same runner and deadline for the shared push selection:
+ordinary lexer cases, actual source roles/Pointee-to-LowIR, reached CTFE faults
+and ownership, encoded generic runtime/constant imports, and edition/CLI
+controls. Its two integration binaries share the production build; it requires
+neither a private-library build nor the external native backend. `SMOKE_ARGS`
+passes ordinary runner options, such as a justified local output cap.
 Before compiler steps, the runner checks every active assignment's metadata with
 the same validators as the full layout check. Pending generated references are
 allowed here; the full layout check still requires their complete provenance.
