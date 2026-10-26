@@ -116,61 +116,72 @@ fn actual_member_nominal_and_result_obligations_remain_bound_to_the_provider() -
         };
         assert!(catalog.pointee_member(&report, &facts, wrong).is_err());
         if name == "result-obligations" {
-            let declared = facts.generics.declared_predicates(member.definition).len();
-            let actual = facts
-                .generics
-                .predicates
-                .get(&member.definition)
-                .ok_or("actual result environment")?
-                .len();
-            assert!(
-                actual > declared,
-                "actual trait elaboration did not produce the opposing environment tail"
-            );
-            let actual = report
-                .resolution
-                .definitions
-                .iter()
-                .enumerate()
-                .find(|(_, row)| {
-                    row.kind == DefKind::Trait && report.package.names.get(row.name) == "Actual"
-                })
-                .ok_or("Actual")?;
-            assert!(
-                facts
-                    .associated
-                    .require_projection_header(member.definition)?
-                    .bounds
-                    .iter()
-                    .any(|clause| {
-                        let crate::types::parameters::clauses::Clause::Predicate(predicate) =
-                            clause
-                        else {
-                            return false;
-                        };
-                        predicate.bound.trait_parts().is_some_and(|(id, _)| {
-                            facts
-                                .types
-                                .trait_application(id)
-                                .is_some_and(|a| a.item.0 as usize == actual.0)
-                        })
-                    })
-            );
-            let first = facts
-                .generics
-                .predicates
-                .get_mut(&member.definition)
-                .and_then(|rows| rows.first_mut())
-                .ok_or("actual declared prefix")?;
-            let crate::types::parameters::clauses::Clause::Predicate(mut predicate) = first.value
-            else {
-                return Err("actual ordinary declared result predicate".into());
-            };
-            predicate.ty = crate::types::TypeId::primitive(crate::types::Primitive::U16);
-            first.value = predicate.into();
-            assert!(check(&report, &facts, application).is_err());
+            result_obligations_keep_the_actual_declared_prefix(
+                &report,
+                &mut facts,
+                member.definition,
+                application,
+            )?;
         }
     }
+    Ok(())
+}
+fn result_obligations_keep_the_actual_declared_prefix(
+    report: &Report,
+    facts: &mut Declarations,
+    member: crate::resolve::model::DefId,
+    application: projection::Application,
+) -> TestResult {
+    let declared = facts.generics.declared_predicates(member).len();
+    let actual = facts
+        .generics
+        .predicates
+        .get(&member)
+        .ok_or("actual result environment")?
+        .len();
+    assert!(
+        actual > declared,
+        "actual trait elaboration did not produce the opposing environment tail"
+    );
+    let actual = report
+        .resolution
+        .definitions
+        .iter()
+        .enumerate()
+        .find(|(_, row)| {
+            row.kind == DefKind::Trait && report.package.names.get(row.name) == "Actual"
+        })
+        .ok_or("Actual")?;
+    assert!(
+        facts
+            .associated
+            .require_projection_header(member)?
+            .bounds
+            .iter()
+            .any(|clause| {
+                let crate::types::parameters::clauses::Clause::Predicate(predicate) = clause else {
+                    return false;
+                };
+                predicate.bound.trait_parts().is_some_and(|(id, _)| {
+                    facts
+                        .types
+                        .trait_application(id)
+                        .is_some_and(|a| a.item.0 as usize == actual.0)
+                })
+            })
+    );
+    let first = facts
+        .generics
+        .predicates
+        .get_mut(&member)
+        .and_then(|rows| rows.first_mut())
+        .ok_or("actual declared prefix")?;
+    let crate::types::parameters::clauses::Clause::Predicate(mut predicate) = first.value else {
+        return Err("actual ordinary declared result predicate".into());
+    };
+    predicate.ty = crate::types::TypeId::primitive(crate::types::Primitive::U16);
+    first.value = predicate.into();
+    assert!(check(report, facts, application).is_err());
     Ok(())
 }
 #[test]
