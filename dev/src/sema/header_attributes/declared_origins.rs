@@ -8,7 +8,7 @@ use crate::{
         unit::NodeKey,
     },
     sema::model::Declarations,
-    support::{hash::HashMap, retained},
+    support::{bindings::LangItem, hash::HashMap, retained},
     syntax::{ast::Kind, item::ItemKind},
 };
 use std::cell::Cell;
@@ -370,7 +370,6 @@ fn validate_source(
     Ok(())
 }
 fn pointee_role_site(report: &Report, key: NodeKey) -> bool {
-    use crate::support::bindings::LangItem;
     report
         .resolution
         .source_bindings
@@ -401,7 +400,6 @@ pub(in crate::sema) fn pointee_source_image(
         .definitions
         .get(declaration.definition.0 as usize)
         .ok_or_else(|| Error::unlocated("source Pointee role lost its actual definition"))?;
-    use crate::support::bindings::LangItem;
     let authenticated = report
         .resolution
         .source_bindings

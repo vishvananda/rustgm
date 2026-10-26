@@ -204,27 +204,37 @@ fn trait_header(facts: &Declarations, plan: Plan) -> Result<&crate::sema::traits
         .and_then(|traits| traits.header(ItemId(plan.trait_.definition.0)))
         .ok_or_else(|| Error::unlocated("source Pointee lost its canonical trait header"))
 }
-fn family_inputs(
-    facts: &Declarations,
-    plan: Plan,
-) -> Result<(Option<(u32, u32)>, &[Clause], &[Pair]), Error> {
+struct FamilyInputs<'a> {
+    identity: Option<(u32, u32)>,
+    requirements: &'a [Clause],
+    regions: &'a [Pair],
+}
+fn family_inputs(facts: &Declarations, plan: Plan) -> Result<FamilyInputs<'_>, Error> {
     match facts.associated.families.get(&plan.member.definition) {
-        Some(family) => Ok((
-            Some((family.captures, family.total)),
-            family.requirements.as_deref().ok_or_else(|| {
+        Some(family) => Ok(FamilyInputs {
+            identity: Some((family.captures, family.total)),
+            requirements: family.requirements.as_deref().ok_or_else(|| {
                 Error::unlocated("source Metadata family inputs are not complete")
             })?,
-            &family.regions,
-        )),
+            regions: &family.regions,
+        }),
         // schemas::plan authenticated the actual required no-generics/no-where
         // item and completed TypeContract. Absence alone supplies no authority.
-        None => Ok((None, &[], &[])),
+        None => Ok(FamilyInputs {
+            identity: None,
+            requirements: &[],
+            regions: &[],
+        }),
     }
 }
 impl Contracts {
     pub(super) fn payment(facts: &Declarations, plan: Plan) -> Result<(usize, usize), Error> {
         let header = trait_header(facts, plan)?;
-        let (_, requirements, regions) = family_inputs(facts, plan)?;
+        let FamilyInputs {
+            requirements,
+            regions,
+            ..
+        } = family_inputs(facts, plan)?;
         let results = &facts
             .associated
             .require_projection_header(plan.member.definition)
@@ -279,7 +289,11 @@ impl Contracts {
         arena: arena::Identity,
     ) -> Result<Self, Error> {
         let header = trait_header(facts, plan)?;
-        let (family_identity, requirements, regions) = family_inputs(facts, plan)?;
+        let FamilyInputs {
+            identity: family_identity,
+            requirements,
+            regions,
+        } = family_inputs(facts, plan)?;
         Ok(Self {
             arena,
             plan,
@@ -334,7 +348,11 @@ impl Contracts {
             nominal.current(report, facts, true)?;
         }
         let header = trait_header(facts, plan)?;
-        let (family_identity, requirements, regions) = family_inputs(facts, plan)?;
+        let FamilyInputs {
+            identity: family_identity,
+            requirements,
+            regions,
+        } = family_inputs(facts, plan)?;
         let results = &facts
             .associated
             .require_projection_header(plan.member.definition)
@@ -426,7 +444,9 @@ impl Contracts {
     pub(super) fn capacities(&self) -> [usize; 15] {
         let mut result = [0; 15];
         for (slot, state) in result[..9]
-            .chunks_exact_mut(3)
+            .as_chunks_mut::<3>()
+            .0
+            .iter_mut()
             .zip(self.states.iter().chain(self.nominal.iter()))
         {
             slot.copy_from_slice(&[
