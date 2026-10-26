@@ -59,18 +59,7 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
     let view = authority
         .reservation
         .recipe_view(&authority.report, &mut work)?;
-    let rows = view.rows()?;
-    let holder = rows
-        .traits
-        .iter()
-        .find(|header| {
-            rows.declarations[header.declaration.0 as usize]
-                .name
-                .as_deref()
-                == Some("Holder")
-        })
-        .ok_or("actual retained Holder declaration")?;
-    let holder_declaration = holder.declaration;
+    let holder_declaration = named_trait(&stage, "Holder", &mut work)?;
     let definition = view.definition(holder_declaration, &mut work)?;
     assert!(authority.report.names_resolved);
     assert!(authority.report.resolution.extern_scope.is_some());
@@ -203,7 +192,7 @@ fn repeated_owner(
 fn owner_failed_precharge() -> Result {
     let mut work = ReservationWork::default();
     let (stage, _) = start(HOLDER, &mut work)?;
-    let owner = named(&stage, "Holder", &mut work)?;
+    let owner = named_trait(&stage, "Holder", &mut work)?;
     let (stage, status) = stage.trait_declaration(owner, &mut work)?;
     assert_eq!(status, Demand::Ready(()));
     work.retained = crate::support::crates::MAX_BYTES;
@@ -343,6 +332,26 @@ fn named(stage: &HeaderDraft, name: &str, work: &mut ReservationWork) -> Result<
         })
         .map(|header| header.declaration)
         .ok_or_else(|| "actual collected function".into())
+}
+
+fn named_trait(
+    stage: &HeaderDraft,
+    name: &str,
+    work: &mut ReservationWork,
+) -> Result<DeclarationRef> {
+    let authority = &stage.session.authority;
+    let view = authority.reservation.recipe_view(&authority.report, work)?;
+    let rows = view.rows()?;
+    rows.traits
+        .iter()
+        .find(|header| {
+            rows.declarations[header.declaration.0 as usize]
+                .name
+                .as_deref()
+                == Some(name)
+        })
+        .map(|header| header.declaration)
+        .ok_or_else(|| "actual collected trait".into())
 }
 
 fn check_member_contracts(
