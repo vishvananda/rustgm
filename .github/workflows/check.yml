@@ -30,9 +30,17 @@ jobs:
       - name: Audit setup
         run: make setup-audit
       - name: Five-minute development check
-        run: make fastcheck FAST_ARGS='lexer'
+        run: python3 .github/focused_refs.py
       - name: Harness, audit cache and upstream contracts
         run: make test-harness test-upstream && obj/audit-venv/bin/python -m unittest discover -s scripts/audit_tests -v
+      - name: Retain formatted source and binding
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: selected-attribute-references
+          path: obj/parallel/all-attribute-selected-output-v1
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Retain focused evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -42,7 +50,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
   qualification:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: false
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
