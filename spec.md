@@ -246,6 +246,12 @@ from deduplicated proof/naming clauses. The
 [combined checkpoint](docs/runtime-header-integration-checkpoint.md) records
 actual projection-use opponents and unchanged alias execution/export fences.
 
+Legacy bootstrap diagnostic compatibility authenticates declarations against the
+existing fixed canonical registries, actual kind/public binding and nonimported
+identity. A missing node is insufficient. This compatibility creates no completed
+source/imported header, KnownAbsent attribute or execution permission; genuine
+source and artifact contracts keep their own producer/Unknown rules.
+
 Source Abort requires the actual current attributed header, complete call
 instance and reached caller proof. Consume a transient witness for the final
 Evaluate and original Unreachable edge before emitting the existing terminator;

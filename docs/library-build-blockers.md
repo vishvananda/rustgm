@@ -109,6 +109,12 @@ agree and are retained without repeating execution. All three native-qualified
 Abort/Not/storage source and LowIR outputs match exactly. Metadata normalization,
 full aliases, imported provided-body proof and panic/formatting remain required.
 
+The [scheduled-regression successor](runtime-header-integration-checkpoint.md#scheduled-regression-successor)
+now passes14 exact controls, strict static checks with explicit retained provenance,
+all215 harness checks and upstream verification. Ordinary bootstrap diagnostic
+ownership and failed closed-projection provenance are repaired; imported Unknown
+and actual execution proof remain separate. Full scheduled qualification is pending.
+
 ## Observable crate milestones
 
 | Milestone | Current result | Next acceptance evidence |
