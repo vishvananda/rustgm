@@ -28,6 +28,7 @@ pub(crate) mod invocations;
 pub(crate) mod iteration;
 pub mod layout_view;
 pub mod lifetimes;
+mod marker_traits;
 pub mod members;
 pub mod methods;
 pub mod model;

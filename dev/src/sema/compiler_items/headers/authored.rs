@@ -141,10 +141,17 @@ impl<'a> Trait<'a> {
                 constant,
                 auto_,
             },
-            attributes: facts.source_bindings.as_deref().map_or(
-                Ok(crate::resolve::bindings::HeaderAttributes::EMPTY),
-                |catalog| catalog.neutral_attributes(super::super::Role::from(declaration)),
-            )?,
+            attributes: facts
+                .source_bindings
+                .as_deref()
+                .map_or(
+                    Ok(crate::resolve::bindings::HeaderAttributes::EMPTY),
+                    |catalog| catalog.neutral_attributes(super::super::Role::from(declaration)),
+                )?
+                .with_marker(
+                    crate::sema::header_attributes::marker_trait(facts, report, actual)
+                        .map_err(|_| "source marker trait lacks its actual completed header")?,
+                ),
             captures: schema.captures,
             parameters: facts
                 .generics

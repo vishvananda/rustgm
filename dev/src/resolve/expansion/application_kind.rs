@@ -5,18 +5,22 @@ use crate::{expand::builtin::BuiltinKind, syntax::ast::MacroContext};
 pub(super) enum CallGrammar {
     Bang(MacroContext),
     Attribute,
+    Derive,
 }
 impl CallGrammar {
     pub(super) const fn kind(self) -> BuiltinKind {
         match self {
             Self::Bang(_) => BuiltinKind::Bang,
             Self::Attribute => BuiltinKind::Attribute,
+            Self::Derive => BuiltinKind::Derive,
         }
     }
     pub(super) fn bang(self) -> Result<MacroContext, &'static str> {
         match self {
             Self::Bang(context) => Ok(context),
-            Self::Attribute => Err("attribute invocation has no bang fragment grammar"),
+            Self::Attribute | Self::Derive => {
+                Err("non-bang invocation has no bang fragment grammar")
+            }
         }
     }
 }

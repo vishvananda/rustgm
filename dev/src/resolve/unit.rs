@@ -66,7 +66,12 @@ impl Unit {
     ) -> impl Iterator<Item = (usize, Attribute, &crate::syntax::token_tree::Forest)> {
         attributes.filter_map(|index| {
             let effect = &self.configured.effects[index];
-            (effect.attribute.effect == crate::expand::configured::Effect::Keep).then(|| {
+            matches!(
+                effect.attribute.effect,
+                crate::expand::configured::Effect::Keep
+                    | crate::expand::configured::Effect::ExpandedDerive
+            )
+            .then(|| {
                 (
                     index,
                     effect.attribute.attribute,

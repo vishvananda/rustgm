@@ -86,6 +86,21 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Erro
         };
         let range = parentheses(forest, group).map_err(error)?;
         if name == Some("derive") {
+            if effect.attribute.effect == crate::expand::configured::Effect::ExpandedDerive {
+                report.expanded_derive(
+                    NodeKey {
+                        file: key.file,
+                        node: owner.node,
+                    },
+                    index,
+                )?;
+                continue;
+            }
+            if report.package.source_core().is_some() {
+                return Err(error(
+                    "source derive requires its actual completed expansion",
+                ));
+            }
             derive(
                 forest,
                 unit.source.text(),

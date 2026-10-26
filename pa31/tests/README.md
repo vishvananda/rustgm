@@ -179,3 +179,7 @@ outcomes. They distinguish final trait bodies/override prohibition, ordinary
 provided overrides, dynamic static-versus-virtual calls, actual source Share,
 exact keyword authority and inactive syntax. The initial contract is retained
 even when observations disprove a prediction. This does not activate PA31.
+
+`spec/source-location/` plans genuine source `Location` Copy/Clone expansion and
+field obligations, with NonNull/PhantomData fields preserved. Caller tracking,
+Debug/formatting and false assertion execution remain separate requirements.

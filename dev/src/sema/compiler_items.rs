@@ -326,3 +326,8 @@ pub(crate) fn tuple_predicate(
             Some(crate::types::Kind::Tuple(_))
         ))
 }
+
+#[cfg(test)]
+pub(crate) const fn validated_layout_bytes() -> usize {
+    roles::layout_bytes()
+}

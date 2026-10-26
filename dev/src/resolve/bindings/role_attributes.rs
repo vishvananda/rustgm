@@ -12,6 +12,7 @@ pub(crate) enum HeaderAttribute {
     Specialization,
     Coinductive,
     DynIncompatible,
+    Marker,
 }
 impl HeaderAttribute {
     pub(super) fn named(name: &str) -> Option<Self> {
@@ -42,6 +43,16 @@ impl HeaderAttributes {
     }
     pub(crate) const fn contains(self, attribute: HeaderAttribute) -> bool {
         self.0 & attribute.bit() != 0
+    }
+    pub(crate) fn with_marker(self, marker: bool) -> Self {
+        Self(
+            self.0
+                | if marker {
+                    HeaderAttribute::Marker.bit()
+                } else {
+                    0
+                },
+        )
     }
     pub(crate) fn requires_sizing_profile(self) -> bool {
         [

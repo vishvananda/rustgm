@@ -390,3 +390,8 @@ pub(super) fn complete_nominal(
     ledger.roles |= bit;
     Ok(())
 }
+
+#[cfg(test)]
+pub(super) const fn layout_bytes() -> usize {
+    size_of::<Validated>()
+}

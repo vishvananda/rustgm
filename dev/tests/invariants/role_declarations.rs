@@ -14,7 +14,7 @@ fn fixture(name: &str) -> TestResult<String> {
         "pa31/tests/spec/source-builtin-declarations/{name}"
     ))?)
 }
-fn with_engine(
+pub(super) fn with_engine(
     source: &str,
     provider: bool,
     body: impl FnOnce(&mut Engine<'_, NoFiles>) -> TestResult,
@@ -81,7 +81,7 @@ fn real_frames_cannot_borrow_unavailable_role_headers() -> TestResult {
             matches!(definition.body, Body::Builtin(role) if !role.executable()).then_some(index)
         })
         .collect();
-    assert_eq!(unavailable.len(), 38);
+    assert_eq!(unavailable.len(), 35);
     for index in unavailable {
         report.invocations[0].definition = index;
         for forged in [false, true] {

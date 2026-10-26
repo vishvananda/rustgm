@@ -19,6 +19,7 @@ use crate::{
 pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     crate::sema::specialization::prepare(report, facts)?;
     let mut by_source = HashMap::default();
+    let mut allowances = report.macro_allowances();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
             continue;
@@ -50,6 +51,16 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                     continue;
                 };
                 let name = attribute.name(forest, unit.source.text());
+                if name.and_then(Consumer::named) == Some(Consumer::MarkerTrait) {
+                    crate::sema::marker_traits::consume(
+                        report,
+                        facts,
+                        key,
+                        attribute,
+                        &mut allowances,
+                    )?;
+                    continue;
+                }
                 if consume_other(
                     report,
                     facts,
@@ -137,6 +148,9 @@ fn consume_other(
     consumer: Option<Consumer>,
 ) -> Result<bool, Error> {
     match consumer {
+        Some(Consumer::DerivedImplementation) => {
+            crate::sema::marker_traits::derived_impl(report, facts, declaration, attribute)?;
+        }
         Some(Consumer::NonExhaustive) => {
             non_exhaustive::consume(report, facts, owner, declaration, attribute, effect)?;
         }
