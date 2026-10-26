@@ -35,5 +35,35 @@ fn source_lang_trait_is_not_a_method_prelude_without_actual_import() -> Result {
         role.origin,
         crate::resolve::body_origin::DeclarationOrigin::Imported(_)
     ));
+    let method = facts
+        .facts
+        .source_bindings
+        .as_deref()
+        .ok_or("actual source role catalog")?
+        .validated_role(crate::support::bindings::LangItem::CloneFn)?
+        .ok_or("actual imported clone method")?;
+    let header = facts
+        .facts
+        .function_header(method.definition)?
+        .ok_or("actual imported method header")?;
+    let Some(crate::types::Kind::Function { parameters, .. }) =
+        facts.facts.types.kind(header.signature)
+    else {
+        return Err("actual clone signature".into());
+    };
+    let receiver = *facts
+        .facts
+        .types
+        .list(parameters)
+        .and_then(|parameters| parameters.first())
+        .ok_or("actual clone first parameter")?;
+    assert_eq!(
+        facts.facts.methods.receivers.get(&method.definition),
+        Some(&(receiver, 1))
+    );
+    assert!(matches!(
+        facts.facts.types.kind(receiver),
+        Some(crate::types::Kind::Reference { mutable: false, .. })
+    ));
     Ok(())
 }
