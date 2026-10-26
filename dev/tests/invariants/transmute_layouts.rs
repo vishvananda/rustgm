@@ -11,8 +11,9 @@ fn actual_byte_continuations_have_empty_ordinary_owners_and_measured_layouts() {
     assert_eq!(reads.retained, 0);
     assert_eq!(size_of::<Constant>(), 32);
     eprintln!(
-        "transmute before Source={} Key={} Pending={} Entry={} Reads={} Decoder={:?}",
+        "transmute after Source={} ReadInput={} Key={} Pending={} Entry={} Reads={} Decoder={:?}",
         size_of::<Source>(),
+        size_of::<ReadInput>(),
         size_of::<Key>(),
         size_of::<Pending>(),
         size_of::<(ReadOperation, Pending)>(),
@@ -20,7 +21,7 @@ fn actual_byte_continuations_have_empty_ordinary_owners_and_measured_layouts() {
         super::super::codec::decoder_layout(),
     );
     eprintln!(
-        "transmute before Constant={}/{} Storage={} Backing={} Snapshot={} Memory={} Machine={} State={}",
+        "transmute after Constant={}/{} Storage={} Backing={} Snapshot={} Memory={} Machine={} State={}",
         size_of::<Constant>(),
         std::mem::align_of::<Constant>(),
         size_of::<super::super::Storage>(),

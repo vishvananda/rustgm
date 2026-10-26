@@ -13,7 +13,12 @@ pub(super) fn checked_call(
     contract: (crate::resolve::model::DefId, Primitive),
 ) -> Result<(), &'static str> {
     let arguments = super::reached_layout::checked_call_arguments(
-        facts, body, frame, position, target, contract,
+        facts,
+        body,
+        frame,
+        position,
+        target,
+        (contract.0, crate::types::TypeId::primitive(contract.1)),
     )?;
     let Some(Kind::FunctionItem { signature, .. }) = facts.types.kind(target.ty()) else {
         return Err("paid call target is not an item");

@@ -791,3 +791,6 @@ fn symbolic_union_field_storage_preserves_mutability_shape_and_binder() -> Resul
     assert_eq!(machine.memory.retained_cells(), 0);
     Ok(())
 }
+
+#[path = "transmute_values.rs"]
+mod transmute_values;

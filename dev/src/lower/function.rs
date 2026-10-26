@@ -9,6 +9,7 @@ mod invocations;
 mod pointers;
 mod references;
 mod referents;
+mod reinterpret_calls;
 mod runtime_checks;
 mod selections;
 mod slices;
@@ -860,6 +861,9 @@ impl Lower<'_, '_, '_> {
                 callee,
                 arguments,
             } => {
+                if let Some(value) = self.runtime_transmute(id)? {
+                    return Ok(value);
+                }
                 if let Some(value) = self.runtime_ub_check(id)? {
                     return Ok(value);
                 }

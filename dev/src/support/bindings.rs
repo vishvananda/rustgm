@@ -171,12 +171,15 @@ pub enum SourceIntrinsic {
     ConstEvalSelect,
     UbChecks,
     Abort,
+    Transmute,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
-        if name == "abort" {
+        if name == "transmute" {
+            Some(Self::Transmute)
+        } else if name == "abort" {
             Some(Self::Abort)
         } else if name == "const_eval_select" {
             Some(Self::ConstEvalSelect)

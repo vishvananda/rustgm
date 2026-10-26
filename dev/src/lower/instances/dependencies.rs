@@ -83,6 +83,29 @@ fn source_call(
             }
             Ok(Some(SourceIntrinsic::UbChecks))
         }
+        Some(SourceIntrinsic::Transmute) => {
+            let selected = Reader::new(facts)
+                .source_transmute(Instance::new(&facts.types, ty)?, body.source)?
+                .ok_or("source transmute lost its dependency descriptor")?;
+            catalog.require_transmute_report(report, facts, &selected)?;
+            let [input] = body
+                .arguments
+                .get(arguments.start as usize..arguments.end as usize)
+                .ok_or("source transmute lost its actual argument range")?
+            else {
+                return Err("source transmute requires one direct value argument");
+            };
+            if signature != selected.signature
+                || value.ty != selected.destination
+                || body
+                    .values
+                    .get(input.0 as usize)
+                    .is_none_or(|v| v.ty != selected.source)
+            {
+                return Err("source transmute dependency differs from its complete direct Call");
+            }
+            Ok(Some(SourceIntrinsic::Transmute))
+        }
         Some(SourceIntrinsic::Abort) => {
             let selection = Reader::new(facts)
                 .source_abort(Instance::new(&facts.types, ty)?, body.source)?
@@ -358,7 +381,8 @@ impl Dependencies {
                     }
                     Some(
                         crate::support::bindings::SourceIntrinsic::UbChecks
-                        | crate::support::bindings::SourceIntrinsic::Abort,
+                        | crate::support::bindings::SourceIntrinsic::Abort
+                        | crate::support::bindings::SourceIntrinsic::Transmute,
                     ) => {
                         // Lowering still proves the actual body/call and its
                         // evaluated callee before emitting an existing bool.
@@ -618,3 +642,7 @@ mod ub_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/abort_dependencies.rs"]
 mod abort_tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/transmute_dependencies.rs"]
+mod transmute_tests;

@@ -1,5 +1,5 @@
 //! Typed views touch only their selected footprint; raw transport does not decode.
-use super::continuations::{Duty, Key, Source};
+use super::continuations::{Duty, Key, ReadInput, Source};
 use super::{Backing, Constant, Failure, Id, Machine, Read, Reader, TypeId};
 use crate::const_eval::static_reads::ReadPurpose;
 use crate::sema::values::StoredShape;
@@ -36,6 +36,7 @@ struct Decoder {
     values: Vec<Constant>,
     duties: Vec<Duty>,
     purpose: ReadPurpose,
+    strict_value: bool,
     base_slots: usize,
     temporary: usize,
 }
@@ -368,7 +369,7 @@ impl Machine<'_, '_> {
         purpose: ReadPurpose,
     ) -> Result<Read<Constant>, Failure> {
         let key = Key {
-            source,
+            input: ReadInput::Storage(source),
             offset,
             ty,
             length: None,
@@ -389,7 +390,7 @@ impl Machine<'_, '_> {
         purpose: ReadPurpose,
     ) -> Result<(Constant, Vec<Duty>), Failure> {
         self.reserve_cells(16)?;
-        self.decode_byte_work(source, vec![Decode::Value { ty, offset }], purpose)
+        self.decode_byte_work(source, vec![Decode::Value { ty, offset }], purpose, false)
     }
     pub(super) fn decode_byte_range(
         &mut self,
@@ -432,7 +433,7 @@ impl Machine<'_, '_> {
             )
             .ok_or("byte range offset overflow")?;
         let key = Key {
-            source,
+            input: ReadInput::Storage(source),
             offset,
             ty,
             length: Some(range.length),
@@ -498,7 +499,7 @@ impl Machine<'_, '_> {
                     .ok_or("byte range offset overflow")?,
             });
         }
-        let (value, duties) = self.decode_byte_work(source, pending, purpose)?;
+        let (value, duties) = self.decode_byte_work(source, pending, purpose, false)?;
         self.complete_byte_read(key, value, duties)
     }
     fn decode_byte_work(
@@ -506,12 +507,14 @@ impl Machine<'_, '_> {
         source: Source,
         pending: Vec<Decode>,
         purpose: ReadPurpose,
+        strict_value: bool,
     ) -> Result<(Constant, Vec<Duty>), Failure> {
         let mut state = Decoder {
             pending,
             values: Vec::new(),
             duties: Vec::new(),
             purpose,
+            strict_value,
             base_slots: self.slots,
             temporary: 0,
         };
@@ -645,6 +648,7 @@ impl Machine<'_, '_> {
             state.values.push(value);
         } else if self.byte_union(ty)
             || (state.purpose == ReadPurpose::Value
+                && !state.strict_value
                 && matches!(self.evaluator.facts().types.kind(ty), Some(Kind::Array { element, .. }) if element == TypeId::primitive(crate::types::Primitive::U8))
                 && self.source_has_fragments(source, offset, layout.size)?)
         {
@@ -792,4 +796,20 @@ impl Machine<'_, '_> {
 #[cfg(test)]
 pub(super) fn decoder_layout() -> (usize, usize) {
     (size_of::<Decoder>(), std::mem::align_of::<Decoder>())
+}
+
+impl Machine<'_, '_> {
+    pub(super) fn decode_strict_value(
+        &mut self,
+        source: Source,
+        ty: TypeId,
+    ) -> Result<(Constant, Vec<Duty>), Failure> {
+        self.reserve_cells(16)?;
+        self.decode_byte_work(
+            source,
+            vec![Decode::Value { ty, offset: 0 }],
+            ReadPurpose::Value,
+            true,
+        )
+    }
 }
