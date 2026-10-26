@@ -1,5 +1,7 @@
 //! Required type declarations and their implementation contracts share resolved identities.
 mod conformance;
+mod early_metadata;
+pub(in crate::sema::declarations) use early_metadata::Phase as MetadataPhase;
 mod families;
 mod parameters;
 mod required;
@@ -135,7 +137,13 @@ impl Checker<'_> {
                             "associated type defaults are not supported by the stable profile",
                         ));
                     }
-                    self.declare_associated_type(member.definition, key, owner, definition)?;
+                    if !crate::sema::compiler_items::pointee::prepared_member(
+                        self.report,
+                        &self.facts,
+                        member.definition,
+                    )? {
+                        self.declare_associated_type(member.definition, key, owner, definition)?;
+                    }
                     if self.bound_syntax.contains_key(&member.definition) {
                         pending.push((member.definition, key));
                     }
@@ -186,9 +194,25 @@ impl Checker<'_> {
         steps: &mut usize,
         limit: usize,
     ) -> Result<(), Error> {
-        let context = self.associated_type_context(id, key)?;
-        self.schedule_bounds(id, context)?;
+        self.begin_associated_result_bounds(id, key)?;
         self.drain(steps, limit)?;
+        self.finish_associated_result_bounds(id, key)
+    }
+
+    pub(in crate::sema::declarations) fn begin_associated_result_bounds(
+        &mut self,
+        id: DefId,
+        key: NodeKey,
+    ) -> Result<(), Error> {
+        let context = self.associated_type_context(id, key)?;
+        self.schedule_bounds(id, context)
+    }
+
+    pub(in crate::sema::declarations) fn finish_associated_result_bounds(
+        &mut self,
+        id: DefId,
+        key: NodeKey,
+    ) -> Result<(), Error> {
         if let Some(family) = self.facts.associated.families.get_mut(&id) {
             family.requirements.get_or_insert_with(Vec::new);
         }
@@ -253,7 +277,7 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn declare_associated_type(
+    pub(in crate::sema::declarations) fn declare_associated_type(
         &mut self,
         id: DefId,
         key: NodeKey,

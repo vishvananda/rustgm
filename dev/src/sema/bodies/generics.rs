@@ -311,6 +311,12 @@ impl Checker<'_> {
                     subject,
                     application,
                 }) => self.quantified_result(node, *clause, *subject, *application)?,
+                Some(Source::Pointee(selected)) => {
+                    selected
+                        .current(self.facts)
+                        .map_err(|error| self.error(node, error.to_string()))?;
+                    continue;
+                }
                 Some(Source::Equality) => {
                     return Err(self.error(node, "equality evidence cannot replace a trait goal"));
                 }

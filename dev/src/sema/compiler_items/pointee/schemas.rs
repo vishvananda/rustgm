@@ -244,14 +244,9 @@ fn dyn_metadata(
                         })
                 })
         });
-    if !found
-        || facts
-            .aggregates
-            .get(ItemId(declaration.definition.0))
-            .is_none_or(|d| d.kind != crate::types::aggregate::Kind::Struct)
-    {
+    if !found {
         return Err(error(
-            "source DynMetadata requires its real PointeeSized formal and completed fields",
+            "source DynMetadata requires its real PointeeSized formal",
         ));
     }
     Ok(())

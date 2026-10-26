@@ -156,15 +156,38 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
     if complete.roles == 0 {
         return Ok(());
     }
-    if catalog.traits.is_some() {
-        return Err(Error::at(
-            crate::resolve::unit::FileId(0),
-            0,
-            "source roles were validated twice",
-        ));
-    }
+    require_distinct_pointee(report, facts, catalog, complete.roles)?;
     let output = catalog.language(LangItem::FnOnceOutput);
     publish(facts, complete, &callables, output)
+}
+
+/// Early metadata and later callable/marker completion share one owner, but
+/// neither an overlapping family nor a bare bit mask is completion authority.
+fn require_distinct_pointee(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+    roles: u32,
+) -> Result<(), Error> {
+    crate::sema::header_attributes::charge_source_contract_query(facts, 1)?;
+    let Some(prior) = catalog.traits.as_deref() else {
+        return Ok(());
+    };
+    let expected = (1 << LangItem::PointeeTrait.index())
+        | (1 << LangItem::MetadataType.index())
+        | if catalog.language(LangItem::DynMetadata).is_some() {
+            1 << LangItem::DynMetadata.index()
+        } else {
+            0
+        };
+    if prior.roles != expected
+        || prior.roles & roles != 0
+        || prior.methods != [None; 3]
+        || prior.pointee.is_none()
+    {
+        return Err(Error::unlocated("source roles were validated twice"));
+    }
+    super::pointee::authenticate(report, facts)
 }
 
 /// Publish only a fully checked role ledger and its actual callable members.
@@ -174,22 +197,32 @@ fn publish(
     callables: &[(Declaration, CallTrait, DefId)],
     output: Option<Declaration>,
 ) -> Result<(), Error> {
-    crate::sema::header_attributes::reserve_source_contracts(facts, 1, size_of::<Validated>())?;
+    let fresh = facts
+        .source_bindings
+        .as_deref()
+        .is_some_and(|catalog| catalog.traits.is_none());
+    crate::sema::header_attributes::reserve_source_contracts(
+        facts,
+        1,
+        usize::from(fresh) * size_of::<Validated>(),
+    )?;
     facts
         .associated
         .register_source_callables(callables, output)
         .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
-    facts
-        .source_bindings
-        .as_deref_mut()
-        .ok_or_else(|| {
-            Error::at(
-                crate::resolve::unit::FileId(0),
-                0,
-                "source catalog disappeared",
-            )
-        })?
-        .traits = Some(Box::new(complete));
+    let catalog = facts.source_bindings.as_deref_mut().ok_or_else(|| {
+        Error::at(
+            crate::resolve::unit::FileId(0),
+            0,
+            "source catalog disappeared",
+        )
+    })?;
+    if let Some(prior) = catalog.traits.as_deref_mut() {
+        prior.roles |= complete.roles;
+        prior.methods = complete.methods;
+    } else {
+        catalog.traits = Some(Box::new(complete));
+    }
     Ok(())
 }
 

@@ -12,6 +12,10 @@ pub(in crate::sema) struct SourceImage {
     syntax: Kind,
 }
 impl SourceImage {
+    pub(in crate::sema) fn same(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.incarnation, &other.incarnation) && self.syntax == other.syntax
+    }
+
     /// The producer prepays retained storage before taking this existing handle.
     pub(in crate::sema) fn capture(unit: &Unit, node: NodeId) -> Self {
         Self {

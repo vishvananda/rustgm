@@ -280,7 +280,7 @@ fn selected_definition_retains_both_argument_groups_and_member_identity() -> Tes
                     &facts,
                     ItemId(declared.0),
                     family,
-                    Source::Implementation { owner, arguments },
+                    &Source::Implementation { owner, arguments },
                 )?;
                 assert_eq!(selected.result(&mut facts)?, None);
                 selections.push((selected, expected));

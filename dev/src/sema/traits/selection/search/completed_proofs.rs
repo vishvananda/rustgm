@@ -35,13 +35,13 @@ impl Reuse {
         goal: Predicate,
         first: u32,
     ) -> Result<Option<super::Selection>, String> {
-        let Some(&source) = self.completed.get(&goal) else {
+        let Some(source) = self.completed.get(&goal) else {
             return Ok(None);
         };
         validate_source(facts, goal, source)?;
         Ok(Some(super::Selection::Proven(super::Evidence {
             provisional_size: false,
-            source,
+            source: source.clone(),
             proof: super::super::Obligations::new(first),
             sized: Vec::new(),
         })))
@@ -103,13 +103,13 @@ impl Query {
             return Ok(());
         };
         let node = &self.nodes[index];
-        super::super::refutation::require_positive_source(facts, node.source)?;
+        super::super::refutation::require_positive_source(facts, node.source.as_ref())?;
         if active.debt_free[index]
             && node.goal.is_concrete(&facts.types)?
-            && let Some(source) = node.source
+            && let Some(source) = node.source.as_ref()
         {
             validate_source(facts, node.goal, source)?;
-            active.reuse.completed.insert(node.goal, source);
+            active.reuse.completed.insert(node.goal, source.clone());
         }
         Ok(())
     }
@@ -126,18 +126,18 @@ impl Query {
             .reuse
             .as_ref()
             .and_then(|active| active.reuse.completed.get(&goal))
-            .copied()
+            .cloned()
         else {
             return Ok(None);
         };
-        validate_source(facts, goal, source)?;
+        validate_source(facts, goal, &source)?;
         let first = frame.available_region().max(self.allocations.floor());
         let node = Node {
             debt_free: false,
             cycle_dependent: false,
             provisional_size: false,
             goal,
-            source: Some(source),
+            source: Some(source.clone()),
             children: Vec::new(),
             first,
             end: first,
@@ -157,7 +157,7 @@ impl Query {
     }
 }
 
-fn validate_source(facts: &Declarations, goal: Predicate, source: Source) -> Result<(), String> {
+fn validate_source(facts: &Declarations, goal: Predicate, source: &Source) -> Result<(), String> {
     super::super::refutation::require_positive_source(facts, Some(source))?;
     if matches!(source, Source::Builtin)
         && goal.bound != crate::types::parameters::predicates::Bound::Sized

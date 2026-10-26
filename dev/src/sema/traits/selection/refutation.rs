@@ -101,12 +101,15 @@ pub(super) fn implementation_negative(facts: &Declarations, owner: DefId) -> Res
 }
 pub(super) fn require_positive_source(
     facts: &Declarations,
-    source: Option<Source>,
+    source: Option<&Source>,
 ) -> Result<(), String> {
     if let Some(Source::Implementation { owner, .. }) = source
-        && implementation_negative(facts, owner)?
+        && implementation_negative(facts, *owner)?
     {
         return Err("negative implementation cannot become positive trait evidence".into());
+    }
+    if let Some(Source::Pointee(selected)) = source {
+        selected.current(facts).map_err(|error| error.to_string())?;
     }
     Ok(())
 }

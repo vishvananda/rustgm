@@ -41,7 +41,7 @@ pub(super) fn definition(
 pub(super) fn implementation_result(
     facts: &mut Declarations,
     application: crate::types::projection::Application,
-    source: Source,
+    source: &Source,
 ) -> Result<TypeId, &'static str> {
     Definition::select(facts, application.item, application.arguments, source)?
         .result(facts)?

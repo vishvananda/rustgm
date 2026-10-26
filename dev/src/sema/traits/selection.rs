@@ -52,6 +52,7 @@ pub(in crate::sema) enum Dependency {
     ImplementationValidated(DefId),
     Fields(crate::types::ItemId),
     Opaque(crate::types::opaque::OpaqueId),
+    PointeeContracts(DefId),
 }
 pub(in crate::sema) enum Failure {
     Pending(Dependency),
@@ -84,6 +85,7 @@ impl Dependency {
                 .as_ref()
                 .is_some_and(|registry| registry.is_validated(owner)),
             Self::Fields(item) => facts.aggregates.get(item).is_some(),
+            Self::PointeeContracts(id) => crate::sema::compiler_items::pointee::ready(facts, id),
             Self::Opaque(id) => facts
                 .opaques
                 .declarations
@@ -93,11 +95,14 @@ impl Dependency {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub(in crate::sema) enum Source {
     Equality,
     /// A language-provided bound, never a trait method or implementation target.
     Builtin,
+    /// Universal source Pointee evidence; the requested member and its result
+    /// obligations remain owned by the actual projection query.
+    Pointee(crate::sema::compiler_items::pointee::Selection),
     /// A language callable implementation with its selected, scoped Output.
     Callable {
         output: TypeId,
@@ -195,6 +200,19 @@ pub(in crate::sema) fn may_have_subject(
     subject: infer::TermId,
     assumptions: Option<&Assumptions>,
 ) -> Result<bool, infer::Error> {
+    if facts
+        .source_bindings
+        .as_deref()
+        .map(|catalog| catalog.role(crate::support::bindings::LangItem::PointeeTrait))
+        .transpose()
+        .map_err(|_| infer::Error::InvalidIdentity)?
+        .flatten()
+        .is_some_and(|role| role.definition.0 == item.0)
+    {
+        // Exclusion only. The actual source selector still authenticates the
+        // current declaration and retains the full goal; no Sized premise exists.
+        return Ok(true);
+    }
     if facts.associated.callable(DefId(item.0)).is_some() {
         return Ok(true);
     }

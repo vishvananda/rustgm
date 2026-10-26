@@ -317,13 +317,45 @@ pub(in crate::sema) fn prepare_outlives(facts: &mut Declarations) -> Result<(), 
         if !facts.associated.types.contains_key(&item) {
             continue;
         }
-        let (templates, _) = templates::for_result(facts, item)?;
-        let captures = facts
-            .associated
-            .trait_owner(item)
-            .and_then(|owner| facts.associated.schema(owner))
-            .ok_or("missing associated lifetime owner schema")?
-            .captures;
+        prepare_member_outlives::<false>(facts, item)?;
+    }
+    Ok(())
+}
+
+/// Early source-role completion uses the same declaration template producer and
+/// store publisher as the final whole-package phase, with its existing ledger.
+pub(in crate::sema) fn prepare_source_outlives(
+    facts: &mut Declarations,
+    item: DefId,
+) -> Result<(), String> {
+    prepare_member_outlives::<true>(facts, item)
+}
+fn prepare_member_outlives<const CHARGED: bool>(
+    facts: &mut Declarations,
+    item: DefId,
+) -> Result<(), String> {
+    let (templates, _) = if CHARGED {
+        templates::for_result_counted(facts, item)?
+    } else {
+        templates::for_result(facts, item)?
+    };
+    let captures = facts
+        .associated
+        .trait_owner(item)
+        .and_then(|owner| facts.associated.schema(owner))
+        .ok_or("missing associated lifetime owner schema")?
+        .captures;
+    if CHARGED {
+        let payments =
+            crate::sema::header_attributes::source_payments(facts.must_use_contracts.as_deref())
+                .map_err(|error| error.to_string())?;
+        facts.types.declare_projection_outlives_counted(
+            ItemId(item.0),
+            captures,
+            &templates.outlives,
+            &|steps, bytes| payments.charge(steps, bytes),
+        )?;
+    } else {
         facts
             .types
             .declare_projection_outlives(ItemId(item.0), captures, &templates.outlives)?;
