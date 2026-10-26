@@ -186,6 +186,28 @@ pub(in crate::sema) fn begin_canonical(
     )
 }
 
+/// Declaration implication keeps the same counted suspension machinery.
+pub(in crate::sema) fn begin_declaration_counted(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: OwnedCaller,
+    attempted_query_steps: &mut usize,
+) -> Result<Progress, String> {
+    begin_with_inputs(
+        facts,
+        context,
+        goal,
+        caller,
+        Availability::Declarations,
+        Mode::Canonical(None),
+        Hooks {
+            attempted: Some(attempted_query_steps),
+            ..Hooks::default()
+        },
+    )
+}
+
 pub(in crate::sema) fn begin_executable_counted(
     facts: &mut Declarations,
     context: &mut Context,

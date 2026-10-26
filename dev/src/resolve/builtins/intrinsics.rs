@@ -22,14 +22,14 @@ pub struct ComparisonResult {
 }
 #[derive(Clone, Copy, Default)]
 pub struct Intrinsics {
-    entries: [Option<Definition>; Intrinsic::ALL.len()],
+    entries: [Option<Definition>; Intrinsic::BOOTSTRAP.len()],
     pointer_module: Option<ScopeId>,
     comparison_result: Option<ComparisonResult>,
 }
 impl Intrinsics {
     #[must_use]
     pub fn get(&self, kind: Intrinsic) -> Option<&Definition> {
-        self.entries[kind.index()].as_ref()
+        self.entries.get(kind.index()).and_then(Option::as_ref)
     }
     #[must_use]
     pub const fn comparison_result(&self) -> Option<ComparisonResult> {
@@ -68,12 +68,12 @@ impl Resolver<'_> {
         let requested = path.iter().any(|name| {
             let name = self.package.names.get(*name);
             name == "ptr"
-                || Intrinsic::ALL
+                || Intrinsic::BOOTSTRAP
                     .into_iter()
                     .any(|kind| kind.is_pointer_function() && kind.name() == name)
         });
         if requested {
-            for kind in Intrinsic::ALL {
+            for kind in Intrinsic::BOOTSTRAP {
                 if kind.is_pointer_function() {
                     self.prepare_intrinsic(c, node, kind)?;
                 }
@@ -87,6 +87,9 @@ impl Resolver<'_> {
         node: NodeId,
         kind: Intrinsic,
     ) -> Result<(), Error> {
+        if !kind.is_pointer_function() {
+            return Err(self.error(c, node, "intrinsic has no ordinary pointer factory"));
+        }
         if self.facts.intrinsics.get(kind).is_some() {
             return Ok(());
         }
@@ -179,7 +182,10 @@ impl Resolver<'_> {
             return Err(self.error(c, node, "canonical comparison Result changed identity"));
         }
         self.facts.intrinsics.comparison_result = Some(identity);
-        for kind in Intrinsic::ALL.into_iter().filter(|kind| kind.is_atomic()) {
+        for kind in Intrinsic::BOOTSTRAP
+            .into_iter()
+            .filter(|kind| kind.is_atomic())
+        {
             let definition = self.builtin_definition(
                 Context { scope, ..c },
                 node,

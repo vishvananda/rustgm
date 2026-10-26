@@ -73,6 +73,9 @@ fn signature(
     if kind == SourceIntrinsic::UbChecks {
         return super::runtime_checks::validate(facts, function);
     }
+    if kind == SourceIntrinsic::Abort {
+        return super::abort_declaration::validate(facts, function);
+    }
     let needs_drop = kind == SourceIntrinsic::NeedsDrop;
     let Some(Kind::Function {
         bound_regions: 0,
@@ -208,7 +211,7 @@ impl Catalog {
             .ok_or("source intrinsic declaration is not validated")?;
         if matches!(
             entry.kind,
-            SourceIntrinsic::ConstEvalSelect | SourceIntrinsic::UbChecks
+            SourceIntrinsic::ConstEvalSelect | SourceIntrinsic::UbChecks | SourceIntrinsic::Abort
         ) {
             // These contracts have dedicated descriptors, without a layout element.
             return Ok(None);
@@ -232,6 +235,7 @@ impl Catalog {
                     "source callback selection requires its own descriptor"
                 }
                 SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
+                SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
             });
         };
         if arguments.next().is_some()
@@ -249,6 +253,7 @@ impl Catalog {
                     "source callback selection requires its own descriptor"
                 }
                 SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
+                SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
             });
         }
         let function = facts
