@@ -106,14 +106,26 @@ fn aliases_have_distinct_identity_lexical_self_and_no_trait_members_or_semantic_
             .contains("trait alias contract expansion is not implemented"),
         "{error}"
     );
-    let projection = report("#![feature(trait_alias)]trait P{}trait A<U>=P;type X=A::U;fn main(){}")?;
-    let generic = projection.resolution.definitions.iter().position(|item| {
-        item.kind == DefKind::Generic && projection.package.names.get(item.name) == "U"
-    }).ok_or("alias lexical generic")?;
+    let projection =
+        report("#![feature(trait_alias)]trait P{}trait A<U>=P;type X=A::U;fn main(){}")?;
+    let generic = projection
+        .resolution
+        .definitions
+        .iter()
+        .position(|item| {
+            item.kind == DefKind::Generic && projection.package.names.get(item.name) == "U"
+        })
+        .ok_or("alias lexical generic")?;
     let generic = Target::Definition(DefId(u32::try_from(generic)?));
     // Associated paths can remain deferred for semantics; lexical U is never
     // an exported member or the resolved target of the written A::U path.
-    assert!(projection.resolution.references.iter().all(|reference| reference.target != generic));
+    assert!(
+        projection
+            .resolution
+            .references
+            .iter()
+            .all(|reference| reference.target != generic)
+    );
     assert!(pipeline::analyze_source(&projection).is_err());
     Ok(())
 }

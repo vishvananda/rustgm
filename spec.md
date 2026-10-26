@@ -207,6 +207,18 @@ bindings from API inheritance. Stability-bearing metadata must reject until its
 transport and use consumers exist; regular policy cannot grant const-callability.
 
 Source-role semantic attributes are validated claims on exact declarations.
+Sparse item feature sites share one source-incarnation witness, transaction and
+monotonic retention envelope across default modifiers and trait aliases. Keep
+whole alias-item spans distinct from default keyword spans; neither source copies
+nor macro root replacement may erase their token authority. Defaultness queries
+must filter alias rows, so aliases cannot allocate specialization state. Retain
+actual alias identities and lexical Self/generic scopes without ordinary trait
+owners, associated member scopes, impl entries or synthetic Self:Alias evidence.
+Typed expansion must share canonical dependency edges rather than repeatedly
+flattening nested alias diamonds. See the
+[source-site checkpoint](docs/trait-alias-sites-checkpoint.md); its active alias
+semantic and imported-transport fences stay explicit until their consumers exist.
+
 The bounded sizing profile requires actual sizing identities, complete headers
 and deny-explicit-impl restrictions before retaining fundamental, specialization
 or coinductive markers; those markers grant no general implementation or cycle

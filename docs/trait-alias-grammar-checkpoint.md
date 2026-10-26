@@ -1,6 +1,10 @@
-# Isolated trait-alias grammar checkpoint
+# Earlier isolated trait-alias grammar checkpoint
 
-This checkpoint is on `pa31-trait-alias-grammar-v1`. It is not an implementation
+The [source-site successor](trait-alias-sites-checkpoint.md) now adds genuine
+resolver identity, whole-item authority and disabled-syntax diagnostics. The
+following records the earlier grammar-only result and its original limits.
+
+This checkpoint was on `pa31-trait-alias-grammar-v1`. It is not an implementation
 of typed aliases and has not been merged into the public compiler. Active aliases
 retain an explicit unsupported semantic boundary. Feature/token authority,
 disabled-syntax diagnostics, actual alias definitions and typed bound expansion
