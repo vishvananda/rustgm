@@ -112,5 +112,30 @@
     "target_compilations": 0,
     "source_path": "build.rs",
     "build_script_sha256": "4b348c53d0a0cd0067ef9887b50f60a1fffdc5d00dda5c0e27fae6aa0ce3dee8"
+  },
+  "original_std": {
+    "package": {
+      "name": "std",
+      "version": "0.0.0",
+      "origin": "rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std",
+      "inventory_sha256": "d56e1983c1d58f8e1e6e950188b62471f1e15447a6c24aa01e123ebc245bb14a"
+    },
+    "target": "x86_64-unknown-linux-gnu",
+    "host_panic": "unwind",
+    "target_panic": "abort",
+    "features": [],
+    "expected_status": 0,
+    "expected_stdout": "cargo:rerun-if-changed=build.rs\ncargo:rustc-check-cfg=cfg(netbsd10)\ncargo::rustc-check-cfg=cfg(no_global_oom_handling)\ncargo:rustc-check-cfg=cfg(restricted_std)\ncargo:rustc-check-cfg=cfg(backtrace_in_libstd)\ncargo:rustc-cfg=backtrace_in_libstd\ncargo:rustc-env=STD_ENV_ARCH=x86_64\ncargo:rustc-check-cfg=cfg(vxworks_lt_25_09)\n",
+    "expected_cfg": [
+      "backtrace_in_libstd"
+    ],
+    "expected_environment": {
+      "STD_ENV_ARCH": "x86_64"
+    },
+    "expected_generated": {},
+    "expected_queries": 0,
+    "target_compilations": 0,
+    "source_path": "library/std/build.rs",
+    "source_sha256": "f5510c905e126f1de772d73c02cacb7a5ed0a485a22fb99f395593b16a9de8b2"
   }
 }

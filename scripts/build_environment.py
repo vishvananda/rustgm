@@ -12,7 +12,11 @@ def package_environment(package, document=None):
     manifest = package.root / 'Cargo.toml'
     if document is None:
         document = tomllib.loads(manifest.read_text())
-    if 'cargo-features' in document:
+    features = document.get('cargo-features', [])
+    # This Cargo feature changes the already retained graph-edge visibility,
+    # not host Rust syntax or compiler-query capabilities. Host edge modifiers
+    # remain checked by each graph consumer before it executes anything.
+    if features not in ([], ['public-dependency']):
         raise ValueError('build-script manifest unstable policy is not implemented')
     manifest_lints.arguments(document.get('lints', {}))
     data = document['package']

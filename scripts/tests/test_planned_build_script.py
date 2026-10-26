@@ -19,9 +19,9 @@ import test_build_units as units
 import test_package_snapshot as snapshots
 
 
-def setup(root, lint_table=''):
+def setup(root, lint_table='', *, manifest_prefix=''):
     source = snapshots.archive(root, [('sample-1.0.0/build.rs', b'fn main() {}')],
-                               manifest=('[package]\nname="sample"\nversion="1.0.0"\n'
+                               manifest=(manifest_prefix + '[package]\nname="sample"\nversion="1.0.0"\n'
                                          'edition="2021"\n' + lint_table).encode())
     vendor = root / 'vendor'
     vendor.mkdir()
@@ -208,6 +208,30 @@ class Tasks(unittest.TestCase):
                 with patch('host_build_script.subprocess.run') as run, self.assertRaises(ValueError):
                     execute(units.decode(data), 1, package, context, root / 'output')
                 run.assert_not_called()
+
+    def test_public_dependency_feature_preserves_target_edges_and_denies_host_modifiers(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            package, context, data = setup(root,
+                manifest_prefix='cargo-features=["public-dependency"]\n')
+            data['units'].append(units.row('public_target'))
+            edge = units.edge(3, 'public_target')
+            edge['public'] = True
+            data['units'][0]['dependencies'].append(edge)
+            plan = units.decode(data)
+            self.assertTrue(plan.units[0].dependencies[-1].public)
+            with patch('host_build_script.subprocess.run', side_effect=self.process) as run:
+                execute(plan, 1, package, context, root / 'output')
+            self.assertEqual(run.call_count, 2)
+            self.assertNotIn('--extern', run.call_args_list[0].args[0])
+            for modifier in ('public', 'noprelude', 'nounused'):
+                invalid = deepcopy(data)
+                invalid['units'][1]['dependencies'][0][modifier] = True
+                with self.subTest(modifier=modifier), patch('host_build_script.subprocess.run') as run, \
+                        self.assertRaisesRegex(ValueError, 'host dependency modifiers'):
+                    execute(units.decode(invalid), 1, package, context, root / modifier)
+                run.assert_not_called()
+                self.assertFalse((root / modifier).exists())
 
 
 class Lints(unittest.TestCase):

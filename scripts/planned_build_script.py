@@ -25,6 +25,8 @@ def pair(plan, selected, package, context):
         raise ValueError('build-script target context differs from planned platform')
     if len(unit.dependencies) != 1:
         raise ValueError('build-script DEP metadata scheduling is not implemented')
+    if any(edge.public or edge.noprelude or edge.nounused for edge in unit.dependencies):
+        raise ValueError('host dependency modifiers are not implemented')
     compiled = plan.units[unit.dependencies[0].index]
     if (compiled.execution is not Execution.HOST_COMPILE or compiled.pkg_id != unit.pkg_id
             or compiled.target != unit.target or compiled.features != unit.features):
