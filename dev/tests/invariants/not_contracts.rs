@@ -176,6 +176,32 @@ fn source_not_rejects_missing_fake_malformed_and_stale_role_authority() -> Resul
         .function_indices
         .get(&actual.method)
         .ok_or("actual method")?;
+    let method_node = facts.functions[index].node;
+    let Syntax::Item(method_item) = report.package.units[0]
+        .configured
+        .ast
+        .node(method_node.node)
+        .kind
+    else {
+        return Err("actual method item".into());
+    };
+    let method_item = method_item as usize;
+    let original = report.package.units[0].configured.ast.items[method_item].kind;
+    let ItemKind::Function { ref mut flags, .. } =
+        report.package.units[0].configured.ast.items[method_item].kind
+    else {
+        return Err("actual method function".into());
+    };
+    flags.safety = crate::syntax::item::Safety::Unsafe;
+    let changed_header = source_not(&report, &mut facts, site)
+        .err()
+        .ok_or("warm mutated method header was accepted")?;
+    assert!(
+        changed_header
+            .to_string()
+            .contains("current safe synchronous header")
+    );
+    report.package.units[0].configured.ast.items[method_item].kind = original;
     facts.functions[index].signature = TypeId::UNIT;
     assert!(source_not(&report, &mut facts, site).is_err());
     report.package.units[0].source =
@@ -197,13 +223,17 @@ fn primitive_source_not_preserves_const_effects_and_real_constant_evaluation() -
     true_constant(&report, checked)?;
     let constant = NOT.replace("pub trait", "pub const trait");
     let prelude = "#![feature(const_trait_impl)]";
-    let destruct = "#[lang=\"destruct\"]pub const trait Destruct:PointeeSized{}";
+    let destruct = "#[lang=\"destruct\"]#[rustc_deny_explicit_impl]#[rustc_dyn_incompatible_trait]pub const trait Destruct:PointeeSized{}";
     let rejected = format!(
         "{prelude}{}{destruct}{constant}{BOOL}pub const VALUE:bool=!false;",
         source("")?
     );
     let report = crate::test_source::source_provider(&rejected, "source_unary")?;
-    assert!(pipeline::analyze_source(&report).is_err());
+    let rejection = pipeline::analyze_source(&report)
+        .err()
+        .ok_or("const Not accepted an ordinary implementation")?;
+    eprintln!("actual const Not ordinary-impl rejection: {rejection}");
+    assert!(!rejection.to_string().contains("compiler marker"));
     let accepted = (rejected + "pub fn value()->bool{VALUE}")
         .replace("impl Inverter for bool", "const impl Inverter for bool");
     let report = crate::test_source::source_provider(&accepted, "source_unary")?;

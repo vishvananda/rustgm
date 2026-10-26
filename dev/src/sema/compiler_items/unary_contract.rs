@@ -223,6 +223,7 @@ fn method_signature(
         .node
         .ok_or("source Not method has no source origin")?;
     current_header(report, facts, method, origin)?;
+    method_syntax(report, facts, method, origin)?;
     let function = facts
         .function_header(method)?
         .ok_or("source Not has no completed method header")?;
@@ -285,6 +286,48 @@ fn method_signature(
         return Err("source Not callable item differs from its completed method header".into());
     }
     Ok(function.signature)
+}
+
+fn method_syntax(
+    report: &Report,
+    facts: &Declarations,
+    method: DefId,
+    origin: NodeKey,
+) -> Result<(), Failure> {
+    let unit = report.package.unit(origin.file);
+    let Syntax::Item(index) = unit.configured.ast.node(origin.node).kind else {
+        return Err("source Not method lost its current function item".into());
+    };
+    let item = unit
+        .configured
+        .ast
+        .items
+        .get(index as usize)
+        .ok_or("source Not method has a stale current item index")?;
+    let ItemKind::Function {
+        flags,
+        abi: crate::syntax::item::Abi::Rust,
+        parameters,
+        body: None,
+        ..
+    } = item.kind
+    else {
+        return Err("source Not method requires its current required Rust function".into());
+    };
+    let function = facts
+        .function_indices
+        .get(&method)
+        .and_then(|&index| facts.functions.get(index))
+        .ok_or("source Not method has no actual source function")?;
+    if flags != crate::syntax::item::FunctionFlags::default()
+        || function.definition != method
+        || function.node != origin
+        || function.parameters != parameters
+        || !unit.configured.ast.list(item.generics).is_empty()
+    {
+        return Err("source Not method changed its current safe synchronous header".into());
+    }
+    Ok(())
 }
 
 #[cfg(test)]
