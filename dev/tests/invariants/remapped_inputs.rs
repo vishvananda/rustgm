@@ -21,7 +21,7 @@ impl Sources for NoFiles {
     }
 }
 fn fresh(work: &mut ReservationWork) -> Result<(Report, ConsumerReservation, Declarations)> {
-    let actual = crate::unpaid_cases::trait_extended(inherited_tests::HOLDER)?;
+    let mut actual = crate::unpaid_cases::trait_extended(inherited_tests::HOLDER)?;
     let provider = actual.inventory.artifacts()[0].identity().clone();
     let producer_arena = actual.facts.types.arena_identity();
     drop(actual.facts);
