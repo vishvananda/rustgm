@@ -80,6 +80,7 @@ fn canonical_projection_argument_search_and_real_body_use_share_source_authority
         Some(selection::Source::Pointee(_))
     ));
     search_argument(&report, &mut analysis.facts, root)?;
+    role_publication_preserves_the_existing_owner(&report, &mut analysis.facts)?;
     let events = capture.rows()?;
     assert!(
         events
@@ -95,6 +96,78 @@ fn canonical_projection_argument_search_and_real_body_use_share_source_authority
     );
     Ok(())
 }
+fn role_publication_preserves_the_existing_owner(
+    report: &Report,
+    facts: &mut Declarations,
+) -> TestResult {
+    use crate::sema::compiler_items::roles;
+    let ledger = facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.traits.as_deref())
+        .ok_or("validated source roles")?;
+    let owner = std::rc::Rc::clone(ledger.pointee.as_ref().ok_or("actual Pointee owner")?);
+    let roles = ledger.roles;
+    let mask = (1 << LangItem::PointeeTrait.index())
+        | (1 << LangItem::MetadataType.index())
+        | (1 << LangItem::DynMetadata.index());
+    assert_ne!(roles & (1 << LangItem::Copy.index()), 0);
+    assert!(
+        roles::validate(report, facts).is_err(),
+        "duplicate regular validation succeeded"
+    );
+    {
+        let ledger = facts
+            .source_bindings
+            .as_deref_mut()
+            .and_then(|catalog| catalog.traits.as_deref_mut())
+            .ok_or("same role ledger")?;
+        ledger.roles = mask;
+        ledger.methods[0] = Some(owner.plan.member.definition);
+    }
+    assert!(
+        roles::validate(report, facts).is_err(),
+        "foreign callable slot accepted as early Pointee family"
+    );
+    {
+        let ledger = facts
+            .source_bindings
+            .as_deref_mut()
+            .and_then(|catalog| catalog.traits.as_deref_mut())
+            .ok_or("same role ledger")?;
+        ledger.methods = [None; 3];
+        ledger.pointee = None;
+    }
+    assert!(
+        roles::validate(report, facts).is_err(),
+        "bare role bits accepted without an actual source seal"
+    );
+    {
+        let ledger = facts
+            .source_bindings
+            .as_deref_mut()
+            .and_then(|catalog| catalog.traits.as_deref_mut())
+            .ok_or("same role ledger")?;
+        assert_eq!(
+            ledger.roles, mask,
+            "failed extension published regular roles"
+        );
+        ledger.pointee = Some(std::rc::Rc::clone(&owner));
+    }
+    roles::validate(report, facts)?;
+    let ledger = facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.traits.as_deref())
+        .ok_or("extended same owner")?;
+    assert_eq!(ledger.roles, roles);
+    assert!(std::rc::Rc::ptr_eq(
+        ledger.pointee.as_ref().ok_or("retained owner")?,
+        &owner
+    ));
+    Ok(())
+}
+
 fn search_argument(report: &Report, facts: &mut Declarations, root: TypeId) -> TestResult {
     let sink = report
         .resolution
