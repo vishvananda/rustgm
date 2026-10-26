@@ -283,6 +283,12 @@ identity. A missing node is insufficient. This compatibility creates no complete
 source/imported header, KnownAbsent attribute or execution permission; genuine
 source and artifact contracts keep their own producer/Unknown rules.
 
+Final trait-method queries distinguish a missing source node from an authenticated
+imported required declaration. Read the actual catalog handle and matching
+declaration header: explicit body absence establishes that the required method
+cannot be final. A provided body still requires its actual final policy; no
+default modifier or unavailable body environment can establish that absence.
+
 Source Abort requires the actual current attributed header, complete call
 instance and reached caller proof. Consume a transient witness for the final
 Evaluate and original Unreachable edge before emitting the existing terminator;
