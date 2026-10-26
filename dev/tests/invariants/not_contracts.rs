@@ -278,7 +278,7 @@ fn source_not_prepares_native_exports_only_after_actual_body_and_const_proof() -
     }
     assert!(program.symbols.iter().filter(|s| s.body.is_some()).count() >= 4);
     let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../obj/parallel/all-attribute-selected-output-v1/native");
+        .join("../obj/parallel/all-attribute-selected-output-v1/native/source-not");
     std::fs::create_dir_all(&folder)?;
     std::fs::write(folder.join("provider.rs"), input)?;
     crate::lowir::writer::write(

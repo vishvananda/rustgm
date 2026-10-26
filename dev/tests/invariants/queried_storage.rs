@@ -85,7 +85,7 @@ fn actual_layout_initializers_and_nominal_clone_bodies_prepare_native_roots() ->
         );
     }
     let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../obj/parallel/all-attribute-selected-output-v1/native");
+        .join("../obj/parallel/all-attribute-selected-output-v1/native/source-storage");
     std::fs::create_dir_all(&folder)?;
     std::fs::write(folder.join("provider.rs"), input)?;
     crate::lowir::writer::write(
