@@ -32,6 +32,10 @@ commands; unknown tools, unresolved workspace inheritance and unstable manifest
 policy remain explicit failures. The original selected libc build script is the
 first unchanged std-graph host consumer; its 27 directive lines are predeclared
 from the source. Target libc and std compilation remain required.
+Its `original_std` contract adds all eight original std-script directives, the
+complete package inventory pin and the explicit abort-target/unwind-host context.
+The public-dependency request preserves target edges while unsupported host-edge
+modifiers still fail before any process is launched.
 
 Follow the [owning brief](../README.md) and
 [library bootstrap plan](../../docs/library-bootstrap-roadmap.md).

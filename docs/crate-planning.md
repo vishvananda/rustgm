@@ -200,7 +200,9 @@ Lower priorities precede overrides, following the
 [Cargo manifest contract](https://doc.rust-lang.org/cargo/reference/manifest.html#the-lints-section).
 `scripts/manifest_lints.py` validates and produces bounded arguments; package
 loading retains them for every host unit. Unknown tools, unresolved workspace
-inheritance, unsupported settings and unstable manifest policy still diagnose.
+inheritance, unsupported settings and unknown unstable manifest policy still
+diagnose. The known `public-dependency` Cargo request preserves typed target-edge
+visibility without enabling host dependency modifiers, Rust syntax or queries.
 The caller supplies lint caps explicitly: `host_build_script.Job.lint_cap`,
 `planned_build_script.execute(..., lint_cap=...)`, or the DAG executor's
 `lint_caps` keyed by exact selected package ID. Caps enter artifact keys and
@@ -233,3 +235,16 @@ Successful executables/objects were scoped-pruned, including the diagnosed
 earlier wrong two-command assertion. Compiler-builtins' shared `configure.rs`
 input closure and std's manifest policy remain required for the other two
 original host pairs. No target library or additional assignment is complete.
+
+The subsequent original std host pair now passes too. It consumes that actual
+manifest feature and lint table, keeps the selected target graph's public edges,
+and rejects public/noprelude/nounused modifiers on the host script edge before
+execution. The unchanged script produces all eight predeclared directive lines:
+`backtrace_in_libstd` and `STD_ENV_ARCH=x86_64`, plus rerun/cfg expectations.
+It makes no compiler queries and generates no source files. The observed run is
+0.699 seconds, receipt SHA-256
+`7be92eecee223a8af1e7bc834f7db6e1349af3df2bc2c2aba8ceb23dd3139577`,
+under `obj/parallel/std-host-v1/`. All 224 harness tests and layout/upstream checks
+pass. Two of the three original host pairs execute; compiler-builtins' shared
+`configure.rs` inputs and complete external-tool/configuration closure remain.
+Original target core, alloc, libc and std artifacts remain unbuilt.

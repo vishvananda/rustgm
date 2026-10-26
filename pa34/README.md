@@ -71,8 +71,10 @@ Host compilation must preserve manifest lint levels, priorities, cfg expectation
 and explicit lint caps. The shared host DAG fixtures retain the independently
 observed directory-source and workspace policies. Original libc's selected host
 script now executes with its unchanged package bytes and all 27 predeclared
-directives; compiler-builtins' shared inputs and std's manifest policy remain
-required. This does not establish target libc or any original library artifact.
+directives. Original std's host script also runs with its real public-dependency
+manifest feature and eight predeclared directives; host modifiers stay closed.
+Compiler-builtins' shared inputs remain required. This does not establish target
+libc or any original library artifact.
 
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust

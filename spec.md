@@ -711,8 +711,10 @@ still fail the outer task; probe failure is not evidence of language incapabilit
 Retain actual package lint levels, priority order and check-cfg expectations in
 host compilation. An explicit per-package lint cap is a separate authenticated
 input, included in receipts and artifact keys; do not infer it from source kind
-or drop manifest policy. Unsupported tools, unresolved workspace inheritance and
-unstable manifest policy remain explicit errors. Parse the manifest once per
+or drop manifest policy. The manifest's `public-dependency` Cargo feature controls
+retained target graph edges; it grants no host Rust or compiler-query capability.
+Unsupported host edge modifiers, tools, workspace inheritance and other unstable
+manifest policy remain explicit errors. Parse the manifest once per
 package and reuse its environment and lint arguments across host units.
 Planning receipts are not compilation results. The
 [planning adapter](docs/crate-planning.md) supports frozen local path inputs and
