@@ -1,6 +1,6 @@
 //! Pinned builtin names serve only ambiguous-derive-helper diagnostics.
 //! They grant neither active attribute admission nor helper use permission.
-//! Source: rust88d9 compiler/rustc_feature/src/builtin_attrs.rs,
+//! Source: rust88d9 `compiler/rustc_feature/src/builtin_attrs.rs`,
 //! SHA-256 0c503aa7399200dc3eaec7aaa8ab39da4d756d6f6f69d0abb7f0a0a0176cf6eb.
 const NAMES: &[&str] = &[
     "allow",

@@ -157,7 +157,7 @@ fn malformed_helpers_global_use_wrong_roles_and_reincarnated_headers_reject() ->
     let effect = data.witnesses[0].index;
     let unit = &mut captured.package.units[summary.node.file.0 as usize];
     let old = unit.configured.effects[effect].capture;
-    unit.configured.effects[effect].capture = if old == 0 { 1 } else { 0 };
+    unit.configured.effects[effect].capture = u32::from(old == 0);
     assert!(panic_contracts::checked(&captured.package, summary.node).is_err());
     let ordinary = crate::test_source::resolve("macro_rules! user{()=>{}}", true)?;
     assert!(panic_contracts::checked(&ordinary.package, key(&ordinary, "user")?)?.is_none());
